@@ -10,7 +10,7 @@ function createWindow () {
         }
     })
 
-    win.loadFile('./static/index.html')
+    win.loadFile('./client/index.html')
 }
 
 

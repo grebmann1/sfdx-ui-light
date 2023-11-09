@@ -1,0 +1,6 @@
+{
+    "modules": [
+        { "dir": "client/modules"},
+        { "npm": "lightning-base-components" }
+    ]
+}
