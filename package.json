@@ -1,0 +1,11 @@
+{
+  "name": "sfdx-ui-light",
+  "version": "1.0.0",
+  "devDependencies": {
+    "electron": "^25.3.0"
+  },
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron ."
+  }
+}
