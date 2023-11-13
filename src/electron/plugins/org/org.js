@@ -3,7 +3,9 @@ const {
     getAllOrgs,
     openOrgUrl,
     createNewOrgAlias,
-    seeDetails
+    seeDetails,
+    unsetAlias,
+    setAlias
 } = require('./methods.js');
 
 class ORG_CONNECTOR{
@@ -15,6 +17,8 @@ class ORG_CONNECTOR{
         ipcMainManager.handle(`${this.namespace}-openOrgUrl`,openOrgUrl);
         ipcMainManager.handle(`${this.namespace}-createNewOrgAlias`,createNewOrgAlias);
         ipcMainManager.handle(`${this.namespace}-seeDetails`,seeDetails);
+        ipcMainManager.handle(`${this.namespace}-unsetAlias`,unsetAlias);
+        ipcMainManager.handle(`${this.namespace}-setAlias`,setAlias);
     }
 }
 

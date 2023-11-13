@@ -1,7 +1,8 @@
 import { LightningElement } from "lwc";
+import LightningAlert from 'lightning/alert';
 import NewOrgModal from "org/NewOrgModal";
 import OrgDetailModal from "org/OrgDetailModal";
-
+import OrgRenameModal from "org/OrgRenameModal";
 
 import {decodeError} from 'shared/utils';
 
@@ -9,9 +10,9 @@ import {decodeError} from 'shared/utils';
 
 const actions = [
     { label: 'Login', name: 'login' },
-    { label: 'See Details', name: 'seeDetails' }
-    /*{ label: 'Set Alias', name: 'setAlias' },
-    { label: 'Unset Alias', name: 'unsetAlias' }*/
+    { label: 'See Details', name: 'seeDetails' },
+    { label: 'Set Alias', name: 'setAlias' },
+    { label: 'Unset Alias', name: 'unsetAlias' }
 ];
 
 const columns = [
@@ -36,8 +37,8 @@ export default class Alias extends LightningElement {
     columns = columns;
     data = [];
 
-    connectedCallback(){
-        this.execute_getAllOrgs();
+    async connectedCallback(){
+        this.data = await this.execute_getAllOrgs();
     }
 
 
@@ -45,8 +46,10 @@ export default class Alias extends LightningElement {
 
     createNewOrg = () => {
         NewOrgModal.open()
-        .then((result) => {
-            console.log(result);
+        .then(async (res) => {
+            if(res){
+                this.data = await this.execute_getAllOrgs();
+            }
         });
     }
 
@@ -59,6 +62,12 @@ export default class Alias extends LightningElement {
                 break;
             case 'seeDetails':
                 this.seeDetails(row);
+                break;
+            case 'unsetAlias':
+                this.unsetAlias(row);
+                break;
+            case 'setAlias':
+                this.setAlias(row);
                 break;
             default:
         }
@@ -74,11 +83,58 @@ export default class Alias extends LightningElement {
     }
 
     seeDetails = async (row) =>  {
-        let res = await this.execute_loadDetails(row);
-        if(res){
-            OrgDetailModal.open(res)
-            .then((result) => {
-                console.log(result);
+        try{
+            let res = await this.execute_loadDetails(row);
+            if(res){
+                OrgDetailModal.open(res)
+                .then((result) => {
+                    console.log(result);
+                });
+            }
+        }catch(e){
+            await LightningAlert.open({
+                message: e.message,
+                theme: 'error', 
+                label: 'Error!', 
+            });
+        }
+        
+    }
+
+    unsetAlias = async (row) => {
+        try{
+            var confirmed = window.confirm(`Are you sure you wish to remove this Alias : ${row.alias}?`)
+            if(confirmed){
+                await this.execute_unsetAlias(row);
+            }
+            this.data = await this.execute_getAllOrgs();
+        }catch(e){
+            await LightningAlert.open({
+                message: e.message,
+                theme: 'error', 
+                label: 'Error!',
+            });
+        }
+    }
+
+    setAlias = async (row) => {
+        try{
+            OrgRenameModal.open({
+                row:row,
+                alias:row.alias
+            })
+            .then(async (res) => {
+                console.log('res',res);
+                if(res === 'success'){
+                    await this.execute_unsetAlias(row);
+                    this.data = await this.execute_getAllOrgs();
+                }
+            });
+        }catch(e){
+            await LightningAlert.open({
+                message: e.message,
+                theme: 'error', 
+                label: 'Error!',
             });
         }
     }
@@ -87,31 +143,19 @@ export default class Alias extends LightningElement {
     /** Execution Methods */
 
     execute_loadDetails = async (row) => {
-        try{
-            var {res, error} = await window.electron.ipcRenderer.invoke('org-seeDetails',row);
-            if (error) {
-                throw decodeError(error)
-            }
-            /*this.setState({
-                isSelectedUserDetailDisplayed:true,
-                selectedUserDetail:{...result,...{username:user.username}}
-            })*/
-            console.log('result',{res, error});
-            console.log('display details !!!')
-            // set alias if null
-            res = {
-                ...res,
-                ...{
-                    id:res.alias,
-                    company:`${res.alias.split('-').length > 1?res.alias.split('-').shift():''}`.toUpperCase(),
-                    name:res.alias.split('-').pop()
-                }
-            }
-            return res;
-        }catch(e){
-            console.log('error',e);
-            return null;
+        var {res, error} = await window.electron.ipcRenderer.invoke('org-seeDetails',row);
+        if (error) {
+            throw decodeError(error)
         }
+        res = {
+            ...res,
+            ...{
+                id:res.alias,
+                company:`${res.alias.split('-').length > 1?res.alias.split('-').shift():''}`.toUpperCase(),
+                name:res.alias.split('-').pop()
+            }
+        }
+        return res;
     }
 
     execute_openOrgUrl = async (row) => {
@@ -132,8 +176,14 @@ export default class Alias extends LightningElement {
                     }
                 }
             })
-        this.data = res;
-        console.log('res',res);
+        return res;
+    }
+
+    execute_unsetAlias = async (row) => {
+        var {res, error} = await window.electron.ipcRenderer.invoke('org-unsetAlias',row);
+        if (error) {
+            throw decodeError(error)
+        }
     }
 
 }

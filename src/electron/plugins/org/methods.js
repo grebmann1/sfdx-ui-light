@@ -63,9 +63,35 @@ createNewOrgAlias = async (event,{alias,instanceurl}) => {
     }
 }
 
+unsetAlias = async (event,{alias}) => {
+    try{
+        let res = await sfdx.alias.unset({
+            _quiet:true,
+            _rejectOnError: true,
+        },{args: [`${alias}`]});
+        return {res};
+    }catch(e){
+        return {error: encodeError(e)}
+    }
+}
+
+setAlias = async (event,{alias,username}) => {
+    try{
+        let response = await sfdx.alias.set({
+            _quiet:true,
+            _rejectOnError: true,
+        },{args: [`${alias}=${username}`]});
+        return {result:response};
+    }catch(e){
+        return {error: encodeError(e)}
+    }
+}
+
 module.exports = {
     getAllOrgs,
     openOrgUrl,
     createNewOrgAlias,
-    seeDetails
+    seeDetails,
+    unsetAlias,
+    setAlias
 }

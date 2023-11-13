@@ -30,7 +30,8 @@ main = () => {
     app.whenReady().then(onReady);
 
     app.on('window-all-closed', () => {
-        if (process.platform !== 'darwin') app.quit();
+      console.log('window-all-closed');
+        app.quit();
     })
   
   

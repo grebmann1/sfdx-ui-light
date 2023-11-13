@@ -1,20 +1,19 @@
 <template>
 
     <!-- Header -->
-    <ui-header></ui-header>
+    <ui-header 
+        current-application-name="Org"
+        current-tab-name="Home"
+    ></ui-header>
 
     <!-- Page -->
     <div class="app-container">
         <div class="slds-template_default  forceBrandBand">
             <section class="section">
                 <div class="container">
-                    <div class="slds-grid slds-gutters">
-                        <div class="slds-col">
-                            <!-- Feature - Start -->
-                            <org-app></org-app>
-                            <!-- Feature - End -->
-                        </div>
-                    </div>
+                    <!-- Feature - Start -->
+                    <org-app></org-app>
+                    <!-- Feature - End -->
                 </div>
             </section>
         </div>
