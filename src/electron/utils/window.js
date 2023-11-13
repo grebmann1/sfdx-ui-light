@@ -4,7 +4,7 @@ const path = require('path');
 let browserWindows = [];
 
 exports.browserWindows;
-exports.createMainWindow = createMainWindow = ({url,file}) => {
+exports.createMainWindow = createMainWindow = () => {
 
     console.log(`Creating main window`);
 
@@ -27,13 +27,6 @@ exports.createMainWindow = createMainWindow = ({url,file}) => {
                 contextIsolation: true,
             }
         });
-
-    if(url){
-        console.log('url',url);
-        browserWindow.loadURL(url);
-    }else if(file){
-        browserWindow.loadFile(file);
-    }
 
     browserWindow.webContents.once('dom-ready', () => {
         if (browserWindow) {

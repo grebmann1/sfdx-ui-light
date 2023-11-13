@@ -56,7 +56,7 @@ export default class OrgRenameModal extends LightningModal {
     async handleSaveClick() {
         if (this.validateForm()) {
             this.disableClose = true;
-            await this.renameAlias();
+            await this.setAlias();
         } else {
             this.disableClose = false;
         }
