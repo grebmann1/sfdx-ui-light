@@ -3,15 +3,23 @@
   "version": "1.0.0",
   "main": "src/electron/main.js",
   "scripts": {
-    "start":"run-p --race start:electron start:client",
+    "start": "electron-forge start",
     "start:electron": "electron .",
     "start:client": "serve site",
-    "build:client":"lwr build",
+    "build:client": "lwr build",
     "dev": "run-p --race dev:client start-electron",
     "dev:client": "run-p --race dev:client:copy dev:client:start",
-    "dev:client:start": "lwr dev"
+    "dev:client:start": "lwr dev",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
   "devDependencies": {
+    "@electron-forge/cli": "^6.4.2",
+    "@electron-forge/maker-deb": "^6.4.2",
+    "@electron-forge/maker-rpm": "^6.4.2",
+    "@electron-forge/maker-squirrel": "^6.4.2",
+    "@electron-forge/maker-zip": "^6.4.2",
+    "@electron-forge/plugin-auto-unpack-natives": "^6.4.2",
     "@lwc/synthetic-shadow": "5.0.0",
     "@salesforce-ux/design-system": "2.22.2",
     "copy-files-from-to": "3.9.0",
@@ -31,7 +39,16 @@
     }
   ],
   "dependencies": {
+    "@lwc/synthetic-shadow": "5.0.0",
     "@lwrjs/label-module-provider": "^0.11.3",
-    "serve": "^14.2.1"
+    "@salesforce-ux/design-system": "2.22.2",
+    "electron": "^25.3.0",
+    "electron-reload": "2.0.0-alpha.1",
+    "electron-squirrel-startup": "^1.0.0",
+    "lightning-base-components": "1.19.11-alpha",
+    "lwc": "5.0.0",
+    "lwr": "0.11.3",
+    "serve": "^14.2.1",
+    "sfdx-node": "^3.8.0"
   }
 }
