@@ -1,0 +1,69 @@
+<template>
+    <lightning-modal-header label="Details"></lightning-modal-header>
+    <lightning-modal-body> 
+        <section class="slds-p-around_medium">
+            <dl class="slds-box slds-m-left_medium slds-m-bottom_medium slds-list_horizontal slds-wrap">
+                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Company">
+                    Company:
+                </dt>
+                <dd class="slds-item_detail slds-truncate" title={company}>
+                    {company}
+                </dd>
+                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Org Id">
+                    OrgId:
+                </dt>
+                <dd class="slds-item_detail slds-truncate" title={orgId}>
+                    {orgId}
+                </dd>
+                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Name">
+                    Name:
+                </dt>
+                <dd class="slds-item_detail slds-truncate" title={name}>
+                    {name}
+                </dd>
+                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Alias">
+                    Alias:
+                </dt>
+                <dd class="slds-item_detail slds-truncate" title={alias}>
+                    {alias}
+                </dd>
+                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Username">
+                    Username:
+                </dt>
+                <dd class="slds-item_detail slds-truncate" title={username}>
+                    {username}
+                </dd>
+                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Instance url">
+                    Instance Url:
+                </dt>
+                <dd class="slds-item_detail slds-truncate" title={instanceUrl}>
+                    {instanceUrl}
+                </dd>
+                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="SFDX Auth Url">
+                    SFDX Auth Url:
+                    <lightning-button-icon 
+                        onclick={handleCopySFDXAuthUrl}
+                        icon-name="utility:copy"  
+                        variant="bare" 
+                        alternative-text="copy"
+                    ></lightning-button-icon>
+                </dt>
+                <dd class="slds-item_detail slds-truncate" title={sfdxAuthUrl}>
+                    {sfdxAuthUrl}
+                </dd>
+                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="AccessToken">
+                    AccessToken:
+                    <lightning-button-icon 
+                        onclick={handleCopySFDXAccessToken}
+                        icon-name="utility:copy"  
+                        variant="bare" 
+                        alternative-text="copy"
+                    ></lightning-button-icon>
+                </dt>
+                <dd class="slds-item_detail slds-truncate" title={accessToken}>
+                    {accessToken}
+                </dd>
+            </dl>
+        </section>
+    </lightning-modal-body>
+</template>

@@ -1,0 +1,15 @@
+
+:host {
+    display: block;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+.app-container {
+    margin-top: 90px;
+}
+
+.container{
+    padding:1rem;
+}

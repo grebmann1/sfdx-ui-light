@@ -1,0 +1,71 @@
+const sfdx = require('sfdx-node');
+const { shell } = require('electron');
+const { encodeError } = require('../../utils/errors.js');
+
+getAllOrgs = async (event) => {
+    return  await sfdx.alias.list();
+}
+
+seeDetails = async (event,{alias}) => {
+    try{
+        let res = await sfdx.force.org.display({
+            _quiet:true,
+            json:true,
+            verbose:true,
+            _rejectOnError: true,
+            targetusername: alias
+        });
+        /** Catch it directly */
+        let loginObject = await sfdx.force.org.open({
+            targetusername:alias,
+            urlonly:true
+        });
+        res = {
+            ...res,
+            ...{
+                loginUrl:loginObject.url,
+                orgId:res.id
+            }
+        };
+        
+        console.log('res',res);
+        return {res};
+    }catch(e){
+        console.log('error',e);
+        return {error: encodeError(e)}
+    }
+}
+
+openOrgUrl = async (event,{alias,redirectUrl}) => {
+    const result = await sfdx.force.org.open({
+        targetusername:alias,
+        urlonly:true
+    });
+    if(result){
+        let url = result.url+(redirectUrl?`&retURL=${encodeURIComponent(redirectUrl)}`:'');
+        shell.openExternal(url);
+    }
+}
+
+createNewOrgAlias = async (event,{alias,instanceurl}) => {
+    console.log('createNewOrgAlias');
+
+    try{
+        let res = await sfdx.auth.web.login({
+            setalias: alias,
+            instanceurl:instanceurl,
+            _quiet:false,
+            _rejectOnError: true
+        });
+        return {res};
+    }catch(e){
+        return {error: encodeError(e)}
+    }
+}
+
+module.exports = {
+    getAllOrgs,
+    openOrgUrl,
+    createNewOrgAlias,
+    seeDetails
+}
