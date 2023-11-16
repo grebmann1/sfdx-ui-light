@@ -4,6 +4,9 @@
     <ui-header 
         current-application-name="Org"
         current-tab-name="Home"
+        applications={applications}
+        onnewapp={handleNewApp}
+        ontabchange={handleTabChange}
     ></ui-header>
 
     <!-- Page -->
@@ -12,7 +15,11 @@
             <section class="section">
                 <div class="container">
                     <!-- Feature - Start -->
-                    <org-app></org-app>
+                    <template for:each={applications} for:item="application">
+                        <div key={application.id} class={application.classVisibility}>
+                            <lwc:component  lwc:is={application.constructor}></lwc:component>
+                        </div>
+                    </template>
                     <!-- Feature - End -->
                 </div>
             </section>

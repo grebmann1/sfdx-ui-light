@@ -9,9 +9,14 @@
     "bundleConfig": { "exclude": ["lwc", "@lwc/synthetic-shadow"] },
     "assets": [
         {
-          "alias": "assetsDir",
-          "dir": "$rootDir/node_modules/@salesforce-ux/design-system/assets",
-          "urlPath": "/assets"
+            "alias": "assetsDir",
+            "dir": "$rootDir/node_modules/@salesforce-ux/design-system/assets",
+            "urlPath": "/assets"
+        },
+        {
+            "alias":"stylesDir",
+            "dir": "$rootDir/src/client/assets/styles",
+            "urlPath": "/styles"
         }
     ],
     "routes": [

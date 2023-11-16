@@ -4,7 +4,7 @@ import NewOrgModal from "org/NewOrgModal";
 import OrgDetailModal from "org/OrgDetailModal";
 import OrgRenameModal from "org/OrgRenameModal";
 
-import {decodeError} from 'shared/utils';
+import {decodeError,getAllOrgs} from 'shared/utils';
 
 
 
@@ -163,20 +163,7 @@ export default class Alias extends LightningElement {
     }
 
     execute_getAllOrgs = async () => {
-        let res = await window.electron.ipcRenderer.invoke('org-getAllOrgs');
-            res = res.sort((a, b) => a.alias.localeCompare(b.alias));
-            res = res.map((item,index) => {
-                return {
-                    ...item,
-                    ...{
-                        id:item.alias,
-                        username:item.value,
-                        company:`${item.alias.split('-').length > 1?item.alias.split('-').shift():''}`.toUpperCase(),
-                        name:item.alias.split('-').pop()
-                    }
-                }
-            })
-        return res;
+        return await getAllOrgs();
     }
 
     execute_unsetAlias = async (row) => {

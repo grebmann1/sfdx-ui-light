@@ -13,7 +13,7 @@
     "dev:client": "NODE_ENV=development run-p --race dev:client:copy dev:client:start",
     "dev:client:start": "NODE_ENV=development lwr dev",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make --platform darwin"
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.4.2",
@@ -48,10 +48,13 @@
     "electron-reload": "2.0.0-alpha.1",
     "electron-serve": "^1.2.0",
     "electron-squirrel-startup": "^1.0.0",
+    "jsforce": "1.11.1",
     "lightning-base-components": "1.19.11-alpha",
     "lwc": "5.0.0",
     "lwr": "0.11.3",
     "serve": "^14.2.1",
-    "sfdx-node": "^3.8.0"
+    "sfdx-node": "^3.8.0",
+    "tabulator-tables": "^5.5.2",
+    "update-electron-app": "^3.0.0"
   }
 }

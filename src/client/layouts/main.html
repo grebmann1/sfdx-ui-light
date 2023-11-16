@@ -5,6 +5,7 @@
         <title>Users Management App</title>
         <!--<link rel="icon" type="image/x-icon" href="$assetsDir/favicon.ico">-->
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="$stylesDir/tabulator.min.css">
         <link rel="stylesheet" href="$assetsDir/styles/salesforce-lightning-design-system.min.css" />
         <style>
             .slds-color-brand{
@@ -14,6 +15,20 @@
                 font-size: .875rem;
                 font-weight: 700 !important;
             }
+            .vertical-title{
+                font-size:small;
+                justify-content: flex-start !important;
+            }
+
+            .tab-visible{
+                visibility: visible;
+            }
+
+            .tab-hide{
+                visibility: hidden;
+                height: 0;
+            }
+            
         </style>
     </head>
     <body>

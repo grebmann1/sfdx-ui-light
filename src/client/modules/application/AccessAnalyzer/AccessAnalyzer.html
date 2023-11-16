@@ -1,0 +1,75 @@
+<template>
+    <div class="grid-container">
+        <!-- HEADER-->
+        <div class="slds-page-header slds-page-header_joined">
+            <div class="slds-page-header__row">
+                <div class="slds-page-header__col-title">
+                    <div class="slds-media">
+                        <div class="slds-media__figure">
+                            <lightning-icon icon-name="standard:user"></lightning-icon>
+                        </div>
+                        <div class="slds-media__body">
+                            <div class="slds-page-header__name">
+                                <div class="slds-page-header__name-title">
+                                    <h1>
+                                        <span>Profiles &amp; Permission Sets</span>
+                                        <span class="slds-page-header__title slds-truncate" title="Access Analyzer">Access Analyzer</span>
+                                    </h1>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-page-header__col-actions slds-align-middle slds-p-bottom_none">
+                    <div class="slds-page-header__controls">
+                        <div class="slds-page-header__control">
+                            <lightning-combobox
+                                name="usernameOrAlias"
+                                label="User/Alias"
+                                variant="label-hidden"
+                                dropdown-alignment="right"
+                                value={usernameOrAlias}
+                                placeholder="Select User/Alias"
+                                disabled={isLoading}
+                                options={usernameOrAlias_options}
+                                onchange={usernameOrAlias_handleChange}
+                            ></lightning-combobox>
+                        </div>
+                        <div class="slds-page-header__control">
+                            <div class="slds-button-group" id="button-group-page-header-actions" role="group">
+                                <lightning-button-icon icon-name="utility:refresh" variant="border-filled" disabled={isLoading} onclick={refreshMetadata}    label="Refresh"></lightning-button-icon>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-page-header__row slds-page-header__row_gutters">
+                <div class="slds-page-header__col-details">
+                    <ul class="slds-page-header__detail-row">
+                        <li class="slds-page-header__detail-block">
+                            <lightning-combobox
+                                label="Reports"
+                                dropdown-alignment="left"
+                                value={report}
+                                placeholder="Select Report Type"
+                                disabled={isLoading}
+                                options={report_options}
+                                onchange={report_handleChange}
+                            ></lightning-combobox>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTAINER -->
+        <div class="column slds-size_1-of-1 slds-medium-size_12-of-12 slds-large-size_12-of-12 region-main">
+            <template lwc:if={isLoading}>
+                <lightning-spinner alternative-text="Loading"></lightning-spinner>
+            </template>
+            <!-- Table -->
+            <div lwc:dom="manual" class="custom-table"></div>
+        </div>
+    </div>
+
+</template>
