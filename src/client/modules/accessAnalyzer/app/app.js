@@ -1,29 +1,48 @@
 import { LightningElement } from "lwc";
 import {decodeError,getAllOrgs,chunkPromises,isEmpty} from 'shared/utils';
 import {TabulatorFull as Tabulator} from 'tabulator-tables';
+import ModalProfileFilter from "accessAnalyzer/ModalProfileFilter";
 
-export default class AccessAnalyzer extends LightningElement {
+/* For Testing in Browser */
+import Fake from 'shared/fake';
+
+export default class App extends LightningElement {
     usernameOrAlias;
-    report = 'Profile';
+    
     orgs = [];
 
     metadatalist = [];
     metadataDetails = [];
     tableInstance;
 
+
+    /* Filters */
+    report = 'Profile';
+    isFilteting_profiles = false;
+    
+
     isLoading = false;
+    /* Debug */
+    isDebugMode = true;
 
     async connectedCallback(){
-        this.orgs = await getAllOrgs();
+        this.orgs = await getAllOrgs(this.isDebugMode);
         this.usernameOrAlias = this.orgs.length > 0 ? this.orgs[0].alias:null;
-        this.loadMetadata();
+        this.loadMetadata({force:false});
+    }
+
+    openModalFilter_profile = () => {
+        ModalProfileFilter.open({
+            profiles:this.metadataDetails['Profile'],
+        });
+
     }
 
     refreshMetadata = async () => {
-        this.loadMetadata(true);
+        this.loadMetadata({force:true});
     }
 
-    loadMetadata = async (force = false) => {
+    loadMetadata = async ({force=false}) => {
         this.isLoading = true;
         this.metadatalist = [];
         this.metadataDetails = [];
@@ -62,6 +81,10 @@ export default class AccessAnalyzer extends LightningElement {
     /** Methods */
 
     getMetadataList = async ({force,types}) => {
+        if(this.isDebugMode){
+            return {res:Fake.Metadata};
+        }
+
         let {res,error} = await window.electron.ipcRenderer.invoke('jsforce-metadataList',{
             force,
             types,
@@ -71,6 +94,9 @@ export default class AccessAnalyzer extends LightningElement {
     }
 
     getMetadataDetails = async ({force,header}) => {
+        if(this.isDebugMode){
+            return {res:Fake[header.type][header.fullName],header}
+        }
         let {res,error} = await window.electron.ipcRenderer.invoke('jsforce-metadataRead',{
             force,
             type:header.type,
@@ -81,6 +107,9 @@ export default class AccessAnalyzer extends LightningElement {
     }
 
     getSObjectInfo = async ({force,type}) => {
+        if(this.isDebugMode){
+            return {res:Fake.SObject[type]}
+        }
         let {res,error} = await window.electron.ipcRenderer.invoke('jsforce-describeSobject',{
             force,
             type,
@@ -118,6 +147,18 @@ export default class AccessAnalyzer extends LightningElement {
     }
 
 
+    /** Filters */
+
+    profileFiltering_handleClick = (e) => {
+
+        this.openModalFilter_profile();
+        //this.isFilteting_profiles = !this.isFilteting_profiles;
+        
+    }
+
+    get profileFilteringVariant(){
+        return this.isFilteting_profiles?'brand':'neutral'
+    }
 
 
 
@@ -165,7 +206,20 @@ export default class AccessAnalyzer extends LightningElement {
         
 		profiles.forEach(p => {
 			if (!filterColumns[p.fullName]) {
-				colModel.push(
+                let _typeIndex = colModel.findIndex(x => x.field == p.userLicense);
+                if(_typeIndex < 0){
+                    /* Create User License */
+                    colModel.push(
+                        { 
+                            title: p.userLicense, field: p.userLicense, columns: [], 
+                            headerHozAlign: "center",  headerWordWrap: false, variableHeight: true, 
+                            headerTooltip :p.userLicense, resizable: true, minWidth:120
+                        }
+                    );
+                    _typeIndex = colModel.length - 1;
+                }
+
+				colModel[_typeIndex].columns.push(
 					{ title: p.fullName, field: p.id, headerHozAlign: "center",hozAlign:"center",headerWordWrap: true, width: 80, formatter:"tickCross", formatterParams:{allowEmpty:true},headerSort:false}
 				);
 			}

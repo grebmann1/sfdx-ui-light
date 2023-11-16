@@ -12,3 +12,13 @@
 .grid-container .region-main {
     width: inherit;
 }
+
+/** Filters **/
+.slds-page-header__detail-block{
+    max-width: unset;
+    padding-right: unset;
+}
+
+.slds-page-header__detail-block .slds-form-element__label{
+    min-height: 18px;
+}

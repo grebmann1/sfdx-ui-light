@@ -27,7 +27,18 @@ export function guid() {
     );
 }
 
-export async function getAllOrgs(){
+export async function getAllOrgs(debugMode = false){
+    console.log('debugMode',debugMode);
+    if(debugMode){
+        return [
+            {
+                id:'TEST-Demo',
+                username:'TEST-Demo@test.com',
+                company:'Test',
+                name:'Demo'
+            }
+        ] 
+    }
     let res = await window.electron.ipcRenderer.invoke('org-getAllOrgs');
         res = res.sort((a, b) => a.alias.localeCompare(b.alias));
         res = res.map((item,index) => {

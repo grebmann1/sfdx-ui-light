@@ -13,7 +13,7 @@ export default class App extends LightningElement {
             isDeletable:false
         });
         await this.loadModule({
-            component:'application/AccessAnalyzer',
+            component:'accessAnalyzer/App',
             name:"Access Analyzer",
             isDeletable:false
         });
