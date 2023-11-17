@@ -47,7 +47,7 @@ export default class ModalProfileFilter extends LightningModal {
 				formatter: function(cell, formatterParams, onRendered){
 					let icon = cell.getValue() > 0 ? activeUserIcon : inactiveUserIcon;
 
-					return icon + cell.getValue() + 'UserCounteSuffix';
+					return icon + cell.getValue() + '';
 				},
 				cellClick:function(e, cell) {
 					cell.getRow().toggleSelect();
@@ -58,7 +58,7 @@ export default class ModalProfileFilter extends LightningModal {
 					let icon = cell.getValue() > 0 ? activeUserIcon : inactiveUserIcon;
 
 					// ～人
-					return icon + cell.getValue() + 'UserCounteSuffix';
+					return icon + cell.getValue() + '';
 				},
 				cellClick:function(e, cell) {
 					cell.getRow().toggleSelect();
@@ -93,24 +93,27 @@ export default class ModalProfileFilter extends LightningModal {
         if (this.tableInstance) {
 			this.tableInstance.destroy();
 		}
-
-		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
-			height: 600,
-			data: datas,
-			layout: "fitDataFill",
-			columns: colModel,
-			columnHeaderVertAlign: "middle",
-			groupBy: "licenseName",
-			groupToggleElement: false,
-			/*TODO group all select/deselect
-			groupHeader: function(value, count, data, group){
-				return "<input type='checkbox' />" + value + "<span style='color:#d00; margin-left:10px;'>(" + count + " item)</span>";
-			},
-			*/
-			selectableCheck : function(row) {
-				return row.getData()['label'] != null;
-			},
-		});
+        window.setTimeout(() => {
+            console.log('this.template.querySelector(".custom-table")',this.template.querySelector(".custom-table"));
+            this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
+                height: 600,
+                data: datas,
+                layout: "fitDataFill",
+                columns: colModel,
+                columnHeaderVertAlign: "middle",
+                groupBy: "licenseName",
+                groupToggleElement: false,
+                /*TODO group all select/deselect
+                groupHeader: function(value, count, data, group){
+                    return "<input type='checkbox' />" + value + "<span style='color:#d00; margin-left:10px;'>(" + count + " item)</span>";
+                },
+                */
+                selectableCheck : function(row) {
+                    return row.getData()['label'] != null;
+                },
+            });
+        },1);
+		
 
     }
 
