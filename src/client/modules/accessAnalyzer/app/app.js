@@ -1,11 +1,10 @@
 import { LightningElement } from "lwc";
-import {decodeError,getAllOrgs,chunkArray,chunkPromises,isEmpty,groupBy,runActionAfterTimeOut} from 'shared/utils';
+import {decodeError,getAllOrgs,chunkArray,chunkPromises,isEmpty,groupBy,runActionAfterTimeOut,isUndefinedOrNull} from 'shared/utils';
 import {TabulatorFull as Tabulator} from 'tabulator-tables';
 import ModalProfileFilter from "accessAnalyzer/ModalProfileFilter";
 import {getAllConnection,removeConnection,connect} from 'connection/utils';
 
 import {loadMetadata_async} from "shared/sf";
-import { isUndefinedOrNull } from "../../shared/utils/utils";
 
 export default class App extends LightningElement {
     currentConnection;

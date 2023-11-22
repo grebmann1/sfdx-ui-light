@@ -15,12 +15,14 @@ export default class App extends LightningElement {
             name:"Home",
             isDeletable:false
         });
-        await this.loadModule({
-            component:'accessAnalyzer/App',
-            name:"Access Analyzer",
-            isDeletable:false
-        });
-    }
+        /** For development **/
+        if(process.env.NODE_ENV === 'development'){
+            await this.loadModule({
+                component:'accessAnalyzer/App',
+                name:"Access Analyzer",
+                isDeletable:false
+            });
+        }
 
     /** Events */
 
