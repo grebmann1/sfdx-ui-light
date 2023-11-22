@@ -19,7 +19,7 @@
     "dev:client:start": "NODE_ENV=development node src/client/server-dev.js",
     "package": "electron-forge package",
     "make": "electron-forge make --platform darwin",
-    "clean":"rm -r __lwr_cache__ site __skip_directory_creation__"
+    "clean": "rm -r __lwr_cache__ site __skip_directory_creation__"
   },
   "copyFiles": [
     {
@@ -28,6 +28,7 @@
     }
   ],
   "dependencies": {
+    "@lwrjs/label-module-provider": "0.11.6",
     "express": "^4.18.2",
     "express-requests-logger": "^4.0.0",
     "http-errors": "^2.0.0",
@@ -36,10 +37,11 @@
     "lwr": "0.11.6",
     "npm-run-all": "^4.1.5",
     "serve": "^14.2.1",
+    "serve-handler": "^6.1.5",
+    "serve-static": "^1.15.0",
     "sfdx-node": "^3.8.0",
     "tabulator-tables": "^5.5.2",
-    "update-electron-app": "^3.0.0",
-    "@lwrjs/label-module-provider":"0.11.6"
+    "update-electron-app": "^3.0.0"
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.4.2",
