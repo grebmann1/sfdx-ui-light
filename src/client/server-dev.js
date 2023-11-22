@@ -1,8 +1,5 @@
 const { createServer,generateStaticSite } =  require("lwr");
-const audit = require('express-requests-logger')
-
 const path = require('path');
-
 const jsforceAjaxProxy = require("jsforce-ajax-proxy");
 
 const PORT = parseInt(process.env.PORT || "3000", 10);
@@ -14,7 +11,7 @@ const lwrServer = createServer({
 });
 const app = lwrServer.getInternalServer("express");
         app.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));
-        
+
 lwrServer
 .listen(( { port, serverMode }) => {
     console.log(`✅ App listening on port ${port} in ${serverMode} mode!`);

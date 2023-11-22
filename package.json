@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "src/electron/main.js",
   "scripts": {
-    "start": "electron-forge start",
+    "start": "lwr start",
     "start:electron:dev": "NODE_ENV=development electron .",
     "start:electron:stage": "NODE_ENV=staging electron .",
     "start:electron:prod": "NODE_ENV=production electron .",
@@ -38,7 +38,8 @@
     "serve": "^14.2.1",
     "sfdx-node": "^3.8.0",
     "tabulator-tables": "^5.5.2",
-    "update-electron-app": "^3.0.0"
+    "update-electron-app": "^3.0.0",
+    "@lwrjs/label-module-provider":"0.11.6"
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.4.2",
@@ -48,7 +49,6 @@
     "@electron-forge/maker-zip": "^6.4.2",
     "@electron-forge/plugin-auto-unpack-natives": "^6.4.2",
     "@lwc/synthetic-shadow": "5.0.0",
-    "@lwrjs/label-module-provider":"0.11.6",
     "@salesforce-ux/design-system": "2.22.2",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",

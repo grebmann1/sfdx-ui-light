@@ -9,7 +9,7 @@ const PORT = parseInt(process.env.PORT || "3000", 10);
 
 
 app.use(express.static(path.join(__dirname,'..','..','site')));
-//app.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));
+app.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));
 app.listen(PORT, () => {
     
     console.log(`✅ App running in PROD mode`);
