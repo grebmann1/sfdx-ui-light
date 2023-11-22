@@ -9,7 +9,7 @@
     "start:electron:prod": "NODE_ENV=production electron .",
     "start:client": "serve site",
     "start:heroku":"run-p start:heroku:1 start:heroku:2",
-    "start:heroku:1":"NODE_ENV=production lwr build",
+    "start:heroku:1":"NODE_ENV=production lwr build --clean",
     "start:heroku:2":"NODE_ENV=production node src/client/server.js",
     "build:client": "lwr build --clean",
     "dev": "run-p --race dev:client start:electron:dev",
@@ -29,8 +29,7 @@
     "cpx": "^1.5.0",
     "electron": "^25.3.0",
     "electron-reload": "2.0.0-alpha.1",
-    "glob": "10.3.10",
-    "npm-run-all": "^4.1.5"
+    "glob": "10.3.10"
   },
   "copyFiles": [
     {
@@ -58,6 +57,7 @@
     "serve": "^14.2.1",
     "sfdx-node": "^3.8.0",
     "tabulator-tables": "^5.5.2",
-    "update-electron-app": "^3.0.0"
+    "update-electron-app": "^3.0.0",
+    "npm-run-all": "^4.1.5"
   }
 }
