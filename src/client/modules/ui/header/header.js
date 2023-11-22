@@ -15,7 +15,9 @@ export default class Header extends LightningElement {
     openLauncher = () => {
         launcher.open()
         .then((res) => {
-            this.dispatchEvent(new CustomEvent("newapp",{detail:res}));
+            if(res){
+                this.dispatchEvent(new CustomEvent("newapp",{detail:res}));
+            }
         })
     }
 

@@ -1,9 +1,24 @@
 const { createServer } =  require("lwr");
-const express =  require("express");
+const path = require('path');
+//const express =  require("express");
 const jsforceAjaxProxy = require("jsforce-ajax-proxy");
 
 const PORT = parseInt(process.env.PORT || "3000", 10);
 const SERVER_MODE = "development" === process.env.NODE_ENV ? "dev" : "prod";
+
+
+//const app = express();
+//const site_path = path.join(__dirname,'..','..','site');
+
+/*
+app.use(express.static(site_path));
+app.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));
+console.log('__dirname',site_path);
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}`)
+})
+*/
+
 
 // Create the LWR App Server
 const lwrServer = createServer({
@@ -13,7 +28,6 @@ const lwrServer = createServer({
 // Get the internal express app
 const expressApp = lwrServer.getInternalServer("express");
 expressApp.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));
-expressApp.use(express.static(__dirname));
 
 // Start the server
 lwrServer

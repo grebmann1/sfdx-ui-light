@@ -24,7 +24,7 @@ export default class App extends LightningElement {
             });
         }
     }
-    
+
     /** Events */
 
     handleTabChange = (e) => {

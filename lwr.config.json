@@ -6,7 +6,7 @@
             { "npm": "lightning-base-components" }
         ]
     },
-    "bundleConfig": { "exclude": ["lwc", "@lwc/synthetic-shadow"] },
+    "bundleConfig": { "exclude": [] },
     "assets": [
         {
             "alias": "assetsDir",
