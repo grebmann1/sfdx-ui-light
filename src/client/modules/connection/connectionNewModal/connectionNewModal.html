@@ -1,0 +1,63 @@
+<template>
+    <lightning-modal-header label="New Org"></lightning-modal-header>
+    <lightning-modal-body>
+        <section class="slds-p-around_large min-height-400 slds-is-relative">
+            <template lwc:if={isLoading}>
+                <lightning-spinner alternative-text="Loading"></lightning-spinner>
+            </template>
+            <div class="slds-form-element slds-m-bottom_large">
+                <lightning-input
+                        class="input-to-validate"
+                        name="alias"
+                        type="text"
+                        label="Alias (use format company-name)"
+                        value={alias}
+                        onchange={alias_onChange}
+                        required
+                ></lightning-input>
+            </div>
+            <div class="slds-m-bottom_large">
+                <lightning-combobox
+                        class="input-to-validate"
+                        name="domain"
+                        label="Domain"
+                        value={selectedDomain}
+                        placeholder="Select Domain"
+                        options={domain_options}
+                        onchange={domainType_onChange}
+                        required
+                ></lightning-combobox>
+            </div>
+            <template lwc:if={isCustomDomainDisplayed}>
+                <div class="slds-m-bottom_large">
+                    <lightning-input
+                            class="input-to-validate"
+                            name="customDomain"
+                            type="text"
+                            value={customDomain}
+                            label="Custom Domain (please include entire url)"
+                            placeholder="Ex: https://org62.my.salesforce.com"
+                            onchange={customDomain_onChange}
+                            required
+                    ></lightning-input>
+                </div>
+            </template>
+        </section>
+    </lightning-modal-body>
+    <lightning-modal-footer>
+        <lightning-button
+                class="slds-float_left slds-button"
+                disabled={isLoading}
+                variant="neutral"
+                label="Cancel"
+                onclick={handleCloseClick}
+        ></lightning-button>
+        <lightning-button
+                class="slds-button"
+                disabled={isLoading}
+                variant="brand"
+                label="Login"
+                onclick={handleLoginClick}
+        ></lightning-button>
+    </lightning-modal-footer>
+</template>
