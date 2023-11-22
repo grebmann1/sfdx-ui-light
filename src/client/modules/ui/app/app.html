@@ -15,6 +15,7 @@
             <section class="section">
                 <div class="container">
                     <!-- Feature - Start -->
+                    <!--<connection-app home="test"></connection-app>-->
                     <template for:each={applications} for:item="application">
                         <div key={application.id} class={application.classVisibility}>
                             <lwc:component  lwc:is={application.constructor}></lwc:component>

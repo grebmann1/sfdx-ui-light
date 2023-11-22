@@ -30,7 +30,7 @@ const columns = [
 
 
 
-export default class Alias extends LightningElement {
+export default class App extends LightningElement {
 
     columns = columns;
     data = [];

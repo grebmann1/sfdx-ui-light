@@ -6,7 +6,14 @@
             { "npm": "lightning-base-components" }
         ]
     },
-    "bundleConfig": { "exclude": [] },
+    "bundleConfig": { 
+        "exclude": [
+            "@lwc/synthetic-shadow",
+            "lwc",
+            "connection/app",
+            "accessAnalyzer/app"
+        ] 
+    },
     "assets": [
         {
             "alias": "assetsDir",
@@ -26,13 +33,13 @@
     ],
     "routes": [
         {
-          "id": "home",
-          "path": "/",
-          "rootComponent": "ui/app",
-          "layoutTemplate": "$layoutsDir/main.html",
-          "bootstrap": {
-            "syntheticShadow": true
-          }
+            "id": "home",
+            "path": "/",
+            "rootComponent": "ui/app",
+            "layoutTemplate": "$layoutsDir/main.html",
+            "bootstrap": {
+                "syntheticShadow": true
+            }
         },
         {
             "id": "callback",
@@ -49,5 +56,13 @@
         "@lwrjs/app-service/moduleProvider",
         "@lwrjs/lwc-module-provider",
         "@lwrjs/npm-module-provider"
-    ]
+    ],
+    "staticSiteGenerator": {
+        "_additionalModules": [
+            "@lwc/synthetic-shadow",
+            "lwc",
+            "connection/app",
+            "accessAnalyzer/app"
+        ]
+    }
 }
