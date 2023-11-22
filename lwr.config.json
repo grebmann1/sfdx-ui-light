@@ -17,6 +17,11 @@
             "alias":"stylesDir",
             "dir": "$rootDir/src/client/assets/styles",
             "urlPath": "/styles"
+        },
+        {
+            "alias":"libsDir",
+            "dir": "$rootDir/src/client/assets/libs",
+            "urlPath": "/libs"
         }
     ],
     "routes": [
@@ -28,6 +33,15 @@
           "bootstrap": {
             "syntheticShadow": true
           }
+        },
+        {
+            "id": "callback",
+            "path": "/callback",
+            "rootComponent": "connection/callback",
+            "layoutTemplate": "$layoutsDir/main.html",
+            "bootstrap": {
+                "syntheticShadow": true
+            }
         }
     ],
     "moduleProviders": [

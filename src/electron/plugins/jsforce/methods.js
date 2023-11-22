@@ -1,16 +1,59 @@
 const sfdx = require('sfdx-node');
 const jsforce = require('jsforce');
 
+const { hashCode } = require('../../utils/utils.js');
 const Store = require('../../utils/store.js');
 const { encodeError } = require('../../utils/errors.js');
 
-describeSobject = async (event,{force=false,alias,type}) => {
-    const store = new Store({configName:`${alias}/SObject/${type}`});
+
+/** QUERY **/
+query = async (event,{refresh,alias,query,toolingApiEnabled,isCacheEnabled}) => {
+    //console.log('{alias,query}',{alias,query});
+    console.log('query - params',{refresh,alias,query,toolingApiEnabled,isCacheEnabled});
+    const hash = hashCode(query);
+    const store = new Store({configName:`${alias}/Query/${hash}`});
     try{
-        if(!store.isEmpty() && !force){
+        if(!store.isEmpty() && isCacheEnabled && !refresh){
             return {res:store.data}
         }
-        console.log('Fetch Mode - describeSobject');
+        let orgInfo = await sfdx.force.org.display({
+            _quiet:true,
+            json:true,
+            verbose:true,
+            _rejectOnError: true,
+            targetusername: alias
+        });
+
+        const conn = new jsforce.Connection({
+            serverUrl : orgInfo.instanceUrl,
+            accessToken : orgInfo.accessToken,
+            version:'54.0'
+        });
+        let res;
+        if(toolingApiEnabled){
+            res = await conn.tooling.query(query);
+        }else{
+            res = await conn.query(query);
+        }
+
+        if(isCacheEnabled){
+            store.set(null,res);
+        }
+        return {res};
+    }catch(e){
+        return {error: encodeError(e)}
+    }
+}
+
+/** SOBJECT DESCRIBE **/
+sobjectDescribe = async (event,{refresh= false,alias,type}) => {
+    console.log('query - sobjectDescribe',{refresh,alias,type});
+    const store = new Store({configName:`${alias}/SObject/${type}`});
+    try{
+        if(!store.isEmpty() && !refresh){
+            return {res:store.data}
+        }
+        console.log('Fetch Mode - sobjectDescribe');
         let orgInfo = await sfdx.force.org.display({
             _quiet:true,
             json:true,
@@ -32,11 +75,13 @@ describeSobject = async (event,{force=false,alias,type}) => {
     }
 }
 
-metadataList = async (event,{force=false,alias,types}) => {
+/** METADATA LIST **/
+metadataList = async (event,{refresh = false,alias,types}) => {
+    console.log('query - metadataList',{refresh,alias,types});
     console.log('metadataList',{alias,types});
     const store = new Store({configName:`${alias}/metadata`});
     try{
-        if(store.contains('metadataList') && !force) return {res:store.get('metadataList')}
+        if(store.contains('metadataList') && !refresh) return {res:store.get('metadataList')}
 
         console.log('Fetch Mode - metadataList');
         let orgInfo = await sfdx.force.org.display({
@@ -63,10 +108,11 @@ metadataList = async (event,{force=false,alias,types}) => {
     }
 }
 
-metadataRead = async (event,{force=false,alias,type,fullName}) => {
+metadataRead = async (event,{refresh = false,alias,type,fullName}) => {
+    //console.log('query - metadataRead',{refresh,alias,type,fullName});
     const store = new Store({configName:`${alias}/${type}/${fullName}`});
     try{
-        if(!store.isEmpty() && !force){
+        if(!store.isEmpty() && !refresh){
             return {res:store.data}
         }
         
@@ -98,5 +144,6 @@ metadataRead = async (event,{force=false,alias,type,fullName}) => {
 module.exports = {
     metadataList,
     metadataRead,
-    describeSobject
+    sobjectDescribe,
+    query
 }

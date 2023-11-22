@@ -2,7 +2,8 @@
 const {
     metadataList,
     metadataRead,
-    describeSobject
+    sobjectDescribe,
+    query
 } = require('./methods.js');
 
 
@@ -14,7 +15,8 @@ class JSFORCE_CONNECTOR{
     enableEventListeners = (ipcMainManager) => {
         ipcMainManager.handle(`${this.namespace}-metadataList`,metadataList);
         ipcMainManager.handle(`${this.namespace}-metadataRead`,metadataRead);
-        ipcMainManager.handle(`${this.namespace}-describeSobject`,describeSobject);
+        ipcMainManager.handle(`${this.namespace}-sobjectDescribe`,sobjectDescribe);
+        ipcMainManager.handle(`${this.namespace}-query`,query);
     }
 }
 

@@ -1,0 +1,47 @@
+<template>
+    <div class="slds-page-header slds-page-header_joined">
+        <div class="slds-page-header__row">
+            <div class="slds-page-header__col-title">
+                <div class="slds-media">
+                    <div class="slds-media__figure">
+                        <lightning-icon icon-name="standard:user"></lightning-icon>
+                    </div>
+                    <div class="slds-media__body">
+                        <div class="slds-page-header__name">
+                            <div class="slds-page-header__name-title">
+                                <h1>
+                                    <span>Connections</span>
+                                    <span class="slds-page-header__title slds-truncate" title="Alias list">Connection list</span>
+                                </h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-page-header__col-actions slds-align-middle slds-p-bottom_none">
+                <div class="slds-page-header__controls">
+                    <div class="slds-page-header__control">
+                        <div class="slds-button-group" id="button-group-page-header-actions" role="group">
+                            <button class="slds-button slds-button_neutral" type="button" onclick={addConnectionClick}>Add Connection</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slds-page-header__row slds-page-header__row_gutters">
+            <div class="slds-page-header__col-details">
+                <div class="slds-page-header__detail-row" style="display:block;">
+                    <!-- Data Table -->
+                    <lightning-datatable
+                            data={data}
+                            columns={columns}
+                            key-field="id"
+                            onrowaction={handleRowAction}
+                            hide-checkbox-column
+                    ></lightning-datatable>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</template>

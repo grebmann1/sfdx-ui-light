@@ -1,7 +1,7 @@
 .grid-container{
     display: grid;
     grid-template-rows: auto 1fr;
-    height:calc(100vh - 30px - 2rem);
+    height:calc(100vh - 30px - 3rem);
     width:calc(100vw - 3.5rem)
 }
 
@@ -11,6 +11,7 @@
 
 .grid-container .region-main {
     width: inherit;
+    display: block !important;
 }
 
 /** Filters **/

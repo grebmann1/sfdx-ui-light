@@ -1,5 +1,8 @@
 import { LightningElement,track } from "lwc";
 import {guid} from "shared/utils";
+
+
+
 export default class App extends LightningElement {
 
     @track applications = [];
@@ -8,7 +11,7 @@ export default class App extends LightningElement {
     async connectedCallback(){
         /** Home App */
         await this.loadModule({
-            component:'org/App',
+            component:'connection/App',
             name:"Home",
             isDeletable:false
         });

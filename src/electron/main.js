@@ -1,7 +1,5 @@
-const { app,nativeImage }   = require('electron');
+const { app,nativeImage,protocol}   = require('electron');
 const path                  = require('path');
-const serve                 = require('electron-serve');
-
 const {getOrCreateMainWindow}   = require('./utils/window.js');
 const { ipcMainManager }        = require('./utils/ipc.js');
 const Store                     = require('./utils/store.js');
@@ -15,7 +13,22 @@ const IpcEvents = [
   'org'
 ];
 
-const loadURL = serve({directory: 'site'});
+//const loadURL = serve({directory: 'site'});
+
+/** Load Server **/
+//let server = require('./express');
+/*protocol.registerSchemesAsPrivileged([
+    {
+        scheme: 'http',
+        privileges: {
+            standard: true,
+            secure: true,
+            allowServiceWorkers: true,
+            supportFetchAPI: true,
+            corsEnabled: true,
+        },
+    },
+]);*/
 
 /** Store **/
 

@@ -45,7 +45,7 @@ exports.createMainWindow = createMainWindow = ({store}) => {
 	});
 
 	browserWindow.on('resize', () => {
-		let { width, height } = mainWindow.getBounds();
+		let { width, height } = browserWindow.getBounds();
 		store.set('windowBounds', { width, height });
 	});
 

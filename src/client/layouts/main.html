@@ -1,6 +1,6 @@
- <!-- $layoutsDir/main.html -->
- <!DOCTYPE html>
- <html>
+<!-- $layoutsDir/main.html -->
+<!DOCTYPE html>
+<html>
     <head>
         <title>Users Management App</title>
         <!--<link rel="icon" type="image/x-icon" href="$assetsDir/favicon.ico">-->
@@ -30,6 +30,21 @@
             }
             
         </style>
+        <script src="$libsDir/jsforce/jsforce.min.js"></script>
+        <script src="$libsDir/localforage/localforage.min.js"></script>
+        <script>
+            jsforce.browser.init({
+                clientId: '3MVG9_kZcLde7U5oNdaqndT3T9qa54eaA.ycC6APuOkYzRP286pPeOvwOqAQ2ue7l5ejNAxPYj4xTbWn3zS6Y',
+                redirectUri: 'http://localhost:3000/callback',
+                proxyUrl: 'http://localhost:3000/proxy/'
+            });
+            window.jsforce = jsforce;
+            window.connections = {}; // use for faster connection, during live processing
+
+
+            /** Local Storage Settings **/
+            window.defaultStore = localforage.createInstance({name: "defaultStore"});
+        </script>
     </head>
     <body>
         <!-- triple braces prevents HTML escaping -->

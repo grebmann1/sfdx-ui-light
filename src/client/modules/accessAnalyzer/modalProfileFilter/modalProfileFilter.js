@@ -1,15 +1,20 @@
 import LightningModal from 'lightning/modal';
 import {TabulatorFull as Tabulator} from 'tabulator-tables';
+import {JSForceConnector} from "shared/jsforce";
 
 import { api } from "lwc";
 
 
 export default class ModalProfileFilter extends LightningModal {
     @api profiles;
+	@api currentOrg;
+	@api selected;
+
     tableInstance;
 
     connectedCallback(){
         this.loadTable();
+		//console.log('currentOrg',JSON.stringify(this.currentOrg));
     }
 
     handleCloseClick() {
@@ -17,17 +22,23 @@ export default class ModalProfileFilter extends LightningModal {
     }
 
     closeModal() {
-        this.close('success');
+        this.close({action:'cancel'});
     }
 
 
     /** events **/
 
+	handleApplyClick = (e) => {
+		this.close({action:'applyFilter',filter:this.tableInstance.getSelectedData().map(x => x.profileId)});
+	}
+
+	/** Methods **/
 
 
     /** Tabulator  **/
     
-    loadTable = () => {
+    loadTable = async () => {
+
         let activeUserIcon = '<i class="user icon"></i>';
 		let inactiveUserIcon = '<i class="user outline icon"></i>';
 
@@ -37,41 +48,36 @@ export default class ModalProfileFilter extends LightningModal {
 					cell.getRow().toggleSelect();
 				}
 			},
-			{ title: '', vertAlign: "middle", field: 'link', width: 15, formatter: "html", headerSort: false},
-			{ title: 'ProfileName', vertAlign: "middle", field: 'label', width: 430, tooltip: true,
+			//{ title: '', vertAlign: "middle",hozAlign:"center", field: 'link', width: 15, formatter: "html", headerSort: false},
+			{ title: 'Profile Name', vertAlign: "middle", field: 'label', width: 430, tooltip: true,
 				cellClick:function(e, cell) {
 					cell.getRow().toggleSelect();
 				}
 			},
-			{ title: 'ActiveUser', field: 'activeUserCount', width: 140, hozAlign: "center", bottomCalc:"sum",
+			{ title: 'Active User', field: 'activeUserCount', width: 140, hozAlign: "center", bottomCalc:"sum",
 				formatter: function(cell, formatterParams, onRendered){
-					let icon = cell.getValue() > 0 ? activeUserIcon : inactiveUserIcon;
-
-					return icon + cell.getValue() + '';
+					return (cell.getValue() > 0 ? activeUserIcon : inactiveUserIcon) + cell.getValue() + '';
 				},
 				cellClick:function(e, cell) {
 					cell.getRow().toggleSelect();
 				},
 			},
-			{ title: 'InactiveUser', field: 'inactiveUserCount', width: 140, hozAlign: "center", bottomCalc: "sum",
+			{ title: 'Inactive User', field: 'inactiveUserCount', width: 140, hozAlign: "center", bottomCalc: "sum",
 				formatter: function(cell, formatterParams, onRendered){
-					let icon = cell.getValue() > 0 ? activeUserIcon : inactiveUserIcon;
-
-					// ～人
-					return icon + cell.getValue() + '';
+					return (cell.getValue() > 0 ? activeUserIcon : inactiveUserIcon) + cell.getValue() + '';
 				},
 				cellClick:function(e, cell) {
 					cell.getRow().toggleSelect();
 				},
 			},
-			{ title: 'UserList', field: 'users', width: 110, hozAlign: "center",
+			/*{ title: 'User List', field: 'users', width: 110, hozAlign: "center",
 				formatter: function(cell, formatterParams, onRendered){
 					return cell.getValue().isShow ? `<a data-id="${cell.getValue().profileId}" class="showUsers ui teal small label" type="button">${'View'}</a>` : '';
 				}
-			},
+			},*/
 		];
 
-		let datas = [];
+		let dataList = [];
 
 		Object.values(this.profiles).forEach(profile => {
             let _activeUserCount = profile.activeUserCount || 0;
@@ -79,30 +85,30 @@ export default class ModalProfileFilter extends LightningModal {
 
 			let data = {};
                 data['profileId'] = profile.id;
-                data['link'] = `<a href="${null}" target="_blank"><i class="icon external alternate"></i></a>`;
-                data['label'] = profile.fullName;
-                data['profileUrl'] = null;
+                //data['link'] = `<a href="${null}" target="_blank"><svg focusable="false" aria-hidden="true" class="slds-icon slds-icon-text-default slds-icon_x-small"><use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#new_window"></use></svg></a>`;
+                data['label'] = profile.label;
+                //data['profileUrl'] = null;
                 data['activeUserCount'] = _activeUserCount;
                 data['inactiveUserCount'] = _inactiveUserCount;
                 data['licenseName'] = profile.userLicense;
-                data['users'] = {isShow: _activeUserCount + _inactiveUserCount > 0, profileId: profile.id};
+                //data['users'] = {isShow: _activeUserCount + _inactiveUserCount > 0, profileId: profile.id};
 
-			datas.push(data);
+			dataList.push(data);
 		});
 
         if (this.tableInstance) {
 			this.tableInstance.destroy();
 		}
         window.setTimeout(() => {
-            console.log('this.template.querySelector(".custom-table")',this.template.querySelector(".custom-table"));
+
             this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
-                height: 600,
-                data: datas,
+                height: 'auto',
+                data: dataList,
                 layout: "fitDataFill",
                 columns: colModel,
                 columnHeaderVertAlign: "middle",
                 groupBy: "licenseName",
-                groupToggleElement: false,
+                groupToggleElement: true,
                 /*TODO group all select/deselect
                 groupHeader: function(value, count, data, group){
                     return "<input type='checkbox' />" + value + "<span style='color:#d00; margin-left:10px;'>(" + count + " item)</span>";
@@ -112,6 +118,17 @@ export default class ModalProfileFilter extends LightningModal {
                     return row.getData()['label'] != null;
                 },
             });
+
+			this.tableInstance.on("tableBuilt", () =>{
+
+				this.tableInstance.selectRow(this.tableInstance.getRows().filter(
+					row => !this.selected.includes(row.getData().profileId)
+				));
+			})
+
+
+
+
         },1);
 		
 

@@ -3,7 +3,13 @@ const { shell } = require('electron');
 const { encodeError } = require('../../utils/errors.js');
 
 getAllOrgs = async (event) => {
-    return  await sfdx.alias.list();
+    let res = await sfdx.force.org.list({
+        json:true,
+        verbose:true
+    });
+    console.log('res',res);
+    return res?.nonScratchOrgs || [];
+
 }
 
 seeDetails = async (event,{alias}) => {

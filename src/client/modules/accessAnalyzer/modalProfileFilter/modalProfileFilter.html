@@ -2,7 +2,7 @@
     <lightning-modal-header label="Filter Profiles"></lightning-modal-header>
     <lightning-modal-body> 
         <!-- Table - START -->
-        <div style="height:500px;">
+        <div>
             <div lwc:dom="manual" class="custom-table"></div>
         </div>
         
@@ -20,8 +20,8 @@
             class="slds-button"
             disabled={saveInProcess}
             variant="brand"
-            label="Save"
-            onclick={handleSaveClick}
+            label="Apply"
+            onclick={handleApplyClick}
         ></lightning-button>
       </lightning-modal-footer>
 </template>

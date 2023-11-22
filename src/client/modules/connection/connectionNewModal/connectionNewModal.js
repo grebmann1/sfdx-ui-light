@@ -9,7 +9,7 @@ const domainOptions = [
 ];
 
 
-export default class NewConnectionModal extends LightningModal {
+export default class ConnectionNewModal extends LightningModal {
 
     domain_options = domainOptions;
     customDomain;
@@ -31,9 +31,17 @@ export default class NewConnectionModal extends LightningModal {
         return isValid;
     }
 
+    connectedCallback(){
+        console.log('ConnectionNewModal-connectedCallback',this.alias);
+    }
 
 
     /** Methods **/
+
+    reset = () => {
+        this.alias = null;
+        this.selectedDomain  = domainOptions[0].value;
+    }
 
 
 
@@ -52,7 +60,8 @@ export default class NewConnectionModal extends LightningModal {
                 id:this.alias,
                 alias:this.alias,
                 company:`${this.alias.split('-').length > 1?this.alias.split('-').shift():''}`.toUpperCase(),
-                name:this.alias.split('-').pop()
+                name:this.alias.split('-').pop(),
+                sfdxAuthUrl:instanceUrl+'/secur/frontdoor.jsp?sid='+accessToken
             };
 
             /** Get Username **/
@@ -60,6 +69,7 @@ export default class NewConnectionModal extends LightningModal {
             console.log('identity',identity);
             if(isNotUndefinedOrNull(identity)){
                 data.username = identity.username;
+                data.orgId    = identity.organization_id;
                 data.userInfo = identity;
             }
 

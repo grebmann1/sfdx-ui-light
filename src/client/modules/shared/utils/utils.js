@@ -1,3 +1,15 @@
+export function isUndefinedOrNull(value) {
+    return value === null || value === undefined;
+}
+
+export function isNotUndefinedOrNull(value) {
+    return !isUndefinedOrNull(value);
+}
+
+export function isEmpty(str) {
+    return (!str || str.length === 0 );
+}
+
 export function decodeError({name, message}){
     const e = new Error(message)
         e.name = name
@@ -26,16 +38,32 @@ export function guid() {
         s4()
     );
 }
+export function groupBy(items,key){
+    return items.reduce((x, y) => {
+        (x[y[key]] = x[y[key]] || []).push(y);
+        return x;
+    }, {});
+}
+
+export function chunkArray(arr,chunkSize = 5){
+    const chunks = [];
+    for (let i = 0; i < arr.length; i += chunkSize) {
+        const chunk = arr.slice(i, i + chunkSize);
+        chunks.push(chunk);
+    }
+    return chunks;
+}
 
 export async function getAllOrgs(debugMode = false){
     console.log('debugMode',debugMode);
     if(debugMode){
         return [
             {
-                id:'TEST-Demo',
-                username:'TEST-Demo@test.com',
-                company:'Test',
-                name:'Demo'
+                id:'DEMO-B2C',
+                username:'DEMO-B2C@test.com',
+                company:'DEMO',
+                name:'B2C',
+                alias:'DEMO-B2C'
             }
         ] 
     }
@@ -78,6 +106,13 @@ export function chunkPromises(arr, size, method) {
     return collector;
 };
 
-export function isEmpty(x){
-    return x == undefined || x == '';
+const buffer = {}
+export function runActionAfterTimeOut(value, action,{timeout = 300} = {}) {
+    if (buffer._clearBufferId) {
+        clearTimeout(buffer._clearBufferId);
+    }
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    buffer._clearBufferId = setTimeout(() => {
+        action(value);
+    }, timeout);
 }

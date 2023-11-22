@@ -59,8 +59,30 @@
                             ></lightning-combobox>
                         </li>
                         <li class="slds-page-header__detail-block">
+                            <lightning-combobox
+                                    label="Namespaces"
+                                    dropdown-alignment="left"
+                                    value={namespaceFiltering_value}
+                                    placeholder="Select Namespace filter"
+                                    disabled={isLoading}
+                                    options={namespaceFiltering_options}
+                                    onchange={namespaceFiltering_handleChange}
+                            ></lightning-combobox>
+                        </li>
+                        <li class="slds-page-header__detail-block">
+                            <lightning-combobox
+                                    label="User Licenses"
+                                    dropdown-alignment="left"
+                                    value={userLicenseFiltering_value}
+                                    placeholder="Select User License filter"
+                                    disabled={isLoading}
+                                    options={userLicenseFiltering_options}
+                                    onchange={userLicenseFiltering_handleChange}
+                            ></lightning-combobox>
+                        </li>
+                        <li class="slds-page-header__detail-block">
                             <div >
-                                <label class="slds-form-element__label"></label>
+                                <label class="slds-form-element__label">Profiles</label>
                                 <div  class="slds-form-element__control">
                                     <lightning-button-stateful
                                         label-when-off="Filter Profiles"
@@ -69,7 +91,7 @@
                                         icon-name-when-off="utility:filterList"
                                         icon-name-when-on="utility:filterList"
                                         icon-name-when-hover="utility:close"
-                                        selected={isFilteting_profiles}
+                                        selected={isFiltering_profiles}
                                         onclick={profileFiltering_handleClick}
                                         variant={profileFilteringVariant}
                                     >
