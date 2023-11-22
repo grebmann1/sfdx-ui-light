@@ -3,7 +3,7 @@ const jsforceAjaxProxy = require("jsforce-ajax-proxy");
 
 const PORT = parseInt(process.env.PORT || "3000", 10);
 const SERVER_MODE =
-    "development" === process.env.NODE_ENV ? "dev" : "prod-compat";
+    "development" === process.env.NODE_ENV ? "dev" : "prod";
 
 // Create the LWR App Server
 const lwrServer = createServer({

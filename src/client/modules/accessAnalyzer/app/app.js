@@ -5,6 +5,7 @@ import ModalProfileFilter from "accessAnalyzer/ModalProfileFilter";
 import {getAllConnection,removeConnection,connect} from 'connection/utils';
 
 import {loadMetadata_async} from "shared/sf";
+import { isUndefinedOrNull } from "../../shared/utils/utils";
 
 export default class App extends LightningElement {
     currentConnection;
@@ -90,6 +91,9 @@ export default class App extends LightningElement {
     }
 
     loadMetadata = async (refresh = false ) => {
+        // Only run when a connection is available
+        if(!this.currentConnection)return;
+
         this.isLoading = true;
         let key = `${this.currentConnection.alias}-metadata`;
         let _metadata = await window.defaultStore.getItem(key);
@@ -197,6 +201,10 @@ export default class App extends LightningElement {
             options = options.concat(Object.keys(groupBy(Object.values(this.profiles),'userLicense')).map(x => ({label:x,value:x})));
         }
         return options;
+    }
+
+    get isRefreshDisabled(){
+        return isUndefinedOrNull(this.currentConnection) || this.isLoading;
     }
 
 
