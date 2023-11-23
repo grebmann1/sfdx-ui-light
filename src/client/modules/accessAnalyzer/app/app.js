@@ -1,7 +1,7 @@
 import { LightningElement } from "lwc";
 import {decodeError,getAllOrgs,chunkArray,chunkPromises,isEmpty,groupBy,runActionAfterTimeOut,isUndefinedOrNull} from 'shared/utils';
 import {TabulatorFull as Tabulator} from 'tabulator-tables';
-import ModalProfileFilter from "accessAnalyzer/ModalProfileFilter";
+import ModalProfileFilter from "accessAnalyzer/modalProfileFilter";
 import {getAllConnection,removeConnection,connect} from 'connection/utils';
 
 import {loadMetadata_async} from "shared/sf";
