@@ -8,18 +8,15 @@
     "start:electron:stage": "NODE_ENV=staging electron .",
     "start:electron:prod": "NODE_ENV=production electron .",
     "start:client": "serve site",
-    "start:heroku": "run-p start:heroku:2",
-    "start:heroku:1": "NODE_ENV=production WARMUP=true lwr build -m prod --clean",
-    "start:heroku:2": "NODE_ENV=production node src/client/server-prod.js",
-    "start:heroku:3": "NODE_ENV=production serve site",
-    "start:heroku:4": "NODE_ENV=production WARMUP=true node src/client/server-dev.js",
+    "start:heroku": "NODE_ENV=production node src/client/server-prod.js",
     "build:client": "lwr build --clean",
     "dev": "run-p --race dev:client start:electron:dev",
     "dev:client": "NODE_ENV=development run-p --race dev:client:copy dev:client:start",
     "dev:client:start": "NODE_ENV=development node src/client/server-dev.js",
     "package": "electron-forge package",
     "make": "electron-forge make --platform darwin",
-    "clean": "rm -r __lwr_cache__ site __skip_directory_creation__"
+    "clean": "rm -r __lwr_cache__ site __skip_directory_creation__",
+    "heroku-postbuild":"NODE_ENV=production WARMUP=true lwr build -m prod --clean"
   },
   "copyFiles": [
     {

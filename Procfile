@@ -1,1 +1,1 @@
-web: npm run start:heroku:2
+web: npm run start:heroku
