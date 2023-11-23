@@ -13,6 +13,7 @@ export default class Header extends LightningElement {
     }
 
     openLauncher = () => {
+        console.log('openLauncher');
         launcher.open()
         .then((res) => {
             if(res){

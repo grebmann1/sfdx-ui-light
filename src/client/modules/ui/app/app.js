@@ -1,7 +1,12 @@
 import { LightningElement,track } from "lwc";
 import {guid} from "shared/utils";
-
-
+import connection_app from "connection/app";
+import accessAnalyzer_app from "accessAnalyzer/app";
+const KNOWN_TYPE = new Set(["connection/app", "accessAnalyzer/app"]);
+const APP_MAPPING = {
+    "connection/app": connection_app,
+    "accessAnalyzer/app": accessAnalyzer_app,
+};
 
 export default class App extends LightningElement {
 
@@ -11,18 +16,18 @@ export default class App extends LightningElement {
     async connectedCallback(){
         /** Home App */
         await this.loadModule({
-            component:'connection/App',
+            component:'connection/app',
             name:"Home",
             isDeletable:false
         });
-        /** For development **/
         if(process.env.NODE_ENV === 'development'){
             await this.loadModule({
-                component:'accessAnalyzer/App',
+                component:'accessAnalyzer/app',
                 name:"Access Analyzer",
                 isDeletable:false
             });
         }
+        
     }
 
     /** Events */
@@ -56,10 +61,17 @@ export default class App extends LightningElement {
         }}));
     }
 
+    
+
     loadModule = async (data) => {
-        const { default: DynamicImport } = await import(data.component);
+
+        if (!KNOWN_TYPE.has(data.component)) {
+            console.warn(`Unknown app type: ${data.component}`);
+        }
+    
+        //let { default: appConstructor } = await APP_MAPPING[app_key]()
         let newApplication = {
-            constructor:DynamicImport,
+            constructor:APP_MAPPING[data.component],
             id:guid(),
             name:data.name,
             isActive:true,

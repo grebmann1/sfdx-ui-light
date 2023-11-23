@@ -10,8 +10,7 @@
         "exclude": [
             "@lwc/synthetic-shadow",
             "lwc",
-            "connection/app",
-            "accessAnalyzer/app"
+            "lightning/modal"
         ] 
     },
     "assets": [
@@ -60,10 +59,7 @@
     "staticSiteGenerator": {
         "_additionalModules": [
             "@lwc/synthetic-shadow",
-            "lwc",
-            "connection/app",
-            "accessAnalyzer/app",
-            "accessAnalyzer/modalProfileFilter"
+            "lwc"
         ]
     }
 }

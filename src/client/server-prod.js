@@ -11,8 +11,8 @@ const jsforceAjaxProxy = require("jsforce-ajax-proxy");
 
 const PORT = parseInt(process.env.PORT || "3000", 10);
 
-app.get("/", (req, res) => handler(req, res, {public: "site",...serveJson}));
 app.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));
+app.get("*", (req, res) => handler(req, res, {public: "site",...serveJson}));
 app.listen(PORT, () => {
     
     console.log(`✅ App running in PROD mode ${PORT}`);
