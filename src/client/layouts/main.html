@@ -33,10 +33,11 @@
         <script src="$libsDir/jsforce/jsforce.min.js"></script>
         <script src="$libsDir/localforage/localforage.min.js"></script>
         <script>
+            let host = window.location.origin;
             jsforce.browser.init({
                 clientId: '3MVG9_kZcLde7U5oNdaqndT3T9qa54eaA.ycC6APuOkYzRP286pPeOvwOqAQ2ue7l5ejNAxPYj4xTbWn3zS6Y',
-                redirectUri: 'http://localhost:3000/callback',
-                proxyUrl: 'http://localhost:3000/proxy/'
+                redirectUri: `${host}/callback`,
+                proxyUrl: `${host}/proxy/`
             });
             window.jsforce = jsforce;
             window.connections = {}; // use for faster connection, during live processing

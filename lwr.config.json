@@ -62,7 +62,8 @@
             "@lwc/synthetic-shadow",
             "lwc",
             "connection/app",
-            "accessAnalyzer/app"
+            "accessAnalyzer/app",
+            "accessAnalyzer/modalProfileFilter"
         ]
     }
 }
