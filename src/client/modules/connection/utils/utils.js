@@ -9,11 +9,12 @@ export async function connect({alias,connection}){
         connection = getConnection(alias);
     }
     console.log('window.jsforce',window.jsforce);
-
+    
+    let host = window.location.origin;
     const instance = await new window.jsforce.Connection({
         instanceUrl : connection.instanceUrl,
         accessToken : connection.accessToken,
-        //proxyUrl: 'http://localhost:3000/proxy/',
+        proxyUrl: `${host}/proxy/`,
         version:'55.0'
     });
     instance.alias = alias || connection.alias;
