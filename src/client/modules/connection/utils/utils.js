@@ -13,7 +13,7 @@ export async function connect({alias,connection}){
     const instance = await new window.jsforce.Connection({
         instanceUrl : connection.instanceUrl,
         accessToken : connection.accessToken,
-        proxyUrl: 'http://localhost:3000/proxy/',
+        //proxyUrl: 'http://localhost:3000/proxy/',
         version:'55.0'
     });
     instance.alias = alias || connection.alias;

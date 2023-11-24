@@ -47,7 +47,7 @@ export default class Alias extends LightningElement {
         jsforce.browser.init({
             clientId: '3MVG9_kZcLde7U5oNdaqndT3T9qa54eaA.ycC6APuOkYzRP286pPeOvwOqAQ2ue7l5ejNAxPYj4xTbWn3zS6Y',
             redirectUri: 'http://localhost:3000/callback',
-            proxyUrl: 'http://localhost:3000/proxy/'
+            //proxyUrl: 'http://localhost:3000/proxy/'
         });
         jsforce.browser.login({loginUrl:'https://test.salesforce.com'});
         //let res = await fetch('http://localhost:3001/url', {method: 'GET'}).then((response) => {console.log('response',response); return response;});
