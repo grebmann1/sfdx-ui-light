@@ -76,11 +76,21 @@ export default class App extends LightningElement {
         if(!this.connector)return;
 
         this.isLoading = true;
-        let key = `${this.connector.header.alias}-metadata`;
-        let _metadata = await window.defaultStore.getItem(key);
-        if(!_metadata || refresh){
+        var _metadata;
+        try{
+            // Cache loading only for full mode
+            if(isNotUndefinedOrNull(this.connector.header.alias)){
+                let key = `${this.connector.header.alias}-metadata`;
+                _metadata = await window.defaultStore.getItem(key);
+            }
+            if(!_metadata || refresh){
+                _metadata = await loadMetadata_async(this.connector.conn,this.loadMetadata_withNameSpaceCallback);
+            }
+        }catch(e){
+            console.error(e);
             _metadata = await loadMetadata_async(this.connector.conn,this.loadMetadata_withNameSpaceCallback);
         }
+        
         let {profiles,...metadata} = _metadata;
         this.profiles = profiles;
         this.metadata = metadata;
@@ -159,7 +169,7 @@ export default class App extends LightningElement {
 
     get userLicenseFiltering_options(){
         let options = [{label:'All',value:'all'}];
-        if(this.profiles){
+        if(isNotUndefinedOrNull(this.profiles)){
             options = options.concat(Object.keys(groupBy(Object.values(this.profiles),'userLicense')).map(x => ({label:x,value:x})));
         }
         return options;
