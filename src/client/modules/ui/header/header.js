@@ -1,5 +1,5 @@
 import { LightningElement,api } from 'lwc';
-import launcher from "ui/launcher";
+import ModalLauncher from "ui/modalLauncher";
 import constant from "global/constant";
 
 export default class Header extends LightningElement {
@@ -16,7 +16,7 @@ export default class Header extends LightningElement {
 
     openLauncher = () => {
         console.log('openLauncher');
-        launcher.open({
+        ModalLauncher.open({
             isUserLoggedIn:this.isUserLoggedIn
         })
         .then((res) => {

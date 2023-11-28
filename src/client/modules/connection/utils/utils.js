@@ -8,9 +8,19 @@ import {Connector} from './mapping';
 export * from './mapping';
 
 
-export async function connect({alias,connection}){
+export async function connect({alias,settings}){
     // Only connect via the web interface
-   return await webInterface.connect({alias,connection});
+   let connection = await webInterface.connect({alias,settings});
+   /** Get Username **/
+   let identity = await connection.identity();
+   let header = {};
+   if(isNotUndefinedOrNull(identity)){
+       header.username = identity.username;
+       header.orgId    = identity.organization_id;
+       header.userInfo = identity;
+   }
+
+   return new Connector(header,newConnection)
 }
 
 export async function getConnection(alias){
@@ -59,16 +69,15 @@ export async function getAllConnection(){
 export async function getExistingSession(){
     if(sessionStorage.getItem("currentConnection")){
         try{
-            let header = JSON.parse(sessionStorage.getItem("currentConnection"));
+            let settings = JSON.parse(sessionStorage.getItem("currentConnection"));
 
-            let connection = await connect({connection:header});
-            return new Connector(header,connection)
+            let connection = await connect({settings});
+            return new Connector(settings,connection)
         }catch(e){
             console.error(e);
             return null;
         }
     }
-
     return null;
 }
 
@@ -78,4 +87,32 @@ export async function saveSession(value){
 
 export async function removeSession(value){
     sessionStorage.removeItem("currentConnection");
+}
+
+
+/** Session Connection **/
+
+export async function directConnection(sessionId,serverUrl){
+    console.log('sessionId,serverUrl',sessionId,serverUrl);
+    let params = {
+        //oauth2      : {...window.jsforceSettings},
+        sessionId   : sessionId,
+        serverUrl   : serverUrl,
+        proxyUrl    : `${window.location.origin}/proxy/`,
+        version     : '55.0'
+    }
+    
+    let connection = await new window.jsforce.Connection(params);
+
+    /** Get Username **/
+    let identity = await connection.identity();
+    let header = {};
+    if(isNotUndefinedOrNull(identity)){
+        header.username = identity.username;
+        header.orgId    = identity.organization_id;
+        header.userInfo = identity;
+    }
+    console.log('directConnection',header,connection);
+
+    return new Connector(header,connection);
 }

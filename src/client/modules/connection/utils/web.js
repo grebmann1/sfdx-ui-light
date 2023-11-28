@@ -1,35 +1,31 @@
 import {isUndefinedOrNull} from 'shared/utils';
 
-export async function connect({alias,connection}){
-    if(isUndefinedOrNull(connection) && isUndefinedOrNull(alias)){
+export async function connect({alias,settings}){
+    if(isUndefinedOrNull(settings) && isUndefinedOrNull(alias)){
         throw new Error('You need to provide the alias or the connection');
     }
 
     if(alias){
-        connection = getConnection(alias);
+        settings = getConnection(alias);
     }
     
     let params = {
         oauth2      : {...window.jsforceSettings},
-        instanceUrl : connection.instanceUrl,
-        accessToken : connection.accessToken,
+        instanceUrl : settings.instanceUrl,
+        accessToken : settings.accessToken,
         proxyUrl    : `${window.location.origin}/proxy/`,
-        version     : connection.instanceApiVersion || process.env.VERSION || '55.0'
+        version     : settings.instanceApiVersion || '55.0'
     }
-    if(connection.refreshToken){
-        params.refreshToken = connection.refreshToken;
+    if(settings.refreshToken){
+        params.refreshToken = settings.refreshToken;
     }
     
+    const connection = await new window.jsforce.Connection(params);
 
-    
-    const instance = await new window.jsforce.Connection(params);
-        instance.on("refresh", function(accessToken, res) {
-            console.log('refresh',accessToken,res);
-        });
-
-        console.log('instance',instance);
-        instance.alias = alias || connection.alias;
-    return instance;
+    return {
+        ...connection,
+        alias:alias || settings.alias
+    };
 }
 
 export async function getConnection(alias){

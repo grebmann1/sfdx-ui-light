@@ -38,7 +38,16 @@
         {
             "id": "home",
             "path": "/",
-            "rootComponent": "ui/app",
+            "rootComponent": "ui/fullView",
+            "layoutTemplate": "$layoutsDir/main.html",
+            "bootstrap": {
+                "syntheticShadow": true
+            }
+        },
+        {
+            "id": "extension",
+            "path": "/extension",
+            "rootComponent": "ui/extensionView",
             "layoutTemplate": "$layoutsDir/main.html",
             "bootstrap": {
                 "syntheticShadow": true

@@ -18,7 +18,12 @@
                         <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#user"></use>
                     </svg>
                 </span>
-                <h2>{loggedInMessage}<a href="#" onclick={handleLogout}>Log out</a></h2>
+                <h2>
+                    {loggedInMessage}
+                    <template lwc:if={isLogoutDisplayed}>
+                        <a href="#" onclick={handleLogout}>Log out</a>
+                    </template>
+                </h2>
             </ui-notify>
         </template>
 

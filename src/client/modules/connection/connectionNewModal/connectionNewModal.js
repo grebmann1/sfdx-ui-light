@@ -71,8 +71,8 @@ export default class ConnectionNewModal extends LightningModal {
             if (error) {
                 throw decodeError(error);
             }
-            let connection = res;
-            await connect({connection});
+            let settings = res;
+            await connect({settings});
             this.close({alias:this.alias,connection});
         }catch(e){
             await LightningAlert.open({

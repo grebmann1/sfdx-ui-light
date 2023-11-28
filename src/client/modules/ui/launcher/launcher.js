@@ -16,23 +16,12 @@ export default class Launcher extends LightningModal {
     
     @api isUserLoggedIn;
 
-   
-    
-
-    handleCloseClick() {
-        this.close();
-    }
-
-    closeModal() {
-        this.close();
-    }
-
     
     /** events **/
     selectApplication = (e) => {
         let application = application_mapping.find(x => x.id === e.currentTarget.dataset.key);
         if(application){
-            this.close(application);
+            this.dispatchEvent(new CustomEvent("select",{detail:application}));
         }
     }
 

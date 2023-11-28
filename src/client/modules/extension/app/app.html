@@ -10,8 +10,8 @@
                         <div class="slds-page-header__name">
                             <div class="slds-page-header__name-title">
                                 <h1>
-                                    <span>Connections</span>
-                                    <span class="slds-page-header__title slds-truncate" title="Alias list">Connection list</span>
+                                    <span>Home Page</span>
+                                    <span class="slds-page-header__title slds-truncate" title="Extension Home page">Extension Home page</span>
                                 </h1>
                             </div>
                         </div>
@@ -22,7 +22,7 @@
                 <div class="slds-page-header__controls">
                     <div class="slds-page-header__control">
                         <div class="slds-button-group" id="button-group-page-header-actions" role="group">
-                            <button class="slds-button slds-button_neutral" type="button" onclick={addConnectionClick}>Connect Org</button>
+                            <button class="slds-button slds-button_neutral" type="button" onclick={redirectToWebsite}>Go to SF Toolkit</button>
                         </div>
                     </div>
                 </div>
@@ -31,21 +31,10 @@
         <div class="slds-page-header__row slds-page-header__row_gutters">
             <div class="slds-page-header__col-details">
                 <div class="slds-page-header__detail-row slds-is-relative min-height-200" style="display:block; ">
-                    <ui-information-block title="Info">
-                        <p>All the sessions/connections are stored in your browser local storage.</p>
-                    </ui-information-block>
-                    <template lwc:if={isLoading}>
-                        <lightning-spinner alternative-text="Loading"></lightning-spinner>
-                    </template>
-                    <!-- Data Table -->
-                    <lightning-datatable
-                            data={data}
-                            columns={columns}
-                            key-field="id"
-                            onrowaction={handleRowAction}
-                            hide-checkbox-column
-                    ></lightning-datatable>
-                    
+                    <!-- Display Connection Info -->
+                    <div class="slds-welcome-mat__info-description slds-text-longform">
+                        <p>Welcome to the SF Toolkit. To open a tool, open the App Launcher and select your application.</p>
+                    </div>
                 </div>
             </div>
         </div>

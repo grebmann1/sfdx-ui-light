@@ -1,39 +1,39 @@
-import { LightningElement,track,wire} from "lwc";
+import { LightningElement,track,api} from "lwc";
 import {guid,isNotUndefinedOrNull} from "shared/utils";
-import { getExistingSession,saveSession,removeSession } from "connection/utils";
+import { getExistingSession,saveSession,removeSession,directConnection } from "connection/utils";
+
+/** Apps  **/
 import connection_app from "connection/app";
 import accessAnalyzer_app from "accessAnalyzer/app";
+import extension_app from "extension/app";
 
-const KNOWN_TYPE = new Set(["connection/app", "accessAnalyzer/app"]);
+const KNOWN_TYPE = new Set(["connection/app", "accessAnalyzer/app","extension/app"]);
 const APP_MAPPING = {
     "connection/app": connection_app,
     "accessAnalyzer/app": accessAnalyzer_app,
+    "extension/app":extension_app
 };
 
 export default class App extends LightningElement {
 
+    @api mode;
+    // for extension
+    @api sessionId;
+    @api serverUrl;
+
+
+
+
     connector;
-    
+    currentApplicationId;
     @track applications = [];
-    @track currentApplicationId;
 
     async connectedCallback(){
 
-        this.connector = await getExistingSession();
-        // Default Mode
-        await this.loadModule({
-            component:'connection/app',
-            name:"Home",
-            isDeletable:false,
-        });
-        
-        console.log('process.env.NODE_ENV',process.env.NODE_ENV);
-        if(process.env.NODE_ENV === 'dev'){
-            await this.loadModule({
-                component:'accessAnalyzer/app',
-                name:"Access Analyzer",
-                isDeletable:true
-            });
+        if(this.isLightMode){
+            this.load_lightMode();
+        }else{
+            this.load_fullMode();
         }
         
     }
@@ -87,15 +87,52 @@ export default class App extends LightningElement {
         this.applications = _applications;
     }
 
+    load_lightMode = async () => {
+        this.connector = await directConnection(this.sessionId,this.serverUrl);
+        // Default Mode
+        await this.loadModule({
+            component:'extension/app',
+            name:"Apps",
+            isDeletable:false,
+        });
+    }
+
+    load_fullMode = async () => {
+        this.connector = await getExistingSession();
+        // Default Mode
+        await this.loadModule({
+            component:'connection/app',
+            name:"Home",
+            isDeletable:false,
+        });
+        
+        console.log('process.env.NODE_ENV',process.env.NODE_ENV);
+        if(process.env.NODE_ENV === 'dev'){
+            await this.loadModule({
+                component:'accessAnalyzer/app',
+                name:"Access Analyzer",
+                isDeletable:true
+            });
+        }
+    }
+
 
     /** Getters */
+
+    get isLightMode(){
+        return this.mode === 'light';
+    }
 
     get dynamicAppContainerClass(){
         return this.isUserLoggedIn?'app-container-logged-in':'app-container';
     }
 
+    get isLogoutDisplayed(){
+        return !this.isLightMode;
+    }
+
     get loggedInMessage(){
-        return `Logged in as ${this.connector.header?.userInfo?.display_name || 'User'} (${this.connector.header?.alias}:${this.connector.header?.username}). `;
+        return `Logged in as ${this.connector.header?.userInfo?.display_name || 'User'} (${this.connector.header?.alias || 'No Alias'} : ${this.connector.header?.username}). `;
     }
 
     get isUserLoggedIn(){
