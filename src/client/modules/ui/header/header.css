@@ -21,3 +21,7 @@
     font-size: .8125rem;
     z-index: 1;
 }
+
+.slds-context-bar__secondary{
+    justify-content: space-between;
+}

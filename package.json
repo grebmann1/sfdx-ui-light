@@ -7,7 +7,7 @@
     "start:electron:stage": "NODE_ENV=staging electron .",
     "start:electron:prod": "NODE_ENV=production electron .",
     "start:client": "serve site",
-    "start:dev:client": "NODE_ENV=development node src/client/server-dev.js",
+    "start:dev:client": "NODE_ENV=development VERSION_APP=$npm_package_version node src/client/server-dev.js",
     "start:dev:electron": "NODE_ENV=development electron .",
     "start:heroku": "NODE_ENV=production node src/client/server-prod.js",
     "package": "electron-forge package",

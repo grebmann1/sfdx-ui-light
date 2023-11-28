@@ -86,10 +86,16 @@ export default class ConnectionNewModal extends LightningModal {
     web_connect = async () => {
         console.log('web_connect');
         window.jsforce.browser.login({
-            loginUrl:this.selectedDomain === 'custom'?this.customDomain:this.selectedDomain,
-            version:process.env.VERSION || '55.0',
-            scope:'id api web openid sfap_api refresh_token'
-        });
+                loginUrl:this.selectedDomain === 'custom'?this.customDomain:this.selectedDomain,
+                version:process.env.VERSION || '55.0',
+                scope:'id api web openid sfap_api refresh_token'
+            },(_,res) => {
+                console.log('status',res.status);
+                if(res.status === 'cancel'){
+                    this.close(null)
+                }
+            }
+        );
         window.jsforce.browser.on('connect', async (connection) =>{
             console.log('connection',connection); // refresh_token
             const {accessToken,instanceUrl,loginUrl,refreshToken,version} = connection;

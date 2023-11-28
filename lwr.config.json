@@ -55,6 +55,7 @@
         }
     ],
     "moduleProviders": [
+        "$rootDir/src/client/lwrModules/process-env-module-provider/processEnvModuleProvider.cjs",
         "@lwrjs/label-module-provider",
         "@lwrjs/app-service/moduleProvider",
         "@lwrjs/lwc-module-provider",

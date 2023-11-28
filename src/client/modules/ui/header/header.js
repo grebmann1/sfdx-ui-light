@@ -1,5 +1,6 @@
 import { LightningElement,api } from 'lwc';
 import launcher from "ui/launcher";
+import versionApp from '@process/env/VERSION_APP';
 
 export default class Header extends LightningElement {
 
@@ -9,9 +10,9 @@ export default class Header extends LightningElement {
     @api applications;
     @api isUserLoggedIn = false
 
-    connectedCallback(){
-        
-    }
+    @api version = versionApp || 'v0.0.0';
+
+    connectedCallback(){}
 
     openLauncher = () => {
         console.log('openLauncher');
@@ -42,6 +43,8 @@ export default class Header extends LightningElement {
 
     /** Getters */
 
-    
+    get formattedVersion(){
+        return `${this.version}`;
+    }
 
 }
