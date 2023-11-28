@@ -13,6 +13,7 @@
     "package": "electron-forge package",
     "make": "electron-forge make --platform darwin",
     "clean": "rm -r __lwr_cache__ site __skip_directory_creation__",
+    "fix:lightning":"node scripts/fix_lightning.js",
     "heroku-postbuild":"npm run clean || NODE_ENV=production WARMUP=true lwr build -m prod --clean"
   },
   "copyFiles": [
@@ -38,7 +39,6 @@
     "update-electron-app": "^3.0.0"
   },
   "devDependencies": {
-    "@salesforce/cli":"2.17.14",
     "@electron-forge/cli": "^6.4.2",
     "@electron-forge/maker-deb": "^6.4.2",
     "@electron-forge/maker-rpm": "^6.4.2",
@@ -55,8 +55,9 @@
     "electron-reload": "2.0.0-alpha.1",
     "electron-serve": "^1.2.0",
     "electron-squirrel-startup": "^1.0.0",
-    "glob": "10.3.10",
     "lightning-base-components": "1.19.11-alpha",
+    "jspdf":"2.5.1",
+    "jspdf-autotable":"3.7.1",
     "lwc":"5.1.0"
   }
 }
