@@ -28,6 +28,10 @@
             "alias":"libsDir",
             "dir": "$rootDir/src/client/assets/libs",
             "urlPath": "/libs"
+        },
+        {
+            "file": "$rootDir/src/client/assets/favicon.ico",
+            "urlPath": "/favicon.ico"
         }
     ],
     "routes": [
