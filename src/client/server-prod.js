@@ -1,14 +1,9 @@
-const path = require('path');
 const express =  require("express");
-const serveStatic = require('serve-static');
 const handler = require('serve-handler');
-
-const app = express();
-const serveJson = require('../../site/serve.json')
-
-
+const serveJson = require('../../site/serve.json');
 const jsforceAjaxProxy = require("jsforce-ajax-proxy");
 
+const app = express();
 const PORT = parseInt(process.env.PORT || "3000", 10);
 
 app.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));

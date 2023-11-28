@@ -1,6 +1,6 @@
 import { LightningElement,api } from 'lwc';
 import launcher from "ui/launcher";
-import versionApp from '@process/env/VERSION_APP';
+import constant from "global/constant";
 
 export default class Header extends LightningElement {
 
@@ -10,7 +10,7 @@ export default class Header extends LightningElement {
     @api applications;
     @api isUserLoggedIn = false
 
-    @api version = versionApp || 'v0.0.0';
+    @api version = constant.version || '';
 
     connectedCallback(){}
 

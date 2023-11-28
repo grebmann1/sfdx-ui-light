@@ -7,14 +7,14 @@
     "start:electron:stage": "NODE_ENV=staging electron .",
     "start:electron:prod": "NODE_ENV=production electron .",
     "start:client": "serve site",
-    "start:dev:client": "NODE_ENV=development VERSION_APP=$npm_package_version node src/client/server-dev.js",
+    "start:dev:client": "NODE_ENV=development node src/client/server-dev.js",
     "start:dev:electron": "NODE_ENV=development electron .",
     "start:heroku": "NODE_ENV=production node src/client/server-prod.js",
     "package": "electron-forge package",
     "make": "electron-forge make --platform darwin",
     "clean": "rm -r __lwr_cache__ site __skip_directory_creation__",
-    "fix:lightning":"node scripts/fix_lightning.js",
-    "heroku-postbuild":"npm run clean || NODE_ENV=production WARMUP=true lwr build -m prod --clean"
+    "fix:lightning": "node scripts/fix_lightning.js",
+    "heroku-postbuild": "npm run clean || NODE_ENV=production WARMUP=true lwr build -m prod --clean"
   },
   "copyFiles": [
     {
@@ -23,7 +23,8 @@
     }
   ],
   "dependencies": {
-    "@lwrjs/label-module-provider":"0.11.6",
+    "@lwrjs/label-module-provider": "0.11.6",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-requests-logger": "^4.0.0",
     "http-errors": "^2.0.0",
@@ -45,7 +46,7 @@
     "@electron-forge/maker-squirrel": "^6.4.2",
     "@electron-forge/maker-zip": "^6.4.2",
     "@electron-forge/plugin-auto-unpack-natives": "^6.4.2",
-    "@lwc/synthetic-shadow":"5.1.0",
+    "@lwc/synthetic-shadow": "5.1.0",
     "@salesforce-ux/design-system": "2.22.2",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
@@ -55,9 +56,9 @@
     "electron-reload": "2.0.0-alpha.1",
     "electron-serve": "^1.2.0",
     "electron-squirrel-startup": "^1.0.0",
+    "jspdf": "2.5.1",
+    "jspdf-autotable": "3.7.1",
     "lightning-base-components": "1.19.11-alpha",
-    "jspdf":"2.5.1",
-    "jspdf-autotable":"3.7.1",
-    "lwc":"5.1.0"
+    "lwc": "5.1.0"
   }
 }
