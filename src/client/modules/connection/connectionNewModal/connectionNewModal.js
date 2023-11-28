@@ -53,15 +53,15 @@ export default class ConnectionNewModal extends LightningModal {
     connect = async () => {
         this.isLoading = true;
         if(isElectronApp()){
-            this.electron_connect();
+            this.electron_oauth();
         }else{
-            this.web_connect();
+            this.web_oauth();
         }
         
     }
 
-    electron_connect = async () => {
-        
+    electron_oauth = async () => {
+        console.log('electron_oauth');
         let params = {
             alias: this.alias,
             instanceurl: this.selectedDomain === 'custom'?this.customDomain:this.selectedDomain
@@ -83,26 +83,25 @@ export default class ConnectionNewModal extends LightningModal {
         }
     }
 
-    web_connect = async () => {
-        console.log('web_connect');
+    web_oauth = async () => {
+        console.log('web_oauth');
         window.jsforce.browser.login({
+                ...window.jsforceSettings,
                 loginUrl:this.selectedDomain === 'custom'?this.customDomain:this.selectedDomain,
                 version:process.env.VERSION || '55.0',
                 scope:'id api web openid sfap_api refresh_token'
             },(_,res) => {
-                console.log('status',res.status);
                 if(res.status === 'cancel'){
                     this.close(null)
                 }
             }
         );
         window.jsforce.browser.on('connect', async (connection) =>{
-            console.log('connection',connection); // refresh_token
             const {accessToken,instanceUrl,loginUrl,refreshToken,version} = connection;
             let nameArray = this.alias.split('-');
             let companyName = nameArray.length > 1 ?nameArray.shift() : '';
             let name = nameArray.join('-');
-            let data = {
+            let header = {
                 accessToken,instanceUrl,loginUrl,refreshToken,version,
                 id:this.alias,
                 alias:this.alias,
@@ -113,17 +112,12 @@ export default class ConnectionNewModal extends LightningModal {
 
             /** Get Username **/
             let identity = await connection.identity();
-            console.log('identity',identity);
             if(isNotUndefinedOrNull(identity)){
-                data.username = identity.username;
-                data.orgId    = identity.organization_id;
-                data.userInfo = identity;
+                header.username = identity.username;
+                header.orgId    = identity.organization_id;
+                header.userInfo = identity;
             }
-
-
-
-            console.log('data',data);
-            await addConnection(data,connection);
+            await addConnection(header,connection);
 
             this.close({alias:this.alias,connection});
         });
