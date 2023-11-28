@@ -1,11 +1,7 @@
 
 const {
-    getAllOrgs,
-    openOrgUrl,
-    createNewOrgAlias,
-    seeDetails,
-    unsetAlias,
-    setAlias
+    getAllOrgs,openOrgUrl,createNewOrgAlias,
+    seeDetails,unsetAlias,setAlias
 } = require('./methods.js');
 
 class ORG_CONNECTOR{

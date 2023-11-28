@@ -116,3 +116,7 @@ export function runActionAfterTimeOut(value, action,{timeout = 300} = {}) {
         action(value);
     }, timeout);
 }
+
+export const isElectronApp = () => {
+    return isNotUndefinedOrNull(window.electron);
+}

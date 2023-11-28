@@ -19,6 +19,13 @@
                 font-size:small;
                 justify-content: flex-start !important;
             }
+            .min-height-400{
+                min-height: 400px;
+            }
+
+            .min-height-200{
+                min-height: 200px;
+            }
 
             .tab-visible{
                 visibility: visible;
@@ -31,17 +38,27 @@
             
         </style>
         <script src="$libsDir/jsforce/jsforce.min.js"></script>
+        <script src="$libsDir/jsforce/jsforce.extend.js"></script>
         <script src="$libsDir/localforage/localforage.min.js"></script>
         <script>
             let host = window.location.origin;
-            jsforce.browser.init({
+
+            window.jsforceSettings = {
                 clientId: '3MVG9_kZcLde7U5oNdaqndT3T9qa54eaA.ycC6APuOkYzRP286pPeOvwOqAQ2ue7l5ejNAxPYj4xTbWn3zS6Y',
                 redirectUri: `${host}/callback`,
                 proxyUrl: `${host}/proxy/`
-            });
+            };
+
+            jsforce.browser = new jsforce.browser.Client(); // Reset
+            window.jsforce.browser.on('connect', async (connection) =>{
+                // Not used
+                //console.log('on connect event !',connection);
+            })
+            
+
+            
             window.jsforce = jsforce;
             window.connections = {}; // use for faster connection, during live processing
-
 
             /** Local Storage Settings **/
             window.defaultStore = localforage.createInstance({name: "defaultStore"});

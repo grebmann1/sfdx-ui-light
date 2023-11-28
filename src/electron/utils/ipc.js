@@ -10,26 +10,8 @@ class IpcMainManager extends EventEmitter {
         this.messageQueue = new WeakMap();
     }
 
-    initListeners(IpcEvents){
-        Object.values(IpcEvents).forEach(name => {
-            ipcMain.removeAllListeners(name);
-            ipcMain.on(name, (...args) => this.emit(name, ...args));
-        });
-    }
-
-    /**
-     * Send an IPC message to an instance of Electron.WebContents.
-     * If none is specified, we'll automatically go with the main window.
-     *
-     * @param {IpcEvents} channel
-     * @param {Array<any>} args
-     * @param {Electron.WebContents} [target]
-     */
-  
-  
     send(channel, args, target) {
         const _target = target || getOrCreateMainWindow().webContents;
-    
         const _args = args || [];
     
         if (!this.readyWebContents.has(_target)) {

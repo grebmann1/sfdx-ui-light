@@ -2,17 +2,16 @@ const sfdx = require('sfdx-node');
 const { shell } = require('electron');
 const { encodeError } = require('../../utils/errors.js');
 
-getAllOrgs = async (event) => {
+getAllOrgs = async (_) => {
     let res = await sfdx.force.org.list({
         json:true,
         verbose:true
     });
     console.log('res',res);
     return res?.nonScratchOrgs || [];
-
 }
 
-seeDetails = async (event,{alias}) => {
+seeDetails = async (_,{alias}) => {
     try{
         let res = await sfdx.force.org.display({
             _quiet:true,
@@ -33,8 +32,6 @@ seeDetails = async (event,{alias}) => {
                 orgId:res.id
             }
         };
-        
-        console.log('res',res);
         return {res};
     }catch(e){
         console.log('error',e);
@@ -42,7 +39,7 @@ seeDetails = async (event,{alias}) => {
     }
 }
 
-openOrgUrl = async (event,{alias,redirectUrl}) => {
+openOrgUrl = async (_,{alias,redirectUrl}) => {
     const result = await sfdx.force.org.open({
         targetusername:alias,
         urlonly:true
@@ -53,7 +50,7 @@ openOrgUrl = async (event,{alias,redirectUrl}) => {
     }
 }
 
-createNewOrgAlias = async (event,{alias,instanceurl}) => {
+createNewOrgAlias = async (_,{alias,instanceurl}) => {
     console.log('createNewOrgAlias');
 
     try{
@@ -69,7 +66,7 @@ createNewOrgAlias = async (event,{alias,instanceurl}) => {
     }
 }
 
-unsetAlias = async (event,{alias}) => {
+unsetAlias = async (_,{alias}) => {
     try{
         let res = await sfdx.alias.unset({
             _quiet:true,
@@ -81,7 +78,7 @@ unsetAlias = async (event,{alias}) => {
     }
 }
 
-setAlias = async (event,{alias,username}) => {
+setAlias = async (_,{alias,username}) => {
     try{
         let response = await sfdx.alias.set({
             _quiet:true,

@@ -87,49 +87,6 @@ export const loadMetadata_async = async (conn,callback) => {
 }
 
 
-/*
-export const loadMetadata = async (conn) => {
-    window.test = conn;
-
-    let results_1 = await Promise.all([
-        getProfiles(conn),
-        getEntityDefinition(conn),
-        getApexClass(conn),
-        getApexPage(conn),
-        getAppDefinition(conn)
-    ]);
-
-    const profiles = results_1[0];
-    const sobjects = results_1[1];
-    const apexClasses = results_1[2];
-    const apexPages  = results_1[3];
-    const appDefinitions = results_1[4];
-
-    let results_2 = await Promise.all([
-        getPermissionSet(conn,profiles),
-        getUserPermissions(conn,profiles)
-    ]);
-
-    const profilesForPermissionSet = results_2[0];
-    const profileFields = results_2[1];
-
-    // Set Permissions
-    await Promise.all([
-        getObjectPermissions(conn,profiles,profilesForPermissionSet),
-        getSetupEntityAccess(conn,profiles,profilesForPermissionSet,apexClasses,apexPages,appDefinitions)
-    ]);
-
-    return {
-        profiles,
-        sobjects,
-        apexClasses,
-        apexPages,
-        appDefinitions,
-        profilesForPermissionSet,
-        profileFields
-    }
-}
-*/
 export const getProfiles = async (conn) => {
     console.log('getProfiles');
     const profiles = {};
@@ -200,7 +157,7 @@ async function getLayouts(conn){
 }
 
 
-export const getPermissionSet = async (conn,profiles) => {
+const getPermissionSet = async (conn,profiles) => {
     const profilesForPermissionSet = {}
     console.log('getPermissionSet');
     let keys = "'" + Object.keys(profiles).join("','") + "'";
@@ -212,7 +169,7 @@ export const getPermissionSet = async (conn,profiles) => {
     return profilesForPermissionSet;
 }
 
-export const getEntityDefinition = async (conn) => {
+const getEntityDefinition = async (conn) => {
     console.log('getEntityDefinition');
     const sobjects = {};
     let query = conn.query("select QualifiedApiName,Label from EntityDefinition where IsCustomizable=true and IsCompactLayoutable=true");
@@ -221,7 +178,7 @@ export const getEntityDefinition = async (conn) => {
     return sobjects;
 }
 
-export const getTabDefinitions = async (conn) => {
+const getTabDefinitions = async (conn) => {
     console.log('getTabDefinitions');
     const tabDefinitions = {};
     let records = (await conn.tooling.query("select Name, Label from TabDefinition")).records || [];
@@ -233,13 +190,13 @@ export const getTabDefinitions = async (conn) => {
 
 
 
-export const setRecordTypes = async (conn,sobjects) => {
+const setRecordTypes = async (conn,sobjects) => {
     console.log('setRecordTypes');
     let records = (await conn.query("select Id, DeveloperName, Name, SobjectType from RecordType")).records || [];
         records.forEach(record => sobjects[record.SobjectType].recordTypes[record.Id] = new RecordType(record.Id, record.DeveloperName, record.Name));
 }
 
-export const setLayoutAssignments = async (conn,profiles,layouts) => {
+const setLayoutAssignments = async (conn,profiles,layouts) => {
     console.log('setLayoutAssignments');
     let records = (await conn.tooling.query("select Profile.Id, LayoutId, RecordTypeId from ProfileLayout where Profile.Id != null")).records || [];
         records.forEach(record => {
@@ -250,7 +207,7 @@ export const setLayoutAssignments = async (conn,profiles,layouts) => {
         });
 }
 
-export const getUserPermissions = async (conn,profiles) => {
+const getUserPermissions = async (conn,profiles) => {
     console.log('getUserPermissions');
     const profileFields = {};
     
@@ -280,7 +237,7 @@ export const getUserPermissions = async (conn,profiles) => {
     return profileFields;
 }
 
-export const setObjectPermissions = async (conn,profiles,profilesForPermissionSet) => {
+const setObjectPermissions = async (conn,profiles,profilesForPermissionSet) => {
     console.log('setObjectPermissions');
     let keys = Object.values(profiles).map(x => x.permissionSetId).join("','");
 
@@ -301,7 +258,7 @@ export const setObjectPermissions = async (conn,profiles,profilesForPermissionSe
         });
 }
 
-export const setPermissionSetTabSetting = async (conn,profiles,profilesForPermissionSet,{tabDefinitions}) => {
+const setPermissionSetTabSetting = async (conn,profiles,profilesForPermissionSet,{tabDefinitions}) => {
     console.log('setPermissionSetTabSetting');
     const fetchPermissionSetTabSetting = async (ids) => {
         let query = conn.query(`select ParentId, Name, Visibility from PermissionSetTabSetting where ParentId in ('${ids.join("','")}')`);
@@ -320,7 +277,7 @@ export const setPermissionSetTabSetting = async (conn,profiles,profilesForPermis
 
 
 
-export const getSetupEntityAccess = async (conn,profiles,includeNamespacePrefix = false,{profilesForPermissionSet,apexClasses,apexPages,appDefinitions}) => {
+const getSetupEntityAccess = async (conn,profiles,includeNamespacePrefix = false,{profilesForPermissionSet,apexClasses,apexPages,appDefinitions}) => {
     console.log('getSetupEntityAccess');
     let keys = Object.values(profiles).map(x => x.permissionSetId).join("','");
 
@@ -373,22 +330,23 @@ export const setFieldDefinition = async (conn,targetObject) => {
     console.log('setFieldDefinition')
     let records_fieldDefinition = (await conn.tooling.query(`select EntityDefinitionId,MasterLabel,IsNillable, QualifiedApiName, DataType from FieldDefinition where EntityDefinition.QualifiedApiName ='${targetObject.name}'`)).records || [];
 
-    targetObject.fields = [];
+    targetObject.fields = {};
 
     records_fieldDefinition.forEach(record => {
-        targetObject.fields[record.QualifiedApiName] =
-            new Field(record.QualifiedApiName, record.MasterLabel, record.DataType, record.IsNillable);
+        targetObject.fields[record.QualifiedApiName] = new Field(record.QualifiedApiName, record.MasterLabel, record.DataType, record.IsNillable);
     });
 }
 
 export const setFieldPermission = async (conn,profiles,profilesForPermissionSet,targetObject) => {
-    console.log('setFieldPermission');
-    let keys = "'" + Object.values(profiles).map(x => x.permissionSetId).join("','") + "'";
-    let records_fieldPermissions = (await conn.tooling.query(`select ParentId, Field, SobjectType, PermissionsEdit, PermissionsRead from FieldPermissions where SobjectType ='${targetObject.name}' and ParentId in (${keys})`)).records || [];
+    // Set field Definition
+    await setFieldDefinition(conn,targetObject);
+
+    let keys = Object.values(profiles).map(x => x.permissionSetId).join("','");
+    let records_fieldPermissions = (await conn.query(`select ParentId, Field, SobjectType, PermissionsEdit, PermissionsRead from FieldPermissions where SobjectType ='${targetObject.name}' and ParentId in ('${keys}')`)).records || [];
         records_fieldPermissions.forEach(record => {
-            
+            let profileId = profilesForPermissionSet[record.ParentId];
             let fieldName = record.Field.replace(targetObject.name + '.', '');
             // profiles[profilesForPermissionSet[record.ParentId]].fieldPermissions[targetObject.name].push(new FieldPermission(record.SobjectType, fieldName, record.PermissionsRead, record.PermissionsEdit));
-            profiles[profilesForPermissionSet[record.ParentId]].fieldPermissions.push(new FieldPermission(record.SobjectType, fieldName, record.PermissionsRead, record.PermissionsEdit));
+            profiles[profileId].fieldPermissions[fieldName] = new FieldPermission(record.SobjectType, fieldName, record.PermissionsRead, record.PermissionsEdit);
         });
 }

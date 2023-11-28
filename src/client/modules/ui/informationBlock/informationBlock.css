@@ -1,0 +1,42 @@
+/** Block Quotes **/
+
+.site-blockquote_note.doc {
+    border-left-color: rgb(0, 102, 204);
+}
+
+.site-blockquote_note.doc .lead {
+    color: rgb(0, 102, 204);
+}
+
+blockquote.doc {
+    background-color: #fafaf9;
+    font-size: 1rem;
+    font-weight: 300;
+    padding: 0.5rem 1rem;
+    margin: 0 0 1.5rem;
+    border: 1px solid #f2f2f2;
+    border-left-width: 0.125rem;
+}
+
+blockquote.doc .lead {
+    margin-bottom: 0;
+    font-weight: var(--lwc-fontWeightBold);
+}
+
+blockquote.doc .doc {
+    color: rgb(84, 79, 79);
+}
+
+.doc {
+    color: rgb(0, 102, 204);
+    font-size: 1rem;
+}
+
+
+strong{
+    color: rgb(0, 102, 204);
+}
+blockquote.doc h4.lead {
+    font-size: 1rem;
+    margin-top: 0;
+}

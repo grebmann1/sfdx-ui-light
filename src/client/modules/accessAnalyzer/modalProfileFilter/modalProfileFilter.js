@@ -1,6 +1,5 @@
 import LightningModal from 'lightning/modal';
 import {TabulatorFull as Tabulator} from 'tabulator-tables';
-import {JSForceConnector} from "shared/jsforce";
 
 import { api } from "lwc";
 
@@ -18,7 +17,8 @@ export default class ModalProfileFilter extends LightningModal {
     }
 
     handleCloseClick() {
-        this.close('canceled');
+        //this.close('canceled');
+		this.close({action:'cancel'});
     }
 
     closeModal() {
@@ -86,7 +86,7 @@ export default class ModalProfileFilter extends LightningModal {
 			let data = {};
                 data['profileId'] = profile.id;
                 //data['link'] = `<a href="${null}" target="_blank"><svg focusable="false" aria-hidden="true" class="slds-icon slds-icon-text-default slds-icon_x-small"><use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#new_window"></use></svg></a>`;
-                data['label'] = profile.label;
+                data['label'] = profile.name;
                 //data['profileUrl'] = null;
                 data['activeUserCount'] = _activeUserCount;
                 data['inactiveUserCount'] = _inactiveUserCount;
@@ -122,7 +122,7 @@ export default class ModalProfileFilter extends LightningModal {
 			this.tableInstance.on("tableBuilt", () =>{
 
 				this.tableInstance.selectRow(this.tableInstance.getRows().filter(
-					row => !this.selected.includes(row.getData().profileId)
+					row => this.selected.includes(row.getData().profileId)
 				));
 			})
 

@@ -11,6 +11,11 @@
     height:calc(100vh - 30px);
 }
 
+.app-container-logged-in {
+    margin-top: 60px;
+    height:calc(100vh - 60px);
+}
+
 .container{
     padding:1rem;
 }

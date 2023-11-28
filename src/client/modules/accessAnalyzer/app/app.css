@@ -1,7 +1,7 @@
 .grid-container{
     display: grid;
     grid-template-rows: auto 1fr;
-    height:calc(100vh - 30px - 3rem);
+    height:calc(100vh - 60px - 3rem);
     width:calc(100vw - 3.5rem)
 }
 
@@ -17,9 +17,26 @@
 /** Filters **/
 .slds-page-header__detail-block{
     max-width: unset;
+    min-width: 200px;
+    padding-right: unset;
+}
+
+.slds-page-header__detail-separator{
+    max-width: unset;
     padding-right: unset;
 }
 
 .slds-page-header__detail-block .slds-form-element__label{
     min-height: 18px;
+}
+
+/** Info header **/
+
+.slds-page-header__detail-info{
+    margin: 0.75rem -1rem -1rem;
+    padding: 1rem;
+    border-radius: 0 0 0.25rem 0.25rem;
+    background-color: var(--slds-g-color-neutral-base-100,#fff);
+    position: relative;
+    z-index: 2;
 }

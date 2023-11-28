@@ -1,5 +1,8 @@
 <template>
     <header class="slds-global-header_container">
+        <!-- Logged In User -->
+        <slot></slot>
+        <!-- Navigation -->
         <div class="slds-context-bar">
             <div class="slds-context-bar__primary">
                 <div class="slds-context-bar__item slds-context-bar__dropdown-trigger slds-dropdown-trigger slds-dropdown-trigger_click slds-no-hover">
@@ -31,6 +34,12 @@
                             <a href="#" class="slds-context-bar__label-action" title={application.name}>
                                 <span class="slds-truncate" title={application.name}>{application.name}</span>
                             </a>
+                            <template lwc:if={application.isDeletable}>
+                                <a href="#" class="slds-context-bar__label-close" onclick={deleteTab}>
+                                    <lightning-button-icon icon-name="utility:close"  variant="container" class="slds-m-left_xx-small"></lightning-button-icon>
+                                </a>
+                            </template>
+                            
                         </li>
                     </template>
                     

@@ -1,16 +1,14 @@
-import { LightningElement } from "lwc";
-import {decodeError,getAllOrgs,chunkArray,chunkPromises,isEmpty,groupBy,runActionAfterTimeOut,isUndefinedOrNull} from 'shared/utils';
+import { LightningElement,api} from "lwc";
+import {decodeError,getAllOrgs,chunkArray,chunkPromises,isEmpty,groupBy,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull} from 'shared/utils';
 import {TabulatorFull as Tabulator} from 'tabulator-tables';
 import ModalProfileFilter from "accessAnalyzer/modalProfileFilter";
-import {getAllConnection,removeConnection,connect} from 'connection/utils';
-
-import {loadMetadata_async} from "shared/sf";
+import {loadMetadata_async,setFieldPermission} from "shared/sf";
+import { fileFormatter } from 'accessAnalyzer/utils';
 
 export default class App extends LightningElement {
-    currentConnection;
 
-    
-    connections = [];
+    @api connector;
+
 
     /* Metadata */
     metadata;
@@ -23,26 +21,18 @@ export default class App extends LightningElement {
 
 
     /* Filters */
-    report = 'Profile';
+    report = 'CustomObject';
     filter_profiles = [];
     namespaceFiltering_value = 'excluded';
     userLicenseFiltering_value = 'all';
+    selectedObject;
     
 
     isLoading = false;
 
-    get isFiltering_profiles(){
-        return this.filter_profiles.length > 0;
-    }
-
 
     async connectedCallback(){
-        this.connections = await getAllConnection();
-        if(this.connections.length > 0){
-            this.currentConnection = await connect({connection:this.connections[0]});
-        }
         this.loadMetadata(false);
-        this.tableResize();
         window.addEventListener('resize',this.tableResize);
     }
 
@@ -52,24 +42,17 @@ export default class App extends LightningElement {
 
 
     tableResize = () => {
-        
         runActionAfterTimeOut(null,(param) => {
-            if(this.tableInstance){
-                console.log('resize -redraw');
+            if(isNotUndefinedOrNull(this.tableInstance)){
                 this.tableInstance.setHeight(this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight);
             }
         });
-        
-        
     }
 
-    refreshMetadata = async () => {
-        this.loadMetadata(true);
-    }
+    
 
     cacheMetadata = async () => {
-        let key = `${this.currentConnection.alias}-metadata`;
-        console.log('cacheMetadata');
+        let key = `${this.connector.header.alias}-metadata`;
         await window.defaultStore.setItem(key,{
             ...this.metadata,
             profiles:this.profiles
@@ -77,7 +60,6 @@ export default class App extends LightningElement {
     }
 
     loadMetadata_withNameSpaceCallback = async (res) => {
-        console.log('loadMetadata_withNameSpaceCallback',res);
         const {entityAccess} = res;
         // Assign Entity Access
         Object.keys(this.profiles).forEach(key => {
@@ -91,72 +73,56 @@ export default class App extends LightningElement {
 
     loadMetadata = async (refresh = false ) => {
         // Only run when a connection is available
-        if(!this.currentConnection)return;
+        if(!this.connector)return;
 
         this.isLoading = true;
-        let key = `${this.currentConnection.alias}-metadata`;
+        let key = `${this.connector.header.alias}-metadata`;
         let _metadata = await window.defaultStore.getItem(key);
         if(!_metadata || refresh){
-            _metadata = await loadMetadata_async(this.currentConnection,this.loadMetadata_withNameSpaceCallback);
+            _metadata = await loadMetadata_async(this.connector.conn,this.loadMetadata_withNameSpaceCallback);
         }
         let {profiles,...metadata} = _metadata;
         this.profiles = profiles;
         this.metadata = metadata;
-        console.log('this.metadata',this.metadata);
-        console.log('this.profiles',this.profiles);
-        /** Metadata List */
+        
+        // Pre filter the profiles
+        if(this.filter_profiles.length == 0){
+            this.filter_profiles = Object.values(this.profiles).filter(x => [
+                'Salesforce','Guest License','Salesforce Platform','Customer Community Plus','Customer Community Plus Login','Customer Community Login','Customer Community'
+            ].includes(x.userLicense)).map(x => x.id);
+        }
 
         this.displayReport();
         this.isLoading = false;
     }
 
-    /** Methods */
-
-    /*
-    loadLayouts = async () => {
-        //metadataLayouts
-        let query = `select Id, Name, NamespacePrefix, EntityDefinition.QualifiedApiName, EntityDefinition.Label from Layout where EntityDefinition.IsCustomizable=true and EntityDefinition.IsCompactLayoutable=true`;
-        const layouts  = (await this.currentConnection.tooling.query(query)).records || [];
-        let _metadataLayouts = [];
-        layouts.forEach(item => {
-            let customObject = this.metadataDetails['CustomObject'].find(x => x.fullName === item.EntityDefinition.QualifiedApiName);
-            if(customObject){
-                if(customObject.recordTypes.length === 0){
-                    _metadataLayouts.push({
-                        name:item.EntityDefinition.QualifiedApiName+'-'+item.Name,// Come from SOQL
-                        id:item.Id,// Come from SOQL
-                        objectLabel:item.EntityDefinition.Label, // Come from SOQL
-                        objectName:item.EntityDefinition.QualifiedApiName,
-                        recordTypeLabel:'Default',
-                        recordTypeName:null,
-                        namespacePrefix:item.NamespacePrefix // Come from SOQL
-                    })
-                }else{
-                    customObject.recordTypes.forEach(recordType => {
-                        _metadataLayouts.push({
-                            name:item.EntityDefinition.QualifiedApiName+'-'+item.Name,// Come from SOQL
-                            id:item.Id,// Come from SOQL
-                            objectLabel:item.EntityDefinition.Label, // Come from SOQL
-                            objectName:item.EntityDefinition.QualifiedApiName,
-                            recordTypeLabel:recordType.label,
-                            recordTypeName:item.EntityDefinition.QualifiedApiName+'.'+recordType.fullName,
-                            namespacePrefix:item.NamespacePrefix // Come from SOQL
-                        })
-                    })
-                }
-
-            }
-        })
-        _metadataLayouts = _metadataLayouts.sort((a, b) => a.objectLabel.localeCompare(b.objectLabel))
-
-        this.metadataLayouts = _metadataLayouts;
-    }
-    */
 
 
     /** Events  **/
-    usernameOrAlias_handleChange = (e) => {
-        this.currentConnection = this.connections.find(x => x.alias === e.detail.value);
+
+    refreshMetadata = async () => {
+        this.loadMetadata(true);
+    }
+
+    downloadCSV = async () => {
+        if(this.tableInstance){
+            this.isLoading = true;
+            await this.tableInstance.download("csv", `${this.connector.header.orgId}_${this.report}.csv`);
+            this.isLoading = false;
+        }
+    }
+
+    downloadPDF = async () => {
+        if(this.tableInstance){
+            this.isLoading = true;
+            let filename = `${this.connector.header.orgId}_${this.report}.pdf`;
+            await this.tableInstance.download(fileFormatter,filename,{
+                useImage:true,
+                title:this.report_options.find(x => x.value == this.report).label,
+                filename
+            });
+            this.isLoading = false;
+        }
     }
 
     report_handleChange = (e) => {
@@ -164,21 +130,18 @@ export default class App extends LightningElement {
         this.displayReport();
     }
 
+
     /** Getters **/
 
-    get usernameOrAlias(){
-        return this.currentConnection?.alias;
-    }
-
-    get usernameOrAlias_options(){
-        return this.connections.map(x => ({label:x.alias,value:x.alias}));
+    get isFiltering_profiles(){
+        return this.filter_profiles.length > 0;
     }
 
     get report_options(){
         return [
             {label:'Object Permissions',value:'CustomObject'},
             {label:'Profile Permissions',value:'Profile'},
-            //{label:'Field-Level Security',value:'FieldLevelSecurity'},
+            {label:'Field-Level Security',value:'FieldLevelSecurity'},
             {label:'Page Layout Assignment',value:'PageLayout'},
             {label:'Apex Class Access',value:'ApexClass'},
             {label:'VisualForce Page Access',value:'ApexPage'},
@@ -203,7 +166,11 @@ export default class App extends LightningElement {
     }
 
     get isRefreshDisabled(){
-        return isUndefinedOrNull(this.currentConnection) || this.isLoading;
+        return isUndefinedOrNull(this.connector) || this.isLoading;
+    }
+
+    get isSObjectSelectorDisplayed(){
+        return this.report === 'FieldLevelSecurity';
     }
 
 
@@ -212,7 +179,7 @@ export default class App extends LightningElement {
     profileFiltering_handleClick = (e) => {
         ModalProfileFilter.open({
             profiles:Object.values(this.profiles),
-            currentConnection:this.currentConnection,
+            currentConnection:this.connector.conn,
             selected:this.filter_profiles
         }).then(res => {
             if(res?.action === 'applyFilter'){
@@ -239,19 +206,32 @@ export default class App extends LightningElement {
         this.userLicenseFiltering_value = e.detail.value;
         this.displayReport(); // Reload the table
     }
+    
+
+    get sobject_options(){
+        return Object.values(this.metadata.sobjects).map(x => ({label:`${x.label} (${x.name})`,value:x.name})).sort((a, b) => a.value.localeCompare(b.value));
+    }
+
+    get selectedObjectName(){
+        return this.selectedObject?.name
+    }
+
+    sobject_handleChange = (e) => {
+        this.selectedObject = this.metadata.sobjects[e.detail.value];
+    }
 
 
 
     /** Tabulator */
 
-    displayReport = () => {
+    displayReport = async () => {
         this.isLoading = true;
         switch(this.report){
             case 'CustomObject':
-                this.setCustomObjectReport();
+                await this.setCustomObjectReport();
             break
             case 'Profile':
-                this.setGenericReport(Object.values(this.metadata.profileFields),'userPermissions','name', [
+                await this.setGenericReport(Object.values(this.metadata.profileFields),'userPermissions','name', [
                         { title: 'Permission Name', field: 'label', frozen: true, headerHozAlign: "center", resizable: false,responsive:0,headerFilter:"input"},
                         { title: 'Developer Name', field: 'name', frozen: true, headerHozAlign: "center", resizable: false, tooltip: true }
                     ],
@@ -259,14 +239,14 @@ export default class App extends LightningElement {
                 );
             break
             case 'ApexClass':
-                this.setGenericReport(Object.values(this.metadata.apexClasses),'classAccesses','name', [
+                await this.setGenericReport(Object.values(this.metadata.apexClasses),'classAccesses','name', [
                         { title: 'Class Name', field: 'label', width:200, frozen: true, headerHozAlign: "center", resizable: false,responsive:0,headerFilter:"input"},
                     ],
                     (x) => {return true;}
                 );
             break
             case 'ApexPage':
-                this.setGenericReport(Object.values(this.metadata.apexPages),'pageAccesses','name', [
+                await this.setGenericReport(Object.values(this.metadata.apexPages),'pageAccesses','name', [
                         { title: 'Page Name', field: 'label', width:200, frozen: true, headerHozAlign: "center", resizable: false,responsive:0,headerFilter:"input"},
                         { title: 'Developer Name', field: 'name', frozen: true, headerHozAlign: "center", resizable: false, tooltip: true }
                     ],
@@ -274,7 +254,7 @@ export default class App extends LightningElement {
                 );
             break;
             case 'TabSettings':
-                this.setGenericReport(Object.values(this.metadata.tabDefinitions),'tabAccesses','name', [
+                await this.setGenericReport(Object.values(this.metadata.tabDefinitions),'tabAccesses','name', [
                         { title: 'Tab Name', field: 'label', frozen: true, headerHozAlign: "center", resizable: false,responsive:0,headerFilter:"input"},
                         { title: 'DeveloperName', field: 'name', frozen: true, headerHozAlign: "center", resizable: false, tooltip: true }
                     ],
@@ -282,7 +262,7 @@ export default class App extends LightningElement {
                 );
             break;
             case 'AppSettings':
-                this.setGenericReport(Object.values(this.metadata.appDefinitions),'appAccesses','name', [
+                await this.setGenericReport(Object.values(this.metadata.appDefinitions),'appAccesses','name', [
                         { title: 'Tab Name', field: 'label', frozen: true, headerHozAlign: "center", resizable: false,responsive:0,headerFilter:"input"},
                         { title: 'DeveloperName', field: 'api', frozen: true, headerHozAlign: "center", resizable: false, tooltip: true }
                     ],
@@ -290,7 +270,10 @@ export default class App extends LightningElement {
                 );
             break;
             case 'PageLayout':
-                this.setLayoutAssignment();
+                await this.setLayoutAssignment();
+            break;
+            case 'FieldLevelSecurity':
+                await this.setFieldLevelSecurityReport();
             break;
             default:
                 console.log('No Default Report');
@@ -341,7 +324,6 @@ export default class App extends LightningElement {
 			}
 		});
 
-
         records
         .filter(x => this.namespaceFiltering_isExcluded && (x.namespacePrefix == null || x.namespacePrefix === '') || !this.namespaceFiltering_isExcluded)
         .forEach(item => {
@@ -374,7 +356,10 @@ export default class App extends LightningElement {
 			columnHeaderVertAlign: "middle",
             groupStartOpen:function(value, count, data, group){
                 return value === 'Default';
-            }
+            },
+            downloadConfig:{
+                rowGroups:false, //do not include row groups in downloaded table
+            },
 		});
     }
 
@@ -538,6 +523,102 @@ export default class App extends LightningElement {
             
 		});
 
+
+
+		if (this.tableInstance) {
+			this.tableInstance.destroy();
+		}
+		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
+			height: this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight,
+			data: dataList,
+			layout: "fitDataFill",
+			columns: colModel,
+			columnHeaderVertAlign: "middle",
+            debugInvalidOptions:true,
+            groupBy:"namespacePrefix",
+            maxHeight:"100%",
+            rowFormatter:function(row){
+                if(row.getData().isCategory){
+                    row.getElement().style.backgroundColor = "#1c96ff";
+                }
+            },        
+		});
+	}
+
+    setFieldLevelSecurityReport = async () => {
+
+        if(isUndefinedOrNull(this.selectedObject) && Object.values(this.metadata.sobjects).length > 0){
+            this.selectedObject = this.metadata.sobjects[this.sobject_options[0].value];
+        }
+
+        await setFieldPermission(this.connector.conn,this.profiles,this.metadata.profilesForPermissionSet,this.selectedObject);
+
+        // setFieldPermission
+        let profiles    = Object.values(this.profiles);
+		let dataList = [];
+		let colModel = [
+			{ title: 'Label', field: 'label', frozen: true, headerHozAlign: "center", minWidth: 200, tooltip: true},
+			{ title: 'Developer Name', field: 'api', frozen: true, headerHozAlign: "center", minWidth: 200, tooltip: true },
+            { title: 'Field Type', field: 'type', frozen: true, headerHozAlign: "center", minWidth: 100, tooltip: true },
+            { title: 'Required', field: 'isRequired', frozen: true, headerHozAlign: "center", minWidth: 20, hozAlign: "center",formatter:"tickCross",formatterParams:{allowEmpty:true},}
+		];
+        
+		profiles.forEach(p => {
+			
+			if (
+                (this.filter_profiles.length === 0 || this.filter_profiles.includes(p.id))
+                && (this.userLicenseFiltering_value === 'all' || this.userLicenseFiltering_value === p.userLicense)
+            ) {
+
+                let _typeIndex = colModel.findIndex(x => x.field === p.userLicense);
+                if(_typeIndex < 0){
+                    /* Create User License */
+                    colModel.push({
+                        title: p.userLicense, field: p.userLicense, columns: [],
+                        headerHozAlign: "center",  headerWordWrap: false, variableHeight: true,
+                        headerTooltip :p.userLicense, resizable: true, minWidth:120
+                    });
+                    _typeIndex = colModel.length - 1;
+                }
+
+                colModel[_typeIndex].columns.push(
+					{
+                        title: p.name,
+                        field: p.id,
+                        headerHozAlign: "center",
+                        hozAlign:"center",
+                        headerWordWrap: true,
+                        width: 80,
+                        headerSort:false
+                    }
+				);
+			}
+		});
+
+        Object.values(this.selectedObject.fields).sort((a, b) => a.name.localeCompare(b.name))
+        .filter(x => this.namespaceFiltering_isExcluded && (x.namespacePrefix == null || x.namespacePrefix === '') || !this.namespaceFiltering_isExcluded)
+        .forEach(field => {
+			let data = {};
+                data['api']     = field.name;
+                data['label']   = field.label;
+                data['type']    = field.type;
+			    data['isRequired'] = !field.isNillable;
+
+            profiles.forEach(p => {
+				let fp = p.fieldPermissions[field.name];
+
+				if (fp && fp.allowEdit) {
+					data[p.id] = 'RW';
+				} else if (fp && fp.allowRead) {
+					data[p.id] = 'R';
+				} else {
+					data[p.id] = '';
+				}
+			});
+
+            dataList.push(data);
+            
+		});
 
 
 		if (this.tableInstance) {

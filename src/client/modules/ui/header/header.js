@@ -7,6 +7,7 @@ export default class Header extends LightningElement {
     @api currentApplicationName = 'App Name';
     @api currentTabName = 'Home';
     @api applications;
+    @api isUserLoggedIn = false
 
     connectedCallback(){
         
@@ -14,7 +15,9 @@ export default class Header extends LightningElement {
 
     openLauncher = () => {
         console.log('openLauncher');
-        launcher.open()
+        launcher.open({
+            isUserLoggedIn:this.isUserLoggedIn
+        })
         .then((res) => {
             if(res){
                 this.dispatchEvent(new CustomEvent("newapp",{detail:res}));
@@ -30,5 +33,15 @@ export default class Header extends LightningElement {
         }}));
     }
 
+    deleteTab = (e) => {
+        e.stopPropagation();
+        this.dispatchEvent(new CustomEvent("tabdelete",{detail:{
+            id:e.currentTarget.closest('li').dataset.key
+        }}));
+    }
+
+    /** Getters */
+
+    
 
 }

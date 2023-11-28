@@ -1,39 +1,27 @@
-import { LightningElement } from "lwc";
+import { LightningElement,api} from "lwc";
 import ConnectionNewModal from "connection/connectionNewModal";
 import ConnectionDetailModal from "connection/connectionDetailModal";
 import ConnectionRenameModal from "connection/connectionRenameModal";
 
-import {isNotUndefinedOrNull} from 'shared/utils';
-import {getAllConnection,removeConnection} from 'connection/utils';
+import {isNotUndefinedOrNull,isElectronApp} from 'shared/utils';
+import {getAllConnection,removeConnection,connect,Connector} from 'connection/utils';
 
 const actions = [
     { label: 'Login', name: 'login' },
+    { label: 'Open Browser', name: 'openBrowser' },
     { label: 'See Details', name: 'seeDetails' },
     { label: 'Set Alias', name: 'setAlias' },
-    { label: 'Unset Alias', name: 'unsetAlias' }
+    { label: 'Remove', name: 'removeConnection' }
 ];
 
-const columns = [
-    { label: 'Company', fieldName: 'company', type: 'text',
-        cellAttributes: {
-            class: 'slds-text-title_bold slds-color-brand  slds-text-title_caps',
-        },
-    },
-    { label: 'Name', fieldName: 'name', type: 'text' },
-    { label: 'Alias', fieldName: 'alias', type: 'text' },
-    { label: 'User Name', fieldName: 'username', type: 'text' },
-    {
-        type: 'action',
-        typeAttributes: { rowActions: actions },
-    },
-];
+
 
 
 
 export default class App extends LightningElement {
 
-    columns = columns;
     data = [];
+    isLoading = false;
 
     async connectedCallback(){
         await this.setAllConnections();
@@ -47,7 +35,6 @@ export default class App extends LightningElement {
         .then(async (res) => {
             if(isNotUndefinedOrNull(res)){
                 // we can use window.jsforce.conn
-                console.log('Connection Added',res);
                 await this.setAllConnections();
             }
         });
@@ -61,11 +48,14 @@ export default class App extends LightningElement {
             case 'login':
                 this.login(row);
                 break;
+            case 'openBrowser':
+                this.openBrowser(row);
+                break;
             case 'seeDetails':
                 this.seeDetails(row);
                 break;
-            case 'unsetAlias':
-                this.unsetAlias(row);
+            case 'removeConnection':
+                this.removeConnection(row);
                 break;
             case 'setAlias':
                 this.setAlias(row);
@@ -82,45 +72,79 @@ export default class App extends LightningElement {
 
 
     setAllConnections = async () => {
-        // Browser version
+        // Browser & Electron version
+        this.isLoading = true;
         let records = await getAllConnection();
-
-        // Electron version
-
         this.data =  records;
+        this.isLoading = false;
     }
 
-    login = (row) => {
+    login = async (row) => {
+        let record = this.data.find(x => x.id == row.id);
+        let connection = await connect({connection:record});
+        this.dispatchEvent(new CustomEvent("login", { detail:{value:new Connector(record,connection)},bubbles: true }));
+    }
 
-        // Browser version
-        window.open(row.sfdxAuthUrl,'_blank');
-
-        // Express version
+    openBrowser = (row) => {
+        if(isElectronApp()){
+            // Express version
+            window.electron.ipcRenderer.invoke('org-openOrgUrl',row);
+        }else{
+            // Browser version
+            window.open(row.sfdxAuthUrl,'_blank');
+        }    
     }
 
     seeDetails = (row) => {
         ConnectionDetailModal.open(row)
         .then((result) => {
-            console.log(result);
         });
     }
 
     setAlias = (row) => {
         ConnectionRenameModal.open({
-            row:row,
-            alias:row.alias
+            oldAlias:row.alias,
+            username:row.username,
+            newAlias:row.alias
         })
         .then(async (result) => {
-            console.log(result);
             await this.setAllConnections();
         });
     }
 
-    unsetAlias = async (row) => {
-        var confirmed = window.confirm(`Are you sure you wish to remove this Alias : ${row.alias}?`)
+    removeConnection = async (row) => {
+        var confirmed = window.confirm(`Are you sure you wish to remove this Connection : ${row.alias}:${row.username} ?`)
         if(confirmed){
             await removeConnection(row.alias);
             await this.setAllConnections();
+        }
+    }
+
+
+    /** Getters */
+
+    get columns(){
+        let _columns = [
+            { label: 'Company', fieldName: 'company', type: 'text',
+                cellAttributes: {
+                    class: 'slds-text-title_bold slds-color-brand  slds-text-title_caps',
+                },
+            },
+            { label: 'Name', fieldName: 'name', type: 'text' },
+            { label: 'Alias', fieldName: 'alias', type: 'text' },
+            { label: 'DevHub', fieldName: 'isDevHub', type:'boolean', fixedWidth:90, _filter:'electron'},
+            { label: 'API', fieldName: 'instanceApiVersion', type: 'text', fixedWidth:90, _filter:'electron'},
+            { label: 'User Name', fieldName: 'username', type: 'text',initialWidth:400 },
+            {
+                type: 'action',
+                typeAttributes: { rowActions: actions },
+            },
+        ];
+
+        if(isElectronApp()){
+            return _columns.filter(x => x._filter == null || x._filter === 'electron');
+        }else{
+            return _columns.filter(x => x._filter == null || x._filter === 'web');
         }
     }
 

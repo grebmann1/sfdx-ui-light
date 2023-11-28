@@ -23,22 +23,11 @@
                 <div class="slds-page-header__col-actions slds-align-middle slds-p-bottom_none">
                     <div class="slds-page-header__controls">
                         <div class="slds-page-header__control">
-                            <lightning-combobox
-                                name="usernameOrAlias"
-                                label="User/Alias"
-                                variant="label-hidden"
-                                dropdown-alignment="right"
-                                value={usernameOrAlias}
-                                placeholder="Select User/Alias"
-                                disabled={isLoading}
-                                options={usernameOrAlias_options}
-                                onchange={usernameOrAlias_handleChange}
-                            ></lightning-combobox>
-                        </div>
-                        <div class="slds-page-header__control">
-                            <div class="slds-button-group" id="button-group-page-header-actions" role="group">
-                                <lightning-button-icon icon-name="utility:refresh" variant="border-filled" disabled={isRefreshDisabled} onclick={refreshMetadata}    label="Refresh"></lightning-button-icon>
-                            </div>
+                            <lightning-button-group>
+                                <lightning-button icon-name="utility:download"  disabled={isLoading} onclick={downloadPDF} label="PDF" ></lightning-button>
+                                <lightning-button icon-name="utility:download"  disabled={isLoading} onclick={downloadCSV} label="CSV" ></lightning-button>
+                                <lightning-button-icon icon-name="utility:refresh" disabled={isRefreshDisabled} onclick={refreshMetadata}    label="Refresh"></lightning-button-icon>
+                            </lightning-button-group>
                         </div>
                     </div>
                 </div>
@@ -94,14 +83,33 @@
                                         selected={isFiltering_profiles}
                                         onclick={profileFiltering_handleClick}
                                         variant={profileFilteringVariant}
+                                        disabled={isLoading}
                                     >
                                     </lightning-button-stateful>
                                 </div>
                             </div>
-                            
                         </li>
+
+                        <!-- EMPTY -->
+                        <li class="slds-page-header__detail-separator" style="width:100%;"></li>
+                        <!-- -->
+                        <!-- For Field Level Security-->
+                        <template lwc:if={isSObjectSelectorDisplayed}>
+                            <li class="slds-page-header__detail-block">
+                                <lightning-combobox
+                                    name="sobject"
+                                    label="Object Selection"
+                                    dropdown-alignment="right"
+                                    value={selectedObjectName}
+                                    placeholder="Select Object"
+                                    options={sobject_options}
+                                    onchange={sobject_handleChange}
+                                    disabled={isLoading}
+                                ></lightning-combobox>
+                            </li>
+                        </template>
+                        
                     </ul>
-                    <!-- Filters - END -->
                 </div>
             </div>
         </div>

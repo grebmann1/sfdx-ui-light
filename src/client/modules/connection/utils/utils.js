@@ -1,87 +1,81 @@
-import {isUndefinedOrNull} from 'shared/utils';
+import { isNotUndefinedOrNull } from 'shared/utils';
+import { isElectronApp } from 'shared/utils';
+
+import * as webInterface from './web';
+import * as electronInterface from './electron';
+import {Connector} from './mapping';
+
+export * from './mapping';
+
 
 export async function connect({alias,connection}){
-    if(isUndefinedOrNull(connection) && isUndefinedOrNull(alias)){
-        throw new Error('You need to provide the alias or the connection');
-    }
-
-    if(alias){
-        connection = getConnection(alias);
-    }
-    console.log('window.jsforce',window.jsforce);
-    
-    let host = window.location.origin;
-    const instance = await new window.jsforce.Connection({
-        instanceUrl : connection.instanceUrl,
-        accessToken : connection.accessToken,
-        proxyUrl: `${host}/proxy/`,
-        version:'55.0'
-    });
-    instance.alias = alias || connection.alias;
-    return instance;
+    // Only connect via the web interface
+   return await webInterface.connect({alias,connection});
 }
 
 export async function getConnection(alias){
-    let connections = await window.defaultStore.getItem('connections');
-    if(isUndefinedOrNull(connections)){
-        connections = [];
+    let connection =   isElectronApp()?await electronInterface.getConnection(alias):await webInterface.getConnection(alias);
+
+    let nameArray = (connection.alias || '').split('-');
+    let company = nameArray.length > 1 ?nameArray.shift() : '';
+    let name    = nameArray.join('-');
+
+    return {
+        ...connection,
+        company,
+        name,
     }
-    return connections.find(x => x.alias === alias);
 }
 
 export async function addConnection(data,connection){
-    let connections = await window.defaultStore.getItem('connections');
-    if(isUndefinedOrNull(connections)){
-        connections = [];
-    }
-    // Remove the duplicate alias
-    connections = connections.filter(x => x.alias !== data.alias);
-    connections.push(data);
-    // Order Connections
-    connections = connections.sort((a, b) => a.alias.localeCompare(b.alias));
-
-    window.connections[data.alias] = connection;
-    await window.defaultStore.setItem('connections',connections);
+   if(isElectronApp()) throw new Error ('Only working for Web');
+   return await webInterface.addConnection(data,connection);
 }
 
-export async function renameConnection(oldAlias,newAlias){
-    let connections = await window.defaultStore.getItem('connections');
-    if(isUndefinedOrNull(connections)){
-        connections = [];
-    }
-    // Switch Name
-    connections.forEach(conn => {
-        if(conn.alias === oldAlias){
-            conn.alias = newAlias;
-        }
-    })
-    // Order Connections
-    connections = connections.sort((a, b) => a.alias.localeCompare(b.alias));
-    // Switch connector
-    window.connections[newAlias] = window.connections[oldAlias];
-    delete window.connections[oldAlias];
-
-    await window.defaultStore.setItem('connections',connections);
+export async function renameConnection(params){
+    return await isElectronApp()?electronInterface.renameConnection(params):webInterface.renameConnection(params);
 }
 
 export async function removeConnection(alias){
-    let connections = await window.defaultStore.getItem('connections');
-    if(isUndefinedOrNull(connections)){
-        connections = [];
-    }
-    // Remove the alias
-    connections = connections.filter(x => x.alias !== alias);
-    // Switch connector
-    delete window.connections[alias];
-
-    await window.defaultStore.setItem('connections',connections);
+    return await isElectronApp()?electronInterface.removeConnection(alias):webInterface.removeConnection(alias);
 }
 
 export async function getAllConnection(){
-    let connections = await window.defaultStore.getItem('connections');
-    if(isUndefinedOrNull(connections)){
-        connections = [];
+    let connections =  isElectronApp()?await electronInterface.getAllConnection():await webInterface.getAllConnection();
+    console.log('connections',connections);
+    return connections.map(x => {
+        let nameArray = (x.alias || '').split('-');
+        let company = nameArray.length > 1 ?nameArray.shift() : '';
+        let name    = nameArray.join('-');
+        return {
+            ...x,
+            company,
+            name,
+        }
+    })
+}
+
+
+export async function getExistingSession(){
+    if(sessionStorage.getItem("currentConnection")){
+        try{
+            let header = JSON.parse(sessionStorage.getItem("currentConnection"));
+
+            let connection = await connect({connection:header});
+            return new Connector(header,connection)
+        }catch(e){
+            console.error(e);
+            return null;
+        }
     }
-    console.log('getAllConnection',connections);
-    return connections;
+
+    return null;
+}
+
+export async function saveSession(value){
+    sessionStorage.setItem("currentConnection",JSON.stringify(value));
+}
+
+export async function removeSession(value){
+    sessionStorage.removeItem("currentConnection");
 }

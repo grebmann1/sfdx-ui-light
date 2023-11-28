@@ -1,5 +1,5 @@
 <template>
-
+     
     <!-- Header -->
     <ui-header 
         current-application-name="Org"
@@ -7,18 +7,33 @@
         applications={applications}
         onnewapp={handleNewApp}
         ontabchange={handleTabChange}
-    ></ui-header>
+        ontabdelete={handleTabDelete}
+        is-user-logged-in={isUserLoggedIn}
+    >
+        <!-- Logged In User-->
+        <template lwc:if={isUserLoggedIn}>
+            <ui-notify>
+                <span class="slds-icon_container slds-icon-utility-user slds-m-right_x-small" title="Description of icon when needed">
+                    <svg class="slds-icon slds-icon_x-small" aria-hidden="true">
+                        <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#user"></use>
+                    </svg>
+                </span>
+                <h2>{loggedInMessage}<a href="#" onclick={handleLogout}>Log out</a></h2>
+            </ui-notify>
+        </template>
+
+    </ui-header>
 
     <!-- Page -->
-    <div class="app-container">
+    <div class={dynamicAppContainerClass}>
         <div class="slds-template_default  forceBrandBand">
             <section class="section">
-                <div class="container">
+                <div class="container" onlogin={handleLogin}>
                     <!-- Feature - Start -->
                     <!--<connection-app home="test"></connection-app>-->
                     <template for:each={applications} for:item="application">
                         <div key={application.id} class={application.classVisibility}>
-                            <lwc:component  lwc:is={application.constructor}></lwc:component>
+                            <lwc:component  lwc:is={application.constructor} lwc:spread={application.attributes}></lwc:component>
                         </div>
                     </template>
                     <!-- Feature - End -->

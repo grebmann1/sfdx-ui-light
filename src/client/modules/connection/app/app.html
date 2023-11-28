@@ -30,7 +30,10 @@
         </div>
         <div class="slds-page-header__row slds-page-header__row_gutters">
             <div class="slds-page-header__col-details">
-                <div class="slds-page-header__detail-row" style="display:block;">
+                <div class="slds-page-header__detail-row slds-is-relative min-height-200" style="display:block; ">
+                    <template lwc:if={isLoading}>
+                        <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                    </template>
                     <!-- Data Table -->
                     <lightning-datatable
                             data={data}
@@ -39,6 +42,7 @@
                             onrowaction={handleRowAction}
                             hide-checkbox-column
                     ></lightning-datatable>
+                    
                 </div>
             </div>
         </div>

@@ -4,15 +4,12 @@
   "main": "src/electron/main.js",
   "scripts": {
     "start": "lwr start",
-    "start:electron:dev": "NODE_ENV=development electron .",
     "start:electron:stage": "NODE_ENV=staging electron .",
     "start:electron:prod": "NODE_ENV=production electron .",
     "start:client": "serve site",
+    "start:dev:client": "NODE_ENV=development node src/client/server-dev.js",
+    "start:dev:electron": "NODE_ENV=development electron .",
     "start:heroku": "NODE_ENV=production node src/client/server-prod.js",
-    "build:client": "lwr build --clean",
-    "dev": "run-p --race dev:client start:electron:dev",
-    "dev:client": "NODE_ENV=development run-p --race dev:client:copy dev:client:start",
-    "dev:client:start": "NODE_ENV=development node src/client/server-dev.js",
     "package": "electron-forge package",
     "make": "electron-forge make --platform darwin",
     "clean": "rm -r __lwr_cache__ site __skip_directory_creation__",
@@ -41,6 +38,7 @@
     "update-electron-app": "^3.0.0"
   },
   "devDependencies": {
+    "@salesforce/cli":"2.17.14",
     "@electron-forge/cli": "^6.4.2",
     "@electron-forge/maker-deb": "^6.4.2",
     "@electron-forge/maker-rpm": "^6.4.2",

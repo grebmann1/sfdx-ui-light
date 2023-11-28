@@ -1,17 +1,11 @@
 const { app,nativeImage,protocol}   = require('electron');
-const path                  = require('path');
+const path                          = require('path');
 const {getOrCreateMainWindow}   = require('./utils/window.js');
 const { ipcMainManager }        = require('./utils/ipc.js');
-const Store                     = require('./utils/store.js');
 const ORG_CONNECTOR             = require('./plugins/org/connector.js');
-const JSFORCE_CONNECTOR         = require('./plugins/jsforce/connector.js');
 
 /** Auto Updater **/
-
 const isDev = !app.isPackaged;
-const IpcEvents = [
-  'org'
-];
 
 //const loadURL = serve({directory: 'site'});
 
@@ -33,9 +27,7 @@ const IpcEvents = [
 /** Store **/
 
 /** Init Listeners */
-ipcMainManager.initListeners(IpcEvents);
 new ORG_CONNECTOR.connector().enableEventListeners(ipcMainManager);
-new JSFORCE_CONNECTOR.connector().enableEventListeners(ipcMainManager);
 
 if(isDev) {
     require('electron-reload')(__dirname, {
@@ -46,12 +38,7 @@ if(isDev) {
 }
 
 
-const store = new Store({
-    configName: 'app-settings',
-    defaults: {
-      windowBounds: { width: 800, height: 600 }
-    }
-});
+
 
 app.whenReady().then(async () => {
     /** Custom image */
@@ -62,11 +49,11 @@ app.whenReady().then(async () => {
 
     /** Main Window **/
     console.log('process.en.NODE_ENV',process.env.NODE_ENV);
-    let mainWindow = getOrCreateMainWindow({store});
+    let mainWindow = getOrCreateMainWindow();
     if (process.env.NODE_ENV === 'development') {
         mainWindow.loadURL('http://localhost:3000/');
     } else {
-        await loadURL(mainWindow);
+        mainWindow.loadURL('https://sfdx-ui-light-e2ea380bf201.herokuapp.com/');
     }
 });
 

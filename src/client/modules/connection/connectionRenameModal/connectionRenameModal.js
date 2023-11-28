@@ -5,8 +5,9 @@ import {renameConnection} from 'connection/utils';
 
 export default class OrgRenameModal extends LightningModal {
 
-    @api alias;
-    @api row;
+    @api newAlias;
+    @api oldAlias;
+    @api username;
 
 
     validateForm = () => {
@@ -22,7 +23,11 @@ export default class OrgRenameModal extends LightningModal {
     }
 
     renameAlias = async () => {
-        await renameConnection(this.row.alias,this.alias);
+        await renameConnection({
+            newAlias:this.newAlias,
+            oldAlias:this.oldAlias,
+            username:this.username
+        });
     }
 
 
@@ -45,7 +50,7 @@ export default class OrgRenameModal extends LightningModal {
     /** events **/
 
     alias_onChange = (e) => {
-        this.alias = e.target.value;
+        this.newAlias = e.target.value;
     }
 
 }
