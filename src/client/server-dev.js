@@ -11,7 +11,7 @@ const SERVER_MODE = "development" === process.env.NODE_ENV ? "dev" : "prod";
 getOAuth2Instance = (params) => {
     return new jsforce.OAuth2({
         // you can change loginUrl to connect to sandbox or prerelease env.
-        clientId : '3MVG9_kZcLde7U5oNdaqndT3T9qa54eaA.ycC6APuOkYzRP286pPeOvwOqAQ2ue7l5ejNAxPYj4xTbWn3zS6Y',
+        clientId : process.env.CLIENT_ID,
         clientSecret : process.env.CLIENT_SECRET,
         redirectUri : params.redirectUri,
         loginUrl : params.loginUrl
@@ -25,7 +25,9 @@ const lwrServer = createServer({
 
 const app = lwrServer.getInternalServer("express");
 app.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));
-
+app.get('/config',function(req,res){
+    res.json({clientId:process.env.CLIENT_ID});
+})
 app.get('/oauth2/callback', function(req, res) {
     var code = req.query.code;
     var states = req.query.state.split('#');

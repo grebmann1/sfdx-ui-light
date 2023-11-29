@@ -40,26 +40,21 @@
         <script src="$libsDir/jsforce/jsforce.js"></script>
         <script src="$libsDir/localforage/localforage.min.js"></script>
         <script>
+            
             let host = window.location.origin;
-
-            window.jsforceSettings = {
-                clientId: '3MVG9_kZcLde7U5oNdaqndT3T9qa54eaA.ycC6APuOkYzRP286pPeOvwOqAQ2ue7l5ejNAxPYj4xTbWn3zS6Y',
-                redirectUri: `${host}/oauth2/callback`,
-                proxyUrl: `${host}/proxy/`
-            };
-
-            jsforce.browser.init(window.jsforceSettings); // Reset
-            window.jsforce.browser.on('connect', async (connection) =>{
-                // Not used
-                console.log('on connect event !',connection);
-                let identity = await connection.identity();
-                console.log(identity);
-            })
-            
-
-            
-            window.jsforce = jsforce;
             window.connections = {}; // use for faster connection, during live processing
+            fetch(`${host}/config`)
+            .then(response => response.json())
+            .then(config => {
+                window.jsforceSettings = {
+                    clientId: config.clientId,
+                    redirectUri: `${host}/oauth2/callback`,
+                    proxyUrl: `${host}/proxy/`
+                };
+                jsforce.browser.init(window.jsforceSettings); // Reset
+            })         
+            window.jsforce = jsforce;
+            
 
             /** Local Storage Settings **/
             window.defaultStore = localforage.createInstance({name: "defaultStore"});

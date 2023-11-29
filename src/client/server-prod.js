@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express =  require("express");
 const handler = require('serve-handler');
 const serveJson = require('../../site/serve.json');
@@ -12,7 +13,7 @@ const PORT = parseInt(process.env.PORT || "3000", 10);
 getOAuth2Instance = (params) => {
   return new jsforce.OAuth2({
       // you can change loginUrl to connect to sandbox or prerelease env.
-      clientId : '3MVG9_kZcLde7U5oNdaqndT3T9qa54eaA.ycC6APuOkYzRP286pPeOvwOqAQ2ue7l5ejNAxPYj4xTbWn3zS6Y',
+      clientId : process.env.CLIENT_ID,
       clientSecret : process.env.CLIENT_SECRET,
       redirectUri : params.redirectUri,
       loginUrl : params.loginUrl
@@ -38,7 +39,9 @@ app.get('/oauth2/callback', function(req, res) {
       })}`);
   });
 });
-
+app.get('/config',function(req,res){
+  res.json({clientId:process.env.CLIENT_ID});
+})
 app.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));
 app.get("/*", (req, res) => handler(req, res, {public: "site",...serveJson}));
 
