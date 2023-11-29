@@ -19,13 +19,6 @@ getOAuth2Instance = (params) => {
   });
 }
 
-app.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));
-app.get("/*", (req, res) => handler(req, res, {public: "site",...serveJson}));
-app.listen(PORT, () => {
-    
-    console.log(`✅ App running in PROD mode ${PORT}`);
-})
-
 app.get('/oauth2/callback', function(req, res) {
   var code = req.query.code;
   var states = req.query.state.split('#');
@@ -45,6 +38,18 @@ app.get('/oauth2/callback', function(req, res) {
       })}`);
   });
 });
+
+app.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));
+app.get("/*", (req, res) => handler(req, res, {public: "site",...serveJson}));
+
+
+
+app.listen(PORT, () => {
+    
+    console.log(`✅ App running in PROD mode ${PORT}`);
+})
+
+
 
 /*
 const handler = require('serve-handler');
