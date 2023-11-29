@@ -3955,6 +3955,7 @@
       var authzUrl = oauth2.getAuthorizationUrl({
         response_type: 'code',
         scope : options.scope,
+        prompt:'login consent',
         state: state +`#${qs.stringify({
           loginUrl:oauth2.loginUrl,
           redirectUri:oauth2.redirectUri
