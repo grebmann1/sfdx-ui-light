@@ -75,6 +75,7 @@ export default class App extends LightningElement {
         // Browser & Electron version
         this.isLoading = true;
         let records = await getAllConnection();
+        console.log('records',records);
         this.data =  records;
         this.isLoading = false;
     }

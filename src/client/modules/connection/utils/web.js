@@ -21,11 +21,8 @@ export async function connect({alias,settings}){
     }
     
     const connection = await new window.jsforce.Connection(params);
-
-    return {
-        ...connection,
-        alias:alias || settings.alias
-    };
+          connection.alias = alias || settings.alias
+    return connection;
 }
 
 export async function getConnection(alias){

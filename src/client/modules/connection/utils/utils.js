@@ -11,6 +11,8 @@ export * from './mapping';
 export async function connect({alias,settings}){
     // Only connect via the web interface
    let connection = await webInterface.connect({alias,settings});
+
+   console.log('connection',connection);
    /** Get Username **/
    let identity = await connection.identity();
    let header = {};
@@ -20,7 +22,7 @@ export async function connect({alias,settings}){
        header.userInfo = identity;
    }
 
-   return new Connector(header,newConnection)
+   return new Connector(header,connection)
 }
 
 export async function getConnection(alias){
@@ -71,8 +73,7 @@ export async function getExistingSession(){
         try{
             let settings = JSON.parse(sessionStorage.getItem("currentConnection"));
 
-            let connection = await connect({settings});
-            return new Connector(settings,connection)
+            return await connect({settings});
         }catch(e){
             console.error(e);
             return null;
@@ -92,6 +93,10 @@ export async function removeSession(value){
 
 /** Session Connection **/
 
+export async function oauth(){
+    
+}
+
 export async function directConnection(sessionId,serverUrl){
     console.log('sessionId,serverUrl',sessionId,serverUrl);
     let params = {
@@ -104,6 +109,7 @@ export async function directConnection(sessionId,serverUrl){
     
     let connection = await new window.jsforce.Connection(params);
 
+    console.log('connection',connection);
     /** Get Username **/
     let identity = await connection.identity();
     let header = {};

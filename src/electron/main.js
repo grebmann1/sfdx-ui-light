@@ -53,7 +53,7 @@ app.whenReady().then(async () => {
     if (process.env.NODE_ENV === 'development') {
         mainWindow.loadURL('http://localhost:3000/');
     } else {
-        mainWindow.loadURL('https://sfdx-ui-light-e2ea380bf201.herokuapp.com/');
+        mainWindow.loadURL('https://sf-toolkit.com/');
     }
 });
 

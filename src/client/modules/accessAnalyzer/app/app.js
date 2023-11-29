@@ -74,6 +74,7 @@ export default class App extends LightningElement {
     loadMetadata = async (refresh = false ) => {
         // Only run when a connection is available
         if(!this.connector)return;
+        console.log('this.connector.conn',this.connector.conn)
 
         this.isLoading = true;
         var _metadata;

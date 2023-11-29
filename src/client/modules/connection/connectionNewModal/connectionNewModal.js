@@ -85,18 +85,9 @@ export default class ConnectionNewModal extends LightningModal {
 
     web_oauth = async () => {
         console.log('web_oauth');
-        window.jsforce.browser.login({
-                ...window.jsforceSettings,
-                loginUrl:this.selectedDomain === 'custom'?this.customDomain:this.selectedDomain,
-                version:process.env.VERSION || '55.0',
-                scope:'id api web openid sfap_api refresh_token'
-            },(_,res) => {
-                if(res.status === 'cancel'){
-                    this.close(null)
-                }
-            }
-        );
+       
         window.jsforce.browser.on('connect', async (connection) =>{
+            console.log('connect');
             const {accessToken,instanceUrl,loginUrl,refreshToken,version} = connection;
             let nameArray = this.alias.split('-');
             let companyName = nameArray.length > 1 ?nameArray.shift() : '';
@@ -121,6 +112,19 @@ export default class ConnectionNewModal extends LightningModal {
 
             this.close({alias:this.alias,connection});
         });
+
+        window.jsforce.browser.login({
+            ...window.jsforceSettings,
+            loginUrl:this.selectedDomain === 'custom'?this.customDomain:this.selectedDomain,
+            version:process.env.VERSION || '55.0',
+            scope:'id api web openid sfap_api refresh_token'
+        },(_test,res) => {
+            console.log('res',res,_test);
+            if(res.status === 'cancel'){
+                this.close(null)
+            }
+        }
+    );
     }
 
 
