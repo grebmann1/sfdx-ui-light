@@ -82,8 +82,8 @@ export default class App extends LightningElement {
 
     login = async (row) => {
         let settings = this.data.find(x => x.id == row.id);
-        let connection = await connect({settings});
-        this.dispatchEvent(new CustomEvent("login", { detail:{value:new Connector(settings,connection)},bubbles: true }));
+        let connector = await connect({settings});
+        this.dispatchEvent(new CustomEvent("login", { detail:{value:connector},bubbles: true }));
     }
 
     openBrowser = (row) => {
