@@ -1,6 +1,6 @@
 import { isNotUndefinedOrNull } from 'shared/utils';
 import { isElectronApp } from 'shared/utils';
-
+import constant from "global/constant";
 import * as webInterface from './web';
 import * as electronInterface from './electron';
 import {Connector} from './mapping';
@@ -125,7 +125,7 @@ export async function oauth({alias,loginUrl},callback){
     window.jsforce.browserClient.login({
         ...window.jsforceSettings,
         loginUrl,
-        version:window.version || '55.0',
+        version:constant.apiVersion,
         scope:'id api web openid sfap_api refresh_token'
     },(_,res) => {
         if(res.status === 'cancel'){
@@ -142,7 +142,7 @@ export async function directConnection(sessionId,serverUrl){
         sessionId   : sessionId,
         serverUrl   : serverUrl,
         proxyUrl    : `${window.location.origin}/proxy/`,
-        version     : window.version || '55.0'
+        version     : constant.apiVersion
     }
     
     let connection = await new window.jsforce.Connection(params);

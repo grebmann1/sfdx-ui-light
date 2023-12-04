@@ -42,7 +42,7 @@ export default class App extends LightningElement {
 
     /** Events */
 
-    handleLogin = (e) => {
+    handleLogin = async (e) => {
         console.log('handleLogin',e.detail.value);
         this.connector = e.detail.value;
         const { instanceUrl,accessToken,version,refreshToken } = this.connector.conn;
@@ -53,6 +53,13 @@ export default class App extends LightningElement {
             instanceApiVersion:version,
             refreshToken
         });
+        if(this.applications.filter(x => x.component == 'org/app').length == 0){
+            await this.loadModule({
+                component:'org/app',
+                name:"Org",
+                isDeletable:false,
+            });
+        }
     }
 
     handleLogout = (e) => {

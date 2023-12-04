@@ -24,7 +24,7 @@ export default class App extends LightningElement {
 
     /* Filters */
     displayFilterContainer = false;
-    report = 'PermissionGroups';
+    report = 'Profile';
     filter_profiles = [];
     filter_permissionSets = [];
     namespaceFiltering_value = 'excluded';
