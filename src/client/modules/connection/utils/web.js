@@ -14,7 +14,7 @@ export async function connect({alias,settings}){
         instanceUrl : settings.instanceUrl,
         accessToken : settings.accessToken,
         proxyUrl    : `${window.location.origin}/proxy/`,
-        version     : window.jsforceSettings.version || '55.0'
+        version     : window.version || '55.0'
     }
     if(settings.refreshToken){
         params.refreshToken = settings.refreshToken;

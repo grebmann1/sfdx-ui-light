@@ -125,7 +125,7 @@ export async function oauth({alias,loginUrl},callback){
     window.jsforce.browserClient.login({
         ...window.jsforceSettings,
         loginUrl,
-        version:process.env.VERSION || '55.0',
+        version:window.version || '55.0',
         scope:'id api web openid sfap_api refresh_token'
     },(_,res) => {
         if(res.status === 'cancel'){
@@ -142,7 +142,7 @@ export async function directConnection(sessionId,serverUrl){
         sessionId   : sessionId,
         serverUrl   : serverUrl,
         proxyUrl    : `${window.location.origin}/proxy/`,
-        version     : '55.0'
+        version     : window.version || '55.0'
     }
     
     let connection = await new window.jsforce.Connection(params);
