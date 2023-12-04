@@ -2,7 +2,9 @@ import { LightningElement,api} from "lwc";
 import {decodeError,getAllOrgs,chunkArray,chunkPromises,isEmpty,groupBy,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull} from 'shared/utils';
 import {TabulatorFull as Tabulator} from 'tabulator-tables';
 import ModalProfileFilter from "accessAnalyzer/modalProfileFilter";
-import {loadMetadata_async,setFieldPermission} from "shared/sf";
+import ModalPermissionSetFilter from "accessAnalyzer/modalPermissionSetFilter";
+
+import { loadMetadata_async,setFieldPermission } from "shared/sf";
 import { fileFormatter } from 'accessAnalyzer/utils';
 
 export default class App extends LightningElement {
@@ -12,7 +14,7 @@ export default class App extends LightningElement {
 
     /* Metadata */
     metadata;
-    profiles;
+    permissionSets;
 
     /* Metadata Loaded */
     isMetadataReady = false;
@@ -21,8 +23,10 @@ export default class App extends LightningElement {
 
 
     /* Filters */
-    report = 'CustomObject';
+    displayFilterContainer = false;
+    report = 'PermissionGroups';
     filter_profiles = [];
+    filter_permissionSets = [];
     namespaceFiltering_value = 'excluded';
     userLicenseFiltering_value = 'all';
     selectedObject;
@@ -40,7 +44,6 @@ export default class App extends LightningElement {
         window.removeEventListener('resize',this.tableResize);
     }
 
-
     tableResize = () => {
         runActionAfterTimeOut(null,(param) => {
             if(isNotUndefinedOrNull(this.tableInstance)){
@@ -49,23 +52,18 @@ export default class App extends LightningElement {
         });
     }
 
-    
 
-    cacheMetadata = async () => {
-        let key = `${this.connector.header.alias}-metadata`;
-        await window.defaultStore.setItem(key,{
-            ...this.metadata,
-            profiles:this.profiles
-        });
-    }
 
     loadMetadata_withNameSpaceCallback = async (res) => {
         const {entityAccess} = res;
+        console.log('res',res);
         // Assign Entity Access
-        Object.keys(this.profiles).forEach(key => {
-            this.profiles[key].classAccesses    = this.profiles[key].classAccesses.concat(entityAccess[key].classAccesses);
-            this.profiles[key].pageAccesses     = this.profiles[key].pageAccesses.concat(entityAccess[key].pageAccesses);
-            this.profiles[key].appAccesses      = this.profiles[key].appAccesses.concat(entityAccess[key].appAccesses);
+        Object.keys(this.permissionSets).forEach(key => {
+            if(this.permissionSets.hasOwnProperty(key) && entityAccess.hasOwnProperty(key)){
+                this.permissionSets[key].classAccesses    = this.permissionSets[key].classAccesses.concat(entityAccess[key].classAccesses);
+                this.permissionSets[key].pageAccesses     = this.permissionSets[key].pageAccesses.concat(entityAccess[key].pageAccesses);
+                this.permissionSets[key].appAccesses      = this.permissionSets[key].appAccesses.concat(entityAccess[key].appAccesses);
+            }
         });
         this.isMetadataReady = true;
         await this.cacheMetadata();
@@ -83,6 +81,9 @@ export default class App extends LightningElement {
             if(isNotUndefinedOrNull(this.connector.header.alias)){
                 let key = `${this.connector.header.alias}-metadata`;
                 _metadata = await window.defaultStore.getItem(key);
+                if(isUndefinedOrNull(_metadata.createdDate) || Date.now() > _metadata.createdDate + 2 * 60 * 60 * 1000){
+                    refresh = true; // We force the refresh
+                }
             }
             if(!_metadata || refresh){
                 _metadata = await loadMetadata_async(this.connector.conn,this.loadMetadata_withNameSpaceCallback);
@@ -92,15 +93,18 @@ export default class App extends LightningElement {
             _metadata = await loadMetadata_async(this.connector.conn,this.loadMetadata_withNameSpaceCallback);
         }
         
-        let {profiles,...metadata} = _metadata;
-        this.profiles = profiles;
+        let {permissionSets,...metadata} = _metadata;
+        this.permissionSets = permissionSets;
         this.metadata = metadata;
         
-        // Pre filter the profiles
+        // Pre filter the permissionSets
         if(this.filter_profiles.length == 0){
-            this.filter_profiles = Object.values(this.profiles).filter(x => [
+            this.filter_profiles = Object.values(this.permissionSets)
+            .filter(x => [
                 'Salesforce','Guest License','Salesforce Platform','Customer Community Plus','Customer Community Plus Login','Customer Community Login','Customer Community'
-            ].includes(x.userLicense)).map(x => x.id);
+            ]
+            .includes(x.userLicense) && x.type === 'Profile')
+            .map(x => x.id);
         }
 
         this.displayReport();
@@ -113,6 +117,15 @@ export default class App extends LightningElement {
 
     refreshMetadata = async () => {
         this.loadMetadata(true);
+    }
+
+    cacheMetadata = async () => {
+        let key = `${this.connector.header.alias}-metadata`;
+        await window.defaultStore.setItem(key,{
+            ...this.metadata,
+            permissionSets:this.permissionSets,
+            createdDate:Date.now()
+        });
     }
 
     downloadCSV = async () => {
@@ -148,16 +161,22 @@ export default class App extends LightningElement {
         return this.filter_profiles.length > 0;
     }
 
+    get isFiltering_permissionSets(){
+        return this.filter_permissionSets.length > 0;
+    }
+
     get report_options(){
         return [
+
+            {label:'General Permissions',value:'Profile'},
+            {label:'Permission Groups',value:'PermissionGroups'},
             {label:'Object Permissions',value:'CustomObject'},
-            {label:'Profile Permissions',value:'Profile'},
             {label:'Field-Level Security',value:'FieldLevelSecurity'},
-            {label:'Page Layout Assignment',value:'PageLayout'},
             {label:'Apex Class Access',value:'ApexClass'},
             {label:'VisualForce Page Access',value:'ApexPage'},
             {label:'Tab Settings',value:'TabSettings'},
-            //{label:'App Settings',value:'AppSettings'}
+            {label:'App Settings',value:'AppSettings'},
+            {label:'Page Layout Assignment',value:'PageLayout'}
         ];
     }
 
@@ -170,8 +189,8 @@ export default class App extends LightningElement {
 
     get userLicenseFiltering_options(){
         let options = [{label:'All',value:'all'}];
-        if(isNotUndefinedOrNull(this.profiles)){
-            options = options.concat(Object.keys(groupBy(Object.values(this.profiles),'userLicense')).map(x => ({label:x,value:x})));
+        if(isNotUndefinedOrNull(this.permissionSets)){
+            options = options.concat(Object.keys(groupBy(Object.values(this.permissionSets),'userLicense')).map(x => ({label:x,value:x})));
         }
         return options;
     }
@@ -187,9 +206,21 @@ export default class App extends LightningElement {
 
     /** Filters */
 
+    get filteringVariant(){
+        return this.displayFilterContainer?'brand':'neutral';
+    }
+    
+    get filtering_title(){
+        return this.displayFilterContainer?'Hide Filter':'Show Filter';
+    }
+
+    filtering_handleClick = (e) => {
+        this.displayFilterContainer = !this.displayFilterContainer;
+    }
+
     profileFiltering_handleClick = (e) => {
         ModalProfileFilter.open({
-            profiles:Object.values(this.profiles),
+            profiles:Object.values(this.permissionSets).filter(x => x.type === 'Profile'),
             currentConnection:this.connector.conn,
             selected:this.filter_profiles
         }).then(res => {
@@ -203,6 +234,25 @@ export default class App extends LightningElement {
     get profileFilteringVariant(){
         return this.isFiltering_profiles?'brand':'neutral'
     }
+
+
+    permissionSetsFiltering_handleClick = (e) => {
+        ModalPermissionSetFilter.open({
+            permissionSets:Object.values(this.permissionSets).filter(x => x.type !== 'Profile'),
+            currentConnection:this.connector.conn,
+            selected:this.filter_permissionSets
+        }).then(res => {
+            if(res?.action === 'applyFilter'){
+                this.filter_permissionSets = res.filter || [];
+                this.displayReport();
+            }
+        })
+    }
+
+    get permissionSetsFilteringVariant(){
+        return this.isFiltering_permissionSets?'brand':'neutral';
+    }
+    
 
     namespaceFiltering_handleChange = (e) => {
         this.namespaceFiltering_value = e.detail.value;
@@ -275,10 +325,13 @@ export default class App extends LightningElement {
             case 'AppSettings':
                 await this.setGenericReport(Object.values(this.metadata.appDefinitions),'appAccesses','name', [
                         { title: 'Tab Name', field: 'label', frozen: true, headerHozAlign: "center", resizable: false,responsive:0,headerFilter:"input"},
-                        { title: 'DeveloperName', field: 'api', frozen: true, headerHozAlign: "center", resizable: false, tooltip: true }
+                        { title: 'DeveloperName', field: 'name', frozen: true, headerHozAlign: "center", resizable: false, tooltip: true }
                     ],
                     (x) => {return x.visibility === 'DefaultOn';}
                 );
+            break;
+            case 'PermissionGroups':
+                await this.setPermissionGroupReport();
             break;
             case 'PageLayout':
                 await this.setLayoutAssignment();
@@ -295,34 +348,38 @@ export default class App extends LightningElement {
 
     /** Table Creation **/
 
-    setGenericReport = async (records,listKey,profileKey = 'name',cols,formatterMethod) => {
+    getBasicFilter = (p) => {
+        return (this.filter_profiles.includes(p.id) || this.filter_permissionSets.includes(p.id))
+        && (this.userLicenseFiltering_value === 'all' || this.userLicenseFiltering_value === p.userLicense)
+    }
 
-        let profilesKeys    = Object.keys(this.profiles);
+    setGenericReport = async (records,listKey,permissionKey = 'name',cols,formatterMethod) => {
+
+        let permissionSets    = Object.values(this.permissionSets);
 		let dataList = [];
 
 		let colModel = cols;
         
-		profilesKeys.forEach(profileId => {
-            let profile = this.profiles[profileId];
+		permissionSets.forEach(permission => {
+            
             if (
-                (this.filter_profiles.length === 0 || this.filter_profiles.includes(profileId))
-                && (this.userLicenseFiltering_value === 'all' || this.userLicenseFiltering_value === profile.userLicense)
+                this.getBasicFilter(permission)
             ){
-                let _typeIndex = colModel.findIndex(x => x.field === profile.userLicense);
+                let _typeIndex = colModel.findIndex(x => x.field === permission.userLicense);
                 if(_typeIndex < 0){
                     /* Create User License */
                     colModel.push({
-                            title: profile.userLicense, field: profile.userLicense, columns: [], 
+                            title: permission.userLicense, field: permission.userLicense, columns: [], 
                             headerHozAlign: "center",  headerWordWrap: false, variableHeight: true, 
-                            headerTooltip :profile.userLicense, resizable: true, minWidth:120
+                            headerTooltip :permission.userLicense, resizable: true, minWidth:120
                     });
                     _typeIndex = colModel.length - 1;
                 }
 
 				colModel[_typeIndex].columns.push(
 					{
-                        title: profile.name,
-                        field: profile.id,
+                        title: permission.name,
+                        field: permission.id,
                         headerHozAlign: "center",
                         hozAlign:"center",
                         headerWordWrap: true,
@@ -344,11 +401,10 @@ export default class App extends LightningElement {
                 data['name']    = item.name;
                 data['namespacePrefix'] = item.namespacePrefix || 'Default';
 
-                profilesKeys.forEach(profileId => {
-                    let profile = this.profiles[profileId];
-                    let index = profile[listKey].findIndex(x => x[profileKey] === item.name);
+                permissionSets.forEach(permission => {
+                    let index = permission[listKey].findIndex(x => x[permissionKey] === item.name);
                     if(index > -1){
-                        data[profileId] = formatterMethod(profile[listKey][index]) // Want to keep empty if doesn't exist instead of false
+                        data[permission.id] = formatterMethod(permission[listKey][index]) // Want to keep empty if doesn't exist instead of false
                     }
                 });
 
@@ -376,7 +432,7 @@ export default class App extends LightningElement {
 
     setLayoutAssignment = async () => {
 
-        let profiles    = Object.values(this.profiles);
+        let permissionSets    = Object.values(this.permissionSets);
         let dataList = [];
 
         let colModel = [
@@ -384,26 +440,25 @@ export default class App extends LightningElement {
             { title: 'Record Type Label', field: 'recordTypeLabel', frozen: true, headerHozAlign: "center", resizable: false, tooltip: true },
         ];
 
-        profiles.forEach(p => {
+        permissionSets.forEach(permission => {
             if (
-                (this.filter_profiles.length === 0 || this.filter_profiles.includes(p.id))
-                && (this.userLicenseFiltering_value === 'all' || this.userLicenseFiltering_value === p.userLicense)
+                this.getBasicFilter(permission)
             ){
-                let _typeIndex = colModel.findIndex(x => x.field === p.userLicense);
+                let _typeIndex = colModel.findIndex(x => x.field === permission.userLicense);
                 if(_typeIndex < 0){
                     /* Create User License */
                     colModel.push({
-                        title: p.userLicense, field: p.userLicense, columns: [],
+                        title: permission.userLicense, field: permission.userLicense, columns: [],
                         headerHozAlign: "center",  headerWordWrap: false, variableHeight: true,
-                        headerTooltip :p.userLicense, resizable: true, minWidth:120
+                        headerTooltip :permission.userLicense, resizable: true, minWidth:120
                     });
                     _typeIndex = colModel.length - 1;
                 }
 
                 colModel[_typeIndex].columns.push(
                     {
-                        title: p.name,
-                        field: p.id,
+                        title: permission.name,
+                        field: permission.id,
                         headerHozAlign: "center",
                         hozAlign:"center",
                         headerWordWrap: false,
@@ -451,9 +506,9 @@ export default class App extends LightningElement {
         .filter(x => this.namespaceFiltering_isExcluded && (x.namespacePrefix == null || x.namespacePrefix === '') || !this.namespaceFiltering_isExcluded)
         .forEach(item => {
             let data = {...item};
-            profiles.forEach(p => {
-                if(p.layoutAssigns.hasOwnProperty(item.key)){
-                    data[p.id] = p.layoutAssigns[item.key].name; // Want to keep empty if doesn't exist instead of false
+            permissionSets.forEach(permission => {
+                if(permission.layoutAssigns.hasOwnProperty(item.key)){
+                    data[permission.id] = permission.layoutAssigns[item.key].name; // Want to keep empty if doesn't exist instead of false
                 }
             });
 
@@ -477,7 +532,7 @@ export default class App extends LightningElement {
     }
 
     setCustomObjectReport = () => {
-        let profiles    = Object.values(this.profiles);
+        let permissionSets    = Object.values(this.permissionSets);//.filter(x => x.type === 'Profile');
 
 		let dataList = [];
 
@@ -486,25 +541,24 @@ export default class App extends LightningElement {
 			{ title: 'Developer Name', field: 'name', frozen: true, headerHozAlign: "center", resizable: false, tooltip: true }
 		];
         
-		profiles.forEach(p => {
+		permissionSets.forEach(permission => {
 			
 			if (
-                (this.filter_profiles.length === 0 || this.filter_profiles.includes(p.id))
-                && (this.userLicenseFiltering_value === 'all' || this.userLicenseFiltering_value === p.userLicense)
+                this.getBasicFilter(permission)
             ) {
 
 
                 let subCols = [
-                    { title: 'Read',       field: p.id + '_r',   minWidth: 28, cssClass: 'vertical-title', width: 40, headerVertical: true, resizable: false ,formatter:"tickCross", formatterParams:{allowEmpty:true}},
-				    { title: 'Create',     field: p.id + '_c',   minWidth: 28, cssClass: 'vertical-title', width: 40, headerVertical: true, resizable: false ,formatter:"tickCross", formatterParams:{allowEmpty:true}},
-				    { title: 'Edit',       field: p.id + '_u',   minWidth: 28, cssClass: 'vertical-title', width: 40, headerVertical: true, resizable: false ,formatter:"tickCross", formatterParams:{allowEmpty:true}},
-				    { title: 'Delete',     field: p.id + '_d',   minWidth: 28, cssClass: 'vertical-title', width: 40, headerVertical: true, resizable: false ,formatter:"tickCross", formatterParams:{allowEmpty:true}},
-				    { title: 'All Read',   field: p.id + '_ar',  minWidth: 28, cssClass: 'vertical-title', width: 40, headerVertical: true, resizable: false ,formatter:"tickCross", formatterParams:{allowEmpty:true}},
-				    { title: 'All Edit',   field: p.id + '_au',  minWidth: 28, cssClass: 'vertical-title', width: 40, headerVertical: true, resizable: false ,formatter:"tickCross", formatterParams:{allowEmpty:true}},
+                    { title: 'Read',       field: permission.id + '_r',   minWidth: 28, cssClass: 'vertical-title', width: 40, headerVertical: true, resizable: false ,formatter:"tickCross", formatterParams:{allowEmpty:true}},
+				    { title: 'Create',     field: permission.id + '_c',   minWidth: 28, cssClass: 'vertical-title', width: 40, headerVertical: true, resizable: false ,formatter:"tickCross", formatterParams:{allowEmpty:true}},
+				    { title: 'Edit',       field: permission.id + '_u',   minWidth: 28, cssClass: 'vertical-title', width: 40, headerVertical: true, resizable: false ,formatter:"tickCross", formatterParams:{allowEmpty:true}},
+				    { title: 'Delete',     field: permission.id + '_d',   minWidth: 28, cssClass: 'vertical-title', width: 40, headerVertical: true, resizable: false ,formatter:"tickCross", formatterParams:{allowEmpty:true}},
+				    { title: 'All Read',   field: permission.id + '_ar',  minWidth: 28, cssClass: 'vertical-title', width: 40, headerVertical: true, resizable: false ,formatter:"tickCross", formatterParams:{allowEmpty:true}},
+				    { title: 'All Edit',   field: permission.id + '_au',  minWidth: 28, cssClass: 'vertical-title', width: 40, headerVertical: true, resizable: false ,formatter:"tickCross", formatterParams:{allowEmpty:true}},
                 ];
 
 				colModel.push(
-					{ title: p.name, field: p.id, columns: subCols, headerHozAlign: "center",  headerWordWrap: true, variableHeight: true, headerTooltip :p.fullName, resizable: false }
+					{ title: permission.name, field: permission.id, columns: subCols, headerHozAlign: "center",  headerWordWrap: true, variableHeight: true, headerTooltip :permission.fullName, resizable: false }
 				);
 			}
 		});
@@ -518,16 +572,16 @@ export default class App extends LightningElement {
                 data['name']    = sObject.name;
                 data['namespacePrefix'] = sObject.namespacePrefix || 'Default';
 
-			profiles.forEach(p => {
+			permissionSets.forEach(permission => {
                 
-				let op = p.objectPermissions.find(x => x.sobjectType === sObject.name);
+				let op = permission.objectPermissions.find(x => x.sobjectType === sObject.name);
 
-				data[p.id + '_r'] = op && op.allowRead;
-                data[p.id + '_c'] = op && op.allowCreate;
-                data[p.id + '_u'] = op && op.allowEdit;
-                data[p.id + '_d'] = op && op.allowDelete;
-				data[p.id + '_ar'] = op && op.viewAllRecords;
-                data[p.id + '_au'] = op && op.modifyAllRecords;
+				data[permission.id + '_r'] = op && op.allowRead;
+                data[permission.id + '_c'] = op && op.allowCreate;
+                data[permission.id + '_u'] = op && op.allowEdit;
+                data[permission.id + '_d'] = op && op.allowDelete;
+				data[permission.id + '_ar'] = op && op.viewAllRecords;
+                data[permission.id + '_au'] = op && op.modifyAllRecords;
 			});
 
             dataList.push(data);
@@ -562,10 +616,10 @@ export default class App extends LightningElement {
             this.selectedObject = this.metadata.sobjects[this.sobject_options[0].value];
         }
 
-        await setFieldPermission(this.connector.conn,this.profiles,this.metadata.profilesForPermissionSet,this.selectedObject);
+        await setFieldPermission(this.connector.conn,this.permissionSets,{targetObject:this.selectedObject});
 
         // setFieldPermission
-        let profiles    = Object.values(this.profiles);
+        let permissionSets    = Object.values(this.permissionSets);
 		let dataList = [];
 		let colModel = [
 			{ title: 'Label', field: 'label', frozen: true, headerHozAlign: "center", minWidth: 200, tooltip: true},
@@ -574,28 +628,27 @@ export default class App extends LightningElement {
             { title: 'Required', field: 'isRequired', frozen: true, headerHozAlign: "center", minWidth: 20, hozAlign: "center",formatter:"tickCross",formatterParams:{allowEmpty:true},}
 		];
         
-		profiles.forEach(p => {
+		permissionSets.forEach(permission => {
 			
 			if (
-                (this.filter_profiles.length === 0 || this.filter_profiles.includes(p.id))
-                && (this.userLicenseFiltering_value === 'all' || this.userLicenseFiltering_value === p.userLicense)
+                this.getBasicFilter(permission)
             ) {
 
-                let _typeIndex = colModel.findIndex(x => x.field === p.userLicense);
+                let _typeIndex = colModel.findIndex(x => x.field === permission.userLicense);
                 if(_typeIndex < 0){
                     /* Create User License */
                     colModel.push({
-                        title: p.userLicense, field: p.userLicense, columns: [],
+                        title: permission.userLicense, field: permission.userLicense, columns: [],
                         headerHozAlign: "center",  headerWordWrap: false, variableHeight: true,
-                        headerTooltip :p.userLicense, resizable: true, minWidth:120
+                        headerTooltip :permission.userLicense, resizable: true, minWidth:120
                     });
                     _typeIndex = colModel.length - 1;
                 }
 
                 colModel[_typeIndex].columns.push(
 					{
-                        title: p.name,
-                        field: p.id,
+                        title: permission.name,
+                        field: permission.id,
                         headerHozAlign: "center",
                         hozAlign:"center",
                         headerWordWrap: true,
@@ -615,15 +668,15 @@ export default class App extends LightningElement {
                 data['type']    = field.type;
 			    data['isRequired'] = !field.isNillable;
 
-            profiles.forEach(p => {
-				let fp = p.fieldPermissions[field.name];
+            permissionSets.forEach(permission => {
+				let fp = permission.fieldPermissions[field.name];
 
 				if (fp && fp.allowEdit) {
-					data[p.id] = 'RW';
+					data[permission.id] = 'RW';
 				} else if (fp && fp.allowRead) {
-					data[p.id] = 'R';
+					data[permission.id] = 'R';
 				} else {
-					data[p.id] = '';
+					data[permission.id] = '';
 				}
 			});
 
@@ -651,5 +704,71 @@ export default class App extends LightningElement {
             },        
 		});
 	}
+
+    setPermissionGroupReport = async () => {
+        console.log(this.metadata,this.permissionSets);
+        let permissionGroups    = Object.values(this.metadata.permissionGroups);
+		let dataList = [];
+
+		let colModel = [
+            { title: 'Permission',      field: 'label', frozen: true, headerHozAlign: "center", resizable: false,responsive:0,headerFilter:"input"},
+            { title: 'DeveloperName',   field: 'name',  frozen: true, headerHozAlign: "center", resizable: false, tooltip: true },
+            //{ title: 'Permission Groups',  frozen: true, headerHozAlign: "center", resizable: false, tooltip: true, columns: []},
+        ];
+        
+		permissionGroups.forEach(permission => {
+            
+				colModel.push(
+					{
+                        title: permission.label,
+                        field: permission.id,
+                        headerHozAlign: "center",
+                        hozAlign:"center",
+                        headerWordWrap: true,
+                        width: 120,
+                        formatter:"tickCross",
+                        formatterParams:{allowEmpty:true},
+                        headerSort:false
+                    }
+				);
+		});
+
+        Object.values(this.permissionSets)
+        .filter(x => ['Standard','Regular','Session'].includes(x.type))
+        .filter(x => this.namespaceFiltering_isExcluded && (x.namespacePrefix == null || x.namespacePrefix === '') || !this.namespaceFiltering_isExcluded)
+        .forEach(item => {
+			let data = {};
+                data['label']   = item.label || item.name;
+                data['name']    = item.name;
+                data['namespacePrefix'] = item.namespacePrefix || 'Default';
+                
+                permissionGroups.forEach(group => {
+                    let index = group.members.findIndex(x => x === item.id);
+                    if(index > -1){
+                        data[group.id] = true;
+                    }
+                });
+
+            dataList.push(data);
+		});
+
+        if (this.tableInstance) {
+			this.tableInstance.destroy();
+		}
+		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
+			height: this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight,
+			data: dataList,
+			layout: "fitDataFill",
+			columns: colModel,
+            groupBy:"namespacePrefix",
+			columnHeaderVertAlign: "middle",
+            groupStartOpen:function(value, count, data, group){
+                return value === 'Default';
+            },
+            downloadConfig:{
+                rowGroups:false, //do not include row groups in downloaded table
+            },
+		});
+    }
 
 }

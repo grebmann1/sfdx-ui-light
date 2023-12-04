@@ -21,7 +21,12 @@ export async function connect({alias,settings}){
     }
     
     const connection = await new window.jsforce.Connection(params);
-          connection.alias = alias || settings.alias
+          connection.alias = alias || settings.alias;
+          connection.on("refresh", function(accessToken, res) {
+            // Refresh event will be fired when renewed access token
+            // to store it in your storage for next request
+            console.log('refresh',accessToken,res)
+          });
     return connection;
 }
 

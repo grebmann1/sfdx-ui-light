@@ -1,5 +1,5 @@
 import {
-    Profile,Sobject,ObjectPermission,FieldPermission,
+    PermissionSet,Sobject,ObjectPermission,FieldPermission,PermissionGroups,
     Field,ApexClass,ApexPage,AppDefinition,Layout,RecordType,TabDefinition
 } from "./mapping";
 
@@ -10,46 +10,46 @@ export const loadMetadata_async = async (conn,callback) => {
     window.test = conn;
 
     let results_1 = await Promise.all([
-        getProfiles(conn),
+        getPermissionSet(conn),
         getEntityDefinition(conn),
         getApexClass(conn),
         getApexPage(conn),
         getAppDefinition(conn),
         getLayouts(conn),
-        getTabDefinitions(conn)
+        getTabDefinitions(conn),
+        getPermissionGroups(conn)
     ]);
 
-    const profiles = results_1[0];
+    const {permissionSets,permissionSetProfileMapping} = results_1[0];
     const sobjects = results_1[1];
     const apexClasses = results_1[2];
     const apexPages  = results_1[3];
     const appDefinitions = results_1[4];
     const layouts = results_1[5];
     const tabDefinitions = results_1[6];
+    const permissionGroups = results_1[7];
 
     let results_2 = await Promise.all([
-        getPermissionSet(conn,profiles),
-        getUserPermissions(conn,profiles),
+        getUserPermissions(conn,permissionSets),
         setRecordTypes(conn,sobjects),
-        setLayoutAssignments(conn,profiles,layouts),
+        setLayoutAssignments(conn,permissionSets,{permissionSetProfileMapping,layouts}),
     ]);
 
-    const profilesForPermissionSet = results_2[0];
-    const profileFields = results_2[1];
+    const profileFields = results_2[0];
 
     let results_3 = await Promise.all([
-        getSetupEntityAccess(conn,profiles,false,{profilesForPermissionSet,apexClasses,apexPages,appDefinitions}),
-        setObjectPermissions(conn,profiles,profilesForPermissionSet),
-        setPermissionSetTabSetting(conn,profiles,profilesForPermissionSet,{tabDefinitions}),
+        getSetupEntityAccess(conn,permissionSets,false,{apexClasses,apexPages,appDefinitions}),
+        setObjectPermissions(conn,permissionSets),
+        setPermissionSetTabSetting(conn,permissionSets,{tabDefinitions}),
     ]);
 
     const entityAccess = results_3[0];
 
     /** Map entity to Profile */
     // We do it here to reuse the method in async mode
-    Object.keys(profiles).forEach(key => {
-        profiles[key] = {
-            ...profiles[key],
+    Object.keys(permissionSets).forEach(key => {
+        permissionSets[key] = {
+            ...permissionSets[key],
             ...entityAccess[key]
         }
     });
@@ -60,7 +60,7 @@ export const loadMetadata_async = async (conn,callback) => {
         console.log('namespaceLoading');
         // Set Permissions
        let results_4 = await Promise.all([
-            getSetupEntityAccess(conn,profiles,true,{profilesForPermissionSet,apexClasses,apexPages,appDefinitions})
+            getSetupEntityAccess(conn,permissionSets,true,{apexClasses,apexPages,appDefinitions})
         ]);
 
         const entityAccess_namespace = results_4[0];
@@ -73,37 +73,53 @@ export const loadMetadata_async = async (conn,callback) => {
     asyncLoading();
     
     return {
-        profiles,
+        permissionSets,
         sobjects,
         apexClasses,
         apexPages,
         appDefinitions,
-        profilesForPermissionSet,
         profileFields,
         layouts,
         tabDefinitions,
-        entityAccess
+        entityAccess,
+        permissionGroups
     }
 }
 
 
-export const getProfiles = async (conn) => {
-    console.log('getProfiles');
-    const profiles = {};
+export const getPermissionSet = async (conn) => {
+    
+    const permissionSets = {};
+    const permissionSetProfileMapping = {}
 
-    let records_profiles = (await conn.query("SELECT id,Name,UserLicense.MasterLabel FROM profile")).records || [];
-        records_profiles.forEach(record => profiles[record.Id] = new Profile(record.Id, record.Name, record.UserLicense?.MasterLabel));
-
-    let keys = "'" + Object.keys(profiles).join("','") + "'";
-    let records_counter = (await conn.query("SELECT count(Id) total,ProfileId,IsActive FROM User WHERE profileId in (" + keys + ") group by ProfileId ,IsActive")).records || [];
-        records_counter.forEach(record => {
-            if (record.IsActive) {
-                profiles[record.ProfileId].activeUserCount = record.total;
-            } else {
-                profiles[record.ProfileId].inactiveUserCount = record.total;
+    let records_profiles = (await conn.query("SELECT Id,ProfileId,Profile.Name,Label,Name,License.Name,Type,Description,IsCustom,NamespacePrefix FROM permissionset")).records || [];
+        records_profiles.forEach(record => {
+            permissionSets[record.Id] = new PermissionSet(record);
+            if(isNotUndefinedOrNull(record.ProfileId)){
+                permissionSetProfileMapping[record.ProfileId] = record.Id;
             }
         });
-    return profiles;
+
+    let keys = Object.values(permissionSets).filter(x => x.type == 'Profile').map(x => x.profileId).join("','");
+    let records_counter = (await conn.query("SELECT count(Id) total,ProfileId,IsActive FROM User WHERE profileId in ('" + keys + "') group by ProfileId ,IsActive")).records || [];
+        records_counter.forEach(record => {
+            if (record.IsActive) {
+                permissionSets[permissionSetProfileMapping[record.ProfileId]].activeUserCount = record.total;
+            } else {
+                permissionSets[permissionSetProfileMapping[record.ProfileId]].inactiveUserCount = record.total;
+            }
+        });
+
+    let records_counter2 = (await conn.query("SELECT count(Id) total,PermissionSetId,IsActive FROM PermissionSetAssignment group by PermissionSetId ,IsActive")).records || [];
+        records_counter2.forEach(record => {
+            if (record.IsActive) {
+                permissionSets[record.PermissionSetId].activeUserCount = record.total;
+            } else {
+                permissionSets[record.PermissionSetId].inactiveUserCount = record.total;
+            }
+        });
+        console.log('getPermissionSet',permissionSets);
+    return {permissionSets,permissionSetProfileMapping};
 }
 
 async function getApexClass(conn) {
@@ -116,6 +132,23 @@ async function getApexClass(conn) {
         });
 
     return apexClasses;
+}
+
+async function getPermissionGroups(conn){
+    console.log('getPermissionGroups');
+    const permissionGroups = {};
+    let query = conn.query('SELECT Description, DeveloperName,  Id, MasterLabel, NamespacePrefix, Status FROM PermissionSetGroup');
+    let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 10000 }) || [];
+        records.forEach(record => {
+            permissionGroups[record.Id] = new PermissionGroups(record);
+        });
+
+    let query_2 = conn.query('SELECT Id, PermissionSetGroupId, PermissionSetId FROM PermissionSetGroupComponent')
+    let records2 = await query_2.run({ responseTarget:'Records',autoFetch : true, maxFetch : 10000 }) || [];
+        records2.forEach(record => {
+            permissionGroups[record.PermissionSetGroupId].members.push(record.PermissionSetId);
+        });
+    return permissionGroups;
 }
 
 async function getApexPage(conn) {
@@ -157,17 +190,6 @@ async function getLayouts(conn){
 }
 
 
-const getPermissionSet = async (conn,profiles) => {
-    const profilesForPermissionSet = {}
-    console.log('getPermissionSet');
-    let keys = "'" + Object.keys(profiles).join("','") + "'";
-    let records = (await conn.query("SELECT Id,ProfileId FROM permissionset WHERE ProfileId in (" + keys + ")")).records || [];
-        records.forEach(record => {
-            profiles[record.ProfileId].permissionSetId = record.Id;
-            profilesForPermissionSet[record.Id] = record.ProfileId;
-        });
-    return profilesForPermissionSet;
-}
 
 const getEntityDefinition = async (conn) => {
     console.log('getEntityDefinition');
@@ -196,18 +218,18 @@ const setRecordTypes = async (conn,sobjects) => {
         records.forEach(record => sobjects[record.SobjectType].recordTypes[record.Id] = new RecordType(record.Id, record.DeveloperName, record.Name));
 }
 
-const setLayoutAssignments = async (conn,profiles,layouts) => {
+const setLayoutAssignments = async (conn,permissionSets,{permissionSetProfileMapping,layouts}) => {
     console.log('setLayoutAssignments');
     let records = (await conn.tooling.query("select Profile.Id, LayoutId, RecordTypeId from ProfileLayout where Profile.Id != null")).records || [];
         records.forEach(record => {
             if (layouts[record.LayoutId]) {
                 let layoutAssignmentKey = layouts[record.LayoutId].objectName+(record.RecordTypeId?`-${record.RecordTypeId}`:'');
-                profiles[record.Profile.Id].layoutAssigns[layoutAssignmentKey] = layouts[record.LayoutId];
+                permissionSets[permissionSetProfileMapping[record.Profile.Id]].layoutAssigns[layoutAssignmentKey] = layouts[record.LayoutId];
             }
         });
 }
 
-const getUserPermissions = async (conn,profiles) => {
+const getUserPermissions = async (conn,permissionSets) => {
     console.log('getUserPermissions');
     const profileFields = {};
     
@@ -222,11 +244,11 @@ const getUserPermissions = async (conn,profiles) => {
         });
 
     let fieldKeys = Object.keys(profileFields);
-    let records_permissionSet = (await conn.query("SELECT FIELDS(STANDARD) FROM PermissionSet WHERE profileid != null LIMIT 2000")).records || [];
+    let records_permissionSet = (await conn.query("SELECT FIELDS(STANDARD) FROM PermissionSet LIMIT 2000")).records || [];
         records_permissionSet.forEach(record => {
-            if (profiles[record.ProfileId]) {
+            if (permissionSets[record.Id]) {
                 fieldKeys.forEach(key => {
-                    profiles[record.ProfileId].userPermissions.push({
+                    permissionSets[record.Id].userPermissions.push({
                         enabled:record[key],
                         name:key,
                         label:profileFields[key].label
@@ -237,16 +259,15 @@ const getUserPermissions = async (conn,profiles) => {
     return profileFields;
 }
 
-const setObjectPermissions = async (conn,profiles,profilesForPermissionSet) => {
+const setObjectPermissions = async (conn,permissionSets) => {
     console.log('setObjectPermissions');
-    let keys = Object.values(profiles).map(x => x.permissionSetId).join("','");
 
-    let query = conn.query(`select ParentId,SobjectType,PermissionsCreate,PermissionsRead,PermissionsEdit,PermissionsDelete,PermissionsViewAllRecords,PermissionsModifyAllRecords from ObjectPermissions where ParentId in ('${keys}')`);
+    let query = conn.query(`select ParentId,SobjectType,PermissionsCreate,PermissionsRead,PermissionsEdit,PermissionsDelete,PermissionsViewAllRecords,PermissionsModifyAllRecords from ObjectPermissions`);
          
     let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
         records.forEach(record => {
-                let profileId = profilesForPermissionSet[record.ParentId];
-                profiles[profileId].objectPermissions.push(new ObjectPermission(
+            if(permissionSets.hasOwnProperty(record.ParentId)){
+                permissionSets[record.ParentId].objectPermissions.push(new ObjectPermission(
                     record.SobjectType,
                     record.PermissionsCreate,
                     record.PermissionsRead,
@@ -255,34 +276,33 @@ const setObjectPermissions = async (conn,profiles,profilesForPermissionSet) => {
                     record.PermissionsViewAllRecords,
                     record.PermissionsModifyAllRecords
                 ));
+            }
         });
 }
 
-const setPermissionSetTabSetting = async (conn,profiles,profilesForPermissionSet,{tabDefinitions}) => {
+const setPermissionSetTabSetting = async (conn,permissionSets,{tabDefinitions}) => {
     console.log('setPermissionSetTabSetting');
     const fetchPermissionSetTabSetting = async (ids) => {
         let query = conn.query(`select ParentId, Name, Visibility from PermissionSetTabSetting where ParentId in ('${ids.join("','")}')`);
         return await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
     }
 
-    let chunk_parentIds = chunkArray(Object.values(profiles).map(x => x.permissionSetId),5);
+    let chunk_parentIds = chunkArray(Object.values(permissionSets).map(x => x.id),5);
 
     let result = await chunkPromises(chunk_parentIds,4,fetchPermissionSetTabSetting);
     let records = result.flat();
         records.forEach(record => {
-            let profileId = profilesForPermissionSet[record.ParentId];
-            profiles[profileId].tabAccesses.push({visibility:record.Visibility,...tabDefinitions[record.Name]})
+            permissionSets[record.ParentId].tabAccesses.push({visibility:record.Visibility,...tabDefinitions[record.Name]})
         });
 }
 
 
 
-const getSetupEntityAccess = async (conn,profiles,includeNamespacePrefix = false,{profilesForPermissionSet,apexClasses,apexPages,appDefinitions}) => {
+const getSetupEntityAccess = async (conn,permissionSets,includeNamespacePrefix = false,{apexClasses,apexPages,appDefinitions}) => {
     console.log('getSetupEntityAccess');
-    let keys = Object.values(profiles).map(x => x.permissionSetId).join("','");
 
     const fetchEntityAccess = async (ids) => {
-        let query = conn.query(`SELECT ParentId, SetupEntityType, SetupEntityId FROM SetupEntityAccess WHERE SetupEntityId in ('${ids.join("','")}') AND ParentId IN ('${keys}')`);
+        let query = conn.query(`SELECT ParentId, SetupEntityType, SetupEntityId FROM SetupEntityAccess WHERE SetupEntityId in ('${ids.join("','")}')`);
         return await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
     }
 
@@ -304,21 +324,20 @@ const getSetupEntityAccess = async (conn,profiles,includeNamespacePrefix = false
     console.log('records',records);
 
     records.forEach(record => {
-        let profileId = profilesForPermissionSet[record.ParentId];
-        if(!entityAccess.hasOwnProperty(profileId)){
-            entityAccess[profileId] = {classAccesses:[],pageAccesses:[],appAccesses:[]}
+        if(!entityAccess.hasOwnProperty(record.ParentId)){
+            entityAccess[record.ParentId] = {classAccesses:[],pageAccesses:[],appAccesses:[]}
         }
         switch(record.SetupEntityType){
             case 'ApexClass':
-                entityAccess[profileId].classAccesses.push(apexClasses[record.SetupEntityId]);
+                entityAccess[record.ParentId].classAccesses.push(apexClasses[record.SetupEntityId]);
             break;
 
             case 'ApexPage':
-                entityAccess[profileId].pageAccesses.push(apexPages[record.SetupEntityId]);
+                entityAccess[record.ParentId].pageAccesses.push(apexPages[record.SetupEntityId]);
             break;
 
             case 'TabSet': // name is TabSet for App Access 
-                entityAccess[profileId].appAccesses.push(appDefinitions[record.SetupEntityId]);
+                entityAccess[record.ParentId].appAccesses.push(appDefinitions[record.SetupEntityId]);
             break;
         }
     });
@@ -337,16 +356,14 @@ export const setFieldDefinition = async (conn,targetObject) => {
     });
 }
 
-export const setFieldPermission = async (conn,profiles,profilesForPermissionSet,targetObject) => {
+export const setFieldPermission = async (conn,permissionSets,{targetObject}) => {
     // Set field Definition
     await setFieldDefinition(conn,targetObject);
 
-    let keys = Object.values(profiles).map(x => x.permissionSetId).join("','");
-    let records_fieldPermissions = (await conn.query(`select ParentId, Field, SobjectType, PermissionsEdit, PermissionsRead from FieldPermissions where SobjectType ='${targetObject.name}' and ParentId in ('${keys}')`)).records || [];
+    let records_fieldPermissions = (await conn.query(`select ParentId, Field, SobjectType, PermissionsEdit, PermissionsRead from FieldPermissions where SobjectType ='${targetObject.name}'`)).records || [];
         records_fieldPermissions.forEach(record => {
-            let profileId = profilesForPermissionSet[record.ParentId];
             let fieldName = record.Field.replace(targetObject.name + '.', '');
             // profiles[profilesForPermissionSet[record.ParentId]].fieldPermissions[targetObject.name].push(new FieldPermission(record.SobjectType, fieldName, record.PermissionsRead, record.PermissionsEdit));
-            profiles[profileId].fieldPermissions[fieldName] = new FieldPermission(record.SobjectType, fieldName, record.PermissionsRead, record.PermissionsEdit);
+            permissionSets[record.ParentId].fieldPermissions[fieldName] = new FieldPermission(record.SobjectType, fieldName, record.PermissionsRead, record.PermissionsEdit);
         });
 }

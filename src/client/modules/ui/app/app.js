@@ -6,12 +6,14 @@ import { getExistingSession,saveSession,removeSession,directConnection } from "c
 import connection_app from "connection/app";
 import accessAnalyzer_app from "accessAnalyzer/app";
 import extension_app from "extension/app";
+import org_app from "org/app";
 
-const KNOWN_TYPE = new Set(["connection/app", "accessAnalyzer/app","extension/app"]);
+const KNOWN_TYPE = new Set(["connection/app", "accessAnalyzer/app","extension/app","org/app"]);
 const APP_MAPPING = {
     "connection/app": connection_app,
     "accessAnalyzer/app": accessAnalyzer_app,
-    "extension/app":extension_app
+    "extension/app":extension_app,
+    "org/app":org_app
 };
 
 export default class App extends LightningElement {
@@ -43,7 +45,14 @@ export default class App extends LightningElement {
     handleLogin = (e) => {
         console.log('handleLogin',e.detail.value);
         this.connector = e.detail.value;
-        saveSession(this.connector.header);
+        const { instanceUrl,accessToken,version,refreshToken } = this.connector.conn;
+        saveSession({
+            ...this.connector.header,
+            instanceUrl,
+            accessToken,
+            instanceApiVersion:version,
+            refreshToken
+        });
     }
 
     handleLogout = (e) => {
@@ -105,6 +114,14 @@ export default class App extends LightningElement {
             name:"Home",
             isDeletable:false,
         });
+
+        if(this.isUserLoggedIn){
+            await this.loadModule({
+                component:'org/app',
+                name:"Org",
+                isDeletable:false,
+            });
+        }
         
         console.log('process.env.NODE_ENV',process.env.NODE_ENV);
         if(process.env.NODE_ENV === 'dev'){

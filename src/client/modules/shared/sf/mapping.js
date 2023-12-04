@@ -26,12 +26,28 @@ export class Field {
     }
 }
 
-export class Profile {
-    constructor(id, name, userLicense) {
-        this.id = id;
-        this.name = name;
-        this.userLicense = userLicense;
-        this.permissionSetId = null;
+export class PermissionGroups{
+    constructor(record){
+        this.id = record.Id;
+        this.name = record.DeveloperName;
+        this.label = record.MasterLabel;
+        this.namespacePrefix = record.NamespacePrefix;
+        this.members = [];
+    }
+}
+
+export class PermissionSet {
+    constructor(record) {
+        this.id = record.Id;
+        this.userLicense = record.License?.Name;
+        this.type = record.Type;
+        this.name = record.Profile?.Name || record.Name;
+        this.label = record.Profile?.Label || record.Label;
+        this.profileId = record.ProfileId;
+        this.description = record.Description;
+        this.isCustom = record.IsCustom;
+        this.namespacePrefix = record.NamespacePrefix;
+
         // field API Name => boolean
         this.userPermissions = [];
         // object API Name => ObjectPermission

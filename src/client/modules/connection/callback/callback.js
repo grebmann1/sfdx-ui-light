@@ -5,9 +5,9 @@ export default class Callback extends LightningElement {
 
 
     connectedCallback(){
-        window.jsforce.browser.on('connect', function(conn) {
-            //window.close();
-        });
+
+        window.jsforce.browserClient = new window.jsforce.browser.Client(); // Reset
+        window.jsforce.browserClient.init(window.jsforceSettings);
     }
 
 

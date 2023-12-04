@@ -1,10 +1,12 @@
 import { LightningElement,api} from "lwc";
+import LightningAlert from 'lightning/alert';
+
 import ConnectionNewModal from "connection/connectionNewModal";
 import ConnectionDetailModal from "connection/connectionDetailModal";
 import ConnectionRenameModal from "connection/connectionRenameModal";
 
 import {isNotUndefinedOrNull,isElectronApp} from 'shared/utils';
-import {getAllConnection,removeConnection,connect,Connector} from 'connection/utils';
+import {getAllConnection,removeConnection,connect,Connector,oauth} from 'connection/utils';
 
 const actions = [
     { label: 'Login', name: 'login' },
@@ -82,8 +84,15 @@ export default class App extends LightningElement {
 
     login = async (row) => {
         let settings = this.data.find(x => x.id == row.id);
-        let connector = await connect({settings});
-        this.dispatchEvent(new CustomEvent("login", { detail:{value:connector},bubbles: true }));
+        try{
+            let connector = await connect({settings});
+            this.dispatchEvent(new CustomEvent("login", { detail:{value:connector},bubbles: true }));
+        }catch(e){
+            oauth({alias:settings.alias,loginUrl:settings.instanceUrl || settings.loginUrl},(res) => {
+                this.dispatchEvent(new CustomEvent("login", { detail:{value:res.connector},bubbles: true }));
+            })
+        }
+        
     }
 
     openBrowser = (row) => {
@@ -97,9 +106,7 @@ export default class App extends LightningElement {
     }
 
     seeDetails = (row) => {
-        ConnectionDetailModal.open(row)
-        .then((result) => {
-        });
+        ConnectionDetailModal.open(row).then((result) => {});
     }
 
     setAlias = (row) => {

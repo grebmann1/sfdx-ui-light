@@ -1,6 +1,6 @@
 import LightningAlert from 'lightning/alert';
 import LightningModal from 'lightning/modal';
-import {addConnection,connect} from 'connection/utils';
+import {addConnection,connect,oauth} from 'connection/utils';
 import {isNotUndefinedOrNull,isElectronApp,decodeError} from "shared/utils";
 
 const domainOptions = [
@@ -84,47 +84,13 @@ export default class ConnectionNewModal extends LightningModal {
     }
 
     web_oauth = async () => {
-        console.log('web_oauth');
-       
-        window.jsforce.browser.on('connect', async (connection) =>{
-            console.log('connect');
-            const {accessToken,instanceUrl,loginUrl,refreshToken,version} = connection;
-            let nameArray = this.alias.split('-');
-            let companyName = nameArray.length > 1 ?nameArray.shift() : '';
-            let name = nameArray.join('-');
-            let header = {
-                accessToken,instanceUrl,loginUrl,refreshToken,version,
-                id:this.alias,
+            console.log('web_oauth');
+            oauth({
                 alias:this.alias,
-                company:companyName.toUpperCase(),
-                name:name,
-                sfdxAuthUrl:instanceUrl+'/secur/frontdoor.jsp?sid='+accessToken,
-            };
-
-            /** Get Username **/
-            let identity = await connection.identity();
-            if(isNotUndefinedOrNull(identity)){
-                header.username = identity.username;
-                header.orgId    = identity.organization_id;
-                header.userInfo = identity;
-            }
-            await addConnection(header,connection);
-
-            this.close({alias:this.alias,connection});
-        });
-
-        window.jsforce.browser.login({
-            ...window.jsforceSettings,
-            loginUrl:this.selectedDomain === 'custom'?this.customDomain:this.selectedDomain,
-            version:process.env.VERSION || '55.0',
-            scope:'id api web openid sfap_api refresh_token'
-        },(_test,res) => {
-            console.log('res',res,_test);
-            if(res.status === 'cancel'){
-                this.close(null)
-            }
-        }
-    );
+                loginUrl:this.selectedDomain === 'custom'?this.customDomain:this.selectedDomain
+            },(res) => {
+                this.close(res);
+            });
     }
 
 

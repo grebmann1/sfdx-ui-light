@@ -4,8 +4,8 @@ import {TabulatorFull as Tabulator} from 'tabulator-tables';
 import { api } from "lwc";
 
 
-export default class ModalProfileFilter extends LightningModal {
-    @api profiles;
+export default class ModalPermissionSetFilter extends LightningModal {
+    @api permissionSets;
 	@api currentOrg;
 	@api selected;
 
@@ -29,7 +29,7 @@ export default class ModalProfileFilter extends LightningModal {
     /** events **/
 
 	handleApplyClick = (e) => {
-		this.close({action:'applyFilter',filter:this.tableInstance.getSelectedData().map(x => x.profileId)});
+		this.close({action:'applyFilter',filter:this.tableInstance.getSelectedData().map(x => x.permissionId)});
 	}
 
 	/** Methods **/
@@ -49,7 +49,11 @@ export default class ModalProfileFilter extends LightningModal {
 				}
 			},
 			//{ title: '', vertAlign: "middle",hozAlign:"center", field: 'link', width: 15, formatter: "html", headerSort: false},
-			{ title: 'Profile Name', vertAlign: "middle", field: 'label', width: 430, tooltip: true,
+			{ title: 'Permission Name', vertAlign: "middle", field: 'label', width: 430, 
+                tooltip: (e,cell) => {
+                    console.log('cell._cell.row',cell._cell.row)
+                    return cell._cell.row.data.description;
+                },
 				cellClick:function(e, cell) {
 					cell.getRow().toggleSelect();
 				}
@@ -79,20 +83,22 @@ export default class ModalProfileFilter extends LightningModal {
 
 		let dataList = [];
 
-		Object.values(this.profiles)
-		.sort((a, b) => a.name.localeCompare(b.name))
-		.forEach(profile => {
-            let _activeUserCount = profile.activeUserCount || 0;
-            let _inactiveUserCount = profile.inactiveUserCount || 0;
+		Object.values(this.permissionSets)
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .forEach(permission => {
+            let _activeUserCount = permission.activeUserCount || 0;
+            let _inactiveUserCount = permission.inactiveUserCount || 0;
 
 			let data = {};
-                data['profileId'] = profile.id;
+                data['permissionId'] = permission.id;
                 //data['link'] = `<a href="${null}" target="_blank"><svg focusable="false" aria-hidden="true" class="slds-icon slds-icon-text-default slds-icon_x-small"><use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#new_window"></use></svg></a>`;
-                data['label'] = profile.name;
+                data['label'] = permission.name;
                 //data['profileUrl'] = null;
                 data['activeUserCount'] = _activeUserCount;
                 data['inactiveUserCount'] = _inactiveUserCount;
-                data['licenseName'] = profile.userLicense;
+                data['licenseName'] = permission.userLicense || 'All licenses';
+                data['isCustom'] = permission.isCustom?'Custom':'Standard';
+                data['description'] = permission.description;
                 //data['users'] = {isShow: _activeUserCount + _inactiveUserCount > 0, profileId: profile.id};
 
 			dataList.push(data);
@@ -109,7 +115,7 @@ export default class ModalProfileFilter extends LightningModal {
                 layout: "fitDataFill",
                 columns: colModel,
                 columnHeaderVertAlign: "middle",
-                groupBy: "licenseName",
+                groupBy: ["isCustom","licenseName"],
                 groupToggleElement: true,
                 /*TODO group all select/deselect
                 groupHeader: function(value, count, data, group){
@@ -124,7 +130,7 @@ export default class ModalProfileFilter extends LightningModal {
 			this.tableInstance.on("tableBuilt", () =>{
 
 				this.tableInstance.selectRow(this.tableInstance.getRows().filter(
-					row => this.selected.includes(row.getData().profileId)
+					row => this.selected.includes(row.getData().permissionId)
 				));
 			})
 

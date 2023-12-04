@@ -14,11 +14,23 @@
     display: block !important;
 }
 
+.slds-page-header__detail-row{
+    flex-wrap: wrap;
+}
+
 /** Filters **/
 .slds-page-header__detail-block{
     max-width: unset;
     min-width: 200px;
     padding-right: unset;
+    padding-left: 1rem !important;
+}
+
+.slds-page-header__detail-block-report{
+    max-width: unset;
+    min-width: 300px;
+    padding-right: unset;
+    padding-left: 1rem !important;
 }
 
 .slds-page-header__detail-separator{
