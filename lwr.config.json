@@ -70,37 +70,11 @@
             "layoutTemplate": "$layoutsDir/main.html"
         },
         {
-            "id": "CTA_0",
+            "id": "CTA",
             "path": "/cta",
-            "routeHandler": "$rootDir/src/client/routeHandlers/ctaRouter.ts",
-            "cache": { "ttl": 60 },
-            "bootstrap": {
-                "syntheticShadow": true
-            }
-        },
-        {
-            "id": "CTA_1",
-            "path": "/cta/:param1",
-            "routeHandler": "$rootDir/src/client/routeHandlers/ctaRouter.ts",
-            "cache": { "ttl": 60 },
-            "bootstrap": {
-                "syntheticShadow": true
-            }
-        },
-        {
-            "id": "CTA_2",
-            "path": "/cta/:param1/:param2",
-            "routeHandler": "$rootDir/src/client/routeHandlers/ctaRouter.ts",
-            "cache": { "ttl": 60 },
-            "bootstrap": {
-                "syntheticShadow": true
-            }
-        },
-        {
-            "id": "CTA_3",
-            "path": "/cta/:param1/:param2/:param3",
-            "routeHandler": "$rootDir/src/client/routeHandlers/ctaRouter.ts",
-            "cache": { "ttl": 60 },
+            "contentTemplate": "$contentDir/cta.html",
+            "layoutTemplate": "$layoutsDir/cta.html",
+            "cache": { "ttl": 1 },
             "bootstrap": {
                 "syntheticShadow": true
             }

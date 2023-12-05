@@ -1,8 +1,14 @@
 
 <div class="content-table">
-    <ui-markdown-viewer is-menu="true" url="https://raw.githubusercontent.com/grebmann1/cta-cheat-sheet/main/Documentation/Documentation.md"></ui-markdown-viewer>
+    <ui-markdown-viewer 
+        is-menu="true" 
+        url="https://raw.githubusercontent.com/grebmann1/cta-cheat-sheet/main/Documentation/Documentation.md"
+    ></ui-markdown-viewer>
 </div>
 
 <div class="content-viewer">
-    <ui-markdown-viewer url="{{markdownUrl}}" string="{{manualText}}"></ui-markdown-viewer>
+    <ui-markdown-viewer 
+        default-url="https://raw.githubusercontent.com/grebmann1/cta-cheat-sheet/main/README.md"
+        base-url="https://raw.githubusercontent.com/grebmann1/cta-cheat-sheet/main/Documentation/"
+    ></ui-markdown-viewer>
 </div>

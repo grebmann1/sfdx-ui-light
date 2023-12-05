@@ -1,24 +1,63 @@
 import { api, LightningElement } from 'lwc';
 import { marked } from './markdown';
+import { isEmpty } from 'shared/utils';
 
 export default class MarkdownViewer extends LightningElement {
-
-    @api url;
-    @api string;
-    @api isMenu = false;
+    
     init = false;
+
+    @api defaultUrl;
+    @api url;
+    @api isMenu = false;
+    @api baseUrl;
 
     connectedCallback(){
         if(!this.init){
-            this.init = true
-            if(this.url){
-                this.getDown(this.url);
-            }else if(this.string){
-                // eslint-disable-next-line @lwc/lwc/no-async-operation
-                setTimeout(() => this.setMarkdown(this.string), 0)
-            }
+            this.initComponent();
+        }
+
+        window.addEventListener('hashchange', (e)=> {
+            this.updateComponent();
+        }, false);
+
+    }
+
+    getPageUrl = () => {
+        if(isEmpty(new URL(document.URL).hash)){
+            return '';
+        }else{
+            return (new URL(document.URL).hash).slice(1);
         }
     }
+
+    updateComponent(){
+        if(!this.isMenu){
+            this.url = this.baseUrl + this.getPageUrl();
+            this.getDown(this.url); // we reset
+        }else{
+            this.runAsMenu();
+        }
+    }
+
+
+    initComponent = () => {
+        let pageUrl = this.getPageUrl();
+        if(this.isMenu){
+            this.getDown(this.url);
+            this.runAsMenu();
+        }else{
+            if(isEmpty(pageUrl)){
+                // hard coded home page
+                this.getDown(this.defaultUrl);
+            }else{
+                this.url = this.baseUrl + pageUrl;
+                this.getDown(this.url);
+            }
+        }
+        this.init = true;
+    }
+
+
 
     runAsMenu = () => {
         var currentURL = window.location.href;
@@ -34,6 +73,8 @@ export default class MarkdownViewer extends LightningElement {
                 console.log('link',link);
                 // Add a class to the matching link
                 link.parentElement.classList.add('currentlist');
+            }else{
+                link.parentElement.classList.remove('currentlist');
             }
         }
     }
@@ -57,7 +98,7 @@ export default class MarkdownViewer extends LightningElement {
             if(p1 === 'Table of contents'){
                 return '';// We remove it `[${p1}](${window.location.origin}/cta)`;
             }else{
-                return `[${p1}](${window.location.origin}/cta/${p2})`;
+                return `[${p1}](${window.location.origin}/cta#${p2})`;
             }
         });
 
@@ -65,11 +106,10 @@ export default class MarkdownViewer extends LightningElement {
         let imagePattern = /\!\[(.*)\]\((.*?)\)/g;
         updatedContent = updatedContent.replace(imagePattern,function(match, p1, p2){
            
-            let splitted = p2.split('/Images/');
+            let splitted = p2.split('Images/');
             let newLink = splitted.length > 1 ? splitted[1]:splitted[0];
             return `![${p1}](https://github.com/grebmann1/cta-cheat-sheet/raw/main/Images/${newLink})`;
         });
-
         return updatedContent;
     }
     

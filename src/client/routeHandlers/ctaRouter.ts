@@ -7,29 +7,7 @@ function isUndefinedOrNull(value) {
 function isEmpty(str) {
   return (!str || str.length === 0 );
 }
-// Return a completely custom response
-// containing some JSON data, based on the current path and query parameters
-// viewRequest = { url, requestPath, params?, query? }
-/*
-export default function jsonRouteHandler(viewRequest: ViewRequest): ViewResponse {
-  const myPathParam = viewRequest.params.my;
-  const someQueryParams = viewRequest.query?.some;
-  console.log('viewRequest',viewRequest);
-  console.log('myPathParam',myPathParam);
-  console.log('someQueryParams',someQueryParams);
-  // return a "ViewResponse": { status?, body, cache?, headers? }
-  return {
-    // Required: return the response body
-    body: {
-      my: myPathParam,
-      some: someQueryParams,
-    },
-    // Optional: HTTP header map
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  };
-}*/
+
 
 export default async function ctaRouter(
   viewRequest: ViewRequest,
@@ -46,7 +24,7 @@ export default async function ctaRouter(
   }else{
     routeProperties.markdownUrl = `${staticUrl}/Documentation/${requestPath}`;
   }
-  //routeProperties.markdownUrl = "https://raw.githubusercontent.com/grebmann1/cta-cheat-sheet/main/Documentation/Documentation.md";
+  
   console.log('routeProperties',routeProperties);
   return {
     // Required: customize the current route by setting:
