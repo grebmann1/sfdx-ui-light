@@ -1,0 +1,69 @@
+<!-- $layoutsDir/main.html -->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SF Toolkit - CTA Cheat Sheet</title>
+        <link rel="icon" type="image/x-icon" href="/favicon.ico">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!--<link rel="stylesheet" href="$assetsDir/styles/salesforce-lightning-design-system.min.css" />-->
+        <style>
+            .container {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 1024px;
+                margin: 0 auto;
+                padding: 45px;
+            }
+        
+            @media (max-width: 767px) {
+                .container {
+                    padding: 15px;
+                }
+            }
+            .markdown-container{
+                display: flex;
+                flex-direction: row;
+                align-items: flex-start;
+                justify-content: space-around;
+            }
+            .content-table{
+                width: 25%;
+                border-right: 1px solid hsla(210,18%,87%,1);
+            }
+            .content-viewer{
+                width: 75%;
+                padding-left:2rem;
+            }
+
+            .content-table ul{
+                list-style:none;
+                padding-top: 5px;
+                padding-bottom: 5px;
+                padding-left: 0px !important;
+            }
+
+            .content-table ul li a{
+                padding-left:2rem;
+            }
+
+            .content-table ul li.currentlist {
+                background: #d8e6fe;
+                padding-top: 10px;
+                padding-bottom: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="markdown-container">
+            {{{body}}} {{{lwr_resources}}}
+        </div>
+    </body>
+    <script>
+            
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('hello');
+            // Get the current URL
+            
+        });
+    </script>
+</html> 

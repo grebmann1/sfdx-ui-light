@@ -1,5 +1,6 @@
 {
     "layoutsDir": "$rootDir/src/client/layouts",   
+    "contentDir": "$rootDir/src/client/content",
     "lwc": {
         "modules": [
             { "dir": "$rootDir/src/client/modules" },
@@ -38,6 +39,15 @@
         {
             "id": "home",
             "path": "/",
+            "contentTemplate": "$contentDir/home.html",
+            "layoutTemplate": "$layoutsDir/home.html",
+            "bootstrap": {
+                "syntheticShadow": true
+            }
+        },
+        {
+            "id": "app",
+            "path": "/app",
             "rootComponent": "ui/fullView",
             "layoutTemplate": "$layoutsDir/main.html",
             "bootstrap": {
@@ -57,7 +67,40 @@
             "id": "callback",
             "path": "/callback",
             "rootComponent": "connection/callback",
-            "layoutTemplate": "$layoutsDir/main.html",
+            "layoutTemplate": "$layoutsDir/main.html"
+        },
+        {
+            "id": "CTA_0",
+            "path": "/cta",
+            "routeHandler": "$rootDir/src/client/routeHandlers/ctaRouter.ts",
+            "cache": { "ttl": 60 },
+            "bootstrap": {
+                "syntheticShadow": true
+            }
+        },
+        {
+            "id": "CTA_1",
+            "path": "/cta/:param1",
+            "routeHandler": "$rootDir/src/client/routeHandlers/ctaRouter.ts",
+            "cache": { "ttl": 60 },
+            "bootstrap": {
+                "syntheticShadow": true
+            }
+        },
+        {
+            "id": "CTA_2",
+            "path": "/cta/:param1/:param2",
+            "routeHandler": "$rootDir/src/client/routeHandlers/ctaRouter.ts",
+            "cache": { "ttl": 60 },
+            "bootstrap": {
+                "syntheticShadow": true
+            }
+        },
+        {
+            "id": "CTA_3",
+            "path": "/cta/:param1/:param2/:param3",
+            "routeHandler": "$rootDir/src/client/routeHandlers/ctaRouter.ts",
+            "cache": { "ttl": 60 },
             "bootstrap": {
                 "syntheticShadow": true
             }

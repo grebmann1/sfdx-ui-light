@@ -31,7 +31,7 @@ export default class App extends LightningElement {
     @track applications = [];
 
     async connectedCallback(){
-
+        console.log('connectedCallback');
         if(this.isLightMode){
             this.load_lightMode();
         }else{

@@ -1,0 +1,23 @@
+<!-- $layoutsDir/main.html -->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SF Toolkit</title>
+        <link rel="icon" type="image/x-icon" href="/favicon.ico">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="$assetsDir/styles/salesforce-lightning-design-system.min.css" />
+        <style>
+            .slds-modal__container {
+                margin: 0 auto;
+                width: 80%;
+                max-width: 70rem;
+                min-width: 20rem;
+                height: 100vh;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- triple braces prevents HTML escaping -->
+        {{{body}}} {{{lwr_resources}}}
+    </body>
+</html> 
