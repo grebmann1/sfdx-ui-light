@@ -95,8 +95,8 @@ export default class MarkdownViewer extends LightningElement {
         // Links
         let urlPattern = /\[(.*)\]\([\.\/|\.\.\/]+(.*?)\)/g;
         let updatedContent = content.replace(urlPattern,function(match, p1, p2){
-            if(p1 === 'Table of contents'){
-                return '';// We remove it `[${p1}](${window.location.origin}/cta)`;
+            if(p1 === 'Table of Contents'){
+                return `[Table of Contents](${window.location.origin}/cta)`;
             }else{
                 return `[${p1}](${window.location.origin}/cta#${p2})`;
             }
