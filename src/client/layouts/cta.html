@@ -5,7 +5,11 @@
         <title>SF Toolkit - CTA Cheat Sheet</title>
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <!--<link rel="stylesheet" href="$assetsDir/styles/salesforce-lightning-design-system.min.css" />-->
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+            rel="stylesheet"
+        />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
         <style>
             .container {
                 box-sizing: border-box;
@@ -44,26 +48,48 @@
 
             .content-table ul li a{
                 padding-left:2rem;
+                width: 90%;
+                display: block;
+                text-align: left;
             }
 
-            .content-table ul li.currentlist {
-                background: #d8e6fe;
+            .content-table ul li.slds-is-active {
+                background: rgba(21,137,238,.1);
                 padding-top: 10px;
                 padding-bottom: 10px;
+
+                font-weight: 700;
+                -webkit-box-shadow: inset 4px 0 0 #1b96ff;
+                box-shadow: inset 4px 0 0 #1b96ff;
             }
+        </style>
+        <style>
+            
         </style>
     </head>
     <body>
-        <div class="markdown-container">
-            {{{body}}} {{{lwr_resources}}}
-        </div>
+        {{{body}}} {{{lwr_resources}}}
     </body>
     <script>
+            var isMenuOpen = false;
+
+            // Function to toggle class on specific elements
+            function handleNavbarMenu() {
+                console.log('toggleClassOnElements');
+                // Get the elements by their IDs or any other suitable method
+                const menu = document.getElementsByClassName('menu-container')[0];
+                const documentation = document.getElementsByClassName('documentation-container')[0];
+
+                // Toggle the class on the elements
+                menu.classList.toggle('d-none');
+                documentation.classList.toggle('d-none');
+                isMenuOpen = !isMenuOpen;
+            }
             
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('hello');
-            // Get the current URL
-            
-        });
+            document.querySelector('.navbar-toggler').addEventListener('click', handleNavbarMenu);
+            window.addEventListener('hashchange', (e)=> {
+                if(isMenuOpen)handleNavbarMenu();
+            }, false);
     </script>
-</html> 
+    
+</html>

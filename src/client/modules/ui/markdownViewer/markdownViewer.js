@@ -72,9 +72,9 @@ export default class MarkdownViewer extends LightningElement {
             if (linkURL === currentURL) {
                 console.log('link',link);
                 // Add a class to the matching link
-                link.parentElement.classList.add('currentlist');
+                link.parentElement.classList.add('slds-is-active');
             }else{
-                link.parentElement.classList.remove('currentlist');
+                link.parentElement.classList.remove('slds-is-active');
             }
         }
     }
