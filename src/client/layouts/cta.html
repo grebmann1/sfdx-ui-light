@@ -12,6 +12,10 @@
         />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
         <style>
+
+            .slds-hide{
+                display:none;
+            }
             .container {
                 box-sizing: border-box;
                 min-width: 200px;
@@ -31,30 +35,22 @@
                 align-items: flex-start;
                 justify-content: space-around;
             }
-            .content-table{
-                width: 25%;
-                border-right: 1px solid hsla(210,18%,87%,1);
-            }
-            .content-viewer{
-                width: 75%;
-                padding-left:2rem;
-            }
 
-            .content-table ul{
+            cta-markdown-menu ul{
                 list-style:none;
                 padding-top: 5px;
                 padding-bottom: 5px;
                 padding-left: 0px !important;
             }
 
-            .content-table ul li a{
+            cta-markdown-menu ul li a{
                 padding-left:2rem;
                 width: 90%;
                 display: block;
                 text-align: left;
             }
 
-            .content-table ul li.slds-is-active {
+            cta-markdown-menu ul li.slds-is-active {
                 background: rgba(21,137,238,.1);
                 padding-top: 10px;
                 padding-bottom: 10px;
@@ -71,28 +67,4 @@
     <body>
         {{{body}}} {{{lwr_resources}}}
     </body>
-    <script>
-            var isMenuOpen = false;
-            const windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-            console.log('windowWidth',windowWidth);
-
-            // Function to toggle class on specific elements
-            function handleNavbarMenu() {
-                console.log('toggleClassOnElements');
-                // Get the elements by their IDs or any other suitable method
-                const menu = document.getElementsByClassName('menu-container')[0];
-                const documentation = document.getElementsByClassName('documentation-container')[0];
-
-                // Toggle the class on the elements
-                menu.classList.toggle('d-none');
-                documentation.classList.toggle('d-none');
-                isMenuOpen = !isMenuOpen;
-            }
-            
-            document.querySelector('.navbar-toggler').addEventListener('click', handleNavbarMenu);
-            window.addEventListener('hashchange', (e)=> {
-                if(isMenuOpen)handleNavbarMenu();
-            }, false);
-    </script>
-    
 </html>

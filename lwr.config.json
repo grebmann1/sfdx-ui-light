@@ -72,7 +72,7 @@
         {
             "id": "CTA",
             "path": "/cta",
-            "contentTemplate": "$contentDir/cta.html",
+            "rootComponent": "cta/app",
             "layoutTemplate": "$layoutsDir/cta.html",
             "cache": { "ttl": 1 },
             "bootstrap": {

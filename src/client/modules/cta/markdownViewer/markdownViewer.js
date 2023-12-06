@@ -1,5 +1,5 @@
 import { api, LightningElement } from 'lwc';
-import { marked } from './markdown';
+import { marked } from 'shared/markdown';
 import { isEmpty } from 'shared/utils';
 
 export default class MarkdownViewer extends LightningElement {
@@ -8,18 +8,12 @@ export default class MarkdownViewer extends LightningElement {
 
     @api defaultUrl;
     @api url;
-    @api isMenu = false;
     @api baseUrl;
 
     connectedCallback(){
         if(!this.init){
             this.initComponent();
         }
-
-        window.addEventListener('hashchange', (e)=> {
-            this.updateComponent();
-        }, false);
-
     }
 
     getPageUrl = () => {
@@ -30,54 +24,21 @@ export default class MarkdownViewer extends LightningElement {
         }
     }
 
-    updateComponent(){
-        if(!this.isMenu){
-            this.url = this.baseUrl + this.getPageUrl();
-            this.getDown(this.url); // we reset
-        }else{
-            this.runAsMenu();
-        }
-    }
+    
 
 
     initComponent = () => {
         let pageUrl = this.getPageUrl();
-        if(this.isMenu){
-            this.getDown(this.url);
-            this.runAsMenu();
+        if(isEmpty(pageUrl)){
+            // hard coded home page
+            this.getDown(this.defaultUrl);
         }else{
-            if(isEmpty(pageUrl)){
-                // hard coded home page
-                this.getDown(this.defaultUrl);
-            }else{
-                this.url = this.baseUrl + pageUrl;
-                this.getDown(this.url);
-            }
+            this.url = this.baseUrl + pageUrl;
+            this.getDown(this.url);
         }
         this.init = true;
     }
 
-
-
-    runAsMenu = () => {
-        var currentURL = window.location.href;
-        
-        // Get all the links on the page
-        var links = this.template.querySelectorAll('a');
-        // Loop through each link and compare its href with the current URL
-        for (var i = 0; i < links.length; i++) {
-            var link = links[i];
-            var linkURL = link.href;
-            // Check if the link's href matches the current URL
-            if (linkURL === currentURL) {
-                console.log('link',link);
-                // Add a class to the matching link
-                link.parentElement.classList.add('slds-is-active');
-            }else{
-                link.parentElement.classList.remove('slds-is-active');
-            }
-        }
-    }
     
     async getDown(url){
         const content = await (await fetch(url)).text();
@@ -111,6 +72,14 @@ export default class MarkdownViewer extends LightningElement {
             return `![${p1}](https://github.com/grebmann1/cta-cheat-sheet/raw/main/Images/${newLink})`;
         });
         return updatedContent;
+    }
+
+    /** Methods */
+
+    @api 
+    updateComponent(){
+        this.url = this.baseUrl + this.getPageUrl();
+        this.getDown(this.url); // we reset
     }
     
 }
