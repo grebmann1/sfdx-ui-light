@@ -59,6 +59,15 @@
             window.defaultStore = localforage.createInstance({name: "defaultStore"});
         </script>
     </head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J8XPLSRY91"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-J8XPLSRY91');
+    </script>
     <body>
         <!-- triple braces prevents HTML escaping -->
         {{{body}}} {{{lwr_resources}}}
