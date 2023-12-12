@@ -1,0 +1,255 @@
+.grid {
+    display: grid;
+}
+
+.h-full {
+    height: 100%;
+}
+
+.grid-cols-12 {
+    grid-template-columns: repeat(12,minmax(0,1fr));
+}
+
+.w-40 {
+    width: 10rem;
+}
+
+.gap-\[0\.125rem\] {
+    gap: 0.125rem;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.gap-3 {
+    gap: 0.75rem;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.flex {
+    display: flex;
+}
+
+.font-medium {
+    font-weight: 500;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.grow {
+    flex-grow: 1;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.hidden {
+    display: none;
+}
+
+.fill-current {
+    fill: currentColor;
+}
+
+
+
+.bg-current {
+    background-color: currentColor;
+}
+
+.bg-neutral-0 {
+    --tw-bg-opacity: 1;
+    background-color: rgb(255 255 255/var(--tw-bg-opacity));
+}
+
+.rounded-xl {
+    border-radius: 0.75rem;
+}
+
+.rounded-sm {
+    border-radius: 0.125rem;
+}
+
+.h-2 {
+    height: 0.5rem;
+}
+
+.p-4 {
+    padding: 1rem;
+}
+
+.col-span-6 {
+    grid-column: span 6/span 6;
+}
+
+/** padding **/
+.py-1\.5 {
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+}
+
+.px-2 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+/** Backgrounds **/
+.to-100\% {
+    --tw-gradient-to-position: 100%;
+}
+
+.to-neutral-5 {
+    --tw-gradient-to: #f3f3f4 var(--tw-gradient-to-position);
+}
+
+.from-background-light {
+    --tw-gradient-from: #fafbfc var(--tw-gradient-from-position);
+    --tw-gradient-to: rgba(250,251,252,0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from),var(--tw-gradient-to);
+}
+
+.bg-neutral-0 {
+    --tw-bg-opacity: 1;
+    background-color: rgb(255 255 255/var(--tw-bg-opacity));
+}
+
+/** Text **/
+.leading-9 {
+    line-height: 2.25rem;
+}
+
+.text-neutral-50 {
+    --tw-text-opacity: 1;
+    color: rgb(139 140 144/var(--tw-text-opacity));
+}
+
+.text-neutral-80 {
+    --tw-text-opacity: 1;
+    color: rgb(69 71 77/var(--tw-text-opacity));
+}
+
+.text-neutral-100 {
+    --tw-text-opacity: 1;
+    color: rgb(23 25 33/var(--tw-text-opacity));
+}
+
+.text-sm {
+    font-size: .875rem;
+    line-height: 1.25rem;
+    letter-spacing: -.00622354em;
+}
+
+.text-2xs {
+    font-size: .5625rem;
+    line-height: .75rem;
+    letter-spacing: .0161691em;
+}
+
+.text-3xl {
+    font-size: 1.75rem;
+    line-height: 2.25rem;
+}
+
+.text-score-alert, .text-score-alert-background {
+    --tw-text-opacity: 1;
+    color: rgb(217 72 40/var(--tw-text-opacity));
+}
+
+.text-score-poor {
+    --tw-text-opacity: 1;
+    color: rgb(217 151 40/var(--tw-text-opacity));
+}
+
+.text-score-fair {
+    --tw-text-opacity: 1;
+    color: rgb(205 178 37/var(--tw-text-opacity));
+}
+
+.text-score-good {
+    --tw-text-opacity: 1;
+    color: rgb(121 159 70/var(--tw-text-opacity));
+}
+
+.text-score-excellent {
+    --tw-text-opacity: 1;
+    color: rgb(37 140 103/var(--tw-text-opacity));
+}
+
+.text-success-main {
+    --tw-text-opacity: 1;
+    color: rgb(64 184 132/var(--tw-text-opacity));
+}
+
+@media (min-width: 1024px){
+    .lg\:text-4xl {
+        font-size: 2.25rem;
+        line-height: 2.75rem;
+    }
+}
+
+@media (min-width: 875px){
+    .md-lg\:text-3xl {
+        font-size: 1.75rem;
+        line-height: 2.25rem;
+    }
+}
+
+@media (min-width: 640px){
+    .sm\:gap-y-0 {
+        row-gap: 0;
+    }
+
+    .sm\:gap-x-4 {
+        -moz-column-gap: 1rem;
+        column-gap: 1rem;
+    }
+
+    .sm\:block {
+        display: block;
+    }
+
+    .sm\:col-span-3 {
+        grid-column: span 3/span 3;
+    }
+
+    .sm\:shadow-none {
+        --tw-shadow: 0 0 #0000;
+        --tw-shadow-colored: 0 0 #0000;
+        box-shadow: var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow);
+    }
+
+    .sm\:bg-gradient-104 {
+        --tw-gradient-stops : #f3f3f4 100%;
+        background-image: linear-gradient(103deg, #f3f5f6 100%,#f3f3f4 100%);
+    }
+
+    .sm\:leading-\[44px\] {
+        line-height: 44px;
+    }
+
+    .sm\:text-4xl {
+        font-size: 2.25rem;
+        line-height: 2.75rem;
+    }
+
+    .sm\:items-end {
+        align-items: flex-end;
+    }
+}
+
+

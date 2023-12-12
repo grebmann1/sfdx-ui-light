@@ -1,0 +1,49 @@
+<template>
+    <div class="col-span-6 hidden rounded-xl bg-neutral-0 p-4 dark:bg-neutral-100 sm:col-span-3 sm:block">
+        <div class="flex h-full flex-col justify-between gap-2 text-neutral-100 dark:text-neutral-0">
+            <div class="flex justify-between">
+                <div class="text-sm font-normal">{title}</div>
+                <div class="text-xs font-normal">{subTitle}</div>
+            </div>
+            <div class="flex items-center justify-between gap-2 lg:gap-4">
+                <div>
+                    <span class="text-lg font-medium md-lg:text-3xl lg:text-4xl">{mark}</span>
+                    <span class="text-xs font-normal md-lg:text-base lg:text-lg">{markExtra}</span>
+                </div>
+                <div class="w-40">
+                    <div class="flex flex-col gap-[0.125rem]">
+                        <div class="flex w-full gap-[0.125rem]">
+                            <div class={step1Class}>
+                                <svg width="12" height="6"><path d="M0 0L6 6L12 0" class="fill-current"></path></svg>
+                            </div>
+                            <div class={step2Class}>
+                                <svg width="12" height="6"><path d="M0 0L6 6L12 0" class="fill-current"></path></svg>
+                            </div>
+                            <div class={step3Class}>
+                                <svg width="12" height="6"><path d="M0 0L6 6L12 0" class="fill-current"></path></svg>
+                            </div>
+                            <div class={step4Class}>
+                                <svg width="12" height="6"><path d="M0 0L6 6L12 0" class="fill-current"></path></svg>
+                            </div>
+                            <div class={step5Class}>
+                                <svg width="12" height="6"><path d="M0 0L6 6L12 0" class="fill-current"></path></svg>
+                            </div>
+                        </div>
+                        <div class="flex w-full gap-[0.125rem]">
+                            <div class="h-2 grow rounded-sm bg-current text-score-alert"></div>
+                            <div class="h-2 grow rounded-sm bg-current text-score-poor"></div>
+                            <div class="h-2 grow rounded-sm bg-current text-score-fair"></div>
+                            <div class="h-2 grow rounded-sm bg-current text-score-good"></div>
+                            <div class="h-2 grow rounded-sm bg-current text-score-excellent"></div>
+                        </div>
+                        <div class="flex justify-between gap-2 text-2xs font-medium text-neutral-50">
+                            <div>{lowLabel}</div>
+                            <div>{highLabel}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-2xs font-normal">{description}</div>
+        </div>
+    </div>
+</template>

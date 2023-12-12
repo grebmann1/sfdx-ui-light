@@ -25,7 +25,7 @@ export async function connect({alias,settings}){
           connection.on("refresh", function(accessToken, res) {
             // Refresh event will be fired when renewed access token
             // to store it in your storage for next request
-            console.log('refresh',accessToken,res)
+            console.log('refresh token',accessToken,res)
           });
     return connection;
 }

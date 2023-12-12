@@ -131,13 +131,13 @@ export default class App extends LightningElement {
         }
         
         console.log('process.env.NODE_ENV',process.env.NODE_ENV);
-        if(process.env.NODE_ENV === 'dev'){
+        /*if(process.env.NODE_ENV === 'dev'){
             await this.loadModule({
                 component:'accessAnalyzer/app',
                 name:"Access Analyzer",
                 isDeletable:true
             });
-        }
+        }*/
     }
 
 
