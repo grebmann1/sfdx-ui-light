@@ -111,6 +111,12 @@ export default class App extends LightningElement {
             name:"Apps",
             isDeletable:false,
         });
+
+        await this.loadModule({
+            component:'org/app',
+            name:"Org",
+            isDeletable:false,
+        });
     }
 
     load_fullMode = async () => {
@@ -131,13 +137,14 @@ export default class App extends LightningElement {
         }
         
         console.log('process.env.NODE_ENV',process.env.NODE_ENV);
-        /*if(process.env.NODE_ENV === 'dev'){
+        /** DEV MODE  */
+        if(process.env.NODE_ENV === 'dev'){
             await this.loadModule({
                 component:'accessAnalyzer/app',
                 name:"Access Analyzer",
                 isDeletable:true
             });
-        }*/
+        }
     }
 
 
