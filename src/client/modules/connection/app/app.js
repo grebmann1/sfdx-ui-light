@@ -100,8 +100,10 @@ export default class App extends LightningElement {
             // Express version
             window.electron.ipcRenderer.invoke('org-openOrgUrl',row);
         }else{
+            let settings = this.data.find(x => x.id == row.id);
             // Browser version
-            window.open(row.sfdxAuthUrl,'_blank');
+            let url = settings.instanceUrl+'/secur/frontdoor.jsp?sid='+settings.accessToken;
+            window.open(url,'_blank');
         }    
     }
 
