@@ -1,0 +1,64 @@
+<template>
+    <div class="list-builder-container slds-grid slds-grid_vertical">
+        <div class="slds-p-vertical_x-small slds-p-horizontal_large slds-shrink-none slds-theme_shade" style="min-height: 125px">
+            <div class="slds-form-element">
+                <label class="slds-form-element__label slds-assistive-text" for="list-builder-search" id="list-builder-search">Search</label>
+                <div class="slds-form-element__control">
+                    <div class="slds-combobox_container">
+                        <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click">
+                            <lightning-input
+                                    name="enter-search"
+                                    label={searchLabel}
+                                    type="search"
+                                    onchange={handleChange}
+                            ></lightning-input>
+                            <template if:true={_helpMessage}>
+                                <div class="slds-p-top_large slds-form-element__control center-radiogroup">
+                                    <!-- Error message displayed under the Environment selection -->
+                                    <div id="help-text" data-help-text class="slds-form-element__help" aria-live="assertive">
+                                        {_helpMessage}
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <lightning-pill-container items={selection} onitemremove={handleItemRemove}></lightning-pill-container>
+            <div class="slds-text-title slds-m-top_x-small" aria-live="polite">{selectedItemsTotal} Item(s) Selected</div>
+        </div>
+        <div style="height: calc(100% - 160px)">
+            <div if:true={displayEmptyMessage}>
+                <slot name="empty-message"></slot>
+            </div>
+            <!-- Table -->
+            <slds-list-builder-custom-datatable if:false={displayEmptyMessage}
+                                                  is-loading={isLoading}
+                                                  data={datatableData}
+                                                  columns={columns}
+                                                  key-field="id"
+                                                  hide-checkbox-column="true"
+                                                  onrowselect={handleRowSelection}
+                                                  enable-infinite-loading={enableInfiniteLoading}
+                                                  onloadmore={loadMoreData}
+            ></slds-list-builder-custom-datatable>
+            <!-- Paginator -->
+            <slds-paginator if:true={usePaginator}
+                              auto-hide
+                              records={formattedData}
+                              page-size="10"
+                              onpaginatorchange={handlePaginatorChange}>
+            </slds-paginator>
+            {loadMoreStatus}
+        </div>
+
+        <div class="slds-p-vertical_x-small slds-p-horizontal_large slds-shrink-none slds-theme_shade" if:false={usePaginator}>
+            <div class="slds-float_left">
+                <slot name="footer-menu"></slot>
+            </div>
+            <div class="slds-float_right">
+                0 - {recordsLength} of {totalRecordsLength}
+            </div>
+        </div>
+    </div>
+</template>

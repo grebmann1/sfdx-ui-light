@@ -121,6 +121,13 @@ export function runActionAfterTimeOut(value, action,{timeout = 300} = {}) {
     }, timeout);
 }
 
+export function timeout(interval) {
+    return new Promise(resolve => {
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        setTimeout(resolve, interval);
+    });
+}
+
 export const isElectronApp = () => {
     return isNotUndefinedOrNull(window.electron);
 }

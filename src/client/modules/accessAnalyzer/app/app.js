@@ -3,6 +3,7 @@ import {decodeError,getAllOrgs,chunkArray,chunkPromises,isEmpty,groupBy,runActio
 import {TabulatorFull as Tabulator} from 'tabulator-tables';
 import ModalProfileFilter from "accessAnalyzer/modalProfileFilter";
 import ModalPermissionSetFilter from "accessAnalyzer/modalPermissionSetFilter";
+import ModalUserSelector from "slds/modalUserSelector";
 
 import { loadMetadata_async,setFieldPermission } from "shared/sf";
 import { fileFormatter } from 'accessAnalyzer/utils';
@@ -152,6 +153,13 @@ export default class App extends LightningElement {
     report_handleChange = (e) => {
         this.report = e.detail.value;
         this.displayReport();
+    }
+
+    adduser_handleClick = (e) => {
+        ModalUserSelector.open()
+        .then(res => {
+
+        })
     }
 
 

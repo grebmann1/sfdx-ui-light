@@ -24,6 +24,7 @@
                     <div class="slds-page-header__controls">
                         <div class="slds-page-header__control">
                             <lightning-button-group>
+                                <!--<lightning-button icon-name="utility:adduser" disabled={isLoading} onclick={adduser_handleClick} label="Select Users"></lightning-button>-->
                                 <lightning-button icon-name="utility:filterList" disabled={isLoading} onclick={filtering_handleClick} label={filtering_title}></lightning-button>
                                 <lightning-button icon-name="utility:download"  disabled={isLoading} onclick={downloadPDF} label="PDF" ></lightning-button>
                                 <lightning-button icon-name="utility:download"  disabled={isLoading} onclick={downloadCSV} label="CSV" ></lightning-button>
@@ -35,6 +36,15 @@
             </div>
             <div class="slds-page-header__row slds-page-header__row_gutters">
                 <div class="slds-page-header__col-details">
+                    <!-- Users START -->
+                    <!--
+                        <ul class="slds-page-header__detail-row">
+                            <li class="slds-page-header__detail-block-report">
+                                
+                            </li>
+                        </ul>
+                    -->
+                    <!-- Users - END -->
                     <!-- Filters - START -->
                     <ul class="slds-page-header__detail-row">
                         

@@ -1,0 +1,7 @@
+:host{
+    height:inherit;
+    display: contents;
+}
+:host .list-builder-container{
+    height:calc(100% - 20px)
+}
