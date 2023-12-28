@@ -9,5 +9,11 @@
     </template>
     <template lwc:else>
         <div class="injector" lwc:dom="manual"></div>
+        <lightning-button-icon
+                onclick={handleCopy}
+                icon-name="utility:copy"
+                variant="bare"
+                alternative-text="copy"
+        ></lightning-button-icon>
     </template>
 </template>

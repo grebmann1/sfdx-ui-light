@@ -18,6 +18,10 @@ export default class RecordExplorerCell extends LightningElement {
         }
     }
 
+    handleCopy = () => {
+        navigator.clipboard.writeText(this.value);
+    }
+
 
     /** Getters */
 

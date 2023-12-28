@@ -1,7 +1,7 @@
 import { createElement,LightningElement} from "lwc";
 
 import {TabulatorFull as Tabulator} from "tabulator-tables";
-import {runActionAfterTimeOut,isEmpty} from 'shared/utils';
+import {runActionAfterTimeOut,isEmpty,isNotUndefinedOrNull} from 'shared/utils';
 import {
     getRecordId,getCurrentTab,getCurrentObjectType,
     fetch_data,fetch_metadata
@@ -165,6 +165,10 @@ export default class RecordExplorer extends LightningElement {
 
     get formattedData(){
         return this.filtering(this.data);
+    }
+
+    get isRecordIdAvailable(){
+        return isNotUndefinedOrNull(this.recordId);
     }
 
 }
