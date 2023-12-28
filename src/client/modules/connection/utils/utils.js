@@ -5,6 +5,7 @@ import * as webInterface from './web';
 import * as electronInterface from './electron';
 import {Connector} from './mapping';
 
+export * from './chrome';
 export * from './mapping';
 
 

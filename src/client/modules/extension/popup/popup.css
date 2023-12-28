@@ -1,0 +1,15 @@
+.grid-container{
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height:calc(100vh - 60px - 3rem);
+    width:calc(100vw - 3.5rem)
+}
+
+.slds-page-header__detail-row{
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.slds-page-header_joined{
+    height:100vh;
+}

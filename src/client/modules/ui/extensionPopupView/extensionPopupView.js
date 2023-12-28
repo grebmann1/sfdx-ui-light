@@ -1,18 +1,32 @@
 import { LightningElement} from "lwc";
 import LightningAlert from 'lightning/alert';
 import { isUndefinedOrNull } from "shared/utils";
+import { getHostAndSession,directConnection } from 'connection/utils';
 
-export default class extensionView extends LightningElement {
+export default class extensionPopupView extends LightningElement {
 
     sessionId;
     serverUrl;
+    isLoaded = false;
 
-    connectedCallback(){
-        this.sessionId = this.getSessionId();
-        this.serverUrl = this.getServerUrl();
+    async connectedCallback(){
+        let cookie = await getHostAndSession();
+        this.sessionId = cookie.session;
+        this.serverUrl = cookie.domain;
+
+        /** Set as global **/
+        window.sessionId = this.sessionId;
+        window.serverUrl = this.serverUrl;
+        window.connector = await new window.jsforce.Connection({
+            serverUrl : 'https://' + this.serverUrl,
+            sessionId : this.sessionId
+        })
+        console.log('window.connector',window.connector);
 
         if(isUndefinedOrNull(this.sessionId) || isUndefinedOrNull(this.serverUrl)){
             this.sendError();
+        }else{
+            this.isLoaded = true;
         }
     }
 

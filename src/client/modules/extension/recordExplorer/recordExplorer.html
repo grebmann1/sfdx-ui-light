@@ -1,0 +1,34 @@
+<template>
+    <template lwc:if={isLoading}>
+        <lightning-spinner alternative-text="Loading"></lightning-spinner>
+    </template>
+    <!-- Header -->
+    <div class="slds-p-vertical_x-small slds-p-horizontal_large slds-shrink-none slds-theme_shade">
+        <!-- Object Info -->
+        <nav role="navigation" aria-label="Breadcrumbs">
+            <ol class="slds-breadcrumb slds-list_horizontal slds-wrap">
+                <li class="slds-breadcrumb__item">
+                    <span>SObject</span>
+                </li>
+                <li class="slds-breadcrumb__item">
+                    <span>{sobjectName}</span>
+                </li>
+            </ol>
+          </nav>
+        <!-- Search -->
+        <div class="slds-form-element">
+            <label class="slds-form-element__label slds-assistive-text" for="data-search">Search</label>
+            <div class="slds-form-element__control">
+                <div class="slds-combobox_container">
+                    <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click" aria-expanded="false" aria-haspopup="listbox" role="combobox">
+                        <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                            <input type="text" onkeyup={handleSearchInput} class="slds-input slds-combobox__input" id="data-search" placeholder="Search Salesforce"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Table -->
+    <div lwc:dom="manual" class="custom-table"></div>
+</template>

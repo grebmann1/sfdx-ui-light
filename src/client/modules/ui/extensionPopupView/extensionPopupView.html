@@ -1,0 +1,9 @@
+<template>
+    <template lwc:if={isLoaded}>
+        <extension-popup 
+            mode="light" 
+            session-id={sessionId} 
+            server-url={serverUrl}
+        ></extension-popup>
+    </template>
+</template>
