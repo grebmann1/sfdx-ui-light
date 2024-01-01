@@ -19,7 +19,7 @@
                 <div class="slds-grid slds-wrap">
                     <template for:each={userLicenses} for:item="item">
                         <div class="slds-col slds-size_1-of-2" key={item.Id}>
-                            <dashboard-horizontal-rank mark={item.value} title={item.label} sub-title=">75%" description={item.description} current-step={item.currentRank}></dashboard-horizontal-rank>
+                            <dashboard-horizontal-rank mark={item.value} title={item.label} sub-title="" description={item.description} current-step={item.currentRank}></dashboard-horizontal-rank>
                         </div>
                     </template>
                 </div>
