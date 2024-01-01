@@ -1,5 +1,5 @@
 import {LightningElement,api} from "lwc";
-import { isNotUndefinedOrNull,isEmpty } from "shared/utils";
+import { isNotUndefinedOrNull,isEmpty,isUndefinedOrNull } from "shared/utils";
 export default class RecordExplorerCell extends LightningElement {
 
     @api value;
@@ -14,7 +14,13 @@ export default class RecordExplorerCell extends LightningElement {
     renderedCallback() {
         if(this.template.querySelector('.injector')){
             // Issue will happen with "HTML values";
-            this.template.querySelector('.injector').innerHTML = this.formattedValue;
+            let formattedHtml = this.formattedValue;
+            if(this.type === 'address'){
+                formattedHtml = `<pre>${this.formattedValue}</pre>`;
+            }
+
+            this.template.querySelector('.injector').innerHTML = formattedHtml;
+            
         }
     }
 
@@ -28,9 +34,15 @@ export default class RecordExplorerCell extends LightningElement {
     get isBoolean(){
         return this.type === 'boolean';
     }
+
+    get isCopyDisplayed(){
+        return isNotUndefinedOrNull(this.value);
+    }
     
 
     get formattedValue(){
+        console.log('isEmpty(this.filter)',isEmpty(this.filter));
+        if(isUndefinedOrNull(this.value)) return '';
         if(isEmpty(this.filter)) return this.value;
 
         var regex = new RegExp('('+this.filter+')','gi');
@@ -38,7 +50,7 @@ export default class RecordExplorerCell extends LightningElement {
             return this.value.toString().replace(/<?>?/,'').replace(regex,'<span style="font-weight:Bold; color:blue;">$1</span>');
         }
 
-        return this.value;
+        return this.value.toString();
     }
     
 }

@@ -1,0 +1,9 @@
+.value-container{
+    display:flex;
+    justify-content: space-between;
+}
+
+pre {
+    margin:0;
+    font-family: inherit;
+}

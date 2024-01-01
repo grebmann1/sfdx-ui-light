@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "SF Toolkit Extension",
-    "version": "1.0.0",
-    "description": "Use SF Toolkit directly from chrome to analyze User access, profile, permissions, etc",
+    "name": "SF Toolkit Light",
+    "version": "1.0.1",
+    "description": "Use SF Toolkit directly from chrome to visualize record details and analyze User access, profile, permissions, etc",
     "icons": {
         "128": "images/icon-128.png"
     },

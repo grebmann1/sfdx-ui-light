@@ -22,7 +22,7 @@ export default class RecordExplorer extends LightningElement {
     record;
     // for table
     data;
-    filter;
+    filter = '';
 
 
     async connectedCallback(){
@@ -96,15 +96,13 @@ export default class RecordExplorer extends LightningElement {
     }
 
     filtering = (arr) => {
-        if(isEmpty(this.filter))
-            return arr;
     
         var items = [];
         var regex = new RegExp('('+this.filter+')','i');
         for(var key in arr){
             var item = arr[key];
-            if(typeof item.value == 'object'){
-                item.value = JSON.stringify(item.value);
+            if(typeof item.value == 'object' && item.value !== null){
+                item.value = JSON.stringify(item.value, null, 2);
             }
     
             if(this.filter === 'false' && item.value === false || this.filter === 'true' && item.value === true || this.filter === 'null' && item.value === null){
@@ -123,7 +121,6 @@ export default class RecordExplorer extends LightningElement {
 
     updateTable = (newValue) => {
         this.filter = newValue;
-        console.log('this.formattedData',this.formattedData);
         this.tableInstance.replaceData(this.formattedData)
         .then(function(){
             //run code after table has been successfully updated
@@ -137,9 +134,9 @@ export default class RecordExplorer extends LightningElement {
     createTable = () => {
 
         let colModel = [
-            { title: 'Field Label'  , field: 'label'    , widthGrow:1,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField},
-            { title: 'ApiName'      , field: 'name'     , widthGrow:1,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField},
-            { title: 'Value'        , field: 'value'    , widthGrow:3,  headerHozAlign: "center", resizable: true ,formatter:this.formatterValue}
+            { title: 'Field Label'  , field: 'label'    , width:200,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField},
+            { title: 'ApiName'      , field: 'name'     , width:200,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField},
+            { title: 'Value'        , field: 'value'    ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterValue}
         ];
 
         if (this.tableInstance) {

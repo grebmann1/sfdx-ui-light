@@ -13,3 +13,7 @@
 .slds-page-header_joined{
     height:100vh;
 }
+
+.slds-page-header__row_gutters{
+    height:auto;
+}
