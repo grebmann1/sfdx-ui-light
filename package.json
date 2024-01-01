@@ -15,7 +15,7 @@
         "clean": "rm -r __lwr_cache__ site __skip_directory_creation__",
         "fix:lightning": "node scripts/fix_lightning.js",
         "extension-build": "rm -r chrome_ext | rollup -c rollup.config.js --bundleConfigAsCjs",
-        "heroku-postbuild": "npm run clean | NODE_ENV=production WARMUP=true lwr build -m prod --clean && copy-files-from-to --config extension-copy.json --silent"
+        "heroku-postbuild": "npm run clean | NODE_ENV=production WARMUP=true lwr build -m prod --clean"
     },
     "copyFiles": [
         {
