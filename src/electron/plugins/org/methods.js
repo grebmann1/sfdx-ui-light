@@ -7,7 +7,7 @@ getAllOrgs = async (_) => {
         json:true,
         verbose:true
     });
-    console.log('res',res);
+    //console.log('res',res);
     return res?.nonScratchOrgs || [];
 }
 

@@ -3,7 +3,8 @@ const path                          = require('path');
 const {getOrCreateMainWindow}   = require('./utils/window.js');
 const { ipcMainManager }        = require('./utils/ipc.js');
 const ORG_CONNECTOR             = require('./plugins/org/connector.js');
-
+const CODE_CONNECTOR            = require('./plugins/code/connector.js');
+const UTIL_CONNECTOR            = require('./plugins/util/connector.js');
 /** Auto Updater **/
 const isDev = !app.isPackaged;
 
@@ -28,6 +29,8 @@ const isDev = !app.isPackaged;
 
 /** Init Listeners */
 new ORG_CONNECTOR.connector().enableEventListeners(ipcMainManager);
+new CODE_CONNECTOR.connector().enableEventListeners(ipcMainManager);
+new UTIL_CONNECTOR.connector().enableEventListeners(ipcMainManager);
 
 if(isDev) {
     require('electron-reload')(__dirname, {
@@ -51,9 +54,9 @@ app.whenReady().then(async () => {
     console.log('process.en.NODE_ENV',process.env.NODE_ENV);
     let mainWindow = getOrCreateMainWindow();
     if (process.env.NODE_ENV === 'development') {
-        mainWindow.loadURL('http://localhost:3000/');
+        mainWindow.loadURL('http://localhost:3000/app');
     } else {
-        mainWindow.loadURL('https://sf-toolkit.com/');
+        mainWindow.loadURL('https://sf-toolkit.com/app');
     }
 });
 

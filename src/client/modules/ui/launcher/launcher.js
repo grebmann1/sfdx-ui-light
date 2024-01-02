@@ -1,5 +1,6 @@
 import LightningModal from 'lightning/modal';
 import { api } from "lwc";
+import {guid,isNotUndefinedOrNull,isElectronApp} from "shared/utils";
 
 const application_mapping = [
     {
@@ -9,6 +10,15 @@ const application_mapping = [
         component:"accessAnalyzer/app",
         description:"Analyze access provided by profiles and permission sets",
         isDeletable:true
+    },
+    {
+        id:"metadata",
+        name:"Metadata",
+        shortName:"AA",
+        component:"metadata/app",
+        description:"Create VSCode project, Review metadata, etc",
+        isDeletable:true,
+        isElectronOnly:true
     }
 ]
 
@@ -28,6 +38,8 @@ export default class Launcher extends LightningModal {
     /** getters */
 
     get applications(){
-        return application_mapping;
+        if(isElectronApp()) return application_mapping;
+
+        return application_mapping.filter(x => !x.isElectronOnly);
     }
 }

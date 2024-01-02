@@ -27,6 +27,7 @@
         "@lwc/rollup-plugin": "^5.2.1",
         "@lwrjs/label-module-provider": "0.11.6",
         "@rollup/plugin-replace": "^5.0.5",
+        "command-exists": "^1.2.9",
         "dotenv": "^16.3.1",
         "express": "^4.18.2",
         "express-requests-logger": "^4.0.0",

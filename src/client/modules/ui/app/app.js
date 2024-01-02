@@ -1,17 +1,19 @@
 import { LightningElement,track,api} from "lwc";
-import {guid,isNotUndefinedOrNull} from "shared/utils";
+import {guid,isNotUndefinedOrNull,isElectronApp} from "shared/utils";
 import { getExistingSession,saveSession,removeSession,directConnection } from "connection/utils";
 
 /** Apps  **/
 import connection_app from "connection/app";
 import accessAnalyzer_app from "accessAnalyzer/app";
+import metadata_app from "metadata/app";
 import extension_app from "extension/app";
 import org_app from "org/app";
 
-const KNOWN_TYPE = new Set(["connection/app", "accessAnalyzer/app","extension/app","org/app"]);
+const KNOWN_TYPE = new Set(["connection/app", "accessAnalyzer/app","extension/app","org/app","metadata/app"]);
 const APP_MAPPING = {
     "connection/app": connection_app,
     "accessAnalyzer/app": accessAnalyzer_app,
+    "metadata/app":metadata_app,
     "extension/app":extension_app,
     "org/app":org_app
 };
@@ -103,6 +105,7 @@ export default class App extends LightningElement {
         this.applications = _applications;
     }
 
+    /** Extension  **/
     load_lightMode = async () => {
         this.connector = await directConnection(this.sessionId,this.serverUrl);
         // Default Mode
@@ -111,7 +114,7 @@ export default class App extends LightningElement {
             name:"Apps",
             isDeletable:false,
         });
-
+        
         await this.loadModule({
             component:'org/app',
             name:"Org",
@@ -119,6 +122,7 @@ export default class App extends LightningElement {
         });
     }
 
+    /** Website & Electron **/
     load_fullMode = async () => {
         this.connector = await getExistingSession();
         // Default Mode
@@ -138,10 +142,11 @@ export default class App extends LightningElement {
         
         console.log('process.env.NODE_ENV',process.env.NODE_ENV);
         /** DEV MODE  */
-        if(process.env.NODE_ENV === 'dev'){
+
+        if(process.env.NODE_ENV === 'dev' && isElectronApp() && this.isUserLoggedIn){
             await this.loadModule({
-                component:'accessAnalyzer/app',
-                name:"Access Analyzer",
+                component:'codeToolkit/app',
+                name:"Code Toolkit",
                 isDeletable:true
             });
         }

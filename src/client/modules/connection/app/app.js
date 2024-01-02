@@ -97,7 +97,7 @@ export default class App extends LightningElement {
 
     openBrowser = (row) => {
         if(isElectronApp()){
-            // Express version
+            // Electron version
             window.electron.ipcRenderer.invoke('org-openOrgUrl',row);
         }else{
             let settings = this.data.find(x => x.id == row.id);
