@@ -144,11 +144,11 @@ export default class App extends LightningElement {
         /** DEV MODE  */
 
         if(process.env.NODE_ENV === 'dev' && isElectronApp() && this.isUserLoggedIn){
-            await this.loadModule({
+            /*await this.loadModule({
                 component:'codeToolkit/app',
                 name:"Code Toolkit",
                 isDeletable:true
-            });
+            });*/
         }
     }
 
