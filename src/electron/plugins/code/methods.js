@@ -6,6 +6,12 @@ const fs    = require('fs');
 
 const { encodeError } = require('../../utils/errors.js');
 
+const fileName      = 'pmd-dist-7.0.0-rc4-bin.zip';
+const fileUrl       = 'https://github.com/pmd/pmd/releases/download/pmd_releases%2F7.0.0-rc4/';
+const folderName    = 'pmd-dist-7.0.0-rc4-bin';
+const binPath       = 'pmd-bin-7.0.0-rc4/bin/pmd';
+
+
 const upsert_toolkitPath = (projectPath) => {
     /** SF Tookit path */
     let sfToolkitPath = path.join(projectPath,'.sf-toolkit');
@@ -18,24 +24,22 @@ const upsert_toolkitPath = (projectPath) => {
 
 isPmdInstalled  = async (_,{projectPath}) => {
     try {
-        let pmdPath = path.join(projectPath,'.sf-toolkit','pmd-bin-7.0.0-rc4');
-        return {result:fs.existsSync(pmdPath)?pmdPath:null};
+        let pmdPath = path.join(projectPath,binPath);
+        return {result:fs.existsSync(pmdPath)?binPath:null};
     } catch (e) {
         return {error: encodeError(e)}
     }
 }
 
 installLatestPmd = async (_,{projectPath}) => {
-    const fileName      = 'pmd-dist-7.0.0-rc4-bin.zip';
-    const fileUrl       = 'https://github.com/pmd/pmd/releases/download/pmd_releases%2F7.0.0-rc4/';
-    const folderName    = 'pmd-dist-7.0.0-rc4-bin';
+    
     
     try {
         // Create hidden toolkit folder
         let sfToolkitPath = upsert_toolkitPath(projectPath);
         
         // Download PMD file if not there
-        if(!fs.existsSync(path.join(sfToolkitPath,'pmd-bin-7.0.0-rc4'))){
+        if(!fs.existsSync(path.join(sfToolkitPath,binPath))){
             execSync(`curl -OL ${fileUrl}/${fileName}`,{cwd: sfToolkitPath}).toString();
             execSync(`unzip ${fileName}`,{cwd: sfToolkitPath}).toString();
             execSync(`rm ${fileName}`,{cwd: sfToolkitPath}).toString();
@@ -46,7 +50,7 @@ installLatestPmd = async (_,{projectPath}) => {
         fs.writeFileSync(path.join(sfToolkitPath,'pmd/rulesets/apex/quickstart.xml'), fs.readFileSync(path.join(app.getAppPath(),'public/templates/pmd/rulesets/apex/quickstart.xml')));
         
 
-        return {result:path.join(sfToolkitPath,folderName)};
+        return {result:binPath};
     } catch (e) {
         return {error: encodeError(e)}
     }
