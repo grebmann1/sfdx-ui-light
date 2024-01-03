@@ -6,16 +6,18 @@ import { getExistingSession,saveSession,removeSession,directConnection } from "c
 import connection_app from "connection/app";
 import accessAnalyzer_app from "accessAnalyzer/app";
 import code_app from "code/app";
+import metadata_app from "metadata/app";
 import extension_app from "extension/app";
 import org_app from "org/app";
 
-const KNOWN_TYPE = new Set(["connection/app", "accessAnalyzer/app","extension/app","org/app","code/app"]);
+const KNOWN_TYPE = new Set(["connection/app", "accessAnalyzer/app","extension/app","org/app","code/app","metadata/app"]);
 const APP_MAPPING = {
     "connection/app": connection_app,
     "accessAnalyzer/app": accessAnalyzer_app,
     "code/app":code_app,
     "extension/app":extension_app,
-    "org/app":org_app
+    "org/app":org_app,
+    "metadata/app":metadata_app
 };
 
 export default class App extends LightningElement {
@@ -34,15 +36,28 @@ export default class App extends LightningElement {
 
     async connectedCallback(){
         console.log('connectedCallback');
-        if(this.isLightMode){
-            this.load_lightMode();
-        }else{
-            this.load_fullMode();
-        }
+        this.initMode();
         
     }
 
     /** Events */
+
+    handleOpenApplication = async (e) => {
+        console.log('handleOpenApplication',e.detail);
+        const component = e.detail.component;
+        const name = e.detail.name;
+        this.connector = e.detail.value;
+        console.log('this.applications',this.applications.map(x => x.component));
+        if(this.applications.filter(x => x.component === component).length == 0){
+            await this.loadModule({
+                component,
+                name,
+                isDeletable:true,
+            });
+        }else{
+            this.loadSpecificTab(component);
+        }
+    }
 
     handleLogin = async (e) => {
         console.log('handleLogin',e.detail.value);
@@ -65,9 +80,11 @@ export default class App extends LightningElement {
     }
 
     handleLogout = (e) => {
+        e.preventDefault();
         console.log('handleLogout',e.detail.value);
         removeSession();
-        location.reload();
+        this.initMode();
+        //location.reload();
     }
 
     handleTabChange = (e) => {
@@ -91,6 +108,19 @@ export default class App extends LightningElement {
 
 
     /** Methods  */
+
+    initMode = () => {
+
+        this.connector      = null;
+        this.applications   = [];
+        this.applicationId  = null;
+
+        if(this.isLightMode){
+            this.load_lightMode();
+        }else{
+            this.load_fullMode();
+        }
+    }
 
     loadSpecificTab = (applicationId) => {
         this.currentApplicationId = applicationId;

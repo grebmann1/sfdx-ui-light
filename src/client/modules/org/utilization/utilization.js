@@ -41,7 +41,7 @@ export default class Utilization extends LightningElement {
                 TotalLicenses:x.TotalLicenses,
                 Id:x.Id,
                 currentRank:this.getCurrentRank(ratioMapping,ratio*100),
-                value:(ratio*100).toFixed(0),
+                value:`${(ratio*100).toFixed(0)} %`,
                 label:x.MasterLabel,
                 description:`${x.UsedLicenses} / ${x.TotalLicenses} licenses are currently used.`
             }

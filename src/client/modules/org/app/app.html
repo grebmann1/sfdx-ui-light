@@ -22,6 +22,10 @@
                 <div class="slds-page-header__controls">
                     <div class="slds-page-header__control">
                         <!-- actions -->
+                        <lightning-button-group>
+                            <lightning-button icon-name="utility:component_customization" onclick={openMetadataExplorer} label="Metadata Explorer"></lightning-button>
+                            <lightning-button icon-name="utility:screen" onclick={openInBrowser} label="Open in browser"></lightning-button>
+                        </lightning-button-group>
                     </div>
                 </div>
             </div>
@@ -167,5 +171,8 @@
         <div class="slds-col slds-col slds-size_1-of-1 slds-large-size_1-of-2">
             <org-utilization connector={connector}></org-utilization>
         </div>
+
     </div>
+
+    
 </template>

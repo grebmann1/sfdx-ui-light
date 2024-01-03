@@ -1,5 +1,7 @@
 import {isUndefinedOrNull} from 'shared/utils';
 import constant from "global/constant";
+
+
 export async function connect({alias,settings}){
     if(isUndefinedOrNull(settings) && isUndefinedOrNull(alias)){
         throw new Error('You need to provide the alias or the connection');
@@ -14,7 +16,7 @@ export async function connect({alias,settings}){
         instanceUrl : settings.instanceUrl,
         accessToken : settings.accessToken,
         proxyUrl    : `${window.location.origin}/proxy/`,
-        version     : constant.apiVersion
+        version     : settings.instanceApiVersion || constant.apiVersion
     }
     if(settings.refreshToken){
         params.refreshToken = settings.refreshToken;
@@ -39,7 +41,7 @@ export async function getConnection(alias){
 }
 
 export async function addConnection(data,connection){
-    let connections = await window.defaultStore.getItem('connections');
+    let connections = await window.defaultStore.getItem('connections') || [];
     if(isUndefinedOrNull(connections)){
         connections = [];
     }

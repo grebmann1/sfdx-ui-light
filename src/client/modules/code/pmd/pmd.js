@@ -1,5 +1,5 @@
 import { LightningElement,api} from "lwc";
-import { decodeError,isNotUndefinedOrNull } from 'shared/utils';
+import { decodeError,isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
 
 export default class Pmd extends LightningElement {
 
@@ -29,6 +29,7 @@ export default class Pmd extends LightningElement {
     }
 
     checkIfPmdInstalled = async () => {
+        console.log('checkIfPmdInstalled');
         const {error, result} = await window.electron.ipcRenderer.invoke('code-isPmdInstalled',{projectPath:this.projectPath});
         if (error) {
             throw decodeError(error);
@@ -57,6 +58,6 @@ export default class Pmd extends LightningElement {
 
 
     get isButtonDisabled(){
-        return isNotUndefinedOrNull(this.projectPath) || this.isPmdInstalled;
+        return isUndefinedOrNull(this.projectPath) || this.isPmdInstalled;
     }
 }

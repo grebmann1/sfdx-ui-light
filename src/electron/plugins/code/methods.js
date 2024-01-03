@@ -66,16 +66,15 @@ createVSCodeProject = async (_,{defaultPath}) => {
         }
         let projectPaths = dialog.showOpenDialogSync(null,options);
 
+        // if empty, return null
         if(projectPaths === undefined) return {result:null};
 
-        let projectPath = projectPaths[0];
-    
-
+        const projectPath     = projectPaths[0];
+        const sfdxProjectPath = path.join(projectPath,'sfdx-project.json');
         /** Check if contain sfdx-project.json **/
-        let sfdxProjectPath = path.join(projectPath,'sfdx-project.json');
         if (!fs.existsSync(sfdxProjectPath)){
             // Create force-app
-            fs.mkdirSync(path.join(sfdxProjectPath,'force-app'), { recursive: true });
+            fs.mkdirSync(path.join(projectPath,'force-app'), { recursive: true });
             // Create copy sfdx-project.json
             fs.writeFileSync(sfdxProjectPath, fs.readFileSync(path.join(app.getAppPath(),'public/templates/sfdx-project.json')));
         }

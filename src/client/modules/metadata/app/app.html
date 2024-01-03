@@ -1,0 +1,75 @@
+<template>
+    <div class="slds-page-header slds-page-header_joined">
+        <div class="slds-page-header__row">
+            <div class="slds-page-header__col-title">
+                <div class="slds-media">
+                    <div class="slds-media__figure">
+                        <lightning-icon icon-name="standard:bundle_config"></lightning-icon>
+                    </div>
+                    <div class="slds-media__body">
+                        <div class="slds-page-header__name">
+                            <div class="slds-page-header__name-title">
+                                <h1>
+                                    <span>Metadata Explorer</span>
+                                    <span class="slds-page-header__title slds-truncate" title="Metadata Explorer">Metadata Explorer</span>
+                                </h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-page-header__col-actions slds-align-middle slds-p-bottom_none">
+                <div class="slds-page-header__controls">
+                    <div class="slds-page-header__control">
+                        <!-- actions -->
+                       
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slds-page-header__row slds-page-header__row_gutters">
+            <div class="slds-page-header__col-details">
+                <div class="slds-page-header__detail-row slds-is-relative" style="display:block; ">
+                    <!-- Display Info -->
+                    <h2>This part is currently in development - Work in progress </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- Container -->
+    <div class="slds-grid slds-gutters slds-wrap">
+
+        <!-- SECTION -->
+        <div class="slds-col slds-col slds-size_1-of-1">
+            <article class="slds-card slds-m-top_small">
+                <div class="slds-card__body slds-card__body_inner">
+                    <div class="slds-grid slds-gutters slds-wrap">
+                        <!-- SECTION -->
+                        <div class="slds-col slds-col slds-size_1-of-4">
+                            <lightning-vertical-navigation selected-item="recent" compact>
+                                <lightning-vertical-navigation-section label="Metadata">
+                                    <template for:each={metadataObjects} for:item="item">
+                                        <lightning-vertical-navigation-item key={item.suffix} label={item.xmlName} name={item.directoryName}></lightning-vertical-navigation-item>
+                                    </template>
+                                </lightning-vertical-navigation-section>
+                            </lightning-vertical-navigation>
+                        </div>
+                        <div class="slds-col slds-col slds-size_3-of-4">
+
+                        </div>
+                    </div>
+
+                    
+
+                </div>
+            </article>
+
+        </div>
+    </div>
+    
+
+
+    
+</template>

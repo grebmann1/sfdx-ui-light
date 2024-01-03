@@ -12,6 +12,13 @@ export default class App extends LightningElement {
         this.initHashHandler();
     }
 
+    scrollToTop = () => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth' // Optional: smooth scrolling behavior
+        });
+      }
+
 
     handleMenu = (e) => {
         this.currentPosition = e.detail.current;
@@ -35,6 +42,7 @@ export default class App extends LightningElement {
             this.refs.viewer.updateComponent();
             this.refs.menu.updateComponent();
             if(this.isMenuOpen)this.handleNavbarMenu();
+            this.scrollToTop();
         }, false);
     }
 

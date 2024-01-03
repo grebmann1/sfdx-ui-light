@@ -9,7 +9,17 @@ const application_mapping = [
         shortName:"AA",
         component:"accessAnalyzer/app",
         description:"Analyze access provided by profiles and permission sets",
-        isDeletable:true
+        isDeletable:true,
+        isElectronOnly:false
+    },
+    {
+        id:"metadata",
+        name:"Metadata Explorer",
+        shortName:"ME",
+        component:"metadata/app",
+        description:"Explorer Metadata from the Org",
+        isDeletable:true,
+        isElectronOnly:false
     },
     {
         id:"code",

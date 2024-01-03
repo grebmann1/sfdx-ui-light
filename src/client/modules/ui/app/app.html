@@ -33,7 +33,7 @@
     <div class={dynamicAppContainerClass}>
         <div class="slds-template_default  forceBrandBand">
             <section class="section">
-                <div class="container" onlogin={handleLogin}>
+                <div class="container" onlogin={handleLogin} onopenapplication={handleOpenApplication}>
                     <!-- Feature - Start -->
                     <!--<connection-app home="test"></connection-app>-->
                     <template for:each={applications} for:item="application">

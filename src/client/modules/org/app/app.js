@@ -1,5 +1,5 @@
 import { LightningElement,api} from "lwc";
-import { isEmpty } from 'shared/utils';
+import { isEmpty,isElectronApp } from 'shared/utils';
 
 
 export default class App extends LightningElement {
@@ -24,6 +24,25 @@ export default class App extends LightningElement {
     }
 
     /** Methods */
+
+    openMetadataExplorer = () => {
+        this.dispatchEvent(new CustomEvent("openapplication", { detail:{
+            connector:this.connector,
+            component:'metadata/app',
+            name:'Metadata Explorer'
+        },bubbles: true }));
+    }
+
+    openInBrowser = () => {
+        if(isElectronApp()){
+            // Electron version
+            window.electron.ipcRenderer.invoke('org-openOrgUrl',this.connector.header);
+        }else{
+            // Browser version
+            let url = this.connector.conn.instanceUrl+'/secur/frontdoor.jsp?sid='+this.connector.conn.accessToken;
+            window.open(url,'_blank');
+        }    
+    }
 
     generateLabel = (key) => {
         let label = [];
