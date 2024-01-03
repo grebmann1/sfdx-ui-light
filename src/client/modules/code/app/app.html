@@ -12,8 +12,8 @@
                             <div class="slds-page-header__name">
                                 <div class="slds-page-header__name-title">
                                     <h1>
-                                        <span>Metadata</span>
-                                        <span class="slds-page-header__title slds-truncate" title="Metadata Toolkit">Metadata Toolkit</span>
+                                        <span>Code Toolkit</span>
+                                        <span class="slds-page-header__title slds-truncate" title="Code Toolkit">Code Toolkit</span>
                                     </h1>
                                 </div>
                             </div>
@@ -43,7 +43,15 @@
     </div>
 
     <!-- Container -->
-
+    <div class="slds-m-top_x-small">
+        <lightning-tabset variant="scoped" >
+            <lightning-tab label="Code Analyzers">
+                <!-- isPathDisplayed -->
+                <code-analyzer project-path={projectPath}></code-analyzer>
+            </lightning-tab>
+        </lightning-tabset>
+    </div>
+    
     
 
 

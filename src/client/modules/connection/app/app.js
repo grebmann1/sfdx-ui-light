@@ -1,12 +1,11 @@
 import { LightningElement,api} from "lwc";
-import LightningAlert from 'lightning/alert';
 
 import ConnectionNewModal from "connection/connectionNewModal";
 import ConnectionDetailModal from "connection/connectionDetailModal";
 import ConnectionRenameModal from "connection/connectionRenameModal";
 
 import {isNotUndefinedOrNull,isElectronApp} from 'shared/utils';
-import {getAllConnection,removeConnection,connect,Connector,oauth} from 'connection/utils';
+import {getAllConnection,removeConnection,getConnection,connect,Connector,oauth} from 'connection/utils';
 
 const actions = [
     { label: 'Login', name: 'login' },

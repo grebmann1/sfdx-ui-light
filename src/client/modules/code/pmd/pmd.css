@@ -1,0 +1,116 @@
+.site .site-text-heading--large {
+    font-size: 1.125rem;
+}
+
+.site .landing__banner {
+    margin-top: 0;
+    padding: 0.5rem;
+    background: #f3f3f3;
+    color: #375480;
+}
+
+.site [class*=site-text-heading] {
+    margin-top: 3rem;
+    font-weight: 400;
+    line-height: 1.25;
+    color: #16325c;
+}
+
+.site [class*=site-text-heading], .site blockquote, .site dl, .site figure, .site p, .site table {
+    margin-bottom: 1.5rem;
+}
+
+.bg-black {
+    --tw-bg-opacity: 1;
+    background-color: rgba(0,0,0,var(--tw-bg-opacity));
+}
+
+:not(pre)>code.hljs, :not(pre)>code[class*=language-] {
+    border-radius: 0.3em;
+    padding: 0.1em;
+    white-space: normal;
+}
+
+.prose :where(pre code):not(:where([class~=not-prose] *)) {
+    background-color: transparent;
+    border-radius: 0;
+    border-width: 0;
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    padding: 0;
+}
+
+code.hljs, code[class*=language-], pre[class*=language-] {
+    word-wrap: normal;
+    background: none;
+    color: #fff;
+    -webkit-hyphens: none;
+    hyphens: none;
+    line-height: 1.5;
+    tab-size: 4;
+    text-align: left;
+    white-space: pre;
+    word-break: normal;
+    word-spacing: normal;
+}
+
+.\!whitespace-pre {
+    background-color: transparent;
+    white-space: pre!important;
+}
+
+.text-gray-200{
+    --tw-text-opacity: 1;
+    color: rgba(217,217,227,var(--tw-text-opacity));
+}
+
+.bg-gray-800 {
+    --tw-bg-opacity: 1;
+    background-color: rgba(52,53,65,var(--tw-bg-opacity));
+}
+
+
+
+.title_2_parts{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.vertical-container{
+    display:flex;
+    flex-direction: column;
+}
+
+.path-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.path-container-right{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.py-2 {
+    padding-bottom: 0.5rem;
+    padding-top: 0.5rem;
+}
+
+.px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.custom-text-copy{
+    --slds-c-icon-color-foreground	:rgba(255, 255, 255, 1);
+    margin-left: 8px;
+    cursor: pointer;
+}

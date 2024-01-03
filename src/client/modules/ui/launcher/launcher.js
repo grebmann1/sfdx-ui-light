@@ -1,6 +1,6 @@
 import LightningModal from 'lightning/modal';
 import { api } from "lwc";
-import {guid,isNotUndefinedOrNull,isElectronApp} from "shared/utils";
+import { isElectronApp } from "shared/utils";
 
 const application_mapping = [
     {
@@ -12,10 +12,10 @@ const application_mapping = [
         isDeletable:true
     },
     {
-        id:"metadata",
-        name:"Metadata",
-        shortName:"AA",
-        component:"metadata/app",
+        id:"code",
+        name:"Code Toolkit",
+        shortName:"CT",
+        component:"code/app",
         description:"Create VSCode project, Review metadata, etc",
         isDeletable:true,
         isElectronOnly:true

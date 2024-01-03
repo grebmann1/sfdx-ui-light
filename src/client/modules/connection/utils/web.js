@@ -6,7 +6,7 @@ export async function connect({alias,settings}){
     }
 
     if(alias){
-        settings = getConnection(alias);
+        settings = await getConnection(alias);
     }
     
     let params = {

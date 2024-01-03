@@ -5,15 +5,15 @@ import { getExistingSession,saveSession,removeSession,directConnection } from "c
 /** Apps  **/
 import connection_app from "connection/app";
 import accessAnalyzer_app from "accessAnalyzer/app";
-import metadata_app from "metadata/app";
+import code_app from "code/app";
 import extension_app from "extension/app";
 import org_app from "org/app";
 
-const KNOWN_TYPE = new Set(["connection/app", "accessAnalyzer/app","extension/app","org/app","metadata/app"]);
+const KNOWN_TYPE = new Set(["connection/app", "accessAnalyzer/app","extension/app","org/app","code/app"]);
 const APP_MAPPING = {
     "connection/app": connection_app,
     "accessAnalyzer/app": accessAnalyzer_app,
-    "metadata/app":metadata_app,
+    "code/app":code_app,
     "extension/app":extension_app,
     "org/app":org_app
 };

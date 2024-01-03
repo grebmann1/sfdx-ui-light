@@ -45,7 +45,7 @@ export async function removeConnection(alias){
     if (error) {
         throw decodeError(error)
     }
-} // guillaume.rebmann33@creative-otter-jii45l.com
+} 
 
 export async function getAllConnection(){
     console.log('electron.getAllConnection');

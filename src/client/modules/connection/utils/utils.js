@@ -27,6 +27,7 @@ export async function connect({alias,settings}){
 }
 
 export async function getConnection(alias){
+    console.log('getConnection (isElectronApp)',isElectronApp());
     let connection =   isElectronApp()?await electronInterface.getConnection(alias):await webInterface.getConnection(alias);
 
     let nameArray = (connection.alias || '').split('-');

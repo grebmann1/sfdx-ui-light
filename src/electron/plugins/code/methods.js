@@ -6,14 +6,50 @@ const fs    = require('fs');
 
 const { encodeError } = require('../../utils/errors.js');
 
-upsert_toolkitPath = (projectPath) => {
+const upsert_toolkitPath = (projectPath) => {
     /** SF Tookit path */
     let sfToolkitPath = path.join(projectPath,'.sf-toolkit');
-    if (fs.existsSync(sfToolkitPath)){
-        // We delete the folder for clean data
-        fs.rmdirSync(sfToolkitPath, { recursive: true, force: true });
+    if (!fs.existsSync(sfToolkitPath)){
+        fs.mkdirSync(sfToolkitPath, { recursive: true });
     }
-    fs.mkdirSync(sfToolkitPath, { recursive: true });
+    
+    return sfToolkitPath;
+}
+
+isPmdInstalled  = async (_,{projectPath}) => {
+    try {
+        let pmdPath = path.join(projectPath,'.sf-toolkit','pmd-bin-7.0.0-rc4');
+        return {result:fs.existsSync(pmdPath)?pmdPath:null};
+    } catch (e) {
+        return {error: encodeError(e)}
+    }
+}
+
+installLatestPmd = async (_,{projectPath}) => {
+    const fileName      = 'pmd-dist-7.0.0-rc4-bin.zip';
+    const fileUrl       = 'https://github.com/pmd/pmd/releases/download/pmd_releases%2F7.0.0-rc4/';
+    const folderName    = 'pmd-dist-7.0.0-rc4-bin';
+    
+    try {
+        // Create hidden toolkit folder
+        let sfToolkitPath = upsert_toolkitPath(projectPath);
+        
+        // Download PMD file if not there
+        if(!fs.existsSync(path.join(sfToolkitPath,'pmd-bin-7.0.0-rc4'))){
+            execSync(`curl -OL ${fileUrl}/${fileName}`,{cwd: sfToolkitPath}).toString();
+            execSync(`unzip ${fileName}`,{cwd: sfToolkitPath}).toString();
+            execSync(`rm ${fileName}`,{cwd: sfToolkitPath}).toString();
+        }
+
+        // Clone Rule Set (Force overwrite)
+        fs.mkdirSync(path.join(sfToolkitPath,'pmd/rulesets/apex'), { recursive: true });
+        fs.writeFileSync(path.join(sfToolkitPath,'pmd/rulesets/apex/quickstart.xml'), fs.readFileSync(path.join(app.getAppPath(),'public/templates/pmd/rulesets/apex/quickstart.xml')));
+        
+
+        return {result:path.join(sfToolkitPath,folderName)};
+    } catch (e) {
+        return {error: encodeError(e)}
+    }
 }
 
 createVSCodeProject = async (_,{defaultPath}) => {
@@ -44,7 +80,8 @@ createVSCodeProject = async (_,{defaultPath}) => {
             fs.writeFileSync(sfdxProjectPath, fs.readFileSync(path.join(app.getAppPath(),'public/templates/sfdx-project.json')));
         }
 
-        //upsert_toolkitPath(projectPath);
+        // Create hidden toolkit folder
+        upsert_toolkitPath(projectPath);
 
         
 
@@ -63,5 +100,7 @@ openVSCodeProject = async (_,{path}) => {
 
 module.exports = {
     createVSCodeProject,
-    openVSCodeProject
+    openVSCodeProject,
+    installLatestPmd,
+    isPmdInstalled
 }

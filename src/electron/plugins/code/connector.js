@@ -1,6 +1,6 @@
 
 const {
-    createVSCodeProject,openVSCodeProject
+    createVSCodeProject,openVSCodeProject,installLatestPmd,isPmdInstalled
 } = require('./methods.js');
 
 class CODE_CONNECTOR{
@@ -10,7 +10,8 @@ class CODE_CONNECTOR{
     enableEventListeners = (ipcMainManager) => {
         ipcMainManager.handle(`${this.namespace}-createVSCodeProject`,createVSCodeProject);
         ipcMainManager.handle(`${this.namespace}-openVSCodeProject`,openVSCodeProject);
-
+        ipcMainManager.handle(`${this.namespace}-installLatestPmd`,installLatestPmd);
+        ipcMainManager.handle(`${this.namespace}-isPmdInstalled`,isPmdInstalled);
     }
 }
 
