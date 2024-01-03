@@ -99,6 +99,10 @@ code.hljs, code[class*=language-], pre[class*=language-] {
     align-items: center;
 }
 
+.overflow-y-auto{
+    overflow-y: auto;
+}
+
 .py-2 {
     padding-bottom: 0.5rem;
     padding-top: 0.5rem;
