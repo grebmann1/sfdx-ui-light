@@ -100,8 +100,8 @@ export default class App extends LightningElement {
 
         return {
             total_users:responses[0].records.reduce((total,x) => x.total+total,0),
-            total_active:responses[0].records.find(x => x.IsActive).total,
-            total_inactive:responses[0].records.find(x => !x.IsActive).total,
+            total_active:responses[0].records.find(x => x.IsActive)?.total || 0,
+            total_inactive:responses[0].records.find(x => !x.IsActive)?.total || 0,
         };
     }
 

@@ -24,9 +24,9 @@ export default class Users extends LightningElement {
         ]);
 
         this.total_users    = responses[0].records.reduce((total,x) => x.total+total,0);
-        this.total_active   = responses[0].records.find(x => x.IsActive).total;
-        this.total_inactive = responses[0].records.find(x => !x.IsActive).total;
-        this.total_active_30days = `+ ${responses[1].records[0].total} (30 days)`;
+        this.total_active   = responses[0].records.find(x => x.IsActive)?.total || 0;
+        this.total_inactive = responses[0].records.find(x => !x.IsActive)?.total || 0;
+        this.total_active_30days = `+ ${responses[1].records[0]?.total || 0} (30 days)`;
 
     }
 

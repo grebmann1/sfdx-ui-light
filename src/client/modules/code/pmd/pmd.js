@@ -60,4 +60,8 @@ export default class Pmd extends LightningElement {
     get isButtonDisabled(){
         return isUndefinedOrNull(this.projectPath) || this.isPmdInstalled;
     }
+
+    get pmdPathFormatted(){
+        return isUndefinedOrNull(this.pmdPath)?'pmd':this.pmdPath;
+    }
 }

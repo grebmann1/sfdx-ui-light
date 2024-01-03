@@ -24,7 +24,7 @@ const upsert_toolkitPath = (projectPath) => {
 
 isPmdInstalled  = async (_,{projectPath}) => {
     try {
-        let pmdPath = path.join(projectPath,binPath);
+        let pmdPath = path.join(projectPath,'.sf-toolkit',binPath);
         return {result:fs.existsSync(pmdPath)?binPath:null};
     } catch (e) {
         return {error: encodeError(e)}
