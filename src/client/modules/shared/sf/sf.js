@@ -93,7 +93,8 @@ export const getPermissionSet = async (conn) => {
     const permissionSetProfileMapping = {}
 
     let records_profiles = (await conn.query("SELECT Id,ProfileId,Profile.Name,Label,Name,License.Name,Type,Description,IsCustom,NamespacePrefix FROM permissionset")).records || [];
-        records_profiles.forEach(record => {
+    console.log('records_profiles',records_profiles);    
+    records_profiles.forEach(record => {
             permissionSets[record.Id] = new PermissionSet(record);
             if(isNotUndefinedOrNull(record.ProfileId)){
                 permissionSetProfileMapping[record.ProfileId] = record.Id;
@@ -112,11 +113,16 @@ export const getPermissionSet = async (conn) => {
 
     let records_counter2 = (await conn.query("SELECT count(Id) total,PermissionSetId,IsActive FROM PermissionSetAssignment group by PermissionSetId ,IsActive")).records || [];
         records_counter2.forEach(record => {
-            if (record.IsActive) {
-                permissionSets[record.PermissionSetId].activeUserCount = record.total;
-            } else {
-                permissionSets[record.PermissionSetId].inactiveUserCount = record.total;
+            if(permissionSets.hasOwnProperty(record.PermissionSetId)){
+                if (record.IsActive) {
+                    permissionSets[record.PermissionSetId].activeUserCount = record.total;
+                } else {
+                    permissionSets[record.PermissionSetId].inactiveUserCount = record.total;
+                }
+            }else{
+                console.warn('Missing permission set : ',record.PermissionSetId);
             }
+            
         });
         console.log('getPermissionSet',permissionSets);
     return {permissionSets,permissionSetProfileMapping};

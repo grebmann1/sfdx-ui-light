@@ -82,7 +82,7 @@ export default class App extends LightningElement {
             if(isNotUndefinedOrNull(this.connector.header.alias)){
                 let key = `${this.connector.header.alias}-metadata`;
                 _metadata = await window.defaultStore.getItem(key);
-                if(isUndefinedOrNull(_metadata.createdDate) || Date.now() > _metadata.createdDate + 2 * 60 * 60 * 1000){
+                if(isUndefinedOrNull(_metadata?.createdDate) || Date.now() > _metadata.createdDate + 2 * 60 * 60 * 1000){
                     refresh = true; // We force the refresh
                 }
             }

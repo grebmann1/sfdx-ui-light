@@ -7,5 +7,6 @@ export default class BasicStats extends LightningElement {
     @api title = "Category Score";
     @api value;
     @api subValue;
+    @api description;
 
 }

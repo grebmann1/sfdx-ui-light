@@ -14,6 +14,17 @@ export default class HorizontalRank extends LightningElement {
     @api lowLabel = "Poor";
     @api highLabel = "Excellent";
 
+    @api isLight = false;
+    @api isDarkTheme = false;
+
+    get containerClass(){
+      return classSet('col-span-6 hidden rounded-xl bg-neutral-0 p-4 dark:bg-neutral-100 sm:col-span-3 sm:block')
+      .add({
+         'sm:bg-gradient-104':this.isDarkTheme
+      })
+      .toString();
+    }
+
     get step1Class(){
         return classSet('flex grow justify-center text-neutral-80 dark:text-neutral-20')
              .add({

@@ -48,10 +48,10 @@
                     <div class="slds-grid slds-gutters slds-wrap">
                         <!-- SECTION -->
                         <div class="slds-col slds-col slds-size_1-of-4">
-                            <lightning-vertical-navigation selected-item="recent" compact>
+                            <lightning-vertical-navigation selected-item={defaultSelectedItem} onselect={handleItemSelection} compact>
                                 <lightning-vertical-navigation-section label="Metadata">
                                     <template for:each={metadataObjects} for:item="item">
-                                        <lightning-vertical-navigation-item key={item.suffix} label={item.xmlName} name={item.directoryName}></lightning-vertical-navigation-item>
+                                        <lightning-vertical-navigation-item key={item.suffix} label={item.xmlName} name={item.xmlName}></lightning-vertical-navigation-item>
                                     </template>
                                 </lightning-vertical-navigation-section>
                             </lightning-vertical-navigation>
