@@ -10,24 +10,76 @@
                     </h2>
                 </div>
                 <div class="slds-no-flex">
-                   
+                    <lightning-combobox
+                            label="Namespaces"
+                            dropdown-alignment="right"
+                            value={namespaceFiltering_value}
+                            placeholder="Select Namespace filter"
+                            disabled={isLoading}
+                            options={namespaceFiltering_options}
+                            onchange={namespaceFiltering_handleChange}
+                    ></lightning-combobox>
                 </div>                    
             </header>
         </div>
         <div class="slds-card__body slds-card__body_inner">
+            <!-- Overview -->
+            <div class="slds-grid slds-wrap slds-gutters">
+                <div class="slds-col slds-grow-none slds-m-top_x-small min-width-150">
+                    <dashboard-basic-stats 
+                        title="Namespaces" 
+                        value={total_namespace}
+                        description="Including all packages"
+                    ></dashboard-basic-stats>
+                </div>
+                <div class="slds-col slds-grow-none slds-m-top_x-small min-width-150">
+                    <dashboard-basic-stats 
+                        title="Apex Classes" 
+                        value={apex_totalApexClasses} 
+                        sub-value={apex_totalApexClassesInMB}
+                        description="All apex classes"
+                    ></dashboard-basic-stats>
+                </div>
+                <div class="slds-col slds-grow-none slds-m-top_x-small min-width-150">
+                    <dashboard-basic-stats 
+                        title="Triggers" 
+                        value={triggers_totalComponents}
+                        description="All Triggers"
+                    ></dashboard-basic-stats>
+                </div>
+                <div class="slds-col slds-grow-none slds-m-top_x-small min-width-150">
+                    <dashboard-basic-stats 
+                        title="Visualforce Pages" 
+                        value={visualforcePage_totalComponents}
+                        description="All Visualforce Pages"
+                    ></dashboard-basic-stats>
+                </div>
+                <div class="slds-col slds-grow-none slds-m-top_x-small min-width-150">
+                    <dashboard-basic-stats 
+                        title="Visualforce Components" 
+                        value={visualforceComponent_totalComponents}
+                        description="All Visualforce Comp."
+                    ></dashboard-basic-stats>
+                </div>
+                <div class="slds-col slds-grow-none slds-m-top_x-small min-width-150">
+                    <dashboard-basic-stats 
+                        title="LWC" 
+                        value={lwc_totalComponents}
+                        description="All LWC"
+                    ></dashboard-basic-stats>
+                </div>
+                <div class="slds-col slds-grow-none slds-m-top_x-small min-width-150">
+                    <dashboard-basic-stats 
+                        title="Aura" 
+                        value={aura_totalComponents}
+                        description="All Aura comp."
+                    ></dashboard-basic-stats>
+                </div>
+            </div>
             <lightning-tabset>
                 <lightning-tab label="Apex">
-                    <!-- Overview -->
                     <div class="slds-grid slds-wrap slds-gutters">
-                        <div class="slds-col slds-size_1-of-3 slds-m-top_x-small">
-                            <dashboard-basic-stats 
-                                title="Apex Classes" 
-                                value={apex_totalApexClasses} 
-                                sub-value={apex_totalApexClassesInMB}
-                                description="All apex classes"
-                            ></dashboard-basic-stats>
-                        </div>
-                        <div class="slds-col slds-size_1-of-3 slds-m-top_x-small">
+                        <div class="slds-col slds-m-top_x-small slds-grow-none min-width-300">
                             <!--<dashboard-basic-stats title="API Versions" value={apex_totalApiVersions}></dashboard-basic-stats>-->
                             <dashboard-horizontal-rank 
                                 mark={apex_totalApiVersionsMark} 
@@ -39,17 +91,25 @@
                                 is-dark-theme
                             ></dashboard-horizontal-rank>
                         </div>
-                        <div class="slds-col slds-size_1-of-3 slds-m-top_x-small">
-                            <dashboard-basic-stats 
-                                title="Namespaces" 
-                                value={apex_totalNamespaces}
-                                description="Including all packages"
-                            ></dashboard-basic-stats>
-                        </div>
                     </div>
                 </lightning-tab>
+                <lightning-tab label="Trigger">
+                    
+                </lightning-tab>
                 <lightning-tab label="LWC">
-                    Two Content !
+                    <div class="slds-grid slds-wrap slds-gutters">
+                        <div class="slds-col slds-grow-none min-width-300 slds-m-top_x-small">
+                            <dashboard-horizontal-rank 
+                                mark={lwc_totalApiVersionsMark} 
+                                title="API Versions" 
+                                sub-title="Total versions" 
+                                description={lwc_totalApiVersionsMarkDescription} 
+                                current-step={lwc_totalApiVersionsStepFormatted} 
+                                is-light
+                                is-dark-theme
+                            ></dashboard-horizontal-rank>
+                        </div>
+                    </div>
                 </lightning-tab>
                 <lightning-tab label="Aura">
                     Three Content !
