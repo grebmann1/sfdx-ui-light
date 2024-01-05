@@ -15,23 +15,25 @@ const getHostAndSession = async () => {
         url: url,
         storeId: cookieStoreId,
     };
-    console.log('tab',tab);
+    //console.log('tab',tab);
     const cookie = await chrome.cookies.get(cookieDetails);
-    console.log('cookie',cookie);
     if (!cookie) {
         return;
     }
     
     // try getting all secure cookies from salesforce.com and find the one matching our org id
     // (we may have more than one org open in different tabs or cookies from past orgs/sessions)
+    
     let [orgId] = cookie.value.split("!");
     let secureCookieDetails = {
         name: "sid",
         secure: true,
         storeId: cookieStoreId,
+        domain: "salesforce.com"
     };
     const cookies = await chrome.cookies.getAll(secureCookieDetails);
-
+    console.log('cookies',cookies);
+    
     let sessionCookie = cookies.find((c) => c.value.startsWith(orgId + "!"));
     if (!sessionCookie) {
         return;

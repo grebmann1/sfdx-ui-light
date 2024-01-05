@@ -29,7 +29,6 @@ export default class Pmd extends LightningElement {
     }
 
     checkIfPmdInstalled = async () => {
-        console.log('checkIfPmdInstalled');
         const {error, result} = await window.electron.ipcRenderer.invoke('code-isPmdInstalled',{projectPath:this.projectPath});
         if (error) {
             throw decodeError(error);
@@ -42,7 +41,8 @@ export default class Pmd extends LightningElement {
         if (error) {
             throw decodeError(error);
         }
-
+        console.info('installLatestPMD',result);
+        this.checkIfPmdInstalled();
     }
 
 

@@ -1,5 +1,6 @@
 const sfdx = require('sfdx-node');
-const { shell } = require('electron');
+const { app,shell } = require('electron');
+const { execSync } = require('child_process');
 const { encodeError } = require('../../utils/errors.js');
 
 getAllOrgs = async (_) => {
@@ -8,7 +9,7 @@ getAllOrgs = async (_) => {
         verbose:true
     });
     //console.log('res',res);
-    return res?.nonScratchOrgs || [];
+    return res || [];
 }
 
 seeDetails = async (_,{alias}) => {
@@ -78,6 +79,19 @@ unsetAlias = async (_,{alias}) => {
     }
 }
 
+logout = async (_,{alias}) => {
+    /** To Refactore later **/
+    try{
+        const command = `sf org logout -o ${alias} -p --json`;
+        console.log('command',command);
+        let res = execSync(command,{cwd: app.getAppPath()}).toString();
+        return {res}
+    }catch(e){
+        return {res:null}
+        //return {error: encodeError(e)}
+    }
+}
+
 setAlias = async (_,{alias,username}) => {
     try{
         let response = await sfdx.alias.set({
@@ -96,5 +110,6 @@ module.exports = {
     createNewOrgAlias,
     seeDetails,
     unsetAlias,
-    setAlias
+    setAlias,
+    logout
 }

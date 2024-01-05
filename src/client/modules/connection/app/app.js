@@ -131,7 +131,7 @@ export default class App extends LightningElement {
     }
 
 
-    /** Getters */
+    /** Getters  */
 
     get columns(){
         let _columns = [
@@ -140,11 +140,33 @@ export default class App extends LightningElement {
                     class: 'slds-text-title_bold slds-color-brand  slds-text-title_caps',
                 },
             },
-            { label: 'Name', fieldName: 'name', type: 'text' },
-            { label: 'Alias', fieldName: 'alias', type: 'text' },
-            { label: 'DevHub', fieldName: 'isDevHub', type:'boolean', fixedWidth:90, _filter:'electron'},
+            { label: 'Name', fieldName: 'name', type: 'text',
+                cellAttributes: {
+                    class: { fieldName: '_typeClass' },
+                },
+            },
+            { label: 'Alias', fieldName: 'alias', type: 'text',
+                cellAttributes: {
+                    class: { fieldName: '_typeClass' },
+                },
+            },
+            { label: 'Type', fieldName: '_type', type:'text', fixedWidth:150, _filter:'electron',
+                cellAttributes: {
+                    class: { fieldName: '_typeClass' },
+                },
+            },
+            { label: 'Status', fieldName: '_status', type:'text', fixedWidth:150, _filter:'electron',
+                cellAttributes: {
+                    class: { fieldName: '_statusClass' },
+                },
+            },
+            { label: 'Expire', fieldName: 'expirationDate', type:'text', fixedWidth:150, _filter:'electron'},
             { label: 'API', fieldName: 'instanceApiVersion', type: 'text', fixedWidth:90, _filter:'electron'},
-            { label: 'User Name', fieldName: 'username', type: 'text',initialWidth:400 },
+            { label: 'User Name', fieldName: 'username', type: 'text',initialWidth:400,
+                cellAttributes: {
+                    class: { fieldName: '_typeClass' },
+                },
+            },
             {
                 type: 'action',
                 typeAttributes: { rowActions: actions },

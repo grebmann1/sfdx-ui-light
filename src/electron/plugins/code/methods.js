@@ -46,8 +46,9 @@ installLatestPmd = async (_,{projectPath}) => {
         }
 
         // Clone Rule Set (Force overwrite)
-        fs.mkdirSync(path.join(sfToolkitPath,'pmd/rulesets/apex'), { recursive: true });
-        fs.writeFileSync(path.join(sfToolkitPath,'pmd/rulesets/apex/quickstart.xml'), fs.readFileSync(path.join(app.getAppPath(),'public/templates/pmd/rulesets/apex/quickstart.xml')));
+        const src_path = path.join(app.getAppPath(),'public/templates/pmd');
+        const dest_path = path.join(sfToolkitPath,'pmd');
+        fs.cpSync(src_path, dest_path, { recursive: true });
         
 
         return {result:binPath};

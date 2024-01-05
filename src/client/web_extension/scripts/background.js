@@ -27,7 +27,7 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
-
+/**
 chrome.action.onClicked.addListener(async (tab) => {
     console.log('tab',tab);
     const tabId = tab.id;
@@ -60,10 +60,14 @@ chrome.action.onClicked.addListener(async (tab) => {
         storeId: cookieStoreId,
     };
     const cookies = await chrome.cookies.getAll(secureCookieDetails);
-
+    console.log('cookies',cookies);
     let sessionCookie = cookies.find((c) => c.value.startsWith(orgId + "!"));
+    console.log('sessionCookie',sessionCookie);
     if (!sessionCookie) {
         return;
     }
-    chrome.tabs.create({ url: 'https://sf-toolkit.com/extension?sessionId=' + sessionCookie.value+'&serverUrl=https://'+sessionCookie.domain }, tab => { });
+    chrome.tabs.create({ 
+      url: 'https://sf-toolkit.com/extension?sessionId=' + sessionCookie.value+'&serverUrl=https://'+sessionCookie.domain 
+    }, tab => { });
 });
+**/

@@ -1,4 +1,4 @@
-import {isNotUndefinedOrNull,decodeError} from 'shared/utils';
+import {isNotUndefinedOrNull,decodeError,classSet} from 'shared/utils';
 
 
 
@@ -41,7 +41,7 @@ export async function renameConnection({oldAlias,newAlias,username}){
 export async function removeConnection(alias){
     // todo: need to be refactured
     console.log('electron.removeConnection');
-    var {error} = await window.electron.ipcRenderer.invoke('org-unsetAlias',{alias});
+    var {error} = await window.electron.ipcRenderer.invoke('org-logout',{alias});
     if (error) {
         throw decodeError(error)
     }
@@ -50,10 +50,28 @@ export async function removeConnection(alias){
 export async function getAllConnection(){
     console.log('electron.getAllConnection');
     let res = await window.electron.ipcRenderer.invoke('org-getAllOrgs');
-    console.log('res',res);
-        res = res.filter(x => isNotUndefinedOrNull(x.alias)); // Remove empty alias
-        res = res.map((item,index) => {
+    let orgs = [].concat(
+        res.nonScratchOrgs.map(x => ({
+            ...x,
+            _status:x.connectedStatus,
+            _type:x.isDevHub?'DevHub':x.isSandbox?'Sandbox':''
+        })),
+        res.scratchOrgs.map(x => ({
+            ...x,
+            _status:x.status,
+            _type:"Scratch"
+        }))
+    );
+
+    orgs = orgs.filter(x => isNotUndefinedOrNull(x.alias)); // Remove empty alias
+    orgs = orgs.map((item,index) => {
             let alias = item.alias || 'Empty'
+            let _typeClass = classSet('').add({
+                'slds-color-brand':item._type === 'DevHub',
+                'slds-color-orange-light':item._type === 'Sandbox',
+                'slds-color-orange-dark':item._type === 'Scratch'
+            }).toString();
+
             return {
                 ...item,
                 ...{
@@ -61,10 +79,12 @@ export async function getAllConnection(){
                     id:`index-${index}`,
                     company:`${alias.split('-').length > 1?alias.split('-').shift():''}`.toUpperCase(),
                     name:alias.split('-').pop(),
-                    sfdxAuthUrl:item.instanceUrl+'/secur/frontdoor.jsp?sid='+item.accessToken
+                    sfdxAuthUrl:item.instanceUrl+'/secur/frontdoor.jsp?sid='+item.accessToken,
+                    _typeClass,
+                    _statusClass:item._status === 'RefreshTokenAuthError'?'slds-text-color_error':'slds-text-color_success slds-text-title_caps',
                 }
             }
         });
-        res = res.sort((a, b) => a.alias.localeCompare(b.alias));
-    return res;
+        orgs = orgs.sort((a, b) => a.alias.localeCompare(b.alias));
+    return orgs;
 }
