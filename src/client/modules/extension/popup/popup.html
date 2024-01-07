@@ -33,12 +33,28 @@
                 <div class="slds-page-header__detail-row slds-is-relative min-height-200" style="display:block; ">
                     
                      <!-- Start -->
-                     <extension-record-explorer></extension-record-explorer>
+                     <extension-record-explorer versions={versions}></extension-record-explorer>
                     <!-- End -->
 
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="slds-utility-bar_container" style="height:24px;">
+        <ul class="slds-utility-bar custom-utility-bar">
+            <li class="slds-utility-bar__item custom-utility-text">
+                <h2>{versionFormatted}</h2>
+                <lightning-button-icon
+                    class="custom-utility-text-copy"
+                    onclick={handleChangeVersionClick}
+                    icon-name="utility:replace"
+                    variant="bare"
+                    alternative-text="Change Version"
+                ></lightning-button-icon>
+            </li>
+        </ul>
     </div>
 
    

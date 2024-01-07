@@ -7,6 +7,8 @@ export default class extensionPopupView extends LightningElement {
 
     sessionId;
     serverUrl;
+    versions = [];
+    version;
     isLoaded = false;
 
     async connectedCallback(){
@@ -19,9 +21,14 @@ export default class extensionPopupView extends LightningElement {
         window.serverUrl = this.serverUrl;
         window.connector = await new window.jsforce.Connection({
             serverUrl : 'https://' + this.serverUrl,
-            sessionId : this.sessionId
+            sessionId : this.sessionId,
         })
-        console.log('window.connector',window.connector);
+
+        this.versions = (await window.connector.request('/services/data/')).sort((a, b) => b.version.localeCompare(a.version));
+        this.version = this.versions[0];
+
+        // Initialize;
+        window.connector.version = this.version.version;
 
         if(isUndefinedOrNull(this.sessionId) || isUndefinedOrNull(this.serverUrl)){
             this.sendError();

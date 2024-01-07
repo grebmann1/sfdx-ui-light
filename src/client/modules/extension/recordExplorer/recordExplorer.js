@@ -1,4 +1,4 @@
-import { createElement,LightningElement} from "lwc";
+import { createElement,LightningElement,api} from "lwc";
 
 import {TabulatorFull as Tabulator} from "tabulator-tables";
 import {runActionAfterTimeOut,isEmpty,isNotUndefinedOrNull} from 'shared/utils';
@@ -9,6 +9,8 @@ import {
 import RecordExplorerCell from 'extension/recordExplorerCell';
 
 export default class RecordExplorer extends LightningElement {
+
+    @api versions = [];
 
     tableInstance;
     isLoading = false;
@@ -26,26 +28,31 @@ export default class RecordExplorer extends LightningElement {
 
 
     async connectedCallback(){
-        let conn = window.connector;
-        this.currentTab = await getCurrentTab();
-        this.contextUrl = window.location.href;
-        // Get recordId (Step 1)
-        this.recordId = getRecordId(this.currentTab.url);
-        // Get sobjectName (Step 2) // Should be optimized to save 1 API Call [Caching]
-        this.sobjectName = await getCurrentObjectType(conn,this.recordId);
-        // Get Metadata (Step 3) // Should be optimized to save 1 API Call [Caching]
-        this.metadata = await fetch_metadata(conn,this.sobjectName);
-        // Get data
-        this.record = await fetch_data(conn,this.sobjectName,this.recordId);
+        try{
+            let conn = window.connector;
+            this.currentTab = await getCurrentTab();
+            this.contextUrl = window.location.href;
+            // Get recordId (Step 1)
+            this.recordId = getRecordId(this.currentTab.url);
+            // Get sobjectName (Step 2) // Should be optimized to save 1 API Call [Caching]
+            this.sobjectName = await getCurrentObjectType(conn,this.recordId);
+            // Get Metadata (Step 3) // Should be optimized to save 1 API Call [Caching]
+            this.metadata = await fetch_metadata(conn,this.sobjectName);
+            // Get data
+            this.record = await fetch_data(conn,this.sobjectName,this.recordId);
 
-        console.log('recordId',this.recordId);
-        console.log('sobjectName',this.sobjectName);
-        console.log('metadata',this.metadata);
-        console.log('record',this.record);
-        this.data = this.formatData();
-        runActionAfterTimeOut(null,(param) => {
-            this.createTable();
-        });
+            console.log('recordId',this.recordId);
+            console.log('sobjectName',this.sobjectName);
+            console.log('metadata',this.metadata);
+            console.log('record',this.record);
+            this.data = this.formatData();
+            runActionAfterTimeOut(null,(param) => {
+                this.createTable();
+            });
+        }catch(e){
+            console.error(e);
+        }
+        
     }
 
     formatData = () => {
@@ -135,7 +142,15 @@ export default class RecordExplorer extends LightningElement {
 
         let colModel = [
             { title: 'Field Label'  , field: 'label'    , width:200,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField},
-            { title: 'ApiName'      , field: 'name'     , width:200,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField},
+            { title: 'ApiName'      , field: 'name'     , width:200,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField,
+                tooltip:(e, cell, onRendered) => {
+                    //e - mouseover event
+                    //cell - cell component
+                    //onRendered - onRendered callback registration function
+                    let metadata = this.metadata.fields.find(x => x.name === cell.getValue());
+                    return `Type: ${metadata.type}`;
+                }
+            },
             { title: 'Value'        , field: 'value'    ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterValue}
         ];
 
@@ -146,7 +161,7 @@ export default class RecordExplorer extends LightningElement {
         console.log('window.innerHeight',window.innerHeight);
 
 		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
-			height: 430,
+			height: 424,
 			data: this.formattedData,
 			layout:"fitColumns",
 			columns: colModel,
@@ -166,6 +181,13 @@ export default class RecordExplorer extends LightningElement {
 
     get isRecordIdAvailable(){
         return isNotUndefinedOrNull(this.recordId);
+    }
+
+    get versions_options(){
+        return this.versions.map(x => ({
+            label:x.label,
+            value:x.version
+        }));
     }
 
 }
