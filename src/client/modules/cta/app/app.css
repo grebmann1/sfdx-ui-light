@@ -1,0 +1,9 @@
+:host{
+    --bs-blue:#02a0e0
+}
+
+.page-item a{
+    border-bottom: dotted 1px;
+    color: var(--bs-blue);
+    text-decoration: none;
+}

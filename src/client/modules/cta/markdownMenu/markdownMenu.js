@@ -33,7 +33,6 @@ export default class MarkdownMenu extends LightningElement {
             var linkURL = link.href;
             // Check if the link's href matches the current URL
             if (linkURL === currentURL) {
-                console.log('link',link);
                 // Add a class to the matching link
                 link.parentElement.classList.add('slds-is-active');
             }else{
@@ -92,7 +91,10 @@ export default class MarkdownMenu extends LightningElement {
         var links = this.template.querySelectorAll('a');
         let index = [...links].findIndex(x => x.parentElement.classList.contains('slds-is-active'));
 
-        this.dispatchEvent(new CustomEvent("menu",{detail:{current:index,links:[...links].map(x => x.href)}}));
+        this.dispatchEvent(new CustomEvent("menu",{detail:{current:index,links:[...links].map(x => ({
+            href:x.href,
+            title:x.text
+        }))}}));
     }
 
     /** Methods */

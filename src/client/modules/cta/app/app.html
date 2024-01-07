@@ -15,10 +15,21 @@
             </div>
             <main role="main" class="documentation-container col-md-9 ml-sm-auto col-lg-19 pt-3 px-4">
 
+                <!-- Header Navigation -->
                 <nav aria-label="Page navigation example">
                     <ul class="pagination" style="justify-content:space-between;">
-                        <li class="page-item"><a class={previousClass} href="#" onclick={goPrevious} >Previous</a></li>
-                        <li class="page-item"><a class={nextClass} href="#" onclick={goNext} >Next</a></li>
+                        <li class="page-item">
+                            <div class={previousClass}>
+                                ← <a href="#" onclick={goPrevious} >{previousTitle}</a>
+                            </div>
+                            
+                        </li>
+                        <li class="page-item">
+                            <div class={nextClass}>
+                                <a href="#" onclick={goNext}>{nextTitle}</a>  →
+                            </div>
+                            
+                        </li>
                     </ul>
                 </nav>
 
@@ -27,10 +38,21 @@
                     base-url="https://raw.githubusercontent.com/grebmann1/cta-cheat-sheet/main/Documentation/"
                 ></cta-markdown-viewer>
 
+                <!-- Footer Navigation -->
                 <nav aria-label="Page navigation example">
                     <ul class="pagination" style="justify-content:space-between;">
-                        <li class="page-item"><a class={previousClass} href="#" onclick={goPrevious} >Previous</a></li>
-                        <li class="page-item"><a class={nextClass} href="#" onclick={goNext}>Next</a></li>
+                        <li class="page-item">
+                            <div class={previousClass}>
+                                ← <a href="#" onclick={goPrevious} >{previousTitle}</a>
+                            </div>
+                            
+                        </li>
+                        <li class="page-item">
+                            <div class={nextClass}>
+                                <a href="#" onclick={goNext}>{nextTitle}</a>  →
+                            </div>
+                            
+                        </li>
                     </ul>
                 </nav>
 

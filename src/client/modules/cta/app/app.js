@@ -53,7 +53,7 @@ export default class App extends LightningElement {
         }else{
             this.currentPosition--;
         }
-        window.location = this.links[this.currentPosition];
+        window.location = this.links[this.currentPosition].href;
     }
 
     goNext = (e) => {
@@ -63,14 +63,24 @@ export default class App extends LightningElement {
         }else{
             this.currentPosition++;
         }
-        window.location = this.links[this.currentPosition];
+        window.location = this.links[this.currentPosition].href;
     }
 
     get previousClass(){
-        return `page-link ${this.currentPosition <= 0?'slds-hide':''}`;
+        return ` ${this.currentPosition <= 0?'slds-hide':''}`;
     }
 
     get nextClass(){
-        return `page-link ${this.currentPosition >= this.links.length - 1?'slds-hide':''}`;
+        return ` ${this.currentPosition >= this.links.length - 1?'slds-hide':''}`;
+    }
+
+    get previousTitle(){
+        let previousPosition = this.currentPosition - 1;
+        return this.links.length > previousPosition ? (this.links[previousPosition]?.title || 'Previous') : 'Previous';
+    }
+
+    get nextTitle(){
+        let nextPosition = this.currentPosition + 1;
+        return this.links.length > nextPosition ? (this.links[nextPosition]?.title || 'Next') : 'Next';
     }
 }
