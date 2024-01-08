@@ -1,5 +1,5 @@
 import { LightningElement,api,track} from "lwc";
-import { isEmpty,formatBytes,isUndefinedOrNull } from 'shared/utils';
+import { isEmpty,formatBytes,isUndefinedOrNull,isNotUndefinedOrNull } from 'shared/utils';
 
 const DEFAULT_NAMESPACE = '__default__';
 
@@ -15,7 +15,8 @@ export default class Code extends LightningElement {
         lwc:[],
         aura:[],
         visualforcePage:[],
-        visualforceComponent:[]
+        visualforceComponent:[],
+        flow:[]
     };
 
     // Data
@@ -25,7 +26,8 @@ export default class Code extends LightningElement {
         visualforcePage:null,
         visualforceComponent:null,
         aura:null,
-        lwc:null
+        lwc:null,
+        flow:null
     };
     namespaces = new Set();
 
@@ -81,6 +83,11 @@ export default class Code extends LightningElement {
                 "SELECT Id,ApiVersion,NamespacePrefix FROM AuraDefinitionBundle",
                 "aura",
                 this.process_aura
+            ),
+            this.load_data(
+                "SELECT Id,NamespacePrefix,Description,FullName,DeveloperName,ActiveVersion.ApiVersion,ManageableState FROM FlowDefinition",
+                "flow",
+                this.process_flow
             )
         ]);
 
@@ -90,7 +97,7 @@ export default class Code extends LightningElement {
         this.data = temp;
     }
 
-    process_apex = (key) => {
+    process_apex = (key = 'apex') => {
         let records = this.filterRecords(key);
         let data = {
             "records":records,
@@ -110,13 +117,18 @@ export default class Code extends LightningElement {
             if(item.LengthWithoutComments > 0){
                 data.totalLength += item.LengthWithoutComments
             }
-        });        
+        });
+
+        // Extra
+        data['totalApiVersions'] = Object.keys(data.apiVersion).length;
+        data['totalApiVersionsStepFormatted'] = this.calculateTotalApiVersionsStepFormatted(data['totalApiVersions']);
 
         this.data[key] = data;
+        
     }
     
 
-    process_lwc = (key) => {
+    process_lwc = (key = 'lwc') => {
         let records = this.filterRecords(key);
         
         let data = {
@@ -140,11 +152,14 @@ export default class Code extends LightningElement {
             }
         });
 
+        // Extra
+        data['totalApiVersions'] = Object.keys(data.apiVersion).length;
+        data['totalApiVersionsStepFormatted'] = this.calculateTotalApiVersionsStepFormatted(data['totalApiVersions']);
         
         this.data[key] = data;
     }
 
-    process_aura = (key) => {
+    process_aura = (key = 'aura') => {
         let records = this.filterRecords(key);
         
         let data = {
@@ -161,8 +176,45 @@ export default class Code extends LightningElement {
             }
         });
 
+        // Extra
+        data['totalApiVersions'] = Object.keys(data.apiVersion).length;
+        data['totalApiVersionsStepFormatted'] = this.calculateTotalApiVersionsStepFormatted(data['totalApiVersions']);
+
         
         this.data[key] = data;
+    }
+
+    process_flow = (key = 'flow') => {
+        let records = this.filterRecords(key);
+        
+        let data = {
+            "records":records,
+            "apiVersion":{},
+        }
+
+        records.forEach(item => {
+            // ActiveVersion -> API Version (not the definition ApiVersion)
+            console.log('item.ActiveVersion.ApiVersion',item.ActiveVersion.ApiVersion);
+            if(!data.apiVersion.hasOwnProperty(item.ActiveVersion.ApiVersion)){
+                data.apiVersion[item.ActiveVersion.ApiVersion] = 1;
+            }else{
+                data.apiVersion[item.ActiveVersion.ApiVersion]++;
+            }
+        });
+
+        // Extra
+        data['totalApiVersions'] = Object.keys(data.apiVersion).length;
+        data['totalApiVersionsStepFormatted'] = this.calculateTotalApiVersionsStepFormatted(data['totalApiVersions']);
+        
+        this.data[key] = data;
+    }
+
+    calculateTotalApiVersionsStepFormatted = (totalApiVersions) => {
+        const ranking = [6,3,0];
+        let currentRank = this.getCurrentRank(ranking,(item) => {
+            return totalApiVersions > item;
+        });
+        return currentRank + 1;
     }
 
     filterRecords = (key) => {
@@ -185,12 +237,13 @@ export default class Code extends LightningElement {
     }
 
     process_all = () => {
-        this.process_apex('apex');
+        this.process_apex();
         this.process_apex('trigger');
         this.process_apex('visualforcePage');
         this.process_apex('visualforceComponent');
-        this.process_lwc('lwc');
-        this.process_aura('aura');
+        this.process_lwc();
+        this.process_aura();
+        this.process_flow();
     }
 
    
@@ -198,20 +251,22 @@ export default class Code extends LightningElement {
 
     /** Getters */
 
+    get isDataAvailable(){
+        return isNotUndefinedOrNull(this.data.apex) // We just need to check the first (Apex)
+    }
+
     // General
 
     get total_namespace(){
         return [...this.namespaces].length + 1;
     }
 
-    // Apex
-
-    get apex_totalApexClasses(){
-        if(isUndefinedOrNull(this.data.apex)){
-            return 0;
-        }
-        return this.data.apex.records.length;
+    get totalApiVersionsMarkDescription(){
+        const descriptions = [' > 6 versions',' > 3 versions',' < 3 versions'];
+        return descriptions[this.lwc_totalApiVersionsStep];
     }
+
+    // Apex
 
     get apex_totalApexClassesInMB(){
         if(isUndefinedOrNull(this.data.apex)){
@@ -220,114 +275,18 @@ export default class Code extends LightningElement {
         return formatBytes(this.data.apex.totalLength,0);
     }
 
-    get apex_totalApiVersions(){
-        if(isUndefinedOrNull(this.data.apex)){
-            return 0;
-        }
-        return Object.keys(this.data.apex.apiVersion).length;
-    }
-
-    get apex_totalApiVersionsStep(){
-        const ranking = [6,3,0];
-        let currentRank = this.getCurrentRank(ranking,(item) => {
-            return this.apex_totalApiVersions > item;
-        });
-
-        return currentRank;
-    }
-
-    get apex_totalApiVersionsStepFormatted(){
-        return this.apex_totalApiVersionsStep + 1;
-    }
-    
-
-    get apex_totalApiVersionsMark(){
-        return this.apex_totalApiVersions;
-    }
-
-    get apex_totalApiVersionsMarkDescription(){
-        const descriptions = [' > 6 versions',' > 3 versions',' < 3 versions'];
-        return descriptions[this.apex_totalApiVersionsStep];
-    }
-
     // LWC 
-
-    get lwc_totalComponents(){
-        if(isUndefinedOrNull(this.data.lwc)){
-            return 0;
-        }
-        return this.data.lwc.records.length;
-    }
-
-    get lwc_totalApiVersions(){
-        if(isUndefinedOrNull(this.data.lwc)){
-            return 0;
-        }
-        return Object.keys(this.data.lwc.apiVersion).length;
-    }
-
-    get lwc_totalApiVersionsStep(){
-        const ranking = [6,3,0];
-        let currentRank = this.getCurrentRank(ranking,(item) => {
-            return this.lwc_totalApiVersions > item;
-        });
-
-        return currentRank;
-    }
-
-    get lwc_totalApiVersionsStepFormatted(){
-        return this.lwc_totalApiVersionsStep + 1;
-    }
-    
-
-    get lwc_totalApiVersionsMark(){
-        return this.lwc_totalApiVersions;
-    }
-
-    get lwc_totalApiVersionsMarkDescription(){
-        const descriptions = [' > 6 versions',' > 3 versions',' < 3 versions'];
-        return descriptions[this.lwc_totalApiVersionsStep];
-    }
 
     // Aura
 
-    get aura_totalComponents(){
-        if(isUndefinedOrNull(this.data.aura)){
-            return 0;
-        }
-        return this.data.aura.records.length;
-    }
-
     // Triggers
-
-    get triggers_totalComponents(){
-        if(isUndefinedOrNull(this.data.trigger)){
-            return 0;
-        }
-        return this.data.trigger.records.length;
-    }
 
     // Visualforce Page
 
-    get visualforcePage_totalComponents(){
-        if(isUndefinedOrNull(this.data.visualforcePage)){
-            return 0;
-        }
-        return this.data.visualforcePage.records.length;
-    }
-
     // Visualforce Component
 
-    get visualforceComponent_totalComponents(){
-        if(isUndefinedOrNull(this.data.visualforceComponent)){
-            return 0;
-        }
-        return this.data.visualforceComponent.records.length;
-    }
+    // Flow
 
-    
-    
- 
 
     /** Events */
 
