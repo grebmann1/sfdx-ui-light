@@ -54,7 +54,12 @@ export default class Launcher extends LightningModal {
     selectApplication = (e) => {
         let application = application_mapping.find(x => x.id === e.currentTarget.dataset.key);
         if(application){
-            this.dispatchEvent(new CustomEvent("select",{detail:application}));
+            if(application.isLoggedInRequired && !this.isUserLoggedIn){
+                window.alert('You need to be connected ! ');
+            }else{
+                this.dispatchEvent(new CustomEvent("select",{detail:application}));
+            }
+            
         }
     }
 

@@ -176,11 +176,11 @@ export default class App extends LightningElement {
         /** DEV MODE  */
 
         if(process.env.NODE_ENV === 'dev' /*&& isElectronApp() && this.isUserLoggedIn*/){
-            await this.loadModule({
+            /**await this.loadModule({
                 component:'sarif/app',
                 name:"Sarif Viewer",
                 isDeletable:true
-            });
+            });**/
         }
     }
 
