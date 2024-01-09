@@ -22,11 +22,16 @@
             <div class="slds-grid slds-wrap slds-gutters">
                 <template for:each={sortedItems} for:item="item">
                     <div key={item.key} class="slds-col slds-size_1-of-1">
-                        <span style="white-space: pre-line;">{item.message}</span>
-                        <pre class="swcSnippet" style="max-height: 108px;">
-                            <code class="lineNumber">{item.lineNumbers}</code>
-                            <code class="hljs flex-grow page-code">{item.location.region.snippet.text}</code>
-                        </pre>
+                        <template lwc:if={item.isSnippetDisplayed}>
+                            <span style="white-space: pre-line;">{item.message}</span>
+                            <pre class="swcSnippet" style="max-height: 108px;">
+                                <code class="lineNumber">{item.lineNumbers}</code>
+                                <code class="hljs flex-grow page-code">{item.snippet}</code>
+                            </pre>
+                        </template>
+                        <template lwc:else>
+                            <span style="white-space: pre-line;">Line: {item.location.region.startLine} | {item.message}</span>
+                        </template>
                     </div>
                 </template>
             </div>

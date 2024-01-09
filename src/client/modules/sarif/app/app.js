@@ -53,8 +53,13 @@ export default class App extends LightningElement {
                     'base64': base64,
                 }
                 /** Stored Current File in local storage **/
-                localStorage.setItem('sarif_lastFileName',file.name)
-                localStorage.setItem(file.name, base64);
+                try{
+                    localStorage.setItem('sarif_lastFileName',file.name)
+                    localStorage.setItem(file.name, base64);
+                }catch(e){
+                    console.warn(e);
+                }
+                
             }
         reader.readAsDataURL(file)
     }
@@ -79,9 +84,17 @@ export default class App extends LightningElement {
     loadCachedFile = () => {
         const lastFileName = localStorage.getItem('sarif_lastFileName');
         if(isNotUndefinedOrNull(lastFileName)){
-            this.fileData = {
-                'filename': lastFileName,
-                'base64': localStorage.getItem(lastFileName),
+            try{
+                const fileData = localStorage.getItem(lastFileName);
+                this.fileData = {
+                    'filename': lastFileName,
+                    'base64': fileData,
+                }
+            }catch(e){
+                console.warn(e);
+                localStorage.removeItem('sarif_lastFileName');
+                localStorage.removeItem(lastFileName);
+                this.fileData = null;
             }
         }
     }
@@ -123,7 +136,9 @@ export default class App extends LightningElement {
     getStructuredDataByFiles = () => {
         let files = {};
         this.getFilteredData.forEach((x,index) => {
-            const {ruleId,kind,level,message,locations} = x;
+            const {ruleId,kind,message,locations} = x;
+            const level = x.level || this.getManualLevel(x);
+            
             let _location = locations[0].physicalLocation;
             let path = _location.artifactLocation.uri;
 
@@ -144,22 +159,30 @@ export default class App extends LightningElement {
         return Object.values(files).sort((a, b) => a.fileName.localeCompare(b.fileName));
     }
 
+    getManualLevel = (x) => {
+        const priorities = ['None','High','Medium High','Medium','Medium Low','Low'];
+        const rule = this.sarif_rules.find(y => y.id == x.ruleId);
+        
+        return priorities[rule?.properties?.priority || 0];
+    }
+
     getStructuredData = () => {
         let result = {};
         this.getFilteredData.forEach((x,index) => {
-            const {ruleId,kind,level,message,locations} = x;
+            const {ruleId,kind,message,locations} = x;
+            const level = x.level || this.getManualLevel(x);
 
             if(!result.hasOwnProperty(level)){
                 result[level] = new Level(
-                    level,
-                    level.charAt(0).toUpperCase()+ level.slice(1),
+                    level
                 );
             }
 
             if(!result[level].rules.hasOwnProperty(ruleId)){
+                const rule = this.sarif_rules.find(y => y.id === ruleId);
                 result[level].rules[ruleId] = new Rule(
                     ruleId,
-                    this.sarif_rules.find(y => y.id === ruleId).name,
+                    rule,
                     result[level].label,
                 );
             }

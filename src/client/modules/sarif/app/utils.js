@@ -1,16 +1,18 @@
-import { getCurrentRank,isUndefinedOrNull} from "shared/utils";
+import { getCurrentRank,isUndefinedOrNull,isEmpty} from "shared/utils";
 
 export class Level {
-    label;
     key;
     rules;
 
     isExpanded = false;
 
-    constructor(label,key){
-        this.label  = label;
+    constructor(key){
         this.key    = key;
         this.rules  = {};
+    }
+
+    get label(){
+        return this.key.length > 0?this.key.charAt(0).toUpperCase()+ this.key.slice(1):'';
     }
 
     get arrayRules(){
@@ -52,9 +54,9 @@ export class Level {
 
     get rank_subTitle(){
         switch (this.level){
-            case 'error':
+            case 'error','High':
                 return '<div class="slds-text-color_error">Critical</div>';
-            case 'warning':
+            case 'warning','Medium High':
                 return '<div class="slds-color-orange-light">High</div>';
             case 'note':
                 return 'Moderate';
@@ -72,18 +74,22 @@ export class Level {
 }
 
 export class Rule {
-    label;
     key;
+    rule;
     files;
 
     levelLabel;
     isExpanded = false;
 
-    constructor(key,label,levelLabel){
-        this.label  = label;
+    constructor(key,rule,levelLabel){
         this.key    = key;
+        this.rule   = rule;
         this.files  = {};
         this.levelLabel = levelLabel;
+    }
+
+    get label(){
+        return this.rule?.name || this.rule?.shortDescription?.text || 'Empty';
     }
 
     get fileItems(){
@@ -175,5 +181,13 @@ export class Item {
             total.push(i);
         }
         return total.join('\n');
+    }
+
+    get snippet(){
+        return this.location?.region?.snippet?.text || '';
+    }
+
+    get isSnippetDisplayed(){
+        return !isEmpty(this.snippet);
     }
 }
