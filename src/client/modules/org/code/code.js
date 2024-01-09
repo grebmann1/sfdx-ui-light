@@ -120,8 +120,7 @@ export default class Code extends LightningElement {
         });
 
         // Extra
-        data['totalApiVersions'] = Object.keys(data.apiVersion).length;
-        data['totalApiVersionsStepFormatted'] = this.calculateTotalApiVersionsStepFormatted(data['totalApiVersions']);
+        this.generateTotalApiVersion(data);
 
         this.data[key] = data;
         
@@ -153,8 +152,7 @@ export default class Code extends LightningElement {
         });
 
         // Extra
-        data['totalApiVersions'] = Object.keys(data.apiVersion).length;
-        data['totalApiVersionsStepFormatted'] = this.calculateTotalApiVersionsStepFormatted(data['totalApiVersions']);
+        this.generateTotalApiVersion(data);
         
         this.data[key] = data;
     }
@@ -177,8 +175,7 @@ export default class Code extends LightningElement {
         });
 
         // Extra
-        data['totalApiVersions'] = Object.keys(data.apiVersion).length;
-        data['totalApiVersionsStepFormatted'] = this.calculateTotalApiVersionsStepFormatted(data['totalApiVersions']);
+        this.generateTotalApiVersion(data);
 
         
         this.data[key] = data;
@@ -203,18 +200,29 @@ export default class Code extends LightningElement {
         });
 
         // Extra
-        data['totalApiVersions'] = Object.keys(data.apiVersion).length;
-        data['totalApiVersionsStepFormatted'] = this.calculateTotalApiVersionsStepFormatted(data['totalApiVersions']);
+        this.generateTotalApiVersion(data);
         
         this.data[key] = data;
     }
 
-    calculateTotalApiVersionsStepFormatted = (totalApiVersions) => {
+    generateTotalApiVersion = (data) => {
+        data.totalApiVersions = Object.keys(data.apiVersion).length;
+        data.totalApiVersionsStep = this.generateTotalApiVersionStep(data.totalApiVersions);
+        data.totalApiVersionsStepFormatted = data.totalApiVersionsStep + 1;
+        data.totalApiVersionsMarkDescription = this.calculateTotalApiVersionMarkDescription(data.totalApiVersionsStep);
+    }
+
+    generateTotalApiVersionStep = (totalApiVersions) => {
         const ranking = [6,3,0];
         let currentRank = this.getCurrentRank(ranking,(item) => {
             return totalApiVersions > item;
         });
-        return currentRank + 1;
+        return currentRank;
+    }
+
+    calculateTotalApiVersionMarkDescription = (step) => {
+        const descriptions = [' > 6 versions',' > 3 versions',' < 3 versions'];
+        return descriptions[step];
     }
 
     filterRecords = (key) => {

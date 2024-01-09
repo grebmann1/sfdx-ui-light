@@ -10,7 +10,8 @@ const application_mapping = [
         component:"accessAnalyzer/app",
         description:"Analyze access provided by profiles and permission sets",
         isDeletable:true,
-        isElectronOnly:false
+        isElectronOnly:false,
+        isLoggedInRequired:true
     },
     {
         id:"metadata",
@@ -19,7 +20,8 @@ const application_mapping = [
         component:"metadata/app",
         description:"Explorer Metadata from the Org",
         isDeletable:true,
-        isElectronOnly:false
+        isElectronOnly:false,
+        isLoggedInRequired:true
     },
     {
         id:"code",
@@ -28,7 +30,18 @@ const application_mapping = [
         component:"code/app",
         description:"Create VSCode project, Review metadata, etc",
         isDeletable:true,
-        isElectronOnly:true
+        isElectronOnly:true,
+        isLoggedInRequired:true
+    },
+    {
+        id:"sarif",
+        name:"Sarif Viewer",
+        shortName:"SW",
+        component:"sarif/app",
+        description:"Read Sarif(json) file and display them (Code Analyser)",
+        isDeletable:true,
+        isElectronOnly:false,
+        isLoggedInRequired:false
     }
 ]
 
@@ -47,9 +60,20 @@ export default class Launcher extends LightningModal {
 
     /** getters */
 
-    get applications(){
-        if(isElectronApp()) return application_mapping;
-
-        return application_mapping.filter(x => !x.isElectronOnly);
+    get allApplications(){
+        let records = application_mapping;
+        if(!isElectronApp()){
+            records = records.filter(x => !x.isElectronOnly);
+        }
+        return records;
     }
+
+    get onlineApplications(){
+        return this.allApplications.filter(x => x.isLoggedInRequired);
+    }
+
+    get offlineApplications(){
+        return this.allApplications.filter(x => !x.isLoggedInRequired);
+    }
+
 }

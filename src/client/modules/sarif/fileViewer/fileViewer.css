@@ -1,0 +1,69 @@
+ol {
+    padding-inline-start: 40px;
+}
+
+li {
+    position: relative;
+    list-style: none;
+    font-size: 1em;
+}
+
+.grayout {
+    opacity: 0.6;
+    margin-left: 5px;
+}
+
+
+label:hover {
+    color: #0C479D;
+    text-decoration: underline;
+}
+
+li::before {
+    content: "\23FA";
+    margin: 0;
+    font-family: auto;
+}
+
+li input {
+    position: absolute;
+    left: 0;
+    margin-left: 0;
+    background: none;
+    opacity: 0;
+    z-index: 2;
+    cursor: pointer;
+    height: 1em;
+    width: 1em;
+    top: 0;
+}
+
+li input + ol {
+    margin: -15px 0 0 -44px;
+    height: 1em;
+}
+
+li input + ol > li {
+    display: none;
+    margin-left: -14px !important;
+    padding-left: 1px;
+}
+
+li label {
+    padding-left: 5px;
+}
+
+li input + ol {
+    margin: -20px 0 0 -44px;
+    padding: 25px 0 0 80px;
+    height: auto;
+}
+
+li input + ol > li {
+    display: block;
+    margin: 0 0 2px;
+}
+
+li input + ol > li:last-child {
+    margin: 0 0 1px;
+}

@@ -1,0 +1,40 @@
+.preview-container{
+    padding: 1rem;
+}
+
+.swcSnippet {
+    margin: 4px 0;
+    padding-right: 4px;
+    font-size: 12px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+}
+
+.swcSnippet .hljs {
+    color: inherit;
+    display: initial;
+    overflow-x: initial;
+    padding: initial;
+    background: initial;
+}
+
+.hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 0.5em;
+    background: white;
+    color: black;
+}
+
+pre {
+    background-color: rgba(0,0,0,0.06);;
+    border-radius: 2px;
+    padding: 4px 8px 6px 8px;
+}
+
+code.lineNumber {
+    width: 36px;
+    color: #999;
+    flex: 0 0 auto;
+}

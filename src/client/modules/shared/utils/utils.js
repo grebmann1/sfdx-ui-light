@@ -143,3 +143,12 @@ export function formatBytes(bytes, decimals = 2) {
 
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
 }
+
+export function getCurrentRank(mapping,check){
+    for (let i = 0; i < mapping.length; i++) {
+        if(check(mapping[i])){
+            return i;
+        }
+    }
+    return mapping.length - 1;
+}

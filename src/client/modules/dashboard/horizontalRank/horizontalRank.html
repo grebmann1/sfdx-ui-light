@@ -3,7 +3,9 @@
         <div class="flex h-full flex-col justify-between gap-1 text-neutral-100 dark:text-neutral-0">
             <div class="flex justify-between">
                 <div class="text-sm font-normal">{title}</div>
-                <div class="text-xs font-normal">{subTitle}</div>
+                <div class="text-xs font-normal">
+                    <lightning-formatted-rich-text value={subTitle}></lightning-formatted-rich-text>
+                </div>
             </div>
             <div class="flex items-center justify-between gap-2 lg:gap-4">
                 <div>

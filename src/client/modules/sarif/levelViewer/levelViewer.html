@@ -1,0 +1,63 @@
+<template>
+
+    <div class="slds-grid slds-wrap slds-gutters">
+        <div class="slds-col slds-col slds-size_1-of-3">
+            <h2 class="slds-tree__group-header">Explore by Level</h2>
+            <ol class="tree slds-m-top_x-small">
+                <!-- Level -->
+                <template for:each={data} for:item="level">
+                    <li key={level.key} >
+                        <label for={level.key}>
+                            <b>{level.label}</b>
+                            <span class="grayout">{level.description}</span>
+                        </label>
+                        <input type="checkbox" id={level.key} data-level={level.key} onclick={handleLevelDisplay}/>
+                        <ol class="tree">
+                            <!-- Rules -->
+                            <template lwc:if={level.isExpanded} for:each={level.arrayRules} for:item="rule">
+                                <li key={rule.key}>
+                                    <label for={rule.key}>
+                                        <b>{rule.label}</b>
+                                        <span class="grayout">{rule.description}</span>
+                                    </label>
+                                    <input type="checkbox" id={rule.key} data-level={level.key} data-rule={rule.key} onclick={handleRuleDisplay}/>
+                                    <ol class="tree">
+                                        <!-- Files -->
+                                        <template lwc:if={rule.isExpanded} for:each={rule.fileItems} for:item="file">
+                                            <li key={file.key}>
+                                                <label for={file.key}>
+                                                    <b>{file.label}</b>
+                                                    <span class="grayout">{file.description}</span>
+                                                </label>
+                                                <input type="checkbox" id={file.key} data-level={level.key} data-rule={rule.key} data-file={file.path} onclick={handleFileDisplay}/>
+                                                <div></div>
+                                                <ol class="tree">
+                                                    <!-- Items -->
+                                                    <template for:each={file.items} for:item="item">
+                                                        <li key={item.key}>
+                                                            <label for={item.key}>
+                                                                <lightning-formatted-rich-text value={item.label}></lightning-formatted-rich-text>
+                                                                <span class="grayout">{item.description}</span>
+                                                            </label>
+                                                            <input type="checkbox" id={item.key} data-level={level.key} data-rule={rule.key} data-file={file.path} data-item={item.key} checked="checked" onclick={handleItemDisplay}/>
+                                                        </li>
+                                                    </template>
+                                                </ol>
+                                            </li>
+                                        </template>
+                                    </ol>
+                                </li>
+                            </template>
+                        </ol>
+                    </li>
+                </template>
+            </ol>
+        </div>
+        <div class="slds-col slds-col slds-size_2-of-3">
+                <!-- Preview -->
+                <template lwc:if={isPreviewDisplayed}>
+                    <sarif-preview file={selectedFile}></sarif-preview>
+                </template>
+        </div>
+    </div>
+</template>
