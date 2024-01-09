@@ -1,55 +1,34 @@
 <template>
-    <div class="slds-section slds-is-open">
-        <h3 class="slds-section__title slds-section__title-action">
-            <span class="slds-truncate" title="Offline Apps">Offline Apps (No connection required)</span>
-        </h3>
-        <div class="slds-section__content">
-            <ul class="slds-grid slds-grid_pull-padded slds-wrap">
-                <!-- Applications - START -->
-                <template for:each={offlineApplications} for:item="application">
-                    <li key={application.id} data-key={application.id} class="slds-p-horizontal_small slds-size_1-of-1 slds-medium-size_1-of-3" onclick={selectApplication}>
-                        <div class="slds-app-launcher__tile slds-text-link_reset">
-                            <div class="slds-app-launcher__tile-figure">
-                                <span class="slds-avatar slds-avatar_large">
-                                    <abbr class="slds-avatar__initials slds-icon-custom-27" title={application.name}>{application.shortName}</abbr>
-                                </span>
+    <template lwc:if={isUserLoggedIn}>
+        <div class="slds-section slds-is-open">
+            <h3 class="slds-section__title slds-section__title-action">
+                <span class="slds-truncate" title="All Apps">All Apps</span>
+            </h3>
+            <div class="slds-section__content" id="appsContent">
+                <ul class="slds-grid slds-grid_pull-padded slds-wrap">
+                    <!-- Applications - START -->
+                    <template for:each={applications} for:item="application">
+                        <li key={application.id} data-key={application.id} class="slds-p-horizontal_small slds-size_1-of-1 slds-medium-size_1-of-3" onclick={selectApplication}>
+                            <div class="slds-app-launcher__tile slds-text-link_reset">
+                                <div class="slds-app-launcher__tile-figure">
+                                    <span class="slds-avatar slds-avatar_large">
+                                        <abbr class="slds-avatar__initials slds-icon-custom-27" title={application.name}>{application.shortName}</abbr>
+                                    </span>
+                                </div>
+                                <div class="slds-app-launcher__tile-body">
+                                    <a href="#">{application.name}</a>
+                                    <p>{application.description}</p>
+                                </div>
                             </div>
-                            <div class="slds-app-launcher__tile-body">
-                                <a href="#">{application.name}</a>
-                                <p>{application.description}</p>
-                            </div>
-                        </div>
-                    </li>
-                </template>
-                <!-- Applications - END -->
-            </ul>
+                        </li>
+                    </template>
+                    <!-- Applications - END -->
+                </ul>
+            </div>
         </div>
-    </div>
-
-    <div class="slds-section slds-is-open">
-        <h3 class="slds-section__title slds-section__title-action">
-            <span class="slds-truncate" title="Online Apps">Online Apps (Required to be connected)</span>
-        </h3>
-        <div class="slds-section__content">
-            <ul class="slds-grid slds-grid_pull-padded slds-wrap">
-                <!-- Applications - START -->
-                <template for:each={onlineApplications} for:item="application">
-                    <li key={application.id} data-key={application.id} class="slds-p-horizontal_small slds-size_1-of-1 slds-medium-size_1-of-3" onclick={selectApplication}>
-                        <div class="slds-app-launcher__tile slds-text-link_reset">
-                            <div class="slds-app-launcher__tile-figure">
-                                <span class="slds-avatar slds-avatar_large">
-                                    <abbr class="slds-avatar__initials slds-icon-custom-27" title={application.name}>{application.shortName}</abbr>
-                                </span>
-                            </div>
-                            <div class="slds-app-launcher__tile-body">
-                                <a href="#">{application.name}</a>
-                                <p>{application.description}</p>
-                            </div>
-                        </div>
-                    </li>
-                </template>
-                <!-- Applications - END -->
-            </ul>
-        </div>
-    </div>
+    </template>
+    <template lwc:else>
+        <!-- Not Logged In-->
+        <h2 class="slds-text-align_center">You need to log in before launching an app</h2>
+    </template>
 </template>

@@ -10,8 +10,7 @@ const application_mapping = [
         component:"accessAnalyzer/app",
         description:"Analyze access provided by profiles and permission sets",
         isDeletable:true,
-        isElectronOnly:false,
-        isLoggedInRequired:true
+        isElectronOnly:false
     },
     {
         id:"metadata",
@@ -20,8 +19,7 @@ const application_mapping = [
         component:"metadata/app",
         description:"Explorer Metadata from the Org",
         isDeletable:true,
-        isElectronOnly:false,
-        isLoggedInRequired:true
+        isElectronOnly:false
     },
     {
         id:"code",
@@ -30,18 +28,7 @@ const application_mapping = [
         component:"code/app",
         description:"Create VSCode project, Review metadata, etc",
         isDeletable:true,
-        isElectronOnly:true,
-        isLoggedInRequired:true
-    },
-    {
-        id:"sarif",
-        name:"Sarif Viewer",
-        shortName:"SW",
-        component:"sarif/app",
-        description:"Read Sarif(json) file and display them (Code Analyser)",
-        isDeletable:true,
-        isElectronOnly:false,
-        isLoggedInRequired:false
+        isElectronOnly:true
     }
 ]
 
@@ -54,31 +41,15 @@ export default class Launcher extends LightningModal {
     selectApplication = (e) => {
         let application = application_mapping.find(x => x.id === e.currentTarget.dataset.key);
         if(application){
-            if(application.isLoggedInRequired && !this.isUserLoggedIn){
-                window.alert('You need to be connected ! ');
-            }else{
-                this.dispatchEvent(new CustomEvent("select",{detail:application}));
-            }
-            
+            this.dispatchEvent(new CustomEvent("select",{detail:application}));
         }
     }
 
     /** getters */
 
-    get allApplications(){
-        let records = application_mapping;
-        if(!isElectronApp()){
-            records = records.filter(x => !x.isElectronOnly);
-        }
-        return records;
-    }
+    get applications(){
+        if(isElectronApp()) return application_mapping;
 
-    get onlineApplications(){
-        return this.allApplications.filter(x => x.isLoggedInRequired);
+        return application_mapping.filter(x => !x.isElectronOnly);
     }
-
-    get offlineApplications(){
-        return this.allApplications.filter(x => !x.isLoggedInRequired);
-    }
-
 }
