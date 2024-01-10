@@ -2,8 +2,8 @@ import {isNotUndefinedOrNull,decodeError,classSet} from 'shared/utils';
 
 
 
-export async function getConnection(alias){
-    console.log('electron.getConnection');
+export async function getSettings(alias){
+    console.log('electron.getSettings');
     var {res, error} = await window.electron.ipcRenderer.invoke('org-seeDetails',{alias});
     if (error) {
         throw decodeError(error)

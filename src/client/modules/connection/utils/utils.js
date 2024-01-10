@@ -1,4 +1,4 @@
-import { isNotUndefinedOrNull } from 'shared/utils';
+import { isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
 import { isElectronApp } from 'shared/utils';
 import constant from "global/constant";
 import * as webInterface from './web';
@@ -10,25 +10,70 @@ export * from './mapping';
 
 
 export async function connect({alias,settings}){
-    // Only connect via the web interface
+    //console.log('util.connect',{alias,settings});
+    if(isUndefinedOrNull(settings) && isUndefinedOrNull(alias)){
+        throw new Error('You need to provide the alias or the connection');
+    }
     
-   let connection = await webInterface.connect({alias,settings});
-   /** Get Username & First connection **/
-   let identity = await connection.identity();
-   let header = {};
-   if(isNotUndefinedOrNull(identity)){
-        header.alias    = connection.alias;
-        header.username = identity.username;
-        header.orgId    = identity.organization_id;
-        header.userInfo = identity;
-   }
 
-   return new Connector(header,connection)
+    if(alias){
+        settings = await getSettings(alias);
+        //console.log('loaded settings',settings);
+    }
+    
+    let params = {
+        instanceUrl : settings.instanceUrl,
+        accessToken : settings.accessToken,
+        proxyUrl    : `${window.location.origin}/proxy/`,
+        version     : settings.instanceApiVersion || constant.apiVersion
+    }
+
+    // Handle Refresh Token
+    if(settings.refreshToken){
+        params.refreshToken = settings.refreshToken;
+        params.oauth2 = { 
+            ...window.jsforceSettings,
+            loginUrl:settings.instanceUrl
+        }
+    }
+
+    //console.log('util.connect.connection',params);
+    const connection = await new window.jsforce.Connection(params);
+          connection.alias = alias || settings.alias;
+          connection.on("refresh", async function(accessToken, res) {
+                console.log('refresh !!!',settings.accessToken,accessToken);
+                let newSettings = {...settings,accessToken};
+                await webInterface.setSettings(connection.alias,newSettings);
+          });
+
+          /*connection.oauth2.refreshToken(params.refreshToken, (err, results) => {
+            console.log('oauth2.refreshToken',connection.oauth2);
+            console.error(err);
+            console.log(results);
+          });*/
+
+    /** Get Username & First connection **/
+    const header = await getHeader(connection);
+    
+    return new Connector(header,connection);
 }
 
-export async function getConnection(alias){
-    console.log('getConnection (isElectronApp)',isElectronApp());
-    let connection =   isElectronApp()?await electronInterface.getConnection(alias):await webInterface.getConnection(alias);
+async function getHeader(connection){
+    let identity = await connection.identity();
+    let header = {};
+    if(isNotUndefinedOrNull(identity)){
+            header.alias    = connection.alias;
+            header.username = identity.username;
+            header.orgId    = identity.organization_id;
+            header.userInfo = identity;
+    }
+    return header;
+}
+
+
+export async function getSettings(alias){
+    //console.log('getSettings (isElectronApp)',isElectronApp());
+    let connection =   isElectronApp()?await electronInterface.getSettings(alias):await webInterface.getSettings(alias);
 
     let nameArray = (connection.alias || '').split('-');
     let company = nameArray.length > 1 ?nameArray.shift() : '';
@@ -56,7 +101,7 @@ export async function removeConnection(alias){
 
 export async function getAllConnection(){
     let connections =  isElectronApp()?await electronInterface.getAllConnection():await webInterface.getAllConnection();
-    console.log('connections',connections);
+    //console.log('connections',connections);
     return connections.map(x => {
         let nameArray = (x.alias || '').split('-');
         let company = nameArray.length > 1 ?nameArray.shift() : '';
@@ -73,8 +118,9 @@ export async function getAllConnection(){
 export async function getExistingSession(){
     if(sessionStorage.getItem("currentConnection")){
         try{
-            let settings = JSON.parse(sessionStorage.getItem("currentConnection"));
-            return await connect({settings});
+            // Don't use settings for now, to avoid issues with electron js (see-details need to be called)
+            const {alias,...settings} = JSON.parse(sessionStorage.getItem("currentConnection"));
+            return await connect({alias});
         }catch(e){
             console.error(e);
             return null;
@@ -138,7 +184,7 @@ export async function oauth({alias,loginUrl},callback){
 }
 
 export async function directConnection(sessionId,serverUrl){
-    console.log('sessionId,serverUrl',sessionId,serverUrl);
+    //console.log('sessionId,serverUrl',sessionId,serverUrl);
     let params = {
         //oauth2      : {...window.jsforceSettings},
         sessionId   : sessionId,
@@ -157,7 +203,7 @@ export async function directConnection(sessionId,serverUrl){
         header.orgId    = identity.organization_id;
         header.userInfo = identity;
     }
-    console.log('directConnection',header,connection);
+    //console.log('directConnection',header,connection);
 
     return new Connector(header,connection);
 }

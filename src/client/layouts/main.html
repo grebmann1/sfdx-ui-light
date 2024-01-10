@@ -69,7 +69,7 @@
             .then(response => response.json())
             .then(config => {
                 window.jsforceSettings = {
-                    clientId: config.clientId,
+                    clientId:  config.clientId,
                     redirectUri: `${host}/oauth2/callback`,
                     proxyUrl: `${host}/proxy/`,
                 };

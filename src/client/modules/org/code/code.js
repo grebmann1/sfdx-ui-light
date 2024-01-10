@@ -39,13 +39,19 @@ export default class Code extends LightningElement {
 
 
     load_data = async (query,key,callback) => {
-        let queryExec = this.connector.conn.tooling.query(query);
-        this.records[key] = await queryExec.run({ responseTarget:'Records',autoFetch : true, maxFetch : 10000 }) || [];
+        try{
+            let queryExec = this.connector.conn.tooling.query(query);
+            this.records[key] = await queryExec.run({ responseTarget:'Records',autoFetch : true, maxFetch : 10000 }) || [];
+            
+            // Extract namespace
+            this.records[key].forEach(x => {
+                this.namespaces.add(x.NamespacePrefix);
+            });
+        }catch(e){
+            console.error(e);
+            this.records[key] = [];
+        }
         
-        // Extract namespace
-        this.records[key].forEach(x => {
-            this.namespaces.add(x.NamespacePrefix);
-        });
 
         callback(key);
     }
@@ -85,7 +91,7 @@ export default class Code extends LightningElement {
                 this.process_aura
             ),
             this.load_data(
-                "SELECT Id,NamespacePrefix,Description,FullName,DeveloperName,ActiveVersion.ApiVersion,ManageableState FROM FlowDefinition",
+                "SELECT Id,NamespacePrefix,Description,DeveloperName,ActiveVersion.ApiVersion,ManageableState FROM FlowDefinition",
                 "flow",
                 this.process_flow
             )
@@ -191,12 +197,14 @@ export default class Code extends LightningElement {
 
         records.forEach(item => {
             // ActiveVersion -> API Version (not the definition ApiVersion)
-            console.log('item.ActiveVersion.ApiVersion',item.ActiveVersion.ApiVersion);
-            if(!data.apiVersion.hasOwnProperty(item.ActiveVersion.ApiVersion)){
-                data.apiVersion[item.ActiveVersion.ApiVersion] = 1;
-            }else{
-                data.apiVersion[item.ActiveVersion.ApiVersion]++;
+            if(item.ActiveVersion?.ApiVersion){
+                if(!data.apiVersion.hasOwnProperty(item.ActiveVersion.ApiVersion)){
+                    data.apiVersion[item.ActiveVersion.ApiVersion] = 1;
+                }else{
+                    data.apiVersion[item.ActiveVersion.ApiVersion]++;
+                }
             }
+            
         });
 
         // Extra

@@ -37,19 +37,15 @@ export default class App extends LightningElement {
     @track applications = [];
 
     async connectedCallback(){
-        console.log('connectedCallback');
         this.initMode();
-        
     }
 
     /** Events */
 
     handleOpenApplication = async (e) => {
-        console.log('handleOpenApplication',e.detail);
         const component = e.detail.component;
         const name = e.detail.name;
         this.connector = e.detail.value;
-        console.log('this.applications',this.applications.map(x => x.component));
         if(this.applications.filter(x => x.component === component).length == 0){
             await this.loadModule({
                 component,
@@ -83,7 +79,6 @@ export default class App extends LightningElement {
 
     handleLogout = (e) => {
         e.preventDefault();
-        console.log('handleLogout',e.detail.value);
         removeSession();
         this.initMode();
         //location.reload();
@@ -172,7 +167,6 @@ export default class App extends LightningElement {
             });
         }
         
-        console.log('process.env.NODE_ENV',process.env.NODE_ENV);
         /** DEV MODE  */
 
         if(process.env.NODE_ENV === 'dev' /*&& isElectronApp() && this.isUserLoggedIn*/){

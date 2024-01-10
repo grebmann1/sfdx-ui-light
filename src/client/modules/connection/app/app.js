@@ -5,7 +5,7 @@ import ConnectionDetailModal from "connection/connectionDetailModal";
 import ConnectionRenameModal from "connection/connectionRenameModal";
 
 import {isNotUndefinedOrNull,isElectronApp} from 'shared/utils';
-import {getAllConnection,removeConnection,getConnection,connect,Connector,oauth} from 'connection/utils';
+import {getAllConnection,removeConnection,connect,oauth} from 'connection/utils';
 
 const actions = [
     { label: 'Login', name: 'login' },
@@ -75,9 +75,7 @@ export default class App extends LightningElement {
     setAllConnections = async () => {
         // Browser & Electron version
         this.isLoading = true;
-        let records = await getAllConnection();
-        console.log('records',records);
-        this.data =  records;
+        this.data =  await getAllConnection();;
         this.isLoading = false;
     }
 
