@@ -46,7 +46,7 @@ export default class App extends LightningElement {
         const component = e.detail.component;
         const name = e.detail.name;
         this.connector = e.detail.value;
-        if(this.applications.filter(x => x.component === component).length == 0){
+        if(this.applications.filter(x => x.componentName === component).length == 0){
             await this.loadModule({
                 component,
                 name,
@@ -69,10 +69,11 @@ export default class App extends LightningElement {
             refreshToken
         });
         // Reset first
-        this.applications = this.applications.filter(x => x.component == 'connection/app');
+        console.log('this.applications',this.applications);
+        this.applications = this.applications.filter(x => x.componentName == 'connection/app');
 
         // Add new module
-        if(this.applications.filter(x => x.component == 'org/app').length == 0){
+        if(this.applications.filter(x => x.componentName == 'org/app').length == 0){
             await this.loadModule({
                 component:'org/app',
                 name:"Org",
@@ -225,6 +226,7 @@ export default class App extends LightningElement {
     
         //let { default: appConstructor } = await APP_MAPPING[app_key]()
         let newApplication = {
+            componentName:data.component,
             constructor:APP_MAPPING[data.component],
             id:guid(),
             name:data.name,
