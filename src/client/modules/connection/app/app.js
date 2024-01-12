@@ -80,13 +80,14 @@ export default class App extends LightningElement {
     }
 
     login = async (row) => {
-        let settings = this.data.find(x => x.id == row.id);
+        let {alias,...settings} = this.data.find(x => x.id == row.id);
         try{
-            let connector = await connect({settings});
+            console.log('settings',settings);
+            let connector = await connect({alias,settings});
             this.dispatchEvent(new CustomEvent("login", { detail:{value:connector},bubbles: true }));
         }catch(e){
             // OAuth in case of login failure !!!!
-            oauth({alias:settings.alias,loginUrl:settings.instanceUrl || settings.loginUrl},(res) => {
+            oauth({alias:alias,loginUrl:settings.instanceUrl || settings.loginUrl},(res) => {
                 this.dispatchEvent(new CustomEvent("login", { detail:{value:res.connector},bubbles: true }));
             })
         }
