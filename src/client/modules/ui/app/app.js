@@ -68,6 +68,10 @@ export default class App extends LightningElement {
             instanceApiVersion:version,
             refreshToken
         });
+        // Reset first
+        this.applications = this.applications.filter(x => x.component == 'connection/app');
+
+        // Add new module
         if(this.applications.filter(x => x.component == 'org/app').length == 0){
             await this.loadModule({
                 component:'org/app',

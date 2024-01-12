@@ -25,7 +25,7 @@ export async function connect({alias,settings}){
         instanceUrl : settings.instanceUrl,
         accessToken : settings.accessToken,
         proxyUrl    : `${window.location.origin}/proxy/`,
-        version     : settings.instanceApiVersion || constant.apiVersion
+        //version     : settings.instanceApiVersion || constant.apiVersion // This might need to be refactored 
     }
 
     // Handle Refresh Token
@@ -37,7 +37,7 @@ export async function connect({alias,settings}){
         }
     }
 
-    //console.log('util.connect.connection',params);
+    //console.log('util.connect.connection',params,settings);
     const connection = await new window.jsforce.Connection(params);
           connection.alias = alias || settings.alias;
           connection.on("refresh", async function(accessToken, res) {
@@ -45,17 +45,20 @@ export async function connect({alias,settings}){
                 let newSettings = {...settings,accessToken};
                 await webInterface.setSettings(connection.alias,newSettings);
           });
-
-          /*connection.oauth2.refreshToken(params.refreshToken, (err, results) => {
-            console.log('oauth2.refreshToken',connection.oauth2);
-            console.error(err);
-            console.log(results);
-          });*/
-
+          
+    /** Assign Latest Version **/
+    await assignLatestVersion(connection);
     /** Get Username & First connection **/
     const header = await getHeader(connection);
     
+    console.log('connection',connection,'header',header);
     return new Connector(header,connection);
+}
+
+async function assignLatestVersion(connection){
+    const versions = (await connection.request('/services/data/')).sort((a, b) => b.version.localeCompare(a.version));
+    // Initialize;
+    connection.version = versions[0].version;
 }
 
 async function getHeader(connection){

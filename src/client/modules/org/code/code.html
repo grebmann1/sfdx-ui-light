@@ -178,6 +178,16 @@
                     </lightning-tab>
                     <lightning-tab label="Flow">
                         <div class="slds-grid slds-wrap slds-gutters">
+                            <template for:each={flow_allProcessType} for:item="item">
+                                <div key={item.key} class="slds-col slds-grow-none min-width-150 slds-m-top_x-small">
+                                    <dashboard-basic-stats 
+                                        title={item.label}
+                                        value={item.value}
+                                    ></dashboard-basic-stats>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="slds-grid slds-wrap slds-gutters">
                             <div class="slds-col slds-grow-none min-width-300 slds-m-top_x-small">
                                 <dashboard-horizontal-rank 
                                     mark={data.flow.totalApiVersions} 

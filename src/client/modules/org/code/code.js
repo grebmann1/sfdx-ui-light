@@ -38,9 +38,10 @@ export default class Code extends LightningElement {
     /** Methods */
 
 
-    load_data = async (query,key,callback) => {
+    load_data = async (query,key,callback,useTooling = false) => {
         try{
-            let queryExec = this.connector.conn.tooling.query(query);
+            const conn = useTooling?this.connector.conn.tooling:this.connector.conn;
+            let queryExec = conn.query(query);
             this.records[key] = await queryExec.run({ responseTarget:'Records',autoFetch : true, maxFetch : 10000 }) || [];
             
             // Extract namespace
@@ -59,41 +60,47 @@ export default class Code extends LightningElement {
 
 
     load_allData = async () => {
-        let results = await Promise.all([
+        await Promise.all([
             this.load_data(
                 "SELECT Id,ApiVersion,NamespacePrefix,LengthWithoutComments,Status FROM ApexClass",
                 "apex",
-                this.process_apex
+                this.process_apex,
+                true
             ),
             this.load_data(
                 "SELECT Id,ApiVersion,NamespacePrefix FROM ApexPage",
                 "visualforcePage",
-                this.process_apex
+                this.process_apex,
+                true
             ),
             this.load_data(
                 "SELECT Id,ApiVersion,NamespacePrefix FROM ApexComponent",
                 "visualforceComponent",
-                this.process_apex
+                this.process_apex,
+                true
             ),
             this.load_data(
                 "SELECT Id,ApiVersion,NamespacePrefix,Status FROM ApexTrigger",
                 "trigger",
-                this.process_apex
+                this.process_apex,
+                true
             ),
             this.load_data(
                 "SELECT Id,ApiVersion,NamespacePrefix,ManageableState FROM LightningComponentBundle",
                 "lwc",
-                this.process_lwc
+                this.process_lwc,
+                true
             ),
             this.load_data(
                 "SELECT Id,ApiVersion,NamespacePrefix FROM AuraDefinitionBundle",
                 "aura",
-                this.process_aura
+                this.process_aura,
+                true
             ),
             this.load_data(
-                "SELECT Id,NamespacePrefix,Description,DeveloperName,ActiveVersion.ApiVersion,ManageableState FROM FlowDefinition",
+                "SELECT Id,DurableId,ApiName,Label,Description,ProcessType,NamespacePrefix,TriggerType,IsActive,VersionNumber,ApiVersion FROM FlowDefinitionView",
                 "flow",
-                this.process_flow
+                this.process_flow,
             )
         ]);
 
@@ -193,15 +200,24 @@ export default class Code extends LightningElement {
         let data = {
             "records":records,
             "apiVersion":{},
+            "processType":{}
         }
 
         records.forEach(item => {
             // ActiveVersion -> API Version (not the definition ApiVersion)
-            if(item.ActiveVersion?.ApiVersion){
-                if(!data.apiVersion.hasOwnProperty(item.ActiveVersion.ApiVersion)){
-                    data.apiVersion[item.ActiveVersion.ApiVersion] = 1;
+            if(item.ApiVersion){
+                if(!data.apiVersion.hasOwnProperty(item.ApiVersion)){
+                    data.apiVersion[item.ApiVersion] = 1;
                 }else{
-                    data.apiVersion[item.ActiveVersion.ApiVersion]++;
+                    data.apiVersion[item.ApiVersion]++;
+                }
+            }
+
+            if(item.ProcessType){
+                if(!data.processType.hasOwnProperty(item.ProcessType)){
+                    data.processType[item.ProcessType] = 1;
+                }else{
+                    data.processType[item.ProcessType]++;
                 }
             }
             
@@ -290,6 +306,7 @@ export default class Code extends LightningElement {
         }
         return formatBytes(this.data.apex.totalLength,0);
     }
+    
 
     // LWC 
 
@@ -302,6 +319,25 @@ export default class Code extends LightningElement {
     // Visualforce Component
 
     // Flow
+
+    get flow_allProcessType(){
+        let items = this.data?.flow?.processType || {};
+        const mapping = {'Flow':'ScreenFlow','AutoLaunchedFlow':'AutolaunchedFlow'};
+        
+        const result = {};
+        Object.keys(items).forEach(key => {
+            const newKey = mapping.hasOwnProperty(key)?mapping[key]:'Other';
+            const value = result.hasOwnProperty(newKey)? result[newKey].value + items[key]: items[key];
+
+            result[newKey] = {
+                key:newKey,
+                label:newKey.split(/(?=[A-Z])/).join(' '),
+                value
+            }
+        });
+
+        return Object.values(result);
+    }
 
 
     /** Events */
