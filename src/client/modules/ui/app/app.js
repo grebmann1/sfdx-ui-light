@@ -185,15 +185,16 @@ export default class App extends LightningElement {
         /** DEV MODE  */
 
         if(process.env.NODE_ENV === 'dev' /*&& isElectronApp() && this.isUserLoggedIn*/){
-            await this.loadModule({
+            /*await this.loadModule({
                 component:'doc/app',
                 name:"Documentation Explorer",
                 isDeletable:true
-            });
+            });*/
         }
 
         /** Direct Opening Mode */
-        const hash = window.location.hash;
+        const hash = (window.location.hash || '').replace('#','');
+        console.log('hash -> ',hash);
         if(DIRECT_LINK_MAPPING.hasOwnProperty(hash)){
             await this.loadModule(DIRECT_LINK_MAPPING[hash]);
         }
