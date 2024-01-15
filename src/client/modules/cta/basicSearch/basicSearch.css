@@ -1,0 +1,82 @@
+/** Site **/
+
+.site-searchbox__wrapper {
+    padding: 0 1rem;
+}
+
+.algolia-autocomplete {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: calc(1.75rem + 2px);
+    z-index: 9999;
+}
+
+.site-searchbox__input {
+    padding-left: 1rem;
+    color: #4f6a92;
+    border-color: #d8dee6;
+}
+
+.site-sidebar button {
+    display: block;
+    padding: 0.875rem 2rem 0.8125rem;
+    line-height: 1.25;
+    color: #4f6a92;
+    width: 100%;
+}
+
+
+/** SLDS **/
+
+.slds-grid_vertical-align-center {
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -ms-flex-line-pack: center;
+    align-content: center;
+}
+
+.slds-grid {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+}
+
+.slds-col {
+    -webkit-box-flex: 1;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+}
+
+.slds-input {
+    padding-top: 0;
+    padding-right: var(--slds-c-input-spacing-horizontal-end,var(--sds-c-input-spacing-horizontal-end,1rem));
+    padding-bottom: 0;
+    padding-left: var(--slds-c-input-spacing-horizontal-start,var(--sds-c-input-spacing-horizontal-start,.75rem));
+    width: 100%;
+    min-height: calc(1.875rem + 2px);
+    line-height: 1.875rem;
+    border: 1px solid var(--slds-c-input-color-border,var(--sds-c-input-color-border,var(--slds-g-color-border-base-4,#c9c9c9)));
+    border-radius: var(--slds-c-input-radius-border,var(--sds-c-input-radius-border,.25rem));
+    background-color: var(--slds-c-input-color-background,var(--sds-c-input-color-background,var(--slds-g-color-neutral-base-100,#fff)));
+    color: var(--slds-c-input-text-color,var(--sds-c-input-text-color));
+    -webkit-box-shadow: var(--slds-c-input-shadow,var(--sds-c-input-shadow));
+    box-shadow: var(--slds-c-input-shadow,var(--sds-c-input-shadow));
+    -webkit-transition: border .1s linear,background-color .1s linear;
+    transition: border .1s linear,background-color .1s linear;
+    display: inline-block;
+}
+
+.slds-assistive-text {
+    position: absolute!important;
+    margin: -1px!important;
+    border: 0!important;
+    padding: 0!important;
+    width: 1px!important;
+    height: 1px!important;
+    overflow: hidden!important;
+    clip: rect(0 0 0 0)!important;
+    text-transform: none!important;
+    white-space: nowrap!important;
+}

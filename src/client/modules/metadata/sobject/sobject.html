@@ -1,0 +1,148 @@
+<template>
+    <!-- Loading -->
+    <template lwc:if={isLoading}>
+        <lightning-spinner alternative-text="Loading"></lightning-spinner>
+    </template>
+    <template lwc:else>
+        <!-- SObject List -->
+        <div class="slds-grid slds-gutters slds-wrap">
+            <div class="slds-col slds-size_1-of-3">
+                <h2 class="slds-nav-vertical__title"> SObjects</h2>
+                <lightning-input 
+                    class="slds-m-bottom_large" 
+                    type="search"
+                    label="Search" 
+                    onchange={handleFilter}
+                ></lightning-input>
+                <div class="slds-scrollable_y" style="max-height:450px;">
+                    <lightning-vertical-navigation onselect={handleItemSelection} compact>
+                        <template for:each={filteredList} for:item="item">
+                            <lightning-vertical-navigation-item key={item.name} label={item.label} name={item.name}></lightning-vertical-navigation-item>
+                        </template>
+                    </lightning-vertical-navigation>
+                </div>
+            </div>
+            <div class="slds-col slds-size_2-of-3">
+                <!-- Container -->
+                <lightning-tabset variant="scoped">
+                    <lightning-tab label="Details">
+                        <template lwc:if={isDetailDisplayed}>
+
+                            <!-- Header -->
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-section__title-action">
+                                    <span class="slds-truncate" title="Informations">Informations</span>
+                                </h3>
+                                <div class="slds-section__content" >
+                                    <div class="slds-grid slds-wrap">
+                                        <!-- Fields -->
+                                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                                            <div class="slds-form-element">
+                                                <label class="slds-text-title_bold slds-form-element__label">Name</label>
+                                                <div class="slds-form-element__control">
+                                                    {selectedDetails.name}
+                                                </div>
+                                              </div>
+                                        </div>
+                                        <!-- Fields -->
+                                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                                            <div class="slds-form-element">
+                                                <label class="slds-text-title_bold slds-form-element__label">Label</label>
+                                                <div class="slds-form-element__control">
+                                                    {selectedDetails.label}
+                                                </div>
+                                              </div>
+                                        </div>
+                                        <!-- Fields -->
+                                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                                            <div class="slds-form-element">
+                                                <label class="slds-text-title_bold slds-form-element__label">Prefix</label>
+                                                <div class="slds-form-element__control">
+                                                    {selectedDetails.keyPrefix}
+                                                </div>
+                                              </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Header -->
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-section__title-action">
+                                    <span class="slds-truncate" title="Settings">Settings</span>
+                                </h3>
+                                <div class="slds-section__content" >
+                                    <div class="slds-grid slds-wrap">
+                                        <!-- Fields -->
+                                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                                            <div class="slds-form-element">
+                                                <label class="slds-text-title_bold slds-form-element__label">Is Creatable</label>
+                                                <div class="slds-form-element__control">
+                                                    {selectedDetails.createable}
+                                                </div>
+                                              </div>
+                                        </div>
+                                        <!-- Fields -->
+                                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                                            <div class="slds-form-element">
+                                                <label class="slds-text-title_bold slds-form-element__label">Is Custom</label>
+                                                <div class="slds-form-element__control">
+                                                    {selectedDetails.custom}
+                                                </div>
+                                              </div>
+                                        </div>
+                                        <!-- Fields -->
+                                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                                            <div class="slds-form-element">
+                                                <label class="slds-text-title_bold slds-form-element__label">Is Triggerable</label>
+                                                <div class="slds-form-element__control">
+                                                    {selectedDetails.triggerable}
+                                                </div>
+                                              </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Fields -->
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-section__title-action">
+                                    <span class="slds-truncate" title="Fields">Fields</span>
+                                </h3>
+                                <div class="slds-section__content" >
+                                    <div class="slds-grid slds-wrap">
+                                        <!-- Display Fields -->
+                                        <div class="slds-col">
+                                            <lightning-input 
+                                                class="slds-m-bottom_medium" 
+                                                type="search"
+                                                label="Search" 
+                                                variant="label-hidden"
+                                                onchange={handleFieldsFilter}
+                                            ></lightning-input>
+                                            <div lwc:dom="manual" class="custom-table-fields"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Child Relationships -->
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title slds-section__title-action">
+                                    <span class="slds-truncate" title="Child Relationships">Child Relationships</span>
+                                </h3>
+                                <div class="slds-section__content" >
+                                    <div class="slds-grid slds-wrap">
+                                        <!-- Display Relationships -->
+                                        <!-- Display Fields -->
+                                        <div lwc:dom="manual" class="custom-table-child"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </lightning-tab>
+                    <lightning-tab label="View">
+                        Two Content !
+                    </lightning-tab>
+                </lightning-tabset>
+            </div>
+        </div>
+    </template>
+</template>

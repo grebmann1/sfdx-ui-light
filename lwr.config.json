@@ -21,6 +21,11 @@
             "urlPath": "/assets"
         },
         {
+            "alias":"imagesDir",
+            "dir": "$rootDir/src/client/assets/images",
+            "urlPath": "/images"
+        },
+        {
             "alias":"stylesDir",
             "dir": "$rootDir/src/client/assets/styles",
             "urlPath": "/styles"

@@ -47,22 +47,19 @@
                 <div class="slds-card__body slds-card__body_inner">
                     <div class="slds-grid slds-gutters slds-wrap">
                         <!-- SECTION -->
-                        <div class="slds-col slds-col slds-size_1-of-4">
-                            <lightning-vertical-navigation selected-item={defaultSelectedItem} onselect={handleItemSelection} compact>
+                        <div class="slds-col slds-col slds-size_1-of-6">
+                            <lightning-vertical-navigation selected-item="sobject" onselect={handleItemSelection} compact>
                                 <lightning-vertical-navigation-section label="Metadata">
-                                    <template for:each={metadataObjects} for:item="item">
-                                        <lightning-vertical-navigation-item key={item.suffix} label={item.xmlName} name={item.xmlName}></lightning-vertical-navigation-item>
-                                    </template>
+                                    <lightning-vertical-navigation-item label="SObject" name="sobject"></lightning-vertical-navigation-item>
                                 </lightning-vertical-navigation-section>
                             </lightning-vertical-navigation>
                         </div>
-                        <div class="slds-col slds-col slds-size_3-of-4">
-
+                        <div class="slds-col slds-col slds-size_5-of-6">
+                            <template lwc:if={isSObjectDisplayed}>
+                                <metadata-sobject connector={connector}></metadata-sobject>
+                            </template>
                         </div>
                     </div>
-
-                    
-
                 </div>
             </article>
 

@@ -8,8 +8,8 @@ import {isNotUndefinedOrNull,isElectronApp} from 'shared/utils';
 import {getAllConnection,removeConnection,connect,oauth} from 'connection/utils';
 
 const actions = [
-    { label: 'Login', name: 'login' },
-    { label: 'Open Browser', name: 'openBrowser' },
+    { label: 'Connect', name: 'login' },
+    { label: 'Login', name: 'openBrowser' },
     { label: 'See Details', name: 'seeDetails' },
     { label: 'Set Alias', name: 'setAlias' },
     { label: 'Remove', name: 'removeConnection' }

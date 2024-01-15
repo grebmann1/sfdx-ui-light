@@ -7,3 +7,9 @@
     color: var(--bs-blue);
     text-decoration: none;
 }
+
+
+/** SF style **/
+.slds-input{
+    width: 100%;
+}

@@ -10,8 +10,9 @@ import metadata_app from "metadata/app";
 import extension_app from "extension/app";
 import org_app from "org/app";
 import sarif_app from "sarif/app";
+import doc_app from "doc/app";
 
-const KNOWN_TYPE = new Set(["connection/app", "accessAnalyzer/app","extension/app","org/app","code/app","metadata/app","sarif/app"]);
+const KNOWN_TYPE = new Set(["connection/app", "accessAnalyzer/app","extension/app","org/app","code/app","metadata/app","sarif/app","doc/app"]);
 const APP_MAPPING = {
     "connection/app": connection_app,
     "accessAnalyzer/app": accessAnalyzer_app,
@@ -19,7 +20,8 @@ const APP_MAPPING = {
     "extension/app":extension_app,
     "org/app":org_app,
     "metadata/app":metadata_app,
-    "sarif/app":sarif_app
+    "sarif/app":sarif_app,
+    "doc/app":doc_app
 };
 
 export default class App extends LightningElement {
@@ -175,11 +177,11 @@ export default class App extends LightningElement {
         /** DEV MODE  */
 
         if(process.env.NODE_ENV === 'dev' /*&& isElectronApp() && this.isUserLoggedIn*/){
-            /**await this.loadModule({
-                component:'sarif/app',
-                name:"Sarif Viewer",
+            await this.loadModule({
+                component:'doc/app',
+                name:"Documentation Explorer",
                 isDeletable:true
-            });**/
+            });
         }
     }
 

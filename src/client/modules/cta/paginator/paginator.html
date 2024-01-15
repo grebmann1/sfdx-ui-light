@@ -1,0 +1,16 @@
+<template>
+    <nav aria-label="Page navigation example">
+        <ul class="pagination" style="justify-content:space-between;">
+            <li class="page-item">
+                <div class={previousClass}>
+                    ← <a href="#" onclick={goPrevious} >{previousTitle}</a>
+                </div>
+            </li>
+            <li class="page-item">
+                <div class={nextClass}>
+                    <a href="#" onclick={goNext}>{nextTitle}</a>  →
+                </div>
+            </li>
+        </ul>
+    </nav>
+</template>

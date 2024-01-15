@@ -29,6 +29,16 @@ const application_mapping = [
         description:"Create VSCode project, Review metadata, etc",
         isDeletable:true,
         isElectronOnly:true
+    },
+    {
+        id:"doc",
+        name:"Documentation Explorer",
+        shortName:"DE",
+        component:"doc/app",
+        description:"Explore Salesforce Documentation",
+        isDeletable:true,
+        isElectronOnly:false,
+        isOfflineAvailable:true
     }
 ]
 
@@ -51,5 +61,9 @@ export default class Launcher extends LightningModal {
         if(isElectronApp()) return application_mapping;
 
         return application_mapping.filter(x => !x.isElectronOnly);
+    }
+
+    get offlineApplications(){
+        return this.applications.filter(x => x.isOfflineAvailable);
     }
 }

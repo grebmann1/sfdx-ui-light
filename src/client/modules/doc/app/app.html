@@ -1,0 +1,102 @@
+<template>
+    <div class="slds-page-header slds-page-header_joined">
+        <div class="slds-page-header__row">
+            <div class="slds-page-header__col-title">
+                <div class="slds-media">
+                    <div class="slds-media__figure">
+                        <lightning-icon icon-name="standard:bundle_config"></lightning-icon>
+                    </div>
+                    <div class="slds-media__body">
+                        <div class="slds-page-header__name">
+                            <div class="slds-page-header__name-title">
+                                <h1>
+                                    <span>Documentation Explorer</span>
+                                    <span class="slds-page-header__title slds-truncate" title="Documentation Explorer">Documentation Explorer</span>
+                                </h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-page-header__col-actions slds-align-middle slds-p-bottom_none">
+                <div class="slds-page-header__controls">
+                    <div class="slds-page-header__control">
+                        <!-- actions -->
+                       
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slds-page-header__row slds-page-header__row_gutters">
+            <div class="slds-page-header__col-details">
+                <div class="slds-page-header__detail-row slds-is-relative" style="display:block; ">
+                    <!-- Display Info -->
+                    <h2>This part is currently in development - Work in progress </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- Container -->
+    <div class="slds-grid slds-gutters slds-wrap">
+        <!-- SECTION -->
+        <div class="slds-col slds-col slds-size_1-of-1">
+            <article class="slds-card slds-m-top_small">
+                <div class="slds-card__body slds-card__body_inner">
+                    <div class="slds-grid slds-gutters slds-wrap slds-is-relative" style="min-height:200px;">
+                        <template lwc:if={isLoading}>
+                            <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                        </template>
+                        <template lwc:else>
+                            <!-- Menu -->
+                            <div class="slds-col slds-col slds-size_1-of-4">
+                                <h2 class="slds-nav-vertical__title"> SObjects</h2>
+                                <div style="display: flex;flex-direction: row;align-content: flex-end;justify-content: flex-end;">
+                                    <lightning-input class="" type="toggle" label="Filter Fields" name="filterFields" onchange={handleToggleChange}></lightning-input>
+                                </div>
+                                <lightning-input 
+                                    class="slds-m-bottom_large" 
+                                    type="search"
+                                    label="Search" 
+                                    onchange={handleFilter}
+                                ></lightning-input>
+                                <div class="slds-scrollable_y" style="max-height:700px;">
+                                    <nav class="slds-nav-vertical">
+                                        <div class="slds-nav-vertical__section">
+                                            <ul aria-describedby="entity-header">
+                                                <template for:each={filteredList} for:item="item">
+                                                    <doc-menu-item key={item.id} name={item.id} label={item.text} filter={filter} current={selectedMenuItem} onselect={handleItemSelection}></doc-menu-item>
+                                                </template>
+                                                
+                                            </ul>
+                                        </div>
+                                    </nav>
+                                </div>
+                            </div>
+                            <!-- Container -->
+                            <div class="slds-col slds-col slds-size_2-of-4">
+                                <div class="doc" lwc:ref="container" lwc:dom="manual"></div>
+                            </div>
+                        </template>
+                        
+                       
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
+    
+    <!-- Footer Information -->
+    <template lwc:if={isFooterDisplayed}>
+        <div class="slds-utility-bar_container">
+            <ul class="slds-utility-bar custom-utility-bar">
+                <li class="slds-utility-bar__item custom-utility-text">
+                    <h2>{loadingMessage}</h2>
+                </li>
+            </ul>
+        </div>
+    </template>
+
+    
+</template>

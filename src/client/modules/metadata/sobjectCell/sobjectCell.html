@@ -1,0 +1,13 @@
+<template>
+    <template lwc:if={isBoolean}>
+        <template lwc:if={value}>
+            <img src="images/checkbox_checked.gif"/>
+        </template>
+        <template lwc:else>
+            <img src="images/checkbox_unchecked.gif"/>
+        </template>
+    </template>
+    <template lwc:else>
+        {value}
+    </template>
+</template>

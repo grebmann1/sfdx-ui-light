@@ -6,23 +6,16 @@ export default class App extends LightningElement {
 
     @api connector;
 
-    @api metadataObjects = [];
-    @api sobjects = [];
     
-    @api defaultSelectedItem = "ApexClass";
     selectedItem;
 
-    async connectedCallback(){
-        this.sobjects = await this.load_toolingGlobal();
-        this.metadataObjects = await this.load_metadataGlobal();
-        this.selectedItem = this.metadataObjects.length > 0 ? this.metadataObjects[0].directoryName:null;
-    }
+    async connectedCallback(){}
 
     /** Events */
 
     handleItemSelection = (e) => {
         this.selectedItem = e.detail.name;
-        this.load_specificMetadata();
+        //this.load_specificMetadata();
     }
     
 
@@ -50,7 +43,9 @@ export default class App extends LightningElement {
 
     /** Getters */
 
-
+    get isSObjectDisplayed(){
+        return this.selectedItem === 'sobject';
+    }
 
     
 

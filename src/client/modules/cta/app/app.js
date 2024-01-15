@@ -5,11 +5,13 @@ import { isEmpty } from 'shared/utils';
 export default class App extends LightningElement {
 
     isMenuOpen = false;
+    isSearchOpen = false;
     currentPosition = 0;
     links = [];
 
     connectedCallback(){
         this.initHashHandler();
+        this.isSearchOpen = true;
     }
 
     scrollToTop = () => {
@@ -64,6 +66,17 @@ export default class App extends LightningElement {
             this.currentPosition++;
         }
         window.location = this.links[this.currentPosition].href;
+    }
+
+    displaySearch = (e) => {
+        console.log('displaySearch');
+        this.isSearchOpen = true;
+    }
+
+    /** Getters **/
+
+    get isDocumentationDisplayed(){
+        return !this.isSearchOpen;
     }
 
     get previousClass(){
