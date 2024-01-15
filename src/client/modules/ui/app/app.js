@@ -24,6 +24,14 @@ const APP_MAPPING = {
     "doc/app":doc_app
 };
 
+const DIRECT_LINK_MAPPING = {
+    "documentation":{
+        component:"doc/app",
+        name:"Documentation Explorer",
+        isDeletable:true
+    }
+}
+
 export default class App extends LightningElement {
 
     @api mode;
@@ -183,6 +191,14 @@ export default class App extends LightningElement {
                 isDeletable:true
             });
         }
+
+        /** Direct Opening Mode */
+        const hash = window.location.hash;
+        if(DIRECT_LINK_MAPPING.hasOwnProperty(hash)){
+            await this.loadModule(DIRECT_LINK_MAPPING[hash]);
+        }
+
+
     }
 
 

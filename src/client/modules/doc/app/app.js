@@ -1,5 +1,6 @@
 import { LightningElement,api} from "lwc";
 import { isEmpty,runActionAfterTimeOut} from 'shared/utils';
+import LightningAlert from 'lightning/alert';
 
 const ACCOUNT_ID = 'sforce_api_objects_account';
 
@@ -18,7 +19,7 @@ export default class App extends LightningElement {
     isFieldFilterEnabled = false;
 
     items = [];
-    allDocuments = []; // used once everything has been loaded
+    filteredItems = []; // used for backend storage
     selectedMenuItem;
     
     isFooterDisplayed = false;
@@ -41,7 +42,11 @@ export default class App extends LightningElement {
     }
 
     handleFilter = (e) => {
-        runActionAfterTimeOut(e.detail.value,(newValue) => {
+        runActionAfterTimeOut(e.detail.value,async (newValue) => {
+            //this.filter = newValue;
+            if(!isEmpty(newValue)){
+                this.filteredItems = await this.getFilteredItems(newValue);   
+            }
             this.filter = newValue;
         },{timeout:500});
     }
@@ -54,6 +59,10 @@ export default class App extends LightningElement {
 
     /** Methods */
 
+    getFilteredItems = async (value) => {
+        return  await (await fetch(`/documentation/search?keywords=${encodeURIComponent(value)}`)).json();
+    }
+
     selectPageToView = async () => {
         let current = this.items.find(x => x.id === this.selectedMenuItem);
         this.currentSobject = await this.loadSingleDocument(current.a_attr.href);
@@ -64,14 +73,15 @@ export default class App extends LightningElement {
         const content = this.currentSobject.content;
         let formattedContent = this.cleanContent(content);
         if(!isEmpty(this.filter)){
-            var regex = new RegExp('('+this.filter+')','gi');
+            var regex = new RegExp('(?<=>)(?:[^<]*?)('+this.filter+')','gim');
             if(regex.test(formattedContent)){
                 formattedContent = formattedContent.toString().replace(regex,'<span style="font-weight:Bold; color:blue;">$1</span>');
             }
         }
         this.refs.container.innerHTML = formattedContent;
         this.applyFilterOnTable(this.filter);
-        //featureTable sort_table
+        this.template.querySelector('.doc').scrollIntoView();
+
     }
 
     applyFilterOnTable = (keywords) => {
@@ -99,65 +109,29 @@ export default class App extends LightningElement {
 
     fetchDocument = async () => {
         let result = await (await fetch(`${this.apiDomain}/docs/get_document/${this.documentationId}`)).json();
+        let _items
         result.toc.forEach(x => {
             x.children.forEach(y => {
                 if( y.id === "sforce_api_objects_list"){
-                    this.items = y.children
+                    _items = y.children
                 }
             })
         });
+        this.items = _items;
         this.sobjectHeader = result;
-        this.loadAllDocuments();
     }
 
     fetchContentDocument = async (deliverable,contentDocumentId,version) => {
         return await (await fetch(`${this.apiDomain}/docs/get_document_content/${deliverable}/${contentDocumentId}/${this.language}/${version}`)).json();
     }
 
-    loadAllDocuments = async () => {
-        this.isFooterDisplayed = true;
-        this.loadingPointer = 0;
-
-        // Helper function to chunk the URL list
-        const chunkList = (list, size) => {
-            const chunks = [];
-            for (let i = 0; i < list.length; i += size) {
-                chunks.push(list.slice(i, i + size));
-            }
-            return chunks;
-        };
-    
-        // Chunk the URLs
-        const itemChunks = chunkList(this.items.map(x => x.a_attr.href), 15);
-        let finalResult = [];
-        // Process each chunk
-        for (const chunk of itemChunks) {
-            const promises = chunk.map(name => this.loadSingleDocument(name));
-            const results = await Promise.all(promises);
-
-            finalResult = [].concat(finalResult,results);
-            this.loadingPointer = finalResult.length;
-        }
-        
-        this.allDocuments = finalResult;
-        this.isFooterDisplayed = false;
-    }
-
     loadSingleDocument = async (name) => {
         try{
-            let item = await window.defaultStore.getItem(`doc-${name}`);
-            if(item){
-                //console.log('Using Cache');
-                return item;
-            }else{
-                let _res = this.fetchContentDocument(
-                    this.sobjectHeader.deliverable,
-                    name,
-                    this.sobjectHeader.version.doc_version
-                );
-                window.defaultStore.setItem(`doc-${name}`,_res);
-                return _res;
-            }
+            return this.fetchContentDocument(
+                this.sobjectHeader.deliverable,
+                name,
+                this.sobjectHeader.version.doc_version
+            );
         }catch(e){
             console.warn('Error happening',e);
             return {};
@@ -180,21 +154,6 @@ export default class App extends LightningElement {
 
     get filteredList(){
         if(isEmpty(this.filter)) return this.items;
-
-        if(this.allDocuments.length == 0){
-            // if documents aren't loaded, we only use simple filter
-            return this.items.filter(x => this.checkIfPresent(x.text,this.filter));
-        }else{
-            // Advanced filter
-            return this.allDocuments.filter(x => this.checkIfPresent(x.title,this.filter) || this.checkIfPresent(x.content,this.filter)).map(x => ({
-                name:x.id,
-                text:x.title,
-                id:x.id
-            }));
-        }
-        
+        return this.filteredItems;
     }
-
-
-
 }

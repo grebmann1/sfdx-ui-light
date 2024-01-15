@@ -19,7 +19,7 @@ export default class App extends LightningElement {
           top: 0,
           behavior: 'smooth' // Optional: smooth scrolling behavior
         });
-      }
+    }
 
 
     handleMenu = (e) => {

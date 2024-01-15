@@ -3,7 +3,11 @@ const { createServer } =  require("lwr");
 const jsforceAjaxProxy = require("jsforce-ajax-proxy");
 const jsforce = require('jsforce');
 const qs = require('qs');
+const fs = require('node:fs');
 
+/** Temporary Code until a DB is incorporated **/
+const VERSION = process.env.DOC_VERSION || '246.0';
+const DATA_DOCUMENTATION = JSON.parse(fs.readFileSync(`./src/documentation/${VERSION}.json`, 'utf-8'));
 
 const PORT = parseInt(process.env.PORT || "3000", 10);
 const SERVER_MODE = "development" === process.env.NODE_ENV ? "dev" : "prod";
@@ -18,15 +22,29 @@ getOAuth2Instance = (params) => {
     });
 }
 
+checkIfPresent = (a,b) => {
+    return (a || '').toLowerCase().includes((b||'').toLowerCase());
+}
+
 const lwrServer = createServer({
     serverMode: SERVER_MODE,
     port: PORT,
 });
 
 const app = lwrServer.getInternalServer("express");
+
 app.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));
 app.get('/config',function(req,res){
     res.json({clientId:process.env.CLIENT_ID});
+})
+app.get('/documentation/search',function(req,res){
+    const keywords = req.query.keywords;
+    const result = DATA_DOCUMENTATION.contents.filter(x => this.checkIfPresent(x.title,keywords) || this.checkIfPresent(x.content,keywords)).map(x => ({
+        name:x.id,
+        text:x.title,
+        id:x.id
+    }));
+    res.json(result);
 })
 app.get('/oauth2/callback', function(req, res) {
     var code = req.query.code;
