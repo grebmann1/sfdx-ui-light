@@ -11,7 +11,7 @@ export default class App extends LightningElement {
 
     connectedCallback(){
         this.initHashHandler();
-        this.isSearchOpen = true;
+        //this.isSearchOpen = true;
     }
 
     scrollToTop = () => {
