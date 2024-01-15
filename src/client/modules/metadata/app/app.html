@@ -43,18 +43,18 @@
 
         <!-- SECTION -->
         <div class="slds-col slds-col slds-size_1-of-1">
-            <article class="slds-card slds-m-top_small">
+            <article class="slds-card slds-m-top_small slds-card-grey">
                 <div class="slds-card__body slds-card__body_inner">
                     <div class="slds-grid slds-gutters slds-wrap">
                         <!-- SECTION -->
-                        <div class="slds-col slds-col slds-size_1-of-6">
+                        <div class="slds-col slds-col slds-size_1-of-8">
                             <lightning-vertical-navigation selected-item="sobject" onselect={handleItemSelection} compact>
                                 <lightning-vertical-navigation-section label="Metadata">
                                     <lightning-vertical-navigation-item label="SObject" name="sobject"></lightning-vertical-navigation-item>
                                 </lightning-vertical-navigation-section>
                             </lightning-vertical-navigation>
                         </div>
-                        <div class="slds-col slds-col slds-size_5-of-6">
+                        <div class="slds-col slds-col slds-size_7-of-8">
                             <template lwc:if={isSObjectDisplayed}>
                                 <metadata-sobject connector={connector}></metadata-sobject>
                             </template>
