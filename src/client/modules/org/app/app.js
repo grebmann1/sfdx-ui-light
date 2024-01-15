@@ -26,11 +26,14 @@ export default class App extends LightningElement {
     /** Methods */
 
     openMetadataExplorer = () => {
-        this.dispatchEvent(new CustomEvent("openapplication", { detail:{
-            connector:this.connector,
-            component:'metadata/app',
-            name:'Metadata Explorer'
-        },bubbles: true }));
+        this.dispatchEvent(new CustomEvent("openapplication", { 
+            detail:{
+                connector:this.connector,
+                component:'metadata/app',
+                name:'Metadata Explorer'
+            }
+            ,bubbles: true 
+        }));
     }
 
     openInBrowser = () => {

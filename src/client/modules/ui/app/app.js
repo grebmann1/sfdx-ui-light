@@ -55,7 +55,7 @@ export default class App extends LightningElement {
     handleOpenApplication = async (e) => {
         const component = e.detail.component;
         const name = e.detail.name;
-        this.connector = e.detail.value;
+        this.connector = e.detail.connector || this.connector;
         if(this.applications.filter(x => x.componentName === component).length == 0){
             await this.loadModule({
                 component,
