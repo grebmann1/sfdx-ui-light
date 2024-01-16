@@ -25,10 +25,12 @@ export default class RecordExplorer extends LightningElement {
     // for table
     data;
     filter = '';
+    isError = false;
 
 
     async connectedCallback(){
         try{
+            this.isError = false;
             let conn = window.connector;
             this.currentTab = await getCurrentTab();
             this.contextUrl = window.location.href;
@@ -51,6 +53,7 @@ export default class RecordExplorer extends LightningElement {
             });
         }catch(e){
             console.error(e);
+            this.isError = true;
         }
         
     }
@@ -180,7 +183,7 @@ export default class RecordExplorer extends LightningElement {
     }
 
     get isRecordIdAvailable(){
-        return isNotUndefinedOrNull(this.recordId);
+        return isNotUndefinedOrNull(this.recordId) && !this.isError;
     }
 
     get versions_options(){

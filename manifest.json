@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "SF Toolkit Light",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "description": "Use SF Toolkit directly from chrome to visualize record details and analyze User access, profile, permissions, etc",
     "icons": {
         "128": "images/icon-128.png"
@@ -14,11 +14,7 @@
     },
     "web_accessible_resources": [
         {
-            "matches": [
-                "https://*.salesforce.com/*",
-                "https://*.force.com/*",
-                "https://*.cloudforce.com/*"
-            ],
+            "matches": ["https://*/*"],
             "resources": [
                 "http://localhost:3000/"
             ]
@@ -27,7 +23,14 @@
     "host_permissions": [
         "https://*.salesforce.com/*",
         "https://*.force.com/*",
-        "https://*.cloudforce.com/*"
+        "https://*.cloudforce.com/*",
+        "https://*.visualforce.com/*",
+        "https://*.salesforce.mil/*",
+        "https://*.force.mil/*",
+        "https://*.cloudforce.mil/*",
+        "https://*.visualforce.mil/*",
+        "https://*.crmforce.mil/*",
+        "https://*.force.com.mcas.ms/*"
     ],
     "background": {
         "service_worker": "scripts/background.js",
