@@ -103,6 +103,7 @@ export default class MarkdownMenu extends LightningElement {
     @api 
     updateComponent(){
         this.runAsMenu();
+        this.sendMenu();
     }
 
     

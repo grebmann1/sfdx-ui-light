@@ -1,15 +1,9 @@
 :host{
-    --slds-g-color-brand-base-30 : #014486;
+    --slds-g-color-brand-base-30 : #0d6efd;
 }
 
 .page-item a{
     border-bottom: dotted 1px;
     color: var(--slds-g-color-brand-base-30);
     text-decoration: none;
-}
-
-
-/** SF style **/
-.slds-input{
-    width: 100%;
 }

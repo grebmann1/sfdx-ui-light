@@ -1,7 +1,7 @@
 /*light*/
 
 :host {
-  --bs-blue: #02a0e0;
+  --bs-blue: #0d6efd;
   -ms-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
   margin: 0;
@@ -727,8 +727,10 @@ tt {
   font-size: 85%;
   white-space: break-spaces;
   /*background-color: rgba(175,184,193,0.2);*/
-  background-color: rgb(242 132 56 / 40%);
-  border-radius: 6px;
+  /*background-color: rgb(242 132 56 / 40%);*/
+  background-color: #0B5CAB;
+  border-radius: 0px;
+  color: white;
 }
 
 code br,
@@ -1053,6 +1055,12 @@ g-emoji img {
 
 ::-webkit-calendar-picker-indicator {
   filter: invert(50%);
+}
+
+/** Extra CSS **/
+
+img{
+  max-width: 1024px !important;
 }
 
 .markdown-alert {

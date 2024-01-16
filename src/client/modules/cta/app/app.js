@@ -23,6 +23,7 @@ export default class App extends LightningElement {
 
 
     handleMenu = (e) => {
+        console.log('handleMenu',e.detail);
         this.currentPosition = e.detail.current;
         this.links = e.detail.links;
     }
