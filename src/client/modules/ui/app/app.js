@@ -40,6 +40,11 @@ export default class App extends LightningElement {
     @api serverUrl;
 
 
+    isSalesforceCliInstalled = false;
+    isJavaCliInstalled = false;
+    isCommandCheckFinished = false;
+
+
 
 
     connector;
@@ -47,7 +52,12 @@ export default class App extends LightningElement {
     @track applications = [];
 
     async connectedCallback(){
+        if(isElectronApp()){
+            await this.initElectron();
+            this.isCommandCheckFinished = true;
+        }
         this.initMode();
+        
     }
 
     /** Events */
@@ -120,6 +130,19 @@ export default class App extends LightningElement {
 
 
     /** Methods  */
+    
+    initElectron = async () => {
+        console.log('Init Electron App');
+
+        let {error, result} = await window.electron.ipcRenderer.invoke('util-checkCommands');
+        if (error) {
+            throw decodeError(error);
+        }
+
+        this.isSalesforceCliInstalled   = result.sfdx;
+        this.isJavaCliInstalled         = result.java;
+        console.log('result',result);
+    }
 
     initMode = () => {
 
@@ -204,6 +227,10 @@ export default class App extends LightningElement {
 
 
     /** Getters */
+    
+    get isSFDXMissing(){
+        return isElectronApp() && !this.isSalesforceCliInstalled && this.isCommandCheckFinished;
+    }
 
     get isLightMode(){
         return this.mode === 'light';

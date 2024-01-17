@@ -2,8 +2,21 @@ const sfdx = require('sfdx-node');
 const { app,shell,dialog } = require('electron');
 const { encodeError } = require('../../utils/errors.js');
 const Store = require('../../utils/store.js');
+const commandExistsSync = require('command-exists').sync;
 
 
+checkCommands = async () => {
+    try{
+        return {
+            result: {
+                sfdx:commandExistsSync('sfdx'),
+                java:commandExistsSync('java')
+            }
+        }
+    }catch(e){
+        return {error: encodeError(e)}
+    }
+}
 
 getAppPath = async () => {
     return app.getAppPath();
@@ -45,6 +58,7 @@ setConfig = async (_,{configName,key,value}) => {
 
 
 module.exports = {
+    checkCommands,
     getPath,
     getAppPath,
     getConfig,

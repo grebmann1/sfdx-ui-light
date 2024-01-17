@@ -26,7 +26,6 @@
                 </h2>
             </ui-notify>
         </template>
-
     </ui-header>
 
     <!-- Page -->
@@ -34,8 +33,13 @@
         <div class="slds-template_default  forceBrandBand">
             <section class="section">
                 <div class="container" onlogin={handleLogin} onopenapplication={handleOpenApplication}>
+                    <!-- [Electron only] SFDX Installation required  -->
+                    <template lwc:if={isSFDXMissing}>
+                        <ui-information-block title="CLI Missing" variant="error">
+                            <p>You need to install the SFDX/SF CLI before being able to use this app. <a href="https://developer.salesforce.com/tools/salesforcecli">https://developer.salesforce.com/tools/salesforcecli</a></p>
+                        </ui-information-block>
+                    </template>
                     <!-- Feature - Start -->
-                    <!--<connection-app home="test"></connection-app>-->
                     <template for:each={applications} for:item="application">
                         <div key={application.id} class={application.classVisibility}>
                             <lwc:component  lwc:is={application.constructor} lwc:spread={application.attributes}></lwc:component>
@@ -46,4 +50,6 @@
             </section>
         </div>
     </div>
+
+    
 </template>

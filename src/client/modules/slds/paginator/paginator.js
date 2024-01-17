@@ -114,7 +114,7 @@ export default class Paginator extends LightningElement {
         return classSet('slds-grid slds-grid_vertical-align-center slds-grid_align-spread')
             .add({
                 'slds-hidden':this.autoHide && this._records.length <= recordsPerPage[0]
-            })
+            }).toString()
     }
 
     get computedPrevious(){

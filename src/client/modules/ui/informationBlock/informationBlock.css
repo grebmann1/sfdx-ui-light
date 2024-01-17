@@ -1,14 +1,8 @@
 /** Block Quotes **/
 
-.site-blockquote_note.doc {
-    border-left-color: rgb(0, 102, 204);
-}
 
-.site-blockquote_note.doc .lead {
-    color: rgb(0, 102, 204);
-}
 
-blockquote.doc {
+blockquote {
     background-color: #fafaf9;
     font-size: 1rem;
     font-weight: 300;
@@ -16,27 +10,47 @@ blockquote.doc {
     margin: 0 0 1.5rem;
     border: 1px solid #f2f2f2;
     border-left-width: 0.125rem;
+    border-left-color: rgb(0, 102, 204);
+    color: rgb(0, 102, 204);
+    font-size: 1rem;
 }
 
-blockquote.doc .lead {
+blockquote .title {
     margin-bottom: 0;
     font-weight: var(--lwc-fontWeightBold);
+    color: rgb(0, 102, 204);
 }
 
-blockquote.doc .doc {
+blockquote .subtitle {
     color: rgb(84, 79, 79);
 }
 
-.doc {
-    color: rgb(0, 102, 204);
-    font-size: 1rem;
-}
 
-
-strong{
-    color: rgb(0, 102, 204);
-}
-blockquote.doc h4.lead {
+blockquote h4.title {
     font-size: 1rem;
     margin-top: 0;
+}
+
+blockquote strong{
+    color: rgb(0, 102, 204);
+}
+
+/** Error **/
+
+blockquote.error .title {
+    color: var(--slds-g-color-error-base-40,#ea001e);
+}
+
+blockquote.error {
+    border-left-color: var(--slds-g-color-error-base-40,#ea001e);
+    color: var(--slds-g-color-error-base-40,#ea001e);
+    font-size: 1rem;
+}
+
+blockquote.error .title {
+    color: var(--slds-g-color-error-base-40,#ea001e);
+}
+
+blockquote.error strong{
+    color: var(--slds-g-color-error-base-40,#ea001e);
 }

@@ -20,4 +20,9 @@
     padding:1rem;
 }
 
+.custom-utility-bar-alert{
+    background-color: var(--slds-g-color-error-base-40,#ea001e);
+    height: 1.5rem !important;
+    color: white;
+}
 
