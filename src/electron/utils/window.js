@@ -14,7 +14,7 @@ let browserWindows = [];
 
 exports.browserWindows;
 
-exports.createMainWindow = createMainWindow = () => {
+exports.createMainWindow = createMainWindow = ({isDev}) => {
 
 
 	let browserWindow = BrowserWindow || null;
@@ -28,7 +28,7 @@ exports.createMainWindow = createMainWindow = () => {
 			icon: path.join(__dirname, '..', '..', 'public', 'sfdx_gui.icns'),
 			show: false,
 			webPreferences: {
-				devTools: true,
+				devTools: isDev,
 				preload: path.join(__dirname, '..', 'preload.js'),
 				allowRunningInsecureContent: true,
 				webviewTag: false,
@@ -79,8 +79,8 @@ exports.createMainWindow = createMainWindow = () => {
 	return browserWindow;
 }
 
-exports.getOrCreateMainWindow = getOrCreateMainWindow = (url) => {
+exports.getOrCreateMainWindow = getOrCreateMainWindow = ({isDev,url}) => {
 	return (
-		BrowserWindow.getFocusedWindow() || browserWindows[0] || createMainWindow(url)
+		BrowserWindow.getFocusedWindow() || browserWindows[0] || createMainWindow({isDev,url})
 	);
 }

@@ -5,10 +5,9 @@
             <span class="slds-truncate" title="All Apps">All Apps</span>
         </h3>
         <div class="slds-section__content">
-            <ul class="slds-grid slds-grid_pull-padded slds-wrap">
-
-                <!-- Applications - START -->
-                <template lwc:if={isUserLoggedIn}>
+            <!-- Applications - START -->
+            <template lwc:if={isUserLoggedIn}>
+                <ul class="slds-grid slds-grid_pull-padded slds-wrap">
                     <template for:each={applications} for:item="application">
                         <li key={application.id} data-key={application.id} class="slds-p-horizontal_small slds-size_1-of-1 slds-medium-size_1-of-3" onclick={selectApplication}>
                             <div class="slds-app-launcher__tile slds-text-link_reset">
@@ -24,13 +23,13 @@
                             </div>
                         </li>
                     </template>
-                </template>
-                <template lwc:else>
-                    <!-- Not Logged In-->
-                    <h2 class="slds-text-align_center">You need to log in before launching an app</h2>
-                </template>
-                <!-- Applications - END -->
-            </ul>
+                </ul>
+            </template>
+            <template lwc:else>
+                <!-- Not Logged In-->
+                <h2 class="slds-text-align_center">You need to log in before launching an app</h2>
+            </template>
+            <!-- Applications - END -->
         </div>
     </div>
     

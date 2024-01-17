@@ -1,21 +1,16 @@
 {
     "name": "sfdx-ui-light",
     "version": "1.0.0",
-    "main": "src/electron/main.js",
     "scripts": {
-        "start": "lwr start",
-        "start:stage:electron": "NODE_ENV=staging electron .",
-        "start:prod:electron": "NODE_ENV=production electron .",
-        "start:client": "serve site",
+        "start:stage:electron": "NODE_ENV=staging electron src/electron",
+        "start:prod:electron": "NODE_ENV=production electron src/electron",
         "start:dev:client": "NODE_ENV=development node -r dotenv/config src/client/server-dev.js",
-        "start:dev:electron": "NODE_ENV=development electron .",
-        "start:heroku": "NODE_ENV=production REDIRECT_URI=https://sf-toolkit.com/oauth2/callback node -r dotenv/config src/client/server-prod.js",
+        "start:dev:electron": "NODE_ENV=development electron src/electron",
         "clean": "rm -r __lwr_cache__ site __skip_directory_creation__",
         "fix:lightning": "node scripts/fix_lightning.js",
-        "build:extension": "rm -r chrome_ext | rollup -c rollup.config.js --bundleConfigAsCjs",
-        "build:package": "electron-forge package",
-        "build:package:make": "electron-forge make --platform darwin",
-        "heroku-postbuild": "npm run clean | NODE_ENV=production WARMUP=true lwr build -m prod --clean"
+        "build:extension": "rm -r chrome_ext; rollup -c rollup.config.js --bundleConfigAsCjs",
+        "start:heroku": "NODE_ENV=production REDIRECT_URI=https://sf-toolkit.com/oauth2/callback node -r dotenv/config src/client/server-prod.js",
+        "heroku-postbuild": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --clean"
     },
     "copyFiles": [
         {
@@ -45,26 +40,15 @@
         "serve-handler": "^6.1.5",
         "serve-static": "^1.15.0",
         "sfdx-node": "^3.8.0",
-        "tabulator-tables": "^5.5.2",
-        "update-electron-app": "^3.0.0"
+        "tabulator-tables": "^5.5.2"
     },
     "devDependencies": {
-        "@electron-forge/cli": "^6.4.2",
-        "@electron-forge/maker-deb": "^6.4.2",
-        "@electron-forge/maker-rpm": "^6.4.2",
-        "@electron-forge/maker-squirrel": "^6.4.2",
-        "@electron-forge/maker-zip": "^6.4.2",
-        "@electron-forge/plugin-auto-unpack-natives": "^6.4.2",
         "@lwc/synthetic-shadow": "5.1.0",
         "@salesforce-ux/design-system": "2.22.2",
         "body-parser": "^1.20.2",
         "cookie-parser": "^1.4.6",
         "copy-files-from-to": "3.9.0",
         "cpx": "^1.5.0",
-        "electron": "^25.3.0",
-        "electron-reload": "2.0.0-alpha.1",
-        "electron-serve": "^1.2.0",
-        "electron-squirrel-startup": "^1.0.0",
         "jspdf": "2.5.1",
         "jspdf-autotable": "3.7.1",
         "lightning-base-components": "1.19.11-alpha",
