@@ -1,5 +1,5 @@
 {
-    "name": "sfdx-ui-light-electron",
+    "name": "sf-toolkit-desktop",
     "version": "1.0.0",
     "main": "main.js",
     "repository": {
@@ -16,6 +16,7 @@
         "update-electron-app": "^3.0.0"
     },
     "devDependencies": {
+        "@electron-forge/maker-dmg":"7.2.0",
         "@electron-forge/cli": "^6.4.2",
         "@electron-forge/maker-deb": "^6.4.2",
         "@electron-forge/maker-rpm": "^6.4.2",

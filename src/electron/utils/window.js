@@ -28,7 +28,7 @@ exports.createMainWindow = createMainWindow = ({isDev}) => {
 			icon: path.join(__dirname, '..', '..', 'public', 'sfdx_gui.icns'),
 			show: false,
 			webPreferences: {
-				devTools: isDev,
+				devTools: true,
 				preload: path.join(__dirname, '..', 'preload.js'),
 				allowRunningInsecureContent: true,
 				webviewTag: false,
@@ -70,12 +70,7 @@ exports.createMainWindow = createMainWindow = ({isDev}) => {
 			event.preventDefault();
 			shell.openExternal(url);
 		});
-
-
 	browserWindows.push(browserWindow);
-
-	browserWindow.webContents.openDevTools();
-
 	return browserWindow;
 }
 

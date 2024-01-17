@@ -3,6 +3,7 @@ module.exports = {
 		asar: true,
 		prune:true,
 		icon:'../../public/sfdx_gui.icns',
+		osxSign: {} // object must exist even if empty
 	},
 	rebuildConfig: {},
 	makers: [
