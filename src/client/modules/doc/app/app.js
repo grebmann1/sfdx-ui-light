@@ -30,7 +30,7 @@ export default class App extends LightningElement {
         this.isLoading = true;
         await this.fetchDocument();
         this.selectedMenuItem = ACCOUNT_ID;
-        //this.selectPageToView();
+        this.selectPageToView();
         this.isLoading = false;
     }
 
