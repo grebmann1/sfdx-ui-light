@@ -8,7 +8,7 @@
             <!-- Applications - START -->
             <template lwc:if={isUserLoggedIn}>
                 <ul class="slds-grid slds-grid_pull-padded slds-wrap">
-                    <template for:each={applications} for:item="application">
+                    <template for:each={onlineApplication} for:item="application">
                         <li key={application.id} data-key={application.id} class="slds-p-horizontal_small slds-size_1-of-1 slds-medium-size_1-of-3" onclick={selectApplication}>
                             <div class="slds-app-launcher__tile slds-text-link_reset">
                                 <div class="slds-app-launcher__tile-figure">

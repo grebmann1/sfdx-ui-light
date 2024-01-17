@@ -59,8 +59,11 @@ export default class Launcher extends LightningModal {
 
     get applications(){
         if(isElectronApp()) return application_mapping;
-
         return application_mapping.filter(x => !x.isElectronOnly);
+    }
+
+    get onlineApplication(){
+        return this.applications.filter(x => !x.isOfflineAvailable);
     }
 
     get offlineApplications(){
