@@ -10,6 +10,8 @@
         "build:prod:package": "npm install --silent; NODE_ENV=production electron-forge package --verbose",
         "build:prod:package:make": "npm install --silent; NODE_ENV=production electron-forge make --platform darwin --verbose",
         "publish":"npm install --silent; electron-forge publish",
+        "publish:dry":"npm install --silent; electron-forge publish --dry-run",
+        "publish:run":"npm install --silent; electron-forge publish --from-dry-run",
         "start:dev:electron": "NODE_ENV=development electron ."
     },
     "dependencies": {
@@ -28,6 +30,7 @@
         "electron": "^25.3.0",
         "electron-reload": "2.0.0-alpha.1",
         "electron-serve": "^1.2.0",
-        "electron-squirrel-startup": "^1.0.0"
+        "electron-squirrel-startup": "^1.0.0",
+        "dotenv": "^16.3.1"
     }
 }

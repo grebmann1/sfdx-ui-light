@@ -1,3 +1,4 @@
+require('dotenv').config();
 module.exports = {
 	packagerConfig: {
 		asar: true,
@@ -26,6 +27,7 @@ module.exports = {
 						owner: 'grebmann1',
 						name: 'sfdx-ui-light'
 				},
+				authToken: process.env.GITHUB_TOKEN,
 				prerelease: true
 		  	}
 		}
