@@ -107,7 +107,6 @@ export default class App extends LightningElement {
     }
 
     seeDetails = (row) => {
-        console.log('row',row);
         const {company,orgId,name,alias,username,instanceUrl,sfdxAuthUrl,accessToken} = row
         ConnectionDetailModal.open({company,orgId,name,alias,username,instanceUrl,sfdxAuthUrl,accessToken}).then((result) => {});
     }
