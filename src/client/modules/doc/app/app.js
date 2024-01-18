@@ -1,10 +1,10 @@
 import { LightningElement,api} from "lwc";
 import { isEmpty,runActionAfterTimeOut} from 'shared/utils';
 import LightningAlert from 'lightning/alert';
-
+import FeatureElement from 'element/featureElement';
 const ACCOUNT_ID = 'sforce_api_objects_account';
 
-export default class App extends LightningElement {
+export default class App extends FeatureElement {
 
     @api connector;
 

@@ -11,6 +11,7 @@ export default class Sobject extends LightningElement {
     records = [];
     selectedItem;
     isLoading = false;
+    isTableLoading = false;
     filter;
     fields_filter;
 
@@ -43,7 +44,9 @@ export default class Sobject extends LightningElement {
 
     handleItemSelection = async (e) => {
         this.selectedItem = e.detail.name;
+        this.isTableLoading = true;
         await this.describeSpecific(this.selectedItem);
+        this.isTableLoading = false;
         runActionAfterTimeOut(null,(param) => {
             this.createFieldsTable();
         });

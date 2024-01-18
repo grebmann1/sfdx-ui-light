@@ -50,16 +50,6 @@
                 min-width: 150px;
             }
 
-            .slds-flex-column{
-                display: flex;
-                flex-direction: column;
-            }
-
-            .slds-full-height{
-                height:100%;
-            }
-
-
             .tab-visible{
                 visibility: visible;
             }
@@ -77,6 +67,10 @@
                 height:90vh;
             }
 
+            .full-page-connected{
+                height:calc(97vh - 90px);
+            }
+
             .full-page-header{
 
             }
@@ -88,6 +82,31 @@
 
             .full-page-body .slds-card__body{
                 height: calc(100% - 2rem);
+            }
+
+            .slds-flex-column{
+                display: flex;
+                flex-direction: column;
+            }
+
+            .slds-full-height{
+                height:100%;
+            }
+
+            .slds-full-height.slds-grid .slds-col {
+                height:100%;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .slds-full-height .slds-tabs_scoped{
+                height:calc(100% - 41px);
+                display: flex;
+                flex-direction: column;
+            }
+
+            .slds-no-padding{
+                padding: unset !important;
             }
 
             /** Footer **/

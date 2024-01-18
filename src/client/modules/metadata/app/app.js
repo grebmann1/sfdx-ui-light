@@ -1,12 +1,11 @@
-import { LightningElement,api} from "lwc";
+import { api} from "lwc";
+import FeatureElement from 'element/featureElement';
 import { isEmpty,isElectronApp } from 'shared/utils';
+import { classSet } from 'shared/utils';
 
 
-export default class App extends LightningElement {
+export default class App extends FeatureElement {
 
-    @api connector;
-
-    
     selectedItem;
 
     async connectedCallback(){}
