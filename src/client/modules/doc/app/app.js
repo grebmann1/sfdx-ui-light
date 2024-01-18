@@ -73,9 +73,9 @@ export default class App extends LightningElement {
         const content = this.currentSobject.content;
         let formattedContent = this.cleanContent(content);
         if(!isEmpty(this.filter)){
-            var regex = new RegExp('(?<=>)(?:[^<]*?)('+this.filter+')','gim');
+            var regex = new RegExp('(?<=>)([^<]*?)(?:'+this.filter+')','gim');
             if(regex.test(formattedContent)){
-                formattedContent = formattedContent.toString().replace(regex,'<span style="font-weight:Bold; color:blue;">$1</span>');
+                formattedContent = formattedContent.toString().replace(regex,`$1<span style="font-weight:Bold; color:blue;">${this.filter}</span>`);
             }
         }
         this.refs.container.innerHTML = formattedContent;
