@@ -3,10 +3,19 @@ const { app,shell,dialog } = require('electron');
 const { encodeError } = require('../../utils/errors.js');
 const Store = require('../../utils/store.js');
 const commandExistsSync = require('command-exists').sync;
+const { execSync } = require('child_process');
+const process = require('node:process');
+const fixPath = require('fix-path');
+
 
 
 checkCommands = async () => {
     try{
+        console.log('sfdx',commandExistsSync('sfdx'));
+        console.log('sfdx2',process.env.PATH);
+        fixPath();
+        console.log('sfdx3',process.env.PATH);
+        console.log('sfdx',commandExistsSync('sfdx'));
         return {
             result: {
                 sfdx:commandExistsSync('sfdx'),

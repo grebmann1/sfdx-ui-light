@@ -25,6 +25,10 @@ getOAuth2Instance = (params) => {
   });
 }
 
+checkIfPresent = (a,b) => {
+  return (a || '').toLowerCase().includes((b||'').toLowerCase());
+}
+
 app.get('/oauth2/callback', function(req, res) {
   var code = req.query.code;
   var states = req.query.state.split('#');
