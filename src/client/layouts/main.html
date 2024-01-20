@@ -64,11 +64,13 @@
 
             /** Static Mode **/
             .full-page{
-                height:90vh;
+                height:100%;
+                display: flex;
+                flex-direction: column;
             }
 
             .full-page-connected{
-                height:calc(97vh - 90px);
+                /*height:calc(97vh - 90px);*/
             }
 
             .full-page-header{
@@ -77,6 +79,11 @@
 
             .full-page-body{
                 height: calc(100% - 120px);
+                position: relative;
+            }
+
+            .full-page-body-builder{
+                height: calc(100% - 2rem);
                 position: relative;
             }
 

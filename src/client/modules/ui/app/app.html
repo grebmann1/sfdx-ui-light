@@ -30,25 +30,31 @@
 
     <!-- Page -->
     <div class={dynamicAppContainerClass}>
-        <div class="slds-p-top_x-small forceBrandBand">
-            <section class="section">
-                <div class="container" onlogin={handleLogin} onopenapplication={handleOpenApplication}>
-                    <!-- [Electron only] SFDX Installation required  -->
-                    <template lwc:if={isSFDXMissing}>
-                        <ui-information-block title="CLI Missing" variant="error">
-                            <p>You need to install the SFDX/SF CLI before being able to use this app. <a href="https://developer.salesforce.com/tools/salesforcecli">https://developer.salesforce.com/tools/salesforcecli</a></p>
-                        </ui-information-block>
-                    </template>
-                    <!-- Feature - Start -->
-                    <template for:each={applications} for:item="application">
-                        <div key={application.id} class={application.classVisibility}>
+        <section class="slds-full-height section">
+            <div class="slds-full-height container" onlogin={handleLogin} onopenapplication={handleOpenApplication}>
+                <!-- [Electron only] SFDX Installation required  -->
+                <template lwc:if={isSFDXMissing}>
+                    <ui-information-block title="CLI Missing" variant="error">
+                        <p>You need to install the SFDX/SF CLI before being able to use this app. <a href="https://developer.salesforce.com/tools/salesforcecli">https://developer.salesforce.com/tools/salesforcecli</a></p>
+                    </ui-information-block>
+                </template>
+                <!-- Feature - Start -->
+                <template for:each={applications} for:item="application">
+                    <div key={application.id} class={application.classVisibility}>
+                        <template lwc:if={application.isFullHeight}>
                             <lwc:component  lwc:is={application.constructor} lwc:spread={application.attributes}></lwc:component>
-                        </div>
-                    </template>
-                    <!-- Feature - End -->
-                </div>
-            </section>
-        </div>
+                        </template>
+                        <template lwc:else>
+                            <div class="slds-scrollable_y slds-p-around_small">
+                                <lwc:component  lwc:is={application.constructor} lwc:spread={application.attributes}></lwc:component>
+                            </div>
+                        </template>
+                        
+                    </div>
+                </template>
+                <!-- Feature - End -->
+            </div>
+        </section>
     </div>
 
     

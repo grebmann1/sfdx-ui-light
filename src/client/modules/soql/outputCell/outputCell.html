@@ -1,0 +1,16 @@
+<template>
+    <template lwc:if={isChildRelationship}>
+        <button class="slds-button slds-button_icon slds-m-right_xx-small" title={i18n.OUTPUT_CELL_SHOW_CHILD_REL} onclick={handleClick}>
+            <svg class="slds-button__icon slds-button__icon_small" aria-hidden="true">
+                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#record_lookup"></use>
+            </svg>
+            <span class="slds-assistive-text">{i18n.OUTPUT_CELL_SHOW_CHILD_REL}</span>
+        </button>
+    </template>
+    <div class="slds-truncate" title={value.data}>
+        <a href={url} target="_blank" tabindex="-1" if:true={url}>{value.data}</a>
+        <template lwc:if={isDataDisplayed}>
+            {value.data}
+        </template>
+    </div>
+</template>

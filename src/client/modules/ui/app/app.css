@@ -4,6 +4,7 @@
     overflow: hidden;
     position: relative;
     width: 100%;
+    height: 100vh;
 }
 
 .app-container {
@@ -12,12 +13,12 @@
 }
 
 .app-container-logged-in {
-    margin-top: 60px;
-    /*height:calc(100vh - 60px);*/
+    margin-top: 75px;
+    height:calc(100vh - 75px);
 }
 
 .container{
-    padding:1rem;
+    /*padding:1rem;*/
 }
 
 .custom-utility-bar-alert{

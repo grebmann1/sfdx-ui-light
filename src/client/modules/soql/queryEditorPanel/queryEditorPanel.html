@@ -1,0 +1,38 @@
+<template>
+    <div class="slds-p-around_small">
+        <button class="slds-button slds-button_brand" onclick={runQuery}>{i18n.QUERY_EDITOR_PANEL_QUERY}</button>
+        <button class="slds-button slds-button_brand" onclick={runQueryAll} title={i18n.QUERY_EDITOR_PANEL_QUERY_ALL_TITLE}> {i18n.QUERY_EDITOR_PANEL_QUERY_ALL} </button>
+        <button class="slds-button slds-button_neutral" onclick={formatQuery}>{i18n.QUERY_EDITOR_PANEL_FORMAT_SOQL}</button>
+    </div>
+    <div class="soql-editor slds-m-horizontal_small slds-m-bottom_small">
+        <textarea class="slds-textarea soql-input" placeholder={i18n.QUERY_EDITOR_PANEL_INPUT_SOQL} onkeydown={handleKeydownSoql} onkeyup={handleKeyupSoql} onblur={handleBlurSoql}></textarea>
+        <template lwc:if={isCompletionVisible}>
+            <div class="completion-popover slds-popover" style={completionStyle}>
+                <ul class="slds-listbox slds-listbox_vertical" role="presentation">
+                    <template for:each={completionItems} for:item="item">
+                        <li role="presentation" class="slds-listbox__item" key={item.key}>
+                            <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" aria-selected={item.isActive} role="option">
+                                <span class="slds-icon_container slds-icon-utility-text" if:false={item.isSyntax}>
+                                    <svg class="slds-icon slds-icon_x-small slds-input__icon_left slds-icon-text-default" aria-hidden="true">
+                                        <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#text"></use>
+                                    </svg>
+                                </span>
+                                <template lwc:if={item.isSyntax}>
+                                    <span class="slds-icon_container slds-icon-utility-display_text">
+                                        <svg class="slds-icon slds-icon_x-small slds-input__icon_left slds-icon-text-default" aria-hidden="true">
+                                            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#display_text"></use>
+                                        </svg>
+                                    </span>
+                                </template>
+                                <span class="slds-media__body slds-m-left_x-small">
+                                    <span class="slds-truncate" title={item.itemLabel} data-key={item.key} onclick={insertItem}> {item.itemLabel} </span>
+                                </span>
+                            </div>
+                        </li>
+                    </template>
+                </ul>
+            </div>
+        </template>
+        
+    </div>
+</template>

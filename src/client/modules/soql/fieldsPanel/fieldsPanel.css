@@ -1,0 +1,63 @@
+:host {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.slds-tree_container {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.slds-tree__group-header {
+    padding: 0.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+}
+.slds-tabs_default {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.slds-tabs_default__item[aria-selected="true"] {
+    color: #080707;
+}
+.slds-tabs_default__item[aria-selected="true"] .slds-tabs_default__link {
+    font-weight: 700;
+}
+.slds-tabs_default__item[aria-selected="true"]:after {
+    background-color: #1589ee;
+    height: 0.1875rem;
+}
+.slds-tabs_default__content {
+    flex: 1;
+    position: relative;
+    padding: 0;
+}
+.left-panel-scrollable {
+    position: absolute;
+    height: 100%;
+    left: 0;
+    right: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+.slds-panel__header {
+    padding: 0 0.75rem;
+    border-top: 1px solid #dddbda;
+}
+.slds-panel__header-title {
+    font-size: 100%;
+    font-weight: 700;
+    line-height: 2.5rem;
+    height: 2.5rem;
+}
+.dropdown-menu {
+    position: absolute;
+    top: 0px;
+    right: 7px;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+}

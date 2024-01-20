@@ -1,43 +1,20 @@
 import { LightningElement,track,api} from "lwc";
 import {guid,isNotUndefinedOrNull,isElectronApp} from "shared/utils";
-import { getExistingSession,saveSession,removeSession,directConnection } from "connection/utils";
+import { getExistingSession,saveSession,removeSession,directConnect,connect } from "connection/utils";
 
 /** Apps  **/
-import connection_app from "connection/app";
-import accessAnalyzer_app from "accessAnalyzer/app";
-import code_app from "code/app";
-import metadata_app from "metadata/app";
-import extension_app from "extension/app";
-import org_app from "org/app";
-import sarif_app from "sarif/app";
-import doc_app from "doc/app";
+import {KNOWN_TYPE,APP_MAPPING,DIRECT_LINK_MAPPING} from './modules';
 
-const KNOWN_TYPE = new Set(["connection/app", "accessAnalyzer/app","extension/app","org/app","code/app","metadata/app","sarif/app","doc/app"]);
-const APP_MAPPING = {
-    "connection/app": connection_app,
-    "accessAnalyzer/app": accessAnalyzer_app,
-    "code/app":code_app,
-    "extension/app":extension_app,
-    "org/app":org_app,
-    "metadata/app":metadata_app,
-    "sarif/app":sarif_app,
-    "doc/app":doc_app
-};
-
-const DIRECT_LINK_MAPPING = {
-    "documentation":{
-        component:"doc/app",
-        name:"Documentation Explorer",
-        isDeletable:true
-    }
-}
+const LIMITED = 'limited';
 
 export default class App extends LightningElement {
 
     @api mode;
-    // for extension
+    // for Extension (Limited Mode)
     @api sessionId;
     @api serverUrl;
+    // for Electron (Limited Mode)
+    @api alias;
 
 
     isSalesforceCliInstalled = false;
@@ -150,8 +127,8 @@ export default class App extends LightningElement {
         this.applications   = [];
         this.applicationId  = null;
 
-        if(this.isLightMode){
-            this.load_lightMode();
+        if(this.isLimitedMode){
+            this.load_limitedMode();
         }else{
             this.load_fullMode();
         }
@@ -164,21 +141,26 @@ export default class App extends LightningElement {
                 if(x.id == applicationId){
                     x.isActive = true;
                     x.class = "slds-context-bar__item slds-is-active";
-                    x.classVisibility = "slds-show";
+                    x.classVisibility = "slds-show slds-full-height";
                 }
             })
         this.applications = _applications;
     }
 
-    /** Extension  **/
-    load_lightMode = async () => {
-        this.connector = await directConnection(this.sessionId,this.serverUrl);
+    /** Extension & Electron Org Window  **/
+    load_limitedMode = async () => {
+        if(isElectronApp()){
+            this.connector = await connect({alias:this.alias});
+        }else{
+            this.connector = await directConnect(this.sessionId,this.serverUrl);
+        }
+        
         // Default Mode
-        await this.loadModule({
+        /*await this.loadModule({
             component:'extension/app',
             name:"Apps",
             isDeletable:false,
-        });
+        });*/
         
         await this.loadModule({
             component:'org/app',
@@ -207,12 +189,12 @@ export default class App extends LightningElement {
         
         /** DEV MODE  */
 
-        if(process.env.NODE_ENV === 'dev' /*&& isElectronApp() && this.isUserLoggedIn*/){
-            /*await this.loadModule({
-                component:'doc/app',
-                name:"Documentation Explorer",
+        if(process.env.NODE_ENV === 'dev' && this.isUserLoggedIn /*&& isElectronApp() && this.isUserLoggedIn*/){
+            await this.loadModule({
+                component:'soql/app',
+                name:"SOQL Explorer",
                 isDeletable:true
-            });*/
+            });
         }
 
         /** Direct Opening Mode */
@@ -232,16 +214,16 @@ export default class App extends LightningElement {
         return isElectronApp() && !this.isSalesforceCliInstalled && this.isCommandCheckFinished;
     }
 
-    get isLightMode(){
-        return this.mode === 'light';
+    get isLimitedMode(){
+        return this.mode === LIMITED;
     }
 
     get dynamicAppContainerClass(){
-        return this.isUserLoggedIn?'app-container-logged-in':'app-container';
+        return this.isUserLoggedIn?'app-container-logged-in slds-full-height':'app-container slds-full-height';
     }
 
     get isLogoutDisplayed(){
-        return !this.isLightMode;
+        return !this.isLimitedMode;
     }
 
     get loggedInMessage(){
@@ -257,7 +239,7 @@ export default class App extends LightningElement {
         return this.applications.map(x => ({...x,...{
             isActive:false,
             class:"slds-context-bar__item",
-            classVisibility:"slds-hide",
+            classVisibility:"slds-hide slds-full-height",
         }}));
     }
 
@@ -265,20 +247,20 @@ export default class App extends LightningElement {
     
 
     loadModule = async (data) => {
-
+        
         if (!KNOWN_TYPE.has(data.component)) {
             console.warn(`Unknown app type: ${data.component}`);
         }
-    
         //let { default: appConstructor } = await APP_MAPPING[app_key]()
         let newApplication = {
             componentName:data.component,
-            constructor:APP_MAPPING[data.component],
+            constructor:APP_MAPPING[data.component].module,
             id:guid(),
             name:data.name,
             isActive:true,
             class:"slds-context-bar__item slds-is-active",
-            classVisibility:"slds-show",
+            classVisibility:"slds-show slds-full-height",
+            isFullHeight:APP_MAPPING[data.component].isFullHeight,
             isDeletable:data.isDeletable,
             attributes:{
                 connector:this.connector

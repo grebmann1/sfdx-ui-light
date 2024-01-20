@@ -78,10 +78,22 @@ Run `npm run start:electron:dev`
 
 We welcome contributions to enhance SF Toolkit. Feel free to fork the repository, make improvements, and create pull requests.
 
+## Open Source Acknowledgments
+
+This tool incorporates components from the following open source project:
+
+- **[LWC SOQL Builder](https://github.com/lwc-soql-builder/lwc-soql-builder)**  
+  Description: LWC SOQL Builder is an open source tool designed to build Salesforce Object Query Language (SOQL) queries in a dynamic and user-friendly interface.
+  License: MIT
+  Technology: LWC & NodeJS
+
+We are thankful to the developers and contributors of the LWC SOQL Builder for their exceptional work. Their project plays a crucial role in the functionality of our tool.
+
+
 ## Support
 
 For any issues, queries, or suggestions, please open an issue in the respective app's directory or contact us directly.
 
 ## License
 
-This project is licensed under the
+This project is licensed under the MIT License

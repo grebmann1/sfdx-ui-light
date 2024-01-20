@@ -1,7 +1,7 @@
 import { LightningElement} from "lwc";
 import LightningAlert from 'lightning/alert';
 import { isUndefinedOrNull } from "shared/utils";
-import { getHostAndSession,directConnection } from 'connection/utils';
+import { getHostAndSession } from 'connection/utils';
 
 export default class extensionPopupView extends LightningElement {
 

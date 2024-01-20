@@ -152,3 +152,10 @@ export function getCurrentRank(mapping,check){
     }
     return mapping.length - 1;
 }
+
+export function escapeRegExp(str) {
+    if (!str) return '';
+    return str.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+
+export * from './salesforce';

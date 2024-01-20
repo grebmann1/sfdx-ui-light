@@ -10,17 +10,20 @@ const store = new Store({
     }
 });
 
-let browserWindows = [];
+var browserWindows = [];
 
-exports.browserWindows;
+exports.browserWindows = browserWindows;
 
-exports.createMainWindow = createMainWindow = ({isDev}) => {
+
+createWindow = ({parent,alwaysOnTop}) => {
 
 
 	let browserWindow = BrowserWindow || null;
 		browserWindow = new BrowserWindow({
 			width: store.width || 1400,
 			height: store.height || 900,
+			parent: parent || null,
+			alwaysOnTop: alwaysOnTop || false,
 			minHeight: 600,
 			minWidth: 600,
 			acceptFirstMouse: true,
@@ -42,6 +45,7 @@ exports.createMainWindow = createMainWindow = ({isDev}) => {
 				browserWindow.show();
 				/** To handle later to have right click menu */
 				//createContextMenu(browserWindow);
+				
 			}
 		});
 
@@ -74,8 +78,28 @@ exports.createMainWindow = createMainWindow = ({isDev}) => {
 	return browserWindow;
 }
 
-exports.getOrCreateMainWindow = getOrCreateMainWindow = ({isDev,url}) => {
-	return (
-		BrowserWindow.getFocusedWindow() || browserWindows[0] || createMainWindow({isDev,url})
-	);
+exports.createMainWindow = ({isDev,url}) => {
+	let browserWindow = createWindow({url});
+		if (isDev) {
+			browserWindow.loadURL('http://localhost:3000/app');
+		} else {
+			browserWindow.loadURL('https://sf-toolkit.com/app');
+		}
+	return browserWindow;
+}
+
+exports.createInstanceWindow = ({parent,isDev,alias,username}) => {
+	console.log(`Creating Instance window`);
+	let browserWindow = createWindow({});
+
+		if (isDev) {
+			browserWindow.loadURL(`http://localhost:3000/extension?alias=${encodeURIComponent(alias)}`);
+		} else {
+			browserWindow.loadURL(`https://sf-toolkit.com/extension?alias=${encodeURIComponent(alias)}`);
+		}
+
+		browserWindow.webContents.once('dom-ready', () => {
+			browserWindow.setTitle(`${alias}:${username}`);
+		});
+	return browserWindow;
 }

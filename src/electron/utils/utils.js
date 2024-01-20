@@ -7,4 +7,18 @@ const hashCode =  (str) => {
     }
     return hash;
 }
-module.exports = {hashCode};
+
+const buffer = {}
+function runActionAfterTimeOut(value, action,{timeout = 300} = {}) {
+    if (buffer._clearBufferId) {
+        clearTimeout(buffer._clearBufferId);
+    }
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    buffer._clearBufferId = setTimeout(() => {
+        action(value);
+    }, timeout);
+    return buffer._clearBufferId;
+}
+
+
+module.exports = {hashCode,runActionAfterTimeOut};

@@ -1,20 +1,25 @@
 import { LightningElement} from "lwc";
 import LightningAlert from 'lightning/alert';
-import { isUndefinedOrNull } from "shared/utils";
+import { isUndefinedOrNull,isElectronApp } from "shared/utils";
 
 export default class extensionView extends LightningElement {
 
     sessionId;
     serverUrl;
+    alias;
 
     connectedCallback(){
-        this.sessionId = this.getSessionId();
-        this.serverUrl = this.getServerUrl();
-
-        if(isUndefinedOrNull(this.sessionId) || isUndefinedOrNull(this.serverUrl)){
-            this.sendError();
+        if(isElectronApp()){
+            this.alias = this.getAlias();
+        }else{
+            this.sessionId = this.getSessionId();
+            this.serverUrl = this.getServerUrl();
+            if(isUndefinedOrNull(this.sessionId) || isUndefinedOrNull(this.serverUrl)){
+                this.sendError();
+            }
         }
     }
+    
 
 
     getSessionId = () => {
@@ -23,6 +28,10 @@ export default class extensionView extends LightningElement {
 
     getServerUrl = () => {
         return new URLSearchParams(window.location.search).get('serverUrl');
+    }
+
+    getAlias = () => {
+        return new URLSearchParams(window.location.search).get('alias');
     }
 
     sendError = () => {

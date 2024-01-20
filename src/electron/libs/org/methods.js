@@ -1,7 +1,60 @@
 const sfdx = require('sfdx-node');
-const { app,shell } = require('electron');
+const path = require('path');
+const { app,shell,utilityProcess,MessageChannelMain } = require('electron');
 const { execSync } = require('child_process');
 const { encodeError } = require('../../utils/errors.js');
+const { runActionAfterTimeOut } = require('../../utils/utils.js');
+
+
+/** Worker Processing **/
+const workers = {};
+
+_handleOAuthInWorker = ({alias,instanceurl}) => {
+    return new Promise(
+        (resolve,reject) => {
+            // Kill child process in case it's too long
+            let timeout = runActionAfterTimeOut(workers.oauth,(param) => {
+                if(param){
+                    reject(new Error('The link expired, please retry'));
+                    param.kill();
+                }
+            },{timeout:15000*2});
+
+            workers.oauth = utilityProcess.fork(path.join(__dirname, '../../workers/oauth.js'))
+            workers.oauth.postMessage({action:'oauth',params:{alias,instanceurl}});
+            workers.oauth.once('exit',  () => {
+                clearTimeout(timeout);
+                workers.oauth = null;
+                resolve(null);
+            })
+            workers.oauth.once('message', async ({res,error}) => {
+                clearTimeout(timeout);
+                workers.oauth.kill();
+                if(res){
+                    resolve(res);
+                }else{
+                    reject(error);
+                }
+            });
+            
+        }
+    ); 
+}
+
+/** Methods **/
+
+killOauth = async (_) => {
+    console.log('killOauth');
+    try{
+        if(workers.oauth){
+            workers.oauth.kill();
+        }
+        return {res};
+    }catch(e){
+        return {error: encodeError(e)}
+    }
+}
+
 
 getAllOrgs = async (_) => {
     let res = await sfdx.force.org.list({
@@ -51,16 +104,11 @@ openOrgUrl = async (_,{alias,redirectUrl}) => {
     }
 }
 
-createNewOrgAlias = async (_,{alias,instanceurl}) => {
-    console.log('createNewOrgAlias');
 
+
+createNewOrgAlias = async (_,{alias,instanceurl}) => {
     try{
-        let res = await sfdx.auth.web.login({
-            setalias: alias,
-            instanceurl:instanceurl,
-            _quiet:false,
-            _rejectOnError: true
-        });
+        let res = await _handleOAuthInWorker({alias,instanceurl}); 
         return {res};
     }catch(e){
         return {error: encodeError(e)}
@@ -105,6 +153,7 @@ setAlias = async (_,{alias,username}) => {
 }
 
 module.exports = {
+    killOauth,
     getAllOrgs,
     openOrgUrl,
     createNewOrgAlias,

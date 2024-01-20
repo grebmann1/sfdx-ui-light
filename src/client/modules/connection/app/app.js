@@ -38,6 +38,7 @@ export default class App extends LightningElement {
                 // we can use window.jsforce.conn
                 await this.setAllConnections();
             }
+            await window.electron.ipcRenderer.invoke('org-killOauth');
         });
 
     }
@@ -80,24 +81,28 @@ export default class App extends LightningElement {
     }
 
     login = async (row) => {
-        let {alias,...settings} = this.data.find(x => x.id == row.id);
-        try{
-            console.log('settings',settings);
-            let connector = await connect({alias,settings});
-            this.dispatchEvent(new CustomEvent("login", { detail:{value:connector},bubbles: true }));
-        }catch(e){
-            // OAuth in case of login failure !!!!
-            oauth({alias:alias,loginUrl:settings.instanceUrl || settings.loginUrl},(res) => {
-                this.dispatchEvent(new CustomEvent("login", { detail:{value:res.connector},bubbles: true }));
-            })
+        if(isElectronApp()){
+            window.electron.ipcRenderer.invoke('OPEN_INSTANCE',row);
+        }else{
+            let {alias,...settings} = this.data.find(x => x.id == row.id);
+            try{
+                console.log('settings',settings);
+                let connector = await connect({alias,settings});
+                this.dispatchEvent(new CustomEvent("login", { detail:{value:connector},bubbles: true }));
+            }catch(e){
+                // OAuth in case of login failure !!!!
+                oauth({alias:alias,loginUrl:settings.instanceUrl || settings.loginUrl},(res) => {
+                    this.dispatchEvent(new CustomEvent("login", { detail:{value:res.connector},bubbles: true }));
+                })
+            }
         }
-        
     }
 
     openBrowser = (row) => {
         if(isElectronApp()){
             // Electron version
             window.electron.ipcRenderer.invoke('org-openOrgUrl',row);
+            
         }else{
             let settings = this.data.find(x => x.id == row.id);
             // Browser version

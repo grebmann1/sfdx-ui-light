@@ -1,0 +1,71 @@
+<template>
+    <template lwc:if={isLoading}>
+        <lightning-spinner variant="brand" alternative-text="Loading"></lightning-spinner>
+    </template>
+    <template lwc:if={sobjectMeta}>
+        <div class="slds-tree_container">
+            <div class="slds-p-left_small">
+                <div class="slds-grid">
+                    <button class="slds-button slds-button_icon" title="Back" onclick={deselectSObject}>
+                        <svg class="slds-button__icon" aria-hidden="true">
+                            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#back"></use>
+                        </svg>
+                        <span class="slds-assistive-text">{i18n.FIELDS_PANEL_BACK}</span>
+                    </button>
+                    <h2 class="slds-tree__group-header slds-truncate">{sobjectMeta.name} / {sobjectMeta.label}</h2>
+                </div>
+            </div>
+            <div class="slds-form-element slds-p-horizontal_large">
+                <label class="slds-form-element__label slds-assistive-text">{i18n.FIELDS_PANEL_FILTER_FIELDS}</label>
+                <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_left-right">
+                    <span class="slds-icon_container slds-icon-utility-search">
+                        <svg class="slds-icon slds-input__icon slds-input__icon_left slds-icon-text-default" aria-hidden="true">
+                            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#search"></use>
+                        </svg>
+                    </span>
+                    <input type="search" placeholder={i18n.FIELDS_PANEL_QUICK_FIND} class="slds-input" value={keyword} onkeyup={setKeyword} />
+                    <template lwc:if={isDisplayClearButton}>
+                        <button class="slds-button slds-button_icon slds-input__icon slds-input__icon_right" title={i18n.FIELDS_PANEL_KEYWORD_CLEAR} onclick={handleClear} if:true={isDisplayClearButton}>
+                            <svg class="slds-button__icon slds-icon-text-light" aria-hidden="true">
+                                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#clear"></use>
+                            </svg>
+                            <span class="slds-assistive-text">{i18n.FIELDS_PANEL_KEYWORD_CLEAR}</span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+            <div class="slds-tabs_default slds-is-relative">
+                <ul class="slds-tabs_default__nav" role="tablist">
+                    <template for:each={tabs} for:item="tab">
+                        <li class="slds-tabs_default__item" aria-selected={tab.isActive} title={tab.label} key={tab.id}>
+                            <a class="slds-tabs_default__link" role="tab" tabindex="-1" onclick={selectTab} data-id={tab.id}>{tab.label}</a>
+                        </li>
+                    </template>
+                </ul>
+                <template lwc:if={isFieldsActive}>
+                    <div class="dropdown-menu">
+                        <lightning-button-menu alternative-text={i18n.FIELDS_PANEL_SHOW_MENU} onselect={handleMenuSelect}>
+                            <lightning-menu-item icon-name="utility:multi_select_checkbox" label={i18n.FIELDS_PANEL_SELECT_ALL_FIELDS} value="select_all"></lightning-menu-item>
+                            <lightning-menu-item icon-name="utility:clear" label={i18n.FIELDS_PANEL_CLEAR_ALL_FIELDS} value="clear_all"></lightning-menu-item>
+                            <lightning-menu-item icon-name="utility:arrowdown" label={i18n.FIELDS_PANEL_SORT_ASC} value="sort_asc"></lightning-menu-item>
+                            <lightning-menu-item icon-name="utility:arrowup" label={i18n.FIELDS_PANEL_SORT_DESC} value="sort_desc"></lightning-menu-item>
+                        </lightning-button-menu>
+                    </div>
+                    <div class="slds-tabs_default__content" role="tabpanel">
+                        <div class="left-panel-scrollable slds-is-relative">
+                            <soql-fields-tree connector={connector} sobject={sobjectMeta.name} keyword={keyword}></soql-fields-tree>
+                        </div>
+                    </div>
+                </template>
+                <template lwc:if={isRelationshipsActive}>
+                    <div class="slds-tabs_default__content" role="tabpanel" >
+                        <div class="left-panel-scrollable">
+                            <soql-relationships-tree connector={connector} sobject={sobjectMeta.name} keyword={keyword}></soql-relationships-tree>
+                        </div>
+                    </div>
+                </template>
+                
+            </div>
+        </div>
+    </template>
+</template>

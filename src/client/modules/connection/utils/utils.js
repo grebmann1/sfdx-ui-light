@@ -186,7 +186,7 @@ export async function oauth({alias,loginUrl},callback){
     });
 }
 
-export async function directConnection(sessionId,serverUrl){
+export async function directConnect(sessionId,serverUrl){
     //console.log('sessionId,serverUrl',sessionId,serverUrl);
     let params = {
         //oauth2      : {...window.jsforceSettings},
@@ -206,7 +206,7 @@ export async function directConnection(sessionId,serverUrl){
         header.orgId    = identity.organization_id;
         header.userInfo = identity;
     }
-    //console.log('directConnection',header,connection);
+    //console.log('directConnect',header,connection);
 
     return new Connector(header,connection);
 }

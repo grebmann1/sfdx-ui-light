@@ -71,10 +71,18 @@ export default class ConnectionNewModal extends LightningModal {
             if (error) {
                 throw decodeError(error);
             }
-            let settings = res;
-            let connector = await connect({settings});
-            this.close({alias:this.alias,connector});
+            
+            
+            if(res){
+                let settings = res;
+                let connector = await connect({settings});
+                this.close({alias:this.alias,connector});
+            }else{
+                this.close();
+            }
+            
         }catch(e){
+            this.close();
             await LightningAlert.open({
                 message: e.message,
                 theme: 'error', // a red theme intended for error states

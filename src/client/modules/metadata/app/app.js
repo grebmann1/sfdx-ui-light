@@ -46,6 +46,10 @@ export default class App extends FeatureElement {
         return this.selectedItem === 'sobject';
     }
 
+    get pageClass(){
+        return super.pageClass+' slds-p-around_small';
+    }
+
     
 
 

@@ -11,11 +11,11 @@ const fixPath = require('fix-path');
 
 checkCommands = async () => {
     try{
-        console.log('sfdx',commandExistsSync('sfdx'));
-        console.log('sfdx2',process.env.PATH);
-        fixPath();
-        console.log('sfdx3',process.env.PATH);
-        console.log('sfdx',commandExistsSync('sfdx'));
+        //console.log('sfdx',commandExistsSync('sfdx'));
+        //console.log('sfdx2',process.env.PATH);
+        //fixPath();
+        //console.log('sfdx3',process.env.PATH);
+        //console.log('sfdx',commandExistsSync('sfdx'));
         return {
             result: {
                 sfdx:commandExistsSync('sfdx'),

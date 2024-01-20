@@ -1,7 +1,7 @@
 
 const {
     getAllOrgs,openOrgUrl,createNewOrgAlias,
-    seeDetails,unsetAlias,setAlias,logout
+    seeDetails,unsetAlias,setAlias,logout,killOauth
 } = require('./methods.js');
 
 class ORG_CONNECTOR{
@@ -9,6 +9,7 @@ class ORG_CONNECTOR{
     constructor(){}
 
     enableEventListeners = (ipcMainManager) => {
+        ipcMainManager.handle(`${this.namespace}-killOauth`,killOauth);
         ipcMainManager.handle(`${this.namespace}-getAllOrgs`,getAllOrgs);
         ipcMainManager.handle(`${this.namespace}-openOrgUrl`,openOrgUrl);
         ipcMainManager.handle(`${this.namespace}-createNewOrgAlias`,createNewOrgAlias);

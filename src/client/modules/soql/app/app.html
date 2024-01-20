@@ -1,0 +1,46 @@
+<template>
+    <div class={pageClass}>
+        <!-- Header -->
+        <soql-header></soql-header>
+        
+         <!-- Body -->
+        <article class="full-page-body full-page-body-builder slds-card">
+            <div class="slds-card__body slds-card__body_inner">
+                <div class="slds-full-height slds-is-relative" style="min-height:200px;">
+                    <template lwc:if={isLoading}>
+                        <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                    </template>
+                    <template lwc:else>
+
+                        <div class="body slds-full-height">
+                            <div class="left-panel">
+                                <!-- Panel -->
+                                <soql-sobject-panel connector={connector} class={sobjectsPanelClass}></soql-sobject-panel>
+                                <template lwc:if={isFieldsPanelDisplayed}>
+                                    <soql-fields-panel connector={connector}></soql-fields-panel>
+                                </template>
+                            </div>
+                            <div class="right-panel">
+                                <div class="right-top-panel">
+                                    <div class="right-top-left-panel">
+                                        <soql-query-editor-panel connector={connector}></soql-query-editor-panel>
+                                    </div>
+                                    <div class="right-top-right-panel">
+                                        <soql-query-list-panel connector={connector}></soql-query-list-panel>
+                                    </div>
+                                </div>
+                                <div class="right-bottom-panel">
+                                    <soql-output-panel connector={connector}></soql-output-panel>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+
+                    </template>
+                </div>
+            </div>
+        </article>
+    </div>
+    
+</template>

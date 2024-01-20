@@ -39,6 +39,16 @@ const application_mapping = [
         isDeletable:true,
         isElectronOnly:false,
         isOfflineAvailable:true
+    },
+    {
+        id:"soql",
+        name:"SOQL Explorer",
+        shortName:"SE",
+        component:"soql/app",
+        description:"Build SOQL queries",
+        isDeletable:true,
+        isElectronOnly:false,
+        isOfflineAvailable:false
     }
 ]
 
