@@ -5,7 +5,7 @@ import {
     store,
     loadRecentQueries,
     updateSoql
-} from 'shared/store';
+} from 'soql/store';
 
 export default class QueryListPanel extends I18nMixin(LightningElement) {
     recentQueries;
@@ -21,7 +21,7 @@ export default class QueryListPanel extends I18nMixin(LightningElement) {
     }
 
     connectedCallback() {
-        store.dispatch(loadRecentQueries());
+        store.dispatch(loadRecentQueries(this.connector.header.alias));
     }
 
     selectQuery(event) {

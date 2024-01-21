@@ -6,7 +6,8 @@ import {
     store,
     deselectChildRelationship,
     clearQueryError
-} from 'shared/store';
+} from 'soql/store';
+import { isNotUndefinedOrNull } from 'shared/utils';
 
 export default class OutputPanel extends I18nMixin(LightningElement) {
 
@@ -18,11 +19,15 @@ export default class OutputPanel extends I18nMixin(LightningElement) {
 
     _sObject;
 
+    error_title;
+    error_message;
+
     @wire(connectStore, { store })
     storeChange({ query, ui }) {
         this.isLoading = query.isFetching;
         if (query.data) {
             if (this.response !== query.data) {
+                this.resetError();
                 this.response = query.data;
                 this._sObject = ui.query.sObject;
             }
@@ -30,12 +35,7 @@ export default class OutputPanel extends I18nMixin(LightningElement) {
             this.response = undefined;
         }
         if (query.error) {
-            console.error(query.error);
-            Toast.show({
-                message: this.i18n.OUTPUT_PANEL_FAILED_SOQL,
-                errors: query.error
-            });
-            store.dispatch(clearQueryError());
+            this.handleError(query.error);
         }
         this.childResponse = ui.childRelationship;
     }
@@ -54,9 +54,9 @@ export default class OutputPanel extends I18nMixin(LightningElement) {
             const blob = new Blob([bom, data], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const download = document.createElement('a');
-            download.href = window.URL.createObjectURL(blob);
-            download.download = `${this._sObject}.csv`;
-            download.click();
+                download.href = window.URL.createObjectURL(blob);
+                download.download = `${this._sObject}.csv`;
+                download.click();
             URL.revokeObjectURL(url);
         } catch (e) {
             console.error(e);
@@ -66,5 +66,30 @@ export default class OutputPanel extends I18nMixin(LightningElement) {
             });
         }
         this.isLoading = false;
+    }
+
+    handleError = e => {
+        console.log('e',e);
+        let errors = e.message.split(':');
+        if(errors.length > 1){
+            this.error_title = errors.shift();
+        }else{
+            this.error_title = 'Error';
+        }
+        this.error_message = errors.join(':');
+        console.error(e);
+        store.dispatch(clearQueryError());
+    }
+
+    resetError = () => {
+        this.error_title = null;
+        this.error_message = null;
+    }
+
+
+    /** Getters */
+    
+    get isError(){
+        return isNotUndefinedOrNull(this.error_message);
     }
 }

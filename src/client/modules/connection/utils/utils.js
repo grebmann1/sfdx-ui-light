@@ -62,14 +62,21 @@ async function assignLatestVersion(connection){
 }
 
 async function getHeader(connection){
-    let identity = await connection.identity();
-    let header = {};
+    const {accessToken,instanceUrl,loginUrl,refreshToken,version} = connection;
+    const identity = await connection.identity();
+    const header = {
+        accessToken,instanceUrl,loginUrl,refreshToken,version,
+        id:connection.alias,
+        alias:connection.alias,
+        sfdxAuthUrl:instanceUrl+'/secur/frontdoor.jsp?sid='+accessToken,
+    };
+
     if(isNotUndefinedOrNull(identity)){
-            header.alias    = connection.alias;
             header.username = identity.username;
             header.orgId    = identity.organization_id;
-            header.userInfo = identity;
+            header.userInfo = identity;       
     }
+
     return header;
 }
 

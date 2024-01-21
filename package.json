@@ -19,8 +19,10 @@
         }
     ],
     "dependencies": {
+        "@alenaksu/json-viewer": "^2.0.1",
         "@lwc/rollup-plugin": "^5.2.1",
         "@lwrjs/label-module-provider": "0.11.6",
+        "@pgrabovets/json-view": "^2.7.5",
         "@rollup/plugin-replace": "^5.0.5",
         "dotenv": "^16.3.1",
         "express": "^4.18.2",

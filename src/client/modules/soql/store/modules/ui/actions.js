@@ -1,6 +1,5 @@
 import {
-    LOGIN,
-    LOGOUT,
+
     UPDATE_API_LIMIT,
     LOAD_RECENT_QUERIES,
     SELECT_SOBJECT,
@@ -16,29 +15,19 @@ import {
     SORT_FIELDS
 } from './constants';
 
-export function login(user) {
-    return {
-        type: LOGIN,
-        payload: { user }
-    };
-}
-
-export function logout() {
-    return {
-        type: LOGOUT
-    };
-}
 
 export function updateApiLimit({connector}) {
     return {
         type: UPDATE_API_LIMIT,
-        payload: { connector }
+        payload: { connector },
+        alias: connector.alias
     };
 }
 
-export function loadRecentQueries() {
+export function loadRecentQueries(alias) {
     return {
-        type: LOAD_RECENT_QUERIES
+        type: LOAD_RECENT_QUERIES,
+        alias: alias
     };
 }
 

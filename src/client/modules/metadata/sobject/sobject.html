@@ -15,7 +15,7 @@
                     onchange={handleFilter}
                 ></lightning-input>
                 <div class="slds-scrollable_y">
-                    <lightning-vertical-navigation onselect={handleItemSelection} compact>
+                    <lightning-vertical-navigation onselect={handleItemSelection} selected-item="Account" compact>
                         <template for:each={filteredList} for:item="item">
                             <lightning-vertical-navigation-item key={item.name} label={item.label} name={item.name}></lightning-vertical-navigation-item>
                         </template>
@@ -147,9 +147,6 @@
                                 </div>
                             </div>
                         </template>
-                    </lightning-tab>
-                    <lightning-tab label="View">
-                        Two Content !
                     </lightning-tab>
                 </lightning-tabset>
             </div>

@@ -1,36 +1,36 @@
 import {
-    REQUEST_QUERY,
-    RECEIVE_QUERY_SUCCESS,
-    RECEIVE_QUERY_ERROR,
-    CLEAR_QUERY_ERROR
+    REQUEST_SOBJECTS,
+    RECEIVE_SOBJECTS_SUCCESS,
+    RECEIVE_SOBJECTS_ERROR,
+    CLEAR_SOBJECTS_ERROR
 } from './constants';
 
-export default function query(
+export default function sobjects(
     state = {
         isFetching: false,
         data: null,
-        error: null
+        error: null,
+        alias: null
     },
     action
 ) {
     switch (action.type) {
-        case REQUEST_QUERY:
+        case REQUEST_SOBJECTS:
             return {
                 ...state,
-                isFetching: true,
-                data: undefined,
-                error: undefined
+                isFetching: true
             };
 
-        case RECEIVE_QUERY_SUCCESS:
+        case RECEIVE_SOBJECTS_SUCCESS:
             return {
                 ...state,
                 isFetching: false,
                 data: action.payload.data,
-                error: undefined
+                alias: action.payload.alias,
+                error: null
             };
 
-        case RECEIVE_QUERY_ERROR:
+        case RECEIVE_SOBJECTS_ERROR:
             return {
                 ...state,
                 isFetching: false,
@@ -38,7 +38,7 @@ export default function query(
                 error: action.payload.error
             };
 
-        case CLEAR_QUERY_ERROR:
+        case CLEAR_SOBJECTS_ERROR:
             return {
                 ...state,
                 error: undefined

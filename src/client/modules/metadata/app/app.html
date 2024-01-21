@@ -11,8 +11,8 @@
                             <div class="slds-page-header__name">
                                 <div class="slds-page-header__name-title">
                                     <h1>
-                                        <span>Metadata Explorer</span>
-                                        <span class="slds-page-header__title slds-truncate" title="Metadata Explorer">Metadata Explorer</span>
+                                        <span>SObject Explorer</span>
+                                        <span class="slds-page-header__title slds-truncate" title="SObject Explorer">SObject Explorer</span>
                                     </h1>
                                 </div>
                             </div>
@@ -46,6 +46,7 @@
                     <template lwc:else>
 
                         <!-- Container -->
+                        <!--
                         <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-8">
                             <lightning-vertical-navigation selected-item="sobject" onselect={handleItemSelection} compact>
                                 <lightning-vertical-navigation-section label="Metadata">
@@ -53,10 +54,12 @@
                                 </lightning-vertical-navigation-section>
                             </lightning-vertical-navigation>
                         </div>
-                        <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_7-of-8">
-                            <template lwc:if={isSObjectDisplayed}>
+                        -->
+                        <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-1">
+                            <metadata-sobject connector={connector}></metadata-sobject>
+                            <!--<template lwc:if={isSObjectDisplayed}>
                                 <metadata-sobject connector={connector}></metadata-sobject>
-                            </template>
+                            </template>-->
                         </div>
 
                     </template>

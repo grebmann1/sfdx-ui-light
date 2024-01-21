@@ -2,7 +2,10 @@ import { createStore, applyMiddleware, combineReducers } from 'redux';
 import thunk from 'redux-thunk';
 
 import logger from 'shared/middleware';
-import application from './modules/application/reducers';
+import sobjects from './modules/sobjects/reducers';
+import sobject from './modules/sobject/reducers';
+import query from './modules/query/reducers';
+import ui from './modules/ui/reducers';
 
 let middlewares = [thunk];
 // eslint-disable-next-line no-undef
@@ -12,7 +15,10 @@ if (process.env.NODE_ENV !== 'production') {
 
 export const store = createStore(
     combineReducers({
-        application
+        sobjects,
+        sobject,
+        query,
+        ui
     }),
     applyMiddleware(...middlewares)
 );

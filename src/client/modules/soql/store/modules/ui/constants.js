@@ -1,5 +1,3 @@
-export const LOGIN = 'LOGIN';
-export const LOGOUT = 'LOGOUT';
 export const UPDATE_API_LIMIT = 'UPDATE_API_LIMIT';
 export const LOAD_RECENT_QUERIES = 'LOAD_RECENT_QUERIES';
 export const SELECT_SOBJECT = 'SELECT_SOBJECT';

@@ -2,6 +2,11 @@
     <template lwc:if={isLoading}>
         <lightning-spinner alternative-text="Loading"></lightning-spinner>
     </template>
+    <template lwc:if={isError}>
+        <ui-information-block title={error_title} variant="error">
+            <p>{error_message}</p>
+        </ui-information-block>
+    </template>
     
     <template lwc:if={response}>
         <div class="slds-p-around_small slds-grid">

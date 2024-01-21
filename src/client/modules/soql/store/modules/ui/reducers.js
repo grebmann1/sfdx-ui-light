@@ -6,8 +6,6 @@ import {
     isQueryValid
 } from 'soql-parser-js';
 import {
-    LOGIN,
-    LOGOUT,
     UPDATE_API_LIMIT,
     SELECT_SOBJECT,
     DESELECT_SOBJECT,
@@ -139,8 +137,9 @@ function recentQueries(state = [], action) {
         ...state.filter(q => q !== soql).slice(0, MAX_RECENT_QUERIES - 1)
     ];
     try {
+        console.log('####### store recentQueries',action.alias);
         localStorage.setItem(
-            RECENT_QUERIES_KEY,
+            `${action.alias}-${RECENT_QUERIES_KEY}`,
             JSON.stringify(recentQueriesState)
         );
     } catch (e) {
@@ -149,9 +148,10 @@ function recentQueries(state = [], action) {
     return recentQueriesState;
 }
 
-function loadRecentQueries() {
+function loadRecentQueries(alias) {
     try {
-        const recentQueriesText = localStorage.getItem(RECENT_QUERIES_KEY);
+        console.log('####### loadRecentQueries',alias);
+        const recentQueriesText = localStorage.getItem(`${alias}-${RECENT_QUERIES_KEY}`);
         if (recentQueriesText) return JSON.parse(recentQueriesText);
     } catch (e) {
         console.warn('Failed to load recent queries from localStorage', e);
@@ -197,7 +197,7 @@ function toggleRelationship(state = [], action) {
     };
 }
 
-function selectAllFields(query = INITIAL_QUERY, action) {
+function selectAllFields(alias,query = INITIAL_QUERY, action) {
     const { sObjectMeta } = action.payload;
     return {
         ...query,
@@ -216,18 +216,6 @@ function clearAllFields(query = INITIAL_QUERY) {
 
 export default function ui(state = {}, action) {
     switch (action.type) {
-        case LOGIN:
-            return {
-                ...state,
-                isLoggedIn: true,
-                user: action.payload.user
-            };
-
-        case LOGOUT:
-            return {
-                ...state,
-                isLoggedIn: false
-            };
 
         case UPDATE_API_LIMIT: {
             const { limitInfo } = action.payload?.connector;
@@ -247,7 +235,7 @@ export default function ui(state = {}, action) {
         case LOAD_RECENT_QUERIES:
             return {
                 ...state,
-                recentQueries: loadRecentQueries()
+                recentQueries: loadRecentQueries(action.alias)
             };
 
         case SELECT_SOBJECT: {
@@ -360,3 +348,13 @@ export default function ui(state = {}, action) {
             return state;
     }
 }
+
+/*
+export default function uiBulk(state = {}, action) {
+    const uiState = state[action.payload.alias];
+    return {
+        ...state,
+        [action.payload.alias]: ui(uiState, action)
+    };
+}
+*/

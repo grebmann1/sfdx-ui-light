@@ -1,7 +1,7 @@
 import { LightningElement, wire, api } from 'lwc';
 import Toast from 'lightning/toast';
 import { I18nMixin } from 'element/i18n';
-import { query_constants } from 'shared/store';
+import { query_constants } from 'soql/store';
 import {
     connectStore,
     store,
@@ -11,7 +11,7 @@ import {
     selectAllFields,
     clearAllFields,
     sortFields,
-} from 'shared/store';
+} from 'soql/store';
 
 import { isEmpty,fullApiName,isNotUndefinedOrNull } from 'shared/utils';
 

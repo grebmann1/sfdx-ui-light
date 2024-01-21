@@ -46,7 +46,9 @@ export default class Code extends LightningElement {
             
             // Extract namespace
             this.records[key].forEach(x => {
-                this.namespaces.add(x.NamespacePrefix);
+                if(!isEmpty(x.NamespacePrefix)){
+                    this.namespaces.add(x.NamespacePrefix);
+                }
             });
         }catch(e){
             console.error(e);

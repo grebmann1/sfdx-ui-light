@@ -5,7 +5,7 @@ import {
     connectStore,
     store,
     toggleRelationship
-} from 'shared/store';
+} from 'soql/store';
 import { isEmpty,fullApiName,isSame,escapeRegExp,isNotUndefinedOrNull } from 'shared/utils';
 
 export default class RelationshipsTree extends I18nMixin(LightningElement) {

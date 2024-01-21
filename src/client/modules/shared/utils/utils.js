@@ -159,3 +159,11 @@ export function escapeRegExp(str) {
 }
 
 export * from './salesforce';
+
+export function basicTextFormatter(text,filter){
+    var regex = new RegExp('('+filter+')','gim');
+    if(regex.test(text)){
+        text = text.toString().replace(regex,`<span style="font-weight:Bold; color:blue;">$1</span>`);
+    }
+    return text;
+}

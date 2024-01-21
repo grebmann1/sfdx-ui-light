@@ -15,10 +15,10 @@ function requestSObject({connector,sObjectName}) {
     };
 }
 
-function receiveSObjectSuccess(sObjectName, data) {
+function receiveSObjectSuccess(sObjectName, data,alias) {
     return {
         type: RECEIVE_SOBJECT_SUCCESS,
-        payload: { sObjectName, data }
+        payload: { sObjectName, data, alias }
     };
 }
 
@@ -29,8 +29,8 @@ function receiveSObjectError(sObjectName, error) {
     };
 }
 
-function shouldFetchSObject({ sobject }, sObjectName) {
-    return !sobject[sObjectName] || !sobject[sObjectName].data;
+function shouldFetchSObject({ sobject }, sObjectName,alias) {
+    return !sobject[sObjectName] || !sobject[sObjectName].data || sobject.alias != alias
 }
 
 function describeSObject({connector,sObjectName}) {
@@ -40,7 +40,7 @@ function describeSObject({connector,sObjectName}) {
         connector
         .describe(sObjectName)
         .then(res => {
-            dispatch(receiveSObjectSuccess(sObjectName, res));
+            dispatch(receiveSObjectSuccess(sObjectName, res,connector.alias));
             dispatch(updateApiLimit({connector}));
         })
         .catch(err => {
@@ -51,7 +51,7 @@ function describeSObject({connector,sObjectName}) {
 
 export function describeSObjectIfNeeded({connector,sObjectName}) {
     return (dispatch, getState) => {
-        if (shouldFetchSObject(getState(), sObjectName)) {
+        if (shouldFetchSObject(getState(),sObjectName,connector.alias)) {
             dispatch(describeSObject({connector,sObjectName}));
         }
     };

@@ -1,5 +1,3 @@
-//import * as salesforce from '../../../service/salesforce';
-const salesforce = {};
 import {
     REQUEST_QUERY,
     RECEIVE_QUERY_SUCCESS,
@@ -14,10 +12,11 @@ function requestQuery() {
     };
 }
 
-function receiveQuerySuccess(data, soql) {
+function receiveQuerySuccess(data, soql, alias) {
     return {
         type: RECEIVE_QUERY_SUCCESS,
-        payload: { data, soql }
+        payload: { data, soql },
+        alias:alias
     };
 }
 
@@ -39,7 +38,7 @@ export function executeQuery({connector,soql}, isAllRows) {
                 //headers: salesforce.getQueryHeaders() // To update later
             })
             .then(res => {
-                dispatch(receiveQuerySuccess(res, soql));
+                dispatch(receiveQuerySuccess(res, soql,connector.alias));
                 dispatch(updateApiLimit({connector}));
             })
             .catch(err => {

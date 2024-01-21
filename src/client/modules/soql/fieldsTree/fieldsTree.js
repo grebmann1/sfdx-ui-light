@@ -8,7 +8,7 @@ import {
     store,
     describeSObjectIfNeeded,
     toggleField
-} from 'shared/store';
+} from 'soql/store';
 
 import { isEmpty,fullApiName,isSame,escapeRegExp,isNotUndefinedOrNull } from 'shared/utils';
 

@@ -14,10 +14,10 @@ const application_mapping = [
     },
     {
         id:"metadata",
-        name:"Metadata Explorer",
-        shortName:"ME",
+        name:"SObject Explorer",
+        shortName:"SE",
         component:"metadata/app",
-        description:"Explorer Metadata from the Org",
+        description:"Explorer SObjects from the Org",
         isDeletable:true,
         isElectronOnly:false
     },
@@ -42,7 +42,7 @@ const application_mapping = [
     },
     {
         id:"soql",
-        name:"SOQL Explorer",
+        name:"SOQL Builder",
         shortName:"SE",
         component:"soql/app",
         description:"Build SOQL queries",

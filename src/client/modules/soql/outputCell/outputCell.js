@@ -4,7 +4,7 @@ import { I18nMixin } from 'element/i18n';
 import {
     store,
     selectChildRelationship,
-} from 'shared/store';
+} from 'soql/store';
 import { isUndefinedOrNull } from 'shared/utils';
 
 export default class OutputCell extends I18nMixin(LightningElement) {
@@ -17,7 +17,7 @@ export default class OutputCell extends I18nMixin(LightningElement) {
 
     get url() {
         if (!/^[0-9A-Za-z]{18}$/.test(this.value.data)) return null;
-        return `${this.connector.conn.instanceUrl}/${this.value.data}`;
+        return `${this.connector.header.sfdxAuthUrl}&retURL=${this.value.data}`;
     }
 
     get isDataDisplayed(){

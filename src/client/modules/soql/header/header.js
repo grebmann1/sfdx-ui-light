@@ -3,7 +3,7 @@ import { I18nMixin } from 'element/i18n';
 import {
     connectStore,
     store
-} from 'shared/store';
+} from 'soql/store';
 
 export default class Header extends I18nMixin(LightningElement) {
     _apiUsage;

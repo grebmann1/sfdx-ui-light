@@ -4,7 +4,7 @@ import {
     store,
     selectSObject,
     clearSObjectsError
-} from 'shared/store';
+} from 'soql/store';
 //import { escapeRegExp } from '../../base/utils/regexp-utils';
 import Toast from 'lightning/toast';
 
@@ -29,7 +29,7 @@ export default class SobjectsPanel extends I18nMixin(LightningElement) {
 
     @wire(connectStore, { store })
     storeChange({ sobjects }) {
-        if (this._rawSObjects) return;
+        //if (this._rawSObjects) return;
         this.isLoading = sobjects.isFetching;
         console.log('this.isLoading',this.isLoading);
         if (sobjects.data) {

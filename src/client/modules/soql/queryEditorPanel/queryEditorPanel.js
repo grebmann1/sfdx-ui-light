@@ -7,9 +7,8 @@ import {
     executeQuery,
     updateSoql,
     formatSoql
-} from 'shared/store';
-
-import { isEmpty,fullApiName,stripNamespace,isSame,escapeRegExp,isNotUndefinedOrNull } from 'shared/utils';
+} from 'soql/store';
+import { fullApiName,stripNamespace,escapeRegExp,isUndefinedOrNull } from 'shared/utils';
 
 const SOQL_SYNTAX_KEYWORDS = [
     'SELECT',
@@ -50,7 +49,9 @@ export default class QueryEditorPanel extends I18nMixin(LightningElement) {
     set soql(value) {
         this._soql = value;
         const inputEl = this.template.querySelector('.soql-input');
-        if (inputEl) inputEl.value = value;
+        if (inputEl && inputEl.value != value){
+            inputEl.value = isUndefinedOrNull(value)?'':value;
+        }
     }
 
     @wire(connectStore, { store })
@@ -62,9 +63,9 @@ export default class QueryEditorPanel extends I18nMixin(LightningElement) {
                 this._sobjectMeta = sobjectState.data;
             }
         }
-        if (soql !== this.soql) {
+        //if (soql !== this.soql) {
             this.soql = soql;
-        }
+        //}
     }
 
     runQuery() {

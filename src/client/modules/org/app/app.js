@@ -14,13 +14,13 @@ export default class App extends LightningElement {
     isFilterting_limits = false;
 
     async connectedCallback(){
-        this.isFilterting_limits = true;
+        //this.isFilterting_limits = true;
         
         this.limits = await this.load_limits();
         this.orgInformation = await this.load_orgInformations();
         this.userInformations = await this.load_userInformations();
-        console.log('this.orgInformation',this.orgInformation);
-        console.log('this.userInformations',this.userInformations);
+        //console.log('this.orgInformation',this.orgInformation);
+        //console.log('this.userInformations',this.userInformations);
     }
 
     /** Methods */
@@ -30,7 +30,18 @@ export default class App extends LightningElement {
             detail:{
                 connector:this.connector,
                 component:'metadata/app',
-                name:'Metadata Explorer'
+                name:'SObject Explorer'
+            }
+            ,bubbles: true 
+        }));
+    }
+
+    openSOQLExplorer = () => {
+        this.dispatchEvent(new CustomEvent("openapplication", { 
+            detail:{
+                connector:this.connector,
+                component:'soql/app',
+                name:'SOQL Builder'
             }
             ,bubbles: true 
         }));

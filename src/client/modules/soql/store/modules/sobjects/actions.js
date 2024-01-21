@@ -1,6 +1,3 @@
-//import * as salesforce from '../../../service/salesforce';
-const salesforce = {};
-
 import {
     REQUEST_SOBJECTS,
     RECEIVE_SOBJECTS_SUCCESS,
@@ -15,10 +12,10 @@ function requestSObjects() {
     };
 }
 
-function receiveSObjectsSuccess(data) {
+function receiveSObjectsSuccess(data,alias) {
     return {
         type: RECEIVE_SOBJECTS_SUCCESS,
-        payload: { data }
+        payload: { data,alias }
     };
 }
 
@@ -29,8 +26,8 @@ function receiveSObjectsError(error) {
     };
 }
 
-function shouldFetchSObjects({ sobjects }) {
-    return !sobjects || !sobjects.data;
+function shouldFetchSObjects({ sobjects },alias) {
+    return !sobjects || !sobjects.data || sobjects.alias != alias
 }
 
 function fetchSObjects({connector}) {
@@ -39,7 +36,7 @@ function fetchSObjects({connector}) {
         connector
         .describeGlobal()
         .then(res => {
-            dispatch(receiveSObjectsSuccess(res));
+            dispatch(receiveSObjectsSuccess(res,connector.alias));
             dispatch(updateApiLimit({connector}));
         })
         .catch(err => {
@@ -50,8 +47,11 @@ function fetchSObjects({connector}) {
 
 export function fetchSObjectsIfNeeded({connector}) {
     return (dispatch, getState) => {
-        if (shouldFetchSObjects(getState())) {
+        console.log('check state',getState());
+        if (shouldFetchSObjects(getState(),connector.alias)) {
+            console.log('------------------ FETCH NEW SOBJECTS ---------------');
             dispatch(fetchSObjects({connector}));
+            console.log('check state',getState());
         }
     };
 }
