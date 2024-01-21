@@ -8,7 +8,7 @@
         </button>
     </template>
     <div class="slds-truncate" title={value.data}>
-        <a href={url} target="_blank" tabindex="-1" if:true={url}>{value.data}</a>
+        <a href="#" target="_blank" tabindex="-1" if:true={url} onclick={handleRedirection}>{value.data}</a>
         <template lwc:if={isDataDisplayed}>
             {value.data}
         </template>

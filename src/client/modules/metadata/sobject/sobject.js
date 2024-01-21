@@ -3,7 +3,8 @@ import { isEmpty,isElectronApp,runActionAfterTimeOut,isUndefinedOrNull,isNotUnde
 import {TabulatorFull as Tabulator} from "tabulator-tables";
 
 import SObjectCell from 'metadata/sobjectCell';
-
+/** Store */
+import { store,navigate } from 'shared/store';
 export default class Sobject extends LightningElement {
 
     @api connector;
@@ -12,8 +13,11 @@ export default class Sobject extends LightningElement {
     selectedItem;
     isLoading = false;
     isTableLoading = false;
+
+
     filter;
     fields_filter;
+    child_filter;
 
     recordDetails = {}
     selectedDetails;
@@ -26,6 +30,10 @@ export default class Sobject extends LightningElement {
     
 
     /** Events */
+    
+    goToSetup = (e) => {
+        store.dispatch(navigate(`lightning/setup/ObjectManager/${this.selectedDetails.name}/Details/view`));
+    }
 
     handleFilter = (e) => {
         console.log('e.detail.value',e.detail.value,e.detail)
@@ -35,10 +43,16 @@ export default class Sobject extends LightningElement {
     }
 
     handleFieldsFilter = (e) => {
-        console.log('e.detail.value',e.detail.value,e.detail)
         runActionAfterTimeOut(e.detail.value,(newValue) => {
             this.fields_filter = newValue;
             this.updateFieldsTable();
+        });
+    }
+
+    handleChildFilter = (e) => {
+        runActionAfterTimeOut(e.detail.value,(newValue) => {
+            this.child_filter = newValue;
+            this.updateChildTable();
         });
     }
 
@@ -49,6 +63,7 @@ export default class Sobject extends LightningElement {
         this.isTableLoading = false;
         runActionAfterTimeOut(null,(param) => {
             this.createFieldsTable();
+            this.createChildsTable();
         });
     }
 
@@ -90,13 +105,13 @@ export default class Sobject extends LightningElement {
             //{ title: 'Updateable'   , field: 'updateable'   ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField_value}
         ]; //aggregatable
 
-        if (this.tableInstance) {
-			this.tableInstance.destroy();
+        if (this.tableFieldInstance) {
+			this.tableFieldInstance.destroy();
 		}
 
         console.log('window.innerHeight',window.innerHeight);
 
-		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table-fields"), {
+		this.tableFieldInstance = new Tabulator(this.template.querySelector(".custom-table-fields"), {
 			height: 424,
 			data: this.field_filteredList,
 			layout:"fitColumns",
@@ -105,14 +120,35 @@ export default class Sobject extends LightningElement {
 		});
     }
 
+    createChildsTable = () => {
+
+        let colModel = [
+            { title: 'Relationship Name', field: 'relationshipName' ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField_field},
+            { title: 'SObject'          , field: 'childSObject'     ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField_field},
+            { title: 'Child Field'      , field: 'field'            ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField_field},
+        ]; //aggregatable
+
+        if (this.tableChildInstance) {
+			this.tableChildInstance.destroy();
+		}
+
+        console.log('window.innerHeight',window.innerHeight);
+
+		this.tableChildInstance = new Tabulator(this.template.querySelector(".custom-table-child"), {
+			height: 424,
+			data: this.child_filteredList,
+			layout:"fitColumns",
+			columns: colModel,
+			columnHeaderVertAlign: "middle"
+		});
+    }
+
     updateFieldsTable = () => {
-        this.tableInstance.replaceData(this.field_filteredList)
-        .then(function(){
-            //run code after table has been successfully updated
-        })
-        .catch(function(error){
-            console.log('error',error);
-        });
+        this.tableFieldInstance.replaceData(this.field_filteredList);
+    }
+
+    updateChildTable = () => {
+        this.tableChildInstance.replaceData(this.child_filteredList);
     }
 
     formatterField_field = (cell,formatterParams,onRendered) => {
@@ -145,6 +181,8 @@ export default class Sobject extends LightningElement {
         //return "Mr" + cell.getValue(); //return the contents of the cell;
     }
 
+    
+
 
     /** Getters **/
 
@@ -161,6 +199,16 @@ export default class Sobject extends LightningElement {
             this.checkIfPresent(x.name,this.fields_filter) 
             || this.checkIfPresent(x.label,this.fields_filter)
             || this.checkIfPresent(x.type,this.fields_filter)
+        );
+    }
+
+    get child_filteredList(){
+        const records = this.selectedDetails.childRelationships.filter(x => !isEmpty(x.relationshipName));
+        if(isEmpty(this.child_filter)) return records;
+        return records.filter(x => 
+            this.checkIfPresent(x.relationshipName,this.child_filter) 
+            || this.checkIfPresent(x.field,this.child_filter)
+            || this.checkIfPresent(x.childSObject,this.child_filter)
         );
     }
 

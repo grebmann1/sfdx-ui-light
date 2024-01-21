@@ -2,6 +2,7 @@
 import {
     LOGIN,
     LOGOUT,
+    NAVIGATE
 } from './constants';
 
 export default function application(state = {}, action) {
@@ -17,6 +18,12 @@ export default function application(state = {}, action) {
             return {
                 ...state,
                 isLoggedIn: false
+            };
+
+        case NAVIGATE:
+            return {
+                ...state,
+                redirectTo: action.payload.target
             };
 
         default:

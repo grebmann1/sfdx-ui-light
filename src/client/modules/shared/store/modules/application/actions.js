@@ -1,6 +1,7 @@
 import {
     LOGIN,
     LOGOUT,
+    NAVIGATE
 } from './constants';
 
 export function login(user) {
@@ -13,5 +14,12 @@ export function login(user) {
 export function logout() {
     return {
         type: LOGOUT
+    };
+}
+
+export function navigate(target) {
+    return {
+        type: NAVIGATE,
+        payload: { target }
     };
 }

@@ -147,6 +147,10 @@ export default class App extends FeatureElement {
     }
     
     /** Getters */
+    
+    get pageClass(){//Overwrite
+        return super.pageClass+' slds-p-around_small';
+    }
 
     get loadingMessage(){
         return `Loading ${this.loadingPointer}/${this.items.length} items`;

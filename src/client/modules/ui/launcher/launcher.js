@@ -10,7 +10,8 @@ const application_mapping = [
         component:"accessAnalyzer/app",
         description:"Analyze access provided by profiles and permission sets",
         isDeletable:true,
-        isElectronOnly:false
+        isElectronOnly:false,
+        type:'metadata'
     },
     {
         id:"metadata",
@@ -19,7 +20,8 @@ const application_mapping = [
         component:"metadata/app",
         description:"Explorer SObjects from the Org",
         isDeletable:true,
-        isElectronOnly:false
+        isElectronOnly:false,
+        type:'metadata'
     },
     {
         id:"code",
@@ -28,7 +30,8 @@ const application_mapping = [
         component:"code/app",
         description:"Create VSCode project, Review metadata, etc",
         isDeletable:true,
-        isElectronOnly:true
+        isElectronOnly:true,
+        type:'code'
     },
     {
         id:"doc",
@@ -38,7 +41,8 @@ const application_mapping = [
         description:"Explore Salesforce Documentation",
         isDeletable:true,
         isElectronOnly:false,
-        isOfflineAvailable:true
+        isOfflineAvailable:true,
+        type:'documentation'
     },
     {
         id:"soql",
@@ -48,7 +52,8 @@ const application_mapping = [
         description:"Build SOQL queries",
         isDeletable:true,
         isElectronOnly:false,
-        isOfflineAvailable:false
+        isOfflineAvailable:false,
+        type:'code'
     }
 ]
 
@@ -72,8 +77,12 @@ export default class Launcher extends LightningModal {
         return application_mapping.filter(x => !x.isElectronOnly);
     }
 
-    get onlineApplication(){
-        return this.applications.filter(x => !x.isOfflineAvailable);
+    get metadataApplications(){
+        return this.applications.filter(x => x.type === 'metadata');
+    }
+
+    get codeApplications(){
+        return this.applications.filter(x => x.type === 'code');
     }
 
     get offlineApplications(){

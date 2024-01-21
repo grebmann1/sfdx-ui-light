@@ -1,9 +1,11 @@
-import { LightningElement,track,api} from "lwc";
+import { LightningElement,track,api,wire} from "lwc";
 import {guid,isNotUndefinedOrNull,isElectronApp} from "shared/utils";
 import { getExistingSession,saveSession,removeSession,directConnect,connect } from "connection/utils";
 
 /** Apps  **/
 import {KNOWN_TYPE,APP_MAPPING,DIRECT_LINK_MAPPING} from './modules';
+/** Store **/
+import { connectStore,store } from 'shared/store';
 
 const LIMITED = 'limited';
 
@@ -34,7 +36,13 @@ export default class App extends LightningElement {
             this.isCommandCheckFinished = true;
         }
         this.initMode();
-        
+    }
+
+    @wire(connectStore, { store })
+    storeChange({ application }) {
+        if(application.redirectTo){
+            this.handleRedirection(application);
+        }
     }
 
     /** Events */
@@ -104,6 +112,17 @@ export default class App extends LightningElement {
     handleNewApp = async (e) => {
         await this.loadModule(e.detail);
     };
+
+    handleRedirection = (application) => {
+        console.log('application.redirectTo',application.redirectTo);
+        if(this.isUserLoggedIn){
+            let url = `${this.connector.header.sfdxAuthUrl}&retURL=${encodeURI(application.redirectTo)}`;
+            window.open(url,'_blank');
+        }else{
+            let url = application.redirectTo;
+            window.open(url,'_blank');
+        }   
+    }
 
 
     /** Methods  */
@@ -191,20 +210,20 @@ export default class App extends LightningElement {
 
         if(process.env.NODE_ENV === 'dev' && this.isUserLoggedIn /*&& isElectronApp() && this.isUserLoggedIn*/){
             /*await this.loadModule({
-                component:'soql/app',
-                name:"SOQL Explorer",
+                component:'metadata/app',
+                name:"Sobject Explorer",
                 isDeletable:true
             });*/
-            await this.loadModule({
+            /*await this.loadModule({
                 component:'soql/app',
                 name:"SOQL Builder",
                 isDeletable:true
-            });
+            });*/
         }
 
         /** Direct Opening Mode */
         const hash = (window.location.hash || '').replace('#','');
-        console.log('hash -> ',hash);
+        //console.log('hash -> ',hash);
         if(DIRECT_LINK_MAPPING.hasOwnProperty(hash)){
             await this.loadModule(DIRECT_LINK_MAPPING[hash]);
         }
