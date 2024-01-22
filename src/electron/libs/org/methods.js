@@ -1,6 +1,6 @@
 const sfdx = require('sfdx-node');
 const path = require('path');
-const { app,shell,utilityProcess,MessageChannelMain } = require('electron');
+const { app,shell,utilityProcess } = require('electron');
 const { execSync } = require('child_process');
 const { encodeError } = require('../../utils/errors.js');
 const { runActionAfterTimeOut } = require('../../utils/utils.js');

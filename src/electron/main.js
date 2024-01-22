@@ -1,4 +1,4 @@
-const { app,nativeImage,Menu }   = require('electron');
+const { app,nativeImage,Menu,utilityProcess }   = require('electron');
 const path                          = require('path');
 const { browserWindows,createMainWindow,createInstanceWindow }   = require('./utils/window.js');
 const { ipcMainManager }        = require('./utils/ipc.js');
@@ -49,11 +49,6 @@ try{
     console.error('Issue in IPC Manager',e);
 }
 
-const isMac = process.platform === 'darwin'
-
-
-
-
 /** Execute **/
 app.whenReady().then(async () => {
     //Add Image to dock
@@ -62,11 +57,13 @@ app.whenReady().then(async () => {
     // Main Window
     createMainWindow({isDev});
     
+
 });
 
 app.on('window-all-closed', () => {
     app.quit();
 })
+
 
 
 

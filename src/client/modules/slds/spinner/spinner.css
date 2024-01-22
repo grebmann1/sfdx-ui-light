@@ -1,0 +1,59 @@
+.spinner-text{
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 99999;
+}
+
+.spinner-text.top.small{
+    margin-top: -25px
+}
+
+.spinner-text.top.medium{
+    margin-top: -33px;
+}
+
+.spinner-text.top.large{
+    margin-top: -41px;
+}
+
+.spinner-text.bottom.small{
+    margin-top: 25px
+}
+
+.spinner-text.bottom.medium{
+    margin-top: 33px;
+}
+
+.spinner-text.bottom.large{
+    margin-top: 41px;
+}
+
+.spinner-text.small{
+    font-size: 11px;
+}
+
+.spinner-text.medium{
+    font-size: 13px;
+}
+
+.spinner-text.large{
+    font-size: 15px;
+}
+
+.inverse {
+    position: relative;
+    background-color: #16325c;
+    height: 100%;
+}
+
+.inverse .spinner-text{
+    color: #ffffff;
+}
+
+.brand .spinner-text{
+    color: rgb(21, 137, 238);
+}

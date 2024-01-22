@@ -1,12 +1,17 @@
-import { LightningElement,api} from "lwc";
+import { LightningElement,api,track} from "lwc";
 import { decodeError,isNotUndefinedOrNull } from 'shared/utils';
 
 
 export default class App extends LightningElement {
 
-    @api isLoading = false;
-    @api projectPath;
+   
+    projectPath;
+    metadataLoaded;
     @api connector;
+
+    isLoading = false;
+    loadingMessage = 'Loading Metadata';
+    @track metadata;
 
     
 
@@ -22,20 +27,28 @@ export default class App extends LightningElement {
     /** Methods  **/
 
     loadPathFromConfig = async () => {
-        if(isNotUndefinedOrNull(this.connector.header.alias)){
+        const {error, result} = await window.electron.ipcRenderer.invoke('code-getInitialConfig',{alias:this.connector.header.alias});
+        if (error) {
+            throw decodeError(error);
+        }
+        console.log('result',result);
+        this.projectPath = result.projectPath;
+        this.metadataLoaded = result.metadataLoaded;
+        
+        /*if(isNotUndefinedOrNull(this.connector.header.alias)){
             const {error, result} = await window.electron.ipcRenderer.invoke('util-getConfig',{key:'projectPath',configName:this.connector.header.alias});
             if (error) {
                 throw decodeError(error);
             }
             this.projectPath = result;
-        }
+        }*/
     }
 
     savePathToConfig = async () => {
-        let {error, result} = await window.electron.ipcRenderer.invoke('util-setConfig',{key:'projectPath',value:this.projectPath,configName:this.connector.header.alias});
+        /*let {error, result} = await window.electron.ipcRenderer.invoke('util-setConfig',{key:'projectPath',value:this.projectPath,configName:this.connector.header.alias});
         if (error) {
             throw decodeError(error);
-        }
+        }*/
     }
 
     selectProject = async () => {
@@ -53,8 +66,40 @@ export default class App extends LightningElement {
 
     }
 
-    retrieveCode = async () => {
+    refreshCode = async () => {
+        this.retrieveCode(true);
+    }
 
+    retrieveCode = async (isRefresh) => {
+        console.log('retrieveCode');
+        this.isLoading = true;
+
+        /** Electron **/
+        let {error, result} = await window.electron.ipcRenderer.invoke('code-retrieveCode',{
+            targetPath:this.projectPath,
+            alias:this.connector.header.alias,
+            refresh:isRefresh === true
+        });
+
+        
+        window.electron.listener_on('update-from-worker',(value) => {
+            if(value.action === 'done'){
+                this.metadata = value.data;
+                window.electron.listener_off('update-from-worker')
+            }else if(value.action === 'error'){
+                throw decodeError(value.error);
+            }
+            this.isLoading = false;
+        })
+
+        if (error) {
+            this.isLoading = false;
+            throw decodeError(error);
+        }
+        if(!result.runInWorker){
+            this.metadata = result.res;
+            this.isLoading = false;
+        }
     }
 
     openVSCode = async () => {
@@ -63,6 +108,21 @@ export default class App extends LightningElement {
 
     handleCopy = () => {
         navigator.clipboard.writeText(this.projectPath);
+    }
+
+    downloadCode = () => {
+        window.electron.ipcRenderer.invoke('code-exportMetadata',{
+            targetPath:this.projectPath,
+            alias:this.connector.header.alias
+        });
+
+        window.electron.listener_on('metadata',(value) => {
+            if(value.action === 'done'){
+                window.electron.listener_off('metadata')
+            }else if(value.action === 'error'){
+                throw decodeError(value.error);
+            }
+        })
     }
 
     
@@ -75,6 +135,14 @@ export default class App extends LightningElement {
     }
 
     get isVSCodeDisabled(){
-        return this.isLoading || !isNotUndefinedOrNull(this.projectPath);
+        return this.isLoading || !isNotUndefinedOrNull(this.projectPath) || !this.metadataLoaded;
+    }
+
+    get isDownloadDisabled(){
+        return this.isLoading || !isNotUndefinedOrNull(this.projectPath) || !this.metadataLoaded;
+    }
+
+    get isRetrieveDisplayed(){
+        return !this.metadataLoaded;
     }
 }

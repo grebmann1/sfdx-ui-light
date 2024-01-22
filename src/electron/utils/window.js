@@ -66,11 +66,13 @@ createWindow = ({parent,alwaysOnTop}) => {
 		});
 
 		browserWindow.webContents.on('new-window', (event, url) => {
+			console.log('new-window',event, url);
 			event.preventDefault();
 			shell.openExternal(url);
 		});
 
 		browserWindow.webContents.on('will-navigate', (event, url) => {
+			console.log('will-navigate',event, url);
 			event.preventDefault();
 			shell.openExternal(url);
 		});

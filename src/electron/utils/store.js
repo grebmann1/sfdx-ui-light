@@ -29,7 +29,7 @@ class Store {
     }else{
       this.data = val;
     }
-
+    
     if(!fs.existsSync(path.dirname(this.path))) {
       fs.mkdirSync(path.dirname(this.path), { recursive: true }) ;
     }

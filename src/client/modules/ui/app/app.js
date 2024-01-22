@@ -115,13 +115,17 @@ export default class App extends LightningElement {
 
     handleRedirection = (application) => {
         console.log('application.redirectTo',application.redirectTo);
+        let url = application.redirectTo;
+
         if(this.isUserLoggedIn){
-            let url = `${this.connector.header.sfdxAuthUrl}&retURL=${encodeURI(application.redirectTo)}`;
-            window.open(url,'_blank');
+            url = `${this.connector.header.sfdxAuthUrl}&retURL=${encodeURI(application.redirectTo)}`;
+        }
+
+        if(isElectronApp()){
+            window.location = url;
         }else{
-            let url = application.redirectTo;
             window.open(url,'_blank');
-        }   
+        }
     }
 
 
@@ -137,7 +141,6 @@ export default class App extends LightningElement {
 
         this.isSalesforceCliInstalled   = result.sfdx;
         this.isJavaCliInstalled         = result.java;
-        console.log('result',result);
     }
 
     initMode = () => {
@@ -190,7 +193,7 @@ export default class App extends LightningElement {
 
     /** Website & Electron **/
     load_fullMode = async () => {
-        this.connector = await getExistingSession();
+        this.connector = await getExistingSession(); // await connect({alias:'acet-dev'})//
         // Default Mode
         await this.loadModule({
             component:'connection/app',
@@ -208,10 +211,10 @@ export default class App extends LightningElement {
         
         /** DEV MODE  */
 
-        if(process.env.NODE_ENV === 'dev' && this.isUserLoggedIn /*&& isElectronApp() && this.isUserLoggedIn*/){
+        if(process.env.NODE_ENV === 'dev' && this.isUserLoggedIn && isElectronApp() /*&& this.isUserLoggedIn*/){
             /*await this.loadModule({
-                component:'metadata/app',
-                name:"Sobject Explorer",
+                component:'code/app',
+                name:"Code Toolkit",
                 isDeletable:true
             });*/
             /*await this.loadModule({

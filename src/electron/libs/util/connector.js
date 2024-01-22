@@ -1,20 +1,12 @@
 
-const {
-    getPath,getAppPath,getConfig,setConfig,
-    checkCommands
-} = require('./methods.js');
+const methods = require('./methods.js');
 
 class UTIL_CONNECTOR{
     namespace = 'util';
     constructor(){}
 
     enableEventListeners = (ipcMainManager) => {
-        ipcMainManager.handle(`${this.namespace}-checkCommands`,checkCommands);
-        ipcMainManager.handle(`${this.namespace}-getPath`,getPath);
-        ipcMainManager.handle(`${this.namespace}-getPath`,getPath);
-        ipcMainManager.handle(`${this.namespace}-getAppPath`,getAppPath);
-        ipcMainManager.handle(`${this.namespace}-getConfig`,getConfig);
-        ipcMainManager.handle(`${this.namespace}-setConfig`,setConfig);
+        Object.keys(methods).forEach(key =>  ipcMainManager.handle(`${this.namespace}-${key}`,methods[key]));
     }
 }
 

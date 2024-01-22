@@ -1,6 +1,7 @@
 
 export { classSet } from './classSet';
-
+export * from './salesforce';
+export * from './normalize';
 
 export function isUndefinedOrNull(value) {
     return value === null || value === undefined;
@@ -158,7 +159,6 @@ export function escapeRegExp(str) {
     return str.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
 }
 
-export * from './salesforce';
 
 export function basicTextFormatter(text,filter){
     var regex = new RegExp('('+filter+')','gim');

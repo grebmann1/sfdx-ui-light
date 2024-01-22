@@ -1,6 +1,6 @@
 {
     "name": "sf-toolkit-desktop",
-    "version": "1.0.6",
+    "version": "1.1.0",
     "main": "main.js",
     "repository": {
         "type": "git",
@@ -15,8 +15,12 @@
         "start:dev:electron": "NODE_ENV=development electron ."
     },
     "dependencies": {
+        "@reduxjs/toolkit": "^2.0.1",
         "command-exists": "^1.2.9",
         "fix-path": "3.0.0",
+        "jszip": "^3.10.1",
+        "moment": "^2.30.1",
+        "reduxtron": "^0.0.9",
         "sfdx-node": "^3.8.0",
         "update-electron-app": "^3.0.0"
     },
