@@ -1060,7 +1060,8 @@ g-emoji img {
 /** Extra CSS **/
 
 img{
-  max-width: 1024px !important;
+  max-width: 1250px !important;
+  width: 100%;
 }
 
 .markdown-alert {
