@@ -5,12 +5,22 @@ const jsforce = require('jsforce');
 const qs = require('qs');
 const fs = require('node:fs');
 
-/** Temporary Code until a DB is incorporated **/
+const CTA_MODULE = require('./modules/cta.js');
+
+/** Documentation Temporary Code until a DB is incorporated **/
 const VERSION = process.env.DOC_VERSION || '246.0';
 const DATA_DOCUMENTATION = JSON.parse(fs.readFileSync(`./src/documentation/${VERSION}.json`, 'utf-8'));
+/** CTA Documentation **/
+var DATA_CTA = [];
+CTA_MODULE.launchScheduleFileDownloaded((files) => {
+    DATA_CTA = files;
+});
+console.log('DATA_CTA.contents',DATA_CTA);
+
 
 const PORT = parseInt(process.env.PORT || "3000", 10);
 const SERVER_MODE = "development" === process.env.NODE_ENV ? "dev" : "prod";
+
 
 getOAuth2Instance = (params) => {
     return new jsforce.OAuth2({
@@ -43,6 +53,15 @@ app.get('/documentation/search',function(req,res){
         name:x.id,
         text:x.title,
         id:x.id
+    }));
+    res.json(result);
+})
+app.get('/cta/search',function(req,res){
+    //console.log('DATA_CTA.contents',DATA_CTA);
+    const keywords = req.query.keywords;
+    const result = DATA_CTA.filter(x => this.checkIfPresent(x.title,keywords) || this.checkIfPresent(x.content,keywords)).map(x => ({
+        url:x.link,
+        content:x.content
     }));
     res.json(result);
 })

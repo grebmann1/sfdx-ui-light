@@ -1,7 +1,7 @@
 import { api, LightningElement } from 'lwc';
 import { isEmpty } from 'shared/utils';
 import { marked } from 'shared/markdown';
-
+import { structurizedMarkdown } from './utils';
 export default class MarkdownMenu extends LightningElement {
     
     init = false;
@@ -9,6 +9,10 @@ export default class MarkdownMenu extends LightningElement {
     @api defaultUrl;
     @api url;
     @api baseUrl;
+
+    formattedContent;
+    keywords;
+    filterItems = [];
 
     async connectedCallback(){
         if(!this.init){
@@ -43,6 +47,8 @@ export default class MarkdownMenu extends LightningElement {
     
     async getDown(url){
         const content = await (await fetch(url)).text();
+        this.formattedContent = structurizedMarkdown(content);
+        console.log('this.formattedContent',this.formattedContent);
         this.setMarkdown(this.replaceLinks(content))
     }
 
@@ -52,11 +58,50 @@ export default class MarkdownMenu extends LightningElement {
         if(this.isMenu)this.runAsMenu();
     }
 
-    replaceLinks = (content) => {
+    handleFilter = (event) => {
+        
+        this.filterItems = event.detail.value || [];
+        this.keywords = event.detail.keywords || '';
 
+        const content = this.filterContent(this.formattedContent).join('\n');
+        this.setMarkdown(this.replaceLinks(content));
+    }
+
+    subFilter = (links) => {
+        if(isEmpty(this.keywords)) return links;
+        return links.filter( x => this.filterItems.map(y => y.url).reduce((acc, y) => acc || x.includes(y),false));
+    }
+
+    recursiveFilter = (l1) => {
+        let filteredItems;
+        if(l1.children?.length > 0){
+            filteredItems = l1.children.map(l2 => this.recursiveFilter(l2)).flat();
+        }else{
+            filteredItems = this.subFilter(l1.links);
+        }
+
+        if(filteredItems.length > 0){
+            return [].concat([l1.content],l1.before,filteredItems,l1.after);
+        }
+        return [];
+    }
+
+    filterContent = (formattedContent) => {
+        var res = [];
+        formattedContent.forEach(l1 => {
+            if(l1.content){
+                res = [].concat(res,this.recursiveFilter(l1)) 
+            }else{
+                res.push(l1);
+            }
+        })
+        return res.flat();
+    }
+
+    replaceLinks = (content) => {
         // Links
         let urlPattern = /\[(.*)\]\([\.\/|\.\.\/]+(.*?)\)/g;
-        let updatedContent = content.replace(urlPattern,function(match, p1, p2){
+        let updatedContent = content.replace(urlPattern,(match, p1, p2) => {
             if(p1 === 'Table of Contents'){
                 return `[Table of Contents](${window.location.origin}/cta)`;
             }else{

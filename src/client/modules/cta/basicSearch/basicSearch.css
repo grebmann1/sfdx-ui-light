@@ -9,7 +9,7 @@
     display: block;
     width: 100%;
     height: calc(1.75rem + 2px);
-    z-index: 9999;
+    z-index: 1000;
 }
 
 .site-searchbox__input {
