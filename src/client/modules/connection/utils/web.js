@@ -68,6 +68,5 @@ export async function getAllConnection(){
     if(isUndefinedOrNull(connections)){
         connections = [];
     }
-    console.log('getAllConnection',connections);
     return connections;
 }

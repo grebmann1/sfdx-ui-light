@@ -1,7 +1,6 @@
 import { api} from "lwc";
 import FeatureElement from 'element/featureElement';
-import { isEmpty,isElectronApp } from 'shared/utils';
-import { classSet } from 'shared/utils';
+import { isEmpty,isElectronApp,classSet } from 'shared/utils';
 
 
 export default class App extends FeatureElement {
@@ -27,15 +26,12 @@ export default class App extends FeatureElement {
 
     load_metadataGlobal = async () => {
         let result = await this.connector.conn.metadata.describe(this.connector.conn.version);
-        console.log('result',result);
         return (result?.metadataObjects || []).sort((a, b) => a.xmlName.localeCompare(b.xmlName));
     }
 
     load_specificMetadata = async () => {
-        console.log('load_specificMetadata');
         var types = [{type: this.selectedItem, folder: null}]; // Single type
         let result = await this.connector.conn.metadata.list(types,this.connector.conn.version);
-        console.log('result',result);
     }
     
 

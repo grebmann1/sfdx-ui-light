@@ -1,9 +1,9 @@
-import { LightningElement,api} from "lwc";
+import { api } from "lwc";
 import { decodeError,isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
+import FeatureElement from 'element/featureElement';
 
-export default class Pmd extends LightningElement {
+export default class Pmd extends FeatureElement {
 
-    @api connector;
     @api pmdPath;
 
     _projectPath;

@@ -1,10 +1,9 @@
 import { LightningElement,api} from "lwc";
 import { isEmpty,isElectronApp } from 'shared/utils';
+import FeatureElement from 'element/featureElement';
 
 
-export default class App extends LightningElement {
-
-    @api connector;
+export default class App extends FeatureElement {
 
     orgInformation = {};
     userInformations = {}
@@ -19,8 +18,6 @@ export default class App extends LightningElement {
         this.limits = await this.load_limits();
         this.orgInformation = await this.load_orgInformations();
         this.userInformations = await this.load_userInformations();
-        //console.log('this.orgInformation',this.orgInformation);
-        //console.log('this.userInformations',this.userInformations);
     }
 
     /** Methods */
@@ -103,7 +100,6 @@ export default class App extends LightningElement {
 
     load_eventsLogs = async () => {
         //let response = await this.connector.conn.query("SELECT Id , EventType , LogFile , LogDate , LogFileLength FROM EventLogFile WHERE EventType = 'API'");
-        //console.log('response',response.records);
     }
 
     load_userInformations = async () => {
@@ -121,6 +117,7 @@ export default class App extends LightningElement {
 
 
     /** Getters */
+    
 
     get formattedLimits(){
         return this.limits.filter( x =>  !this.isFilterting_limits || x.Remaining == 0 || x.Max/x.Remaining <= 0.10) || [];

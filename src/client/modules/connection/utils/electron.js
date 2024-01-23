@@ -3,7 +3,6 @@ import {isNotUndefinedOrNull,decodeError,classSet} from 'shared/utils';
 
 
 export async function getSettings(alias){
-    console.log('electron.getSettings');
     var {res, error} = await window.electron.ipcRenderer.invoke('org-seeDetails',{alias});
     if (error) {
         throw decodeError(error)
@@ -21,7 +20,6 @@ export async function getSettings(alias){
 
 
 export async function renameConnection({oldAlias,newAlias,username}){
-    console.log('electron.renameConnection');
     let {error} = await window.electron.ipcRenderer.invoke('org-setAlias',{
         alias: newAlias,
         username: username
@@ -40,7 +38,6 @@ export async function renameConnection({oldAlias,newAlias,username}){
 
 export async function removeConnection(alias){
     // todo: need to be refactured
-    console.log('electron.removeConnection');
     var {error} = await window.electron.ipcRenderer.invoke('org-logout',{alias});
     if (error) {
         throw decodeError(error)
@@ -48,7 +45,6 @@ export async function removeConnection(alias){
 } 
 
 export async function getAllConnection(){
-    console.log('electron.getAllConnection');
     let res = await window.electron.ipcRenderer.invoke('org-getAllOrgs');
     let orgs = [].concat(
         res.nonScratchOrgs.map(x => ({

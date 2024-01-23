@@ -1,12 +1,11 @@
 
-import { LightningElement, api } from 'lwc';
-import { I18nMixin } from 'element/i18n';
+import { api } from 'lwc';
+import FeatureElement from 'element/featureElement';
 import { isUndefinedOrNull } from 'shared/utils';
 import { store,selectChildRelationship} from 'soql/store';
 import { store as appStore,navigate  }  from 'shared/store';
 
-export default class OutputCell extends I18nMixin(LightningElement) {
-    @api connector;
+export default class OutputCell extends FeatureElement {
     @api value;
 
     get isChildRelationship() {

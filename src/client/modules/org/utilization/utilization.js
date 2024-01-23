@@ -1,10 +1,8 @@
-import { LightningElement,api} from "lwc";
-import { isEmpty } from 'shared/utils';
+import { api } from "lwc";
+import FeatureElement from 'element/featureElement';
 
 
-export default class Utilization extends LightningElement {
-
-    @api connector;
+export default class Utilization extends FeatureElement {
 
     userLicenses = [];
 

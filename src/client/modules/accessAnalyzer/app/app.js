@@ -1,6 +1,8 @@
-import { LightningElement,api} from "lwc";
-import {decodeError,getAllOrgs,chunkArray,chunkPromises,isEmpty,groupBy,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull} from 'shared/utils';
-import {TabulatorFull as Tabulator} from 'tabulator-tables';
+import { api } from "lwc";
+import FeatureElement from 'element/featureElement';
+
+import { groupBy,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull } from 'shared/utils';
+import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import ModalProfileFilter from "accessAnalyzer/modalProfileFilter";
 import ModalPermissionSetFilter from "accessAnalyzer/modalPermissionSetFilter";
 import ModalUserSelector from "slds/modalUserSelector";
@@ -8,10 +10,7 @@ import ModalUserSelector from "slds/modalUserSelector";
 import { loadMetadata_async,setFieldPermission } from "shared/sf";
 import { fileFormatter } from 'accessAnalyzer/utils';
 
-export default class App extends LightningElement {
-
-    @api connector;
-
+export default class App extends FeatureElement {
 
     /* Metadata */
     metadata;
@@ -57,7 +56,6 @@ export default class App extends LightningElement {
 
     loadMetadata_withNameSpaceCallback = async (res) => {
         const {entityAccess} = res;
-        console.log('res',res);
         // Assign Entity Access
         Object.keys(this.permissionSets).forEach(key => {
             if(this.permissionSets.hasOwnProperty(key) && entityAccess.hasOwnProperty(key)){
@@ -73,7 +71,6 @@ export default class App extends LightningElement {
     loadMetadata = async (refresh = false ) => {
         // Only run when a connection is available
         if(!this.connector)return;
-        console.log('this.connector.conn',this.connector.conn)
 
         this.isLoading = true;
         var _metadata;
@@ -714,7 +711,6 @@ export default class App extends LightningElement {
 	}
 
     setPermissionGroupReport = async () => {
-        console.log(this.metadata,this.permissionSets);
         let permissionGroups    = Object.values(this.metadata.permissionGroups);
 		let dataList = [];
 

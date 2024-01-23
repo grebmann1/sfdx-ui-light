@@ -1,6 +1,6 @@
-import { LightningElement, wire, api } from 'lwc';
+import { wire, api } from 'lwc';
 import Toast from 'lightning/toast';
-import { I18nMixin } from 'element/i18n';
+import FeatureElement from 'element/featureElement';
 import { query_constants } from 'soql/store';
 import {
     connectStore,
@@ -16,9 +16,7 @@ import {
 import { isEmpty,fullApiName,isNotUndefinedOrNull } from 'shared/utils';
 
 
-export default class FieldsPanel extends I18nMixin(LightningElement) {
-
-    @api connector;
+export default class FieldsPanel extends FeatureElement {
     @api namespace;
 
     tabs = [

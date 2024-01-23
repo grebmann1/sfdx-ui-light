@@ -88,7 +88,7 @@ seeDetails = async (_,{alias}) => {
         };
         return {res};
     }catch(e){
-        console.log('error',e);
+        console.error(e);
         return {error: encodeError(e)}
     }
 }
@@ -131,7 +131,6 @@ logout = async (_,{alias}) => {
     /** To Refactore later **/
     try{
         const command = `sf org logout -o ${alias} -p --json`;
-        console.log('command',command);
         let res = execSync(command,{cwd: app.getAppPath()}).toString();
         return {res}
     }catch(e){

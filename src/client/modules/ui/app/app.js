@@ -23,10 +23,15 @@ export default class App extends LightningElement {
     isJavaCliInstalled = false;
     isCommandCheckFinished = false;
 
+    @api 
+    get connector(){
+        return window.connector;
+    }
+    set connector(value){
+        window.connector = value;
+    }
 
 
-
-    connector;
     currentApplicationId;
     @track applications = [];
 
@@ -63,7 +68,6 @@ export default class App extends LightningElement {
     }
 
     handleLogin = async (e) => {
-        console.log('handleLogin',e.detail.value);
         this.connector = e.detail.value;
         const { instanceUrl,accessToken,version,refreshToken } = this.connector.conn;
         saveSession({
@@ -74,7 +78,6 @@ export default class App extends LightningElement {
             refreshToken
         });
         // Reset first
-        console.log('this.applications',this.applications);
         this.applications = this.applications.filter(x => x.componentName == 'connection/app');
 
         // Add new module
@@ -114,7 +117,6 @@ export default class App extends LightningElement {
     };
 
     handleRedirection = (application) => {
-        console.log('application.redirectTo',application.redirectTo);
         let url = application.redirectTo;
 
         if(this.isUserLoggedIn){
@@ -132,8 +134,6 @@ export default class App extends LightningElement {
     /** Methods  */
     
     initElectron = async () => {
-        console.log('Init Electron App');
-
         let {error, result} = await window.electron.ipcRenderer.invoke('util-checkCommands');
         if (error) {
             throw decodeError(error);
@@ -290,7 +290,7 @@ export default class App extends LightningElement {
             isFullHeight:APP_MAPPING[data.component].isFullHeight,
             isDeletable:data.isDeletable,
             attributes:{
-                connector:this.connector
+                //connector:this.connector
             }
         };
         let _applications = this.applicationPreFormatted;

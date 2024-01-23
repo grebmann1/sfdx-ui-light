@@ -65,9 +65,6 @@ export const fileFormatter = function(list, options, setFileContents){
     
     let pageHeight = 80 + list.length*30;
     let pageWidth = 80 + tableWidth;
-    console.log('headers',headers,pageWidth);
-    console.log('[pageHeight, pageWidth]',[2000, pageWidth]);
-    console.log('rows',rows);
     var originalDoc = new jsPDF({
         orientation:rows.length < 30 ? "landscape":"portrait",
         format:[pageHeight, pageWidth],

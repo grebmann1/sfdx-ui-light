@@ -5,10 +5,20 @@ import { I18nMixin } from 'element/i18n';
 
 export default class FeatureElement extends I18nMixin(LightningElement) {
 
-    @api connector;
+    //@api connector;
+    
+    
 
   
     /** Getters */
+    
+    get connector(){
+        return window.connector;
+    }
+
+    get alias(){
+        return window.connector?.header?.alias;
+    }
     
     get isUserLoggedIn(){
         return isNotUndefinedOrNull(this.connector);

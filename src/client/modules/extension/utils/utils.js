@@ -72,10 +72,9 @@ export function getCurrentObjectType(conn,recordId){
     return new Promise( (resolve,reject) => {
         conn.tooling.executeAnonymous("ID a='" + recordId + "';Integer.valueOf(String.valueOf(a.getSObjectType()));", (err, res) => {
             if (err) { 
-                console.log('err',err.message);
+                console.err(err);
                 reject(err); 
             }else{
-                console.log('res',res);
                 let _sobjectString = res.exceptionMessage.replace(/^.* (.*)$/,'$1');
                 resolve(_sobjectString == 'null'?null:_sobjectString);
             }
@@ -85,7 +84,6 @@ export function getCurrentObjectType(conn,recordId){
 }
 
 export function fetch_metadata(conn,sobjectName){
-	console.log('--> fetch_metadata');
 	return new Promise((resolve,reject) => {
 		conn.sobject(sobjectName).describe((err, meta) => {
 			if (err) {
@@ -98,7 +96,6 @@ export function fetch_metadata(conn,sobjectName){
 }
 
 export function fetch_data(conn,sobjectName,recordId){
-	console.log('--> fetch_data');
 	return new Promise((resolve,reject) => {
 		conn.sobject(sobjectName).retrieve(recordId, (err, record) =>{
 			if (err) {

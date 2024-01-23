@@ -4,8 +4,7 @@ import FeatureElement from 'element/featureElement';
 import { connectStore,store,fetchSObjectsIfNeeded } from 'soql/store';
 
 export const isFullPage = true;
-export default class FieldsPanel extends FeatureElement {
-    @api connector;
+export default class App extends FeatureElement {
 
     @track selectedSObject;
 

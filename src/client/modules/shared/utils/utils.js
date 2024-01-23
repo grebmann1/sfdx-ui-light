@@ -60,7 +60,6 @@ export function chunkArray(arr,chunkSize = 5){
 }
 
 export async function getAllOrgs(debugMode = false){
-    console.log('debugMode',debugMode);
     if(debugMode){
         return [
             {

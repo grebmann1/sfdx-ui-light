@@ -1,7 +1,7 @@
 
 
-import { LightningElement, wire, api } from 'lwc';
-import { I18nMixin } from 'element/i18n';
+import { wire, api } from 'lwc';
+import FeatureElement from 'element/featureElement';
 import { getFlattenedFields } from 'soql-parser-js';
 import {
     connectStore,
@@ -12,11 +12,7 @@ import {
 
 import { isEmpty,fullApiName,isSame,escapeRegExp,isNotUndefinedOrNull } from 'shared/utils';
 
-export default class FieldsTree extends I18nMixin(LightningElement) {
-
-    @api connector;
-
-
+export default class FieldsTree extends FeatureElement {
     // sObject Name
     @api sobject;
     // relationship Path e.g. "Contact.Owner"
@@ -64,7 +60,6 @@ export default class FieldsTree extends I18nMixin(LightningElement) {
     storeChange({ sobject, ui }) {
         const sobjectState = sobject[this.sobject];
         if (!sobjectState) return;
-        console.log('sobjectState.isFetching',sobjectState.isFetching);
         this.isLoading = sobjectState.isFetching;
         if (sobjectState.data) {
             this.sobjectMeta = sobjectState.data;

@@ -1,13 +1,12 @@
 import { createElement,LightningElement,api} from "lwc";
+import FeatureElement from 'element/featureElement';
 import { isEmpty,isElectronApp,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull } from 'shared/utils';
 import {TabulatorFull as Tabulator} from "tabulator-tables";
-
 import SObjectCell from 'metadata/sobjectCell';
+
 /** Store */
 import { store,navigate } from 'shared/store';
-export default class Sobject extends LightningElement {
-
-    @api connector;
+export default class Sobject extends FeatureElement {
 
     records = [];
     selectedItem;
@@ -23,7 +22,6 @@ export default class Sobject extends LightningElement {
     selectedDetails;
 
     connectedCallback(){
-        console.log('connector',this.connector);
         this.describeAll();
     }
 
@@ -36,7 +34,6 @@ export default class Sobject extends LightningElement {
     }
 
     handleFilter = (e) => {
-        console.log('e.detail.value',e.detail.value,e.detail)
         runActionAfterTimeOut(e.detail.value,(newValue) => {
             this.filter = newValue;
         });
@@ -78,13 +75,11 @@ export default class Sobject extends LightningElement {
     describeAll = async () => {
         this.isLoading = true;
         this.records = await this.load_toolingGlobal();
-        console.log('records',this.records);
         this.isLoading = false;
     }
 
     describeSpecific = async (name) => {
         let result = await this.connector.conn.sobject(name).describe();
-        console.log('result',result);
         this.selectedDetails = result;
     }
 
@@ -109,8 +104,6 @@ export default class Sobject extends LightningElement {
 			this.tableFieldInstance.destroy();
 		}
 
-        console.log('window.innerHeight',window.innerHeight);
-
 		this.tableFieldInstance = new Tabulator(this.template.querySelector(".custom-table-fields"), {
 			height: 424,
 			data: this.field_filteredList,
@@ -131,8 +124,6 @@ export default class Sobject extends LightningElement {
         if (this.tableChildInstance) {
 			this.tableChildInstance.destroy();
 		}
-
-        console.log('window.innerHeight',window.innerHeight);
 
 		this.tableChildInstance = new Tabulator(this.template.querySelector(".custom-table-child"), {
 			height: 424,

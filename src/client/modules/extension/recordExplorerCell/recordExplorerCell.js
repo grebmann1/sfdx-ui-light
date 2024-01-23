@@ -41,7 +41,6 @@ export default class RecordExplorerCell extends LightningElement {
     
 
     get formattedValue(){
-        console.log('isEmpty(this.filter)',isEmpty(this.filter));
         if(isUndefinedOrNull(this.value)) return '';
         if(isEmpty(this.filter)) return this.value;
 

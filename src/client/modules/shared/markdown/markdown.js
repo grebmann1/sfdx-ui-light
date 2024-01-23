@@ -1302,7 +1302,7 @@ export const marked = function(root) {
         default: {
           var errMsg = 'Token with "' + this.token.type + '" type was not found.';
           if (this.options.silent) {
-            console.log(errMsg);
+            console.error(errMsg);
           } else {
             throw new Error(errMsg);
           }

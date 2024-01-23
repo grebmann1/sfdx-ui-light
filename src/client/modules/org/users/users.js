@@ -1,11 +1,8 @@
-import { LightningElement,api} from "lwc";
-import { isEmpty } from 'shared/utils';
+import { api } from "lwc";
+import FeatureElement from 'element/featureElement';
 
 
-export default class Users extends LightningElement {
-
-    @api connector;
-
+export default class Users extends FeatureElement {
     total_users;
     total_active;
     total_inactive;

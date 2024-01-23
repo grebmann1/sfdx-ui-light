@@ -20,7 +20,7 @@
                             </span>
                         </div>
                         <template lwc:if={relation.isExpanded}>
-                            <soql-fields-tree connector={connector} sobject={relation.childSObject} childrelation={relation.relationshipName} rootlevel="2"></soql-fields-tree>
+                            <soql-fields-tree sobject={relation.childSObject} childrelation={relation.relationshipName} rootlevel="2"></soql-fields-tree>
                         </template>
                     </li>
                 </template>

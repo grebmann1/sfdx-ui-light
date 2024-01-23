@@ -13,7 +13,7 @@
             <button class="slds-button slds-button_neutral" onclick={exportCsv}>{i18n.OUTPUT_PANEL_EXPORT_CSV}</button>
             <div class="slds-p-around_x-small slds-col_bump-left">{i18n.OUTPUT_PANEL_TOTAL}: {response.totalSize}</div>
         </div>
-        <soql-output-table connector={connector} class="main-output" response={response}></soql-output-table>
+        <soql-output-table class="main-output" response={response}></soql-output-table>
         <template lwc:if={childResponse}>
             <div class="child-relationsihp-panel">
                 <button class="slds-button slds-button_icon slds-button_icon" title={i18n.OUTPUT_PANEL_CLOSE_CHILD_REL} onclick={closeChildRelationship}>
@@ -22,7 +22,7 @@
                     </svg>
                     <span class="slds-assistive-text">{i18n.OUTPUT_PANEL_CLOSE_CHILD_REL}</span>
                 </button>
-                <soql-output-table connector={connector} response={childResponse}></soql-output-table>
+                <soql-output-table response={childResponse}></soql-output-table>
             </div>
         </template>
         

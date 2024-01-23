@@ -1,5 +1,5 @@
-import { LightningElement, wire, api } from 'lwc';
-import { I18nMixin } from 'element/i18n';
+import { wire, api } from 'lwc';
+import FeatureElement from 'element/featureElement';
 import {
     connectStore,
     store,
@@ -7,10 +7,9 @@ import {
     updateSoql
 } from 'soql/store';
 
-export default class QueryListPanel extends I18nMixin(LightningElement) {
+export default class QueryListPanel extends FeatureElement {
     recentQueries;
-    @api connector;
-
+    
     @wire(connectStore, { store })
     storeChange({ ui }) {
         if (ui.recentQueries) {

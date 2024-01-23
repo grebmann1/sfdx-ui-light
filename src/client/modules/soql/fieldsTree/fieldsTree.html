@@ -36,8 +36,7 @@
                                     </ul>
                                 </template>
                                 <template lwc:elseif={field.relationshipPath}>
-                                    <soql-fields-tree 
-                                            connector={connector}
+                                    <soql-fields-tree                             
                                             sobject={field.relationshipSObjectName} 
                                             relationship={field.relationshipPath} 
                                             rootlevel={rootlevel} 

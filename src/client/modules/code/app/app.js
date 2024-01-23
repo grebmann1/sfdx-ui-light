@@ -1,13 +1,13 @@
-import { LightningElement,api,track} from "lwc";
+import { track } from "lwc";
 import { decodeError,isNotUndefinedOrNull } from 'shared/utils';
+import FeatureElement from 'element/featureElement';
 
 
-export default class App extends LightningElement {
+export default class App extends FeatureElement {
 
    
     projectPath;
     metadataLoaded;
-    @api connector;
 
     isLoading = false;
     loadingMessage = 'Loading Metadata';

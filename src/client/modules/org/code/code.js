@@ -1,11 +1,12 @@
 import { LightningElement,api,track} from "lwc";
+import FeatureElement from 'element/featureElement';
+
 import { isEmpty,formatBytes,isUndefinedOrNull,isNotUndefinedOrNull } from 'shared/utils';
 
 const DEFAULT_NAMESPACE = '__default__';
 
-export default class Code extends LightningElement {
+export default class Code extends FeatureElement {
 
-    @api connector;
     @api namespaceFiltering_value = DEFAULT_NAMESPACE;
 
     // Records

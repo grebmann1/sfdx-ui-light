@@ -44,7 +44,6 @@ export default class App extends LightningElement {
 
     handleFileChange = (e) => {
         const file = e.target.files[0];
-        console.log('file',file);
         var reader = new FileReader()
             reader.onload = () => {
                 var base64 = reader.result.split(',')[1]
@@ -71,7 +70,6 @@ export default class App extends LightningElement {
 
     handleSearchInput = (e) => {
         let val = e.currentTarget.value;
-        console.log('val',val);
         runActionAfterTimeOut(val,(newValue) => {
             this.filterWith(newValue);
         });

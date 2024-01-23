@@ -1,17 +1,14 @@
-import { LightningElement, wire, api } from 'lwc';
+import { wire, api } from 'lwc';
+import FeatureElement from 'element/featureElement';
 import {
     connectStore,
     store,
     selectSObject,
     clearSObjectsError
 } from 'soql/store';
-//import { escapeRegExp } from '../../base/utils/regexp-utils';
 import Toast from 'lightning/toast';
 
-import { I18nMixin } from 'element/i18n';
-
-export default class SobjectsPanel extends I18nMixin(LightningElement) {
-    @api connector;
+export default class SobjectsPanel extends FeatureElement {
 
     keyword = '';
     sobjects;
@@ -31,7 +28,6 @@ export default class SobjectsPanel extends I18nMixin(LightningElement) {
     storeChange({ sobjects }) {
         //if (this._rawSObjects) return;
         this.isLoading = sobjects.isFetching;
-        console.log('this.isLoading',this.isLoading);
         if (sobjects.data) {
             this._rawSObjects = sobjects.data.sobjects.map(sobject => {
                 return {
@@ -68,7 +64,6 @@ export default class SobjectsPanel extends I18nMixin(LightningElement) {
     }
 
     selectSObject(event) {
-        console.log('selectSObject');
         const sObjectName = event.target.dataset.name;
         store.dispatch(selectSObject(sObjectName));
     }

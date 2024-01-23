@@ -17,7 +17,7 @@
                             <tr class="slds-hint-parent" key={row.key}>
                                 <template for:each={row.values} for:item="value">
                                     <td key={value.key}>
-                                        <soql-output-cell connector={connector} value={value}></soql-output-cell>
+                                        <soql-output-cell value={value}></soql-output-cell>
                                     </td>
                                 </template>
                             </tr>

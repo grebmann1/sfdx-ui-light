@@ -43,10 +43,7 @@ export default class RecordExplorer extends LightningElement {
             // Get data
             this.record = await fetch_data(conn,this.sobjectName,this.recordId);
 
-            console.log('recordId',this.recordId);
-            console.log('sobjectName',this.sobjectName);
-            console.log('metadata',this.metadata);
-            console.log('record',this.record);
+
             this.data = this.formatData();
             runActionAfterTimeOut(null,(param) => {
                 this.createTable();
@@ -99,7 +96,6 @@ export default class RecordExplorer extends LightningElement {
 
     handleSearchInput = (e) => {
         let val = e.currentTarget.value;
-        console.log('val',val);
         runActionAfterTimeOut(val,(newValue) => {
             this.updateTable(newValue);
         });
@@ -136,7 +132,7 @@ export default class RecordExplorer extends LightningElement {
             //run code after table has been successfully updated
         })
         .catch(function(error){
-            console.log('error',error);
+            console.error(error);
         });
     }
 
@@ -160,8 +156,6 @@ export default class RecordExplorer extends LightningElement {
         if (this.tableInstance) {
 			this.tableInstance.destroy();
 		}
-
-        console.log('window.innerHeight',window.innerHeight);
 
 		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
 			height: 424,

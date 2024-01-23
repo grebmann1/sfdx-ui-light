@@ -86,7 +86,6 @@ export default class App extends LightningElement {
         }else{
             let {alias,...settings} = this.data.find(x => x.id == row.id);
             try{
-                console.log('settings',settings);
                 let connector = await connect({alias,settings});
                 this.dispatchEvent(new CustomEvent("login", { detail:{value:connector},bubbles: true }));
             }catch(e){

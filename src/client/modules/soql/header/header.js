@@ -1,11 +1,11 @@
-import { LightningElement, wire, api } from 'lwc';
-import { I18nMixin } from 'element/i18n';
+import { wire } from 'lwc';
+import FeatureElement from 'element/featureElement';
 import {
     connectStore,
     store
 } from 'soql/store';
 
-export default class Header extends I18nMixin(LightningElement) {
+export default class Header extends FeatureElement{
     _apiUsage;
 
     

@@ -1,5 +1,5 @@
-import { LightningElement, wire, api } from 'lwc';
-import { I18nMixin } from 'element/i18n';
+import { wire, api } from 'lwc';
+import FeatureElement from 'element/featureElement';
 import { getFlattenedFields } from 'soql-parser-js';
 import {
     connectStore,
@@ -8,9 +8,7 @@ import {
 } from 'soql/store';
 import { isEmpty,fullApiName,isSame,escapeRegExp,isNotUndefinedOrNull } from 'shared/utils';
 
-export default class RelationshipsTree extends I18nMixin(LightningElement) {
-
-    @api connector;
+export default class RelationshipsTree extends FeatureElement {
 
     // sObject Name
     @api sobject;
@@ -110,7 +108,6 @@ export default class RelationshipsTree extends I18nMixin(LightningElement) {
             relationships = this._rawRelationships;
         }
 
-        console.log('relationships',relationships);
 
         this.relationships = relationships.map(relation => {
             return {

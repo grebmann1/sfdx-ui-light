@@ -1,6 +1,6 @@
-import { LightningElement, wire, api } from 'lwc';
+import { wire, api } from 'lwc';
 import getCaretCoordinates from 'textarea-caret';
-import { I18nMixin } from 'element/i18n';
+import FeatureElement from 'element/featureElement';
 import {
     connectStore,
     store,
@@ -30,9 +30,7 @@ const SOQL_SYNTAX_KEYWORDS = [
     'OFFSET'
 ];
 
-export default class QueryEditorPanel extends I18nMixin(LightningElement) {
-
-    @api connector;
+export default class QueryEditorPanel extends FeatureElement {
     @api namespace;
 
     isCompletionVisible;

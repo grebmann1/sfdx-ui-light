@@ -32,10 +32,6 @@ export default class ConnectionNewModal extends LightningModal {
         return isValid;
     }
 
-    connectedCallback(){
-        console.log('ConnectionNewModal-connectedCallback',this.alias);
-    }
-
 
     /** Methods **/
 
@@ -61,7 +57,6 @@ export default class ConnectionNewModal extends LightningModal {
     }
 
     electron_oauth = async () => {
-        console.log('electron_oauth');
         let params = {
             alias: this.alias,
             instanceurl: this.selectedDomain === 'custom'?this.customDomain:this.selectedDomain
@@ -92,7 +87,6 @@ export default class ConnectionNewModal extends LightningModal {
     }
 
     web_oauth = async () => {
-            console.log('web_oauth');
             oauth({
                 alias:this.alias,
                 loginUrl:this.selectedDomain === 'custom'?this.customDomain:this.selectedDomain

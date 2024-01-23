@@ -137,7 +137,6 @@ function recentQueries(state = [], action) {
         ...state.filter(q => q !== soql).slice(0, MAX_RECENT_QUERIES - 1)
     ];
     try {
-        console.log('####### store recentQueries',action.alias);
         localStorage.setItem(
             `${action.alias}-${RECENT_QUERIES_KEY}`,
             JSON.stringify(recentQueriesState)
@@ -150,7 +149,6 @@ function recentQueries(state = [], action) {
 
 function loadRecentQueries(alias) {
     try {
-        console.log('####### loadRecentQueries',alias);
         const recentQueriesText = localStorage.getItem(`${alias}-${RECENT_QUERIES_KEY}`);
         if (recentQueriesText) return JSON.parse(recentQueriesText);
     } catch (e) {
@@ -279,7 +277,6 @@ export default function ui(state = {}, action) {
 
         case UPDATE_SOQL: {
             const { soql } = action.payload;
-            console.log('soql',soql);
             if (!soql.trim()) {
                 return {
                     ...state,

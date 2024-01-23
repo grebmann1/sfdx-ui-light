@@ -88,12 +88,11 @@ export const loadMetadata_async = async (conn,callback) => {
 
 
 export const getPermissionSet = async (conn) => {
-    
+    console.log('getPermissionSet');
     const permissionSets = {};
     const permissionSetProfileMapping = {}
 
     let records_profiles = (await conn.query("SELECT Id,ProfileId,Profile.Name,Label,Name,License.Name,Type,Description,IsCustom,NamespacePrefix FROM permissionset")).records || [];
-    console.log('records_profiles',records_profiles);    
     records_profiles.forEach(record => {
             permissionSets[record.Id] = new PermissionSet(record);
             if(isNotUndefinedOrNull(record.ProfileId)){
@@ -124,7 +123,6 @@ export const getPermissionSet = async (conn) => {
             }
             
         });
-        console.log('getPermissionSet',permissionSets);
     return {permissionSets,permissionSetProfileMapping};
 }
 
@@ -327,7 +325,6 @@ const getSetupEntityAccess = async (conn,permissionSets,includeNamespacePrefix =
         chunkPromises(chunk_appDefinitions,4,fetchEntityAccess)
     ]);
     let records = results.flat().flat();
-    console.log('records',records);
 
     records.forEach(record => {
         if(!entityAccess.hasOwnProperty(record.ParentId)){

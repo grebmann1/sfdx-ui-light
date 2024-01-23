@@ -32,7 +32,6 @@ const getHostAndSession = async () => {
         domain: "salesforce.com"
     };
     const cookies = await chrome.cookies.getAll(secureCookieDetails);
-    console.log('cookies',cookies);
     
     let sessionCookie = cookies.find((c) => c.value.startsWith(orgId + "!"));
     if (!sessionCookie) {

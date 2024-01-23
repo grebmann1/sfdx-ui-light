@@ -51,7 +51,6 @@ export async function connect({alias,settings}){
     /** Get Username & First connection **/
     const header = await getHeader(connection);
     
-    console.log('connection',connection,'header',header);
     return new Connector(header,connection);
 }
 

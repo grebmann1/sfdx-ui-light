@@ -237,7 +237,6 @@ exportMap.exportMetadata = (event,{targetPath,alias}) => {
 const workers = {};
 
 _retrieveCodeWorker = ({alias,configName,targetPath,manifestPath,webContents}) => {
-    console.log('all params',alias,configName,targetPath,webContents);
     const store = new Store({configName});
     let workerKey = `retrieve-${alias}`;
     // Kill child process in case it's too long
@@ -290,7 +289,6 @@ _scanCodeWorker = ({alias,targetPath,webContents}) => {
     workers[workerKey].once('message', async (value) => {
         const {res,error} = value;
         if(res){
-            console.log('res',res);
             webContents.send('update-from-worker',{type:'codeScanner',action:'done',data});
         }else{
             webContents.send('update-from-worker',{type:'codeScanner',action:'error',error});

@@ -47,11 +47,8 @@ function fetchSObjects({connector}) {
 
 export function fetchSObjectsIfNeeded({connector}) {
     return (dispatch, getState) => {
-        console.log('check state',getState());
         if (shouldFetchSObjects(getState(),connector.alias)) {
-            console.log('------------------ FETCH NEW SOBJECTS ---------------');
             dispatch(fetchSObjects({connector}));
-            console.log('check state',getState());
         }
     };
 }

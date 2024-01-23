@@ -23,13 +23,11 @@ export default class App extends LightningElement {
 
 
     handleMenu = (e) => {
-        console.log('handleMenu',e.detail);
         this.currentPosition = e.detail.current;
         this.links = e.detail.links;
     }
 
     handleNavbarMenu() {
-        console.log('toggleClassOnElements');
         // Get the elements by their IDs or any other suitable method
         const menu = this.template.querySelector('.menu-container');
         const documentation = this.template.querySelector('.documentation-container');
@@ -70,7 +68,6 @@ export default class App extends LightningElement {
     }
 
     displaySearch = (e) => {
-        console.log('displaySearch');
         this.isSearchOpen = true;
     }
 

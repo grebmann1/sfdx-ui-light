@@ -15,7 +15,6 @@ export default class Header extends LightningElement {
     connectedCallback(){}
 
     openLauncher = () => {
-        console.log('openLauncher');
         ModalLauncher.open({
             isUserLoggedIn:this.isUserLoggedIn
         })

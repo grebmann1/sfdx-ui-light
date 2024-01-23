@@ -1,6 +1,6 @@
 import { LightningElement, wire,api  } from 'lwc';
 import Toast from 'lightning/toast';
-import { I18nMixin } from 'element/i18n';
+import FeatureElement from 'element/featureElement';
 import {
     connectStore,
     store,
@@ -9,9 +9,7 @@ import {
 } from 'soql/store';
 import { isNotUndefinedOrNull } from 'shared/utils';
 
-export default class OutputPanel extends I18nMixin(LightningElement) {
-
-    @api connector;
+export default class OutputPanel extends FeatureElement {
 
     response;
     childResponse;
@@ -69,7 +67,6 @@ export default class OutputPanel extends I18nMixin(LightningElement) {
     }
 
     handleError = e => {
-        console.log('e',e);
         let errors = e.message.split(':');
         if(errors.length > 1){
             this.error_title = errors.shift();

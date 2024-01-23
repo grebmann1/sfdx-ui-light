@@ -1,6 +1,6 @@
-import { LightningElement, api } from 'lwc';
+import { api } from 'lwc';
 import Toast from 'lightning/toast';
-import { I18nMixin } from 'element/i18n';
+import FeatureElement from 'element/featureElement';
 
 class ColumnCollector {
 
@@ -53,14 +53,12 @@ class ColumnCollector {
 
 const PAGE_SIZE = 200;
 
-export default class OutputTable extends I18nMixin(LightningElement) {
+export default class OutputTable extends FeatureElement {
     columns;
     rows;
     _response;
     _nextRecordsUrl;
     _allRows;
-
-    @api connector;
 
     @api
     set response(res) {
