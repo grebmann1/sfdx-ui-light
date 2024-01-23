@@ -13,8 +13,8 @@ This repository hosts the SF Toolkit , offering a comprehensive suite of tools f
 - ✅ SOQL Builder
 - ✅ Metadata Viewer (Work in progress)
 - ✅ Code Extractor & Analyzer (Work in progress)
-- ✅ Electron App for Mac OS [Latest Release](https://github.com/grebmann1/sfdx-ui-light/releases/latest)
-- ✅ Chrome Extension available in the [Chrome Store](https://chromewebstore.google.com/detail/sf-toolkit-light/konbmllgicfccombdckckakhnmejjoei)
+- ✅ Electron App for Mac OS [Install Latest Release](https://github.com/grebmann1/sfdx-ui-light/releases/latest)
+- ✅ Chrome Extension available in the [Install Chrome Extension](https://chromewebstore.google.com/detail/sf-toolkit-light/konbmllgicfccombdckckakhnmejjoei)
 - Middleware hooks to debug callouts
 - Datamodel viewer
 - Experience Cloud (Guest User review)

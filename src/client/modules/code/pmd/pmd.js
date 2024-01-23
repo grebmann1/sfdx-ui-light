@@ -3,7 +3,7 @@ import { decodeError,isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils
 
 export default class Pmd extends LightningElement {
 
-    
+    @api connector;
     @api pmdPath;
 
     _projectPath;
@@ -43,6 +43,24 @@ export default class Pmd extends LightningElement {
         }
         console.info('installLatestPMD',result);
         this.checkIfPmdInstalled();
+    }
+
+    runSfdxAnalyzer = async () => {
+        const {error, result} = await window.electron.ipcRenderer.invoke('code-runSfdxAnalyzer',{alias:this.connector.header.alias});
+        if (error) {
+            throw decodeError(error);
+        }
+        console.info('runSfdxAnalyzer',result);
+        //this.checkIfPmdInstalled();
+        window.electron.listener_on('update-from-worker',(value) => {
+            if(value.action === 'done'){
+                this.metadata = value.data;
+                window.electron.listener_off('update-from-worker')
+            }else if(value.action === 'error'){
+                throw decodeError(value.error);
+            }
+            this.isLoading = false;
+        })
     }
 
 

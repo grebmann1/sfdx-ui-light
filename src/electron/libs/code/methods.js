@@ -113,41 +113,7 @@ exportMap.openVSCodeProject = async (_,{path}) => {
     execSync(`code .`,{cwd: path}).toString();
 }
 
-/** Worker Processing **/
-const workers = {};
 
-_retrieveCodeWorker = ({alias,configName,targetPath,manifestPath,webContents}) => {
-    console.log('all params',alias,configName,targetPath,webContents);
-    const store = new Store({configName});
-    let workerKey = `retrieve-${alias}`;
-    // Kill child process in case it's too long
-    let timeout = runActionAfterTimeOut(workers[workerKey],(param) => {
-        if(param){
-            param.kill();
-        }
-    },{timeout:60000*2});
-    if(workers[workerKey]) throw new Error('Existing instance already processing');
-    
-    workers[workerKey] = utilityProcess.fork(path.join(__dirname, '../../workers/retrieve.js'),[],{cwd:targetPath})
-    workers[workerKey].postMessage({params:{alias,manifestPath}});
-    workers[workerKey].once('exit',  () => {
-        clearTimeout(timeout);
-        webContents.send('update-from-worker',{type:'retrieveCode',action:'exit'});
-        workers[workerKey] = null;
-    })
-    workers[workerKey].once('message', async (value) => {
-        const {res,error} = value;
-        if(res){
-            const data = res.response;
-            store.set(null,data);
-            webContents.send('update-from-worker',{type:'retrieveCode',action:'done',data});
-        }else{
-            webContents.send('update-from-worker',{type:'retrieveCode',action:'error',error});
-        }
-        clearTimeout(timeout);
-        workers[workerKey].kill();
-    });
-}
 
 exportMap.getInitialConfig = (event,{alias}) => {
     
@@ -226,6 +192,21 @@ exportMap.retrieveCode = (event,{alias,targetPath,refresh}) => {
     }
 }
 
+exportMap.runSfdxAnalyzer = (event,{targetPath,alias}) => {
+    const webContents = event.sender;
+    try{
+        _scanCodeWorker({
+            alias,
+            targetPath,
+            webContents,
+        });
+    }catch(e){
+        console.error('error',e);
+        webContents.send('update-from-worker',{type:'codeScanner',action:'error',error});
+        return {error: encodeError(e)}
+    }
+}
+
 exportMap.exportMetadata = (event,{targetPath,alias}) => {
     const webContents = event.sender;
     try{
@@ -252,7 +233,72 @@ exportMap.exportMetadata = (event,{targetPath,alias}) => {
     }
 }
 
+/** Worker Processing **/
+const workers = {};
 
+_retrieveCodeWorker = ({alias,configName,targetPath,manifestPath,webContents}) => {
+    console.log('all params',alias,configName,targetPath,webContents);
+    const store = new Store({configName});
+    let workerKey = `retrieve-${alias}`;
+    // Kill child process in case it's too long
+    let timeout = runActionAfterTimeOut(workers[workerKey],(param) => {
+        if(param){
+            param.kill();
+        }
+    },{timeout:60000*2});
+    if(workers[workerKey]) throw new Error('Existing instance already processing');
+    
+    workers[workerKey] = utilityProcess.fork(path.join(__dirname, '../../workers/retrieve.js'),[],{cwd:targetPath})
+    workers[workerKey].postMessage({params:{alias,manifestPath}});
+    workers[workerKey].once('exit',  () => {
+        clearTimeout(timeout);
+        webContents.send('update-from-worker',{type:'retrieveCode',action:'exit'});
+        workers[workerKey] = null;
+    })
+    workers[workerKey].once('message', async (value) => {
+        const {res,error} = value;
+        if(res){
+            const data = res.response;
+            store.set(null,data);
+            webContents.send('update-from-worker',{type:'retrieveCode',action:'done',data});
+        }else{
+            webContents.send('update-from-worker',{type:'retrieveCode',action:'error',error});
+        }
+        clearTimeout(timeout);
+        workers[workerKey].kill();
+    });
+}
+
+_scanCodeWorker = ({alias,targetPath,webContents}) => {
+
+    let workerKey = `scanner-${alias}`;
+    // Kill child process in case it's too long
+    let timeout = runActionAfterTimeOut(workers[workerKey],(param) => {
+        if(param){
+            param.kill();
+        }
+    },{timeout:60000*2});
+    if(workers[workerKey]) throw new Error('Existing instance already processing');
+    
+    workers[workerKey] = utilityProcess.fork(path.join(__dirname, '../../workers/scanner.js'),[],{cwd:targetPath})
+    workers[workerKey].postMessage({params:{alias}});
+    workers[workerKey].once('exit',  () => {
+        clearTimeout(timeout);
+        webContents.send('update-from-worker',{type:'codeScanner',action:'exit'});
+        workers[workerKey] = null;
+    })
+    workers[workerKey].once('message', async (value) => {
+        const {res,error} = value;
+        if(res){
+            console.log('res',res);
+            webContents.send('update-from-worker',{type:'codeScanner',action:'done',data});
+        }else{
+            webContents.send('update-from-worker',{type:'codeScanner',action:'error',error});
+        }
+        clearTimeout(timeout);
+        workers[workerKey].kill();
+    });
+}
 
 
 
