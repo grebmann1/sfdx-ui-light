@@ -29,13 +29,13 @@ Visit [SF Toolkit](https://www.sf-toolkit.com) to access the full suite of Sales
 
 Utilize the Electron-based desktop application powered by Salesforce Developer Experience (SFDX) in the background. This app provides a seamless desktop experience for managing Salesforce connections, analyzing access rights, and visualizing user permissions. Instructions for setup and usage are available in the respective app directories.
 
-![Chrome Extension](./git_images/electron.png)
+![Elecron](./git_images/electron.png)
 
 ### Chrome Extension
 
 The Chrome Extension integrates directly into your browser, offering quick access to SF Toolkit functionality. Visualize profiles, manage connections, and export data as CSV or PDF—all from within your browser for streamlined Salesforce access management.
 
-![Chrome Extension](./git_images/extension.png)
+![Chrome Extension](./git_images/chrome.png)
 
 ## Installation and Usage
 
