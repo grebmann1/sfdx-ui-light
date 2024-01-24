@@ -33,11 +33,16 @@ const extractFiles = async (url) => {
     return await (await fetch(url)).text();
 }
  const launchScheduleFileDownloaded = (callback) => {
-    fetchContent(callback);
-    schedule.scheduleJob('1 * * * *', () => { // run every hour at minute 1
-       console.log('Auto run of CTA - fetchContent');
-       fetchContent(callback);
-    });
+    try{
+        fetchContent(callback);
+        schedule.scheduleJob('1 * * * *', () => { // run every hour at minute 1
+            console.log('Auto run of CTA - fetchContent');
+            fetchContent(callback);
+        });
+    }catch(e){
+        console.error(e);
+        callback([]);
+    }
  }
 
 exports.launchScheduleFileDownloaded = launchScheduleFileDownloaded;

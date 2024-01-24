@@ -7,9 +7,19 @@ const jsforceAjaxProxy = require("jsforce-ajax-proxy");
 const qs = require('qs');
 const fs = require('node:fs');
 
+const CTA_MODULE = require('./modules/cta.js');
+
 /** Temporary Code until a DB is incorporated **/
 const VERSION = process.env.DOC_VERSION || '246.0';
 const DATA_DOCUMENTATION = JSON.parse(fs.readFileSync(`./src/documentation/${VERSION}.json`, 'utf-8'));
+
+/** CTA Documentation **/
+var DATA_CTA = [];
+CTA_MODULE.launchScheduleFileDownloaded((files) => {
+  DATA_CTA = files;
+});
+console.log('DATA_CTA.contents',DATA_CTA);
+
 
 const app = express();
 const PORT = parseInt(process.env.PORT || "3000", 10);
