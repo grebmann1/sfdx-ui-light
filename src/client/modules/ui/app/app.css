@@ -10,6 +10,7 @@
 .app-container {
     margin-top: 30px;
     /**height:calc(100vh - 30px);*/
+    height: calc(100vh - 30px);
 }
 
 .app-container-logged-in {
