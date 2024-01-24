@@ -69,7 +69,16 @@ app.get('/documentation/search',function(req,res){
       id:x.id
   }));
   res.json(result);
-})
+});
+app.get('/cta/search',function(req,res){
+  //console.log('DATA_CTA.contents',DATA_CTA);
+  const keywords = req.query.keywords;
+  const result = DATA_CTA.filter(x => this.checkIfPresent(x.title,keywords) || this.checkIfPresent(x.content,keywords)).map(x => ({
+      url:x.link,
+      content:x.content
+  }));
+  res.json(result);
+});
 app.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));
 app.get("/*", (req, res) => handler(req, res, {public: "site",...serveJson}));
 
