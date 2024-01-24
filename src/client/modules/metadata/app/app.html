@@ -12,7 +12,7 @@
                                 <div class="slds-page-header__name-title">
                                     <h1>
                                         <span>SObject Explorer</span>
-                                        <span class="slds-page-header__title slds-truncate" title="SObject Explorer">SObject Explorer</span>
+                                        <span class="slds-page-header__title slds-truncate" title="Metadata Explorer">SObject Explorer</span>
                                     </h1>
                                 </div>
                             </div>
@@ -32,7 +32,7 @@
                 <div class="slds-page-header__col-details">
                     <div class="slds-page-header__detail-row slds-is-relative" style="display:block; ">
                         <!-- Display Info -->
-                        <h2>This part is currently in development - Work in progress </h2>
+                        <h2>v1.0 of the Metadata Explorer (JSON Viewer)</h2>
                     </div>
                 </div>
             </div>
@@ -40,29 +40,72 @@
         <article class="full-page-body slds-card slds-m-top_small">
             <div class="slds-card__body slds-card__body_inner">
                 <div class="slds-full-height slds-grid slds-gutters_direct slds-wrap slds-is-relative" style="min-height:200px;">
-                    <template lwc:if={isLoading}>
-                        <lightning-spinner alternative-text="Loading"></lightning-spinner>
-                    </template>
-                    <template lwc:else>
+                    <!-- Container -->
+                        
+                    <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-4">
+                        <!-- Metadata List -->
+                        <template lwc:if={isMetadataListDisplayed}>
+                            <div class="slds-p-left_small slds-p-top_small">
+                                <div class="slds-grid">
+                                    <h2 class="slds-tree__group-header slds-truncate">Metadata</h2>
+                                </div>
+                            </div>
+                            <div class="slds-scrollable_y slds-is-relative min-height-200">
+                                <template lwc:if={isLoading}>
+                                    <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                                </template>
 
-                        <!-- Container -->
-                        <!--
-                        <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-8">
-                            <lightning-vertical-navigation selected-item="sobject" onselect={handleItemSelection} compact>
-                                <lightning-vertical-navigation-section label="Metadata">
-                                    <lightning-vertical-navigation-item label="SObject" name="sobject"></lightning-vertical-navigation-item>
-                                </lightning-vertical-navigation-section>
-                            </lightning-vertical-navigation>
-                        </div>
-                        -->
-                        <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-1">
-                            <metadata-sobject></metadata-sobject>
-                            <!--<template lwc:if={isSObjectDisplayed}>
-                                <metadata-sobject ></metadata-sobject>
-                            </template>-->
-                        </div>
+                                <lightning-vertical-navigation onselect={handleMetadataTypeSelection} compact>
+                                    <lightning-vertical-navigation-section>
+                                        <template for:each={metadataType_list} for:item="type">
+                                            <lightning-vertical-navigation-item 
+                                                key={type.xmlName} label={type.xmlName} name={type.xmlName}
+                                            ></lightning-vertical-navigation-item>
+                                        </template>
+                                    </lightning-vertical-navigation-section>
+                                </lightning-vertical-navigation>
+                            </div>
+                        </template>
+                        <template lwc:else>
+                            <div class="slds-p-left_small slds-p-top_small">
+                                <div class="slds-grid">
+                                    <button class="slds-button slds-button_icon" title="Back" onclick={unselectMetadata}>
+                                        <svg class="slds-button__icon" aria-hidden="true">
+                                            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#back"></use>
+                                        </svg>
+                                        <span class="slds-assistive-text">{i18n.FIELDS_PANEL_BACK}</span>
+                                    </button>
+                                    <h2 class="slds-tree__group-header slds-truncate">{selectedMetadataType}</h2>
+                                </div>
+                            </div>
+                            <div class="slds-scrollable_y slds-is-relative min-height-200">
+                                <template lwc:if={isLoading}>
+                                    <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                                </template>
+                                <lightning-vertical-navigation onselect={handleMetadataSelection} compact>
+                                    <lightning-vertical-navigation-section>
+                                        <template for:each={metadata_list} for:item="item">
+                                            <lightning-vertical-navigation-item 
+                                                key={item.Name} label={item.Name} name={item.Id}
+                                            ></lightning-vertical-navigation-item>
+                                        </template>
+                                    </lightning-vertical-navigation-section>
+                                </lightning-vertical-navigation>
 
-                    </template>
+                                <template lwc:if={displayIfEmpty}>
+                                    <div class="slds-p-around_small">No items found</div>
+                                </template>
+                            </div>
+                        </template>
+                        <!-- Metadata Details -->
+                    </div>
+                    <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_3-of-4">
+                        <div class="slds-scrollable_y">
+                            <template lwc:if={isRecordDisplayed}>
+                                <div lwc:dom="manual" lwc:ref="container"></div>
+                            </template>
+                        </div>
+                    </div>
                 </div>
             </div>
         </article>

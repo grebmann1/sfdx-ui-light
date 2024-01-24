@@ -14,11 +14,21 @@ const application_mapping = [
         type:'metadata'
     },
     {
-        id:"metadata",
+        id:"sobject",
         name:"SObject Explorer",
         shortName:"SE",
-        component:"metadata/app",
+        component:"sobjectExplorer/app",
         description:"Explorer SObjects from the Org",
+        isDeletable:true,
+        isElectronOnly:false,
+        type:'metadata'
+    },
+    {
+        id:"metadata",
+        name:"Metadata Explorer",
+        shortName:"ME",
+        component:"metadata/app",
+        description:"Explorer Metadata from the Org",
         isDeletable:true,
         isElectronOnly:false,
         type:'metadata'

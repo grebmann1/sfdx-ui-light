@@ -34,6 +34,7 @@ export default class App extends LightningElement {
     addConnectionClick = () => {
         ConnectionNewModal.open()
         .then(async (res) => {
+            //console.log('addConnectionClick',res);
             if(isNotUndefinedOrNull(res)){
                 // we can use window.jsforce.conn
                 await this.setAllConnections();

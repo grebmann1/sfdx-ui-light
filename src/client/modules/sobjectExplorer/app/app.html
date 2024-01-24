@@ -1,0 +1,75 @@
+<template>
+    <div class={pageClass}>
+        <div class="full-page-header slds-page-header slds-page-header_joined">
+            <div class="slds-page-header__row">
+                <div class="slds-page-header__col-title">
+                    <div class="slds-media">
+                        <div class="slds-media__figure">
+                            <lightning-icon icon-name="standard:bundle_config"></lightning-icon>
+                        </div>
+                        <div class="slds-media__body">
+                            <div class="slds-page-header__name">
+                                <div class="slds-page-header__name-title">
+                                    <h1>
+                                        <span>SObject Explorer</span>
+                                        <span class="slds-page-header__title slds-truncate" title="SObject Explorer">SObject Explorer</span>
+                                    </h1>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-page-header__col-actions slds-align-middle slds-p-bottom_none">
+                    <div class="slds-page-header__controls">
+                        <div class="slds-page-header__control">
+                            <!-- actions -->
+                           
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-page-header__row slds-page-header__row_gutters">
+                <div class="slds-page-header__col-details">
+                    <div class="slds-page-header__detail-row slds-is-relative" style="display:block; ">
+                        <!-- Display Info -->
+                        <h2>This part is currently in development - Work in progress </h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <article class="full-page-body slds-card slds-m-top_small">
+            <div class="slds-card__body slds-card__body_inner">
+                <div class="slds-full-height slds-grid slds-gutters_direct slds-wrap slds-is-relative" style="min-height:200px;">
+                    <template lwc:if={isLoading}>
+                        <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                    </template>
+                    <template lwc:else>
+
+                        <!-- Container -->
+                        <!--
+                        <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-8">
+                            <lightning-vertical-navigation selected-item="sobject" onselect={handleItemSelection} compact>
+                                <lightning-vertical-navigation-section label="Metadata">
+                                    <lightning-vertical-navigation-item label="SObject" name="sobject"></lightning-vertical-navigation-item>
+                                </lightning-vertical-navigation-section>
+                            </lightning-vertical-navigation>
+                        </div>
+                        -->
+                        <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-1">
+                            <sobjectExplorer-sobject></sobjectExplorer-sobject>
+                            <!--<template lwc:if={isSObjectDisplayed}>
+                                <metadata-sobject ></metadata-sobject>
+                            </template>-->
+                        </div>
+
+                    </template>
+                </div>
+            </div>
+        </article>
+    </div>
+
+    
+
+
+    
+</template>

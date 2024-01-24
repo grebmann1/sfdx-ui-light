@@ -45,6 +45,7 @@ export async function removeConnection(alias){
 } 
 
 export async function getAllConnection(){
+    console.log('getAllConnection - electron');
     let res = await window.electron.ipcRenderer.invoke('org-getAllOrgs');
     let orgs = [].concat(
         res.nonScratchOrgs.map(x => ({
