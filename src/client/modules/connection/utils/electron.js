@@ -45,20 +45,22 @@ export async function removeConnection(alias){
 } 
 
 export async function getAllConnection(){
-    let res = await window.electron.ipcRenderer.invoke('org-getAllOrgs');
+    console.log('getAllConnection - electron');
+    const {result,error} = await window.electron.ipcRenderer.invoke('org-getAllOrgs');
+    console.log('org-getAllOrgs',result);
     let orgs = [].concat(
-        res.nonScratchOrgs.map(x => ({
+        result.nonScratchOrgs.map(x => ({
             ...x,
             _status:x.connectedStatus,
             _type:x.isDevHub?'DevHub':x.isSandbox?'Sandbox':''
         })),
-        res.scratchOrgs.map(x => ({
+        result.scratchOrgs.map(x => ({
             ...x,
             _status:x.status,
             _type:"Scratch"
         }))
     );
-
+    console.log('orgs',orgs.map(x => x.username));
     orgs = orgs.filter(x => isNotUndefinedOrNull(x.alias)); // Remove empty alias
     orgs = orgs.map((item,index) => {
             let alias = item.alias || 'Empty'

@@ -211,12 +211,12 @@ export default class App extends LightningElement {
         
         /** DEV MODE  */
 
-        if(process.env.NODE_ENV === 'dev' && this.isUserLoggedIn && isElectronApp() /*&& this.isUserLoggedIn*/){
-            /*await this.loadModule({
-                component:'code/app',
-                name:"Code Toolkit",
+        if(process.env.NODE_ENV === 'dev' && this.isUserLoggedIn /*&& this.isUserLoggedIn*/){
+            await this.loadModule({
+                component:'metadata/app',
+                name:"Metadata Explorer",
                 isDeletable:true
-            });*/
+            });
             /*await this.loadModule({
                 component:'soql/app',
                 name:"SOQL Builder",

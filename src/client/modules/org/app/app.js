@@ -21,12 +21,23 @@ export default class App extends FeatureElement {
     }
 
     /** Methods */
-
+    
     openMetadataExplorer = () => {
         this.dispatchEvent(new CustomEvent("openapplication", { 
             detail:{
                 connector:this.connector,
                 component:'metadata/app',
+                name:'Metadata Explorer'
+            }
+            ,bubbles: true 
+        }));
+    }
+
+    openSobjectExplorer = () => {
+        this.dispatchEvent(new CustomEvent("openapplication", { 
+            detail:{
+                connector:this.connector,
+                component:'sobjectExplorer/app',
                 name:'SObject Explorer'
             }
             ,bubbles: true 

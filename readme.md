@@ -66,15 +66,7 @@ Heroku isn't needed but if you want to test it with heroku, you need to follow t
 2. Run `heroku local --port 3000`
 
 ### Electron Desktop App
-- Navigate to the 'src/electron' directory for detailed instructions on setting up and using the Electron desktop app.
-
-#### Run electron App (Prod)
-1. Run `cd src/electron`
-2. Run `npm run start:electron:prod`
-
-#### Run electron App (Development with localhost)
-1. Run `cd src/electron`
-2. Run `npm run start:dev:electron`
+- Navigate to the specific 'repo' : [github](https://github.com/grebmann1/sfdx-ui-desktop)
 
 ### Chrome Extension
 - Refer to the 'extension' directory for installation steps and usage guidelines of the Chrome Extension.

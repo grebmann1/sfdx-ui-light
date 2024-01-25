@@ -2,7 +2,7 @@ import { createElement,LightningElement,api} from "lwc";
 import FeatureElement from 'element/featureElement';
 import { isEmpty,isElectronApp,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull } from 'shared/utils';
 import {TabulatorFull as Tabulator} from "tabulator-tables";
-import SObjectCell from 'metadata/sobjectCell';
+import SObjectCell from 'sobjectExplorer/sobjectCell';
 
 /** Store */
 import { store,navigate } from 'shared/store';
@@ -159,7 +159,7 @@ export default class Sobject extends FeatureElement {
     formatterField_value = (cell, formatterParams, onRendered) => {
         let value = cell._cell.value;
         //let data = cell._cell.row.data;
-        const element = createElement('metadata-sobject-cell', {
+        const element = createElement('sobjectExplorer-sobject-cell', {
             is: SObjectCell
         });
         Object.assign(element, {
