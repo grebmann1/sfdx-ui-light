@@ -110,7 +110,7 @@ export async function removeConnection(alias){
 
 export async function getAllConnection(){
     let connections =  isElectronApp()?await electronInterface.getAllConnection():await webInterface.getAllConnection();
-    //console.log('connections',connections);
+    console.log('connections',connections);
     return connections.map(x => {
         let nameArray = (x.alias || '').split('-');
         let company = nameArray.length > 1 ?nameArray.shift() : '';

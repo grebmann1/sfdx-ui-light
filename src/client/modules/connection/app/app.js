@@ -32,15 +32,20 @@ export default class App extends LightningElement {
 
 
     addConnectionClick = () => {
+
         ConnectionNewModal.open()
         .then(async (res) => {
             //console.log('addConnectionClick',res);
             if(isNotUndefinedOrNull(res)){
-                // we can use window.jsforce.conn
+                console.log('force refresh');
                 await this.setAllConnections();
             }
-            await window.electron.ipcRenderer.invoke('org-killOauth');
+            if(isElectronApp()){
+                await window.electron.ipcRenderer.invoke('org-killOauth');
+            }
         });
+
+        
 
     }
 

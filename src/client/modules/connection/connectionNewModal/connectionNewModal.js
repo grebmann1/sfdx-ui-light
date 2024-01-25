@@ -66,17 +66,23 @@ export default class ConnectionNewModal extends LightningModal {
             if (error) {
                 throw decodeError(error);
             }
-            
-            
-            if(res){
-                let settings = res;
-                let connector = await connect({settings});
-                this.close({alias:this.alias,connector});
-            }else{
-                this.close();
-            }
+
+            window.electron.listener_on('oauth',(value) => {
+                console.log('value',value);
+                if(value.action === 'done' || value.action === 'exit'){
+                    window.electron.listener_off('oauth');
+                    setTimeout(() => {
+                        console.log('close connection');
+                        this.close(value.data);
+                    }, 1000);
+                    
+                }else if(value.action === 'error'){
+                    throw decodeError(value.error);
+                }
+            })
             
         }catch(e){
+            console.log('error',e);
             this.close();
             await LightningAlert.open({
                 message: e.message,
