@@ -220,11 +220,11 @@ export default class App extends LightningElement {
         /** DEV MODE  */
 
         if(process.env.NODE_ENV === 'dev' && this.isUserLoggedIn /*&& this.isUserLoggedIn*/){
-            await this.loadModule({
+            /*await this.loadModule({
                 component:'sobjectexplorer/app',
                 name:"Sobject Explorer",
                 isDeletable:true
-            });
+            });*/
             /*await this.loadModule({
                 component:'soql/app',
                 name:"SOQL Builder",
