@@ -1,6 +1,6 @@
 {
     "name": "sfdx-ui-light",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "scripts": {
         "start:dev:client": "NODE_ENV=development node -r dotenv/config src/server/server-dev.js",
         "start:prod:client": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --clean; NODE_ENV=production node -r dotenv/config src/server/server-prod.js",
