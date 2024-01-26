@@ -2,7 +2,7 @@ import connection_app from "connection/app";
 import accessAnalyzer_app from "accessAnalyzer/app";
 import code_app from "code/app";
 import metadata_app from "metadata/app";
-//import sobjectExplorer_app from "sobjectexplorer/app";
+import sobjectExplorer_app from "sobjectexplorer/app";
 import extension_app from "extension/app";
 import org_app from "org/app";
 import sarif_app from "sarif/app";
@@ -18,7 +18,8 @@ const KNOWN_TYPE = new Set([
     "metadata/app",
     "sarif/app",
     "doc/app",
-    "soql/app"
+    "soql/app",
+    "sobjectexplorer/app"
 ]);
 const APP_MAPPING = {
     "connection/app": {
@@ -55,6 +56,10 @@ const APP_MAPPING = {
     },
     "soql/app":{
         module:soql_app,
+        isFullHeight:true
+    },
+    "sobjectexplorer/app":{
+        module:sobjectExplorer_app,
         isFullHeight:true
     }
 };
