@@ -1,4 +1,4 @@
-import { api} from "lwc";
+import {LightningElement,api} from "lwc";
 import FeatureElement from 'element/featureElement';
 
 
