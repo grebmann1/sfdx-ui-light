@@ -14,16 +14,6 @@ const application_mapping = [
         type:'metadata'
     },
     {
-        id:"sobject",
-        name:"SObject Explorer",
-        shortName:"SE",
-        component:"sobjectexplorer/app",
-        description:"Explorer SObjects from the Org",
-        isDeletable:true,
-        isElectronOnly:false,
-        type:'metadata'
-    },
-    {
         id:"metadata",
         name:"Metadata Explorer",
         shortName:"ME",

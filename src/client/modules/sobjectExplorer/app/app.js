@@ -1,6 +1,5 @@
 import { api} from "lwc";
 import FeatureElement from 'element/featureElement';
-import { isEmpty,isElectronApp,classSet } from 'shared/utils';
 
 
 export default class App extends FeatureElement {
@@ -13,7 +12,6 @@ export default class App extends FeatureElement {
 
     handleItemSelection = (e) => {
         this.selectedItem = e.detail.name;
-        //this.load_specificMetadata();
     }
     
 
@@ -28,11 +26,6 @@ export default class App extends FeatureElement {
         let result = await this.connector.conn.metadata.describe(this.connector.conn.version);
         return (result?.metadataObjects || []).sort((a, b) => a.xmlName.localeCompare(b.xmlName));
     }
-
-    load_specificMetadata = async () => {
-        var types = [{type: this.selectedItem, folder: null}]; // Single type
-        let result = await this.connector.conn.metadata.list(types,this.connector.conn.version);
-    }
     
 
 
@@ -45,8 +38,4 @@ export default class App extends FeatureElement {
     get pageClass(){
         return super.pageClass+' slds-p-around_small';
     }
-
-    
-
-
 }

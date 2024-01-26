@@ -1,6 +1,6 @@
-import { createElement,LightningElement,api} from "lwc";
+import { createElement} from "lwc";
 import FeatureElement from 'element/featureElement';
-import { isEmpty,isElectronApp,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull } from 'shared/utils';
+import { isEmpty,runActionAfterTimeOut,isNotUndefinedOrNull } from 'shared/utils';
 import {TabulatorFull as Tabulator} from "tabulator-tables";
 import SObjectCell from 'sobjectexplorer/sobjectCell';
 

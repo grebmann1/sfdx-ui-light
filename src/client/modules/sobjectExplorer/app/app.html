@@ -44,22 +44,8 @@
                         <lightning-spinner alternative-text="Loading"></lightning-spinner>
                     </template>
                     <template lwc:else>
-
-                        <!-- Container -->
-                        <!--
-                        <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-8">
-                            <lightning-vertical-navigation selected-item="sobject" onselect={handleItemSelection} compact>
-                                <lightning-vertical-navigation-section label="Metadata">
-                                    <lightning-vertical-navigation-item label="SObject" name="sobject"></lightning-vertical-navigation-item>
-                                </lightning-vertical-navigation-section>
-                            </lightning-vertical-navigation>
-                        </div>
-                        -->
                         <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-1">
                             <sobjectexplorer-sobject></sobjectexplorer-sobject>
-                            <!--<template lwc:if={isSObjectDisplayed}>
-                                <metadata-sobject ></metadata-sobject>
-                            </template>-->
                         </div>
 
                     </template>
