@@ -37,7 +37,7 @@ export default class App extends FeatureElement {
         this.dispatchEvent(new CustomEvent("openapplication", { 
             detail:{
                 connector:this.connector,
-                component:'sobjectExplorer/app',
+                component:'sobjectexplorer/app',
                 name:'SObject Explorer'
             }
             ,bubbles: true 
