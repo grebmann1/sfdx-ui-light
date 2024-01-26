@@ -27,7 +27,7 @@ const application_mapping = [
         id:"sobject",
         name:"SObject Explorer",
         shortName:"SE",
-        component:"sobjectExplorer/app",
+        component:"sobjectexplorer/app",
         description:"Explorer SObjects from the Org",
         isDeletable:true,
         isElectronOnly:false,
