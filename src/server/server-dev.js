@@ -44,6 +44,9 @@ const lwrServer = createServer({
 const app = lwrServer.getInternalServer("express");
 
 app.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));
+app.get('/version',function(req,res){
+    res.json({version:process.env.npm_package_version});
+})
 app.get('/config',function(req,res){
     res.json({clientId:process.env.CLIENT_ID});
 })

@@ -9,6 +9,7 @@
         ontabchange={handleTabChange}
         ontabdelete={handleTabDelete}
         is-user-logged-in={isUserLoggedIn}
+        version={version}
     >
         <!-- Logged In User-->
         <template lwc:if={isUserLoggedIn}>
@@ -56,6 +57,11 @@
             </div>
         </section>
     </div>
+
+    <!-- Shared Footer -->
+    <!--
+        <ui-footer></ui-footer>
+    -->
 
     
 </template>

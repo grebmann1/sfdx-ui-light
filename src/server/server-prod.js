@@ -61,6 +61,9 @@ app.get('/oauth2/callback', function(req, res) {
 app.get('/config',function(req,res){
   res.json({clientId:process.env.CLIENT_ID});
 })
+app.get('/version',function(req,res){
+  res.json({version:process.env.npm_package_version});
+})
 app.get('/documentation/search',function(req,res){
   const keywords = req.query.keywords;
   const result = DATA_DOCUMENTATION.contents.filter(x => this.checkIfPresent(x.title,keywords) || this.checkIfPresent(x.content,keywords)).map(x => ({

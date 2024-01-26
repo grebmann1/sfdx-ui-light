@@ -9,12 +9,13 @@
 
 .app-container {
     margin-top: 30px;
-    /**height:calc(100vh - 30px);*/
+    /**calc(100vh - 30px - 24px)*/
     height: calc(100vh - 30px);
 }
 
 .app-container-logged-in {
     margin-top: 75px;
+     /**calc(100vh - 75px - 24px)*/
     height:calc(100vh - 75px);
 }
 

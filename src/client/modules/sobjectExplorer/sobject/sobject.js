@@ -2,7 +2,7 @@ import { createElement} from "lwc";
 import FeatureElement from 'element/featureElement';
 import { isEmpty,runActionAfterTimeOut,isNotUndefinedOrNull } from 'shared/utils';
 import {TabulatorFull as Tabulator} from "tabulator-tables";
-import SObjectCell from 'sobjectexplorer/sobjectCell';
+import SObjectCell from 'sobjectExplorer/sobjectCell';
 
 /** Store */
 import { store,navigate } from 'shared/store';
@@ -74,7 +74,8 @@ export default class Sobject extends FeatureElement {
 
     describeAll = async () => {
         this.isLoading = true;
-        this.records = await this.load_toolingGlobal();
+        const records = (await this.load_toolingGlobal()) || [];
+        this.records = records.map(x => ({...x,formattedLabel:`${x.label}(${x.name})`}))
         this.isLoading = false;
     }
 
@@ -159,7 +160,7 @@ export default class Sobject extends FeatureElement {
     formatterField_value = (cell, formatterParams, onRendered) => {
         let value = cell._cell.value;
         //let data = cell._cell.row.data;
-        const element = createElement('sobjectexplorer-sobject-cell', {
+        const element = createElement('sobjectExplorer-sobject-cell', {
             is: SObjectCell
         });
         Object.assign(element, {
@@ -177,10 +178,10 @@ export default class Sobject extends FeatureElement {
 
     /** Getters **/
 
-    get filteredList(){
+    get objects_filteredList(){
         if(isEmpty(this.filter)) return this.records;
 
-        return this.records.filter(x => this.checkIfPresent(x.name,this.filter) || this.checkIfPresent(x.label,this.filter));
+        return this.records.filter(x => this.checkIfPresent(x.formattedLabel,this.filter));
     }
 
     get field_filteredList(){

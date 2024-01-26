@@ -7,7 +7,7 @@
         <!-- SObject List -->
         <div class="slds-full-height slds-grid slds-gutters_direct slds-wrap">
             <div class="slds-col slds-size_1-of-3">
-                <h2 class="slds-nav-vertical__title"> SObjects</h2>
+                <h2 class="slds-nav-vertical__title">SObjects</h2>
                 <lightning-input 
                     class="slds-m-bottom_large" 
                     type="search"
@@ -16,8 +16,8 @@
                 ></lightning-input>
                 <div class="slds-scrollable_y">
                     <lightning-vertical-navigation onselect={handleItemSelection} selected-item="Account" compact>
-                        <template for:each={filteredList} for:item="item">
-                            <lightning-vertical-navigation-item key={item.name} label={item.label} name={item.name}></lightning-vertical-navigation-item>
+                        <template for:each={objects_filteredList} for:item="item">
+                            <lightning-vertical-navigation-item key={item.name} label={item.formattedLabel} name={item.name}></lightning-vertical-navigation-item>
                         </template>
                     </lightning-vertical-navigation>
                 </div>
@@ -177,7 +177,6 @@
                                                     </template>
                                                     <div lwc:dom="manual" class="custom-table-child"></div>
                                                 </div>
-                                                
                                             </div>
                                         </div>
                                     </div>

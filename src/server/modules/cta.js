@@ -35,7 +35,7 @@ const extractFiles = async (url) => {
  const launchScheduleFileDownloaded = (callback) => {
     try{
         fetchContent(callback);
-        schedule.scheduleJob('1 * * * *', () => { // run every hour at minute 1
+        schedule.scheduleJob('* 23 * * *', () => { // run every every day at 11PM
             console.log('Auto run of CTA - fetchContent');
             fetchContent(callback);
         });

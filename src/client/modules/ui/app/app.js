@@ -19,6 +19,7 @@ export default class App extends LightningElement {
     @api alias;
 
 
+    version;
     isSalesforceCliInstalled = false;
     isJavaCliInstalled = false;
     isCommandCheckFinished = false;
@@ -40,6 +41,7 @@ export default class App extends LightningElement {
             await this.initElectron();
             this.isCommandCheckFinished = true;
         }
+        this.loadVersion();
         this.initMode();
     }
 
@@ -133,6 +135,12 @@ export default class App extends LightningElement {
 
     /** Methods  */
     
+    loadVersion = async () => {
+        const data = await (await fetch('/version')).json();
+        console.log('version',data);
+        this.version = `v${data.version || '1.0.0'}`;
+    }
+    
     initElectron = async () => {
         let {error, result} = await window.electron.ipcRenderer.invoke('util-checkCommands');
         if (error) {
@@ -213,8 +221,8 @@ export default class App extends LightningElement {
 
         if(process.env.NODE_ENV === 'dev' && this.isUserLoggedIn /*&& this.isUserLoggedIn*/){
             await this.loadModule({
-                component:'metadata/app',
-                name:"Metadata Explorer",
+                component:'sobjectExplorer/app',
+                name:"Sobject Explorer",
                 isDeletable:true
             });
             /*await this.loadModule({
