@@ -4,6 +4,7 @@
     "lwc": {
         "modules": [
             { "dir": "$rootDir/src/client/modules" },
+            { "dir": "$rootDir/src/client/applications/explorers" },
             { "npm": "lightning-base-components" }
         ]
     },
