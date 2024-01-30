@@ -7,21 +7,25 @@
     height: 100vh;
 }
 
+.slds-menu-collapsed{
+    width: 50px !important;
+}
+/*
 .app-container {
     margin-top: 30px;
-    /**calc(100vh - 30px - 24px)*/
     height: calc(100vh - 30px);
 }
-
 .app-container-logged-in {
     margin-top: 75px;
-     /**calc(100vh - 75px - 24px)*/
+    
     height:calc(100vh - 75px);
 }
-
 .container{
-    /*padding:1rem;*/
+    padding:1rem;
 }
+*/
+
+
 
 .custom-utility-bar-alert{
     background-color: var(--slds-g-color-error-base-40,#ea001e);
@@ -29,3 +33,61 @@
     color: white;
 }
 
+
+/** Structure **/
+
+.home {
+    background-color: #fafaf9;
+}
+
+.l-container-vertical {
+    position: absolute!important;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    flex-direction: column;
+    display: flex;
+}
+
+.l-container-whole-parent{
+    position: absolute!important;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.l-container-whole-parent{
+    -webkit-overflow-scrolling: touch;
+    max-height: 100%;
+    overflow: hidden;
+    overflow-y: auto;
+}
+
+.l-cell-content-size {
+    position: relative;
+}
+
+.l-cell-content-size{
+    flex:none;
+}
+
+.l-cell-auto-size {
+    position: relative;
+    min-width: 0;
+}
+
+.l-cell-auto-size{
+    flex: 1 1 auto;
+}
+
+.l-cell-auto-size{
+    display: flex;
+}
+
+.home__navigation {
+    border-right: 1px solid #dddbda;
+    width: 250px;
+    background-color: #fff;
+}

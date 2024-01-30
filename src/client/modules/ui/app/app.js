@@ -1,13 +1,16 @@
-import { LightningElement,track,api,wire} from "lwc";
-import {guid,isNotUndefinedOrNull,isElectronApp} from "shared/utils";
+import { LightningElement,track,api,wire } from "lwc";
+import { guid,isNotUndefinedOrNull,isElectronApp,classSet,isUndefinedOrNull } from "shared/utils";
 import { getExistingSession,saveSession,removeSession,directConnect,connect } from "connection/utils";
 
 /** Apps  **/
-import {KNOWN_TYPE,APP_MAPPING,DIRECT_LINK_MAPPING} from './modules';
+import {APP_MAPPING,APP_LIST,DIRECT_LINK_MAPPING} from './modules';
 /** Store **/
-import { connectStore,store } from 'shared/store';
+import { connectStore,store,store_application } from 'shared/store';
 
 const LIMITED = 'limited';
+
+export * as CONFIG from './modules';
+
 
 export default class App extends LightningElement {
 
@@ -23,6 +26,19 @@ export default class App extends LightningElement {
     isSalesforceCliInstalled = false;
     isJavaCliInstalled = false;
     isCommandCheckFinished = false;
+    isMenuHidden = false;
+    isMenuCollapsed = false;
+
+    @track applications = [];
+
+    get currentApplicationId(){
+        return this._currentApplicationId;
+    }
+    set currentApplicationId(value){
+        this._currentApplicationId = value;
+        this.assignNewHash(value);
+    }
+
 
     @api 
     get connector(){
@@ -32,9 +48,35 @@ export default class App extends LightningElement {
         window.connector = value;
     }
 
+    @wire(connectStore, { store })
+    applicationChange({application}) {
+        // Open Application
+        if(application.isOpen){
+            const {target} = application;
+            this.handleApplicationSelection(target);
+        }
 
-    currentApplicationId;
-    @track applications = [];
+        if(application.isLoggedIn){
+            this.handleLogin(application.connector);
+        }else if(application.isLoggedOut){
+            this.connector = null;
+        }
+
+        // Toggle Menu
+        if(isNotUndefinedOrNull(application.isMenuDisplayed)){
+           this.isMenuHidden = !application.isMenuDisplayed;
+        }else if(isNotUndefinedOrNull(application.isMenuExpanded)){
+            this.isMenuCollapsed = !application.isMenuExpanded;
+        }
+
+        // Redirect
+        if(application.redirectTo){
+            this.handleRedirection(application);
+        }
+    }
+
+
+    
 
     async connectedCallback(){
         if(isElectronApp()){
@@ -45,32 +87,10 @@ export default class App extends LightningElement {
         this.initMode();
     }
 
-    @wire(connectStore, { store })
-    storeChange({ application }) {
-        if(application.redirectTo){
-            this.handleRedirection(application);
-        }
-    }
-
     /** Events */
 
-    handleOpenApplication = async (e) => {
-        const component = e.detail.component;
-        const name = e.detail.name;
-        this.connector = e.detail.connector || this.connector;
-        if(this.applications.filter(x => x.componentName === component).length == 0){
-            await this.loadModule({
-                component,
-                name,
-                isDeletable:true,
-            });
-        }else{
-            this.loadSpecificTab(component);
-        }
-    }
-
-    handleLogin = async (e) => {
-        this.connector = e.detail.value;
+    handleLogin = async (connector) => {
+        this.connector = connector;
         const { instanceUrl,accessToken,version,refreshToken } = this.connector.conn;
         saveSession({
             ...this.connector.header,
@@ -80,20 +100,18 @@ export default class App extends LightningElement {
             refreshToken
         });
         // Reset first
-        this.applications = this.applications.filter(x => x.componentName == 'connection/app');
-
+        this.applications = this.applications.filter(x => x.name == 'home/app');
+        
         // Add new module
-        if(this.applications.filter(x => x.componentName == 'org/app').length == 0){
-            await this.loadModule({
-                component:'org/app',
-                name:"Org",
-                isDeletable:false,
-            });
+        if(this.applications.filter(x => x.name == 'org/app').length == 0){
+            this.openSpecificModule('org/app');
         }
     }
 
     handleLogout = (e) => {
         e.preventDefault();
+        store.dispatch(store_application.logout());
+
         removeSession();
         this.initMode();
         //location.reload();
@@ -117,12 +135,13 @@ export default class App extends LightningElement {
     handleNewApp = async (e) => {
         await this.loadModule(e.detail);
     };
+    
 
     handleRedirection = (application) => {
-        let url = application.redirectTo;
+        let url = application.redirectTo || '';
 
-        if(this.isUserLoggedIn){
-            url = `${this.connector.header.sfdxAuthUrl}&retURL=${encodeURI(application.redirectTo)}`;
+        if(this.isUserLoggedIn && !url.startsWith('http')){
+            url = `${this.connector.header.sfdxAuthUrl}&retURL=${encodeURI(url)}`;
         }
 
         if(isElectronApp()){
@@ -132,12 +151,34 @@ export default class App extends LightningElement {
         }
     }
 
+    handleApplicationSelection = async (target) => {
+        //console.log('this.applications',this.applications.map(x => x.name),target);
+        if(this.applications.filter(x => x.name === target).length == 0){
+            await this.loadModule(target);
+        }else{
+            const existingAppId = this.applications.find(x => x.name === target).id;
+            this.loadSpecificTab(existingAppId);
+        }
+    }
+
 
     /** Methods  */
     
+    assignNewHash = (value) => {
+        if(isUndefinedOrNull(value)) return;
+
+        const app = this.applications.find(x => x.id === value);
+        if(app && APP_MAPPING.hasOwnProperty(app.name) && isNotUndefinedOrNull(APP_MAPPING[app.name].path)){
+            window.location.hash = APP_MAPPING[app.name].path;
+        }
+    }
+    
+    openSpecificModule = (target) => {
+        this.handleApplicationSelection(target);
+    }
+    
     loadVersion = async () => {
         const data = await (await fetch('/version')).json();
-        console.log('version',data);
         this.version = `v${data.version || '1.0.0'}`;
     }
     
@@ -152,6 +193,7 @@ export default class App extends LightningElement {
     }
 
     initMode = () => {
+        window.isLimitedMode = this.isLimitedMode; // To hide 
 
         this.connector      = null;
         this.applications   = [];
@@ -191,40 +233,26 @@ export default class App extends LightningElement {
             name:"Apps",
             isDeletable:false,
         });*/
-        
-        await this.loadModule({
-            component:'org/app',
-            name:"Org",
-            isDeletable:false,
-        });
+
+        // Should be loaded via login !
+        this.openSpecificModule('org/app'); 
     }
 
     /** Website & Electron **/
     load_fullMode = async () => {
         this.connector = await getExistingSession(); // await connect({alias:'acet-dev'})//
         // Default Mode
-        await this.loadModule({
-            component:'connection/app',
-            name:"Home",
-            isDeletable:false,
-        });
+        await this.loadModule('home/app');
 
         if(this.isUserLoggedIn){
-            await this.loadModule({
-                component:'org/app',
-                name:"Org",
-                isDeletable:false,
-            });
+            // Should be loaded via login !
+            this.openSpecificModule('org/app');
         }
         
         /** DEV MODE  */
 
         if(process.env.NODE_ENV === 'dev' && this.isUserLoggedIn /*&& this.isUserLoggedIn*/){
-            /*await this.loadModule({
-                component:'sobjectexplorer/app',
-                name:"Sobject Explorer",
-                isDeletable:true
-            });*/
+            //await this.loadModule('editor/app');
             /*await this.loadModule({
                 component:'soql/app',
                 name:"SOQL Builder",
@@ -269,6 +297,15 @@ export default class App extends LightningElement {
         return isNotUndefinedOrNull(this.connector);
     }
 
+    get menuClass(){
+        return classSet('l-cell-content-size home__navigation slds-show_small')
+        .add({
+            'slds-hide':this.isMenuHidden,
+            'slds-menu-collapsed':this.isMenuCollapsed
+        })
+        .toString()
+    }
+
 
     get applicationPreFormatted(){
         return this.applications.map(x => ({...x,...{
@@ -281,29 +318,34 @@ export default class App extends LightningElement {
     /** Dynamic Loading */
     
 
-    loadModule = async (data) => {
+    loadModule = async (target) => {
+        const settings = APP_LIST.find(x => x.name === target);
         
-        if (!KNOWN_TYPE.has(data.component)) {
-            console.warn(`Unknown app type: ${data.component}`);
+        if (!settings) {
+            console.warn(`Unknown app type: ${target}`);
+            // Run Manual Mode
+        }else{
+            const application = {
+                name:settings.name,
+                constructor:settings.module,
+                id:guid(),
+                label:settings.label,
+                isActive:true,
+                class:"slds-context-bar__item slds-is-active",
+                classVisibility:"slds-show slds-full-height",
+                isFullHeight:settings.isFullHeight,
+                isDeletable:settings.isDeletable,
+                requireConnection:!settings.isOfflineAvailable,
+                isTabVisible:settings.isTabVisible,
+                attributes:{
+                    //connector:this.connector
+                }
+            };
+            let _applications = this.applicationPreFormatted;
+                _applications.push(application);
+            this.applications = _applications;
+            this.currentApplicationId = application.id;
         }
-        //let { default: appConstructor } = await APP_MAPPING[app_key]()
-        let newApplication = {
-            componentName:data.component,
-            constructor:APP_MAPPING[data.component].module,
-            id:guid(),
-            name:data.name,
-            isActive:true,
-            class:"slds-context-bar__item slds-is-active",
-            classVisibility:"slds-show slds-full-height",
-            isFullHeight:APP_MAPPING[data.component].isFullHeight,
-            isDeletable:data.isDeletable,
-            attributes:{
-                //connector:this.connector
-            }
-        };
-        let _applications = this.applicationPreFormatted;
-            _applications.push(newApplication);
-        this.applications = _applications;
-        this.currentApplicationId = newApplication.id;
+        
     };
 }

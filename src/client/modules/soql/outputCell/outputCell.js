@@ -3,7 +3,7 @@ import { api } from 'lwc';
 import FeatureElement from 'element/featureElement';
 import { isUndefinedOrNull } from 'shared/utils';
 import { store,selectChildRelationship} from 'soql/store';
-import { store as appStore,navigate  }  from 'shared/store';
+import { store as appStore,store_application  }  from 'shared/store';
 
 export default class OutputCell extends FeatureElement {
     @api value;
@@ -30,6 +30,6 @@ export default class OutputCell extends FeatureElement {
     handleRedirection = (e) =>{
         e.preventDefault();
         e.stopPropagation();
-        appStore.dispatch(navigate(this.value.data))
+        appStore.dispatch(store_application.navigate(this.value.data))
     }
 }

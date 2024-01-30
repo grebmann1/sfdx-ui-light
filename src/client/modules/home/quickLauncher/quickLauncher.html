@@ -1,0 +1,78 @@
+<template>
+    <div class="slds-card slds-m-top_small slds-grid_vertical">
+        <div class="slds-col">
+            <div class="slds-card__header slds-grid">
+                <header class="slds-media slds-has-flexi-truncate slds-media_center">
+                    <div class="slds-media__body">
+                        <h1 class="slds-card__header-title">
+                            <span>Quick Launch</span>
+                        </h1>
+                    </div>
+                    <div class="slds-no-flex"></div>
+                </header>
+            </div>
+            <div class="slds-card__body">
+                <div class="slds-grid slds-wrap">
+                    <div class="slds-col slds-size_1-of-2 slds-large-size_1-of-3">
+                        <!-- Explorers -->
+                        <div class="slds-item-title">
+                            <div class="slds-p-left_medium slds-text-heading_small slds-truncate">Explorers</div>
+                        </div>
+                        <template for:each={explorers} for:item="item">
+                            <div key={item.name} class="slds-item-list" onclick={handleQuickAction} data-name={item.name}>
+                                <div class="slds-p-horizontal_medium">
+                                    <lightning-icon icon-name={item.quickActionIcon}></lightning-icon>
+                                </div>
+                                <div class="slds-item-list-text">
+                                    <b>{item.label}</b>
+                                    <div class="slds-text-title">{item.description}</div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="slds-col slds-size_1-of-2 slds-large-size_1-of-3">
+                        <!-- Tools -->
+                        <div class="slds-item-title">
+                            <div class="slds-p-left_medium slds-text-heading_small slds-truncate">Tools</div>
+                        </div>
+                        <template for:each={tools} for:item="item">
+                            <div key={item.name} class="slds-item-list" onclick={handleQuickAction} data-name={item.name}>
+                                <div class="slds-p-horizontal_medium">
+                                    <lightning-icon icon-name={item.quickActionIcon}></lightning-icon>
+                                </div>
+                                <div class="slds-item-list-text">
+                                    <b>{item.label}</b>
+                                    <div class="slds-text-title">{item.description}</div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="slds-col slds-size_1-of-2 slds-large-size_1-of-3">
+                        <!-- Plugins -->
+                        <div class="slds-item-title">
+                            <div class="slds-p-left_medium slds-text-heading_small slds-truncate">Plugins</div>
+                        </div>
+                        <div class="slds-item-list" onclick={handleRedirection} data-url="https://chromewebstore.google.com/detail/sf-toolkit-light/konbmllgicfccombdckckakhnmejjoei">
+                            <div class="slds-p-horizontal_medium">
+                                <lightning-icon icon-name="standard:apex_plugin"></lightning-icon>
+                            </div>
+                            <div class="slds-item-list-text">
+                                <b>Chrome Extension</b>
+                                <div class="slds-text-title">Extension improving the UX of admins/devs in Salesforce and Authenticated redirection to SF Toolkit.</div>
+                            </div>
+                        </div>
+                        <div class="slds-item-list" onclick={handleRedirection} data-url="https://github.com/grebmann1/sf-toolkit-desktop/releases">
+                            <div class="slds-p-horizontal_medium">
+                                <lightning-icon icon-name="standard:scheduling_workspace"></lightning-icon>
+                            </div>
+                            <div class="slds-item-list-text">
+                                <b>Electron</b>
+                                <div class="slds-text-title">Desktop version of the SF Toolkit that interact with your SFDX CLI and provide extra feature such as PMD, etc.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

@@ -10,6 +10,12 @@
         <link rel="stylesheet" href="$stylesDir/highlight.css">
         <link rel="stylesheet" href="$assetsDir/styles/salesforce-lightning-design-system.min.css" />
         <style>
+            @font-face {
+                font-family: 'seti';
+                /* Replace myFont with your resource name */
+                src: url('/styles/seti.hash.woff') format('woff');
+             }
+
             .slds-color-brand{
                 color:rgb(7, 87, 133);
             }
@@ -30,6 +36,11 @@
                 font-size: .875rem;
                 font-weight: 700 !important;
             }
+
+            .slds-border-right{
+                border-right: 1px solid #dddbda;
+            }
+
             .vertical-title{
                 font-size:small;
                 justify-content: flex-start !important;
@@ -48,6 +59,10 @@
 
             .min-width-150{
                 min-width: 150px;
+            }
+
+            .slds-full-width{
+                width: 100%;
             }
 
             .tab-visible{
@@ -95,6 +110,9 @@
                 display: flex;
                 flex-direction: column;
             }
+            .slds-justify-content-flew-end{
+                justify-content: flex-end;
+            }
 
             .slds-full-height{
                 height:100%;
@@ -102,6 +120,10 @@
 
             .slds-auto-height{
                 height:auto;
+            }
+
+            .slds-overflow-hidden{
+                overflow: hidden;
             }
 
             .slds-full-height.slds-grid .slds-col {
@@ -116,8 +138,20 @@
                 flex-direction: column;
             }
 
+            .slds-padding-top-200{
+                padding-top: 200px;
+            }
+
             .slds-no-padding{
                 padding: unset !important;
+            }
+
+            .slds-dark-bg{
+                /*background-color: #292524;*/
+            }
+
+            .slds-light-bg{
+                background-color: white;
             }
 
             /** Footer **/
@@ -137,8 +171,32 @@
                 margin-left: 8px;
                 cursor: pointer;
             }
+
+            .menu-header .slds-nav-vertical__title:empty{
+                padding:0px;
+            }
+
+            .slds-without-tab lightning-tab{
+                display:none;
+            }
+
+            .slds-without-tab .slds-tabs_scoped__item {
+                margin-bottom: unset;
+            }
+
+            .slds-menu-collapsed lightning-vertical-navigation-section .slds-nav-vertical__title{
+                padding-left:0.2rem;
+            }
+            .slds-menu-collapsed lightning-vertical-navigation-section .slds-nav-vertical__action{
+                padding-left:unset;
+                padding-right:unset;
+            }
+            .slds-menu-collapsed lightning-vertical-navigation-item-icon .slds-nav-vertical__action lightning-icon{
+                padding-left:0.8rem;
+            }
             
         </style>
+        <!--<script src="$reactDir/main.js"></script>-->
         <script src="$libsDir/jsforce/jsforce.js"></script>
         <script src="$libsDir/localforage/localforage.min.js"></script>
         <script>

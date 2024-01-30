@@ -1,5 +1,5 @@
-import { LightningElement,api} from "lwc";
-
+import { api } from "lwc";
+import FeatureElement from 'element/featureElement';
 import ConnectionNewModal from "connection/connectionNewModal";
 import ConnectionDetailModal from "connection/connectionDetailModal";
 import ConnectionRenameModal from "connection/connectionRenameModal";
@@ -19,7 +19,7 @@ const actions = [
 
 
 
-export default class App extends LightningElement {
+export default class App extends FeatureElement {
 
     data = [];
     isLoading = false;
@@ -93,6 +93,7 @@ export default class App extends LightningElement {
             let {alias,...settings} = this.data.find(x => x.id == row.id);
             try{
                 let connector = await connect({alias,settings});
+                console.log('login');
                 this.dispatchEvent(new CustomEvent("login", { detail:{value:connector},bubbles: true }));
             }catch(e){
                 // OAuth in case of login failure !!!!
@@ -142,6 +143,10 @@ export default class App extends LightningElement {
 
 
     /** Getters  */
+    
+    get pageClass(){
+        return super.pageClass+' slds-overflow-hidden';
+    }
 
     get columns(){
         let _columns = [
@@ -160,18 +165,18 @@ export default class App extends LightningElement {
                     class: { fieldName: '_typeClass' },
                 },
             },
-            { label: 'Type', fieldName: '_type', type:'text', fixedWidth:150, _filter:'electron',
+            { label: 'Type', fieldName: '_type', type:'text', _filter:'electron',
                 cellAttributes: {
                     class: { fieldName: '_typeClass' },
                 },
             },
-            { label: 'Status', fieldName: '_status', type:'text', fixedWidth:150, _filter:'electron',
+            { label: 'Status', fieldName: '_status', type:'text', fixedWidth:90, _filter:'electron',
                 cellAttributes: {
                     class: { fieldName: '_statusClass' },
                 },
             },
-            { label: 'Expire', fieldName: 'expirationDate', type:'text', fixedWidth:150, _filter:'electron'},
-            { label: 'API', fieldName: 'instanceApiVersion', type: 'text', fixedWidth:90, _filter:'electron'},
+            { label: 'Expire', fieldName: 'expirationDate', type:'text', fixedWidth:100, _filter:'electron'},
+            { label: 'API', fieldName: 'instanceApiVersion', type: 'text', fixedWidth:70, _filter:'electron'},
             { label: 'User Name', fieldName: 'username', type: 'text',initialWidth:400,
                 cellAttributes: {
                     class: { fieldName: '_typeClass' },

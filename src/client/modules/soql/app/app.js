@@ -2,6 +2,7 @@ import { LightningElement,api,wire,track} from "lwc";
 import { isEmpty,runActionAfterTimeOut,isNotUndefinedOrNull } from 'shared/utils';
 import FeatureElement from 'element/featureElement';
 import { connectStore,store,fetchSObjectsIfNeeded } from 'soql/store';
+import { store as appStore,store_application  }  from 'shared/store';
 
 export const isFullPage = true;
 export default class App extends FeatureElement {
@@ -10,6 +11,7 @@ export default class App extends FeatureElement {
 
     connectedCallback() {
         store.dispatch(fetchSObjectsIfNeeded({connector:this.connector.conn}));
+        appStore.dispatch(store_application.collapseMenu('soql'));
     }
 
     @wire(connectStore, { store })

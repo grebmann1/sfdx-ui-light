@@ -1,6 +1,6 @@
 {
     "name": "sfdx-ui-light",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "scripts": {
         "start:dev:client": "NODE_ENV=development node -r dotenv/config src/server/server-dev.js",
         "start:prod:client": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --clean; NODE_ENV=production node -r dotenv/config src/server/server-prod.js",
@@ -18,8 +18,10 @@
     ],
     "dependencies": {
         "@alenaksu/json-viewer": "^2.0.1",
-        "@lwc/rollup-plugin": "^5.2.1",
-        "@lwrjs/label-module-provider": "0.11.6",
+        "@lwc/rollup-plugin": "6.0.0",
+        "@lwrjs/router":"0.11.12",
+        "@lwrjs/label-module-provider": "0.11.12",
+        "@monaco-editor/loader": "^1.4.0",
         "@pgrabovets/json-view": "^2.7.5",
         "@rollup/plugin-replace": "^5.0.5",
         "dotenv": "^16.3.1",
@@ -29,7 +31,8 @@
         "http-errors": "^2.0.0",
         "jsforce": "1.11.1",
         "jsforce-ajax-proxy": "^2.0.0",
-        "lwr": "0.11.6",
+        "lwr": "0.11.12",
+        "monaco-editor": "^0.45.0",
         "mongodb": "^6.3.0",
         "node-fetch": "^2.7.0",
         "node-schedule": "^2.1.1",
@@ -47,7 +50,7 @@
         "textarea-caret": "^3.1.0"
     },
     "devDependencies": {
-        "@lwc/synthetic-shadow": "5.1.0",
+        "@lwc/synthetic-shadow": "6.0.0",
         "@salesforce-ux/design-system": "2.22.2",
         "body-parser": "^1.20.2",
         "cookie-parser": "^1.4.6",
@@ -56,6 +59,6 @@
         "jspdf": "2.5.1",
         "jspdf-autotable": "3.7.1",
         "lightning-base-components": "1.19.11-alpha",
-        "lwc": "5.1.0"
+        "lwc": "6.0.0"
     }
 }

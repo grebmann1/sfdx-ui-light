@@ -12,6 +12,8 @@ export default class Header extends LightningElement {
 
     @api version = constant.version || '';
 
+    @api isMenuDisplayed = false;
+
     connectedCallback(){}
 
     openLauncher = () => {
@@ -26,6 +28,16 @@ export default class Header extends LightningElement {
     }
 
     /** Events **/
+    
+    handleToggle = (e) => {
+        console.log('handleToggle');
+        this.isMenuDisplayed = ! this.isMenuDisplayed;
+        if(this.isFullPage){
+            //appStore.dispatch(store_application.hideMenu());
+        }else{
+            //appStore.dispatch(store_application.showMenu());
+        }
+    }
     
     selectTab = (e) => {
         this.dispatchEvent(new CustomEvent("tabchange",{detail:{

@@ -1,0 +1,13 @@
+<template>
+    <template lwc:if={isDisplayed}>
+        <slot></slot>
+    </template>
+    <template lwc:else>
+        <slds-connection-illustration 
+            class="slds-full-width" 
+            title={title} 
+            sub-title={subTitle}
+            padding
+        ></slds-connection-illustration>
+    </template>
+</template>

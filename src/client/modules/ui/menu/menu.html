@@ -1,0 +1,103 @@
+<template>
+    <div class={collapseClass}>
+        <lightning-button-icon-stateful icon-name={iconName} variant="border-filled" size="large" selected={isMenuSmall} onclick={handleToggle}></lightning-button-icon-stateful>
+    </div>
+    <div class="slds-has-divider_top-space"></div>
+    <lightning-vertical-navigation class="menu-header" select-item={selectedItem} onselect={handleApplicationSelection}>
+        <!-- Home -->
+        <lightning-vertical-navigation-section>
+            <template for:each={homes} for:item="item">
+                <template lwc:if={item.menuIcon}>
+                    <lightning-vertical-navigation-item-icon
+                        key={item.name}
+                        label={item.menuLabel}
+                        name={item.name}
+                        icon-name={item.menuIcon}
+                        ></lightning-vertical-navigation-item-icon>
+                </template>
+                <template lwc:else>
+                    <lightning-vertical-navigation-item 
+                        key={item.name} 
+                        label={item.menuLabel} 
+                        name={item.name}
+                    ></lightning-vertical-navigation-item>
+                </template>
+            </template>
+        </lightning-vertical-navigation-section>
+        <template lwc:if={isMenuSmall}>
+            <!-- Applications -->
+            <lightning-button-menu variant="container" tooltip="Applications" icon-name="utility:builder" onselect={handleApplicationSelection}>
+                <template for:each={applications} for:item="item">
+                    <lightning-menu-item tooltip={item.menuLabel}
+                        key={item.name} 
+                        value={item.name} 
+                        label={item.menuLabel}
+                        icon-name={item.menuIcon}
+                    ></lightning-menu-item>
+                </template>
+            </lightning-button-menu>
+            <!-- Connections -->
+            <template lwc:if={isUnlimitedMode}> <!-- Only display in standard mode (not in electron instance) -->
+                <lightning-button-menu variant="container" tooltip="Connections" icon-name="utility:connected_apps" onselect={handleApplicationSelection}>
+                    <template for:each={connections} for:item="item">
+                        <lightning-menu-item 
+                            key={item.name} 
+                            value={item.name} 
+                            label={item.menuLabel}
+                            icon-name={item.menuIcon}
+                        ></lightning-menu-item>
+                    </template>
+                </lightning-button-menu>
+            </template>
+            
+        </template>
+        <template lwc:else>
+            <!-- Applications -->
+            <template for:each={applications} for:item="item">
+                <template lwc:if={item.menuIcon}>
+                    <lightning-vertical-navigation-item-icon
+                        key={item.name}
+                        label={item.menuLabel}
+                        name={item.name}
+                        icon-name={item.menuIcon}
+                        ></lightning-vertical-navigation-item-icon>
+                </template>
+                <template lwc:else>
+                    <lightning-vertical-navigation-item 
+                        key={item.name} 
+                        label={item.menuLabel} 
+                        name={item.name}
+                    ></lightning-vertical-navigation-item>
+                </template>
+            </template>
+            <!-- Connections -->
+            <template for:each={connections} for:item="item">
+                <template lwc:if={item.menuIcon}>
+                    <lightning-vertical-navigation-item-icon
+                        key={item.name}
+                        label={item.menuLabel}
+                        name={item.name}
+                        icon-name={item.menuIcon}
+                        ></lightning-vertical-navigation-item-icon>
+                </template>
+                <template lwc:else>
+                    <lightning-vertical-navigation-item 
+                        key={item.name} 
+                        label={item.menuLabel} 
+                        name={item.name}
+                    ></lightning-vertical-navigation-item>
+                </template>
+            </template>
+        </template>
+    </lightning-vertical-navigation>
+    <div class="slds-has-divider_top-space"></div>
+    <lightning-vertical-navigation-section>
+        <template for:each={others} for:item="item">
+            <lightning-vertical-navigation-item-icon key={item.name} onclick={handleRedirection} data-url={item.url}
+                        label={item.menuLabel}
+                        name={item.name}
+                        icon-name={item.menuIcon}>
+            </lightning-vertical-navigation-item-icon>
+        </template>
+    </lightning-vertical-navigation-section>
+</template>

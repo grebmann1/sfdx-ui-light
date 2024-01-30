@@ -1,6 +1,7 @@
 import { LightningElement,api} from "lwc";
 import { isEmpty,isElectronApp } from 'shared/utils';
 import FeatureElement from 'element/featureElement';
+import { store,store_application } from 'shared/store';
 
 
 export default class App extends FeatureElement {
@@ -23,36 +24,18 @@ export default class App extends FeatureElement {
     /** Methods */
     
     openMetadataExplorer = () => {
-        this.dispatchEvent(new CustomEvent("openapplication", { 
-            detail:{
-                connector:this.connector,
-                component:'metadata/app',
-                name:'Metadata Explorer'
-            }
-            ,bubbles: true 
-        }));
+        const target = 'metadata/app';
+        store.dispatch(store_application.open(target));
     }
 
     openSobjectExplorer = () => {
-        this.dispatchEvent(new CustomEvent("openapplication", { 
-            detail:{
-                connector:this.connector,
-                component:'sobjectexplorer/app',
-                name:'SObject Explorer'
-            }
-            ,bubbles: true 
-        }));
+        const target = 'sobjectexplorer/app';
+        store.dispatch(store_application.open(target));
     }
 
     openSOQLExplorer = () => {
-        this.dispatchEvent(new CustomEvent("openapplication", { 
-            detail:{
-                connector:this.connector,
-                component:'soql/app',
-                name:'SOQL Builder'
-            }
-            ,bubbles: true 
-        }));
+        const target = 'soql/app';
+        store.dispatch(store_application.open(target));
     }
 
     openInBrowser = () => {

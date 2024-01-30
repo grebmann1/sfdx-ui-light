@@ -1,0 +1,145 @@
+<template>
+    <div class="container"  style="--space-unit: 0;">
+        <div class="sticky" >
+            <header class="row" >
+                <span class="text-sm pl-2" >FILES</span>
+                <span class="inline-row" >
+                    <button class="small secondary" aria-label="collapse all" data-balloon-pos="down-right" >
+                        <i class="codicon codicon-collapse-all" ></i>
+                    </button>
+                    <div class="btn-group inline-row" >
+                        <button class="small secondary" aria-label="more options" data-balloon-pos="down-right"  aria-haspopup="listbox" aria-expanded="false">
+                            <i class="codicon codicon-ellipsis" ></i>
+                        </button>
+                        <ul class="dropdown-menu theme-dark" role="listbox" tabindex="-1"  style="display: none;">
+                            <li class="disabled" >
+                                <span class="groupseparator" ></span>
+                            </li> 
+                            <li class="" >
+                                <i class="codicon codicon-group-by-ref-type" ></i>Auto collapse
+                            </li>
+                            <li class="checked" >
+                                <i class="codicon codicon-list-tree" ></i>Full Depth hello
+                            </li>
+                        </ul>
+                    </div>
+                </span>
+            </header>
+        </div>
+        <ul role="tree" readonly="" >
+            <li  aria-expanded="true">
+                <span role="treeitem" aria-label="src/" tabindex="0" draggable="false"  style="border: 1px solid transparent;" aria-selected="true">
+                    <span  style="margin-left: calc(0rem);">
+                        <i class="codicon codicon-chevron-down" ></i>
+                        <div class="content inline-row" pattern="[0-9a-zA-Z-_./]+" value="src" >
+                            <div class="wrapper" >
+                                <span class="field" >src</span>
+                            </div>
+                        </div>
+                    </span>
+                </span>
+                <div class="content inline-row" data-balloon-pos="down" data-balloon-length="medium"  style="margin: 0.5rem calc(1rem); display: none;">
+                    <input class="field" pattern="[0-9a-zA-Z-_./]+" placeholder="Type a new file name" >
+                </div>
+                <ul role="group" >
+                    <li >
+                        <span role="treeitem" aria-label="src/app.css" tabindex="0" draggable="false"  style="border: 1px solid transparent;">
+                            <span  style="margin-left: calc(0.5rem);">
+                                <span class="_css-file-icon file-icon" ></span>
+                                <div class="content inline-row" pattern="[0-9a-zA-Z-_./]+" value="app.css" >
+                                    <div class="wrapper" >
+                                        <span class="field" >app.css</span>
+                                    </div>
+                                </div>
+                            </span>
+                        </span>
+                    </li>
+                    <li >
+                        <span role="treeitem" aria-label="src/app.html" tabindex="0" draggable="false"  style="border: 1px solid transparent;">
+                            <span  style="margin-left: calc(0.5rem);">
+                                <span class="_html_3-file-icon file-icon" ></span>
+                                <div class="content inline-row" pattern="[0-9a-zA-Z-_./]+" value="app.html" >
+                                    <div class="wrapper" >
+                                        <span class="field" >app.html</span>
+                                    </div>
+                                </div>
+                            </span>
+                        </span>
+                    </li>
+                    <li >
+                        <span role="treeitem" aria-label="src/app.js" tabindex="0" draggable="false"  style="border: 1px solid transparent;">
+                            <span  style="margin-left: calc(0.5rem);">
+                                <span class="_javascript-file-icon file-icon" ></span>
+                                <div class="content inline-row" pattern="[0-9a-zA-Z-_./]+" value="app.js" >
+                                    <div class="wrapper" >
+                                        <span class="field" >app.js</span>
+                                    </div>
+                                </div>
+                            </span>
+                        </span>
+                    </li>
+                    <li >
+                        <span role="treeitem" aria-label="src/child.html" tabindex="0" draggable="false"  style="border: 1px solid transparent;">
+                            <span  style="margin-left: calc(0.5rem);">
+                                <span class="_html_3-file-icon file-icon" ></span>
+                                <div class="content inline-row" pattern="[0-9a-zA-Z-_./]+" value="child.html" >
+                                    <div class="wrapper" >
+                                        <span class="field" >child.html</span>
+                                    </div>
+                                </div>
+                            </span>
+                        </span>
+                    </li>
+                    <li >
+                        <span role="treeitem" aria-label="src/child.js" tabindex="0" draggable="false"  style="border: 1px solid transparent;">
+                            <span  style="margin-left: calc(0.5rem);">
+                                <span class="_javascript-file-icon file-icon" ></span>
+                                <div class="content inline-row" pattern="[0-9a-zA-Z-_./]+" value="child.js" >
+                                    <div class="wrapper" >
+                                        <span class="field" >child.js</span>
+                                    </div>
+                                </div>
+                            </span>
+                        </span>
+                    </li>
+                    <li >
+                        <span role="treeitem" aria-label="src/index.stories.js" tabindex="0" draggable="false"  style="border: 1px solid transparent;">
+                            <span  style="margin-left: calc(0.5rem);">
+                                <span class="_storybook-file-icon wcd-file-icon" ></span>
+                                <div class="content inline-row" pattern="[0-9a-zA-Z-_./]+" value="index.stories.js" >
+                                    <div class="wrapper" >
+                                        <span class="field" >index.stories.js</span>
+                                    </div>
+                                </div>
+                            </span>
+                        </span>
+                    </li>
+                </ul>
+            </li>
+            <li >
+                <span role="treeitem" aria-label="lwc.config.json" tabindex="0" draggable="false"  style="border: 1px solid transparent;">
+                    <span  style="margin-left: calc(0rem);">
+                        <span class="_json-file-icon file-icon" ></span>
+                        <div class="content inline-row" pattern="[0-9a-zA-Z-_./]+" value="lwc.config.json" >
+                            <div class="wrapper" >
+                                <span class="field" >lwc.config.json</span>
+                            </div>
+                        </div>
+                    </span>
+                </span>
+            </li>
+            <li >
+                <span role="treeitem" aria-label="package.json" tabindex="0" draggable="false"  style="border: 1px solid transparent;">
+                    <span  style="margin-left: calc(0rem);">
+                        <span class="_json-file-icon file-icon" ></span>
+                        <div class="content inline-row" pattern="[0-9a-zA-Z-_./]+" value="package.json" >
+                            <div class="wrapper" >
+                                <span class="field" >package.json</span>
+                            </div>
+                        </div>
+                    </span>
+                </span>
+            </li>
+        </ul>
+    </div>
+</template>

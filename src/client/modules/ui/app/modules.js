@@ -1,3 +1,4 @@
+import home_app from "home/app";
 import connection_app from "connection/app";
 import accessAnalyzer_app from "accessAnalyzer/app";
 import code_app from "code/app";
@@ -8,8 +9,10 @@ import org_app from "org/app";
 import sarif_app from "sarif/app";
 import doc_app from "doc/app";
 import soql_app from "soql/app";
+//import codeViewer_app from "editor/app";
 
 const KNOWN_TYPE = new Set([
+    "home/app",
     "connection/app", 
     "accessAnalyzer/app",
     "extension/app",
@@ -22,17 +25,57 @@ const KNOWN_TYPE = new Set([
     "sobjectexplorer/app"
 ]);
 const APP_MAPPING = {
+    "home/app": {
+        module:home_app,
+        isFullHeight:false,
+        label:"Home",
+        isElectronOnly:false,
+        isOfflineAvailable:true,
+        isTabVisible:false,
+        type:'home',
+        menuIcon:'utility:home'
+    },
     "connection/app": {
         module:connection_app,
         isFullHeight:false,
+        label:"Salesforce Connections",
+        isElectronOnly:false,
+        isOfflineAvailable:true,
+        isTabVisible:false,
+        type:'connection',
+        menuIcon:'utility:salesforce1',
+        menuLabel:'Salesforce',
+        path:'connections'
     },
     "accessAnalyzer/app": {
         module:accessAnalyzer_app,
-        isFullHeight:false
+        isFullHeight:false,
+        isDeletable:true,
+        isElectronOnly:false,
+        isOfflineAvailable:false,
+        isMenuVisible:true,
+        isTabVisible:true,
+        label:"Access Analyzer",
+        type:'application',
+        description:"Review/Compare the access provided by the Permission sets & Profiles.",
+        quickActionIcon:"standard:portal",
+        shortName:"Access.",
+        path:'access'
     },
     "code/app":{
         module:code_app,
-        isFullHeight:false
+        isFullHeight:false,
+        isDeletable:true,
+        isElectronOnly:true,
+        isOfflineAvailable:false,
+        isMenuVisible:true,
+        isTabVisible:true,
+        label:"Code Toolkit",
+        type:'application',
+        description:"Retrieve Code, Run Static code analysis, Open visualforce. A perfect toolkit to simplify your life (Electron only).",
+        quickActionIcon:"standard:apex",
+        shortName:"Code",
+        path:'code'
     },
     "extension/app":{
         module:extension_app,
@@ -40,11 +83,31 @@ const APP_MAPPING = {
     },
     "org/app":{
         module:org_app,
-        isFullHeight:false
+        isFullHeight:false,
+        isDeletable:false,
+        isElectronOnly:false,
+        isOfflineAvailable:false,
+        isMenuVisible:false,
+        isTabVisible:true,
+        label:"Org. Overview",
+        type:'application',
+        shortName:"Org",
+        path:'org'
     },
     "metadata/app":{
         module:metadata_app,
-        isFullHeight:true
+        isFullHeight:true,
+        isDeletable:true,
+        isElectronOnly:false,
+        isOfflineAvailable:false,
+        isMenuVisible:true,
+        isTabVisible:true,
+        label:"Metadata Explorer",
+        type:'application',
+        description:"Review & Modify all your metadata. (Beta)",
+        quickActionIcon:"standard:knowledge",
+        shortName:"Metad.",
+        path:'metadata'
     },
     "sarif/app":{
         module:sarif_app,
@@ -52,15 +115,48 @@ const APP_MAPPING = {
     },
     "doc/app":{
         module:doc_app,
-        isFullHeight:true
+        isFullHeight:true,
+        isDeletable:true,
+        isElectronOnly:false,
+        isOfflineAvailable:true,
+        isMenuVisible:true,
+        isTabVisible:false,
+        label:"Documentation",
+        type:'application',
+        description:"Search through the Salesforce Documentation",
+        quickActionIcon:"standard:article",
+        shortName:"Doc.",
+        path:'documentation'
     },
     "soql/app":{
         module:soql_app,
-        isFullHeight:true
+        isFullHeight:true,
+        isDeletable:true,
+        isElectronOnly:false,
+        isOfflineAvailable:false,
+        isMenuVisible:true,
+        isTabVisible:true,
+        label:"SOQL Builder",
+        type:'application',
+        description:"Build SOQL queries with fields suggestion and export them.",
+        quickActionIcon:"standard:data_model",
+        shortName:"SOQL",
+        path:'soql'
     },
     "sobjectexplorer/app":{
         module:sobjectExplorer_app,
-        isFullHeight:true
+        isFullHeight:true,
+        isDeletable:true,
+        isElectronOnly:false,
+        isOfflineAvailable:false,
+        isMenuVisible:true,
+        isTabVisible:true,
+        label:"SObject Explorer",
+        type:'application',
+        description:"Explore in details all your SObjects",
+        quickActionIcon:"standard:knowledge",
+        shortName:"SObject",
+        path:'sobject'
     }
 };
 
@@ -77,8 +173,13 @@ const DIRECT_LINK_MAPPING = {
     },
 }
 
+const APP_LIST = (() => {
+    return Object.keys(APP_MAPPING).map(name => ({name,...APP_MAPPING[name]}));
+})()
+
 export {
     KNOWN_TYPE,
     APP_MAPPING,
-    DIRECT_LINK_MAPPING
+    DIRECT_LINK_MAPPING,
+    APP_LIST
 }

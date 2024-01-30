@@ -23,7 +23,13 @@
                     <div class="slds-page-header__controls">
                         <div class="slds-page-header__control">
                             <!-- actions -->
-                           
+                            <lightning-button-group>
+                                <!--<lightning-button icon-name="utility:adduser" disabled={isLoading} onclick={adduser_handleClick} label="Select Users"></lightning-button>-->
+                                <lightning-button icon-name="utility:link"  disabled={isLoading} onclick={goToMetadata} label="Apex" data-name="ApexClass"></lightning-button>
+                                <lightning-button icon-name="utility:link"  disabled={isLoading} onclick={goToMetadata} label="LWC" data-name="LightningComponentBundle"></lightning-button>
+                                <lightning-button icon-name="utility:link"  disabled={isLoading} onclick={goToMetadata} label="Aura" data-name="AuraDefinitionBundle"></lightning-button>
+
+                            </lightning-button-group>
                         </div>
                     </div>
                 </div>
@@ -32,7 +38,7 @@
                 <div class="slds-page-header__col-details">
                     <div class="slds-page-header__detail-row slds-is-relative" style="display:block; ">
                         <!-- Display Info -->
-                        <h2>Currently in beta mode</h2>
+                        <h2>Currently only supporting certains types : Apex, LWC, Aura, Trigger, Visualforce</h2>
                     </div>
                 </div>
             </div>
@@ -42,7 +48,7 @@
                 <div class="slds-full-height slds-grid slds-gutters_direct slds-wrap slds-is-relative" style="min-height:200px;">
                     <!-- Container -->
                         
-                    <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-4">
+                    <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-4 slds-border-right">
                         <!-- Metadata List -->
                         <template lwc:if={isMetadataListDisplayed}>
                             <div class="slds-p-left_small slds-p-top_small">
@@ -51,13 +57,19 @@
                                 </div>
                             </div>
                             <div class="slds-scrollable_y slds-is-relative min-height-200">
+                                <lightning-input 
+                                    class="slds-m-vertical_medium" 
+                                    type="search"
+                                    label="Search" 
+                                    variant="label-hidden"
+                                    onchange={handleMetadataTypeSearch}
+                                ></lightning-input>
                                 <template lwc:if={isLoading}>
                                     <lightning-spinner alternative-text="Loading"></lightning-spinner>
                                 </template>
-
                                 <lightning-vertical-navigation onselect={handleMetadataTypeSelection} compact>
                                     <lightning-vertical-navigation-section>
-                                        <template for:each={metadataType_list} for:item="type">
+                                        <template for:each={metadataType_filteredList} for:item="type">
                                             <lightning-vertical-navigation-item 
                                                 key={type.xmlName} label={type.xmlName} name={type.xmlName}
                                             ></lightning-vertical-navigation-item>
@@ -65,8 +77,10 @@
                                     </lightning-vertical-navigation-section>
                                 </lightning-vertical-navigation>
                             </div>
+                            <!---->
                         </template>
                         <template lwc:else>
+                            <!-- Record List -->
                             <div class="slds-p-left_small slds-p-top_small">
                                 <div class="slds-grid">
                                     <button class="slds-button slds-button_icon" title="Back" onclick={unselectMetadata}>
@@ -75,16 +89,23 @@
                                         </svg>
                                         <span class="slds-assistive-text">{i18n.FIELDS_PANEL_BACK}</span>
                                     </button>
-                                    <h2 class="slds-tree__group-header slds-truncate">{selectedMetadataType}</h2>
+                                    <h2 class="slds-m-left_x-small slds-tree__group-header slds-truncate">{selectedMetadataType}</h2>
                                 </div>
                             </div>
                             <div class="slds-scrollable_y slds-is-relative min-height-200">
+                                <lightning-input 
+                                    class="slds-m-vertical_medium" 
+                                    type="search"
+                                    label="Search" 
+                                    variant="label-hidden"
+                                    onchange={handleMetadataSearch}
+                                ></lightning-input>
                                 <template lwc:if={isLoading}>
                                     <lightning-spinner alternative-text="Loading"></lightning-spinner>
                                 </template>
                                 <lightning-vertical-navigation onselect={handleMetadataSelection} compact>
                                     <lightning-vertical-navigation-section>
-                                        <template for:each={metadata_list} for:item="item">
+                                        <template for:each={metadata_filteredList} for:item="item">
                                             <lightning-vertical-navigation-item 
                                                 key={item.Name} label={item.Name} name={item.Id}
                                             ></lightning-vertical-navigation-item>
@@ -96,23 +117,22 @@
                                     <div class="slds-p-around_small">No items found</div>
                                 </template>
                             </div>
+                            <!---->
                         </template>
                         <!-- Metadata Details -->
                     </div>
                     <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_3-of-4">
-                        <div class="slds-scrollable_y">
+                        <editor-app lwc:ref="editor" class={editorClass}></editor-app>
+                        <!--<div class="slds-scrollable_y">
                             <template lwc:if={isRecordDisplayed}>
+                                <metadata-code-viewer></metadata-code-viewer>
                                 <div lwc:dom="manual" lwc:ref="container"></div>
                             </template>
                         </div>
+                        -->
                     </div>
                 </div>
             </div>
         </article>
     </div>
-
-    
-
-
-    
 </template>

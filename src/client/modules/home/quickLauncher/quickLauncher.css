@@ -1,0 +1,19 @@
+.slds-item-title {
+    display: flex;
+    align-items: center;
+    height: 50px;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #dddbda;
+}
+
+.slds-item-list {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem;
+    height: 60px;
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+.slds-item-list-text {
+    width: calc(100% - 56px);
+}

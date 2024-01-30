@@ -166,3 +166,59 @@ export function basicTextFormatter(text,filter){
     }
     return text;
 }
+
+const languageMapping = {
+    css: 'css',
+    scss: 'scss',
+    js: 'javascript',
+    json: 'json',
+    md: 'markdown',
+    ts: 'typescript',
+    txt: 'text',
+    apex: 'java', // We map apex to JAVA,
+    cls: 'java', // We map cls to JAVA
+    xml: 'xml',
+    design: 'xml', // We map cls to xml
+    trigger:'apex',
+    html:'html',
+    page:'html',
+    auradoc:'html',
+    cmp:'html',
+    png:'png',
+    svg:'xml'
+}
+
+export function getLanguage(extension){
+    return languageMapping.hasOwnProperty(extension)?languageMapping[extension]:null;
+}
+
+export function formatFiles(files){
+    return [...files].map(file =>{
+      const extension = file?.name.includes('.')?file?.name.split('.').pop():null;
+      return { 
+        ...file,
+        ...{
+          extension:extension, // we remove the '.' for the editor
+          language:getLanguage(extension)
+        }
+      }
+    })
+}
+
+export function sortObjectsByField(objects, field, order) {
+    // Define a map for storing the order of each element
+    const orderMap = {};
+    order.forEach((item, index) => {
+        orderMap[item] = index;
+    });
+
+    // Sort function
+    return objects.sort((a, b) => {
+        // Get the order index, default to a large number if the item is not in the order array
+        const orderA = orderMap.hasOwnProperty(a[field]) ? orderMap[a[field]] : 999;
+        const orderB = orderMap.hasOwnProperty(b[field]) ? orderMap[b[field]] : 999;
+
+        // Compare the order indices
+        return orderA - orderB;
+    });
+}

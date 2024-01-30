@@ -1,9 +1,10 @@
 import { isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
 import { isElectronApp } from 'shared/utils';
 import constant from "global/constant";
+import { Connector } from './mapping';
 import * as webInterface from './web';
 import * as electronInterface from './electron';
-import {Connector} from './mapping';
+import { store,store_application } from 'shared/store';
 
 export * from './chrome';
 export * from './mapping';
@@ -51,7 +52,12 @@ export async function connect({alias,settings}){
     /** Get Username & First connection **/
     const header = await getHeader(connection);
     
-    return new Connector(header,connection);
+    // Dispatch Login Event
+    var connector = new Connector(header,connection);
+
+    store.dispatch(store_application.login(connector));
+    
+    return connector;
 }
 
 async function assignLatestVersion(connection){
@@ -212,7 +218,8 @@ export async function directConnect(sessionId,serverUrl){
         header.orgId    = identity.organization_id;
         header.userInfo = identity;
     }
-    //console.log('directConnect',header,connection);
-
-    return new Connector(header,connection);
+    // Dispatch Login Event
+    var connector = new Connector(header,connection);
+    store.dispatch(store_application.login(connector));
+    return connector;
 }

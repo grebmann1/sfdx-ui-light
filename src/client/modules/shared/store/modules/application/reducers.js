@@ -1,31 +1,45 @@
 
-import {
-    LOGIN,
-    LOGOUT,
-    NAVIGATE
-} from './constants';
+import * as CONST from '../../constants';
 
 export default function application(state = {}, action) {
     switch (action.type) {
-        case LOGIN:
+        case CONST.LOGIN:
             return {
-                ...state,
                 isLoggedIn: true,
-                user: action.payload.user
+                connector: action.payload.connector
             };
-
-        case LOGOUT:
+        case CONST.LOGOUT:
             return {
-                ...state,
-                isLoggedIn: false
+                isLoggedOut: true
             };
-
-        case NAVIGATE:
+        case CONST.NAVIGATE:
             return {
-                ...state,
+                isNavigate: true,
                 redirectTo: action.payload.target
             };
-
+        case CONST.OPEN:
+            return {
+                isOpen: true,
+                target: action.payload.target
+            }
+        case CONST.MENU_HIDE:
+            return {
+                isMenuDisplayed:false
+            }
+        case CONST.MENU_SHOW:
+            return {
+                isMenuDisplayed:true
+            }
+        case CONST.MENU_COLLAPSE:
+            return {
+                isMenuExpanded:false,
+                source: action.payload.source
+            }
+        case CONST.MENU_EXPAND:
+            return {
+                isMenuExpanded:true,
+                source: action.payload.source
+            }
         default:
             return state;
     }

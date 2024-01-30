@@ -1,8 +1,11 @@
 :host {
     display: block;
-    overflow: hidden;
-    position: relative;
-    width: 100%;
+    height: 2.5rem;
+}
+
+.slds-global-header_container{
+    position: absolute;
+    height: 2.5rem;
 }
 
 .slds-context-bar__label-close{

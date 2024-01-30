@@ -1,27 +1,27 @@
 <template>
     <header class="slds-global-header_container">
-        <!-- Logged In User -->
-        <slot></slot>
         <!-- Navigation -->
         <div class="slds-context-bar">
             <div class="slds-context-bar__primary">
                 <div class="slds-context-bar__item slds-context-bar__dropdown-trigger slds-dropdown-trigger slds-dropdown-trigger_click slds-no-hover">
-                    <div class="slds-context-bar__icon-action">
-                        <button class="slds-button slds-icon-waffle_container slds-context-bar__button" title="Application Launcher" onclick={openLauncher}>
-                            <span class="slds-icon-waffle">
-                                <span class="slds-r1"></span>
-                                <span class="slds-r2"></span>
-                                <span class="slds-r3"></span>
-                                <span class="slds-r4"></span>
-                                <span class="slds-r5"></span>
-                                <span class="slds-r6"></span>
-                                <span class="slds-r7"></span>
-                                <span class="slds-r8"></span>
-                                <span class="slds-r9"></span>
-                            </span>
-                            <span class="slds-assistive-text">Open App Launcher</span>
-                        </button>
-                    </div>
+                    <!--
+                        <div class="slds-context-bar__icon-action">
+                            <button class="slds-button slds-icon-waffle_container slds-context-bar__button" title="Application Launcher" onclick={openLauncher}>
+                                <span class="slds-icon-waffle">
+                                    <span class="slds-r1"></span>
+                                    <span class="slds-r2"></span>
+                                    <span class="slds-r3"></span>
+                                    <span class="slds-r4"></span>
+                                    <span class="slds-r5"></span>
+                                    <span class="slds-r6"></span>
+                                    <span class="slds-r7"></span>
+                                    <span class="slds-r8"></span>
+                                    <span class="slds-r9"></span>
+                                </span>
+                                <span class="slds-assistive-text">Open App Launcher</span>
+                            </button>
+                        </div>
+                    -->
                     <span class="slds-context-bar__label-action slds-context-bar__app-name">
                         <span class="slds-truncate" title="SF Toolkit">SF Toolkit</span>
                     </span>
@@ -30,17 +30,18 @@
             <nav class="slds-context-bar__secondary" role="navigation">
                 <ul class="slds-grid">
                     <template for:each={applications} for:item="application">
-                        <li key={application.id} class={application.class} onclick={selectTab} data-key={application.id}>
-                            <a href="#" class="slds-context-bar__label-action" title={application.name}>
-                                <span class="slds-truncate" title={application.name}>{application.name}</span>
-                            </a>
-                            <template lwc:if={application.isDeletable}>
-                                <a href="#" class="slds-context-bar__label-close" onclick={deleteTab}>
-                                    <lightning-button-icon icon-name="utility:close"  variant="container" class="slds-m-left_xx-small"></lightning-button-icon>
+                        <template lwc:if={application.isTabVisible}>
+                            <li key={application.id} class={application.class} onclick={selectTab} data-key={application.id}>
+                                <a href="#" class="slds-context-bar__label-action" title={application.label}>
+                                    <span class="slds-truncate" title={application.label}>{application.label}</span>
                                 </a>
-                            </template>
-                            
-                        </li>
+                                <template lwc:if={application.isDeletable}>
+                                    <a href="#" class="slds-context-bar__label-close" onclick={deleteTab}>
+                                        <lightning-button-icon icon-name="utility:close"  variant="container" class="slds-m-left_xx-small"></lightning-button-icon>
+                                    </a>
+                                </template>
+                            </li>
+                        </template>
                     </template>
                 </ul>
                 <span class="slds-float_right">

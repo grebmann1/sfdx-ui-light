@@ -5,7 +5,7 @@ import {TabulatorFull as Tabulator} from "tabulator-tables";
 import SObjectCell from 'sobjectexplorer/sobjectCell';
 
 /** Store */
-import { store,navigate } from 'shared/store';
+import { store,store_application } from 'shared/store';
 export default class Sobject extends FeatureElement {
 
     records = [];
@@ -30,7 +30,7 @@ export default class Sobject extends FeatureElement {
     /** Events */
     
     goToSetup = (e) => {
-        store.dispatch(navigate(`lightning/setup/ObjectManager/${this.selectedDetails.name}/Details/view`));
+        store.dispatch(store_application.navigate(`lightning/setup/ObjectManager/${this.selectedDetails.name}/Details/view`));
     }
 
     handleFilter = (e) => {
@@ -74,8 +74,12 @@ export default class Sobject extends FeatureElement {
 
     describeAll = async () => {
         this.isLoading = true;
-        const records = (await this.load_toolingGlobal()) || [];
-        this.records = records.map(x => ({...x,formattedLabel:`${x.label}(${x.name})`}))
+        try{
+            const records = (await this.load_toolingGlobal()) || [];
+            this.records = records.map(x => ({...x,formattedLabel:`${x.label}(${x.name})`}))
+        }catch(e){
+            console.error(e);
+        }
         this.isLoading = false;
     }
 

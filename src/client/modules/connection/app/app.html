@@ -1,17 +1,17 @@
 <template>
-    <div class="slds-page-header slds-page-header_joined">
+    <div class="slds-page-header slds-page-header_joined slds-overflow-hidden">
         <div class="slds-page-header__row">
             <div class="slds-page-header__col-title">
                 <div class="slds-media">
                     <div class="slds-media__figure">
-                        <lightning-icon icon-name="standard:user"></lightning-icon>
+                        <lightning-icon icon-name="standard:default"></lightning-icon>
                     </div>
                     <div class="slds-media__body">
                         <div class="slds-page-header__name">
                             <div class="slds-page-header__name-title">
                                 <h1>
-                                    <span>Connections</span>
-                                    <span class="slds-page-header__title slds-truncate" title="Alias list">Connection list</span>
+                                    <span>My Salesforce Connections</span>
+                                    <span class="slds-page-header__title slds-truncate" title="Authorized Orgs">Authorized Orgs</span>
                                 </h1>
                             </div>
                         </div>
@@ -23,7 +23,7 @@
                     <div class="slds-page-header__control">
                         <!-- <lightning-button icon-name="utility:knowledge_base" label="Documentation Explorer"></lightning-button> -->
                         <div class="slds-button-group" id="button-group-page-header-actions" role="group">
-                            <button class="slds-button slds-button_neutral" type="button" onclick={addConnectionClick}>Connect Org</button>
+                            <button class="slds-button slds-button_neutral" type="button" onclick={addConnectionClick}>Authorize Org</button>
                         </div>
                     </div>
                 </div>
