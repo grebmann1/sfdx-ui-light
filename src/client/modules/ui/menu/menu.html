@@ -1,8 +1,4 @@
 <template>
-    <div class={collapseClass}>
-        <lightning-button-icon-stateful icon-name={iconName} variant="border-filled" size="large" selected={isMenuSmall} onclick={handleToggle}></lightning-button-icon-stateful>
-    </div>
-    <div class="slds-has-divider_top-space"></div>
     <lightning-vertical-navigation class="menu-header" select-item={selectedItem} onselect={handleApplicationSelection}>
         <!-- Home -->
         <lightning-vertical-navigation-section>

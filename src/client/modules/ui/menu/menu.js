@@ -7,7 +7,7 @@ import { connectStore,store,store_application } from 'shared/store';
         
 export default class Menu extends FeatureElement {
     
-    @api isMenuSmall = false;
+    isMenuSmall = false;
     @api isUserLoggedIn = false; // to enforce
     selectedItem = 'home';
 
@@ -16,7 +16,7 @@ export default class Menu extends FeatureElement {
     applicationChange({application}) {
        
         // Toggle Menu
-        if(isNotUndefinedOrNull(application.isMenuExpanded) && isNotUndefinedOrNull(application.source)){
+        if(isNotUndefinedOrNull(application.isMenuExpanded)){
             this.isMenuSmall = !application.isMenuExpanded;
         }
     }

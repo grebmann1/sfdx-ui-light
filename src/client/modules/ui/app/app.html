@@ -34,10 +34,12 @@
                             version={version}
                         ></ui-header>
                     </div>
-                    <div class="l-cell-auto-size l-container-horizontal">
+                    <div class="slds-show_medium l-cell-auto-size l-container-horizontal">
+                        <!-- Menu -->
                         <div class={menuClass}>
                             <ui-menu is-user-logged-in={isUserLoggedIn} onapplicationselection={handleApplicationSelection}></ui-menu>
                         </div>
+                        <!-- Container - START -->
                         <div class="l-cell-auto-size">
                             <div class="l-container-vertical">
                                 <!-- Page - START -->
@@ -71,9 +73,18 @@
                                 </div>
                                 <!-- Page - END -->
                             </div>
+                            
                         </div>
+                        <!-- Container - END -->
                     </div>
+                    <!-- Mobile Illustration -->
+                    <slds-preview-illustration 
+                        class="slds-p-top_x-large slds-hide_medium l-container-horizonta" 
+                        title="Screen view is too small" 
+                        sub-title="SF Toolkit does not support mobile devices."
+                    ></slds-preview-illustration>
                 </div>
+                
             </div>
         </div>
     </div>

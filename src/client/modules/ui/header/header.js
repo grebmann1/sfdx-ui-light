@@ -1,4 +1,7 @@
-import { LightningElement,api } from 'lwc';
+import { LightningElement,api,wire } from 'lwc';
+import { isElectronApp, isEmpty, classSet,isNotUndefinedOrNull } from 'shared/utils';
+import { store,store_application } from 'shared/store';
+
 import ModalLauncher from "ui/modalLauncher";
 import constant from "global/constant";
 
@@ -12,30 +15,19 @@ export default class Header extends LightningElement {
 
     @api version = constant.version || '';
 
-    @api isMenuDisplayed = false;
+    @api isMenuSmall = false;
 
     connectedCallback(){}
-
-    openLauncher = () => {
-        ModalLauncher.open({
-            isUserLoggedIn:this.isUserLoggedIn
-        })
-        .then((res) => {
-            if(res){
-                this.dispatchEvent(new CustomEvent("newapp",{detail:res}));
-            }
-        })
-    }
+    
 
     /** Events **/
     
-    handleToggle = (e) => {
-        console.log('handleToggle');
-        this.isMenuDisplayed = ! this.isMenuDisplayed;
-        if(this.isFullPage){
-            //appStore.dispatch(store_application.hideMenu());
+    handleToggle = () => {
+        this.isMenuSmall = !this.isMenuSmall;
+        if(this.isMenuSmall){
+            store.dispatch(store_application.collapseMenu());
         }else{
-            //appStore.dispatch(store_application.showMenu());
+            store.dispatch(store_application.expandMenu());
         }
     }
     
@@ -52,10 +44,36 @@ export default class Header extends LightningElement {
         }}));
     }
 
+    /** **/
+    
+    openLauncher = () => {
+        ModalLauncher.open({
+            isUserLoggedIn:this.isUserLoggedIn
+        })
+        .then((res) => {
+            if(res){
+                this.dispatchEvent(new CustomEvent("newapp",{detail:res}));
+            }
+        })
+    }
+
     /** Getters */
 
     get formattedVersion(){
         return `${this.version}`;
+    }
+
+    get collapseClass(){
+        return classSet("slds-grid button-container")
+        .add({
+            'slds-grid_align-end':!this.isMenuSmall,
+            'slds-grid_align-center':this.isMenuSmall,
+        })
+        .toString()
+    }
+
+    get iconName(){
+        return this.isMenuSmall?'utility:toggle_panel_left':'utility:toggle_panel_right';
     }
 
 }

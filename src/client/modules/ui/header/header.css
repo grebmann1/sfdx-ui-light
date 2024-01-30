@@ -3,6 +3,10 @@
     height: 2.5rem;
 }
 
+.button-container{
+    margin: 10px;
+}
+
 .slds-global-header_container{
     position: absolute;
     height: 2.5rem;
@@ -27,4 +31,17 @@
 
 .slds-context-bar__secondary{
     justify-content: space-between;
+}
+
+.slds-context-bar{
+    padding: 0;
+}
+
+.slds-context-bar__app-name{
+    padding: unset;
+}
+
+.slds-context-bar__item{
+    align-items: center;
+
 }
