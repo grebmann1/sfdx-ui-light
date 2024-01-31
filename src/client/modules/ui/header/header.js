@@ -64,7 +64,7 @@ export default class Header extends LightningElement {
     }
 
     get collapseClass(){
-        return classSet("slds-grid button-container")
+        return classSet("slds-grid button-container slds-show_medium")
         .add({
             'slds-grid_align-end':!this.isMenuSmall,
             'slds-grid_align-center':this.isMenuSmall,

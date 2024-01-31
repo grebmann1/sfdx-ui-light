@@ -29,6 +29,10 @@
     z-index: 1;
 }
 
+.slds-context-bar__primary{
+    padding-right:40px;
+}
+
 .slds-context-bar__secondary{
     justify-content: space-between;
 }
