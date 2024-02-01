@@ -1,6 +1,7 @@
 import { api } from "lwc";
-import { isEmpty,runActionAfterTimeOut} from 'shared/utils';
+import { isEmpty,runActionAfterTimeOut,isNotUndefinedOrNull} from 'shared/utils';
 import FeatureElement from 'element/featureElement';
+const OBJECT_PREFIX = 'sforce_api_objects_';
 const ACCOUNT_ID = 'sforce_api_objects_account';
 
 export default class App extends FeatureElement {
@@ -25,6 +26,7 @@ export default class App extends FeatureElement {
 
     async connectedCallback(){
         this.isLoading = true;
+        this.initializeMermaid();
         await this.fetchDocument();
         this.selectedMenuItem = ACCOUNT_ID;
         this.selectPageToView();
@@ -34,8 +36,7 @@ export default class App extends FeatureElement {
     /** Events */
 
     handleItemSelection = async (e) => {
-        this.selectedMenuItem = e.detail.name;
-        this.selectPageToView();
+        this.redirectTo(e.detail.name);
     }
 
     handleFilter = (e) => {
@@ -55,6 +56,23 @@ export default class App extends FeatureElement {
     
 
     /** Methods */
+    
+    redirectTo = (name) => {
+        this.isLoading = true;
+        this.selectedMenuItem = name;
+        this.selectPageToView();
+        this.isLoading = false;
+    }
+    
+    initializeMermaid = () => {
+        window.mermaidCallback = (nodeId) => {
+            this.interactWithDiagram(nodeId);
+        }
+        window.mermaid.initialize({
+            startOnLoad: false,
+            securityLevel: 'loose'
+        });
+    }
 
     getFilteredItems = async (value) => {
         return  await (await fetch(`/documentation/search?keywords=${encodeURIComponent(value)}`)).json();
@@ -77,8 +95,8 @@ export default class App extends FeatureElement {
         }
         this.refs.container.innerHTML = formattedContent;
         this.applyFilterOnTable(this.filter);
-        this.template.querySelector('.doc').scrollIntoView();
-
+        this.buildUML();
+        this.template.querySelector('.mermaid').scrollIntoView();
     }
 
     applyFilterOnTable = (keywords) => {
@@ -98,6 +116,89 @@ export default class App extends FeatureElement {
                 
             });
         },{timeout:300});
+    }
+
+    concatenateNonEmptyText = (node) => {
+        let text = '';
+    
+        // Check if the current node is a text node and has non-whitespace content
+        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0) {
+            text += node.textContent.trim() + ' '; // Concatenate text and add a space for separation
+        }
+    
+        // Iterate through all child nodes
+        node.childNodes.forEach(child => {
+            text += this.concatenateNonEmptyText(child);
+        });
+    
+        return text;
+    }
+
+    extractData = () => {
+        let items = this.refs.container.querySelector('.featureTable').querySelectorAll('tbody tr');
+        const result = [];
+        [...items].forEach(x => {
+            const data = {
+                Field:this.concatenateNonEmptyText(x.querySelector('.keyword'))
+            };
+            x.querySelectorAll('.detailList .dt').forEach((dt) => {
+                const dd = dt.nextElementSibling;
+                data[(dt.textContent || "").replace(/ /g, "")] = (dd.textContent || "").replace(/ /g, "");
+            });
+            result.push(data);
+        });
+        return result;
+    }
+
+    interactWithDiagram = (nodeId) => {
+        console.log('interactWithDiagram',nodeId);
+        try{
+            const lookupName = OBJECT_PREFIX+nodeId.split('-')[1].toLowerCase();
+            if(this.items.find(x => x.id === lookupName)){
+                this.redirectTo(lookupName);
+            }
+        }catch(e){
+            console.error('interactWithDiagram',e);
+        }
+        
+    }
+    
+
+    buildUML = async () => {
+        this.refs.mermaid.innerHTML = '';
+        const source = this.concatenateNonEmptyText(this.refs.container.querySelector('.helpHead1')).replace(/ /g, "");
+        const result = ['classDiagram','direction LR',`class \`${source}\``];
+        const interactions = [`click \`${source}\` call mermaidCallback()`];
+        // Filter to take only fields with "Refer To"
+        const references = this.extractData().filter(x => x.Type === 'reference');
+            references.forEach(x => {
+                var lookup = x.RefersTo || this.extractManualObject(x.Field);
+                    lookup = lookup.replace(',','|')
+                if(lookup){
+                    if(lookup.split('|').length > 5){
+                        lookup = `${x.Field} Objects`;
+                    }
+                    result.push(`\`${source}\` --> \`${lookup || 'Undefined'}\` : ${x.Field}`);
+                    interactions.push(`click \`${lookup}\` call mermaidCallback()`)
+                }
+            });
+            //console.log('r',[].concat(result,interactions).join('\n'));
+        const { svg,bindFunctions } = await window.mermaid.render('graphDiv',[].concat(result,interactions).join('\n'));
+        this.refs.mermaid.innerHTML = svg;
+        if (bindFunctions) {
+            bindFunctions(this.refs.mermaid);
+        }
+    }
+
+    extractManualObject = (field) => {
+        if(!isEmpty(field) /*|| supportedFields.includes(field)*/){
+            field = field.replace(/ /g, "");
+            if (field.endsWith("Id")) {
+                return field.slice(0, -2); // Remove the last 2 characters
+            }
+            return field;
+        }
+        return null;
     }
 
     checkIfPresent = (a,b) => {

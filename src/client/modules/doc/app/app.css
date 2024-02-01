@@ -713,3 +713,16 @@ li {
     margin-left: 8px;
     cursor: pointer;
 }
+
+.mermaid  rect {
+    fill: #e7f3fd !important;
+    stroke: #2f2cb7 !important;
+    stroke-width: 4px;
+}
+.mermaid .edgeLabel .label span {
+    background: #fff !important;
+}
+.mermaid .divider {
+    stroke: #2f2cb7 !important;
+    stroke-width: 1;
+}

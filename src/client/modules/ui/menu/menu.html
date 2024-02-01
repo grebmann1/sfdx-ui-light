@@ -1,5 +1,5 @@
 <template>
-    <lightning-vertical-navigation class="menu-header" select-item={selectedItem} onselect={handleApplicationSelection}>
+    <lightning-vertical-navigation class="menu-header" onselect={handleApplicationSelection}>
         <!-- Home -->
         <lightning-vertical-navigation-section>
             <template for:each={homes} for:item="item">
