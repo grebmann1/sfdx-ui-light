@@ -714,6 +714,10 @@ li {
     cursor: pointer;
 }
 
+.mermaid {
+    text-align: center;
+}
+
 .mermaid  rect {
     fill: #e7f3fd !important;
     stroke: #2f2cb7 !important;

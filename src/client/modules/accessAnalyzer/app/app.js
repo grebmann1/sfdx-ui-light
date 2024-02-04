@@ -35,7 +35,7 @@ export default class App extends FeatureElement {
     isLoading = false;
 
 
-    async connectedCallback(){
+    connectedCallback(){
         this.loadMetadata(false);
         window.addEventListener('resize',this.tableResize);
     }

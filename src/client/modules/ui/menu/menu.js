@@ -3,6 +3,7 @@ import FeatureElement from 'element/featureElement';
 import { isElectronApp, isEmpty, classSet,isNotUndefinedOrNull } from 'shared/utils';
 import { CONFIG } from 'ui/app';
 import { connectStore,store,store_application } from 'shared/store';
+import { NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 
         
 export default class Menu extends FeatureElement {
@@ -14,12 +15,14 @@ export default class Menu extends FeatureElement {
 
     @wire(connectStore, { store })
     applicationChange({application}) {
-       
         // Toggle Menu
         if(isNotUndefinedOrNull(application.isMenuExpanded)){
             this.isMenuSmall = !application.isMenuExpanded;
         }
     }
+
+    @wire(NavigationContext)
+    navContext;
 
     connectedCallback(){}
 
@@ -29,8 +32,12 @@ export default class Menu extends FeatureElement {
     handleApplicationSelection = (e) => {
         e.stopPropagation();
         const target = e.detail.name || e.detail.value;
+        if(!isEmpty(target)){
+            navigate(this.navContext,{type:'application',attributes:{applicationName:target}});
+        }else{
+            navigate(this.navContext,{type:'home'});
+        }
         this.selectedItem = target;
-        store.dispatch(store_application.open(target));
     }
 
     handleRedirection = (e) => {

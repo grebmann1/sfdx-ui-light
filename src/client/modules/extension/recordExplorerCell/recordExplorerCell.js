@@ -9,7 +9,7 @@ export default class RecordExplorerCell extends LightningElement {
     @api filter;
 
 
-    async connectedCallback(){}
+    connectedCallback(){}
 
     renderedCallback() {
         if(this.template.querySelector('.injector')){

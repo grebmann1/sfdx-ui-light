@@ -1,0 +1,43 @@
+<template>
+    <!-- Record List -->
+    <div class="slds-p-left_small slds-p-top_small">
+        <div class="slds-grid">
+            <template lwc:if={isBackDisplayed}>
+                <button class="slds-button slds-button_icon" title="Back" onclick={goBack} disabled={isLoading}>
+                    <svg class="slds-button__icon" aria-hidden="true">
+                        <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#back"></use>
+                    </svg>
+                    <span class="slds-assistive-text">{i18n.FIELDS_PANEL_BACK}</span>
+                </button>
+            </template>
+            
+            <h2 class="slds-m-left_x-small slds-tree__group-header slds-truncate">{title}</h2>
+        </div>
+    </div>
+    <div class="slds-flex-column slds-is-relative min-height-200">
+        <lightning-input 
+            class="slds-m-vertical_medium" 
+            type="search"
+            label="Search" 
+            variant="label-hidden"
+            value={filter}
+            onchange={handleSearch}
+        ></lightning-input>
+        <template lwc:if={isLoading}>
+            <lightning-spinner alternative-text="Loading"></lightning-spinner>
+        </template>
+        <lightning-vertical-navigation onselect={handleSelection} compact class="slds-scrollable_y ">
+            <lightning-vertical-navigation-section>
+                <template for:each={filteredList} for:item="item">
+                    <lightning-vertical-navigation-item 
+                        key={item.Key} label={item.Label} name={item.Name}
+                    ></lightning-vertical-navigation-item>
+                </template>
+            </lightning-vertical-navigation-section>
+        </lightning-vertical-navigation>
+
+        <template lwc:if={displayIfEmpty}>
+            <div class="slds-p-around_small">No items found</div>
+        </template>
+    </div>
+</template>

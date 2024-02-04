@@ -66,6 +66,15 @@
             }
         },
         {
+            "id": "app2",
+            "path": "/app/:appName",
+            "rootComponent": "ui/fullView",
+            "layoutTemplate": "$layoutsDir/main.html",
+            "bootstrap": {
+                "syntheticShadow": true
+            }
+        },
+        {
             "id": "extension",
             "path": "/extension",
             "rootComponent": "ui/extensionView",

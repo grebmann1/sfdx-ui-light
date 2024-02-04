@@ -11,7 +11,11 @@ export default class extensionPopupView extends LightningElement {
     version;
     isLoaded = false;
 
-    async connectedCallback(){
+    connectedCallback(){
+        this.init();
+    }
+
+    init = async () => {
         let cookie = await getHostAndSession();
         this.sessionId = cookie.session;
         this.serverUrl = cookie.domain;

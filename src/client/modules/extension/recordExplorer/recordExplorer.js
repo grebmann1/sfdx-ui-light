@@ -28,7 +28,11 @@ export default class RecordExplorer extends LightningElement {
     isError = false;
 
 
-    async connectedCallback(){
+    connectedCallback(){
+        this.initRecordExplorer();
+    }
+
+    initRecordExplorer = async () => {
         try{
             this.isError = false;
             let conn = window.connector;
@@ -52,7 +56,6 @@ export default class RecordExplorer extends LightningElement {
             console.error(e);
             this.isError = true;
         }
-        
     }
 
     formatData = () => {

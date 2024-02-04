@@ -8,7 +8,7 @@ export default class Popup extends LightningElement {
     @api versions = [];
     @api version;
 
-    async connectedCallback(){
+    connectedCallback(){
         console.log('sessionId',this.sessionId);
         console.log('serverUrl',this.serverUrl);
         console.log('version',this.version);

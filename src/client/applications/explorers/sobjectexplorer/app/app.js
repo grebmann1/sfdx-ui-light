@@ -4,7 +4,7 @@ import FeatureElement from 'element/featureElement';
 
 export default class App extends FeatureElement {
 
-    async connectedCallback(){}
+    connectedCallback(){}
 
     /** Events */
 

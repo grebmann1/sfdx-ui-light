@@ -1,7 +1,7 @@
 import { LightningElement,track,api,wire } from "lwc";
 import { guid,isNotUndefinedOrNull,isElectronApp,classSet,isUndefinedOrNull } from "shared/utils";
 import { getExistingSession,saveSession,removeSession,directConnect,connect } from "connection/utils";
-
+import { NavigationMixin,CurrentPageReference } from 'lightning/navigation';
 /** Apps  **/
 import {APP_MAPPING,APP_LIST,DIRECT_LINK_MAPPING} from './modules';
 /** Store **/
@@ -11,8 +11,7 @@ const LIMITED = 'limited';
 
 export * as CONFIG from './modules';
 
-
-export default class App extends LightningElement {
+export default class App extends NavigationMixin(LightningElement) {
 
     @api mode;
     // for Extension (Limited Mode)
@@ -36,7 +35,7 @@ export default class App extends LightningElement {
     }
     set currentApplicationId(value){
         this._currentApplicationId = value;
-        this.assignNewHash(value);
+        //this.assignNewHash(value);
     }
 
 
@@ -75,10 +74,32 @@ export default class App extends LightningElement {
         }
     }
 
+    @wire(CurrentPageReference)
+    handleNavigation(pageRef){
+        const {type, attributes} = pageRef;
+        switch(type){
+            case 'home':
+            case 'application':
+                
+                const target = APP_LIST.find(x => x.path === attributes.applicationName);
+                console.log('handleNavigation',target)
+                if(isNotUndefinedOrNull(target)){
+                    this.handleApplicationSelection(target.name);
+                }else{
+                    this.handleApplicationSelection('home/app');
+                }
+            break;
+        }
+    }
+
 
     
 
-    async connectedCallback(){
+    connectedCallback(){
+        this.init();
+    }
+
+    init = async () => {
         if(isElectronApp()){
             await this.initElectron();
             this.isCommandCheckFinished = true;
@@ -88,7 +109,7 @@ export default class App extends LightningElement {
     }
 
     /** Events */
-
+    
     handleLogin = async (connector) => {
         this.connector = connector;
         const { instanceUrl,accessToken,version,refreshToken } = this.connector.conn;
@@ -123,17 +144,11 @@ export default class App extends LightningElement {
     }
 
     handleTabDelete = (e) => {
-        let applicationId = e.detail.id;
-        let currentIndex = this.applications.findIndex(x => x.id == applicationId);
-        this.applications = this.applications.filter(x => x.id != applicationId);
-
-        // Select other
-        let newApplicationId = this.applications[currentIndex - 1].id;
-        this.loadSpecificTab(newApplicationId);
+        this.applications = this.applications.filter(x => x.id != e.detail.id);
     }
 
     handleNewApp = async (e) => {
-        await this.loadModule(e.detail);
+        this.loadModule(e.detail);
     };
     
 
@@ -154,7 +169,7 @@ export default class App extends LightningElement {
     handleApplicationSelection = async (target) => {
         //console.log('this.applications',this.applications.map(x => x.name),target);
         if(this.applications.filter(x => x.name === target).length == 0){
-            await this.loadModule(target);
+            this.loadModule(target);
         }else{
             const existingAppId = this.applications.find(x => x.name === target).id;
             this.loadSpecificTab(existingAppId);
@@ -173,7 +188,7 @@ export default class App extends LightningElement {
         }
     }
     
-    openSpecificModule = (target) => {
+    openSpecificModule = async (target) => {
         this.handleApplicationSelection(target);
     }
     
@@ -242,7 +257,7 @@ export default class App extends LightningElement {
     load_fullMode = async () => {
         this.connector = await getExistingSession(); // await connect({alias:'acet-dev'})//
         // Default Mode
-        await this.loadModule('home/app');
+        this.loadModule('home/app',true);
 
         if(this.isUserLoggedIn){
             // Should be loaded via login !
@@ -264,10 +279,8 @@ export default class App extends LightningElement {
         const hash = (window.location.hash || '').replace('#','');
         //console.log('hash -> ',hash);
         if(DIRECT_LINK_MAPPING.hasOwnProperty(hash)){
-            await this.loadModule(DIRECT_LINK_MAPPING[hash]);
+            //await this.loadModule(DIRECT_LINK_MAPPING[hash]);
         }
-
-
     }
 
 
@@ -318,7 +331,7 @@ export default class App extends LightningElement {
     /** Dynamic Loading */
     
 
-    loadModule = async (target) => {
+    loadModule = (target,isFirst = false) => {
         const settings = APP_LIST.find(x => x.name === target);
         
         if (!settings) {
@@ -328,6 +341,7 @@ export default class App extends LightningElement {
             const application = {
                 name:settings.name,
                 constructor:settings.module,
+                path:settings.path,
                 id:guid(),
                 label:settings.label,
                 isActive:true,
@@ -342,7 +356,12 @@ export default class App extends LightningElement {
                 }
             };
             let _applications = this.applicationPreFormatted;
+            if(isFirst){
+                _applications.unshift(application);
+            }else{
                 _applications.push(application);
+            }
+                
             this.applications = _applications;
             this.currentApplicationId = application.id;
         }

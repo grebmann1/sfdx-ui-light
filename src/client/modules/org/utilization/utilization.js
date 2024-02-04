@@ -7,9 +7,12 @@ export default class Utilization extends FeatureElement {
     userLicenses = [];
 
 
-    async connectedCallback(){
+    connectedCallback(){
+        this.init();
+    }
+
+    init = async () => {
         this.isFilterting_limits = true;
-        
         this.userLicenses = await this.load_userLicenses();
     }
 

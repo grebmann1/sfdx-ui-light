@@ -14,13 +14,17 @@ export default class MarkdownMenu extends LightningElement {
     keywords;
     filterItems = [];
 
-    async connectedCallback(){
+    connectedCallback(){
         if(!this.init){
-            await this.getDown(this.url);
-            this.runAsMenu();
-            this.init = true;
-            this.sendMenu();
+            this.initMenu();
         }
+    }
+
+    initMenu = async () => {
+        await this.getDown(this.url);
+        this.runAsMenu();
+        this.init = true;
+        this.sendMenu();
     }
 
 

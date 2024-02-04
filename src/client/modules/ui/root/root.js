@@ -1,6 +1,5 @@
 import { LightningElement,api} from "lwc";
 import { createRouter } from 'lwr/router';
-import { NavigationMixin,CurrentPageReference } from 'lightning/navigation';
 // Route definition array
 const routes = [
     {
@@ -25,7 +24,6 @@ const routes = [
 ];
 export default class fullView extends LightningElement {
     router = createRouter({ routes });
-
 
     /** Events */
     

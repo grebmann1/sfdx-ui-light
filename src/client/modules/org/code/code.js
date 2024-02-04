@@ -32,7 +32,7 @@ export default class Code extends FeatureElement {
     };
     namespaces = new Set();
 
-    async connectedCallback(){
+    connectedCallback(){
         this.load_allData();
     }
 

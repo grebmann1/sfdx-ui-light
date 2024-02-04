@@ -1,6 +1,7 @@
 import { LightningElement,api,wire } from 'lwc';
 import { isElectronApp, isEmpty, classSet,isNotUndefinedOrNull } from 'shared/utils';
-import { store,store_application } from 'shared/store';
+import { connectStore,store,store_application } from 'shared/store';
+import { NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 
 import ModalLauncher from "ui/modalLauncher";
 import constant from "global/constant";
@@ -17,6 +18,17 @@ export default class Header extends LightningElement {
 
     @api isMenuSmall = false;
 
+    @wire(NavigationContext)
+    navContext;
+
+    @wire(connectStore, { store })
+    applicationChange({application}) {
+        // Toggle Menu
+        if(isNotUndefinedOrNull(application.isMenuExpanded)){
+            this.isMenuSmall = !application.isMenuExpanded;
+        }
+    }
+
     connectedCallback(){}
     
 
@@ -32,16 +44,28 @@ export default class Header extends LightningElement {
     }
     
     selectTab = (e) => {
-        this.dispatchEvent(new CustomEvent("tabchange",{detail:{
-            id:e.currentTarget.dataset.key
-        }}));
+        console.log('e.currentTarget.dataset.path',e.currentTarget.dataset.path);
+        const target = e.currentTarget.dataset.path;
+        if(!isEmpty(target)){
+            navigate(this.navContext,{type:'application',attributes:{applicationName:target}});
+        }else{
+            navigate(this.navContext,{type:'home'});
+        }
     }
 
     deleteTab = (e) => {
         e.stopPropagation();
-        this.dispatchEvent(new CustomEvent("tabdelete",{detail:{
-            id:e.currentTarget.closest('li').dataset.key
-        }}));
+        const applicationId = e.currentTarget.closest('li').dataset.key;
+        const filteredTabs  = this.applications.filter(x => x.isTabVisible);
+        const index = filteredTabs.findIndex(x => x.id === applicationId);
+        // Delete app
+        this.dispatchEvent(new CustomEvent("tabdelete",{detail:{id:applicationId}}));
+        // Navigate
+        if(index > 0){
+            navigate(this.navContext,{type:'application',attributes:{applicationName:filteredTabs[index - 1].path} });
+        }else{
+            navigate(this.navContext,{type:'home'});
+        }
     }
 
     /** **/

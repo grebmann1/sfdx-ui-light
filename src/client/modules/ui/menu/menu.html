@@ -7,7 +7,7 @@
                     <lightning-vertical-navigation-item-icon
                         key={item.name}
                         label={item.menuLabel}
-                        name={item.name}
+                        name={item.path}
                         icon-name={item.menuIcon}
                         ></lightning-vertical-navigation-item-icon>
                 </template>
@@ -15,7 +15,7 @@
                     <lightning-vertical-navigation-item 
                         key={item.name} 
                         label={item.menuLabel} 
-                        name={item.name}
+                        name={item.path}
                     ></lightning-vertical-navigation-item>
                 </template>
             </template>
@@ -26,7 +26,7 @@
                 <template for:each={applications} for:item="item">
                     <lightning-menu-item tooltip={item.menuLabel}
                         key={item.name} 
-                        value={item.name} 
+                        value={item.path} 
                         label={item.menuLabel}
                         icon-name={item.menuIcon}
                     ></lightning-menu-item>
@@ -38,7 +38,7 @@
                     <template for:each={connections} for:item="item">
                         <lightning-menu-item 
                             key={item.name} 
-                            value={item.name} 
+                            value={item.path} 
                             label={item.menuLabel}
                             icon-name={item.menuIcon}
                         ></lightning-menu-item>
@@ -54,7 +54,7 @@
                     <lightning-vertical-navigation-item-icon
                         key={item.name}
                         label={item.menuLabel}
-                        name={item.name}
+                        name={item.path}
                         icon-name={item.menuIcon}
                         ></lightning-vertical-navigation-item-icon>
                 </template>
@@ -62,7 +62,7 @@
                     <lightning-vertical-navigation-item 
                         key={item.name} 
                         label={item.menuLabel} 
-                        name={item.name}
+                        name={item.path}
                     ></lightning-vertical-navigation-item>
                 </template>
             </template>
@@ -72,7 +72,7 @@
                     <lightning-vertical-navigation-item-icon
                         key={item.name}
                         label={item.menuLabel}
-                        name={item.name}
+                        name={item.path}
                         icon-name={item.menuIcon}
                         ></lightning-vertical-navigation-item-icon>
                 </template>
@@ -80,13 +80,14 @@
                     <lightning-vertical-navigation-item 
                         key={item.name} 
                         label={item.menuLabel} 
-                        name={item.name}
+                        name={item.path}
                     ></lightning-vertical-navigation-item>
                 </template>
             </template>
         </template>
     </lightning-vertical-navigation>
     <div class="slds-has-divider_top-space"></div>
+    <!-- Others -->
     <lightning-vertical-navigation-section>
         <template for:each={others} for:item="item">
             <lightning-vertical-navigation-item-icon key={item.name} onclick={handleRedirection} data-url={item.url}

@@ -13,7 +13,7 @@ export default class MenuItem extends LightningElement {
 
 
 
-    async connectedCallback(){}
+    connectedCallback(){}
 
     /** Events */
 

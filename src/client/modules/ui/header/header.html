@@ -16,12 +16,12 @@
                 <ul class="slds-grid">
                     <template for:each={applications} for:item="application">
                         <template lwc:if={application.isTabVisible}>
-                            <li key={application.id} class={application.class} onclick={selectTab} data-key={application.id}>
-                                <a href="#" class="slds-context-bar__label-action" title={application.label}>
+                            <li key={application.id} class={application.class} onclick={selectTab} data-key={application.id} data-path={application.path}>
+                                <a class="slds-context-bar__label-action" title={application.label}>
                                     <span class="slds-truncate" title={application.label}>{application.label}</span>
                                 </a>
                                 <template lwc:if={application.isDeletable}>
-                                    <a href="#" class="slds-context-bar__label-close" onclick={deleteTab}>
+                                    <a class="slds-context-bar__label-close" onclick={deleteTab}>
                                         <lightning-button-icon icon-name="utility:close"  variant="container" class="slds-m-left_xx-small"></lightning-button-icon>
                                     </a>
                                 </template>

@@ -24,7 +24,11 @@ export default class App extends FeatureElement {
     loadingPointer = 0;
 
 
-    async connectedCallback(){
+    connectedCallback(){
+        this.loadDocumentation();
+    }
+
+    loadDocumentation = async () => {
         this.isLoading = true;
         this.initializeMermaid();
         await this.fetchDocument();

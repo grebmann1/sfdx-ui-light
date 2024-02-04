@@ -24,8 +24,8 @@ export default class App extends FeatureElement {
     data = [];
     isLoading = false;
 
-    async connectedCallback(){
-        await this.setAllConnections();
+    connectedCallback(){
+        this.setAllConnections();
     }
 
     /** Actions */

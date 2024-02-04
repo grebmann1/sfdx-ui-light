@@ -1,10 +1,14 @@
-import { LightningElement,api} from "lwc";
+import { api,wire } from "lwc";
 import { isEmpty,isElectronApp } from 'shared/utils';
 import FeatureElement from 'element/featureElement';
 import { store,store_application } from 'shared/store';
+import { NavigationContext, generateUrl, navigate } from 'lwr/navigation';
+import { CONFIG } from 'ui/app';
 
 
 export default class App extends FeatureElement {
+    @wire(NavigationContext)
+    navContext;
 
     orgInformation = {};
     userInformations = {}
@@ -13,9 +17,12 @@ export default class App extends FeatureElement {
     // Filtering
     isFilterting_limits = false;
 
-    async connectedCallback(){
+    connectedCallback(){
         //this.isFilterting_limits = true;
-        
+        this.init();
+    }
+
+    init = async () => {
         this.limits = await this.load_limits();
         this.orgInformation = await this.load_orgInformations();
         this.userInformations = await this.load_userInformations();
@@ -23,19 +30,22 @@ export default class App extends FeatureElement {
 
     /** Methods */
     
+    goToTarget = (target) => {
+        navigate(this.navContext,{type:'application',attributes:{
+            applicationName:CONFIG.APP_LIST.find(x => x.name === target).path
+        }});
+    }
+    
     openMetadataExplorer = () => {
-        const target = 'metadata/app';
-        store.dispatch(store_application.open(target));
+        this.goToTarget('metadata/app');
     }
 
     openSobjectExplorer = () => {
-        const target = 'sobjectexplorer/app';
-        store.dispatch(store_application.open(target));
+        this.goToTarget('sobjectexplorer/app');
     }
 
     openSOQLExplorer = () => {
-        const target = 'soql/app';
-        store.dispatch(store_application.open(target));
+        this.goToTarget('soql/app');
     }
 
     openInBrowser = () => {

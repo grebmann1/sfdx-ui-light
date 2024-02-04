@@ -1,4 +1,4 @@
-import { api} from "lwc";
+import { api,track} from "lwc";
 import FeatureElement from 'element/featureElement';
 import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeOut,formatFiles,sortObjectsByField } from 'shared/utils';
 import jsonview from '@pgrabovets/json-view';
@@ -8,67 +8,87 @@ import Toast from 'lightning/toast';
 export default class App extends FeatureElement {
 
     isLoading = false;
-    selectedMetadataType;
-    selectedMetadataRecordName;
 
-    metadataType_list = [];
-    metadata_list = [];
-    metadata_record;
+    @track selection = [];
+    @track metadata  = [];
+    currentLevel = 0;
 
+    //@track selection = {};
+    //@track items = {}
     isEditorDisplayed = false;
 
     // Filters
     metadataFilter;
     metadataTypeFilter;
 
-    async connectedCallback(){
+    // Menu
+
+    // Mode
+    advancedMode = false;
+
+    connectedCallback(){
         this.load_metadataGlobal();
     }
 
     /** Events */
     
-    goToMetadata = (e) => {
-        this.unselectMetadata();
-        this.selectedMetadataType = e.currentTarget.dataset.name;
-        this.load_specificMetadata();
-    }
-    
-    handleMetadataSearch = (e) => {
-        runActionAfterTimeOut(e.detail.value,(newValue) => {
-            this.metadataFilter = newValue;
-        });
+    handleMenuSelection = (e) => {
+
+        const {itemName,itemLabel, level} = e.detail;
+
+        switch(this.currentLevel){
+            case 0:
+                // Metadata Type selection
+                this.load_specificMetadata({itemName,itemLabel});
+                this.currentLevel = 1;
+            break;
+            case 1:
+                // Metadata Record selection
+                this.load_specificMetadataRecord({itemName,itemLabel});
+                //this.currentLevel = 2; // Only for the flows
+            break;
+            case 2:
+                // Only work for items such as flows
+                //console.log('selection lvl 3');
+            break;
+        }
     }
 
-    handleMetadataTypeSearch = (e) => {
-        runActionAfterTimeOut(e.detail.value,(newValue) => {
-            this.metadataTypeFilter = newValue;
-        });
-    }
-
-    handleMetadataTypeSelection = (e) => {
-        e.stopPropagation();
-        this.selectedMetadataType = e.detail.name;
-        this.load_specificMetadata();
-    }
-
-    handleMetadataSelection = (e) => {
-        e.stopPropagation();
-        this.metadata_record = null;
-        console.log('handleMetadataSelection');
-        this.selectedMetadataName = e.detail.name;
-        this.load_specificMetadataRecord();
-    }
-
-    unselectMetadata = () => {
-        this.selectedMetadataName = null;
-        this.selectedMetadataType = null;
-        this.metadata_record = null;
-        this.metadata_list = [];
+    handleMenuBack = () => {
         this.hideEditor();
+        if(this.currentLevel > 0){
+            this.currentLevel--;
+        }else{
+            this.currentLevel = 0;
+        }
+
+        this.selection = this.selection.slice(0,this.currentLevel+1);
+        this.metadata = this.metadata.slice(0,this.currentLevel+1);
+        
+        
     }
     
+    goToMetadata = (e) => {
+        this.hideEditor();
+        this.currentLevel = 0;
+        this.selection  = []
+        this.metadata   = this.metadata.slice(0,1);
+        this.handleMenuSelection({detail:{
+            itemName:e.currentTarget.dataset.name,
+            itemLabel:e.currentTarget.dataset.name
+        }});
+    }
 
     /** Methods */
+    
+    selectionUpdate = ({itemName,itemLabel}) => {
+        if(this.selection.length > this.currentLevel){
+            this.selection[this.currentLevel] = {itemName,itemLabel};
+        }else{
+            this.selection = [].concat(this.selection,[{itemName,itemLabel}]);
+        }
+        
+    }
 
     load_metadataGlobal = async () => {
         this.isLoading = true;
@@ -76,54 +96,52 @@ export default class App extends FeatureElement {
         //console.log('sobjects',sobjects);
         let result = await this.connector.conn.metadata.describe(this.connector.conn.version);
             result = (result?.metadataObjects || []).sort((a, b) => a.xmlName.localeCompare(b.xmlName));
-            result = result.filter(x => sobjects.includes(x.xmlName));
-        this.metadataType_list = result;
+            result = result.filter(x => sobjects.includes(x.xmlName)).map(x => ({...x,...{Name:x.xmlName,Label:x.xmlName,Key:x.xmlName}}));
+        this.metadata = [].concat(this.metadata,[{records:result,label:'Metadata'}]);
+        console.log('this.metadata',this.metadata);
         this.isLoading = false;
     }
 
-    load_specificMetadata = async () => {
+    load_specificMetadata = async ({itemName,itemLabel}) => {
         this.isLoading = true;
-        var type = this.selectedMetadataType; // Single type
-        const metadataConfig = await this.connector.conn.tooling.sobject(type).describe() || [];
+        this.selectionUpdate({itemName,itemLabel});
+        const metadataConfig = await this.connector.conn.tooling.sobject(itemName).describe() || [];
         //console.log('metadataConfig.fields.map(x => x.name)',metadataConfig.fields.map(x => x.name));
         const fields = metadataConfig.fields.map(x => x.name).filter(x => ['Id','Name','DeveloperName','MasterLabel','NamespacePrefix'].includes(x));
-        let query = `SELECT ${fields.join(',')} FROM ${type}`;
         //console.log('query',query);
-        let queryExec = this.connector.conn.tooling.query(query);
+        let queryExec = this.connector.conn.tooling.query(`SELECT ${fields.join(',')} FROM ${itemName}`);
         let result = (await queryExec.run({ responseTarget:'records',autoFetch : true, maxFetch : 10000 })).records || [];
-            result = result.map(x => ({
-                        ...x,
-                        Name:this.generateName(x)
-                    })).sort((a, b) => a.Name.localeCompare(b.Name));
-        console.log('metadata_list',result);
-        this.metadata_list = result;
+            result = result.map(x => {
+                const _tempName = this.formatName(x);
+                return {
+                    ...x,
+                    Name:x.Id,
+                    Label:_tempName,
+                    Key:x.Id
+                }
+            }).sort((a, b) => a.Label.localeCompare(b.Label));
+        console.log('metadata_lvl2',result);
+        this.metadata = [].concat(this.metadata,[{records:result,label:itemLabel}]);
+        
         this.isLoading = false;
     }
 
-    generateName = (x) => {
+    formatName = (x) => {
         const name = x.Name || x.DeveloperName || x.MasterLabel;
-        if(x.NamespacePrefix){
-            return `${x.NamespacePrefix}__${name}`;
-        }
-
-        return name;
+        return x.NamespacePrefix ? `${x.NamespacePrefix}__${name}` : name;
     }
 
-    load_specificMetadataRecord = async () => {
-        const type = this.selectedMetadataType; // Single type
-        var recordId = this.selectedMetadataName;
-
-        //console.log('this.selectedMetadataName',this.selectedMetadataName);
-        //console.log('this.metadata_list',this.metadata_list);TableEnumOrId
-        const metadataRecord = this.metadata_list.find(x => x.Id == recordId);
+    load_specificMetadataRecord = async ({itemName,itemLabel}) => {
+        this.selectionUpdate({itemName,itemLabel});
+        var recordId = itemName;
+        const metadataRecord = this.metadata[1].records.find(x => x.Id == recordId);
         if(metadataRecord.EntityDefinitionId){
             recordId = metadataRecord.EntityDefinitionId
         }
-        console.log('search',type,recordId,metadataRecord);
+        //console.log('search',this.metadata_lvl1_selection,recordId,metadataRecord);
         try{
             let result = await this.connector.conn.request(metadataRecord.attributes.url);
             console.log('result',result);
-            this.metadata_record = result;
 
             switch(result.attributes.type){
                 case "LightningComponentBundle":
@@ -146,10 +164,10 @@ export default class App extends FeatureElement {
                 break;
                 default:
                     runActionAfterTimeOut(null,async () => {
-                        this.visualizer = jsonview.create(JSON.stringify(this.metadata_record));
+                        this.visualizer = jsonview.create(JSON.stringify(result));
                             jsonview.render(this.visualizer,this.refs.container);
                             jsonview.expand(this.visualizer);
-                        //this.refs.container.innerHTML = `<json-viewer>${JSON.stringify(this.metadata_record)}</json-viewer>`;
+                        //this.refs.container.innerHTML = `<json-viewer>${JSON.stringify(this.metadata_lvl2_selection)}</json-viewer>`;
                     },{timeout:500});
             }
         }catch(e){
@@ -207,12 +225,9 @@ export default class App extends FeatureElement {
     }
 
     handle_AURA = async (data) => {
-        console.log('data',data);
         let resources = (await this.connector.conn.tooling.query(`SELECT AuraDefinitionBundleId,Format,DefType,Source FROM AuraDefinition WHERE AuraDefinitionBundleId = '${data.Id}'`)).records || [];
-        console.log('resources',resources);
         let files = formatFiles(resources.map(x => {
             let _name = this._auraNameMapping(data.FullName,x.DefType);
-            console.log('_name',_name);
             return {
                 path:_name,
                 name:_name,
@@ -239,31 +254,23 @@ export default class App extends FeatureElement {
 
 
     /** Getters */
-
-    get metadataType_filteredList(){
-        if(isEmpty(this.metadataTypeFilter)) return this.metadataType_list;
-        return this.metadataType_list.filter(x => this.checkIfPresent(x.xmlName,this.metadataTypeFilter));
-    }
     
-    get metadata_filteredList(){
-        if(isEmpty(this.metadataFilter)) return this.metadata_list;
-        return this.metadata_list.filter(x => this.checkIfPresent(x.Name,this.metadataFilter));
+    get menuItems(){
+        if(this.metadata.length == 0) return [];
+        return this.metadata[this.metadata.length - 1].records;
+    }
+
+    get menuBackTitle(){
+        if(this.metadata.length == 0) return '';
+        return this.metadata[this.metadata.length - 1].label;
+    }
+
+    get isBackDisplayed(){
+        return this.currentLevel > 0;
     }
 
     get pageClass(){
         return super.pageClass+' slds-p-around_small';
-    }
-
-    get isMetadataListDisplayed(){
-        return isEmpty(this.selectedMetadataType);
-    }
-
-    get isRecordDisplayed(){
-        return isNotUndefinedOrNull(this.metadata_record);
-    }
-
-    get displayIfEmpty(){
-        return !this.isLoading && this.metadata_list.length == 0;
     }
 
     get editorClass(){

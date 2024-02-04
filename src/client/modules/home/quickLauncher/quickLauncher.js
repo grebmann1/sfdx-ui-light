@@ -1,14 +1,17 @@
-import { api } from "lwc";
+import { api,wire } from "lwc";
 import FeatureElement from 'element/featureElement';
 
 import { isEmpty,isElectronApp } from 'shared/utils';
 import { CONFIG } from 'ui/app';
 import { store_application,store } from 'shared/store';
+import { NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 
+    
 
 
 export default class QuickLauncher extends FeatureElement {
-
+    @wire(NavigationContext)
+    navContext;
     
     connectedCallback(){
         console.log('CONFIG',CONFIG);
@@ -17,8 +20,12 @@ export default class QuickLauncher extends FeatureElement {
     /** Events */
     
     handleQuickAction = (e) => {
-        const name = e.currentTarget.dataset.name;
-        store.dispatch(store_application.open(name));
+        const target = e.currentTarget.dataset.path;
+        if(!isEmpty(target)){
+            navigate(this.navContext,{type:'application',attributes:{applicationName:target}});
+        }else{
+            navigate(this.navContext,{type:'home'});
+        }
     }
 
     handleRedirection = (e) => {

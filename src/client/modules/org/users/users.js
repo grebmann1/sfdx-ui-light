@@ -10,7 +10,11 @@ export default class Users extends FeatureElement {
     total_active_30days;
 
 
-    async connectedCallback(){
+    connectedCallback(){
+       this.init();
+    }
+
+    init = async () => {
         this.userInformations = await this.load_userInformations();
     }
 

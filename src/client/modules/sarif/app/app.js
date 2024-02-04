@@ -31,7 +31,7 @@ export default class App extends LightningElement {
 
    
 
-    async connectedCallback(){
+    connectedCallback(){
         runActionAfterTimeOut(null,(param) => {
             this.loadCachedFile();
         });

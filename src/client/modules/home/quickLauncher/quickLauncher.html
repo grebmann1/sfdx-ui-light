@@ -19,7 +19,7 @@
                             <div class="slds-p-left_medium slds-text-heading_small slds-truncate">Explorers</div>
                         </div>
                         <template for:each={explorers} for:item="item">
-                            <div key={item.name} class="slds-item-list" onclick={handleQuickAction} data-name={item.name}>
+                            <div key={item.name} class="slds-item-list" onclick={handleQuickAction} data-path={item.path}>
                                 <div class="slds-p-horizontal_medium">
                                     <lightning-icon icon-name={item.quickActionIcon}></lightning-icon>
                                 </div>
@@ -36,7 +36,7 @@
                             <div class="slds-p-left_medium slds-text-heading_small slds-truncate">Tools</div>
                         </div>
                         <template for:each={tools} for:item="item">
-                            <div key={item.name} class="slds-item-list" onclick={handleQuickAction} data-name={item.name}>
+                            <div key={item.name} class="slds-item-list" onclick={handleQuickAction} data-path={item.path}>
                                 <div class="slds-p-horizontal_medium">
                                     <lightning-icon icon-name={item.quickActionIcon}></lightning-icon>
                                 </div>

@@ -109,6 +109,21 @@ const APP_MAPPING = {
         shortName:"Metad.",
         path:'metadata'
     },
+    "sobjectexplorer/app":{
+        module:sobjectExplorer_app,
+        isFullHeight:true,
+        isDeletable:true,
+        isElectronOnly:false,
+        isOfflineAvailable:false,
+        isMenuVisible:true,
+        isTabVisible:true,
+        label:"SObject Explorer",
+        type:'application',
+        description:"Explore in details all your SObjects",
+        quickActionIcon:"standard:knowledge",
+        shortName:"SObject",
+        path:'sobject'
+    },
     "sarif/app":{
         module:sarif_app,
         isFullHeight:false
@@ -120,7 +135,7 @@ const APP_MAPPING = {
         isElectronOnly:false,
         isOfflineAvailable:true,
         isMenuVisible:true,
-        isTabVisible:false,
+        isTabVisible:true,
         label:"Documentation",
         type:'application',
         description:"Search through the Salesforce Documentation",
@@ -142,21 +157,6 @@ const APP_MAPPING = {
         quickActionIcon:"standard:data_model",
         shortName:"SOQL",
         path:'soql'
-    },
-    "sobjectexplorer/app":{
-        module:sobjectExplorer_app,
-        isFullHeight:true,
-        isDeletable:true,
-        isElectronOnly:false,
-        isOfflineAvailable:false,
-        isMenuVisible:true,
-        isTabVisible:true,
-        label:"SObject Explorer",
-        type:'application',
-        description:"Explore in details all your SObjects",
-        quickActionIcon:"standard:knowledge",
-        shortName:"SObject",
-        path:'sobject'
     }
 };
 
