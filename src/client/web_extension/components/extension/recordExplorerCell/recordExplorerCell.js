@@ -30,6 +30,10 @@ export default class RecordExplorerCell extends LightningElement {
 
 
     /** Getters */
+    
+    get isTrue(){
+        return this.value === true;
+    }
 
     get isBoolean(){
         return this.type === 'boolean';

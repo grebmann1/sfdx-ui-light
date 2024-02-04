@@ -2,7 +2,7 @@ import { LightningElement} from "lwc";
 import LightningAlert from 'lightning/alert';
 import { isUndefinedOrNull,isElectronApp } from "shared/utils";
 
-export default class extensionView extends LightningElement {
+export default class directView extends LightningElement {
 
     sessionId;
     serverUrl;

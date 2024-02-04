@@ -15,7 +15,25 @@ export default {
         lwc({
             "modules": [
                 { "dir": "../modules" },
+                { "dir": "../components" },
+                { "dir": "components" },
                 { "npm": "lightning-base-components" },
+                {
+                    "name": "tabulator-tables",
+                    "path": "node_modules/tabulator-tables/dist/js/tabulator_esm.js"
+                },
+                {
+                    "name": "@babel/runtime/helpers/esm/objectSpread2",
+                    "path": "../../node_modules/@babel/runtime/helpers/esm/objectSpread2.js"
+                },
+                {
+                    "name": "redux",
+                    "path": "node_modules/redux/es/redux.js"
+                },
+                {
+                    "name":"redux-thunk",
+                    "path":"node_modules/redux-thunk/es/index.js"
+                },
                 {
                     "name": "tabulator-tables",
                     "path": "node_modules/tabulator-tables/dist/js/tabulator_esm.js"
