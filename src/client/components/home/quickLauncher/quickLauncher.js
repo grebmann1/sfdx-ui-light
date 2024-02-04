@@ -39,7 +39,7 @@ export default class QuickLauncher extends FeatureElement {
     /** Getters */
     
     get explorers(){
-        const explorers = ['sobjectexplorer/app','metadata/app','doc/app'];
+        const explorers = ['object/app','metadata/app','doc/app'];
         return CONFIG.APP_LIST.filter(x => explorers.includes(x.name));
     }
 

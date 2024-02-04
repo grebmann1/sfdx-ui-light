@@ -41,7 +41,7 @@ export default class App extends FeatureElement {
     }
 
     openSobjectExplorer = () => {
-        this.goToTarget('sobjectexplorer/app');
+        this.goToTarget('object/app');
     }
 
     openSOQLExplorer = () => {

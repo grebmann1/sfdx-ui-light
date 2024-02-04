@@ -2,7 +2,7 @@ import { createElement} from "lwc";
 import FeatureElement from 'element/featureElement';
 import { isEmpty,runActionAfterTimeOut,isNotUndefinedOrNull } from 'shared/utils';
 import {TabulatorFull as Tabulator} from "tabulator-tables";
-import SObjectCell from 'sobjectexplorer/sobjectCell';
+import SObjectCell from 'object/sobjectCell';
 
 /** Store */
 import { store,store_application } from 'shared/store';
@@ -164,7 +164,7 @@ export default class Sobject extends FeatureElement {
     formatterField_value = (cell, formatterParams, onRendered) => {
         let value = cell._cell.value;
         //let data = cell._cell.row.data;
-        const element = createElement('sobjectexplorer-sobject-cell', {
+        const element = createElement('object-sobject-cell', {
             is: SObjectCell
         });
         Object.assign(element, {

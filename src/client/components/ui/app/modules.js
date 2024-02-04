@@ -3,7 +3,7 @@ import connection_app from "connection/app";
 import accessAnalyzer_app from "accessAnalyzer/app";
 import code_app from "code/app";
 import metadata_app from "metadata/app";
-import sobjectExplorer_app from "sobjectexplorer/app";
+import sobjectExplorer_app from "object/app";
 import extension_app from "extension/app";
 import org_app from "org/app";
 import sarif_app from "sarif/app";
@@ -22,7 +22,7 @@ const KNOWN_TYPE = new Set([
     "sarif/app",
     "doc/app",
     "soql/app",
-    "sobjectexplorer/app"
+    "object/app"
 ]);
 const APP_MAPPING = {
     "home/app": {
@@ -109,7 +109,7 @@ const APP_MAPPING = {
         shortName:"Metad.",
         path:'metadata'
     },
-    "sobjectexplorer/app":{
+    "object/app":{
         module:sobjectExplorer_app,
         isFullHeight:true,
         isDeletable:true,
