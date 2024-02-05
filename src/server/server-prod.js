@@ -1,8 +1,7 @@
-require('dotenv').config();
-const { createServer } =  require("lwr");
-//const express =  require("express");
-//const handler = require('serve-handler');
-//const serveJson = require('../../site/serve.json');
+require('dotenv').config()
+const express =  require("express");
+const handler = require('serve-handler');
+const serveJson = require('../../site/serve.json');
 const jsforce = require('jsforce');
 const jsforceAjaxProxy = require("jsforce-ajax-proxy");
 const qs = require('qs');
@@ -22,19 +21,9 @@ CTA_MODULE.launchScheduleFileDownloaded((files) => {
 console.log('DATA_CTA.contents',DATA_CTA);
 
 
-
-
-
-//const app = express();
-const SERVER_MODE = "development" === process.env.NODE_ENV ? "dev" : "prod";
+const app = express();
 const PORT = parseInt(process.env.PORT || "3000", 10);
 
-const lwrServer = createServer({
-  serverMode: SERVER_MODE,
-  port: PORT,
-});
-
-const app = lwrServer.getInternalServer("express");
 
 getOAuth2Instance = (params) => {
   return new jsforce.OAuth2({
@@ -94,17 +83,14 @@ app.get('/cta/search',function(req,res){
   res.json(result);
 });
 app.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));
-//app.get("/*", (req, res) => handler(req, res, {public: "site",...serveJson}));
+app.get("/*", (req, res) => handler(req, res, {public: "site",...serveJson}));
 
-lwrServer
-.listen(( { port, serverMode }) => {
-    console.log(`✅ App listening on port ${port} in ${serverMode} mode!`);
-    console.log(`Url http://localhost:${port}`);
+
+
+app.listen(PORT, () => {
+    
+    console.log(`✅ App running in PROD mode ${PORT}`);
 })
-.catch((err) => {
-    console.error(err);
-    //process.exit(1);
-});
 
 
 

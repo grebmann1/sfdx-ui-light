@@ -15,6 +15,7 @@
     "bundleConfig": { 
         "exclude": [
             "lwr/navigation",
+            "shared/store",
             "@lwc/synthetic-shadow",
             "lwc",
             "lightning/modal"
@@ -46,6 +47,7 @@
             "urlPath": "/favicon.ico"
         }
     ],
+    "hooks": ["$rootDir/src/client/hooks/application-hook.mjs"],
     "routes": [
         {
             "id": "home",
@@ -59,15 +61,6 @@
         {
             "id": "app",
             "path": "/app",
-            "rootComponent": "ui/fullView",
-            "layoutTemplate": "$layoutsDir/main.html",
-            "bootstrap": {
-                "syntheticShadow": true
-            }
-        },
-        {
-            "id": "app2",
-            "path": "/app/:app",
             "rootComponent": "ui/fullView",
             "layoutTemplate": "$layoutsDir/main.html",
             "bootstrap": {
