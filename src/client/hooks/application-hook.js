@@ -1,5 +1,4 @@
-import path from 'path';
-
+const path = require('path');
 const DEFAULT_MAIN_LAYOUT = 'main.html';
 const CACHE_TTL = '30m';
 
@@ -22,7 +21,7 @@ function generateRoutes(applications, { contentDir, layoutsDir }) {
   });
 }
 
-export default class ApplicationHook {
+class ApplicationHook {
     
     async initConfigs(lwrConfig, globalData){
 
@@ -30,3 +29,5 @@ export default class ApplicationHook {
       lwrConfig.routes.push(...generateRoutes(applications, lwrConfig));
     }
 }
+
+module.exports = ApplicationHook;

@@ -47,7 +47,7 @@
             "urlPath": "/favicon.ico"
         }
     ],
-    "hooks": ["$rootDir/src/client/hooks/application-hook.mjs"],
+    "hooks": ["$rootDir/src/client/hooks/application-hook.js"],
     "routes": [
         {
             "id": "home",
