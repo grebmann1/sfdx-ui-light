@@ -44,7 +44,7 @@ const APP_MAPPING = {
         isTabVisible:false,
         type:'connection',
         menuIcon:'utility:salesforce1',
-        menuLabel:'Salesforce',
+        menuLabel:'Connections',
         path:'connections'
     },
     "accessAnalyzer/app": {
@@ -139,6 +139,7 @@ const APP_MAPPING = {
         label:"Documentation",
         type:'application',
         description:"Search through the Salesforce Documentation",
+        menuIcon:"utility:knowledge_base",
         quickActionIcon:"standard:article",
         shortName:"Doc.",
         path:'documentation'

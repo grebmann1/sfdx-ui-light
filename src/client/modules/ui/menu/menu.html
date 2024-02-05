@@ -20,7 +20,9 @@
                 </template>
             </template>
         </lightning-vertical-navigation-section>
+        
         <template lwc:if={isMenuSmall}>
+            <!-- SMALL MENU - START -->
             <!-- Applications -->
             <lightning-button-menu variant="container" tooltip="Applications" icon-name="utility:builder" onselect={handleApplicationSelection}>
                 <template for:each={applications} for:item="item">
@@ -45,9 +47,10 @@
                     </template>
                 </lightning-button-menu>
             </template>
-            
+            <!-- SMALL MENU - END -->
         </template>
         <template lwc:else>
+            <!-- LARGE MENU - START -->
             <!-- Applications -->
             <template for:each={applications} for:item="item">
                 <template lwc:if={item.menuIcon}>
@@ -67,23 +70,27 @@
                 </template>
             </template>
             <!-- Connections -->
-            <template for:each={connections} for:item="item">
-                <template lwc:if={item.menuIcon}>
-                    <lightning-vertical-navigation-item-icon
-                        key={item.name}
-                        label={item.menuLabel}
-                        name={item.path}
-                        icon-name={item.menuIcon}
-                        ></lightning-vertical-navigation-item-icon>
-                </template>
-                <template lwc:else>
-                    <lightning-vertical-navigation-item 
-                        key={item.name} 
-                        label={item.menuLabel} 
-                        name={item.path}
-                    ></lightning-vertical-navigation-item>
+            <template lwc:if={isUnlimitedMode}> <!-- Only display in standard mode (not in electron instance) -->
+                <div class="slds-has-divider_top-space"></div>
+                <template for:each={connections} for:item="item">
+                    <template lwc:if={item.menuIcon}>
+                        <lightning-vertical-navigation-item-icon
+                            key={item.name}
+                            label={item.menuLabel}
+                            name={item.path}
+                            icon-name={item.menuIcon}
+                            ></lightning-vertical-navigation-item-icon>
+                    </template>
+                    <template lwc:else>
+                        <lightning-vertical-navigation-item 
+                            key={item.name} 
+                            label={item.menuLabel} 
+                            name={item.path}
+                        ></lightning-vertical-navigation-item>
+                    </template>
                 </template>
             </template>
+            <!-- LARGE MENU - END -->
         </template>
     </lightning-vertical-navigation>
     <div class="slds-has-divider_top-space"></div>
