@@ -18,7 +18,6 @@
         }
     ],
     "dependencies": {
-        "@alenaksu/json-viewer": "^2.0.1",
         "@lwc/rollup-plugin": "6.0.0",
         "@lwrjs/router":"0.11.12",
         "@lwrjs/label-module-provider": "0.11.12",
@@ -28,13 +27,9 @@
         "dotenv": "^16.3.1",
         "express": "^4.18.2",
         "express-requests-logger": "^4.0.0",
-        "highlight.js": "^11.9.0",
-        "http-errors": "^2.0.0",
         "jsforce": "1.11.1",
         "jsforce-ajax-proxy": "^2.0.0",
         "lwr": "0.11.12",
-        "monaco-editor": "^0.45.0",
-        "mongodb": "^6.3.0",
         "node-fetch": "^2.7.0",
         "node-schedule": "^2.1.1",
         "npm-run-all": "^4.1.5",
@@ -43,23 +38,24 @@
         "redux-thunk": "^2.3.0",
         "rollup-plugin-copy": "^3.5.0",
         "serve": "^14.2.1",
-        "serve-handler": "^6.1.5",
         "serve-static": "^1.15.0",
-        "sfdx-node": "^3.8.0",
         "soql-parser-js": "^5.0.2",
         "tabulator-tables": "^5.5.2",
         "textarea-caret": "^3.1.0",
-        "lightning-base-components": "1.19.11-alpha"
+        "lightning-base-components": "1.19.11-alpha",
+        "@salesforce-ux/design-system": "2.22.2",
+        "jspdf": "2.5.1",
+        "jspdf-autotable": "3.7.1"
     },
     "devDependencies": {
         "@lwc/synthetic-shadow": "6.0.0",
-        "@salesforce-ux/design-system": "2.22.2",
         "body-parser": "^1.20.2",
         "cookie-parser": "^1.4.6",
         "copy-files-from-to": "3.9.0",
         "cpx": "^1.5.0",
-        "jspdf": "2.5.1",
-        "jspdf-autotable": "3.7.1",
-        "lwc": "6.0.0"
+        "lwc": "6.0.0",
+        "sfdx-node": "^3.8.0",
+        "serve-handler": "^6.1.5",
+        "highlight.js": "^11.9.0"
     }
 }

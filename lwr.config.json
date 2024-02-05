@@ -27,11 +27,6 @@
             "urlPath": "/assets"
         },
         {
-            "alias": "monacoDir",
-            "dir": "$rootDir/node_modules/monaco-editor/min/vs",
-            "urlPath": "/monaco"
-        },
-        {
             "alias":"imagesDir",
             "dir": "$rootDir/src/client/assets/images",
             "urlPath": "/images"
