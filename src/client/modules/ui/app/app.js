@@ -27,6 +27,8 @@ export default class App extends LightningElement {
     isCommandCheckFinished = false;
     isMenuHidden = false;
     isMenuCollapsed = false;
+    pageHasLoaded = false;
+    targetPage;
 
     @track applications = [];
 
@@ -76,6 +78,8 @@ export default class App extends LightningElement {
 
     @wire(CurrentPageReference)
     handleNavigation(pageRef){
+        this.targetPage = pageRef;
+        if(!this.pageHasLoaded) return;
         const {type, attributes} = pageRef;
         switch(type){
             case 'home':
@@ -207,7 +211,8 @@ export default class App extends LightningElement {
         this.isJavaCliInstalled         = result.java;
     }
 
-    initMode = () => {
+    initMode = async () => {
+        console.log('init mode');
         window.isLimitedMode = this.isLimitedMode; // To hide 
 
         this.connector      = null;
@@ -215,9 +220,9 @@ export default class App extends LightningElement {
         this.applicationId  = null;
 
         if(this.isLimitedMode){
-            this.load_limitedMode();
+            await this.load_limitedMode();
         }else{
-            this.load_fullMode();
+            await this.load_fullMode();
         }
     }
 
@@ -251,6 +256,10 @@ export default class App extends LightningElement {
 
         // Should be loaded via login !
         this.openSpecificModule('org/app'); 
+        this.pageHasLoaded = true;
+        if(this.targetPage){
+            this.handleNavigation(this.targetPage);
+        }
     }
 
     /** Website & Electron **/
@@ -261,7 +270,7 @@ export default class App extends LightningElement {
 
         if(this.isUserLoggedIn){
             // Should be loaded via login !
-            this.openSpecificModule('org/app');
+            //this.openSpecificModule('org/app');
         }
         
         /** DEV MODE  */
@@ -280,6 +289,11 @@ export default class App extends LightningElement {
         //console.log('hash -> ',hash);
         if(DIRECT_LINK_MAPPING.hasOwnProperty(hash)){
             //await this.loadModule(DIRECT_LINK_MAPPING[hash]);
+        }
+
+        this.pageHasLoaded = true;
+        if(this.targetPage){
+            this.handleNavigation(this.targetPage);
         }
     }
 
