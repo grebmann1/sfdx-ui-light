@@ -1,7 +1,7 @@
 import { LightningElement,track,api,wire } from "lwc";
 import { guid,isNotUndefinedOrNull,isElectronApp,classSet,isUndefinedOrNull } from "shared/utils";
 import { getExistingSession,saveSession,removeSession,directConnect,connect } from "connection/utils";
-import { NavigationMixin,CurrentPageReference } from 'lightning/navigation';
+import { NavigationMixin,CurrentPageReference } from 'lwr/navigation';
 /** Apps  **/
 import {APP_MAPPING,APP_LIST,DIRECT_LINK_MAPPING} from './modules';
 /** Store **/
@@ -11,7 +11,7 @@ const LIMITED = 'limited';
 
 export * as CONFIG from './modules';
 
-export default class App extends NavigationMixin(LightningElement) {
+export default class App extends LightningElement {
 
     @api mode;
     // for Extension (Limited Mode)

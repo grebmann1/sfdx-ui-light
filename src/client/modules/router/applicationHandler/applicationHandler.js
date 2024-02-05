@@ -16,7 +16,7 @@ export default class ApplicationHandler {
     update(page) {
         this.callback({
             viewset: {
-                default: null,
+                default: () => null,
             },
         });
     }

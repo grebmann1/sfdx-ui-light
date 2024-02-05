@@ -3,6 +3,7 @@
     "version": "1.0.3",
     "scripts": {
         "start:dev:client": "NODE_ENV=development node -r dotenv/config src/server/server-dev.js",
+        "start:prod:client2": "NODE_ENV=prod node -r dotenv/config src/server/server-prod.js",
         "start:prod:client": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --clean; NODE_ENV=production node -r dotenv/config src/server/server-prod.js",
         "clean": "rm -r __lwr_cache__ site __skip_directory_creation__",
         "fix:lightning": "node scripts/fix_lightning.js",

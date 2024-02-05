@@ -1,95 +1,93 @@
 <template>
-    <lwr-router-container router={router} onhandlenavigation={handleNavigation}>
-        <div class="l-container-vertical">
-            <div class="l-cell-content-size">
-                <!-- Logged In User-->
-                <template lwc:if={isUserLoggedIn}>
-                    <ui-notify>
-                        <span class="slds-icon_container slds-icon-utility-user slds-m-right_x-small" title="Description of icon when needed">
-                            <svg class="slds-icon slds-icon_x-small" aria-hidden="true">
-                                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#user"></use>
-                            </svg>
-                        </span>
-                        <h2>
-                            {loggedInMessage}
-                            <template lwc:if={isLogoutDisplayed}>
-                                <a href="#" onclick={handleLogout}>Log out</a>
-                            </template>
-                        </h2>
-                    </ui-notify>
-                </template>
-            </div>
-            <div class="l-cell-auto-size">
-                <div class="l-container-whole-parent">
-                    <div class="home l-container-vertical">
-                        <div class="l-cell-content-size">
-                            <!-- Header -->
-                            <ui-header 
-                                current-application-name="Org"
-                                current-tab-name="Home"
-                                applications={applications}
-                                onnewapp={handleNewApp}
-                                ontabchange={handleTabChange}
-                                ontabdelete={handleTabDelete}
-                                is-user-logged-in={isUserLoggedIn}
-                                version={version}
-                            ></ui-header>
-                        </div>
-                        <div class="slds-show_medium l-cell-auto-size l-container-horizontal">
-                            <!-- Menu -->
-                            <div class={menuClass}>
-                                <ui-menu is-user-logged-in={isUserLoggedIn} onapplicationselection={handleApplicationSelection}></ui-menu>
-                            </div>
-                            <!-- Container - START -->
-                            <div class="l-cell-auto-size">
-                                <div class="l-container-vertical">
-                                    <!-- Page - START -->
-                                    <div class={dynamicAppContainerClass}>
-                                        <section class="slds-full-height section">
-                                            <div class="slds-full-height container" onopenapplication={handleApplicationSelection}>
-                                                <!-- [Electron only] SFDX Installation required  -->
-                                                <template lwc:if={isSFDXMissing}>
-                                                    <ui-information-block title="CLI Missing" variant="error">
-                                                        <p>You need to install the SFDX/SF CLI before being able to use this app. <a href="https://developer.salesforce.com/tools/salesforcecli">https://developer.salesforce.com/tools/salesforcecli</a></p>
-                                                    </ui-information-block>
-                                                </template>
-                                                <!-- Feature - Start -->
-                                                    <template for:each={applications} for:item="application">
-                                                        <div key={application.id} class={application.classVisibility}>
-                                                            <slds-require-connection is-required={application.requireConnection} class="slds-full-height">
-                                                                <template lwc:if={application.isFullHeight}>
-                                                                    <lwc:component  lwc:is={application.constructor} lwc:spread={application.attributes}></lwc:component>
-                                                                </template>
-                                                                <template lwc:else>
-                                                                    <div class="slds-scrollable_y slds-p-around_small">
-                                                                        <lwc:component  lwc:is={application.constructor} lwc:spread={application.attributes}></lwc:component>
-                                                                    </div>
-                                                                </template>
-                                                            </slds-require-connection>
-                                                        </div>
-                                                    </template>
-                                                <!-- Feature - End -->
-                                            </div>
-                                        </section>
-                                    </div>
-                                    <!-- Page - END -->
-                                </div>
-                                
-                            </div>
-                            <!-- Container - END -->
-                        </div>
-                        <!-- Mobile Illustration -->
-                        <slds-preview-illustration 
-                            class="slds-p-top_x-large slds-hide_medium l-container-horizonta" 
-                            title="Screen view is too small" 
-                            sub-title="SF Toolkit does not support mobile devices."
-                        ></slds-preview-illustration>
+    <div class="l-container-vertical">
+        <div class="l-cell-content-size">
+            <!-- Logged In User-->
+            <template lwc:if={isUserLoggedIn}>
+                <ui-notify>
+                    <span class="slds-icon_container slds-icon-utility-user slds-m-right_x-small" title="Description of icon when needed">
+                        <svg class="slds-icon slds-icon_x-small" aria-hidden="true">
+                            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#user"></use>
+                        </svg>
+                    </span>
+                    <h2>
+                        {loggedInMessage}
+                        <template lwc:if={isLogoutDisplayed}>
+                            <a href="#" onclick={handleLogout}>Log out</a>
+                        </template>
+                    </h2>
+                </ui-notify>
+            </template>
+        </div>
+        <div class="l-cell-auto-size">
+            <div class="l-container-whole-parent">
+                <div class="home l-container-vertical">
+                    <div class="l-cell-content-size">
+                        <!-- Header -->
+                        <ui-header 
+                            current-application-name="Org"
+                            current-tab-name="Home"
+                            applications={applications}
+                            onnewapp={handleNewApp}
+                            ontabchange={handleTabChange}
+                            ontabdelete={handleTabDelete}
+                            is-user-logged-in={isUserLoggedIn}
+                            version={version}
+                        ></ui-header>
                     </div>
-                    
+                    <div class="slds-show_medium l-cell-auto-size l-container-horizontal">
+                        <!-- Menu -->
+                        <div class={menuClass}>
+                            <ui-menu is-user-logged-in={isUserLoggedIn} onapplicationselection={handleApplicationSelection}></ui-menu>
+                        </div>
+                        <!-- Container - START -->
+                        <div class="l-cell-auto-size">
+                            <div class="l-container-vertical">
+                                <!-- Page - START -->
+                                <div class={dynamicAppContainerClass}>
+                                    <section class="slds-full-height section">
+                                        <div class="slds-full-height container" onopenapplication={handleApplicationSelection}>
+                                            <!-- [Electron only] SFDX Installation required  -->
+                                            <template lwc:if={isSFDXMissing}>
+                                                <ui-information-block title="CLI Missing" variant="error">
+                                                    <p>You need to install the SFDX/SF CLI before being able to use this app. <a href="https://developer.salesforce.com/tools/salesforcecli">https://developer.salesforce.com/tools/salesforcecli</a></p>
+                                                </ui-information-block>
+                                            </template>
+                                            <!-- Feature - Start -->
+                                                <template for:each={applications} for:item="application">
+                                                    <div key={application.id} class={application.classVisibility}>
+                                                        <slds-require-connection is-required={application.requireConnection} class="slds-full-height">
+                                                            <template lwc:if={application.isFullHeight}>
+                                                                <lwc:component  lwc:is={application.constructor} lwc:spread={application.attributes}></lwc:component>
+                                                            </template>
+                                                            <template lwc:else>
+                                                                <div class="slds-scrollable_y slds-p-around_small">
+                                                                    <lwc:component  lwc:is={application.constructor} lwc:spread={application.attributes}></lwc:component>
+                                                                </div>
+                                                            </template>
+                                                        </slds-require-connection>
+                                                    </div>
+                                                </template>
+                                            <!-- Feature - End -->
+                                        </div>
+                                    </section>
+                                </div>
+                                <!-- Page - END -->
+                            </div>
+                            
+                        </div>
+                        <!-- Container - END -->
+                    </div>
+                    <!-- Mobile Illustration -->
+                    <slds-preview-illustration 
+                        class="slds-p-top_x-large slds-hide_medium l-container-horizonta" 
+                        title="Screen view is too small" 
+                        sub-title="SF Toolkit does not support mobile devices."
+                    ></slds-preview-illustration>
                 </div>
+                
             </div>
         </div>
-    </lwr-router-container>
+    </div>
     
 
     <!-- Shared Footer -->

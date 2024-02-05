@@ -14,6 +14,7 @@
     },
     "bundleConfig": { 
         "exclude": [
+            "lwr/navigation",
             "@lwc/synthetic-shadow",
             "lwc",
             "lightning/modal"
@@ -71,7 +72,7 @@
         },
         {
             "id": "app2",
-            "path": "/app/:appName",
+            "path": "/app/:app",
             "rootComponent": "ui/fullView",
             "layoutTemplate": "$layoutsDir/main.html",
             "bootstrap": {
@@ -105,6 +106,7 @@
         }
     ],
     "moduleProviders": [
+        "@lwrjs/router/module-provider",
         "@lwrjs/label-module-provider",
         "@lwrjs/app-service/moduleProvider",
         "@lwrjs/lwc-module-provider",
