@@ -87,7 +87,7 @@
             "path": "/cta",
             "rootComponent": "cta/app",
             "layoutTemplate": "$layoutsDir/cta.html",
-            "cache": { "ttl": 1 },
+            "cache": { "ttl": 60 },
             "bootstrap": {
                 "syntheticShadow": true
             }
