@@ -45,17 +45,17 @@
         "lightning-base-components": "1.19.11-alpha",
         "@salesforce-ux/design-system": "2.22.2",
         "jspdf": "2.5.1",
-        "jspdf-autotable": "3.7.1"
+        "jspdf-autotable": "3.7.1",
+        "highlight.js": "^11.9.0",
+        "@lwc/synthetic-shadow": "6.0.0"
     },
     "devDependencies": {
-        "@lwc/synthetic-shadow": "6.0.0",
         "body-parser": "^1.20.2",
         "cookie-parser": "^1.4.6",
         "copy-files-from-to": "3.9.0",
         "cpx": "^1.5.0",
         "lwc": "6.0.0",
         "sfdx-node": "^3.8.0",
-        "serve-handler": "^6.1.5",
-        "highlight.js": "^11.9.0"
+        "serve-handler": "^6.1.5"
     }
 }
