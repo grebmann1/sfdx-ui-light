@@ -25,7 +25,10 @@ export default class Menu extends FeatureElement {
     navContext;
 
     connectedCallback(){
-        this.isMenuSmall = isElectronApp(); // by default it small for electron apps
+        if(isElectronApp()){
+            this.isMenuSmall = true; // by default it small for electron apps
+            store.dispatch(store_application.collapseMenu());
+        }
     }
 
     
