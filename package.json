@@ -35,6 +35,7 @@
         "jsforce-ajax-proxy": "^2.0.0",
         "jspdf": "2.5.1",
         "jspdf-autotable": "3.7.1",
+        "jszip": "^3.10.1",
         "lightning-base-components": "1.19.11-alpha",
         "lwr": "0.11.12",
         "node-fetch": "^2.7.0",

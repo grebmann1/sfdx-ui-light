@@ -63,6 +63,9 @@
                     </div>
                     <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_3-of-4">
                         <editor-app lwc:ref="editor" class={editorClass}></editor-app>
+                        <div class="slds-scrollable_y"> 
+                            <div lwc:dom="manual" lwc:ref="container"></div> 
+                        </div>
                         <!--<div class="slds-scrollable_y">
                             <template lwc:if={isRecordDisplayed}>
                                 <metadata-code-viewer></metadata-code-viewer>

@@ -222,3 +222,14 @@ export function sortObjectsByField(objects, field, order) {
         return orderA - orderB;
     });
 }
+
+export function removeDuplicates(arr, prop) {
+    const unique = new Set();
+    const result = arr.filter((item) => {
+        const val = item[prop];
+        const isPresent = unique.has(val);
+        unique.add(val);//always add
+        return !isPresent;
+    });
+    return result;
+}
