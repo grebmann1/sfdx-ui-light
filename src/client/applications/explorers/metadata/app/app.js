@@ -180,7 +180,7 @@ export default class App extends FeatureElement {
                     this.displayEditor(await this.handle_APEX(result,'page','Markup')); // Similar to APEX
                 break;
                 case "Flow":
-                    var xmlMetadata = await this.connector.conn.metadata.read('Flow', ['eo_cf_questionnaire-1']);
+                    var xmlMetadata = await this.connector.conn.metadata.read('Flow', [result.FullName]);
                     /*const metadataPackage = {
                         unpackaged: {
                           types: [{ name: 'Flow', members: ['eo_cf_questionnaire-1'] }],

@@ -3,7 +3,9 @@ import FeatureElement from 'element/featureElement';
 
 import { isEmpty,formatBytes,isUndefinedOrNull,isNotUndefinedOrNull } from 'shared/utils';
 
-const DEFAULT_NAMESPACE = '__default__';
+
+const DEFAULT_NAMESPACE = 'Default';
+const ALL_NAMESPACE     = 'All';
 
 export default class Code extends FeatureElement {
 
@@ -37,6 +39,14 @@ export default class Code extends FeatureElement {
     }
 
     /** Methods */
+    
+    extractNamespaces = (value) => {
+        const result = new Set(['All']);
+        (value || []).forEach(x => {
+            result.add(x.NamespacePrefix || 'Default');
+        })
+        return [...result];
+    }
 
 
     load_data = async (query,key,callback,useTooling = false) => {
@@ -45,11 +55,9 @@ export default class Code extends FeatureElement {
             let queryExec = conn.query(query);
             this.records[key] = await queryExec.run({ responseTarget:'Records',autoFetch : true, maxFetch : 10000 }) || [];
             
-            // Extract namespace
+            // Add namespace
             this.records[key].forEach(x => {
-                if(!isEmpty(x.NamespacePrefix)){
-                    this.namespaces.add(x.NamespacePrefix);
-                }
+                this.namespaces.add(x.NamespacePrefix || 'Default');
             });
         }catch(e){
             console.error(e);
@@ -256,7 +264,7 @@ export default class Code extends FeatureElement {
         if(!this.records.hasOwnProperty(key)) return [];
 
         let records = [...this.records[key]];
-        if(this.namespaceFiltering_value != DEFAULT_NAMESPACE){
+        if(this.namespaceFiltering_value != ALL_NAMESPACE){
             records = records.filter(x => x.NamespacePrefix === this.namespaceFiltering_value)
         } 
         return records;
@@ -351,7 +359,7 @@ export default class Code extends FeatureElement {
     
 
     get namespaceFiltering_options(){
-        return [...this.namespaces].map(x => ({label:x,value:x})).concat([{label:'Default',value:DEFAULT_NAMESPACE}]);
+        return [...this.namespaces].map(x => ({label:x,value:x})).concat([{label:ALL_NAMESPACE,value:ALL_NAMESPACE}]);
     }
 
     namespaceFiltering_handleChange = (e) => {
