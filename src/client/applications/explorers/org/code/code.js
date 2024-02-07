@@ -39,15 +39,6 @@ export default class Code extends FeatureElement {
     }
 
     /** Methods */
-    
-    extractNamespaces = (value) => {
-        const result = new Set(['All']);
-        (value || []).forEach(x => {
-            result.add(x.NamespacePrefix || DEFAULT_NAMESPACE);
-        })
-        return [...result];
-    }
-
 
     load_data = async (query,key,callback,useTooling = false) => {
         try{
@@ -262,12 +253,7 @@ export default class Code extends FeatureElement {
 
     filterRecords = (key) => {
         if(!this.records.hasOwnProperty(key)) return [];
-
-        let records = [...this.records[key]];
-        if(this.namespaceFiltering_value != ALL_NAMESPACE){
-            records = records.filter(x => x.NamespacePrefix === this.namespaceFiltering_value)
-        } 
-        return records;
+        return [...this.records[key]].filter(x => isEmpty(x.NamespacePrefix) && this.namespaceFiltering_value === DEFAULT_NAMESPACE || this.namespaceFiltering_value === x.NamespacePrefix);
     }
 
     getCurrentRank = (mapping,check) => {

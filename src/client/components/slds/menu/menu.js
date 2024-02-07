@@ -58,23 +58,13 @@ export default class Menu extends FeatureElement {
     extractNamespaces = (value) => {
         const result = new Set(['All']);
         (value || []).forEach(x => {
-            result.add(x.NamespacePrefix || 'Default');
+            result.add(x.NamespacePrefix || DEFAULT_NAMESPACE);
         })
         return [...result];
     }
     
     checkIfPresent = (a,b) => {
         return (a || '').toLowerCase().includes((b||'').toLowerCase());
-    }
-
-    filterRecords = (key) => {
-        if(!this.records.hasOwnProperty(key)) return [];
-
-        let records = [...this.records[key]];
-        if(this.namespaceFiltering_value != ALL_NAMESPACE && isNotUndefinedOrNull(this.namespaceFiltering_value)){
-            records = records.filter(x => x.NamespacePrefix === this.namespaceFiltering_value)
-        } 
-        return records;
     }
 
     /* Getters */
@@ -96,7 +86,7 @@ export default class Menu extends FeatureElement {
     
     get filteredList(){
         if(isEmpty(this.filter)) return this.namespaceFiltered;
-        return this.namespaceFiltered.filter(x => this.checkIfPresent(x.Name,this.filter));
+        return this.namespaceFiltered.filter(x => this.checkIfPresent(x.Name,this.filter) || this.checkIfPresent(x.Label,this.filter));
     }
 
     get displayIfEmpty(){
