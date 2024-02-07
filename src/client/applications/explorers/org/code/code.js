@@ -43,7 +43,7 @@ export default class Code extends FeatureElement {
     extractNamespaces = (value) => {
         const result = new Set(['All']);
         (value || []).forEach(x => {
-            result.add(x.NamespacePrefix || 'Default');
+            result.add(x.NamespacePrefix || DEFAULT_NAMESPACE);
         })
         return [...result];
     }
@@ -57,7 +57,7 @@ export default class Code extends FeatureElement {
             
             // Add namespace
             this.records[key].forEach(x => {
-                this.namespaces.add(x.NamespacePrefix || 'Default');
+                this.namespaces.add(x.NamespacePrefix || DEFAULT_NAMESPACE);
             });
         }catch(e){
             console.error(e);
