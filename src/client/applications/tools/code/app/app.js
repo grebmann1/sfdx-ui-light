@@ -5,14 +5,14 @@ import FeatureElement from 'element/featureElement';
 
 export default class App extends FeatureElement {
 
-   
-    projectPath;
-    metadataLoaded;
-
     isLoading = false;
     loadingMessage = 'Loading Metadata';
-    @track metadata;
 
+
+
+    @track metadata;
+    projectPath;
+    initMetadataLoaded = false;
     
 
     
@@ -33,7 +33,7 @@ export default class App extends FeatureElement {
         }
         console.log('result',result);
         this.projectPath = result.projectPath;
-        this.metadataLoaded = result.metadataLoaded;
+        this.initMetadataLoaded = result.metadataLoaded;
         
         /*if(isNotUndefinedOrNull(this.connector.header.alias)){
             const {error, result} = await window.electron.ipcRenderer.invoke('util-getConfig',{key:'projectPath',configName:this.connector.header.alias});
@@ -134,15 +134,19 @@ export default class App extends FeatureElement {
         return isNotUndefinedOrNull(this.projectPath);
     }
 
+    get isMetadataLoaded(){
+        return this.initMetadataLoaded || isNotUndefinedOrNull(this.metadata);
+    }
+
     get isVSCodeDisabled(){
-        return this.isLoading || !isNotUndefinedOrNull(this.projectPath) || !this.metadataLoaded;
+        return this.isLoading || !isNotUndefinedOrNull(this.projectPath) || !this.isMetadataLoaded;
     }
 
     get isDownloadDisabled(){
-        return this.isLoading || !isNotUndefinedOrNull(this.projectPath) || !this.metadataLoaded;
+        return this.isLoading || !isNotUndefinedOrNull(this.projectPath) || !this.isMetadataLoaded;
     }
 
     get isRetrieveDisplayed(){
-        return !this.metadataLoaded;
+        return !this.isMetadataLoaded;
     }
 }

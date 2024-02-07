@@ -218,7 +218,7 @@ export default class App extends LightningElement {
         this.connector      = null;
         this.applications   = [];
         this.applicationId  = null;
-
+        
         if(this.isLimitedMode){
             await this.load_limitedMode();
         }else{
@@ -255,7 +255,8 @@ export default class App extends LightningElement {
         });*/
 
         // Should be loaded via login !
-        this.openSpecificModule('org/app'); 
+        //this.openSpecificModule('org/app'); 
+        //this.openSpecificModule('code/app'); 
         this.pageHasLoaded = true;
         if(this.targetPage){
             this.handleNavigation(this.targetPage);

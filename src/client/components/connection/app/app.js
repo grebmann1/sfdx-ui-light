@@ -82,7 +82,7 @@ export default class App extends FeatureElement {
     setAllConnections = async () => {
         // Browser & Electron version
         this.isLoading = true;
-        this.data =  await getAllConnection();;
+        this.data =  await getAllConnection();
         this.isLoading = false;
     }
 

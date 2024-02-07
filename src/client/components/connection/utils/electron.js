@@ -3,6 +3,7 @@ import {isNotUndefinedOrNull,decodeError,classSet} from 'shared/utils';
 
 
 export async function getSettings(alias){
+    console.log('getSettings - electron');
     var {res, error} = await window.electron.ipcRenderer.invoke('org-seeDetails',{alias});
     if (error) {
         throw decodeError(error)
@@ -47,7 +48,6 @@ export async function removeConnection(alias){
 export async function getAllConnection(){
     console.log('getAllConnection - electron');
     const {result,error} = await window.electron.ipcRenderer.invoke('org-getAllOrgs');
-    console.log('org-getAllOrgs',result);
     let orgs = [].concat(
         result.nonScratchOrgs.map(x => ({
             ...x,

@@ -28,6 +28,10 @@
             "urlPath": "/assets"
         },
         {
+            "file":"$rootDir/node_modules/xterm/css/xterm.css",
+            "urlPath":"/xterm.css"
+        },
+        {
             "alias":"imagesDir",
             "dir": "$rootDir/src/client/assets/images",
             "urlPath": "/images"

@@ -33,6 +33,7 @@ export default class Pmd extends FeatureElement {
         if (error) {
             throw decodeError(error);
         }
+        console.info('checkIfPmdInstalled',{error, result});
         this.pmdPath = isNotUndefinedOrNull(result)?`${result}/bin/pmd`:null;
     }
 
@@ -45,26 +46,13 @@ export default class Pmd extends FeatureElement {
         this.checkIfPmdInstalled();
     }
 
-    runSfdxAnalyzer = async () => {
-        const {error, result} = await window.electron.ipcRenderer.invoke('code-runSfdxAnalyzer',{alias:this.connector.header.alias});
-        if (error) {
-            throw decodeError(error);
-        }
-        console.info('runSfdxAnalyzer',result);
-        //this.checkIfPmdInstalled();
-        window.electron.listener_on('update-from-worker',(value) => {
-            if(value.action === 'done'){
-                this.metadata = value.data;
-                window.electron.listener_off('update-from-worker')
-            }else if(value.action === 'error'){
-                throw decodeError(value.error);
-            }
-            this.isLoading = false;
-        })
-    }
 
 
     /** Getters **/
+    
+    get pmdCommand(){
+        return `${this.pmdPathFormatted} check -f summaryhtml -R ".sf-toolkit/pmd/rulesets/apex/quickstart.xml" -d "force-app/main/default/classes" -r ".sf-toolkit/pmd/reports/report.html"`;
+    }
 
     get installPMDLabel(){
         return this.isPmdInstalled?'PMD Already Installed':'Install PMD in your project';

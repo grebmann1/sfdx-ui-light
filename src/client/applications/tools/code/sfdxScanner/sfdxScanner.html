@@ -1,0 +1,58 @@
+<template>
+    <div class="site">
+        
+        <div class="title_2_parts">
+            <h2 class="site-text-heading--large site-jump-anchor__container">
+                Step 1: Install SFDX Scanner 
+            </h2>
+            
+            <!-- <lightning-button label="Run SFDX Scanner" onclick={handleBasicRun}></lightning-button> -->
+        </div>
+        Link to install <a href="https://forcedotcom.github.io/sfdx-scanner/">SFDX Scanner (SF Official Tool)</a>
+
+        <h2 class="site-text-heading--large site-jump-anchor__container">
+            Step 2: Configure Rule Sets
+        </h2>
+        <p>You can use the Rule Sets by default or modify them to match your needs</p>
+
+        <h2 class="site-text-heading--large site-jump-anchor__container">
+            Step 3: Run SFDX Scanner
+        </h2>
+       
+
+        <!-- Others -->
+        <pre>
+            <div class="bg-black rounded-md">
+                <div class="flex items-center relative text-gray-200 bg-gray-800 dark:bg-token-surface-primary px-4 py-2 text-xs font-sans justify-between rounded-t-md"><span>Bash</span>
+                    <div>
+                        <lightning-button-icon
+                            class="custom-text-copy"
+                            onclick={handleCopy}
+                            icon-name="utility:copy"
+                            variant="bare"
+                            alternative-text="copy"
+                        ></lightning-button-icon>
+                        <!--
+                            <lightning-button-icon
+                                class="custom-text-copy"
+                                onclick={handlePlay}
+                                icon-name="utility:play"
+                                variant="bare"
+                                alternative-text="play"
+                            ></lightning-button-icon>
+                        -->
+                    </div>
+                </div>
+                <div class="p-4 overflow-y-auto">
+                    <code class="!whitespace-pre hljs language-php-template">
+                        <span class="xml">
+                            {sfdxScannerCommand}
+                        </span>
+                    </code>
+                </div>
+            </div>
+        </pre>
+         <!-- code -->
+         <!-- <div lwc:ref="container" lwc:dom="manual"></div> -->
+    </div>
+</template>
