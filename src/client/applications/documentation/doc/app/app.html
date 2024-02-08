@@ -41,43 +41,41 @@
         <article class="full-page-body slds-card slds-m-top_small">
             <div class="slds-card__body slds-card__body_inner">
                 <div class="slds-full-height slds-grid slds-gutters slds-wrap slds-is-relative" style="min-height:200px;">
-                    <template lwc:if={isLoading}>
-                        <lightning-spinner alternative-text="Loading"></lightning-spinner>
-                    </template>
-                    <template lwc:else>
-                        <!-- Menu -->
-                        <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-4">
-                            <h2 class="slds-nav-vertical__title"> SObjects</h2>
-                            <div style="display: flex;flex-direction: row;align-content: flex-end;justify-content: flex-end;">
-                                <lightning-input class="" type="toggle" label="Filter Fields" name="filterFields" onchange={handleToggleChange}></lightning-input>
-                            </div>
-                            <lightning-input 
+                    <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-4">
+                        
+                    <slds-menu 
+                        class="slds-flex-column slds-full-height min-height-200"
+                        items={filteredList}
+                        title="SObjects"
+                        selected-item={selectedMenuItem}
+                        onmenuselection={handleItemSelection}
+                        onback={handleMenuBack}
+                        is-loading={isMenuLoading}
+                        hide-search
+                    >   
+                        <!-- Inner Input -->
+                        <div style="display: flex;flex-direction: row;align-content: flex-end;justify-content: flex-end;">
+                            <lightning-input class="" type="toggle" label="Filter Fields" name="filterFields" onchange={handleToggleChange}></lightning-input>
+                        </div>
+                        <lightning-input 
                                 class="slds-m-bottom_large" 
                                 type="search"
                                 label="Search" 
                                 onchange={handleFilter}
-                            ></lightning-input>
-                            <div class="slds-scrollable_y">
-                                <nav class="slds-nav-vertical">
-                                    <div class="slds-nav-vertical__section">
-                                        <ul aria-describedby="entity-header">
-                                            <template for:each={filteredList} for:item="item">
-                                                <doc-menu-item key={item.id} name={item.id} label={item.text} filter={filter} current={selectedMenuItem} onselect={handleItemSelection}></doc-menu-item>
-                                            </template>
-                                            
-                                        </ul>
-                                    </div>
-                                </nav>
-                            </div>
+                        ></lightning-input>
+                        <!-- Inner Input -->
+                    </slds-menu>
+                    </div>
+                    <!-- Container -->
+                    <div class="slds-scrollable_y slds-flex-column slds-full-height slds-col slds-col slds-size_3-of-4">
+                        <div class="slds-is-relative">
+                            <template lwc:if={isLoading}>
+                                <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                            </template>
+                            <div class="mermaid" lwc:ref="mermaid"  lwc:dom="manual"></div>
+                            <div class="doc"     lwc:ref="container" lwc:dom="manual"></div>
                         </div>
-                        <!-- Container -->
-                        <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_3-of-4">
-                            <div class="slds-scrollable_y">
-                                <div class="mermaid" lwc:ref="mermaid"  lwc:dom="manual"></div>
-                                <div class="doc"    lwc:ref="container" lwc:dom="manual"></div>
-                            </div>
-                        </div>
-                    </template>
+                    </div>
                 </div>
             </div>
         </article>

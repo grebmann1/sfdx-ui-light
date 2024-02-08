@@ -14,44 +14,47 @@
             <h2 class="slds-m-left_x-small slds-tree__group-header slds-truncate">{title}</h2>
         </div>
     </div>
-    <div class="slds-flex-column slds-is-relative min-height-200">
-        <template lwc:if={namespaceFiltering_isDisplayed}>
-            <div class="slds-grid slds-grid_align-end">
-                <lightning-combobox
-                    class="slds-width-150 slds-float-right"
-                    label="Namespaces"
-                    dropdown-alignment="right"
-                    value="All"
-                    placeholder="Select Namespace filter"
-                    disabled={isLoading}
-                    options={namespaceFiltering_options}
-                    onchange={namespaceFiltering_handleChange}
-                ></lightning-combobox>
-            </div>
-        </template>
-        <lightning-input 
-            class="slds-m-vertical_medium" 
-            type="search"
-            label="Search" 
-            variant="label-hidden"
-            value={filter}
-            onchange={handleSearch}
-        ></lightning-input>
-        <template lwc:if={isLoading}>
-            <lightning-spinner alternative-text="Loading"></lightning-spinner>
-        </template>
-        <lightning-vertical-navigation onselect={handleSelection} compact class="slds-scrollable_y ">
-            <lightning-vertical-navigation-section>
-                <template for:each={filteredList} for:item="item">
-                    <lightning-vertical-navigation-item 
-                        key={item.Key} label={item.Label} name={item.Name}
-                    ></lightning-vertical-navigation-item>
-                </template>
-            </lightning-vertical-navigation-section>
-        </lightning-vertical-navigation>
-
-        <template lwc:if={displayIfEmpty}>
-            <div class="slds-p-around_small">No items found</div>
-        </template>
+    <div class="slds-flex-column min-height-200">
+        <slot></slot> <!-- Slot -->
+        <div class="slds-flex-column slds-is-relative slds-scrollable_y">
+            <template lwc:if={namespaceFiltering_isDisplayed}>
+                <div class="slds-grid slds-grid_align-end">
+                    <lightning-combobox
+                        class="slds-width-150 slds-float-right"
+                        label="Namespaces"
+                        dropdown-alignment="right"
+                        value="All"
+                        placeholder="Select Namespace filter"
+                        disabled={isLoading}
+                        options={namespaceFiltering_options}
+                        onchange={namespaceFiltering_handleChange}
+                    ></lightning-combobox>
+                </div>
+            </template>
+            <template lwc:if={isSearchDisplayed}>
+                <lightning-input 
+                    class="slds-m-vertical_medium" 
+                    type="search"
+                    label="Search" 
+                    variant="label-hidden"
+                    value={filter}
+                    onchange={handleSearch}
+                ></lightning-input>
+            </template>
+            <template lwc:if={isLoading}>
+                <lightning-spinner alternative-text="Loading"></lightning-spinner>
+            </template>
+            <lightning-vertical-navigation onselect={handleSelection} compact>
+                <lightning-vertical-navigation-section>
+                    <template for:each={filteredList} for:item="item">
+                        <slds-menu-item key={item.Key} name={item.Name} label={item.Label} filter={filter} current={selectedItem}></slds-menu-item>
+                    </template>
+                </lightning-vertical-navigation-section>
+            </lightning-vertical-navigation>
+    
+            <template lwc:if={displayIfEmpty}>
+                <div class="slds-p-around_small">No items found</div>
+            </template>
+        </div>
     </div>
 </template>

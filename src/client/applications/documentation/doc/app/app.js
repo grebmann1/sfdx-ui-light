@@ -7,6 +7,7 @@ const ACCOUNT_ID = 'sforce_api_objects_account';
 export default class App extends FeatureElement {
 
     isLoading = false;
+    isMenuLoading = false;
     apiDomain = 'https://developer.salesforce.com';
     language = 'en-us';
     documentationId = 'atlas.en-us.object_reference.meta';
@@ -38,20 +39,23 @@ export default class App extends FeatureElement {
     }
 
     /** Events */
-
-    handleItemSelection = async (e) => {
-        this.redirectTo(e.detail.name);
-    }
-
+    
     handleFilter = (e) => {
+        this.isMenuLoading = true;
         runActionAfterTimeOut(e.detail.value,async (newValue) => {
             //this.filter = newValue;
             if(!isEmpty(newValue)){
                 this.filteredItems = await this.getFilteredItems(newValue);   
             }
             this.filter = newValue;
+            this.isMenuLoading = false;
         },{timeout:500});
     }
+
+    handleItemSelection = async (e) => {
+        this.redirectTo(e.detail.itemName);
+    }
+
 
     handleToggleChange = (e) => {
         this.isFieldFilterEnabled = e.detail.checked;
@@ -62,10 +66,9 @@ export default class App extends FeatureElement {
     /** Methods */
     
     redirectTo = (name) => {
-        this.isLoading = true;
         this.selectedMenuItem = name;
         this.selectPageToView();
-        this.isLoading = false;
+        
     }
     
     initializeMermaid = () => {
@@ -83,9 +86,19 @@ export default class App extends FeatureElement {
     }
 
     selectPageToView = async () => {
-        let current = this.items.find(x => x.id === this.selectedMenuItem);
-        this.currentSobject = await this.loadSingleDocument(current.a_attr.href);
+        this.isLoading = true;
+        if(this.refs.mermaid){
+            this.refs.mermaid.innerHTML = ''; // Reset
+        }
+        if(this.refs.doc){
+            this.refs.doc.innerHTML     = ''; // Reset
+        }
+        
+        
+        //let current = this.items.find(x => x.Name === this.selectedMenuItem);
+        this.currentSobject = await this.loadSingleDocument(this.selectedMenuItem);
         this.displayBodyContent();
+        this.isLoading = false;
     }
 
     displayBodyContent = () => {
@@ -126,14 +139,17 @@ export default class App extends FeatureElement {
         let text = '';
     
         // Check if the current node is a text node and has non-whitespace content
-        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0) {
-            text += node.textContent.trim() + ' '; // Concatenate text and add a space for separation
+        if(isNotUndefinedOrNull(node)){
+            if (node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0) {
+                text += node.textContent.trim() + ' '; // Concatenate text and add a space for separation
+            }
+        
+            // Iterate through all child nodes
+            node.childNodes.forEach(child => {
+                text += this.concatenateNonEmptyText(child);
+            });
         }
-    
-        // Iterate through all child nodes
-        node.childNodes.forEach(child => {
-            text += this.concatenateNonEmptyText(child);
-        });
+        
     
         return text;
     }
@@ -155,7 +171,6 @@ export default class App extends FeatureElement {
     }
 
     interactWithDiagram = (nodeId) => {
-        console.log('interactWithDiagram',nodeId);
         try{
             const lookupName = OBJECT_PREFIX+nodeId.split('-')[1].toLowerCase();
             if(this.items.find(x => x.id === lookupName)){
@@ -177,7 +192,7 @@ export default class App extends FeatureElement {
         const references = this.extractData().filter(x => x.Type === 'reference');
             references.forEach(x => {
                 var lookup = x.RefersTo || this.extractManualObject(x.Field);
-                    lookup = lookup.replace(',','|')
+                    lookup = lookup.replaceAll(',','|')
                 if(lookup){
                     if(lookup.split('|').length > 5){
                         lookup = `${x.Field} Objects`;
@@ -210,6 +225,7 @@ export default class App extends FeatureElement {
     }
 
     fetchDocument = async () => {
+        this.isMenuLoading = true;
         let result = await (await fetch(`${this.apiDomain}/docs/get_document/${this.documentationId}`)).json();
         let _items
         result.toc.forEach(x => {
@@ -221,6 +237,7 @@ export default class App extends FeatureElement {
         });
         this.items = _items;
         this.sobjectHeader = result;
+        this.isMenuLoading = false;
     }
 
     fetchContentDocument = async (deliverable,contentDocumentId,version) => {
@@ -231,7 +248,7 @@ export default class App extends FeatureElement {
         try{
             return this.fetchContentDocument(
                 this.sobjectHeader.deliverable,
-                name,
+                `${name}.htm`,
                 this.sobjectHeader.version.doc_version
             );
         }catch(e){
@@ -259,7 +276,14 @@ export default class App extends FeatureElement {
     }
 
     get filteredList(){
-        if(isEmpty(this.filter)) return this.items;
-        return this.filteredItems;
+        var items = this.items;
+        if(!isEmpty(this.filter)){
+            items = this.filteredItems;
+        }
+        return items.map(x => ({
+            Label:x.text,
+            Key:x.id,
+            Name:x.id,
+        }));
     }
 }

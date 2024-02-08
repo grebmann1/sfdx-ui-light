@@ -9,8 +9,11 @@ export default class Menu extends FeatureElement {
 
     @api title;
     @api isLoading = false;
-    @api isBackDisplayed;
+    @api isBackDisplayed = false;
+    @api hideSearch = false;
     @api level;
+
+    @api selectedItem;
 
     namespacePrefixes = [];
     namespaceFiltering_value;
@@ -42,6 +45,7 @@ export default class Menu extends FeatureElement {
     }
 
     handleSelection = (e) => {
+        this.selectedItem = e.detail.name;
         const item = this.items.find(x => x.Name === e.detail.name);
         this.dispatchEvent(new CustomEvent("menuselection", { detail:{
             itemName:item.Name,
@@ -69,6 +73,22 @@ export default class Menu extends FeatureElement {
 
     /* Getters */
     
+    get formattedLabel(){
+        if(isEmpty(this.filter)){
+            return this.label;
+        }
+
+        var regex = new RegExp('('+this.filter+')','gi');
+        if(regex.test(this.label)){
+            return this.label.toString().replace(/<?>?/,'').replace(regex,'<span style="font-weight:Bold; color:blue;">$1</span>');
+        }else{
+            return this.label;
+        }
+    }
+    
+    get isSearchDisplayed(){
+        return !this.hideSearch;
+    }
     
     
     get namespaceFiltering_isDisplayed(){
