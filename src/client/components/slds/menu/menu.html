@@ -47,7 +47,7 @@
             <lightning-vertical-navigation onselect={handleSelection} compact>
                 <lightning-vertical-navigation-section>
                     <template for:each={filteredList} for:item="item">
-                        <slds-menu-item key={item.Key} name={item.Name} label={item.Label} filter={filter} current={selectedItem}></slds-menu-item>
+                        <slds-menu-item key={item.Key} name={item.Name} label={item.Label} highlight={itemHighlight} current={selectedItem}></slds-menu-item>
                     </template>
                 </lightning-vertical-navigation-section>
             </lightning-vertical-navigation>

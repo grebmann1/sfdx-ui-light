@@ -73,6 +73,10 @@ export default class Menu extends FeatureElement {
     }
 
     /* Getters */
+
+    get itemHighlight(){
+        return this.filter || this.highlight;
+    }
     
     get formattedLabel(){
         if(isEmpty(this.filter) && isEmpty(this.highlight)){

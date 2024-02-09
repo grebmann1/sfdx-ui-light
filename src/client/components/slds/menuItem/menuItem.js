@@ -7,7 +7,7 @@ export default class MenuItem extends LightningElement {
 
     @api isSelected;
     @api name;
-    @api filter;
+    @api highlight;
     @api label;
     @api current;
 
@@ -37,11 +37,11 @@ export default class MenuItem extends LightningElement {
     }
 
     get formattedLabel(){
-        if(isEmpty(this.filter)){
+        if(isEmpty(this.highlight)){
             return this.label;
         }
 
-        var regex = new RegExp('('+this.filter+')','gi');
+        var regex = new RegExp('('+this.highlight+')','gi');
         if(regex.test(this.label)){
             return this.label.toString().replace(/<?>?/,'').replace(regex,'<span style="font-weight:Bold; color:blue;">$1</span>');
         }else{
