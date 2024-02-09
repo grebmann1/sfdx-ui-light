@@ -15,8 +15,9 @@
         </div>
     </div>
     <div class="slds-flex-column min-height-200">
-        <slot></slot> <!-- Slot -->
-        <div class="slds-flex-column slds-is-relative slds-scrollable_y">
+        
+        <div class="slds-flex-column slds-is-relative slds-full-height min-height-200">
+            <slot></slot> <!-- Slot -->
             <template lwc:if={namespaceFiltering_isDisplayed}>
                 <div class="slds-grid slds-grid_align-end">
                     <lightning-combobox
@@ -44,10 +45,10 @@
             <template lwc:if={isLoading}>
                 <lightning-spinner alternative-text="Loading"></lightning-spinner>
             </template>
-            <lightning-vertical-navigation onselect={handleSelection} compact>
+            <lightning-vertical-navigation onselect={handleSelection} compact class="slds-scrollable_y">
                 <lightning-vertical-navigation-section>
                     <template for:each={filteredList} for:item="item">
-                        <slds-menu-item key={item.Key} name={item.Name} label={item.Label} highlight={itemHighlight} current={selectedItem}></slds-menu-item>
+                        <slds-menu-item key={item.Key} name={item.Name} label={item.Label} highlight={itemHighlight} is-selected={item.isSelected}></slds-menu-item>
                     </template>
                 </lightning-vertical-navigation-section>
             </lightning-vertical-navigation>

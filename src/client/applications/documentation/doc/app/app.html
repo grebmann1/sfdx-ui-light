@@ -40,36 +40,41 @@
         </div>
         <article class="full-page-body slds-card slds-m-top_small">
             <div class="slds-card__body slds-card__body_inner">
-                <div class="slds-full-height slds-grid slds-gutters slds-wrap slds-is-relative" style="min-height:200px;">
-                    <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-4">
-                        
-                    <slds-menu 
-                        class="slds-flex-column slds-full-height min-height-200"
-                        items={filteredList}
-                        title="SObjects"
-                        highlight={filter}
-                        selected-item={selectedMenuItem}
-                        onmenuselection={handleItemSelection}
-                        onback={handleMenuBack}
-                        is-loading={isMenuLoading}
-                        hide-search
-                    >   
-                        <!-- Inner Input -->
-                        <div style="display: flex;flex-direction: row;align-content: flex-end;justify-content: flex-end;">
-                            <lightning-input class="" type="toggle" label="Filter Fields" name="filterFields" onchange={handleToggleChange}></lightning-input>
-                        </div>
-                        <lightning-input 
-                                class="slds-m-bottom_large" 
-                                type="search"
-                                label="Search" 
-                                onchange={handleFilter}
-                        ></lightning-input>
-                        <!-- Inner Input -->
-                    </slds-menu>
+                <div class="slds-full-height slds-grid slds-gutters slds-wrap slds-is-relative">
+                    <div class="slds-flex-column slds-full-height slds-col slds-col min-height-200 slds-size_1-of-4"> 
+                        <slds-menu 
+                            class="slds-flex-column slds-full-height min-height-200"
+                            items={filteredList}
+                            title="SObjects"
+                            highlight={filter}
+                            selected-item={selectedMenuItem}
+                            onmenuselection={handleItemSelection}
+                            onback={handleMenuBack}
+                            is-loading={isMenuLoading}
+                            hide-search
+                        >   
+                            <!-- Inner Input -->
+                            <div style="display: flex;flex-direction: row;align-content: flex-end;justify-content: flex-end;">
+                                <lightning-input 
+                                    type="toggle" 
+                                    label="Filter Fields" 
+                                    name="filterFields" 
+                                    message-toggle-active=""
+                                    message-toggle-inactive=""
+                                    onchange={handleToggleChange}></lightning-input>
+                            </div>
+                            <lightning-input 
+                                    class="slds-m-bottom_large" 
+                                    type="search"
+                                    label="Search" 
+                                    onchange={handleFilter}
+                            ></lightning-input>
+                            <!-- Inner Input -->
+                        </slds-menu>
                     </div>
                     <!-- Container -->
-                    <div class="slds-scrollable_y slds-flex-column min-height-200 slds-full-height slds-col slds-col slds-size_3-of-4">
-                        <div class="slds-is-relative">
+                    <div class="slds-scrollable_y slds-flex-column slds-full-height slds-col slds-col slds-size_3-of-4">
+                        <div class="min-height-200 slds-is-relative">
                             <template lwc:if={isLoading}>
                                 <lightning-spinner alternative-text="Loading"></lightning-spinner>
                             </template>

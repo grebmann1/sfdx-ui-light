@@ -1,4 +1,4 @@
-import { api} from "lwc";
+import { api,track} from "lwc";
 import FeatureElement from 'element/featureElement';
 import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeOut,formatFiles,sortObjectsByField } from 'shared/utils';
 
@@ -6,32 +6,31 @@ const DEFAULT_NAMESPACE = 'Default';
 const ALL_NAMESPACE     = 'All';
 
 export default class Menu extends FeatureElement {
-
+    _isRendered = true;
     @api title;
     @api isLoading = false;
     @api isBackDisplayed = false;
     @api hideSearch = false;
     @api level;
     @api highlight; // Like filtering but only highlighting the record
+    filter;
 
     @api selectedItem;
 
     namespacePrefixes = [];
     namespaceFiltering_value;
 
-
+    @track _items = [];
     @api
     get items(){
         return this._items;
     }
     set items(value){
-        this._items = value;
+        this._items = (JSON.parse(JSON.stringify(value)));
         this.filter = null; // reset;
-        this.namespacePrefixes = this.extractNamespaces(value);
+        this.namespacePrefixes = this.extractNamespaces(this._items);
     }
-    
 
-    filter;
 
     /** Events **/
     
@@ -47,10 +46,18 @@ export default class Menu extends FeatureElement {
 
     handleSelection = (e) => {
         this.selectedItem = e.detail.name;
-        const item = this.items.find(x => x.Name === e.detail.name);
+        const index     = this.items.findIndex(x => x.Name === e.detail.name);
+        const oldIndex  = this.items.findIndex(x => x.isSelected);
+        if(oldIndex > -1){
+            this._items[oldIndex].isSelected = false;
+        }
+        if(index > -1){
+            this._items[index].isSelected = true;
+        }
+        
         this.dispatchEvent(new CustomEvent("menuselection", { detail:{
-            itemName:item.Name,
-            itemLabel:item.Label,
+            itemName:this.items[index].Name,
+            itemLabel:this.items[index].Label,
             level:this.level
         },bubbles: true }));
     }
@@ -60,6 +67,7 @@ export default class Menu extends FeatureElement {
     }
 
     /** Methods **/
+
     extractNamespaces = (value) => {
         const result = new Set(['All']);
         (value || []).forEach(x => {
@@ -78,23 +86,9 @@ export default class Menu extends FeatureElement {
         return this.filter || this.highlight;
     }
     
-    get formattedLabel(){
-        if(isEmpty(this.filter) && isEmpty(this.highlight)){
-            return this.label;
-        }
-        var _filter = isEmpty(this.highlight)?this.filter:this.highlight;
-        var regex = new RegExp('('+_filter+')','gi');
-        if(regex.test(this.label)){
-            return this.label.toString().replace(/<?>?/,'').replace(regex,'<span style="font-weight:Bold; color:blue;">$1</span>');
-        }else{
-            return this.label;
-        }
-    }
-    
     get isSearchDisplayed(){
         return !this.hideSearch;
     }
-    
     
     get namespaceFiltering_isDisplayed(){
         return this.namespaceFiltering_options.length > 2; // Default & All are there by default

@@ -6,17 +6,33 @@ import SObjectCell from 'object/sobjectCell';
 
 /** Store */
 import { store,store_application } from 'shared/store';
+
+
+const TYPEFILTER_OPTIONS = [
+    { label: 'Object', value: 'object' },
+    { label: 'Change Event', value: 'change' },
+    { label: 'Platform Event', value: 'event' },
+    { label: 'Custom Metadata', value: 'metadata' },
+    { label: 'Feed', value: 'feed' },
+    { label: 'History', value: 'history' },
+    { label: 'Share', value: 'share' },
+];
+
 export default class Sobject extends FeatureElement {
 
     records = [];
+    recordFilters = [];
     selectedItem;
     isLoading = false;
     isTableLoading = false;
+    isMenuLoading = false;
 
 
     filter;
     fields_filter;
     child_filter;
+    typeFilter_value = [];
+    displayAdvancedFilter = false;
 
     recordDetails = {}
     selectedDetails;
@@ -28,6 +44,10 @@ export default class Sobject extends FeatureElement {
     
 
     /** Events */
+
+    handleToggleChange = (e) => {
+        this.displayAdvancedFilter = e.detail.checked;
+    }
     
     goToSetup = (e) => {
         store.dispatch(store_application.navigate(`lightning/setup/ObjectManager/${this.selectedDetails.name}/Details/view`));
@@ -53,8 +73,15 @@ export default class Sobject extends FeatureElement {
         });
     }
 
+    typeFilter_onChange = (e) => {
+        this.typeFilter_value = e.detail.value;
+        setTimeout(() => {
+            this.recordFilters = this.filterRecords();
+        },1);
+    }
+
     handleItemSelection = async (e) => {
-        this.selectedItem = e.detail.name;
+        this.selectedItem = e.detail.itemName;
         this.isTableLoading = true;
         await this.describeSpecific(this.selectedItem);
         this.isTableLoading = false;
@@ -74,22 +101,63 @@ export default class Sobject extends FeatureElement {
 
     describeAll = async () => {
         this.isLoading = true;
+        this.isMenuLoading = true;
         try{
-            const records = (await this.load_toolingGlobal()) || [];
-            this.records = records.map(x => ({...x,formattedLabel:`${x.label}(${x.name})`}))
+            var records = (await this.load_toolingGlobal()) || [];
+            this.records = records;
+            this.menuRecords = records.map(x => ({
+                Label:`${x.label}(${x.name})`, // for slds-menu
+                Name:x.name, // for slds-menu
+                Key:x.name, // for slds-menu
+                category:this.extractCategory(x.name)
+            })).sort((a, b) => a.Name.localeCompare(b.Name));
+            this.recordFilters = this.filterRecords();
         }catch(e){
             console.error(e);
         }
         this.isLoading = false;
+        this.isMenuLoading = false;
     }
 
     describeSpecific = async (name) => {
         let result = await this.connector.conn.sobject(name).describe();
         this.selectedDetails = result;
+        const references = this.selectedDetails.fields.filter(x => x.type === 'reference');
+        console.log('result',result);
+        setTimeout(() => {
+            this.buildUML();
+        },100)
     }
 
     checkIfPresent = (a,b) => {
         return (a || '').toLowerCase().includes((b||'').toLowerCase());
+    }
+
+    buildUML = async () => {
+        this.refs.mermaid.innerHTML = '';
+        const source = this.selectedDetails.name;
+        const result = ['classDiagram','direction LR',`class \`${source}\``];
+        const interactions = [`click \`${source}\` call mermaidCallback()`];
+        // Filter to take only fields with "Refer To"
+        const references = this.selectedDetails.fields.filter(x => x.type === 'reference');
+        console.log('references',references);
+        references.forEach(field => {
+            field.referenceTo.forEach( target => {
+                result.push(`\`${source}\` --> \`${target || 'Undefined'}\` : ${field.relationshipName}`);
+            })
+        });
+        /*
+        const relationships = this.selectedDetails.childRelationships.filter(x => !x.deprecatedAndHidden);
+        relationships.forEach(item => {
+            result.push(`\`${item.childSObject}\` --> \`${source}\` : ${item.field}`);
+        });
+        */
+            //console.log('r',[].concat(result,interactions).join('\n'));
+        const { svg,bindFunctions } = await window.mermaid.render('graphDiv',[].concat(result,interactions).join('\n'));
+        this.refs.mermaid.innerHTML = svg;
+        if (bindFunctions) {
+            bindFunctions(this.refs.mermaid);
+        }
     }
 
 
@@ -114,7 +182,8 @@ export default class Sobject extends FeatureElement {
 			data: this.field_filteredList,
 			layout:"fitColumns",
 			columns: colModel,
-			columnHeaderVertAlign: "middle"
+			columnHeaderVertAlign: "middle",
+            autoResize:false
 		});
     }
 
@@ -135,7 +204,8 @@ export default class Sobject extends FeatureElement {
 			data: this.child_filteredList,
 			layout:"fitColumns",
 			columns: colModel,
-			columnHeaderVertAlign: "middle"
+			columnHeaderVertAlign: "middle",
+            autoResize:false
 		});
     }
 
@@ -178,15 +248,35 @@ export default class Sobject extends FeatureElement {
     }
 
     
+    extractCategory = (item) => {
+        if(item.endsWith('ChangeEvent')){
+            return 'change';
+        }else if(item.endsWith('Feed')){
+            return 'feed';
+        }else if(item.endsWith('History')){
+            return 'history';
+        }else if(item.endsWith('Share')){
+            return 'share';
+        }else if(item.endsWith('__mdt')){
+            return 'metadata';
+        }
+
+        return 'object'; // default value for the left over
+    }
+
+    filterRecords = () => {
+        if(this.typeFilter_value.length == 0) return this.menuRecords;
+        return this.menuRecords.filter(x => this.typeFilter_value.includes(x.category));
+    }
 
 
     /** Getters **/
 
-    get objects_filteredList(){
-        if(isEmpty(this.filter)) return this.records;
-
-        return this.records.filter(x => this.checkIfPresent(x.formattedLabel,this.filter));
+    get typeFilter_options(){
+        return TYPEFILTER_OPTIONS;
     }
+
+    
 
     get field_filteredList(){
         //if(!this.isDetailDisplayed) return [];

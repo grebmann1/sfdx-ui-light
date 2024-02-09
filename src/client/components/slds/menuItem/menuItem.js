@@ -11,10 +11,6 @@ export default class MenuItem extends LightningElement {
     @api label;
     @api current;
 
-
-
-    connectedCallback(){}
-
     /** Events */
 
     handleClick = (e) => {
@@ -31,7 +27,7 @@ export default class MenuItem extends LightningElement {
     get currentClass(){
         return classSet('slds-nav-vertical__item')
              .add({
-                'slds-is-active':this.current === this.name
+                'slds-is-active':this.isSelected
              })
              .toString();
     }

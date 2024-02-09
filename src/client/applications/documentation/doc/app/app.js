@@ -31,11 +31,13 @@ export default class App extends FeatureElement {
 
     loadDocumentation = async () => {
         this.isLoading = true;
+        this.isMenuLoading = true;
         this.initializeMermaid();
         await this.fetchDocument();
         this.selectedMenuItem = ACCOUNT_ID;
         this.selectPageToView();
         this.isLoading = false;
+        this.isMenuLoading = false;
     }
 
     /** Events */
