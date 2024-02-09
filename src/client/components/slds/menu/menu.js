@@ -12,6 +12,7 @@ export default class Menu extends FeatureElement {
     @api isBackDisplayed = false;
     @api hideSearch = false;
     @api level;
+    @api highlight; // Like filtering but only highlighting the record
 
     @api selectedItem;
 
@@ -74,11 +75,11 @@ export default class Menu extends FeatureElement {
     /* Getters */
     
     get formattedLabel(){
-        if(isEmpty(this.filter)){
+        if(isEmpty(this.filter) && isEmpty(this.highlight)){
             return this.label;
         }
-
-        var regex = new RegExp('('+this.filter+')','gi');
+        var _filter = isEmpty(this.highlight)?this.filter:this.highlight;
+        var regex = new RegExp('('+_filter+')','gi');
         if(regex.test(this.label)){
             return this.label.toString().replace(/<?>?/,'').replace(regex,'<span style="font-weight:Bold; color:blue;">$1</span>');
         }else{
