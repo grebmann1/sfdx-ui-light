@@ -121,6 +121,10 @@ export default class App extends FeatureElement {
 
 
     /** Getters */
+
+    get organisationAddress(){
+        return `${this.orgInformation.Address?.country} ${this.orgInformation.Address?.city}, ${this.orgInformation.Address?.street}`;
+    }
     
 
     get formattedLimits(){

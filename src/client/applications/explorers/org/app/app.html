@@ -90,12 +90,24 @@
                                 <lightning-tile label="Org Information">
                                     <dl class="slds-dl_horizontal">
                                         <dt class="slds-dl_horizontal__label">
+                                            <p class="slds-truncate" title="Id">Id:</p>
+                                        </dt>
+                                        <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                            <p class="slds-truncate" title={orgInformation.Id}>{orgInformation.Id}</p>
+                                        </dd>
+                                        <dt class="slds-dl_horizontal__label">
                                             <p class="slds-truncate" title="Is Sandbox">Is Sandbox:</p>
                                         </dt>
                                         <dd class="slds-dl_horizontal__detail slds-tile__meta">
                                             <p class="slds-truncate" title={orgInformation.IsSandbox}>
                                                 <lightning-input type="checkbox" label="IsSandbox" variant="label-hidden" checked={orgInformation.IsSandbox} disabled></lightning-input>
                                             </p>
+                                        </dd>
+                                        <dt class="slds-dl_horizontal__label">
+                                            <p class="slds-truncate" title="Instance">Instance:</p>
+                                        </dt>
+                                        <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                            <p class="slds-truncate" title={orgInformation.InstanceName}>{orgInformation.InstanceName}</p>
                                         </dd>
                                         <dt class="slds-dl_horizontal__label">
                                             <p class="slds-truncate" title="Language">Language:</p>
