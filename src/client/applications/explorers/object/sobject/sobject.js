@@ -36,9 +36,11 @@ export default class Sobject extends FeatureElement {
 
     recordDetails = {}
     selectedDetails;
+    extraSelectedDetails;
 
     connectedCallback(){
-        this.describeAll();
+        this.loadAlls();
+
     }
 
     
@@ -93,9 +95,18 @@ export default class Sobject extends FeatureElement {
 
     /** Methods  **/
 
+    loadAlls = async () => {
+        await this.describeAll();
+    }
+
     load_toolingGlobal = async () => {
         let result = await this.connector.conn.describeGlobal();
         return result?.sobjects || [];
+    }
+
+    checkRecords = async () => {
+        this.extraSelectedDetails = {totalRecords:0};
+        this.extraSelectedDetails.totalRecords = (await this.connector.conn.query(`SELECT Count(Id) total FROM ${this.selectedDetails.name}`)).records[0].total;
     }
 
 
@@ -122,8 +133,7 @@ export default class Sobject extends FeatureElement {
     describeSpecific = async (name) => {
         let result = await this.connector.conn.sobject(name).describe();
         this.selectedDetails = result;
-        const references = this.selectedDetails.fields.filter(x => x.type === 'reference');
-        console.log('result',result);
+        await this.checkRecords();
         setTimeout(() => {
             this.buildUML();
         },100)

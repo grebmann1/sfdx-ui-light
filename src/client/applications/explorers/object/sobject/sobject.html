@@ -64,6 +64,27 @@
                                     <lightning-spinner alternative-text="Loading"></lightning-spinner>
                                 </template>
                                 <template lwc:else>
+                                    <!-- Header - Records -->
+                                    <div class="slds-section slds-is-open">
+                                        <h3 class="slds-section__title">
+                                            <div class="slds-section__title-action">
+                                                <span class="slds-truncate" title="Records">Records</span>
+                                            </div>
+                                        </h3>
+                                        <div class="slds-section__content" >
+                                            <div class="slds-full-height slds-grid slds-wrap slds-gutters_direct">
+                                                <!-- Total Records -->
+                                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
+                                                    <div class="slds-form-element">
+                                                        <label class="slds-text-title_bold slds-form-element__label">Total Records</label>
+                                                        <div class="slds-form-element__control">
+                                                            {extraSelectedDetails.totalRecords}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <!-- Header -->
                                     <div class="slds-section slds-is-open">
                                         <h3 class="slds-section__title">
