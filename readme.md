@@ -18,6 +18,27 @@ This repository hosts the SF Toolkit , offering a comprehensive suite of tools f
 - Middleware hooks to debug callouts
 - Datamodel viewer
 - Experience Cloud (Guest User review)
+- Profile comparaison (to find easily similiarities in Access Analyzer & Separatly) so we can print it and display it nicely
+
+### Org Analysis/Overview
+- License use
+- Data/file storage use
+- Application Count
+- Managed packaged count
+- unlocked package count
+- Profile count
+- Permission Count
+- Reports Count
+- Flow Count
+- Validation Rules Count
+- etc
+- Multi Currency Enabled ?
+
+### Data - Object assignment and sage
+  - Layouts assignements and usage
+  - Fields Counts (by objects)
+  - List View Counts by Page layouts
+
 
 ## Features
 

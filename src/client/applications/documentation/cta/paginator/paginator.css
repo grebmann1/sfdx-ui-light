@@ -7,3 +7,10 @@
     color: var(--slds-g-color-brand-base-30);
     text-decoration: none;
 }
+
+.page-item{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+}
