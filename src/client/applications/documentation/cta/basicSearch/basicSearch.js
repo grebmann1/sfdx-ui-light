@@ -11,8 +11,7 @@ export default class BasicSearch extends LightningElement {
             if(!isEmpty(newValue)){
                 result = await this.getFilteredItems(newValue);   
             }
-            console.log('result',result,newValue);
-            this.dispatchEvent(new CustomEvent("filter", { detail:{value:result,keywords:newValue},bubbles: true }));
+            this.dispatchEvent(new CustomEvent("filter", { detail:{value:result,keywords:newValue},bubbles: true,composed: true }));
         },{timeout:500});
     }
 

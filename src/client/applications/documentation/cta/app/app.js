@@ -8,6 +8,7 @@ export default class App extends LightningElement {
     isSearchOpen = false;
     currentPosition = 0;
     links = [];
+    filter;
 
     connectedCallback(){
         this.initHashHandler();
@@ -25,6 +26,11 @@ export default class App extends LightningElement {
     handleMenu = (e) => {
         this.currentPosition = e.detail.current;
         this.links = e.detail.links;
+    }
+
+    handleFilterChange = (e) => {
+        this.filter = e.detail.keywords || null;
+        this.refs.viewer.updateComponent(); // force refresh
     }
 
     handleNavbarMenu() {

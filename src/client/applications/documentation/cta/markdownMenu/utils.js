@@ -14,7 +14,7 @@ export function structurizedMarkdown(markdownContent) {
             if(currentCategory){
                 content.push(currentCategory);
             }
-            currentCategory = {content:line,children:[],links:[],before:[],after:[]};
+            currentCategory = {content:`\r${line}`,children:[],links:[],before:[],after:[]};
             currentSubCategory = null; // reset;
         }else if(line.startsWith('#### ')){// Detect subCategories
             if(currentSubCategory){

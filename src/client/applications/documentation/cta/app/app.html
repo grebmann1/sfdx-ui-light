@@ -18,6 +18,7 @@
                 <cta-markdown-menu lwc:ref="menu"
                     url="https://raw.githubusercontent.com/grebmann1/cta-cheat-sheet/main/Documentation/Documentation.md"
                     onmenu={handleMenu}
+                    onfilter={handleFilterChange}
                 ></cta-markdown-menu>
             </div>
             <!-- Container -->
@@ -35,6 +36,7 @@
                     ></cta-paginator>
     
                     <cta-markdown-viewer lwc:ref="viewer"
+                        filter={filter}
                         default-url="https://raw.githubusercontent.com/grebmann1/cta-cheat-sheet/main/README.md"
                         base-url="https://raw.githubusercontent.com/grebmann1/cta-cheat-sheet/main/Documentation/"
                     ></cta-markdown-viewer>

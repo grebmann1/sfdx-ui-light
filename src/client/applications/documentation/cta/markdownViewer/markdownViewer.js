@@ -9,6 +9,15 @@ export default class MarkdownViewer extends LightningElement {
     @api defaultUrl;
     @api url;
     @api baseUrl;
+    
+
+    @api
+    get filter(){
+        return this._filter;
+    }
+    set filter(value){
+        this._filter = value;
+    }
 
     connectedCallback(){
         if(!this.init){
@@ -47,8 +56,14 @@ export default class MarkdownViewer extends LightningElement {
 
     setMarkdown(markdown){
         // eslint-disable-next-line @lwc/lwc/no-inner-html
-        this.refs.container.innerHTML = marked()(markdown);
-        if(this.isMenu)this.runAsMenu();
+        var html = marked()(markdown);
+        if(!isEmpty(this.filter)){ // new RegExp('(?<!`)\b'+this.filter+'\b(?!`)','gim');
+            var regex = new RegExp('(?<=>)([^<]*?)('+this.filter+')','gim');
+            if(regex.test(html)){
+                html = html.toString().replace(regex,`$1<span style="font-weight:Bold; color:blue;">$2</span>`);
+            }
+        }
+        this.refs.container.innerHTML = html;
     }
 
     replaceLinks = (content) => {

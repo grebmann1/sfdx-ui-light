@@ -50,10 +50,10 @@ export default class MarkdownMenu extends LightningElement {
     }
     
     async getDown(url){
-        const content = await (await fetch(url)).text();
-        this.formattedContent = structurizedMarkdown(content);
-        console.log('this.formattedContent',this.formattedContent);
-        this.setMarkdown(this.replaceLinks(content))
+        const text = await (await fetch(url)).text();
+        this.formattedContent = structurizedMarkdown(text);
+        const content = this.filterContent(this.formattedContent).join('\n');
+        this.setMarkdown(this.replaceLinks(content));
     }
 
     setMarkdown(markdown){
