@@ -253,7 +253,7 @@ export default class Code extends FeatureElement {
 
     filterRecords = (key) => {
         if(!this.records.hasOwnProperty(key)) return [];
-        return [...this.records[key]].filter(x => isEmpty(x.NamespacePrefix) && this.namespaceFiltering_value === DEFAULT_NAMESPACE || this.namespaceFiltering_value === x.NamespacePrefix);
+        return [...this.records[key]].filter(x => isEmpty(x.NamespacePrefix) && this.namespaceFiltering_value === DEFAULT_NAMESPACE || this.namespaceFiltering_value === x.NamespacePrefix || this.namespaceFiltering_value === ALL_NAMESPACE);
     }
 
     getCurrentRank = (mapping,check) => {
