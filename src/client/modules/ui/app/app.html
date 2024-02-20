@@ -20,6 +20,11 @@
         </div>
         <div class="l-cell-auto-size">
             <div class="l-container-whole-parent">
+                <!-- Full App Loading -->
+                <template lwc:if={isFullAppLoading}>
+                    <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                </template>
+                <!-- Container & Header -->
                 <div class="home l-container-vertical">
                     <div class="l-cell-content-size">
                         <!-- Header -->
@@ -45,7 +50,7 @@
                                 <!-- Page - START -->
                                 <div class={dynamicAppContainerClass}>
                                     <section class="slds-full-height section">
-                                        <div class="slds-full-height container" onopenapplication={handleApplicationSelection}>
+                                        <div class="slds-full-height container" onopenapplication={handleApplicationSelection} onstartlogin={handleStartLogin}>
                                             <!-- [Electron only] SFDX Installation required  -->
                                             <template lwc:if={isSFDXMissing}>
                                                 <ui-information-block title="CLI Missing" variant="error">

@@ -91,6 +91,7 @@ export default class App extends FeatureElement {
             window.electron.ipcRenderer.invoke('OPEN_INSTANCE',row);
         }else{
             let {alias,...settings} = this.data.find(x => x.id == row.id);
+            this.dispatchEvent(new CustomEvent("startlogin", { bubbles: true,composed: true }));
             try{
                 let connector = await connect({alias,settings});
                 console.log('login');

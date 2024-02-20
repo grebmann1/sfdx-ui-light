@@ -115,7 +115,8 @@ export default class App extends FeatureElement {
         this.refs.container.innerHTML = formattedContent;
         this.applyFilterOnTable(this.filter);
         this.buildUML();
-        this.template.querySelector('.mermaid').scrollIntoView();
+        this.template.querySelector('.documentation-container').scrollTo({ top: 0, behavior: 'auto' });
+        //this.template.querySelector('.mermaid').scrollIntoView();
     }
 
     applyFilterOnTable = (keywords) => {

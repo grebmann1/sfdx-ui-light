@@ -16,7 +16,7 @@
     </div>
     <div class="slds-flex-column min-height-200">
         
-        <div class="slds-flex-column slds-is-relative slds-full-height min-height-200">
+        <div class="slds-flex-column slds-full-height min-height-200">
             <slot></slot> <!-- Slot -->
             <template lwc:if={namespaceFiltering_isDisplayed}>
                 <div class="slds-grid slds-grid_align-end">
@@ -42,16 +42,19 @@
                     onchange={handleSearch}
                 ></lightning-input>
             </template>
-            <template lwc:if={isLoading}>
-                <lightning-spinner alternative-text="Loading"></lightning-spinner>
-            </template>
-            <lightning-vertical-navigation onselect={handleSelection} compact class="slds-scrollable_y">
-                <lightning-vertical-navigation-section>
-                    <template for:each={filteredList} for:item="item">
-                        <slds-menu-item key={item.Key} name={item.Name} label={item.Label} highlight={itemHighlight} is-selected={item.isSelected}></slds-menu-item>
-                    </template>
-                </lightning-vertical-navigation-section>
-            </lightning-vertical-navigation>
+            <div class="slds-flex-column slds-fill-height slds-is-relative">
+                <template lwc:if={isLoading}>
+                    <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                </template>
+                <lightning-vertical-navigation onselect={handleSelection} compact class="slds-scrollable_y">
+                    <lightning-vertical-navigation-section>
+                        <template for:each={filteredList} for:item="item">
+                            <slds-menu-item key={item.Key} name={item.Name} label={item.Label} highlight={itemHighlight} is-selected={item.isSelected}></slds-menu-item>
+                        </template>
+                    </lightning-vertical-navigation-section>
+                </lightning-vertical-navigation>
+            </div>
+            
     
             <template lwc:if={displayIfEmpty}>
                 <div class="slds-p-around_small">No items found</div>

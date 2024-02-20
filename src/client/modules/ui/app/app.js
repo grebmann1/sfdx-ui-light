@@ -29,16 +29,11 @@ export default class App extends LightningElement {
     isMenuCollapsed = false;
     pageHasLoaded = false;
     targetPage;
+    _isFullAppLoading = false;
 
     @track applications = [];
 
-    get currentApplicationId(){
-        return this._currentApplicationId;
-    }
-    set currentApplicationId(value){
-        this._currentApplicationId = value;
-        //this.assignNewHash(value);
-    }
+    currentApplicationId;
 
 
     @api 
@@ -113,6 +108,11 @@ export default class App extends LightningElement {
     }
 
     /** Events */
+
+    handleStartLogin = () => {
+        console.log('handleStartLogin');
+        this._isFullAppLoading = true;
+    }
     
     handleLogin = async (connector) => {
         this.connector = connector;
@@ -131,6 +131,7 @@ export default class App extends LightningElement {
         if(this.applications.filter(x => x.name == 'org/app').length == 0){
             this.openSpecificModule('org/app');
         }
+        this._isFullAppLoading = false;
     }
 
     handleLogout = (e) => {
@@ -182,15 +183,6 @@ export default class App extends LightningElement {
 
 
     /** Methods  */
-    
-    assignNewHash = (value) => {
-        if(isUndefinedOrNull(value)) return;
-
-        const app = this.applications.find(x => x.id === value);
-        if(app && APP_MAPPING.hasOwnProperty(app.name) && isNotUndefinedOrNull(APP_MAPPING[app.name].path)){
-            window.location.hash = APP_MAPPING[app.name].path;
-        }
-    }
     
     openSpecificModule = async (target) => {
         this.handleApplicationSelection(target);
@@ -300,6 +292,10 @@ export default class App extends LightningElement {
 
 
     /** Getters */
+
+    get isFullAppLoading(){
+        return this._isFullAppLoading || !this.pageHasLoaded;
+    }
     
     get isSFDXMissing(){
         return isElectronApp() && !this.isSalesforceCliInstalled && this.isCommandCheckFinished;
