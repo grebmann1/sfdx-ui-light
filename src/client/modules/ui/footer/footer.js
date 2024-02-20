@@ -1,9 +1,9 @@
 import { LightningElement} from "lwc";
-
+/** Store **/
 
 export default class Footer extends LightningElement {
 
-    isPathDisplayed = true;
+    isFooterDisplayed = true;
 
 
 

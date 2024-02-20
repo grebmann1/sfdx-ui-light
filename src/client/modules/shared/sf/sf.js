@@ -6,9 +6,9 @@ import {
 import { chunkPromises,chunkArray,isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
 
 
+
 export const loadMetadata_async = async (conn,callback) => {
     window.test = conn;
-
     let results_1 = await Promise.all([
         getPermissionSet(conn),
         getEntityDefinition(conn),

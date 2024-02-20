@@ -283,7 +283,9 @@ export default class App extends FeatureElement {
     }
 
     sobject_handleChange = (e) => {
+        console.log('sobject_handleChange');
         this.selectedObject = this.metadata.sobjects[e.detail.value];
+        this.setFieldLevelSecurityReport();
     }
 
 
@@ -359,7 +361,7 @@ export default class App extends FeatureElement {
     }
 
     setGenericReport = async (records,listKey,permissionKey = 'name',cols,formatterMethod) => {
-
+        this.isLoading = true;
         let permissionSets    = Object.values(this.permissionSets);
 		let dataList = [];
 
@@ -422,6 +424,7 @@ export default class App extends FeatureElement {
 		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
 			height: this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight,
 			data: dataList,
+            selectable:true,
 			layout: "fitDataFill",
 			columns: colModel,
             groupBy:"namespacePrefix",
@@ -433,10 +436,11 @@ export default class App extends FeatureElement {
                 rowGroups:false, //do not include row groups in downloaded table
             },
 		});
+        this.isLoading = false;
     }
 
     setLayoutAssignment = async () => {
-
+        this.isLoading = true;
         let permissionSets    = Object.values(this.permissionSets);
         let dataList = [];
 
@@ -526,6 +530,7 @@ export default class App extends FeatureElement {
         this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
             height: this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight,
             data: dataList,
+            selectable:true,
             layout: "fitDataFill",
             columns: colModel,
             groupBy:"name",
@@ -534,9 +539,11 @@ export default class App extends FeatureElement {
                 return count > 1;
             }
         });
+        this.isLoading = false;
     }
 
     setCustomObjectReport = () => {
+        this.isLoading = true;
         let permissionSets    = Object.values(this.permissionSets);//.filter(x => x.type === 'Profile');
 
 		let dataList = [];
@@ -601,6 +608,7 @@ export default class App extends FeatureElement {
 		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
 			height: this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight,
 			data: dataList,
+            selectable:true,
 			layout: "fitDataFill",
 			columns: colModel,
 			columnHeaderVertAlign: "middle",
@@ -613,10 +621,11 @@ export default class App extends FeatureElement {
                 }
             },        
 		});
+        this.isLoading = false;
 	}
 
     setFieldLevelSecurityReport = async () => {
-
+        this.isLoading = true;
         if(isUndefinedOrNull(this.selectedObject) && Object.values(this.metadata.sobjects).length > 0){
             this.selectedObject = this.metadata.sobjects[this.sobject_options[0].value];
         }
@@ -696,6 +705,7 @@ export default class App extends FeatureElement {
 		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
 			height: this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight,
 			data: dataList,
+            selectable:true,
 			layout: "fitDataFill",
 			columns: colModel,
 			columnHeaderVertAlign: "middle",
@@ -708,9 +718,11 @@ export default class App extends FeatureElement {
                 }
             },        
 		});
+        this.isLoading = false;
 	}
 
     setPermissionGroupReport = async () => {
+        this.isLoading = true;
         let permissionGroups    = Object.values(this.metadata.permissionGroups);
 		let dataList = [];
 
@@ -762,6 +774,7 @@ export default class App extends FeatureElement {
 		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
 			height: this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight,
 			data: dataList,
+            selectable:true,
 			layout: "fitDataFill",
 			columns: colModel,
             groupBy:"namespacePrefix",
@@ -773,6 +786,7 @@ export default class App extends FeatureElement {
                 rowGroups:false, //do not include row groups in downloaded table
             },
 		});
+        this.isLoading = false;
     }
 
 }

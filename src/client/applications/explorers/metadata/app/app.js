@@ -191,6 +191,7 @@ export default class App extends FeatureElement {
                     var xmlMetadata = await this.fetchXMLFile(metadataPackage);*/
                     console.log('xmlMetadata',xmlMetadata);
                     runActionAfterTimeOut(null,async () => {
+                        this.hideJsonViewer();
                         this.visualizer = jsonview.create(JSON.stringify(xmlMetadata));
                             jsonview.render(this.visualizer,this.refs.container);
                             jsonview.expand(this.visualizer);
@@ -199,6 +200,7 @@ export default class App extends FeatureElement {
                 break;
                 default:
                     runActionAfterTimeOut(null,async () => {
+                        this.hideJsonViewer();
                         this.visualizer = jsonview.create(JSON.stringify(result));
                             jsonview.render(this.visualizer,this.refs.container);
                             jsonview.expand(this.visualizer);
