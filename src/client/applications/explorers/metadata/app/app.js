@@ -12,6 +12,8 @@ export default class App extends FeatureElement {
     @track selection = [];
     @track metadata  = [];
     currentLevel = 0;
+    @track selectedRecord;
+    @track selectedRecordLoading = false;
 
     //@track selection = {};
     //@track items = {}
@@ -44,7 +46,9 @@ export default class App extends FeatureElement {
             break;
             case 1:
                 // Metadata Record selection
-                this.load_specificMetadataRecord({itemName,itemLabel});
+                this.selectedRecord = null;
+                this.selectedRecordLoading = true;
+                this.load_specificMetadataRecord({itemName,itemLabel});;
                 //this.currentLevel = 2; // Only for the flows
             break;
             case 2:
@@ -57,6 +61,7 @@ export default class App extends FeatureElement {
     handleMenuBack = () => {
         this.hideEditor();
         this.hideJsonViewer();
+        this.selectedRecord = null;
 
         if(this.currentLevel > 0){
             this.currentLevel--;
@@ -123,7 +128,7 @@ export default class App extends FeatureElement {
                     Label:_tempName,
                     Key:x.Id
                 }
-            }).sort((a, b) => a.Label.localeCompare(b.Label));
+            }).sort((a, b) => (a.Label || '').localeCompare(b.Label));
         
         // Format the data for specific metadata type
         switch(itemName){
@@ -158,6 +163,7 @@ export default class App extends FeatureElement {
         //console.log('search',this.metadata_lvl1_selection,recordId,metadataRecord);
         try{
             let result = await this.connector.conn.request(metadataRecord.attributes.url);
+            
             console.log('result',result);
 
             switch(result.attributes.type){
@@ -190,23 +196,14 @@ export default class App extends FeatureElement {
                       
                     var xmlMetadata = await this.fetchXMLFile(metadataPackage);*/
                     console.log('xmlMetadata',xmlMetadata);
-                    runActionAfterTimeOut(null,async () => {
-                        this.hideJsonViewer();
-                        this.visualizer = jsonview.create(JSON.stringify(xmlMetadata));
-                            jsonview.render(this.visualizer,this.refs.container);
-                            jsonview.expand(this.visualizer);
-                    },{timeout:500});
+                    this.selectedRecord = xmlMetadata;
                     
                 break;
                 default:
-                    runActionAfterTimeOut(null,async () => {
-                        this.hideJsonViewer();
-                        this.visualizer = jsonview.create(JSON.stringify(result));
-                            jsonview.render(this.visualizer,this.refs.container);
-                            jsonview.expand(this.visualizer);
-                        //this.refs.container.innerHTML = `<json-viewer>${JSON.stringify(this.metadata_lvl2_selection)}</json-viewer>`;
-                    },{timeout:500});
+                    this.selectedRecord = result;
             }
+
+            this.selectedRecordLoading = false
         }catch(e){
             console.error(e);
             Toast.show({
@@ -350,7 +347,9 @@ export default class App extends FeatureElement {
 
     hideJsonViewer = () => {
         if(this.visualizer){
-            jsonview.destroy(this.visualizer);
+            try{
+                jsonview.destroy(this.visualizer);
+            }catch(e){console.error(e)}
         }
     }
 
@@ -377,6 +376,10 @@ export default class App extends FeatureElement {
 
     get editorClass(){
         return classSet("slds-full-height").add({'slds-hide':!this.isEditorDisplayed}).toString();
+    }
+
+    get isMetadataViewerDisplayed(){
+        return isNotUndefinedOrNull(this.selectedRecord);
     }
 
 }

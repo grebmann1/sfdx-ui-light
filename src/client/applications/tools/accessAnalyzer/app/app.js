@@ -195,7 +195,7 @@ export default class App extends FeatureElement {
     get userLicenseFiltering_options(){
         let options = [{label:'All',value:'all'}];
         if(isNotUndefinedOrNull(this.permissionSets)){
-            options = options.concat(Object.keys(groupBy(Object.values(this.permissionSets),'userLicense')).map(x => ({label:x,value:x})));
+            options = options.concat(Object.keys(groupBy(Object.values(this.permissionSets),'userLicense')).filter(x => x != 'undefined').map(x => ({label:x,value:x})));
         }
         return options;
     }

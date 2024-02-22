@@ -6,6 +6,9 @@
                     <!-- Editor--> 
                     <div class="slds-flex-column slds-full-height slds-light-bg">
                         <div>
+                            <div class="slds-grid">
+                                
+                            </div>
                             <lightning-tabset variant="scoped" class="slds-without-tab">
                                 <template for:each={formattedFiles} for:item="file">
                                     <lightning-tab key={file.path} label={file.name} value={file.path} onactive={handleSelectTab}></lightning-tab>

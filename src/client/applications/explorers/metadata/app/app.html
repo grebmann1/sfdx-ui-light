@@ -60,12 +60,20 @@
                             is-loading={isLoading}
                         ></slds-menu>
                     </div>
-                    <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_3-of-4">
-                        <!-- Metadata Details -->
+                    <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_3-of-4 slds-is-relative">
+
+                        <!-- Editor view -->
                         <editor-app lwc:ref="editor" class={editorClass}></editor-app>
-                        <div class="slds-scrollable_y"> 
-                            <div lwc:dom="manual" lwc:ref="container"></div> 
-                        </div>
+                        
+
+                        <!-- JSON Viewer view -->
+                        <template lwc:if={isMetadataViewerDisplayed}>
+                            <metadata-viewer class="slds-full-height" lwc:ref="viewer" record={selectedRecord}></metadata-viewer>
+                        </template>
+                        <template lwc:elseif={selectedRecordLoading}>
+                            <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                        </template>
+
                         <!--<div class="slds-scrollable_y">
                             <template lwc:if={isRecordDisplayed}>
                                 <metadata-code-viewer></metadata-code-viewer>
