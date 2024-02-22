@@ -81,10 +81,10 @@ export default class Viewer extends FeatureElement {
         var header,rows;
         if(records.length == 0) return {rows,header};
         if(typeof records[0] != 'object'){
-            header = [{ label: `${key} values`, fieldName: 'value', type: 'text',wrapText: true}];
+            header = [{ label: `${key} values`, fieldName: 'value', type: 'text',wrapText: false}];
             rows = records.map((x,index) => ({_index:index,value:x}));
         }else{
-            header = Object.keys(records[0]).map(x => ({ label: x, fieldName: x, type: 'text',wrapText: true}));
+            header = Object.keys(records[0]).map(x => ({ label: x, fieldName: x, type: 'text',wrapText: false}));
             rows = records.map((x,index) => ({_index:index,...this.formatArray(x)}));
         }
         return {rows,header};
