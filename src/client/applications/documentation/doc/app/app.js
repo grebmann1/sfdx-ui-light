@@ -1,8 +1,57 @@
 import { api } from "lwc";
-import { isEmpty,runActionAfterTimeOut,isNotUndefinedOrNull} from 'shared/utils';
+import { isEmpty,runActionAfterTimeOut,isNotUndefinedOrNull,removeDuplicates } from 'shared/utils';
 import FeatureElement from 'element/featureElement';
 const OBJECT_PREFIX = 'sforce_api_objects_';
 const ACCOUNT_ID = 'sforce_api_objects_account';
+const SEPARATOR = '###';
+const DEFAULT_CONFIG = 'atlas.en-us.object_reference.meta'; // 234.0
+const CONFIGURATION = {
+    'atlas.en-us.object_reference.meta': {
+        label:'Core Salesforce'
+    },
+    'atlas.en-us.salesforce_feedback_management_dev_guide.meta':{
+        label:'Feedback Management'
+    },
+    'atlas.en-us.salesforce_scheduler_developer_guide.meta' : {
+        label:'Scheduler'
+    },
+    'atlas.en-us.field_service_dev.meta':{
+        label:'Field Service Lightning'
+    },
+    'atlas.en-us.loyalty.meta':{
+        label:'Loyalty'
+    },
+    'atlas.en-us.psc_api.meta':{
+        label:'Public Sector Cloud'
+    },
+    'atlas.en-us.netzero_cloud_dev_guide.meta':{
+        label:'Net Zero Cloud'
+    },
+    'atlas.en-us.edu_cloud_dev_guide.meta':{
+        label:'Education Cloud'
+    },
+    'atlas.en-us.automotive_cloud.meta':{
+        label:'Automotive Cloud'
+    },
+    'atlas.en-us.eu_developer_guide.meta':{
+        label:'Energy and Utilities Cloud'
+    },
+    'atlas.en-us.health_cloud_object_reference.meta':{
+        label:'Health Cloud'
+    },
+    'atlas.en-us.retail_api.meta':{
+        label:'Consumer Goods Cloud'
+    },
+    'atlas.en-us.financial_services_cloud_object_reference.meta':{
+        label:'Financial Service Cloud'
+    },
+    'atlas.en-us.mfg_api_devguide.meta':{
+        label:'Manufacturing Cloud'
+    },
+    'atlas.en-us.nonprofit_cloud.meta':{
+        label:'Non profit Cloud'
+    }
+}
 
 export default class App extends FeatureElement {
 
@@ -10,7 +59,12 @@ export default class App extends FeatureElement {
     isMenuLoading = false;
     apiDomain = 'https://developer.salesforce.com';
     language = 'en-us';
-    documentationId = 'atlas.en-us.object_reference.meta';
+    documentationId = DEFAULT_CONFIG;
+
+
+    cloud_value = [DEFAULT_CONFIG]; // standard by default
+    documentMapping = {};
+
 
     sobjectHeader;
     currentSobject;
@@ -33,8 +87,8 @@ export default class App extends FeatureElement {
         this.isLoading = true;
         this.isMenuLoading = true;
         this.initializeMermaid();
-        await this.fetchDocument();
-        this.selectedMenuItem = ACCOUNT_ID;
+        await this.fetchDocuments();
+        this.selectedMenuItem = `${DEFAULT_CONFIG}${SEPARATOR}${ACCOUNT_ID}`;
         this.selectPageToView();
         this.isLoading = false;
         this.isMenuLoading = false;
@@ -55,7 +109,7 @@ export default class App extends FeatureElement {
     }
 
     handleItemSelection = async (e) => {
-        this.redirectTo(e.detail.itemName);
+        this.redirectTo(e.detail.key);
     }
 
 
@@ -67,10 +121,9 @@ export default class App extends FeatureElement {
 
     /** Methods */
     
-    redirectTo = (name) => {
-        this.selectedMenuItem = name;
+    redirectTo = (key) => {
+        this.selectedMenuItem = key;
         this.selectPageToView();
-        
     }
     
     initializeMermaid = () => {
@@ -84,7 +137,7 @@ export default class App extends FeatureElement {
     }
 
     getFilteredItems = async (value) => {
-        return  await (await fetch(`/documentation/search?keywords=${encodeURIComponent(value)}`)).json();
+        return  await (await fetch(`/documentation/search?keywords=${encodeURIComponent(value)}&filters=${encodeURIComponent(this.cloud_value)}`)).json();
     }
 
     selectPageToView = async () => {
@@ -98,7 +151,8 @@ export default class App extends FeatureElement {
         
         
         //let current = this.items.find(x => x.Name === this.selectedMenuItem);
-        this.currentSobject = await this.loadSingleDocument(this.selectedMenuItem);
+        const [documentationId,name] = this.selectedMenuItem.split(SEPARATOR);
+        this.currentSobject = await this.loadSingleDocument(documentationId,name);
         this.displayBodyContent();
         this.isLoading = false;
     }
@@ -227,32 +281,62 @@ export default class App extends FeatureElement {
         return (a || '').toLowerCase().includes((b||'').toLowerCase());
     }
 
-    fetchDocument = async () => {
+    fetchDocuments = async () => {
+
         this.isMenuLoading = true;
-        let result = await (await fetch(`${this.apiDomain}/docs/get_document/${this.documentationId}`)).json();
-        let _items
-        result.toc.forEach(x => {
-            x.children.forEach(y => {
-                if( y.id === "sforce_api_objects_list"){
-                    _items = y.children
-                }
-            })
-        });
-        this.items = _items;
-        this.sobjectHeader = result;
+        //console.log('fetchDocuments',this.cloud_value);
+        for (const item of this.cloud_value) {
+            await this.fetchDocuments_single(item);
+        }
+        // group items
+        this.items = Object.keys(this.documentMapping)
+        .filter(documentationId => this.cloud_value.includes(documentationId))
+        .reduce((acc,documentationId) => acc.concat(this.documentMapping[documentationId].items.map(x => ({...x,documentationId}))),[]);
+        
+        //console.log('this.items',this.items);
         this.isMenuLoading = false;
+    }
+
+    fetchDocuments_single = async (documentationId) => {
+        //console.log('fetchDocuments_single',documentationId);
+        if(this.documentMapping.hasOwnProperty(documentationId)) return;
+        
+        let result = await (await fetch(`${this.apiDomain}/docs/get_document/${documentationId}`)).json();
+        //console.log(documentationId,result);
+        var items = removeDuplicates(this.extraDataFromJson(documentationId,result.toc,[]),'id')
+        .sort((a, b) => (a.text || '').localeCompare(b.text));
+        this.documentMapping[documentationId] = {
+            items:items,
+            header:result
+        }
+        //console.log('this.documentMapping[documentationId]',documentationId,this.documentMapping[documentationId]);
+    }
+
+    extraDataFromJson = (documentationId,items,result) => {
+        for(var x of (items || [])){
+            const itemId = x.id || '';
+            if(x.children){
+                result = result.concat(this.extraDataFromJson(documentationId,x.children,[]));
+            }else{
+                if((itemId).startsWith('sforce_api_objects_')){
+                    result.push(x)
+                }
+            }
+        }
+        return result;
     }
 
     fetchContentDocument = async (deliverable,contentDocumentId,version) => {
         return await (await fetch(`${this.apiDomain}/docs/get_document_content/${deliverable}/${contentDocumentId}/${this.language}/${version}`)).json();
     }
 
-    loadSingleDocument = async (name) => {
+    loadSingleDocument = async (documentationId,name) => {
         try{
+            const header = this.documentMapping[documentationId].header;
             return this.fetchContentDocument(
-                this.sobjectHeader.deliverable,
+                header.deliverable,
                 `${name}.htm`,
-                this.sobjectHeader.version.doc_version
+                header.version.doc_version
             );
         }catch(e){
             console.warn('Error happening',e);
@@ -267,8 +351,20 @@ export default class App extends FeatureElement {
         }
         return content;
     }
+
+    cloud_handleChange = async (e) => {
+        this.cloud_value = e.detail.value;
+        if(!isEmpty(this.filter)){
+            this.filteredItems = await this.getFilteredItems(this.filter);   
+        }
+        this.fetchDocuments();
+    }
     
     /** Getters */
+
+    get cloud_options(){
+        return Object.keys(CONFIGURATION).map(x => ({label:CONFIGURATION[x].label,value:x}));
+    }
     
     get pageClass(){//Overwrite
         return super.pageClass+' slds-p-around_small';
@@ -284,9 +380,9 @@ export default class App extends FeatureElement {
             items = this.filteredItems;
         }
         return items.map(x => ({
-            Label:x.text,
-            Key:x.id,
-            Name:x.id,
+            key:`${x.documentationId}${SEPARATOR}${x.id}`,
+            label:x.text,
+            name:x.id,
         }));
     }
 }

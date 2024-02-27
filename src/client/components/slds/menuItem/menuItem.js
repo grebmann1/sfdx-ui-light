@@ -11,6 +11,12 @@ export default class MenuItem extends LightningElement {
     @api label;
     @api current;
 
+    hasLoaded = false;
+
+    connectedCallback(){
+        setTimeout(() => {this.hasLoaded = true;},1); // Improve the performances
+    }
+
     /** Events */
 
     handleClick = (e) => {

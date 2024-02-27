@@ -34,6 +34,13 @@
                     <div class="slds-page-header__detail-row slds-is-relative" style="display:block; ">
                         <!-- Display Info -->
                         <h2>This part is currently in development - Work in progress </h2>
+                        <lightning-checkbox-group name="clouds"
+                              class="slds-checkbox-flex"
+                              label="Filters"
+                              options={cloud_options}
+                              value={cloud_value}
+                              onchange={cloud_handleChange}
+                        ></lightning-checkbox-group>
                     </div>
                 </div>
             </div>

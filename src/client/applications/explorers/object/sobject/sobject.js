@@ -83,7 +83,7 @@ export default class Sobject extends FeatureElement {
     }
 
     handleItemSelection = async (e) => {
-        this.selectedItem = e.detail.itemName;
+        this.selectedItem = e.detail.name;
         this.isTableLoading = true;
         await this.describeSpecific(this.selectedItem);
         this.isTableLoading = false;
@@ -117,11 +117,11 @@ export default class Sobject extends FeatureElement {
             var records = (await this.load_toolingGlobal()) || [];
             this.records = records;
             this.menuRecords = records.map(x => ({
-                Label:`${x.label}(${x.name})`, // for slds-menu
-                Name:x.name, // for slds-menu
-                Key:x.name, // for slds-menu
+                label:`${x.label}(${x.name})`, // for slds-menu
+                name:x.name, // for slds-menu
+                key:x.name, // for slds-menu
                 category:this.extractCategory(x.name)
-            })).sort((a, b) => a.Name.localeCompare(b.Name));
+            })).sort((a, b) => a.name.localeCompare(b.name));
             this.recordFilters = this.filterRecords();
         }catch(e){
             console.error(e);

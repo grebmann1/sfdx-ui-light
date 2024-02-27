@@ -36,19 +36,19 @@ export default class App extends FeatureElement {
     
     handleMenuSelection = (e) => {
 
-        const {itemName,itemLabel, level} = e.detail;
+        const {name,label} = e.detail;
 
         switch(this.currentLevel){
             case 0:
                 // Metadata Type selection
-                this.load_specificMetadata({itemName,itemLabel});
+                this.load_specificMetadata({name,label});
                 this.currentLevel = 1;
             break;
             case 1:
                 // Metadata Record selection
                 this.selectedRecord = null;
                 this.selectedRecordLoading = true;
-                this.load_specificMetadataRecord({itemName,itemLabel});;
+                this.load_specificMetadataRecord({name,label});;
                 //this.currentLevel = 2; // Only for the flows
             break;
             case 2:
@@ -82,18 +82,18 @@ export default class App extends FeatureElement {
         this.selection  = []
         this.metadata   = this.metadata.slice(0,1);
         this.handleMenuSelection({detail:{
-            itemName:e.currentTarget.dataset.name,
-            itemLabel:e.currentTarget.dataset.name
+            name:e.currentTarget.dataset.name,
+            label:e.currentTarget.dataset.name
         }});
     }
 
     /** Methods */
     
-    selectionUpdate = ({itemName,itemLabel}) => {
+    selectionUpdate = ({name,label}) => {
         if(this.selection.length > this.currentLevel){
-            this.selection[this.currentLevel] = {itemName,itemLabel};
+            this.selection[this.currentLevel] = {name,label};
         }else{
-            this.selection = [].concat(this.selection,[{itemName,itemLabel}]);
+            this.selection = [].concat(this.selection,[{name,label}]);
         }
         
     }
@@ -104,34 +104,34 @@ export default class App extends FeatureElement {
         //console.log('sobjects',sobjects);
         let result = await this.connector.conn.metadata.describe(this.connector.conn.version);
             result = (result?.metadataObjects || []).sort((a, b) => a.xmlName.localeCompare(b.xmlName));
-            result = result.filter(x => sobjects.includes(x.xmlName)).map(x => ({...x,...{Name:x.xmlName,Label:x.xmlName,Key:x.xmlName}}));
+            result = result.filter(x => sobjects.includes(x.xmlName)).map(x => ({...x,...{name:x.xmlName,label:x.xmlName,key:x.xmlName}}));
         this.metadata = [].concat(this.metadata,[{records:result,label:'Metadata'}]);
         console.log('this.metadata',this.metadata);
         this.isLoading = false;
     }
 
-    load_specificMetadata = async ({itemName,itemLabel}) => {
+    load_specificMetadata = async ({name,label}) => {
         this.isLoading = true;
-        this.selectionUpdate({itemName,itemLabel});
-        const metadataConfig = await this.connector.conn.tooling.sobject(itemName).describe() || [];
+        this.selectionUpdate({name,label});
+        const metadataConfig = await this.connector.conn.tooling.sobject(name).describe() || [];
         //console.log('metadataConfig.fields.map(x => x.name)',metadataConfig.fields.map(x => x.name));
         const fields = metadataConfig.fields.map(x => x.name).filter(x => ['Id','Name','DeveloperName','MasterLabel','NamespacePrefix'].includes(x));
         //console.log('query',query);
-        let queryExec = this.connector.conn.tooling.query(`SELECT ${fields.join(',')} FROM ${itemName}`);
+        let queryExec = this.connector.conn.tooling.query(`SELECT ${fields.join(',')} FROM ${name}`);
         let result = (await queryExec.run({ responseTarget:'records',autoFetch : true, maxFetch : 10000 })).records || [];
         //console.log('metadata_lvl2',result);
             result = result.map(x => {
                 const _tempName = this.formatName(x);
                 return {
                     ...x,
-                    Name:x.Id,
-                    Label:_tempName,
-                    Key:x.Id
+                    name:x.Id,
+                    label:_tempName,
+                    key:x.Id
                 }
-            }).sort((a, b) => (a.Label || '').localeCompare(b.Label));
+            }).sort((a, b) => (a.label || '').localeCompare(b.label));
         
         // Format the data for specific metadata type
-        switch(itemName){
+        switch(name){
             case 'Flow':
                 console.log('filter flow')
                 result = removeDuplicates(result,'MasterLabel');
@@ -143,7 +143,7 @@ export default class App extends FeatureElement {
         }
 
         
-        this.metadata = [].concat(this.metadata,[{records:result,label:itemLabel}]);
+        this.metadata = [].concat(this.metadata,[{records:result,label}]);
         console.log('metadata_lvl2_formatted',result);
         this.isLoading = false;
     }
@@ -153,9 +153,9 @@ export default class App extends FeatureElement {
         return x.NamespacePrefix ? `${x.NamespacePrefix}__${name}` : name;
     }
 
-    load_specificMetadataRecord = async ({itemName,itemLabel}) => {
-        this.selectionUpdate({itemName,itemLabel});
-        var recordId = itemName;
+    load_specificMetadataRecord = async ({name,label}) => {
+        this.selectionUpdate({name,label});
+        var recordId = name;
         const metadataRecord = this.metadata[1].records.find(x => x.Id == recordId);
         if(metadataRecord.EntityDefinitionId){
             recordId = metadataRecord.EntityDefinitionId

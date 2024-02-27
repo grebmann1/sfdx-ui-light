@@ -10,7 +10,7 @@ const fs = require('node:fs');
 const CTA_MODULE = require('./modules/cta.js');
 
 /** Temporary Code until a DB is incorporated **/
-const VERSION = process.env.DOC_VERSION || '246.0';
+const VERSION = process.env.DOC_VERSION || '248.0';
 const DATA_DOCUMENTATION = JSON.parse(fs.readFileSync(`./src/documentation/${VERSION}.json`, 'utf-8'));
 
 /** CTA Documentation **/
@@ -66,13 +66,15 @@ app.get('/version',function(req,res){
 })
 app.get('/documentation/search',function(req,res){
   const keywords = req.query.keywords;
-  const result = DATA_DOCUMENTATION.contents.filter(x => this.checkIfPresent(x.title,keywords) || this.checkIfPresent(x.content,keywords)).map(x => ({
+  const filters = req.query.filters;
+  const result = DATA_DOCUMENTATION.contents.filter(x => filters.includes(x.documentationId)).filter(x => this.checkIfPresent(x.title,keywords) || this.checkIfPresent(x.content,keywords)).map(x => ({
       name:x.id,
       text:x.title,
-      id:x.id
+      id:x.id,
+      documentationId:x.documentationId
   }));
   res.json(result);
-});
+})
 app.get('/cta/search',function(req,res){
   //console.log('DATA_CTA.contents',DATA_CTA);
   const keywords = req.query.keywords;

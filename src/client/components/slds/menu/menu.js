@@ -46,7 +46,7 @@ export default class Menu extends FeatureElement {
 
     handleSelection = (e) => {
         this.selectedItem = e.detail.name;
-        const index     = this.items.findIndex(x => x.Name === e.detail.name);
+        const index     = this.items.findIndex(x => x.name === e.detail.name);
         const oldIndex  = this.items.findIndex(x => x.isSelected);
         if(oldIndex > -1){
             this._items[oldIndex].isSelected = false;
@@ -56,9 +56,7 @@ export default class Menu extends FeatureElement {
         }
         
         this.dispatchEvent(new CustomEvent("menuselection", { detail:{
-            itemName:this.items[index].Name,
-            itemLabel:this.items[index].Label,
-            level:this.level
+            ...this.items[index]
         },bubbles: true }));
     }
 
@@ -105,7 +103,7 @@ export default class Menu extends FeatureElement {
     
     get filteredList(){
         if(isEmpty(this.filter)) return this.namespaceFiltered;
-        return this.namespaceFiltered.filter(x => this.checkIfPresent(x.Name,this.filter) || this.checkIfPresent(x.Label,this.filter));
+        return this.namespaceFiltered.filter(x => this.checkIfPresent(x.name,this.filter) || this.checkIfPresent(x.label,this.filter));
     }
 
     get displayIfEmpty(){
