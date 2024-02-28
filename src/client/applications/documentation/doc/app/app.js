@@ -101,7 +101,7 @@ export default class App extends FeatureElement {
         runActionAfterTimeOut(e.detail.value,async (newValue) => {
             //this.filter = newValue;
             if(!isEmpty(newValue)){
-                this.filteredItems = await this.getFilteredItems(newValue);   
+                this.filteredItems = removeDuplicates(await this.getFilteredItems(newValue),'id');
             }
             this.filter = newValue;
             this.isMenuLoading = false;
@@ -291,8 +291,9 @@ export default class App extends FeatureElement {
         // group items
         this.items = Object.keys(this.documentMapping)
         .filter(documentationId => this.cloud_value.includes(documentationId))
-        .reduce((acc,documentationId) => acc.concat(this.documentMapping[documentationId].items.map(x => ({...x,documentationId}))),[]);
-        
+        .reduce((acc,documentationId) => acc.concat(this.documentMapping[documentationId].items.map(x => ({...x,documentationId}))),[])
+        .sort((a, b) => (a.text || '').localeCompare(b.text));
+
         //console.log('this.items',this.items);
         this.isMenuLoading = false;
     }
@@ -304,7 +305,6 @@ export default class App extends FeatureElement {
         let result = await (await fetch(`${this.apiDomain}/docs/get_document/${documentationId}`)).json();
         //console.log(documentationId,result);
         var items = removeDuplicates(this.extraDataFromJson(documentationId,result.toc,[]),'id')
-        .sort((a, b) => (a.text || '').localeCompare(b.text));
         this.documentMapping[documentationId] = {
             items:items,
             header:result
@@ -355,7 +355,7 @@ export default class App extends FeatureElement {
     cloud_handleChange = async (e) => {
         this.cloud_value = e.detail.value;
         if(!isEmpty(this.filter)){
-            this.filteredItems = await this.getFilteredItems(this.filter);   
+            this.filteredItems = removeDuplicates(await this.getFilteredItems(this.filter),'id');   
         }
         this.fetchDocuments();
     }
