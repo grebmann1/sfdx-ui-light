@@ -171,8 +171,8 @@ export default class App extends FeatureElement {
         
         let {permissionSets,...metadata} = _metadata;
         this.permissionSets = permissionSets;
-        console.log('this.permissionSets',this.permissionSets);
-        console.log('this.metadata',metadata);
+        //console.log('this.permissionSets',this.permissionSets);
+        //console.log('this.metadata',metadata);
         this.metadata = metadata;
         
         // Pre filter the permissionSets
@@ -442,11 +442,11 @@ export default class App extends FeatureElement {
 
 		var dataList = [];
 		let colModel = [
-			{ title: 'Label', field: 'label', frozen: true, headerHozAlign: "center", resizable: false,responsive:0,headerFilter:"input"},
-			{ title: 'Developer Name', field: 'name', frozen: true, headerHozAlign: "center", resizable: false, tooltip: true }
+			{ title: 'Label', field: 'label', resizable: true, headerHozAlign: "center", resizable: false,responsive:0,headerFilter:"input"},
+			{ title: 'Developer Name', field: 'name', resizable: true, headerHozAlign: "center", resizable: false, tooltip: true }
 		];
         const filteredPermissions = Object.values(this.permissionSets).filter(x => this.getBasicFilter(x));
-        console.log('filteredPermissions',filteredPermissions);
+        //console.log('filteredPermissions',filteredPermissions);
         // Columns processing
 		filteredPermissions.forEach(permission => {
 			
@@ -595,8 +595,8 @@ export default class App extends FeatureElement {
         const filteredPermissions = Object.values(this.permissionSets).filter(x => this.getBasicFilter(x));
 		let dataList = [];
 		let colModel = [
-			{ title: 'Label', field: 'label', frozen: true, headerHozAlign: "center", minWidth: 200, tooltip: true},
-			{ title: 'Developer Name', field: 'api', frozen: true, headerHozAlign: "center", minWidth: 200, tooltip: true },
+			{ title: 'Label', field: 'label', resizable: true, headerHozAlign: "center", minWidth: 200, tooltip: true},
+			{ title: 'Developer Name', field: 'api', resizable: true, headerHozAlign: "center", minWidth: 200, tooltip: true },
             { title: 'Field Type', field: 'type', resizable:true, headerHozAlign: "center", minWidth: 100, tooltip: true },
             { title: 'Required', field: 'isRequired', resizable:true, headerHozAlign: "center", minWidth: 20, hozAlign: "center",formatter:"tickCross",formatterParams:{allowEmpty:true},}
 		];
