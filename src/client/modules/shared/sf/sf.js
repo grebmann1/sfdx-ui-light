@@ -1,5 +1,5 @@
 import {
-    PermissionSet,Sobject,ObjectPermission,FieldPermission,PermissionGroups,
+    PermissionSet,Sobject,ObjectPermission,FieldPermission,PermissionGroups,LayoutAssignment,
     Field,ApexClass,ApexPage,AppDefinition,Layout,RecordType,TabDefinition
 } from "./mapping";
 
@@ -32,7 +32,7 @@ export const loadMetadata_async = async (conn,callback) => {
     let results_2 = await Promise.all([
         getUserPermissions(conn,permissionSets),
         setRecordTypes(conn,sobjects),
-        setLayoutAssignments(conn,permissionSets,{permissionSetProfileMapping,layouts}),
+        setLayoutAssignments(conn,permissionSets,{permissionSetProfileMapping,layouts})
     ]);
 
     const profileFields = results_2[0];
@@ -224,11 +224,17 @@ const setRecordTypes = async (conn,sobjects) => {
 
 const setLayoutAssignments = async (conn,permissionSets,{permissionSetProfileMapping,layouts}) => {
     console.log('setLayoutAssignments');
-    let records = (await conn.tooling.query("select Profile.Id, LayoutId, RecordTypeId from ProfileLayout where Profile.Id != null")).records || [];
+    let query = conn.tooling.query("select Profile.Id, LayoutId, RecordTypeId from ProfileLayout where Profile.Id != null");
+    let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 200000 }) || [];
+    console.log('records',records);
         records.forEach(record => {
             if (layouts[record.LayoutId]) {
-                let layoutAssignmentKey = layouts[record.LayoutId].objectName+(record.RecordTypeId?`-${record.RecordTypeId}`:'');
-                permissionSets[permissionSetProfileMapping[record.Profile.Id]].layoutAssigns[layoutAssignmentKey] = layouts[record.LayoutId];
+                //let layoutAssignmentKey = layouts[record.LayoutId].objectName+(record.RecordTypeId?`-${record.RecordTypeId}`:'');
+                permissionSets[permissionSetProfileMapping[record.Profile.Id]].layoutAssigns.push(new LayoutAssignment(
+                    record.LayoutId,
+                    layouts[record.LayoutId].objectName,
+                    record.RecordTypeId
+                ));
             }
         });
 }

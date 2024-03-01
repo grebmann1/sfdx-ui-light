@@ -130,6 +130,7 @@
                                     onchange={report_handleChange}
                                 ></lightning-combobox>
                             </li>
+                            
                             <!-- For Field Level Security-->
                             <template lwc:if={isSObjectSelectorDisplayed}>
                                 <li class="slds-page-header__detail-block-report">
@@ -143,6 +144,23 @@
                                         onchange={sobject_handleChange}
                                         disabled={isLoading}
                                     ></lightning-combobox>
+                                </li>
+                            </template>
+
+                            <!-- Diff Checker -->
+                            <template lwc:if={isDiffCheckerDisplayed}>
+                                <li class="slds-page-header__detail-block">
+                                    <lightning-input 
+                                        type="toggle" 
+                                        label="Diff. Checker" 
+                                        name="diffChecker" 
+                                        onchange={diff_handleChange}
+                                        checked={isDiffEnabled}
+                                        message-toggle-active="Active"
+                                        message-toggle-inactive="Inactive"
+                                        disabled={isLoading}
+                                        variant="label-stacked"
+                                    ></lightning-input>
                                 </li>
                             </template>
                         </template>

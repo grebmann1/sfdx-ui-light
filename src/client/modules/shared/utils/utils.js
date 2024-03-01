@@ -233,3 +233,12 @@ export function removeDuplicates(arr, prop) {
     });
     return result;
 }
+
+export function getFromStorage(item,byDefault){
+    try{
+        const parsedItem = JSON.parse(item);
+        return isUndefinedOrNull(parsedItem)?byDefault:parsedItem;
+    }catch(e){
+        return byDefault;
+    }
+}

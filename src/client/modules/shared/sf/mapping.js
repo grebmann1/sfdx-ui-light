@@ -63,7 +63,7 @@ export class PermissionSet {
         // app ID => AppDefinition
         this.appAccesses = [];
         // Object API Name + RecordType ID => Layout
-        this.layoutAssigns = {};
+        this.layoutAssigns = [];
 
         this.activeUserCount = 0;
 
@@ -103,6 +103,15 @@ export class FieldPermission {
         this.fieldName = fieldName;
         this.allowRead = allowRead;
         this.allowEdit = allowEdit;
+    }
+}
+
+export class LayoutAssignment {
+    constructor(id, objectName, recordTypeId) {
+        this.id = id;
+        this.objectName = objectName;
+        this.recordTypeId = recordTypeId;
+        this.key = recordTypeId?`${objectName}-${recordTypeId}`:objectName;
     }
 }
 
