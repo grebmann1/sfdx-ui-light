@@ -1,0 +1,11 @@
+<template>
+    <p class="slds-m-top_small slds-m-bottom_small">
+        <a class="pseudoLink" onclick={expandAll}>Expand All</a> | 
+        <a class="pseudoLink" onclick={collapseAll}>Collapse All</a>
+    </p>
+    <ul class="treeview">
+        <template for:each={items} for:item="item">
+            <metadata-structure-viewer-item key={item.key} title={item.key} value={item.value} items={item.items} is-open></metadata-structure-viewer-item>
+        </template>
+    </ul>
+</template>

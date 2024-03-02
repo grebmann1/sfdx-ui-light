@@ -1,16 +1,19 @@
-import { api,track} from "lwc";
+import { api,wire,track} from "lwc";
 import FeatureElement from 'element/featureElement';
 import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeOut,formatFiles,sortObjectsByField,removeDuplicates } from 'shared/utils';
 import jsonview from '@pgrabovets/json-view';
 import Toast from 'lightning/toast';
 import jszip from 'jszip';
+import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 
 export default class App extends FeatureElement {
+    @wire(NavigationContext)
+    navContext;
 
     isLoading = false;
 
     @track selection = [];
-    @track metadata  = [];
+    @track metadata  = [{records:[],label:'Metadata'}];
     currentLevel = 0;
     @track selectedRecord;
     @track selectedRecordLoading = false;
@@ -28,6 +31,34 @@ export default class App extends FeatureElement {
     // Mode
     advancedMode = false;
 
+    _pageRef;
+    @wire(CurrentPageReference)
+    handleNavigation(pageRef){
+        if(this._pageRef != null && JSON.stringify(this._pageRef) == JSON.stringify(pageRef)) return;
+        this._pageRef = pageRef;
+        
+        //console.log('handleNavigation',pageRef);
+        this.loadFromNavigation(pageRef);
+    }
+
+    loadFromNavigation = async ({state, attributes}) => {
+        const {attribute1}  = attributes;
+        const {id}      = state;
+
+        if(attribute1){
+            await this.load_specificMetadata({name:attribute1,label:attribute1});
+            this.currentLevel = 1;
+        }
+
+        if(id){
+            this.selectedRecordLoading = true;
+            await this.load_specificMetadataRecord({name:id,label:id});
+            //this.currentLevel = 2;
+        }
+        
+    }
+
+
     connectedCallback(){
         this.load_metadataGlobal();
     }
@@ -37,18 +68,31 @@ export default class App extends FeatureElement {
     handleMenuSelection = (e) => {
 
         const {name,label} = e.detail;
-
+        //console.log('handleMenuSelection',this.currentLevel);
         switch(this.currentLevel){
             case 0:
                 // Metadata Type selection
-                this.load_specificMetadata({name,label});
+                //this.load_specificMetadata({name,label});
                 this.currentLevel = 1;
+                navigate(this.navContext,{type:'application',attributes:{
+                    applicationName:'metadata',
+                    attribute1:name,
+                }});
             break;
             case 1:
                 // Metadata Record selection
                 this.selectedRecord = null;
                 this.selectedRecordLoading = true;
-                this.load_specificMetadataRecord({name,label});;
+                //this.load_specificMetadataRecord({name,label});
+                navigate(this.navContext,{type:'application',
+                    attributes:{
+                        applicationName:'metadata',
+                        attribute1:this.metadata[1].label,
+                    },
+                    state:{
+                        id:name
+                    }
+                });
                 //this.currentLevel = 2; // Only for the flows
             break;
             case 2:
@@ -71,6 +115,17 @@ export default class App extends FeatureElement {
 
         this.selection = this.selection.slice(0,this.currentLevel+1);
         this.metadata = this.metadata.slice(0,this.currentLevel+1);
+
+        if(this.currentLevel == 1){
+            navigate(this.navContext,{type:'application',attributes:{
+                applicationName:'metadata',
+                attribute1:this.metadata[1].label,
+            }});
+        }else if(this.currentLevel == 0){
+            navigate(this.navContext,{type:'application',attributes:{
+                applicationName:'metadata'
+            }});
+        }
         
         
     }
@@ -105,8 +160,8 @@ export default class App extends FeatureElement {
         let result = await this.connector.conn.metadata.describe(this.connector.conn.version);
             result = (result?.metadataObjects || []).sort((a, b) => a.xmlName.localeCompare(b.xmlName));
             result = result.filter(x => sobjects.includes(x.xmlName)).map(x => ({...x,...{name:x.xmlName,label:x.xmlName,key:x.xmlName}}));
-        this.metadata = [].concat(this.metadata,[{records:result,label:'Metadata'}]);
-        console.log('this.metadata',this.metadata);
+        this.metadata[0] = {records:result,label:'Metadata'};
+        //console.log('this.metadata',this.metadata);
         this.isLoading = false;
     }
 
@@ -142,9 +197,13 @@ export default class App extends FeatureElement {
 
         }
 
+        if(this.metadata.length <= 1){
+            this.metadata.push(null)
+        }
+        this.metadata[1] = {records:result,label};
         
-        this.metadata = [].concat(this.metadata,[{records:result,label}]);
-        console.log('metadata_lvl2_formatted',result);
+        //console.log('metadata_lvl2_formatted',result);
+        //console.log('this.metadata',this.metadata);
         this.isLoading = false;
     }
 
@@ -164,7 +223,7 @@ export default class App extends FeatureElement {
         try{
             let result = await this.connector.conn.request(metadataRecord.attributes.url);
             
-            console.log('result',result);
+            //console.log('result',result);
 
             switch(result.attributes.type){
                 case "LightningComponentBundle":
@@ -195,7 +254,7 @@ export default class App extends FeatureElement {
                       };
                       
                     var xmlMetadata = await this.fetchXMLFile(metadataPackage);*/
-                    console.log('xmlMetadata',xmlMetadata);
+                    //console.log('xmlMetadata',xmlMetadata);
                     this.selectedRecord = xmlMetadata;
                     
                 break;
@@ -212,6 +271,7 @@ export default class App extends FeatureElement {
                 variant:'error',
                 mode:'dismissible'
             });
+            this.selectedRecordLoading = false
         }
     }
 
@@ -358,7 +418,15 @@ export default class App extends FeatureElement {
     
     get menuItems(){
         if(this.metadata.length == 0) return [];
-        return this.metadata[this.metadata.length - 1].records;
+        return this.metadata[this.metadata.length - 1].records.map(x => ({
+            ...x,
+            isSelected:this.selectedItem == x.name
+        }));
+    }
+
+    get selectedItem(){
+        if(this.selection.length == 0) return null;
+        return this.selection[this.selection.length - 1].name;
     }
 
     get menuBackTitle(){

@@ -37,6 +37,7 @@ export default class Viewer extends FeatureElement {
     set record(value){
         this._record = null;
         this._record = value;
+        //console.log('this._record',this._record);
         if(this._record){
             this.displayData();
             this.formatRecord(this._record);
@@ -163,6 +164,10 @@ export default class Viewer extends FeatureElement {
 
     get defaultContainerClass(){
         return classSet("slds-full-height slds-scrollable_y").add({'slds-hide':!(this.currentTab === 'Default')}).toString();
+    }
+
+    get customContainerClass(){
+        return classSet("slds-full-height slds-scrollable_y").add({'slds-hide':!(this.currentTab === 'Custom')}).toString();
     }
 
     get jsonContainerClass(){

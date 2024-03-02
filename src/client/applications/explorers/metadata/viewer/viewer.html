@@ -8,14 +8,19 @@
                         <div>
                             <div class="slds-grid"></div>
                             <lightning-tabset variant="scoped" class="slds-without-tab">
-                                <lightning-tab label="Default" value="Default"  onactive={handleSelectTab}></lightning-tab>
+                                <lightning-tab label="Workbench" value="Default"  onactive={handleSelectTab}></lightning-tab>
+                                <!--<lightning-tab label="Default" value="Custom"  onactive={handleSelectTab}></lightning-tab>-->
                                 <lightning-tab label="JSON"    value="JSON"     onactive={handleSelectTab}></lightning-tab>
                             </lightning-tabset>
                         </div>
 
                         <div class={defaultContainerClass}>
+                            <metadata-structure-viewer record={record}></metadata-structure-viewer>
+                        </div>
+                        <!-- Details 
+                        <div class={customContainerClass}>
                             <template lwc:if={isArrayDisplayed}>
-                                <!-- Details -->
+                                
                                 <div class="slds-section slds-is-open">
                                     <h3 class="slds-section__title">
                                         <div class="slds-section__title-action">
@@ -83,7 +88,9 @@
                                         </div>
                                     </div>
                                 </div>
+                                -->
                                 <!-- Audit Fields -->
+                                <!--
                                 <div class="slds-section slds-is-open">
                                     <h3 class="slds-section__title">
                                         <div class="slds-section__title-action">
@@ -135,8 +142,9 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+                                -->
                                 <!-- Objects -->
+                                <!--
                                 <template for:each={formattedObjects} for:item="category">
                                     <div key={category.title} class="slds-section slds-is-open">
                                         <h3 class="slds-section__title">
@@ -179,6 +187,7 @@
                                 </template>
                             </template>
                         </div>
+                        -->
 
                         <div class={jsonContainerClass} lwc:dom="manual" lwc:ref="container"></div> 
                     </div>

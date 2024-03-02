@@ -81,7 +81,7 @@ export default class App extends LightningElement {
             case 'application':
                 
                 const target = APP_LIST.find(x => x.path === attributes.applicationName);
-                console.log('handleNavigation',target)
+                //console.log('handleNavigation',target,pageRef)
                 if(isNotUndefinedOrNull(target)){
                     this.handleApplicationSelection(target.name);
                 }else{
