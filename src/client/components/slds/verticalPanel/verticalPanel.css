@@ -1,0 +1,12 @@
+/** Filter Panel **/
+
+.slds-filter-panel-container{
+    background-color:#fafaf9;
+    position:absolute;
+    top:0px;
+    right:0px;
+    height:100%;
+    overflow:hidden;
+    display:flex;
+    flex-direction:row-reverse
+}

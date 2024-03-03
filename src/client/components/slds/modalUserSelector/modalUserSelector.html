@@ -1,36 +1,32 @@
 <template>
     <lightning-modal-header label="User selector"></lightning-modal-header>
-    <lightning-modal-body> 
+    <lightning-modal-body class="body-full-height"> 
+        
         <!-- Table - START -->
-        <slds-list-builder
-            is-loading={isDatatableLoading}
-            onsearch={handleSearch}
-            records={filteredRecords}
-            to-exclude={toExclude}
-            total-records={totalRecords}
-            columns={columns}
-            id-field="id"
-            onloadmoredata={loadMoreData}
-            enable-infinite-loading={enableInfiniteLoading}
-            load-more-status={loadMoreStatus}    
-        >
-            <div slot="empty-message" class="slds-text-title slds-align_absolute-center empty-datatable slds-text-align_center">
-                <h2>No user matching your criteria.</h2>
+        <div class="container slds-full-height">
+            <div class="slds-flex-column slds-full-height slds-is-relative"> 
+                <template lwc:if={isLoading}>
+                    <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium slds-p-vertical_medium">
+                        <slds-spinner alternative-text="Loading" size="small" message={loadingMessage}></slds-spinner>
+                    </div>
+                </template>
+                <div lwc:dom="manual" class="custom-table"></div>
             </div>
-        </slds-list-builder>
+        </div>
+        
         <!-- Table - END-->
     </lightning-modal-body>
     <lightning-modal-footer>
         <lightning-button
             class="slds-float_left slds-button"
-            disabled={saveInProcess}
+            disabled={isLoading}
             variant="neutral"
             label="Cancel"
             onclick={handleCloseClick}
         ></lightning-button>
         <lightning-button
             class="slds-button"
-            disabled={saveInProcess}
+            disabled={isLoading}
             variant="brand"
             label="Apply"
             onclick={handleApplyClick}

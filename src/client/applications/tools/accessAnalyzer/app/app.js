@@ -1,7 +1,7 @@
 import { api } from "lwc";
 import FeatureElement from 'element/featureElement';
 
-import { groupBy,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull,getFromStorage } from 'shared/utils';
+import { groupBy,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull,getFromStorage,classSet } from 'shared/utils';
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import ModalProfileFilter from "accessAnalyzer/modalProfileFilter";
 import ModalPermissionSetFilter from "accessAnalyzer/modalPermissionSetFilter";
@@ -20,7 +20,8 @@ const CONFIG = [
         category:'General Permissions',
         permissionFieldId:'name',
         formatter:(x) => {return x.enabled;},
-        report:['FullView']
+        report:['FullView'],
+        key:'general'
     },
     {
         metadataName:'sobjects',
@@ -32,7 +33,8 @@ const CONFIG = [
             const arr = [x.allowRead,x.allowCreate,x.allowEdit,x.allowDelete,x.viewAllRecords,x.modifyAllRecords];
             return arr.map(bool => bool ? '1' : '0').join('');
         },
-        report:['FullView','ObjectPermissions']
+        report:['FullView','ObjectPermissions'],
+        key:'objects'
     },
     {
         metadataName:'sobjects', // custom
@@ -54,28 +56,32 @@ const CONFIG = [
         permissionName:'classAccesses',
         category:'Apex Class Permissions',
         permissionFieldId:'name',
-        formatter:(x) => {return true;}
+        formatter:(x) => {return true;},
+        key:'apex'
     },
     {
         metadataName:'apexPages',
         permissionName:'pageAccesses',
         category:'Apex Page Permissions',
         permissionFieldId:'name',
-        formatter:(x) => {return true;}
+        formatter:(x) => {return true;},
+        key:'page'
     },
     {
         metadataName:'appDefinitions',
         permissionName:'appAccesses',
         category:'App Settings',
         permissionFieldId:'name',
-        formatter:(x) => {return x.visibility === 'DefaultOn';}
+        formatter:(x) => {return x.visibility === 'DefaultOn';},
+        key:'app'
     },
     {
         metadataName:'tabDefinitions',
         permissionName:'tabAccesses',
         category:'Tab Settings',
         permissionFieldId:'name',
-        formatter:(x) => {return x.visibility === 'DefaultOn';}
+        formatter:(x) => {return x.visibility === 'DefaultOn';},
+        key:'tab'
     }
 ];
 
@@ -87,15 +93,15 @@ export default class App extends FeatureElement {
 
     /* Metadata Loaded */
     isMetadataReady = false;
-
     tableInstance;
-
+    report = 'FullView';
 
     /* Filters */
     displayFilterContainer = false;
-    report = 'FullView';
     filter_profiles = [];
     filter_permissionSets = [];
+    filter_users = [];
+    metadataFilter_value = Object.values(CONFIG).map(x => x.key); // Default select all
     namespaceFiltering_value = 'excluded';
     userLicenseFiltering_value = 'all';
     selectedObject;
@@ -105,6 +111,7 @@ export default class App extends FeatureElement {
     
 
     isLoading = false;
+    
 
 
     connectedCallback(){
@@ -222,7 +229,8 @@ export default class App extends FeatureElement {
                 useImage:true,
                 title:this.report_options.find(x => x.value == this.report).label,
                 filename,
-                report:this.report
+                report:this.report,
+                leftCellAlignement:this.report == 'Matrix' ? 1 : 2
             });
             this.isLoading = false;
         }
@@ -231,13 +239,6 @@ export default class App extends FeatureElement {
     report_handleChange = (e) => {
         this.report = e.detail.value;
         this.displayReport();
-    }
-
-    adduser_handleClick = (e) => {
-        ModalUserSelector.open()
-        .then(res => {
-
-        })
     }
 
 
@@ -249,6 +250,10 @@ export default class App extends FeatureElement {
 
     get isFiltering_permissionSets(){
         return this.filter_permissionSets.length > 0;
+    }
+
+    get isFiltering_users(){
+        return this.filter_users.length > 0;
     }
 
     get report_options(){
@@ -288,6 +293,10 @@ export default class App extends FeatureElement {
         return this.report === 'FullView' || this.report === 'FieldLevelSecurity';
     }
 
+    get isMetadataFilterDisplayed(){
+        return this.report === 'Matrix';
+    }
+
     get diffCheckerVariant(){
         return this.isDiffEnabled?'brand':'neutral';
     }
@@ -295,8 +304,8 @@ export default class App extends FeatureElement {
         return this.displayFilterContainer?'brand':'neutral';
     }
     
-    get filtering_title(){
-        return this.displayFilterContainer?'Hide Filter':'Show Filter';
+    get filtering_variant(){
+        return this.displayFilterContainer?'brand':'border-filled';
     }
 
     get profileFilteringVariant(){
@@ -319,24 +328,42 @@ export default class App extends FeatureElement {
         return this.selectedObject?.name
     }
 
+    get metadataFilter_options(){
+        return Object.values(CONFIG).map(x => ({
+            label:x.category,
+            value:x.key
+        }))
+    }
+
+    get filteredPermissions(){
+        return Object.values(this.permissionSets).filter(x => this.getBasicFilter(x));
+    }
+
     sobject_handleChange = (e) => {
         this.selectedObject = this.metadata.sobjects[e.detail.value];
         this.setFieldLevelSecurityReport(true);
     }
 
-    diff_handleChange = (e) => {
-        this.isDiffEnabled = e.detail.checked;
-        window.setTimeout(() => {
-            this.updateDiffData();
+    metadataFilter_handleChange = (e) => {
+        this.metadataFilter_value = e.detail.value;
+        window.setTimeout(async () => {
+            this.updateTable(this.calculateMatrixData());
         },1)
     }
 
-    updateDiffData = async () => {
+    diff_handleChange = (e) => {
+        this.isDiffEnabled = e.detail.checked;
+        window.setTimeout(async () => {
+            // for DiffData, we don't store it, we just reprocess the dataList
+            this.updateTable(this.getDiffData(this.dataList));
+        },1)
+    }
+
+    updateTable = async (data) => {
         if(!this.tableInstance) return;
 
         this.isLoading = true;
-        const _dataList = this.getDiffData(this.dataList);
-        await this.tableInstance.replaceData(_dataList);
+        await this.tableInstance.replaceData(data);
         this.isLoading = false;
     }
 
@@ -368,6 +395,15 @@ export default class App extends FeatureElement {
                 localStorage.setItem(`${this.connector.header.alias}-accessAnalyzer_filter_profiles`,JSON.stringify(this.filter_profiles));
                 this.displayReport();
             }
+        })
+    }
+
+    userFiltering_handleClick = (e) => {
+        ModalUserSelector.open({
+            conn:this.connector.conn,
+            size:'full'
+        }).then(res => {
+            
         })
     }
 
@@ -438,10 +474,10 @@ export default class App extends FeatureElement {
         && (this.userLicenseFiltering_value === 'all' || this.userLicenseFiltering_value === p.userLicense)
     }
 
-    generateFullDataList = (permissions,metadataFilter) => {
+    generateFullDataList = (metadataFilter) => {
         var dataList = [];
         // Row processing
-        Object.values(CONFIG).filter(x => isUndefinedOrNull(metadataFilter) || isNotUndefinedOrNull(metadataFilter) && x.key == metadataFilter).forEach(configItem => {
+        Object.values(CONFIG).filter(x => isUndefinedOrNull(metadataFilter) || isNotUndefinedOrNull(metadataFilter) && metadataFilter.includes(x.key)).forEach(configItem => {
 
             Object.values(this.metadata[configItem.metadataName]) // sobjects.recordTypes
             .filter(x => this.namespaceFiltering_isExcluded && (x.namespacePrefix == null || x.namespacePrefix === '') || !this.namespaceFiltering_isExcluded)
@@ -452,7 +488,7 @@ export default class App extends FeatureElement {
                     data['namespacePrefix'] = item.namespacePrefix || 'Default';
                     data['category'] = configItem.category;
 
-                    permissions.forEach(permission => {
+                    this.filteredPermissions.forEach(permission => {
                         const permissionList = permission[configItem.permissionName];
                         let index = permissionList.findIndex(x => x[configItem.permissionFieldId] === item.name);
                         if(index > -1){
@@ -470,7 +506,7 @@ export default class App extends FeatureElement {
                                 category:data.category,
                                 namespacePrefix : data.namespacePrefix
                             };
-                            permissions.forEach(permission => {
+                            this.filteredPermissions.forEach(permission => {
                                 const permissionList = permission[configItem.permissionName];
                                 
                                 let index = permissionList.findIndex(x => x[configItem.permissionFieldId] === permissionKey);
@@ -495,7 +531,7 @@ export default class App extends FeatureElement {
                                 category:data.category,
                                 namespacePrefix : data.namespacePrefix
                             };
-                            permissions.forEach(permission => {
+                            this.filteredPermissions.forEach(permission => {
                                 const permissionList = permission[configItem.permissionName];
                                 let index = permissionList.findIndex(x => x[configItem.permissionFieldId] === item.name);
                                 if(index > -1){
@@ -513,75 +549,20 @@ export default class App extends FeatureElement {
         return dataList;
     }
 
-    setMatrixReport = async (metadataFilter) => {
-
-        this.isLoading = true;
-        if (this.tableInstance) {
-			this.tableInstance.destroy();
-		}
-        
-		let colModel = [
-			{ title: 'Permission', field: 'name', resizable: true, headerHozAlign: "center", resizable: true,responsive:0,headerFilter:"input"},
-		];
-        const filteredPermissions = Object.values(this.permissionSets).filter(x => this.getBasicFilter(x));
-        
-        // Columns processing
-		filteredPermissions
-        .sort((a, b) => (a.name || '').localeCompare(b.name))
-        .forEach(permission => {
-            colModel.push(
-                {
-                    title: permission.name,
-                    field: permission.id,
-                    tooltip: (e,cell) => {
-                        if(cell.getValue() && Object.keys(cell.getValue()).length > 0){
-                            return `<ul>${Object.keys(cell.getValue()).map(key => `<li>${key}: ${cell.getValue()[key]}</li>`).join('')}</ul>`;
-                        }
-                    },
-                    clickPopup:function(e, component, onRendered){
-                        if(component.getValue() && Object.keys(component.getValue()).length > 0){
-                            return `<ul>${Object.keys(component.getValue()).map(key => `<li>${key}: ${component.getValue()[key]}</li>`).join('')}</ul>`;
-                        }
-                    },
-                    headerHozAlign: "center",
-                    hozAlign:"center",
-                    headerWordWrap: true,
-                    width: 80,
-                    headerSort:false,                 
-                    formatter:function(cell,formatterParams,onRendered){
-                        if(cell.getValue()){
-                            const total =  Object.values(cell.getValue()).reduce((acc,item) => acc + item,0);
-                            if(total < 10){
-                                cell.getElement().style.backgroundColor = "#669900";
-                            }else if(total >= 10 && total < 20){
-                                cell.getElement().style.backgroundColor = "#ff5d2d";
-                            }else{
-                                //cell.getElement().style.backgroundColor = "#cc3333";
-                            }
-
-                            return total;
-                        }
-                    }
-                }
-            );
-		});
-
-        console.log('colModel',colModel);
-        
-        // Diff Checker processing
-        this.dataList = this.generateFullDataList(filteredPermissions,metadataFilter);
+    calculateMatrixData = () => {
+        const _dataList = this.generateFullDataList(this.metadataFilter_value);
         
         // Create Matrix
         const matrix = {}
-        filteredPermissions.forEach(perm1 => {
+        this.filteredPermissions.forEach(perm1 => {
             matrix[perm1.id] = {name:perm1.name,id:perm1.id};
-            filteredPermissions.forEach(perm2 => {
-                matrix[perm1.id][perm2.id] = {}; // difference aggregator
+            this.filteredPermissions.forEach(perm2 => {
+                matrix[perm1.id][perm2.id] = {perm1:perm1.id,perm2:perm2.id}; // difference aggregator
             })
         });
-        this.dataList.forEach(data => {
-            filteredPermissions.forEach(perm1 => {
-                filteredPermissions.forEach(perm2 => {
+        _dataList.forEach(data => {
+            this.filteredPermissions.forEach(perm1 => {
+                this.filteredPermissions.forEach(perm2 => {
                     if(data[perm1.id] != data[perm2.id]){
                         if(!matrix[perm1.id][perm2.id].hasOwnProperty(data.category)){
                             matrix[perm1.id][perm2.id][data.category] = 0
@@ -592,11 +573,71 @@ export default class App extends FeatureElement {
             })
         });
 
-        const _dataList = Object.values(matrix).sort((a, b) => (a.name || '').localeCompare(b.name)); //this.getDiffData(this.dataList);
+        return Object.values(matrix).sort((a, b) => (a.name || '').localeCompare(b.name)); 
+    }
 
+    setMatrixReport = async (metadataFilter) => {
+
+        this.isLoading = true;
+        if (this.tableInstance) {
+			this.tableInstance.destroy();
+		}
+        
+		let colModel = [
+			{ title: 'Permission', field: 'name', resizable: true, headerHozAlign: "center", resizable: true,responsive:0,headerFilter:"input"},
+		];
+        
+        // Columns processing
+		this.filteredPermissions
+        .sort((a, b) => (a.name || '').localeCompare(b.name))
+        .forEach(permission => {
+            colModel.push(
+                {
+                    title: permission.name,
+                    field: permission.id,
+                    /*tooltip: (e,cell) => {
+                        if(cell.getValue() && Object.keys(cell.getValue()).length > 0){
+                            return `<ul>${Object.keys(cell.getValue()).map(key => `<li>${key}: ${cell.getValue()[key]}</li>`).join('')}</ul>`;
+                        }
+                    },*/
+                    clickPopup:function(e, component, onRendered){
+                        if(component.getValue() && Object.keys(component.getValue()).length > 0){
+                            return `<ul>${Object.keys(component.getValue()).map(key => `<li>${key}: ${component.getValue()[key]}</li>`).join('')}</ul>`;
+                        }else{
+                            return 'No Difference'
+                        }
+                    },
+                    headerHozAlign: "center",
+                    hozAlign:"center",
+                    headerWordWrap: true,
+                    width: 80,
+                    headerSort:false,                 
+                    formatter:function(cell,formatterParams,onRendered){
+                        if(cell.getValue()){
+                            if(isNotUndefinedOrNull(cell.getValue().perm1) && cell.getValue().perm1 == cell.getValue().perm2){
+                                // Cross mapping
+                                cell.getElement().style.backgroundColor = "#747474";
+                            }else{
+                                const total =  Object.values(cell.getValue()).filter(x => typeof x === "number").reduce((acc,item) => acc + item,0);
+                                if(total < 10){
+                                    cell.getElement().style.backgroundColor = "#669900";
+                                }else if(total >= 10 && total < 20){
+                                    cell.getElement().style.backgroundColor = "#ff5d2d";
+                                }else{
+                                    //cell.getElement().style.backgroundColor = "#cc3333";
+                                }
+                                return total;
+                            }
+                        }
+                    }
+                }
+            );
+		});
+
+        this.dataList = this.calculateMatrixData(metadataFilter);
 		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
 			height: this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight,
-			data: _dataList,
+			data: this.dataList,
 			layout: "fitDataFill",
 			columns: colModel,
 			columnHeaderVertAlign: "middle",
@@ -627,10 +668,9 @@ export default class App extends FeatureElement {
 			{ title: 'Label', field: 'label', resizable: true, headerHozAlign: "center", resizable: false,responsive:0,headerFilter:"input"},
 			{ title: 'Developer Name', field: 'name', resizable: true, headerHozAlign: "center", resizable: false, tooltip: true }
 		];
-        const filteredPermissions = Object.values(this.permissionSets).filter(x => this.getBasicFilter(x));
-        //console.log('filteredPermissions',filteredPermissions);
+
         // Columns processing
-		filteredPermissions.forEach(permission => {
+		this.filteredPermissions.forEach(permission => {
 			
 			let _typeIndex = colModel.findIndex(x => x.field === permission.userLicense);
                 if(_typeIndex < 0){
@@ -666,7 +706,7 @@ export default class App extends FeatureElement {
         
         
         // Diff Checker processing
-        this.dataList = this.generateFullDataList(filteredPermissions,metadataFilter);
+        this.dataList = this.generateFullDataList(metadataFilter);
         const _dataList = this.getDiffData(this.dataList);
 
 		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
@@ -705,8 +745,6 @@ export default class App extends FeatureElement {
 
         await setFieldPermission(this.connector.conn,this.permissionSets,{targetObject:this.selectedObject});
 
-        // setFieldPermission
-        const filteredPermissions = Object.values(this.permissionSets).filter(x => this.getBasicFilter(x));
 		let dataList = [];
 		let colModel = [
 			{ title: 'Label', field: 'label', resizable: true, headerHozAlign: "center", minWidth: 200, tooltip: true},
@@ -715,7 +753,7 @@ export default class App extends FeatureElement {
             { title: 'Required', field: 'isRequired', resizable:true, headerHozAlign: "center", minWidth: 20, hozAlign: "center",formatter:"tickCross",formatterParams:{allowEmpty:true},}
 		];
         
-		filteredPermissions.forEach(permission => {
+		this.filteredPermissions.forEach(permission => {
 			let _typeIndex = colModel.findIndex(x => x.field === permission.userLicense);
             if(_typeIndex < 0){
                 /* Create User License */
@@ -749,7 +787,7 @@ export default class App extends FeatureElement {
                 data['type']    = field.type;
 			    data['isRequired'] = !field.isNillable;
 
-            filteredPermissions.forEach(permission => {
+            this.filteredPermissions.forEach(permission => {
 				let fp = permission.fieldPermissions[field.name];
 
 				if (fp && fp.allowEdit) {
@@ -872,16 +910,13 @@ export default class App extends FeatureElement {
 			this.tableInstance.destroy();
 		}
 
-        const filteredPermissions = Object.values(this.permissionSets).filter(x => this.getBasicFilter(x));
-
 		let dataList = [];
-
 		let colModel = [
 			{ title: 'Label', field: 'label', frozen: true, headerHozAlign: "center", resizable: false,responsive:0,headerFilter:"input"},
 			{ title: 'Developer Name', field: 'name', frozen: true, headerHozAlign: "center", resizable: false, tooltip: true }
 		];
         
-		filteredPermissions.forEach(permission => {
+		this.filteredPermissions.forEach(permission => {
 			let subCols = [
                 { title: 'Read',       field: permission.id + '_r',   minWidth: 28, cssClass: 'vertical-title', width: 40, headerVertical: true, resizable: false ,formatter:"tickCross", formatterParams:{allowEmpty:true}},
                 { title: 'Create',     field: permission.id + '_c',   minWidth: 28, cssClass: 'vertical-title', width: 40, headerVertical: true, resizable: false ,formatter:"tickCross", formatterParams:{allowEmpty:true}},
@@ -900,14 +935,14 @@ export default class App extends FeatureElement {
         .filter(x => this.namespaceFiltering_isExcluded && (x.namespacePrefix == null || x.namespacePrefix === '') || !this.namespaceFiltering_isExcluded)
         .forEach(sObject => {
             
-			let data = {};
+			const data = {};
                 data['label']   = sObject.label;
                 data['name']    = sObject.name;
                 data['namespacePrefix'] = sObject.namespacePrefix || 'Default';
 
-            filteredPermissions.forEach(permission => {
+            this.filteredPermissions.forEach(permission => {
                 
-				let op = permission.objectPermissions.find(x => x.sobjectType === sObject.name);
+				const op = permission.objectPermissions.find(x => x.sobjectType === sObject.name);
 
 				data[permission.id + '_r'] = op && op.allowRead;
                 data[permission.id + '_c'] = op && op.allowCreate;
@@ -940,5 +975,18 @@ export default class App extends FeatureElement {
 		});
         this.isLoading = false;
 	}
+
+
+    /** Filter Panel */
+
+    handleCloseVerticalPanel = () => {
+        this.displayFilterContainer = false;
+    }
+
+    
+
+
+
+
 
 }
