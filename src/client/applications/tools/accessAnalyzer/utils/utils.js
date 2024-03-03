@@ -11,6 +11,7 @@ export const fileFormatter = function(list, options, setFileContents){
     const useImage = false || options.useImage;
     const title = options.title || 'Report';
     const filename = options.filename || 'report.pdf';
+    const report = options.report || null;
 
     var headers = [];
     var rows = [];
@@ -95,19 +96,32 @@ export const fileFormatter = function(list, options, setFileContents){
         body: rows,
         theme:'striped',
         didParseCell: async ({cell,doc,section}) => {
-            //console.log('section',section);
             if (section === 'body') {
+                // Matrix Reporting
+                if(report == 'Matrix'){
+                    const total =  Object.values(cell.raw.content).reduce((acc,item) => acc + item,0);
+                    if(total < 10){
+                        cell.styles.fillColor = "#669900";
+                    }else if(total >= 10 && total < 20){
+                        cell.styles.fillColor = "#ff5d2d";
+                    }else if (total >= 20){
+                        //cell.styles.fillColor = "#cc3333";
+                    }
+                    cell.text  = [`${total}`];
+                }
+                //  Boolean procesing
                 if(cell.raw.content === true || cell.raw.content === false){
                     cell.text = [];
-                }
-
-                if(!useImage){
-                    if(cell.raw.content === true){
-                        cell.styles.fillColor = 'green';
-                    }else if(cell.raw.content === false){
-                        cell.styles.fillColor = 'red';
+                    if(!useImage){
+                        if(cell.raw.content === true){
+                            cell.styles.fillColor = 'green';
+                        }else if(cell.raw.content === false){
+                            cell.styles.fillColor = 'red';
+                        }
                     }
                 }
+                
+                
             }
         },
         didDrawCell: async ({cell,doc,section}) => {

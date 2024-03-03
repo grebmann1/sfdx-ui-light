@@ -221,7 +221,8 @@ export default class App extends FeatureElement {
             await this.tableInstance.download(fileFormatter,filename,{
                 useImage:true,
                 title:this.report_options.find(x => x.value == this.report).label,
-                filename
+                filename,
+                report:this.report
             });
             this.isLoading = false;
         }
@@ -253,6 +254,7 @@ export default class App extends FeatureElement {
     get report_options(){
         return [
             {label:'Full View',value:'FullView'},
+            {label:'Matrix Diff Comparaison',value:'Matrix'},
             {label:'Permission Groups',value:'PermissionGroups'},
             {label:'Object Permissions',value:'CustomObject'},
             {label:'Field-Level Security',value:'FieldLevelSecurity'}
@@ -410,6 +412,9 @@ export default class App extends FeatureElement {
             case 'FullView':
                 await this.setFullViewReport();
             break;
+            case 'Matrix':
+                await this.setMatrixReport();
+            break;
             case 'PermissionGroups':
                 await this.setPermissionGroupReport();
             break;
@@ -433,6 +438,184 @@ export default class App extends FeatureElement {
         && (this.userLicenseFiltering_value === 'all' || this.userLicenseFiltering_value === p.userLicense)
     }
 
+    generateFullDataList = (permissions,metadataFilter) => {
+        var dataList = [];
+        // Row processing
+        Object.values(CONFIG).filter(x => isUndefinedOrNull(metadataFilter) || isNotUndefinedOrNull(metadataFilter) && x.key == metadataFilter).forEach(configItem => {
+
+            Object.values(this.metadata[configItem.metadataName]) // sobjects.recordTypes
+            .filter(x => this.namespaceFiltering_isExcluded && (x.namespacePrefix == null || x.namespacePrefix === '') || !this.namespaceFiltering_isExcluded)
+            .forEach(item => {
+                let data = {};
+                    data['label']   = item.label || item.name;
+                    data['name']    = item.name;
+                    data['namespacePrefix'] = item.namespacePrefix || 'Default';
+                    data['category'] = configItem.category;
+
+                    permissions.forEach(permission => {
+                        const permissionList = permission[configItem.permissionName];
+                        let index = permissionList.findIndex(x => x[configItem.permissionFieldId] === item.name);
+                        if(index > -1){
+                            data[permission.id] = configItem.formatter(permissionList[index],this.metadata) // Want to keep empty if doesn't exist instead of false
+                        }
+                    });
+
+                    if(configItem.key === 'layouts'){
+                        // Run special logic for layouts
+                        const children = Object.values(item.recordTypes).map(recordType => {
+                            const permissionKey = `${item.name}-${recordType.id}`; // to be replaced in the SF method
+                            const subData = {
+                                name:`${data.name}.${recordType.name}`,
+                                label:recordType.label,
+                                category:data.category,
+                                namespacePrefix : data.namespacePrefix
+                            };
+                            permissions.forEach(permission => {
+                                const permissionList = permission[configItem.permissionName];
+                                
+                                let index = permissionList.findIndex(x => x[configItem.permissionFieldId] === permissionKey);
+                                if(index > -1){
+                                    subData[permission.id] = this.metadata['layouts'][permissionList[index].id].name // Want to keep empty if doesn't exist instead of false
+                                }
+                            });
+                            return subData;
+                        });
+                        if(children && children.length > 0){
+                            data._children = children; // avoid empty record types
+                        }
+                    }
+
+                    if(configItem.subPermissions){
+                        
+                        // Check the children
+                        data._children = configItem.subPermissions.map(key => {
+                            const subData = {
+                                name:`${data.name}.${key}`,
+                                label:key,
+                                category:data.category,
+                                namespacePrefix : data.namespacePrefix
+                            };
+                            permissions.forEach(permission => {
+                                const permissionList = permission[configItem.permissionName];
+                                let index = permissionList.findIndex(x => x[configItem.permissionFieldId] === item.name);
+                                if(index > -1){
+                                    subData[permission.id] = permissionList[index][key] // Want to keep empty if doesn't exist instead of false
+                                }
+                            });
+                            return subData;
+                        });
+                    }
+
+                    dataList.push(data);
+            });
+        })
+        
+        return dataList;
+    }
+
+    setMatrixReport = async (metadataFilter) => {
+
+        this.isLoading = true;
+        if (this.tableInstance) {
+			this.tableInstance.destroy();
+		}
+        
+		let colModel = [
+			{ title: 'Permission', field: 'name', resizable: true, headerHozAlign: "center", resizable: true,responsive:0,headerFilter:"input"},
+		];
+        const filteredPermissions = Object.values(this.permissionSets).filter(x => this.getBasicFilter(x));
+        
+        // Columns processing
+		filteredPermissions
+        .sort((a, b) => (a.name || '').localeCompare(b.name))
+        .forEach(permission => {
+            colModel.push(
+                {
+                    title: permission.name,
+                    field: permission.id,
+                    tooltip: (e,cell) => {
+                        if(cell.getValue() && Object.keys(cell.getValue()).length > 0){
+                            return `<ul>${Object.keys(cell.getValue()).map(key => `<li>${key}: ${cell.getValue()[key]}</li>`).join('')}</ul>`;
+                        }
+                    },
+                    clickPopup:function(e, component, onRendered){
+                        if(component.getValue() && Object.keys(component.getValue()).length > 0){
+                            return `<ul>${Object.keys(component.getValue()).map(key => `<li>${key}: ${component.getValue()[key]}</li>`).join('')}</ul>`;
+                        }
+                    },
+                    headerHozAlign: "center",
+                    hozAlign:"center",
+                    headerWordWrap: true,
+                    width: 80,
+                    headerSort:false,                 
+                    formatter:function(cell,formatterParams,onRendered){
+                        if(cell.getValue()){
+                            const total =  Object.values(cell.getValue()).reduce((acc,item) => acc + item,0);
+                            if(total < 10){
+                                cell.getElement().style.backgroundColor = "#669900";
+                            }else if(total >= 10 && total < 20){
+                                cell.getElement().style.backgroundColor = "#ff5d2d";
+                            }else{
+                                //cell.getElement().style.backgroundColor = "#cc3333";
+                            }
+
+                            return total;
+                        }
+                    }
+                }
+            );
+		});
+
+        console.log('colModel',colModel);
+        
+        // Diff Checker processing
+        this.dataList = this.generateFullDataList(filteredPermissions,metadataFilter);
+        
+        // Create Matrix
+        const matrix = {}
+        filteredPermissions.forEach(perm1 => {
+            matrix[perm1.id] = {name:perm1.name,id:perm1.id};
+            filteredPermissions.forEach(perm2 => {
+                matrix[perm1.id][perm2.id] = {}; // difference aggregator
+            })
+        });
+        this.dataList.forEach(data => {
+            filteredPermissions.forEach(perm1 => {
+                filteredPermissions.forEach(perm2 => {
+                    if(data[perm1.id] != data[perm2.id]){
+                        if(!matrix[perm1.id][perm2.id].hasOwnProperty(data.category)){
+                            matrix[perm1.id][perm2.id][data.category] = 0
+                        }
+                        matrix[perm1.id][perm2.id][data.category]++;
+                    }
+                })
+            })
+        });
+
+        const _dataList = Object.values(matrix).sort((a, b) => (a.name || '').localeCompare(b.name)); //this.getDiffData(this.dataList);
+
+		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
+			height: this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight,
+			data: _dataList,
+			layout: "fitDataFill",
+			columns: colModel,
+			columnHeaderVertAlign: "middle",
+            debugInvalidOptions:true,
+            movableColumns: true,
+            movableRows: true,
+            maxHeight:"100%",
+            placeholder:()=>{
+                return this.isDiffEnabled ? "No Matching Data (Diff Enabled)" : "No Data available"; 
+            },
+            rowFormatter:function(row){
+                if(row.getData().isCategory){
+                    row.getElement().style.backgroundColor = "#1c96ff";
+                }
+            },        
+		});
+        this.isLoading = false;
+    }
+
     setFullViewReport = async (metadataFilter) => {
         console.log('setFullViewReport');
         this.isLoading = true;
@@ -440,7 +623,6 @@ export default class App extends FeatureElement {
 			this.tableInstance.destroy();
 		}
 
-		var dataList = [];
 		let colModel = [
 			{ title: 'Label', field: 'label', resizable: true, headerHozAlign: "center", resizable: false,responsive:0,headerFilter:"input"},
 			{ title: 'Developer Name', field: 'name', resizable: true, headerHozAlign: "center", resizable: false, tooltip: true }
@@ -481,79 +663,11 @@ export default class App extends FeatureElement {
                     }
 				);
 		});
-        // Row processing
-        Object.values(CONFIG).filter(x => isUndefinedOrNull(metadataFilter) || isNotUndefinedOrNull(metadataFilter) && x.key == metadataFilter).forEach(configItem => {
-
-            Object.values(this.metadata[configItem.metadataName]) // sobjects.recordTypes
-            .filter(x => this.namespaceFiltering_isExcluded && (x.namespacePrefix == null || x.namespacePrefix === '') || !this.namespaceFiltering_isExcluded)
-            .forEach(item => {
-                let data = {};
-                    data['label']   = item.label || item.name;
-                    data['name']    = item.name;
-                    data['namespacePrefix'] = item.namespacePrefix || 'Default';
-                    data['category'] = configItem.category;
-
-                    filteredPermissions.forEach(permission => {
-                        const permissionList = permission[configItem.permissionName];
-                        let index = permissionList.findIndex(x => x[configItem.permissionFieldId] === item.name);
-                        if(index > -1){
-                            data[permission.id] = configItem.formatter(permissionList[index],this.metadata) // Want to keep empty if doesn't exist instead of false
-                        }
-                    });
-
-                    if(configItem.key === 'layouts'){
-                        // Run special logic for layouts
-                        const children = Object.values(item.recordTypes).map(recordType => {
-                            const permissionKey = `${item.name}-${recordType.id}`; // to be replaced in the SF method
-                            const subData = {
-                                name:`${data.name}.${recordType.name}`,
-                                label:recordType.label,
-                                category:data.category,
-                                namespacePrefix : data.namespacePrefix
-                            };
-                            filteredPermissions.forEach(permission => {
-                                const permissionList = permission[configItem.permissionName];
-                                
-                                let index = permissionList.findIndex(x => x[configItem.permissionFieldId] === permissionKey);
-                                if(index > -1){
-                                    subData[permission.id] = this.metadata['layouts'][permissionList[index].id].name // Want to keep empty if doesn't exist instead of false
-                                }
-                            });
-                            return subData;
-                        });
-                        if(children && children.length > 0){
-                            data._children = children; // avoid empty record types
-                        }
-                    }
-
-                    if(configItem.subPermissions){
-                        
-                        // Check the children
-                        data._children = configItem.subPermissions.map(key => {
-                            const subData = {
-                                name:`${data.name}.${key}`,
-                                label:key,
-                                category:data.category,
-                                namespacePrefix : data.namespacePrefix
-                            };
-                            filteredPermissions.forEach(permission => {
-                                const permissionList = permission[configItem.permissionName];
-                                let index = permissionList.findIndex(x => x[configItem.permissionFieldId] === item.name);
-                                if(index > -1){
-                                    subData[permission.id] = permissionList[index][key] // Want to keep empty if doesn't exist instead of false
-                                }
-                            });
-                            return subData;
-                        });
-                    }
-
-                    dataList.push(data);
-            });
-        })
+        
         
         // Diff Checker processing
-        this.dataList = dataList;
-        const _dataList = this.getDiffData(dataList);
+        this.dataList = this.generateFullDataList(filteredPermissions,metadataFilter);
+        const _dataList = this.getDiffData(this.dataList);
 
 		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
 			height: this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight,
