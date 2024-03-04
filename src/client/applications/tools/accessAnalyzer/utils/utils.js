@@ -12,6 +12,8 @@ export const fileFormatter = function(list, options, setFileContents){
     const title = options.title || 'Report';
     const filename = options.filename || 'report.pdf';
     const report = options.report || null;
+    const greenTreshold = options.greenTreshold || 10;
+    const orangeTreshold = options.orangeTreshold || 20;
 
     var headers = [];
     var rows = [];
@@ -110,12 +112,10 @@ export const fileFormatter = function(list, options, setFileContents){
                             .filter(x => typeof x === "number")
                             .reduce((acc,item) => acc + item,0);
 
-                            if(total < 10){
+                            if(total < greenTreshold){
                                 cell.styles.fillColor = "#669900";
-                            }else if(total >= 10 && total < 20){
+                            }else if(total < orangeTreshold){
                                 cell.styles.fillColor = "#ff5d2d";
-                            }else if (total >= 20){
-                                //cell.styles.fillColor = "#cc3333";
                             }
                             cell.text  = [`${total}`];
                         }

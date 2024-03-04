@@ -108,7 +108,10 @@ export default class App extends FeatureElement {
 
     /* Compare */
     isDiffEnabled = false;
-    
+
+    /* Matrix */
+    greenTreshold = 5;
+    orangeTreshold = 10;
 
     isLoading = false;
     
@@ -134,8 +137,10 @@ export default class App extends FeatureElement {
 
     loadCachedSettings = () => {
         if(isNotUndefinedOrNull(this.connector.header.alias)){
-            this.filter_permissionSets  = getFromStorage(localStorage.getItem(`${this.connector.header.alias}-accessAnalyzer_filter_permissionSets`),[]);
-            this.filter_profiles        = getFromStorage(localStorage.getItem(`${this.connector.header.alias}-accessAnalyzer_filter_profiles`),[]);
+            this.filter_permissionSets  = getFromStorage(localStorage.getItem(`${this.connector.header.alias}-accessAnalyzer-filter_permissionSets`),[]);
+            this.filter_profiles        = getFromStorage(localStorage.getItem(`${this.connector.header.alias}-accessAnalyzer-filter_profiles`),[]);
+            this.greenTreshold          = getFromStorage(localStorage.getItem(`global-accessAnalyzer-greenTreshold`),5);
+            this.orangeTreshold         = getFromStorage(localStorage.getItem(`global-accessAnalyzer-orangeTreshold`),10);
         }
     }
 
@@ -200,6 +205,24 @@ export default class App extends FeatureElement {
 
     /** Events  **/
 
+    handleChangeGreenTreshold = (e) => {
+       
+        runActionAfterTimeOut(e.detail.value,(newValue) => {
+            console.log('newValue',newValue);
+            this.greenTreshold = newValue;
+            localStorage.setItem(`global-accessAnalyzer-greenTreshold`,JSON.stringify(this.greenTreshold));
+            this.displayReport();
+        },{timeout:500});
+    }
+
+    handleChangeOrangeTreshold = (e) => {
+        runActionAfterTimeOut(e.detail.value,(newValue) => {
+            this.orangeTreshold = e.detail.value;
+            localStorage.setItem(`global-accessAnalyzer-orangeTreshold`,JSON.stringify(this.orangeTreshold));
+            this.displayReport();
+        },{timeout:500});
+    }
+
     refreshMetadata = async () => {
         this.loadMetadata(true);
     }
@@ -230,7 +253,9 @@ export default class App extends FeatureElement {
                 title:this.report_options.find(x => x.value == this.report).label,
                 filename,
                 report:this.report,
-                leftCellAlignement:this.report == 'Matrix' ? 1 : 2
+                leftCellAlignement:this.report == 'Matrix' ? 1 : 2,
+                greenTreshold:this.greenTreshold,
+                orangeTreshold:this.orangeTreshold
             });
             this.isLoading = false;
         }
@@ -612,19 +637,17 @@ export default class App extends FeatureElement {
                     headerWordWrap: true,
                     width: 80,
                     headerSort:false,                 
-                    formatter:function(cell,formatterParams,onRendered){
+                    formatter:(cell,formatterParams,onRendered) =>{
                         if(cell.getValue()){
                             if(isNotUndefinedOrNull(cell.getValue().perm1) && cell.getValue().perm1 == cell.getValue().perm2){
                                 // Cross mapping
                                 cell.getElement().style.backgroundColor = "#747474";
                             }else{
                                 const total =  Object.values(cell.getValue()).filter(x => typeof x === "number").reduce((acc,item) => acc + item,0);
-                                if(total < 10){
+                                if(total < this.greenTreshold){
                                     cell.getElement().style.backgroundColor = "#669900";
-                                }else if(total >= 10 && total < 20){
+                                }else if(total < this.orangeTreshold){
                                     cell.getElement().style.backgroundColor = "#ff5d2d";
-                                }else{
-                                    //cell.getElement().style.backgroundColor = "#cc3333";
                                 }
                                 return total;
                             }

@@ -194,6 +194,20 @@
                         </div>
                     </div>
                 </li>
+                <li class="slds-item">
+                    <lightning-slider 
+                        label="Matrix - Green Treshold" 
+                        value={greenTreshold}
+                        onchange={handleChangeGreenTreshold}
+                    ></lightning-slider>
+                </li>
+                <li class="slds-item">
+                    <lightning-slider 
+                        label="Matrix - Orange Treshold" 
+                        value={orangeTreshold}
+                        onchange={handleChangeOrangeTreshold}
+                    ></lightning-slider>
+                </li>
                 <!-- FILTER -->
                 <!-- TODO:
                     <li class="slds-item">
