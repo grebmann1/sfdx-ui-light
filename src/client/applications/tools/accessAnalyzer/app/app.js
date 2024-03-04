@@ -111,7 +111,9 @@ export default class App extends FeatureElement {
 
     /* Matrix */
     greenTreshold = 5;
+    _greenTreshold;
     orangeTreshold = 10;
+    _orangeTreshold;
 
     isLoading = false;
     
@@ -205,21 +207,39 @@ export default class App extends FeatureElement {
 
     /** Events  **/
 
-    handleChangeGreenTreshold = (e) => {
-       
-        runActionAfterTimeOut(e.detail.value,(newValue) => {
-            this.greenTreshold = newValue;
+    handleUndoTreshold = () => {
+        this._greenTreshold = this.greenTreshold;
+        this._orangeTreshold = this.orangeTreshold;
+        this.orangeTreshold = 0;
+        this.greenTreshold = 0;
+        // reset
+        window.setTimeout(()=>{
+            this.orangeTreshold = this._orangeTreshold;
+            this.greenTreshold = this._greenTreshold;
+            this._greenTreshold = null;
+            this._orangeTreshold = null;
+        },1)
+    }
+
+    handleApplyTreshold = () => {
+        if(this._greenTreshold){
+            this.greenTreshold = this._greenTreshold;
             localStorage.setItem(`global-accessAnalyzer-greenTreshold`,JSON.stringify(this.greenTreshold));
-            this.displayReport();
-        },{timeout:500});
+        }
+
+        if(this._orangeTreshold){
+            this.orangeTreshold = this._orangeTreshold;
+            localStorage.setItem(`global-accessAnalyzer-greenTreshold`,JSON.stringify(this.orangeTreshold));
+        }
+        this.displayReport();
+    }
+
+    handleChangeGreenTreshold = (e) => {
+        this._greenTreshold = e.detail.value;
     }
 
     handleChangeOrangeTreshold = (e) => {
-        runActionAfterTimeOut(e.detail.value,(newValue) => {
-            this.orangeTreshold = e.detail.value;
-            localStorage.setItem(`global-accessAnalyzer-orangeTreshold`,JSON.stringify(this.orangeTreshold));
-            this.displayReport();
-        },{timeout:500});
+        this._orangeTreshold = e.detail.value;
     }
 
     refreshMetadata = async () => {
@@ -267,6 +287,14 @@ export default class App extends FeatureElement {
 
 
     /** Getters **/
+
+    get isTresholdButtonDisplayed(){
+        return isNotUndefinedOrNull(this._greenTreshold) && this.greenTreshold != this._greenTreshold || isNotUndefinedOrNull(this._orangeTreshold) &&  this.orangeTreshold != this._orangeTreshold;
+    }
+
+    get isUndoDisabled(){
+        return this.greenTreshold == this._greenTreshold && this.orangeTreshold == this._orangeTreshold;
+    }
 
     get isFiltering_profiles(){
         return this.filter_profiles.length > 0;

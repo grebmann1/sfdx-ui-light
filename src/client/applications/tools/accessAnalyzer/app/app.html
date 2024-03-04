@@ -194,19 +194,26 @@
                         </div>
                     </div>
                 </li>
+                <li class="slds-item slds-has-divider_top-space"></li>
                 <li class="slds-item">
                     <lightning-slider 
                         label="Matrix - Green Treshold" 
                         value={greenTreshold}
                         onchange={handleChangeGreenTreshold}
                     ></lightning-slider>
-                </li>
-                <li class="slds-item">
                     <lightning-slider 
                         label="Matrix - Orange Treshold" 
                         value={orangeTreshold}
                         onchange={handleChangeOrangeTreshold}
                     ></lightning-slider>
+                    <template lwc:if={isTresholdButtonDisplayed}>
+                        <div class="slds-text-align_center slds-m-top_small">
+                            <lightning-button-group>
+                                <lightning-button label="Apply" variant="brand" onclick={handleApplyTreshold}></lightning-button>
+                                <lightning-button label="Cancel" disabled={isUndoDisabled} onclick={handleUndoTreshold}></lightning-button>
+                            </lightning-button-group>
+                        </div>
+                    </template>
                 </li>
                 <!-- FILTER -->
                 <!-- TODO:
