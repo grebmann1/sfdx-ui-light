@@ -208,7 +208,6 @@ export default class App extends FeatureElement {
     handleChangeGreenTreshold = (e) => {
        
         runActionAfterTimeOut(e.detail.value,(newValue) => {
-            console.log('newValue',newValue);
             this.greenTreshold = newValue;
             localStorage.setItem(`global-accessAnalyzer-greenTreshold`,JSON.stringify(this.greenTreshold));
             this.displayReport();
