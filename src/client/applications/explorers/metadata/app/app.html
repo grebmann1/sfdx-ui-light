@@ -73,6 +73,9 @@
                         <template lwc:elseif={selectedRecordLoading}>
                             <lightning-spinner alternative-text="Loading"></lightning-spinner>
                         </template>
+                        <template lwc:elseif={isNoRecord}>
+                            <slds-empty-illustration title="No record" sub-title={noRecordMessage}></slds-empty-illustration>
+                        </template>
 
                         <!--<div class="slds-scrollable_y">
                             <template lwc:if={isRecordDisplayed}>

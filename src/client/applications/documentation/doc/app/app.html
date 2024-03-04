@@ -24,7 +24,9 @@
                     <div class="slds-page-header__controls">
                         <div class="slds-page-header__control">
                             <!-- actions -->
-                           
+                            <lightning-button-group>
+                                <lightning-button-icon icon-name="utility:filterList" disabled={isLoading} onclick={filtering_handleClick} variant={filtering_variant}></lightning-button-icon>
+                            </lightning-button-group>
                         </div>
                     </div>
                 </div>
@@ -33,65 +35,76 @@
                 <div class="slds-page-header__col-details">
                     <div class="slds-page-header__detail-row slds-is-relative" style="display:block; ">
                         <!-- Display Info -->
-                        <h2>This part is currently in development - Work in progress </h2>
-                        <lightning-checkbox-group name="clouds"
-                              class="slds-checkbox-flex"
-                              label="Filters"
-                              options={cloud_options}
-                              value={cloud_value}
-                              onchange={cloud_handleChange}
-                        ></lightning-checkbox-group>
+                        <h2>Multiple <span class="slds-text-title_bold">Clouds</span> are available in the "Filters" <a href="#" onclick={openFilter}>See all clouds available</a></h2>
+                        <lightning-pill-container 
+                            items={pillItems}
+                            onitemremove={handleItemRemove}
+                        ></lightning-pill-container>
                     </div>
                 </div>
             </div>
         </div>
-        <article class="full-page-body slds-card slds-m-top_small">
-            <div class="slds-card__body slds-card__body_inner">
-                <div class="slds-full-height slds-grid slds-gutters slds-wrap">
-                    <div class="slds-flex-column slds-full-height slds-col slds-col min-height-200 slds-size_1-of-4"> 
-                        <slds-menu 
-                            class="slds-flex-column slds-full-height min-height-200"
-                            items={filteredList}
-                            title="SObjects"
-                            highlight={filter}
-                            selected-item={selectedMenuItem}
-                            onmenuselection={handleItemSelection}
-                            onback={handleMenuBack}
-                            is-loading={isMenuLoading}
-                            hide-search
-                        >   
-                            <!-- Inner Input -->
-                            <div style="display: flex;flex-direction: row;align-content: flex-end;justify-content: flex-end;">
-                                <lightning-input 
-                                    type="toggle" 
-                                    label="Filter Fields" 
-                                    name="filterFields" 
-                                    message-toggle-active=""
-                                    message-toggle-inactive=""
-                                    onchange={handleToggleChange}></lightning-input>
-                            </div>
+        <div class="slds-full-height slds-overflow-hidden slds-flex-row">
+            <article class="full-page-body slds-card slds-m-top_small slds-col">
+                <div class="slds-card__body slds-card__body_inner">
+                    <div class="slds-full-height slds-grid slds-gutters slds-wrap">
+                        <div class="slds-flex-column slds-full-height slds-col slds-col min-height-200 slds-size_1-of-4"> 
+                            <slds-menu 
+                                class="slds-flex-column slds-full-height min-height-200"
+                                items={filteredList}
+                                title="SObjects"
+                                highlight={filter}
+                                selected-item={selectedMenuItem}
+                                onmenuselection={handleItemSelection}
+                                onback={handleMenuBack}
+                                is-loading={isMenuLoading}
+                                hide-search
+                            >
                             <lightning-input 
-                                    class="slds-m-bottom_large" 
-                                    type="search"
-                                    label="Search" 
-                                    onchange={handleFilter}
-                            ></lightning-input>
-                            <!-- Inner Input -->
+                                        class="slds-m-bottom_large" 
+                                        type="search"
+                                        label="Search" 
+                                        onchange={handleFilter}
+                                ></lightning-input>
                         </slds-menu>
-                    </div>
-                    <!-- Container -->
-                    <div class="documentation-container slds-scrollable_y slds-flex-column slds-full-height slds-col slds-col slds-size_3-of-4">
-                        <div class="min-height-200 slds-is-relative">
-                            <template lwc:if={isLoading}>
-                                <lightning-spinner alternative-text="Loading"></lightning-spinner>
-                            </template>
-                            <div class="mermaid" lwc:ref="mermaid"  lwc:dom="manual"></div>
-                            <div class="doc"     lwc:ref="container" lwc:dom="manual"></div>
+                        </div>
+                        <!-- Container -->
+                        <div class="documentation-container slds-scrollable_y slds-flex-column slds-full-height slds-col slds-col slds-size_3-of-4">
+                            <div class="min-height-200 slds-is-relative">
+                                <template lwc:if={isLoading}>
+                                    <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                                </template>
+                                <div class="mermaid" lwc:ref="mermaid"  lwc:dom="manual"></div>
+                                <div class="doc"     lwc:ref="container" lwc:dom="manual"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </article>
+            </article>
+            <!-- Panel -->
+            <slds-vertical-panel is-open={displayFilter} onclose={handleCloseVerticalPanel}>
+                <!-- FILTER -->
+                <li class="slds-item">
+                    <lightning-input 
+                        type="toggle" 
+                        label="Filter Fields" 
+                        name="filterFields" 
+                        message-toggle-active=""
+                        message-toggle-inactive=""
+                        onchange={handleToggleChange}
+                    ></lightning-input>
+                </li>
+                <li class="slds-item">
+                    <lightning-checkbox-group name="clouds"
+                            label="Filters"
+                            options={cloud_options}
+                            value={cloud_value}
+                            onchange={cloud_handleChange}
+                    ></lightning-checkbox-group>
+                </li>
+            </slds-vertical-panel>
+        </div>
+        
     </div>
     
     

@@ -1,5 +1,5 @@
 import { api } from "lwc";
-import { isEmpty,runActionAfterTimeOut,isNotUndefinedOrNull,removeDuplicates } from 'shared/utils';
+import { isEmpty,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull,removeDuplicates } from 'shared/utils';
 import FeatureElement from 'element/featureElement';
 const OBJECT_PREFIX = 'sforce_api_objects_';
 const ACCOUNT_ID = 'sforce_api_objects_account';
@@ -70,6 +70,7 @@ export default class App extends FeatureElement {
     currentSobject;
     filter;
     isFieldFilterEnabled = false;
+    displayFilter = false;
 
     items = [];
     filteredItems = []; // used for backend storage
@@ -95,6 +96,26 @@ export default class App extends FeatureElement {
     }
 
     /** Events */
+
+    openFilter = (e) => {
+        e.preventDefault();
+        this.displayFilter = true;
+    }
+
+    handleItemRemove = (e) => {
+        this.displayFilter = true; // always open the filter menu
+        if(this.cloud_value.length == 1) return; // dont allow to remove the last one
+        this.cloud_value = this.cloud_value.filter(x => x != e.detail.item.name);
+        this.refreshDocumentsFromCloud();
+    }
+
+    handleCloseVerticalPanel = (e) => {
+        this.displayFilter = false;
+    }
+
+    filtering_handleClick = (e) => {
+        this.displayFilter = !this.displayFilter;
+    }
     
     handleFilter = (e) => {
         this.isMenuLoading = true;
@@ -120,6 +141,15 @@ export default class App extends FeatureElement {
     
 
     /** Methods */
+
+    refreshDocumentsFromCloud = async() => {
+        window.setTimeout(async () => {
+            if(!isEmpty(this.filter)){
+                this.filteredItems = removeDuplicates(await this.getFilteredItems(this.filter),'id');   
+            }
+            this.fetchDocuments();
+        },1)
+    }
     
     redirectTo = (key) => {
         this.selectedMenuItem = key;
@@ -354,13 +384,18 @@ export default class App extends FeatureElement {
 
     cloud_handleChange = async (e) => {
         this.cloud_value = e.detail.value;
-        if(!isEmpty(this.filter)){
-            this.filteredItems = removeDuplicates(await this.getFilteredItems(this.filter),'id');   
-        }
-        this.fetchDocuments();
+        this.refreshDocumentsFromCloud();
     }
     
     /** Getters */
+
+    get pillItems(){
+        return this.cloud_value.map(x => ({name:x,label:CONFIGURATION[x].label}))
+    }
+
+    get filtering_variant(){
+        return this.displayFilter?'brand':'border-filled';
+    }
 
     get cloud_options(){
         return Object.keys(CONFIGURATION).map(x => ({label:CONFIGURATION[x].label,value:x}));

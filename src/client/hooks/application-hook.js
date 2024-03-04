@@ -12,7 +12,9 @@ const APP_LIST = [
   'metadata',
   'metadata/:attribute1',
   'sobject',
+  'sobject/:attribute1',
   'documentation',
+  'documentation/:attribute1',
   'soql'
 ]
 

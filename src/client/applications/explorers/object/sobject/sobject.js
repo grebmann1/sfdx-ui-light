@@ -1,4 +1,4 @@
-import { createElement} from "lwc";
+import { api, createElement} from "lwc";
 import FeatureElement from 'element/featureElement';
 import { isEmpty,runActionAfterTimeOut,isNotUndefinedOrNull } from 'shared/utils';
 import {TabulatorFull as Tabulator} from "tabulator-tables";
@@ -7,59 +7,41 @@ import SObjectCell from 'object/sobjectCell';
 /** Store */
 import { store,store_application } from 'shared/store';
 
-
-const TYPEFILTER_OPTIONS = [
-    { label: 'Object', value: 'object' },
-    { label: 'Change Event', value: 'change' },
-    { label: 'Platform Event', value: 'event' },
-    { label: 'Custom Metadata', value: 'metadata' },
-    { label: 'Feed', value: 'feed' },
-    { label: 'History', value: 'history' },
-    { label: 'Share', value: 'share' },
-];
-
 export default class Sobject extends FeatureElement {
 
-    records = [];
-    recordFilters = [];
-    selectedItem;
     isLoading = false;
     isTableLoading = false;
-    isMenuLoading = false;
+    isNoRecord = false;
 
-
-    filter;
     fields_filter;
     child_filter;
-    typeFilter_value = [];
-    displayAdvancedFilter = false;
 
     recordDetails = {}
     selectedDetails;
     extraSelectedDetails;
 
-    connectedCallback(){
-        this.loadAlls();
-
+    @api
+    get recordName(){
+        return this._recordName;
     }
+
+    set recordName(value){
+        this._recordName = value;
+        if(!isEmpty(value)){
+            this.loadSpecificRecord();
+        }
+    }
+
+    connectedCallback(){}
 
     
 
     /** Events */
-
-    handleToggleChange = (e) => {
-        this.displayAdvancedFilter = e.detail.checked;
-    }
     
     goToSetup = (e) => {
         store.dispatch(store_application.navigate(`lightning/setup/ObjectManager/${this.selectedDetails.name}/Details/view`));
     }
-
-    handleFilter = (e) => {
-        runActionAfterTimeOut(e.detail.value,(newValue) => {
-            this.filter = newValue;
-        });
-    }
+    
 
     handleFieldsFilter = (e) => {
         runActionAfterTimeOut(e.detail.value,(newValue) => {
@@ -75,18 +57,13 @@ export default class Sobject extends FeatureElement {
         });
     }
 
-    typeFilter_onChange = (e) => {
-        this.typeFilter_value = e.detail.value;
-        setTimeout(() => {
-            this.recordFilters = this.filterRecords();
-        },1);
-    }
+    
 
-    handleItemSelection = async (e) => {
-        this.selectedItem = e.detail.name;
-        this.isTableLoading = true;
-        await this.describeSpecific(this.selectedItem);
-        this.isTableLoading = false;
+    loadSpecificRecord = async () => {
+        this.reset();
+        this.isLoading = true;
+        await this.describeSpecific(this.recordName);
+        this.isLoading = false;
         runActionAfterTimeOut(null,(param) => {
             this.createFieldsTable();
             this.createChildsTable();
@@ -94,49 +71,36 @@ export default class Sobject extends FeatureElement {
     }
 
     /** Methods  **/
-
-    loadAlls = async () => {
-        await this.describeAll();
-    }
-
-    load_toolingGlobal = async () => {
-        let result = await this.connector.conn.describeGlobal();
-        return result?.sobjects || [];
+    
+    reset = () => {
+        this.fields_filter = null;
+        this.child_filter = null;
+        this.isNoRecord = false;
+        this.isLoading = false;
+        this.isTableLoading = false;
     }
 
     checkRecords = async () => {
         this.extraSelectedDetails = {totalRecords:0};
-        this.extraSelectedDetails.totalRecords = (await this.connector.conn.query(`SELECT Count(Id) total FROM ${this.selectedDetails.name}`)).records[0].total;
-    }
-
-
-    describeAll = async () => {
-        this.isLoading = true;
-        this.isMenuLoading = true;
         try{
-            var records = (await this.load_toolingGlobal()) || [];
-            this.records = records;
-            this.menuRecords = records.map(x => ({
-                label:`${x.label}(${x.name})`, // for slds-menu
-                name:x.name, // for slds-menu
-                key:x.name, // for slds-menu
-                category:this.extractCategory(x.name)
-            })).sort((a, b) => a.name.localeCompare(b.name));
-            this.recordFilters = this.filterRecords();
+            this.extraSelectedDetails.totalRecords = (await this.connector.conn.query(`SELECT Count(Id) total FROM ${this.selectedDetails.name}`)).records[0].total;
         }catch(e){
-            console.error(e);
+            console.error('checkRecords',e);
         }
-        this.isLoading = false;
-        this.isMenuLoading = false;
     }
 
     describeSpecific = async (name) => {
-        let result = await this.connector.conn.sobject(name).describe();
-        this.selectedDetails = result;
-        await this.checkRecords();
-        setTimeout(() => {
-            this.buildUML();
-        },100)
+        try{
+            let result = await this.connector.conn.sobject(name).describe();
+            this.selectedDetails = result;
+            await this.checkRecords();
+            setTimeout(() => {
+                this.buildUML();
+            },100)
+        }catch(e){
+            console.error(e);
+            this.isNoRecord = true;
+        }
     }
 
     checkIfPresent = (a,b) => {
@@ -257,36 +221,11 @@ export default class Sobject extends FeatureElement {
         //return "Mr" + cell.getValue(); //return the contents of the cell;
     }
 
-    
-    extractCategory = (item) => {
-        if(item.endsWith('ChangeEvent')){
-            return 'change';
-        }else if(item.endsWith('Feed')){
-            return 'feed';
-        }else if(item.endsWith('History')){
-            return 'history';
-        }else if(item.endsWith('Share')){
-            return 'share';
-        }else if(item.endsWith('__mdt')){
-            return 'metadata';
-        }
+    /** Getters **/ 
 
-        return 'object'; // default value for the left over
+    get noRecordMessage(){
+        return `${this.recordName} wasn't found in your metadata.`;
     }
-
-    filterRecords = () => {
-        if(this.typeFilter_value.length == 0) return this.menuRecords;
-        return this.menuRecords.filter(x => this.typeFilter_value.includes(x.category));
-    }
-
-
-    /** Getters **/
-
-    get typeFilter_options(){
-        return TYPEFILTER_OPTIONS;
-    }
-
-    
 
     get field_filteredList(){
         //if(!this.isDetailDisplayed) return [];

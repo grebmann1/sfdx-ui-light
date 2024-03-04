@@ -1,6 +1,6 @@
 import { api,wire,track} from "lwc";
 import FeatureElement from 'element/featureElement';
-import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeOut,formatFiles,sortObjectsByField,removeDuplicates } from 'shared/utils';
+import { isEmpty,isElectronApp,classSet,isUndefinedOrNull,isNotUndefinedOrNull,runActionAfterTimeOut,formatFiles,sortObjectsByField,removeDuplicates } from 'shared/utils';
 import jsonview from '@pgrabovets/json-view';
 import Toast from 'lightning/toast';
 import jszip from 'jszip';
@@ -11,6 +11,7 @@ export default class App extends FeatureElement {
     navContext;
 
     isLoading = false;
+    isNoRecord = false;
 
     @track selection = [];
     @track metadata  = [{records:[],label:'Metadata'}];
@@ -34,16 +35,22 @@ export default class App extends FeatureElement {
     _pageRef;
     @wire(CurrentPageReference)
     handleNavigation(pageRef){
-        if(this._pageRef != null && JSON.stringify(this._pageRef) == JSON.stringify(pageRef)) return;
-        this._pageRef = pageRef;
+        if(isUndefinedOrNull(pageRef)) return;
+        if(JSON.stringify(this._pageRef) == JSON.stringify(pageRef)) return;
         
-        //console.log('handleNavigation',pageRef);
-        this.loadFromNavigation(pageRef);
+        if(pageRef?.attributes?.applicationName == 'metadata'){
+            this._pageRef = pageRef;
+            this.loadFromNavigation(pageRef);
+        }
     }
 
     loadFromNavigation = async ({state, attributes}) => {
-        const {attribute1}  = attributes;
+        console.log('metadata - loadFromNavigation');
+        const {applicationName,attribute1}  = attributes;
         const {id}      = state;
+        if(applicationName != 'metadata') return; // Only for metadata
+
+        this.isNoRecord = false;
 
         if(attribute1){
             await this.load_specificMetadata({name:attribute1,label:attribute1});
@@ -172,38 +179,39 @@ export default class App extends FeatureElement {
         //console.log('metadataConfig.fields.map(x => x.name)',metadataConfig.fields.map(x => x.name));
         const fields = metadataConfig.fields.map(x => x.name).filter(x => ['Id','Name','DeveloperName','MasterLabel','NamespacePrefix'].includes(x));
         //console.log('query',query);
-        let queryExec = this.connector.conn.tooling.query(`SELECT ${fields.join(',')} FROM ${name}`);
-        let result = (await queryExec.run({ responseTarget:'records',autoFetch : true, maxFetch : 10000 })).records || [];
-        //console.log('metadata_lvl2',result);
-            result = result.map(x => {
-                const _tempName = this.formatName(x);
-                return {
-                    ...x,
-                    name:x.Id,
-                    label:_tempName,
-                    key:x.Id
-                }
-            }).sort((a, b) => (a.label || '').localeCompare(b.label));
-        
-        // Format the data for specific metadata type
-        switch(name){
-            case 'Flow':
-                console.log('filter flow')
-                result = removeDuplicates(result,'MasterLabel');
-                console.log('before',result);
-            break;
-
-            default:
-
+        try{
+            let queryExec = this.connector.conn.tooling.query(`SELECT ${fields.join(',')} FROM ${name}`);
+            let result = (await queryExec.run({ responseTarget:'records',autoFetch : true, maxFetch : 10000 })).records || [];
+            //console.log('metadata_lvl2',result);
+                result = result.map(x => {
+                    const _tempName = this.formatName(x);
+                    return {
+                        ...x,
+                        name:x.Id,
+                        label:_tempName,
+                        key:x.Id
+                    }
+                }).sort((a, b) => (a.label || '').localeCompare(b.label));
+            
+            // Format the data for specific metadata type
+            switch(name){
+                case 'Flow':
+                    console.log('filter flow')
+                    result = removeDuplicates(result,'MasterLabel');
+                    console.log('before',result);
+                break;
+    
+                default:
+    
+            }
+    
+            if(this.metadata.length <= 1){
+                this.metadata.push(null)
+            }
+            this.metadata[1] = {records:result,label};
+        }catch(e){
+            console.error(e); // We still show the menu
         }
-
-        if(this.metadata.length <= 1){
-            this.metadata.push(null)
-        }
-        this.metadata[1] = {records:result,label};
-        
-        //console.log('metadata_lvl2_formatted',result);
-        //console.log('this.metadata',this.metadata);
         this.isLoading = false;
     }
 
@@ -216,9 +224,13 @@ export default class App extends FeatureElement {
         this.selectionUpdate({name,label});
         var recordId = name;
         const metadataRecord = this.metadata[1].records.find(x => x.Id == recordId);
-        if(metadataRecord.EntityDefinitionId){
-            recordId = metadataRecord.EntityDefinitionId
+        if(isUndefinedOrNull(metadataRecord)){
+            this.isNoRecord = true;
+            this.selectedRecordLoading = false;
+            return;
         }
+
+        recordId = metadataRecord.EntityDefinitionId
         //console.log('search',this.metadata_lvl1_selection,recordId,metadataRecord);
         try{
             let result = await this.connector.conn.request(metadataRecord.attributes.url);
@@ -415,6 +427,10 @@ export default class App extends FeatureElement {
 
 
     /** Getters */
+
+    get noRecordMessage(){
+        return `This record wasn't found in your metadata.`;
+    }
     
     get menuItems(){
         if(this.metadata.length == 0) return [];

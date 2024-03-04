@@ -118,13 +118,14 @@
         </div>
 
         <!-- CONTAINER -->
-        <div class="column slds-size_1-of-1 slds-medium-size_12-of-12 slds-large-size_12-of-12 region-main slds-is-relative">
-            <template lwc:if={isLoading}>
-                <lightning-spinner alternative-text="Loading"></lightning-spinner>
-            </template>
-            <!-- Table -->
-            <div lwc:dom="manual" class="custom-table"></div>
-
+        <div class="slds-full-height slds-overflow-hidden slds-flex-row">
+            <div class="slds-col slds-fill-height column region-main slds-is-relative">
+                <template lwc:if={isLoading}>
+                    <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                </template>
+                <!-- Table -->
+                <div lwc:dom="manual" class="custom-table"></div>
+            </div>
             <!-- Panel -->
             <slds-vertical-panel is-open={displayFilterContainer} onclose={handleCloseVerticalPanel}>
                 <!-- FILTER -->
@@ -218,5 +219,6 @@
                 -->
             </slds-vertical-panel>
         </div>
+        
     </div>
 </template>

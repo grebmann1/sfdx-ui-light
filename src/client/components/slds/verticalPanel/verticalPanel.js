@@ -26,7 +26,7 @@ export default class VerticalPanel extends LightningElement {
     get filterPanelClass(){
         return classSet('slds-panel slds-size_medium slds-panel_docked slds-panel_docked-right slds-panel_drawer').add({
             'slds-is-open':this.isOpen,
-            
+            'slds-m-left_small':true, // in case we want to add some logic
         }).toString();
     }
 

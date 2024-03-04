@@ -12,7 +12,7 @@
                                 <div class="slds-page-header__name-title">
                                     <h1>
                                         <span>SObject Explorer</span>
-                                        <span class="slds-page-header__title slds-truncate" title="SObject Explorer">SObject Explorer</span>
+                                        <span class="slds-page-header__title slds-truncate" title="Metadata Explorer">SObject Explorer</span>
                                     </h1>
                                 </div>
                             </div>
@@ -23,7 +23,9 @@
                     <div class="slds-page-header__controls">
                         <div class="slds-page-header__control">
                             <!-- actions -->
-                           
+                            <lightning-button-group>
+                                <lightning-button-icon icon-name="utility:filterList" disabled={isLoading} onclick={filtering_handleClick} variant={filtering_variant}></lightning-button-icon>
+                            </lightning-button-group>
                         </div>
                     </div>
                 </div>
@@ -32,24 +34,46 @@
                 <div class="slds-page-header__col-details">
                     <div class="slds-page-header__detail-row slds-is-relative" style="display:block; ">
                         <!-- Display Info -->
-                        <h2>This part is currently in development - Work in progress </h2>
+                        <h2>Under development</h2>
                     </div>
                 </div>
             </div>
         </div>
-        <article class="full-page-body slds-card slds-m-top_small">
-            <div class="slds-card__body slds-card__body_inner">
-                <div class="slds-full-height slds-grid slds-gutters_direct slds-wrap slds-is-relative" style="min-height:200px;">
-                    <template lwc:if={isLoading}>
-                        <lightning-spinner alternative-text="Loading"></lightning-spinner>
-                    </template>
-                    <template lwc:else>
-                        <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-1">
-                            <object-sobject></object-sobject>
+        <div class="slds-full-height slds-overflow-hidden slds-flex-row">
+            <article class="full-page-body slds-card slds-m-top_small slds-col">
+                <div class="slds-card__body slds-card__body_inner">
+                    <div class="slds-full-height slds-grid slds-gutters_direct slds-wrap slds-is-relative" style="min-height:200px;">
+                        <!-- Container -->
+                        <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-4 slds-border-right">
+                            <!-- SObject List -->
+                            <slds-menu class="slds-flex-column slds-full-height min-height-200"
+                                    items={formattedMenuItems}
+                                    title="SObjects"
+                                    onmenuselection={handleItemSelection}
+                                    is-loading={isLoading}
+                            ></slds-menu>
                         </div>
-                    </template>
+                         <!-- Object Viewer -->
+                        <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_3-of-4 slds-is-relative">
+                            <object-sobject record-name={selectedItem}></object-sobject>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </article>
+            </article>
+            <!-- Panel -->
+            <slds-vertical-panel is-open={displayFilter} onclose={handleCloseVerticalPanel}>
+                <!-- FILTER -->
+                <li class="slds-item">
+                    <lightning-checkbox-group 
+                        name="sobjectExtraFilter"
+                        label="Advanced Filtering"
+                        options={typeFilter_options}
+                        value={typeFilter_value}
+                        onchange={typeFilter_onChange}
+                    ></lightning-checkbox-group>
+                </li>
+            </slds-vertical-panel>
+        </div>
+        
     </div>
 </template>
