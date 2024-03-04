@@ -602,7 +602,7 @@ export default class App extends FeatureElement {
                     },*/
                     clickPopup:function(e, component, onRendered){
                         if(component.getValue() && Object.keys(component.getValue()).length > 0){
-                            return `<ul>${Object.keys(component.getValue()).map(key => `<li>${key}: ${component.getValue()[key]}</li>`).join('')}</ul>`;
+                            return `<ul>${Object.keys(component.getValue()).filter(key => !['perm1','perm2'].includes(key) ).map(key => `<li>${key}: ${component.getValue()[key]}</li>`).join('')}</ul>`;
                         }else{
                             return 'No Difference'
                         }
