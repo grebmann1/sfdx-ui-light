@@ -444,7 +444,7 @@ export default class App extends FeatureElement {
         }).then(res => {
             if(res?.action === 'applyFilter'){
                 this.filter_profiles = res.filter || [];
-                localStorage.setItem(`${this.connector.header.alias}-accessAnalyzer_filter_profiles`,JSON.stringify(this.filter_profiles));
+                localStorage.setItem(`${this.connector.header.alias}-accessAnalyzer-filter_profiles`,JSON.stringify(this.filter_profiles));
                 this.displayReport();
             }
         })
