@@ -14,7 +14,7 @@ export default class QuickLauncher extends FeatureElement {
     navContext;
     
     connectedCallback(){
-        console.log('CONFIG',CONFIG);
+        //console.log('CONFIG',CONFIG);
     }
 
     /** Events */
@@ -30,7 +30,7 @@ export default class QuickLauncher extends FeatureElement {
 
     handleRedirection = (e) => {
         const url = e.currentTarget.dataset.url;
-        console.log('url',url);
+        //console.log('url',url);
         store.dispatch(store_application.navigate(url));
     }
 

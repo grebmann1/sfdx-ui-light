@@ -5,6 +5,7 @@
             <template for:each={homes} for:item="item">
                 <template lwc:if={item.menuIcon}>
                     <lightning-vertical-navigation-item-icon
+                        data-key={item.path}
                         key={item.name}
                         label={item.menuLabel}
                         name={item.path}
@@ -13,6 +14,7 @@
                 </template>
                 <template lwc:else>
                     <lightning-vertical-navigation-item 
+                        data-key={item.path}
                         key={item.name} 
                         label={item.menuLabel} 
                         name={item.path}
@@ -27,6 +29,7 @@
             <lightning-button-menu variant="container" tooltip="Applications" icon-name="utility:builder" onselect={handleApplicationSelection}>
                 <template for:each={applications} for:item="item">
                     <lightning-menu-item tooltip={item.menuLabel}
+                        data-key={item.path}
                         key={item.name} 
                         value={item.path} 
                         label={item.menuLabel}
@@ -39,6 +42,7 @@
                 <lightning-button-menu variant="container" tooltip="Connections" icon-name="utility:connected_apps" onselect={handleApplicationSelection}>
                     <template for:each={connections} for:item="item">
                         <lightning-menu-item 
+                            data-key={item.path}
                             key={item.name} 
                             value={item.path} 
                             label={item.menuLabel}
@@ -55,6 +59,7 @@
             <template for:each={applications} for:item="item">
                 <template lwc:if={item.menuIcon}>
                     <lightning-vertical-navigation-item-icon
+                        data-key={item.path}
                         key={item.name}
                         label={item.menuLabel}
                         name={item.path}
@@ -63,6 +68,7 @@
                 </template>
                 <template lwc:else>
                     <lightning-vertical-navigation-item 
+                        data-key={item.path}
                         key={item.name} 
                         label={item.menuLabel} 
                         name={item.path}
@@ -75,6 +81,7 @@
                 <template for:each={connections} for:item="item">
                     <template lwc:if={item.menuIcon}>
                         <lightning-vertical-navigation-item-icon
+                            data-key={item.path}
                             key={item.name}
                             label={item.menuLabel}
                             name={item.path}
@@ -82,7 +89,8 @@
                             ></lightning-vertical-navigation-item-icon>
                     </template>
                     <template lwc:else>
-                        <lightning-vertical-navigation-item 
+                        <lightning-vertical-navigation-item
+                            data-key={item.path} 
                             key={item.name} 
                             label={item.menuLabel} 
                             name={item.path}
@@ -98,6 +106,7 @@
     <lightning-vertical-navigation-section>
         <template for:each={others} for:item="item">
             <lightning-vertical-navigation-item-icon key={item.name} onclick={handleRedirection} data-url={item.url}
+                        data-key={item.path}
                         label={item.menuLabel}
                         name={item.name}
                         icon-name={item.menuIcon}>

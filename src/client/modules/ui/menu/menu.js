@@ -1,28 +1,50 @@
 import { api,wire } from 'lwc';
 import FeatureElement from 'element/featureElement';
-import { isElectronApp, isEmpty, classSet,isNotUndefinedOrNull } from 'shared/utils';
+import { isElectronApp, isEmpty, classSet,isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
 import { CONFIG } from 'ui/app';
 import { connectStore,store,store_application } from 'shared/store';
-import { NavigationContext, generateUrl, navigate } from 'lwr/navigation';
+import { NavigationContext, CurrentPageReference,generateUrl, navigate } from 'lwr/navigation';
 
         
 export default class Menu extends FeatureElement {
     
-    isMenuSmall = false;
     @api isUserLoggedIn = false; // to enforce
+
+    isMenuSmall = false;
     selectedItem = 'home';
+
+
+    @wire(NavigationContext)
+    navContext;
 
 
     @wire(connectStore, { store })
     applicationChange({application}) {
+        console.log('application',application,CONFIG)
         // Toggle Menu
         if(isNotUndefinedOrNull(application.isMenuExpanded)){
             this.isMenuSmall = !application.isMenuExpanded;
         }
     }
+    
+    @wire(CurrentPageReference)
+    handleNavigation(pageRef){
+        if(isUndefinedOrNull(pageRef)) return;
+        if(JSON.stringify(this._pageRef) == JSON.stringify(pageRef)) return;
+        
+        this.updateMenuItemFromNavigation(pageRef);
+    }
 
-    @wire(NavigationContext)
-    navContext;
+    updateMenuItemFromNavigation = async ({attributes}) => {
+        
+        const {applicationName}  = attributes;
+        if(this.selectedItem != applicationName){
+            console.log('Update Menu - From Navigation');
+            this.selectedItem = applicationName;
+            this.updateSelectedItem();
+        }
+        
+    }
 
     connectedCallback(){
         if(isElectronApp()){
@@ -43,6 +65,7 @@ export default class Menu extends FeatureElement {
             navigate(this.navContext,{type:'home'});
         }
         this.selectedItem = target;
+        
     }
 
     handleRedirection = (e) => {
@@ -63,6 +86,17 @@ export default class Menu extends FeatureElement {
 
 
     /** Methods **/
+
+    updateSelectedItem = () => {
+        let currentActiveItem   = this.template.querySelector('.slds-nav-vertical__item.slds-is-active');
+        let newActiveItem       = this.template.querySelector(`.slds-nav-vertical__item[data-key="${this.selectedItem}"]`);
+        if(currentActiveItem){
+            currentActiveItem.classList.remove('slds-is-active');
+        }
+        if(newActiveItem){
+            newActiveItem.classList.add('slds-is-active');
+        }
+    }
 
     formatMenuItems = (items,hideMenuLabel = false) => {
         return items.map(x => {

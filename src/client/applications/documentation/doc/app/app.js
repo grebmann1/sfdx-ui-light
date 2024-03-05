@@ -1,6 +1,8 @@
-import { api } from "lwc";
-import { isEmpty,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull,removeDuplicates } from 'shared/utils';
 import FeatureElement from 'element/featureElement';
+import { wire,api } from "lwc";
+import { isEmpty,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull,removeDuplicates } from 'shared/utils';
+import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'lwr/navigation';
+
 const OBJECT_PREFIX = 'sforce_api_objects_';
 const ACCOUNT_ID = 'sforce_api_objects_account';
 const SEPARATOR = '###';
@@ -54,6 +56,8 @@ const CONFIGURATION = {
 }
 
 export default class App extends FeatureElement {
+    @wire(NavigationContext)
+    navContext;
 
     isLoading = false;
     isMenuLoading = false;
@@ -79,6 +83,39 @@ export default class App extends FeatureElement {
     isFooterDisplayed = false;
     loadingPointer = 0;
 
+    _pageRef;
+    @wire(CurrentPageReference)
+    handleNavigation(pageRef){
+        if(isUndefinedOrNull(pageRef)) return;
+        if(JSON.stringify(this._pageRef) == JSON.stringify(pageRef)) return;
+        
+        if(pageRef?.attributes?.applicationName == 'documentation'){
+            this._pageRef = pageRef;
+            this.loadFromNavigation(pageRef);
+        }
+    }
+
+    loadFromNavigation = async ({state, attributes}) => {
+        console.log('documentation - loadFromNavigation');
+        const {applicationName,attribute1}  = attributes;
+        const {name}      = state;
+        if(applicationName != 'documentation') return; // Only for metadata
+
+        this.isNoRecord = false;
+
+        if(attribute1){
+            await this.fetchDocuments_single(attribute1);
+            console.log('cloud fetched',attribute1);
+            if(!this.cloud_value.includes(attribute1) && CONFIGURATION.hasOwnProperty(attribute1)){
+                this.cloud_value.push(attribute1);
+            }
+            if(name){
+                this.selectedMenuItem = `${attribute1}${SEPARATOR}${name}`;
+                this.selectPageToView();
+            }
+        }
+    }
+
 
     connectedCallback(){
         this.loadDocumentation();
@@ -89,8 +126,13 @@ export default class App extends FeatureElement {
         this.isMenuLoading = true;
         this.initializeMermaid();
         await this.fetchDocuments();
-        this.selectedMenuItem = `${DEFAULT_CONFIG}${SEPARATOR}${ACCOUNT_ID}`;
-        this.selectPageToView();
+        if(isUndefinedOrNull(this.selectedMenuItem)){
+            // Only add for the core cloud when loading
+            if(this.filteredList.length > 0){
+                this.redirectTo(this.filteredList[0].key);
+            }
+            
+        }
         this.isLoading = false;
         this.isMenuLoading = false;
     }
@@ -152,8 +194,18 @@ export default class App extends FeatureElement {
     }
     
     redirectTo = (key) => {
-        this.selectedMenuItem = key;
-        this.selectPageToView();
+        const [documentationId,name] = (key || '').split(SEPARATOR);
+        //this.redirectTo(e.detail.key);
+        navigate(this.navContext,{
+            type:'application',
+            attributes:{
+                applicationName:'documentation',
+                attribute1:documentationId
+            },
+            state:{
+                name:name
+            }
+        });
     }
     
     initializeMermaid = () => {
@@ -172,10 +224,10 @@ export default class App extends FeatureElement {
 
     selectPageToView = async () => {
         this.isLoading = true;
-        if(this.refs.mermaid){
+        if(this.refs?.mermaid){
             this.refs.mermaid.innerHTML = ''; // Reset
         }
-        if(this.refs.doc){
+        if(this.refs?.doc){
             this.refs.doc.innerHTML     = ''; // Reset
         }
         
@@ -183,7 +235,12 @@ export default class App extends FeatureElement {
         //let current = this.items.find(x => x.Name === this.selectedMenuItem);
         const [documentationId,name] = this.selectedMenuItem.split(SEPARATOR);
         this.currentSobject = await this.loadSingleDocument(documentationId,name);
-        this.displayBodyContent();
+        if(this.currentSobject){
+            this.displayBodyContent();
+        }else{
+            this.isNoRecord = true;
+        }
+        
         this.isLoading = false;
     }
 
@@ -363,22 +420,30 @@ export default class App extends FeatureElement {
     loadSingleDocument = async (documentationId,name) => {
         try{
             const header = this.documentMapping[documentationId].header;
-            return this.fetchContentDocument(
+            return await this.fetchContentDocument(
                 header.deliverable,
                 `${name}.htm`,
                 header.version.doc_version
             );
         }catch(e){
             console.warn('Error happening',e);
-            return {};
+            return null;
         }
     }
 
     cleanContent = (content) => {
-        var regex = new RegExp('(src\=\"\/)','gi');
-        if(regex.test(content)){
-            content = content.toString().replace(regex,'src="https://developer.salesforce.com/');
+        const srcRegex = new RegExp('(src\=\"\/)','gi');
+        const hrefRegex = new RegExp('href="((?!http:\/\/|https:\/\/)[^":]+)"','gi');
+
+        if(srcRegex.test(content)){
+            content = content.toString().replace(srcRegex,'src="https://developer.salesforce.com/');
         }
+        if(hrefRegex.test(content)){
+            content = content.toString().replace(hrefRegex,function(match, p1, p2){
+                return `href="https://developer.salesforce.com/${p1}"`;
+            });
+        }
+
         return content;
     }
 
@@ -414,10 +479,14 @@ export default class App extends FeatureElement {
         if(!isEmpty(this.filter)){
             items = this.filteredItems;
         }
-        return items.map(x => ({
-            key:`${x.documentationId}${SEPARATOR}${x.id}`,
-            label:x.text,
-            name:x.id,
-        }));
+        return items.map(x => {
+            const key = `${x.documentationId}${SEPARATOR}${x.id}`;
+            return {
+                key,
+                label:x.text,
+                name:x.id,
+                isSelected:this.selectedMenuItem == key
+            }
+        });
     }
 }
