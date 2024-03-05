@@ -20,6 +20,8 @@ This repository hosts the SF Toolkit , offering a comprehensive suite of tools f
 - Middleware hooks to debug callouts
 - Datamodel viewer
 - Experience Cloud (Guest User review)
+- One Time Use batch generator (To create, deploy, run and delete a batch)
+- Nebula Logger Connector (To install and monitor Nebular Logs)
 
 ### Org Analysis/Overview
 - License use
