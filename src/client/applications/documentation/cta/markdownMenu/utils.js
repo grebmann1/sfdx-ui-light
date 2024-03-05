@@ -20,7 +20,7 @@ export function structurizedMarkdown(markdownContent) {
             if(currentSubCategory){
                 currentCategory.children.push(currentSubCategory);
             }
-            currentSubCategory = {content:line,links:[],before:[],after:[]}
+            currentSubCategory = {content:`\r${line}`,links:[],before:[],after:[]}
         }else if(line.startsWith('- ')){// Detect link
             if(currentSubCategory){
                 currentSubCategory.links.push(line);

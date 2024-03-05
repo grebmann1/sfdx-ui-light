@@ -105,9 +105,10 @@ export default class App extends FeatureElement {
 
         if(attribute1){
             await this.fetchDocuments_single(attribute1);
-            console.log('cloud fetched',attribute1);
+            //console.log('cloud fetched',attribute1);
             if(!this.cloud_value.includes(attribute1) && CONFIGURATION.hasOwnProperty(attribute1)){
                 this.cloud_value.push(attribute1);
+                this.documentationId = attribute1;
             }
             if(name){
                 this.selectedMenuItem = `${attribute1}${SEPARATOR}${name}`;
@@ -318,7 +319,7 @@ export default class App extends FeatureElement {
         try{
             const lookupName = OBJECT_PREFIX+nodeId.split('-')[1].toLowerCase();
             if(this.items.find(x => x.id === lookupName)){
-                this.redirectTo(lookupName);
+                this.redirectTo(`${this.documentationId}${SEPARATOR}${lookupName}`);
             }
         }catch(e){
             console.error('interactWithDiagram',e);

@@ -1,5 +1,8 @@
 :host{
     --slds-g-color-brand-base-30 : #014486;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .page-item a{

@@ -93,8 +93,12 @@ export default class MarkdownViewer extends LightningElement {
 
     @api 
     updateComponent(){
-        this.url = this.baseUrl + this.getPageUrl();
-        this.getDown(this.url); // we reset
+        const _url = this.getPageUrl();
+        if(!isEmpty(_url)){
+            this.url = this.baseUrl + _url;
+            this.getDown(this.url); // we reset
+        }
+        
     }
     
 }

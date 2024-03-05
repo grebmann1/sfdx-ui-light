@@ -1,14 +1,26 @@
-import { api } from "lwc";
+import { wire,api } from "lwc";
 import FeatureElement from 'element/featureElement';
+import { NavigationContext, navigate } from 'lwr/navigation';
 
 
 export default class RequireConnection extends FeatureElement {
+    @wire(NavigationContext)
+    navContext;
 
     @api title = "No Salesforce Connection";
     @api subTitle = "It's required to be connected to an Org to use this feature";
     @api isRequired = false;
 
     /** Events */
+
+    goToConnection = () => {
+        navigate(this.navContext,{
+            type:'application',
+            attributes:{
+                applicationName:'connections',
+            }
+        });
+    }
 
     /** Methods */
 

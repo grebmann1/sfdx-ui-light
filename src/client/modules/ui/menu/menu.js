@@ -20,7 +20,6 @@ export default class Menu extends FeatureElement {
 
     @wire(connectStore, { store })
     applicationChange({application}) {
-        console.log('application',application,CONFIG)
         // Toggle Menu
         if(isNotUndefinedOrNull(application.isMenuExpanded)){
             this.isMenuSmall = !application.isMenuExpanded;
