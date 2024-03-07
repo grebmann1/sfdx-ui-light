@@ -60,7 +60,7 @@ export async function getAllConnection(){
             _type:"Scratch"
         }))
     );
-    console.log('orgs',orgs.map(x => x.username));
+    console.log('orgs',orgs);
     orgs = orgs.filter(x => isNotUndefinedOrNull(x.alias)); // Remove empty alias
     orgs = orgs.map((item,index) => {
             let alias = item.alias || 'Empty'

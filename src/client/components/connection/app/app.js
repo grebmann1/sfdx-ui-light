@@ -5,7 +5,7 @@ import ConnectionDetailModal from "connection/connectionDetailModal";
 import ConnectionRenameModal from "connection/connectionRenameModal";
 
 import {isNotUndefinedOrNull,isElectronApp} from 'shared/utils';
-import {getAllConnection,removeConnection,connect,oauth} from 'connection/utils';
+import {getAllConnection,removeConnection,connect,oauth,getSettings} from 'connection/utils';
 
 const actions = [
     { label: 'Connect', name: 'login' },
@@ -118,8 +118,13 @@ export default class App extends FeatureElement {
         }    
     }
 
-    seeDetails = (row) => {
-        const {company,orgId,name,alias,username,instanceUrl,sfdxAuthUrl,accessToken} = row
+    seeDetails = async (row) => {
+        var {company,orgId,name,alias,username,instanceUrl,sfdxAuthUrl,accessToken} = row;
+        if(isElectronApp()){
+            let settings = await getSettings(alias);
+            sfdxAuthUrl = settings.sfdxAuthUrl || sfdxAuthUrl;
+        }
+        
         ConnectionDetailModal.open({company,orgId,name,alias,username,instanceUrl,sfdxAuthUrl,accessToken}).then((result) => {});
     }
 

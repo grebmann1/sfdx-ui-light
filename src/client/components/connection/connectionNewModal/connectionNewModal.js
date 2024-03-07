@@ -57,6 +57,7 @@ export default class ConnectionNewModal extends LightningModal {
     }
 
     electron_oauth = async () => {
+        console.log('electron_oauth');
         let params = {
             alias: this.alias,
             instanceurl: this.selectedDomain === 'custom'?this.customDomain:this.selectedDomain
@@ -68,7 +69,6 @@ export default class ConnectionNewModal extends LightningModal {
             }
 
             window.electron.listener_on('oauth',(value) => {
-                console.log('value',value);
                 if(value.action === 'done' || value.action === 'exit'){
                     window.electron.listener_off('oauth');
                     setTimeout(() => {
