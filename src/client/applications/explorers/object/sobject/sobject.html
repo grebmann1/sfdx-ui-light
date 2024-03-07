@@ -8,7 +8,7 @@
     </template>
     <template lwc:elseif={isDetailDisplayed}>
         <article class="slds-flex-column slds-full-height slds-card slds-card_boundary">
-            <div class="slds-card__header slds-grid slds-page-header">
+            <div class="slds-card__header slds-grid slds-page-header slds-flex-column slds-card__header-with-quick-links">
                 <header class="slds-media slds-media_center slds-has-flexi-truncate">
                     <div class="slds-media__figure">
                         <lightning-icon icon-name="standard:bundle_config"></lightning-icon>
@@ -24,9 +24,14 @@
                         </div>
                     </div>
                     <div class="slds-no-flex">
-                        <lightning-button icon-name="utility:screen" onclick={goToSetup} label="Go to Setup"></lightning-button>
+                            
                     </div>
                 </header>
+                <div class="slds-quick-links">
+                    <lightning-button class="slds-p-horizontal_x-small" variant="base" icon-name="utility:link" label="Fields"          onclick={goToUrl} data-url={fieldUrl}></lightning-button>
+                    <lightning-button class="slds-p-horizontal_x-small" variant="base" icon-name="utility:link" label="Record Types"    onclick={goToUrl} data-url={recordTypeUrl}></lightning-button>
+                    <lightning-button class="slds-p-horizontal_x-small" variant="base" icon-name="utility:link" label="Setup"           onclick={goToUrl} data-url={setupUrl}></lightning-button>
+                </div>
             </div>
             <div class="slds-flex-column slds-full-height slds-card__body slds-scrollable_y">
                 <div class="slds-card__body slds-card__body_inner">

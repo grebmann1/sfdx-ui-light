@@ -2,6 +2,7 @@ import {LightningElement,wire,api,track} from "lwc";
 import FeatureElement from 'element/featureElement';
 import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 import { groupBy,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull,getFromStorage,classSet } from 'shared/utils';
+import { store,store_application } from 'shared/store';
 
 
 const TYPEFILTER_OPTIONS = [
@@ -14,6 +15,14 @@ const TYPEFILTER_OPTIONS = [
     { label: 'Share', value: 'share' },
 ];
 
+const METADATAFILTER_OPTIONS = [
+    { label: 'Is Searchable', value: 'searchable' },
+    { label: 'Is Layoutable', value: 'layoutable' },
+    { label: 'Is Queryable', value: 'queryable'},
+    { label: 'Is Custom', value: 'custom'},
+    { label: 'Is Retrieveable', value: 'retrieveable'}
+];
+
 export default class App extends FeatureElement {
     @wire(NavigationContext)
     navContext;
@@ -22,10 +31,11 @@ export default class App extends FeatureElement {
 
     displayFilter = false;
     records = [];
-    recordFilters = [];
+    filteredRecords = [];
     menuRecords = [];
 
     typeFilter_value = []; // by default
+    metadataFilter_value = [];
 
     _pageRef;
     @wire(CurrentPageReference)
@@ -37,8 +47,6 @@ export default class App extends FeatureElement {
             this._pageRef = pageRef;
             this.loadFromNavigation(pageRef);
         }
-
-        
     }
 
     
@@ -50,6 +58,11 @@ export default class App extends FeatureElement {
     
 
     /** Events */
+
+    goToUrl = (e) => {
+        const redirectUrl = e.currentTarget.dataset.url;
+        store.dispatch(store_application.navigate(redirectUrl));
+    }
 
     handleCloseVerticalPanel = (e) => {
         this.displayFilter = false;
@@ -75,11 +88,20 @@ export default class App extends FeatureElement {
         this.typeFilter_value = e.detail.value;
         localStorage.setItem('global-sobject-typeFilter_value',JSON.stringify(this.typeFilter_value));
         setTimeout(() => {
-            this.recordFilters = this.filterRecords();
+            this.filteredRecords = this.filterRecords();
+        },1);
+    }
+
+    metadataFilter_onChange = (e) => {
+        this.metadataFilter_value = e.detail.value;
+        localStorage.setItem('global-sobject-metadataFilter_value',JSON.stringify(this.metadataFilter_value));
+        setTimeout(() => {
+            this.filteredRecords = this.filterRecords();
         },1);
     }
 
     /** Methods */
+    
 
     loadFromNavigation = async ({state, attributes}) => {
         console.log('sobject - loadFromNavigation');
@@ -108,8 +130,8 @@ export default class App extends FeatureElement {
     }
 
     filterRecords = () => {
-        if(this.typeFilter_value.length == 0) return this.menuRecords;
-        return this.menuRecords.filter(x => this.typeFilter_value.includes(x.category));
+        if(this.typeFilter_value.length == 0) return this.records;
+        return this.records.filter(x => this.typeFilter_value.includes(x.category)).filter(x => this.metadataFilter_value.reduce((acc,y) => {return acc && x[y]},true));
     }
 
     loadAlls = async () => {
@@ -125,14 +147,8 @@ export default class App extends FeatureElement {
         this.isLoading = true;
         try{
             const records = (await this.load_toolingGlobal()) || [];
-            this.records = records;
-            this.menuRecords = records.map(x => ({
-                label:`${x.label}(${x.name})`, // for slds-menu
-                name:x.name, // for slds-menu
-                key:x.name, // for slds-menu
-                category:this.extractCategory(x.name)
-            })).sort((a, b) => a.name.localeCompare(b.name));
-            this.recordFilters = this.filterRecords();
+            this.records = records.map(x => ({...x,category:this.extractCategory(x.name)}));
+            this.filteredRecords = this.filterRecords();
         }catch(e){
             console.error(e);
         }
@@ -144,6 +160,7 @@ export default class App extends FeatureElement {
     loadCachedSettings = () => {
         if(isNotUndefinedOrNull(this.connector.header.alias)){
             this.typeFilter_value  = getFromStorage(localStorage.getItem('global-sobject-typeFilter_value'),['object']);
+            this.metadataFilter_value  = getFromStorage(localStorage.getItem('global-sobject-metadataFilter_value'),['searchable','queryable']);
         }
     }
 
@@ -151,14 +168,20 @@ export default class App extends FeatureElement {
     /** Getters */
 
     get formattedMenuItems(){
-        return this.recordFilters.map(x => ({
-            ...x,
+        return this.filteredRecords.map(x => ({
+            label:`${x.label}(${x.name})`, // for slds-menu
+            name:x.name, // for slds-menu
+            key:x.name, // for slds-menu
             isSelected:this.selectedItem == x.name
-        }));
+        })).sort((a, b) => a.name.localeCompare(b.name));;
     }
 
     get typeFilter_options(){
         return TYPEFILTER_OPTIONS;
+    }
+
+    get metadataFilter_options(){
+        return METADATAFILTER_OPTIONS;
     }
 
     get filtering_variant(){

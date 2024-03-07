@@ -24,6 +24,7 @@
                         <div class="slds-page-header__control">
                             <!-- actions -->
                             <lightning-button-group>
+                                <lightning-button icon-name="utility:link" label="Object Manager" onclick={goToUrl} data-url="/lightning/setup/ObjectManager/home"></lightning-button>
                                 <lightning-button-icon icon-name="utility:filterList" disabled={isLoading} onclick={filtering_handleClick} variant={filtering_variant}></lightning-button-icon>
                             </lightning-button-group>
                         </div>
@@ -55,7 +56,7 @@
                         </div>
                          <!-- Object Viewer -->
                         <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_3-of-4 slds-is-relative">
-                            <object-sobject record-name={selectedItem}></object-sobject>
+                            <object-sobject object-records={records} record-name={selectedItem}></object-sobject>
                         </div>
                     </div>
                 </div>
@@ -65,8 +66,18 @@
                 <!-- FILTER -->
                 <li class="slds-item">
                     <lightning-checkbox-group 
+                        name="sobjectBasicFilter"
+                        label="Metadata Filters"
+                        options={metadataFilter_options}
+                        value={metadataFilter_value}
+                        onchange={metadataFilter_onChange}
+                    ></lightning-checkbox-group>
+                </li>
+                <!-- FILTER -->
+                <li class="slds-item">
+                    <lightning-checkbox-group 
                         name="sobjectExtraFilter"
-                        label="Advanced Filtering"
+                        label="Advanced Filters"
                         options={typeFilter_options}
                         value={typeFilter_value}
                         onchange={typeFilter_onChange}

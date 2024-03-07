@@ -1,7 +1,7 @@
 import { LightningElement,track,api,wire } from "lwc";
 import { guid,isNotUndefinedOrNull,isElectronApp,classSet,isUndefinedOrNull } from "shared/utils";
 import { getExistingSession,saveSession,removeSession,directConnect,connect } from "connection/utils";
-import { NavigationMixin,CurrentPageReference } from 'lwr/navigation';
+import { NavigationContext,CurrentPageReference,navigate } from 'lwr/navigation';
 /** Apps  **/
 import {APP_MAPPING,APP_LIST,DIRECT_LINK_MAPPING} from './modules';
 /** Store **/
@@ -12,6 +12,8 @@ const LIMITED = 'limited';
 export * as CONFIG from './modules';
 
 export default class App extends LightningElement {
+    @wire(NavigationContext)
+    navContext;
 
     @api mode;
     // for Extension (Limited Mode)
@@ -160,6 +162,14 @@ export default class App extends LightningElement {
     handleRedirection = (application) => {
         let url = application.redirectTo || '';
 
+        if(url.startsWith('sftoolkit:')){
+            /* Inner Navigation */
+            const navigationConfig = url.replace('sftoolkit:','');
+            navigate(this.navContext,JSON.parse(navigationConfig));
+            return;
+        }
+        
+        
         if(this.isUserLoggedIn && !url.startsWith('http')){
             url = `${this.connector.header.sfdxAuthUrl}&retURL=${encodeURI(url)}`;
         }

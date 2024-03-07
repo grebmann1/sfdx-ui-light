@@ -24,10 +24,14 @@
                         <div class="slds-page-header__control">
                             <!-- actions -->
                             <lightning-button-group>
-                                <lightning-button icon-name="utility:component_customization" onclick={openSOQLExplorer} label="SOQL Builder"></lightning-button>
-                                <lightning-button icon-name="utility:component_customization" onclick={openMetadataExplorer} label="Metadata Explorer"></lightning-button>
-                                <lightning-button icon-name="utility:component_customization" onclick={openSobjectExplorer} label="SObject Explorer"></lightning-button>
-                                <lightning-button icon-name="utility:screen" onclick={openInBrowser} label="Open in browser"></lightning-button>
+                                <lightning-button 
+                                    icon-name="utility:home" label="SF → Home"
+                                    onclick={goToUrl} data-url="/lightning/page/home"
+                                ></lightning-button>
+                                <lightning-button 
+                                    icon-name="utility:setup" label="SF → Setup"
+                                    onclick={goToUrl} data-url="/lightning/setup/SetupOneHome/home"
+                                ></lightning-button>
                             </lightning-button-group>
                         </div>
                     </div>
@@ -38,6 +42,11 @@
                     <div class="slds-page-header__detail-row slds-is-relative" style="display:block; ">
                         <!-- Display dashboard Info -->
                         <h2>This part is currently in development - Work in progress </h2>
+                        <lightning-button-group>
+                            <lightning-button icon-name="utility:component_customization" onclick={openSOQLExplorer} label="SOQL Builder"></lightning-button>
+                            <lightning-button icon-name="utility:component_customization" onclick={openMetadataExplorer} label="Metadata Explorer"></lightning-button>
+                            <lightning-button icon-name="utility:component_customization" onclick={openSobjectExplorer} label="SObject Explorer"></lightning-button>
+                        </lightning-button-group>
                     </div>
                 </div>
             </div>
@@ -57,6 +66,9 @@
                                         <span>General Information</span>
                                     </a>
                                 </h2>
+                            </div>
+                            <div class="slds-no-flex">
+                                <lightning-button icon-name="utility:link" label="Company Information" onclick={goToUrl} data-url="/lightning/setup/CompanyProfileInfo/home"></lightning-button>
                             </div>
                         </header>
                     </div>
@@ -132,7 +144,9 @@
     
             <!-- SECTION -->
             <div class="slds-col slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-top_small">
-                <org-users class="slds-auto-height"></org-users>
+                <org-users class="slds-auto-height">
+                    <lightning-button slot="header-button" icon-name="utility:link" label="Users" onclick={goToUrl} data-url="/lightning/setup/ManageUsers/home"></lightning-button>
+                </org-users>
             </div>
     
     

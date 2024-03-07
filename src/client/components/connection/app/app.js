@@ -9,7 +9,7 @@ import {getAllConnection,removeConnection,connect,oauth} from 'connection/utils'
 
 const actions = [
     { label: 'Connect', name: 'login' },
-    { label: 'Login', name: 'openBrowser' },
+    { label: 'Browser', name: 'openBrowser' },
     { label: 'See Details', name: 'seeDetails' },
     { label: 'Set Alias', name: 'setAlias' },
     { label: 'Remove', name: 'removeConnection' }

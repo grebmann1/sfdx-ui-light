@@ -242,3 +242,11 @@ export function getFromStorage(item,byDefault){
         return byDefault;
     }
 }
+
+export function goToUrl(conn,redirectUrl){
+    let url = conn.instanceUrl+'/secur/frontdoor.jsp?sid='+conn.accessToken;
+    if(redirectUrl){
+        url+=`&retURL=${encodeURIComponent(redirectUrl)}`
+    }
+    window.open(url,'_blank');
+}

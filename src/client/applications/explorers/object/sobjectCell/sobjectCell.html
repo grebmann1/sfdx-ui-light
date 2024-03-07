@@ -7,6 +7,9 @@
             <img src="images/checkbox_unchecked.gif"/>
         </template>
     </template>
+    <template lwc:elseif={isLink}>
+        <lightning-button variant="base" label={urlLabel} onclick={goToUrl} data-url={urlLink}></lightning-button>
+    </template>
     <template lwc:else>
         {value}
     </template>

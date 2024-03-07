@@ -1,5 +1,6 @@
-import { api, createElement} from "lwc";
+import { wire, api, createElement} from "lwc";
 import FeatureElement from 'element/featureElement';
+import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 import { isEmpty,runActionAfterTimeOut,isNotUndefinedOrNull } from 'shared/utils';
 import {TabulatorFull as Tabulator} from "tabulator-tables";
 import SObjectCell from 'object/sobjectCell';
@@ -8,6 +9,9 @@ import SObjectCell from 'object/sobjectCell';
 import { store,store_application } from 'shared/store';
 
 export default class Sobject extends FeatureElement {
+
+    @wire(NavigationContext)
+    navContext;
 
     isLoading = false;
     isTableLoading = false;
@@ -19,6 +23,9 @@ export default class Sobject extends FeatureElement {
     recordDetails = {}
     selectedDetails;
     extraSelectedDetails;
+
+    @api
+    objectRecords = [];
 
     @api
     get recordName(){
@@ -38,8 +45,9 @@ export default class Sobject extends FeatureElement {
 
     /** Events */
     
-    goToSetup = (e) => {
-        store.dispatch(store_application.navigate(`lightning/setup/ObjectManager/${this.selectedDetails.name}/Details/view`));
+    goToUrl = (e) => {
+        const redirectUrl = e.currentTarget.dataset.url;
+        store.dispatch(store_application.navigate(redirectUrl));
     }
     
 
@@ -138,9 +146,10 @@ export default class Sobject extends FeatureElement {
     createFieldsTable = () => {
 
         let colModel = [
+            /*{ title: 'Setup', width:100, field: 'id'     ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField_link},*/
             { title: 'Field Label'  , field: 'label'    ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField_field},
             { title: 'ApiName'      , field: 'name'     ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField_field},
-            { title: 'Type'         , field: 'type'     ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField_field},
+            { title: 'Type'         , field: 'type'     ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField_type},
             //{ title: 'Unique'       , field: 'unique'   ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField_value},
             { title: 'Length'       , field: 'length'   ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField_value},
             //{ title: 'Createable'   , field: 'createable'   ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField_value},
@@ -221,6 +230,31 @@ export default class Sobject extends FeatureElement {
         //return "Mr" + cell.getValue(); //return the contents of the cell;
     }
 
+    formatterField_type = (cell) => {
+        const value = cell._cell.value;
+        const config = {
+            isBoolean:false
+        }
+        
+        if(value === 'reference'){
+            const data = cell._cell.row.data;
+            const referenceTo = data?.referenceTo?.length > 0 ? data.referenceTo[0]:null; // We take only 1 for now
+            if(this.objectRecords.find(x => x.name == referenceTo)){
+                config.urlLabel     = referenceTo;
+                config.urlLink      = 'sftoolkit:'+JSON.stringify({type:'application',attributes:{applicationName:'sobject',attribute1:referenceTo}});
+            } 
+        }
+
+        const element = createElement('object-sobject-cell', {
+            is: SObjectCell
+        });
+        Object.assign(element, {
+            value,
+            ...config
+        });
+        return element;
+    }
+
     /** Getters **/ 
 
     get noRecordMessage(){
@@ -249,6 +283,19 @@ export default class Sobject extends FeatureElement {
 
     get isDetailDisplayed(){
         return isNotUndefinedOrNull(this.selectedDetails);
+    }
+
+
+    get fieldUrl(){
+        return `/lightning/setup/ObjectManager/${this.selectedDetails.name}/FieldsAndRelationships/view`;
+    }
+
+    get recordTypeUrl(){
+        return `/lightning/setup/ObjectManager/${this.selectedDetails.name}/RecordTypes/view`;
+    }
+
+    get setupurl(){
+        return `/lightning/setup/ObjectManager/${this.selectedDetails.name}/Details/view`;
     }
     
 }
