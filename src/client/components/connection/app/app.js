@@ -6,6 +6,8 @@ import ConnectionRenameModal from "connection/connectionRenameModal";
 
 import {isNotUndefinedOrNull,isElectronApp} from 'shared/utils';
 import {getAllConnection,removeConnection,connect,oauth,getSettings} from 'connection/utils';
+import { store,store_application } from 'shared/store';
+
 
 const actions = [
     { label: 'Connect', name: 'login' },
@@ -105,16 +107,20 @@ export default class App extends FeatureElement {
         }
     }
 
-    openBrowser = (row) => {
+    openBrowser = async (row) => {
         if(isElectronApp()){
             // Electron version
             window.electron.ipcRenderer.invoke('org-openOrgUrl',row);
             
         }else{
-            let settings = this.data.find(x => x.id == row.id);
-            // Browser version
-            let url = settings.instanceUrl+'/secur/frontdoor.jsp?sid='+settings.accessToken;
-            window.open(url,'_blank');
+            this.isLoading = true;
+            try{
+                const {alias,...settings} = this.data.find(x => x.id == row.id);
+                const connector = await connect({alias,settings,disableEvent:true});
+                const url = connector.conn.instanceUrl+'/secur/frontdoor.jsp?sid='+connector.conn.accessToken;
+                window.open(url,'_blank');
+            }catch(e){}
+            this.isLoading = false;
         }    
     }
 

@@ -159,7 +159,7 @@ export default class App extends LightningElement {
     };
     
 
-    handleRedirection = (application) => {
+    handleRedirection = async (application) => {
         let url = application.redirectTo || '';
 
         if(url.startsWith('sftoolkit:')){
@@ -171,6 +171,8 @@ export default class App extends LightningElement {
         
         
         if(this.isUserLoggedIn && !url.startsWith('http')){
+            // to force refresh in case it's not valid anymore : 
+            await this.connector.conn.identity();
             url = `${this.connector.header.sfdxAuthUrl}&retURL=${encodeURI(url)}`;
         }
 

@@ -10,7 +10,7 @@ export * from './chrome';
 export * from './mapping';
 
 
-export async function connect({alias,settings}){
+export async function connect({alias,settings,disableEvent = false}){
     //console.log('util.connect',{alias,settings});
     if(isUndefinedOrNull(settings) && isUndefinedOrNull(alias)){
         throw new Error('You need to provide the alias or the connection');
@@ -55,7 +55,10 @@ export async function connect({alias,settings}){
     // Dispatch Login Event
     var connector = new Connector(header,connection);
 
-    store.dispatch(store_application.login(connector));
+    if(!disableEvent){
+        store.dispatch(store_application.login(connector));
+    }
+    
     
     return connector;
 }
