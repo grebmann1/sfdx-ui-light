@@ -204,7 +204,7 @@ export default class App extends FeatureElement {
                 default:
     
             }
-    
+            
             if(this.metadata.length <= 1){
                 this.metadata.push(null)
             }
@@ -273,7 +273,7 @@ export default class App extends FeatureElement {
                 default:
                     this.selectedRecord = result;
             }
-
+            //console.log('result',result);
             this.selectedRecordLoading = false
         }catch(e){
             console.error(e);
@@ -347,24 +347,30 @@ export default class App extends FeatureElement {
     }
 
     handle_LWC = async (data) => {
-
+        console.log('data',data);
         let resources = (await this.connector.conn.tooling.query(`SELECT LightningComponentBundleId,Format,FilePath,Source FROM LightningComponentResource WHERE LightningComponentBundleId = '${data.Id}'`)).records || [];
         let files = formatFiles(resources.map(x => ({
             path:x.FilePath,
             name:x.FilePath.split('/').pop(),
             body:x.Source,
-            apiVersion:x.ApiVersion
+            apiVersion:x.ApiVersion,
+            metadata:this.metadata[1].label,
+            id:data.Id,
+            _source:x
         })));
 
         return sortObjectsByField(files,'extension',['html','js','css','xml'])
     }
 
     handle_APEX = async (data,extension = 'cls',bodyField = 'Body') => {
+        //console.log('data',data);
         return formatFiles([{
             path:`${data.FullName || data.Name}.${extension}`,
             name:`${data.FullName || data.Name}.${extension}`,
             body:data[bodyField],
-            apiVersion:data.ApiVersion
+            apiVersion:data.ApiVersion,
+            metadata:this.metadata[1].label,
+            id:data.Id,
         }]);
     }
 
@@ -397,7 +403,10 @@ export default class App extends FeatureElement {
                 path:_name,
                 name:_name,
                 body:x.Source,
-                apiVersion:data.ApiVersion
+                apiVersion:data.ApiVersion,
+                metadata:this.metadata[1].label,
+                id:data.Id,
+                _source:x
             }     
         }));
         return sortObjectsByField(files,'extension',['cmp','html','js','css','xml'])
@@ -408,7 +417,7 @@ export default class App extends FeatureElement {
     }
     
     displayEditor = (files) => {
-        this.refs.editor.displayFiles(files);
+        this.refs.editor.displayFiles(this.metadata[this.metadata.length - 1].label,files);
         this.isEditorDisplayed = true;
     }
 

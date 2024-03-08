@@ -63,6 +63,8 @@ export default class Viewer extends FeatureElement {
         this.currentTab = event.target.value;
     }
 
+
+
     /** Methods **/
     
     formatArray = (record) => {

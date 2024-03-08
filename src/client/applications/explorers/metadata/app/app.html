@@ -25,9 +25,9 @@
                             <!-- actions -->
                             <lightning-button-group>
                                 <!--<lightning-button icon-name="utility:adduser" disabled={isLoading} onclick={adduser_handleClick} label="Select Users"></lightning-button>-->
-                                <lightning-button icon-name="utility:link"  disabled={isLoading} onclick={goToMetadata} label="Apex" data-name="ApexClass"></lightning-button>
-                                <lightning-button icon-name="utility:link"  disabled={isLoading} onclick={goToMetadata} label="LWC" data-name="LightningComponentBundle"></lightning-button>
-                                <lightning-button icon-name="utility:link"  disabled={isLoading} onclick={goToMetadata} label="Aura" data-name="AuraDefinitionBundle"></lightning-button>
+                                <lightning-button icon-name="utility:preview"  disabled={isLoading} onclick={goToMetadata} label="Apex" data-name="ApexClass"></lightning-button>
+                                <lightning-button icon-name="utility:preview"  disabled={isLoading} onclick={goToMetadata} label="LWC" data-name="LightningComponentBundle"></lightning-button>
+                                <lightning-button icon-name="utility:preview"  disabled={isLoading} onclick={goToMetadata} label="Aura" data-name="AuraDefinitionBundle"></lightning-button>
 
                             </lightning-button-group>
                         </div>
@@ -43,7 +43,7 @@
                 </div>
             </div>
         </div>
-        <article class="full-page-body slds-card slds-m-top_small">
+        <article class="full-page-body slds-card slds-m-top_small" style="overflow:hidden;">
             <div class="slds-card__body slds-card__body_inner">
                 <div class="slds-full-height slds-grid slds-gutters_direct slds-wrap slds-is-relative" style="min-height:200px;">
                     <!-- Container -->
@@ -68,7 +68,7 @@
 
                         <!-- JSON Viewer view -->
                         <template lwc:if={isMetadataViewerDisplayed}>
-                            <metadata-viewer class="slds-full-height" lwc:ref="viewer" record={selectedRecord}></metadata-viewer>
+                            <metadata-viewer class="slds-full-height" lwc:ref="viewer" record={selectedRecord} ></metadata-viewer>
                         </template>
                         <template lwc:elseif={selectedRecordLoading}>
                             <lightning-spinner alternative-text="Loading"></lightning-spinner>

@@ -18,7 +18,7 @@ export default class Menu extends FeatureElement {
     @api selectedItem;
 
     namespacePrefixes = [];
-    namespaceFiltering_value;
+    namespaceFiltering_value = DEFAULT_NAMESPACE;
 
     @track _items = [];
     @api
