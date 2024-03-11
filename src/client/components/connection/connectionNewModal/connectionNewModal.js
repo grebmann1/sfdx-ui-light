@@ -1,3 +1,4 @@
+import { api } from "lwc";
 import LightningAlert from 'lightning/alert';
 import LightningModal from 'lightning/modal';
 import {addConnection,connect,oauth} from 'connection/utils';
@@ -12,12 +13,12 @@ const domainOptions = [
 
 export default class ConnectionNewModal extends LightningModal {
 
-    domain_options = domainOptions;
-    customDomain;
-
-    selectedDomain  = domainOptions[0].value;
     isLoading = false;
-    alias;
+    domain_options = domainOptions;
+
+    @api customDomain;
+    @api selectedDomain  = domainOptions[0].value;
+    @api alias;
 
 
     validateForm = () => {
@@ -93,12 +94,12 @@ export default class ConnectionNewModal extends LightningModal {
     }
 
     web_oauth = async () => {
-            oauth({
-                alias:this.alias,
-                loginUrl:this.selectedDomain === 'custom'?this.customDomain:this.selectedDomain
-            },(res) => {
-                this.close(res);
-            });
+        oauth({
+            alias:this.alias,
+            loginUrl:this.selectedDomain === 'custom'?this.customDomain:this.selectedDomain
+        },(res) => {
+            this.close(res);
+        });
     }
 
 

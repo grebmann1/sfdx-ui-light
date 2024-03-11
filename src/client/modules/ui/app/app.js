@@ -1,4 +1,5 @@
 import { LightningElement,track,api,wire } from "lwc";
+import LightningAlert from 'lightning/alert';
 import { guid,isNotUndefinedOrNull,isElectronApp,classSet,isUndefinedOrNull } from "shared/utils";
 import { getExistingSession,saveSession,removeSession,directConnect,connect } from "connection/utils";
 import { NavigationContext,CurrentPageReference,navigate } from 'lwr/navigation';
@@ -245,10 +246,18 @@ export default class App extends LightningElement {
 
     /** Extension & Electron Org Window  **/
     load_limitedMode = async () => {
-        if(isElectronApp()){
-            this.connector = await connect({alias:this.alias});
-        }else{
-            this.connector = await directConnect(this.sessionId,this.serverUrl);
+        try{
+            if(isElectronApp()){
+                this.connector = await connect({alias:this.alias});
+            }else{
+                this.connector = await directConnect(this.sessionId,this.serverUrl);
+            }
+        }catch(e){
+            await LightningAlert.open({
+                message: e.message,//+'\n You might need to remove and OAuth again.',
+                theme: 'error', // a red theme intended for error states
+                label: 'Error!', // this is the header text
+            });
         }
         
         // Default Mode

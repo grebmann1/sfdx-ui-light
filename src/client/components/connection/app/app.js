@@ -17,9 +17,9 @@ const actions = [
     { label: 'Remove', name: 'removeConnection' }
 ];
 
-
-
-
+const LOGIN_URL = 'https://login.salesforce.com';
+const TEST_URL = 'https://login.salesforce.com';
+const CUSTOM_URL = 'custom';
 
 export default class App extends FeatureElement {
 
@@ -34,8 +34,11 @@ export default class App extends FeatureElement {
 
 
     addConnectionClick = () => {
+        this.authorizeOrg();
+    }
 
-        ConnectionNewModal.open()
+    authorizeOrg = (param) => {
+        ConnectionNewModal.open(param)
         .then(async (res) => {
             //console.log('addConnectionClick',res);
             if(isNotUndefinedOrNull(res)){
@@ -46,9 +49,6 @@ export default class App extends FeatureElement {
                 await window.electron.ipcRenderer.invoke('org-killOauth');
             }
         });
-
-        
-
     }
 
     handleRowAction(event) {
@@ -80,6 +80,16 @@ export default class App extends FeatureElement {
 
     /** Methods */
 
+    forceAuthorization = (row) => {
+        const selectedDomain = row.loginUrl.startsWith(LOGIN_URL)?LOGIN_URL:(row.loginUrl.startsWith(TEST_URL)?TEST_URL:CUSTOM_URL);
+        const authorizeParams = {
+            selectedDomain,
+            customDomain:selectedDomain === CUSTOM_URL?row.loginUrl:null,
+            alias:row.alias
+        }
+        this.authorizeOrg(authorizeParams);
+    }
+
 
     setAllConnections = async () => {
         // Browser & Electron version
@@ -90,7 +100,12 @@ export default class App extends FeatureElement {
 
     login = async (row) => {
         if(isElectronApp()){
-            window.electron.ipcRenderer.invoke('OPEN_INSTANCE',row);
+            if(row._hasError){
+                this.forceAuthorization(row);
+            }else{
+                window.electron.ipcRenderer.invoke('OPEN_INSTANCE',row);
+            }
+            
         }else{
             let {alias,...settings} = this.data.find(x => x.id == row.id);
             this.dispatchEvent(new CustomEvent("startlogin", { bubbles: true,composed: true }));
@@ -110,8 +125,11 @@ export default class App extends FeatureElement {
     openBrowser = async (row) => {
         if(isElectronApp()){
             // Electron version
-            window.electron.ipcRenderer.invoke('org-openOrgUrl',row);
-            
+            if(row._hasError){
+                this.forceAuthorization(row);
+            }else{
+                window.electron.ipcRenderer.invoke('org-openOrgUrl',row);
+            }
         }else{
             this.isLoading = true;
             try{
@@ -151,7 +169,7 @@ export default class App extends FeatureElement {
             await removeConnection(row.alias);
             await this.setAllConnections();
         }
-    }
+    };
 
 
     /** Getters  */
@@ -182,13 +200,13 @@ export default class App extends FeatureElement {
                     class: { fieldName: '_typeClass' },
                 },
             },
-            { label: 'Status', fieldName: '_status', type:'text', fixedWidth:90, _filter:'electron',
+            { label: 'Status', fieldName: '_status', type:'text', initialWidth:90, _filter:'electron',
                 cellAttributes: {
                     class: { fieldName: '_statusClass' },
                 },
             },
-            { label: 'Expire', fieldName: 'expirationDate', type:'text', fixedWidth:100, _filter:'electron'},
-            { label: 'API', fieldName: 'instanceApiVersion', type: 'text', fixedWidth:70, _filter:'electron'},
+            { label: 'Expire', fieldName: 'expirationDate', type:'text', initialWidth:100, _filter:'electron'},
+            { label: 'API', fieldName: 'instanceApiVersion', type: 'text', initialWidth:70, _filter:'electron'},
             { label: 'User Name', fieldName: 'username', type: 'text',initialWidth:400,
                 cellAttributes: {
                     class: { fieldName: '_typeClass' },

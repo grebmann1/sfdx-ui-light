@@ -1,5 +1,6 @@
 import {isNotUndefinedOrNull,decodeError,classSet} from 'shared/utils';
 
+const CONNECTION_ERRORS = ['JwtAuthError','RefreshTokenAuthError'];
 
 
 export async function getSettings(alias){
@@ -79,7 +80,8 @@ export async function getAllConnection(){
                     name:alias.split('-').pop(),
                     sfdxAuthUrl:item.instanceUrl+'/secur/frontdoor.jsp?sid='+item.accessToken,
                     _typeClass,
-                    _statusClass:item._status === 'RefreshTokenAuthError'?'slds-text-color_error':'slds-text-color_success slds-text-title_caps',
+                    _statusClass:CONNECTION_ERRORS.includes(item._status)?'slds-text-color_error':'slds-text-color_success slds-text-title_caps',
+                    _hasError:item._status == 'JwtAuthError',
                 }
             }
         });

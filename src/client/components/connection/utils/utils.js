@@ -11,6 +11,7 @@ export * from './mapping';
 
 
 export async function connect({alias,settings,disableEvent = false}){
+    console.log('--> connect',alias,settings);
     //console.log('util.connect',{alias,settings});
     if(isUndefinedOrNull(settings) && isUndefinedOrNull(alias)){
         throw new Error('You need to provide the alias or the connection');
@@ -18,8 +19,9 @@ export async function connect({alias,settings,disableEvent = false}){
     
 
     if(alias){
+        console.log('before - getSettings')
         settings = await getSettings(alias);
-        //console.log('loaded settings',settings);
+        console.log('loaded settings',settings);
     }
     
     let params = {
