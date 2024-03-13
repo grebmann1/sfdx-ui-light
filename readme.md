@@ -9,14 +9,16 @@ This repository hosts the SF Toolkit , offering a comprehensive suite of tools f
 ## Roadmap
 
 - ✅ User (Access & Usage) reporting (with PDF export)
+- ✅ Profile/Permission comparator (with PDF export)
 - ✅ Org Dashboard (Work in progress)
 - ✅ SOQL Builder
-- ✅ Metadata Viewer (Work in progress)
+- ✅ Metadata Viewer
+- ✅ Light Metadata Editor (for **LWC**, Aura and Apex)
 - ✅ Code Extractor & Analyzer (Work in progress)
 - ✅ Electron App for Mac OS [Install Latest Release](https://github.com/grebmann1/sfdx-ui-light/releases/latest)
 - ✅ Chrome Extension available in the [Install Chrome Extension](https://chromewebstore.google.com/detail/sf-toolkit-light/konbmllgicfccombdckckakhnmejjoei)
 - Metadata Global Loader with Cache mechanisme to optimize metadata loading and use of api calls. Include a refresh capability.
-- Profile comparaison (to find easily similiarities in Access Analyzer & Separatly) so we can print it and display it nicely
+- ✅ Profile comparaison (to find easily similiarities in Access Analyzer & Separatly) so we can print it and display it nicely
 - Middleware hooks to debug callouts
 - Datamodel viewer
 - Experience Cloud (Guest User review)
@@ -24,7 +26,7 @@ This repository hosts the SF Toolkit , offering a comprehensive suite of tools f
 - Nebula Logger Connector (To install and monitor Nebular Logs)
 
 ### Org Analysis/Overview
-- License use
+- ✅ License use
 - Data/file storage use
 - Application Count
 - Managed packaged count
