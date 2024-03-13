@@ -50,6 +50,18 @@
                 </dt>
                 <dd class="slds-item_detail slds-truncate" title={sfdxAuthUrl}>
                     {sfdxAuthUrl}
+                </dd> 
+                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="SFDX Auth Url">
+                    Direct Login Url:
+                    <lightning-button-icon
+                            onclick={handleCopyFrontDoorUrl}
+                            icon-name="utility:copy"
+                            variant="bare"
+                            alternative-text="copy"
+                    ></lightning-button-icon>
+                </dt>
+                <dd class="slds-item_detail slds-truncate" title={frontDoorUrl}>
+                    {frontDoorUrl}
                 </dd>
                 <dt class="slds-item_label slds-text-color_weak slds-truncate" title="AccessToken">
                     AccessToken:

@@ -68,5 +68,12 @@ export async function getAllConnection(){
     if(isUndefinedOrNull(connections)){
         connections = [];
     }
+    // Mapping
+    connections = connections.map(x => ({
+        ...x,
+        frontDoorUrl:x.instanceUrl+'/secur/frontdoor.jsp?sid='+x.accessToken,
+        sfdxAuthUrl:`force://${window.jsforceSettings.clientId}::${x.refreshToken}@${(new URL(x.instanceUrl)).host}`,
+    }))
+
     return connections;
 }

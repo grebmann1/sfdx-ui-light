@@ -174,7 +174,7 @@ export default class App extends LightningElement {
         if(this.isUserLoggedIn && !url.startsWith('http')){
             // to force refresh in case it's not valid anymore : 
             await this.connector.conn.identity();
-            url = `${this.connector.header.sfdxAuthUrl}&retURL=${encodeURI(url)}`;
+            url = `${this.connector.header.frontDoorUrl}&retURL=${encodeURI(url)}`;
         }
 
         if(isElectronApp()){

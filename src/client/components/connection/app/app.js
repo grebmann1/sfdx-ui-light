@@ -143,13 +143,13 @@ export default class App extends FeatureElement {
     }
 
     seeDetails = async (row) => {
-        var {company,orgId,name,alias,username,instanceUrl,sfdxAuthUrl,accessToken} = row;
+        var {company,orgId,name,alias,username,instanceUrl,sfdxAuthUrl,accessToken,frontDoorUrl} = row;
         if(isElectronApp()){
             let settings = await getSettings(alias);
             sfdxAuthUrl = settings.sfdxAuthUrl || sfdxAuthUrl;
         }
         
-        ConnectionDetailModal.open({company,orgId,name,alias,username,instanceUrl,sfdxAuthUrl,accessToken}).then((result) => {});
+        ConnectionDetailModal.open({company,orgId,name,alias,username,instanceUrl,sfdxAuthUrl,accessToken,frontDoorUrl}).then((result) => {});
     }
 
     setAlias = (row) => {

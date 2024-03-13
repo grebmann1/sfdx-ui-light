@@ -10,6 +10,7 @@ export default class ConnectionDetailModal extends LightningModal {
     @api username;
     @api instanceUrl;
     @api sfdxAuthUrl;
+    @api frontDoorUrl;
     @api accessToken;
 
 
@@ -30,6 +31,10 @@ export default class ConnectionDetailModal extends LightningModal {
 
     handleCopySFDXAccessToken = () => {
         navigator.clipboard.writeText(this.accessToken);
+    }
+
+    handleCopyFrontDoorUrl = () => {
+        navigator.clipboard.writeText(this.frontDoorUrl)
     }
 
     /** getters */

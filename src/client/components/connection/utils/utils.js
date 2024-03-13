@@ -78,7 +78,8 @@ async function getHeader(connection){
         accessToken,instanceUrl,loginUrl,refreshToken,version,
         id:connection.alias,
         alias:connection.alias,
-        sfdxAuthUrl:instanceUrl+'/secur/frontdoor.jsp?sid='+accessToken,
+        frontDoorUrl:instanceUrl+'/secur/frontdoor.jsp?sid='+accessToken,
+        sfdxAuthUrl:`force://${window.jsforceSettings.clientId}::${refreshToken}@${instanceUrl}`
     };
 
     if(isNotUndefinedOrNull(identity)){
@@ -175,7 +176,8 @@ export async function oauth({alias,loginUrl},callback){
             alias:alias,
             company:companyName.toUpperCase(),
             name:name,
-            sfdxAuthUrl:instanceUrl+'/secur/frontdoor.jsp?sid='+accessToken,
+            frontDoorUrl:instanceUrl+'/secur/frontdoor.jsp?sid='+accessToken,
+            sfdxAuthUrl:`force://${window.jsforceSettings.clientId}::${refreshToken}@${(new URL(instanceUrl)).host}`,
         };
 
         /** Get Username **/
