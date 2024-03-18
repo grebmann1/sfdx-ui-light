@@ -1,5 +1,5 @@
 import { LightningElement,api} from "lwc";
-import { isUndefinedOrNull } from "shared/utils";
+import { isUndefinedOrNull,isNotUndefinedOrNull } from "shared/utils";
 
 export default class Popup extends LightningElement {
 
@@ -31,5 +31,9 @@ export default class Popup extends LightningElement {
 
     get versionFormatted(){
         return isUndefinedOrNull(this.version)?'':`${this.version.label} (${this.version.version})`;
+    }
+
+    get isFooterDisplayed(){
+        return isNotUndefinedOrNull(this.sessionId);
     }
 }

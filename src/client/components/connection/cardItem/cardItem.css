@@ -1,0 +1,39 @@
+.card-item{
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.card-left{
+    display: flex;
+}
+
+.icon-org-prod{
+    --slds-c-icon-color-foreground-default: rgb(0 162 225);
+    --slds-c-icon-color-background: transparent;
+}
+
+.icon-apex .slds-button__icon{
+    --slds-c-icon-color-foreground-default: rgb(0 162 225);
+    --slds-c-icon-color-background: transparent;
+}
+
+.icon-org-sandbox{
+    --slds-c-icon-color-foreground-default: gray;
+    --slds-c-icon-color-background: transparent;
+}
+
+.icon-incognito {
+    height: 20px;
+    width: 20px;
+    vertical-align: inherit;
+}
+
+svg.icon-incognito {
+    fill: #717171;
+    width: 13.5px;
+    height: 12.5px;
+}

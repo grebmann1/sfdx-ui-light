@@ -14,30 +14,27 @@
     },
     "web_accessible_resources": [
         {
-            "matches": ["https://*/*"],
+            "matches": [
+                "https://*/*",
+                "http://*/*"
+            ],
             "resources": [
-                "http://localhost:3000/"
+                "index.html*",
+                "callback.html*"
             ]
         }
     ],
-    "host_permissions": [
-        "https://*.salesforce.com/*",
-        "https://*.force.com/*",
-        "https://*.cloudforce.com/*",
-        "https://*.visualforce.com/*",
-        "https://*.salesforce.mil/*",
-        "https://*.force.mil/*",
-        "https://*.cloudforce.mil/*",
-        "https://*.visualforce.mil/*",
-        "https://*.crmforce.mil/*",
-        "https://*.force.com.mcas.ms/*"
-    ],
+    "host_permissions": [],
     "background": {
         "service_worker": "scripts/background.js",
         "type": "module"
     },
     "permissions": [
         "cookies",
-        "declarativeContent"
-    ]
+        "declarativeContent",
+        "storage",
+        "tabs",
+        "tabGroups"
+    ],
+    "incognito": "split"
   }

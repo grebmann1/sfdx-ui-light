@@ -90,6 +90,26 @@ app.get('/oauth2/callback', function(req, res) {
     });
 });
 
+app.get('/chrome/callback', function(req, res) {
+    var code = req.query.code;
+    var states = req.query.state.split('#');
+    var params = qs.parse(states[1]);
+
+    var conn = new jsforce.Connection({ oauth2 : getOAuth2Instance(params) });
+    
+    conn.authorize(code, function(err, userInfo) {
+      if (err) { return console.error(err); }
+      res.redirect(`chrome-extension://dmlgjapbfifmeopbfikbdmlgdcgcdmfb/callback.html#${qs.stringify({ 
+            access_token:   conn.accessToken, 
+            instance_url:   conn.instanceUrl,
+            refresh_token:  conn.refreshToken,
+            issued_at: Date.now(),
+            id: userInfo.url,
+            state:states[0]
+        })}`);
+    });
+});
+
 
 lwrServer
 .listen(( { port, serverMode }) => {

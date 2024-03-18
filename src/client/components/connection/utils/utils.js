@@ -9,10 +9,10 @@ import { store,store_application } from 'shared/store';
 export * from './chrome';
 export * from './mapping';
 
+const PROXY_EXCLUSION = [];
 
 export async function connect({alias,settings,disableEvent = false}){
     console.log('--> connect',alias,settings);
-    //console.log('util.connect',{alias,settings});
     if(isUndefinedOrNull(settings) && isUndefinedOrNull(alias)){
         throw new Error('You need to provide the alias or the connection');
     }
@@ -27,7 +27,7 @@ export async function connect({alias,settings,disableEvent = false}){
     let params = {
         instanceUrl : settings.instanceUrl,
         accessToken : settings.accessToken,
-        proxyUrl    : `${window.location.origin}/proxy/`,
+        proxyUrl    : window.jsforceSettings.proxyUrl, // For chrome extension, we run without proxy
         //version     : settings.instanceApiVersion || constant.apiVersion // This might need to be refactored 
     }
 
@@ -164,6 +164,7 @@ export async function removeSession(value){
 export async function oauth({alias,loginUrl},callback){
     
     window.jsforce.browserClient = new window.jsforce.browser.Client(Date.now()); // Reset
+    console.log('window.jsforceSettings',window.jsforceSettings);
     window.jsforce.browserClient.init(window.jsforceSettings);
     window.jsforce.browserClient.on('connect', async (connection) =>{
         const {accessToken,instanceUrl,loginUrl,refreshToken,version} = connection;
@@ -211,7 +212,7 @@ export async function directConnect(sessionId,serverUrl){
         //oauth2      : {...window.jsforceSettings},
         sessionId   : sessionId,
         serverUrl   : serverUrl,
-        proxyUrl    : `${window.location.origin}/proxy/`,
+        proxyUrl    : window.jsforceSettings.proxyUrl,
         version     : constant.apiVersion
     }
     

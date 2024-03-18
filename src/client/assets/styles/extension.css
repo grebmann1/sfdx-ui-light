@@ -1,4 +1,27 @@
 body {
     width: 700px;
-    /** height: 700px; **/
+    height: 600px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6{
+  font-weight:inherit;
+  font-size:0.8em;
+}
+
+.slds-text-heading_medium{
+    font-size:unset !important;
+}
+
+.card-container{
+    margin:0 0 0.5rem;
+}
+
+.slds-has-divider_top-space{
+    margin-top: 0.3rem;
+    padding-top: 0.3rem;
 }

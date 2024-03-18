@@ -1,60 +1,23 @@
 <template>
-    <div class="slds-page-header slds-page-header_joined">
-        <div class="slds-page-header__row">
-            <div class="slds-page-header__col-title">
-                <div class="slds-media">
-                    <div class="slds-media__figure">
-                        <lightning-icon icon-name="standard:code_playground"></lightning-icon>
-                    </div>
-                    <div class="slds-media__body">
-                        <div class="slds-page-header__name">
-                            <div class="slds-page-header__name-title">
-                                <h1>
-                                    <span>SF Toolkit Light</span>
-                                    <span class="slds-page-header__title slds-truncate" title="Light Version">Light Version</span>
-                                </h1>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="slds-page-header__col-actions slds-align-middle slds-p-bottom_none">
-                <div class="slds-page-header__controls">
-                    <div class="slds-page-header__control">
-                        <div class="slds-button-group" id="button-group-page-header-actions" role="group">
-                            <button class="slds-button slds-button_neutral" type="button" onclick={redirectToWebsite}>Go to SF Toolkit</button>
-                        </div>
-                    </div>
-                </div>
+    <div>
+        <!-- HEADER -->
+        <extension-header></extension-header>
+
+        <!-- BODY slds-background-white -->
+        <div class="slds-p-around_small slds-grid slds-wrap slds-grid_vertical-stretch ">
+
+            <!-- SECTION -->
+            <div class="slds-auto-height slds-col slds-col slds-size_1-of-1 slds-p-top_small">
+                <!-- Start -->
+                <!--<extension-record-explorer versions={versions}></extension-record-explorer>-->
+                <connection-app variant="card"></connection-app>
+                <!-- End -->
             </div>
         </div>
+
+        <!-- Footer -->
+        <template lwc:if={isFooterDisplayed}>
+            <extension-footer version={version}></extension-footer>
+        </template>
     </div>
-    <div class="slds-grid slds-gutters slds-wrap slds-grid_vertical-stretch slds-background-white">
-
-        <!-- SECTION -->
-        <div class="slds-auto-height slds-col slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-top_small">
-            <!-- Start -->
-            <extension-record-explorer versions={versions}></extension-record-explorer>
-            <!-- End -->
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="slds-utility-bar_container" style="height:24px;">
-        <ul class="slds-utility-bar custom-utility-bar">
-            <li class="slds-utility-bar__item custom-utility-text">
-                <h2>{versionFormatted}</h2>
-                <lightning-button-icon
-                    class="custom-utility-text-copy"
-                    onclick={handleChangeVersionClick}
-                    icon-name="utility:replace"
-                    variant="bare"
-                    alternative-text="Change Version"
-                ></lightning-button-icon>
-            </li>
-        </ul>
-    </div>
-
-   
-
 </template>

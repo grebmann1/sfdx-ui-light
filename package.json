@@ -2,6 +2,7 @@
     "name": "sfdx-ui-light",
     "version": "1.0.5",
     "scripts": {
+        "start:dev:extension": "rollup -c rollup.config.js --bundleConfigAsCjs --watch | serve chrome_ext",
         "start:dev:client": "NODE_ENV=development node -r dotenv/config src/server/server-dev.js",
         "start:prod:build": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --minify --clean;",
         "start:prod:run": "NODE_ENV=production node -r dotenv/config src/server/server-prod.js",
@@ -38,6 +39,7 @@
         "jspdf-autotable": "3.7.1",
         "jszip": "^3.10.1",
         "lightning-base-components": "1.19.11-alpha",
+        "localforage-webextensionstorage-driver": "^3.0.0",
         "lwr": "0.11.12",
         "node-fetch": "^2.7.0",
         "node-schedule": "^2.1.1",

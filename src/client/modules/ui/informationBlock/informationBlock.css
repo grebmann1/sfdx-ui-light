@@ -4,7 +4,7 @@
 
 blockquote {
     background-color: #fafaf9;
-    font-size: 1rem;
+    /*font-size: 1rem;*/
     font-weight: 300;
     padding: 0.5rem 1rem;
     margin: 0 0 1.5rem;
@@ -12,7 +12,6 @@ blockquote {
     border-left-width: 0.125rem;
     border-left-color: rgb(0, 102, 204);
     color: rgb(0, 102, 204);
-    font-size: 1rem;
 }
 
 blockquote .title {
@@ -27,7 +26,7 @@ blockquote .subtitle {
 
 
 blockquote h4.title {
-    font-size: 1rem;
+    /*font-size: 1rem;*/
     margin-top: 0;
 }
 

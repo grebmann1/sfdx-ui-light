@@ -1,38 +1,7 @@
-.slds-page-header__detail-row{
-    padding-left: 0;
-    padding-right: 0;
-}
 
-.slds-page-header_joined{
-    /**height:calc(100vh - 1.5rem);**/
-}
-
-.slds-page-header__row_gutters{
-    height:auto;
-}
 
 .slds-background-white{
     background-color: white;;
 }
 
-
-/** Footer **/
-
-.custom-utility-bar{
-    background-color: #032d60;
-    height: 1.5rem !important;
-    color: white;
-    justify-content: flex-end;
-}
-
-.custom-utility-bar .custom-utility-text{
-    margin-left: 8px;
-    font-weight: 400;
-}
-
-.custom-utility-text-copy{
-    --slds-c-icon-color-foreground	:rgba(255, 255, 255, 1);
-    margin-left: 8px;
-    cursor: pointer;
-}
 

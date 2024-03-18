@@ -1,0 +1,12 @@
+.slds-page-header__detail-row{
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.slds-page-header_joined{
+    /**height:calc(100vh - 1.5rem);**/
+}
+
+.slds-page-header__row_gutters{
+    height:auto;
+}

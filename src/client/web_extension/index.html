@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Chrome Extension LWC Template</title>
-    <link rel="stylesheet" href="/assets/styles/salesforce-lightning-design-system.css" />
-    <link rel="stylesheet" href="/assets/styles/tabulator.min.css" />
-    <link rel="stylesheet" href="/assets/styles/extension.css" />
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <title>Chrome Extension LWC Template</title>
+        <link rel="stylesheet" href="/assets/styles/salesforce-lightning-design-system.css" />
+        <link rel="stylesheet" href="/assets/styles/tabulator.min.css" />
+        <link rel="stylesheet" href="/assets/styles/extension.css" />
+    </head>
     <body>
         <script src="/assets/libs/jsforce/jsforce.js"></script>
+        <script src="/assets/libs/localforage/localforage.min.js"></script>
+        <script src="/assets/libs/localforage/drivers/chrome.js"></script>
         <script type="module" src="popup/main.js"></script>
     </body>
 </html>

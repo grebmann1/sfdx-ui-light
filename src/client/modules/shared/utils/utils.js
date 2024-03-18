@@ -132,6 +132,10 @@ export const isElectronApp = () => {
     return isNotUndefinedOrNull(window.electron);
 }
 
+export const isChromeExtension = () => {
+    return isNotUndefinedOrNull(chrome?.windows);
+}
+
 export function formatBytes(bytes, decimals = 2) {
     if (!+bytes) return '0 Bytes'
 
@@ -249,4 +253,8 @@ export function goToUrl(conn,redirectUrl){
         url+=`&retURL=${encodeURIComponent(redirectUrl)}`
     }
     window.open(url,'_blank');
+}
+
+export function checkIfPresent(a,b){
+    return (a || '').toLowerCase().includes((b||'').toLowerCase());
 }

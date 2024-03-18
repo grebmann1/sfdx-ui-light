@@ -159,8 +159,8 @@ export default class App extends FeatureElement {
 
     loadCachedSettings = () => {
         if(isNotUndefinedOrNull(this.connector.header.alias)){
-            this.typeFilter_value  = getFromStorage(localStorage.getItem('global-sobject-typeFilter_value'),['object']);
-            this.metadataFilter_value  = getFromStorage(localStorage.getItem('global-sobject-metadataFilter_value'),['searchable','queryable']);
+            this.typeFilter_value       = getFromStorage(localStorage.getItem('global-sobject-typeFilter_value'),['object']);
+            this.metadataFilter_value   = getFromStorage(localStorage.getItem('global-sobject-metadataFilter_value'),['searchable','queryable']);
         }
     }
 

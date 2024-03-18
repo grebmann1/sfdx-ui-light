@@ -23,7 +23,7 @@
                     <div class="slds-page-header__control">
                         <!-- <lightning-button icon-name="utility:knowledge_base" label="Documentation Explorer"></lightning-button> -->
                         <div class="slds-button-group" id="button-group-page-header-actions" role="group">
-                            <button class="slds-button slds-button_neutral" type="button" onclick={addConnectionClick}>Authorize Org</button>
+                            <lightning-button icon-name="utility:add" label="Add Org" onclick={addConnectionClick}></lightning-button>
                         </div>
                     </div>
                 </div>
@@ -32,20 +32,41 @@
         <div class="slds-page-header__row slds-page-header__row_gutters">
             <div class="slds-page-header__col-details">
                 <div class="slds-page-header__detail-row slds-is-relative min-height-200" style="display:block; ">
-                    <ui-information-block title="Info">
-                        <p>All the sessions/connections are stored in your browser local storage.</p>
-                    </ui-information-block>
                     <template lwc:if={isLoading}>
                         <lightning-spinner alternative-text="Loading"></lightning-spinner>
                     </template>
-                    <!-- Data Table -->
-                    <lightning-datatable
-                            data={data}
-                            columns={columns}
-                            key-field="id"
-                            onrowaction={handleRowAction}
-                            hide-checkbox-column
-                    ></lightning-datatable>
+
+                    <!-- Search -->
+                    <lightning-input 
+                        class="slds-m-bottom_medium" 
+                        type="search"
+                        label="Search" 
+                        variant="label-hidden"
+                        onchange={handleFieldsFilter}
+                    ></lightning-input>
+
+                    <!-- Table Variant -->
+                    <template lwc:if={isTableVariant}>
+                        <lightning-datatable
+                                data={filteredOriginal}
+                                columns={columns}
+                                key-field="id"
+                                onrowaction={handleRowAction}
+                                hide-checkbox-column
+                        ></lightning-datatable>
+                    </template>
+
+                    <!-- Card Variant -->
+                    <template lwc:if={isCardVariant}>
+                        <template for:each={filteredFormatted} for:item="item">
+                            <connection-card 
+                                key={item.key} 
+                                item={item} 
+                                onrowaction={handleRowAction}
+                                is-open
+                            ></connection-card>
+                        </template>
+                    </template>
                     
                 </div>
             </div>

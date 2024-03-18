@@ -1,11 +1,11 @@
-import { api } from "lwc";
+import { api,track } from "lwc";
 import FeatureElement from 'element/featureElement';
 import ConnectionNewModal from "connection/connectionNewModal";
 import ConnectionDetailModal from "connection/connectionDetailModal";
 import ConnectionRenameModal from "connection/connectionRenameModal";
 
-import {isNotUndefinedOrNull,isElectronApp} from 'shared/utils';
-import {getAllConnection,removeConnection,connect,oauth,getSettings} from 'connection/utils';
+import { runActionAfterTimeOut,checkIfPresent,isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,normalizeString as normalize,groupBy } from 'shared/utils';
+import { getAllConnection,removeConnection,connect,oauth,getSettings } from 'connection/utils';
 import { store,store_application } from 'shared/store';
 
 
@@ -23,8 +23,13 @@ const CUSTOM_URL = 'custom';
 
 export default class App extends FeatureElement {
 
-    data = [];
+    @api variant = 'table';
+    @track data = [];
+    @track formattedData = [];
     isLoading = false;
+
+    // Search
+    filter;
 
     connectedCallback(){
         this.setAllConnections();
@@ -52,6 +57,7 @@ export default class App extends FeatureElement {
     }
 
     handleRowAction(event) {
+        console.log('handleRowAction',event.detail);
         const actionName = event.detail.action.name;
         const row = event.detail.row;
         switch (actionName) {
@@ -59,7 +65,10 @@ export default class App extends FeatureElement {
                 this.login(row);
                 break;
             case 'openBrowser':
-                this.openBrowser(row);
+                this.openBrowser(row,'_blank');
+                break;
+            case 'incognito':
+                this.openBrowser(row,'incognito');
                 break;
             case 'seeDetails':
                 this.seeDetails(row);
@@ -95,7 +104,17 @@ export default class App extends FeatureElement {
         // Browser & Electron version
         this.isLoading = true;
         this.data =  await getAllConnection();
+        this.formattedData = this.formatDataForCardView();
         this.isLoading = false;
+    }
+
+    formatDataForCardView = () => {
+        let grouped = groupBy(this.data,'company');
+        return Object.keys(grouped).map(key => ({
+            key:key,
+            title:key,
+            items:grouped[key]
+        }))
     }
 
     login = async (row) => {
@@ -122,7 +141,8 @@ export default class App extends FeatureElement {
         }
     }
 
-    openBrowser = async (row) => {
+    openBrowser = async (row,target) => {
+        console.log('openBrowser',target);
         if(isElectronApp()){
             // Electron version
             if(row._hasError){
@@ -136,7 +156,31 @@ export default class App extends FeatureElement {
                 const {alias,...settings} = this.data.find(x => x.id == row.id);
                 const connector = await connect({alias,settings,disableEvent:true});
                 const url = connector.conn.instanceUrl+'/secur/frontdoor.jsp?sid='+connector.conn.accessToken;
-                window.open(url,'_blank');
+
+                if(isChromeExtension()){
+                    if(target == 'incognito'){
+                        chrome.windows.getAll({populate: false, windowTypes: ['normal']}, (windows) => {
+                            for (let w of windows) {
+                                if (w.incognito) {
+                                    // Use this window.
+                                    chrome.tabs.create({url: url, windowId: w.id},(tab) => {
+                                        this.createOrAddToTabGroup(tab, alias);
+                                    });
+                                    return;
+                                }
+                            }
+                            // No incognito window found, open a new one.
+                            chrome.windows.create({url: url, incognito: true});
+                        });
+                    }else{
+                        chrome.tabs.create({url: url},(tab) => {
+                            this.createOrAddToTabGroup(tab, alias);
+                        });
+                        
+                    }
+                }else{
+                    window.open(url,target);
+                }
             }catch(e){}
             this.isLoading = false;
         }    
@@ -171,8 +215,73 @@ export default class App extends FeatureElement {
         }
     };
 
+    createOrAddToTabGroup = (tab, groupName) =>{
+        chrome.tabGroups.query({}, (groups) => {
+            let group = groups.find(g => g.title === groupName);
+        
+            if (group) {
+                // Group exists, add the tab to this group
+                chrome.tabs.group({groupId: group.id, tabIds: tab.id}, () => {
+                    console.log(`Tab added to existing group '${groupName}'`);
+                });
+            } else {
+                // Group does not exist, create a new group with this tab
+                chrome.tabs.group({createProperties: {}, tabIds: tab.id}, (newGroupId) => {
+                    chrome.tabGroups.update(newGroupId, {title: groupName}, () => {
+                        console.log(`New group '${groupName}' created and tab added`);
+                    });
+                });
+            }
+        });
+    }
+
+    handleFieldsFilter = (e) => {
+        runActionAfterTimeOut(e.detail.value,(newValue) => {
+            this.filter = newValue;
+            //this.updateFieldsTable();
+        });
+    }
+
+    formatSpecificField = (content) => {
+        var regex = new RegExp('('+this.filter+')','gi');
+        if(regex.test(content)){
+            return content.replace(/<?>?/,'').replace(regex,'<span style="font-weight:Bold; color:blue;">$1</span>');
+        }else{
+            return content;
+        }
+    }
 
     /** Getters  */
+
+    get filteredFormatted(){
+        return this.formattedData.map(group => ({
+            ...group,
+            items:group.items.filter(x => isUndefinedOrNull(this.filter) || isNotUndefinedOrNull(this.filter) && (checkIfPresent(x.alias,this.filter) || checkIfPresent(x.username,this.filter))).map(x => ({
+                ...x,
+                _name:this.formatSpecificField(x.name),
+                _username:this.formatSpecificField(x.username)
+            }))
+        }));
+    }
+
+    get filteredOriginal(){
+        return this.data.filter(x => isUndefinedOrNull(this.filter) || isNotUndefinedOrNull(this.filter) && (checkIfPresent(x.alias,this.filter) || checkIfPresent(x.username,this.filter)));
+    }
+
+    get normalizedVariant() {
+        return normalize(this.variant, {
+            fallbackValue: 'table',
+            validValues: ['table', 'card']
+        });
+    }
+
+    get isTableVariant(){
+        return this.normalizedVariant == 'table';
+    }
+
+    get isCardVariant(){
+        return this.normalizedVariant == 'card';
+    }
     
     get pageClass(){
         return super.pageClass+' slds-overflow-hidden';
@@ -224,6 +333,5 @@ export default class App extends FeatureElement {
             return _columns.filter(x => x._filter == null || x._filter === 'web');
         }
     }
-
 
 }
