@@ -1,5 +1,5 @@
 <template>
-    <div class="slds-page-header slds-page-header_joined">
+    <!--<div class="slds-page-header slds-page-header_joined">
         <div class="slds-page-header__row">
             <div class="slds-page-header__col-title">
                 <div class="slds-media">
@@ -29,4 +29,34 @@
             </div>
         </div>
     </div>
+    -->
+
+    <header class="slds-global-header_container">
+        
+        <div class="slds-global-header slds-grid slds-grid_align-spread">
+            <div class="slds-global-header__item slds-show_small">
+                <div class="slds-context-bar__item slds-context-bar__dropdown-trigger slds-dropdown-trigger slds-dropdown-trigger_click slds-no-hover">
+                    <!--<div class={collapseClass}>
+                        <lightning-button-icon icon-name={iconName} variant="bare" size="large" onclick={handleToggle}></lightning-button-icon>
+                    </div>-->
+                    <span class="slds-context-bar__label-action slds-context-bar__app-name">
+                        <span class="slds-truncate" title="SF Toolkit">SF Toolkit</span>
+                    </span>
+                </div>
+            </div>
+            <div class="slds-global-header__item">
+                <lightning-input 
+                    class="" 
+                    type="search"
+                    label="Search" 
+                    variant="label-hidden"
+                    onchange={handleSearch}
+                ></lightning-input>
+            </div>
+            <div class="slds-global-header__item">
+                <slot name="action"></slot>
+            </div>
+        </div>
+        
+    </header>
 </template>

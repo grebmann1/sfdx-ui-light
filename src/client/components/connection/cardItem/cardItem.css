@@ -11,6 +11,12 @@
     display: flex;
 }
 
+.action-items{
+    align-items: flex-end;
+    float: right;
+    display: flex;
+}
+
 .icon-org-prod{
     --slds-c-icon-color-foreground-default: rgb(0 162 225);
     --slds-c-icon-color-background: transparent;

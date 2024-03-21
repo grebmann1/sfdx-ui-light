@@ -264,6 +264,7 @@
             .then(config => {
                 window.jsforceSettings = {
                     clientId:  config.clientId,
+                    chromeId: config.chromeId,
                     redirectUri: `${host}/oauth2/callback`,
                     proxyUrl: `${host}/proxy/`,
                 };

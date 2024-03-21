@@ -1,76 +1,79 @@
 <template>
-    <div class="slds-page-header slds-page-header_joined slds-overflow-hidden">
-        <div class="slds-page-header__row">
-            <div class="slds-page-header__col-title">
-                <div class="slds-media">
-                    <div class="slds-media__figure">
-                        <lightning-icon icon-name="standard:default"></lightning-icon>
+    <template lwc:if={isHeaderLess}>
+         <!-- Card Variant -->
+         <div class="slds-connection-card-list">
+            <template lwc:if={isCardVariant}>
+                <template for:each={filteredFormatted} for:item="item">
+                    <connection-card 
+                        key={item.key} 
+                        item={item} 
+                        onrowaction={handleRowAction}
+                    ></connection-card>
+                </template>
+            </template>
+        </div>
+    </template>
+    <template lwc:else>
+        <div class="slds-page-header slds-page-header_joined slds-overflow-hidden">
+            <div class={headerRowClass}>
+                <div class="slds-page-header__col-title">
+                    <div class="slds-media">
+                        <div class="slds-media__figure">
+                            <lightning-icon icon-name="standard:default"></lightning-icon>
+                        </div>
+                        <div class="slds-media__body">
+                            <div class="slds-page-header__name">
+                                <div class="slds-page-header__name-title">
+                                    <h1>
+                                        <span>My Salesforce Connections</span>
+                                        <span class="slds-page-header__title slds-truncate" title="Authorized Orgs">Authorized Orgs</span>
+                                    </h1>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="slds-media__body">
-                        <div class="slds-page-header__name">
-                            <div class="slds-page-header__name-title">
-                                <h1>
-                                    <span>My Salesforce Connections</span>
-                                    <span class="slds-page-header__title slds-truncate" title="Authorized Orgs">Authorized Orgs</span>
-                                </h1>
+                </div>
+                <div class="slds-page-header__col-actions slds-align-middle slds-p-bottom_none">
+                    <div class="slds-page-header__controls">
+                        <div class="slds-page-header__control">
+                            <!-- <lightning-button icon-name="utility:knowledge_base" label="Documentation Explorer"></lightning-button> -->
+                            <div class="slds-button-group" id="button-group-page-header-actions" role="group">
+                                <lightning-button icon-name="utility:add" label="Add Org" onclick={addConnectionClick}></lightning-button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="slds-page-header__col-actions slds-align-middle slds-p-bottom_none">
-                <div class="slds-page-header__controls">
-                    <div class="slds-page-header__control">
-                        <!-- <lightning-button icon-name="utility:knowledge_base" label="Documentation Explorer"></lightning-button> -->
-                        <div class="slds-button-group" id="button-group-page-header-actions" role="group">
-                            <lightning-button icon-name="utility:add" label="Add Org" onclick={addConnectionClick}></lightning-button>
-                        </div>
+            <div class="slds-page-header__row_gutters"> <!-- slds-page-header__row-->
+                <div class="slds-page-header__col-details">
+                    <div class={detailRowClass} style="display:block; ">
+                        <template lwc:if={isLoading}>
+                            <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                        </template>
+    
+                        <!-- Search -->
+                        <lightning-input 
+                            class="slds-m-bottom_medium" 
+                            type="search"
+                            label="Search" 
+                            variant="label-hidden"
+                            onchange={handleFieldsFilter}
+                        ></lightning-input>
+                        
+    
+                        <!-- Table Variant -->
+                        <template lwc:if={isTableVariant}>
+                            <lightning-datatable
+                                    data={filteredOriginal}
+                                    columns={columns}
+                                    key-field="id"
+                                    onrowaction={handleRowAction}
+                                    hide-checkbox-column
+                            ></lightning-datatable>
+                        </template>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="slds-page-header__row slds-page-header__row_gutters">
-            <div class="slds-page-header__col-details">
-                <div class="slds-page-header__detail-row slds-is-relative min-height-200" style="display:block; ">
-                    <template lwc:if={isLoading}>
-                        <lightning-spinner alternative-text="Loading"></lightning-spinner>
-                    </template>
-
-                    <!-- Search -->
-                    <lightning-input 
-                        class="slds-m-bottom_medium" 
-                        type="search"
-                        label="Search" 
-                        variant="label-hidden"
-                        onchange={handleFieldsFilter}
-                    ></lightning-input>
-
-                    <!-- Table Variant -->
-                    <template lwc:if={isTableVariant}>
-                        <lightning-datatable
-                                data={filteredOriginal}
-                                columns={columns}
-                                key-field="id"
-                                onrowaction={handleRowAction}
-                                hide-checkbox-column
-                        ></lightning-datatable>
-                    </template>
-
-                    <!-- Card Variant -->
-                    <template lwc:if={isCardVariant}>
-                        <template for:each={filteredFormatted} for:item="item">
-                            <connection-card 
-                                key={item.key} 
-                                item={item} 
-                                onrowaction={handleRowAction}
-                                is-open
-                            ></connection-card>
-                        </template>
-                    </template>
-                    
-                </div>
-            </div>
-        </div>
-    </div>
-
+    </template>
 </template>

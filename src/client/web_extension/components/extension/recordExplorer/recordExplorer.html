@@ -1,9 +1,7 @@
 <template>
-    <template lwc:if={isLoading}>
-        <lightning-spinner alternative-text="Loading"></lightning-spinner>
-    </template>
+    
     <!-- Header -->
-    <div class="slds-p-vertical_x-small slds-p-horizontal_large slds-shrink-none">
+    <div class="slds-p-vertical_x-small slds-p-horizontal_small slds-shrink-none">
        
         
         <template lwc:if={isRecordIdAvailable}>
@@ -19,19 +17,6 @@
                     </li>
                 </ol>
             </nav>
-            <!-- Search -->
-            <div class="slds-form-element">
-                <label class="slds-form-element__label slds-assistive-text" for="data-search">Search</label>
-                <div class="slds-form-element__control">
-                    <div class="slds-combobox_container">
-                        <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click" aria-expanded="false" aria-haspopup="listbox" role="combobox">
-                            <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
-                                <input type="text" onkeyup={handleSearchInput} class="slds-input slds-combobox__input" id="data-search" placeholder="Search in record"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </template>
         <template lwc:else>
             <!-- Place Holder -->
@@ -39,5 +24,9 @@
         </template>
     </div>
     <!-- Table -->
+    <template lwc:if={isLoading}>
+        <lightning-spinner alternative-text="Loading"></lightning-spinner>
+    </template>
     <div lwc:dom="manual" class="custom-table"></div>
+    
 </template>

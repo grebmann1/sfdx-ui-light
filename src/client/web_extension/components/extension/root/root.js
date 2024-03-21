@@ -1,34 +1,40 @@
-import { LightningElement} from "lwc";
+import { LightningElement,api } from "lwc";
 import LightningAlert from 'lightning/alert';
 import { isUndefinedOrNull } from "shared/utils";
-import { getHostAndSession } from 'connection/utils';
+import { directConnect,getHostAndSession } from 'connection/utils';
 
 export default class root extends LightningElement {
 
+    @api variant;
     sessionId;
     serverUrl;
     versions = [];
     version;
-    isLoaded = false;
+    hasLoaded = false;
 
-    connectedCallback(){
-        this.init();
+    async connectedCallback(){
+        let cookie = await getHostAndSession();
+        if(cookie){
+            this.init_existingSession(cookie);
+        }else{
+            this.init_default();
+        }
     }
 
-    init = async () => {
-        let cookie = await getHostAndSession();
+    init_default = () => {
+        this.hasLoaded = true;
+    }
+
+    init_existingSession = async (cookie) => {
         this.sessionId = cookie.session;
         this.serverUrl = cookie.domain;
 
         /** Set as global **/
         window.sessionId = this.sessionId;
         window.serverUrl = this.serverUrl;
-        window.connector = await new window.jsforce.Connection({
-            serverUrl : 'https://' + this.serverUrl,
-            sessionId : this.sessionId,
-        })
+        window.connector = await directConnect(this.sessionId,'https://' + this.serverUrl);
 
-        this.versions = (await window.connector.request('/services/data/')).sort((a, b) => b.version.localeCompare(a.version));
+        this.versions = (await window.connector.conn.request('/services/data/')).sort((a, b) => b.version.localeCompare(a.version));
         this.version = this.versions[0];
 
         // Initialize;
@@ -37,7 +43,7 @@ export default class root extends LightningElement {
         if(isUndefinedOrNull(this.sessionId) || isUndefinedOrNull(this.serverUrl)){
             this.sendError();
         }else{
-            this.isLoaded = true;
+            this.hasLoaded = true;
         }
     }
 

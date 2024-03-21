@@ -3,7 +3,7 @@
     background-color: #032d60;
     height: 1.5rem !important;
     color: white;
-    justify-content: flex-end;
+    justify-content: space-between;/*flex-end;*/
     align-items: center;
 }
 

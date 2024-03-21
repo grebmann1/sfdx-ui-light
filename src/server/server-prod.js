@@ -23,7 +23,7 @@ console.log('DATA_CTA.contents',DATA_CTA);
 
 const app = express();
 const PORT = parseInt(process.env.PORT || "3000", 10);
-
+const CHROME_ID = process.env.CHROME_ID || 'dmlgjapbfifmeopbfikbdmlgdcgcdmfb';
 
 getOAuth2Instance = (params) => {
   return new jsforce.OAuth2({
@@ -68,7 +68,7 @@ app.get('/chrome/callback', function(req, res) {
   
   conn.authorize(code, function(err, userInfo) {
     if (err) { return console.error(err); }
-    res.redirect(`chrome-extension://dmlgjapbfifmeopbfikbdmlgdcgcdmfb/callback.html#${qs.stringify({ 
+    res.redirect(`chrome-extension://${CHROME_ID}/callback.html#${qs.stringify({ 
           access_token:   conn.accessToken, 
           instance_url:   conn.instanceUrl,
           refresh_token:  conn.refreshToken,
@@ -80,7 +80,10 @@ app.get('/chrome/callback', function(req, res) {
 });
 
 app.get('/config',function(req,res){
-  res.json({clientId:process.env.CLIENT_ID});
+  res.json({
+      clientId:process.env.CLIENT_ID,
+      chromeId:CHROME_ID
+  });
 })
 app.get('/version',function(req,res){
   res.json({version:process.env.npm_package_version});

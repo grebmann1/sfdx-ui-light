@@ -1,31 +1,123 @@
 "use strict";
-chrome.runtime.onInstalled.addListener(() => {
-  // disable the action by default
-  chrome.action.disable();
 
-  // remove existing rules so only ours are applied
-  chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {
-    // add a custom rule
-    chrome.declarativeContent.onPageChanged.addRules([
-      {
-        // define the rule's conditions
-        conditions: [
-          new chrome.declarativeContent.PageStateMatcher({
-            pageUrl: { hostSuffix: 'lightning.force.com', schemes: ['https'] }
-          }),
-          new chrome.declarativeContent.PageStateMatcher({
-            pageUrl: { hostSuffix: 'salesforce.com', schemes: ['https'] }
-          }),
-          new chrome.declarativeContent.PageStateMatcher({
-            pageUrl: { hostSuffix: 'cloudforce.com', schemes: ['https'] }
-          }),
-        ],
-        // show the action when conditions are met
-        actions: [new chrome.declarativeContent.ShowAction()],
-      },
-    ]);
-  });
+const getCurrentTab = async () => {
+    let queryOptions = { active: true, lastFocusedWindow: true };
+    // `tab` will either be a `tabs.Tab` instance or `undefined`.
+    let [tab] = await chrome.tabs.query(queryOptions);
+    return tab;
+}
+
+const isHostMatching = (url) => {
+    return url.host.endsWith('lightning.force.com') || url.host.endsWith('salesforce.com') || url.host.endsWith('cloudforce.com');
+}
+
+const handleTabOpening = async (tab) => {
+    const url = new URL(tab.url);
+
+    /** Remove by default **/
+    await chrome.sidePanel.setOptions({
+        tabId:tab.id,
+        enabled: false
+    });
+
+    /**  Filter Tabs **/
+    if (isHostMatching(url)) {
+        // Salesforce website, ensure the popup is set
+        console.log('onActivated - chrome.action.setPopup');
+        chrome.action.setPopup({tabId: tab.id, popup: 'views/popup.html'});
+    }else{
+        console.log('onActivated - default : side panel');
+        await chrome.sidePanel.setOptions({
+            tabId:tab.id,
+            path: 'views/side.html',
+            enabled: true
+        });
+    }
+}
+
+/** Init **/
+chrome.action.disable();
+
+/** On Install Event */
+
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.contextMenus.create({
+        id: 'openSidePanel',
+        title: 'Open side panel',
+        contexts: ['all']
+    });
 });
+
+
+//chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch((error) => console.error(error));
+
+
+/** Event Listener */
+
+chrome.runtime.onConnect.addListener( (port) => {
+    //console.log('port',port);
+    if(port.name === 'side-panel-connection'){
+        port.onDisconnect.addListener(async () => {
+            const tab = await getCurrentTab();
+            if(isHostMatching(new URL(tab.url))){
+                await chrome.sidePanel.setOptions({
+                    tabId:tab.id,
+                    enabled: false
+                });
+            }
+            
+        });
+    }
+});
+
+chrome.tabs.onActivated.addListener(async ({tabId, windowId}) => {
+    if (!tabId) return;
+    const tab = await chrome.tabs.get(tabId);
+    handleTabOpening(tab);
+    
+});
+chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
+    if (!tab.url || info.status !== 'complete') return;
+    handleTabOpening(tab);
+});
+
+// Message Listener
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+	if (request.action === "launchWebAuthFlow") {
+        chrome.identity.launchWebAuthFlow({
+            'url': request.url,
+            'interactive': true
+        }, (responseUrl) => {
+            if (chrome.runtime.lastError) {
+                sendResponse({ error: chrome.runtime.lastError.message });
+                return;
+            }
+            const url   = new URL(responseUrl);
+            const code  = (new URLSearchParams(url.search)).get('code'); // Simplified for example
+            sendResponse({ code });
+        });
+        return true;
+	}
+});
+
+/** Context Menus **/
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+    if (info.menuItemId === 'openSidePanel') {
+        // This will open the panel in all the pages on the current window.
+        chrome.sidePanel.open({ tabId: tab.id });
+    }
+});
+
+/** Action Button  */
+chrome.action.onClicked.addListener((tab) => {
+    console.log('on action clicked');
+});
+
+
+
+
+
 
 /**
 chrome.action.onClicked.addListener(async (tab) => {

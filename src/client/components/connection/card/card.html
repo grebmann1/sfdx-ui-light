@@ -7,12 +7,13 @@
             </div>
             <div class="card-header-right">
                 <template lwc:if={isOpenFormatted}>
-                    <lightning-button-menu menu-alignment="auto" icon-name="utility:settings" icon-size="small" alternative-text="Show menu" variant="border-filled" onclick={dummyCardMenuClick}>
+                    <!--<lightning-button-menu menu-alignment="auto" icon-name="utility:settings" icon-size="small" alternative-text="Show menu" variant="border-filled" onclick={dummyCardMenuClick}>
                         <lightning-menu-item value="MenuItemOne" label="Menu Item One"></lightning-menu-item>
                         <lightning-menu-item value="MenuItemTwo" label="Menu Item Two"></lightning-menu-item>
                         <lightning-menu-item value="MenuItemThree" label="Menu Item Three"></lightning-menu-item>
                         <lightning-menu-item value="MenuItemFour" label="Menu Item Four"></lightning-menu-item>
                     </lightning-button-menu>
+                    -->
                 </template>
                 <template lwc:else>
                     {itemMessage}

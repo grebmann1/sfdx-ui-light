@@ -1,9 +1,17 @@
 <template>
-    <extension-popup 
-        mode="light" 
-        session-id={sessionId} 
-        server-url={serverUrl}
-        versions={versions}
-        version={version}
-    ></extension-popup>
+    <template lwc:if={hasLoaded}>
+        <extension-popup 
+            mode="light" 
+            session-id={sessionId} 
+            server-url={serverUrl}
+            versions={versions}
+            version={version}
+            variant={variant}
+        ></extension-popup>
+    </template>
+    <template lwc:else>
+        <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
+            <slds-spinner alternative-text="Loading" size="small" message="Connecting to Mars"></slds-spinner>
+        </div>
+    </template>
 </template>

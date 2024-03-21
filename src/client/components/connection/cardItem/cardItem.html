@@ -1,18 +1,15 @@
 <template>
-    <div class="card-item slds-col slds-p-top_xx-small slds-p-left_xx-small">
-        <div class="card-left">
+    <div class="card-item slds-col slds-grid slds-wrap slds-p-top_xx-small slds-p-left_xx-small">
+        <div class="slds-grid slds-col slds-size_3-of-5">
             <lightning-icon icon-name="utility:salesforce1" class={iconClass} size="small"></lightning-icon>
             <p class="card-title">
                 <span class="slds-text-heading_small">
                     <lightning-formatted-rich-text value={name} disable-linkify></lightning-formatted-rich-text>
                 </span>
-                <span class="slds-text-title slds-p-left_x-small">
-                    (<lightning-formatted-rich-text value={username} disable-linkify></lightning-formatted-rich-text>)
-                </span>
             </p>
         </div>
-        <div class="card-right">
-            <lightning-button-group>
+        <div class="slds-col slds-size_2-of-5">
+            <lightning-button-group class="action-items">
                 <lightning-button-icon icon-name="utility:new_window" size="small" onclick={handleEventClick} data-event="openBrowser" variant="border-filled"></lightning-button-icon>
                 <!-- Incognito Icon -->
                 <button onclick={handleEventClick} data-event="incognito" class="slds-button slds-button_middle slds-button_icon slds-button_icon-small slds-button_icon-border-filled slds-button_first">
@@ -25,14 +22,19 @@
                     </svg>
                 </button>
                 <lightning-button-icon icon-name="utility:apex" size="small" class="icon-apex" onclick={handleEventClick} data-event="openToolkit" variant="border-filled"></lightning-button-icon>
-                <lightning-button-menu menu-alignment="auto" alternative-text="Show menu" icon-size="small" variant="border-filled" onclick={dummyCardMenuClick}>
-                    <lightning-menu-item value="MenuItemOne" label="Menu Item One"></lightning-menu-item>
-                    <lightning-menu-item value="MenuItemTwo" label="Menu Item Two"></lightning-menu-item>
-                    <lightning-menu-item value="MenuItemThree" label="Menu Item Three"></lightning-menu-item>
-                    <lightning-menu-item value="MenuItemFour" label="Menu Item Four"></lightning-menu-item>
+                <lightning-button-menu menu-alignment="auto" alternative-text="Show menu" icon-size="small" variant="border-filled">
+                    <lightning-menu-item prefix-icon-name="utility:preview" value="Details" label="See Details" onclick={handleEventClick} data-event="seeDetails"></lightning-menu-item>
+                    <lightning-menu-item prefix-icon-name="utility:edit_form" value="Alias" label="Set Alias" onclick={handleEventClick} data-event="setAlias"></lightning-menu-item>
+                    <lightning-menu-item prefix-icon-name="utility:delete" value="Delete" label="Delete" onclick={handleEventClick} data-event="removeConnection"></lightning-menu-item>
                 </lightning-button-menu>
-            </lightning-button-group>
-            
+            </lightning-button-group>   
+        </div>
+        <div class="slds-col slds-size_1-of-1">
+            <p class="card-title">
+                <span class="slds-text-title">
+                    <lightning-formatted-rich-text value={username} disable-linkify></lightning-formatted-rich-text>
+                </span>
+            </p>
         </div>
     </div>
 </template>

@@ -10,3 +10,54 @@
 .slds-page-header__row_gutters{
     height:auto;
 }
+
+
+/** New Header **/
+
+.button-container{
+    margin: 10px;
+}
+
+.slds-global-header_container{
+    position: absolute;
+    height: 2.5rem;
+    width: 100%;
+}
+
+.slds-context-bar__label-close{
+    display: flex;
+    -ms-flex-line-pack: center;
+    align-content: center;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-flex: 1;
+    -ms-flex-positive: 1;
+    flex-grow: 1;
+    border-radius: 0;
+    min-width: 0;
+    color: inherit;
+    font-size: .8125rem;
+    z-index: 1;
+}
+
+.slds-context-bar__primary{
+    padding-right:40px;
+}
+
+.slds-context-bar__secondary{
+    justify-content: space-between;
+}
+
+.slds-context-bar{
+    padding: 0;
+}
+
+.slds-context-bar__app-name{
+    padding: unset;
+}
+
+.slds-context-bar__item{
+    align-items: center;
+
+}

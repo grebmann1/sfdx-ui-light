@@ -4,8 +4,8 @@ import ConnectionNewModal from "connection/connectionNewModal";
 import ConnectionDetailModal from "connection/connectionDetailModal";
 import ConnectionRenameModal from "connection/connectionRenameModal";
 
-import { runActionAfterTimeOut,checkIfPresent,isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,normalizeString as normalize,groupBy } from 'shared/utils';
-import { getAllConnection,removeConnection,connect,oauth,getSettings } from 'connection/utils';
+import { classSet,runActionAfterTimeOut,checkIfPresent,isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,normalizeString as normalize,groupBy } from 'shared/utils';
+import { getAllConnection,removeConnection,connect,oauth,getSettings,getCurrentTab } from 'connection/utils';
 import { store,store_application } from 'shared/store';
 
 
@@ -24,6 +24,7 @@ const CUSTOM_URL = 'custom';
 export default class App extends FeatureElement {
 
     @api variant = 'table';
+    @api isHeaderLess = false;
     @track data = [];
     @track formattedData = [];
     isLoading = false;
@@ -38,6 +39,12 @@ export default class App extends FeatureElement {
     /** Actions */
 
 
+    @api
+    applyFilter = (value) => {
+        this.filter = value;
+    }
+
+    @api
     addConnectionClick = () => {
         this.authorizeOrg();
     }
@@ -69,6 +76,9 @@ export default class App extends FeatureElement {
                 break;
             case 'incognito':
                 this.openBrowser(row,'incognito');
+                break;
+            case 'openToolkit':
+                this.openToolkit(row);
                 break;
             case 'seeDetails':
                 this.seeDetails(row);
@@ -143,6 +153,7 @@ export default class App extends FeatureElement {
 
     openBrowser = async (row,target) => {
         console.log('openBrowser',target);
+
         if(isElectronApp()){
             // Electron version
             if(row._hasError){
@@ -184,6 +195,20 @@ export default class App extends FeatureElement {
             }catch(e){}
             this.isLoading = false;
         }    
+    }
+
+    openToolkit = async (row) => {
+        this.isLoading = true;
+            try{
+                const {alias,...settings} = this.data.find(x => x.id == row.id);
+                const connector = await connect({alias,settings,disableEvent:true});
+                const url = `https://sf-toolkit.com/extension?sessionId=${connector.conn.accessToken}&serverUrl=${encodeURIComponent(connector.conn.instanceUrl)}`;
+                window.open(url,'_blank');
+                /*chrome.tabs.create({url: url},(tab) => {
+                    this.createOrAddToTabGroup(tab, alias);
+                });*/
+            }catch(e){}
+        this.isLoading = false;
     }
 
     seeDetails = async (row) => {
@@ -253,6 +278,10 @@ export default class App extends FeatureElement {
 
     /** Getters  */
 
+    get isSearchDisplayed(){
+        return !this.isSearchHidden;
+    }
+
     get filteredFormatted(){
         return this.formattedData.map(group => ({
             ...group,
@@ -285,6 +314,14 @@ export default class App extends FeatureElement {
     
     get pageClass(){
         return super.pageClass+' slds-overflow-hidden';
+    }
+
+    get headerRowClass(){
+        return classSet("slds-page-header__row").toString();
+    }
+
+    get detailRowClass(){
+        return classSet("slds-page-header__detail-row slds-is-relative min-height-200").toString();
     }
 
     get columns(){

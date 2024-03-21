@@ -51,12 +51,13 @@ export default {
         }),
         copy({
             targets: [
-              { src: 'src/client/web_extension/index.html', dest: 'chrome_ext' },
-              { src: 'src/client/web_extension/callback.html', dest: 'chrome_ext' },
-              { src: 'src/client/web_extension/callback.js', dest: 'chrome_ext' },
+              { src: 'src/client/web_extension/views/', dest: 'chrome_ext' },
               { src: 'src/client/web_extension/scripts', dest: 'chrome_ext' },
               { src: 'src/client/web_extension/images', dest: 'chrome_ext' },
               { src: 'manifest.json', dest: 'chrome_ext' },
+              { src: 'src/client/web_extension/callback.js', dest: 'chrome_ext/popup' },
+              { src: 'src/client/web_extension/side.js', dest: 'chrome_ext/popup' },
+              { src: 'src/client/web_extension/popup.js', dest: 'chrome_ext/popup' },
             ]
         })
     ],

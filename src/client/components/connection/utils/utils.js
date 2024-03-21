@@ -123,6 +123,18 @@ export async function removeConnection(alias){
 export async function getAllConnection(){
     let connections =  isElectronApp()?await electronInterface.getAllConnection():await webInterface.getAllConnection();
     console.log('connections',connections);
+    // To be removed, only for testing
+    if(connections == null || connections.length == 0){
+        console.log('FAKE Connections')
+        return [1,2,3,4,5,7,8,9,10].map(x => ({
+            alias:`Test-${x}-Prod`,
+            company:`Test-${x}`,
+            name:'Prod',
+            id:`Test-${x}-Prod`,
+            username:`Test-${x}-Prod@salesforce.com`
+        }));
+    }
+    
     return connections.map(x => {
         let nameArray = (x.alias || '').split('-');
         let company = nameArray.length > 1 ?nameArray.shift() : '';
@@ -161,13 +173,55 @@ export async function removeSession(value){
 
 /** Session Connection **/
 
+
+export async function oauth_chrome({alias,loginUrl},callback){
+
+    const oauth2 = new window.jsforce.OAuth2({
+        clientId : window.jsforceSettings.clientId,
+        redirectUri : chrome.identity.getRedirectURL(),
+        loginUrl : loginUrl
+    });
+
+    const finalUrl = oauth2.getAuthorizationUrl({ prompt:'login consent',scope : 'id api web openid sfap_api refresh_token' });  
+    chrome.runtime.sendMessage({
+        action: "launchWebAuthFlow",
+        url:finalUrl
+    },async (response) => {
+        const { code } = response;
+        if(isNotUndefinedOrNull(code)){
+            const connection = new window.jsforce.Connection({ oauth2 });
+            const userInfo = await connection.authorize(code);
+            oauth_extend({alias,connection},callback);
+        }
+
+    });
+}
+
 export async function oauth({alias,loginUrl},callback){
     
     window.jsforce.browserClient = new window.jsforce.browser.Client(Date.now()); // Reset
     console.log('window.jsforceSettings',window.jsforceSettings);
     window.jsforce.browserClient.init(window.jsforceSettings);
     window.jsforce.browserClient.on('connect', async (connection) =>{
-        const {accessToken,instanceUrl,loginUrl,refreshToken,version} = connection;
+        oauth_extend({alias,connection},callback);
+    });
+
+    window.jsforce.browserClient.login({
+        ...window.jsforceSettings,
+        loginUrl,
+        version:constant.apiVersion,
+        scope:'id api web openid sfap_api refresh_token'
+    },(_,res) => {
+        if(res.status === 'cancel'){
+            //this.close(null)
+            callback(null);
+        }
+    });
+}
+
+async function oauth_extend({alias,connection},callback){
+    console.log('oauth_extend');
+    const {accessToken,instanceUrl,loginUrl,refreshToken,version} = connection;
         let nameArray = alias.split('-');
         let companyName = nameArray.length > 1 ?nameArray.shift() : '';
         let name = nameArray.join('-');
@@ -191,23 +245,10 @@ export async function oauth({alias,loginUrl},callback){
         await addConnection(header,connection);
         let connector = new Connector(header,connection);
         callback({alias,connector})//this.close({alias:alias,connection});
-    });
-
-    window.jsforce.browserClient.login({
-        ...window.jsforceSettings,
-        loginUrl,
-        version:constant.apiVersion,
-        scope:'id api web openid sfap_api refresh_token'
-    },(_,res) => {
-        if(res.status === 'cancel'){
-            //this.close(null)
-            callback(null);
-        }
-    });
 }
 
 export async function directConnect(sessionId,serverUrl){
-    //console.log('sessionId,serverUrl',sessionId,serverUrl);
+    console.log('sessionId,serverUrl',sessionId,serverUrl);
     let params = {
         //oauth2      : {...window.jsforceSettings},
         sessionId   : sessionId,

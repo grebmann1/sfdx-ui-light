@@ -35,11 +35,13 @@ export default class RecordExplorer extends LightningElement {
     initRecordExplorer = async () => {
         try{
             this.isError = false;
-            let conn = window.connector;
+            this.isLoading = true;
+            let conn = window.connector.conn;
             this.currentTab = await getCurrentTab();
             this.contextUrl = window.location.href;
             // Get recordId (Step 1)
             this.recordId = getRecordId(this.currentTab.url);
+            console.log('this.recordId',this.recordId);
             // Get sobjectName (Step 2) // Should be optimized to save 1 API Call [Caching]
             this.sobjectName = await getCurrentObjectType(conn,this.recordId);
             // Get Metadata (Step 3) // Should be optimized to save 1 API Call [Caching]
@@ -51,10 +53,12 @@ export default class RecordExplorer extends LightningElement {
             this.data = this.formatData();
             runActionAfterTimeOut(null,(param) => {
                 this.createTable();
+                this.isLoading = false;
             });
         }catch(e){
             console.error(e);
             this.isError = true;
+            this.isLoading = false;
         }
     }
 
@@ -128,6 +132,7 @@ export default class RecordExplorer extends LightningElement {
        return items;
     }
 
+    @api
     updateTable = (newValue) => {
         this.filter = newValue;
         this.tableInstance.replaceData(this.formattedData)

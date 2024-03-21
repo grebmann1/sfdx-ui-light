@@ -1,8 +1,8 @@
 import { api } from "lwc";
 import LightningAlert from 'lightning/alert';
 import LightningModal from 'lightning/modal';
-import {addConnection,connect,oauth} from 'connection/utils';
-import {isNotUndefinedOrNull,isElectronApp,decodeError} from "shared/utils";
+import {addConnection,connect,oauth,oauth_chrome} from 'connection/utils';
+import {isNotUndefinedOrNull,isElectronApp,isChromeExtension,decodeError} from "shared/utils";
 
 const domainOptions = [
     { id: 'prod',   label: 'login.salesforce.com', value: 'https://login.salesforce.com' },
@@ -51,6 +51,8 @@ export default class ConnectionNewModal extends LightningModal {
         this.isLoading = true;
         if(isElectronApp()){
             this.electron_oauth();
+        }else if(isChromeExtension()){
+            this.chrome_oauth();
         }else{
             this.web_oauth();
         }
@@ -92,12 +94,25 @@ export default class ConnectionNewModal extends LightningModal {
             });
         }
     }
+    
+    chrome_oauth = async () => {
+        console.log('chrome_oauth');
+        oauth_chrome({
+            alias:this.alias,
+            loginUrl:this.selectedDomain === 'custom'?this.customDomain:this.selectedDomain
+        },(res) => {
+            console.log('chrome_oauth',res);
+            this.close(res);
+        });
+        
+    }
 
     web_oauth = async () => {
         oauth({
             alias:this.alias,
             loginUrl:this.selectedDomain === 'custom'?this.customDomain:this.selectedDomain
         },(res) => {
+            console.log('web_oauth',res);
             this.close(res);
         });
     }

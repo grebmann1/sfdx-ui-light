@@ -1,16 +1,33 @@
 <template>
-    <div>
+    <div class="slds-popup-container">
         <!-- HEADER -->
-        <extension-header></extension-header>
+        <extension-header onsearch={handleSearch}>
+            <!-- Actions for connections -->
+            <template lwc:if={isConnection}>
+                <lightning-button-group slot="action">
+                    <lightning-button icon-name="utility:add" label="Org" onclick={connection_authorizeOrg}></lightning-button>
+                </lightning-button-group>
+            </template>
+            <template lwc:elseif={isRecordExplorer}>
+                <lightning-button-group slot="action">
+                    <lightning-button icon-name="utility:picklist_choice" label="Orgs" onclick={openSidePanel}></lightning-button>
+                    <lightning-button icon-name="utility:open" label="Toolkit" onclick={redirectToWebsite}></lightning-button>
+                </lightning-button-group>
+            </template>
+        </extension-header>
 
         <!-- BODY slds-background-white -->
-        <div class="slds-p-around_small slds-grid slds-wrap slds-grid_vertical-stretch ">
+        <div class="slds-full-height slds-is-relative slds-p-left_small slds-p-right_small slds-p-bottom_small slds-grid slds-wrap slds-grid_vertical-stretch slds-scrollable_y">
 
             <!-- SECTION -->
             <div class="slds-auto-height slds-col slds-col slds-size_1-of-1 slds-p-top_small">
                 <!-- Start -->
-                <!--<extension-record-explorer versions={versions}></extension-record-explorer>-->
-                <connection-app variant="card"></connection-app>
+                <template lwc:if={isConnection}>
+                    <connection-app lwc:ref="connection"  variant="card" is-header-less></connection-app>
+                </template>
+                <template lwc:elseif={isRecordExplorer}>
+                    <extension-record-explorer lwc:ref="recordexplorer" versions={versions}></extension-record-explorer>
+                </template>
                 <!-- End -->
             </div>
         </div>
