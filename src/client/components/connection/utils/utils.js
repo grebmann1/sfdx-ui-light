@@ -124,7 +124,7 @@ export async function getAllConnection(){
     let connections =  isElectronApp()?await electronInterface.getAllConnection():await webInterface.getAllConnection();
     console.log('connections',connections);
     // To be removed, only for testing
-    if(connections == null || connections.length == 0){
+    /*if(connections == null || connections.length == 0){
         console.log('FAKE Connections')
         return [1,2,3,4,5,7,8,9,10].map(x => ({
             alias:`Test-${x}-Prod`,
@@ -133,7 +133,7 @@ export async function getAllConnection(){
             id:`Test-${x}-Prod`,
             username:`Test-${x}-Prod@salesforce.com`
         }));
-    }
+    }*/
     
     return connections.map(x => {
         let nameArray = (x.alias || '').split('-');

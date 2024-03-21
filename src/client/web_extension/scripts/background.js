@@ -26,7 +26,6 @@ const handleTabOpening = async (tab) => {
         console.log('onActivated - chrome.action.setPopup');
         chrome.action.setPopup({tabId: tab.id, popup: 'views/popup.html'});
     }else{
-        console.log('onActivated - default : side panel');
         await chrome.sidePanel.setOptions({
             tabId:tab.id,
             path: 'views/side.html',
@@ -37,7 +36,7 @@ const handleTabOpening = async (tab) => {
 
 /** Init **/
 chrome.action.disable();
-
+chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch((error) => console.error(error));
 /** On Install Event */
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -46,6 +45,15 @@ chrome.runtime.onInstalled.addListener(() => {
         title: 'Open side panel',
         contexts: ['all']
     });
+});
+
+chrome.storage.onChanged.addListener((changes, namespace) => {
+    for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
+      console.log(
+        `Storage key "${key}" in namespace "${namespace}" changed.`,
+        `Old value was "${oldValue}", new value is "${newValue}".`
+      );
+    }
 });
 
 

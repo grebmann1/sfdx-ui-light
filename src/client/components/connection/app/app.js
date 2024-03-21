@@ -278,6 +278,10 @@ export default class App extends FeatureElement {
 
     /** Getters  */
 
+    get isNoRecord(){
+        return this.formattedData.length == 0;
+    }
+
     get isSearchDisplayed(){
         return !this.isSearchHidden;
     }

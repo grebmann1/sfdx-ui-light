@@ -7,6 +7,7 @@ const loadLocalForage = async () => {
         localforage.ready().then(function() {
             resolve();
         }).catch(function (e) {
+            console.log('error',e)
             resolve();
         });
     })
@@ -31,7 +32,7 @@ const init = async () => {
     };
     window.defaultStore = localforage.createInstance({name: "defaultStore"});
     window.jsforce = jsforce;
-    console.log('window.jsforceSettings',window.jsforceSettings);
+    console.log('window.jsforceSettings',window.jsforceSettings,localforage);
 }
 
 

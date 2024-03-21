@@ -10,6 +10,9 @@
                         onrowaction={handleRowAction}
                     ></connection-card>
                 </template>
+                <template lwc:if={isNoRecord}>
+                    <slds-empty-illustration title="No orgs"></slds-empty-illustration>
+                </template>
             </template>
         </div>
     </template>
