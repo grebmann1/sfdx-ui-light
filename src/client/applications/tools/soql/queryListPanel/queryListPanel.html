@@ -5,7 +5,7 @@
                 <a class="slds-tabs_default__link" href="javascript:void(0);" role="tab" tabindex="-1" aria-selected="false" aria-controls="tab-recent-queries" id="tab-recent-queries__item">{i18n.QUERY_LIST_PANEL_RECENT_QUERIES}</a>
             </li>
         </ul>
-        <div id="tab-recent-queries" class="slds-tabs_default__content" role="tabpanel" aria-labelledby="tab-recent-queries__item">
+        <div id="tab-recent-queries" class="slds-tabs_default__content" role="tabpanel">
             <div class="slds-scrollable">
                 <template for:each={recentQueries} for:item="query">
                     <div class="slds-p-around_small slds-border_bottom recent-query-item" title={query.soql} key={query.key} data-key={query.key} onclick={selectQuery}> {query.soql} </div>

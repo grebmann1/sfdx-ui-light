@@ -1,0 +1,40 @@
+<template>
+    <lightning-modal-header label="Import Org Credentials"></lightning-modal-header>
+    <lightning-modal-body>
+        <section class="slds-p-around_large min-height-400">
+            
+            <div class="slds-form-element slds-m-bottom_large">
+                <lightning-textarea 
+                    class="input-to-validate" 
+                    name="configuration" 
+                    label="Paste your configuration"
+                    onchange={handleChange}
+                ></lightning-textarea>
+            </div>
+
+            <template lwc:if={isResultDisplayed}>
+                <ui-information-block title="Info">
+                    <p class="slds-text-heading_small slds-text-color_success">{resultMessage}</p>
+                    <p>New Connection won't overwrite your existing connections.</p>
+                </ui-information-block>
+            </template>
+
+        </section>
+    </lightning-modal-body>
+    <lightning-modal-footer>
+        <lightning-button
+                class="slds-float_left slds-button"
+                disabled={saveInProcess}
+                variant="neutral"
+                label="Cancel"
+                onclick={handleCloseClick}
+        ></lightning-button>
+        <lightning-button
+                class="slds-button"
+                disabled={saveInProcess}
+                variant="brand"
+                label="Import"
+                onclick={handleSaveClick}
+        ></lightning-button>
+    </lightning-modal-footer>
+</template>

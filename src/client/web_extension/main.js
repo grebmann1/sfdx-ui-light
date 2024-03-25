@@ -2,6 +2,7 @@ import '@lwc/synthetic-shadow';
 import { createElement } from 'lwc';
 import extensionRoot from 'extension/root';
 
+
 const loadLocalForage = async () => {
     return new Promise((resolve,reject) => {
         localforage.ready().then(function() {
@@ -21,7 +22,9 @@ const init = async () => {
     await loadLocalForage();
 
     /** Define Settings **/
-    window.connections = {}; // use for faster connection, during live processing
+    window.mermaid = mermaid; 
+    window.Prism = Prism;
+    //window.connections = {}; // use for faster connection, during live processing
     window.jsforceSettings = {
         clientId:  '3MVG9_kZcLde7U5oNdaqndT3T9qa54eaA.ycC6APuOkYzRP286pPeOvwOqAQ2ue7l5ejNAxPYj4xTbWn3zS6Y',
         chromeId:   'dmlgjapbfifmeopbfikbdmlgdcgcdmfb',
@@ -32,7 +35,7 @@ const init = async () => {
     };
     window.defaultStore = localforage.createInstance({name: "defaultStore"});
     window.jsforce = jsforce;
-    console.log('window.jsforceSettings',window.jsforceSettings,localforage);
+    //console.log('window.jsforceSettings',window.jsforceSettings,localforage);
 }
 
 

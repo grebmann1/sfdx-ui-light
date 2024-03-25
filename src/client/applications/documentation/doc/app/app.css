@@ -693,8 +693,26 @@
 li {
     margin: var(--dx-g-spacing-sm) 0 var(--dx-g-spacing-sm) var(--dx-g-spacing-lg);
 }
-
-
+/*
+.doc pre[class*="language-"], 
+.doc code[class*="language-"] {
+     border-radius: 0px 0px 0.3em 0.3em;
+    padding-bottom: var(--dx-g-spacing-smd);
+    background-color: unset;
+    padding-top: var(--dx-g-spacing-sm);
+    font-size: 14px;
+    text-shadow: none;
+    font-family: var(--dx-g-font-mono);
+    direction: ltr;
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    line-height: 20px;
+    tab-size: 4;
+    hyphens: none;
+}
+*/
 /** Utility **/
 
 .custom-utility-bar{
@@ -729,4 +747,53 @@ li {
 .mermaid .divider {
     stroke: #2f2cb7 !important;
     stroke-width: 1;
+}
+
+
+/** Exta **/
+.slds-100-width{
+    width: 100%;/*-webkit-fill-available;*/
+}
+
+.slds-50-width{
+    width: 50%;
+}
+
+.slds-25-width{
+    width: 25%;
+}
+
+.background-gray {
+    background-color: var(--dx-g-gray-95);
+}
+
+.slds-card__body{
+    /*margin-top: 0px;
+    margin-bottom: 0px;
+    padding-left: 0px;
+    padding-right: 0px;*/
+}
+
+.mobile-menu{
+    /*height: 2.5rem;*/
+}
+
+.custom-menu{
+    --slds-c-icon-color-foreground-default: rgb(0 162 225);
+}
+
+.is-sticky {
+    align-self: flex-start;
+    position: sticky;
+    top: 2px;
+    z-index: 999;
+    width: 100%;
+}
+
+.collapsed{
+    background-color: var(--dx-g-gray-90);
+}
+
+.full-width{
+    width: 100vw;
 }

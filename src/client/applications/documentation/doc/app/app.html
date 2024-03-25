@@ -1,7 +1,7 @@
 <template>
     <!-- Container -->
     <div class={pageClass}>
-        <div class="full-page-header slds-page-header slds-page-header_joined">
+        <div class={fullPageHeaderClass}>
             <div class="slds-page-header__row">
                 <div class="slds-page-header__col-title">
                     <div class="slds-media">
@@ -13,7 +13,7 @@
                                 <div class="slds-page-header__name-title">
                                     <h1>
                                         <span>Documentation Explorer</span>
-                                        <span class="slds-page-header__title slds-truncate" title="Documentation Explorer">Documentation Explorer</span>
+                                        <span class="slds-page-header__title slds-truncate" title={documentationTitle}>{documentationTitle}</span>
                                     </h1>
                                 </div>
                             </div>
@@ -25,13 +25,16 @@
                         <div class="slds-page-header__control">
                             <!-- actions -->
                             <lightning-button-group>
-                                <lightning-button-icon icon-name="utility:filterList" disabled={isLoading} onclick={filtering_handleClick} variant={filtering_variant}></lightning-button-icon>
+                                <lightning-button-icon icon-name="utility:filterList"   disabled={isLoading} onclick={filtering_handleClick} variant={filtering_variant}></lightning-button-icon>
+                                <template lwc:if={isResponsive}>
+                                    <lightning-button-icon icon-name="utility:rows" disabled={isLoading} onclick={menu_handleClick} variant={menu_variant}></lightning-button-icon>
+                                </template>
                             </lightning-button-group>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="slds-page-header__row slds-page-header__row_gutters">
+            <div class={filterContainerClass}>
                 <div class="slds-page-header__col-details">
                     <div class="slds-page-header__detail-row slds-is-relative" style="display:block; ">
                         <!-- Display Info -->
@@ -45,12 +48,12 @@
             </div>
         </div>
         <div class="slds-full-height slds-overflow-hidden slds-flex-row">
-            <article class="full-page-body slds-card slds-m-top_small slds-col">
-                <div class="slds-card__body slds-card__body_inner">
-                    <div class="slds-full-height slds-grid slds-gutters slds-wrap">
-                        <div class="slds-flex-column slds-full-height slds-col min-height-200 slds-size_1-of-4"> 
+            <article class={articleContainerClass}>
+                <div class="full-page "> <!-- slds-card__body slds-card__body_inner -->
+                    <div class="slds-full-height slds-grid slds-wrap">
+                        <div class={menuContainerClass}> 
                             <slds-menu 
-                                class="slds-flex-column slds-full-height min-height-200"
+                                class="slds-flex-column full-page-body min-height-200"
                                 items={filteredList}
                                 title="SObjects"
                                 highlight={filter}
@@ -60,20 +63,23 @@
                                 is-loading={isMenuLoading}
                                 hide-search
                             >
-                                <lightning-input 
-                                            class="slds-m-bottom_large" 
+                                <template lwc:if={isNotResponsive}>
+                                    <lightning-input 
+                                            class="slds-m-bottom_large slds-m-right_small" 
                                             type="search"
                                             label="Search" 
                                             onchange={handleFilter}
                                     ></lightning-input>
+                                </template>
                             </slds-menu>
                         </div>
+                        <template lwc:if={isLoading}>
+                            <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                        </template>
                         <!-- Container -->
-                        <div class="documentation-container  slds-flex-column slds-full-height slds-col slds-size_3-of-4 slds-is-relative">
-                            <div class="min-height-200 slds-scrollable_y">
-                                <template lwc:if={isLoading}>
-                                    <lightning-spinner alternative-text="Loading"></lightning-spinner>
-                                </template>
+                        <div class={documentationContainerClass}>
+                            <div class="min-height-200 "> <!-- slds-scrollable_y -->
+                                
 
                                 
                                 <template lwc:if={isNoRecord}>
@@ -83,14 +89,13 @@
                                     <div class="mermaid" lwc:ref="mermaid"  lwc:dom="manual"></div>
                                     <div class="doc"     lwc:ref="container" lwc:dom="manual"></div>
                                 </template>
-                                
                             </div>
                         </div>
                     </div>
                 </div>
             </article>
             <!-- Panel -->
-            <slds-vertical-panel is-open={displayFilter} onclose={handleCloseVerticalPanel}>
+            <slds-vertical-panel size={filterPanelSize} is-open={displayFilter} onclose={handleCloseVerticalPanel}>
                 <!-- FILTER -->
                 <li class="slds-item">
                     <lightning-input 

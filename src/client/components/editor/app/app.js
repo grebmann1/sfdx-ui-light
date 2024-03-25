@@ -24,7 +24,7 @@ export default class App extends FeatureElement {
     isLoading = false;
 
     connectedCallback(){
-        console.log('code editor');
+        //console.log('code editor');
         this.loadMonacoEditor();
     }
 

@@ -6,6 +6,7 @@ import { classSet } from 'lightning/utils';
 export default class VerticalPanel extends LightningElement {
 
     @api isOpen;
+    @api size = 'slds-size_medium';
 
     hasLoaded = false;
 
@@ -24,9 +25,9 @@ export default class VerticalPanel extends LightningElement {
     /** Getters */
 
     get filterPanelClass(){
-        return classSet('slds-panel slds-size_medium slds-panel_docked slds-panel_docked-right slds-panel_drawer').add({
-            'slds-is-open':this.isOpen,
-            'slds-m-left_small':true, // in case we want to add some logic
+        return classSet(`slds-panel ${this.size} slds-panel_docked slds-panel_docked-right slds-panel_drawer`)
+        .add({
+            'slds-is-open':this.isOpen
         }).toString();
     }
 

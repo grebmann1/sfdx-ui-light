@@ -1,12 +1,12 @@
 import { api } from "lwc";
 import LightningAlert from 'lightning/alert';
 import LightningModal from 'lightning/modal';
-import {addConnection,connect,oauth,oauth_chrome} from 'connection/utils';
+import {oauth,oauth_chrome} from 'connection/utils';
 import {isNotUndefinedOrNull,isElectronApp,isChromeExtension,decodeError} from "shared/utils";
 
 const domainOptions = [
-    { id: 'prod',   label: 'login.salesforce.com', value: 'https://login.salesforce.com' },
-    { id: 'test',   label: 'test.salesforce.com', value: 'https://test.salesforce.com' },
+    { id: 'prod',   label: 'login.salesforce.com', value: 'login.salesforce.com' },
+    { id: 'test',   label: 'test.salesforce.com', value: 'test.salesforce.com' },
     { id: 'custom', label: 'custom domain', value: 'custom' }
 ];
 
@@ -23,6 +23,7 @@ export default class ConnectionNewModal extends LightningModal {
 
     validateForm = () => {
         let isValid = true;
+        // Default
         let inputFields = this.template.querySelectorAll('.input-to-validate');
             inputFields.forEach(inputField => {
                 if(!inputField.checkValidity()) {
@@ -30,6 +31,18 @@ export default class ConnectionNewModal extends LightningModal {
                     isValid = false;
                 }
             });
+        // Custom Domain
+        const domainToValidate = this.template.querySelector('.domain-to-validate');
+        if(domainToValidate){
+            if(isNotUndefinedOrNull(domainToValidate.value) && domainToValidate.value.startsWith('http')){
+                domainToValidate.setCustomValidity('Don\'t include the protocol');
+                isValid = false;
+            }else{
+                domainToValidate.setCustomValidity('');
+            }
+            domainToValidate.reportValidity();
+        }
+        
         return isValid;
     }
 
@@ -63,7 +76,7 @@ export default class ConnectionNewModal extends LightningModal {
         console.log('electron_oauth');
         let params = {
             alias: this.alias,
-            instanceurl: this.selectedDomain === 'custom'?this.customDomain:this.selectedDomain
+            instanceurl: this.loginUrl
         };
         try{
             const {error, res} = await window.electron.ipcRenderer.invoke('org-createNewOrgAlias',params);
@@ -99,7 +112,7 @@ export default class ConnectionNewModal extends LightningModal {
         console.log('chrome_oauth');
         oauth_chrome({
             alias:this.alias,
-            loginUrl:this.selectedDomain === 'custom'?this.customDomain:this.selectedDomain
+            loginUrl:this.loginUrl
         },(res) => {
             console.log('chrome_oauth',res);
             this.close(res);
@@ -110,7 +123,7 @@ export default class ConnectionNewModal extends LightningModal {
     web_oauth = async () => {
         oauth({
             alias:this.alias,
-            loginUrl:this.selectedDomain === 'custom'?this.customDomain:this.selectedDomain
+            loginUrl:this.loginUrl
         },(res) => {
             console.log('web_oauth',res);
             this.close(res);
@@ -153,6 +166,10 @@ export default class ConnectionNewModal extends LightningModal {
 
     get isCustomDomainDisplayed(){
         return this.selectedDomain === domainOptions[2].value;
+    }
+
+    get loginUrl(){
+        return `https://${this.selectedDomain === 'custom'?this.customDomain:this.selectedDomain}`;
     }
 
 

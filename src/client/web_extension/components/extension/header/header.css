@@ -19,8 +19,8 @@
 }
 
 .slds-global-header_container{
-    position: absolute;
-    height: 2.5rem;
+    position: relative !important;
+    height: 50px;
     width: 100%;
 }
 

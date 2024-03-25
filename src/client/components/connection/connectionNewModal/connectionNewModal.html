@@ -31,12 +31,12 @@
             <template lwc:if={isCustomDomainDisplayed}>
                 <div class="slds-m-bottom_large">
                     <lightning-input
-                            class="input-to-validate"
+                            class="domain-to-validate"
                             name="customDomain"
                             type="text"
                             value={customDomain}
-                            label="Custom Domain (please include entire url)"
-                            placeholder="Ex: https://org62.my.salesforce.com"
+                            label="Custom Domain (Only include the host without the protocol)"
+                            placeholder="Ex: org62.my.salesforce.com"
                             onchange={customDomain_onChange}
                             required
                     ></lightning-input>

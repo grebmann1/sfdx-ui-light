@@ -16,8 +16,13 @@ export default {
             "modules": [
                 { "dir": "../modules" },
                 { "dir": "../components" },
+                { "dir": "../applications/documentation" },
                 { "dir": "components" },
                 { "npm": "lightning-base-components" },
+                {
+                    "name": "mermaid",
+                    "path": "node_modules/mermaid/dist/mermaid.js"
+                },
                 {
                     "name": "tabulator-tables",
                     "path": "node_modules/tabulator-tables/dist/js/tabulator_esm.js"
@@ -35,9 +40,9 @@ export default {
                     "path":"node_modules/redux-thunk/es/index.js"
                 },
                 {
-                    "name": "tabulator-tables",
-                    "path": "node_modules/tabulator-tables/dist/js/tabulator_esm.js"
-                },
+                    "name":"lwr/navigation",
+                    "path":"node_modules/@lwrjs/router/build/es/modules/lwr/navigation/navigation.js"
+                }
             ]
         }),
         copy({

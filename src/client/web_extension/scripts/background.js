@@ -23,9 +23,11 @@ const handleTabOpening = async (tab) => {
     /**  Filter Tabs **/
     if (isHostMatching(url)) {
         // Salesforce website, ensure the popup is set
-        console.log('onActivated - chrome.action.setPopup');
+        //console.log('onActivated - chrome.action.setPopup');
+        //await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false })
         chrome.action.setPopup({tabId: tab.id, popup: 'views/popup.html'});
     }else{
+        //await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
         await chrome.sidePanel.setOptions({
             tabId:tab.id,
             path: 'views/side.html',
@@ -35,8 +37,7 @@ const handleTabOpening = async (tab) => {
 }
 
 /** Init **/
-chrome.action.disable();
-chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch((error) => console.error(error));
+//chrome.action.disable();
 /** On Install Event */
 
 chrome.runtime.onInstalled.addListener(() => {

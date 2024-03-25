@@ -1,40 +1,47 @@
 import {isUndefinedOrNull} from 'shared/utils';
 
-export async function getSettings(alias){
-    let connections = await window.defaultStore.getItem('connections');
-    if(isUndefinedOrNull(connections)){
-        connections = [];
-    }
+
+
+const formatConnectionItem = (item) => {
+    return item; // Keep for now
+    /*const { accessToken,instanceUrl,loginUrl,refreshToken,version } = item;
+    return { 
+        accessToken,
+        instanceUrl,
+        loginUrl,
+        refreshToken,
+        //version
+    };*/
+}
+
+const formatConnections = (connections) => {
+    return connections.map(x => formatConnectionItem(x));
+}
+
+
+export async function getConnection(alias){
+    let connections = await window.defaultStore.getItem('connections') || [];
     return connections.find(x => x.alias === alias);
 }
 
-export async function setSettings(alias,settings){
-    let connections = await window.defaultStore.getItem('connections');
-    let index = connections.findIndex(x => x.alias === alias);
-    connections[index] = settings;
-    await window.defaultStore.setItem('connections',connections);
-}
-
-export async function addConnection(data,connection){
+export async function setConnection(alias,connection){
     let connections = await window.defaultStore.getItem('connections') || [];
-    if(isUndefinedOrNull(connections)){
-        connections = [];
+    let index = connections.findIndex(x => x.alias === alias);
+    if(index >= 0){
+        connections[index] = connection;
+    }else{
+        connections.push(connection);
     }
-    // Remove the duplicate alias
-    connections = connections.filter(x => x.alias !== data.alias);
-    connections.push(data);
     // Order Connections
     connections = connections.sort((a, b) => a.alias.localeCompare(b.alias));
 
-    window.connections[data.alias] = connection;
-    await window.defaultStore.setItem('connections',connections);
+    await window.defaultStore.setItem('connections',formatConnections(connections));
 }
 
+
 export async function renameConnection({oldAlias,newAlias,username}){
-    let connections = await window.defaultStore.getItem('connections');
-    if(isUndefinedOrNull(connections)){
-        connections = [];
-    }
+    let connections = await window.defaultStore.getItem('connections') || [];
+
     // Switch Name
     connections.forEach(conn => {
         if(conn.alias === oldAlias){
@@ -43,37 +50,32 @@ export async function renameConnection({oldAlias,newAlias,username}){
     })
     // Order Connections
     connections = connections.sort((a, b) => a.alias.localeCompare(b.alias));
-    // Switch connector
-    window.connections[newAlias] = window.connections[oldAlias];
-    delete window.connections[oldAlias];
 
-    await window.defaultStore.setItem('connections',connections);
+    await window.defaultStore.setItem('connections',formatConnections(connections));
 }
 
 export async function removeConnection(alias){
-    let connections = await window.defaultStore.getItem('connections');
-    if(isUndefinedOrNull(connections)){
-        connections = [];
-    }
+    let connections = await window.defaultStore.getItem('connections') || [];
     // Remove the alias
     connections = connections.filter(x => x.alias !== alias);
-    // Switch connector
-    delete window.connections[alias];
 
-    await window.defaultStore.setItem('connections',connections);
+    await window.defaultStore.setItem('connections',formatConnections(connections));
 }
 
 export async function getAllConnection(){
-    let connections = await window.defaultStore.getItem('connections');
-    if(isUndefinedOrNull(connections)){
-        connections = [];
-    }
+    let connections = await window.defaultStore.getItem('connections') || [];
     // Mapping
-    connections = connections.map(x => ({
-        ...x,
-        frontDoorUrl:x.instanceUrl+'/secur/frontdoor.jsp?sid='+x.accessToken,
-        sfdxAuthUrl:`force://${window.jsforceSettings.clientId}::${x.refreshToken}@${(new URL(x.instanceUrl)).host}`,
-    }))
+    connections = connections.map(x => {
+        // fix data issues
+        if(!x.instanceUrl.startsWith('http')){
+            x.instanceUrl = `https://${x.instanceUrl}`; 
+        }
+        return {
+            ...x,
+            frontDoorUrl:x.instanceUrl+'/secur/frontdoor.jsp?sid='+x.accessToken,
+            sfdxAuthUrl:`force://${window.jsforceSettings.clientId}::${x.refreshToken}@${(new URL(x.instanceUrl)).host}`,
+        }
+    })
 
     return connections;
 }

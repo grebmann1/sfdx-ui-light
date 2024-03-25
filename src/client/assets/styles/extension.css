@@ -1,19 +1,20 @@
 body {
     /*width: 700px;
     height: 600px;*/
+    height: 100vh;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6{
+div:not(ui-information-block) > h1,
+div:not(ui-information-block) > h2,
+div:not(ui-information-block) > h3,
+div:not(ui-information-block) > h4,
+div:not(ui-information-block) > h5,
+div:not(ui-information-block) > h6{
   font-weight:inherit;
   font-size:0.8em;
 }
 
-.slds-text-heading_medium{
+div:not(ui-information-block) > .slds-text-heading_medium{
     font-size:unset !important;
 }
 
@@ -24,4 +25,80 @@ h6{
 .slds-has-divider_top-space{
     margin-top: 0.3rem;
     padding-top: 0.3rem;
+}
+
+doc-app .full-page.slds-p-around_small{
+    padding: 0 !important;
+}
+
+doc-app .full-page-body.slds-m-top_small{
+    margin-top: 0 !important;
+}
+
+/** Static Mode **/
+.full-page{
+    height:100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.full-page-connected{
+    /*height:calc(97vh - 90px);*/
+}
+
+.full-page-header{
+
+}
+
+.full-page-body{
+    /*height: calc(100% - 120px);*/
+    position: relative;
+    flex-grow: 1;
+    overflow: auto;
+}
+
+.slds-flex-column{
+    display: flex;
+    flex-direction: column;
+}
+
+.slds-flex-row{
+    display: flex;
+    flex-direction: row;
+}
+
+.slds-justify-content-flew-end{
+    justify-content: flex-end;
+}
+
+.slds-full-height{
+    height:100%;
+}
+
+.slds-auto-height{
+    height:auto;
+}
+
+.slds-overflow-hidden{
+    overflow: hidden;
+}
+
+.slds-full-height.slds-grid .slds-col {
+    height:100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.slds-full-height .slds-tabs_scoped{
+    height:calc(100% - 41px);
+    display: flex;
+    flex-direction: column;
+}
+
+.slds-padding-top-200{
+    padding-top: 200px;
+}
+
+.slds-no-padding{
+    padding: unset !important;
 }

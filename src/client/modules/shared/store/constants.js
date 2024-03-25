@@ -1,6 +1,7 @@
 export const LOGIN = 'LOGIN';
 export const LOGOUT = 'LOGOUT';
 export const NAVIGATE = 'NAVIGATE';
+export const FAKE_NAVIGATE = 'FAKE_NAVIGATE';
 export const OPEN = 'OPEN';
 export const SHOW = 'SHOW';
 export const HIDE = 'HIDE';

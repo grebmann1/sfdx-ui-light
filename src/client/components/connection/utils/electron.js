@@ -3,8 +3,8 @@ import {isNotUndefinedOrNull,decodeError,classSet} from 'shared/utils';
 const CONNECTION_ERRORS = ['JwtAuthError','RefreshTokenAuthError'];
 
 
-export async function getSettings(alias){
-    console.log('getSettings - electron');
+export async function getConnection(alias){
+    console.log('getConnection - electron');
     var {res, error} = await window.electron.ipcRenderer.invoke('org-seeDetails',{alias});
     if (error) {
         throw decodeError(error)

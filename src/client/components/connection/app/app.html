@@ -1,7 +1,7 @@
 <template>
     <template lwc:if={isHeaderLess}>
          <!-- Card Variant -->
-         <div class="slds-connection-card-list">
+         <div class="slds-connection-card-list slds-p-horizontal_x-small">
             <template lwc:if={isCardVariant}>
                 <template for:each={filteredFormatted} for:item="item">
                     <connection-card 
@@ -40,9 +40,11 @@
                     <div class="slds-page-header__controls">
                         <div class="slds-page-header__control">
                             <!-- <lightning-button icon-name="utility:knowledge_base" label="Documentation Explorer"></lightning-button> -->
-                            <div class="slds-button-group" id="button-group-page-header-actions" role="group">
-                                <lightning-button icon-name="utility:add" label="Add Org" onclick={addConnectionClick}></lightning-button>
-                            </div>
+                            <lightning-button-group>
+                                <lightning-button icon-name="utility:upload"   label="Import"  title="Import orgs" onclick={importClick}></lightning-button>
+                                <lightning-button icon-name="utility:download" label="Export"  title="Export orgs" onclick={exportClick}></lightning-button>
+                                <lightning-button icon-name="utility:add"      label="Org"     title="org"         onclick={addConnectionClick}></lightning-button>
+                            </lightning-button-group>
                         </div>
                     </div>
                 </div>

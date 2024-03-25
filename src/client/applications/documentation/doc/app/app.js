@@ -1,7 +1,9 @@
 import FeatureElement from 'element/featureElement';
-import { wire,api } from "lwc";
-import { isEmpty,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull,removeDuplicates } from 'shared/utils';
+import { wire,api,createElement } from "lwc";
+import { isEmpty,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull,removeDuplicates,classSet } from 'shared/utils';
 import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'lwr/navigation';
+import { connectStore,store,store_application } from 'shared/store';
+import sldsCodeBlock from 'slds/codeBlock';
 
 const OBJECT_PREFIX = 'sforce_api_objects_';
 const ACCOUNT_ID = 'sforce_api_objects_account';
@@ -59,6 +61,8 @@ export default class App extends FeatureElement {
     @wire(NavigationContext)
     navContext;
 
+    @api isResponsive = false;
+
     isLoading = false;
     isMenuLoading = false;
     apiDomain = 'https://developer.salesforce.com';
@@ -75,6 +79,7 @@ export default class App extends FeatureElement {
     filter;
     isFieldFilterEnabled = false;
     displayFilter = false;
+    displayMenu = false;
 
     items = [];
     filteredItems = []; // used for backend storage
@@ -95,8 +100,18 @@ export default class App extends FeatureElement {
         }
     }
 
+    @wire(connectStore, { store })
+    applicationChange({application}) {
+        if(application?.type === 'FAKE_NAVIGATE'){
+            const pageRef = application.target;
+            this.loadFromNavigation(pageRef);
+        }
+        // Toggle Menu
+        //console.log('application',application)
+    }
+
     loadFromNavigation = async ({state, attributes}) => {
-        console.log('documentation - loadFromNavigation');
+        //('documentation - loadFromNavigation');
         const {applicationName,attribute1}  = attributes;
         const {name}      = state;
         if(applicationName != 'documentation') return; // Only for metadata
@@ -159,7 +174,22 @@ export default class App extends FeatureElement {
     filtering_handleClick = (e) => {
         this.displayFilter = !this.displayFilter;
     }
+
+    menu_handleClick = (e) => {
+        this.displayMenu = !this.displayMenu;
+    }
     
+    @api
+    externalSearch = async (value) => {
+        this.isLoading = true;
+        if(!isEmpty(value)){
+            this.displayMenu = true;
+            this.filteredItems = removeDuplicates(await this.getFilteredItems(value),'id');
+        }
+        this.filter = value;
+        this.isLoading = false;
+    }
+
     handleFilter = (e) => {
         this.isMenuLoading = true;
         runActionAfterTimeOut(e.detail.value,async (newValue) => {
@@ -173,6 +203,7 @@ export default class App extends FeatureElement {
     }
 
     handleItemSelection = async (e) => {
+        this.displayMenu = false; // For the responsive
         this.redirectTo(e.detail.key);
     }
 
@@ -196,8 +227,7 @@ export default class App extends FeatureElement {
     
     redirectTo = (key) => {
         const [documentationId,name] = (key || '').split(SEPARATOR);
-        //this.redirectTo(e.detail.key);
-        navigate(this.navContext,{
+        const params = {
             type:'application',
             attributes:{
                 applicationName:'documentation',
@@ -206,7 +236,13 @@ export default class App extends FeatureElement {
             state:{
                 name:name
             }
-        });
+        };
+
+        if(this.isNavigationAvailable){
+            navigate(this.navContext,params);
+        }else{
+            store.dispatch(store_application.fakeNavigate(params));
+        }
     }
     
     initializeMermaid = () => {
@@ -220,7 +256,8 @@ export default class App extends FeatureElement {
     }
 
     getFilteredItems = async (value) => {
-        return  await (await fetch(`/documentation/search?keywords=${encodeURIComponent(value)}&filters=${encodeURIComponent(this.cloud_value)}`)).json();
+        /** Doesnt work when testing the extension running on a server **/
+        return  await (await fetch(`${this.searchHost}documentation/search?keywords=${encodeURIComponent(value)}&filters=${encodeURIComponent(this.cloud_value)}`)).json();
     }
 
     selectPageToView = async () => {
@@ -254,11 +291,39 @@ export default class App extends FeatureElement {
                 formattedContent = formattedContent.toString().replace(regex,`$1<span style="font-weight:Bold; color:blue;">${this.filter}</span>`);
             }
         }
+
+
         this.refs.container.innerHTML = formattedContent;
         this.applyFilterOnTable(this.filter);
         this.buildUML();
+        this.transformCodeBlockToComponents();
         this.template.querySelector('.documentation-container').scrollTo({ top: 0, behavior: 'auto' });
         //this.template.querySelector('.mermaid').scrollIntoView();
+    }
+
+    transformCodeBlockToComponents = () => {
+        const mapping = {js: "javascript"};
+        this.refs.container.querySelectorAll(".codeSection")
+        .forEach( el => {
+            el.setAttribute("lwc:dom", "manual");
+            const list = el.firstChild.classList;
+            let c = "";
+            for (const d in list)
+                if (typeof list[d] == "string") {
+                    const p = list[d];
+                    p.startsWith("brush:") && (c = p.split(":")[1])
+                }
+            const newElement = createElement("slds-code-block", {
+                is: sldsCodeBlock
+            });
+            Object.assign(newElement, {
+                codeBlock: el.innerHTML,
+                language: mapping[c] || c,
+                title: "",
+            }),
+            el.innerHTML = "",
+            el.appendChild(newElement)
+        })
     }
 
     applyFilterOnTable = (keywords) => {
@@ -441,7 +506,7 @@ export default class App extends FeatureElement {
         }
         if(hrefRegex.test(content)){
             content = content.toString().replace(hrefRegex,function(match, p1, p2){
-                return `href="https://developer.salesforce.com/${p1}"`;
+                return `href="https://developer.salesforce.com/docs/${p1}"`;
             });
         }
 
@@ -455,12 +520,28 @@ export default class App extends FeatureElement {
     
     /** Getters */
 
+    get documentationTitle(){
+        return `Documentation Explorer ${isNotUndefinedOrNull(this.currentSobject)?` - ${this.currentSobject.title}`:''}`;
+    }
+
+    get searchHost(){
+        return this.isResponsive?'https://sf-toolkit.com/':'/';
+    }
+
+    get isNavigationAvailable(){
+        return isNotUndefinedOrNull(this.navContext);
+    }
+
     get pillItems(){
         return this.cloud_value.map(x => ({name:x,label:CONFIGURATION[x].label}))
     }
 
     get filtering_variant(){
         return this.displayFilter?'brand':'border-filled';
+    }
+
+    get menu_variant(){
+        return this.displayMenu?'brand':'border-filled';
     }
 
     get cloud_options(){
@@ -473,6 +554,56 @@ export default class App extends FeatureElement {
 
     get loadingMessage(){
         return `Loading ${this.loadingPointer}/${this.items.length} items`;
+    }
+
+    get articleContainerClass(){
+        return classSet('full-page slds-card slds-col')
+        .add({
+            'slds-m-top_small':!this.isResponsive,
+            'slds-25-width':this.displayFilter && this.isResponsive,
+            'slds-100-width':!this.isResponsive || !this.displayFilter
+            //'slds-scrollable_y':this.isResponsive
+            //'slds-show_large':this.displayFilter || this.displayMenu
+        }).toString();
+    }
+
+    get filterContainerClass(){
+        return classSet("slds-page-header__row slds-page-header__row_gutters")
+        .add({
+            'slds-show':this.displayFilter,
+            'slds-show_large':!this.displayFilter
+        }).toString();
+    }
+
+    get menuContainerClass(){
+        return classSet('slds-flex-column slds-p-left_x-small slds-full-height slds-col min-height-200 slds-size_1-of-1 slds-large-size_1-of-4 background-gray')
+        .add({
+            'slds-show':this.displayMenu,
+            'slds-show_large':!this.displayMenu
+        }).toString();
+    }
+
+    get documentationContainerClass(){
+        return classSet('documentation-container slds-scrollable_y slds-p-horizontal_small slds-flex-column slds-full-height slds-col slds-size_1-of-1 slds-large-size_3-of-4 slds-is-relative')
+        .add({
+            //'slds-scrollable_y':!this.isResponsive
+            //'slds-show_large':this.displayFilter || this.displayMenu
+        }).toString();
+    }
+
+    get fullPageHeaderClass(){
+        return classSet('full-page-header slds-page-header slds-page-header_joined is-sticky')
+        .add({
+            'collapsed':this.displayFilter || this.displayMenu
+        }).toString();
+    }
+
+    get filterPanelSize(){
+        return this.isResponsive ? 'slds-size_full':'slds-size_medium'
+    }
+
+    get isNotResponsive(){
+        return !this.isResponsive;
     }
 
     get filteredList(){

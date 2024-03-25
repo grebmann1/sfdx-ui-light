@@ -20,6 +20,13 @@ export function navigate(target) {
     };
 }
 
+export function fakeNavigate(target) {
+    return {
+        type: CONST.FAKE_NAVIGATE,
+        payload: { target }
+    };
+}
+
 export function open(target) {
     return {
         type: CONST.OPEN,

@@ -1,17 +1,19 @@
 import { api,track } from "lwc";
+import Toast from 'lightning/toast';
 import FeatureElement from 'element/featureElement';
 import ConnectionNewModal from "connection/connectionNewModal";
 import ConnectionDetailModal from "connection/connectionDetailModal";
 import ConnectionRenameModal from "connection/connectionRenameModal";
-
+import ConnectionImportModal from "connection/connectionImportModal";
 import { classSet,runActionAfterTimeOut,checkIfPresent,isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,normalizeString as normalize,groupBy } from 'shared/utils';
-import { getAllConnection,removeConnection,connect,oauth,getSettings,getCurrentTab } from 'connection/utils';
+import { getAllConnection,removeConnection,connect,oauth,getConnection,getCurrentTab } from 'connection/utils';
 import { store,store_application } from 'shared/store';
 
 
 const actions = [
     { label: 'Connect', name: 'login' },
     { label: 'Browser', name: 'openBrowser' },
+    { label: 'Export', name: 'export' },
     { label: 'See Details', name: 'seeDetails' },
     { label: 'Set Alias', name: 'setAlias' },
     { label: 'Remove', name: 'removeConnection' }
@@ -88,6 +90,9 @@ export default class App extends FeatureElement {
                 break;
             case 'setAlias':
                 this.setAlias(row);
+                break;
+            case 'export':
+                this.exportRow(row);
                 break;
             default:
         }
@@ -211,10 +216,25 @@ export default class App extends FeatureElement {
         this.isLoading = false;
     }
 
+    exportRow = async (row) => {
+        const { alias,sfdxAuthUrl } = row;
+        const exportedRow = [{
+            alias,
+            sfdxAuthUrl
+        }];
+        
+        navigator.clipboard.writeText(JSON.stringify(exportedRow, null, 4));
+        Toast.show({
+            label: `${alias} has been exported to your clipboard`,
+            //message: 'Exported to your clipboard', // Message is hidden in small screen
+            variant:'success',
+        });
+    }
+
     seeDetails = async (row) => {
         var {company,orgId,name,alias,username,instanceUrl,sfdxAuthUrl,accessToken,frontDoorUrl} = row;
         if(isElectronApp()){
-            let settings = await getSettings(alias);
+            let settings = await getConnection(alias);
             sfdxAuthUrl = settings.sfdxAuthUrl || sfdxAuthUrl;
         }
         
@@ -276,6 +296,27 @@ export default class App extends FeatureElement {
         }
     }
 
+    @api
+    exportClick = (e) => {
+        navigator.clipboard.writeText(JSON.stringify(this.exportedData, null, 4));
+        Toast.show({
+            label: 'Exported to your clipboard',
+            //message: 'Exported to your clipboard', // Message is hidden in small screen
+            variant:'success',
+        });
+    }
+
+    @api
+    importClick = (e) => {
+        ConnectionImportModal.open()
+        .then(async (res) => {
+            if(isNotUndefinedOrNull(res)){
+                console.log('force refresh');
+                await this.setAllConnections();
+            }
+        });
+    }
+
     /** Getters  */
 
     get isNoRecord(){
@@ -286,13 +327,23 @@ export default class App extends FeatureElement {
         return !this.isSearchHidden;
     }
 
+    get exportedData(){
+        return this.data.map(x => {
+            const { sfdxAuthUrl,alias } = x;
+            return {
+                alias,
+                sfdxAuthUrl
+            }
+        });
+    }
+
     get filteredFormatted(){
         return this.formattedData.map(group => ({
             ...group,
             items:group.items.filter(x => isUndefinedOrNull(this.filter) || isNotUndefinedOrNull(this.filter) && (checkIfPresent(x.alias,this.filter) || checkIfPresent(x.username,this.filter))).map(x => ({
                 ...x,
-                _name:this.formatSpecificField(x.name),
-                _username:this.formatSpecificField(x.username)
+                _name:this.formatSpecificField(x.name || ''),
+                _username:this.formatSpecificField(x.username || '')
             }))
         }));
     }

@@ -4,7 +4,7 @@
         <div class="slds-col">
             <!--RECORDS PER PAGE-->
             <div class={computedRecordPerPage}>
-                <label class="slds-text-color_weak slds-p-horizontal_x-small" for="recordsPerPage">{formattedRecordsPerPageTitle}</label>
+                <label class="slds-text-color_weak slds-p-horizontal_x-small">{formattedRecordsPerPageTitle}</label>
                 <div class="slds-select_container">
                     <select class="slds-select" id="recordsPerPage" onchange={handleRecordsPerPage}>
                         <template for:each={pageSizeOptions} for:item="option">
@@ -31,7 +31,7 @@
                     <span class={computedPrevious}>
                         <lightning-button-icon icon-name="utility:left" variant="bare" size="medium" alternative-text="Previous Page" onclick={previousPage}></lightning-button-icon>
                     </span>
-                    <label class="slds-text-color_weak slds-p-horizontal_x-small" for="pageNum">Page:</label>
+                    <label class="slds-text-color_weak slds-p-horizontal_x-small">Page:</label>
                     <input type="number" id="pageNum" value={pageNumber} maxlength="4" onkeypress={handlePageNumberChange} class="customInput" title="Go to a Page"></input>
                     <span>&nbsp;of&nbsp;<b id="totalPages">{totalPages}</b></span>
                     <span class={computedPagination}>

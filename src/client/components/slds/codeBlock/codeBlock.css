@@ -1,0 +1,8 @@
+:host{
+    position: relative;
+}
+
+.code-block-content {
+    border-radius: 0px 0px 0.3em 0.3em;
+    overflow-y: auto;
+}   

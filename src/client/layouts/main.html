@@ -258,7 +258,6 @@
         <script src="$libsDir/localforage/localforage.min.js"></script>
         <script>
             let host = window.location.origin;
-            window.connections = {}; // use for faster connection, during live processing
             fetch(`${host}/config`)
             .then(response => response.json())
             .then(config => {

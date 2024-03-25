@@ -11,7 +11,23 @@ export * from './mapping';
 
 const PROXY_EXCLUSION = [];
 
-export async function connect({alias,settings,disableEvent = false}){
+export function extractConfig(config){
+    // Regular expression pattern to match the required parts
+    const regex = /force:\/\/([^:]+)::([^@]+)@(.+)/;
+    
+    // Extracting variables using regex
+    const matches = config.match(regex);
+    if (matches && matches.length === 4) {
+        // Destructuring matches to extract variables
+        const [,clientId, refreshToken, instanceUrl] = matches;
+        
+        // Returning the extracted variables
+        return { clientId, refreshToken, instanceUrl };
+    }
+    return null;
+}
+
+export async function connect({alias,settings,disableEvent = false, directStorage = false}){
     console.log('--> connect',alias,settings);
     if(isUndefinedOrNull(settings) && isUndefinedOrNull(alias)){
         throw new Error('You need to provide the alias or the connection');
@@ -19,9 +35,14 @@ export async function connect({alias,settings,disableEvent = false}){
     
 
     if(alias){
-        console.log('before - getSettings')
-        settings = await getSettings(alias);
+        console.log('before - getConnection')
+        let _settings = await getConnection(alias);
+        if(_settings){
+            settings = _settings;
+        }
         console.log('loaded settings',settings);
+    }else{
+        alias = settings.alias; 
     }
     
     let params = {
@@ -42,17 +63,26 @@ export async function connect({alias,settings,disableEvent = false}){
 
     //console.log('util.connect.connection',params,settings);
     const connection = await new window.jsforce.Connection(params);
-          connection.alias = alias || settings.alias;
-          connection.on("refresh", async function(accessToken, res) {
-                console.log('refresh !!!',settings.accessToken,accessToken);
-                let newSettings = {...settings,accessToken};
-                await webInterface.setSettings(connection.alias,newSettings);
-          });
-          
+        connection.alias = alias || settings.alias;
+
     /** Assign Latest Version **/
     await assignLatestVersion(connection);
     /** Get Username & First connection **/
-    const header = await getHeader(connection);
+    const header = await generateHeader({alias,connection});
+
+    if(directStorage){
+        await webInterface.setConnection(connection.alias,header);
+    }
+    connection.on("refresh", async function(accessToken, res) {
+        console.log('refresh !!!',settings.accessToken,accessToken);
+        let newHeader = {
+            ...header,
+            accessToken
+        };
+        await webInterface.setConnection(connection.alias,newHeader);
+    });
+          
+    
     
     // Dispatch Login Event
     var connector = new Connector(header,connection);
@@ -71,45 +101,23 @@ async function assignLatestVersion(connection){
     connection.version = versions[0].version;
 }
 
-async function getHeader(connection){
-    const {accessToken,instanceUrl,loginUrl,refreshToken,version} = connection;
-    const identity = await connection.identity();
-    const header = {
-        accessToken,instanceUrl,loginUrl,refreshToken,version,
-        id:connection.alias,
-        alias:connection.alias,
-        frontDoorUrl:instanceUrl+'/secur/frontdoor.jsp?sid='+accessToken,
-        sfdxAuthUrl:`force://${window.jsforceSettings.clientId}::${refreshToken}@${instanceUrl}`
-    };
 
-    if(isNotUndefinedOrNull(identity)){
-            header.username = identity.username;
-            header.orgId    = identity.organization_id;
-            header.userInfo = identity;       
+export async function getConnection(alias){
+    //console.log('getConnection (isElectronApp)',isElectronApp());
+    let connection =   isElectronApp()?await electronInterface.getConnection(alias):await webInterface.getConnection(alias);
+    if(connection){
+        let nameArray = (connection.alias || '').split('-');
+        let company = nameArray.length > 1 ?nameArray.shift() : '';
+        let name    = nameArray.join('-');
+    
+        return {
+            ...connection,
+            company,
+            name,
+        }
     }
-
-    return header;
-}
-
-
-export async function getSettings(alias){
-    //console.log('getSettings (isElectronApp)',isElectronApp());
-    let connection =   isElectronApp()?await electronInterface.getSettings(alias):await webInterface.getSettings(alias);
-
-    let nameArray = (connection.alias || '').split('-');
-    let company = nameArray.length > 1 ?nameArray.shift() : '';
-    let name    = nameArray.join('-');
-
-    return {
-        ...connection,
-        company,
-        name,
-    }
-}
-
-export async function addConnection(data,connection){
-   if(isElectronApp()) throw new Error ('Only working for Web');
-   return await webInterface.addConnection(data,connection);
+    return null;
+    
 }
 
 export async function renameConnection(params){
@@ -188,9 +196,11 @@ export async function oauth_chrome({alias,loginUrl},callback){
         url:finalUrl
     },async (response) => {
         const { code } = response;
+        //console.log('code',code);
         if(isNotUndefinedOrNull(code)){
             const connection = new window.jsforce.Connection({ oauth2 });
             const userInfo = await connection.authorize(code);
+            console.log('userInfo',userInfo);
             oauth_extend({alias,connection},callback);
         }
 
@@ -219,32 +229,39 @@ export async function oauth({alias,loginUrl},callback){
     });
 }
 
+async function generateHeader({alias,connection}){
+    console.log('generateHeader');
+    const {accessToken,instanceUrl,loginUrl,refreshToken,version} = connection;
+    let nameArray = alias.split('-');
+    let companyName = nameArray.length > 1 ?nameArray.shift() : '';
+    let name = nameArray.join('-');
+    let header = {
+        accessToken,instanceUrl,loginUrl,refreshToken,version,
+        id:alias,
+        alias:alias,
+        company:companyName.toUpperCase(),
+        name:name,
+        frontDoorUrl:instanceUrl+'/secur/frontdoor.jsp?sid='+accessToken,
+        sfdxAuthUrl:`force://${window.jsforceSettings.clientId}::${refreshToken}@${(new URL(instanceUrl)).host}`,
+    };
+
+    /** Get Username **/
+    let identity = await connection.identity();
+    if(isNotUndefinedOrNull(identity)){
+        header.username = identity.username;
+        header.orgId    = identity.organization_id;
+        header.userInfo = identity;
+    }
+
+    return header;
+}
+
 async function oauth_extend({alias,connection},callback){
     console.log('oauth_extend');
-    const {accessToken,instanceUrl,loginUrl,refreshToken,version} = connection;
-        let nameArray = alias.split('-');
-        let companyName = nameArray.length > 1 ?nameArray.shift() : '';
-        let name = nameArray.join('-');
-        let header = {
-            accessToken,instanceUrl,loginUrl,refreshToken,version,
-            id:alias,
-            alias:alias,
-            company:companyName.toUpperCase(),
-            name:name,
-            frontDoorUrl:instanceUrl+'/secur/frontdoor.jsp?sid='+accessToken,
-            sfdxAuthUrl:`force://${window.jsforceSettings.clientId}::${refreshToken}@${(new URL(instanceUrl)).host}`,
-        };
-
-        /** Get Username **/
-        let identity = await connection.identity();
-        if(isNotUndefinedOrNull(identity)){
-            header.username = identity.username;
-            header.orgId    = identity.organization_id;
-            header.userInfo = identity;
-        }
-        await addConnection(header,connection);
-        let connector = new Connector(header,connection);
-        callback({alias,connector})//this.close({alias:alias,connection});
+    const header = await generateHeader({alias,connection});
+    await webInterface.setConnection(alias,header);
+    let connector = new Connector(header,connection);
+    callback({alias,connector})//this.close({alias:alias,connection});
 }
 
 export async function directConnect(sessionId,serverUrl){
