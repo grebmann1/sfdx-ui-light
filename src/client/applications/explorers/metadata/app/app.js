@@ -202,7 +202,6 @@ export default class App extends FeatureElement {
                 break;
     
                 default:
-    
             }
             
             if(this.metadata.length <= 1){
@@ -235,7 +234,7 @@ export default class App extends FeatureElement {
         try{
             let result = await this.connector.conn.request(metadataRecord.attributes.url);
             
-            //console.log('result',result);
+            console.log('result',result);
 
             switch(result.attributes.type){
                 case "LightningComponentBundle":
@@ -256,7 +255,7 @@ export default class App extends FeatureElement {
                 case "ApexComponent":
                     this.displayEditor(await this.handle_APEX(result,'page','Markup')); // Similar to APEX
                 break;
-                case "Flow":
+                case "______Flow":
                     var xmlMetadata = await this.connector.conn.metadata.read('Flow', [result.FullName]);
                     /*const metadataPackage = {
                         unpackaged: {
