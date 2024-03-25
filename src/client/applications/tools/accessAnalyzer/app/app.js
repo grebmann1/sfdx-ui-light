@@ -93,7 +93,6 @@ export default class App extends FeatureElement {
 
     /* Metadata Loaded */
     isMetadataReady = false;
-    tableInstance;
     report = 'FullView';
 
     /* Filters */
@@ -116,6 +115,21 @@ export default class App extends FeatureElement {
     _orangeTreshold;
 
     isLoading = false;
+    customLoadingMessage;
+
+
+    set tableInstance(value){
+        this._tableInstance = value;
+        if(isNotUndefinedOrNull(value)){
+            this._tableInstance.on("dataProcessed",() => {
+                this.isLoading = false;
+            });
+        }
+    }
+
+    get tableInstance(){
+        return this._tableInstance;
+    }
     
 
 
@@ -165,6 +179,7 @@ export default class App extends FeatureElement {
         if(!this.connector)return;
 
         this.isLoading = true;
+        this.customLoadingMessage = 'Loading Metadata from Mars';
         var _metadata;
         try{
             // Cache loading only for full mode
@@ -198,9 +213,9 @@ export default class App extends FeatureElement {
             .includes(x.userLicense) && x.type === 'Profile')
             .map(x => x.id);
         }
-
-        this.displayReport();
         this.isLoading = false;
+        this.displayReport();
+        
     }
 
 
@@ -287,6 +302,10 @@ export default class App extends FeatureElement {
 
 
     /** Getters **/
+
+    get loadingMessage(){
+        return this.customLoadingMessage?this.customLoadingMessage:'Loading';
+    }
 
     get isTresholdButtonDisplayed(){
         return isNotUndefinedOrNull(this._greenTreshold) && this.greenTreshold != this._greenTreshold || isNotUndefinedOrNull(this._orangeTreshold) &&  this.orangeTreshold != this._orangeTreshold;
@@ -392,6 +411,7 @@ export default class App extends FeatureElement {
     }
 
     sobject_handleChange = (e) => {
+        this.isLoading = true;
         this.selectedObject = this.metadata.sobjects[e.detail.value];
         this.setFieldLevelSecurityReport(true);
     }
@@ -489,7 +509,9 @@ export default class App extends FeatureElement {
     /** Tabulator */
 
     displayReportAsync = async () => {
-        this.isLoading = true;
+        //this.isLoading = true;
+        //this.customLoadingMessage = 'Gathering insights from the data cosmos';
+        
         switch(this.report){
             case 'CustomObject':
                 await this.setCustomObjectReport();
@@ -510,11 +532,16 @@ export default class App extends FeatureElement {
                 console.log('No Default Report');
             break;
         }
-        this.isLoading = false;
+        //this.isLoading = false;
     }
 
     displayReport = () => {
+        this.isLoading = true;
+        this.customLoadingMessage = 'Gathering insights from the data cosmos';
         window.setTimeout(() => {
+            if (this.tableInstance) {
+                this.tableInstance.destroy();
+            }
             this.displayReportAsync();
         },1);
     }   
@@ -603,7 +630,6 @@ export default class App extends FeatureElement {
 
     calculateMatrixData = () => {
         const _dataList = this.generateFullDataList(this.metadataFilter_value);
-        
         // Create Matrix
         const matrix = {}
         this.filteredPermissions.forEach(perm1 => {
@@ -612,31 +638,50 @@ export default class App extends FeatureElement {
                 matrix[perm1.id][perm2.id] = {perm1:perm1.id,perm2:perm2.id}; // difference aggregator
             })
         });
-        _dataList.forEach(data => {
+        /*_dataList.forEach((data,index) => {
             this.filteredPermissions.forEach(perm1 => {
-                this.filteredPermissions.forEach(perm2 => {
+                const toExclude = [];
+                this.filteredPermissions.filter(perm2 => !toExclude.includes(perm2.id)).forEach(perm2 => {
                     if(data[perm1.id] != data[perm2.id]){
                         if(!matrix[perm1.id][perm2.id].hasOwnProperty(data.category)){
                             matrix[perm1.id][perm2.id][data.category] = 0
+                            matrix[perm2.id][perm1.id][data.category] = 0 // reverse
                         }
                         matrix[perm1.id][perm2.id][data.category]++;
+                        matrix[perm2.id][perm1.id][data.category]++; // reverse
                     }
-                })
+                });
+                toExclude.push(perm1.id);
             })
+        });*/
+        const toExclude = []; // Move outside the loop to avoid unnecessary reinitialization
+        
+        this.filteredPermissions.forEach((perm1, index1) => {
+            _dataList.forEach(data => {
+                if (!toExclude.includes(perm1.id)) { // Check if perm1 is already excluded
+                    this.filteredPermissions.slice(index1 + 1).forEach(perm2 => { // Start from next index to avoid redundant comparisons
+                        if (data[perm1.id] !== data[perm2.id]) { // Check if perm2 is not excluded and values are different
+                            if (!matrix[perm1.id][perm2.id].hasOwnProperty(data.category)) {
+                                matrix[perm1.id][perm2.id][data.category] = 0;
+                                matrix[perm2.id][perm1.id][data.category] = 0; // Reverse
+                            }
+                            matrix[perm1.id][perm2.id][data.category]++;
+                            matrix[perm2.id][perm1.id][data.category]++; // Reverse
+                        }
+                    });
+                }
+            });
+            toExclude.push(perm1.id); // Exclude perm1 after processing its comparisons
         });
 
         return Object.values(matrix).sort((a, b) => (a.name || '').localeCompare(b.name)); 
     }
 
     setMatrixReport = async (metadataFilter) => {
+        console.log('setMatrixReport');
 
-        this.isLoading = true;
-        if (this.tableInstance) {
-			this.tableInstance.destroy();
-		}
-        
 		let colModel = [
-			{ title: 'Permission', field: 'name', resizable: true, headerHozAlign: "center", resizable: true,responsive:0,headerFilter:"input"},
+			{ title: 'Permission', field: 'name', resizable: true, headerHozAlign: "center", resizable: true, responsive:0,frozen:true,headerFilter:"input"},
 		];
         
         // Columns processing
@@ -685,6 +730,7 @@ export default class App extends FeatureElement {
 		});
 
         this.dataList = this.calculateMatrixData(metadataFilter);
+        //console.log('this.dataList',this.dataList);
 		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
 			height: this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight,
 			data: this.dataList,
@@ -704,19 +750,14 @@ export default class App extends FeatureElement {
                 }
             },        
 		});
-        this.isLoading = false;
     }
 
     setFullViewReport = async (metadataFilter) => {
         console.log('setFullViewReport');
-        this.isLoading = true;
-        if (this.tableInstance) {
-			this.tableInstance.destroy();
-		}
 
 		let colModel = [
-			{ title: 'Label', field: 'label', resizable: true, headerHozAlign: "center", resizable: false,responsive:0,headerFilter:"input"},
-			{ title: 'Developer Name', field: 'name', resizable: true, headerHozAlign: "center", resizable: false, tooltip: true }
+			{ title: 'Label', field: 'label', resizable: true, frozen:true, headerHozAlign: "center", resizable: false,responsive:0,headerFilter:"input"},
+			{ title: 'Developer Name', field: 'name', resizable: true, frozen:true, headerHozAlign: "center", resizable: false, tooltip: true }
 		];
 
         // Columns processing
@@ -780,14 +821,9 @@ export default class App extends FeatureElement {
                 }
             },        
 		});
-        this.isLoading = false;
     }
 
     setFieldLevelSecurityReport = async (updateData) => {
-        this.isLoading = true;
-		if (this.tableInstance && !updateData) {
-			this.tableInstance.destroy();
-		}
 
         if(isUndefinedOrNull(this.selectedObject) && Object.values(this.metadata.sobjects).length > 0){
             this.selectedObject = this.metadata.sobjects[this.sobject_options[0].value];
@@ -797,8 +833,8 @@ export default class App extends FeatureElement {
 
 		let dataList = [];
 		let colModel = [
-			{ title: 'Label', field: 'label', resizable: true, headerHozAlign: "center", minWidth: 200, tooltip: true},
-			{ title: 'Developer Name', field: 'api', resizable: true, headerHozAlign: "center", minWidth: 200, tooltip: true },
+			{ title: 'Label', field: 'label', resizable: true, frozen:true, headerHozAlign: "center", minWidth: 200, tooltip: true},
+			{ title: 'Developer Name', field: 'api', resizable: true, frozen:true, headerHozAlign: "center", minWidth: 200, tooltip: true },
             { title: 'Field Type', field: 'type', resizable:true, headerHozAlign: "center", minWidth: 100, tooltip: true },
             { title: 'Required', field: 'isRequired', resizable:true, headerHozAlign: "center", minWidth: 20, hozAlign: "center",formatter:"tickCross",formatterParams:{allowEmpty:true},}
 		];
@@ -879,19 +915,17 @@ export default class App extends FeatureElement {
                 },        
             });
         }
-
-		
-        this.isLoading = false;
 	}
 
     setPermissionGroupReport = async () => {
-        this.isLoading = true;
+
+
         let permissionGroups    = Object.values(this.metadata.permissionGroups);
 		let dataList = [];
 
 		let colModel = [
-            { title: 'Permission',      field: 'label', frozen: true, headerHozAlign: "center", resizable: false,responsive:0,headerFilter:"input"},
-            { title: 'DeveloperName',   field: 'name',  frozen: true, headerHozAlign: "center", resizable: false, tooltip: true },
+            { title: 'Permission',      field: 'label', headerHozAlign: "center", resizable: false, frozen: true, responsive:0,headerFilter:"input"},
+            { title: 'DeveloperName',   field: 'name',  headerHozAlign: "center", resizable: false, frozen: true, tooltip: true },
             //{ title: 'Permission Groups',  frozen: true, headerHozAlign: "center", resizable: false, tooltip: true, columns: []},
         ];
         
@@ -931,9 +965,7 @@ export default class App extends FeatureElement {
             dataList.push(data);
 		});
 
-        if (this.tableInstance) {
-			this.tableInstance.destroy();
-		}
+        
 		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
 			height: this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight,
 			data: dataList,
@@ -950,20 +982,15 @@ export default class App extends FeatureElement {
                 rowGroups:false, //do not include row groups in downloaded table
             },
 		});
-        this.isLoading = false;
     }
 
 
     setCustomObjectReport = async () => {
-        this.isLoading = true;
-		if (this.tableInstance) {
-			this.tableInstance.destroy();
-		}
 
 		let dataList = [];
 		let colModel = [
-			{ title: 'Label', field: 'label', frozen: true, headerHozAlign: "center", resizable: false,responsive:0,headerFilter:"input"},
-			{ title: 'Developer Name', field: 'name', frozen: true, headerHozAlign: "center", resizable: false, tooltip: true }
+			{ title: 'Label', field: 'label', headerHozAlign: "center", resizable: false, frozen: true, responsive:0,headerFilter:"input"},
+			{ title: 'Developer Name', field: 'name', headerHozAlign: "center", resizable: false, frozen: true, tooltip: true }
 		];
         
 		this.filteredPermissions.forEach(permission => {
@@ -1023,7 +1050,6 @@ export default class App extends FeatureElement {
                 }
             },        
 		});
-        this.isLoading = false;
 	}
 
 
@@ -1032,11 +1058,4 @@ export default class App extends FeatureElement {
     handleCloseVerticalPanel = () => {
         this.displayFilterContainer = false;
     }
-
-    
-
-
-
-
-
 }

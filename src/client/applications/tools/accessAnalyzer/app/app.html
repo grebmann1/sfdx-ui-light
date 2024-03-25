@@ -104,6 +104,7 @@
                                     label="Metadata Selector"
                                     options={metadataFilter_options}
                                     value={metadataFilter_value}
+                                    disabled={isLoading}
                                     onchange={metadataFilter_handleChange}
                                 ></lightning-checkbox-group>
                             </li>
@@ -121,7 +122,9 @@
         <div class="slds-full-height slds-overflow-hidden slds-flex-row">
             <div class="slds-col slds-fill-height column region-main slds-is-relative">
                 <template lwc:if={isLoading}>
-                    <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                    <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
+                        <slds-spinner alternative-text="Loading" size="small" message={loadingMessage}></slds-spinner>
+                    </div>
                 </template>
                 <!-- Table -->
                 <div lwc:dom="manual" class="custom-table"></div>
@@ -199,11 +202,13 @@
                     <lightning-slider 
                         label="Matrix - Green Treshold" 
                         value={greenTreshold}
+                        disabled={isLoading}
                         onchange={handleChangeGreenTreshold}
                     ></lightning-slider>
                     <lightning-slider 
                         label="Matrix - Orange Treshold" 
                         value={orangeTreshold}
+                        disabled={isLoading}
                         onchange={handleChangeOrangeTreshold}
                     ></lightning-slider>
                     <template lwc:if={isTresholdButtonDisplayed}>
