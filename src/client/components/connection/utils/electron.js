@@ -78,7 +78,6 @@ export async function getAllConnection(){
                     id:`index-${index}`,
                     company:`${alias.split('-').length > 1?alias.split('-').shift():''}`.toUpperCase(),
                     name:alias.split('-').pop(),
-                    frontDoorUrl:item.instanceUrl+'/secur/frontdoor.jsp?sid='+item.accessToken,
                     _typeClass,
                     _statusClass:CONNECTION_ERRORS.includes(item._status)?'slds-text-color_error':'slds-text-color_success slds-text-title_caps',
                     _hasError:item._status == 'JwtAuthError',

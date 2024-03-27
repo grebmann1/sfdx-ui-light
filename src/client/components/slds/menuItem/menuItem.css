@@ -1,0 +1,10 @@
+.slds-nav-vertical__action{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.slds-nav-vertical__action:focus {
+    outline: 0;
+    text-decoration: unset;
+}

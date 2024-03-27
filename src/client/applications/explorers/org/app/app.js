@@ -1,5 +1,5 @@
 import { api,wire } from "lwc";
-import { isEmpty,isElectronApp,goToUrl } from 'shared/utils';
+import { isEmpty,isElectronApp } from 'shared/utils';
 import FeatureElement from 'element/featureElement';
 import { store,store_application } from 'shared/store';
 import { NavigationContext, generateUrl, navigate } from 'lwr/navigation';
@@ -54,7 +54,7 @@ export default class App extends FeatureElement {
             window.electron.ipcRenderer.invoke('org-openOrgUrl',this.connector.header);
         }else{
             // Browser version
-            let url = this.connector.conn.instanceUrl+'/secur/frontdoor.jsp?sid='+this.connector.conn.accessToken;
+            let url = this.connector.frontDoorUrl;
             window.open(url,'_blank');
         }    //https://rieckermanngmbh--qa.sandbox.lightning.force.com/lightning/setup/SetupOneHome/home?setupApp=all
     }

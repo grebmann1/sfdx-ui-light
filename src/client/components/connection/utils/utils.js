@@ -75,11 +75,11 @@ export async function connect({alias,settings,disableEvent = false, directStorag
     }
     connection.on("refresh", async function(accessToken, res) {
         console.log('refresh !!!',settings.accessToken,accessToken);
-        let newHeader = {
+        /*let newHeader = {
             ...header,
             accessToken
-        };
-        await webInterface.setConnection(connection.alias,newHeader);
+        };*/
+        //await webInterface.setConnection(connection.alias,newHeader);
     });
           
     
@@ -241,7 +241,6 @@ async function generateHeader({alias,connection}){
         alias:alias,
         company:companyName.toUpperCase(),
         name:name,
-        frontDoorUrl:instanceUrl+'/secur/frontdoor.jsp?sid='+accessToken,
         sfdxAuthUrl:`force://${window.jsforceSettings.clientId}::${refreshToken}@${(new URL(instanceUrl)).host}`,
     };
 

@@ -16,6 +16,12 @@
     cursor: default;
 }
 
+.value-container{
+    display: flex;
+    flex-direction: row;
+}
+
+
 li {
     background: white url("/images/list.gif") no-repeat left center;
     list-style-type: none;

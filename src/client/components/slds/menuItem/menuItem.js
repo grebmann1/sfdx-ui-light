@@ -9,6 +9,8 @@ export default class MenuItem extends LightningElement {
     @api name;
     @api highlight;
     @api label;
+    @api badgeLabel;
+    @api badgeClass;
     @api current;
 
     hasLoaded = false;
@@ -30,6 +32,10 @@ export default class MenuItem extends LightningElement {
 
 
     /** Getters */
+
+    get hasBadge(){
+        return !isEmpty(this.badgeLabel);
+    }
     get currentClass(){
         return classSet('slds-nav-vertical__item')
              .add({

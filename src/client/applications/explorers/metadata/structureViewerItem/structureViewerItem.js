@@ -1,6 +1,7 @@
 import { api,track} from "lwc";
 import FeatureElement from 'element/featureElement';
-import { isEmpty,classSet,isUndefinedOrNull,isNotUndefinedOrNull} from 'shared/utils';
+import { isEmpty,isSalesforceId,classSet,isUndefinedOrNull,isNotUndefinedOrNull} from 'shared/utils';
+import { store,store_application } from 'shared/store';
 
 export default class StructureViewerItem extends FeatureElement {
     @api title;
@@ -20,10 +21,19 @@ export default class StructureViewerItem extends FeatureElement {
 
     /** Events **/
 
+    goToUrl = (e) => {
+        e.preventDefault();
+        const redirectUrl = e.currentTarget.dataset.url;
+        console.log('redirectUrl',redirectUrl);
+        store.dispatch(store_application.navigate(redirectUrl));
+    }
+
     onClickItem = (e) => {
         e.stopPropagation();
         this.isOpen = !this.isOpen;
     }
+
+    /* Methods **/
 
     @api
     expandAll = () => {
@@ -79,6 +89,9 @@ export default class StructureViewerItem extends FeatureElement {
         return this.isOpen && isNotUndefinedOrNull(this.formattedItems);
     }
     
+    get isSalesforceId(){
+        return isNotUndefinedOrNull(this.value) && isSalesforceId(this.value);
+    }
 
     get isJsonValue(){
         return isNotUndefinedOrNull(this.value) && typeof this.value === 'object' && !Array.isArray(this.value);
@@ -94,6 +107,10 @@ export default class StructureViewerItem extends FeatureElement {
 
     get isValueFalse(){
         return isNotUndefinedOrNull(this.value) && typeof this.value === 'boolean' && !this.value;
+    }
+
+    get href(){
+        return `/${this.value}`;
     }
 
     get formattedItems(){

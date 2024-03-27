@@ -171,7 +171,7 @@ export default class App extends FeatureElement {
             try{
                 const {alias,...settings} = this.data.find(x => x.id == row.id);
                 const connector = await connect({alias,settings,disableEvent:true});
-                const url = connector.conn.instanceUrl+'/secur/frontdoor.jsp?sid='+connector.conn.accessToken;
+                const url = connector.frontDoorUrl;
 
                 if(isChromeExtension()){
                     if(target == 'incognito'){
@@ -232,7 +232,12 @@ export default class App extends FeatureElement {
     }
 
     seeDetails = async (row) => {
-        var {company,orgId,name,alias,username,instanceUrl,sfdxAuthUrl,accessToken,frontDoorUrl} = row;
+        var {company,orgId,name,username,instanceUrl,sfdxAuthUrl} = row;
+        const {alias,...settings} = this.data.find(x => x.id == row.id);
+        const connector = await connect({alias,settings,disableEvent:true});
+        const accessToken   = connector.conn.accessToken;
+        const frontDoorUrl  = connector.frontDoorUrl;
+        
         if(isElectronApp()){
             let settings = await getConnection(alias);
             sfdxAuthUrl = settings.sfdxAuthUrl || sfdxAuthUrl;

@@ -1,7 +1,7 @@
 import { api,track} from "lwc";
 import FeatureElement from 'element/featureElement';
 import jsonview from '@pgrabovets/json-view';
-import { isEmpty,isElectronApp,classSet,isUndefinedOrNull,isNotUndefinedOrNull,runActionAfterTimeOut,formatFiles,sortObjectsByField,removeDuplicates } from 'shared/utils';
+import { isEmpty,isSalesforceId,isElectronApp,classSet,isUndefinedOrNull,isNotUndefinedOrNull,runActionAfterTimeOut,formatFiles,sortObjectsByField,removeDuplicates } from 'shared/utils';
 
 const AUDIT_FIELDS = [
     'Id',

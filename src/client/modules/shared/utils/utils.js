@@ -246,7 +246,7 @@ export function getFromStorage(item,byDefault){
         return byDefault;
     }
 }
-
+/*
 export function goToUrl(conn,redirectUrl){
     let url = conn.instanceUrl+'/secur/frontdoor.jsp?sid='+conn.accessToken;
     if(redirectUrl){
@@ -254,7 +254,15 @@ export function goToUrl(conn,redirectUrl){
     }
     window.open(url,'_blank');
 }
-
+*/
 export function checkIfPresent(a,b){
     return (a || '').toLowerCase().includes((b||'').toLowerCase());
+}
+
+export function isSalesforceId(str) {
+    // Salesforce ID pattern
+    var idPattern = /^[a-zA-Z0-9]{15}(?:[a-zA-Z0-9]{3})?$/;
+
+    // Check if the string matches the Salesforce ID pattern
+    return idPattern.test(str);
 }

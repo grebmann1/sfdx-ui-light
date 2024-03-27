@@ -49,7 +49,15 @@
                 <lightning-vertical-navigation onselect={handleSelection} compact class="slds-scrollable_y">
                     <lightning-vertical-navigation-section>
                         <template for:each={filteredList} for:item="item">
-                            <slds-menu-item key={item.key} name={item.name} label={item.label} highlight={itemHighlight} is-selected={item.isSelected}></slds-menu-item>
+                            <slds-menu-item 
+                                key={item.key} 
+                                name={item.name} 
+                                label={item.label} 
+                                highlight={itemHighlight} 
+                                badge-label={item.badgeLabel}
+                                badge-class={item.badgeClass}
+                                is-selected={item.isSelected}
+                            ></slds-menu-item>
                         </template>
                     </lightning-vertical-navigation-section>
                 </lightning-vertical-navigation>

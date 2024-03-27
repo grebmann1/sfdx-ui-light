@@ -23,13 +23,7 @@
                     <div class="slds-page-header__controls">
                         <div class="slds-page-header__control">
                             <!-- actions -->
-                            <lightning-button-group>
-                                <!--<lightning-button icon-name="utility:adduser" disabled={isLoading} onclick={adduser_handleClick} label="Select Users"></lightning-button>-->
-                                <lightning-button icon-name="utility:preview"  disabled={isLoading} onclick={goToMetadata} label="Apex" data-name="ApexClass"></lightning-button>
-                                <lightning-button icon-name="utility:preview"  disabled={isLoading} onclick={goToMetadata} label="LWC" data-name="LightningComponentBundle"></lightning-button>
-                                <lightning-button icon-name="utility:preview"  disabled={isLoading} onclick={goToMetadata} label="Aura" data-name="AuraDefinitionBundle"></lightning-button>
-
-                            </lightning-button-group>
+                            
                         </div>
                     </div>
                 </div>
@@ -38,7 +32,22 @@
                 <div class="slds-page-header__col-details">
                     <div class="slds-page-header__detail-row slds-is-relative" style="display:block; ">
                         <!-- Display Info -->
-                        <h2>Currently only supporting certains types : Apex, LWC, Aura, Trigger, Visualforce</h2>
+                        <h2>Quick Links</h2>
+                        <div class="slds-grid">
+                            <div>
+                                <lightning-button-group>
+                                    <lightning-button  disabled={isLoading} onclick={goToMetadata} label="Apex" data-name="ApexClass"></lightning-button>
+                                    <lightning-button  disabled={isLoading} onclick={goToMetadata} label="LWC" data-name="LightningComponentBundle"></lightning-button>
+                                    <lightning-button  disabled={isLoading} onclick={goToMetadata} label="Aura" data-name="AuraDefinitionBundle"></lightning-button>
+                                </lightning-button-group>
+                            </div>
+                            <div class="slds-m-left_medium">
+                                <lightning-button-group>
+                                    <lightning-button  disabled={isLoading} onclick={goToMetadata} label="Flow" data-name="Flow"></lightning-button>
+                                    <lightning-button  disabled={isLoading} onclick={goToMetadata} label="WorkFlow" data-name="WorkFlow"></lightning-button>
+                                </lightning-button-group>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

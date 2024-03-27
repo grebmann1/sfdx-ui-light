@@ -6,6 +6,8 @@ import Toast from 'lightning/toast';
 import jszip from 'jszip';
 import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 
+const METADATA_EXCLUDE_LIST = ['Flow','FlowDefinition'];
+
 export default class App extends FeatureElement {
     @wire(NavigationContext)
     navContext;
@@ -27,6 +29,12 @@ export default class App extends FeatureElement {
     metadataFilter;
     metadataTypeFilter;
 
+    currentMetadata;
+    param1;
+    param2;
+    label1;
+    label2;
+
     // Menu
 
     // Mode
@@ -45,24 +53,52 @@ export default class App extends FeatureElement {
     }
 
     loadFromNavigation = async ({state, attributes}) => {
-        console.log('metadata - loadFromNavigation');
-        const {applicationName,attribute1}  = attributes;
-        const {id}      = state;
+        const { applicationName,attribute1 }  = attributes;
+        let { param1,label1,param2,label2 } = state;
         if(applicationName != 'metadata') return; // Only for metadata
 
         this.isNoRecord = false;
-
-        if(attribute1){
-            await this.load_specificMetadata({name:attribute1,label:attribute1});
+        const exceptionMetadata = attribute1?this.exceptionMetadataList.find(x => x.name === attribute1):null;
+        if(attribute1 && this.currentMetadata != attribute1){
+            // Metadata
             this.currentLevel = 1;
+            this.currentMetadata = attribute1;
+            if(exceptionMetadata){
+                await this.load_specificMetadataException(exceptionMetadata);
+            }else{
+                await this.load_specificMetadata(attribute1);
+            }
         }
 
-        if(id){
-            this.selectedRecordLoading = true;
-            await this.load_specificMetadataRecord({name:id,label:id});
+        if(param1 && this.param1 != param1){
+            console.log('param1');
+            this.param1 = param1;
+            this.label1 = label1;
+            //this.selectedRecordLoading = true;
+            if(exceptionMetadata && exceptionMetadata.hasLvl2){
+                let metadataRecord = this.metadata[this.metadata.length - 1].records.find(x => x.key == param1);
+
+                // Advanced with Extra lvl
+                this.currentLevel = 2;
+                const lvl2ExceptionMetadata = this.exceptionMetadataList.find(x => x.name === exceptionMetadata.lvl2Type);
+                await this.load_specificMetadataException(lvl2ExceptionMetadata,param1);
+                if(isUndefinedOrNull(param2) && exceptionMetadata.selectDefaultFunc){
+                    param2 = exceptionMetadata.selectDefaultFunc(metadataRecord);
+                    label2 = exceptionMetadata.selectDefaultLabelFunc(metadataRecord);
+                }
+            }else{
+                // Basic
+                await this.load_specificMetadataRecord(this.param1);
+            }
+        }
+
+        if(param2 && this.param2 != param2){
+            console.log('param2');
+            this.param2 = param2;
+            this.label2 = label2;
+            await this.load_specificMetadataRecord(this.param2);
             //this.currentLevel = 2;
         }
-        
     }
 
 
@@ -75,7 +111,6 @@ export default class App extends FeatureElement {
     handleMenuSelection = (e) => {
 
         const {name,label} = e.detail;
-        //console.log('handleMenuSelection',this.currentLevel);
         switch(this.currentLevel){
             case 0:
                 // Metadata Type selection
@@ -90,21 +125,35 @@ export default class App extends FeatureElement {
                 // Metadata Record selection
                 this.selectedRecord = null;
                 this.selectedRecordLoading = true;
-                //this.load_specificMetadataRecord({name,label});
+
                 navigate(this.navContext,{type:'application',
                     attributes:{
                         applicationName:'metadata',
-                        attribute1:this.metadata[1].label,
+                        attribute1:this.currentMetadata,
                     },
                     state:{
-                        id:name
+                        param1:name,
+                        label1:label
                     }
                 });
+                
                 //this.currentLevel = 2; // Only for the flows
             break;
             case 2:
+
+                navigate(this.navContext,{type:'application',
+                    attributes:{
+                        applicationName:'metadata',
+                        attribute1:this.currentMetadata,
+                    },
+                    state:{
+                        param1:this._pageRef.state.param1,
+                        label1:this._pageRef.state.label1,
+                        param2:name,
+                        label2:label
+                    }
+                });
                 // Only work for items such as flows
-                //console.log('selection lvl 3');
             break;
         }
     }
@@ -120,28 +169,33 @@ export default class App extends FeatureElement {
             this.currentLevel = 0;
         }
 
-        this.selection = this.selection.slice(0,this.currentLevel+1);
         this.metadata = this.metadata.slice(0,this.currentLevel+1);
-
-        if(this.currentLevel == 1){
+        
+        if(this.currentLevel == 2){
             navigate(this.navContext,{type:'application',attributes:{
                 applicationName:'metadata',
-                attribute1:this.metadata[1].label,
+                attribute1:this.currentMetadata,
+                state:{
+                    param1:this.param1,
+                    label1:this.label1
+                }
+            }});
+        }else if(this.currentLevel == 1){
+            navigate(this.navContext,{type:'application',attributes:{
+                applicationName:'metadata',
+                attribute1:this.currentMetadata,
             }});
         }else if(this.currentLevel == 0){
             navigate(this.navContext,{type:'application',attributes:{
                 applicationName:'metadata'
             }});
-        }
-        
-        
+        } 
     }
     
     goToMetadata = (e) => {
         this.hideEditor();
         this.hideJsonViewer();
         this.currentLevel = 0;
-        this.selection  = []
         this.metadata   = this.metadata.slice(0,1);
         this.handleMenuSelection({detail:{
             name:e.currentTarget.dataset.name,
@@ -150,92 +204,96 @@ export default class App extends FeatureElement {
     }
 
     /** Methods */
-    
-    selectionUpdate = ({name,label}) => {
-        if(this.selection.length > this.currentLevel){
-            this.selection[this.currentLevel] = {name,label};
-        }else{
-            this.selection = [].concat(this.selection,[{name,label}]);
-        }
-        
-    }
+
 
     load_metadataGlobal = async () => {
         this.isLoading = true;
         let sobjects = (await this.connector.conn.tooling.describeGlobal()).sobjects.map(x => x.name);
-        //console.log('sobjects',sobjects);
         let result = await this.connector.conn.metadata.describe(this.connector.conn.version);
-            result = (result?.metadataObjects || []).sort((a, b) => a.xmlName.localeCompare(b.xmlName));
+            result = (result?.metadataObjects || [])
             result = result.filter(x => sobjects.includes(x.xmlName)).map(x => ({...x,...{name:x.xmlName,label:x.xmlName,key:x.xmlName}}));
+            result = result.filter(x => !METADATA_EXCLUDE_LIST.includes(x.name));
+            result = [].concat(result,this.exceptionMetadataList.filter(x => x.isSearchable));
+            result = result.sort((a, b) => a.name.localeCompare(b.name));
         this.metadata[0] = {records:result,label:'Metadata'};
-        //console.log('this.metadata',this.metadata);
         this.isLoading = false;
     }
 
-    load_specificMetadata = async ({name,label}) => {
+    load_specificMetadataException = async (exceptionMetadata,recordId) => {
+        console.log('load_specificMetadataException');
+        const { name,label,queryFields,queryObject,labelFunc,field_id,manualFilter,badgeFunc,compareFunc,filterFunc } = exceptionMetadata;
+        const newCompare = compareFunc?compareFunc:(a, b) => (a.label || '').localeCompare(b.label);
+
         this.isLoading = true;
-        this.selectionUpdate({name,label});
-        const metadataConfig = await this.connector.conn.tooling.sobject(name).describe() || [];
-        //console.log('metadataConfig.fields.map(x => x.name)',metadataConfig.fields.map(x => x.name));
-        const fields = metadataConfig.fields.map(x => x.name).filter(x => ['Id','Name','DeveloperName','MasterLabel','NamespacePrefix'].includes(x));
-        //console.log('query',query);
+        const metadataConfig = await this.connector.conn.tooling.sobject(queryObject).describe() || [];
+        const fields = [].concat(metadataConfig.fields.map(x => x.name).filter(x => ['Id','Name','DeveloperName','MasterLabel','NamespacePrefix'].includes(x)),queryFields);
         try{
-            let queryExec = this.connector.conn.tooling.query(`SELECT ${fields.join(',')} FROM ${name}`);
+            let queryExec = this.connector.conn.tooling.query(`SELECT ${fields.join(',')} FROM ${queryObject} ${filterFunc(recordId)}`);
             let result = (await queryExec.run({ responseTarget:'records',autoFetch : true, maxFetch : 10000 })).records || [];
-            //console.log('metadata_lvl2',result);
+                result = result.filter(x => manualFilter(x))
+            
                 result = result.map(x => {
-                    const _tempName = this.formatName(x);
+                    const badge = badgeFunc(x);
                     return {
                         ...x,
-                        name:x.Id,
-                        label:_tempName,
-                        key:x.Id
+                        name:x[field_id],
+                        label:labelFunc(x),
+                        key:x[field_id],
+                        badgeLabel:badge?badge.label:null,
+                        badgeClass:badge?badge.class:null
                     }
-                }).sort((a, b) => (a.label || '').localeCompare(b.label));
+                }).sort(newCompare);
             
-            // Format the data for specific metadata type
-            switch(name){
-                case 'Flow':
-                    console.log('filter flow')
-                    result = removeDuplicates(result,'MasterLabel');
-                    console.log('before',result);
-                break;
-    
-                default:
-            }
             
-            if(this.metadata.length <= 1){
+            if(this.metadata.length <= this.currentLevel){
                 this.metadata.push(null)
             }
-            this.metadata[1] = {records:result,label};
+            this.metadata[this.currentLevel] = {records:result,label};
         }catch(e){
             console.error(e); // We still show the menu
         }
         this.isLoading = false;
     }
 
-    formatName = (x) => {
-        const name = x.Name || x.DeveloperName || x.MasterLabel;
-        return x.NamespacePrefix ? `${x.NamespacePrefix}__${name}` : name;
+    load_specificMetadata = async (name) => {
+        this.isLoading = true;
+        const metadataConfig = await this.connector.conn.tooling.sobject(name).describe() || [];
+        const fields = metadataConfig.fields.map(x => x.name).filter(x => ['Id','Name','DeveloperName','MasterLabel','NamespacePrefix'].includes(x));
+        try{
+            let queryExec = this.connector.conn.tooling.query(`SELECT ${fields.join(',')} FROM ${name}`);
+            let result = (await queryExec.run({ responseTarget:'records',autoFetch : true, maxFetch : 10000 })).records || [];
+                result = result.map(x => {
+                    const _tempName = this.formatName(x);
+                    return {
+                        ...x,
+                        name:x.Id,
+                        label:_tempName,
+                        key:x.Id,
+                    }
+                }).sort((a, b) => (a.label || '').localeCompare(b.label));
+            
+            if(this.metadata.length <= 1){
+                this.metadata.push(null)
+            }
+            this.metadata[1] = {records:result,label:name};
+        }catch(e){
+            console.error(e); // We still show the menu
+        }
+        this.isLoading = false;
     }
 
-    load_specificMetadataRecord = async ({name,label}) => {
-        this.selectionUpdate({name,label});
-        var recordId = name;
-        const metadataRecord = this.metadata[1].records.find(x => x.Id == recordId);
+    load_specificMetadataRecord = async (key) => {
+        const metadataRecord = this.metadata[this.metadata.length - 1].records.find(x => x.key == key);
         if(isUndefinedOrNull(metadataRecord)){
             this.isNoRecord = true;
             this.selectedRecordLoading = false;
             return;
         }
 
-        recordId = metadataRecord.EntityDefinitionId
-        //console.log('search',this.metadata_lvl1_selection,recordId,metadataRecord);
+        //recordId = metadataRecord.EntityDefinitionId
         try{
             let result = await this.connector.conn.request(metadataRecord.attributes.url);
             
-            console.log('result',result);
-
             switch(result.attributes.type){
                 case "LightningComponentBundle":
                     this.displayEditor(await this.handle_LWC(result));
@@ -255,24 +313,9 @@ export default class App extends FeatureElement {
                 case "ApexComponent":
                     this.displayEditor(await this.handle_APEX(result,'page','Markup')); // Similar to APEX
                 break;
-                case "______Flow":
-                    var xmlMetadata = await this.connector.conn.metadata.read('Flow', [result.FullName]);
-                    /*const metadataPackage = {
-                        unpackaged: {
-                          types: [{ name: 'Flow', members: ['eo_cf_questionnaire-1'] }],
-                          version: '52.0' // Adjust this version according to your Salesforce instance
-                        }
-                      };
-                      
-                    var xmlMetadata = await this.fetchXMLFile(metadataPackage);*/
-                    //console.log('xmlMetadata',xmlMetadata);
-                    this.selectedRecord = xmlMetadata;
-                    
-                break;
                 default:
                     this.selectedRecord = result;
             }
-            //console.log('result',result);
             this.selectedRecordLoading = false
         }catch(e){
             console.error(e);
@@ -286,67 +329,13 @@ export default class App extends FeatureElement {
         }
     }
 
-    fetchXMLFile = (metadataPackage) => {
-        return new Promise((resolve,reject) => {
-            this.connector.conn.metadata.retrieve(metadataPackage, (err, asyncResult) => {
-                if (err) {
-                    console.error(err);
-                    reject(err);
-                }
-                console.log('Retrieve Request Id:', asyncResult.id);
-            
-                // Check the status of the retrieve request periodically
-                const checkRetrieveStatus = () => {
-                    this.connector.conn.metadata.checkRetrieveStatus(asyncResult.id, (err, retrieveResult) =>{
-                        if (err) {
-                            console.error(err);
-                            reject(err);
-                        }
-                
-                        if (retrieveResult.done === 'false') {
-                            console.log('Retrieve in progress... waiting...');
-                            setTimeout(checkRetrieveStatus, 5000); // Check status again after 5 seconds
-                        } else {
-                            console.log('Retrieve complete!');
-                            // Process the retrieved zip file
-                            const zipFile = retrieveResult.zipFile;
-                            // Here you can use a library like JSZip to extract and process the XML file from the zip
-                            console.log('Zip file content:', zipFile);
-                            const zipContentBinary = atob(zipFile); 
-
-                            // Load the ZIP file with JSZip
-                            jszip.loadAsync(zipContentBinary, {base64: false}).then((zip) => {
-                            // Specify the path to the file within the ZIP you wish to display
-                            // For example, 'unpackaged/flows/Your_Flow_API_Name.flow-meta.xml'
-                            const filePath = 'path_to_your_xml_file_within_zip.xml';
-                            console.log('zip',zip);
-                            // Check if the file exists and read it
-                            if (zip.files[filePath]) {
-                                zip.files[filePath].async('string').then((content) => {
-                                // 'content' is the XML content of the file
-                                console.log(content);
-                                }).catch((err) => {
-                                console.error('Error reading file from zip:', err);
-                                });
-                            } else {
-                                console.log('File not found in zip:', filePath);
-                            }
-                            }).catch((err) => {
-                            console.error('Error loading zip file:', err);
-                            });
-                            resolve(zipFile);
-                        }
-                    });
-                };
-            
-                // Start checking the status
-                checkRetrieveStatus();
-            });
-        })
+    formatName = (x) => {
+        const name = x.Name || x.DeveloperName || x.MasterLabel || x.Id;
+        return x.NamespacePrefix ? `${x.NamespacePrefix}__${name}` : name;
     }
 
+
     handle_LWC = async (data) => {
-        console.log('data',data);
         let resources = (await this.connector.conn.tooling.query(`SELECT LightningComponentBundleId,Format,FilePath,Source FROM LightningComponentResource WHERE LightningComponentBundleId = '${data.Id}'`)).records || [];
         let files = formatFiles(resources.map(x => ({
             path:x.FilePath,
@@ -362,7 +351,6 @@ export default class App extends FeatureElement {
     }
 
     handle_APEX = async (data,extension = 'cls',bodyField = 'Body') => {
-        //console.log('data',data);
         return formatFiles([{
             path:`${data.FullName || data.Name}.${extension}`,
             name:`${data.FullName || data.Name}.${extension}`,
@@ -436,6 +424,89 @@ export default class App extends FeatureElement {
 
     /** Getters */
 
+    get exceptionMetadataList(){
+        return [
+            {
+                isSearchable:true,
+                name:'Flow',
+                label:'Flow',
+                key:'Flow',
+                isException:true,
+                hasLvl2:true,
+                lvl2Type:'FlowVersion',
+                queryObject:'FlowDefinition',
+                queryFields:['ActiveVersion.ProcessType','ActiveVersion.Status','ActiveVersionId'],
+                labelFunc:this.formatName,
+                filterFunc:(x) => " WHERE ActiveVersion.ProcessType <> 'Workflow'",
+                field_id:'Id',
+                selectDefaultFunc:(x) => x.ActiveVersionId,
+                selectDefaultLabelFunc:(x) => 'Active',
+                badgeFunc:(x) => {
+                    return x.ActiveVersion?.Status?{
+                        label:'Active',
+                        class:'slds-theme_success'
+                    }:{
+                        label:'Inactive',
+                        class:''
+                    }
+                },
+                manualFilter:(x) => { return x.ActiveVersion?.ProcessType !== 'Workflow'}
+                
+                
+            },
+            {
+                isSearchable:true,
+                name:'WorkFlow',
+                label:'WorkFlow',
+                key:'WorkFlow',
+                isException:true,
+                hasLvl2:true,
+                lvl2Type:'FlowVersion',
+                queryObject:'FlowDefinition',
+                queryFields:['ActiveVersion.ProcessType','ActiveVersion.Status','ActiveVersionId'],
+                labelFunc:this.formatName,
+                filterFunc:(x) => " WHERE ActiveVersion.ProcessType = 'Workflow'",
+                field_id:'Id',
+                selectDefaultFunc:(x) => x.ActiveVersionId,
+                selectDefaultLabelFunc:(x) => 'Active',
+                badgeFunc:(x) => {
+                    return x.ActiveVersion?.Status?{
+                        label:'Active',
+                        class:'slds-theme_success'
+                    }:{
+                        label:'Inactive',
+                        class:''
+                    }
+                },
+                manualFilter:(x) => {return x.ActiveVersion?.ProcessType === 'Workflow'}
+            },
+            {
+                isSearchable:false,
+                name:'FlowVersion',
+                label:'FlowVersion',
+                key:'FlowVersion',
+                isException:true,
+                hasLvl2:false,
+                queryObject:'Flow',
+                queryFields:['ProcessType','Status','VersionNumber'],
+                labelFunc:(x) => `Version ${x.VersionNumber}`,
+                filterFunc:(x) => ` WHERE Definition.Id = '${x}'`,
+                field_id:'Id',
+                badgeFunc:(x) => {
+                    return x.Status === 'Active'?{
+                        label:'Active',
+                        class:'slds-theme_success'
+                    }:{
+                        label:x.Status,
+                        class:''
+                    }
+                },
+                manualFilter:(x) => { return true;},
+                compareFunc:(a, b) => (a.Status || '').localeCompare(b.Status)
+            }
+        ]
+    }
+
     get noRecordMessage(){
         return `This record wasn't found in your metadata.`;
     }
@@ -444,18 +515,31 @@ export default class App extends FeatureElement {
         if(this.metadata.length == 0) return [];
         return this.metadata[this.metadata.length - 1].records.map(x => ({
             ...x,
-            isSelected:this.selectedItem == x.name
+            isSelected:this.selectedItem == x.key
         }));
     }
 
     get selectedItem(){
-        if(this.selection.length == 0) return null;
-        return this.selection[this.selection.length - 1].name;
+        if(this.currentLevel == 2){
+            return this.param2;
+        }else if(this.currentLevel == 1){
+            return this.param1;
+        } else if(this.currentLevel == 0){
+            return this.currentMetadata;
+        }else{
+            return null;
+        }
     }
 
     get menuBackTitle(){
-        if(this.metadata.length == 0) return '';
-        return this.metadata[this.metadata.length - 1].label;
+    
+        if(this.currentLevel == 2){
+            return this.label1;
+        }else if(this.currentLevel == 1){
+            return this.currentMetadata;
+        } else if(this.currentLevel == 0){
+            return '';
+        }
     }
 
     get isBackDisplayed(){
