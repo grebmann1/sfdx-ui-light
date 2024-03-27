@@ -330,7 +330,7 @@ export default class App extends FeatureElement {
     }
 
     formatName = (x) => {
-        const name = x.Name || x.DeveloperName || x.MasterLabel || x.Id;
+        const name = x.MasterLabel || x.Name || x.DeveloperName || x.Id;
         return x.NamespacePrefix ? `${x.NamespacePrefix}__${name}` : name;
     }
 
