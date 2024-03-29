@@ -1,7 +1,7 @@
 <template>
     <template lwc:if={isHeaderLess}>
-         <!-- Card Variant -->
-         <div class="slds-connection-card-list slds-p-horizontal_x-small">
+            <!-- Card Variant -->
+        <div class="slds-connection-card-list slds-p-horizontal_x-small">
             <template lwc:if={isCardVariant}>
                 <template for:each={filteredFormatted} for:item="item">
                     <connection-card 
@@ -55,7 +55,7 @@
                         <template lwc:if={isLoading}>
                             <lightning-spinner alternative-text="Loading"></lightning-spinner>
                         </template>
-    
+
                         <!-- Search -->
                         <lightning-input 
                             class="slds-m-bottom_medium" 
@@ -65,7 +65,7 @@
                             onchange={handleFieldsFilter}
                         ></lightning-input>
                         
-    
+
                         <!-- Table Variant -->
                         <template lwc:if={isTableVariant}>
                             <lightning-datatable

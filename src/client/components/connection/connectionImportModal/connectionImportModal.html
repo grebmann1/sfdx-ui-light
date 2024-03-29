@@ -1,25 +1,29 @@
 <template>
     <lightning-modal-header label="Import Org Credentials"></lightning-modal-header>
-    <lightning-modal-body>
-        <section class="slds-p-around_large min-height-400">
-            
-            <div class="slds-form-element slds-m-bottom_large">
-                <lightning-textarea 
-                    class="input-to-validate" 
-                    name="configuration" 
-                    label="Paste your configuration"
-                    onchange={handleChange}
-                ></lightning-textarea>
-            </div>
-
-            <template lwc:if={isResultDisplayed}>
-                <ui-information-block title="Info">
-                    <p class="slds-text-heading_small slds-text-color_success">{resultMessage}</p>
-                    <p>New Connection won't overwrite your existing connections.</p>
-                </ui-information-block>
-            </template>
-
-        </section>
+    <lightning-modal-body >
+        <slds-file-uploader lwc:ref="uploader" onfilechange={handleFileChange} type-list="['application/json']" is-modal>
+            <section class="slds-p-around_large min-height-400">
+                <div class="slds-center-container">
+                    
+                    <template lwc:if={isResultDisplayed}>
+                        <lightning-dual-listbox name="newconnection"
+                            label="Select Credentials to import"
+                            source-label="Existing Credential"
+                            selected-label="New Credential (Upsert)"
+                            field-level-help="Select credential to overwrite"
+                            options={options}
+                            value={list_new}
+                            onchange={handleDualListChange}
+                        ></lightning-dual-listbox>
+                    </template>
+                    <template lwc:else>
+                        <div style="text-align: center;">
+                            <lightning-input type="file" label="Upload Org Credentials" accept=".json" onchange={inputChange}></lightning-input>
+                        </div>
+                    </template>
+                </div>
+            </section>
+        </slds-file-uploader>
     </lightning-modal-body>
     <lightning-modal-footer>
         <lightning-button

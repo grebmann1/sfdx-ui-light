@@ -1,5 +1,5 @@
 import {LightningElement,api} from "lwc";
-import { isNotUndefinedOrNull,isEmpty,isUndefinedOrNull } from "shared/utils";
+import { isNotUndefinedOrNull,isSalesforceId,isEmpty,isUndefinedOrNull } from "shared/utils";
 export default class RecordExplorerCell extends LightningElement {
 
     @api value;
@@ -7,6 +7,7 @@ export default class RecordExplorerCell extends LightningElement {
     @api name;
     @api label;
     @api filter;
+    @api currentOrigin;
 
 
     connectedCallback(){}
@@ -17,6 +18,8 @@ export default class RecordExplorerCell extends LightningElement {
             let formattedHtml = this.formattedValue;
             if(this.type === 'address'){
                 formattedHtml = `<pre>${this.formattedValue}</pre>`;
+            }else if(this.isSalesforceId){
+                formattedHtml = `<a href="${this.currentOrigin}/${this.value}" target="_blank">${this.formattedValue}</a>`;
             }
 
             this.template.querySelector('.injector').innerHTML = formattedHtml;
@@ -41,6 +44,10 @@ export default class RecordExplorerCell extends LightningElement {
 
     get isCopyDisplayed(){
         return isNotUndefinedOrNull(this.value);
+    }
+
+    get isSalesforceId(){
+        return isNotUndefinedOrNull(this.value) && isSalesforceId(this.value);
     }
     
 

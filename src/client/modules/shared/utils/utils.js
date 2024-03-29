@@ -266,3 +266,14 @@ export function isSalesforceId(str) {
     // Check if the string matches the Salesforce ID pattern
     return idPattern.test(str);
 }
+
+export function download(data,type,filename){
+    console.log('download');
+    const blob = new Blob([data], { type });
+    const url = URL.createObjectURL(blob);
+    const download = document.createElement('a');
+        download.href = window.URL.createObjectURL(blob);
+        download.download = filename;
+        download.click();
+    URL.revokeObjectURL(url);
+}

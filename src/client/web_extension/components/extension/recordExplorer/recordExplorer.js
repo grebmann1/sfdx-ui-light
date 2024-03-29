@@ -16,6 +16,7 @@ export default class RecordExplorer extends LightningElement {
     isLoading = false;
 
     currentTab;
+    currentOrigin;
 
     // record data
     sobjectName;
@@ -38,6 +39,8 @@ export default class RecordExplorer extends LightningElement {
             this.isLoading = true;
             let conn = window.connector.conn;
             this.currentTab = await getCurrentTab();
+            this.currentOrigin = (new URL(this.currentTab.url)).origin;
+            console.log('currentOrigin',this.currentOrigin);
             this.contextUrl = window.location.href;
             // Get recordId (Step 1)
             this.recordId = getRecordId(this.currentTab.url);
@@ -94,7 +97,8 @@ export default class RecordExplorer extends LightningElement {
         Object.assign(element, {
             ...data,
             ...{
-                filter:this.filter
+                filter:this.filter,
+                currentOrigin:this.currentOrigin
             }
         });
         return element;

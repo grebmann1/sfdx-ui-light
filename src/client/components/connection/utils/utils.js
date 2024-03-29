@@ -61,7 +61,7 @@ export async function connect({alias,settings,disableEvent = false, directStorag
         }
     }
 
-    //console.log('util.connect.connection',params,settings);
+    console.log('util.connect.connection',params,settings);
     const connection = await new window.jsforce.Connection(params);
         connection.alias = alias || settings.alias;
 

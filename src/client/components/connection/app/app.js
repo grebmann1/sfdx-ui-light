@@ -5,7 +5,7 @@ import ConnectionNewModal from "connection/connectionNewModal";
 import ConnectionDetailModal from "connection/connectionDetailModal";
 import ConnectionRenameModal from "connection/connectionRenameModal";
 import ConnectionImportModal from "connection/connectionImportModal";
-import { classSet,runActionAfterTimeOut,checkIfPresent,isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,normalizeString as normalize,groupBy } from 'shared/utils';
+import { download,classSet,runActionAfterTimeOut,checkIfPresent,isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,normalizeString as normalize,groupBy } from 'shared/utils';
 import { getAllConnection,removeConnection,connect,oauth,getConnection,getCurrentTab } from 'connection/utils';
 import { store,store_application } from 'shared/store';
 
@@ -223,9 +223,10 @@ export default class App extends FeatureElement {
             sfdxAuthUrl
         }];
         
-        navigator.clipboard.writeText(JSON.stringify(exportedRow, null, 4));
+        //navigator.clipboard.writeText(JSON.stringify(exportedRow, null, 4));
+        download(JSON.stringify(exportedRow),'application/json',`${alias}_sftoolkit_config.json`);
         Toast.show({
-            label: `${alias} has been exported to your clipboard`,
+            label: `${alias} has been exported.`,
             //message: 'Exported to your clipboard', // Message is hidden in small screen
             variant:'success',
         });
@@ -243,7 +244,10 @@ export default class App extends FeatureElement {
             sfdxAuthUrl = settings.sfdxAuthUrl || sfdxAuthUrl;
         }
         
-        ConnectionDetailModal.open({company,orgId,name,alias,username,instanceUrl,sfdxAuthUrl,accessToken,frontDoorUrl}).then((result) => {});
+        ConnectionDetailModal.open({
+            company,orgId,name,alias,username,instanceUrl,sfdxAuthUrl,accessToken,frontDoorUrl,
+            'size':isChromeExtension()?'full':'medium'
+        }).then((result) => {});
     }
 
     setAlias = (row) => {
@@ -303,6 +307,7 @@ export default class App extends FeatureElement {
 
     @api
     exportClick = (e) => {
+        download(JSON.stringify(this.exportedData),'application/json','sftoolkit_config.json');
         navigator.clipboard.writeText(JSON.stringify(this.exportedData, null, 4));
         Toast.show({
             label: 'Exported to your clipboard',
@@ -313,7 +318,10 @@ export default class App extends FeatureElement {
 
     @api
     importClick = (e) => {
-        ConnectionImportModal.open()
+        ConnectionImportModal.open({
+            'existingConnections':this.data,
+            'size':isChromeExtension()?'full':'medium'
+        })
         .then(async (res) => {
             if(isNotUndefinedOrNull(res)){
                 console.log('force refresh');

@@ -108,6 +108,7 @@ export default class App extends LightningElement {
         }
         this.loadVersion();
         this.initMode();
+        this.initDragDrop();
     }
 
     /** Events */
@@ -215,6 +216,11 @@ export default class App extends LightningElement {
 
         this.isSalesforceCliInstalled   = result.sfdx;
         this.isJavaCliInstalled         = result.java;
+    }
+
+    initDragDrop = () => {
+        window.addEventListener("dragover",function(e){e.preventDefault();},false);
+        window.addEventListener("drop",function(e){e.preventDefault();},false);
     }
 
     initMode = async () => {
