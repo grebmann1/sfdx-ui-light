@@ -4,7 +4,6 @@ import accessAnalyzer_app from "accessAnalyzer/app";
 import code_app from "code/app";
 import metadata_app from "metadata/app";
 import sobjectExplorer_app from "object/app";
-import extension_app from "extension/app";
 import org_app from "org/app";
 import sarif_app from "sarif/app";
 import doc_app from "doc/app";
@@ -15,7 +14,6 @@ const KNOWN_TYPE = new Set([
     "home/app",
     "connection/app", 
     "accessAnalyzer/app",
-    "extension/app",
     "org/app",
     "code/app",
     "metadata/app",
@@ -76,10 +74,6 @@ const APP_MAPPING = {
         quickActionIcon:"standard:apex",
         shortName:"Code",
         path:'code'
-    },
-    "extension/app":{
-        module:extension_app,
-        isFullHeight:false
     },
     "org/app":{
         module:org_app,
