@@ -9,6 +9,13 @@
     "action": {
         "default_title": "Click to open SF Toolkit Light"
     },
+    "content_scripts": [
+        {
+          "matches": ["https://*.sf-toolkit.com/*","http://localhost:3000/*"],
+          "run_at":"document_end",
+          "js": ["scripts/inject.js"]
+        }
+    ],
     "content_security_policy": {
         "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
     },
