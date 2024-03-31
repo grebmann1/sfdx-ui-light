@@ -38,6 +38,9 @@ export async function setConnection(alias,connection){
     await window.defaultStore.setItem('connections',formatConnections(connections));
 }
 
+export async function setAllConnection(connections){
+    await window.defaultStore.setItem('connections',formatConnections(connections));
+}
 
 export async function renameConnection({oldAlias,newAlias,username}){
     let connections = await window.defaultStore.getItem('connections') || [];

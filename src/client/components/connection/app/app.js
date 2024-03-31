@@ -6,7 +6,7 @@ import ConnectionDetailModal from "connection/connectionDetailModal";
 import ConnectionRenameModal from "connection/connectionRenameModal";
 import ConnectionImportModal from "connection/connectionImportModal";
 import { download,classSet,runActionAfterTimeOut,checkIfPresent,isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,normalizeString as normalize,groupBy } from 'shared/utils';
-import { getAllConnection,removeConnection,connect,oauth,getConnection,getCurrentTab } from 'connection/utils';
+import { getAllConnection,setAllConnection,removeConnection,connect,oauth,getConnection,getCurrentTab } from 'connection/utils';
 import { store,store_application } from 'shared/store';
 
 
@@ -31,21 +31,36 @@ export default class App extends FeatureElement {
     @api isHeaderLess = false;
     @track data = [];
     @track formattedData = [];
-    isLoading = false;
+    isLoading   = false;
+
+    // Injection
+    isInjected  = false;
+    loadFromExtension = false;
+    @track injectedConnections = [];
 
     // Search
     filter;
 
-    connectedCallback(){
-        this.setAllConnections();
+    async connectedCallback(){
+        await this.fetchAllConnections();
         this.checkForInjected();
     }
 
     /** Actions */
-    checkForInjected = () => {
+    checkForInjected = async () => {
         let el = document.getElementsByClassName('injected-connections');
         if(el){
-            console.log('el',el[0]);
+            this.isInjected = true;
+            try{
+                let content = el[0].textContent.trim() || "{'connections':[]}";
+                this.injectedConnections = JSON.parse(content)?.connections || [];
+                this.loadFromExtension = (await window.defaultStore.getItem('connection-extension-toggle')) === true;
+                if(this.loadFromExtension){
+                    this.fetchInjectedConnections();
+                }
+            }catch(e){
+                console.error('Issue while injecting',e);
+            }
         }
     }
 
@@ -65,7 +80,7 @@ export default class App extends FeatureElement {
             //console.log('addConnectionClick',res);
             if(isNotUndefinedOrNull(res)){
                 console.log('force refresh');
-                await this.setAllConnections();
+                await this.fetchAllConnections();
             }
             if(isElectronApp()){
                 await window.electron.ipcRenderer.invoke('org-killOauth');
@@ -74,7 +89,6 @@ export default class App extends FeatureElement {
     }
 
     handleRowAction(event) {
-        console.log('handleRowAction',event.detail);
         const actionName = event.detail.action.name;
         const row = event.detail.row;
         switch (actionName) {
@@ -107,6 +121,16 @@ export default class App extends FeatureElement {
     }
 
 
+    handleLoadFromExtensionChange = async (e) => {
+            // e.detail.checked;
+            this.loadFromExtension = e.detail.checked;
+            await window.defaultStore.setItem('connection-extension-toggle',this.loadFromExtension);
+            if(this.loadFromExtension){
+                this.fetchInjectedConnections();
+            }
+    }
+
+
 
 
 
@@ -123,11 +147,24 @@ export default class App extends FeatureElement {
     }
 
 
-    setAllConnections = async () => {
+    fetchAllConnections = async () => {
         // Browser & Electron version
         this.isLoading = true;
         this.data =  await getAllConnection();
         this.formattedData = this.formatDataForCardView();
+        this.isLoading = false;
+    }
+
+    fetchInjectedConnections = async () => {
+        this.isLoading = true;
+        const aliasList = this.injectedConnections.map(x => x.alias);
+        const newConnections = [].concat(this.injectedConnections,this.data.filter(x => !aliasList.includes(x.alias)));
+        
+        //console.log('newConnections',JSON.parse(JSON.stringify(newConnections)));
+        await setAllConnection(JSON.parse(JSON.stringify(newConnections)));
+
+        /** Fetch Again **/
+        this.fetchAllConnections();
         this.isLoading = false;
     }
 
@@ -147,7 +184,6 @@ export default class App extends FeatureElement {
             }else{
                 window.electron.ipcRenderer.invoke('OPEN_INSTANCE',row);
             }
-            
         }else{
             let {alias,...settings} = this.data.find(x => x.id == row.id);
             this.dispatchEvent(new CustomEvent("startlogin", { bubbles: true,composed: true }));
@@ -265,7 +301,7 @@ export default class App extends FeatureElement {
             newAlias:row.alias
         })
         .then(async (result) => {
-            await this.setAllConnections();
+            await this.fetchAllConnections();
         });
     }
 
@@ -273,7 +309,7 @@ export default class App extends FeatureElement {
         var confirmed = window.confirm(`Are you sure you wish to remove this Connection : ${row.alias}:${row.username} ?`)
         if(confirmed){
             await removeConnection(row.alias);
-            await this.setAllConnections();
+            await this.fetchAllConnections();
         }
     };
 
@@ -328,12 +364,12 @@ export default class App extends FeatureElement {
     importClick = (e) => {
         ConnectionImportModal.open({
             'existingConnections':this.data,
-            'size':isChromeExtension()?'full':'medium'
+            'size':'full',//isChromeExtension()?'full':'medium'
         })
         .then(async (res) => {
             if(isNotUndefinedOrNull(res)){
                 console.log('force refresh');
-                await this.setAllConnections();
+                await this.fetchAllConnections();
             }
         });
     }
@@ -371,6 +407,7 @@ export default class App extends FeatureElement {
 
     get filteredOriginal(){
         return this.data.filter(x => isUndefinedOrNull(this.filter) || isNotUndefinedOrNull(this.filter) && (checkIfPresent(x.alias,this.filter) || checkIfPresent(x.username,this.filter)));
+
     }
 
     get normalizedVariant() {
@@ -397,7 +434,7 @@ export default class App extends FeatureElement {
     }
 
     get detailRowClass(){
-        return classSet("slds-page-header__detail-row slds-is-relative min-height-200").toString();
+        return classSet("slds-page-header__detail-row slds-is-relative min-height-200 slds-row-container").toString();
     }
 
     get columns(){

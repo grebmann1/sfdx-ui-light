@@ -1,0 +1,7 @@
+.slds-row-extension{
+    display: flex;flex-direction: row;justify-content: flex-end;
+}
+
+.slds-row-container{
+    display:flex; flex-direction:column;
+}

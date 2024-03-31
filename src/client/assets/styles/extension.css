@@ -102,3 +102,63 @@ doc-app .full-page-body.slds-m-top_small{
 .slds-no-padding{
     padding: unset !important;
 }
+
+
+/** Modal **/
+
+@media (max-width: 200em){
+    .slds-modal_full{
+      top:env(safe-area-inset-top, 0);
+      bottom:auto;
+      height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    }
+    .slds-modal_full .slds-modal__header{
+      grid-area:header;
+      border-top-left-radius:0;
+      border-top-right-radius:0;
+    }
+    .slds-modal_full .slds-modal__container{
+      width:100%;
+      max-width:none;
+      min-width:0;
+      margin:0;
+      padding:1rem 0 0 0;
+      background-color:var(--slds-c-modal-header-color-background, var(--slds-c-modal-color-background, var(--slds-g-color-neutral-base-100, white)));
+      border-radius:0;
+      display:grid;
+      height:100dvh;
+      grid-template-rows:-webkit-min-content -webkit-min-content 1fr -webkit-min-content;
+      grid-template-rows:min-content min-content 1fr min-content;
+      grid-template-areas:"close" "header" "content" "footer";
+      grid-template-columns:1fr;
+    }
+    .slds-modal_full .slds-modal__content_footless,
+  .slds-modal_full .slds-modal__container > .slds-modal__content:last-child,
+  .slds-modal_full .slds-modal__content_has-hidden-footer{
+      border-bottom-right-radius:0;
+      border-bottom-left-radius:0;
+      -webkit-box-shadow:none;
+              box-shadow:none;
+    }
+    .slds-modal_full .slds-modal__close{
+      grid-area:close;
+      right:1rem;
+      --slds-c-button-color-background:var(--slds-g-color-neutral-base-100, white);
+      --slds-c-button-color-background-active:var(--slds-g-color-neutral-base-100, white);
+      color:var(--slds-g-color-neutral-base-50, #747474);
+    }
+    .slds-modal_full .slds-modal__close:hover,
+  .slds-modal_full .slds-modal__:focus{
+      color:#014486;
+    }
+    .slds-modal_full .slds-modal__content{
+      grid-area:content;
+    }
+    .slds-modal_full .slds-modal__footer{
+      grid-area:footer;
+      border-bottom-right-radius:0;
+      border-bottom-left-radius:0;
+      -webkit-box-shadow:none;
+              box-shadow:none;
+    }
+}

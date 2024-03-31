@@ -1,17 +1,20 @@
 {
     "manifest_version": 3,
-    "name": "SF Toolkit Light",
-    "version": "1.0.8",
+    "name": "Salesforce Toolkit",
+    "version": "1.0.9",
     "description": "Use SF Toolkit directly from chrome to visualize record details and analyze User access, profile, permissions, etc",
     "icons": {
-        "128": "images/icon-128.png"
+        "128": "images/sf-toolkit-icon-128.png"
     },
     "action": {
-        "default_title": "Click to open SF Toolkit Light"
+        "default_title": "Click to open SF Toolkit"
     },
     "content_scripts": [
         {
-          "matches": ["https://*.sf-toolkit.com/*","http://localhost:3000/*"],
+          "matches": [
+            "https://*.sf-toolkit.com/*",
+            "http://localhost:3000/*"
+        ],
           "run_at":"document_end",
           "js": ["scripts/inject.js"]
         }

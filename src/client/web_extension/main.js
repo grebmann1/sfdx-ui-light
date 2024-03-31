@@ -14,12 +14,21 @@ const loadLocalForage = async () => {
     })
 }
 
-
 const init = async () => {
     /** Load Local Forage  **/
-    localforage.defineDriver(webExtensionStorageDriver.sync);
-    localforage.setDriver('webExtensionSyncStorage')
-    await loadLocalForage();
+    console.log('customChromeStorageDriver',customChromeStorageDriver);
+    
+    localforage.defineDriver(customChromeStorageDriver)
+    .then(() => localforage.setDriver('customChromeStorageDriver'))
+    .then(() => {
+        console.log('customChromeStorageDriver',customChromeStorageDriver);
+        console.log('localforage',localforage);
+        console.log('localforage.driver()',localforage.driver());
+        window.defaultStore = localforage//localforage.createInstance({name: "defaultStore"});
+        console.log('window.defaultStore',window.defaultStore);
+    });
+    
+    
 
     /** Define Settings **/
     window.mermaid = mermaid; 
@@ -33,9 +42,11 @@ const init = async () => {
         //redirectUri: `http://localhost:3000/chrome/callback`,
         //proxyUrl: `http://localhost:3000/proxy/`,
     };
-    window.defaultStore = localforage.createInstance({name: "defaultStore"});
+    
     window.jsforce = jsforce;
     //console.log('window.jsforceSettings',window.jsforceSettings,localforage);
+
+    
 }
 
 

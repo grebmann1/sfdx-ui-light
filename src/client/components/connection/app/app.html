@@ -39,7 +39,6 @@
                 <div class="slds-page-header__col-actions slds-align-middle slds-p-bottom_none">
                     <div class="slds-page-header__controls">
                         <div class="slds-page-header__control">
-                            <lightning-button label="Test" onclick={testClick}></lightning-button>
                             <!-- <lightning-button icon-name="utility:knowledge_base" label="Documentation Explorer"></lightning-button> -->
                             <lightning-button-group>
                                 <lightning-button icon-name="utility:upload"   label="Import"  title="Import orgs" onclick={importClick}></lightning-button>
@@ -52,7 +51,22 @@
             </div>
             <div class="slds-page-header__row_gutters"> <!-- slds-page-header__row-->
                 <div class="slds-page-header__col-details">
-                    <div class={detailRowClass} style="display:block; ">
+                    <div class={detailRowClass}>
+                        <template lwc:if={isInjected}>
+                            <div class="slds-grid slds-grid_align-end slds-m-bottom_medium">
+                                <div class="slds-col">
+                                    <lightning-input 
+                                        type="toggle" 
+                                        label="Sync from Extension"
+                                        name="filterFields" 
+                                        message-toggle-active=""
+                                        message-toggle-inactive=""
+                                        checked={loadFromExtension}
+                                        onchange={handleLoadFromExtensionChange}
+                                    ></lightning-input>
+                                </div>
+                            </div>
+                        </template>
                         <template lwc:if={isLoading}>
                             <lightning-spinner alternative-text="Loading"></lightning-spinner>
                         </template>

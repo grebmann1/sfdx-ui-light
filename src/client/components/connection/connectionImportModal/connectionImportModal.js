@@ -18,6 +18,8 @@ export default class ConnectionImportModal extends LightningModal {
 
     @track list_new = [];
 
+    isLoading = false;
+
 
     /** Methods  **/
 
@@ -112,22 +114,26 @@ export default class ConnectionImportModal extends LightningModal {
     }
 
     handleSaveClick = async () => {
+        this.isLoading = true;
         try{
             const connectors = await this.getOauthForNewConnections();
-            console.log('connectors',connectors);
-            Toast.show({
-                label: `${this.list_new.length} credential(s) added !`,
-                variant:'success',
-            });
-            this.close('success');
+            //console.log('connectors',connectors);
+            
+            //this.close('success');
         }catch(e){
             console.error(e);
-            LightningAlert.open({
+            /*LightningAlert.open({
                 message: e.message,
                 theme: 'error', 
                 label: 'Error!', 
-            });
+            });*/
         }
+        this.isLoading = false;
+        Toast.show({
+            label: `${this.list_new.length} credential(s) added !`,
+            variant:'success',
+        });
+        this.close('success');
     }
 
     handleDualListChange = (e) => {

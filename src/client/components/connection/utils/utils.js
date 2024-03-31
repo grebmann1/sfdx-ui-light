@@ -120,6 +120,10 @@ export async function getConnection(alias){
     
 }
 
+export async function setAllConnection(params){
+    return webInterface.setAllConnection(params);
+}
+
 export async function renameConnection(params){
     return await isElectronApp()?electronInterface.renameConnection(params):webInterface.renameConnection(params);
 }
