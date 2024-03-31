@@ -25,6 +25,8 @@ const CUSTOM_URL = 'custom';
 
 export default class App extends FeatureElement {
 
+
+
     @api variant = 'table';
     @api isHeaderLess = false;
     @track data = [];
@@ -36,10 +38,16 @@ export default class App extends FeatureElement {
 
     connectedCallback(){
         this.setAllConnections();
+        this.checkForInjected();
     }
 
     /** Actions */
-
+    checkForInjected = () => {
+        let el = document.getElementsByClassName('injected-connections');
+        if(el){
+            console.log('el',el[0]);
+        }
+    }
 
     @api
     applyFilter = (value) => {
