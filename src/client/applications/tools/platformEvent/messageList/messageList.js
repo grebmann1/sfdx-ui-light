@@ -3,7 +3,7 @@ import { decodeError,isNotUndefinedOrNull,isEmpty,runActionAfterTimeOut } from '
 import FeatureElement from 'element/featureElement';
 
 
-export default class SubscribedEventMessageList extends FeatureElement {
+export default class MessageList extends FeatureElement {
 
     isLoading = false;
 

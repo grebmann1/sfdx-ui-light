@@ -2,7 +2,7 @@ import { api,track } from "lwc";
 import { decodeError,isNotUndefinedOrNull,classSet } from 'shared/utils';
 import FeatureElement from 'element/featureElement';
 
-export default class SubscbriedEventItem extends FeatureElement {
+export default class Channel extends FeatureElement {
 
     isLoading = false;
 

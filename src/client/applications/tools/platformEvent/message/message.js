@@ -3,7 +3,7 @@ import { decodeError,isNotUndefinedOrNull,classSet } from 'shared/utils';
 import FeatureElement from 'element/featureElement';
 import moment from 'moment';
 
-export default class SubscribedEventMessageItem extends FeatureElement {
+export default class Message extends FeatureElement {
 
     isLoading = false;
 

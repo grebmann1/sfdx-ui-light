@@ -3,7 +3,7 @@ import { decodeError,isNotUndefinedOrNull } from 'shared/utils';
 import FeatureElement from 'element/featureElement';
 
 
-export default class SubscribedEventListPanel extends FeatureElement {
+export default class ChannelList extends FeatureElement {
 
     isLoading = false;
 
