@@ -53,28 +53,28 @@
                                         
                                     </div>
                                     <div class="top-right-panel">
-                                        <platformEvent-channel-list
+                                        <platformevent-channel-list
                                             items={subscribedChannels}
                                             onselect={handleChannelSelection}
                                             ondelete={handleChannelDeletion}
                                             selected-item={selectedChannelName}
-                                        ></platformEvent-channel-list>
+                                        ></platformevent-channel-list>
                                     </div>
                                 </div>
                                 <template lwc:if={isSelectedChannelDisplayed}>
                                     <div class="bottom-panel slds-grid">
                                         <slds-split-view left-min-width="200" right-min-width="200">
                                             <div class="bottom-left-panel slds-m-right_small" slot="left">
-                                                <platformEvent-message-list 
+                                                <platformevent-message-list 
                                                     title={selectedChannelName} 
                                                     messages={messagesDisplayed}
                                                     onselect={handleEventSelection}
                                                     onempty={handleEmptyMessages}
-                                                ></platformEvent-message-list>
+                                                ></platformevent-message-list>
                                             </div>
                                             <div class="bottom-right-panel slds-m-left_small" slot="right">
                                                 <template lwc:if={isEventViewerDisplayed}>
-                                                    <platformEvent-event-viewer item={selectedEventItem}></platformEvent-event-viewer>
+                                                    <platformevent-event-viewer item={selectedEventItem}></platformevent-event-viewer>
                                                 </template>
                                             </div>
                                         </slds-split-view>
