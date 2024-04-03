@@ -8,6 +8,7 @@ import org_app from "org/app";
 import sarif_app from "sarif/app";
 import doc_app from "doc/app";
 import soql_app from "soql/app";
+import platformEvent_app from "platformEvent/app";
 //import codeViewer_app from "editor/app";
 
 const KNOWN_TYPE = new Set([
@@ -19,8 +20,9 @@ const KNOWN_TYPE = new Set([
     "metadata/app",
     "sarif/app",
     "doc/app",
+    "object/app",
     "soql/app",
-    "object/app"
+    "platformEvent/app"
 ]);
 const APP_MAPPING = {
     "home/app": {
@@ -44,6 +46,19 @@ const APP_MAPPING = {
         menuIcon:'utility:salesforce1',
         menuLabel:'Connections',
         path:'connections'
+    },
+    "org/app":{
+        module:org_app,
+        isFullHeight:false,
+        isDeletable:false,
+        isElectronOnly:false,
+        isOfflineAvailable:false,
+        isMenuVisible:false,
+        isTabVisible:true,
+        label:"Org. Overview",
+        type:'application',
+        shortName:"Org",
+        path:'org'
     },
     "accessAnalyzer/app": {
         module:accessAnalyzer_app,
@@ -69,24 +84,11 @@ const APP_MAPPING = {
         isMenuVisible:true,
         isTabVisible:true,
         label:"Code Toolkit",
-        type:'application',
+        type:'tool',
         description:"Retrieve Code, Run Static code analysis, Open visualforce. A perfect toolkit to simplify your life (Electron only).",
         quickActionIcon:"standard:apex",
         shortName:"Code",
         path:'code'
-    },
-    "org/app":{
-        module:org_app,
-        isFullHeight:false,
-        isDeletable:false,
-        isElectronOnly:false,
-        isOfflineAvailable:false,
-        isMenuVisible:false,
-        isTabVisible:true,
-        label:"Org. Overview",
-        type:'application',
-        shortName:"Org",
-        path:'org'
     },
     "metadata/app":{
         module:metadata_app,
@@ -131,7 +133,7 @@ const APP_MAPPING = {
         isMenuVisible:true,
         isTabVisible:true,
         label:"Documentation",
-        type:'application',
+        type:'documentation',
         description:"Search through the Salesforce Documentation",
         menuIcon:"utility:knowledge_base",
         quickActionIcon:"standard:article",
@@ -147,11 +149,26 @@ const APP_MAPPING = {
         isMenuVisible:true,
         isTabVisible:true,
         label:"SOQL Builder",
-        type:'application',
+        type:'tool',
         description:"Build SOQL queries with fields suggestion and export them.",
         quickActionIcon:"standard:data_model",
         shortName:"SOQL",
         path:'soql'
+    },
+    "platformEvent/app":{
+        module:platformEvent_app,
+        isFullHeight:true,
+        isDeletable:true,
+        isElectronOnly:false,
+        isOfflineAvailable:false,
+        isMenuVisible:true,
+        isTabVisible:true,
+        label:"Platform Event Tool",
+        type:'tool',
+        description:"Subscribe to platform event to test them.",
+        quickActionIcon:"standard:events",
+        shortName:"PLEV",
+        path:'platformevent'
     }
 };
 

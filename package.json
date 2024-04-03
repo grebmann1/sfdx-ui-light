@@ -1,6 +1,6 @@
 {
     "name": "sfdx-ui-light",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "scripts": {
         "start:dev:extension": "rollup -c rollup.config.js --bundleConfigAsCjs --watch | serve chrome_ext",
         "start:dev:client": "NODE_ENV=development node -r dotenv/config src/server/server-dev.js",
@@ -29,6 +29,7 @@
         "@pgrabovets/json-view": "^2.7.5",
         "@rollup/plugin-replace": "^5.0.5",
         "@salesforce-ux/design-system": "2.22.2",
+        "cometd": "^7.0.12",
         "dotenv": "^16.3.1",
         "express": "^4.18.2",
         "express-requests-logger": "^4.0.0",
@@ -42,6 +43,7 @@
         "localforage-webextensionstorage-driver": "^3.0.0",
         "lwr": "0.11.12",
         "mermaid": "^10.9.0",
+        "moment": "^2.30.1",
         "node-fetch": "^2.7.0",
         "node-schedule": "^2.1.1",
         "npm-run-all": "^4.1.5",

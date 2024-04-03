@@ -86,7 +86,7 @@ export default class App extends FeatureElement {
 
     typeFilter_onChange = (e) => {
         this.typeFilter_value = e.detail.value;
-        localStorage.setItem('global-sobject-typeFilter_value',JSON.stringify(this.typeFilter_value));
+        //localStorage.setItem('global-sobject-typeFilter_value',JSON.stringify(this.typeFilter_value));
         setTimeout(() => {
             this.filteredRecords = this.filterRecords();
         },1);
@@ -94,7 +94,7 @@ export default class App extends FeatureElement {
 
     metadataFilter_onChange = (e) => {
         this.metadataFilter_value = e.detail.value;
-        localStorage.setItem('global-sobject-metadataFilter_value',JSON.stringify(this.metadataFilter_value));
+        //localStorage.setItem('global-sobject-metadataFilter_value',JSON.stringify(this.metadataFilter_value));
         setTimeout(() => {
             this.filteredRecords = this.filterRecords();
         },1);
@@ -159,8 +159,8 @@ export default class App extends FeatureElement {
 
     loadCachedSettings = () => {
         if(isNotUndefinedOrNull(this.connector.header.alias)){
-            this.typeFilter_value       = getFromStorage(localStorage.getItem('global-sobject-typeFilter_value'),['object']);
-            this.metadataFilter_value   = getFromStorage(localStorage.getItem('global-sobject-metadataFilter_value'),['searchable','queryable']);
+            //this.typeFilter_value       = getFromStorage(localStorage.getItem('global-sobject-typeFilter_value'),['object']);
+            //this.metadataFilter_value   = getFromStorage(localStorage.getItem('global-sobject-metadataFilter_value'),['searchable','queryable']);
         }
     }
 

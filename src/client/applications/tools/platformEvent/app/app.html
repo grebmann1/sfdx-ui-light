@@ -1,0 +1,91 @@
+<template>
+    <div class={pageClass}>
+        <!-- Header -->
+        
+        
+         <!-- Body -->
+        <article class="full-page-body full-page-body-builder slds-card">
+            <div class="slds-card__body slds-card__body_inner">
+                <div class="slds-full-height slds-is-relative" style="min-height:200px;">
+                    <template lwc:if={isLoading}>
+                        <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                    </template>
+                    <template lwc:else>
+                        <div class="body slds-full-height">
+                            <!-- <div class="left-panel"></div> -->
+                            <div class="panel">
+                                <div class="top-panel">
+                                    <div class="top-left-panel">
+                                        <div class="slds-m-horizontal_small slds-m-bottom_small">
+                                            <lightning-input class="input-validate" label="Platform Event" placeholder="DummyEvent__e" onchange={handleChannelNameChange}
+                                                value="CCR_TaskNotification__e"
+                                            ></lightning-input>
+                                        </div>
+                                        <div class="slds-grid slds-justify-content-space-between slds-grid_vertical-align-center">
+                                            <div class="slds-p-around_small">
+                                                <lightning-input
+                                                    type="toggle" 
+                                                    label="Execute Apex" 
+                                                    name="executeApex"
+                                                    variant="label-stacked"
+                                                    message-toggle-active=""
+                                                    message-toggle-inactive=""
+                                                    onchange={handleToggleChange}
+                                                    checked={isApexContainerDisplayed}
+                                                ></lightning-input>
+                                            </div>
+
+                                            <div class="slds-p-around_small">
+                                                <lightning-button label="Subscribe" variant="brand" title="Subscribe to channel" onclick={subscribeChannel} disabled={isSubscribeDisabled}></lightning-button>
+                                            </div>
+                                        </div>
+                                        <template lwc:if={isApexContainerDisplayed}>
+                                            <div class="slds-quick-apex-container">
+                                                <lightning-textarea class="input-apex" label="Apex Script" value={apexScript} placeholder="Execute Anonymous Apex to publish an event ..." onchange={handleApexScriptChange}></lightning-textarea>
+                                                <div class="slds-grid slds-justify-content-space-between slds-grid_vertical-align-center">
+                                                    <div></div>
+                                                    <div class="slds-p-around_small">
+                                                        <lightning-button label="Execute" title="Execute Apex" onclick={executeApex} disabled={isExecuteApexDisabled}></lightning-button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        
+                                    </div>
+                                    <div class="top-right-panel">
+                                        <platformEvent-channel-list
+                                            items={subscribedChannels}
+                                            onselect={handleChannelSelection}
+                                            ondelete={handleChannelDeletion}
+                                            selected-item={selectedChannelName}
+                                        ></platformEvent-channel-list>
+                                    </div>
+                                </div>
+                                <template lwc:if={isSelectedChannelDisplayed}>
+                                    <div class="bottom-panel slds-grid">
+                                        <slds-split-view left-min-width="200" right-min-width="200">
+                                            <div class="bottom-left-panel slds-m-right_small" slot="left">
+                                                <platformEvent-message-list 
+                                                    title={selectedChannelName} 
+                                                    messages={messagesDisplayed}
+                                                    onselect={handleEventSelection}
+                                                    onempty={handleEmptyMessages}
+                                                ></platformEvent-message-list>
+                                            </div>
+                                            <div class="bottom-right-panel slds-m-left_small" slot="right">
+                                                <template lwc:if={isEventViewerDisplayed}>
+                                                    <platformEvent-event-viewer item={selectedEventItem}></platformEvent-event-viewer>
+                                                </template>
+                                            </div>
+                                        </slds-split-view>
+                                    </div>
+                                </template>
+                                
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </article>
+    </div>
+</template>

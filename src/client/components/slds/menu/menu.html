@@ -42,6 +42,12 @@
                     onchange={handleSearch}
                 ></lightning-input>
             </template>
+
+    
+            <template lwc:if={displayIfEmpty}>
+                <div class="slds-p-around_small">No items found</div>
+            </template>
+            
             <div class="slds-flex-column slds-fill-height slds-is-relative">
                 <template lwc:if={isLoading}>
                     <lightning-spinner alternative-text="Loading"></lightning-spinner>
@@ -63,10 +69,6 @@
                 </lightning-vertical-navigation>
             </div>
             
-    
-            <template lwc:if={displayIfEmpty}>
-                <div class="slds-p-around_small">No items found</div>
-            </template>
         </div>
     </div>
 </template>

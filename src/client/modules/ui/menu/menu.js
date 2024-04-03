@@ -108,6 +108,18 @@ export default class Menu extends FeatureElement {
         });
     }
 
+    generateFilter = (name,hideMenuLabel = false) => {
+        var filtered = this.formatMenuItems(this.items.filter(x => x.type === name),hideMenuLabel);
+        if(!isElectronApp()){
+            filtered = filtered.filter(x => !x.isElectronOnly);
+        }
+        if(!this.isUserLoggedIn){
+            filtered = filtered.filter(x => x.isOfflineAvailable);
+        }
+
+        return filtered;
+    }
+
 
     /** Getters **/
     
@@ -124,6 +136,10 @@ export default class Menu extends FeatureElement {
         return this.isMenuSmall?'App':'Applications';
     }
 
+    get toolsLabel(){
+        return this.isMenuSmall?'Tools':'Tools';
+    }
+
     get connectionLabel(){
         return this.isMenuSmall?'Conn':'Connections';
     }
@@ -133,39 +149,27 @@ export default class Menu extends FeatureElement {
     }
     
     get homes(){
-        var filtered = this.formatMenuItems(this.items.filter(x => x.type === 'home'),this.isMenuSmall);
-        if(!isElectronApp()){
-            filtered = filtered.filter(x => !x.isElectronOnly);
-        }
-        if(!this.isUserLoggedIn){
-            filtered = filtered.filter(x => x.isOfflineAvailable);
-        }
-        
-        return filtered;
+        return this.generateFilter('home',this.isMenuSmall);
     }
     
     get applications(){
-        var filtered = this.formatMenuItems(this.items.filter(x => x.type === 'application'));
-        if(!isElectronApp()){
-            filtered = filtered.filter(x => !x.isElectronOnly);
-        }
-        if(!this.isUserLoggedIn){
-            filtered = filtered.filter(x => x.isOfflineAvailable);
-        }
-        
-        return filtered;
+        return this.generateFilter('application');
+    }
+
+    get documentations(){
+        return this.generateFilter('documentation');
+    }
+
+    get tools(){
+        return this.generateFilter('tool');
+    }
+
+    get hasTools(){
+        return this.tools.length > 0;
     }
     
     get connections(){
-        var filtered = this.formatMenuItems(this.items.filter(x => x.type === 'connection'));
-        if(!isElectronApp()){
-            filtered = filtered.filter(x => !x.isElectronOnly);
-        }
-        if(!this.isUserLoggedIn){
-            filtered = filtered.filter(x => x.isOfflineAvailable);
-        }
-        
-        return filtered;
+        return this.generateFilter('connection');
     }
 
     get others(){

@@ -32,11 +32,12 @@ export function executeQuery({connector,soql}, isAllRows) {
     return async dispatch => {
         dispatch(requestQuery());
         connector
-            .request({
+            .query(soql)
+            /*.request({
                 method: 'GET',
                 url: `${apiPath}?q=${encodeURIComponent(soql)}`,
                 //headers: salesforce.getQueryHeaders() // To update later
-            })
+            })*/
             .then(res => {
                 dispatch(receiveQuerySuccess(res, soql,connector.alias));
                 dispatch(updateApiLimit({connector}));

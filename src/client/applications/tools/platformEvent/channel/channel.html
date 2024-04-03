@@ -1,0 +1,13 @@
+<template>
+    <div class={itemClass} title={item.channel} key={item.name} data-key={item.name} onclick={selectChannel}>
+        <span> {item.channel}</span>
+        <div> 
+             <lightning-badge label={item.status} class={item.badgeClass}></lightning-badge>
+        </div>
+        <div> 
+            <lightning-button-group>
+                <lightning-button-icon icon-name="utility:delete" tooltip="Remove Subscription" onclick={removeChannel}></lightning-button-icon>
+            </lightning-button-group>
+        </div>
+     </div>
+</template>

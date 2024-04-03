@@ -1,11 +1,21 @@
 <template>
-    <div class="slds-grid slds-wrap">
-        <div class="slds-size_1-of-1 dx-theme-dark dx-variant-card">
-            <div class="code-block-content">
-                <div class="codeblock">
-                    <pre lwc:dom="manual"></pre>
-                </div>
+    <div class="dx-theme-dark dx-variant-card">
+        <div class="toolbar">
+            <div class="toolbar-item slds-m-right_small">
+                <lightning-button-icon 
+                    size="medium" 
+                    icon-name="utility:copy" 
+                    variant="bare-inverse" 
+                    onclick={handleCopy}
+                    tooltip="Click to copy"
+                ></lightning-button-icon>
+            </div>
+        </div>
+        <div class="code-block-content">
+            <div class="codeblock">
+                <pre lwc:dom="manual"></pre>
             </div>
         </div>
     </div>
 </template>
+

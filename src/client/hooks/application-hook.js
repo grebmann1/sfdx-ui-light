@@ -15,7 +15,8 @@ const APP_LIST = [
   'sobject/:attribute1',
   'documentation',
   'documentation/:attribute1',
-  'soql'
+  'soql',
+  'platformevent'
 ]
 
 function generateRoutes(applications, { contentDir, layoutsDir }) {

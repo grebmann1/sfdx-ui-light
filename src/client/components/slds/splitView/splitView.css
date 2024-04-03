@@ -1,0 +1,24 @@
+/* splitView.css */
+
+:host{
+    width: 100%;
+}
+.split-view {
+    display: flex;
+    height: 100%;
+    position: relative;
+}
+
+.split-view-column {
+    overflow: auto;
+}
+
+.splitter {
+    cursor: col-resize;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    background-color: #ccc;
+    z-index: 1;
+}

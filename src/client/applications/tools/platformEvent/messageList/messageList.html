@@ -1,0 +1,34 @@
+<template>
+    <div class="slds-tabs_default">
+        <ul class="slds-tabs_default__nav" role="tablist">
+            <li class="slds-tabs_default__item slds-is-active" title="Platform Events" role="presentation">
+                <a class="slds-tabs_default__link" href="javascript:void(0);" role="tab" tabindex="-1" aria-selected="false">{title}</a>
+            </li>
+        </ul>
+        <div class="slds-tabs_default__content" role="tabpanel">
+            <div class="slds-grid slds-grid_align-end slds-m-top_small">
+                <div class="slds-col">
+                    <lightning-button-group>
+                        <lightning-button-icon icon-name="utility:delete" tooltip="Empty list of messages" onclick={handleEmptyMessages}></lightning-button-icon>
+                    </lightning-button-group>
+                </div>
+            </div>
+            <lightning-input 
+                class="slds-m-vertical_medium" 
+                type="search"
+                label="Search" 
+                variant="label-hidden"
+                value={filter}
+                onchange={handleSearch}
+            ></lightning-input>
+            <div class="slds-scrollable_y">
+                <template lwc:if={isEmpty}>
+                    <slds-empty-illustration title="No record" sub-title="There is no events"></slds-empty-illustration>
+                </template>
+                <template for:each={sortedFilteredMessages} for:item="item">
+                    <platformEvent-message item={item} key={item.id}></platformEvent-message>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>

@@ -43,7 +43,7 @@ const handleTabOpening = async (tab) => {
 chrome.runtime.onInstalled.addListener(() => {
     chrome.contextMenus.create({
         id: 'openSidePanel',
-        title: 'Open side panel',
+        title: 'Open Salesforce Toolkit',
         contexts: ['all']
     });
 });

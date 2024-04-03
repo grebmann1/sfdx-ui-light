@@ -1,0 +1,16 @@
+<!-- splitView.html -->
+<template>
+    <div class="split-view left-container" style={containerStyle}>
+
+        <div class="split-view-column" style={leftColumnStyle}>
+            <slot name="left"></slot>
+        </div>
+        
+        <div class="splitter" style={splitterStyle} onmousedown={handleMouseDown}></div>
+
+        <div class="split-view-column right-container" style={rightColumnStyle}>
+            <slot name="right"></slot>
+        </div>
+
+    </div>
+</template>

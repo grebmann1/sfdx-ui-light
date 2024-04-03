@@ -4,18 +4,24 @@ const jsforceAjaxProxy = require("jsforce-ajax-proxy");
 const jsforce = require('jsforce');
 const qs = require('qs');
 const fs = require('node:fs');
+const httpProxy = require('http-proxy');
+const proxy = httpProxy.createProxyServer({});
+
+
 
 const CTA_MODULE = require('./modules/cta.js');
 
 /** Documentation Temporary Code until a DB is incorporated **/
 const VERSION = process.env.DOC_VERSION || '248.0';
 const DATA_DOCUMENTATION = JSON.parse(fs.readFileSync(`./src/documentation/${VERSION}.json`, 'utf-8'));
+
+
 /** CTA Documentation **/
 var DATA_CTA = [];
 CTA_MODULE.launchScheduleFileDownloaded((files) => {
     DATA_CTA = files;
 });
-console.log('DATA_CTA.contents',DATA_CTA);
+//console.log('DATA_CTA.contents',DATA_CTA);
 
 
 const PORT = parseInt(process.env.PORT || "3000", 10);
@@ -37,6 +43,9 @@ checkIfPresent = (a,b) => {
     return (a || '').toLowerCase().includes((b||'').toLowerCase());
 }
 
+/** Proxy **/
+
+
 const lwrServer = createServer({
     serverMode: SERVER_MODE,
     port: PORT,
@@ -44,7 +53,11 @@ const lwrServer = createServer({
 
 const app = lwrServer.getInternalServer("express");
 
+/* CometD Proxy */
+app.all("/cometd/?*", jsforceAjaxProxy({ enableCORS: true }));
+/* jsForce Proxy */
 app.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));
+
 app.get('/version',function(req,res){
     res.json({version:process.env.npm_package_version});
 })
@@ -114,6 +127,9 @@ app.get('/chrome/callback', function(req, res) {
     });
 });
 
+
+
+/** LWR Server **/
 
 lwrServer
 .listen(( { port, serverMode }) => {

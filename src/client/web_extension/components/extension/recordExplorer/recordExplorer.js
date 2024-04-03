@@ -170,7 +170,7 @@ export default class RecordExplorer extends LightningElement {
 		}
 
 		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
-			height: 424,
+			height: '470',
 			data: this.formattedData,
 			layout:"fitColumns",
 			columns: colModel,

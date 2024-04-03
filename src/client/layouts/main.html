@@ -8,6 +8,7 @@
         <link rel="stylesheet" href="$stylesDir/tabulator.min.css">
         <link rel="stylesheet" href="$stylesDir/dashboard.css">
         <link rel="stylesheet" href="$stylesDir/highlight.css">
+        <link rel="stylesheet" href="$stylesDir/prism.css">
         <link rel="stylesheet" href="$assetsDir/styles/salesforce-lightning-design-system.min.css" />
         <link rel="stylesheet" href="/xterm.css"/>
         <style>
@@ -129,6 +130,10 @@
             
             .slds-justify-content-flew-end{
                 justify-content: flex-end;
+            }
+
+            .slds-justify-content-space-between{
+                justify-content: space-between;
             }
 
             .slds-full-height{
@@ -256,6 +261,7 @@
             import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
             window.mermaid = mermaid;
         </script>
+        <script src="$libsDir/prism/prism.js"></script>
         <script src="$libsDir/jsforce/jsforce.js"></script>
         <script src="$libsDir/localforage/localforage.min.js"></script>
         <script>
@@ -272,6 +278,7 @@
                 //jsforce.browser.init(window.jsforceSettings); // Reset
             })         
             window.jsforce = jsforce;
+            window.Prism = Prism;
             
 
             /** Local Storage Settings **/

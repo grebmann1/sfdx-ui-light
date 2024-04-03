@@ -32,6 +32,7 @@ const SOQL_SYNTAX_KEYWORDS = [
 
 export default class QueryEditorPanel extends FeatureElement {
     @api namespace;
+    @api useToolingApi;
 
     isCompletionVisible;
     completionStyle;
@@ -90,11 +91,16 @@ export default class QueryEditorPanel extends FeatureElement {
         this._insertItem(inputEl, selectedItem);
     }
 
+    handleToolingApiCheckboxChange = (e) => {
+        console.log('handleToolingApiCheckboxChange',e.detail.checked);
+        this.useToolingApi = e.detail.checked;
+    }
+
     handleKeyupSoql(event) {
         const { value } = event.target;
         if (this._soql !== value) {
             store.dispatch(updateSoql({
-                connector:this.connector.conn,
+                connector:this.queryConnector,
                 soql:value
             }));
         }
@@ -144,7 +150,7 @@ export default class QueryEditorPanel extends FeatureElement {
         if (!input) return;
         const query = input.value;
         if (!query) return;
-        store.dispatch(executeQuery({connector:this.connector.conn,soql:query}, isAllRows));
+        store.dispatch(executeQuery({connector:this.queryConnector,soql:query}, isAllRows));
     }
 
     _openCompletion(event) {
@@ -317,10 +323,16 @@ export default class QueryEditorPanel extends FeatureElement {
             textarea.focus();
             textarea.setSelectionRange(insertedIndex, insertedIndex);
             store.dispatch(updateSoql({
-                connector:this.connector.conn,
+                connector:this.queryConnector,
                 soql:this.soql
             }));
         }
         this._closeCompletion();
+    }
+
+    /** Getters **/
+
+    get queryConnector(){
+        return this.useToolingApi?this.connector.conn.tooling:this.connector.conn;
     }
 }

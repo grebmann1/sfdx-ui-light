@@ -1,6 +1,12 @@
 import { LightningElement,api,track } from "lwc";
+import { isEmpty,runActionAfterTimeOut } from 'shared/utils';
 
 export default class CodeBlock extends LightningElement {
+
+	prismInitialized = false;
+	@track _codeBlock;
+	prism;
+
 	@api
 	set language(value) {
 		this._language = value.toLowerCase();
@@ -21,14 +27,17 @@ export default class CodeBlock extends LightningElement {
 		return this._codeBlock;
 	}
 
-	prismInitialized = false;
-	@track _codeBlock;
 
-	prism;
 
 	renderedCallback() {
 		this.loadPrism();
-	}
+    }
+
+
+
+
+	/** Methods  **/
+
 
 	loadPrism() {
 		this.prismInitialized = true;
@@ -42,17 +51,16 @@ export default class CodeBlock extends LightningElement {
 
 	highlightCodeSegment() {
 		if (this.prism) {
-            console.log('highlightCodeSegment');
 			let codeBlockEl = this.template.querySelector("pre");
 			// eslint-disable-next-line
 			if (codeBlockEl.innerHTML !== "") {
 				// eslint-disable-next-line
 				codeBlockEl.innerHTML = "";
-				codeBlockEl.classList.remove("language-javascript");
+				//codeBlockEl.classList.remove("language-javascript");
 			}
 			codeBlockEl.classList.add("line-numbers");
 			const codeEl = document.createElement("code");
-			codeEl.classList.add(`language-${this._language}`);
+				codeEl.classList.add(`language-${this._language}`);
 			if (this._language === "java") {
 				this._codeBlock = this._codeBlock
 					.replace(/</g, "&lt;")
@@ -61,7 +69,19 @@ export default class CodeBlock extends LightningElement {
 			// eslint-disable-next-line
 			codeEl.innerHTML = this._codeBlock;
 			codeBlockEl.appendChild(codeEl);
-			this.prism.highlightAllUnder(codeBlockEl);
+			this.prism.highlightAllUnder(codeBlockEl,false,()=>{
+				console.log('callback');
+			});
 		}
 	}
+
+	/** Events **/
+
+	handleCopy = () => {
+        navigator.clipboard.writeText(this._codeBlock);
+    }
+
+
+	
+
 }

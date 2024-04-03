@@ -1,0 +1,30 @@
+:host{
+    width: 300px;
+}
+
+.item {
+    /* max-height: 30px; */
+    overflow: hidden;
+    font-weight: 700;
+}
+
+.item:hover {
+    background: #f3f2f2;
+    cursor: pointer;
+    -webkit-box-shadow: inset 4px 0 0 #1b96ff;
+    box-shadow: inset 4px 0 0 #1b96ff;
+}
+
+.item.slds-is-active{
+    -webkit-box-shadow: inset 4px 0 0 #1b96ff;
+    box-shadow: inset 4px 0 0 #1b96ff;
+}
+
+.item.slds-is-new{
+    background: #f3f2f2;
+}
+
+.slds-split-view__list-item-action:focus{
+    box-shadow:unset;
+    -webkit-box-shadow:unset;
+}

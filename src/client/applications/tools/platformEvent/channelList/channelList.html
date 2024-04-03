@@ -1,0 +1,16 @@
+<template>
+    <div class="slds-tabs_default">
+        <ul class="slds-tabs_default__nav" role="tablist">
+            <li class="slds-tabs_default__item slds-is-active" title="Platform Events" role="presentation">
+                <a class="slds-tabs_default__link" href="javascript:void(0);" role="tab" tabindex="-1" aria-selected="false">Channels</a>
+            </li>
+        </ul>
+        <div class="slds-tabs_default__content" role="tabpanel">
+            <div class="slds-scrollable">
+                <template for:each={items} for:item="item">
+                    <platformEvent-channel key={item.name} item={item} selected-item={selectedItem}></platformEvent-channel>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>
