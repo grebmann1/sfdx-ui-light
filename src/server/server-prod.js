@@ -108,7 +108,12 @@ app.get('/cta/search',function(req,res){
   }));
   res.json(result);
 });
+
+/* CometD Proxy */
+app.all("/cometd/?*", jsforceAjaxProxy({ enableCORS: true }));
+/* JS Force Proxy */
 app.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));
+
 app.get("/*", (req, res) => handler(req, res, {public: "site",...serveJson}));
 
 
