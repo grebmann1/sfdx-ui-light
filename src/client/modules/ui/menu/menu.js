@@ -8,7 +8,7 @@ import { NavigationContext, CurrentPageReference,generateUrl, navigate } from 'l
         
 export default class Menu extends FeatureElement {
     
-    @api isUserLoggedIn = false; // to enforce
+    @api isUserLoggedIn = false; // to enforce t
 
     isMenuSmall = false;
     selectedItem = 'home';
