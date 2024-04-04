@@ -23,7 +23,7 @@
             ></lightning-input>
             <div class="slds-scrollable_y">
                 <template lwc:if={isEmpty}>
-                    <slds-empty-illustration title="No record" sub-title="There is no events"></slds-empty-illustration>
+                    <slds-empty-illustration title="No Messages" sub-title="There is no events received"></slds-empty-illustration>
                 </template>
                 <template for:each={sortedFilteredMessages} for:item="item">
                     <platformevent-message item={item} key={item.id}></platformevent-message>
