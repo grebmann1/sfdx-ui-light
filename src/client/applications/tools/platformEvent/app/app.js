@@ -1,7 +1,7 @@
 import { api,track } from "lwc";
 import { decodeError,isNotUndefinedOrNull,isUndefinedOrNull,guid } from 'shared/utils';
 import FeatureElement from 'element/featureElement';
-import { PlatformEvent } from 'platformEvent/utils';
+import { PlatformEvent } from 'platformevent/utils';
 
 
 

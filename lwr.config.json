@@ -9,11 +9,7 @@
             { "dir": "$rootDir/src/client/applications/explorers" },
             { "dir": "$rootDir/src/client/applications/documentation" },
             { "dir": "$rootDir/src/client/applications/tools" },
-            { "npm": "lightning-base-components" },
-            {
-                "name":"lightning/tooltipLibrary",
-                "path": "$rootDir/node_modules/lightning-base-components/src/lightning/tooltipLibrary/tooltipLibrary.js"
-            }
+            { "npm": "lightning-base-components" }
         ]
     },
     "bundleConfig": { 

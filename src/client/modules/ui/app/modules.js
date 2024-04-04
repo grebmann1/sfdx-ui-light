@@ -8,7 +8,7 @@ import org_app from "org/app";
 import sarif_app from "sarif/app";
 import doc_app from "doc/app";
 import soql_app from "soql/app";
-import platformEvent_app from "platformEvent/app";
+import platformEvent_app from "platformevent/app";
 //import codeViewer_app from "editor/app";
 
 const KNOWN_TYPE = new Set([
@@ -22,7 +22,7 @@ const KNOWN_TYPE = new Set([
     "doc/app",
     "object/app",
     "soql/app",
-    "platformEvent/app"
+    "platformevent/app"
 ]);
 const APP_MAPPING = {
     "home/app": {
@@ -155,7 +155,7 @@ const APP_MAPPING = {
         shortName:"SOQL",
         path:'soql'
     },
-    "platformEvent/app":{
+    "platformevent/app":{
         module:platformEvent_app,
         isFullHeight:true,
         isDeletable:true,
