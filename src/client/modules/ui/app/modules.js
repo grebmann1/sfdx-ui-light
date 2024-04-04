@@ -163,9 +163,9 @@ const APP_MAPPING = {
         isOfflineAvailable:false,
         isMenuVisible:true,
         isTabVisible:true,
-        label:"Platform Event Tool",
+        label:"Platform Event Hook",
         type:'tool',
-        description:"Subscribe to platform event to test them.",
+        description:"Subscribe to platform event to visualize them.",
         quickActionIcon:"standard:events",
         shortName:"PLEV",
         path:'platformevent'
