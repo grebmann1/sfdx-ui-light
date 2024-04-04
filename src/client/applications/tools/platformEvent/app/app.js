@@ -15,9 +15,9 @@ const cometd = new lib.CometD();
 export default class App extends FeatureElement {
 
     isLoading = false;
-    channelName = 'CCR_TaskNotification__e'; 
+    channelName;// = 'CCR_TaskNotification__e'; 
     // Apex
-    apexScript = 'CCR_TaskNotification__e event = new CCR_TaskNotification__e();\n// Publish the event\nDatabase.SaveResult result = EventBus.publish(event);';
+    apexScript; // ='CCR_TaskNotification__e event = new CCR_TaskNotification__e();\n// Publish the event\nDatabase.SaveResult result = EventBus.publish(event);';
     isApexContainerDisplayed = false;
     isApexRunning = false;
 
