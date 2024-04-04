@@ -12,27 +12,35 @@ const isHostMatching = (url) => {
 }
 
 const handleTabOpening = async (tab) => {
-    const url = new URL(tab.url);
+    try{
+        console.log('handleTabOpening');
+        const url = new URL(tab.url);
 
-    /** Remove by default **/
-    await chrome.sidePanel.setOptions({
-        tabId:tab.id,
-        enabled: false
-    });
-
-    /**  Filter Tabs **/
-    if (isHostMatching(url)) {
-        // Salesforce website, ensure the popup is set
-        //console.log('onActivated - chrome.action.setPopup');
-        //await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false })
-        chrome.action.setPopup({tabId: tab.id, popup: 'views/popup.html'});
-    }else{
-        //await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
+        /** Remove by default **/
         await chrome.sidePanel.setOptions({
             tabId:tab.id,
-            path: 'views/side.html',
-            enabled: true
+            enabled: false
         });
+
+        /**  Filter Tabs **/
+        if (isHostMatching(url)) {
+            //console.log('isHostMatching');
+            // Salesforce website, ensure the popup is set
+            //console.log('onActivated - chrome.action.setPopup');
+            //await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false })
+            chrome.action.setPopup({tabId: tab.id, popup: 'views/popup.html'});
+        }else{
+            await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
+            //console.log('openSidePanel 1');
+            await chrome.sidePanel.setOptions({
+                tabId:tab.id,
+                path: 'views/side.html',
+                enabled: true
+            });
+            //console.log('openSidePanel 2');
+        }
+    }catch(e){
+        console.log('Issue handleTabOpening',e);
     }
 }
 
@@ -120,7 +128,8 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 /** Action Button  */
 chrome.action.onClicked.addListener((tab) => {
-    console.log('on action clicked');
+    //console.log('on action clicked');
+    //handleTabOpening(tab);
 });
 
 

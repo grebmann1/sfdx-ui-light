@@ -103,6 +103,35 @@ doc-app .full-page-body.slds-m-top_small{
     padding: unset !important;
 }
 
+.min-height-400{
+    min-height: 400px;
+}
+
+.min-height-200{
+    min-height: 200px;
+}
+
+.min-width-300{
+    min-width: 300px;
+}
+
+.min-width-150{
+    min-width: 150px;
+}
+
+.slds-width-150{
+    width: 150px;
+}
+
+.slds-center-container{
+    position: unset;
+    width:unset;
+    left: unset;
+    top: unset;
+    -webkit-transform: unset;
+    transform: unset;
+}
+
 
 /** Modal **/
 

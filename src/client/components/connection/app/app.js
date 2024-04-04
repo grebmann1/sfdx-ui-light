@@ -367,10 +367,8 @@ export default class App extends FeatureElement {
             'size':'full',//isChromeExtension()?'full':'medium'
         })
         .then(async (res) => {
-            if(isNotUndefinedOrNull(res)){
-                console.log('force refresh');
-                await this.fetchAllConnections();
-            }
+            console.log('force refresh');
+            await this.fetchAllConnections();
         });
     }
 

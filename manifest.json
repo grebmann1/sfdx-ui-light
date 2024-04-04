@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
-    "name": "Salesforce Toolkit",
-    "version": "1.1.0",
+    "name": "Salesforce Toolkit - Dev",
+    "version": "1.1.1",
     "description": "Use SF Toolkit directly from chrome to visualize record details and analyze User access, profile, permissions, etc",
     "icons": {
         "128": "images/sf-toolkit-icon-128.png"
