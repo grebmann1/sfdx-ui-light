@@ -25,7 +25,8 @@ export default class EventViewer extends FeatureElement {
     /** Getters */
 
     get content(){
-        return JSON.stringify(this.item, null, 4);
+        const data = this.item?.content || this.item;
+        return JSON.stringify(data, null, 4);
     }
 
   
