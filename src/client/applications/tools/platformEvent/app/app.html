@@ -53,12 +53,12 @@
                                         
                                     </div>
                                     <div class="top-right-panel">
-                                        <platformevent-channel-list
+                                        <platformevent-channel-panel
                                             items={subscribedChannels}
+                                            selected-item={selectedChannelName}
                                             onselect={handleChannelSelection}
                                             ondelete={handleChannelDeletion}
-                                            selected-item={selectedChannelName}
-                                        ></platformevent-channel-list>
+                                        ></platformevent-channel-panel>
                                     </div>
                                 </div>
                                 <template lwc:if={isSelectedChannelDisplayed}>
