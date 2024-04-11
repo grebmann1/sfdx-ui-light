@@ -24,7 +24,7 @@ const KNOWN_TYPE = new Set([
     "object/app",
     "soql/app",
     "platformevent/app",
-    "anonymousApex/app"
+    //"anonymousApex/app"
 ]);
 const APP_MAPPING = {
     "home/app": {
@@ -157,7 +157,7 @@ const APP_MAPPING = {
         shortName:"SOQL",
         path:'soql'
     },
-    "anonymousApex/app":{
+    /*"anonymousApex/app":{
         module:anonymousApex_app,
         isFullHeight:true,
         isDeletable:true,
@@ -171,7 +171,7 @@ const APP_MAPPING = {
         quickActionIcon:"standard:apex",
         shortName:"APEX",
         path:'anonymousapex'
-    },
+    },*/
     "platformevent/app":{
         module:platformEvent_app,
         isFullHeight:true,
