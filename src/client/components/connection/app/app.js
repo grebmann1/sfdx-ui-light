@@ -15,7 +15,7 @@ const actions = [
     { label: 'Browser', name: 'openBrowser' },
     { label: 'Export', name: 'export' },
     { label: 'See Details', name: 'seeDetails' },
-    { label: 'Set Alias', name: 'setAlias' },
+    { label: 'Edit', name: 'setAlias' },
     { label: 'Remove', name: 'removeConnection' }
 ];
 
@@ -91,7 +91,7 @@ export default class App extends FeatureElement {
         });
     }
 
-    handleRowAction(event) {
+    handleRowAction = (event) => {
         const actionName = event.detail.action.name;
         const row = event.detail.row;
         switch (actionName) {
@@ -300,8 +300,10 @@ export default class App extends FeatureElement {
     setAlias = (row) => {
         ConnectionRenameModal.open({
             oldAlias:row.alias,
+            category:row.company,
+            orgName:row.name,
             username:row.username,
-            newAlias:row.alias
+            connections:this.data
         })
         .then(async (result) => {
             await this.fetchAllConnections();
