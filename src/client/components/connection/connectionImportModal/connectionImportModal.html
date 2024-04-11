@@ -3,28 +3,33 @@
     <lightning-modal-body >
         <slds-file-uploader lwc:ref="uploader" onfilechange={handleFileChange} type-list="['application/json']" is-modal>
             <section class="slds-p-around_large min-height-400 slds-is-relative">
-                <div class="slds-center-container">
-                    <template lwc:if={isResultDisplayed}>
-                        <lightning-dual-listbox name="newconnection"
-                            label="Select Credentials to import"
-                            source-label="Existing Credential"
-                            selected-label="New Credential (Upsert)"
-                            field-level-help="Select credential to overwrite"
-                            options={options}
-                            value={list_new}
-                            onchange={handleDualListChange}
-                        ></lightning-dual-listbox>
-                    </template>
-                    <template lwc:else>
-                        <div style="text-align: center;">
-                            <lightning-input type="file" label="Upload Org Credentials" accept=".json" onchange={inputChange}></lightning-input>
-                        </div>
-                    </template>
+
+                <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-center slds-grid_align-center">
+                    <div class="sld-col slds-size_1-of-1 slds-large-size_3-of-4">
+                        <template lwc:if={isLoading}>
+                            <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                        </template>
+                        
+                        <template lwc:if={isResultDisplayed}>
+                            <lightning-dual-listbox name="newconnection"
+                                label="Credentials"
+                                source-label="Excluded"
+                                selected-label="To Import"
+                                field-level-help="Select credential to import/update"
+                                options={options}
+                                value={list_new}
+                                onchange={handleDualListChange}
+                            ></lightning-dual-listbox>
+                        </template>
+                        <template lwc:else>
+                            <div style="text-align: center;">
+                                <lightning-input type="file" label="Upload Org Credentials" accept=".json" onchange={inputChange}></lightning-input>
+                            </div>
+                        </template>
+                    </div>
                 </div>
 
-                <template lwc:if={isLoading}>
-                    <lightning-spinner alternative-text="Loading"></lightning-spinner>
-                </template>
+                
             </section>
         </slds-file-uploader>
     </lightning-modal-body>

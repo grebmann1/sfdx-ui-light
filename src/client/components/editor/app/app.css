@@ -1,3 +1,7 @@
+:host{
+    display: block;
+}
+
 .l-container-vertical {
     position: absolute!important;
     top: 0;

@@ -1,7 +1,7 @@
 import { wire, api } from 'lwc';
 import Toast from 'lightning/toast';
 import FeatureElement from 'element/featureElement';
-import { query_constants } from 'soql/store';
+import { ui_constants } from 'soql/store';
 import {
     connectStore,
     store,
@@ -112,10 +112,10 @@ export default class FieldsPanel extends FeatureElement {
                 store.dispatch(clearAllFields());
                 break;
             case 'sort_asc':
-                store.dispatch(sortFields(query_constants.SORT.ORDER.ASC));
+                store.dispatch(sortFields(ui_constants.SORT.ORDER.ASC));
                 break;
             case 'sort_desc':
-                store.dispatch(sortFields(query_constants.SORT.ORDER.DESC));
+                store.dispatch(sortFields(ui_constants.SORT.ORDER.DESC));
                 break;
             default:
                 break;

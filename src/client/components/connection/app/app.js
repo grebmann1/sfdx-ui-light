@@ -44,6 +44,9 @@ export default class App extends FeatureElement {
     async connectedCallback(){
         await this.fetchAllConnections();
         this.checkForInjected();
+        window.setTimeout(()=>{
+            //this.addConnectionClick();
+        },10)
     }
 
     /** Actions */
@@ -52,7 +55,7 @@ export default class App extends FeatureElement {
         if(el){
             this.isInjected = true;
             try{
-                let content = el[0].textContent.trim() || "{'connections':[]}";
+                let content = (el[0]?.textContent || "{'connections':[]}").trim();
                 this.injectedConnections = JSON.parse(content)?.connections || [];
                 this.loadFromExtension = (await window.defaultStore.getItem('connection-extension-toggle')) === true;
                 if(this.loadFromExtension){
@@ -71,7 +74,7 @@ export default class App extends FeatureElement {
 
     @api
     addConnectionClick = () => {
-        this.authorizeOrg();
+        this.authorizeOrg({connections:this.data});
     }
 
     authorizeOrg = (param) => {
@@ -364,12 +367,24 @@ export default class App extends FeatureElement {
     importClick = (e) => {
         ConnectionImportModal.open({
             'existingConnections':this.data,
-            'size':'full',//isChromeExtension()?'full':'medium'
+            'size':isChromeExtension()?'full':'small'
         })
         .then(async (res) => {
             console.log('force refresh');
             await this.fetchAllConnections();
         });
+    }
+
+    displayCard = () => {
+        if(!this.isCardVariant){
+            this.variant = 'card';
+        }
+    }
+
+    displayTable = () => {
+        if(!this.isTableVariant){
+            this.variant = 'table';
+        }
     }
 
     /** Getters  */
@@ -437,7 +452,7 @@ export default class App extends FeatureElement {
 
     get columns(){
         let _columns = [
-            { label: 'Company', fieldName: 'company', type: 'text',
+            { label: 'Category', fieldName: 'company', type: 'text',
                 cellAttributes: {
                     class: 'slds-text-title_bold slds-color-brand  slds-text-title_caps',
                 },

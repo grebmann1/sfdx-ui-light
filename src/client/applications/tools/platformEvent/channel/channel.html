@@ -1,8 +1,11 @@
 <template>
-    <div class={itemClass} title={item.channel} key={item.name} data-key={item.name} onclick={selectChannel}>
-        <span> {item.channel}</span>
+    <div class={itemClass} title={item.formattedName} key={item.name} data-key={item.name} onclick={selectChannel}>
+        <span> {item.formattedName}</span>
         <div> 
              <lightning-badge label={item.status} class={item.badgeClass}></lightning-badge>
+        </div>
+        <div>
+            <lightning-badge label={formatedMessageCount}></lightning-badge>
         </div>
         <div> 
             <lightning-button-group>

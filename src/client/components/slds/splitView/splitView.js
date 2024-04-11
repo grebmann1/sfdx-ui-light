@@ -15,7 +15,7 @@ export default class SplitView extends LightningElement {
     }
 
     get rightColumnStyle() {
-        return `width: ${100 - this.splitterPosition}%;`;
+        return `width: calc(${100 - this.splitterPosition}% - 12px);`;
     }
 
     get splitterStyle() {

@@ -12,9 +12,16 @@
     --dx-g-indigo-vibrant-30: rgba(47, 44, 183, 1);
 }
 
+.dx-variant-card{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
 .code-block-content {
     border-radius: 0px 0px 0.3em 0.3em;
     overflow-y: auto;
+    overflow-x: auto;
 }   
 
 .dx-theme-dark .btn {
@@ -37,6 +44,7 @@
     align-items: center;
     height: 40px;
     justify-content: flex-end;
+    padding:5px;
 }
 .toolbar-item:not(:first-of-type) {
     margin-right: 4px;

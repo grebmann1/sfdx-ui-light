@@ -1,0 +1,36 @@
+<template>
+    <div class={pageClass}>
+        <builder-editor>
+            <div class="slds-is-relative slds-full-width slds-full-height" style="min-height:200px;">
+                <template lwc:if={isLoading}>
+                    <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                </template>
+                <template lwc:else>
+                    <slds-split-view left-min-width="200" right-min-width="200">
+                        <div class="slds-flex-column slds-full-height slds-full-width" slot="left">
+                            <div class="slds-p-around_small slds-grid slds-grid_align-end" style="min-height:48px;">
+                                <lightning-button-group class="slds-p-horizontal_medium slds-p-bottom_medium">
+                                    <lightning-button icon-name="utility:save" variant="brand"  disabled={isLoading} onclick={onSaveClick} label="Run"></lightning-button>
+                                </lightning-button-group>
+                            </div>
+                            <editor-app lwc:ref="editor" class="slds-flex-column slds-full-height slds-full-width"
+                                onmonacoloaded={handleMonacoLoaded}
+                                is-action-hidden
+                            ></editor-app>
+                        </div>
+                        
+                        <div class="slds-p-around_small" slot="right">
+                            <p>
+                                <strong
+                                    >Scrollable and collapsible splitter pane, with a size
+                                    of 10%.</strong
+                                >
+                            </p>
+                            <p>{text}</p>
+                        </div>
+                    </slds-split-view>
+                </template>
+            </div>
+        </builder-editor>
+    </div>
+</template>

@@ -1,7 +1,6 @@
 import { api,track } from "lwc";
-import { decodeError,isNotUndefinedOrNull,isEmpty,runActionAfterTimeOut } from 'shared/utils';
+import { decodeError,isNotUndefinedOrNull,isEmpty,runActionAfterTimeOut,checkIfPresent } from 'shared/utils';
 import FeatureElement from 'element/featureElement';
-
 
 export default class MessageList extends FeatureElement {
 
@@ -9,6 +8,7 @@ export default class MessageList extends FeatureElement {
 
     @api messages = [];
     @api title;
+    @api selectedEventItem;
 
     filter;
    
@@ -45,9 +45,13 @@ export default class MessageList extends FeatureElement {
 
     /** Getters */
 
+    get selectedItemId(){
+        return this.selectedEventItem?.id;
+    }
+
     get filteredMessages(){
         if(isEmpty(this.filter)) return this.messages;
-        return this.messages.filter(x => this.checkIfPresent(x.id,this.filter));
+        return this.messages.filter(x => checkIfPresent(x.id,this.filter));
     }
 
     get sortedFilteredMessages(){

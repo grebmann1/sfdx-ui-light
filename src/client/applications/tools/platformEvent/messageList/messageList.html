@@ -5,7 +5,7 @@
                 <a class="slds-tabs_default__link" href="javascript:void(0);" role="tab" tabindex="-1" aria-selected="false">{title}</a>
             </li>
         </ul>
-        <div class="slds-tabs_default__content" role="tabpanel">
+        <div class="slds-tabs_default__content slds-fill-height slds-flex-column" role="tabpanel">
             <div class="slds-grid slds-grid_align-end slds-m-top_small">
                 <div class="slds-col">
                     <lightning-button-group>
@@ -26,7 +26,7 @@
                     <slds-empty-illustration title="No Messages" sub-title="There is no events received"></slds-empty-illustration>
                 </template>
                 <template for:each={sortedFilteredMessages} for:item="item">
-                    <platformevent-message item={item} key={item.id}></platformevent-message>
+                    <platformevent-message selected-item-id={selectedItemId} item={item} key={item.id}></platformevent-message>
                 </template>
             </div>
         </div>

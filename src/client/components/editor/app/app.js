@@ -13,6 +13,7 @@ export default class App extends FeatureElement {
     @api files = [];
     @api currentFile;
     @api metadataType;
+    @api isActionHidden = false;
     
 
 
@@ -23,9 +24,9 @@ export default class App extends FeatureElement {
     isEditMode = false;
     isLoading = false;
 
-    connectedCallback(){
-        //console.log('code editor');
-        this.loadMonacoEditor();
+    async connectedCallback(){
+        console.log('code editor');
+        await this.loadMonacoEditor();
     }
 
     /** Events */
@@ -197,7 +198,7 @@ export default class App extends FeatureElement {
             },
             automaticLayout:true,
             readOnly: false,
-            //scrollBeyondLastLine: false,
+            scrollBeyondLastLine: false,
             //theme: "vs-dark"
         });
 
@@ -214,6 +215,8 @@ export default class App extends FeatureElement {
         this.monaco.languages.register({ id: 'handlebars' });
         this.monaco.languages.register({ id: 'razor' });
         setAllLanguages(this.monaco.languages);
+
+        this.dispatchEvent(new CustomEvent("monacoloaded", {bubbles: true }));
     }
 
     /** Getters */
@@ -227,5 +230,9 @@ export default class App extends FeatureElement {
 
     get isToolDisplayed(){
         return this.files.length > 0;
+    }
+
+    get isActionsDisplayed(){
+        return !this.isActionHidden;
     }
 }

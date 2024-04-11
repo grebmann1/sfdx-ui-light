@@ -1,16 +1,17 @@
 <template>
-    <div class="slds-tabs_default">
-        <ul class="slds-tabs_default__nav" role="tablist">
-            <li class="slds-tabs_default__item slds-is-active" title="Platform Events" role="presentation">
-                <a class="slds-tabs_default__link" href="javascript:void(0);" role="tab" tabindex="-1" aria-selected="false">Channels</a>
-            </li>
-        </ul>
-        <div class="slds-tabs_default__content" role="tabpanel">
-            <div class="slds-scrollable">
-                <template for:each={items} for:item="item">
-                    <platformevent-channel key={item.name} item={item} selected-item={selectedItem}></platformevent-channel>
-                </template>
-            </div>
-        </div>
-    </div>
+
+    <lightning-tabset variant="scoped">
+        <lightning-tab label="Recents" value="Recents" class="slds-scrollable_y">
+            <template for:each={recentChannels} for:item="channel">
+                <div class="slds-p-around_small slds-border_bottom recent-channel-item" title={channel} key={channel} data-key={channel} onclick={handleSelectChannel}> 
+                    {channel} 
+                </div>
+            </template>
+        </lightning-tab>
+        <lightning-tab label="Subscribed" value="Subscribed" class="slds-scrollable_y">
+            <template for:each={items} for:item="item">
+                <platformevent-channel key={item.name} item={item} selected-item={selectedItem}></platformevent-channel>
+            </template>
+        </lightning-tab>
+    </lightning-tabset>
 </template>

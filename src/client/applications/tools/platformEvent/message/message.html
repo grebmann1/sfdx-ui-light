@@ -2,12 +2,18 @@
     <div class={itemClass}>
         <a href="#" role="option" class="slds-split-view__list-item-action slds-grow slds-has-flexi-truncate" tabindex="0" onclick={handleItemSelection}>
             <div class="slds-grid slds-wrap">
-                <span class="slds-truncate slds-text-title_caps" title="Id">Id</span>
-                <span class="slds-truncate slds-col_bump-left" title={id}>{id}</span>
-            </div>
-            <div class="slds-grid slds-wrap">
-                <span class="slds-truncate slds-text-title_caps slds-text-color_default" title="Received">Received</span>
-                <span class="slds-truncate slds-col_bump-left" title={formattedReceivedDate}>{formattedReceivedDate}</span>
+                <div class="slds-col">
+                    <span class="slds-truncate slds-text-title_caps" title="Id">Id</span>
+                    <span class="slds-p-left_small slds-truncate slds-col_bump-left" title={id}>{id}</span>
+                </div>
+                <div class="slds-col">
+                    <span class="slds-truncate slds-text-title_caps" title="Replay Id">Replay Id</span>
+                    <span class="slds-p-left_small slds-truncate slds-col_bump-left" title={replayId}>{replayId}</span>
+                </div>
+                <div class="slds-col">
+                    <span class="slds-truncate slds-text-title_caps slds-text-color_default" title="Received">Received</span>
+                    <span class="slds-p-left_small slds-truncate slds-col_bump-left" title={formattedReceivedDate}>{formattedReceivedDate}</span>
+                </div>
             </div>
         </a>
     </div>

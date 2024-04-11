@@ -7,3 +7,4 @@ export * from './modules/ui/actions';
 
 
 export * as query_constants from './modules/query/constants';
+export * as ui_constants from './modules/ui/constants';

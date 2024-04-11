@@ -195,7 +195,7 @@ function toggleRelationship(state = [], action) {
     };
 }
 
-function selectAllFields(alias,query = INITIAL_QUERY, action) {
+function selectAllFields(query = INITIAL_QUERY, action) {
     const { sObjectMeta } = action.payload;
     return {
         ...query,

@@ -1,9 +1,12 @@
-import { api,track } from "lwc";
+import { api,track,wire } from "lwc";
 import { decodeError,isNotUndefinedOrNull,isUndefinedOrNull,guid } from 'shared/utils';
 import FeatureElement from 'element/featureElement';
 import { PlatformEvent } from 'platformevent/utils';
 
-
+import {
+    connectStore,
+    store
+} from 'platformevent/store';
 
 import lib from 'cometd';
 
@@ -28,6 +31,16 @@ export default class App extends FeatureElement {
     @track messagesDisplayed = [];//[{id:1712150227604,receivedDate:1712150227604,content:{channel:"/event/CCR_TaskNotification__e",data:{event:{EventApiName:"CCR_TaskNotification__e",EventUuid:"b2d74e15-07db-4856-81f2-aa65e904bb64",replayId:1499957}}}}];
     @track selectedChannel; //new PlatformEvent({name:'CCR_TaskNotification__e'});
     @track selectedEventItem;// = this.messagesDisplayed[0];
+
+
+    @wire(connectStore, { store })
+    storeChange({ channel }) {
+        if (channel) {
+            console.log('channel',channel);
+            this.store_handleReceivedMessage(channel)
+            console.log('channel from app',channel)
+        }
+    }
 
 
     connectedCallback(){
@@ -95,15 +108,17 @@ export default class App extends FeatureElement {
         }
     }
 
-    handleReceivedMessage = (item) => {
-        //console.log('handleReceivedMessage',item);
-        if(item.content.channel === this.selectedChannel?.channel){
-            this.messagesDisplayed.push(item);
+    store_handleReceivedMessage = (data) => {
+        //console.log('handleReceivedMessage',item.content.channel,this.selectedChannel?.channel);
+        if(data.channel === this.selectedChannel?.channel){
+            this.messagesDisplayed = [...data.messages]; // reset
         }
     }
+
     handleEmptyMessages = () => {
         // Reset message list
-        this.messagesDisplayed = [];
+        this.selectedChannel.cleanMessages(); 
+        this.selectedEventItem = null;
     }
 
     subscribeChannel = (e) => {
@@ -112,12 +127,19 @@ export default class App extends FeatureElement {
             input.setCustomValidity('Already subscribed');
             input.reportValidity();
             return;
+        }else if(!this.channelName.startsWith('/')){
+            input.setCustomValidity('Wrong Format, please follow this approach : /event/dummmy__e');
+            input.reportValidity();
+            return;
         }
         const newEvent = this.newPlatformEvent();
-        newEvent.subscribe(cometd,this.handleReceivedMessage)
+        newEvent.subscribe(cometd)
         this.subscribedChannels.push(newEvent);
-        this.selectedChannel = newEvent; // assign as selected event
-        console.log('this.selectedChannel',this.selectedChannel);
+        // Display new Channel
+        this.selectedChannel = newEvent; 
+        this.messagesDisplayed = newEvent.messages;
+        // Reset
+        this.channelName = null;
     }
 
     unsubscribeChannel = (e) => {}
@@ -125,10 +147,16 @@ export default class App extends FeatureElement {
     handleChannelSelection = (e) => {
         const name = e.detail.value;
         const _item = this.subscribedChannels.find(x => x.name == name);
+        console.log('_item',_item);
         if(_item){
             this.selectedChannel = _item;
-            this.messagesDisplayed = this.selectedChannel.messages;
+            this.messagesDisplayed = _item.messages;
         }
+    }
+
+    handleRecentChannelSelection = (e) => {
+        this.channelName = e.detail.value;
+        this.subscribeChannel();
     }
 
     handleChannelDeletion = (e) => {
@@ -150,7 +178,7 @@ export default class App extends FeatureElement {
                 return console.error(err);
             }else if(!res.success){
                 const input = this.template.querySelector('.input-apex');
-                input.setCustomValidity(`Error: ${res.compileProblem}`);
+                input.setCustomValidity(`Error: ${res.compileProblem || res.exceptionMessage}`);
                 input.reportValidity();
             }
 
@@ -163,7 +191,8 @@ export default class App extends FeatureElement {
 
     newPlatformEvent = () => {
         return new PlatformEvent({
-            name:this.channelName
+            name:this.channelName,
+            alias:this.connector.header.alias
         });
     }
 

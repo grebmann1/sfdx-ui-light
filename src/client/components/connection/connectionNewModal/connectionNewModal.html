@@ -5,43 +5,108 @@
             <template lwc:if={isLoading}>
                 <lightning-spinner alternative-text="Loading"></lightning-spinner>
             </template>
-            <div class="slds-form-element slds-m-bottom_large">
-                <lightning-input
-                        class="input-to-validate"
-                        name="alias"
-                        type="text"
-                        label="Alias (use format company-name)"
-                        value={alias}
-                        onchange={alias_onChange}
-                        required
-                ></lightning-input>
-            </div>
-            <div class="slds-m-bottom_large">
-                <lightning-combobox
-                        class="input-to-validate"
-                        name="domain"
-                        label="Domain"
-                        value={selectedDomain}
-                        placeholder="Select Domain"
-                        options={domain_options}
-                        onchange={domainType_onChange}
-                        required
-                ></lightning-combobox>
-            </div>
-            <template lwc:if={isCustomDomainDisplayed}>
-                <div class="slds-m-bottom_large">
+            <!-- Group -->
+            <div class="slds-grid slds-wrap">
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                    <template lwc:if={isNewCategoryDisplayed}>
+                        <!-- New Record Form -->
+                        <div class="slds-grid">
+                            <div class="slds-col slds-p-horizontal_xx-small">
+                                <lightning-input
+                                        class="new-category-to-validate"
+                                        name="newCategory"
+                                        type="text"
+                                        label="New Category"
+                                        value={newCategory}
+                                        onchange={newCategory_onChange}
+                                        required
+                                ></lightning-input>
+                            </div>
+                            <div class="slds-col slds-p-horizontal_xx-small">
+                                <div class="slds-form-element">
+                                    <label class="slds-form-element__label slds-no-flex dummy-label"> </label>
+                                    <div class="slds-form-element__control">
+                                        <lightning-button-group>
+                                            <lightning-button-icon icon-name="utility:close" class="slds-button_destructive" onclick={handleCancelNewCategoryClick}></lightning-button-icon>
+                                            <lightning-button-icon icon-name="utility:check" variant='brand' onclick={handleCreateNewCategoryClick}></lightning-button-icon>
+                                        </lightning-button-group>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <slds-lookup
+                            label="Category"
+                            placeholder="Select Category"
+                            tooltip="Select the category to group your credentials"
+                            selection={selectedCategory}
+                            errors={errors}
+                            onsearch={handleLookupSearch}
+                            onselectionchange={handleLookupSelectionChange}
+                            onnewrecord={handleLookupNewRecordSelection}
+                            new-record-options={newRecordOptions}
+                            required
+                        ></slds-lookup>
+                    </template>
+                </div>
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input
-                            class="domain-to-validate"
-                            name="customDomain"
+                            class="input-to-validate"
+                            name="name"
                             type="text"
-                            value={customDomain}
-                            label="Custom Domain (Only include the host without the protocol)"
-                            placeholder="Ex: org62.my.salesforce.com"
-                            onchange={customDomain_onChange}
+                            label="Name"
+                            field-level-help="Name of your Org"
+                            value={name}
+                            onchange={name_onChange}
                             required
                     ></lightning-input>
                 </div>
-            </template>
+            </div>
+            <!-- Name -->
+            <div class="slds-grid slds-wrap">
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small"></div>
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                    <lightning-input
+                            name="alias"
+                            type="text"
+                            label="Alias"
+                            value={generatedAlias}
+                            disabled
+                    ></lightning-input>
+                </div>
+            </div>
+
+            <!-- Domain -->
+            <div class="slds-grid slds-wrap">
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                    <lightning-combobox
+                            class="input-to-validate"
+                            name="domain"
+                            label="Domain"
+                            value={selectedDomain}
+                            placeholder="Select Domain"
+                            options={domain_options}
+                            onchange={domainType_onChange}
+                            required
+                    ></lightning-combobox>
+                </div>
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                    <template lwc:if={isCustomDomainDisplayed}>
+                        <lightning-input
+                                    class="domain-to-validate"
+                                    name="customDomain"
+                                    type="text"
+                                    value={customDomain}
+                                    label="Custom Domain (Only include the host without the protocol)"
+                                    placeholder="Ex: org62.my.salesforce.com"
+                                    onchange={customDomain_onChange}
+                                    required
+                            ></lightning-input>
+                    </template>
+                </div>
+            </div>
+            
         </section>
     </lightning-modal-body>
     <lightning-modal-footer>

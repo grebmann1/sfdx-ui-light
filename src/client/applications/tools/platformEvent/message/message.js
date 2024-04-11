@@ -1,13 +1,15 @@
-import { api,track } from "lwc";
+import { api,track,wire } from "lwc";
 import { decodeError,isNotUndefinedOrNull,classSet } from 'shared/utils';
 import FeatureElement from 'element/featureElement';
 import moment from 'moment';
+
 
 export default class Message extends FeatureElement {
 
     isLoading = false;
 
     @api item;
+    @api selectedItemId;
 
     _formattedReceivedDate;
     _interval;
@@ -49,7 +51,7 @@ export default class Message extends FeatureElement {
     get itemClass(){
         return classSet("slds-p-left_xx-small slds-p-vertical_xx-small slds-border_bottom item slds-grid")
         .add({
-            'slds-is-active':this.item.isSelected,
+            'slds-is-active':this.item.id == this.selectedItemId,
             'slds-is-new':!this.item.isRead
         }).toString();
     }
@@ -63,10 +65,10 @@ export default class Message extends FeatureElement {
     }
 
     get replayId(){
-        return this.item?.content?.data?.replayId || '';
+        return this.item?.content?.data?.event?.replayId || '';
     }
 
     get eventUuid(){
-        return this.item?.content?.data?.EventUuid || '';
+        return this.item?.content?.data?.event?.EventUuid || '';
     }
 }

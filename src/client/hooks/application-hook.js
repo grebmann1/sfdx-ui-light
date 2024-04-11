@@ -16,7 +16,8 @@ const APP_LIST = [
   'documentation',
   'documentation/:attribute1',
   'soql',
-  'platformevent'
+  'platformevent',
+  'anonymousapex'
 ]
 
 function generateRoutes(applications, { contentDir, layoutsDir }) {

@@ -1,0 +1,40 @@
+<template>
+    <div if:true={showSpinner} class="slds-spinner_container">
+        <lightning-spinner variant="brand" alternative-text={spinnerAlternativeText}></lightning-spinner>
+    </div>
+    <div role="main" class="editor-main-container slds-grid slds-grid_vertical">
+        <div class="slds-builder-header_container slds-is-relative toolbar-header-container">
+            <!-- Header -->
+            <builder-header>
+                <!-- Start Body -->
+                <slot name="header"></slot>
+                <!-- End Body -->
+            </builder-header>
+        </div>
+        <template lwc:if={isReadOnlyMode}>
+            <div class="slds-scoped-notification slds-media slds-media_center slds-color__background_gray-3" role="status" >
+                <div class="slds-media__figure">
+                    <lightning-icon icon-name="utility:info" size="small"></lightning-icon>
+                </div>
+                <div class="slds-media__body">
+                    <p>{labels.readOnlyModeAlertMessage}</p>
+                </div>
+            </div>
+        </template>
+        <div class="slds-col slds-grow slds-grid slds-is-relative slds-scrollable_none">
+            <!-- Left Panel -->
+            <builder-left-panel class={showLeftPanelClass}>
+                <!-- Start Left -->
+                <slot name="left"></slot>
+                <!-- End Left -->
+            </builder-left-panel>
+            <!-- Start Body -->
+            <slot></slot>
+            <!-- End Body -->
+            <!-- Right Panel -->
+            <template lwc:if={showRightPanel}>
+                <builder-right-panel></builder-right-panel>
+            </template>
+        </div>
+    </div>
+</template>

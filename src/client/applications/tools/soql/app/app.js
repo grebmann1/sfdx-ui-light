@@ -8,6 +8,7 @@ export const isFullPage = true;
 export default class App extends FeatureElement {
 
     @track selectedSObject;
+    @track isLeftToggled = true;
 
     connectedCallback() {
         store.dispatch(fetchSObjectsIfNeeded({connector:this.connector.conn}));
@@ -21,6 +22,12 @@ export default class App extends FeatureElement {
         } else {
             this.selectedSObject = null;
         }
+    }
+
+    /** Events **/
+
+    handleLeftToggleChange = (e) => {
+        this.isLeftToggled = e.detail.value;
     }
 
     /** Getters **/

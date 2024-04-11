@@ -6,7 +6,11 @@
             <slot name="left"></slot>
         </div>
         
-        <div class="splitter" style={splitterStyle} onmousedown={handleMouseDown}></div>
+        <div class="splitter separator-horizontal" style={splitterStyle} onmousedown={handleMouseDown}>
+            <div class="left-colapsed"></div>
+            <div class="separator-icon-horizontal"></div>
+            <div class="right-colapsed"></div>
+        </div>
 
         <div class="split-view-column right-container" style={rightColumnStyle}>
             <slot name="right"></slot>

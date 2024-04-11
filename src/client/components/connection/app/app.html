@@ -41,9 +41,11 @@
                         <div class="slds-page-header__control">
                             <!-- <lightning-button icon-name="utility:knowledge_base" label="Documentation Explorer"></lightning-button> -->
                             <lightning-button-group>
-                                <lightning-button icon-name="utility:upload"   label="Import"  title="Import orgs" onclick={importClick}></lightning-button>
-                                <lightning-button icon-name="utility:download" label="Export"  title="Export orgs" onclick={exportClick}></lightning-button>
-                                <lightning-button icon-name="utility:add"      label="Org"     title="org"         onclick={addConnectionClick}></lightning-button>
+                                <lightning-button icon-name="utility:add" label="Add Org" title="org" onclick={addConnectionClick}></lightning-button>
+                                <lightning-button-menu variant="border-filled" menu-alignment="auto" alternative-text="Show menu">
+                                    <lightning-menu-item prefix-icon-name="utility:upload" icon-size="small"    value="Import" label="Import orgs" onclick={importClick}></lightning-menu-item>
+                                    <lightning-menu-item prefix-icon-name="utility:download" icon-size="small"   value="Export" label="Export orgs" onclick={exportClick}></lightning-menu-item>
+                                </lightning-button-menu>
                             </lightning-button-group>
                         </div>
                     </div>
@@ -53,7 +55,13 @@
                 <div class="slds-page-header__col-details">
                     <div class={detailRowClass}>
                         <template lwc:if={isInjected}>
-                            <div class="slds-grid slds-grid_align-end slds-m-bottom_medium">
+                            <div class="slds-grid slds-grid_align-spread slds-m-bottom_medium">
+                                <div class="slds-col">
+                                    <lightning-button-group>
+                                        <lightning-button-icon-stateful icon-name="utility:tile_card_list" selected={isCardVariant} onclick={displayCard}></lightning-button-icon-stateful>
+                                        <lightning-button-icon-stateful icon-name="utility:list" selected={isTableVariant} onclick={displayTable}></lightning-button-icon-stateful>
+                                    </lightning-button-group>
+                                </div>
                                 <div class="slds-col">
                                     <lightning-input 
                                         type="toggle" 
@@ -90,6 +98,20 @@
                                     onrowaction={handleRowAction}
                                     hide-checkbox-column
                             ></lightning-datatable>
+                        </template>
+
+                        <!-- Card Variant -->
+                        <template lwc:if={isCardVariant}>
+                            <template for:each={filteredFormatted} for:item="item">
+                                <connection-card 
+                                    key={item.key} 
+                                    item={item} 
+                                    onrowaction={handleRowAction}
+                                ></connection-card>
+                            </template>
+                            <template lwc:if={isNoRecord}>
+                                <slds-empty-illustration title="No orgs"></slds-empty-illustration>
+                            </template>
                         </template>
                     </div>
                 </div>

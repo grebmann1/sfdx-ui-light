@@ -127,6 +127,10 @@
                 display: flex;
                 flex-direction: row;
             }
+
+            .slds-align-items_center{
+                align-items: center; 
+            }
             
             .slds-justify-content-flew-end{
                 justify-content: flex-end;
@@ -154,8 +158,15 @@
                 flex-direction: column;
             }
 
+            /*
             .slds-full-height .slds-tabs_scoped{
                 height:calc(100% - 41px);
+                display: flex;
+                flex-direction: column;
+            }
+            */
+            .slds-full-height lightning-tabset > div {
+                height:100%;
                 display: flex;
                 flex-direction: column;
             }

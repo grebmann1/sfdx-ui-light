@@ -1,42 +1,35 @@
 <template>
-    <div class="slds-full-height slds-is-relative">
-        <div class="slds-full-height l-cell-auto-size l-container-horizontal">
-            <div class="l-cell-auto-size">
-                <div class="l-container-vertical">
-                    <!-- Editor--> 
-                    <div class="slds-flex-column slds-full-height slds-light-bg">
-                        <div>
-                            <div class="slds-grid slds-grid_align-end" style="min-height:48px;">
-                                <lightning-button-group class="slds-p-horizontal_medium slds-p-bottom_medium">
-                                    <!--<lightning-button icon-name="utility:adduser" disabled={isLoading} onclick={adduser_handleClick} label="Select Users"></lightning-button>-->
-                                    <template lwc:if={isEditMode}>
-                                        <lightning-button icon-name="utility:save" variant="brand"  disabled={isLoading} onclick={onSaveClick} label="Save"></lightning-button>
-                                        <lightning-button  disabled={isLoading} onclick={onCancelClick} label="Cancel"></lightning-button>
-                                    </template>
-                                    
-                                </lightning-button-group>
-                            </div>
-                            <lightning-tabset variant="scoped" class="slds-without-tab">
-                                <template for:each={formattedFiles} for:item="file">
-                                    <lightning-tab key={file.path} label={file.name} value={file.path} onactive={handleSelectTab}></lightning-tab>
-                                </template>
-                            </lightning-tabset>
-                        </div>
-
-                        <template lwc:true={isToolDisplayed}>
-                            <div class="slds-clearfix">
-                                <lightning-button-icon class="slds-float_right" variant="bare" icon-name="utility:copy"></lightning-button-icon>
-                            </div>
+    <div class="slds-flex-column slds-full-height slds-light-bg">
+        <div>
+            <template lwc:if={isActionsDisplayed}>
+                <div class="slds-grid slds-grid_align-end" style="min-height:48px;">
+                    <lightning-button-group class="slds-p-horizontal_medium slds-p-bottom_medium">
+                        <!--<lightning-button icon-name="utility:adduser" disabled={isLoading} onclick={adduser_handleClick} label="Select Users"></lightning-button>-->
+                        <template lwc:if={isEditMode}>
+                            <lightning-button icon-name="utility:save" variant="brand"  disabled={isLoading} onclick={onSaveClick} label="Save"></lightning-button>
+                            <lightning-button  disabled={isLoading} onclick={onCancelClick} label="Cancel"></lightning-button>
                         </template>
-                        <div class="slds-flex-column slds-full-height">
-                            <div lwc:dom="manual" lwc:ref="editor" class="slds-full-height" ></div>
-                        </div>
-                        <template lwc:if={isLoading}>
-                            <lightning-spinner alternative-text="Loading"></lightning-spinner>
-                        </template>
-                    </div>
+                        
+                    </lightning-button-group>
                 </div>
-            </div>
+            </template>
+            <lightning-tabset variant="scoped" class="slds-without-tab">
+                <template for:each={formattedFiles} for:item="file">
+                    <lightning-tab key={file.path} label={file.name} value={file.path} onactive={handleSelectTab}></lightning-tab>
+                </template>
+            </lightning-tabset>
         </div>
+
+        <template lwc:true={isToolDisplayed}>
+            <div class="slds-clearfix">
+                <lightning-button-icon class="slds-float_right" variant="bare" icon-name="utility:copy"></lightning-button-icon>
+            </div>
+        </template>
+        <!-- Editor -->
+        <div lwc:dom="manual" lwc:ref="editor" class="" style="height:100%;"></div>
+
+        <template lwc:if={isLoading}>
+            <lightning-spinner alternative-text="Loading"></lightning-spinner>
+        </template>
     </div>
 </template>

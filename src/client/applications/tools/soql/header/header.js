@@ -1,4 +1,4 @@
-import { wire } from 'lwc';
+import { api,wire } from 'lwc';
 import FeatureElement from 'element/featureElement';
 import {
     connectStore,
@@ -8,7 +8,7 @@ import {
 export default class Header extends FeatureElement{
     _apiUsage;
 
-    isFullPage = false;
+    @api isLeftToggled = false;
 
     @wire(connectStore, { store })
     storeChange({ ui }) {
@@ -20,16 +20,15 @@ export default class Header extends FeatureElement{
     }
 
     /** Events **/
-/*
+
     handleToggle = (e) => {
-        this.isFullPage = ! this.isFullPage;
-        if(this.isFullPage){
-            appStore.dispatch(store_application.hideMenu());
-        }else{
-            appStore.dispatch(store_application.showMenu());
-        }
+        this.isLeftToggled = ! this.isLeftToggled;
+        this.dispatchEvent(new CustomEvent("lefttoggle", { 
+            detail:{value:this.isLeftToggled},
+            bubbles: true,composed: true 
+        }));
     }
-    */
+
     /** Getters **/
 
     get apiUsage() {

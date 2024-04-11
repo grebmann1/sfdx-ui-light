@@ -9,6 +9,7 @@ import sarif_app from "sarif/app";
 import doc_app from "doc/app";
 import soql_app from "soql/app";
 import platformEvent_app from "platformevent/app";
+import anonymousApex_app from "anonymousApex/app";
 //import codeViewer_app from "editor/app";
 
 const KNOWN_TYPE = new Set([
@@ -22,7 +23,8 @@ const KNOWN_TYPE = new Set([
     "doc/app",
     "object/app",
     "soql/app",
-    "platformevent/app"
+    "platformevent/app",
+    "anonymousApex/app"
 ]);
 const APP_MAPPING = {
     "home/app": {
@@ -154,6 +156,21 @@ const APP_MAPPING = {
         quickActionIcon:"standard:data_model",
         shortName:"SOQL",
         path:'soql'
+    },
+    "anonymousApex/app":{
+        module:anonymousApex_app,
+        isFullHeight:true,
+        isDeletable:true,
+        isElectronOnly:false,
+        isOfflineAvailable:false,
+        isMenuVisible:true,
+        isTabVisible:true,
+        label:"Anonymous Apex",
+        type:'tool',
+        description:"Execute Apex Scripts",
+        quickActionIcon:"standard:apex",
+        shortName:"APEX",
+        path:'anonymousapex'
     },
     "platformevent/app":{
         module:platformEvent_app,

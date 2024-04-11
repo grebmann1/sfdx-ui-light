@@ -506,7 +506,7 @@ export default class App extends FeatureElement {
         }
         if(hrefRegex.test(content)){
             content = content.toString().replace(hrefRegex,function(match, p1, p2){
-                return `href="https://developer.salesforce.com/docs/${p1}"`;
+                return `href="https://developer.salesforce.com/docs/${p1}" target="_blank"`;
             });
         }
 
