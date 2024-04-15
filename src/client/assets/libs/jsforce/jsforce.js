@@ -1849,10 +1849,11 @@
   Metadata.prototype._invoke = function(method, message, callback) {
     var soapEndpoint = new SOAP(this._conn, {
       xmlns: "http://soap.sforce.com/2006/04/metadata",
-      endpointUrl: this._conn.instanceUrl + "/services/Soap/m/" + this._conn.version
+      endpointUrl: this._conn.instanceUrl + "/services/Soap/m/" + this._conn.version,
+      headers: null
     });
     return soapEndpoint.invoke(method, message).then(function(res) {
-      return res.result;
+      return res.header?{...res?.body?.result,_header:res.header}:res.body?.result;
     }).thenCall(callback);
   };
   
@@ -2669,7 +2670,7 @@
    * @class
    * @param {Connection} conn - Connection
    */
-  var SoapApi = module.exports = function(conn) {
+  var SoapApi = module.exports = function(conn,xmlns) {
     this._conn = conn;
   };
   
@@ -2677,13 +2678,14 @@
    * Call SOAP Api (Partner) endpoint
    * @private
    */
-  SoapApi.prototype._invoke = function(method, message, schema, callback) {
+  SoapApi.prototype._invoke = function(method, message, schema, callback,options) {
     var soapEndpoint = new SOAP(this._conn, {
-      xmlns: "urn:partner.soap.sforce.com",
-      endpointUrl: this._conn.instanceUrl + "/services/Soap/u/" + this._conn.version
+      xmlns: options?.xmlns || "urn:partner.soap.sforce.com",
+      endpointUrl: options?.endpointUrl || this._conn.instanceUrl + "/services/Soap/u/" + this._conn.version,
+      headers:options?.headers || null
     });
-    return soapEndpoint.invoke(method, message, { result: schema }).then(function(res) {
-      return res.result;
+    return soapEndpoint.invoke(method, message, schema).then(function(res) {
+      return res.header?{...res?.body?.result,_header:res.header}:res.body?.result;
     }).thenCall(callback);
   };
   
@@ -9044,6 +9046,7 @@
     SOAP.super_.apply(this, arguments);
     this._endpointUrl = options.endpointUrl;
     this._xmlns = options.xmlns || 'urn:partner.soap.sforce.com';
+    this._headers = options.headers || null;
   };
   
   inherits(SOAP, HttpApi);
@@ -9069,7 +9072,7 @@
       url: this._endpointUrl,
       headers: {
         'Content-Type': 'text/xml',
-        'SOAPAction': '""'
+        'SOAPAction': '""',
       },
       message: message
     }).then(function(res) {
@@ -9128,7 +9131,7 @@
   
   /** @override **/
   SOAP.prototype.parseError = function(body) {
-    var error = lookupValue(body, [ /:Envelope$/, /:Body$/, /:Fault$/ ]);
+    var error = lookupValue(body, [ /:Envelope$/,/:Header$/, /:Body$/, /:Fault$/ ]);
     return {
       errorCode: error.faultcode,
       message: error.faultstring
@@ -9138,7 +9141,7 @@
   /** @override **/
   SOAP.prototype.getResponseBody = function(response) {
     var body = SOAP.super_.prototype.getResponseBody.call(this, response);
-    return lookupValue(body, [ /:Envelope$/, /:Body$/, /.+/ ]);
+    return {body:lookupValue(body, [ /:Envelope$/, /:Body$/, /.+/ ]),header:lookupValue(body, [ /:Envelope$/,/:Header$/, /.+/ ])};
   };
   
   /**
@@ -9216,6 +9219,7 @@
       ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">',
       '<soapenv:Header xmlns="' + this._xmlns + '">',
       toXML(header),
+      this._headers?toXML(this._headers):'',
       '</soapenv:Header>',
       '<soapenv:Body xmlns="' + this._xmlns + '">',
       toXML(message),

@@ -17,6 +17,9 @@
                 <template for:each={formattedFiles} for:item="file">
                     <lightning-tab key={file.path} label={file.name} value={file.path} onactive={handleSelectTab}></lightning-tab>
                 </template>
+                <template lwc:if={isAddTabEnabled}>
+                    <lightning-tab icon-name="utility:add" class="slds-icon_x-small" label="" value="add" onactive={handleAddTab}></lightning-tab>
+                </template>
             </lightning-tabset>
         </div>
 
@@ -26,7 +29,7 @@
             </div>
         </template>
         <!-- Editor -->
-        <div lwc:dom="manual" lwc:ref="editor" class="" style="height:100%;"></div>
+        <div lwc:ref="editor" class="" style="height:100%;"></div>
 
         <template lwc:if={isLoading}>
             <lightning-spinner alternative-text="Loading"></lightning-spinner>

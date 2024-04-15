@@ -80,3 +80,7 @@ svg {
     height: var(--dx-c-icon-size);
     width: var(--dx-c-icon-size);
 }
+
+.language-log{
+    white-space: break-spaces !important;
+}

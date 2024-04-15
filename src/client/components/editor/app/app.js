@@ -14,6 +14,7 @@ export default class App extends FeatureElement {
     @api currentFile;
     @api metadataType;
     @api isActionHidden = false;
+    @api isAddTabEnabled = false;
     
 
 
@@ -23,6 +24,9 @@ export default class App extends FeatureElement {
 
     isEditMode = false;
     isLoading = false;
+    hasLoaded = false;
+
+    counter = 0;
 
     async connectedCallback(){
         console.log('code editor');
@@ -81,6 +85,19 @@ export default class App extends FeatureElement {
                 }else{
                     //console.error('Deployment failed:', request.ErrorMsg);
                     const componentFailures = request.DeployDetails.componentFailures.map(x => x.problem).join(' | ');
+                    const markers = request.DeployDetails.componentFailures.map(x => ({
+                        startLineNumber: x.lineNumber,
+                        endLineNumber:x.lineNumber,
+                        startColumn: 1,
+                        endColumn:this.currentModel.getLineLength(x.lineNumber),
+                        message: x.problem,
+                        severity: monaco.MarkerSeverity.Error
+                    }));
+                    this.addMarkers(
+                        this.currentModel,
+                        markers
+                    );
+
                     await LightningAlert.open({
                         message: request.ErrorMsg || componentFailures,
                         theme: 'error', // a red theme intended for error states
@@ -151,20 +168,38 @@ export default class App extends FeatureElement {
     }   
     
     @api
+    addMarkers = (model,markers) => {
+        this.monaco.editor.setModelMarkers(model, "owner", markers);
+    }
+
+    @api
+    resetMarkers = (model) => {
+        this.monaco.editor.setModelMarkers(model, "owner",[]);
+    }
+
+    @api
     displayFiles = (metadataType,files) => {
-        console.log('files',metadataType,files);
+        if(this.counter >= 10) return;
 
-        this.metadataType = metadataType;
-        this.files = files;
-        this.isEditMode = false;
-
-        this.createModels();
-        if(this.editor){
-            this.editor.setModel(this.models[0].model);
+        if(this.hasLoaded){
+            console.log('files',metadataType,files);
+            this.metadataType = metadataType;
+            this.files = files;
+            this.isEditMode = false;
+    
+            this.createModels();
+            if(this.editor){
+                this.editor.setModel(this.models[0].model);
+            }else{
+                this.createEditor();
+            }
         }else{
-            this.createEditor();
+            window.setTimeout(() => {
+                this.displayFiles(metadataType,files);
+                this.counter = 1;
+            },1000)
         }
-        this.editor.focus();
+        
     }
     
     createModels = () => {
@@ -190,16 +225,21 @@ export default class App extends FeatureElement {
     createEditor = () => {
         if(this.models.length == 0) return;
 
+        const innerContainer2 = document.createElement('div');
+            innerContainer2.setAttribute("slot", "editor");
+            innerContainer2.style.width = '100%';
+            innerContainer2.style.height = '100%';
+        this.refs.editor.appendChild(innerContainer2);
+
         this.currentFile = this.models[0].path;
-        this.editor = this.monaco.editor.create(this.refs.editor, {
+        this.editor = this.monaco.editor.create(innerContainer2, {
             model: this.models[0].model,
             minimap: {
                 enabled: false
             },
             automaticLayout:true,
             readOnly: false,
-            scrollBeyondLastLine: false,
-            //theme: "vs-dark"
+            scrollBeyondLastLine: false
         });
 
         this.editor.onDidChangeModelContent((event) => {
@@ -217,9 +257,25 @@ export default class App extends FeatureElement {
         setAllLanguages(this.monaco.languages);
 
         this.dispatchEvent(new CustomEvent("monacoloaded", {bubbles: true }));
+        this.hasLoaded = true;
     }
 
     /** Getters */
+
+    @api
+    get currentModel(){
+        return this.editor.getModel();
+    }
+
+    @api
+    get currentEditor(){
+        return this.editor;
+    }
+
+    @api
+    get currentMonaco(){
+        return this.monaco;
+    }
     
     get formattedFiles(){
         return this.files.map(x => ({

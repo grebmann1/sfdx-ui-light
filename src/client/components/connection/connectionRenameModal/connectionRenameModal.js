@@ -34,9 +34,6 @@ export default class OrgRenameModal extends LightningModal {
         }
         
     }
-
-
-    category;
     newCategory;
     isNewCategoryDisplayed = false;
 

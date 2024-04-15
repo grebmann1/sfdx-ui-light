@@ -29,7 +29,9 @@ export default class Header extends LightningElement {
         }
     }
 
-    connectedCallback(){}
+    connectedCallback(){
+        this.loadCache();
+    }
     
 
     /** Events **/
@@ -41,6 +43,8 @@ export default class Header extends LightningElement {
         }else{
             store.dispatch(store_application.expandMenu());
         }
+
+        window.defaultStore.setItem('header-isMenuSmall',JSON.stringify(this.isMenuSmall));
     }
     
     selectTab = (e) => {
@@ -68,7 +72,24 @@ export default class Header extends LightningElement {
         }
     }
 
-    /** **/
+    /** Methods **/
+
+    loadCache = async () => {
+        try{
+            let _isMenuSmall = await window.defaultStore.getItem('header-isMenuSmall');
+            if(!isEmpty(_isMenuSmall)){
+                this.isMenuSmall = _isMenuSmall === 'true';
+                if(this.isMenuSmall){
+                    store.dispatch(store_application.collapseMenu());
+                }else{
+                    store.dispatch(store_application.expandMenu());
+                }
+            }
+        }catch(e){
+            console.error(e);
+        }
+        
+    }
     
     openLauncher = () => {
         ModalLauncher.open({
