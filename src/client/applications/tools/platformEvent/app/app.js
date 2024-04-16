@@ -1,13 +1,10 @@
 import { api,track,wire } from "lwc";
-import { decodeError,isNotUndefinedOrNull,isUndefinedOrNull,guid } from 'shared/utils';
-import FeatureElement from 'element/featureElement';
+import { decodeError,isNotUndefinedOrNull,isUndefinedOrNull,guid,isEmpty } from 'shared/utils';
 import { PlatformEvent } from 'platformevent/utils';
+import { connectStore,store } from 'platformevent/store';
 
-import {
-    connectStore,
-    store
-} from 'platformevent/store';
-
+import FeatureElement from 'element/featureElement';
+import Toast from 'lightning/toast';
 import lib from 'cometd';
 
 
@@ -20,7 +17,7 @@ export default class App extends FeatureElement {
     isLoading = false;
     channelName;// = 'CCR_TaskNotification__e'; 
     // Apex
-    apexScript; // ='CCR_TaskNotification__e event = new CCR_TaskNotification__e();\n// Publish the event\nDatabase.SaveResult result = EventBus.publish(event);';
+    apexScript = ''; // ='CCR_TaskNotification__e event = new CCR_TaskNotification__e();\n// Publish the event\nDatabase.SaveResult result = EventBus.publish(event);';
     isApexContainerDisplayed = false;
     isApexRunning = false;
 
@@ -36,15 +33,13 @@ export default class App extends FeatureElement {
     @wire(connectStore, { store })
     storeChange({ channel }) {
         if (channel) {
-            console.log('channel',channel);
             this.store_handleReceivedMessage(channel)
-            console.log('channel from app',channel)
         }
     }
 
 
     connectedCallback(){
-        console.log('cometd',cometd,this.connector);
+        this.loadCache();
         cometd.configure({
             url: `/cometd/${guid()}`,
             requestHeaders: {
@@ -54,10 +49,7 @@ export default class App extends FeatureElement {
             appendMessageTypeToURL : false,
             //logLevel: 'debug'
         });
-        //cometd.websocketEnabled = false;
-
         cometd.handshake(status => {
-            //console.log('Status is',status);
             if(!status.successful){
                 console.error('Error during handshake');
             }else{
@@ -69,17 +61,37 @@ export default class App extends FeatureElement {
     disconnectedCallback() {
         if (cometd) {
             // Unsubscribe from the channel
-            cometd.unsubscribeAll();
-
+            cometd.clearSubscriptions();
             // Disconnect from the CometD server
             cometd.disconnect();
-
-            //console.log('Disconnected from CometD server');
         }
     }
 
 
     /** Events **/
+
+    handleMonacoLoaded = (e) => {
+        console.log('loaded');
+        this.refs.editor.displayFiles(
+            'ApexClass',[
+                {   
+                    id:'abc',
+                    path:'abc',
+                    name:'Script',
+                    apiVersion:60,
+                    body:this.apexScript,
+                    language:'java',
+                }
+            ]
+        );
+    }
+
+    handleEditorChange = (e) => {
+        console.log('handleEditorChange',e.detail);
+        this.apexScript = e.detail.value;
+        let key = `${this.connector.header.alias}-platformevent-script`;
+        window.defaultStore.setItem(key,this.apexScript);
+    }
 
     handleToggleChange = (e) => {
         this.isApexContainerDisplayed = e.detail.checked;
@@ -87,12 +99,6 @@ export default class App extends FeatureElement {
 
     handleChannelNameChange = (e) => {
         this.channelName = e.detail.value;
-        e.currentTarget.setCustomValidity('');
-        e.currentTarget.reportValidity();
-    }
-
-    handleApexScriptChange = (e) => {
-        this.apexScript = e.detail.value;
         e.currentTarget.setCustomValidity('');
         e.currentTarget.reportValidity();
     }
@@ -171,23 +177,31 @@ export default class App extends FeatureElement {
 
     executeApex = (e) => {
         this.isApexRunning = true;
-        console.log('executeApex');
-        this.connector.conn.tooling.executeAnonymous(this.apexScript, (err, res) => {
-            console.log('err, res',err, res);
-            if (err) { 
-                return console.error(err);
-            }else if(!res.success){
-                const input = this.template.querySelector('.input-apex');
-                input.setCustomValidity(`Error: ${res.compileProblem || res.exceptionMessage}`);
-                input.reportValidity();
+        this.refs.editor.executeApex((err,res) => {
+            if(res.success){
+                Toast.show({
+                    label: 'Apex Successfull run',
+                    //message: 'Exported to your clipboard', // Message is hidden in small screen
+                    variant:'success',
+                });
             }
-
             this.isApexRunning = false;
-            // ...
         });
     }
 
     /** Methods  **/
+
+    loadCache = async () => {
+        try{
+            let key = `${this.connector.header.alias}-platformevent-script`;
+            const _script = await window.defaultStore.getItem(key);
+            if(!isEmpty(_script)){
+                this.apexScript = _script;
+            }
+        }catch(e){
+            console.error(e);
+        }
+    }
 
     newPlatformEvent = () => {
         return new PlatformEvent({
@@ -211,7 +225,7 @@ export default class App extends FeatureElement {
     }
 
     get isExecuteApexDisabled(){
-        return isUndefinedOrNull(this.apexScript) || this.isApexRunning;
+        return isEmpty(this.apexScript) || this.isApexRunning;
     }
 
     get isEventViewerDisplayed(){

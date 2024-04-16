@@ -48,7 +48,6 @@ export default class Header extends LightningElement {
     }
     
     selectTab = (e) => {
-        console.log('e.currentTarget.dataset.path',e.currentTarget.dataset.path);
         const target = e.currentTarget.dataset.path;
         if(!isEmpty(target)){
             navigate(this.navContext,{type:'application',attributes:{applicationName:target}});

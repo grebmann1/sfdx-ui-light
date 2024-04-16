@@ -37,11 +37,17 @@
                                     </div>
                                 </div>
                                 <template lwc:if={isApexContainerDisplayed}>
-                                    <div class="slds-quick-apex-container slds-p-around_small">
-                                        <lightning-textarea class="input-apex" label="Apex Script" value={apexScript} placeholder="Execute Anonymous Apex to publish an event ..." onchange={handleApexScriptChange}></lightning-textarea>
-                                        <div class="slds-grid slds-justify-content-space-between slds-grid_vertical-align-center">
-                                            <div></div>
-                                            <div class="slds-p-around_small">
+                                    <div class="slds-grid slds-wrap slds-quick-apex-container slds-p-around_small">
+                                        <!--<lightning-textarea class="input-apex" label="Apex Script" value={apexScript} placeholder="Execute Anonymous Apex to publish an event ..." onchange={handleApexScriptChange}></lightning-textarea> -->
+                                        <editor-app lwc:ref="editor" class="slds-col slds-size_1-of-1 slds-flex-column  slds-full-width"
+                                            onmonacoloaded={handleMonacoLoaded}
+                                            onchange={handleEditorChange}
+                                            max-height="200px"
+                                            is-action-hidden
+                                        ></editor-app>
+                                        <div class="slds-col slds-size_1-of-1 slds-grid slds-grid_align-end">
+                                            
+                                            <div class="slds-col slds-p-around_small">
                                                 <lightning-button label="Execute" title="Execute Apex" onclick={executeApex} disabled={isExecuteApexDisabled}></lightning-button>
                                             </div>
                                         </div>

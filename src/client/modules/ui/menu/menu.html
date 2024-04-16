@@ -26,30 +26,35 @@
         <template lwc:if={isMenuSmall}>
             <!-- SMALL MENU - START -->
             <!-- Applications -->
-            <lightning-button-menu variant="container" tooltip="Applications" icon-name="utility:builder" onselect={handleApplicationSelection}>
-                <template for:each={applications} for:item="item">
-                    <lightning-menu-item tooltip={item.menuLabel}
-                        data-key={item.path}
-                        key={item.name} 
-                        value={item.path} 
-                        label={item.menuLabel}
-                        icon-name={item.menuIcon}
-                    ></lightning-menu-item>
-                </template>
-            </lightning-button-menu>
+            <template lwc:if={hasApplications}>
+                <lightning-button-menu variant="container" tooltip="Applications" icon-name="utility:builder" onselect={handleApplicationSelection}>
+                    <template for:each={applications} for:item="item">
+                        <lightning-menu-item tooltip={item.menuLabel}
+                            data-key={item.path}
+                            key={item.name} 
+                            value={item.path} 
+                            label={item.menuLabel}
+                            icon-name={item.menuIcon}
+                        ></lightning-menu-item>
+                    </template>
+                </lightning-button-menu>
+            </template>
             <!-- Tools -->
-            <lightning-button-menu variant="container" tooltip="Tools" icon-name="utility:apex" onselect={handleApplicationSelection}>
-                <template for:each={tools} for:item="item">
-                    <lightning-menu-item tooltip={item.menuLabel}
-                        data-key={item.path}
-                        key={item.name} 
-                        value={item.path} 
-                        label={item.menuLabel}
-                        icon-name={item.menuIcon}
-                    ></lightning-menu-item>
-                </template>
-            </lightning-button-menu>
-            <div class="slds-has-divider_top-space"></div>
+            <template lwc:if={hasTools}>
+                <lightning-button-menu variant="container" tooltip="Tools" icon-name="utility:apex" onselect={handleApplicationSelection}>
+                    <template for:each={tools} for:item="item">
+                        <lightning-menu-item tooltip={item.menuLabel}
+                            data-key={item.path}
+                            key={item.name} 
+                            value={item.path} 
+                            label={item.menuLabel}
+                            icon-name={item.menuIcon}
+                        ></lightning-menu-item>
+                    </template>
+                </lightning-button-menu>
+                <div class="slds-has-divider_top-space"></div>
+            </template>
+            
             <!-- Connections -->
             <template lwc:if={isUnlimitedMode}> <!-- Only display in standard mode (not in electron instance) -->
                 <lightning-button-menu variant="container" tooltip="Connections" icon-name="utility:connected_apps" onselect={handleApplicationSelection}>

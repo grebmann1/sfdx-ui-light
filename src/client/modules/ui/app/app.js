@@ -17,6 +17,7 @@ export default class App extends LightningElement {
     navContext;
 
     @api mode;
+    @api redirectUrl;
     // for Extension (Limited Mode)
     @api sessionId;
     @api serverUrl;
@@ -79,6 +80,7 @@ export default class App extends LightningElement {
         this.targetPage = pageRef;
         if(!this.pageHasLoaded) return;
         const {type, attributes} = pageRef;
+        console.log('pageRef',pageRef);
         switch(type){
             case 'home':
             case 'application':
@@ -259,6 +261,13 @@ export default class App extends LightningElement {
             }else{
                 this.connector = await directConnect(this.sessionId,this.serverUrl);
             }
+
+            if(this.redirectUrl){
+                // Temporary solution, only used to open application for now. Might need to be improved to consider more functionalities.
+                navigate(this.navContext,{type:'application',attributes:{applicationName:this.redirectUrl}});
+            }else{
+                navigate(this.navContext,{type:'application',attributes:{applicationName:'org'}}); // org is the default
+            }
         }catch(e){
             await LightningAlert.open({
                 message: e.message,//+'\n You might need to remove and OAuth again.',
@@ -279,6 +288,7 @@ export default class App extends LightningElement {
         //this.openSpecificModule('code/app'); 
         this.pageHasLoaded = true;
         if(this.targetPage){
+            console.log('targetPage',this.targetPage);
             this.handleNavigation(this.targetPage);
         }
     }

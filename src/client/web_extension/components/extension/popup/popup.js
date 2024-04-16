@@ -51,6 +51,14 @@ export default class Popup extends LightningElement {
         }, tab => {});
     }
 
+    redirectToAnonymousApex = () => {
+
+    }
+
+    redirectToSoqlBuilder = () => {
+        
+    }
+
     openSidePanel = async () => {
         const tab = await getCurrentTab();
         await chrome.sidePanel.setOptions({

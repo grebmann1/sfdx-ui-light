@@ -17,7 +17,9 @@
             <template lwc:elseif={isRecordExplorer}>
                 <!-- Actions for record Explorer -->
                 <lightning-button-group slot="action">
-                    <lightning-button-icon icon-name="utility:apex" label="Toolkit" title="Open SF Toolkit" onclick={redirectToWebsite}></lightning-button-icon>
+                    <lightning-button-icon icon-name="utility:builder" label="Toolkit" title="Open SF Toolkit" onclick={redirectToWebsite}></lightning-button-icon>
+                    <lightning-button-icon icon-name="utility:apex" label="Apex" title="Open Anonymous Apex" onclick={redirectToAnonymousApex}></lightning-button-icon>
+                    <lightning-button-icon icon-name="utility:database" label="SOQL" title="Open SOQL Builder" onclick={redirectToSoqlBuilder}></lightning-button-icon>
                     <lightning-button-icon icon-name="utility:toggle_panel_right" label="Advanced" title="Open Side Panel" onclick={openSidePanel}></lightning-button-icon>
 
                 </lightning-button-group>

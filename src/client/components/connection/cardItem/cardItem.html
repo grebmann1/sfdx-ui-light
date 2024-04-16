@@ -21,7 +21,10 @@
                         <path class="cls-inc" d="M12.61,22.36a4,4,0,0,1,2.47-.95,3.89,3.89,0,0,1,2.51.95" transform="translate(-0.15 -3.26)"></path>
                     </svg>
                 </button>
-                <lightning-button-icon icon-name="utility:apex" size="small" class="icon-apex" onclick={handleEventClick} title="Open Toolkit" data-event="openToolkit" variant="border-filled"></lightning-button-icon>
+                <lightning-button-icon icon-name="utility:apex" size="small" class="icon-apex" onclick={handleEventClick} title="Open Apex Editor" data-event="openToolkit" data-redirect="anonymousapex" variant="border-filled"></lightning-button-icon>
+                <lightning-button-icon icon-name="utility:database" size="small" class="icon-database" onclick={handleEventClick} title="Open SOQL Builder" data-event="openToolkit" data-redirect="soql" variant="border-filled"></lightning-button-icon>
+                <lightning-button-icon icon-name="utility:builder" size="small" class="icon-builder" onclick={handleEventClick} title="Open Toolkit" data-event="openToolkit" variant="border-filled"></lightning-button-icon>
+
                 <lightning-button-menu menu-alignment="auto" alternative-text="Show menu" icon-size="small" variant="border-filled">
                     <lightning-menu-item prefix-icon-name="utility:preview" value="Details" label="See Details" title="See details" onclick={handleEventClick} data-event="seeDetails"></lightning-menu-item>
                     <lightning-menu-item prefix-icon-name="utility:download" value="Export" label="Export" title="Export" onclick={handleEventClick} data-event="export"></lightning-menu-item>

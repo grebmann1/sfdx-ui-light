@@ -6,7 +6,11 @@ export default class directView extends LightningElement {
 
     sessionId;
     serverUrl;
+    redirectUrl;
     alias;
+
+    // For direct connection
+    connector;
 
     connectedCallback(){
         if(isElectronApp()){
@@ -14,12 +18,12 @@ export default class directView extends LightningElement {
         }else{
             this.sessionId = this.getSessionId();
             this.serverUrl = this.getServerUrl();
+            this.redirectUrl = this.getRedirectUrl();
             if(isUndefinedOrNull(this.sessionId) || isUndefinedOrNull(this.serverUrl)){
                 this.sendError();
             }
         }
     }
-    
 
 
     getSessionId = () => {
@@ -28,6 +32,10 @@ export default class directView extends LightningElement {
 
     getServerUrl = () => {
         return new URLSearchParams(window.location.search).get('serverUrl');
+    }
+
+    getRedirectUrl = () => {
+        return new URLSearchParams(window.location.search).get('redirectUrl');
     }
 
     getAlias = () => {

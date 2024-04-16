@@ -104,7 +104,6 @@ export default class App extends FeatureElement {
     
 
     loadFromNavigation = async ({state, attributes}) => {
-        console.log('sobject - loadFromNavigation');
         const {applicationName,attribute1}  = attributes;
         if(applicationName != 'sobject') return; // Only for sobject
 

@@ -16,11 +16,17 @@ const handleTabOpening = async (tab) => {
         console.log('handleTabOpening');
         const url = new URL(tab.url);
 
+        const existingOptions = await chrome.sidePanel.getOptions({tabId:tab.id});
+        console.log('existingOptions',existingOptions);
+
         /** Remove by default **/
-        await chrome.sidePanel.setOptions({
-            tabId:tab.id,
-            enabled: false
-        });
+        if(!existingOptions.enabled){
+            await chrome.sidePanel.setOptions({
+                tabId:tab.id,
+                enabled: false
+            });
+        }
+        
 
         /**  Filter Tabs **/
         if (isHostMatching(url)) {
@@ -75,6 +81,7 @@ chrome.runtime.onConnect.addListener( (port) => {
     //console.log('port',port);
     if(port.name === 'side-panel-connection'){
         port.onDisconnect.addListener(async () => {
+            console.log('disconnect listener')
             const tab = await getCurrentTab();
             if(isHostMatching(new URL(tab.url))){
                 await chrome.sidePanel.setOptions({

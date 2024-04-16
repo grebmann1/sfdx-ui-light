@@ -131,6 +131,10 @@ export default class Menu extends FeatureElement {
         })
         .toString()
     }
+
+    get isSmallToolDisplayed(){
+
+    }
     
     get applicationLabel(){
         return this.isMenuSmall?'App':'Applications';
@@ -166,6 +170,10 @@ export default class Menu extends FeatureElement {
 
     get hasTools(){
         return this.tools.length > 0;
+    }
+
+    get hasApplications(){
+        return this.applications.length > 0;
     }
     
     get connections(){

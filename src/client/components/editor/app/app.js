@@ -8,13 +8,36 @@ import {setAllLanguages} from './languages';
 
 /** REQUIRED FIELDS : _source & _bodyField */
 
+const INFO = 'INFO';
+const Schemas = {}
+
+Schemas.ExecuteAnonymousResult = {
+    body:{
+        result:{
+            column: 'number',
+            compileProblem: 'string',
+            compiled: 'boolean',
+            exceptionMessage: 'boolean',
+            exceptionStackTrace: 'boolean',
+            line: 'number',
+            success:'boolean'
+        }
+    },
+    header:{
+        debugLog:'string'
+    }
+}
+
 export default class App extends FeatureElement {
 
+    @api maxHeight;
     @api files = [];
     @api currentFile;
     @api metadataType;
     @api isActionHidden = false;
     @api isAddTabEnabled = false;
+
+    @api isTabEnabled; // by default, we display tabs
     
 
 
@@ -157,49 +180,11 @@ export default class App extends FeatureElement {
 
     saveCode = async () => {
         this.isLoading = true;
-        
         if(['ApexClass','ApexTrigger','ApexPage','ApexComponent'].includes(this.metadataType)){
             this.deployApex()
         }else{
             this.deployOthers();
         }
-
-        
-    }   
-    
-    @api
-    addMarkers = (model,markers) => {
-        this.monaco.editor.setModelMarkers(model, "owner", markers);
-    }
-
-    @api
-    resetMarkers = (model) => {
-        this.monaco.editor.setModelMarkers(model, "owner",[]);
-    }
-
-    @api
-    displayFiles = (metadataType,files) => {
-        if(this.counter >= 10) return;
-
-        if(this.hasLoaded){
-            console.log('files',metadataType,files);
-            this.metadataType = metadataType;
-            this.files = files;
-            this.isEditMode = false;
-    
-            this.createModels();
-            if(this.editor){
-                this.editor.setModel(this.models[0].model);
-            }else{
-                this.createEditor();
-            }
-        }else{
-            window.setTimeout(() => {
-                this.displayFiles(metadataType,files);
-                this.counter = 1;
-            },1000)
-        }
-        
     }
     
     createModels = () => {
@@ -239,15 +224,20 @@ export default class App extends FeatureElement {
             },
             automaticLayout:true,
             readOnly: false,
-            scrollBeyondLastLine: false
+            scrollBeyondLastLine: false,
+            theme: "vs-dark"
         });
 
         this.editor.onDidChangeModelContent((event) => {
             this.isEditMode = true;
+
+            runActionAfterTimeOut(this.editor.getValue(),(value) => {
+                console.log('new value',value);
+                this.dispatchEvent(new CustomEvent("change", {detail:{value},bubbles: true }));
+            },{timeout:300});
             //console.log('onDidChangeModelContent',event);
         });
     }
-
 
     loadMonacoEditor = async () => {
         this.monaco = await loader.init();
@@ -260,7 +250,88 @@ export default class App extends FeatureElement {
         this.hasLoaded = true;
     }
 
+    executeApexSoap = (apexcode,callback) => {  
+        this.connector.conn.soap._invoke("executeAnonymous", { apexcode: apexcode }, Schemas.ExecuteAnonymousResult, callback,{
+            xmlns: "http://soap.sforce.com/2006/08/apex",
+            endpointUrl:this.connector.conn.instanceUrl + "/services/Soap/s/" + this.connector.conn.version,
+        });
+    }
+
+    @api
+    executeApex = async (callback) => {
+        const model = this.currentModel;
+        this.isLoading = true;
+        // Reset errors :
+        this.resetMarkers(model);
+        // Execute
+        this.executeApexSoap(model.getValue(), (err, res) => {
+            console.log('err, res',err, res);
+            if (err) { 
+                LightningAlert.open({
+                    message: err.message,
+                    theme: 'error', // a red theme intended for error states
+                    label: 'Error!', // this is the header text
+                });
+            }else if(!res.success){
+                this.addMarkers(
+                    model,
+                    [{
+                        startLineNumber: res.line,
+                        endLineNumber: res.line,
+                        startColumn: 1,
+                        endColumn: model.getLineLength(res.line),
+                        message: res.compileProblem,
+                        severity: this.monaco.MarkerSeverity.Error
+                    }]
+                );
+            }
+            this.isLoading = false;
+            callback(err,res);
+        });
+    }
+    
+    @api
+    addMarkers = (model,markers) => {
+        this.monaco.editor.setModelMarkers(model, "owner", markers);
+    }
+
+    @api
+    resetMarkers = (model) => {
+        this.monaco.editor.setModelMarkers(model, "owner",[]);
+    }
+
+    @api
+    displayFiles = (metadataType,files) => {
+        if(this.counter >= 10) return;
+
+        if(this.hasLoaded){
+            console.log('files',metadataType,files);
+            this.metadataType = metadataType;
+            this.files = files;
+            this.isEditMode = false;
+    
+            this.createModels();
+            if(this.editor){
+                this.editor.setModel(this.models[0].model);
+            }else{
+                this.createEditor();
+            }
+        }else{
+            window.setTimeout(() => {
+                this.displayFiles(metadataType,files);
+                this.counter = 1;
+            },1000)
+        }
+        
+    }
+    
+    
+
     /** Getters */
+
+    get dynamicStyle(){
+        return this.maxHeight?`height:${this.maxHeight};`:'height:100%;';
+    }
 
     @api
     get currentModel(){
@@ -286,6 +357,10 @@ export default class App extends FeatureElement {
 
     get isToolDisplayed(){
         return this.files.length > 0;
+    }
+
+    get isTabDisplayed(){
+        return this.isTabEnabled;
     }
 
     get isActionsDisplayed(){

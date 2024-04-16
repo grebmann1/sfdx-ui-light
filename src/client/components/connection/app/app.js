@@ -93,7 +93,7 @@ export default class App extends FeatureElement {
 
     handleRowAction = (event) => {
         const actionName = event.detail.action.name;
-        const row = event.detail.row;
+        const { row,redirect } = event.detail;
         switch (actionName) {
             case 'login':
                 this.login(row);
@@ -105,7 +105,10 @@ export default class App extends FeatureElement {
                 this.openBrowser(row,'incognito');
                 break;
             case 'openToolkit':
-                this.openToolkit(row);
+                this.openToolkit(row,redirect);
+                break;
+            case 'openSoqlBuilder':
+                this.openSoqlBuilder(row);
                 break;
             case 'seeDetails':
                 this.seeDetails(row);
@@ -249,17 +252,23 @@ export default class App extends FeatureElement {
         }    
     }
 
-    openToolkit = async (row) => {
+    openToolkit = async (row,redirect) => {
         this.isLoading = true;
             try{
                 const {alias,...settings} = this.data.find(x => x.id == row.id);
                 const connector = await connect({alias,settings,disableEvent:true});
-                const url = `https://sf-toolkit.com/extension?sessionId=${connector.conn.accessToken}&serverUrl=${encodeURIComponent(connector.conn.instanceUrl)}`;
+                var url = `https://sf-toolkit.com/extension?sessionId=${connector.conn.accessToken}&serverUrl=${encodeURIComponent(connector.conn.instanceUrl)}`;
+                //var url = `http://localhost:3000/extension?sessionId=${connector.conn.accessToken}&serverUrl=${encodeURIComponent(connector.conn.instanceUrl)}`;
+                if(redirect){
+                    url+=`&redirectUrl=${encodeURIComponent(redirect)}`;
+                }
                 window.open(url,'_blank');
                 /*chrome.tabs.create({url: url},(tab) => {
                     this.createOrAddToTabGroup(tab, alias);
                 });*/
-            }catch(e){}
+            }catch(e){
+                console.log('error',e);
+            }
         this.isLoading = false;
     }
 
@@ -482,6 +491,15 @@ export default class App extends FeatureElement {
             { label: 'Expire', fieldName: 'expirationDate', type:'text', initialWidth:100, _filter:'electron'},
             { label: 'API', fieldName: 'instanceApiVersion', type: 'text', initialWidth:70, _filter:'electron'},
             { label: 'User Name', fieldName: 'username', type: 'text',initialWidth:400,
+                cellAttributes: {
+                    class: { fieldName: '_typeClass' },
+                },
+            },
+            {   label:'Connect',
+                type: 'button',initialWidth:110,
+                typeAttributes:{    
+                    label:'Connect',title:'Connect',name:'login',variant:'brand'
+                },
                 cellAttributes: {
                     class: { fieldName: '_typeClass' },
                 },

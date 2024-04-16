@@ -35,10 +35,10 @@ const application_mapping = [
     },
     {
         id:"code",
-        name:"Code Toolkit",
-        shortName:"CT",
-        component:"code/app",
-        description:"Create VSCode project, Review metadata, etc",
+        name:"Anonymous Apex",
+        shortName:"AA",
+        component:"anonymousapex/app",
+        description:"Execute Anonymous Apex",
         isDeletable:true,
         isElectronOnly:true,
         type:'code'
