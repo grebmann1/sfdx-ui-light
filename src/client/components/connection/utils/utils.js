@@ -204,7 +204,7 @@ export async function oauth_chrome({alias,loginUrl},callback){
         if(isNotUndefinedOrNull(code)){
             const connection = new window.jsforce.Connection({ oauth2 });
             const userInfo = await connection.authorize(code);
-            console.log('userInfo',userInfo);
+            //console.log('userInfo',userInfo);
             oauth_extend({alias,connection},callback);
         }
 
@@ -214,7 +214,7 @@ export async function oauth_chrome({alias,loginUrl},callback){
 export async function oauth({alias,loginUrl},callback){
     
     window.jsforce.browserClient = new window.jsforce.browser.Client(Date.now()); // Reset
-    console.log('window.jsforceSettings',window.jsforceSettings);
+    //console.log('window.jsforceSettings',window.jsforceSettings);
     window.jsforce.browserClient.init(window.jsforceSettings);
     window.jsforce.browserClient.on('connect', async (connection) =>{
         oauth_extend({alias,connection},callback);
