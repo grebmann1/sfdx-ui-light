@@ -28,12 +28,12 @@ export default class App extends FeatureElement {
     isMonacoLoaded = false;
     isFilterUserDebugEnabled = false;
 
-
     // Apex
     apexScript; // ='CCR_TaskNotification__e event = new CCR_TaskNotification__e();\n// Publish the event\nDatabase.SaveResult result = EventBus.publish(event);';
     isApexRunning = false;
 
     _logs = [];
+    _cacheFiles = [];
     @api
 	set logs(value) {
 		this._logs = value;
@@ -54,7 +54,7 @@ export default class App extends FeatureElement {
     }
 
     connectedCallback(){
-       this.loadCache();
+       this.loadFromCache();
     }
 
     disconnectedCallback() {
@@ -64,18 +64,6 @@ export default class App extends FeatureElement {
 
 	/** Methods  **/
 
-    loadCache = async () => {
-        
-        try{
-            let key = `${this.connector.header.alias}-debuglog`;
-            const _debugLogConfig = await window.defaultStore.getItem(key);
-            if(!isEmpty(_debugLogConfig)){
-                this.debug = JSON.parse(_debugLogConfig);
-            }
-        }catch(e){
-            console.error(e);
-        }
-    }
 
     showErrorOnMonaco = (data) => {
         this.refs.editor.addMarkers(
@@ -91,8 +79,32 @@ export default class App extends FeatureElement {
         );
     }
 
+    storeToCache = () => {
+        let key = `${this.connector.header.alias}-anonymousapex-scripts`;
+        window.defaultStore.setItem(key,JSON.stringify(this.refs.editor.editorUpdatedFiles));
+    }
+
+    loadFromCache = async () => {
+        let key = `${this.connector.header.alias}-anonymousapex-scripts`;
+        let _config = await window.defaultStore.getItem(key);
+        try{
+            if(isEmpty(_config)) return;
+            this._cacheFiles = JSON.parse(_config)
+        }catch(e){
+            console.error(e);
+        }
+    }
+
 
     /** Events **/
+
+    handleEditorChange = (e) => {
+        this.storeToCache();
+    }
+
+    handleAddTab = (e) => {
+        this.refs.editor.addFiles([this.generateEmptyFile()]);
+    }
 
     debug_handleChange = (e) => {
         this.debug[e.currentTarget.dataset.key] = e.detail.value;
@@ -172,20 +184,27 @@ export default class App extends FeatureElement {
 
     /** Methods  **/
 
+    generateEmptyFile = () => {
+        const _uid = guid();
+        return {   
+            id:_uid,
+            path:_uid,
+            name:'Script',
+            apiVersion:60,
+            body:`System.debug('Hello the world');`,
+            language:'java',
+        }
+    }
+
     initEditor = () => {
         this.isMonacoLoaded = true;
-        this.refs.editor.displayFiles(
-            'ApexClass',[
-                {   
-                    id:'abc',
-                    path:'abc',
-                    name:'Script',
-                    apiVersion:60,
-                    body:"System.debug('Hello the world');",
-                    language:'java',
-                }
-            ]
-        );
+        // Load from cache 
+        const initFiles = this._cacheFiles || [];
+        if(initFiles.length == 0){
+            initFiles.push(this.generateEmptyFile())
+        }
+        // init by default
+        this.refs.editor.displayFiles('ApexClass',initFiles);
     }
 
     filterLog = (item) => {

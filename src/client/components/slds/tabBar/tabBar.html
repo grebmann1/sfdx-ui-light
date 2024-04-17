@@ -1,0 +1,113 @@
+<template>
+    <ul
+            class={computedListClass}
+            role="tablist"
+            aria-orientation={computedAriaOrientation}
+            onkeydown={handleKeyDown}
+    >
+        <template for:each={_allTabs} for:item="tab">
+            <template lwc:if={tab.isAddTabEnabled}>
+                <li
+                        data-add
+                        key={tab.value}
+                        class={tab.class}
+                        onclick={handleAddTabClick}
+                        title={tab.title}
+                        role="presentation"
+                        data-label={tab.label}
+                        data-tab-value={tab.value}
+                >
+                    <a
+                            class={tab.linkClass}
+                            data-tab-value={tab.value}
+                            data-label={tab.label}
+                            role="tab"
+                            href="javascript:void(0)"
+                            tabindex={tab.tabIndex}
+                    >
+                    <span>
+                        <lightning-icon
+                            icon-name={tab.iconName}
+                            data-tab-value={tab.value}
+                            size="small"
+                            alternative-text={tab.iconAlternativeText}
+                        ></lightning-icon>
+                    </span>
+                    </a>
+                </li>
+            </template>
+            <template lwc:elseif={tab.visible}>
+                <li
+                        data-tab
+                        key={tab.value}
+                        class={tab.class}
+                        onclick={handleTabClick}
+                        title={tab.title}
+                        role="presentation"
+                        data-label={tab.label}
+                        data-tab-value={tab.value}
+                >
+                    <a
+                            class={tab.linkClass}
+                            data-tab-value={tab.value}
+                            data-label={tab.label}
+                            role="tab"
+                            href="javascript:void(0)"
+                            onblur={handleBlur}
+                            onfocus={handleFocus}
+                            tabindex={tab.tabIndex}
+                            aria-selected={tab.ariaSelected}
+                    >
+                        <template if:true={tab.iconName}>
+                            <span class={computedLeftIconClass}>
+                                <lightning-icon
+                                    icon-name={tab.iconName}
+                                    data-tab-value={tab.value}
+                                    size="small"
+                                    alternative-text={tab.iconAlternativeText}
+                                ></lightning-icon>
+                            </span>
+                        </template>
+                        {tab.label} 
+                        <template lwc:if={tab.counter}>
+                            <lightning-badge label={tab.counter} style={tab.badgeColor} class={tab.badgePositionClass}></lightning-badge>
+                        </template>
+                    </a>
+                    <template lwc:if={tab.isCloseable}>
+                        <div class="slds-col_bump-left slds-p-left_none slds-p-right_xx-small">
+                            <lightning-button-icon variant="bare" size="small" label="close" icon-name="utility:close" data-tab-value={tab.value} onclick={handleCloseTab}></lightning-button-icon>
+                        </div>
+                    </template>
+                    
+                </li>
+            </template>
+        </template>
+        <template lwc:if={overflowSupported}>
+            <li
+                    data-overflow
+                    class={computedOverflowClass}
+                    style={computedOverflowVisibility}
+            >
+                <lightning-button-menu 
+                    variant=bare
+                    alternative-text={i18n.moreAlternativeText}
+                    title={i18n.moreTitle}
+                    onselect={handleOverflowSelect}
+                    icon-name="utility:chevrondown"
+                    label={i18n.more}
+                    menu-alignment="right"
+                >
+                    <template for:each={_allTabs} for:item="tab">
+                        <template if:false={tab.visible}>
+                            <lightning-menu-item
+                                    key={tab.value}
+                                    label={tab.label}
+                                    value={tab.value}
+                            ></lightning-menu-item>
+                        </template>
+                    </template>
+                </lightning-button-menu>
+            </li>
+        </template>
+    </ul>
+</template>

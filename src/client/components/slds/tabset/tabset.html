@@ -1,0 +1,14 @@
+<template>
+    <div
+            class={computedClass}
+            title={title}
+            onprivatetabregister={handleTabRegister}
+            onprivatetabdatachange={handleTabDataChange}
+    >
+        <slds-tab-bar variant={variant} onselect={handleTabSelected}></slds-tab-bar>
+        <slot></slot>
+        <template lwc:if={isAddTabDisplayed}>
+            <slds-tab icon-name="utility:add" class="slds-icon_x-small slds-tab-add" label="" value="add" is-add-tab-enabled></slds-tab>
+        </template>
+    </div>
+</template>

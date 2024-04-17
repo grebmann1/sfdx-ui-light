@@ -37,7 +37,7 @@ export default class App extends FeatureElement {
     @api isActionHidden = false;
     @api isAddTabEnabled = false;
 
-    @api isTabEnabled; // by default, we display tabs
+    @api isTabEnabled = false; // by default, we display tabs
     
 
 
@@ -52,20 +52,38 @@ export default class App extends FeatureElement {
     counter = 0;
 
     async connectedCallback(){
-        console.log('code editor');
         await this.loadMonacoEditor();
     }
 
     /** Events */
 
-    handleSelectTab(event) {
+    handleAddTab = (e) => {
+        //console.log('editor - handleAddTab');
+        // Process this in the parent component
+    }
+
+    handleCloseTab = (e) => {
+        const tabId = e.detail.value;
+        //console.log('editor - handleCloseTab',tabId);
+        // Process this in the parent component
+
+        const currentTabId = this.template.querySelector('slds-tabset').activeTabValue;
+        this.models = this.models.filter(x => x.path != tabId);
+        const latestModel = this.models[this.models.length - 1];
+        if(currentTabId == tabId){
+            this.editor.setModel(latestModel.model); // set last model
+            this.template.querySelector('slds-tabset').activeTabValue = latestModel.path;
+        }
+        this.dispatchEvent(new CustomEvent("change", {detail:{value:'delete',type:'tab'},bubbles: true }));
+    }
+
+    handleSelectTab(event){
         
         const oldModelIndex = this.models.findIndex(x => x.path === this.currentFile);
         if(oldModelIndex >= 0){
             // Save previous state
             this.models[oldModelIndex].state = this.editor.saveViewState();
         }
-        
         
         this.currentFile = event.target.value;
         const element = this.models.find(x => x.path === this.currentFile);
@@ -187,8 +205,21 @@ export default class App extends FeatureElement {
         }
     }
     
-    createModels = () => {
-        this.models = this.files.map(x => ({
+    createModels = (files) => {
+        this.models = files.map(x => ({
+            name    : x.name,
+            path    : x.path,
+            model   : this.monaco.editor.createModel(x.body,x.language),
+            state   : null,
+            _id     : x.id,
+            _metadata : x.metadata,
+            _file   : x
+        }));
+    }
+
+    addModels = (files) => {
+        return files.map(x => ({
+            name    : x.name,
             path    : x.path,
             model   : this.monaco.editor.createModel(x.body,x.language),
             state   : null,
@@ -232,8 +263,7 @@ export default class App extends FeatureElement {
             this.isEditMode = true;
 
             runActionAfterTimeOut(this.editor.getValue(),(value) => {
-                console.log('new value',value);
-                this.dispatchEvent(new CustomEvent("change", {detail:{value},bubbles: true }));
+                this.dispatchEvent(new CustomEvent("change", {detail:{value,type:'body'},bubbles: true }));
             },{timeout:300});
             //console.log('onDidChangeModelContent',event);
         });
@@ -301,29 +331,45 @@ export default class App extends FeatureElement {
     }
 
     @api
+    addFiles = (files) => {
+        const _newModels = this.addModels(files);
+        this.models = [].concat(this.models,_newModels);
+
+        const latestModel = this.models[this.models.length - 1];
+        this.editor.setModel(latestModel.model); // set last model
+        window.setTimeout(()=>{
+            this.template.querySelector('slds-tabset').activeTabValue = latestModel.path;
+        },1)
+        this.dispatchEvent(new CustomEvent("change", {detail:{value:'add',type:'tab'},bubbles: true }));
+    }
+
+    @api
     displayFiles = (metadataType,files) => {
         if(this.counter >= 10) return;
 
         if(this.hasLoaded){
-            console.log('files',metadataType,files);
             this.metadataType = metadataType;
-            this.files = files;
             this.isEditMode = false;
     
-            this.createModels();
+            this.createModels(files);
+            const latestModel = this.models[this.models.length - 1];
             if(this.editor){
-                this.editor.setModel(this.models[0].model);
+                this.editor.setModel(latestModel.model); // set last model
             }else{
                 this.createEditor();
             }
+            window.setTimeout(()=>{
+                this.template.querySelector('slds-tabset').activeTabValue = latestModel.path;
+            },1)
         }else{
             window.setTimeout(() => {
                 this.displayFiles(metadataType,files);
                 this.counter = 1;
             },1000)
         }
-        
     }
+
+    
     
     
 
@@ -347,16 +393,27 @@ export default class App extends FeatureElement {
     get currentMonaco(){
         return this.monaco;
     }
+
+    @api 
+    get editorUpdatedFiles(){
+        return this.models.map(x => {
+            return {
+                ...x._file,
+                body:x.model.getValue()
+            }
+        })
+    }
     
-    get formattedFiles(){
-        return this.files.map(x => ({
+    get formattedModels(){
+        return this.models.map(x => ({
             ...x,
+            isCloseable:this.models.length > 1,
             class:classSet('slds-tabs_scoped__item').add({'slds-is-active':x.path === this.currentFile}).toString()
         }))
     }
 
     get isToolDisplayed(){
-        return this.files.length > 0;
+        return this.models.length > 0;
     }
 
     get isTabDisplayed(){
@@ -365,5 +422,9 @@ export default class App extends FeatureElement {
 
     get isActionsDisplayed(){
         return !this.isActionHidden;
+    }
+
+    get isAddTabEnabledFormatted(){
+        return this.isAddTabEnabled && this.models.length < 5;
     }
 }

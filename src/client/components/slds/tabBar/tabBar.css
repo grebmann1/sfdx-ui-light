@@ -1,0 +1,45 @@
+.slds-badge-position-corner {
+    position: absolute;
+    right: -10px;
+    top: -10px;
+    z-index: 10;
+}
+
+.slds-is-active.slds-tabs_scoped__item{
+    background-color: var(--slds-g-color-neutral-base-100, #fff);
+    border-color: var(--slds-g-color-border-base-4, #e5e5e5);
+    font-weight: 700;
+    color: var(--slds-g-color-neutral-base-10, #181818);
+}
+
+.slds-tabs_scoped__item{
+    border-left: 1px solid transparent;
+    border-right: 1px solid transparent;
+}
+
+.slds-is-active .slds-tabs_scoped__link {
+    background-color: unset;
+    border-color: unset;
+    font-weight: unset;
+    color: unset;
+}
+
+.slds-tabs_scoped__link:hover {
+    text-decoration: none;
+    color: currentColor;
+    border-color: unset;
+}
+
+.slds-tabs_scoped__link{
+    border-right: unset;
+    border-left: unset;
+}
+
+
+.slds-tab-add{
+    /*background: #e5e5e5 !important;*/
+}
+
+.slds-tab-add:hover{
+    background: #f3f3f3 !important;
+}

@@ -14,14 +14,11 @@
                 </div>
             </template>
             <template lwc:if={isTabDisplayed}>
-                <lightning-tabset variant="scoped" class="slds-without-tab">
-                    <template for:each={formattedFiles} for:item="file">
-                        <lightning-tab key={file.path} label={file.name} value={file.path} onactive={handleSelectTab}></lightning-tab>
+                <slds-tabset variant="scoped" class="slds-without-tab" onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled={isAddTabEnabledFormatted}>
+                    <template for:each={formattedModels} for:item="item">
+                        <slds-tab key={item.path} label={item.name} value={item.path} onactive={handleSelectTab} is-closeable={item.isCloseable}></slds-tab>
                     </template>
-                    <template lwc:if={isAddTabEnabled}>
-                        <lightning-tab icon-name="utility:add" class="slds-icon_x-small" label="" value="add" onactive={handleAddTab}></lightning-tab>
-                    </template>
-                </lightning-tabset>
+                </slds-tabset>
             </template>
         </div>
 
