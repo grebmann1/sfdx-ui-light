@@ -1,9 +1,11 @@
 import lwc from '@lwc/rollup-plugin';
 import replace from '@rollup/plugin-replace';
 import copy from 'rollup-plugin-copy';
+import * as data from './package.json';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
+console.log('data.version',data.version);
 
 export default {
     input: 'src/client/web_extension/main.js',
@@ -61,7 +63,14 @@ export default {
               { src: 'src/client/web_extension/views/', dest: 'chrome_ext' },
               { src: 'src/client/web_extension/scripts', dest: 'chrome_ext' },
               { src: 'src/client/web_extension/images', dest: 'chrome_ext' },
-              { src: 'manifest.json', dest: 'chrome_ext', transform: (contents, filename) => contents.toString().replace('__buildLogo__', isProduction ? 'images/sf-toolkit-icon-128.png':'images/sf-toolkit-icon-128-dev.png')            },
+              { src: 'manifest.json', dest: 'chrome_ext', transform: (contents, filename) => 
+                {
+                    let newContents = contents.toString();
+                        newContents = newContents.replace('__buildLogo__', isProduction ? 'images/sf-toolkit-icon-128.png':'images/sf-toolkit-icon-128-dev.png');
+                        newContents = newContents.replace('__buildVersion__', data.version);
+                    return newContents;
+                }            
+              },
               { src: 'src/client/web_extension/callback.js', dest: 'chrome_ext/popup' },
               { src: 'src/client/web_extension/side.js', dest: 'chrome_ext/popup' },
               { src: 'src/client/web_extension/popup.js', dest: 'chrome_ext/popup' },
