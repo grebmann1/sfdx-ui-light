@@ -79,7 +79,9 @@ export default class ConnectionNewModal extends LightningModal {
             if(isNotUndefinedOrNull(domainToValidate.value) && domainToValidate.value.startsWith('http')){
                 try{
                     const _url = new URL(domainToValidate.value);
-                    this.customDomain = _url.host;
+                    this.customDomain = this.processHost(_url.host);
+                    
+
                 }catch(e){
                     domainToValidate.setCustomValidity('Don\'t include the protocol');
                     isValid = false;
@@ -91,6 +93,20 @@ export default class ConnectionNewModal extends LightningModal {
         }
         
         return isValid;
+    }
+
+    processHost = (host) => {
+        const SALESFORCE_HOST = 'my.salesforce.com';
+        if(!host.endsWith(SALESFORCE_HOST)){
+            const baseHost = host.split('.')[0];
+            if(baseHost.includes('--')){
+                // Sandbox
+                host = `${baseHost}.sandbox.my.salesforce.com`
+            }else{
+                host = `${baseHost}.my.salesforce.com`;
+            }
+        }
+        return host;
     }
 
     validateNewCategory = () => {

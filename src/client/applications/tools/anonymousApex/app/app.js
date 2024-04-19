@@ -66,8 +66,9 @@ export default class App extends FeatureElement {
 
 
     showErrorOnMonaco = (data) => {
+        const model = this.refs.editor.currentModel;
         this.refs.editor.addMarkers(
-            this.refs.editor.currentModel,
+            model,
             [{
                 startLineNumber: data.line,
                 endLineNumber:data.line,
