@@ -15,7 +15,10 @@ const getCurrentTab = async () => {
 }
 
 const isHostMatching = (url) => {
-    return url.host.endsWith('lightning.force.com') || url.host.endsWith('salesforce.com') || url.host.endsWith('cloudforce.com');
+    // This should be optimized in the futur !
+    const hosts = ['my.salesforce.com','lightning.force.com','cloudforce.com','lightning.force.com.mcas.ms'];
+    return hosts.reduce((previous,host) => url.host.endsWith(host) || previous,false);
+    //return url.host.endsWith('lightning.force.com') || url.host.endsWith('salesforce.com') || url.host.endsWith('cloudforce.com');
 }
 
 const handleTabOpening = async (tab) => {
