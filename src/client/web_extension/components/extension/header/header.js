@@ -54,7 +54,6 @@ export default class Header extends LightningElement {
             store.dispatch(store_application.expandMenu());
         }
     }
-
     /** **/
     
 

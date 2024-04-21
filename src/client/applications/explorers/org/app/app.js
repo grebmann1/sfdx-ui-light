@@ -10,7 +10,6 @@ export default class App extends FeatureElement {
     @wire(NavigationContext)
     navContext;
 
-    orgInformation = {};
     userInformations = {}
     limits = [];
 
@@ -24,7 +23,6 @@ export default class App extends FeatureElement {
 
     init = async () => {
         this.limits = await this.load_limits();
-        this.orgInformation = await this.load_orgInformations();
         this.userInformations = await this.load_userInformations();
     }
 
@@ -102,11 +100,6 @@ export default class App extends FeatureElement {
         })
     }
 
-    load_orgInformations = async () => {
-        let response = await this.connector.conn.query("SELECT Fields(all) FROM Organization LIMIT 1");
-        return response.records[0];
-    }
-
     load_eventsLogs = async () => {
         //let response = await this.connector.conn.query("SELECT Id , EventType , LogFile , LogDate , LogFileLength FROM EventLogFile WHERE EventType = 'API'");
     }
@@ -126,10 +119,6 @@ export default class App extends FeatureElement {
 
 
     /** Getters */
-
-    get organisationAddress(){
-        return `${this.orgInformation.Address?.country} ${this.orgInformation.Address?.city}, ${this.orgInformation.Address?.street}`;
-    }
     
 
     get formattedLimits(){

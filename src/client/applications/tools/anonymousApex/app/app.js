@@ -3,6 +3,7 @@ import { decodeError,isNotUndefinedOrNull,isEmpty,guid } from 'shared/utils';
 import FeatureElement from 'element/featureElement';
 
 const INFO = 'INFO';
+const DEBUG = 'DEBUG';
 const Schemas = {}
 
 Schemas.ExecuteAnonymousResult = {
@@ -47,7 +48,7 @@ export default class App extends FeatureElement {
     debug = {
         debug_db : INFO,
         debug_callout : INFO,
-        debug_apexCode : INFO,
+        debug_apexCode : DEBUG,
         debug_validation : INFO,
         debug_profiling : INFO,
         debug_system : INFO,
@@ -64,21 +65,6 @@ export default class App extends FeatureElement {
 
 	/** Methods  **/
 
-
-    showErrorOnMonaco = (data) => {
-        const model = this.refs.editor.currentModel;
-        this.refs.editor.addMarkers(
-            model,
-            [{
-                startLineNumber: data.line,
-                endLineNumber:data.line,
-                startColumn: 1,
-                endColumn:model.getLineLength(data.line),
-                message: data.compileProblem,
-                severity: monaco.MarkerSeverity.Error
-            }]
-        );
-    }
 
     storeToCache = () => {
         let key = `${this.connector.header.alias}-anonymousapex-scripts`;
@@ -124,17 +110,12 @@ export default class App extends FeatureElement {
     }
 
     executeApex = async (e) => {
-        const model = this.refs.editor?.currentModel?.getValue();
         this.isApexRunning = true;
-        // Reset errors :
-        this.refs.editor.resetMarkers(this.refs.editor.currentModel);
         // Execute
-        this.executeApexSoap(model, (err, res) => {
+        this.executeApexSoap( (err, res) => {
             console.log('err, res',err, res);
             if (err) { 
                 return console.error(err);
-            }else if(!res.success){
-                this.showErrorOnMonaco(res);
             }
 
             if(!isEmpty(res._header?.debugLog || '')){
@@ -146,41 +127,8 @@ export default class App extends FeatureElement {
         });
     }
 
-    executeApexSoap = (apexcode,callback) => {  
-        this.connector.conn.soap._invoke("executeAnonymous", { apexcode: apexcode }, Schemas.ExecuteAnonymousResult, callback,{
-            xmlns: "http://soap.sforce.com/2006/08/apex",
-            endpointUrl:this.connector.conn.instanceUrl + "/services/Soap/s/" + this.connector.conn.version,
-            headers:{
-                DebuggingHeader:{
-                    categories:[
-                        {
-                            category:'Apex_code',
-                            level:this.debug.debug_apexCode
-                        },
-                        {
-                            category:'Callout',
-                            level:this.debug.debug_callout
-                        },
-                        {
-                            category:'Validation',
-                            level:this.debug.debug_validation
-                        },
-                        {
-                            category:'Db',
-                            level:this.debug.debug_db
-                        },
-                        {
-                            category:'Apex_profiling',
-                            level:this.debug.debug_profiling
-                        },
-                        {
-                            category:'System',
-                            level:this.debug.debug_system
-                        }
-                    ]
-                }
-            }
-        });
+    executeApexSoap = (callback) => {  
+        this.refs.editor.executeApex(this.headers,callback);
     }
 
     /** Methods  **/
@@ -276,6 +224,39 @@ export default class App extends FeatureElement {
             {value:'DEBUG',label:'Debug'},
             {value:'FINE',label:'Fine'},
         ]
+    }
+
+    get headers(){
+        return {
+            DebuggingHeader:{
+                categories:[
+                    {
+                        category:'Apex_code',
+                        level:this.debug.debug_apexCode
+                    },
+                    {
+                        category:'Callout',
+                        level:this.debug.debug_callout
+                    },
+                    {
+                        category:'Validation',
+                        level:this.debug.debug_validation
+                    },
+                    {
+                        category:'Db',
+                        level:this.debug.debug_db
+                    },
+                    {
+                        category:'Apex_profiling',
+                        level:this.debug.debug_profiling
+                    },
+                    {
+                        category:'System',
+                        level:this.debug.debug_system
+                    }
+                ]
+            }
+        }
     }
   
 }

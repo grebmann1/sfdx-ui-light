@@ -5,10 +5,13 @@ import extensionRoot from 'extension/root';
 
 const loadLocalForage = async () => {
     return new Promise((resolve,reject) => {
-        localforage.ready().then(function() {
-            resolve();
-        }).catch(function (e) {
-            console.log('error',e)
+        localforage.defineDriver(customChromeStorageDriver)
+        .then(() => localforage.setDriver('customChromeStorageDriver'))
+        .then(() => {
+            //console.log('customChromeStorageDriver',customChromeStorageDriver);
+            //console.log('localforage',localforage);
+            //console.log('localforage.driver()',localforage.driver());
+            window.defaultStore = localforage//localforage.createInstance({name: "defaultStore"});
             resolve();
         });
     })
@@ -16,17 +19,9 @@ const loadLocalForage = async () => {
 
 const init = async () => {
     /** Load Local Forage  **/
-    console.log('customChromeStorageDriver',customChromeStorageDriver);
+    //console.log('customChromeStorageDriver',customChromeStorageDriver);
     
-    localforage.defineDriver(customChromeStorageDriver)
-    .then(() => localforage.setDriver('customChromeStorageDriver'))
-    .then(() => {
-        console.log('customChromeStorageDriver',customChromeStorageDriver);
-        console.log('localforage',localforage);
-        console.log('localforage.driver()',localforage.driver());
-        window.defaultStore = localforage//localforage.createInstance({name: "defaultStore"});
-        console.log('window.defaultStore',window.defaultStore);
-    });
+    await loadLocalForage();
     
     
 

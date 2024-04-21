@@ -1,0 +1,23 @@
+<template>
+    <!-- Check if in salesforce page or not -->
+    <template lwc:if={isSalesforcePanel}>
+        <panels-salesforce 
+            versions={versions}
+            version={version}
+            record-id={recordId}
+            is-connector-loaded={isConnectorLoaded}
+            is-back-button-displayed={isBackButtonDisplayed}
+            onchangepanel={handlePanelChange}
+            onback={handleGoBack}
+        ></panels-salesforce>
+    </template>
+    <template lwc:else>
+        <panels-default 
+            is-connector-loaded={isConnectorLoaded}
+            is-back-button-displayed={isBackButtonDisplayed}
+            onchangepanel={handlePanelChange}
+            onback={handleGoBack}
+        ></panels-default>
+    </template>
+    
+</template>

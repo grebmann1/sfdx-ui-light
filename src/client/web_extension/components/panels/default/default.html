@@ -2,34 +2,25 @@
     <div class="slds-popup-container">
         <!-- HEADER -->
         <extension-header onsearch={handleSearch}>
-            
-            <template lwc:if={isConnection}>
-                <!-- Actions for connections -->
-                <lightning-button-group slot="action">
+            <lightning-button-group slot="action">
+                <template lwc:if={isBackButtonDisplayed}>
+                    <lightning-button class="back-button" variant="brand" icon-name="utility:back" label="Back" size="medium" onclick={handleBackClick}></lightning-button>
+                </template>
+                <template lwc:if={isConnection}>
+                    <!-- Actions for connections -->
                     <lightning-button icon-name="utility:add" label="Org" title="Add new org" onclick={connection_authorizeOrg}></lightning-button>
                     <lightning-button-icon icon-name="utility:knowledge_base" title="Open Documentation" onclick={documentationClick}></lightning-button-icon>
                     <lightning-button-menu menu-alignment="auto" alternative-text="Show menu">
                         <lightning-menu-item prefix-icon-name="utility:upload" value="Import" label="Import Orgs" onclick={importClick}></lightning-menu-item>
                         <lightning-menu-item prefix-icon-name="utility:download" value="Export" label="Export Orgs" onclick={exportClick}></lightning-menu-item>
                     </lightning-button-menu>
-                </lightning-button-group>
-            </template>
-            <template lwc:elseif={isRecordExplorer}>
-                <!-- Actions for record Explorer -->
-                <lightning-button-group slot="action">
-                    <lightning-button-icon icon-name="utility:builder" label="Toolkit" title="Open SF Toolkit" onclick={redirectToWebsite}></lightning-button-icon>
-                    <lightning-button-icon icon-name="utility:apex" label="Apex" title="Open Anonymous Apex" onclick={redirectToAnonymousApex}></lightning-button-icon>
-                    <lightning-button-icon icon-name="utility:database" label="SOQL" title="Open SOQL Builder" onclick={redirectToSoqlBuilder}></lightning-button-icon>
-                    <lightning-button-icon icon-name="utility:toggle_panel_right" label="Advanced" title="Open Side Panel" onclick={openSidePanel}></lightning-button-icon>
-
-                </lightning-button-group>
-            </template>
-            <template lwc:elseif={isDocumentation}>
-                <!-- Actions for Documentation -->
-                <lightning-button-group slot="action">
+                </template>
+                <template lwc:elseif={isDocumentation}>
+                    <!-- Actions for Documentation -->
                     <lightning-button-icon icon-name="utility:salesforce1" title="Display Org List" onclick={openConnectionClick}></lightning-button-icon>
-                </lightning-button-group>
-            </template>
+                </template>
+            </lightning-button-group>
+            
         </extension-header>
 
         <!-- BODY slds-background-white -->
@@ -41,19 +32,11 @@
                 <template lwc:if={isConnection}>
                     <connection-app lwc:ref="connection"  variant="card" is-header-less></connection-app>
                 </template>
-                <template lwc:elseif={isRecordExplorer}>
-                    <extension-record-explorer lwc:ref="recordexplorer" versions={versions}></extension-record-explorer>
-                </template>
                 <template lwc:elseif={isDocumentation}>
                     <doc-app lwc:ref="documentation" is-responsive></doc-app>
                 </template>
                 <!-- End -->
             </div>
         </div>
-
-        <!-- Footer -->
-        <template lwc:if={isFooterDisplayed}>
-            <extension-footer version={version}></extension-footer>
-        </template>
     </div>
 </template>

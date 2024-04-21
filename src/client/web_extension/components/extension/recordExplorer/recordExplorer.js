@@ -1,16 +1,15 @@
-import { createElement,LightningElement,api} from "lwc";
+import { createElement,api} from "lwc";
+import FeatureElement from 'element/featureElement';
 
 import {TabulatorFull as Tabulator} from "tabulator-tables";
 import {runActionAfterTimeOut,isEmpty,isNotUndefinedOrNull} from 'shared/utils';
-import {
-    getRecordId,getCurrentTab,getCurrentObjectType,
-    fetch_data,fetch_metadata
-} from "extension/utils";
+import { getCurrentTab,getCurrentObjectType,fetch_data,fetch_metadata} from "extension/utils";
 import RecordExplorerCell from 'extension/recordExplorerCell';
 
-export default class RecordExplorer extends LightningElement {
+export default class RecordExplorer extends FeatureElement {
 
     @api versions = [];
+    
 
     tableInstance;
     isLoading = false;
@@ -21,7 +20,6 @@ export default class RecordExplorer extends LightningElement {
     // record data
     sobjectName;
     metadata;
-    recordId;
     record;
     // for table
     data;
@@ -29,28 +27,37 @@ export default class RecordExplorer extends LightningElement {
     isError = false;
 
 
-    connectedCallback(){
-        this.initRecordExplorer();
+    @api
+    get recordId(){
+        return this._recordId;
     }
+    set recordId(value){
+        var toRun = this._recordId != value && !isEmpty(value);
+        this._recordId = value;
+        if(toRun){
+            this.initRecordExplorer();
+        }
+        
+    }
+    
+
+
+    connectedCallback(){}
 
     initRecordExplorer = async () => {
+        console.log('initRecordExplorer');
         try{
             this.isError = false;
             this.isLoading = true;
-            let conn = window.connector.conn;
+            
             this.currentTab = await getCurrentTab();
             this.currentOrigin = (new URL(this.currentTab.url)).origin;
-            console.log('currentOrigin',this.currentOrigin);
-            this.contextUrl = window.location.href;
-            // Get recordId (Step 1)
-            this.recordId = getRecordId(this.currentTab.url);
-            console.log('this.recordId',this.recordId);
             // Get sobjectName (Step 2) // Should be optimized to save 1 API Call [Caching]
-            this.sobjectName = await getCurrentObjectType(conn,this.recordId);
+            this.sobjectName = await getCurrentObjectType(this.connector.conn,this.recordId);
             // Get Metadata (Step 3) // Should be optimized to save 1 API Call [Caching]
-            this.metadata = await fetch_metadata(conn,this.sobjectName);
+            this.metadata = await fetch_metadata(this.connector.conn,this.sobjectName);
             // Get data
-            this.record = await fetch_data(conn,this.sobjectName,this.recordId);
+            this.record = await fetch_data(this.connector.conn,this.sobjectName,this.recordId);
 
 
             this.data = this.formatData();
@@ -90,7 +97,8 @@ export default class RecordExplorer extends LightningElement {
     }
 
     formatterValue = (cell, formatterParams, onRendered) => {
-        let data = cell._cell.row.data;
+        console.log('cell',cell,cell.getData())
+        let data = cell.getData();
         const element = createElement('extension-record-explorer-cell', {
             is: RecordExplorerCell
         });
@@ -102,6 +110,7 @@ export default class RecordExplorer extends LightningElement {
             }
         });
         return element;
+        
         //return "Mr" + cell.getValue(); //return the contents of the cell;
     }
 
@@ -152,8 +161,8 @@ export default class RecordExplorer extends LightningElement {
     createTable = () => {
 
         let colModel = [
-            { title: 'Field Label'  , field: 'label'    , width:200,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField},
-            { title: 'ApiName'      , field: 'name'     , width:200,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField,
+            { title: 'Field Label'  , field: 'label'    ,   headerHozAlign: "center", resizable: true ,formatter:this.formatterField,responsive:1,width:150},
+            { title: 'ApiName'      , field: 'name'     ,   headerHozAlign: "center", resizable: true ,formatter:this.formatterField,responsive:0,width:150,
                 tooltip:(e, cell, onRendered) => {
                     //e - mouseover event
                     //cell - cell component
@@ -162,7 +171,7 @@ export default class RecordExplorer extends LightningElement {
                     return `Type: ${metadata.type}`;
                 }
             },
-            { title: 'Value'        , field: 'value'    ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterValue}
+            { title: 'Value'        , field: 'value'    ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterValue,}
         ];
 
         if (this.tableInstance) {
@@ -170,14 +179,32 @@ export default class RecordExplorer extends LightningElement {
 		}
 
 		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
-			height: '470',
+			height: '100%',
 			data: this.formattedData,
-			layout:"fitColumns",
+            layout:"fitDataFill",
+            responsiveLayout:"collapse",
+            rowHeader:{formatter:"responsiveCollapse", width:30, minWidth:30, hozAlign:"center", resizable:false, headerSort:false},
+			//layout:"fitColumns",
 			columns: colModel,
 			columnHeaderVertAlign: "middle",
+            resizableColumnFit:true,
             downloadConfig:{
                 rowGroups:false, //do not include row groups in downloaded table
             },
+            responsiveLayoutCollapseFormatter:function(data){
+                //data - an array of objects containing the column title and value for each cell
+                var list = document.createElement("ul");
+
+                data.forEach(function(col){
+                    let item = document.createElement("li");
+                    item.style = 'display: flex;width: 100%;flex-direction: row;justify-content: space-between;';
+                    item.innerHTML = "<strong>" + col.title + ":</strong>";
+                    item.appendChild(col.value);
+                    list.appendChild(item);
+                });
+        
+                return Object.keys(data).length ? list : "";
+            }
 		});
     }
 

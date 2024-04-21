@@ -10,17 +10,19 @@ console.log('data.version',data.version);
 export default {
     input: 'src/client/web_extension/main.js',
     output: {
-        dir: 'chrome_ext/popup'
+        dir: 'chrome_ext/scripts'
     },
     plugins: [
         replace({
             'process.env.NODE_ENV': JSON.stringify('development'),
         }),
         lwc({
+            "enableDynamicComponents":true,
             "modules": [
                 { "dir": "../modules" },
                 { "dir": "../components" },
                 { "dir": "../applications/documentation" },
+                { "dir": "../applications/explorers" },
                 { "dir": "components" },
                 { "npm": "lightning-base-components" },
                 {
@@ -71,9 +73,7 @@ export default {
                     return newContents;
                 }            
               },
-              { src: 'src/client/web_extension/callback.js', dest: 'chrome_ext/popup' },
-              { src: 'src/client/web_extension/side.js', dest: 'chrome_ext/popup' },
-              { src: 'src/client/web_extension/popup.js', dest: 'chrome_ext/popup' },
+              { src: 'src/client/web_extension/components/extension/utils/utils.js', dest: 'chrome_ext/scripts' },
             ]
         })
     ],

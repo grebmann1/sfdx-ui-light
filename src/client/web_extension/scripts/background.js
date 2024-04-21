@@ -1,4 +1,11 @@
 "use strict";
+import * as utils from './utils.js';
+
+/** Variables */
+const CONFIG_POPUP = 'openAsPopup';
+var config = {};
+
+/** Methods */
 
 const getCurrentTab = async () => {
     let queryOptions = { active: true, lastFocusedWindow: true };
@@ -12,13 +19,19 @@ const isHostMatching = (url) => {
 }
 
 const handleTabOpening = async (tab) => {
+    
+    //const config = loadConfiguration();
+    // Instead of loading the configuration every time, send a message to the background job !!!
+
+    //const configuration = utils.loadExtensionConfigFromCache();
+    //const openPopupInSidePanel = configuration.openPopupInSidePanel || false;
+    //console.log('handleTabOpening - openPopupInSidePanel',openPopupInSidePanel);
+    const openAsPopup = false;//config[CONFIG_POPUP];
+    //console.log('openAsPopup',config,openAsPopup);
     try{
-        console.log('handleTabOpening');
         const url = new URL(tab.url);
 
         const existingOptions = await chrome.sidePanel.getOptions({tabId:tab.id});
-        console.log('existingOptions',existingOptions);
-
         /** Remove by default **/
         if(!existingOptions.enabled){
             await chrome.sidePanel.setOptions({
@@ -30,38 +43,74 @@ const handleTabOpening = async (tab) => {
 
         /**  Filter Tabs **/
         if (isHostMatching(url)) {
-            //console.log('isHostMatching');
-            // Salesforce website, ensure the popup is set
-            //console.log('onActivated - chrome.action.setPopup');
-            //await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false })
-            chrome.action.setPopup({tabId: tab.id, popup: 'views/popup.html'});
+            if(openAsPopup){
+                // Popup Panel ### Deprecated for now !
+                await chrome.sidePanel.setOptions({
+                    tabId:tab.id,
+                    enabled: false
+                });
+                await chrome.action.setPopup({tabId: tab.id, popup: 'views/popup.html?panel=salesforce'});
+            }else{
+                // Side Panel
+                await chrome.sidePanel.setOptions({
+                    tabId:tab.id,
+                    path: 'views/side.html?panel=salesforce',
+                    enabled: true
+                });
+                await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+            }
+            
         }else{
-            await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
-            //console.log('openSidePanel 1');
+            await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
             await chrome.sidePanel.setOptions({
                 tabId:tab.id,
-                path: 'views/side.html',
+                path: 'views/side.html?panel=default',
                 enabled: true
             });
-            //console.log('openSidePanel 2');
         }
     }catch(e){
         console.log('Issue handleTabOpening',e);
     }
 }
 
-/** Init **/
-//chrome.action.disable();
-/** On Install Event */
 
+const loadConfiguration = async () => {
+    const items = [CONFIG_POPUP];
+    const data = await chrome.storage.local.get(items);
+    const configuration = {};
+    items.forEach(item => {
+        configuration[item] = data[item];
+    })
+    console.log('loadConfiguration',configuration);
+    return configuration;
+}
+
+
+
+/** On Install Event */
 chrome.runtime.onInstalled.addListener(() => {
+    // Create Menu
     chrome.contextMenus.create({
         id: 'openSidePanel',
         title: 'Open Salesforce Toolkit',
         contexts: ['all']
     });
+    // Update tabs
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        const currentTab = tabs[0];
+        chrome.sidePanel.setOptions({
+            tabId:currentTab.id,
+            path: 'views/side.html',
+            enabled: true
+        });
+    });
 });
 
+
+
+
+/** Event Listener */
+/*
 chrome.storage.onChanged.addListener((changes, namespace) => {
     for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
       console.log(
@@ -70,25 +119,20 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
       );
     }
 });
-
-
-//chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch((error) => console.error(error));
-
-
-/** Event Listener */
-
+*/
+  
 chrome.runtime.onConnect.addListener( (port) => {
     //console.log('port',port);
     if(port.name === 'side-panel-connection'){
         port.onDisconnect.addListener(async () => {
-            console.log('disconnect listener')
-            const tab = await getCurrentTab();
+            //console.log('disconnect listener')
+            /*const tab = await getCurrentTab();
             if(isHostMatching(new URL(tab.url))){
                 await chrome.sidePanel.setOptions({
                     tabId:tab.id,
                     enabled: false
                 });
-            }
+            }*/
             
         });
     }
@@ -134,57 +178,28 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 });
 
 /** Action Button  */
-chrome.action.onClicked.addListener((tab) => {
-    //console.log('on action clicked');
+chrome.action.onClicked.addListener(async (tab) => {
+    console.log('onClicked');
     //handleTabOpening(tab);
 });
 
+/***********************************************/
+/***********************************************/
+/***********************************************/
+/***********************************************/
+/***********************************************/
 
 
 
+const init = async () => {
+    chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch((error) => console.error(error));
+    config = await loadConfiguration();
+}
 
 
-/**
-chrome.action.onClicked.addListener(async (tab) => {
-    console.log('tab',tab);
-    const tabId = tab.id;
-    const url = new URL(tab.url).origin;
-    let cookieStoreId = await chrome.cookies.getAllCookieStores((stores) => {
-      var currentStore = stores.find(obj => {
-          return obj.tabIds.includes(tabId);
-      });
-      return currentStore.tabIds[tabId];
-  });
-    
-    let cookieDetails = {
-        name: "sid",
-        url: url,
-        storeId: cookieStoreId,
-    };
-    
-    const cookie = await chrome.cookies.get(cookieDetails);
-    console.log('cookie',cookie);
-    if (!cookie) {
-        return;
-    }
-    
-    // try getting all secure cookies from salesforce.com and find the one matching our org id
-    // (we may have more than one org open in different tabs or cookies from past orgs/sessions)
-    let [orgId] = cookie.value.split("!");
-    let secureCookieDetails = {
-        name: "sid",
-        secure: true,
-        storeId: cookieStoreId,
-    };
-    const cookies = await chrome.cookies.getAll(secureCookieDetails);
-    console.log('cookies',cookies);
-    let sessionCookie = cookies.find((c) => c.value.startsWith(orgId + "!"));
-    console.log('sessionCookie',sessionCookie);
-    if (!sessionCookie) {
-        return;
-    }
-    chrome.tabs.create({ 
-      url: 'https://sf-toolkit.com/extension?sessionId=' + sessionCookie.value+'&serverUrl=https://'+sessionCookie.domain 
-    }, tab => { });
-});
-**/
+/***********************************************/
+/***********************************************/
+/***********************************************/
+/******************** Init *********************/
+
+init();

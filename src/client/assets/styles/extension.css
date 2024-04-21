@@ -191,3 +191,7 @@ doc-app .full-page-body.slds-m-top_small{
               box-shadow:none;
     }
 }
+
+.back-button  lightning-primitive-icon {
+    display: flex;
+}

@@ -5,49 +5,64 @@ export async function getCurrentTab(){
     return tab;
 }
 
-export function getRecordId(href) {
-	let url = new URL(href);
-	// Find record ID from URL
-	let searchParams = new URLSearchParams(url.search.substring(1));
-	// Salesforce Classic and Console
-	if (url.hostname.endsWith(".salesforce.com") || url.hostname.endsWith(".salesforce.mil")) {
-		let match = url.pathname.match(/\/([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})(?:\/|$)/);
-		if (match) {
-			let res = match[1];
-			if (res.includes("0000") || res.length == 3) {
+export function isEmpty(str) {
+    return (!str || str.length === 0 );
+}
+
+function extractRecordId(href){
+	if(!href) return null;
+	try{
+		let url = new URL(href);
+		// Find record ID from URL
+		let searchParams = new URLSearchParams(url.search.substring(1));
+		// Salesforce Classic and Console
+		if (url.hostname.endsWith(".salesforce.com") || url.hostname.endsWith(".salesforce.mil")) {
+			let match = url.pathname.match(/\/([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})(?:\/|$)/);
+			if (match) {
+				let res = match[1];
+				if (res.includes("0000") || res.length == 3) {
+					return match[1];
+				}
+			}
+		}
+
+		// Lightning Experience and Salesforce1
+		if (url.hostname.endsWith(".lightning.force.com") || url.hostname.endsWith(".lightning.force.mil") || url.hostname.endsWith(".lightning.crmforce.mil")) {
+			let match;
+
+			if (url.pathname == "/one/one.app") {
+				// Pre URL change: https://docs.releasenotes.salesforce.com/en-us/spring18/release-notes/rn_general_enhanced_urls_cruc.htm
+				match = url.hash.match(/\/sObject\/([a-zA-Z0-9]+)(?:\/|$)/);
+			} else {
+				match = url.pathname.match(/\/lightning\/[r|o]\/[a-zA-Z0-9_]+\/([a-zA-Z0-9]+)/);
+			}
+			if (match) {
 				return match[1];
 			}
 		}
-	}
-
-	// Lightning Experience and Salesforce1
-	if (url.hostname.endsWith(".lightning.force.com") || url.hostname.endsWith(".lightning.force.mil") || url.hostname.endsWith(".lightning.crmforce.mil")) {
-		let match;
-
-		if (url.pathname == "/one/one.app") {
-			// Pre URL change: https://docs.releasenotes.salesforce.com/en-us/spring18/release-notes/rn_general_enhanced_urls_cruc.htm
-			match = url.hash.match(/\/sObject\/([a-zA-Z0-9]+)(?:\/|$)/);
-		} else {
-			match = url.pathname.match(/\/lightning\/[r|o]\/[a-zA-Z0-9_]+\/([a-zA-Z0-9]+)/);
+		// Visualforce
+		{
+			let idParam = searchParams.get("id");
+			if (idParam) {
+				return idParam;
+			}
 		}
-		if (match) {
-			return match[1];
+		// Visualforce page that does not follow standard Visualforce naming
+		for (let [, p] of searchParams) {
+			if (p.match(/^([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/) && p.includes("0000")) {
+				return p;
+			}
 		}
-	}
-	// Visualforce
-	{
-		let idParam = searchParams.get("id");
-		if (idParam) {
-			return idParam;
-		}
-	}
-	// Visualforce page that does not follow standard Visualforce naming
-	for (let [, p] of searchParams) {
-		if (p.match(/^([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/) && p.includes("0000")) {
-			return p;
-		}
+		
+	}catch(e){
+		console.errror('Error while extracting the recordId')
 	}
 	return null;
+}
+
+export function getRecordId(href) {
+	const recordId = extractRecordId(href);
+	return recordId.match(/^([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/)?recordId:null;
 }
 
 export function getSobject(href) {
@@ -105,4 +120,33 @@ export function fetch_data(conn,sobjectName,recordId){
 			}
 		});
 	});
+}
+
+export function loadConfiguration(text){
+	var result = {};
+
+	console.log('text',text);
+	try{
+		if(!isEmpty(text)){
+			result = JSON.parse(text);
+			// Add method to reformat the config in case of config issue
+		}
+	}catch(e){
+		console.error('Wrong format for the config !',e);
+	}
+	return result;
+}
+
+export async function loadExtensionConfigFromCache(items){
+	const configuration = {};
+	items.map(async key => {
+		configuration[key] = await window.defaultStore.getItem(key);
+		// using map as a trick to bypass the promise issue.
+	})
+	return configuration;
+}
+
+export const PANELS = {
+	SALESFORCE : 'salesforce',
+	DEFAULT : 'default'
 }

@@ -1,16 +1,34 @@
 <template>
-    <template lwc:if={hasLoaded}>
-        <extension-popup  class="slds-full-height"
-            session-id={sessionId} 
-            server-url={serverUrl}
+    <template lwc:if={isSide}>
+        <views-side  
+            class="slds-full-height"
             versions={versions}
             version={version}
-            variant={variant}
-        ></extension-popup>
+            record-id={recordId}
+            is-connector-loaded={isConnectorLoaded}
+        ></views-side>
     </template>
-    <template lwc:else>
+    <template lwc:elseif={isPopup}>
+        <views-popup  
+            class="slds-full-height"
+            versions={versions}
+            record-id={recordId}
+            version={version}
+            is-connector-loaded={isConnectorLoaded}
+        ></views-popup>
+    </template>
+    <template lwc:elseif={isOptions}>
+        <views-options class="slds-full-height"></views-options>
+    </template>
+    <!--
+        <template lwc:if={hasLoaded}>
+        </template>
+        <template lwc:else>
         <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
             <slds-spinner alternative-text="Loading" size="small" message="Connecting to Mars"></slds-spinner>
         </div>
     </template>
+    -->
+    
+    
 </template>

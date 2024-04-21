@@ -280,21 +280,22 @@ export default class App extends FeatureElement {
         this.hasLoaded = true;
     }
 
-    executeApexSoap = (apexcode,callback) => {  
+    executeApexSoap = (apexcode,headers,callback) => {  
         this.connector.conn.soap._invoke("executeAnonymous", { apexcode: apexcode }, Schemas.ExecuteAnonymousResult, callback,{
             xmlns: "http://soap.sforce.com/2006/08/apex",
             endpointUrl:this.connector.conn.instanceUrl + "/services/Soap/s/" + this.connector.conn.version,
+            headers
         });
     }
 
     @api
-    executeApex = async (callback) => {
+    executeApex = async (headers,callback) => {
         const model = this.currentModel;
         this.isLoading = true;
         // Reset errors :
         this.resetMarkers(model);
         // Execute
-        this.executeApexSoap(model.getValue(), (err, res) => {
+        this.executeApexSoap(model.getValue(),headers, (err, res) => {
             console.log('err, res',err, res);
             if (err) { 
                 LightningAlert.open({
@@ -302,7 +303,7 @@ export default class App extends FeatureElement {
                     theme: 'error', // a red theme intended for error states
                     label: 'Error!', // this is the header text
                 });
-            }else if(!res.success){
+            }else if(!res.success && !res.compiled){
                 this.addMarkers(
                     model,
                     [{

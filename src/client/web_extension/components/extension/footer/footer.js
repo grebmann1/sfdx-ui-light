@@ -1,12 +1,11 @@
 import { LightningElement,api} from "lwc";
 import { isUndefinedOrNull } from "shared/utils";
+import FeatureElement from 'element/featureElement';
 
-export default class Footer extends LightningElement {
+export default class Footer extends FeatureElement {
 
     @api versions = [];
     @api version;
-
-    username;
 
     connectedCallback(){
 
@@ -14,11 +13,15 @@ export default class Footer extends LightningElement {
 
     /** Events **/
 
+    handleCopy = () => {
+        navigator.clipboard.writeText(this.usernameFormatted);
+    }
+
 
     /** Getters **/
 
     get usernameFormatted(){
-        return isUndefinedOrNull(window.connector.header.username)?'':`${window.connector.header.username}`;
+        return isUndefinedOrNull(this.connector.header.username)?'':`${this.connector.header.username}`;
     }
 
     get versionFormatted(){

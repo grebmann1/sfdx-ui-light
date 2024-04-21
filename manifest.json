@@ -49,7 +49,8 @@
         "tabs",
         "tabGroups",
         "sidePanel",
-        "contextMenus"
+        "contextMenus",
+        "webNavigation"
     ],
     "incognito": "split"
   }

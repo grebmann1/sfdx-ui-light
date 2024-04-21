@@ -1,32 +1,37 @@
 <template>
     
-    <!-- Header -->
-    <div class="slds-p-vertical_x-small slds-p-horizontal_small slds-shrink-none">
-       
+    <div class="slds-full-height slds-flex-column">
+        <!-- Header -->
+        <div class="slds-p-vertical_x-small slds-p-horizontal_small slds-shrink-none">
+            <template lwc:if={isRecordIdAvailable}>
+                
+                <!-- Object Info -->
+                <nav role="navigation" aria-label="Breadcrumbs">
+                    <ol class="slds-breadcrumb slds-list_horizontal slds-wrap">
+                        <li class="slds-breadcrumb__item">
+                            <span>SObject</span>
+                        </li>
+                        <li class="slds-breadcrumb__item">
+                            <span>{sobjectName}</span>
+                        </li>
+                    </ol>
+                </nav>
+            </template>
+            <template lwc:else>
+                <!-- Place Holder -->
+                <slds-empty-illustration title="No record" sub-title="The extension only support standard record pages."></slds-empty-illustration>
+            </template>
+        </div>
+        <!-- Table -->
+        <div class="full-page-body">
+            <template lwc:if={isLoading}>
+                <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
+                    <slds-spinner alternative-text="Loading" size="small" message="Fetching data from Salesforce"></slds-spinner>
+                </div>
+            </template>
+            <div lwc:dom="manual" class="custom-table"></div>
+        </div>
         
-        <template lwc:if={isRecordIdAvailable}>
-            
-            <!-- Object Info -->
-            <nav role="navigation" aria-label="Breadcrumbs">
-                <ol class="slds-breadcrumb slds-list_horizontal slds-wrap">
-                    <li class="slds-breadcrumb__item">
-                        <span>SObject</span>
-                    </li>
-                    <li class="slds-breadcrumb__item">
-                        <span>{sobjectName}</span>
-                    </li>
-                </ol>
-            </nav>
-        </template>
-        <template lwc:else>
-            <!-- Place Holder -->
-            <slds-empty-illustration title="No record" sub-title="The extension only support standard record pages."></slds-empty-illustration>
-        </template>
     </div>
-    <!-- Table -->
-    <template lwc:if={isLoading}>
-        <lightning-spinner alternative-text="Loading"></lightning-spinner>
-    </template>
-    <div lwc:dom="manual" class="custom-table"></div>
     
 </template>

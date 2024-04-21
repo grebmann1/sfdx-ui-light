@@ -1,7 +1,14 @@
 <template>
     <div class="slds-utility-bar_container" style="height:24px;">
-        <ul class="slds-utility-bar custom-utility-bar">
+        <ul class="slds-utility-bar custom-utility-bar slds-p-horizontal_x-small">
             <li class="slds-utility-bar__item custom-utility-text">
+                <lightning-button-icon
+                    class="custom-utility-text-copy"
+                    onclick={handleCopy}
+                    icon-name="utility:copy"
+                    variant="bare"
+                    alternative-text="copy"
+                ></lightning-button-icon>
                 <h2>{usernameFormatted}</h2>
             </li>
             <li class="slds-utility-bar__item custom-utility-text">

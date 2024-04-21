@@ -107,9 +107,6 @@ export default class App extends FeatureElement {
             case 'openToolkit':
                 this.openToolkit(row,redirect);
                 break;
-            case 'openSoqlBuilder':
-                this.openSoqlBuilder(row);
-                break;
             case 'seeDetails':
                 this.seeDetails(row);
                 break;
