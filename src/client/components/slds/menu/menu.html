@@ -52,9 +52,9 @@
                 <template lwc:if={isLoading}>
                     <lightning-spinner alternative-text="Loading"></lightning-spinner>
                 </template>
-                <lightning-vertical-navigation onselect={handleSelection} compact class="slds-scrollable_y">
+                <lightning-vertical-navigation onselect={handleSelection} compact class="slds-scrollable_y" onscroll={handleScroll}>
                     <lightning-vertical-navigation-section>
-                        <template for:each={filteredList} for:item="item">
+                        <template for:each={virtualList} for:item="item">
                             <slds-menu-item 
                                 key={item.key} 
                                 name={item.name} 

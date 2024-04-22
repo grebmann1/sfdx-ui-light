@@ -227,7 +227,7 @@ export default class App extends FeatureElement {
                                 if (w.incognito) {
                                     // Use this window.
                                     chrome.tabs.create({url: url, windowId: w.id},(tab) => {
-                                        this.createOrAddToTabGroup(tab, alias);
+                                        this.createOrAddToTabGroup(tab, alias,w.id);
                                     });
                                     return;
                                 }
@@ -236,8 +236,9 @@ export default class App extends FeatureElement {
                             chrome.windows.create({url: url, incognito: true});
                         });
                     }else{
-                        chrome.tabs.create({url: url},(tab) => {
-                            this.createOrAddToTabGroup(tab, alias);
+                        const current = await chrome.windows.getCurrent();
+                        chrome.tabs.create({url: url,windowId:current.id},(tab) => {
+                            this.createOrAddToTabGroup(tab, alias,current.id);
                         });
                         
                     }
@@ -324,8 +325,8 @@ export default class App extends FeatureElement {
         }
     };
 
-    createOrAddToTabGroup = (tab, groupName) =>{
-        chrome.tabGroups.query({}, (groups) => {
+    createOrAddToTabGroup = (tab, groupName,windowId) =>{
+        chrome.tabGroups.query({windowId:windowId}, (groups) => {
             let group = groups.find(g => g.title === groupName);
         
             if (group) {

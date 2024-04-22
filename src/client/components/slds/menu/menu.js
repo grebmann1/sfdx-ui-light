@@ -13,13 +13,19 @@ export default class Menu extends FeatureElement {
     @api hideSearch = false;
     @api level;
     @api highlight; // Like filtering but only highlighting the record
+
+    // Filter
     filter;
+    @api keepFilter = false;
+    // Scrolling
+    pageNumber = 1;
 
-    @api selectedItem;
-
+    
+    observer
     namespacePrefixes = [];
     namespaceFiltering_value = DEFAULT_NAMESPACE;
 
+    
     @track _items = [];
     @api
     get items(){
@@ -27,12 +33,26 @@ export default class Menu extends FeatureElement {
     }
     set items(value){
         this._items = (JSON.parse(JSON.stringify(value)));
-        this.filter = null; // reset;
         this.namespacePrefixes = this.extractNamespaces(this._items);
+        this.pageNumber = 1; // reset
+        if(!this.keepFilter){
+            this.filter = null; // reset;
+        }
     }
+    @api selectedItem;
 
 
     /** Events **/
+
+    handleScroll(event) {
+        const target = event.target;
+        const isScrolledToBottom = target.scrollHeight - target.scrollTop === target.clientHeight;
+        if (isScrolledToBottom) {
+            // Fetch more data when user scrolls to the bottom
+            this.pageNumber++;
+        }
+    }
+    
     
     namespaceFiltering_handleChange = (e) => {
         this.namespaceFiltering_value = e.detail.value;
@@ -41,7 +61,7 @@ export default class Menu extends FeatureElement {
     handleSearch = (e) => {
         runActionAfterTimeOut(e.detail.value,(newValue) => {
             this.filter = newValue;
-        });
+        },1000);
     }
 
     handleSelection = (e) => {
@@ -65,6 +85,7 @@ export default class Menu extends FeatureElement {
     }
 
     /** Methods **/
+
 
     extractNamespaces = (value) => {
         const result = new Set(['All']);
@@ -99,6 +120,11 @@ export default class Menu extends FeatureElement {
     get namespaceFiltered(){
         if(this.namespaceFiltering_value == ALL_NAMESPACE || isEmpty(this.namespaceFiltering_value)) return this.items;
         return this.items.filter(x => isEmpty(x.NamespacePrefix) && this.namespaceFiltering_value === DEFAULT_NAMESPACE || this.namespaceFiltering_value === x.NamespacePrefix);
+    }
+
+    get virtualList(){
+        // Best UX Improvement !!!!
+        return this.filteredList.slice(0,this.pageNumber * 100);
     }
     
     get filteredList(){

@@ -36,7 +36,7 @@ export default class Header extends LightningElement {
                 detail:{ value:newValue },
                 bubbles: true 
             }));
-        });
+        },1000);
     }
 
     redirectToWebsite = () => {

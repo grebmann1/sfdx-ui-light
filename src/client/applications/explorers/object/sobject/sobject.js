@@ -47,6 +47,7 @@ export default class Sobject extends FeatureElement {
     
     goToUrl = (e) => {
         const redirectUrl = e.currentTarget.dataset.url;
+        console.log('redirectUrl',redirectUrl);
         store.dispatch(store_application.navigate(redirectUrl));
     }
     
@@ -294,7 +295,7 @@ export default class Sobject extends FeatureElement {
         return `/lightning/setup/ObjectManager/${this.selectedDetails.name}/RecordTypes/view`;
     }
 
-    get setupurl(){
+    get setupUrl(){
         return `/lightning/setup/ObjectManager/${this.selectedDetails.name}/Details/view`;
     }
     

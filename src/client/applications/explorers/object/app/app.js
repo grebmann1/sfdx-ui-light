@@ -33,15 +33,19 @@ export default class App extends FeatureElement {
     records = [];
     filteredRecords = [];
     menuRecords = [];
+    @track formattedMenuItems = [];
 
+    // Filter
     typeFilter_value = []; // by default
     metadataFilter_value = [];
+    keepFilter = false;
+
 
     _pageRef;
     @wire(CurrentPageReference)
     handleNavigation(pageRef){
         if(isUndefinedOrNull(pageRef)) return;
-        if(JSON.stringify(this._pageRef) == JSON.stringify(pageRef)) return;
+        //if(JSON.stringify(this._pageRef) == JSON.stringify(pageRef)) return;
        
         if(pageRef?.attributes?.applicationName == 'sobject'){
             this._pageRef = pageRef;
@@ -104,13 +108,15 @@ export default class App extends FeatureElement {
     
 
     loadFromNavigation = async ({state, attributes}) => {
+        this.keepFilter = false;
         const {applicationName,attribute1}  = attributes;
         if(applicationName != 'sobject') return; // Only for sobject
 
         if(attribute1){
+            this.keepFilter = true;
             this.selectedItem = attribute1;
         }
-        
+        this.setFormattedMenuItems();
     }
 
     extractCategory = (item) => {
@@ -135,6 +141,7 @@ export default class App extends FeatureElement {
 
     loadAlls = async () => {
         await this.describeAll();
+        this.setFormattedMenuItems();
     }
 
     load_toolingGlobal = async () => {
@@ -163,17 +170,16 @@ export default class App extends FeatureElement {
         }
     }
 
-
-    /** Getters */
-
-    get formattedMenuItems(){
-        return this.filteredRecords.map(x => ({
+    setFormattedMenuItems = () => {
+        this.formattedMenuItems = this.filteredRecords.map(x => ({
             label:`${x.label}(${x.name})`, // for slds-menu
             name:x.name, // for slds-menu
             key:x.name, // for slds-menu
             isSelected:this.selectedItem == x.name
-        })).sort((a, b) => a.name.localeCompare(b.name));;
+        })).sort((a, b) => a.name.localeCompare(b.name));
     }
+
+    /** Getters */
 
     get typeFilter_options(){
         return TYPEFILTER_OPTIONS;

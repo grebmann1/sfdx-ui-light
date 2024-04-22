@@ -26,8 +26,8 @@ export default class App extends FeatureElement {
     isEditorDisplayed = false;
 
     // Filters
-    metadataFilter;
-    metadataTypeFilter;
+    @track menuItems = [];
+    keepFilter = false;
 
     currentMetadata;
     param1;
@@ -44,7 +44,7 @@ export default class App extends FeatureElement {
     @wire(CurrentPageReference)
     handleNavigation(pageRef){
         if(isUndefinedOrNull(pageRef)) return;
-        if(JSON.stringify(this._pageRef) == JSON.stringify(pageRef)) return;
+        //if(JSON.stringify(this._pageRef) == JSON.stringify(pageRef)) return;
         
         if(pageRef?.attributes?.applicationName == 'metadata'){
             this._pageRef = pageRef;
@@ -58,6 +58,7 @@ export default class App extends FeatureElement {
         if(applicationName != 'metadata') return; // Only for metadata
 
         this.isNoRecord = false;
+
         const exceptionMetadata = attribute1?this.exceptionMetadataList.find(x => x.name === attribute1):null;
         if(attribute1 && this.currentMetadata != attribute1){
             // Metadata
@@ -71,7 +72,7 @@ export default class App extends FeatureElement {
         }
 
         if(param1 && this.param1 != param1){
-            console.log('param1');
+            this.keepFilter = true; // Avoid menu search refresh !
             this.param1 = param1;
             this.label1 = label1;
             //this.selectedRecordLoading = true;
@@ -93,12 +94,13 @@ export default class App extends FeatureElement {
         }
 
         if(param2 && this.param2 != param2){
-            console.log('param2');
             this.param2 = param2;
             this.label2 = label2;
             await this.load_specificMetadataRecord(this.param2);
             //this.currentLevel = 2;
         }
+        // At the end to avoid multiple refresh
+        this.setMenuItems();
     }
 
 
@@ -115,6 +117,9 @@ export default class App extends FeatureElement {
             case 0:
                 // Metadata Type selection
                 //this.load_specificMetadata({name,label});
+                this.currentMetadata = null;
+                this.param1 = null;
+                this.param2 = null;
                 this.currentLevel = 1;
                 navigate(this.navContext,{type:'application',attributes:{
                     applicationName:'metadata',
@@ -125,7 +130,8 @@ export default class App extends FeatureElement {
                 // Metadata Record selection
                 this.selectedRecord = null;
                 this.selectedRecordLoading = true;
-
+                this.param1 = null;
+                this.param2 = null;
                 navigate(this.navContext,{type:'application',
                     attributes:{
                         applicationName:'metadata',
@@ -140,7 +146,7 @@ export default class App extends FeatureElement {
                 //this.currentLevel = 2; // Only for the flows
             break;
             case 2:
-
+                this.param2 = null;
                 navigate(this.navContext,{type:'application',
                     attributes:{
                         applicationName:'metadata',
@@ -159,6 +165,7 @@ export default class App extends FeatureElement {
     }
 
     handleMenuBack = () => {
+        this.keepFilter = false;
         this.hideEditor();
         this.hideJsonViewer();
         this.selectedRecord = null;
@@ -172,6 +179,7 @@ export default class App extends FeatureElement {
         this.metadata = this.metadata.slice(0,this.currentLevel+1);
         
         if(this.currentLevel == 2){
+            this.param2 = null;
             navigate(this.navContext,{type:'application',attributes:{
                 applicationName:'metadata',
                 attribute1:this.currentMetadata,
@@ -181,11 +189,16 @@ export default class App extends FeatureElement {
                 }
             }});
         }else if(this.currentLevel == 1){
+            this.param1 = null;
+            this.param2 = null;
             navigate(this.navContext,{type:'application',attributes:{
                 applicationName:'metadata',
                 attribute1:this.currentMetadata,
             }});
         }else if(this.currentLevel == 0){
+            this.currentMetadata = null;
+            this.param1 = null;
+            this.param2 = null;
             navigate(this.navContext,{type:'application',attributes:{
                 applicationName:'metadata'
             }});
@@ -229,7 +242,7 @@ export default class App extends FeatureElement {
         const fields = [].concat(metadataConfig.fields.map(x => x.name).filter(x => ['Id','Name','DeveloperName','MasterLabel','NamespacePrefix'].includes(x)),queryFields);
         try{
             let queryExec = this.connector.conn.tooling.query(`SELECT ${fields.join(',')} FROM ${queryObject} ${filterFunc(recordId)}`);
-            let result = (await queryExec.run({ responseTarget:'records',autoFetch : true, maxFetch : 10000 })).records || [];
+            let result = (await queryExec.run({ responseTarget:'Records',autoFetch : true, maxFetch : 10000 })) || [];
                 result = result.filter(x => manualFilter(x))
             
                 result = result.map(x => {
@@ -261,7 +274,7 @@ export default class App extends FeatureElement {
         const fields = metadataConfig.fields.map(x => x.name).filter(x => ['Id','Name','DeveloperName','MasterLabel','NamespacePrefix'].includes(x));
         try{
             let queryExec = this.connector.conn.tooling.query(`SELECT ${fields.join(',')} FROM ${name}`);
-            let result = (await queryExec.run({ responseTarget:'records',autoFetch : true, maxFetch : 10000 })).records || [];
+            let result = (await queryExec.run({ responseTarget:'Records',autoFetch : true, maxFetch : 10000 })) || [];
                 result = result.map(x => {
                     const _tempName = this.formatName(x);
                     return {
@@ -421,6 +434,17 @@ export default class App extends FeatureElement {
         }
     }
 
+    setMenuItems = () => {
+        if(this.metadata.length == 0){
+            this.menuItems = [];
+        }else{
+            this.menuItems = this.metadata[this.metadata.length - 1].records.map(x => ({
+                ...x,
+                isSelected:this.selectedItem == x.key
+            }));
+        }
+    }
+
 
     /** Getters */
 
@@ -511,13 +535,13 @@ export default class App extends FeatureElement {
         return `This record wasn't found in your metadata.`;
     }
     
-    get menuItems(){
+    /*get menuItems(){
         if(this.metadata.length == 0) return [];
         return this.metadata[this.metadata.length - 1].records.map(x => ({
             ...x,
             isSelected:this.selectedItem == x.key
         }));
-    }
+    }*/
 
     get selectedItem(){
         if(this.currentLevel == 2){
