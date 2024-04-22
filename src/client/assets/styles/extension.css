@@ -195,3 +195,10 @@ doc-app .full-page-body.slds-m-top_small{
 .back-button  lightning-primitive-icon {
     display: flex;
 }
+
+.slds-fill-height{
+    /*height: calc(100% - 120px);*/
+    position: relative;
+    flex-grow: 1;
+    overflow: auto;
+}

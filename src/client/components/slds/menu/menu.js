@@ -45,6 +45,7 @@ export default class Menu extends FeatureElement {
     /** Events **/
 
     handleScroll(event) {
+        console.log('handleScroll');
         const target = event.target;
         const isScrolledToBottom = target.scrollHeight - target.scrollTop === target.clientHeight;
         if (isScrolledToBottom) {
