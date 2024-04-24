@@ -4,18 +4,46 @@
         <!-- Header -->
         <div class="slds-p-vertical_x-small slds-p-horizontal_small slds-shrink-none">
             <template lwc:if={isRecordIdAvailable}>
-                
-                <!-- Object Info -->
-                <nav role="navigation" aria-label="Breadcrumbs">
-                    <ol class="slds-breadcrumb slds-list_horizontal slds-wrap">
-                        <li class="slds-breadcrumb__item">
-                            <span>SObject</span>
-                        </li>
-                        <li class="slds-breadcrumb__item">
-                            <span>{sobjectName}</span>
-                        </li>
-                    </ol>
-                </nav>
+                <!-- After loading -->
+                <template lwc:if={hasLoaded}>
+                    <!-- Object Info -->
+                    <nav role="navigation" aria-label="Breadcrumbs">
+                        <ol class="slds-breadcrumb slds-list_horizontal slds-wrap">
+                            <li class="slds-breadcrumb__item">
+                                <span>SObject</span>
+                            </li>
+                            <li class="slds-breadcrumb__item">
+                                <a href={objectListLink}>{label}</a>
+                            </li>
+                        </ol>
+                    </nav>
+                    <!-- Quick Links & Info -->
+                    <dl class="slds-list_horizontal slds-wrap">
+                        <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Record Id">
+                            Record Id
+                        </dt>
+                        <dd class="slds-item_detail slds-truncate">
+                            {keyPrefix} / {recordId} <lightning-button-icon
+                                onclick={handleCopyId}
+                                icon-name="utility:copy"
+                                variant="bare"
+                                alternative-text="copy"
+                            ></lightning-button-icon>
+                        </dd>
+                        <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Links">
+                        Links
+                        </dt>
+                        <dd class="slds-item_detail slds-truncate">
+                            <a href={objectSetupLink} target="_blank">Setup</a> / <a href={objectFieldsSetupLink} target="_blank">Fields</a> / <a href={recordTypesLink} target="_blank">Records Types</a> / <a href={objectListLink} target="_blank">List</a>
+                        </dd>
+                        <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Documentation">
+                            Documentation
+                        </dt>
+                        <dd class="slds-item_detail slds-truncate">
+                            <a href={objectDocLink} target="_blank" onclick={redirectDoc}>{docLinkTitle}</a>
+                        </dd>
+                    </dl>
+                </template>
             </template>
             <template lwc:else>
                 <!-- Place Holder -->
@@ -23,13 +51,36 @@
             </template>
         </div>
         <!-- Table -->
-        <div class="full-page-body">
+        <div class="full-page-body tableFixHead" onscroll={handleScroll}>
             <template lwc:if={isLoading}>
                 <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
                     <slds-spinner alternative-text="Loading" size="small" message="Fetching data from Salesforce"></slds-spinner>
                 </div>
             </template>
-            <div lwc:dom="manual" class="custom-table"></div>
+            <!--<div lwc:dom="manual" class="custom-table"></div>-->
+            <table role="grid" class="slds-table slds-table_cell slds-table_fixed-layout slds-table_bordered slds-table_resizable-cols slds-no-row-hover" id="data-table">
+                <thead>
+                    <tr class="slds-line-height_reset head">
+                        <th aria-label="Name" aria-sort="none" class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col" id='leftColumn' draggable="false">
+                            <div class="slds-th__action slds-text-link_reset">
+                                <span class="slds-truncate" title="Name">Field</span>
+                            </div>
+                        </th>
+                        <th aria-label="Product Code" aria-sort="none" class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
+                            <div class="slds-th__action slds-text-link_reset">
+                                <span class="slds-truncate" title="Product Code">Value</span>
+                            </div>
+                        </th>
+                        <th aria-label="" aria-sort="none" class="" scope="col" style="width:30px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="data-toDisplay" class="slds-scrollable_y" >
+                    <!-- DATA are going here -->
+                    <template for:each={virtualList} for:item="item">
+                        <extension-record-explorer-row key={item.name} item={item} filter={filter} current-origin={currentOrigin}></extension-record-explorer-row>
+                    </template>
+                </tbody>
+            </table>
         </div>
         
     </div>

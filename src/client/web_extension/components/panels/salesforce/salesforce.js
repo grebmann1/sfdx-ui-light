@@ -1,4 +1,5 @@
 import { LightningElement,api} from "lwc";
+import { connectStore,store,store_application } from 'shared/store';
 import { isUndefinedOrNull,isNotUndefinedOrNull,isEmpty,normalizeString as normalize} from "shared/utils";
 import { PANELS } from 'extension/utils';
 import { getCurrentTab } from 'connection/utils';
@@ -76,17 +77,25 @@ export default class Salesforce extends LightningElement {
     }
 
     openDefaultPanel = () => {
-        this.dispatchEvent(new CustomEvent("changepanel", { detail:{
+        const params = {
+            type:'application',
+            attributes:{
+                applicationName:'home',
+            },state:{}
+        };
+
+        store.dispatch(store_application.fakeNavigate(params));
+        /*this.dispatchEvent(new CustomEvent("changepanel", { detail:{
             panel:PANELS.DEFAULT,
             isBackButtonDisplayed:true
-        },bubbles: true,composed: true}));
+        },bubbles: true,composed: true}));*/
     }
 
     /** Methods **/
 
     handleSearchRecordExplorer = (value) => {
         if(this.refs.recordexplorer){
-            this.refs.recordexplorer.updateTable(value);
+            this.refs.recordexplorer.updateFilter(value);
         }
     }
 

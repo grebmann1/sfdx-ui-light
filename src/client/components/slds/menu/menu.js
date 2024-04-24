@@ -4,7 +4,7 @@ import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeO
 
 const DEFAULT_NAMESPACE = 'Default';
 const ALL_NAMESPACE     = 'All';
-
+const PAGE_LIST_SIZE    = 70;
 export default class Menu extends FeatureElement {
     _isRendered = true;
     @api title;
@@ -126,7 +126,7 @@ export default class Menu extends FeatureElement {
 
     get virtualList(){
         // Best UX Improvement !!!!
-        return this.filteredList.slice(0,this.pageNumber * 100);
+        return this.filteredList.slice(0,this.pageNumber * PAGE_LIST_SIZE);
     }
     
     get filteredList(){

@@ -1,4 +1,5 @@
-import { LightningElement,api} from "lwc";
+import { LightningElement,api,wire} from "lwc";
+import { connectStore,store,store_application } from 'shared/store';
 import { isUndefinedOrNull,isNotUndefinedOrNull,normalizeString as normalize} from "shared/utils";
 import { getCurrentTab } from 'connection/utils';
 import Toast from 'lightning/toast';
@@ -15,6 +16,15 @@ export default class Default extends LightningElement {
     @api currentApplication = APPLICATIONS.CONNECTION;
     @api isBackButtonDisplayed = false;
 
+
+    @wire(connectStore, { store })
+    applicationChange({application}) {
+        if(application?.type === 'FAKE_NAVIGATE'){
+            const pageRef = application.target;
+            this.loadFromNavigation(pageRef);
+        }
+        console.log('application in default',application)
+    }
 
 
     connectedCallback(){
@@ -59,6 +69,18 @@ export default class Default extends LightningElement {
     }
 
     /** Methods **/
+
+    loadFromNavigation = async ({state, attributes}) => {
+        //('documentation - loadFromNavigation');
+        const {applicationName,attribute1}  = attributes;
+        //console.log('applicationName',applicationName);
+        if(applicationName == 'documentation'){
+            this.currentApplication = APPLICATIONS.DOCUMENTATION;
+        }else if(applicationName == 'home'){
+            this.currentApplication = APPLICATIONS.CONNECTION;
+        }
+        
+    }
 
     handleSearchConnection = (value) => {
         if(this.refs.connection){

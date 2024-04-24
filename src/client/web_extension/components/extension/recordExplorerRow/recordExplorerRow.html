@@ -1,0 +1,19 @@
+<template>
+    <tr style="height: 0;">
+        <td lwc:ref="field" lwc:dom="manual" class="cell-field slds-cell-wrap"></td>
+        <td class="cell-value slds-cell-wrap">
+            <!-- Value -->
+            <span lwc:ref="value" lwc:dom="manual"></span>
+        </td>
+        <td class="cell-action slds-cell-wrap">
+            <template lwc:if={isCopyDisplayed}>
+                <lightning-button-icon
+                    onclick={handleCopy}
+                    icon-name="utility:copy"
+                    variant="bare"
+                    alternative-text="copy"
+                ></lightning-button-icon>
+            </template>
+        </td>
+    </tr>
+</template>

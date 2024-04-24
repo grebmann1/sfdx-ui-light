@@ -1,10 +1,14 @@
-import { createElement,api} from "lwc";
+import { createElement,api,track} from "lwc";
 import FeatureElement from 'element/featureElement';
+import { connectStore,store,store_application } from 'shared/store';
 
-import {TabulatorFull as Tabulator} from "tabulator-tables";
-import {runActionAfterTimeOut,isEmpty,isNotUndefinedOrNull} from 'shared/utils';
-import { getCurrentTab,getCurrentObjectType,fetch_data,fetch_metadata} from "extension/utils";
-import RecordExplorerCell from 'extension/recordExplorerCell';
+import {runActionAfterTimeOut,isEmpty,isNotUndefinedOrNull,isUndefinedOrNull} from 'shared/utils';
+import { getCurrentTab,getCurrentObjectType,fetch_data,fetch_metadata,
+    getObjectSetupLink,getObjectFieldsSetupLink,getRecordTypesLink,getObjectListLink,getObjectDocLink
+} from "extension/utils";
+
+const PAGE_LIST_SIZE    = 70;
+const TOOLING = 'tooling';
 
 export default class RecordExplorer extends FeatureElement {
 
@@ -19,13 +23,16 @@ export default class RecordExplorer extends FeatureElement {
 
     // record data
     sobjectName;
-    metadata;
+    @track metadata;
     record;
     // for table
     data;
     filter = '';
     isError = false;
 
+    // Scrolling
+    pageNumber = 1;
+    //entities = new Map();
 
     @api
     get recordId(){
@@ -42,7 +49,40 @@ export default class RecordExplorer extends FeatureElement {
     
 
 
-    connectedCallback(){}
+    connectedCallback(){
+        // Load metadata
+        //this.getObjects(this.connector.conn,'standard');
+        //this.getObjects(this.connector.conn.tooling,'tooling');
+    }
+    /*
+    addEntity = ({entity,api}) => {
+        let item = this.entities.get(entity.name);
+        if(item){
+            if(!item.keyPrefix){ 
+                item.keyPrefix = entity.keyPrefix;
+            }
+        }else{
+            item = entity;
+            item.availableApis = [];
+        }
+        if (api) {
+            item.availableApis.push(api);
+            if (entity.keyPrefix) {
+                item.availableKeyPrefix = entity.keyPrefix;
+            }
+        }
+        this.entities.set(item.name,item);
+    }
+    
+    getObjects = (connector,api) =>{
+        return connector.describeGlobal().then(describe => {
+            for (let entity of describe.sobjects) {
+                this.addEntity({entity,api})
+            }
+        }).catch(err => {
+          console.error("list " + api + " sobjects", err);
+        });
+    }*/
 
     initRecordExplorer = async () => {
         console.log('initRecordExplorer');
@@ -56,15 +96,21 @@ export default class RecordExplorer extends FeatureElement {
             this.sobjectName = await getCurrentObjectType(this.connector.conn,this.recordId);
             // Get Metadata (Step 3) // Should be optimized to save 1 API Call [Caching]
             this.metadata = await fetch_metadata(this.connector.conn,this.sobjectName);
+            if(isUndefinedOrNull(this.metadata)){
+                // Trying with tooling API
+                this.metadata = await fetch_metadata(this.connector.conn.tooling,this.sobjectName);
+                if(isNotUndefinedOrNull(this.metadata)){
+                    this.metadata._useToolingApi = true;
+                }
+            }
             // Get data
-            this.record = await fetch_data(this.connector.conn,this.sobjectName,this.recordId);
-
-
-            this.data = this.formatData();
-            runActionAfterTimeOut(null,(param) => {
-                this.createTable();
-                this.isLoading = false;
-            });
+            if(isNotUndefinedOrNull(this.metadata)){
+                const _connector = this.metadata?._useToolingApi?this.connector.conn.tooling:this.connector.conn;
+                this.record = await fetch_data(_connector,this.sobjectName,this.recordId);
+                this.data = this.formatData();
+            }
+            
+            this.isLoading = false;
         }catch(e){
             console.error(e);
             this.isError = true;
@@ -82,43 +128,12 @@ export default class RecordExplorer extends FeatureElement {
         }).sort((a, b) => a.label.localeCompare(b.label));
     }
 
-    formatterField = (cell,formatterParams,onRendered) => {
-        let field = cell._cell.value;
-        if(isEmpty(this.filter)){
-            return field;
-        }
-        
-        var regex = new RegExp('('+this.filter+')','gi');
-        if(regex.test(field)){
-            return field.toString().replace(/<?>?/,'').replace(regex,'<span style="font-weight:Bold; color:blue;">$1</span>');
-        }else{
-            return field;
-        }
-    }
 
-    formatterValue = (cell, formatterParams, onRendered) => {
-        console.log('cell',cell,cell.getData())
-        let data = cell.getData();
-        const element = createElement('extension-record-explorer-cell', {
-            is: RecordExplorerCell
-        });
-        Object.assign(element, {
-            ...data,
-            ...{
-                filter:this.filter,
-                currentOrigin:this.currentOrigin
-            }
-        });
-        return element;
-        
-        //return "Mr" + cell.getValue(); //return the contents of the cell;
-    }
 
-    handleSearchInput = (e) => {
-        let val = e.currentTarget.value;
-        runActionAfterTimeOut(val,(newValue) => {
-            this.updateTable(newValue);
-        });
+    @api
+    updateFilter = (value) => {
+        this.filter = value;
+        this.pageNumber = 1; // reset
     }
 
     filtering = (arr) => {
@@ -145,71 +160,93 @@ export default class RecordExplorer extends FeatureElement {
        return items;
     }
 
-    @api
-    updateTable = (newValue) => {
-        this.filter = newValue;
-        this.tableInstance.replaceData(this.formattedData)
-        .then(function(){
-            //run code after table has been successfully updated
-        })
-        .catch(function(error){
-            console.error(error);
-        });
+    
+
+
+    /** Events **/
+
+    handleScroll(event) {
+        //console.log('handleScroll');
+        const target = event.target;
+        const scrollDiff = Math.abs(target.clientHeight - (target.scrollHeight - target.scrollTop));
+        const isScrolledToBottom = scrollDiff < 5; //5px of buffer
+        if (isScrolledToBottom) {
+            // Fetch more data when user scrolls to the bottom
+            this.pageNumber++;
+        }
     }
 
+    handleCopyId = () => {
+        navigator.clipboard.writeText(this.recordId);
+    }
 
-    createTable = () => {
-
-        let colModel = [
-            { title: 'Field Label'  , field: 'label'    ,   headerHozAlign: "center", resizable: true ,formatter:this.formatterField,responsive:1,width:150},
-            { title: 'ApiName'      , field: 'name'     ,   headerHozAlign: "center", resizable: true ,formatter:this.formatterField,responsive:0,width:150,
-                tooltip:(e, cell, onRendered) => {
-                    //e - mouseover event
-                    //cell - cell component
-                    //onRendered - onRendered callback registration function
-                    let metadata = this.metadata.fields.find(x => x.name === cell.getValue());
-                    return `Type: ${metadata.type}`;
-                }
+    redirectDoc = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const params = {
+            type:'application',
+            attributes:{
+                applicationName:'documentation',
+                attribute1:this.isUsingToolingApi?'atlas.en-us.api_tooling.meta':'atlas.en-us.object_reference.meta'
             },
-            { title: 'Value'        , field: 'value'    ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterValue,}
-        ];
-
-        if (this.tableInstance) {
-			this.tableInstance.destroy();
-		}
-
-		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
-			height: '100%',
-			data: this.formattedData,
-            layout:"fitDataFill",
-            responsiveLayout:"collapse",
-            rowHeader:{formatter:"responsiveCollapse", width:30, minWidth:30, hozAlign:"center", resizable:false, headerSort:false},
-			//layout:"fitColumns",
-			columns: colModel,
-			columnHeaderVertAlign: "middle",
-            resizableColumnFit:true,
-            downloadConfig:{
-                rowGroups:false, //do not include row groups in downloaded table
-            },
-            responsiveLayoutCollapseFormatter:function(data){
-                //data - an array of objects containing the column title and value for each cell
-                var list = document.createElement("ul");
-
-                data.forEach(function(col){
-                    let item = document.createElement("li");
-                    item.style = 'display: flex;width: 100%;flex-direction: row;justify-content: space-between;';
-                    item.innerHTML = "<strong>" + col.title + ":</strong>";
-                    item.appendChild(col.value);
-                    list.appendChild(item);
-                });
-        
-                return Object.keys(data).length ? list : "";
+            state:{
+                name:this.isUsingToolingApi?`tooling_api_objects_${this.sobjectName.toLowerCase()}`:`sforce_api_objects_${this.sobjectName.toLowerCase()}`
             }
-		});
+        };
+
+        store.dispatch(store_application.fakeNavigate(params));
     }
 
 
     /** Getters */
+
+    get labelPlural(){
+        return this.metadata?.labelPlural;
+    }
+
+    get label(){
+        return this.metadata?.label;
+    }
+
+    get keyPrefix(){
+        return this.metadata?.keyPrefix;
+    }
+
+
+    get linkConfig(){
+        return {
+            host:this.currentOrigin,
+            sobjectName:this.sobjectName,
+            durableId:this.metadata?.durableId,
+            isCustomSetting:this.metadata?.IsCustomSetting,
+            keyPrefix:this.metadata?.keyPrefix
+        }
+    }
+
+    get objectSetupLink(){
+        return getObjectSetupLink(this.linkConfig);
+    }
+
+    get objectFieldsSetupLink(){
+        return getObjectFieldsSetupLink(this.linkConfig);
+    }
+
+    get recordTypesLink(){
+        return getRecordTypesLink(this.linkConfig);
+    }
+
+    get objectListLink(){
+        return getObjectListLink(this.linkConfig);
+    }
+
+    get objectDocLink(){
+        return getObjectDocLink(this.sobjectName,this.isUsingToolingApi);
+    }
+
+    get virtualList(){
+        // Best UX Improvement !!!!
+        return this.formattedData.slice(0,this.pageNumber * PAGE_LIST_SIZE);
+    }
 
     get formattedData(){
         return this.filtering(this.data);
@@ -224,6 +261,18 @@ export default class RecordExplorer extends FeatureElement {
             label:x.label,
             value:x.version
         }));
+    }
+
+    get hasLoaded(){
+        return !this.isLoading;
+    }
+
+    get isUsingToolingApi(){
+        return this.metadata?._useToolingApi;
+    }
+
+    get docLinkTitle(){
+        return this.metadata?._useToolingApi ?'Tooling':'Standard';
     }
 
 }

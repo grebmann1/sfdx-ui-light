@@ -1,4 +1,5 @@
-import { LightningElement,api} from "lwc";
+import { LightningElement,api,wire} from "lwc";
+import { connectStore,store,store_application } from 'shared/store';
 import { isUndefinedOrNull,isNotUndefinedOrNull,normalizeString as normalize} from "shared/utils";
 import { PANELS } from 'extension/utils';
 
@@ -15,6 +16,15 @@ export default class Side extends LightningElement {
     previousPanel;
     isBackButtonDisplayed = false;
 
+    @wire(connectStore, { store })
+    applicationChange({application}) {
+        if(application?.type === 'FAKE_NAVIGATE'){
+            const pageRef = application.target;
+            this.loadFromNavigation(pageRef);
+        }
+        console.log('application',application)
+    }
+
     connectedCallback(){
         this.panel = this.defaultPanel;
     }
@@ -23,20 +33,35 @@ export default class Side extends LightningElement {
     /** Events **/
 
     handlePanelChange = (e) => {
-        this.previousPanel = this.panel;
+        //this.previousPanel = this.panel;
         this.panel = e.detail.panel;
         this.isBackButtonDisplayed = e.detail.isBackButtonDisplayed;
     }
 
     handleGoBack = () => {
         console.log('handleGoBack');
-        this.panel = this.previousPanel;
+        //this.panel = this.previousPanel;
+        this.panel = PANELS.SALESFORCE; // For now only salesforce is returned with go back, In the futur, store the navigation events to go back !
         this.isBackButtonDisplayed = false;
-        this.previousPanel = null;
+        //this.previousPanel = null;
     }
 
     /** Methods **/
 
+    loadFromNavigation = async ({state, attributes}) => {
+        //('documentation - loadFromNavigation');
+        const {applicationName,attribute1}  = attributes;
+        console.log('applicationName',applicationName);
+        if(applicationName == 'documentation' || applicationName == 'home'){
+            this.handlePanelChange({
+                detail:{
+                    panel:PANELS.DEFAULT,
+                    isBackButtonDisplayed:true
+                }
+            })
+        }
+        
+    }
 
     /** Getters **/
 
@@ -53,6 +78,14 @@ export default class Side extends LightningElement {
 
     get isSalesforcePanel(){
         return this.panel == PANELS.SALESFORCE;
+    }
+
+    get salesforcePanelClass(){
+        return this.isSalesforcePanel ? '':'slds-hide';
+    }
+
+    get defaultPanelClass(){
+        return this.isSalesforcePanel ? 'slds-hide':'';
     }
 
   
