@@ -45,9 +45,10 @@ export default class Menu extends FeatureElement {
     /** Events **/
 
     handleScroll(event) {
-        console.log('handleScroll');
+        //console.log('handleScroll');
         const target = event.target;
-        const isScrolledToBottom = target.scrollHeight - target.scrollTop === target.clientHeight;
+        const scrollDiff = Math.abs(target.clientHeight - (target.scrollHeight - target.scrollTop));
+        const isScrolledToBottom = scrollDiff < 5; //5px of buffer
         if (isScrolledToBottom) {
             // Fetch more data when user scrolls to the bottom
             this.pageNumber++;
