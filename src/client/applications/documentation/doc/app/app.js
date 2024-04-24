@@ -559,7 +559,7 @@ export default class App extends FeatureElement {
     get articleContainerClass(){
         return classSet('full-page slds-card slds-col')
         .add({
-            'slds-m-top_small':!this.isResponsive,
+            //'slds-m-top_small':!this.isResponsive,
             'slds-25-width':this.displayFilter && this.isResponsive,
             'slds-100-width':!this.isResponsive || !this.displayFilter
             //'slds-scrollable_y':this.isResponsive
