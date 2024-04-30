@@ -55,4 +55,3 @@ window.extension_initLwc = async (variant) => {
     });
     document.body.appendChild(elm);
 }
-

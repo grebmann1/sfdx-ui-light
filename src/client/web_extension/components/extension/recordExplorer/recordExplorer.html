@@ -7,6 +7,7 @@
                 <!-- After loading -->
                 <template lwc:if={hasLoaded}>
                     <!-- Object Info -->
+                    <!--
                     <nav role="navigation" aria-label="Breadcrumbs">
                         <ol class="slds-breadcrumb slds-list_horizontal slds-wrap">
                             <li class="slds-breadcrumb__item">
@@ -17,8 +18,15 @@
                             </li>
                         </ol>
                     </nav>
+                    -->
                     <!-- Quick Links & Info -->
                     <dl class="slds-list_horizontal slds-wrap">
+                        <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Record Id">
+                            SObject
+                        </dt>
+                        <dd class="slds-item_detail slds-truncate">
+                            <a href={objectListLink}>{label}</a>
+                        </dd>
                         <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Record Id">
                             Record Id
                         </dt>

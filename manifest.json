@@ -25,15 +25,20 @@
     "web_accessible_resources": [
         {
             "matches": [
-                "https://*/*",
-                "http://*/*"
+                "<all_urls>"
             ],
             "resources": [
                 "index.html*",
-                "callback.html*"
+                "callback.html*",
+                "openai/index.js",
+                "workers/openaiWorker/worker.js"
             ]
         }
     ],
+    "options_ui": {
+        "page": "views/options.html",
+        "open_in_tab": false
+    },
     "host_permissions": [
         "https://*/*",
         "*://*/*"

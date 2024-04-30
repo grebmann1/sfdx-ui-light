@@ -19,7 +19,6 @@ export default class Card extends FeatureElement {
 
     /** Methods **/
     initSettings = () => {
-        console.log('initSettings',this.configName);
         const _configText = localStorage.getItem(this.configName);
         this.config = defaultConfig;
         try{
@@ -29,7 +28,6 @@ export default class Card extends FeatureElement {
         }catch(e){
             console.error('Issue in card config !');
         }
-        console.log('this.config.isOpen',this.config.isOpen);
         // Process
         if(this.config.isOpen){
             this.isOpen = true;

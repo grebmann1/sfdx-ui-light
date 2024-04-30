@@ -48,6 +48,11 @@ export default class ChannelPanel extends FeatureElement {
 
 
     /** Methods  **/
+    @api
+    showSubscribedTab = () => {
+        if(!this.template.querySelector('lightning-tabset')) return;
+        this.template.querySelector('lightning-tabset').activeTabValue = 'Subscribed';
+    }
 
 
     /** Getters */

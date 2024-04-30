@@ -1,0 +1,9 @@
+:host{
+    display: block;
+    height: 100%;
+}
+
+
+.slds-tabs_scoped{
+    height:unset;
+}

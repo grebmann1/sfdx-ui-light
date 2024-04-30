@@ -1,5 +1,5 @@
 import { api,track,wire } from "lwc";
-import { decodeError,isNotUndefinedOrNull,isUndefinedOrNull,guid,isEmpty } from 'shared/utils';
+import { decodeError,isNotUndefinedOrNull,isUndefinedOrNull,guid,isEmpty,checkIfPresent } from 'shared/utils';
 import { PlatformEvent } from 'platformevent/utils';
 import { connectStore,store } from 'platformevent/store';
 
@@ -19,9 +19,11 @@ export default class App extends FeatureElement {
     // Apex
     apexScript = ''; // ='CCR_TaskNotification__e event = new CCR_TaskNotification__e();\n// Publish the event\nDatabase.SaveResult result = EventBus.publish(event);';
     isApexContainerDisplayed = false;
+    isManualChannelDisplayed = false;
     isApexRunning = false;
 
     @track subscribedChannels = [];
+    @track eventObjects = [];
 
 
     /** */
@@ -29,6 +31,10 @@ export default class App extends FeatureElement {
     @track selectedChannel; //new PlatformEvent({name:'CCR_TaskNotification__e'});
     @track selectedEventItem;// = this.messagesDisplayed[0];
 
+
+    /** Lookup */
+    @track lookup_selectedEvents = [];
+    @track lookup_errors = [];
 
     @wire(connectStore, { store })
     storeChange({ channel }) {
@@ -40,6 +46,7 @@ export default class App extends FeatureElement {
 
     connectedCallback(){
         this.loadCache();
+        this.describeAll();
         cometd.configure({
             url: `/cometd/${guid()}`,
             requestHeaders: {
@@ -93,8 +100,12 @@ export default class App extends FeatureElement {
         window.defaultStore.setItem(key,this.apexScript);
     }
 
-    handleToggleChange = (e) => {
+    handleApexToggleChange = (e) => {
         this.isApexContainerDisplayed = e.detail.checked;
+    }
+
+    handleManualChannelToggleChange = (e) => {
+        this.isManualChannelDisplayed = e.detail.checked;
     }
 
     handleChannelNameChange = (e) => {
@@ -128,9 +139,27 @@ export default class App extends FeatureElement {
     }
 
     subscribeChannel = (e) => {
+        const eventName = this.isManualChannelDisplayed?this.subscribe_manual():this.subscribe_lookup();
+        this.cometdSubscribe(eventName);
+        this.template.querySelector('platformevent-channel-panel').showSubscribedTab();
+    }
+
+    cometdSubscribe = (eventName) => {
+        const newEvent = this.newPlatformEvent(eventName);
+            newEvent.subscribe(cometd)
+        this.subscribedChannels.push(newEvent);
+        // Display new Channel
+        this.selectedChannel = newEvent; 
+        this.messagesDisplayed = newEvent.messages;
+        // Reset
+        this.channelName = null;
+        this.lookup_selectedEvents = [];
+    }
+
+    subscribe_manual = () => {
         const input = this.template.querySelector('.input-validate')
         if(this.subscribedChannels.map(x => x.name).includes(this.channelName)){
-            input.setCustomValidity('Already subscribed');
+            input.setCustomValidity('Already subscribed !');
             input.reportValidity();
             return;
         }else if(!this.channelName.startsWith('/')){
@@ -138,14 +167,19 @@ export default class App extends FeatureElement {
             input.reportValidity();
             return;
         }
-        const newEvent = this.newPlatformEvent();
-        newEvent.subscribe(cometd)
-        this.subscribedChannels.push(newEvent);
-        // Display new Channel
-        this.selectedChannel = newEvent; 
-        this.messagesDisplayed = newEvent.messages;
-        // Reset
-        this.channelName = null;
+    }
+
+    subscribe_lookup = () => {
+        if(this.lookup_selectedEvents.length == 0) return null;
+
+        const apiName = this.lookup_selectedEvents[0].id;
+        console.log('apiName',apiName);
+        const eventName = apiName.endsWith('__e')?`/event/${apiName}`:`/data/${apiName}`;
+        if(this.subscribedChannels.map(x => x.name).includes(eventName)){
+            this.lookup_errors.push({ message:"Already subscribed !"})
+        }
+
+        return eventName;
     }
 
     unsubscribeChannel = (e) => {}
@@ -153,7 +187,6 @@ export default class App extends FeatureElement {
     handleChannelSelection = (e) => {
         const name = e.detail.value;
         const _item = this.subscribedChannels.find(x => x.name == name);
-        console.log('_item',_item);
         if(_item){
             this.selectedChannel = _item;
             this.messagesDisplayed = _item.messages;
@@ -161,8 +194,10 @@ export default class App extends FeatureElement {
     }
 
     handleRecentChannelSelection = (e) => {
-        this.channelName = e.detail.value;
-        this.subscribeChannel();
+        const eventName = e.detail.value;
+        if(!this.subscribedChannels.map(x => x.name).includes(eventName)){
+            this.cometdSubscribe(eventName)
+        }
     }
 
     handleChannelDeletion = (e) => {
@@ -189,7 +224,44 @@ export default class App extends FeatureElement {
         });
     }
 
+    lookup_handleSearch = (e) => {
+        const lookupElement = e.target;
+        const keywords = e.detail.rawSearchTerm;
+        const results = this.eventObjects.filter(x => checkIfPresent(x.name,keywords)).map(x => this.formatForLookup(x.name));
+        lookupElement.setSearchResults(results);
+    }
+
+    lookup_handleSelectionChange = (e) => {
+        const selection = this.template.querySelector('slds-lookup').getSelection();
+        this.lookup_selectedEvents = selection;
+    }
+
+    
+
     /** Methods  **/
+
+    formatForLookup = (item) => {
+        return {
+            id: item,
+            title: item
+        };
+    }
+
+    load_toolingGlobal = async () => {
+        let result = await this.connector.conn.describeGlobal();
+        return result?.sobjects || [];
+    }
+
+    describeAll = async () => {
+        this.isLoading = true;
+        try{
+            const records = (await this.load_toolingGlobal()) || [];
+            this.eventObjects = records.filter(x => x.name.endsWith('ChangeEvent') || x.name.endsWith('__e'));
+        }catch(e){
+            console.error(e);
+        }
+        this.isLoading = false;
+    }
 
     loadCache = async () => {
         try{
@@ -203,9 +275,9 @@ export default class App extends FeatureElement {
         }
     }
 
-    newPlatformEvent = () => {
+    newPlatformEvent = (name) => {
         return new PlatformEvent({
-            name:this.channelName,
+            name,
             alias:this.connector.header.alias
         });
     }
@@ -217,7 +289,7 @@ export default class App extends FeatureElement {
     }
 
     get isSubscribeDisabled(){
-        return isUndefinedOrNull(this.channelName);
+        return isUndefinedOrNull(this.channelName) && (isUndefinedOrNull(this.lookup_selectedEvents) || this.lookup_selectedEvents.length == 0);
     }
 
     get isSelectedChannelDisplayed(){

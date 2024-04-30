@@ -1,3 +1,7 @@
+.slds-card{
+    height:-webkit-fill-available;
+}
+
 .slds-dl--horizontal__label,.slds-dl_horizontal__label{
     width:40% !important;
 }

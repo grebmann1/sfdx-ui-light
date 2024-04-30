@@ -35,7 +35,7 @@ export default class ConnectionNewModal extends LightningModal {
 
     /* Group variables */
     maxSelectionSize = 2;
-    @track selectedCategory = [];//[DEFAULT_CATEGORY];
+    @track selectedCategory = [DEFAULT_CATEGORY];
     errors = [];
     
     newRecordOptions = [

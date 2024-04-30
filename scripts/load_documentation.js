@@ -1,6 +1,11 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const fetch = require("node-fetch");
+const OpenAI = require('openai');
+const openai = new OpenAI({
+    apiKey: '##############################',
+});
+
 const CHUNK_SIZE = 50;
 
 const CONFIGURATION = {
@@ -75,7 +80,9 @@ fetchDocuments = async () => {
     var items = Object.keys(documentMapping)
     .reduce((acc,documentationId) => acc.concat(documentMapping[documentationId].items.map(x => ({...x,documentationId}))),[]);
     
-    loadAllDocuments(items);
+    //loadAllDocuments(items);
+    // Separate files
+    loadAllDocumentAsSeparateFile(items);
 }
 
 fetchDocuments_single = async (documentationId) => {
@@ -116,16 +123,16 @@ fetchContentDocument = async (documentationId,url) => {
     
 }
 
+ // Helper function to chunk the URL list
+ const chunkList = (list, size) => {
+    const chunks = [];
+    for (let i = 0; i < list.length; i += size) {
+        chunks.push(list.slice(i, i + size));
+    }
+    return chunks;
+};
 
 loadAllDocuments = async (items) => {
-    // Helper function to chunk the URL list
-    const chunkList = (list, size) => {
-        const chunks = [];
-        for (let i = 0; i < list.length; i += size) {
-            chunks.push(list.slice(i, i + size));
-        }
-        return chunks;
-    };
 
     // Chunk the URLs
     const itemChunks = chunkList(items.map(x => ({url:x.a_attr.href,...x})), CHUNK_SIZE);
@@ -149,4 +156,68 @@ loadAllDocuments = async (items) => {
     fs.writeFileSync(pathFile,JSON.stringify(formattedData), 'utf-8');
 }
 
+loadAllDocumentAsSeparateFile = async (items) => {
+
+    // Chunk the URLs
+    //const itemChunks = chunkList(items.map(x => ({url:x.a_attr.href,...x})), CHUNK_SIZE);
+    const vectorStore = await openai.beta.vectorStores.create({
+        name: "Salesforce Toolkit - Store"
+    });
+    // Process each items
+    const results = [];
+    for await (const x of items.map(x => ({url:x.a_attr.href,...x}))) {
+        const fileName = `./src/documentation/${version}/${x.url}.json`;
+        const fileExist = fs.existsSync(fileName);
+        if(!fileExist){
+            const data = await fetchContentDocument(x.documentationId,x.url);
+            if(data.content){
+                data.content = data.content.replaceAll('\n','').replaceAll('\"','').replaceAll('\t','');
+                fs.writeFileSync(fileName,JSON.stringify(data), 'utf-8');
+            }
+        }
+        //console.log('fileExist',fileExist)
+        if(!fs.existsSync(fileName)) return; // Double check as the content can be empty
+
+        const file = await openai.files.create({
+            file: fs.createReadStream(fileName),
+            purpose: "assistants",
+        });
+        console.log('file',file);
+        results.push(file);
+    }
+    console.log('results',results);
+    const fileChunks = chunkList(results, 500);
+    for await (const chunk of fileChunks) {
+        const myVectorStoreFileBatch = await openai.beta.vectorStores.fileBatches.create(vectorStore.id,{file_ids: chunk.map(x => x.id)});
+        
+        console.log('myVectorStoreFileBatch',myVectorStoreFileBatch);
+    }
+    
+    /*const myUpdatedAssistant = await openai.beta.assistants.update(
+        "asst_RpwCiurQtkfHYcO8IVeFBuIE",
+        {
+          tools: [{ type: "file_search" }],
+          tool_resources:{
+
+          }
+        }
+    );*/
+}
+
+fetchFilesAndAttachToVector = async () => {
+    const list = await openai.files.list();
+    console.log('Files to delete',list.data.length)
+    const fileChunks = chunkList(list.data, 5);
+
+    //let finalResult = [];
+    let counter = 0;
+    for await (const chunk of fileChunks) {
+        const promises = chunk.map(file => openai.files.del(file.id));
+        const results = await Promise.all(promises);
+        //finalResult = [].concat(finalResult,results);
+        counter += results.length;
+        console.log(`Proccessed : ${counter}/${list.data.length}`);
+    }
+}
+//fetchFilesAndAttachToVector();
 fetchDocuments();

@@ -5,11 +5,11 @@
             <template lwc:if={isDefaultMenu}>
                 <!-- Actions for record Explorer -->
                 <lightning-button-group slot="action">
-                    <lightning-button-icon icon-name="utility:builder" label="Toolkit" title="Open SF Toolkit" onclick={redirectToWebsite}></lightning-button-icon>
+                    <lightning-button-icon icon-name="utility:new_window" label="Toolkit" title="Open SF Toolkit" onclick={redirectToWebsite}></lightning-button-icon>
+                    <!--<lightning-button-icon icon-name="utility:einstein" title="Open Einstein" onclick={einsteinClick}></lightning-button-icon>-->
                     <lightning-button-icon icon-name="utility:apex" label="Apex" title="Open Anonymous Apex" onclick={redirectToAnonymousApex}></lightning-button-icon>
                     <lightning-button-icon icon-name="utility:database" label="SOQL" title="Open SOQL Builder" onclick={redirectToSoqlBuilder}></lightning-button-icon>
-                    <lightning-button-icon icon-name="utility:home" label="Home" title="Home" onclick={openDefaultPanel}></lightning-button-icon>
-                    <!--<lightning-button-icon icon-name="utility:toggle_panel_right" label="Advanced" title="Open Side Panel" onclick={openSidePanel}></lightning-button-icon>-->
+                    <lightning-button-icon icon-name="utility:threedots_vertical" label="App" title="See more Apps" onclick={openDefaultPanel}></lightning-button-icon>
                 </lightning-button-group>
             </template>
         </extension-header>
@@ -38,25 +38,31 @@
             </div>
             -->
             <!-- SECTION -->
-            <div class="slds-full-height slds-col slds-col slds-size_1-of-1 slds-p-around_small">
+            <div class="slds-full-height slds-col slds-col slds-size_1-of-1">
                 <!-- Start -->
                 <template lwc:if={isConnectorLoaded}>
-                    <template lwc:if={isRecordExplorer}>
-                        <!-- Record Explorer Section-->
-                        <extension-record-explorer lwc:ref="recordexplorer" 
-                            versions={versions}
-                            record-id={recordId}
-                            current-origin={currentOrigin}
-                        ></extension-record-explorer>
-                    </template>
-                    <template lwc:else>
+                    <slds-tabset variant="scoped" class="slds-without-tab slds-full-height">
                         <!-- Default Welcome Section-->
-                        <ui-information-block title="Info">
-                            <p>The content will automatically change based on your URL.</p>
-                            <p>Navigate to your salesforce records to display the Data Explorer.</p>
-                        </ui-information-block>
-                        <org-company class="slds-show"></org-company>
-                    </template>
+                        <slds-tab class="full-page-body" label="Org Info" value={tabName_orgInfo}>
+                            <ui-information-block title="Info">
+                                <p>The content will automatically change based on your URL.</p>
+                                <p>Navigate to your salesforce records to display the Data Explorer.</p>
+                            </ui-information-block>
+                            <org-users class="slds-p-around_x-small slds-show"></org-users>
+                            <org-company title="General Info" link-label="Company" class="slds-p-around_x-small slds-show"></org-company>
+                        </slds-tab>
+                        <!-- Record Explorer Section-->
+                        <template lwc:if={isRecordExplorer}>
+                            <slds-tab class="full-page-body" label="Record Explorer" value={tabName_recordExplorer}>
+                                <extension-record-explorer lwc:ref="recordexplorer" 
+                                    versions={versions}
+                                    record-id={recordId}
+                                    current-origin={currentOrigin}
+                                ></extension-record-explorer>
+                            </slds-tab>
+                        </template>
+
+                    </slds-tabset>
                 </template>
                 <template lwc:else>
                     <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">

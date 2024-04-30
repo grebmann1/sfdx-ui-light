@@ -46,7 +46,12 @@ export default class root extends FeatureElement {
         }
     }
 
-    async connectedCallback(){
+    connectedCallback(){
+        this.loadComponent();
+    }
+
+    loadComponent = async () => {
+       
         let cookie = await getHostAndSession();
         if(cookie){
             this.init_existingSession(cookie);
@@ -58,7 +63,6 @@ export default class root extends FeatureElement {
         this.currentUrl = this.currentTab.url;
         //this.currentOrigin = (new URL(this.currentTab.url)).origin;
         this.monitorUrlChange();
-        
     }
     
     monitorUrlChange = async () => {

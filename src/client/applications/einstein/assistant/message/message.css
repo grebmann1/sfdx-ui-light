@@ -1,0 +1,12 @@
+.slds-chat-message__text{
+    max-width: 100%;
+    white-space: normal;
+}
+
+.slds-chat-message{
+    width: -webkit-fill-available;
+}
+
+.slds-chat-message__body{
+    width: -webkit-fill-available;
+}

@@ -5,8 +5,9 @@
 
         <!-- BODY slds-background-white -->
         <div class="slds-is-relative slds-grid slds-wrap slds-grid_vertical-stretch full-page-body">
-            <!-- SECTION -->
-            <div class="slds-full-height slds-col slds-col slds-size_1-of-1">
+            <!-- SECTION - General -->
+            <!--
+            <div class="slds-col slds-col slds-size_1-of-1">
                 <div class="slds-section slds-is-open">
                     <h3 class="slds-section__title">
                         <div class="slds-section__title-action">
@@ -14,18 +15,29 @@
                         </div>
                     </h3>
                     <div class="slds-section__content">
+                        
+                    </div>
+                </div>
+            </div>
+            -->
+            <!-- SECTION - Einstein AI -->
+            <div class="slds-col slds-col slds-size_1-of-1">
+                <div class="slds-section slds-is-open">
+                    <h3 class="slds-section__title">
+                        <div class="slds-section__title-action">
+                            <span class="slds-truncate" title="OpenAI Settings">OpenAI Settings</span>
+                        </div>
+                    </h3>
+                    <div class="slds-section__content">
+                        <ui-information-block title="Open AI - Beta Mode">
+                            <p>This is in Beta, might not work as expected and might be removed in the future !</p>
+                        </ui-information-block>
                         <div class="slds-grid slds-wrap">
                             <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
-                                <lightning-input
-                                    type="toggle"
-                                    variant="label-stacked" 
-                                    label="Open Field Explorer in the Side Panel"
-                                    name="openAsPopup"
-                                    message-toggle-active=""
-                                    message-toggle-inactive=""
-                                    onchange={openAsPopup_change}
-                                    checked={openAsPopup_checked}
-                                ></lightning-input>
+                                <lightning-input type="text" label="OpenAI API Key" value={openai_key} onchange={handleOpenaiKey_change}></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                                <lightning-input type="text" label="OpenAI Assistant Id" value={openai_assistant_id} onchange={handleOpenaiAssistantId_change}></lightning-input>
                             </div>
                         </div>
                     </div>

@@ -1,5 +1,6 @@
 import { api } from "lwc";
 import FeatureElement from 'element/featureElement';
+import { store,store_application } from 'shared/store';
 
 
 export default class Users extends FeatureElement {
@@ -13,6 +14,16 @@ export default class Users extends FeatureElement {
     connectedCallback(){
        this.init();
     }
+
+    /** Events */
+
+    goToUrl = (e) => {
+        const redirectUrl = e.currentTarget.dataset.url;
+        store.dispatch(store_application.navigate(redirectUrl));
+    }
+
+
+    /** methods */
 
     init = async () => {
         this.userInformations = await this.load_userInformations();

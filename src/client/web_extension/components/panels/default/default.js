@@ -1,20 +1,25 @@
 import { LightningElement,api,wire} from "lwc";
 import { connectStore,store,store_application } from 'shared/store';
-import { isUndefinedOrNull,isNotUndefinedOrNull,normalizeString as normalize} from "shared/utils";
-import { getCurrentTab } from 'connection/utils';
-import Toast from 'lightning/toast';
+import { isNotUndefinedOrNull} from "shared/utils";
+import { loadExtensionConfigFromCache,CACHE_CONFIG } from "extension/utils";
+
 
 const APPLICATIONS = {
     CONNECTION:'connection',
-    DOCUMENTATION:'documentation'
+    DOCUMENTATION:'documentation',
+    ASSISTANT:'assistant'
 }
 
 
 
 export default class Default extends LightningElement {
 
-    @api currentApplication = APPLICATIONS.CONNECTION;
+    @api currentApplication = APPLICATIONS.CONNECTION;//APPLICATIONS.ASSISTANT;//
     @api isBackButtonDisplayed = false;
+
+    openaiKey;
+    openaiAssistantId;
+
 
 
     @wire(connectStore, { store })
@@ -28,19 +33,27 @@ export default class Default extends LightningElement {
 
 
     connectedCallback(){
-
+        this.loadAssistantConfig();
     }
     
 
 
     /** Events **/
 
-    handleBackClick = () => {
-        this.dispatchEvent(new CustomEvent("back", {bubbles: true,composed: true}));
+    einsteinClick = () => {
+        this.currentApplication = APPLICATIONS.ASSISTANT;
     }
 
     openConnectionClick = () => {
         this.currentApplication = APPLICATIONS.CONNECTION;
+    }
+
+    documentationClick = (e) => {
+        this.currentApplication = APPLICATIONS.DOCUMENTATION;
+    }
+
+    handleBackClick = () => {
+        this.dispatchEvent(new CustomEvent("back", {bubbles: true,composed: true}));
     }
 
     handleSearch = (e) => {
@@ -64,11 +77,16 @@ export default class Default extends LightningElement {
         }
     }
 
-    documentationClick = (e) => {
-        this.currentApplication = APPLICATIONS.DOCUMENTATION;
-    }
-
     /** Methods **/
+
+    loadAssistantConfig = async () => {
+        const configuration = await loadExtensionConfigFromCache([
+            CACHE_CONFIG.OPENAI_KEY,
+            CACHE_CONFIG.OPENAI_ASSISTANT_ID
+        ]);
+        this.openaiKey = configuration[CACHE_CONFIG.OPENAI_KEY];
+        this.openaiAssistantId = configuration[CACHE_CONFIG.OPENAI_ASSISTANT_ID];
+    }
 
     loadFromNavigation = async ({state, attributes}) => {
         //('documentation - loadFromNavigation');
@@ -102,6 +120,18 @@ export default class Default extends LightningElement {
 
     /** Getters **/
 
+    get connectionVariant(){
+        return this.isConnection?'brand':'standard';
+    }
+
+    get assistantVariant(){
+        return this.isAssistant?'brand':'standard';
+    }
+
+    get documentationVariant(){
+        return this.isDocumentation?'brand':'standard';
+    }
+
     get isConnection(){
         return this.currentApplication == APPLICATIONS.CONNECTION;
     }
@@ -109,6 +139,14 @@ export default class Default extends LightningElement {
 
     get isDocumentation(){
         return this.currentApplication == APPLICATIONS.DOCUMENTATION;
+    }
+
+    get isAssistant(){
+        return this.currentApplication == APPLICATIONS.ASSISTANT;
+    }
+
+    get isAssistantDisplayed(){
+        return isNotUndefinedOrNull(this.openaiAssistantId) && isNotUndefinedOrNull(this.openaiKey);
     }
 
 }

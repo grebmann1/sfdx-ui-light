@@ -1,0 +1,18 @@
+<template>
+    <li class={itemClass}>
+        <div class="slds-chat-message">
+            <div class="slds-chat-message__body">
+                <div class={itemMessageClass}>
+                    <!--<lightning-formatted-rich-text value={body}></lightning-formatted-rich-text>-->
+                    <template lwc:if={isUser}>
+                        {body}
+                    </template>
+                    <template lwc:else>
+                        <slds-markdown-viewer lwc:ref="container" value={body}></slds-markdown-viewer>
+                    </template>
+                </div>
+                <div class="slds-chat-message__meta">{originMessage} </div> <!-- • 4:59 PM -->
+            </div>
+        </div>
+    </li>
+</template>

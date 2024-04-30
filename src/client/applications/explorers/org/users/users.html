@@ -1,5 +1,5 @@
 <template>
-    <article class="slds-card slds-full-height">
+    <article class="slds-card">
         <div class="slds-card__header slds-grid">
             <header class="slds-media slds-media_center slds-has-flexi-truncate">
                 <div class="slds-media__body">
@@ -10,20 +10,21 @@
                     </h2>
                 </div>
                 <div class="slds-no-flex">
-                   <slot name="header-button"></slot>
+                   <!--<slot name="header-button"></slot>-->
+                   <lightning-button icon-name="utility:link" label="Users" onclick={goToUrl} data-url="/lightning/setup/ManageUsers/home"></lightning-button>
                 </div>                    
             </header>
         </div>
         <div class="slds-card__body slds-card__body_inner">
             <div class="slds-scrollable_y" style="max-height:450px;">
                 <div class="slds-grid slds-wrap slds-gutters">
-                    <div class="slds-col slds-size_1-of-2 slds-large-size_1-of-3 slds-m-top_x-small">
+                    <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-2 slds-medium-size_1-of-3 slds-m-top_x-small">
                         <dashboard-basic-stats title="Active Users (30 Days)" value={total_active} sub-value={total_active_30days}></dashboard-basic-stats>
                     </div>
-                    <div class="slds-col slds-size_1-of-2 slds-large-size_1-of-3 slds-m-top_x-small">
+                    <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-3 slds-m-top_x-small">
                         <dashboard-basic-stats title="Total Users" value={total_users}></dashboard-basic-stats>
                     </div>
-                    <div class="slds-col slds-size_1-of-2 slds-large-size_1-of-3 slds-m-top_x-small">
+                    <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-3 slds-m-top_x-small">
                         <dashboard-basic-stats title="Inactive Users" value={total_inactive}></dashboard-basic-stats>
                     </div>
                 </div>

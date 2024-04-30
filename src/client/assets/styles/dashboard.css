@@ -113,6 +113,12 @@
 }
 
 /** Backgrounds **/
+
+.bg-gradient-104 {
+    --tw-gradient-stops : #f3f3f4 100%;
+    background-image: linear-gradient(103deg, #f3f5f6 100%,#f3f3f4 100%);
+}
+
 .to-100\% {
     --tw-gradient-to-position: 100%;
 }

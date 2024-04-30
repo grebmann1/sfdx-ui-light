@@ -786,7 +786,7 @@ li {
     align-self: flex-start;
     position: sticky;
     top: 2px;
-    z-index: 999;
+    z-index: 2;
     width: 100%;
 }
 

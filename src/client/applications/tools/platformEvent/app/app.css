@@ -46,3 +46,12 @@
 .bottom-right-panel{
     /*width: 100%;*/
 }
+
+.class-or{
+    text-align: center;
+    height: auto;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}

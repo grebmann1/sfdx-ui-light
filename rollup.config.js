@@ -6,7 +6,7 @@ import * as data from './package.json';
 const isProduction = process.env.NODE_ENV === 'production';
 
 console.log('data.version',data.version);
-
+//  'process.env.NODE_ENV': isProduction?'production':'development',
 export default {
     input: 'src/client/web_extension/main.js',
     output: {
@@ -14,7 +14,7 @@ export default {
     },
     plugins: [
         replace({
-            'process.env.NODE_ENV': JSON.stringify('development'),
+            'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
         }),
         lwc({
             "enableDynamicComponents":true,
@@ -23,6 +23,7 @@ export default {
                 { "dir": "../components" },
                 { "dir": "../applications/documentation" },
                 { "dir": "../applications/explorers" },
+                { "dir": "../applications/einstein" },
                 { "dir": "components" },
                 { "npm": "lightning-base-components" },
                 {
@@ -73,7 +74,7 @@ export default {
                     return newContents;
                 }            
               },
-              { src: 'src/client/web_extension/components/extension/utils/utils.js', dest: 'chrome_ext/scripts' },
+              { src: 'src/client/web_extension/components/extension/utils/utils.js', dest: 'chrome_ext/scripts' }
             ]
         })
     ],

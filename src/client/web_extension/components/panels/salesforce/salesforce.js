@@ -13,23 +13,39 @@ export default class Salesforce extends LightningElement {
 
     @api versions = [];
     @api version;
-    @api recordId;
     @api currentOrigin;
 
     @api currentApplication = APPLICATIONS.RECORD_EXPLORER;
-
-    @api isConnectorLoaded = false;
     @api isBackButtonDisplayed = false;
     
+    connectedCallback(){}
 
-
-    connectedCallback(){
-
+    _isConnectorLoaded = false;
+    @api
+    get isConnectorLoaded(){
+        return this._isConnectorLoaded;
+    }
+    set isConnectorLoaded(value){
+        this._isConnectorLoaded = value;
+        this.openRecordExplorerTab();
     }
     
+    _recordId;
+    @api
+    get recordId(){
+        return this._recordId;
+    }
+    set recordId(value){
+        this._recordId = value;
+        this.openRecordExplorerTab();
+    }
+
+    //orgInfo
 
 
     /** Events **/
+
+    
 
     redirectToWebsite = () => {
         this.redirectToUrlViaChrome({});
@@ -58,22 +74,24 @@ export default class Salesforce extends LightningElement {
         }, tab => {});
     }
 
-    openSidePanel = async () => {
-        const tab = await getCurrentTab();
-        await chrome.sidePanel.setOptions({
-            tabId:tab.id,
-            path: 'views/side.html',
-            enabled: true
-        });
-        chrome.sidePanel.open({ tabId: tab.id });
-        window.close(); // close the popup
-    }
+    
 
     handleSearch = (e) => {
         const { value } = e.detail;
-        if(this.isRecordExplorer && isNotUndefinedOrNull(value)){
+        if(this.isRecordExplorer && isNotUndefinedOrNull(value) && this.currentActiveTab === this.tabName_recordExplorer){
             this.handleSearchRecordExplorer(value);
         }
+    }
+
+    einsteinClick = () => {
+        const params = {
+            type:'application',
+            attributes:{
+                applicationName:'assistant',
+            },state:{}
+        };
+
+        store.dispatch(store_application.fakeNavigate(params));
     }
 
     openDefaultPanel = () => {
@@ -85,13 +103,17 @@ export default class Salesforce extends LightningElement {
         };
 
         store.dispatch(store_application.fakeNavigate(params));
-        /*this.dispatchEvent(new CustomEvent("changepanel", { detail:{
-            panel:PANELS.DEFAULT,
-            isBackButtonDisplayed:true
-        },bubbles: true,composed: true}));*/
     }
 
     /** Methods **/
+
+    openRecordExplorerTab = () => {
+        if(isUndefinedOrNull(this._recordId) || this._isConnectorLoaded === false) return;
+
+        window.setTimeout(() => {
+            this.template.querySelector('slds-tabset').activeTabValue = this.tabName_recordExplorer;
+        },100);
+    }
 
     handleSearchRecordExplorer = (value) => {
         if(this.refs.recordexplorer){
@@ -99,7 +121,13 @@ export default class Salesforce extends LightningElement {
         }
     }
 
+
+
     /** Getters **/
+
+    get currentActiveTab(){
+        return this.template.querySelector('slds-tabset')?.activeTabValue;
+    }
 
     get isDefaultMenu(){
         return true;
@@ -115,5 +143,13 @@ export default class Salesforce extends LightningElement {
 
     get isFooterDisplayed(){
         return this.isConnectorLoaded;
+    }
+
+    get tabName_recordExplorer(){
+        return 'recordExplorer';
+    }
+
+    get tabName_orgInfo(){
+        return 'orgInfo';
     }
 }

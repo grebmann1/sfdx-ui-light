@@ -5,7 +5,7 @@ import ConnectionNewModal from "connection/connectionNewModal";
 import ConnectionDetailModal from "connection/connectionDetailModal";
 import ConnectionRenameModal from "connection/connectionRenameModal";
 import ConnectionImportModal from "connection/connectionImportModal";
-import { download,classSet,runActionAfterTimeOut,checkIfPresent,isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,normalizeString as normalize,groupBy } from 'shared/utils';
+import { download,classSet,runActionAfterTimeOut,checkIfPresent,isEmpty,isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,normalizeString as normalize,groupBy } from 'shared/utils';
 import { getAllConnection,setAllConnection,removeConnection,connect,oauth,getConnection,getCurrentTab } from 'connection/utils';
 import { store,store_application } from 'shared/store';
 
@@ -53,9 +53,11 @@ export default class App extends FeatureElement {
     checkForInjected = async () => {
         let el = document.getElementsByClassName('injected-connections');
         if(el){
+            let content = el[0]?.textContent;
+            if(isEmpty(content)) return;
             this.isInjected = true;
             try{
-                let content = (el[0]?.textContent || "{'connections':[]}").trim();
+                //let content = (content || "{'connections':[]}").trim();
                 this.injectedConnections = JSON.parse(content)?.connections || [];
                 this.loadFromExtension = (await window.defaultStore.getItem('connection-extension-toggle')) === true;
                 if(this.loadFromExtension){

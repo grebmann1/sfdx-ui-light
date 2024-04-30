@@ -4,79 +4,89 @@
             <header class="slds-media slds-media_center slds-has-flexi-truncate">
                 <div class="slds-media__body">
                     <h2 class="slds-card__header-title">
-                        <a href="#" class="slds-card__header-link slds-truncate" title="General Information">
-                            <span>General Information</span>
+                        <a href="#" class="slds-card__header-link slds-truncate" title={title}>
+                            <span>{title}</span>
                         </a>
                     </h2>
                 </div>
                 <div class="slds-no-flex">
-                    <lightning-button icon-name="utility:link" label="Company Information" onclick={goToUrl} data-url="/lightning/setup/CompanyProfileInfo/home"></lightning-button>
+                    <lightning-button icon-name="utility:link" label={linkLabel} onclick={goToUrl} data-url="/lightning/setup/CompanyProfileInfo/home"></lightning-button>
                 </div>
             </header>
         </div>
         <div class="slds-card__body slds-card__body_inner">
             <div class="slds-grid slds-gutters slds-wrap">
-                <div class="slds-col slds-col slds-size_1-of-1 slds-large-size_1-of-2">
-                    <lightning-tile label="Company Information">
-                        <dl class="slds-dl_horizontal">
-                            <dt class="slds-dl_horizontal__label">
-                                <p class="slds-truncate" title="Name">Name:</p>
-                            </dt>
-                            <dd class="slds-dl_horizontal__detail slds-tile__meta">
-                                <p class="slds-truncate" title={orgInformation.Name}>{orgInformation.Name}</p>
-                            </dd>
-                            <dt class="slds-dl_horizontal__label">
-                                <p class="slds-truncate" title="Organization Type">Organization Type:</p>
-                            </dt>
-                            <dd class="slds-dl_horizontal__detail slds-tile__meta">
-                                <p class="slds-truncate" title={orgInformation.OrganizationType}>{orgInformation.OrganizationType}</p>
-                            </dd>
-                            <dt class="slds-dl_horizontal__label">
-                                <p class="slds-truncate" title="Created Date">Created Date:</p>
-                            </dt>
-                            <dd class="slds-dl_horizontal__detail slds-tile__meta">
-                                <p class="slds-truncate" title={orgInformation.CreatedDate}>{orgInformation.CreatedDate}</p>
-                            </dd>
-                        </dl>
-                    </lightning-tile>
+                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2">
+                    <article class="slds-tile">
+                        <h3 class="slds-tile__title slds-truncate slds-text-heading_small slds-color-brand" title="Company Information">
+                            Company Information
+                        </h3>
+                        <div class="slds-tile__detail">
+                            <div class="slds-grid slds-gutters slds-wrap">
+                                <div class="slds-col slds-size_1-of-3 slds-small-size_1-of-2">
+                                    <p class="slds-truncate" title="Name">Name:</p>
+                                </div>
+                                <div class="slds-col slds-size_2-of-3 slds-small-size_1-of-2">
+                                    <p class="slds-truncate" title={orgInformation.Name}>{orgInformation.Name}</p>
+                                </div>
+                                <div class="slds-col slds-size_1-of-3 slds-small-size_1-of-2">
+                                    <p class="slds-truncate" title="Organization Type">Organization Type:</p>
+                                </div>
+                                <div class="slds-col slds-size_2-of-3 slds-small-size_1-of-2">
+                                    <p class="slds-truncate" title={orgInformation.OrganizationType}>{orgInformation.OrganizationType}</p>
+                                </div>
+                                <div class="slds-col slds-size_1-of-3 slds-small-size_1-of-2">
+                                    <p class="slds-truncate" title="Created Date">Created Date:</p>
+                                </div>
+                                <div class="slds-col slds-size_2-of-3 slds-small-size_1-of-2">
+                                    <p class="slds-truncate" title={orgInformation.CreatedDate}>{orgInformation.CreatedDate}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
                 </div>
-                <div class="slds-col slds-col slds-size_1-of-1 slds-large-size_1-of-2">
-                    <lightning-tile label="Org Information">
-                        <dl class="slds-dl_horizontal">
-                            <dt class="slds-dl_horizontal__label">
-                                <p class="slds-truncate" title="Id">Id:</p>
-                            </dt>
-                            <dd class="slds-dl_horizontal__detail slds-tile__meta">
-                                <p class="slds-truncate" title={orgInformation.Id}>{orgInformation.Id}</p>
-                            </dd>
-                            <dt class="slds-dl_horizontal__label">
-                                <p class="slds-truncate" title="Is Sandbox">Is Sandbox:</p>
-                            </dt>
-                            <dd class="slds-dl_horizontal__detail slds-tile__meta">
-                                <p class="slds-truncate" title={orgInformation.IsSandbox}>
-                                    <lightning-input type="checkbox" label="IsSandbox" variant="label-hidden" checked={orgInformation.IsSandbox} disabled></lightning-input>
-                                </p>
-                            </dd>
-                            <dt class="slds-dl_horizontal__label">
-                                <p class="slds-truncate" title="Instance">Instance:</p>
-                            </dt>
-                            <dd class="slds-dl_horizontal__detail slds-tile__meta">
-                                <p class="slds-truncate" title={orgInformation.InstanceName}>{orgInformation.InstanceName}</p>
-                            </dd>
-                            <dt class="slds-dl_horizontal__label">
-                                <p class="slds-truncate" title="Language">Language:</p>
-                            </dt>
-                            <dd class="slds-dl_horizontal__detail slds-tile__meta">
-                                <p class="slds-truncate" title={orgInformation.LanguageLocaleKey}>{orgInformation.LanguageLocaleKey}</p>
-                            </dd>
-                            <dt class="slds-dl_horizontal__label">
-                                <p class="slds-truncate" title="Timezone">Timezone:</p>
-                            </dt>
-                            <dd class="slds-dl_horizontal__detail slds-tile__meta">
-                                <p class="slds-truncate" title={orgInformation.TimeZoneSidKey}>{orgInformation.TimeZoneSidKey}</p>
-                            </dd>
-                        </dl>
-                    </lightning-tile>
+                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-top_small">
+                    <article class="slds-tile">
+                        <h3 class="slds-tile__title slds-truncate slds-text-heading_small slds-color-brand" title="Org Information">
+                            Org Information
+                        </h3>
+                        <div class="slds-tile__detail">
+                            <div class="slds-grid slds-gutters slds-wrap">
+                                <div class="slds-col slds-size_1-of-3 slds-small-size_1-of-2">
+                                    <p class="slds-truncate" title="Id">Id:</p>
+                                </div>
+                                <div class="slds-col slds-size_2-of-3 slds-small-size_1-of-2">
+                                    <p class="slds-truncate" title={orgInformation.Id}>{orgInformation.Id}</p>
+                                </div>
+                                <div class="slds-col slds-size_1-of-3 slds-small-size_1-of-2">
+                                    <p class="slds-truncate" title="Is Sandbox">Is Sandbox:</p>
+                                </div>
+                                <div class="slds-col slds-size_2-of-3 slds-small-size_1-of-2">
+                                    <p class="slds-truncate" title={orgInformation.IsSandbox}>
+                                        <lightning-input type="checkbox" label="IsSandbox" variant="label-hidden" checked={orgInformation.IsSandbox} disabled></lightning-input>
+                                    </p>
+                                </div>
+                                <div class="slds-col slds-size_1-of-3 slds-small-size_1-of-2">
+                                    <p class="slds-truncate" title="Instance">Instance:</p>
+                                </div>
+                                <div class="slds-col slds-size_2-of-3 slds-small-size_1-of-2">
+                                    <p class="slds-truncate" title={orgInformation.InstanceName}>{orgInformation.InstanceName}</p>
+                                </div>
+                                <div class="slds-col slds-size_1-of-3 slds-small-size_1-of-2">
+                                    <p class="slds-truncate" title="Language">Language:</p>
+                                </div>
+                                <div class="slds-col slds-size_2-of-3 slds-small-size_1-of-2">
+                                    <p class="slds-truncate" title={orgInformation.InstanceName}>{orgInformation.LanguageLocaleKey}</p>
+                                </div>
+                                <div class="slds-col slds-size_1-of-3 slds-small-size_1-of-2">
+                                    <p class="slds-truncate" title="Timezone">Timezone:</p>
+                                </div>
+                                <div class="slds-col slds-size_2-of-3 slds-small-size_1-of-2">
+                                    <p class="slds-truncate" title={orgInformation.TimeZoneSidKey}>{orgInformation.TimeZoneSidKey}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
                 </div>
             </div>
             

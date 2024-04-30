@@ -64,7 +64,7 @@ export default class Channel extends FeatureElement {
     }
 
     get itemClass(){
-        return classSet("slds-p-around_small slds-border_bottom channel-item slds-grid slds-justify-content-space-between slds-align-items_center")
+        return classSet("slds-p-around_small slds-border_bottom channel-item slds-grid slds-wrap slds-justify-content-space-between slds-align-items_center")
         .add({
             'slds-is-active':this.selectedItem == this.item.name,
         }).toString();

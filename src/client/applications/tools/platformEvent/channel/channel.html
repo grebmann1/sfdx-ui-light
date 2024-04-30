@@ -1,14 +1,16 @@
 <template>
     <div class={itemClass} title={item.formattedName} key={item.name} data-key={item.name} onclick={selectChannel}>
-        <span> {item.formattedName}</span>
-        <div> 
+        <div class="slds-col slds-size_3-of-6">
+            <span> {item.formattedName}</span>
+        </div>
+        <div class="slds-col slds-size_1-of-6"> 
              <lightning-badge label={item.status} class={item.badgeClass}></lightning-badge>
         </div>
-        <div>
+        <div class="slds-col slds-size_1-of-6">
             <lightning-badge label={formatedMessageCount}></lightning-badge>
         </div>
-        <div> 
-            <lightning-button-group>
+        <div class="slds-col slds-size_1-of-6"> 
+            <lightning-button-group class="slds-float_right">
                 <lightning-button-icon icon-name="utility:delete" tooltip="Remove Subscription" onclick={removeChannel}></lightning-button-icon>
             </lightning-button-group>
         </div>

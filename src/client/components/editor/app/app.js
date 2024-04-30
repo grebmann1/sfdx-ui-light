@@ -339,7 +339,9 @@ export default class App extends FeatureElement {
         const latestModel = this.models[this.models.length - 1];
         this.editor.setModel(latestModel.model); // set last model
         window.setTimeout(()=>{
+            if(!this.template.querySelector('slds-tabset')) return;
             this.template.querySelector('slds-tabset').activeTabValue = latestModel.path;
+            
         },1)
         this.dispatchEvent(new CustomEvent("change", {detail:{value:'add',type:'tab'},bubbles: true }));
     }
@@ -360,6 +362,7 @@ export default class App extends FeatureElement {
                 this.createEditor();
             }
             window.setTimeout(()=>{
+                if(!this.template.querySelector('slds-tabset')) return;
                 this.template.querySelector('slds-tabset').activeTabValue = latestModel.path;
             },1)
         }else{

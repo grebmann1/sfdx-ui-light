@@ -34,8 +34,11 @@ export default class Side extends LightningElement {
 
     handlePanelChange = (e) => {
         //this.previousPanel = this.panel;
-        this.panel = e.detail.panel;
-        this.isBackButtonDisplayed = e.detail.isBackButtonDisplayed;
+        if(this.panel != e.detail.panel){
+            this.panel = e.detail.panel;
+            this.isBackButtonDisplayed = e.detail.isBackButtonDisplayed;
+        }
+        
     }
 
     handleGoBack = () => {

@@ -62,7 +62,7 @@ function extractRecordId(href){
 
 export function getRecordId(href) {
 	const recordId = extractRecordId(href);
-	return recordId.match(/^([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/)?recordId:null;
+	return recordId && recordId.match(/^([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/)?recordId:null;
 }
 
 export function getSobject(href) {
@@ -139,19 +139,27 @@ export function loadConfiguration(text){
 	return result;
 }
 
-export async function loadExtensionConfigFromCache(items){
+export async function loadExtensionConfigFromCache(keys){
 	const configuration = {};
-	items.map(async key => {
+	for await (const key of keys){
 		configuration[key] = await window.defaultStore.getItem(key);
-		// using map as a trick to bypass the promise issue.
-	})
+	}
 	return configuration;
+}
+
+export async function saveExtensionConfigToCache(config){
+	const keys = Object.keys(config);
+	for await (const key of keys){
+		await window.defaultStore.setItem(key,config[key]);
+	}
 }
 
 export const PANELS = {
 	SALESFORCE : 'salesforce',
 	DEFAULT : 'default'
 }
+
+
 
 export function getObjectSetupLink({host, sobjectName, durableId, isCustomSetting}) {
 	if(sobjectName.endsWith("__mdt")) {
@@ -201,4 +209,10 @@ export function getObjectDocLink(sobjectName,isUsingToolingApi){
       	return `https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_${sobjectName.toLowerCase()}.htm`;
     }
     return `https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_${sobjectName.toLowerCase()}.htm`;
+}
+
+export const CACHE_CONFIG = {
+	CONFIG_POPUP:'openAsPopup',
+	OPENAI_ASSISTANT_ID:'openai_assistant_id',
+	OPENAI_KEY:'openai_key'
 }

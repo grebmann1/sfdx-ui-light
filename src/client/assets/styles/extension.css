@@ -90,7 +90,7 @@ doc-app .full-page-body.slds-m-top_small{
 }
 
 .slds-full-height .slds-tabs_scoped{
-    height:calc(100% - 41px);
+    height:100%;/*calc(100% - 41px);*/
     display: flex;
     flex-direction: column;
 }
@@ -130,6 +130,32 @@ doc-app .full-page-body.slds-m-top_small{
     top: unset;
     -webkit-transform: unset;
     transform: unset;
+}
+
+.slds-tabs_scoped__link .slds-icon{
+    width: 1rem;
+    height: 1rem;
+}
+
+.slds-color-brand{
+    color:rgb(7, 87, 133);
+}
+
+.slds-color-orange-dark{
+    color:rgb(133, 74, 7);
+}
+
+.slds-color-orange-light{
+    color:rgb(217, 127, 24);
+}
+
+.slds-card-grey{
+    background-color:var(--slds-g-color-neutral-base-95,#f3f3f3);
+}
+
+.slds-text-title_bold {
+    font-size: .875rem;
+    font-weight: 700 !important;
 }
 
 
@@ -201,4 +227,8 @@ doc-app .full-page-body.slds-m-top_small{
     position: relative;
     flex-grow: 1;
     overflow: auto;
+}
+
+.slds-tabs_scoped__content{
+    padding: 0; /* Only for Extension */
 }

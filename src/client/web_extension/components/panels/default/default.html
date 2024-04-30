@@ -4,21 +4,18 @@
         <extension-header onsearch={handleSearch}>
             <lightning-button-group slot="action">
                 <template lwc:if={isBackButtonDisplayed}>
-                    <lightning-button class="back-button" variant="brand" icon-name="utility:back" label="Back" size="medium" onclick={handleBackClick}></lightning-button>
+                    <lightning-button class="back-button" icon-name="utility:back" label="Back" size="medium" onclick={handleBackClick}></lightning-button>
                 </template>
-                <template lwc:if={isConnection}>
-                    <!-- Actions for connections -->
-                    <lightning-button icon-name="utility:add" label="Org" title="Add new org" onclick={connection_authorizeOrg}></lightning-button>
-                    <lightning-button-icon icon-name="utility:knowledge_base" title="Open Documentation" onclick={documentationClick}></lightning-button-icon>
-                    <lightning-button-menu menu-alignment="auto" alternative-text="Show menu">
-                        <lightning-menu-item prefix-icon-name="utility:upload" value="Import" label="Import Orgs" onclick={importClick}></lightning-menu-item>
-                        <lightning-menu-item prefix-icon-name="utility:download" value="Export" label="Export Orgs" onclick={exportClick}></lightning-menu-item>
-                    </lightning-button-menu>
+                <!-- Actions for connections -->
+                <lightning-button-icon variant={connectionVariant} icon-name="utility:salesforce1" title="Home" onclick={openConnectionClick}></lightning-button-icon>
+                <template lwc:if={isAssistantDisplayed}>
+                    <lightning-button-icon variant={assistantVariant} icon-name="utility:einstein" title="Assistant" onclick={einsteinClick}></lightning-button-icon>
                 </template>
-                <template lwc:elseif={isDocumentation}>
-                    <!-- Actions for Documentation utility:salesforce1 -->
-                    <lightning-button icon-name="utility:home" label="Home" size="medium" onclick={openConnectionClick}></lightning-button>
-                </template>
+                <lightning-button-icon variant={documentationVariant} icon-name="utility:knowledge_base" title="Documentation" onclick={documentationClick}></lightning-button-icon>
+                <lightning-button-menu menu-alignment="auto" alternative-text="Show menu">
+                    <lightning-menu-item prefix-icon-name="utility:upload" value="Import" label="Import Orgs" onclick={importClick}></lightning-menu-item>
+                    <lightning-menu-item prefix-icon-name="utility:download" value="Export" label="Export Orgs" onclick={exportClick}></lightning-menu-item>
+                </lightning-button-menu>
             </lightning-button-group>
             
         </extension-header>
@@ -34,6 +31,9 @@
                 </template>
                 <template lwc:elseif={isDocumentation}>
                     <doc-app lwc:ref="documentation" is-responsive></doc-app>
+                </template>
+                <template lwc:elseif={isAssistant}>
+                    <assistant-app lwc:ref="assistant" openai-key={openaiKey} openai-assistant-id={openaiAssistantId}></assistant-app>
                 </template>
                 <!-- End -->
             </div>

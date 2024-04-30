@@ -69,6 +69,7 @@ export default class CodeBlock extends LightningElement {
 			// eslint-disable-next-line
 			codeEl.innerHTML = this._codeBlock;
 			codeBlockEl.appendChild(codeEl);
+			console.log('codeBlockEl',codeBlockEl);
 			this.prism.highlightAllUnder(codeBlockEl,false,()=>{
 				console.log('callback');
 			});

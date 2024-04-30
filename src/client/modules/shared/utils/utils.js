@@ -293,3 +293,7 @@ export function download(data,type,filename){
         download.click();
     URL.revokeObjectURL(url);
 }
+
+export const ROLES = {
+    USER:'user',
+}

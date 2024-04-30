@@ -6,7 +6,9 @@ import { store,store_application } from 'shared/store';
 
 export default class Company extends FeatureElement {
 
-
+    @api title = 'General Information';
+    @api linkLabel = 'Company Information';
+    
     orgInformation = {};
 
 
