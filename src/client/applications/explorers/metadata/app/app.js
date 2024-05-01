@@ -14,6 +14,7 @@ export default class App extends FeatureElement {
 
     isLoading = false;
     isNoRecord = false;
+    isGlobalMetadataLoaded = false;
 
     @track selection = [];
     @track metadata  = [{records:[],label:'Metadata'}];
@@ -57,6 +58,9 @@ export default class App extends FeatureElement {
         let { param1,label1,param2,label2 } = state;
         if(applicationName != 'metadata') return; // Only for metadata
 
+        if(!this.isGlobalMetadataLoaded){
+           await this.load_metadataGlobal();
+        }
         this.isNoRecord = false;
 
         const exceptionMetadata = attribute1?this.exceptionMetadataList.find(x => x.name === attribute1):null;
@@ -100,12 +104,13 @@ export default class App extends FeatureElement {
             //this.currentLevel = 2;
         }
         // At the end to avoid multiple refresh
+        console.log('setMenuItems');
         this.setMenuItems();
     }
 
 
     connectedCallback(){
-        this.load_metadataGlobal();
+        //this.load_metadataGlobal();
     }
 
     /** Events */
@@ -230,6 +235,7 @@ export default class App extends FeatureElement {
             result = result.sort((a, b) => a.name.localeCompare(b.name));
         this.metadata[0] = {records:result,label:'Metadata'};
         this.isLoading = false;
+        this.isGlobalMetadataLoaded = true;
     }
 
     load_specificMetadataException = async (exceptionMetadata,recordId) => {
@@ -435,6 +441,7 @@ export default class App extends FeatureElement {
     }
 
     setMenuItems = () => {
+        console.log('this.metadata',this.metadata);
         if(this.metadata.length == 0){
             this.menuItems = [];
         }else{
