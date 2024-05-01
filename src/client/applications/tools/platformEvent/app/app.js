@@ -212,7 +212,7 @@ export default class App extends FeatureElement {
 
     executeApex = (e) => {
         this.isApexRunning = true;
-        this.refs.editor.executeApex((err,res) => {
+        this.refs.editor.executeApex(null,(err,res) => {
             if(res.success){
                 Toast.show({
                     label: 'Apex Successfull run',
