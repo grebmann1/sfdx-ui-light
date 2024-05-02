@@ -17,8 +17,8 @@ Schemas.ExecuteAnonymousResult = {
             column: 'number',
             compileProblem: 'string',
             compiled: 'boolean',
-            exceptionMessage: 'boolean',
-            exceptionStackTrace: 'boolean',
+            exceptionMessage: 'string',
+            exceptionStackTrace: 'string',
             line: 'number',
             success:'boolean'
         }
