@@ -1090,3 +1090,8 @@ img{
 .markdown-alert.markdown-alert-warning {
   border-left-color: #9a6700;
 }
+
+.language-mermaid svg {
+  width: 100%;
+  max-width: 100% !important;
+}

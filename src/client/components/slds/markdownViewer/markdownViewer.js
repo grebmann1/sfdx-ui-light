@@ -29,11 +29,12 @@ export default class MarkdownViewer extends LightningElement {
     setMarkdown = (markdown) =>{
         var html = marked()(markdown);
         this.refs.container.innerHTML = html;
-        this.transformCodeBlockToComponents();
+        this.enable_codeViewer();
+        this.enable_mermaid();
 
     }
 
-    transformCodeBlockToComponents = () => {
+    enable_codeViewer = () => {
         //console.log('transformCodeBlockToComponents');
         const mapping = {js: "javascript",apex:"apex"};
         this.refs.container.querySelectorAll("pre .language-java,pre .language-apex,pre .language-javascript,pre .language-soql")
@@ -61,6 +62,15 @@ export default class MarkdownViewer extends LightningElement {
             el.appendChild(newElement)
             //newTarget.replaceWith(newElement)
         })
+    }
+
+    enable_mermaid = async () => {
+        this.refs.container.querySelectorAll("pre .language-mermaid")
+        .forEach( async el => {
+            const { svg,bindFunctions } = await window.mermaid.render('graphDiv',el.innerText);
+            el.innerHTML = svg;
+        });
+        
     }
     
 }

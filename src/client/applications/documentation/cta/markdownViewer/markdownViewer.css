@@ -571,7 +571,7 @@ li > p {
 }
 
 li + li {
-  margin-top: 0.25em;
+  margin-top:unset;/*0.25em;*/
 }
 
 dl {

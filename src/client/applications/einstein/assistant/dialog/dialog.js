@@ -1,11 +1,12 @@
 import { LightningElement,api,track} from "lwc";
 import { isUndefinedOrNull,isEmpty,ROLES,guid } from "shared/utils";
 import FeatureElement from 'element/featureElement';
+import { upsertThreadList,storeThread,getThread } from 'assistant/utils';
 
 export default class Dialog extends FeatureElement {
 
     worker;
-    threadId;
+    @api threadId;
     isLoading = false;
 
     @api openaiKey;
@@ -19,10 +20,8 @@ export default class Dialog extends FeatureElement {
         this.worker.addEventListener('message',this.handleMessage);
         this.worker.addEventListener('error', this.handleError);
 
-        /*const messageTest = localStorage.getItem('messages-test');
-        if(!isEmpty(messageTest)){
-            this.messages = JSON.parse(messageTest);
-        }*/
+        this.loadExistingThread();
+       
     }
 
     disconnectedCallback(){
@@ -37,6 +36,13 @@ export default class Dialog extends FeatureElement {
 
 
     /** Methods **/
+
+    loadExistingThread = async () => {
+        if(this.threadId){
+            this.messages = await getThread(this.threadId);
+            this.scrollToBottom();
+        }
+    }
     
 
     generateMessageForWorker = (content,extraInformation,threadId) => {
@@ -52,10 +58,16 @@ export default class Dialog extends FeatureElement {
         }
     }
 
+    scrollToBottom = () => {
+        window.setTimeout(()=> {
+            const messageElements = this.template.querySelectorAll('assistant-message');
+            messageElements[messageElements.length - 1].scrollIntoView({ behavior: 'smooth', block: 'end' });
+        },100);
+    }
+
     /** Events **/
     handleSendClick = () => {
         const value = this.template.querySelector('.slds-publisher__input').value;
-        console.log('value',value);
         if(!isEmpty(value)){
             this.isLoading = true;
             this.messages.push({
@@ -79,14 +91,11 @@ export default class Dialog extends FeatureElement {
             //console.log('messages',this.messages);
             this.threadId = threadId;
             this.isLoading = false;
-            //localStorage.setItem('messages-test',JSON.stringify(this.messages));
-            window.setTimeout(()=> {
-                const messageElements = this.template.querySelectorAll('assistant-message');
-                messageElements[messageElements.length - 1].scrollTo({ top: 0, behavior: 'auto' });
-            },100);
+            storeThread(this.threadId,this.messages);
+            upsertThreadList(this.threadId);
+            this.scrollToBottom();
         //worker.terminate(); // don't forget to delete worker
         }
-        console.log('message',event.data); // handle message
         
     }
 

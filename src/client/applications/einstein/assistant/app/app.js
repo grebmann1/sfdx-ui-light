@@ -1,6 +1,7 @@
 import { LightningElement,api,track} from "lwc";
-import { isUndefinedOrNull,isEmpty,guid,classSet } from "shared/utils";
+import { isUndefinedOrNull,isNotUndefinedOrNull,isEmpty,guid,classSet } from "shared/utils";
 import FeatureElement from 'element/featureElement';
+import { getThreadList,deleteThreadList } from 'assistant/utils';
 
 export default class App extends FeatureElement {
 
@@ -13,7 +14,7 @@ export default class App extends FeatureElement {
     @track tabs = [];
 
     connectedCallback(){
-        this.addTab();
+        this.loadExistingThreads();
     }
 
     disconnectedCallback(){
@@ -24,6 +25,10 @@ export default class App extends FeatureElement {
 
     handleCloseTab = (e) => {
         const tabId = e.detail.value;
+        const threadId = this.tabs.find(x => x.id == tabId).threadId;
+        if(isNotUndefinedOrNull(threadId)){
+            deleteThreadList(threadId);
+        }
 
         const currentTabId = this.template.querySelector('slds-tabset').activeTabValue;
         this.tabs = this.tabs.filter(x => x.id != tabId);
@@ -48,6 +53,23 @@ export default class App extends FeatureElement {
 
     /** Methods **/
 
+    loadExistingThreads = async() => {
+        const threads = await getThreadList();
+        if(isUndefinedOrNull(threads) || threads.length == 0){
+            this.handleAddTab();
+        }else{
+            this.tabs = threads.map(threadId => ({
+                id:guid(),
+                name:'Dialog',
+                threadId
+            }));
+            console.log('this.tabs',this.tabs);
+            window.setTimeout(() => {
+                this.template.querySelector('slds-tabset').activeTabValue = this.tabs[0].id;
+            },100);
+        }
+    }
+
     addTab = () => {
         const newTab = this.createTab();
         this.currentTab = newTab.id;
@@ -67,9 +89,10 @@ export default class App extends FeatureElement {
     /** Getters **/
 
     get formattedTabs(){
-        return this.tabs.map(x => ({
+        return this.tabs.map((x,index) => ({
             ...x,
             isCloseable:this.tabs.length > 1,
+            name:`Dialog ${index + 1}`,
             class:classSet('slds-tabs_scoped__item').add({'slds-is-active':x.id === this.currentTab}).toString()
         }))
     }

@@ -30,6 +30,9 @@
     flex-direction: column;
     overflow: auto;
 }
+.slds-chat-message__text_outbound .slds-chat-message__meta{
+    margin-left: auto;
+}
 
 .slds-icon-typing.slds-is-animated .slds-icon-typing__dot {
     -webkit-animation: slds-icon-typing__dot-first 1.2s ease-in-out infinite;

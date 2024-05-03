@@ -2,21 +2,21 @@
     <div class="output-panel slds-scrollable_x">
         <div class="slds-table--header-fixed_container">
             <div class="slds-scrollable_y" onscroll={handleScroll}>
-                <table class="slds-table slds-table_bordered slds-table_col-bordered slds-table--header-fixed">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered slds-table--header-fixed">
                     <thead>
                         <tr class="slds-line-height_reset">
                             <template for:each={columns} for:item="column">
                                 <th class="" scope="col" key={column}>
-                                    <div class="slds-cell-fixed slds-truncate" title={column}>{column}</div>
+                                    <div class="slds-cell-fixed slds-p-horizontal_small slds-truncate" title={column}>{column}</div>
                                 </th>
                             </template>
                         </tr>
                     </thead>
                     <tbody>
-                        <template for:each={rows} for:item="row">
+                        <template for:each={virtualList} for:item="row">
                             <tr class="slds-hint-parent" key={row.key}>
                                 <template for:each={row.values} for:item="value">
-                                    <td key={value.key}>
+                                    <td key={value.key} class="slds-cell-wrap">
                                         <soql-output-cell value={value}></soql-output-cell>
                                     </td>
                                 </template>

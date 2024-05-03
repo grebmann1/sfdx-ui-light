@@ -4,7 +4,11 @@
             <template for:each={formattedTabs} for:item="item">
                 <slds-tab class="full-page-body" key={item.id} label={item.name} value={item.id} onactive={handleSelectTab} is-closeable={item.isCloseable}>
                     <!-- Dialogs -->
-                    <assistant-dialog key={item.id} openai-key={openaiKey} openai-assistant-id={openaiAssistantId}></assistant-dialog>
+                    <assistant-dialog key={item.id} 
+                        openai-key={openaiKey} 
+                        openai-assistant-id={openaiAssistantId}
+                        thread-id={item.threadId}
+                    ></assistant-dialog>
                 </slds-tab>
             </template>
         </slds-tabset>
