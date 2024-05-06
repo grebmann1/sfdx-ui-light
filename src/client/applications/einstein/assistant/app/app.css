@@ -7,3 +7,7 @@
 .slds-tabs_scoped{
     height:unset;
 }
+
+.full-page-body{
+    overflow:  hidden !important;
+}

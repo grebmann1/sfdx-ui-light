@@ -10,3 +10,7 @@
 .slds-chat-message__body{
     width: -webkit-fill-available;
 }
+
+.slds-chat-listitem_outbound .slds-chat-message__meta{
+    margin-left: auto;
+}

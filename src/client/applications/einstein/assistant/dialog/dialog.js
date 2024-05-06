@@ -61,7 +61,12 @@ export default class Dialog extends FeatureElement {
     scrollToBottom = () => {
         window.setTimeout(()=> {
             const messageElements = this.template.querySelectorAll('assistant-message');
-            messageElements[messageElements.length - 1].scrollIntoView({ behavior: 'smooth', block: 'end' });
+            if(this.isLoading){
+                this.template.querySelector('.slds-chat-listitem').scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }else{
+                messageElements[messageElements.length - 1].scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }
+            
         },100);
     }
 
@@ -75,6 +80,7 @@ export default class Dialog extends FeatureElement {
                 content:value,
                 id:guid()
             })
+            this.scrollToBottom();
             this.worker.postMessage(this.generateMessageForWorker(value,null,this.threadId));
             this.template.querySelector('.slds-publisher__input').value  = null; // reset
         }
