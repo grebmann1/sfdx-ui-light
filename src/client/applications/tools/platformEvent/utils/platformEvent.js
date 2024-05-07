@@ -31,7 +31,7 @@ export class PlatformEvent {
             this._instance = instance;
             this._subscription = instance.subscribe(this.name, (message) => {
                 const item = { id: message.data.event.replayId,receivedDate: Date.now(),content: message};
-                console.log('Received message:', item);
+                //console.log('Received message:', item);
                 this.messages.push(item);
                 //callback(item);
                 store.dispatch(receiveMessageSuccess(item,this.messages,this.name));
@@ -39,6 +39,7 @@ export class PlatformEvent {
             this.status = STATUS_SUBSCRIBED;
             store.dispatch(subscribeChannelSuccess(this.name,this.alias))
         }catch(e){
+            console.error(e);
             this.status = STATUS_ERROR;
         }
     }

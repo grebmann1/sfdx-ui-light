@@ -48,9 +48,10 @@ export default function ui(state = {}, action) {
         }
 
         case SUBSCRIBE_CHANNEL_SUCCESS:
+            console.log('state',state,action)
             return {
                 ...state,
-                recentChannels: recentChannels(state.recentChannels, action)
+                recentChannels: recentChannels(action.payload?.recentChannels, action)
             };
 
         case LOAD_RECENT_CHANNELS:
