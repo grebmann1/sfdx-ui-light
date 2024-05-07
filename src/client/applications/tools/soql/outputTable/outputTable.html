@@ -13,7 +13,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <template for:each={virtualList} for:item="row">
+                        <template for:each={_allRows} for:item="row">
                             <tr class="slds-hint-parent" key={row.key}>
                                 <template for:each={row.values} for:item="value">
                                     <td key={value.key} class="slds-cell-wrap">
