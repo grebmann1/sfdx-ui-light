@@ -20,7 +20,7 @@ export default async function ctaRouter(
   const requestPath = viewRequest.requestPath.substring(4);
 
   if(isEmpty(requestPath)){
-    routeProperties.manualText = "# CTA Cheat Sheet\n## Objective of this document\nThe goal of this document is to group key information that are needed to pass the salesforce CTA exam. Don't expect to see technical things in this documents but more **Best Practices** and **Limitations** to take into consideration when solving the scenario.\nThere will be no discussion about Software Architecture as CTA and Software architecture are 2 different things and often developer have difficulties to distinguish between both concepts.\n## How to contribute\nThis document is open source and you can contribute to it by creating a pull request.";
+    routeProperties.manualText = "# CTA Personal Notes\n## Objective of this document\nThe goal of this document is to group key information that are needed to pass the salesforce CTA exam. Don't expect to see technical things in this documents but more **Best Practices** and **Limitations** to take into consideration when solving the scenario.\nThere will be no discussion about Software Architecture as CTA and Software architecture are 2 different things and often developer have difficulties to distinguish between both concepts.\n## How to contribute\nThis document is open source and you can contribute to it by creating a pull request.";
   }else{
     routeProperties.markdownUrl = `${staticUrl}/Documentation/${requestPath}`;
   }

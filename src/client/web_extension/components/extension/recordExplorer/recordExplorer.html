@@ -6,6 +6,15 @@
             <template lwc:if={isRecordIdAvailable}>
                 <!-- After loading -->
                 <template lwc:if={hasLoaded}>
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_5-of-6">
+                        </div>
+                        <div class="slds-col slds-size_1-of-6">
+                            <lightning-button-group class="slds-float_right">
+                                <lightning-button-icon icon-name="utility:refresh" title="Refresh" disabled={isLoading} onclick={refresh_handleClick}></lightning-button-icon>
+                            </lightning-button-group>
+                        </div>
+                    </div>
                     <!-- Object Info -->
                     <!--
                     <nav role="navigation" aria-label="Breadcrumbs">

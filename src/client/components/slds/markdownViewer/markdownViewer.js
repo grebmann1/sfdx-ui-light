@@ -64,13 +64,73 @@ export default class MarkdownViewer extends LightningElement {
         })
     }
 
-    enable_mermaid = async () => {
+    enable_mermaid = () => {
         this.refs.container.querySelectorAll("pre .language-mermaid")
         .forEach( async el => {
-            const { svg,bindFunctions } = await window.mermaid.render('graphDiv',el.innerText);
-            el.innerHTML = svg;
+            this.renderMermaid(el);
         });
+    }
+
+
+    fixDiagram = (input) => {
+        function camelCaseToLowercaseWords(input) {
+            return input.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
+        }
         
+        function fixClassName(line) {
+            const match = line.match(/([A-Z][a-zA-Z0-9]*)\s*\{/);
+            if (match) {
+                const className = match[1];
+                //const newClassName = camelCaseToLowercaseWords(className); // we dont use, it's more complicate
+                return line.replace(className, `class ${className}`);
+            }
+            return line;
+        }
+
+        // Split the input into lines for easier manipulation.
+        const lines = input.split('\n');
+        let isValidDiagram = false;
+        let fixedDiagram = [];
+    
+        lines.forEach(line => {
+            //line = line.trim();
+    
+            if (line.startsWith('classDiagram')) {
+                isValidDiagram = true;
+            }
+    
+            if (isValidDiagram) {
+                // Fix class names
+                line = fixClassName(line);
+                fixedDiagram.push(line);
+            } else {
+                fixedDiagram.push(line);
+            }
+        });
+    
+        // Join the fixed lines back into a single string.
+        return fixedDiagram.join('\n');
+    }
+    
+
+    renderMermaid = async (el) => {
+
+        
+
+        try{
+            const diagramText = this.fixDiagram(el.innerText);
+            console.log('diagramText');
+            console.log(diagramText);
+            if(await mermaid.parse(diagramText)){
+                const { svg,bindFunctions } = await window.mermaid.render('graphDiv',diagramText);
+                el.innerHTML = svg;
+            }else{
+                console.log('Invalid format')
+            }
+            
+        }catch(e){
+            console.log('Unknown diagram & error',e);
+        }
     }
     
 }

@@ -6,7 +6,9 @@ import { getCurrentTab } from 'connection/utils';
 import Toast from 'lightning/toast';
 
 const APPLICATIONS = {
-    RECORD_EXPLORER:'recordExplorer'
+    RECORD_EXPLORER:'recordExplorer',
+    USER_EXPLORER:'userExplorer',
+    ORG_INFO:'orgInfo'
 }
 
 export default class Salesforce extends LightningElement {
@@ -27,7 +29,9 @@ export default class Salesforce extends LightningElement {
     }
     set isConnectorLoaded(value){
         this._isConnectorLoaded = value;
+        //this._isConnectorLoaded = true; // For offline debuging
         this.openRecordExplorerTab();
+        //this.openUserExplorerTab(); // For offline debuging
     }
     
     _recordId;
@@ -77,9 +81,12 @@ export default class Salesforce extends LightningElement {
     
 
     handleSearch = (e) => {
+        console.log('handleSearch',this.refs.userexplorer);
         const { value } = e.detail;
-        if(this.isRecordExplorer && isNotUndefinedOrNull(value) && this.currentActiveTab === this.tabName_recordExplorer){
-            this.handleSearchRecordExplorer(value);
+        if(this.refs.recordexplorer && isNotUndefinedOrNull(value) && this.currentActiveTab === APPLICATIONS.RECORD_EXPLORER){
+            this.refs.recordexplorer.updateFilter(value);
+        }else if(this.refs.userexplorer && isNotUndefinedOrNull(value) && this.currentActiveTab === APPLICATIONS.USER_EXPLORER){
+            this.refs.userexplorer.updateFilter(value);
         }
     }
 
@@ -111,7 +118,15 @@ export default class Salesforce extends LightningElement {
         if(isUndefinedOrNull(this._recordId) || this._isConnectorLoaded === false) return;
 
         window.setTimeout(() => {
-            this.template.querySelector('slds-tabset').activeTabValue = this.tabName_recordExplorer;
+            this.template.querySelector('slds-tabset').activeTabValue = APPLICATIONS.RECORD_EXPLORER;
+        },100);
+    }
+
+    openUserExplorerTab = () => {
+        if(this._isConnectorLoaded === false) return;
+
+        window.setTimeout(() => {
+            this.template.querySelector('slds-tabset').activeTabValue = APPLICATIONS.USER_EXPLORER;
         },100);
     }
 
@@ -125,6 +140,10 @@ export default class Salesforce extends LightningElement {
 
     /** Getters **/
 
+    get APPLICATIONS(){
+        return APPLICATIONS;
+    }
+
     get currentActiveTab(){
         return this.template.querySelector('slds-tabset')?.activeTabValue;
     }
@@ -133,8 +152,12 @@ export default class Salesforce extends LightningElement {
         return true;
     }
 
-    get isRecordExplorer(){
+    get isRecordExplorerAvailable(){
         return !isEmpty(this.recordId);
+    }
+
+    get isUserExplorerAvailable(){
+        return true; // No specific logic yet to reduce the visibility
     }
 
     get versionFormatted(){
@@ -143,13 +166,5 @@ export default class Salesforce extends LightningElement {
 
     get isFooterDisplayed(){
         return this.isConnectorLoaded;
-    }
-
-    get tabName_recordExplorer(){
-        return 'recordExplorer';
-    }
-
-    get tabName_orgInfo(){
-        return 'orgInfo';
     }
 }

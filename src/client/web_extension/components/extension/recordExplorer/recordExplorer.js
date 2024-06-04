@@ -85,7 +85,7 @@ export default class RecordExplorer extends FeatureElement {
     }*/
 
     initRecordExplorer = async () => {
-        console.log('initRecordExplorer');
+        //console.log('initRecordExplorer');
         try{
             this.isError = false;
             this.isLoading = true;
@@ -103,6 +103,27 @@ export default class RecordExplorer extends FeatureElement {
                     this.metadata._useToolingApi = true;
                 }
             }
+            // Get data
+            if(isNotUndefinedOrNull(this.metadata)){
+                const _connector = this.metadata?._useToolingApi?this.connector.conn.tooling:this.connector.conn;
+                this.record = await fetch_data(_connector,this.sobjectName,this.recordId);
+                this.data = this.formatData();
+            }
+            
+            this.isLoading = false;
+        }catch(e){
+            console.error(e);
+            this.isError = true;
+            this.isLoading = false;
+        }
+    }
+
+    refreshData = async () => {
+        //console.log('refreshData');
+        try{
+            this.isError = false;
+            this.isLoading = true;
+            
             // Get data
             if(isNotUndefinedOrNull(this.metadata)){
                 const _connector = this.metadata?._useToolingApi?this.connector.conn.tooling:this.connector.conn;
@@ -195,6 +216,10 @@ export default class RecordExplorer extends FeatureElement {
         };
 
         store.dispatch(store_application.fakeNavigate(params));
+    }
+
+    refresh_handleClick = () => {
+        this.refreshData();
     }
 
 

@@ -7,6 +7,7 @@ export default class VerticalPanel extends LightningElement {
 
     @api isOpen;
     @api size = 'slds-size_medium';
+    @api title = 'Filter';
 
     hasLoaded = false;
 

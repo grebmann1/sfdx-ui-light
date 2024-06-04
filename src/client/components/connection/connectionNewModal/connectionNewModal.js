@@ -3,7 +3,7 @@ import Toast from 'lightning/toast';
 import LightningAlert from 'lightning/alert';
 import LightningModal from 'lightning/modal';
 import { oauth,oauth_chrome } from 'connection/utils';
-import { isNotUndefinedOrNull,isElectronApp,isChromeExtension,decodeError,checkIfPresent } from "shared/utils";
+import { isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,decodeError,checkIfPresent } from "shared/utils";
 
 const domainOptions = [
     { id: 'prod',   label: 'login.salesforce.com', value: 'login.salesforce.com' },
@@ -31,7 +31,20 @@ export default class ConnectionNewModal extends LightningModal {
     name;
     category;
     newCategory;
-    isNewCategoryDisplayed = false;
+
+    _isNewCategoryDisplayed;
+    set isNewCategoryDisplayed(value){
+        this._isNewCategoryDisplayed = value;
+        if(this._isNewCategoryDisplayed === false)(
+            window.setTimeout(()=>{
+                this.initLookupDefaultResults();
+
+            },1)
+        )
+    }
+    get isNewCategoryDisplayed(){
+        return this._isNewCategoryDisplayed;
+    }
 
     /* Group variables */
     maxSelectionSize = 2;
@@ -43,9 +56,7 @@ export default class ConnectionNewModal extends LightningModal {
     ];
 
     connectedCallback() {
-        window.setTimeout(()=>{
-            this.initLookupDefaultResults();
-        },1)
+        this.isNewCategoryDisplayed = false;
     }
 
     /** Methods **/
@@ -55,6 +66,7 @@ export default class ConnectionNewModal extends LightningModal {
         const lookup = this.template.querySelector('slds-lookup');
         if (lookup) {
             lookup.setDefaultResults(this.categories.map(x => this.formatForLookup(x)));
+            lookup.selection = this.selectedCategory;
         }
     }
 
@@ -200,8 +212,10 @@ export default class ConnectionNewModal extends LightningModal {
     }
 
     checkForErrors() {
-        this.errors = [];
+        //console.log('checkForErrors',this.template.querySelector('slds-lookup').getSelection());
         const selection = this.template.querySelector('slds-lookup').getSelection();
+
+        this.errors = [];
         this.selectedCategory = selection;
         // Enforcing required field
         if (selection.length === 0) {
@@ -235,6 +249,7 @@ export default class ConnectionNewModal extends LightningModal {
         try {
             const keywords = event.detail.rawSearchTerm;
             const results = this.categories.filter(x => checkIfPresent(x,keywords)).map(x => this.formatForLookup(x));
+            console.log('results',results);
             lookupElement.setSearchResults(results);
         } catch (error) {
             this.notifyUser('Lookup Error', 'An error occurred while searching with the lookup field.', 'error');
@@ -265,12 +280,15 @@ export default class ConnectionNewModal extends LightningModal {
             await this.connect();
         }
     }
+    
     handleCancelNewCategoryClick = (e) => {
         this.isNewCategoryDisplayed = false;
         this.newCategory = null;
     }
+
     handleCreateNewCategoryClick = (e) => {
         if(this.validateNewCategory()){
+            this.errors = []; // reset
             this.selectedCategory = [
                 this.formatForLookup(this.newCategory)
             ];

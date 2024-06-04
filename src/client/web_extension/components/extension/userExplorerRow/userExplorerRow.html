@@ -1,0 +1,36 @@
+<template>
+    <tr style="height: 0;">
+        <td lwc:ref="username" lwc:dom="manual" class="cell-field slds-cell-wrap"></td>
+        <td class="cell-value slds-cell-wrap">
+            <!-- Value -->
+            <span lwc:ref="name" lwc:dom="manual"></span>
+        </td>
+        <td class="cell-value slds-cell-wrap">
+            <!-- Value -->
+            <span lwc:ref="profile" lwc:dom="manual"></span>
+        </td>
+        <td class="cell-value slds-cell-wrap">
+            <!-- Value -->
+            <template lwc:if={isActive}>
+                <img src="/assets/images/checkbox_checked.gif"/>
+            </template>
+            <template lwc:else>
+                <img src="/assets/images/checkbox_unchecked.gif"/>
+            </template>
+        </td>
+        <td class="cell-action slds-cell-wrap">
+            <lightning-button-group>
+                <lightning-button-icon disabled={isDisabled} onclick={loginAsClick} icon-name="utility:change_owner" variant="border-filled" alternative-text="Login As" title="Login As"></lightning-button-icon>
+                <lightning-button-icon  onclick={viewClick} icon-name="utility:preview" variant="border-filled" alternative-text="View" title="View"></lightning-button-icon>
+                <!--
+                    <lightning-button-menu alternative-text="Show menu" menu-alignment="auto">
+                        <lightning-menu-item value="MenuItemOne" label="Menu Item One"></lightning-menu-item>
+                        <lightning-menu-item value="MenuItemTwo" label="Menu Item Two"></lightning-menu-item>
+                        <lightning-menu-item value="MenuItemThree" label="Menu Item Three"></lightning-menu-item>
+                        <lightning-menu-item value="MenuItemFour" label="Menu Item Four"></lightning-menu-item>
+                    </lightning-button-menu>
+                -->
+            </lightning-button-group>
+        </td>
+    </tr>
+</template>
