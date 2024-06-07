@@ -26,6 +26,14 @@ export class Field {
     }
 }
 
+export class UserPermission {
+    constructor(name, label, enabled) {
+        this.name = name;
+        this.label = label;
+        this.enabled = enabled;
+    }
+}
+
 export class PermissionGroups{
     constructor(record){
         this.id = record.Id;

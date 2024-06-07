@@ -1,7 +1,7 @@
 .spinner-text{
     position: absolute;
     left: 50%;
-    top: 50%;
+    top: 52%;
     -webkit-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
     text-align: center;
@@ -9,15 +9,15 @@
 }
 
 .spinner-text.top.small{
-    margin-top: -25px
+    margin-top: -35px
 }
 
 .spinner-text.top.medium{
-    margin-top: -33px;
+    margin-top: -43px;
 }
 
 .spinner-text.top.large{
-    margin-top: -41px;
+    margin-top: -51px;
 }
 
 .spinner-text.bottom.small{

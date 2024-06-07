@@ -1,13 +1,14 @@
 import {
     PermissionSet,Sobject,ObjectPermission,FieldPermission,PermissionGroups,LayoutAssignment,
-    Field,ApexClass,ApexPage,AppDefinition,Layout,RecordType,TabDefinition
+    Field,ApexClass,ApexPage,AppDefinition,Layout,RecordType,TabDefinition,UserPermission,
+    User
 } from "./mapping";
 
 import { chunkPromises,chunkArray,isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
 
 
 
-export const loadMetadata_async = async (conn,callback) => {
+export const loadMetadata_async = async (conn,callback,updateLoadingMessage) => {
     window.test = conn;
     let results_1 = await Promise.all([
         getPermissionSet(conn),
@@ -19,6 +20,9 @@ export const loadMetadata_async = async (conn,callback) => {
         getTabDefinitions(conn),
         getPermissionGroups(conn)
     ]);
+    console.log('--> Result_1');
+
+    updateLoadingMessage('Mapping General permissions and layouts. (2/3)');
 
     const {permissionSets,permissionSetProfileMapping} = results_1[0];
     const sobjects = results_1[1];
@@ -30,19 +34,21 @@ export const loadMetadata_async = async (conn,callback) => {
     const permissionGroups = results_1[7];
 
     let results_2 = await Promise.all([
-        getUserPermissions(conn,permissionSets),
+        setUserPermissions(conn,permissionSets),
         setRecordTypes(conn,sobjects),
         setLayoutAssignments(conn,permissionSets,{permissionSetProfileMapping,layouts})
     ]);
+    console.log('--> Result_2');
+    updateLoadingMessage('Mapping Entities to Profiles & PermissionSets. (3/3)');
 
     const profileFields = results_2[0];
 
     let results_3 = await Promise.all([
-        getSetupEntityAccess(conn,permissionSets,false,{apexClasses,apexPages,appDefinitions}),
+        getSetupEntityAccess(conn,null,false,{apexClasses,apexPages,appDefinitions}),
         setObjectPermissions(conn,permissionSets),
         setPermissionSetTabSetting(conn,permissionSets,{tabDefinitions}),
     ]);
-
+    console.log('--> results_3');
     const entityAccess = results_3[0];
 
     /** Map entity to Profile */
@@ -60,7 +66,7 @@ export const loadMetadata_async = async (conn,callback) => {
         console.log('namespaceLoading');
         // Set Permissions
        let results_4 = await Promise.all([
-            getSetupEntityAccess(conn,permissionSets,true,{apexClasses,apexPages,appDefinitions})
+            getSetupEntityAccess(conn,null,true,{apexClasses,apexPages,appDefinitions})
         ]);
 
         const entityAccess_namespace = results_4[0];
@@ -93,7 +99,7 @@ export const getPermissionSet = async (conn) => {
     const permissionSetProfileMapping = {}
 
     let records_profiles = (await conn.query("SELECT Id,ProfileId,Profile.Name,Label,Name,License.Name,Type,Description,IsCustom,NamespacePrefix FROM permissionset")).records || [];
-    records_profiles.forEach(record => {
+        records_profiles.forEach(record => {
             permissionSets[record.Id] = new PermissionSet(record);
             if(isNotUndefinedOrNull(record.ProfileId)){
                 permissionSetProfileMapping[record.ProfileId] = record.Id;
@@ -130,11 +136,11 @@ async function getApexClass(conn) {
     console.log('getApexClass');
     const apexClasses = {};
     let query = conn.query("SELECT Id,Name,NamespacePrefix FROM ApexClass");
-    let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 10000 }) || [];
+    let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
         records.forEach(record => {
             apexClasses[record.Id] = new ApexClass(record);
         });
-
+    console.log('ApexClass records - ',records.length);
     return apexClasses;
 }
 
@@ -142,13 +148,13 @@ async function getPermissionGroups(conn){
     console.log('getPermissionGroups');
     const permissionGroups = {};
     let query = conn.query('SELECT Description, DeveloperName,  Id, MasterLabel, NamespacePrefix, Status FROM PermissionSetGroup');
-    let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 10000 }) || [];
+    let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
         records.forEach(record => {
             permissionGroups[record.Id] = new PermissionGroups(record);
         });
 
     let query_2 = conn.query('SELECT Id, PermissionSetGroupId, PermissionSetId FROM PermissionSetGroupComponent')
-    let records2 = await query_2.run({ responseTarget:'Records',autoFetch : true, maxFetch : 10000 }) || [];
+    let records2 = await query_2.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
         records2.forEach(record => {
             permissionGroups[record.PermissionSetGroupId].members.push(record.PermissionSetId);
         });
@@ -159,7 +165,7 @@ async function getApexPage(conn) {
     console.log('getApexPage');
     const  apexPages = {};
     let query = conn.query("SELECT Id,Name,MasterLabel FROM ApexPage");
-    let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 10000 }) || [];
+    let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
         records.forEach(record => {
             apexPages[record.Id] = new ApexPage(record);
         });
@@ -184,9 +190,11 @@ async function getAppDefinition(conn){
 async function getLayouts(conn){
     console.log('getLayouts');
     const  layouts = {};
-
-    let records = (await conn.tooling.query("select Id, Name, EntityDefinition.QualifiedApiName, EntityDefinition.Label from Layout where EntityDefinition.IsCustomizable=true and EntityDefinition.IsCompactLayoutable=true")).records || [];
-        records.forEach(record => {
+    let query = conn.tooling.query("SELECT Id, Name, EntityDefinition.QualifiedApiName, EntityDefinition.Label,EntityDefinition.IsCustomizable,EntityDefinition.IsCompactLayoutable from Layout");
+    let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 200000 }) || [];
+        records
+        .filter(x => x.EntityDefinition?.IsCompactLayoutable && x.EntityDefinition?.IsCustomizable)
+        .forEach(record => {
             layouts[record.Id] = new Layout(record.Id, record.Name, record.EntityDefinition.QualifiedApiName, record.EntityDefinition.Label);
         });
 
@@ -199,8 +207,10 @@ const getEntityDefinition = async (conn) => {
     console.log('getEntityDefinition');
     const sobjects = {};
     let query = conn.query("select QualifiedApiName,Label from EntityDefinition where IsCustomizable=true and IsCompactLayoutable=true");
-    let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
-        records.forEach(record => sobjects[record.QualifiedApiName] = new Sobject(record.QualifiedApiName, record.Label));
+    let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 200000 }) || [];
+        records.forEach(record => {
+            sobjects[record.QualifiedApiName] = new Sobject(record.QualifiedApiName, record.Label)
+        });
     return sobjects;
 }
 
@@ -226,44 +236,40 @@ const setLayoutAssignments = async (conn,permissionSets,{permissionSetProfileMap
     console.log('setLayoutAssignments');
     let query = conn.tooling.query("select Profile.Id, LayoutId, RecordTypeId from ProfileLayout where Profile.Id != null");
     let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 200000 }) || [];
-    console.log('records',records);
         records.forEach(record => {
             if (layouts[record.LayoutId]) {
                 //let layoutAssignmentKey = layouts[record.LayoutId].objectName+(record.RecordTypeId?`-${record.RecordTypeId}`:'');
-                permissionSets[permissionSetProfileMapping[record.Profile.Id]].layoutAssigns.push(new LayoutAssignment(
-                    record.LayoutId,
-                    layouts[record.LayoutId].objectName,
-                    record.RecordTypeId
-                ));
+                permissionSets[permissionSetProfileMapping[record.Profile.Id]].layoutAssigns.push(
+                    new LayoutAssignment(
+                        record.LayoutId,
+                        layouts[record.LayoutId].objectName,
+                        record.RecordTypeId
+                    )
+                );
             }
         });
 }
 
-const getUserPermissions = async (conn,permissionSets) => {
-    console.log('getUserPermissions');
+const setUserPermissions = async (conn,permissionSets) => {
+    console.log('setUserPermissions');
     const profileFields = {};
     
     let permissionDescribe = await conn.sobject('PermissionSet').describe();
         permissionDescribe.fields.forEach( x => {
             if (x.name.startsWith('Permissions')) {
-                profileFields[x.name] = {
-                    name:x.name,
-                    label:x.label
-                }
+                const { name,label } = x;
+                profileFields[x.name] = {name,label}
             }
         });
-
-    let fieldKeys = Object.keys(profileFields);
-    let records_permissionSet = (await conn.query("SELECT FIELDS(STANDARD) FROM PermissionSet LIMIT 2000")).records || [];
-        records_permissionSet.forEach(record => {
+    //console.log('permissionDescribe',permissionDescribe);
+    const profileFieldsToArray = Object.values(profileFields);
+    /* Might need to split this to improve the performances (Profiles & PermissionSets) **/
+    let query = conn.query(`SELECT FIELDS(STANDARD) FROM PermissionSet`); 
+    let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 200000 }) || [];
+        records.forEach(record => {
             if (permissionSets[record.Id]) {
-                fieldKeys.forEach(key => {
-                    permissionSets[record.Id].userPermissions.push({
-                        enabled:record[key],
-                        name:key,
-                        label:profileFields[key].label
-                    });
-                });
+                const userPermissions = profileFieldsToArray.map(item => new UserPermission(item.name,item.label,record[item.name]));
+                permissionSets[record.Id].userPermissions = userPermissions;
             }
         });
     return profileFields;
@@ -274,18 +280,20 @@ const setObjectPermissions = async (conn,permissionSets) => {
 
     let query = conn.query(`select ParentId,SobjectType,PermissionsCreate,PermissionsRead,PermissionsEdit,PermissionsDelete,PermissionsViewAllRecords,PermissionsModifyAllRecords from ObjectPermissions`);
          
-    let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
+    let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 200000 }) || [];
         records.forEach(record => {
             if(permissionSets.hasOwnProperty(record.ParentId)){
-                permissionSets[record.ParentId].objectPermissions.push(new ObjectPermission(
-                    record.SobjectType,
-                    record.PermissionsCreate,
-                    record.PermissionsRead,
-                    record.PermissionsEdit,
-                    record.PermissionsDelete,
-                    record.PermissionsViewAllRecords,
-                    record.PermissionsModifyAllRecords
-                ));
+                permissionSets[record.ParentId].objectPermissions.push(
+                    new ObjectPermission(
+                        record.SobjectType,
+                        record.PermissionsCreate,
+                        record.PermissionsRead,
+                        record.PermissionsEdit,
+                        record.PermissionsDelete,
+                        record.PermissionsViewAllRecords,
+                        record.PermissionsModifyAllRecords
+                    )
+                );
             }
         });
 }
@@ -294,7 +302,7 @@ const setPermissionSetTabSetting = async (conn,permissionSets,{tabDefinitions}) 
     console.log('setPermissionSetTabSetting');
     const fetchPermissionSetTabSetting = async (ids) => {
         let query = conn.query(`select ParentId, Name, Visibility from PermissionSetTabSetting where ParentId in ('${ids.join("','")}')`);
-        return await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
+        return await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 200000 }) || [];
     }
 
     let chunk_parentIds = chunkArray(Object.values(permissionSets).map(x => x.id),5);
@@ -302,7 +310,10 @@ const setPermissionSetTabSetting = async (conn,permissionSets,{tabDefinitions}) 
     let result = await chunkPromises(chunk_parentIds,4,fetchPermissionSetTabSetting);
     let records = result.flat();
         records.forEach(record => {
-            permissionSets[record.ParentId].tabAccesses.push({visibility:record.Visibility,...tabDefinitions[record.Name]})
+            permissionSets[record.ParentId].tabAccesses.push({
+                visibility:record.Visibility,
+                ...tabDefinitions[record.Name]
+            })
         });
 }
 
@@ -310,19 +321,19 @@ const setPermissionSetTabSetting = async (conn,permissionSets,{tabDefinitions}) 
 
 const getSetupEntityAccess = async (conn,permissionSets,includeNamespacePrefix = false,{apexClasses,apexPages,appDefinitions}) => {
     console.log('getSetupEntityAccess');
-
+    const CHUNK_SIZE = 50;
     const fetchEntityAccess = async (ids) => {
         let query = conn.query(`SELECT ParentId, SetupEntityType, SetupEntityId FROM SetupEntityAccess WHERE SetupEntityId in ('${ids.join("','")}')`);
-        return await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
+        return await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 200000 }) || [];
     }
 
     const filter_method = x => isUndefinedOrNull(x.namespacePrefix) && !includeNamespacePrefix || includeNamespacePrefix;
 
     const entityAccess = {}
 
-    let chunk_apexClasses = chunkArray(Object.values(apexClasses).filter(filter_method).map(x => x.id),50);
-    let chunk_apexPages = chunkArray(Object.values(apexPages).filter(filter_method).map(x => x.id),50);
-    let chunk_appDefinitions = chunkArray(Object.values(appDefinitions).filter(filter_method).map(x => x.id),50);
+    let chunk_apexClasses = chunkArray(Object.values(apexClasses).filter(filter_method).map(x => x.id),CHUNK_SIZE);
+    let chunk_apexPages = chunkArray(Object.values(apexPages).filter(filter_method).map(x => x.id),CHUNK_SIZE);
+    let chunk_appDefinitions = chunkArray(Object.values(appDefinitions).filter(filter_method).map(x => x.id),CHUNK_SIZE);
 
 
     let results = await Promise.all([
@@ -331,10 +342,11 @@ const getSetupEntityAccess = async (conn,permissionSets,includeNamespacePrefix =
         chunkPromises(chunk_appDefinitions,4,fetchEntityAccess)
     ]);
     let records = results.flat().flat();
-
     records.forEach(record => {
         if(!entityAccess.hasOwnProperty(record.ParentId)){
-            entityAccess[record.ParentId] = {classAccesses:[],pageAccesses:[],appAccesses:[]}
+            entityAccess[record.ParentId] = {
+                classAccesses:[],pageAccesses:[],appAccesses:[]
+            }
         }
         switch(record.SetupEntityType){
             case 'ApexClass':

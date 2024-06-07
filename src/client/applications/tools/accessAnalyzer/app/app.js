@@ -116,6 +116,7 @@ export default class App extends FeatureElement {
 
     isLoading = false;
     customLoadingMessage;
+    customAdditionalMessage;
 
 
     set tableInstance(value){
@@ -179,7 +180,8 @@ export default class App extends FeatureElement {
         if(!this.connector)return;
 
         this.isLoading = true;
-        this.customLoadingMessage = 'Loading Metadata from Mars';
+        this.customLoadingMessage = 'Fetching Metadata from Salesforce. (1/3)';
+        this.customAdditionalMessage = 'This request might take up to a few minutes.';
         var _metadata;
         try{
             // Cache loading only for full mode
@@ -191,17 +193,17 @@ export default class App extends FeatureElement {
                 }
             }
             if(!_metadata || refresh){
-                _metadata = await loadMetadata_async(this.connector.conn,this.loadMetadata_withNameSpaceCallback);
+                _metadata = await loadMetadata_async(this.connector.conn,this.loadMetadata_withNameSpaceCallback,this.updateLoadingMessage);
             }
         }catch(e){
             console.error(e);
-            _metadata = await loadMetadata_async(this.connector.conn,this.loadMetadata_withNameSpaceCallback);
+            _metadata = await loadMetadata_async(this.connector.conn,this.loadMetadata_withNameSpaceCallback,this.updateLoadingMessage);
         }
         
         let {permissionSets,...metadata} = _metadata;
         this.permissionSets = permissionSets;
         //console.log('this.permissionSets',this.permissionSets);
-        //console.log('this.metadata',metadata);
+        console.log('this.metadata',metadata);
         this.metadata = metadata;
         
         // Pre filter the permissionSets
@@ -214,10 +216,15 @@ export default class App extends FeatureElement {
             .map(x => x.id);
         }
         this.isLoading = false;
+        this.customAdditionalMessage = null;
         this.displayReport();
         
     }
 
+    updateLoadingMessage = (message) => {
+        console.log('updateLoadingMessage');
+        this.customLoadingMessage = message;
+    }
 
 
     /** Events  **/
@@ -353,7 +360,7 @@ export default class App extends FeatureElement {
     }
 
     get isRefreshDisabled(){
-        return isUndefinedOrNull(this.connector) || this.isLoading;
+        return isUndefinedOrNull(this.connector) /*|| this.isLoading;*/
     }
 
     get isSObjectSelectorDisplayed(){
@@ -442,8 +449,10 @@ export default class App extends FeatureElement {
     getDiffData = (data) => {
         if(!this.isDiffEnabled) return data;
         const constants = ['label','name','namespacePrefix','category','type','_children','api','isRequired'];
+        
         return data.filter(row => {
-            const fields = Object.keys(row).filter(x => !constants.includes(x));
+            //const fields = Object.keys(row).filter(x => !constants.includes(x));
+            const fields = this.filteredPermissions.map(x => x.id);
             const toCompare = fields.reduce((acc,field) => {
                 acc.add(row[field]);
                 return acc;
@@ -537,7 +546,7 @@ export default class App extends FeatureElement {
 
     displayReport = () => {
         this.isLoading = true;
-        this.customLoadingMessage = 'Gathering insights from the data cosmos';
+        this.customLoadingMessage = 'Generating report based on the metadata.';
         window.setTimeout(() => {
             if (this.tableInstance) {
                 this.tableInstance.destroy();
@@ -556,74 +565,81 @@ export default class App extends FeatureElement {
     generateFullDataList = (metadataFilter) => {
         var dataList = [];
         // Row processing
-        Object.values(CONFIG).filter(x => isUndefinedOrNull(metadataFilter) || isNotUndefinedOrNull(metadataFilter) && metadataFilter.includes(x.key)).forEach(configItem => {
+        try{
+            Object.values(CONFIG)
+            .filter(x => isUndefinedOrNull(metadataFilter) || isNotUndefinedOrNull(metadataFilter) && metadataFilter.includes(x.key))
+            .forEach(configItem => {
+                console.log('configItem.metadataName',configItem.metadataName);
+                Object.values(this.metadata[configItem.metadataName]) // sobjects.recordTypes
+                .filter(x => this.namespaceFiltering_isExcluded && (x.namespacePrefix == null || x.namespacePrefix === '') || !this.namespaceFiltering_isExcluded)
+                .forEach(item => {
+                    let data = {};
+                        data['label']   = item.label || item.name;
+                        data['name']    = item.name;
+                        data['namespacePrefix'] = item.namespacePrefix || 'Default';
+                        data['category'] = configItem.category;
 
-            Object.values(this.metadata[configItem.metadataName]) // sobjects.recordTypes
-            .filter(x => this.namespaceFiltering_isExcluded && (x.namespacePrefix == null || x.namespacePrefix === '') || !this.namespaceFiltering_isExcluded)
-            .forEach(item => {
-                let data = {};
-                    data['label']   = item.label || item.name;
-                    data['name']    = item.name;
-                    data['namespacePrefix'] = item.namespacePrefix || 'Default';
-                    data['category'] = configItem.category;
-
-                    this.filteredPermissions.forEach(permission => {
-                        const permissionList = permission[configItem.permissionName];
-                        let index = permissionList.findIndex(x => x[configItem.permissionFieldId] === item.name);
-                        if(index > -1){
-                            data[permission.id] = configItem.formatter(permissionList[index],this.metadata) // Want to keep empty if doesn't exist instead of false
-                        }
-                    });
-
-                    if(configItem.key === 'layouts'){
-                        // Run special logic for layouts
-                        const children = Object.values(item.recordTypes).map(recordType => {
-                            const permissionKey = `${item.name}-${recordType.id}`; // to be replaced in the SF method
-                            const subData = {
-                                name:`${data.name}.${recordType.name}`,
-                                label:recordType.label,
-                                category:data.category,
-                                namespacePrefix : data.namespacePrefix
-                            };
-                            this.filteredPermissions.forEach(permission => {
-                                const permissionList = permission[configItem.permissionName];
-                                
-                                let index = permissionList.findIndex(x => x[configItem.permissionFieldId] === permissionKey);
-                                if(index > -1){
-                                    subData[permission.id] = this.metadata['layouts'][permissionList[index].id].name // Want to keep empty if doesn't exist instead of false
-                                }
-                            });
-                            return subData;
+                        this.filteredPermissions.forEach(permission => {
+                            const permissionList = permission[configItem.permissionName];
+                            let index = permissionList.findIndex(x => x[configItem.permissionFieldId] === item.name);
+                            if(index > -1){
+                                data[permission.id] = configItem.formatter(permissionList[index],this.metadata) // Want to keep empty if doesn't exist instead of false
+                            }
                         });
-                        if(children && children.length > 0){
-                            data._children = children; // avoid empty record types
-                        }
-                    }
 
-                    if(configItem.subPermissions){
-                        
-                        // Check the children
-                        data._children = configItem.subPermissions.map(key => {
-                            const subData = {
-                                name:`${data.name}.${key}`,
-                                label:key,
-                                category:data.category,
-                                namespacePrefix : data.namespacePrefix
-                            };
-                            this.filteredPermissions.forEach(permission => {
-                                const permissionList = permission[configItem.permissionName];
-                                let index = permissionList.findIndex(x => x[configItem.permissionFieldId] === item.name);
-                                if(index > -1){
-                                    subData[permission.id] = permissionList[index][key] // Want to keep empty if doesn't exist instead of false
-                                }
+                        if(configItem.key === 'layouts'){
+                            // Run special logic for layouts
+                            const children = Object.values(item.recordTypes).map(recordType => {
+                                const permissionKey = `${item.name}-${recordType.id}`; // to be replaced in the SF method
+                                const subData = {
+                                    name:`${data.name}.${recordType.name}`,
+                                    label:recordType.label,
+                                    category:data.category,
+                                    namespacePrefix : data.namespacePrefix
+                                };
+                                this.filteredPermissions.forEach(permission => {
+                                    const permissionList = permission[configItem.permissionName];
+                                    
+                                    let index = permissionList.findIndex(x => x[configItem.permissionFieldId] === permissionKey);
+                                    if(index > -1){
+                                        subData[permission.id] = this.metadata['layouts'][permissionList[index].id].name // Want to keep empty if doesn't exist instead of false
+                                    }
+                                });
+                                return subData;
                             });
-                            return subData;
-                        });
-                    }
+                            if(children && children.length > 0){
+                                data._children = children; // avoid empty record types
+                            }
+                        }
 
-                    dataList.push(data);
-            });
-        })
+                        if(configItem.subPermissions){
+                            
+                            // Check the children
+                            data._children = configItem.subPermissions.map(key => {
+                                const subData = {
+                                    name:`${data.name}.${key}`,
+                                    label:key,
+                                    category:data.category,
+                                    namespacePrefix : data.namespacePrefix
+                                };
+                                this.filteredPermissions.forEach(permission => {
+                                    const permissionList = permission[configItem.permissionName];
+                                    let index = permissionList.findIndex(x => x[configItem.permissionFieldId] === item.name);
+                                    if(index > -1){
+                                        subData[permission.id] = permissionList[index][key] // Want to keep empty if doesn't exist instead of false
+                                    }
+                                });
+                                return subData;
+                            });
+                        }
+
+                        dataList.push(data);
+                });
+            })
+        }catch(e){
+            console.error('Issue in processing',e);
+        }
+        
         
         return dataList;
     }
@@ -756,8 +772,8 @@ export default class App extends FeatureElement {
         console.log('setFullViewReport');
 
 		let colModel = [
-			{ title: 'Label', field: 'label', resizable: true, frozen:true, headerHozAlign: "center", resizable: false,responsive:0,headerFilter:"input"},
-			{ title: 'Developer Name', field: 'name', resizable: true, frozen:true, headerHozAlign: "center", resizable: false, tooltip: true }
+			{ title: 'Developer Name', field: 'name', minWidth:200, resizable: true,frozen:true, headerHozAlign: "center",responsive:0,headerFilter:"input"},
+			{ title: 'Label', field: 'label', minWidth:200, resizable: true,  headerHozAlign: "center", tooltip: true,headerFilter:"input" }
 		];
 
         // Columns processing
@@ -810,7 +826,8 @@ export default class App extends FeatureElement {
 			columns: colModel,
 			columnHeaderVertAlign: "middle",
             debugInvalidOptions:true,
-            groupBy:"category",
+            groupBy:this.namespaceFiltering_isExcluded?"category":["category","namespacePrefix"],
+            groupStartOpen:this.namespaceFiltering_isExcluded?false:[false,true],
             maxHeight:"100%",
             placeholder:()=>{
                 return this.isDiffEnabled ? "No Matching Data (Diff Enabled)" : "No Data available"; 
@@ -833,8 +850,8 @@ export default class App extends FeatureElement {
 
 		let dataList = [];
 		let colModel = [
-			{ title: 'Label', field: 'label', resizable: true, frozen:true, headerHozAlign: "center", minWidth: 200, tooltip: true},
-			{ title: 'Developer Name', field: 'api', resizable: true, frozen:true, headerHozAlign: "center", minWidth: 200, tooltip: true },
+            { title: 'Developer Name', field: 'api', resizable: true, frozen:true, headerHozAlign: "center", minWidth: 200, tooltip: true,headerFilter:"input" },
+			{ title: 'Label', field: 'label', resizable: true, headerHozAlign: "center", minWidth: 200, tooltip: true,headerFilter:"input"},
             { title: 'Field Type', field: 'type', resizable:true, headerHozAlign: "center", minWidth: 100, tooltip: true },
             { title: 'Required', field: 'isRequired', resizable:true, headerHozAlign: "center", minWidth: 20, hozAlign: "center",formatter:"tickCross",formatterParams:{allowEmpty:true},}
 		];
@@ -903,7 +920,7 @@ export default class App extends FeatureElement {
                 columns: colModel,
                 columnHeaderVertAlign: "middle",
                 debugInvalidOptions:true,
-                groupBy:"namespacePrefix",
+                groupBy:this.namespaceFiltering_isExcluded?null:"namespacePrefix",
                 maxHeight:"100%",
                 placeholder:()=>{
                     return this.isDiffEnabled ? "No Matching Data (Diff Enabled)" : "No Data available"; 
@@ -924,8 +941,8 @@ export default class App extends FeatureElement {
 		let dataList = [];
 
 		let colModel = [
-            { title: 'Permission',      field: 'label', headerHozAlign: "center", resizable: false, frozen: true, responsive:0,headerFilter:"input"},
-            { title: 'DeveloperName',   field: 'name',  headerHozAlign: "center", resizable: false, frozen: true, tooltip: true },
+            { title: 'DeveloperName',   field: 'name',  headerHozAlign: "center", resizable: true, frozen: true, tooltip: true,headerFilter:"input" },
+            { title: 'Permission',      field: 'label', headerHozAlign: "center", resizable: true, responsive:0,headerFilter:"input"},
             //{ title: 'Permission Groups',  frozen: true, headerHozAlign: "center", resizable: false, tooltip: true, columns: []},
         ];
         
@@ -989,8 +1006,8 @@ export default class App extends FeatureElement {
 
 		let dataList = [];
 		let colModel = [
-			{ title: 'Label', field: 'label', headerHozAlign: "center", resizable: false, frozen: true, responsive:0,headerFilter:"input"},
-			{ title: 'Developer Name', field: 'name', headerHozAlign: "center", resizable: false, frozen: true, tooltip: true }
+			{ title: 'Developer Name', field: 'name', headerHozAlign: "center", resizable: false, frozen: true, tooltip: true,headerFilter:"input" },
+            { title: 'Label', field: 'label', headerHozAlign: "center", resizable: false, responsive:0,headerFilter:"input"},
 		];
         
 		this.filteredPermissions.forEach(permission => {

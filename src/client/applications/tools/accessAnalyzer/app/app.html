@@ -123,7 +123,12 @@
             <div class="slds-col slds-fill-height column region-main slds-is-relative">
                 <template lwc:if={isLoading}>
                     <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
-                        <slds-spinner alternative-text="Loading" size="small" message={loadingMessage}></slds-spinner>
+                        <slds-spinner 
+                            alternative-text="Loading" 
+                            size="small" 
+                            message={loadingMessage}
+                            additional-message={customAdditionalMessage}
+                        ></slds-spinner>
                     </div>
                 </template>
                 <!-- Table -->

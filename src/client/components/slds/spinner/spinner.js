@@ -7,6 +7,7 @@ export default class Spinner extends LightningElement {
     @api variant;
 
     @api message;
+    @api additionalMessage;
     @api messages;
     @api position;
     messageCSS;
