@@ -13,3 +13,7 @@
 
 .tableFixHead table { border-collapse: inherit; width: 100%; }
 .tableFixHead thead { position: sticky; top: 0; z-index: 2; }
+
+.slds-editor-footer{
+    background-color: #fafaf9;
+}
