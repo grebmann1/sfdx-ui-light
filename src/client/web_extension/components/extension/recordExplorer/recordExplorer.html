@@ -125,7 +125,7 @@
         <template lwc:if={isEditMode}>
             <div class="slds-editor-footer">
                 <template lwc:if={isChangeMessageDisplayed}>
-                    <div class="slds-grid slds-grid_align-center slds-p-vertical_x-small">
+                    <div class="slds-grid slds-grid_align-center slds-p-top_x-small">
                         <p>
                             {modifiedRowsTotal} pending change(s)  
                             <lightning-button 
@@ -140,7 +140,7 @@
                     </div>
                 </template>
                 
-                <div class="slds-grid slds-grid_align-center slds-p-bottom_small">
+                <div class="slds-grid slds-grid_align-center slds-p-vertical_x-small">
                     <lightning-button
                         disabled={isCancelButtonDisabled}
                         class="slds-float_left slds-button"
@@ -156,7 +156,7 @@
                         onclick={handleSaveClick}
                     ></lightning-button>
                 </div>
-                <div class="slds-grid slds-grid_align-center slds-p-bottom_small">
+                <div class="slds-grid slds-grid_align-center slds-p-bottom_x-small">
                     <p>(Record Editing is currently in beta phase)</p>
                 </div>
             </div>
