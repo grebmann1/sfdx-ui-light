@@ -6,9 +6,7 @@ const SESSION_EXPIRATION_IN_MIN = 30;
 
 async function getOrCreateSessionId() {
 	// Store session in memory storage
-	let {
-		sessionData
-	} = await chrome.storage.session.get('sessionData');
+	let { sessionData } = await chrome.storage.session.get('sessionData');
 	// Check if session exists and is still valid
 	const currentTimeInMs = Date.now();
 	if (sessionData && sessionData.timestamp) {
@@ -62,7 +60,7 @@ window.addEventListener("load", async () => {
 				params: {
 					session_id: await getOrCreateSessionId(),
 					engagement_time_msec: DEFAULT_ENGAGEMENT_TIME_IN_MSEC,
-					page_title: document.title,
+					page_title: "Chrome Extension",//document.title,
 					page_location: document.location.href
 				},
 			}, ],

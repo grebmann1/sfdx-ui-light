@@ -1,0 +1,216 @@
+<template>
+    <template if:true={failed}>
+       <span class="slds-hide">No input rendered: {errorMessage}</span>
+    </template>
+    <template if:true={ready}>
+        <template if:true={isTypeName}>
+            <lightning-input-name
+               label={label}
+               first-name={value.FirstName}
+               last-name={value.LastName}
+               salutation={value.Salutation}
+               options={picklistOptions}
+               disabled={_disabled}
+               required={required}
+               field-level-help={inlineHelpText}
+               onchange={handleChange}></lightning-input-name>
+        </template>
+        <template if:true={isTypeAddress}>
+            <lightning-input-address
+                street-label={addressField.Street.label}
+                city-label={addressField.City.label}
+                province-label={state.label}
+                country-label={country.label}
+                postal-code-label={addressField.PostalCode.label}
+                street={addressField.Street.value}
+                city={addressField.City.value}
+                province={state.value}
+                postal-code={addressField.PostalCode.value}
+                country={country.value}
+                province-options={state.options}
+                country-options={country.options}
+                disabled={_disabled}
+                required={required}
+                field-level-help={inlineHelpText}
+                onchange={handleChange}></lightning-input-address>
+        </template>
+        <template if:true={isTypeNumber}>
+            <lightning-input
+               disabled={_disabled}
+               name={_fieldName}
+               type="number"
+               variant={variant}
+               required={required}
+               label={label}
+               formatter={numberFormatter}
+               value={value}
+               step={numberStep}
+               field-level-help={inlineHelpText}
+               onchange={handleChange}></lightning-input>
+        </template>
+        <template if:true={isTypeText}>
+            <lightning-input
+               disabled={_disabled}
+               label={label}
+               variant={variant}
+               value={value}
+               name={_fieldName}
+               required={required}
+               field-level-help={inlineHelpText}
+               onchange={handleChange}></lightning-input>
+        </template>
+        <template if:true={isTypeCheckbox}>
+            <lightning-input
+               disabled={_disabled}
+               label={label}
+               name={_fieldName}
+               checked={value}
+               type="checkbox"
+               variant={variant}
+               field-level-help={inlineHelpText}
+               onchange={handleChange}></lightning-input>
+        </template>
+        <template if:true={isTypePassword}>
+            <lightning-input
+               disabled={_disabled}
+               label={label}
+               name={_fieldName}
+               value={value}
+               required={required}
+               type="password"
+               variant={variant}
+               field-level-help={inlineHelpText}
+               onchange={handleChange}></lightning-input>
+        </template>
+        <template if:true={isTypeEmail}>
+            <lightning-input
+               disabled={_disabled}
+               label={label}
+               name={_fieldName}
+               value={value}
+               required={required}
+               type="email"
+               variant={variant}
+               field-level-help={inlineHelpText}
+               onchange={handleChange}></lightning-input>
+        </template>
+        <template if:true={isTypeTextArea}>
+            <lightning-textarea
+               label={label}
+               name={_fieldName}
+               value={value}
+               disabled={_disabled}
+               required={required}
+               maxlength={uiField.length}
+               field-level-help={inlineHelpText}
+               onchange={handleChange}></lightning-textarea>
+        </template>
+        <template if:true={isTypeRichText}>
+            <!--<lightning-input-rich-text
+                label={label}
+                value={value}
+                disabled={_disabled}
+                required={required}
+                field-level-help={inlineHelpText}
+                onchange={handleChange}></lightning-input-rich-text>-->
+            <lightning-textarea
+               label={label}
+               name={_fieldName}
+               value={value}
+               disabled={_disabled}
+               required={required}
+               maxlength={uiField.length}
+               field-level-help={inlineHelpText}
+               onchange={handleChange}></lightning-textarea>
+        </template>
+        <template if:true={isTypeDate}>
+            <lightning-input label={label}
+               name={_fieldName}
+               type="date"
+               variant={variant}
+               value={value}
+               disabled={_disabled}
+               required={required}
+               field-level-help={inlineHelpText}
+               onchange={handleChange}></lightning-input>
+        </template>
+        <template if:true={isTypeDateTime}>
+            <lightning-input
+               label={label}
+               name={_fieldName}
+               type="datetime"
+               variant={variant}
+               value={value}
+               required={required}
+               disabled={_disabled}
+               field-level-help={inlineHelpText}
+               onchange={handleChange}> </lightning-input>
+        </template>
+        <template if:true={isTypePicklist}>
+            <lightning-picklist
+               label={label}
+               name={_fieldName}
+               variant={variant}
+               value={value}
+               disabled={_disabled}
+               options={picklistOptions}
+               required={required}
+               field-level-help={inlineHelpText}
+               onchange={handleChange}></lightning-picklist>
+        </template>
+        <template if:true={isTypeMultiPicklist}>
+            <lightning-picklist
+               multiple
+               label={label}
+               name={_fieldName}
+               variant={variant}
+               value={value}
+               disabled={_disabled}
+               options={picklistOptions}
+               required={required}
+               field-level-help={inlineHelpText}
+               onchange={handleChange}></lightning-picklist>
+        </template>
+        <template if:true={isTypeReference}>
+            <!-- To Do in the future !!! -->
+            <!--<lightning-lookup
+                disabled={_disabled}
+                field-name={_fieldName}
+                object-infos={objectInfos}
+                record={record.record}
+                values={lookupValues}
+                label={label}
+                onchange={handleChange}></lightning-lookup>
+            -->
+            <lightning-input
+               disabled={_disabled}
+               label={label_lookup}
+               variant={variant}
+               value={value}
+               name={_fieldName}
+               required={required}
+               field-level-help={inlineHelpText}
+               onchange={handleChange}></lightning-input>
+        </template>
+        <template if:true={isTypeLocation}>
+            <lightning-input-location
+                longitude={value.longitude}
+                latitude={value.latitude}
+                label={label}
+                disabled={_disabled}
+                required={required}
+                onchange={handleChange}></lightning-input-location>
+        </template>
+        <template if:true={isTypeUnsupportedReference}>
+            <lightning-input
+                disabled
+                label={label}
+                name={_fieldName}
+                value={value}
+                required={required}
+                type="text"
+                field-level-help={inlineHelpText}
+                onchange={handleChange}></lightning-input>
+        </template>
+    </template>
+</template>

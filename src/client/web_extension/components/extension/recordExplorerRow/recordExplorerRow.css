@@ -1,3 +1,11 @@
 :host{
     display:contents;
 }
+
+pre{
+    margin:0px;
+}
+
+.slds-is-dirty{
+    background-color: antiquewhite;
+}

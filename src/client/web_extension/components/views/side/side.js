@@ -10,9 +10,8 @@ export default class Side extends LightningElement {
     @api versions = [];
     @api version;
     @api recordId;
-
-
-    panel = PANELS.DEFAULT;
+    @api panel = PANELS.DEFAULT;
+    
     previousPanel;
     isBackButtonDisplayed = false;
 
@@ -50,6 +49,12 @@ export default class Side extends LightningElement {
     }
 
     /** Methods **/
+
+    @api
+    resetToDefaultView = () => {
+        console.log('resetToDefaultView');
+        this.panel = PANELS.DEFAULT;
+    }
 
     loadFromNavigation = async ({state, attributes}) => {
         //('documentation - loadFromNavigation');

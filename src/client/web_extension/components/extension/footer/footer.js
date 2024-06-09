@@ -1,4 +1,5 @@
 import { LightningElement,api} from "lwc";
+import Toast from 'lightning/toast';
 import { isUndefinedOrNull } from "shared/utils";
 import FeatureElement from 'element/featureElement';
 
@@ -15,6 +16,10 @@ export default class Footer extends FeatureElement {
 
     handleCopy = () => {
         navigator.clipboard.writeText(this.usernameFormatted);
+        Toast.show({
+            label: 'Username exported to your clipboard',
+            variant:'success',
+        });
     }
 
 

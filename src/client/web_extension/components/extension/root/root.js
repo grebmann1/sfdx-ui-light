@@ -1,9 +1,9 @@
 import { LightningElement,api,wire } from "lwc";
 import FeatureElement from 'element/featureElement';
 import LightningAlert from 'lightning/alert';
-import { isUndefinedOrNull,runActionAfterTimeOut,normalizeString as normalize } from "shared/utils";
+import { isUndefinedOrNull,isNotUndefinedOrNull,runActionAfterTimeOut,normalizeString as normalize } from "shared/utils";
 import { directConnect,getHostAndSession } from 'connection/utils';
-import { getCurrentTab,getRecordId } from 'extension/utils';
+import { getCurrentTab,getRecordId,PANELS } from 'extension/utils';
 
 /** Store **/
 import { connectStore,store,store_application } from 'shared/store';
@@ -47,42 +47,64 @@ export default class root extends FeatureElement {
     }
 
     connectedCallback(){
-        this.loadComponent();
+        this.loadComponent(true);
     }
 
-    loadComponent = async () => {
+    disconnectedCallback(){
+        chrome.tabs.onUpdated.removeListener(this.monitorUrlListener);
+    }
+
+    loadComponent = async (withMonitorChange) => {
        
         let cookie = await getHostAndSession();
+        console.log('cookie',cookie);
         if(cookie){
             this.init_existingSession(cookie);
+            if(this.refs.view){
+                this.refs.view.panel = PANELS.SALESFORCE;
+            }
         }else{
-            this.init_default();
+            this.redirectToDefaultView();
         }
 
         this.currentTab = await getCurrentTab();
         this.currentUrl = this.currentTab.url;
         //this.currentOrigin = (new URL(this.currentTab.url)).origin;
-        this.monitorUrlChange();
-    }
-    
-    monitorUrlChange = async () => {
-        chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
-            //console.log('onUpdated',tabId, info, tab)
-            if (!tab.url || info.status !== 'complete' || tabId != this.currentTab.id) return;
-            runActionAfterTimeOut(tab.url,async (newUrl) => {
-                this.currentUrl = newUrl;
-            },{timeout:500});
-        });
+        if(withMonitorChange){
+            chrome.tabs.onUpdated.addListener(this.monitorUrlListener);
+        }
     }
 
-    init_default = () => {
-        //this.hasLoaded = true;
+
+    monitorUrlListener = async (tabId, info, tab) => {
+        //console.log('onUpdated',tabId, info, tab)
+        if (!tab.url || info.status !== 'complete' || tabId != this.currentTab.id) return;
+        runActionAfterTimeOut(tab.url,async (newUrl) => {
+            this.currentUrl = newUrl;
+            if(!this.hasSession){
+                // Reload in case there is existing session found!
+                this.loadComponent(false);
+            }else{
+                // verify cookie
+                let cookie = await getHostAndSession();
+                if(isUndefinedOrNull(cookie)){
+                    this.redirectToDefaultView();
+                }
+            }
+        },{timeout:300});
     }
+
+    redirectToDefaultView = () => {
+        // Redirect to default view as there is no cookie !!!
+        if(this.refs.view){
+            this.refs.view.panel = PANELS.DEFAULT;
+        }
+    }
+
 
     init_existingSession = async (cookie) => {
         this.sessionId = cookie.session;
         this.serverUrl = cookie.domain;
-
         /** Set as global **/
         window.sessionId = this.sessionId;
         window.serverUrl = this.serverUrl;
@@ -143,6 +165,10 @@ export default class root extends FeatureElement {
 
     /** Getters **/
 
+    get hasSession(){
+        return isNotUndefinedOrNull(this.sessionId) && isNotUndefinedOrNull(this.serverUrl)
+    }
+
     get normalizedVariant() {
         return normalize(this.variant, {
             fallbackValue: VARIANT.SIDE,
@@ -151,14 +177,14 @@ export default class root extends FeatureElement {
     }
 
     get isSide(){
-        return this.normalizedVariant === VARIANT.SIDE
+        return this.normalizedVariant === VARIANT.SIDE;
     }
 
     get isPopup(){
-        return this.normalizedVariant === VARIANT.POPUP
+        return this.normalizedVariant === VARIANT.POPUP;
     }
 
     get isOptions(){
-        return this.normalizedVariant === VARIANT.OPTIONS
+        return this.normalizedVariant === VARIANT.OPTIONS;
     }
 }

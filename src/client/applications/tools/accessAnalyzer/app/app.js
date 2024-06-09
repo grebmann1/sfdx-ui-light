@@ -203,7 +203,7 @@ export default class App extends FeatureElement {
         let {permissionSets,...metadata} = _metadata;
         this.permissionSets = permissionSets;
         //console.log('this.permissionSets',this.permissionSets);
-        console.log('this.metadata',metadata);
+        //console.log('this.metadata',metadata);
         this.metadata = metadata;
         
         // Pre filter the permissionSets
@@ -569,7 +569,6 @@ export default class App extends FeatureElement {
             Object.values(CONFIG)
             .filter(x => isUndefinedOrNull(metadataFilter) || isNotUndefinedOrNull(metadataFilter) && metadataFilter.includes(x.key))
             .forEach(configItem => {
-                console.log('configItem.metadataName',configItem.metadataName);
                 Object.values(this.metadata[configItem.metadataName]) // sobjects.recordTypes
                 .filter(x => this.namespaceFiltering_isExcluded && (x.namespacePrefix == null || x.namespacePrefix === '') || !this.namespaceFiltering_isExcluded)
                 .forEach(item => {

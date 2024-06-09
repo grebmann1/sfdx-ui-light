@@ -1,6 +1,7 @@
 <template>
     <template lwc:if={isSide}>
-        <views-side  
+        <views-side 
+            lwc:ref="view"
             class="slds-full-height"
             versions={versions}
             version={version}
@@ -10,6 +11,7 @@
     </template>
     <template lwc:elseif={isPopup}>
         <views-popup  
+            lwc:ref="view"
             class="slds-full-height"
             versions={versions}
             record-id={recordId}

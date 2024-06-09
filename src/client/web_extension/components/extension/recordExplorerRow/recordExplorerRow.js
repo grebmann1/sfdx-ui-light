@@ -1,8 +1,10 @@
 import {LightningElement,api} from "lwc";
-import { isNotUndefinedOrNull,isSalesforceId,isEmpty,isUndefinedOrNull } from "shared/utils";
+import Toast from 'lightning/toast';
+import { isNotUndefinedOrNull,isSalesforceId,isEmpty,isUndefinedOrNull,classSet } from "shared/utils";
 export default class RecordExplorerRow extends LightningElement {
 
     @api item;
+    @api isVisible;
     @api currentOrigin;
     @api get filter(){
         return this._filter;
@@ -10,43 +12,146 @@ export default class RecordExplorerRow extends LightningElement {
     set filter(value){
         this._filter = value;
         if(this.hasRendered){
-            this.renderRows();
+            this.renderRow();
         }
     }
 
     hasRendered = false;
 
+    // Editing
+    @api editingFieldSet; // used for scroll loading !
+    @api isEditMode = false;
+    @api isDirty = false;
+    @api record;
+    @api metadata;
+    @api get fieldErrors(){
+        return this._errors;
+    }
+    set fieldErrors(value){
+        this._errors = value;
+        if(this.hasRendered && this.isEditMode){
+            this.renderFieldErrors();
+        }
+    }
+
     connectedCallback(){
-        this.hasRendered = true;
-        //this.renderRows();
+        //this.renderRow();
     }
 
     renderedCallback() {
-        /*if(this.template.querySelector('.injector')){
-            // Issue will happen with "HTML values";
-            let formattedHtml = this.formattedValue;
-            if(this.type === 'address'){
-                formattedHtml = `<pre>${this.formattedValue}</pre>`;
-            }else if(this.isSalesforceId){
-                formattedHtml = `<a href="${this.currentOrigin}/${this.value}" target="_blank">${this.formattedValue}</a>`;
+        this.renderRow();
+        if(!this.hasRendered && isNotUndefinedOrNull(this.editingFieldSet) && this.editingFieldSet.has(this.name)){
+            // Only happening for new row created during scrolling
+            this.enableInputField();
+        }
+        this.hasRendered = true;
+    }
+
+    /** Methods  **/
+
+    renderFieldErrors = () => {
+        if(isNotUndefinedOrNull(this.fieldErrors) && this.fieldErrors.hasOwnProperty(this.name)){
+            this.refs.inputfield.setErrors(this.fieldErrors);
+        }
+    }
+
+    renderRow = () => {
+        if(this.refs.field){
+            this.refs.field.innerHTML = this.formattedFieldName;
+        }
+        if(this.refs.value){
+            this.refs.value.innerHTML = this.formattedValue;
+        }
+    }
+
+    @api
+    enableInputField = () => {
+        if(!this.isEditEnabled) return;
+        
+        this.isEditMode = true;
+        setTimeout(() => {
+            const uiField = this.metadata.fields.find(x => x.name === this.name);
+            this.refs.inputfield.wireRecordAndMetadata({
+                record:this.record,
+                objectInfo:this.metadata,
+                uiField
+            });
+            console.log('uiField',uiField);
+            // Passing all picklists
+            if(this.isPicklist){
+                const picklistValues = this.metadata.fields.filter(x => x.type == 'picklist' || x.type == 'multipicklist').reduce((a, v) => ({ ...a, [v.name]: v.picklistValues}), {})
+                this.refs.inputfield.wirePicklistValues(picklistValues);
             }
-
-            this.template.querySelector('.injector').innerHTML = formattedHtml;
-            
-        }*/
-        this.renderRows();
+        },1);
     }
 
-    handleCopy = () => {
+    @api
+    disableInputField = () => {
+        this.isDirty = false;
+        this.isEditMode = false;
+    }
+
+    sendRowChangeEvent = () => {
+        this.dispatchEvent(
+            // eslint-disable-next-line lightning-global/no-custom-event-bubbling
+            new CustomEvent('rowchange', {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            })
+        );
+    }
+
+    /* Events */
+
+    handleInputChange = (e) => {
+        //console.log('handleInputChange',e.detail);
+        if (e.detail.value !== this.value) {
+            this.isDirty = true;
+        } else {
+            this.isDirty = false;
+        }
+        //this.sendRowChangeEvent();
+    }
+
+    handleCopyClick = () => {
         navigator.clipboard.writeText(this.value);
+        Toast.show({
+            label: 'Value exported to your clipboard',
+            variant:'success',
+        });
     }
 
-    renderRows = () => {
-        this.refs.field.innerHTML = this.formattedFieldName;
-        this.refs.value.innerHTML = this.formattedValue;
+    handleUndoClick = () => {
+        //this.isEditMode = false; // for now we just reset it by disabling the "Input field"
+        this.isDirty = false;
+        const uiField = this.metadata.fields.find(x => x.name === this.name);
+        this.refs.inputfield.reset();
     }
-
     
+
+    handleEditClick = () => {
+        this.enableInputField();
+        this.dispatchEvent(
+            // eslint-disable-next-line lightning-global/no-custom-event-bubbling
+            new CustomEvent('enableeditmode', {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                detail:{
+                    fieldName:this.name
+                }
+            })
+        );
+    }
+    
+    handleFormulaClick = () => {
+        navigator.clipboard.writeText(this.formula);
+        Toast.show({
+            label: 'Formula exported to your clipboard',
+            variant:'success',
+        });
+    }
 
     /** Getters */
 
@@ -54,12 +159,18 @@ export default class RecordExplorerRow extends LightningElement {
         return this.item?.label;
     }
 
+    @api
     get name(){
         return this.item?.name;
     }
 
     get value(){
         return this.item?.value;
+    }
+
+    @api
+    get newValue(){
+        return this.refs.inputfield.value;
     }
 
     get type(){
@@ -85,6 +196,38 @@ export default class RecordExplorerRow extends LightningElement {
     get isSalesforceId(){
         return isNotUndefinedOrNull(this.value) && isSalesforceId(this.value);
     }
+
+    get isEditEnabled(){
+        return this.item.fieldInfo.updateable; //&& !this.isEditMode;
+    }
+
+    get isEditButtonDisplayed(){
+        return this.isEditEnabled && !this.isEditMode;
+    }
+
+    get isUndoDisplayed(){
+        return this.isEditMode && this.isDirty;
+    }
+
+    get isReadOnly(){
+        return !this.isEditMode && !this.isNotEditable || this.isNotEditable;
+    }
+
+    get isNotEditable(){
+        return !this.item.fieldInfo.updateable;
+    }
+
+    get isFormula(){
+        return this.item.fieldInfo.calculated;
+    }
+
+    get formula(){
+        return this.item.fieldInfo.calculatedFormula;
+    }
+
+    get isPicklist(){
+        return this.item.fieldInfo.type == 'picklist' || this.item.fieldInfo.type == 'multipicklist';
+    }
     
 
     get formattedFieldName(){
@@ -94,7 +237,7 @@ export default class RecordExplorerRow extends LightningElement {
         
         const regex = new RegExp('('+this.filter+')','gmi');
         if(regex.test(this.name)){
-            console.log('this.name.toString()',this.name.toString());
+            //console.log('this.name.toString()',this.name.toString());
             return this.name.toString().replace(/<?>?/,'').replace(regex,'<span style="font-weight:Bold; color:blue;">$1</span>');
         }else{
             return this.name;
@@ -138,6 +281,14 @@ export default class RecordExplorerRow extends LightningElement {
 
         // otherwise just return the formattedValue
         return _formattedValue;
+    }
+
+    get rowClass(){
+        return classSet('')
+        .add({
+            'slds-is-dirty':this.isDirty,
+            'slds-hide':!this.isVisible
+        }).toString();
     }
     
 }
