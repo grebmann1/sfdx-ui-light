@@ -41,7 +41,7 @@ export default class UserExplorer extends FeatureElement {
 
     searchUsers = async () => {
         this.isLoading = true;
-        let query = this.connector.conn.query(`${BASE_QUERY} WHERE Username  LIKE '%${this.filter}%' OR Name LIKE '%${this.filter}%' OR Email LIKE '%${this.filter}%' OR Profile.Name LIKE '%${this.filter}%' ORDER BY Name limit 200`);
+        let query = this.connector.conn.query(`${BASE_QUERY} WHERE Username  LIKE '%${this.filter}%' OR Name LIKE '%${this.filter}%' OR Email LIKE '%${this.filter}%' OR Profile.Name LIKE '%${this.filter}%' ORDER BY Name limit 500`);
         try{
             let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
             this.data = records;
@@ -56,7 +56,7 @@ export default class UserExplorer extends FeatureElement {
         this.currentOrigin = (new URL(this.currentTab.url)).origin;
         // Default when loading
         this.isLoading = true;
-        let query = this.connector.conn.query(`${BASE_QUERY} ORDER BY Name limit 200`);
+        let query = this.connector.conn.query(`${BASE_QUERY} ORDER BY Name limit 500`);
 
         try{
             let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
