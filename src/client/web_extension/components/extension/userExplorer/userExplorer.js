@@ -18,7 +18,7 @@ export default class UserExplorer extends FeatureElement {
     currentOrigin;
 
     // for table
-    data;
+    data = [];
     filter = '';
 
     // Scrolling
@@ -41,9 +41,13 @@ export default class UserExplorer extends FeatureElement {
 
     searchUsers = async () => {
         this.isLoading = true;
-        let query = this.connector.conn.query(`${BASE_QUERY} WHERE Username  LIKE '%${this.filter}%' OR Name LIKE '%${this.filter}%' OR Email LIKE '%${this.filter}%' OR Profile.Name LIKE '%${this.filter}%' ORDER BY Name limit 2000`);
-        let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
-        this.data = records;
+        let query = this.connector.conn.query(`${BASE_QUERY} WHERE Username  LIKE '%${this.filter}%' OR Name LIKE '%${this.filter}%' OR Email LIKE '%${this.filter}%' OR Profile.Name LIKE '%${this.filter}%' ORDER BY Name limit 200`);
+        try{
+            let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
+            this.data = records;
+        }catch(e){
+            console.error(e);
+        }
         this.isLoading = false;
     }
 
@@ -52,9 +56,14 @@ export default class UserExplorer extends FeatureElement {
         this.currentOrigin = (new URL(this.currentTab.url)).origin;
         // Default when loading
         this.isLoading = true;
-        let query = this.connector.conn.query(`${BASE_QUERY} ORDER BY Name limit 2000`);
-        let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
-        this.data = records;
+        let query = this.connector.conn.query(`${BASE_QUERY} ORDER BY Name limit 200`);
+
+        try{
+            let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
+            this.data = records;    
+        }catch(e){
+            console.error(e);
+        }
         this.isLoading = false;
     }
 
