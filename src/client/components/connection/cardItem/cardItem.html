@@ -10,9 +10,9 @@
         </div>
         <div class="slds-col slds-size_2-of-5">
             <lightning-button-group class="action-items">
-                <lightning-button-icon icon-name="utility:new_window" title="Open Browser" size="small" onclick={handleEventClick} data-event="openBrowser" variant="border-filled"></lightning-button-icon>
+                <lightning-button-icon disabled={isErrorDisplayed} icon-name="utility:new_window" title="Open Browser" size="small" onclick={handleEventClick} data-event="openBrowser" variant="border-filled"></lightning-button-icon>
                 <!-- Incognito Icon -->
-                <button onclick={handleEventClick} title="Open Incognito" data-event="incognito" class="slds-button slds-button_middle slds-button_icon slds-button_icon-small slds-button_icon-border-filled slds-button_first">
+                <button disabled={isErrorDisplayed} onclick={handleEventClick} title="Open Incognito" data-event="incognito" class="slds-button slds-button_middle slds-button_icon slds-button_icon-small slds-button_icon-border-filled slds-button_first">
                     <svg class="slds-button__icon icon-incognito" viewBox="0 0 30 26" xmlns="http://www.w3.org/2000/svg">
                         <path d="M8.94,4.69L7.16,10.43a0.45,0.45,0,0,0,.43.58H22.78a0.45,0.45,0,0,0,.43-0.58l-2-6.36A1.15,1.15,0,0,0,20,3.27l-6.62,1A5.27,5.27,0,0,1,10.49,4h0A1.15,1.15,0,0,0,8.94,4.69Z" transform="translate(-0.15 -3.26)"></path>
                         <path d="M0.15,16.72H30a35.79,35.79,0,0,0-14.92-3.33A35.79,35.79,0,0,0,.15,16.72Z" transform="translate(-0.15 -3.26)"></path>
@@ -33,6 +33,15 @@
                 </lightning-button-menu>
             </lightning-button-group>   
         </div>
+        <template lwc:if={isErrorDisplayed}>
+            <p class="card-title">
+                <lightning-icon icon-name="utility:error" size="x-small" variant="error"></lightning-icon>
+                <span class="slds-m-left_x-small slds-text-title slds-text-color_error">
+                   {errorMessage}
+                </span>
+                <lightning-button class="slds-m-left_x-small" variant="base" label="Authorize Org" onclick={handleEventClick} data-event="login"></lightning-button>
+            </p>
+        </template>
         <div class="slds-col slds-size_1-of-1">
             <p class="card-title">
                 <span class="slds-text-title">

@@ -23,7 +23,7 @@ export default class Menu extends FeatureElement {
     
     observer
     namespacePrefixes = [];
-    namespaceFiltering_value = DEFAULT_NAMESPACE;
+    @api namespaceFilteringValue = DEFAULT_NAMESPACE;
 
     
     @track _items = [];
@@ -57,7 +57,7 @@ export default class Menu extends FeatureElement {
     
     
     namespaceFiltering_handleChange = (e) => {
-        this.namespaceFiltering_value = e.detail.value;
+        this.namespaceFilteringValue = e.detail.value;
     }
 
     handleSearch = (e) => {
@@ -120,8 +120,8 @@ export default class Menu extends FeatureElement {
     }
 
     get namespaceFiltered(){
-        if(this.namespaceFiltering_value == ALL_NAMESPACE || isEmpty(this.namespaceFiltering_value)) return this.items;
-        return this.items.filter(x => isEmpty(x.NamespacePrefix) && this.namespaceFiltering_value === DEFAULT_NAMESPACE || this.namespaceFiltering_value === x.NamespacePrefix);
+        if(this.namespaceFilteringValue == ALL_NAMESPACE || isEmpty(this.namespaceFilteringValue) || !this.namespaceFiltering_isDisplayed) return this.items;
+        return this.items.filter(x => isEmpty(x.NamespacePrefix) && this.namespaceFilteringValue === DEFAULT_NAMESPACE || this.namespaceFilteringValue === x.NamespacePrefix);
     }
 
     get virtualList(){

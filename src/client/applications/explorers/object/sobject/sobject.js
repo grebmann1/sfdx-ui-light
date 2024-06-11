@@ -1,7 +1,7 @@
 import { wire, api, createElement} from "lwc";
 import FeatureElement from 'element/featureElement';
 import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'lwr/navigation';
-import { isEmpty,runActionAfterTimeOut,isNotUndefinedOrNull } from 'shared/utils';
+import { isEmpty,runActionAfterTimeOut,isNotUndefinedOrNull,classSet } from 'shared/utils';
 import {TabulatorFull as Tabulator} from "tabulator-tables";
 import SObjectCell from 'object/sobjectCell';
 
@@ -24,6 +24,8 @@ export default class Sobject extends FeatureElement {
     selectedDetails;
     extraSelectedDetails;
 
+    isDiagramDisplayed = false;
+
     @api
     objectRecords = [];
 
@@ -39,7 +41,9 @@ export default class Sobject extends FeatureElement {
         }
     }
 
-    connectedCallback(){}
+    connectedCallback(){
+        this.loadFromCache();
+    }
 
     
 
@@ -47,7 +51,6 @@ export default class Sobject extends FeatureElement {
     
     goToUrl = (e) => {
         const redirectUrl = e.currentTarget.dataset.url;
-        console.log('redirectUrl',redirectUrl);
         store.dispatch(store_application.navigate(redirectUrl));
     }
     
@@ -66,6 +69,10 @@ export default class Sobject extends FeatureElement {
         });
     }
 
+    handleDisplayDiagram = (e) => {
+        this.isDiagramDisplayed = e.detail.checked;
+        localStorage.setItem(`object-explorer-isDiagramDisplayed`,e.detail.checked);
+    }
     
 
     loadSpecificRecord = async () => {
@@ -80,6 +87,10 @@ export default class Sobject extends FeatureElement {
     }
 
     /** Methods  **/
+
+    loadFromCache = async () => {
+        this.isDiagramDisplayed = localStorage.getItem(`object-explorer-isDiagramDisplayed`) === 'true';
+    }
     
     reset = () => {
         this.fields_filter = null;
@@ -123,7 +134,6 @@ export default class Sobject extends FeatureElement {
         const interactions = [`click \`${source}\` call mermaidCallback()`];
         // Filter to take only fields with "Refer To"
         const references = this.selectedDetails.fields.filter(x => x.type === 'reference');
-        console.log('references',references);
         references.forEach(field => {
             field.referenceTo.forEach( target => {
                 result.push(`\`${source}\` --> \`${target || 'Undefined'}\` : ${field.relationshipName}`);
@@ -299,4 +309,11 @@ export default class Sobject extends FeatureElement {
         return `/lightning/setup/ObjectManager/${this.selectedDetails.name}/Details/view`;
     }
     
+    get mermaidClass(){
+        return classSet('mermaid')
+        .add({
+            'slds-hide':!this.isDiagramDisplayed
+        })
+        .toString();
+    }
 }

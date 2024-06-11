@@ -1,4 +1,4 @@
-import {isUndefinedOrNull,isEmpty} from 'shared/utils';
+import {isUndefinedOrNull,isNotUndefinedOrNull,isEmpty} from 'shared/utils';
 
 
 
@@ -69,7 +69,7 @@ export async function removeConnection(alias){
 export async function getAllConnection(){
     let connections = await window.defaultStore.getItem('connections') || [];
     // Mapping
-    connections = connections.map(x => {
+    connections = connections.filter(x => isNotUndefinedOrNull(x)).map(x => {
         let instanceUrl = x.instanceUrl && !x.instanceUrl.startsWith('http')? `https://${x.instanceUrl}`:x.instanceUrl;
         let sfdxAuthUrl = x.refreshToken && x.instanceUrl?`force://${window.jsforceSettings.clientId}::${x.refreshToken}@${(new URL(x.instanceUrl)).host}`:null;
         let _isRedirect = !isEmpty(x.redirectUrl);
@@ -79,7 +79,9 @@ export async function getAllConnection(){
             ...{
                 instanceUrl,
                 sfdxAuthUrl,
-                _isRedirect
+                _isRedirect,
+                _status:x._hasError?'OAuth Error':'Connected',
+                _statusClass:x._hasError?'slds-text-color_error':'slds-text-color_success slds-text-title_caps',
             }
        }
     });

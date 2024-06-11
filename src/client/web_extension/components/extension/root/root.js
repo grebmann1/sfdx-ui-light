@@ -157,6 +157,7 @@ export default class root extends FeatureElement {
         if(!url.startsWith('http')){
             // to force refresh in case it's not valid anymore : 
             await this.connector.conn.identity();
+            console.log('this.connector',this.connector)
             url = `${this.connector.frontDoorUrl}&retURL=${encodeURI(url)}`;
         }
 

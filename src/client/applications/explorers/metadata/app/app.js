@@ -104,7 +104,6 @@ export default class App extends FeatureElement {
             //this.currentLevel = 2;
         }
         // At the end to avoid multiple refresh
-        console.log('setMenuItems');
         this.setMenuItems();
     }
 
@@ -290,7 +289,7 @@ export default class App extends FeatureElement {
                         key:x.Id,
                     }
                 }).sort((a, b) => (a.label || '').localeCompare(b.label));
-            
+            //console.log('result',result);
             if(this.metadata.length <= 1){
                 this.metadata.push(null)
             }
@@ -441,10 +440,11 @@ export default class App extends FeatureElement {
     }
 
     setMenuItems = () => {
-        console.log('this.metadata',this.metadata);
+        //console.log('this.metadata',this.metadata);
         if(this.metadata.length == 0){
             this.menuItems = [];
         }else{
+            //console.log('this.metadata[this.metadata.length - 1].records',this.metadata[this.metadata.length - 1].records);
             this.menuItems = this.metadata[this.metadata.length - 1].records.map(x => ({
                 ...x,
                 isSelected:this.selectedItem == x.key

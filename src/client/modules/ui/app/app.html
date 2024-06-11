@@ -50,7 +50,7 @@
                                 <!-- Page - START -->
                                 <div class={dynamicAppContainerClass}>
                                     <section class="slds-full-height section">
-                                        <div class="slds-full-height container" onopenapplication={handleApplicationSelection} onstartlogin={handleStartLogin}>
+                                        <div class="slds-full-height container" onopenapplication={handleApplicationSelection} onstartlogin={handleStartLogin} onstoploading={handleStopLoading}>
                                             <!-- [Electron only] SFDX Installation required  -->
                                             <template lwc:if={isSFDXMissing}>
                                                 <ui-information-block title="CLI Missing" variant="error">

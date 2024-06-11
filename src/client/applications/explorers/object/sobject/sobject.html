@@ -104,10 +104,24 @@
                                 </div>
                             </h3>
                             <div class="slds-section__content slds-m-horizontal_small" >
+                                <div class="slds-grid slds-m-vertical_small">
+                                    <div class="slds-col_bump-right"></div>
+                                    <div>
+                                        <lightning-input 
+                                            type="toggle" 
+                                            label="Display Diagram" 
+                                            name="displayDiagram" 
+                                            message-toggle-active=""
+                                            message-toggle-inactive=""
+                                            checked={isDiagramDisplayed}
+                                            onchange={handleDisplayDiagram}
+                                        ></lightning-input>
+                                    </div>
+                                </div>
                                 <div class="slds-full-height slds-grid slds-wrap">
                                     <!-- Display Diagram -->
-                                    <div class="slds-col slds-size_1-of-1 slds-is-relative min-height-200">
-                                        <div class="mermaid" lwc:ref="mermaid"  lwc:dom="manual"></div>
+                                    <div class="slds-col slds-size_1-of-1 slds-is-relative">
+                                        <div class={mermaidClass} lwc:ref="mermaid"  lwc:dom="manual"></div>
                                     </div>
                                 </div>
                             </div>
@@ -126,7 +140,7 @@
                                         <div class="slds-form-element">
                                             <label class="slds-text-title_bold slds-form-element__label">Is Creatable</label>
                                             <div class="slds-form-element__control">
-                                                {selectedDetails.createable}
+                                                <object-sobject-cell value={selectedDetails.createable} is-boolean></object-sobject-cell>
                                             </div>
                                         </div>
                                     </div>
@@ -135,7 +149,7 @@
                                         <div class="slds-form-element">
                                             <label class="slds-text-title_bold slds-form-element__label">Is Custom</label>
                                             <div class="slds-form-element__control">
-                                                {selectedDetails.custom}
+                                                <object-sobject-cell value={selectedDetails.custom} is-boolean></object-sobject-cell>
                                             </div>
                                         </div>
                                     </div>
@@ -144,7 +158,7 @@
                                         <div class="slds-form-element">
                                             <label class="slds-text-title_bold slds-form-element__label">Is Triggerable</label>
                                             <div class="slds-form-element__control">
-                                                {selectedDetails.triggerable}
+                                                <object-sobject-cell value={selectedDetails.triggerable} is-boolean></object-sobject-cell>
                                             </div>
                                         </div>
                                     </div>

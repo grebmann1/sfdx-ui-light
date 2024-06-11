@@ -61,18 +61,27 @@ export async function connect({alias,settings,disableEvent = false, directStorag
         }
     }
 
-    console.log('util.connect.connection',params,settings);
+    //console.log('util.connect.connection',params,settings);
     const connection = await new window.jsforce.Connection(params);
         connection.alias = alias || settings.alias;
 
     /** Assign Latest Version **/
     await assignLatestVersion(connection);
-    /** Get Username & First connection **/
+   
+
     const header = await generateHeader({alias,connection});
+    /** Handler Connection Error and save it */
+    if(header._hasError){
+        console.log('alias',alias,connection.alias,header);
+        await webInterface.setConnection(connection.alias,header);
+        return null;
+    }
+
 
     if(directStorage){
         await webInterface.setConnection(connection.alias,header);
     }
+    
     connection.on("refresh", async function(accessToken, res) {
         console.log('refresh !!!',settings.accessToken,accessToken);
         /*let newHeader = {
@@ -81,12 +90,9 @@ export async function connect({alias,settings,disableEvent = false, directStorag
         };*/
         //await webInterface.setConnection(connection.alias,newHeader);
     });
-          
-    
     
     // Dispatch Login Event
     var connector = new Connector(header,connection);
-
     if(!disableEvent){
         store.dispatch(store_application.login(connector));
     }
@@ -146,7 +152,6 @@ export async function getAllConnection(){
             username:`Test-${x}-Prod@salesforce.com`
         }));
     }*/
-    
     return connections.map(x => {
         let nameArray = (x.alias || '').split('-');
         let company = nameArray.length > 1 ?nameArray.shift() : '';
@@ -155,6 +160,10 @@ export async function getAllConnection(){
             ...x,
             company,
             name,
+            id:x.alias, // To investigate in case of issues
+            _connectVariant:x._hasError?'brand-outline':'brand',
+            _connectLabel:x._hasError?'Authorize':'Connect',
+            _connectAction:x._hasError?'authorize':'login'
         }
     })
 }
@@ -216,7 +225,7 @@ export async function oauth_chrome({alias,loginUrl},callback,callbackErrorHandle
     });
 }
 
-export async function oauth({alias,loginUrl},callback){
+export async function oauth({alias,loginUrl},callback,callbackErrorHandler){
     
     window.jsforce.browserClient = new window.jsforce.browser.Client(Date.now()); // Reset
     //console.log('window.jsforceSettings',window.jsforceSettings);
@@ -231,6 +240,7 @@ export async function oauth({alias,loginUrl},callback){
         version:constant.apiVersion,
         scope:'id api web openid sfap_api refresh_token'
     },(_,res) => {
+        console.log('res',res);
         if(res.status === 'cancel'){
             //this.close(null)
             callback(null);
@@ -252,20 +262,32 @@ async function generateHeader({alias,connection}){
     };
 
     if(connection){
-        const {accessToken,instanceUrl,loginUrl,refreshToken,version} = connection;
+        const {
+            accessToken,instanceUrl,loginUrl,refreshToken,version,username,orgId,userInfo,
+            _isInjected
+        } = connection;
         header = {
             ...header,
+            username,orgId,userInfo,
             accessToken,instanceUrl,loginUrl,refreshToken,version,
+            _isInjected,
             sfdxAuthUrl:`force://${window.jsforceSettings.clientId}::${refreshToken}@${(new URL(instanceUrl)).host}`
         }
 
         /** Get Username **/
-        let identity = await connection.identity();
-        if(isNotUndefinedOrNull(identity)){
-            header.username = identity.username;
-            header.orgId    = identity.organization_id;
-            header.userInfo = identity;
+        try{
+            let identity = await connection.identity();
+            if(isNotUndefinedOrNull(identity)){
+                header.username = identity.username;
+                header.orgId    = identity.organization_id;
+                header.userInfo = identity;
+            }
+        }catch(e){
+            console.log('Identity Fetch Error',e);
+            header._hasError = true;
+            header._errorMessage = e.message;
         }
+        
     }
     return header;
 }

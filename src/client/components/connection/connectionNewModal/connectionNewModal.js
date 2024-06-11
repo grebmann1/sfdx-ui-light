@@ -148,15 +148,13 @@ export default class ConnectionNewModal extends LightningModal {
         this.close();
     }
 
-    connect = async () => {
+    register = async () => {
         this.isLoading = true;
         if(this.isOauth){
             if(isElectronApp()){
                 this.electron_oauth();
-            }else if(isChromeExtension()){
-                this.chrome_oauth();
             }else{
-                this.web_oauth();
+                this.standard_oauth();
             }
         }else if(this.isRedirect){
             this.default_redirect();
@@ -208,30 +206,19 @@ export default class ConnectionNewModal extends LightningModal {
         }
     }
     
-    chrome_oauth = async () => {
-        console.log('chrome_oauth');
-        oauth_chrome({
+    standard_oauth = async () => {
+        console.log('standard_oauth');
+        const _oauthMethod = isChromeExtension()?oauth_chrome:oauth;
+        _oauthMethod({
             alias:this.alias,
             loginUrl:this.loginUrl,
         },(res) => {
-            console.log('chrome_oauth',res);
             this.close(res);
         },(e) => {
-            console.error('OAuth Error',e);
             this.notifyUser('OAuth Error', e.message, 'error');
             this.close(null);
         });
         
-    }
-
-    web_oauth = async () => {
-        oauth({
-            alias:this.alias,
-            loginUrl:this.loginUrl
-        },(res) => {
-            console.log('web_oauth',res);
-            this.close(res);
-        });
     }
 
     checkForErrors() {
@@ -300,7 +287,7 @@ export default class ConnectionNewModal extends LightningModal {
     handleLoginClick = async (e) =>  {
         if (this.validateForm()) {
             this.alias = this.generatedAlias; // Automatically generated from the Category & Name
-            await this.connect();
+            await this.register();
         }
     }
     

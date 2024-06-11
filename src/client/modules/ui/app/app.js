@@ -119,8 +119,18 @@ export default class App extends LightningElement {
         console.log('handleStartLogin');
         this._isFullAppLoading = true;
     }
+
+    handleStopLoading = () => {
+        console.log('handleStopLoading');
+        this._isFullAppLoading = false;
+    }
     
     handleLogin = async (connector) => {
+        if(isUndefinedOrNull(connector)){
+            this._isFullAppLoading = false;
+            return;
+        }
+
         this.connector = connector;
         const { instanceUrl,accessToken,version,refreshToken } = this.connector.conn;
         saveSession({
@@ -177,7 +187,7 @@ export default class App extends LightningElement {
         if(this.isUserLoggedIn && !url.startsWith('http')){
             // to force refresh in case it's not valid anymore : 
             await this.connector.conn.identity();
-            console.log('this.connector.frontDoorUrl',this.connector.frontDoorUrl);
+            console.log('this.connector.frontDoorUrl',this.connector);
             url = `${this.connector.frontDoorUrl}&retURL=${encodeURI(url)}`;
         }
 

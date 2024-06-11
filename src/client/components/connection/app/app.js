@@ -6,7 +6,7 @@ import ConnectionDetailModal from "connection/connectionDetailModal";
 import ConnectionRenameModal from "connection/connectionRenameModal";
 import ConnectionImportModal from "connection/connectionImportModal";
 import { download,classSet,runActionAfterTimeOut,checkIfPresent,isEmpty,isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,normalizeString as normalize,groupBy } from 'shared/utils';
-import { getAllConnection,setAllConnection,removeConnection,connect,oauth,getConnection,getCurrentTab } from 'connection/utils';
+import { getAllConnection,setAllConnection,removeConnection,connect,oauth,getConnection,getCurrentTab,oauth_chrome } from 'connection/utils';
 import { store,store_application } from 'shared/store';
 
 
@@ -85,7 +85,11 @@ export default class App extends FeatureElement {
         const { row,redirect } = event.detail;
         switch (actionName) {
             case 'login':
-                this.login(row);
+                if(row._hasError){
+                    this.authorizeExistingOrg(row);
+                }else{
+                    this.login(row);
+                }
                 break;
             case 'openBrowser':
                 this.openBrowser(row,'_blank');
@@ -143,6 +147,7 @@ export default class App extends FeatureElement {
         // Browser & Electron version
         this.isLoading = true;
         this.data =  await getAllConnection();
+        //console.log('originalList',this.data);
         //console.log('getAllConnection',this.data);
         this.formattedData = this.formatDataForCardView();
         this.isLoading = false;
@@ -150,10 +155,14 @@ export default class App extends FeatureElement {
 
     fetchInjectedConnections = async () => {
         this.isLoading = true;
-        const aliasList = this.injectedConnections.map(x => x.alias);
-        const newConnections = [].concat(this.injectedConnections,this.data.filter(x => !aliasList.includes(x.alias)));
+
+        const newConnections = this.injectedConnections.map(x => {
+            return {
+                ...x,
+                _isInjected:true,
+            }
+        });
         
-        //console.log('newConnections',JSON.parse(JSON.stringify(newConnections)));
         await setAllConnection(JSON.parse(JSON.stringify(newConnections)));
 
         /** Fetch Again **/
@@ -173,6 +182,7 @@ export default class App extends FeatureElement {
     login = async (row) => {
         if(isElectronApp()){
             if(row._hasError){
+                /** Investigate if it's working !!! */
                 this.forceAuthorization(row);
             }else{
                 window.electron.ipcRenderer.invoke('OPEN_INSTANCE',row);
@@ -180,17 +190,44 @@ export default class App extends FeatureElement {
         }else{
             let {alias,...settings} = this.data.find(x => x.id == row.id);
             this.dispatchEvent(new CustomEvent("startlogin", { bubbles: true,composed: true }));
-            try{
-                let connector = await connect({alias,settings});
-                console.log('login');
+            let connector = await connect({alias,settings});
+            if(connector){
                 this.dispatchEvent(new CustomEvent("login", { detail:{value:connector},bubbles: true }));
-            }catch(e){
-                // OAuth in case of login failure !!!!
-                oauth({alias:alias,loginUrl:settings.instanceUrl || settings.loginUrl},(res) => {
-                    this.dispatchEvent(new CustomEvent("login", { detail:{value:res.connector},bubbles: true }));
-                })
+            }else{
+                this.dispatchEvent(new CustomEvent("stoploading", {bubbles: true }));
+                this.fetchAllConnections();
+                Toast.show({
+                    label: `OAuth Issue | Check your settings [re-authorize the org]`,
+                    variant:'error',
+                    mode:'dismissible'
+                });
             }
         }
+    }
+
+    authorizeExistingOrg = async (row) => {
+        if(isElectronApp()) return;
+
+        let {alias,...settings} = this.data.find(x => x.id == row.id);
+        this.dispatchEvent(new CustomEvent("startlogin", { bubbles: true,composed: true }));
+        console.log('settings',settings);
+        const loginUrl = 'https://culturalcareaupair--qa.sandbox.my.salesforce.com';
+        const _oauthMethod = isChromeExtension()?oauth_chrome:oauth;
+
+        _oauthMethod(
+            {alias,loginUrl},
+            (res) => {
+                this.fetchAllConnections();
+                if(isUndefinedOrNull(res)){
+                    this.dispatchEvent(new CustomEvent("stoploading", {bubbles: true }));
+                }
+            },(e) => {  
+                console.error(e);
+                if(isUndefinedOrNull(res)){
+                    this.dispatchEvent(new CustomEvent("stoploading", {bubbles: true }));
+                }
+            }
+        );
     }
 
     openBrowser = async (row,target) => {
@@ -210,6 +247,9 @@ export default class App extends FeatureElement {
                 let url;
                 if(isEmpty(redirectUrl)){
                     const connector = await connect({alias,settings,disableEvent:true});
+                    if(isUndefinedOrNull(connector)){
+                        throw new Error('Issue while connecting !');
+                    }
                     url = connector.frontDoorUrl;
                 }else{
                     url = redirectUrl;
@@ -243,7 +283,7 @@ export default class App extends FeatureElement {
                 }
             }catch(e){
                 Toast.show({
-                    label: `${e.name} | ${e.message}`,
+                    label: `OAuth Issue | Check your settings [re-authorize the org]`,
                     variant:'error',
                     mode:'dismissible'
                 });
@@ -321,8 +361,8 @@ export default class App extends FeatureElement {
             });
         }else{
             const connector = await connect({alias,settings,disableEvent:true});
-            const accessToken   = connector.conn.accessToken;
-            const frontDoorUrl  = connector.frontDoorUrl;
+            const accessToken   = connector?connector.conn.accessToken:null;
+            const frontDoorUrl  = connector?connector.frontDoorUrl:null;
             if(isElectronApp()){
                 let settings = await getConnection(alias);
                 sfdxAuthUrl = settings.sfdxAuthUrl || sfdxAuthUrl;
@@ -529,7 +569,7 @@ export default class App extends FeatureElement {
                     class: { fieldName: '_typeClass' },
                 },
             },
-            { label: 'Status', fieldName: '_status', type:'text', initialWidth:90, _filter:'electron',
+            { label: 'Status', fieldName: '_status', type:'text', initialWidth:120,
                 cellAttributes: {
                     class: { fieldName: '_statusClass' },
                 },
@@ -544,7 +584,10 @@ export default class App extends FeatureElement {
             {   label:'Connect',
                 type: 'button',initialWidth:110,
                 typeAttributes:{    
-                    label:'Connect',title:'Connect',name:'login',variant:'brand',
+                    name: 'login',
+                    label: { fieldName: '_connectLabel'},
+                    title: { fieldName: '_connectLabel'},
+                    variant: { fieldName: '_connectVariant'},
                     disabled: { fieldName: '_isRedirect'}
                 },
                 cellAttributes: {

@@ -15,6 +15,9 @@ export class Header{
     orgId;
     username;
 
+    _hasError;
+    // Used when chrome extension inject connection
+    _isInjected;
 }
 export class Connector {
 

@@ -93,6 +93,7 @@ export default class App extends FeatureElement {
         //localStorage.setItem('global-sobject-typeFilter_value',JSON.stringify(this.typeFilter_value));
         setTimeout(() => {
             this.filteredRecords = this.filterRecords();
+            this.setFormattedMenuItems();
         },1);
     }
 
@@ -101,6 +102,7 @@ export default class App extends FeatureElement {
         //localStorage.setItem('global-sobject-metadataFilter_value',JSON.stringify(this.metadataFilter_value));
         setTimeout(() => {
             this.filteredRecords = this.filterRecords();
+            this.setFormattedMenuItems();
         },1);
     }
 
@@ -135,8 +137,11 @@ export default class App extends FeatureElement {
     }
 
     filterRecords = () => {
-        if(this.typeFilter_value.length == 0) return this.records;
-        return this.records.filter(x => this.typeFilter_value.includes(x.category)).filter(x => this.metadataFilter_value.reduce((acc,y) => {return acc && x[y]},true));
+        if(this.typeFilter_value.length == 0 && this.metadataFilter_value.length == 0) return this.records;
+
+        return this.records
+        .filter(x => this.typeFilter_value.includes(x.category) || this.typeFilter_value.length == 0)
+        .filter(x => this.metadataFilter_value.reduce((acc,y) => {return acc && x[y]},true) || this.metadataFilter_value.length == 0);
     }
 
     loadAlls = async () => {

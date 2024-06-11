@@ -57,7 +57,15 @@ export default class CardItem extends FeatureElement {
     }
 
     get isAppButtonDisabled(){
-        return this.isRedirectCredential;
+        return this.isRedirectCredential || this.isErrorDisplayed;
+    }
+
+    get isErrorDisplayed(){
+        return this.item?._hasError;
+    }
+
+    get errorMessage(){
+        return this.item?._errorMessage || '';
     }
 
 }
