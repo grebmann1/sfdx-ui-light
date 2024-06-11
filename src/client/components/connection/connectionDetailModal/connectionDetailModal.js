@@ -1,5 +1,6 @@
 import LightningModal from 'lightning/modal';
 import { api } from "lwc";
+import { isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,decodeError,checkIfPresent } from "shared/utils";
 
 export default class ConnectionDetailModal extends LightningModal {
 
@@ -13,6 +14,9 @@ export default class ConnectionDetailModal extends LightningModal {
     @api frontDoorUrl;
     @api accessToken;
 
+    // redirectUrl
+    @api redirectUrl;
+
 
     handleCloseClick() {
         this.close('canceled');
@@ -22,6 +26,11 @@ export default class ConnectionDetailModal extends LightningModal {
         this.close('success');
     }
 
+    /* Getters */
+
+    get isRedirect(){
+        return isNotUndefinedOrNull(this.redirectUrl);
+    }
 
     /** events **/
 
@@ -34,7 +43,11 @@ export default class ConnectionDetailModal extends LightningModal {
     }
 
     handleCopyFrontDoorUrl = () => {
-        navigator.clipboard.writeText(this.frontDoorUrl)
+        navigator.clipboard.writeText(this.frontDoorUrl);
+    }
+
+    handleCopyRedirectUrl = () => {
+        navigator.clipboard.writeText(this.redirectUrl);
     }
 
     /** getters */

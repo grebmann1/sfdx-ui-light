@@ -10,8 +10,8 @@ import { getAllConnection,setAllConnection,removeConnection,connect,oauth,getCon
 import { store,store_application } from 'shared/store';
 
 
-const actions = [
-    { label: 'Connect', name: 'login' },
+const ACTIONS = [
+    { label: 'Connect', name: 'login'},
     { label: 'Browser', name: 'openBrowser' },
     { label: 'Export', name: 'export' },
     { label: 'See Details', name: 'seeDetails' },
@@ -20,7 +20,7 @@ const actions = [
 ];
 
 const LOGIN_URL = 'https://login.salesforce.com';
-const TEST_URL = 'https://login.salesforce.com';
+const TEST_URL = 'https://test.salesforce.com';
 const CUSTOM_URL = 'custom';
 
 export default class App extends FeatureElement {
@@ -76,22 +76,9 @@ export default class App extends FeatureElement {
 
     @api
     addConnectionClick = () => {
-        this.authorizeOrg({connections:this.data});
+        this.addNewOrg({connections:this.data});
     }
 
-    authorizeOrg = (param) => {
-        ConnectionNewModal.open(param)
-        .then(async (res) => {
-            //console.log('addConnectionClick',res);
-            if(isNotUndefinedOrNull(res)){
-                console.log('force refresh');
-                await this.fetchAllConnections();
-            }
-            if(isElectronApp()){
-                await window.electron.ipcRenderer.invoke('org-killOauth');
-            }
-        });
-    }
 
     handleRowAction = (event) => {
         const actionName = event.detail.action.name;
@@ -156,6 +143,7 @@ export default class App extends FeatureElement {
         // Browser & Electron version
         this.isLoading = true;
         this.data =  await getAllConnection();
+        //console.log('getAllConnection',this.data);
         this.formattedData = this.formatDataForCardView();
         this.isLoading = false;
     }
@@ -218,9 +206,15 @@ export default class App extends FeatureElement {
         }else{
             this.isLoading = true;
             try{
-                const {alias,...settings} = this.data.find(x => x.id == row.id);
-                const connector = await connect({alias,settings,disableEvent:true});
-                const url = connector.frontDoorUrl;
+                const {alias,redirectUrl,...settings} = this.data.find(x => x.id == row.id);
+                let url;
+                if(isEmpty(redirectUrl)){
+                    const connector = await connect({alias,settings,disableEvent:true});
+                    url = connector.frontDoorUrl;
+                }else{
+                    url = redirectUrl;
+                }
+                
 
                 if(isChromeExtension()){
                     if(target == 'incognito'){
@@ -247,7 +241,13 @@ export default class App extends FeatureElement {
                 }else{
                     window.open(url,target);
                 }
-            }catch(e){}
+            }catch(e){
+                Toast.show({
+                    label: `${e.name} | ${e.message}`,
+                    variant:'error',
+                    mode:'dismissible'
+                });
+            }
             this.isLoading = false;
         }    
     }
@@ -268,6 +268,11 @@ export default class App extends FeatureElement {
                 });*/
             }catch(e){
                 console.log('error',e);
+                Toast.show({
+                    label: `${e.name} | ${e.message}`,
+                    variant:'error',
+                    mode:'dismissible'
+                });
             }
         this.isLoading = false;
     }
@@ -288,22 +293,46 @@ export default class App extends FeatureElement {
         });
     }
 
-    seeDetails = async (row) => {
-        var {company,orgId,name,username,instanceUrl,sfdxAuthUrl} = row;
-        const {alias,...settings} = this.data.find(x => x.id == row.id);
-        const connector = await connect({alias,settings,disableEvent:true});
-        const accessToken   = connector.conn.accessToken;
-        const frontDoorUrl  = connector.frontDoorUrl;
-        
-        if(isElectronApp()){
-            let settings = await getConnection(alias);
-            sfdxAuthUrl = settings.sfdxAuthUrl || sfdxAuthUrl;
-        }
-        
-        ConnectionDetailModal.open({
-            company,orgId,name,alias,username,instanceUrl,sfdxAuthUrl,accessToken,frontDoorUrl,
+    addNewOrg = (param) => {
+        ConnectionNewModal.open({
+            ...param,
             'size':isChromeExtension()?'full':'medium'
-        }).then((result) => {});
+        })
+        .then(async (res) => {
+            //console.log('addConnectionClick',res);
+            if(isNotUndefinedOrNull(res)){
+                console.log('force refresh');
+                await this.fetchAllConnections();
+            }
+            if(isElectronApp()){
+                await window.electron.ipcRenderer.invoke('org-killOauth');
+            }
+        });
+    }
+
+    seeDetails = async (row) => {
+        var {company,orgId,name,username,instanceUrl,sfdxAuthUrl,redirectUrl} = row;
+        const {alias,...settings} = this.data.find(x => x.id == row.id);
+        if(isNotUndefinedOrNull(redirectUrl)){
+            // redirect credential
+            ConnectionDetailModal.open({
+                company,name,alias,redirectUrl,
+                'size':isChromeExtension()?'full':'medium'
+            });
+        }else{
+            const connector = await connect({alias,settings,disableEvent:true});
+            const accessToken   = connector.conn.accessToken;
+            const frontDoorUrl  = connector.frontDoorUrl;
+            if(isElectronApp()){
+                let settings = await getConnection(alias);
+                sfdxAuthUrl = settings.sfdxAuthUrl || sfdxAuthUrl;
+            }
+            ConnectionDetailModal.open({
+                company,orgId,name,alias,username,instanceUrl,sfdxAuthUrl,accessToken,frontDoorUrl,
+                redirectUrl,
+                'size':isChromeExtension()?'full':'medium'
+            });
+        }
     }
 
     setAlias = (row) => {
@@ -312,7 +341,10 @@ export default class App extends FeatureElement {
             category:row.company,
             orgName:row.name,
             username:row.username,
-            connections:this.data
+            isRedirect:!isEmpty(row.redirectUrl),
+            redirectUrl:row.redirectUrl,
+            connections:this.data,
+            'size':isChromeExtension()?'full':'medium'
         })
         .then(async (result) => {
             await this.fetchAllConnections();
@@ -398,6 +430,17 @@ export default class App extends FeatureElement {
         }
     }
 
+    getRowActions(row, doneCallback) {
+        let actions = ACTIONS;
+        if (row._isRedirect) {
+            actions = actions.filter(x => !['login'].includes(x.name))
+        }
+        // simulate a trip to the server
+        setTimeout(() => {
+            doneCallback(actions);
+        }, 200);
+    }
+
     /** Getters  */
 
     get isNoRecord(){
@@ -409,7 +452,7 @@ export default class App extends FeatureElement {
     }
 
     get exportedData(){
-        return this.data.map(x => {
+        return this.data.filter(x => !isEmpty(x.sfdxAuthUrl)).map(x => {
             const { sfdxAuthUrl,alias } = x;
             return {
                 alias,
@@ -424,14 +467,17 @@ export default class App extends FeatureElement {
             items:group.items.filter(x => isUndefinedOrNull(this.filter) || isNotUndefinedOrNull(this.filter) && (checkIfPresent(x.alias,this.filter) || checkIfPresent(x.username,this.filter))).map(x => ({
                 ...x,
                 _name:this.formatSpecificField(x.name || ''),
-                _username:this.formatSpecificField(x.username || '')
+                _username:this.formatSpecificField(x.username || ''),
             }))
         }));
     }
 
     get filteredOriginal(){
-        return this.data.filter(x => isUndefinedOrNull(this.filter) || isNotUndefinedOrNull(this.filter) && (checkIfPresent(x.alias,this.filter) || checkIfPresent(x.username,this.filter)));
-
+        return this.data.filter(x => 
+            isUndefinedOrNull(this.filter)
+            || isNotUndefinedOrNull(this.filter) && (checkIfPresent(x.alias,this.filter) 
+            || checkIfPresent(x.username,this.filter))
+        );
     }
 
     get normalizedVariant() {
@@ -498,15 +544,16 @@ export default class App extends FeatureElement {
             {   label:'Connect',
                 type: 'button',initialWidth:110,
                 typeAttributes:{    
-                    label:'Connect',title:'Connect',name:'login',variant:'brand'
+                    label:'Connect',title:'Connect',name:'login',variant:'brand',
+                    disabled: { fieldName: '_isRedirect'}
                 },
                 cellAttributes: {
-                    class: { fieldName: '_typeClass' },
+                    class: { fieldName: '_typeClass' }
                 },
             },
             {
                 type: 'action',
-                typeAttributes: { rowActions: actions },
+                typeAttributes: { rowActions: this.getRowActions },
             },
         ];
 

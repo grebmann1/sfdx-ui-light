@@ -62,6 +62,7 @@ export default class App extends FeatureElement {
     navContext;
 
     @api isResponsive = false;
+    @api isDiagramDisplayed = false;
 
     isLoading = false;
     isMenuLoading = false;
@@ -135,6 +136,12 @@ export default class App extends FeatureElement {
 
     connectedCallback(){
         this.loadDocumentation();
+        this.loadFromCache();
+    }
+
+    loadFromCache = async () => {
+        //console.log('cache',localStorage.getItem(`doc-isDiagramDisplayed`));
+        this.isDiagramDisplayed = localStorage.getItem(`doc-isDiagramDisplayed`) === 'true';
     }
 
     loadDocumentation = async () => {
@@ -211,6 +218,11 @@ export default class App extends FeatureElement {
     handleToggleChange = (e) => {
         this.isFieldFilterEnabled = e.detail.checked;
         this.displayBodyContent();
+    }
+
+    handleDisplayDiagram = (e) => {
+        this.isDiagramDisplayed = e.detail.checked;
+        localStorage.setItem(`doc-isDiagramDisplayed`,e.detail.checked);
     }
     
 
@@ -554,6 +566,14 @@ export default class App extends FeatureElement {
 
     get loadingMessage(){
         return `Loading ${this.loadingPointer}/${this.items.length} items`;
+    }
+
+    get mermaidClass(){
+        return classSet('mermaid')
+        .add({
+            'slds-hide':!this.isDiagramDisplayed
+        })
+        .toString();
     }
 
     get articleContainerClass(){

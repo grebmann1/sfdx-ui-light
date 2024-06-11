@@ -73,18 +73,24 @@ export default class MarkdownViewer extends LightningElement {
 
 
     fixDiagram = (input) => {
-        function camelCaseToLowercaseWords(input) {
-            return input.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
-        }
         
-        function fixClassName(line) {
-            const match = line.match(/([A-Z][a-zA-Z0-9]*)\s*\{/);
+        function fixClassName(line){
+            if(isEmpty(line) || line.includes('classDiagram')) return line;
+
+            const match = line.match(/(class|Class)([a-zA-Z0-9]*)\s*\{/);
             if (match) {
-                const className = match[1];
+                const oldClassName = match[1]+match[2];
+                const newClassName = match[2];
                 //const newClassName = camelCaseToLowercaseWords(className); // we dont use, it's more complicate
-                return line.replace(className, `class ${className}`);
+                return line.replace(oldClassName, `class ${newClassName}`);
             }
             return line;
+        }
+
+        function fixClassNameInLinks(line){
+            if(isEmpty(line) || line.includes('classDiagram')) return line;
+            
+            return line.replace(/(class|Class)([a-zA-Z0-9]+)/g, '$2').toLowerCase();
         }
 
         // Split the input into lines for easier manipulation.
@@ -95,20 +101,19 @@ export default class MarkdownViewer extends LightningElement {
         lines.forEach(line => {
             //line = line.trim();
     
-            if (line.startsWith('classDiagram')) {
+            /*if (line.startsWith('classDiagram')) {
                 isValidDiagram = true;
-            }
+            }*/
     
-            if (isValidDiagram) {
-                // Fix class names
-                line = fixClassName(line);
-                fixedDiagram.push(line);
-            } else {
-                fixedDiagram.push(line);
-            }
+            // Fix class names
+            line = fixClassName(line);
+            line = fixClassNameInLinks(line);
+            fixedDiagram.push(line);
+
         });
     
         // Join the fixed lines back into a single string.
+        console.log('test',fixedDiagram.join('\n'));
         return fixedDiagram.join('\n');
     }
     
@@ -119,8 +124,8 @@ export default class MarkdownViewer extends LightningElement {
 
         try{
             const diagramText = this.fixDiagram(el.innerText);
-            console.log('diagramText');
-            console.log(diagramText);
+            //console.log('diagramText');
+            //console.log(diagramText);
             if(await mermaid.parse(diagramText)){
                 const { svg,bindFunctions } = await window.mermaid.render('graphDiv',diagramText);
                 el.innerHTML = svg;

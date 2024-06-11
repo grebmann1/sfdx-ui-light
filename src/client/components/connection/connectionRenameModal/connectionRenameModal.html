@@ -1,7 +1,7 @@
 <template>
     <lightning-modal-header label="Edit Connection  "></lightning-modal-header>
     <lightning-modal-body>
-        <section class="slds-p-around_large min-height-400 slds-is-relative">
+        <section class="min-height-400 slds-is-relative">
             <template lwc:if={isLoading}>
                 <lightning-spinner alternative-text="Loading"></lightning-spinner>
             </template>
@@ -17,8 +17,8 @@
                                         name="newCategory"
                                         type="text"
                                         label="New Category"
-                                        value={category}
-                                        onchange={category_onChange}
+                                        value={newCategory}
+                                        onchange={newCategory_onChange}
                                         required
                                 ></lightning-input>
                             </div>
@@ -76,6 +76,25 @@
                     ></lightning-input>
                 </div>
             </div>
+
+            <!-- Redirect Mode-->
+            <template lwc:if={isRedirect}>
+                <div class="slds-grid slds-wrap">
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small"></div>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                        <lightning-input
+                                class="input-to-validate"
+                                name="redirectUrl"
+                                type="url"
+                                value={redirectUrl}
+                                label="Redirect Url"
+                                placeholder="Ex: https://sso.coca-cola.com"
+                                onchange={redirectUrl_onChange}
+                                required
+                        ></lightning-input>
+                    </div>
+                </div>
+            </template>
         </section>
     </lightning-modal-body>
     <lightning-modal-footer>

@@ -1,4 +1,4 @@
-import {isUndefinedOrNull} from 'shared/utils';
+import {isUndefinedOrNull,isEmpty} from 'shared/utils';
 
 
 
@@ -42,13 +42,14 @@ export async function setAllConnection(connections){
     await window.defaultStore.setItem('connections',formatConnections(connections));
 }
 
-export async function renameConnection({oldAlias,newAlias,username}){
+export async function renameConnection({oldAlias,newAlias,username,redirectUrl}){
     let connections = await window.defaultStore.getItem('connections') || [];
 
     // Switch Name
     connections.forEach(conn => {
         if(conn.alias === oldAlias){
             conn.alias = newAlias;
+            conn.redirectUrl = redirectUrl;
         }
     })
     // Order Connections
@@ -69,15 +70,21 @@ export async function getAllConnection(){
     let connections = await window.defaultStore.getItem('connections') || [];
     // Mapping
     connections = connections.map(x => {
-        // fix data issues
-        if(!x.instanceUrl.startsWith('http')){
-            x.instanceUrl = `https://${x.instanceUrl}`; 
-        }
-        return {
+        let instanceUrl = x.instanceUrl && !x.instanceUrl.startsWith('http')? `https://${x.instanceUrl}`:x.instanceUrl;
+        let sfdxAuthUrl = x.refreshToken && x.instanceUrl?`force://${window.jsforceSettings.clientId}::${x.refreshToken}@${(new URL(x.instanceUrl)).host}`:null;
+        let _isRedirect = !isEmpty(x.redirectUrl);
+
+       return {
             ...x,
-            sfdxAuthUrl:`force://${window.jsforceSettings.clientId}::${x.refreshToken}@${(new URL(x.instanceUrl)).host}`,
-        }
-    })
+            ...{
+                instanceUrl,
+                sfdxAuthUrl,
+                _isRedirect
+            }
+       }
+    });
+
+    //console.log('connections',connections);
 
     return connections;
 }

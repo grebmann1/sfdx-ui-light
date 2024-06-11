@@ -52,4 +52,12 @@ export default class CardItem extends FeatureElement {
         return this.item?.isSandbox || (this.item?.instanceUrl || '').endsWith('sandbox.my.salesforce.com');
     }
 
+    get isRedirectCredential(){
+        return isNotUndefinedOrNull(this.item?.redirectUrl);//isEmpty(this.item?.refreshToken);
+    }
+
+    get isAppButtonDisabled(){
+        return this.isRedirectCredential;
+    }
+
 }

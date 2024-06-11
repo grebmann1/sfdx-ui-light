@@ -2,7 +2,7 @@ import { api,track } from "lwc";
 import Toast from 'lightning/toast';
 import LightningAlert from 'lightning/alert';
 import LightningModal from 'lightning/modal';
-import { oauth,oauth_chrome } from 'connection/utils';
+import { oauth,oauth_chrome,setRedirectCredential } from 'connection/utils';
 import { isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,decodeError,checkIfPresent } from "shared/utils";
 
 const domainOptions = [
@@ -17,6 +17,11 @@ const DEFAULT_CATEGORY = {
     title: 'Default'
 }
 
+const CREDENTIAL_TYPES = {
+    oauth:'OAUTH',
+    redirect:'REDIRECT'
+}
+
 
 export default class ConnectionNewModal extends LightningModal {
 
@@ -24,6 +29,7 @@ export default class ConnectionNewModal extends LightningModal {
     domain_options = domainOptions;
 
     @api customDomain;
+    @api redirectUrl;
     @api selectedDomain  = domainOptions[0].value;
     @api alias;
     @api connections = [];
@@ -31,6 +37,7 @@ export default class ConnectionNewModal extends LightningModal {
     name;
     category;
     newCategory;
+    credentialType = CREDENTIAL_TYPES.oauth;
 
     _isNewCategoryDisplayed;
     set isNewCategoryDisplayed(value){
@@ -143,14 +150,26 @@ export default class ConnectionNewModal extends LightningModal {
 
     connect = async () => {
         this.isLoading = true;
-        if(isElectronApp()){
-            this.electron_oauth();
-        }else if(isChromeExtension()){
-            this.chrome_oauth();
-        }else{
-            this.web_oauth();
+        if(this.isOauth){
+            if(isElectronApp()){
+                this.electron_oauth();
+            }else if(isChromeExtension()){
+                this.chrome_oauth();
+            }else{
+                this.web_oauth();
+            }
+        }else if(this.isRedirect){
+            this.default_redirect();
         }
-        
+    }
+
+    default_redirect = () => {
+        setRedirectCredential({
+            alias:this.alias,
+            redirectUrl:this.redirectUrl
+        });
+        this.isLoading = false;
+        this.close(true);
     }
 
     electron_oauth = async () => {
@@ -193,10 +212,14 @@ export default class ConnectionNewModal extends LightningModal {
         console.log('chrome_oauth');
         oauth_chrome({
             alias:this.alias,
-            loginUrl:this.loginUrl
+            loginUrl:this.loginUrl,
         },(res) => {
             console.log('chrome_oauth',res);
             this.close(res);
+        },(e) => {
+            console.error('OAuth Error',e);
+            this.notifyUser('OAuth Error', e.message, 'error');
+            this.close(null);
         });
         
     }
@@ -317,8 +340,36 @@ export default class ConnectionNewModal extends LightningModal {
         this.selectedDomain = e.target.value;
     }
 
+    handleCredentialTypeChange = (e) => {
+        this.credentialType = e.target.value;
+    }
+
+    redirectUrl_onChange = (e) => {
+        this.redirectUrl = e.target.value;
+    }
+
 
     /** getters */
+
+    get credentialOptions() {
+        if(isElectronApp()){
+            return [
+                { label: 'OAuth (Recommended)', value: CREDENTIAL_TYPES.oauth},
+            ];
+        }
+        return [
+            { label: 'OAuth (Recommended)', value: CREDENTIAL_TYPES.oauth },
+            { label: 'Redirect Only', value: CREDENTIAL_TYPES.redirect },
+        ];
+    }
+
+    get isOauth(){
+        return this.credentialType === CREDENTIAL_TYPES.oauth;
+    }
+
+    get isRedirect(){
+        return this.credentialType === CREDENTIAL_TYPES.redirect;
+    }
 
     get categories(){
         return [...new Set(this.connections.map(x => x.company))];

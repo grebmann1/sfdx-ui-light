@@ -16,6 +16,8 @@ export default class OrgRenameModal extends LightningModal {
 
     @api orgName;
     @api username;
+    @api redirectUrl;
+    @api isRedirect = false;
     @api oldAlias;
     @api connections = [];
 
@@ -85,13 +87,16 @@ export default class OrgRenameModal extends LightningModal {
         await renameConnection({
             newAlias:this.generatedAlias,
             oldAlias:this.oldAlias,
-            username:this.username
+            username:this.username,
+            redirectUrl:this.redirectUrl
         });
     }
 
     checkForErrors() {
-        this.errors = [];
+        //console.log('checkForErrors',this.template.querySelector('slds-lookup').getSelection());
         const selection = this.template.querySelector('slds-lookup').getSelection();
+
+        this.errors = [];
         this.selectedCategory = selection;
         // Enforcing required field
         if (selection.length === 0) {
@@ -115,6 +120,20 @@ export default class OrgRenameModal extends LightningModal {
         });
     }
 
+    validateNewCategory = () => {
+        let isValid = true;
+        // Default
+        let inputFields = this.template.querySelectorAll('.new-category-to-validate');
+            inputFields.forEach(inputField => {
+                if(!inputField.checkValidity()) {
+                    inputField.reportValidity();
+                    isValid = false;
+                }
+            });
+        
+        return isValid;
+    }
+
     
 
     /** events **/
@@ -133,6 +152,10 @@ export default class OrgRenameModal extends LightningModal {
 
     newCategory_onChange = (e) => {
         this.newCategory = e.target.value;
+    }
+
+    redirectUrl_onChange = (e) => {
+        this.redirectUrl = e.target.value;
     }
 
     handleLookupSearch = async (event) =>{
@@ -160,12 +183,15 @@ export default class OrgRenameModal extends LightningModal {
             this.template.querySelector('.new-category-to-validate')?.focus();
         })
     }
+    
     handleCancelNewCategoryClick = (e) => {
         this.isNewCategoryDisplayed = false;
         this.newCategory = null;
     }
+
     handleCreateNewCategoryClick = (e) => {
         if(this.validateNewCategory()){
+            this.errors = []; // reset
             this.selectedCategory = [
                 this.formatForLookup(this.newCategory)
             ];

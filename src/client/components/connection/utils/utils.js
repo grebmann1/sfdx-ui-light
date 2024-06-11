@@ -134,7 +134,7 @@ export async function removeConnection(alias){
 
 export async function getAllConnection(){
     let connections =  isElectronApp()?await electronInterface.getAllConnection():await webInterface.getAllConnection();
-    console.log('connections',connections);
+    //console.log('connections',connections);
     // To be removed, only for testing
     /*if(connections == null || connections.length == 0){
         console.log('FAKE Connections')
@@ -186,7 +186,7 @@ export async function removeSession(value){
 /** Session Connection **/
 
 
-export async function oauth_chrome({alias,loginUrl},callback){
+export async function oauth_chrome({alias,loginUrl},callback,callbackErrorHandler){
 
     const oauth2 = new window.jsforce.OAuth2({
         clientId : window.jsforceSettings.clientId,
@@ -201,12 +201,17 @@ export async function oauth_chrome({alias,loginUrl},callback){
     },async (response) => {
         const { code } = response;
         //console.log('code',code);
-        if(isNotUndefinedOrNull(code)){
-            const connection = new window.jsforce.Connection({ oauth2 });
+        if(isUndefinedOrNull(code)) return;
+        
+        const connection = new window.jsforce.Connection({ oauth2 });
+        try{
             const userInfo = await connection.authorize(code);
             //console.log('userInfo',userInfo);
             oauth_extend({alias,connection},callback);
+        }catch(e){
+            callbackErrorHandler(e);
         }
+        
 
     });
 }
@@ -235,28 +240,45 @@ export async function oauth({alias,loginUrl},callback){
 
 async function generateHeader({alias,connection}){
     console.log('generateHeader');
-    const {accessToken,instanceUrl,loginUrl,refreshToken,version} = connection;
+    
     let nameArray = alias.split('-');
     let companyName = nameArray.length > 1 ?nameArray.shift() : '';
     let name = nameArray.join('-');
     let header = {
-        accessToken,instanceUrl,loginUrl,refreshToken,version,
         id:alias,
         alias:alias,
         company:companyName.toUpperCase(),
         name:name,
-        sfdxAuthUrl:`force://${window.jsforceSettings.clientId}::${refreshToken}@${(new URL(instanceUrl)).host}`,
     };
 
-    /** Get Username **/
-    let identity = await connection.identity();
-    if(isNotUndefinedOrNull(identity)){
-        header.username = identity.username;
-        header.orgId    = identity.organization_id;
-        header.userInfo = identity;
-    }
+    if(connection){
+        const {accessToken,instanceUrl,loginUrl,refreshToken,version} = connection;
+        header = {
+            ...header,
+            accessToken,instanceUrl,loginUrl,refreshToken,version,
+            sfdxAuthUrl:`force://${window.jsforceSettings.clientId}::${refreshToken}@${(new URL(instanceUrl)).host}`
+        }
 
+        /** Get Username **/
+        let identity = await connection.identity();
+        if(isNotUndefinedOrNull(identity)){
+            header.username = identity.username;
+            header.orgId    = identity.organization_id;
+            header.userInfo = identity;
+        }
+    }
     return header;
+}
+
+export async function setRedirectCredential({alias,redirectUrl}){
+    console.log('redirect_credential');
+    const header = await generateHeader({alias});
+          header.redirectUrl = redirectUrl;
+
+    await webInterface.setConnection(alias,header);
+    let connector = new Connector(header,null);
+    callback({alias,connector})//this.close({alias:alias,connection});
+        
 }
 
 async function oauth_extend({alias,connection},callback){

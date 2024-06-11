@@ -86,7 +86,21 @@
                                     <slds-empty-illustration title="No record" sub-title="There is no data with these parameters"></slds-empty-illustration>
                                 </template>
                                 <template lwc:else>
-                                    <div class="mermaid" lwc:ref="mermaid"  lwc:dom="manual"></div>
+                                    <div class="slds-grid slds-m-vertical_small">
+                                        <div class="slds-col_bump-right"></div>
+                                        <div>
+                                            <lightning-input 
+                                                type="toggle" 
+                                                label="Display Diagram" 
+                                                name="displayDiagram" 
+                                                message-toggle-active=""
+                                                message-toggle-inactive=""
+                                                checked={isDiagramDisplayed}
+                                                onchange={handleDisplayDiagram}
+                                            ></lightning-input>
+                                        </div>
+                                    </div>
+                                    <div class={mermaidClass} lwc:ref="mermaid"  lwc:dom="manual"></div>
                                     <div class="doc"     lwc:ref="container" lwc:dom="manual"></div>
                                 </template>
                             </div>
