@@ -89,13 +89,16 @@ export default class MarkdownViewer extends LightningElement {
 
         function fixClassNameInLinks(line){
             if(isEmpty(line) || line.includes('classDiagram')) return line;
-            
-            return line.replace(/(class|Class)([a-zA-Z0-9]+)/g, '$2').toLowerCase();
+            const match = line.match(/(class|Class)([a-zA-Z0-9]+)/);
+            if (match) {
+                return line.replace(/(class|Class)([a-zA-Z0-9]+)/g, '$2');
+            }else{
+                return line;
+            }
         }
 
         // Split the input into lines for easier manipulation.
         const lines = input.split('\n');
-        let isValidDiagram = false;
         let fixedDiagram = [];
     
         lines.forEach(line => {
@@ -107,7 +110,9 @@ export default class MarkdownViewer extends LightningElement {
     
             // Fix class names
             line = fixClassName(line);
+            console.log('line1',line);
             line = fixClassNameInLinks(line);
+            console.log('line2',line);
             fixedDiagram.push(line);
 
         });

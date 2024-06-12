@@ -19,7 +19,7 @@ const OPENAI_RUN = class {
             'Search in the files first to find a possible answer.',
             'If it\'s not there, use your own knwoledge or search on internet.',
             //'Display it and then return in JSON format the redirection to the correct dialog.',
-            `This is the request of the user : "${content}".`,
+            `This is the request of the user : "${content}". If the user request a diagram, always return a valid mermaid diagram.`,
             //'Provide the response in HTML and add it to the JSON.',
             //'Only return a JSON formatted response following this format : {"response":"your response"}',
             //'Return the response in JSON following this format : {"answer":"your answer in html format"}'
