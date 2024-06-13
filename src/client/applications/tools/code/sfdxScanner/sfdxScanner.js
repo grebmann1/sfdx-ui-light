@@ -18,7 +18,7 @@ export default class Pmd extends FeatureElement {
     connectedCallback(){
         console.log('xterm',xterm);
         setTimeout(() => {
-            this.createTerminal();
+            //this.createTerminal();
         },300);
     }
 
