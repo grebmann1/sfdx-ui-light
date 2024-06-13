@@ -33,7 +33,7 @@ export default class App extends FeatureElement {
         }
         console.log('result',result);
         this.projectPath = result.projectPath;
-        this.initMetadataLoaded = result.metadataLoaded;
+        this.initMetadataLoaded = result.metadataLoaded || true; // For DEMO - TODO: Fix issue related to Metadata download
         
         /*if(isNotUndefinedOrNull(this.connector.header.alias)){
             const {error, result} = await window.electron.ipcRenderer.invoke('util-getConfig',{key:'projectPath',configName:this.connector.header.alias});
