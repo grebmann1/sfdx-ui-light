@@ -1,6 +1,7 @@
 import { LightningElement,api,wire } from "lwc";
 import FeatureElement from 'element/featureElement';
 import LightningAlert from 'lightning/alert';
+import Toast from 'lightning/toast';
 import { isUndefinedOrNull,isNotUndefinedOrNull,runActionAfterTimeOut,normalizeString as normalize } from "shared/utils";
 import { directConnect,getHostAndSession } from 'connection/utils';
 import { getCurrentTab,getRecordId,PANELS } from 'extension/utils';
@@ -108,17 +109,24 @@ export default class root extends FeatureElement {
         /** Set as global **/
         window.sessionId = this.sessionId;
         window.serverUrl = this.serverUrl;
-        window.connector = await directConnect(this.sessionId,'https://' + this.serverUrl);
-        this.versions = (await this.connector.conn.request('/services/data/')).sort((a, b) => b.version.localeCompare(a.version));
-        this.version = this.versions[0];
-        // Initialize;
-        this.connector.version = this.version.version;
-
         if(isUndefinedOrNull(this.sessionId) || isUndefinedOrNull(this.serverUrl)){
-            this.sendError();
-        }else{
-            this.isConnectorLoaded = true;
+            this.sendError('Missing SessionId AND/OR ServerUrl'); // Shouldn't be used all the time
+            this.redirectToDefaultView();
         }
+
+        try{
+            window.connector = await directConnect(this.sessionId,'https://' + this.serverUrl);
+            this.versions = (await this.connector.conn.request('/services/data/')).sort((a, b) => b.version.localeCompare(a.version));
+            this.version = this.versions[0];
+            // Initialize;
+            this.connector.version = this.version.version;
+            this.isConnectorLoaded = true;
+
+        }catch(e){
+            this.sendError(e.message); // Shouldn't be used all the time
+            this.redirectToDefaultView();
+        }
+        
     }
     
     /*
@@ -131,11 +139,16 @@ export default class root extends FeatureElement {
     }
     */
 
-    sendError = () => {
-        LightningAlert.open({
+    sendError = (message) => {
+        /*LightningAlert.open({
             message: 'Invalid Session',
             theme: 'error', // a red theme intended for error states
             label: 'Error!', // this is the header text
+        });*/
+        Toast.show({
+            label: message || 'Error during connection',
+            variant:'error',
+            mode:'dismissible'
         });
     }
 

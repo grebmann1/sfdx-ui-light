@@ -323,6 +323,7 @@ ol {
   margin-top: 0;
   margin-bottom: 0;
   padding-left: 2em;
+  list-style: circle;
 }
 
 ol ol,
@@ -564,6 +565,7 @@ ol ol,
 ol ul {
   margin-top: 0;
   margin-bottom: 0;
+  list-style: circle !important;
 }
 
 li > p {

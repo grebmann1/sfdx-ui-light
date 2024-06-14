@@ -1,5 +1,8 @@
 import {api} from "lwc";
 import FeatureElement from 'element/featureElement';
+import Toast from 'lightning/toast';
+import UserExplorerNetworkModal from 'extension/UserExplorerNetworkModal'
+
 import { isNotUndefinedOrNull,isSalesforceId,isEmpty,isUndefinedOrNull } from "shared/utils";
 export default class UserExplorerRow extends FeatureElement {
 
@@ -53,37 +56,38 @@ export default class UserExplorerRow extends FeatureElement {
         });
     }
 
-    openInAnonymousWindow = (groupName,targetUrl) => {
-        chrome.windows.getAll({populate: false, windowTypes: ['normal']}, (windows) => {
-            for (let w of windows) {
-                if (w.incognito) {
-                    // Use this window.
-                    chrome.tabs.create({url: targetUrl, windowId: w.id},(tab) => {
-                        const groupName = this.username;
-                        chrome.tabs.group({createProperties: {}, tabIds: tab.id}, (newGroupId) => {
-                            chrome.tabGroups.update(newGroupId, {title: groupName}, () => {
-                                console.log(`New group '${groupName}' created and tab added`);
-                            });
-                        });
-                    });
-                    return;
-                }
-            }
-            // No incognito window found, open a new one.
-            chrome.windows.create({url: targetUrl, incognito: true});
-        });
-    }
-
     /** Events **/
 
-    loginAsClick = () => {
+    loginAsClick = async () => {
+        const query = `SELECT Id, MemberId, NetworkId,Network.Name,Network.Status FROM NetworkMember Where MemberId = '${this.recordId}' AND Network.Status = 'Live'`
+        const retUrl = '/';
+        const networkMembers = (await this.connector.conn.query(query)).records.map(x => ({
+            ...x,
+            _redirectLink:`${this.connector.conn.instanceUrl}/servlet/servlet.su?oid=${encodeURIComponent(this.connector.header.orgId)}&retURL=${encodeURIComponent(retUrl)}&sunetworkid=${encodeURIComponent(x.NetworkId)}&sunetworkuserid=${encodeURIComponent(x.MemberId)}`
+        }));
+        
         const targetUrl = `${this.connector.conn.instanceUrl}/servlet/servlet.su?oid=${this.connector.header.orgId}&suorgadminid=${this.item.Id}&retURL=%2Fhome%2Fhome.jsp&targetURL=%2Fhome%2Fhome.jsp`;
-        this.openInAnonymousWindow(this.username,`${this.connector.frontDoorUrl}&retURL=${encodeURIComponent(targetUrl)}`);
+        //this.openInAnonymousWindow(this.username,`${this.connector.frontDoorUrl}&retURL=${encodeURIComponent(targetUrl)}`);
+
+        UserExplorerNetworkModal.open({
+            username:this.username,
+            frontDoorUrl:this.connector.frontDoorUrl,
+            standard:this.item.Profile.UserType == 'Standard'?`${this.connector.frontDoorUrl}&retURL=${encodeURIComponent(targetUrl)}`:'',
+            networkMembers
+        })
     }
 
     viewClick = () => {
         const targetUrl = encodeURIComponent(`/${this.item.Id}?noredirect=1&isUserEntityOverride=1`);
         window.open(`${this.currentOrigin}/lightning/setup/ManageUsers/page?address=${targetUrl}`,'_blank');
+    }
+
+    handleCopyRecordId = () => {
+        navigator.clipboard.writeText(this.recordId);
+        Toast.show({
+            label: 'RecordId exported to your clipboard',
+            variant:'success',
+        });
     }
 
 
@@ -97,6 +101,10 @@ export default class UserExplorerRow extends FeatureElement {
 
     get isDisabled(){
         return this.item?.Id === this.connector.conn.userInfo.id || !this.isActive;
+    }
+
+    get recordId(){
+        return this.item?.Id || '';
     }
 
     get name(){

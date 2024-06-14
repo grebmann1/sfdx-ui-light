@@ -11,6 +11,9 @@ import { getCurrentTab,getCurrentObjectType,fetch_data,fetch_metadata,
 
 const PAGE_LIST_SIZE    = 70;
 const TOOLING = 'tooling';
+const SOBJECT = {
+    contact : 'Contact'
+}
 
 export default class RecordExplorer extends FeatureElement {
 
@@ -31,6 +34,9 @@ export default class RecordExplorer extends FeatureElement {
     data = [];
     filter = '';
     isError = false;
+
+    // Exceptions
+    networkMembers = [];
 
     // Scrolling
     pageNumber = 1;
@@ -122,6 +128,16 @@ export default class RecordExplorer extends FeatureElement {
                 //console.log('this.record',this.record);
                 //console.log('this.metadata',this.metadata);
                 this.data = this.formatData();
+                
+                if(this.sobjectName === SOBJECT.contact){
+                    const query = `SELECT Id, MemberId, NetworkId,Network.Name,Network.Status FROM NetworkMember Where Member.ContactId = '${this.recordId}' AND Network.Status = 'Live'`
+                    const networkMembers = (await this.connector.conn.query(query)).records;
+                    const retUrl = '/';
+                    this.networkMembers = networkMembers.map(x => ({
+                        ...x,
+                        _redirectLink:`${this.connector.conn.instanceUrl}/servlet/servlet.su?oid=${encodeURIComponent(this.connector.header.orgId)}&retURL=${encodeURIComponent(retUrl)}&sunetworkid=${encodeURIComponent(x.NetworkId)}&sunetworkuserid=${encodeURIComponent(x.MemberId)}`
+                    }))
+                }
             }
 
             // Initiliaze Picklist Dependencies
@@ -405,6 +421,10 @@ export default class RecordExplorer extends FeatureElement {
     }
 
     /** Getters */
+
+    get isNetworkMemberListDisplayed(){
+        return this.networkMembers.length > 0;
+    }
 
     get modifiedRowsTotal(){
         return this.modifiedRows.length;

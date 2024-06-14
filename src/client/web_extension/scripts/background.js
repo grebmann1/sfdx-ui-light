@@ -1,23 +1,23 @@
 "use strict";
-import * as utils from './utils.js';
+//import * as utils from './utils.js';
 
 /** Variables */
 const CONFIG_POPUP = 'openAsPopup';
-var config = {};
+//var config = {};
 
 /** Methods */
 
-const getCurrentTab = async () => {
+/*const getCurrentTab = async () => {
     let queryOptions = { active: true, lastFocusedWindow: true };
     // `tab` will either be a `tabs.Tab` instance or `undefined`.
     let [tab] = await chrome.tabs.query(queryOptions);
     return tab;
-}
+}*/
 
 const isHostMatching = (url) => {
     // This should be optimized in the futur !
     const hosts = ['my.salesforce.com','lightning.force.com','cloudforce.com','lightning.force.com.mcas.ms'];
-    return hosts.reduce((previous,host) => url.host.endsWith(host) || previous,false);
+    return hosts.reduce((previous,host) => url.host.endsWith(host) || previous,false) || url.href.includes(`${url.host}/s/`);
     //return url.host.endsWith('lightning.force.com') || url.host.endsWith('salesforce.com') || url.host.endsWith('cloudforce.com');
 }
 

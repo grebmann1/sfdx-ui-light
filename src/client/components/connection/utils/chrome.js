@@ -9,12 +9,12 @@ const getCurrentTab = async () => {
 const getHostAndSession = async () => {
     try{
         let tab = await getCurrentTab();
-        let url = new URL(tab.url).origin;
+        let url = new URL(tab.url);
         let cookieStoreId = await getCurrentTabCookieStoreId(tab.id);
         
         let cookieDetails = {
             name: "sid",
-            url: url,
+            url: url.origin,
             storeId: cookieStoreId,
         };
         //console.log('tab',tab);
@@ -32,10 +32,14 @@ const getHostAndSession = async () => {
             secure: true,
             storeId: cookieStoreId,
             domain: "salesforce.com"
+            //url:`https:${url.host}` // Investigate if it's better
         };
+        //console.log('secureCookieDetails',secureCookieDetails);
         const cookies = await chrome.cookies.getAll(secureCookieDetails);
-        
+        //console.log('cookies',cookies);
         let sessionCookie = cookies.find((c) => c.value.startsWith(orgId + "!"));
+
+
         if (!sessionCookie) {
             return;
         }

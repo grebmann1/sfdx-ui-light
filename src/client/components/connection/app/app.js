@@ -147,7 +147,7 @@ export default class App extends FeatureElement {
         // Browser & Electron version
         this.isLoading = true;
         this.data =  await getAllConnection();
-        //console.log('originalList',this.data);
+        console.log('originalList',this.data);
         //console.log('getAllConnection',this.data);
         this.formattedData = this.formatDataForCardView();
         this.isLoading = false;
@@ -210,7 +210,7 @@ export default class App extends FeatureElement {
 
         let {alias,...settings} = this.data.find(x => x.id == row.id);
         this.dispatchEvent(new CustomEvent("startlogin", { bubbles: true,composed: true }));
-        console.log('settings',settings);
+        //console.log('settings',settings);
         const loginUrl = 'https://culturalcareaupair--qa.sandbox.my.salesforce.com';
         const _oauthMethod = isChromeExtension()?oauth_chrome:oauth;
 

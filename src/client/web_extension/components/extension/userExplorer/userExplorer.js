@@ -8,7 +8,7 @@ import { getCurrentTab,getCurrentObjectType,fetch_data,fetch_metadata,
 } from "extension/utils";
 
 const PAGE_LIST_SIZE = 70;
-const BASE_QUERY = 'SELECT Id, Username, Name,Email,IsActive,ProfileId,Profile.Name FROM User ';
+const BASE_QUERY = 'SELECT Id, Username, Name,Email,IsActive,ProfileId,Profile.Name,Profile.UserType FROM User ';
 
 export default class UserExplorer extends FeatureElement {
 
@@ -41,7 +41,7 @@ export default class UserExplorer extends FeatureElement {
 
     searchUsers = async () => {
         this.isLoading = true;
-        let query = this.connector.conn.query(`${BASE_QUERY} WHERE Username  LIKE '%${this.filter}%' OR Name LIKE '%${this.filter}%' OR Email LIKE '%${this.filter}%' OR Profile.Name LIKE '%${this.filter}%' ORDER BY Name limit 500`);
+        let query = this.connector.conn.query(`${BASE_QUERY} WHERE Username  LIKE '%${this.filter}%' OR Name LIKE '%${this.filter}%' OR Email LIKE '%${this.filter}%' OR Profile.Name LIKE '%${this.filter}%' OR Contact.Name LIKE '%${this.filter}%' ORDER BY Name limit 500`);
         try{
             let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
             this.data = records;

@@ -60,6 +60,29 @@
                         <dd class="slds-item_detail slds-truncate">
                             <a href={objectDocLink} target="_blank" onclick={redirectDoc}>{docLinkTitle}</a>
                         </dd>
+
+                        <!-- Specific to Contacts -->
+                        <template lwc:if={isNetworkMemberListDisplayed}>
+                            <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Login as">
+                                Login as
+                            </dt>
+                            <dd class="slds-item_detail">
+                                <template iterator:item={networkMembers}>
+                                    <div key={item.value.Id} class="slds-inline-flex">
+                                        <a href={item.value._redirectLink} target="_blank">{item.value.Network.Name}</a>
+                                        <template lwc:if={item.last}>
+                                        </template>
+                                        <template lwc:else>
+                                            <p class="slds-m-horizontal_x-small">|</p>
+                                        </template>
+                                    </div>
+                                </template>
+                                
+                            </dd>
+                        </template>
+                        
+
+
                     </dl>
                 </template>
             </template>

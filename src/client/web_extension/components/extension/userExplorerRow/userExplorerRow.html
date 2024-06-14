@@ -1,5 +1,13 @@
 <template>
     <tr style="height: 0;">
+        <td class="cell-value slds-cell-wrap">
+            <lightning-button-icon
+                    onclick={handleCopyRecordId}
+                    icon-name="utility:copy"
+                    variant="bare"
+                    alternative-text={recordId}
+            ></lightning-button-icon>
+        </td>
         <td lwc:ref="username" lwc:dom="manual" class="cell-field slds-cell-wrap"></td>
         <td class="cell-value slds-cell-wrap">
             <!-- Value -->

@@ -292,14 +292,13 @@ async function generateHeader({alias,connection}){
     return header;
 }
 
-export async function setRedirectCredential({alias,redirectUrl}){
+export async function setRedirectCredential({alias,redirectUrl},callback){
     console.log('redirect_credential');
     const header = await generateHeader({alias});
           header.redirectUrl = redirectUrl;
 
     await webInterface.setConnection(alias,header);
-    let connector = new Connector(header,null);
-    callback({alias,connector})//this.close({alias:alias,connection});
+    callback();
         
 }
 
@@ -308,7 +307,7 @@ async function oauth_extend({alias,connection},callback){
     const header = await generateHeader({alias,connection});
     await webInterface.setConnection(alias,header);
     let connector = new Connector(header,connection);
-    callback({alias,connector})//this.close({alias:alias,connection});
+    callback({alias,connector});//this.close({alias:alias,connection});
 }
 
 export async function directConnect(sessionId,serverUrl){

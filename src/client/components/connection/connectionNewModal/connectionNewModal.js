@@ -165,9 +165,11 @@ export default class ConnectionNewModal extends LightningModal {
         setRedirectCredential({
             alias:this.alias,
             redirectUrl:this.redirectUrl
+        },() => {
+            this.isLoading = false;
+            this.close(true);
         });
-        this.isLoading = false;
-        this.close(true);
+        
     }
 
     electron_oauth = async () => {
