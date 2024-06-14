@@ -30,8 +30,8 @@ export default class Salesforce extends LightningElement {
     set isConnectorLoaded(value){
         this._isConnectorLoaded = value;
         //this._isConnectorLoaded = true; // For offline debuging
-        //this.openRecordExplorerTab();
-        this.openUserExplorerTab(); // For offline debuging
+        this.openRecordExplorerTab();
+        //this.openUserExplorerTab(); // For offline debuging
     }
     
     _recordId;
