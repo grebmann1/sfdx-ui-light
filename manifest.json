@@ -11,12 +11,31 @@
     },
     "content_scripts": [
         {
-          "matches": [
-            "https://*.sf-toolkit.com/*",
-            "http://localhost:3000/*"
-        ],
-          "run_at":"document_end",
-          "js": ["scripts/inject.js"]
+            "matches": [
+                "https://*.sf-toolkit.com/*",
+                "http://localhost:3000/*"
+            ],
+            "run_at":"document_end",
+            "js": ["scripts/inject_toolkit.js"]
+        },
+        {
+            "matches": [
+                "https://*.salesforce.com/*",
+                "https://*.visual.force.com/*",
+                "https://*.vf.force.com/*",
+                "https://*.lightning.force.com/*",
+                "https://*.cloudforce.com/*",
+                "https://*.visualforce.com/*",
+                "https://*.salesforce.mil/*",
+                "https://*.visual.force.mil/*",
+                "https://*.vf.force.mil/*",
+                "https://*.lightning.force.mil/*",
+                "https://*.cloudforce.mil/*",
+                "https://*.visualforce.mil/*",
+                "https://*.crmforce.mil/*"
+            ],
+            "run_at":"document_end",
+            "js": ["scripts/inject_salesforce.js"]
         }
     ],
     "content_security_policy": {
@@ -28,6 +47,7 @@
                 "<all_urls>"
             ],
             "resources": [
+                "scripts/*",
                 "index.html*",
                 "callback.html*",
                 "openai/index.js",
@@ -37,7 +57,7 @@
     ],
     "options_ui": {
         "page": "views/options.html",
-        "open_in_tab": false
+        "open_in_tab": true
     },
     "host_permissions": [
         "https://*/*",

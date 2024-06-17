@@ -39,6 +39,10 @@ export default {
                     "path": "../../node_modules/@babel/runtime/helpers/esm/objectSpread2.js"
                 },
                 {
+                    "name": "hotkeys-js",
+                    "path": "node_modules/hotkeys-js/dist/hotkeys.esm.js"
+                },
+                {
                     "name": "redux",
                     "path": "node_modules/redux/es/redux.js"
                 },
@@ -74,6 +78,8 @@ export default {
                     return newContents;
                 }            
               },
+
+              { src: 'node_modules/hotkeys-js/dist/hotkeys.esm.js', dest: 'chrome_ext/scripts'},
               { src: 'src/client/web_extension/components/extension/utils/utils.js', dest: 'chrome_ext/scripts' }
             ]
         })

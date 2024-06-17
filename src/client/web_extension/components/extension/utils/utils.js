@@ -214,5 +214,7 @@ export function getObjectDocLink(sobjectName,isUsingToolingApi){
 export const CACHE_CONFIG = {
 	CONFIG_POPUP:'openAsPopup',
 	OPENAI_ASSISTANT_ID:'openai_assistant_id',
-	OPENAI_KEY:'openai_key'
+	OPENAI_KEY:'openai_key',
+	SHORTCUT_RECORDID:'shortcut_recordid',
+	SHORTCUT_INJECTION_ENABLED:'shortcut_injection_enabled'
 }

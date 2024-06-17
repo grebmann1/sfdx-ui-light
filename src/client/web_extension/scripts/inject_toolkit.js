@@ -1,7 +1,7 @@
+'use strict';
 
 
-
-const injectHtml = (myJsonObject) => {
+const _injectHtml = (myJsonObject) => {
     const jsonString = JSON.stringify(myJsonObject, null, 2); // Beautify the JSON string
 
     // Create a new element to display the JSON string
@@ -13,12 +13,19 @@ const injectHtml = (myJsonObject) => {
     // Append the element to the body or another existing element of your choice
     document.body.appendChild(divElement);
 }
-const injectMethod = async () => {
-    const connections = await chrome.storage.local.get("connections");
-    injectHtml(connections)
 
+
+
+/** Methods **/
+const injectConnections = async () => {
+    _injectHtml(await chrome.storage.local.get("connections"))
 }
 
 
-injectMethod();
+
+(async () => {
+    console.log('### SF Toolkit Injection ###');
+
+    injectConnections();
+})();
 
