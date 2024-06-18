@@ -40,6 +40,35 @@
                         <div class="slds-section slds-is-open">
                             <h3 class="slds-section__title">
                                 <div class="slds-section__title-action">
+                                    <span class="slds-truncate" title="Login As">Login As</span>
+                                </div>
+                            </h3>
+                            <div class="slds-section__content">
+                                <ui-information-block title="Incognito Full Access">
+                                    <p>To have full access to incognito, you need to set "Allow in Incognito".</p>
+                                    <p> Current value : {isFullIncognitoAccess} </p>
+                                </ui-information-block>
+                                <div class="slds-grid slds-wrap">
+                                    <div class="slds-col slds-medium-size_1-of-2 slds-p-horizontal_small">
+                                        <lightning-input 
+                                            type="toggle" 
+                                            label="Open Experience Cloud in Incognito" 
+                                            onchange={handleExperienceCloudLoginAsIncognito_change}
+                                            checked={experienceCloudLoginAsIncognito}
+                                            message-toggle-active="Active"
+                                            message-toggle-inactive="Inactive"
+                                            variant="label-stacked"
+                                        ></lightning-input>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- SECTION - Shortcut -->
+                    <div class="slds-col slds-col slds-size_1-of-1">
+                        <div class="slds-section slds-is-open">
+                            <h3 class="slds-section__title">
+                                <div class="slds-section__title-action">
                                     <span class="slds-truncate" title="Shortcut Settings">Shortcut Settings</span>
                                 </div>
                             </h3>

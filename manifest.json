@@ -76,5 +76,5 @@
         "sidePanel",
         "contextMenus"
     ],
-    "incognito": "split"
+    "incognito": "spanning"
   }

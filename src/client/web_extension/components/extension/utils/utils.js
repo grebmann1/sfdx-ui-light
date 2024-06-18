@@ -211,10 +211,51 @@ export function getObjectDocLink(sobjectName,isUsingToolingApi){
     return `https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_${sobjectName.toLowerCase()}.htm`;
 }
 
+export const chromeOpenInWindow = async (targetUrl,groupName,incognito = false,newWindow = false) => {
+	const windows = await chrome.windows.getAll({populate: false, windowTypes: ['normal']});
+	for (let w of windows) {
+		if ((w.incognito && incognito || !incognito) && !newWindow) {
+			// Use this window.
+			let tab = await chrome.tabs.create({url: targetUrl, windowId: w.id});
+			let groups = await chrome.tabGroups.query({windowId:w.id}) || [];
+			let group = groups.find(g => g.title === groupName);
+			if (group) {
+				// Group exists, add the tab to this group
+				chrome.tabs.group({groupId: group.id, tabIds: tab.id}, () => {
+					console.log(`Tab added to existing group '${groupName}'`);
+				});
+			} else {
+				// Group does not exist, create a new group with this tab
+				chrome.tabs.group({createProperties: {}, tabIds: tab.id}, (newGroupId) => {
+					chrome.tabGroups.update(newGroupId, {title: groupName}, () => {
+						console.log(`New group '${groupName}' created and tab added`);
+					});
+				});
+			}
+			return;
+		}
+	}
+	const new_window = await chrome.windows.create({url: targetUrl, incognito: incognito});
+	if(new_window){
+		chrome.tabs.query({windowId: new_window.id}, async (tabs) => {
+			// There should be only one tab in the new window
+			const tabId = tabs[0].id;
+			const newGroupId = await chrome.tabs.group({createProperties: {windowId:new_window.id},tabIds: tabId});
+			chrome.tabGroups.update(newGroupId, {title: groupName}, () => {
+				console.log(`New group '${groupName}' created and tab added`);
+			});
+		});
+	}else{
+		console.warning('You need to Authorize the extension to have access to Incognito');
+	}
+	
+}
+
 export const CACHE_CONFIG = {
 	CONFIG_POPUP:'openAsPopup',
 	OPENAI_ASSISTANT_ID:'openai_assistant_id',
 	OPENAI_KEY:'openai_key',
 	SHORTCUT_RECORDID:'shortcut_recordid',
-	SHORTCUT_INJECTION_ENABLED:'shortcut_injection_enabled'
+	SHORTCUT_INJECTION_ENABLED:'shortcut_injection_enabled',
+	EXPERIENCE_CLOUD_LOGINAS_INCOGNITO:'experienceCloudLoginAsIncognito'
 }

@@ -11,6 +11,10 @@ export default class Options extends LightningElement {
     openai_assistant_id;
     shortcut_recordid;
     shortcut_enabled;
+    experienceCloudLoginAsIncognito;
+
+    // Extension Permissions
+    hasIncognitoAccess = false;
 
     connectedCallback(){
         this.loadConfigFromCache();
@@ -40,6 +44,10 @@ export default class Options extends LightningElement {
         this.shortcut_enabled = e.detail.checked;
     }
 
+    handleExperienceCloudLoginAsIncognito_change = (e) => {
+        this.experienceCloudLoginAsIncognito = e.detail.checked;
+    }
+
     handleSaveClick = async (e) => {
         await this.saveToCache();
         
@@ -62,7 +70,9 @@ export default class Options extends LightningElement {
             config[CACHE_CONFIG.OPENAI_ASSISTANT_ID] = this.openai_assistant_id;
             config[CACHE_CONFIG.SHORTCUT_RECORDID]   = this.shortcut_recordid;
             config[CACHE_CONFIG.SHORTCUT_INJECTION_ENABLED] = this.shortcut_enabled;
+            config[CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO] = this.experienceCloudLoginAsIncognito;
 
+            
         // To Bulkify
         await saveExtensionConfigToCache(config);
         Toast.show({
@@ -80,14 +90,18 @@ export default class Options extends LightningElement {
             CACHE_CONFIG.OPENAI_KEY,
             CACHE_CONFIG.OPENAI_ASSISTANT_ID,
             CACHE_CONFIG.SHORTCUT_RECORDID,
-            CACHE_CONFIG.SHORTCUT_INJECTION_ENABLED
+            CACHE_CONFIG.SHORTCUT_INJECTION_ENABLED,
+            CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO
 
         ]);
+        this.hasIncognitoAccess = await chrome.extension.isAllowedIncognitoAccess();
+
         this.openAsPopup_checked    = configuration[CACHE_CONFIG.CONFIG_POPUP] || false;
         this.openai_key             = configuration[CACHE_CONFIG.OPENAI_KEY] || null;
         this.openai_assistant_id    = configuration[CACHE_CONFIG.OPENAI_ASSISTANT_ID] || null;
         this.shortcut_recordid      = configuration[CACHE_CONFIG.SHORTCUT_RECORDID]|| null;
         this.shortcut_enabled       = configuration[CACHE_CONFIG.SHORTCUT_INJECTION_ENABLED] || false;
+        this.experienceCloudLoginAsIncognito = configuration[CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO] || false;
     }
 
 
@@ -95,6 +109,10 @@ export default class Options extends LightningElement {
 
     get isShortcutDisabled(){
         return !this.shortcut_enabled;
+    }
+
+    get isFullIncognitoAccess(){
+        return this.hasIncognitoAccess;
     }
    
 }

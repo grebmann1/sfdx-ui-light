@@ -20,7 +20,7 @@
                 <dd class="slds-item_detail">
                     <template iterator:item={networkMembers}>
                         <div key={item.value.Id} class="slds-grid">
-                            <a href={item.value._redirectLink} target="_blank">{item.value.Network.Name}</a>
+                            <a href={item.value._redirectLink} target="_blank" onclick={handleExperienceLogin}>{item.value.Network.Name}</a>
                         </div>
                     </template>
                 </dd>

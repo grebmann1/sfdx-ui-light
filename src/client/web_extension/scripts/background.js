@@ -196,7 +196,7 @@ chrome.action.onClicked.addListener(async (tab) => {
 
 const init = async () => {
     chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch((error) => console.error(error));
-    config = await loadConfiguration();
+    //config = await loadConfiguration();
 }
 
 

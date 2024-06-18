@@ -2,8 +2,13 @@ import {api} from "lwc";
 import FeatureElement from 'element/featureElement';
 import Toast from 'lightning/toast';
 import UserExplorerNetworkModal from 'extension/UserExplorerNetworkModal'
-
+import {
+    CACHE_CONFIG,
+    loadExtensionConfigFromCache,
+    chromeOpenInWindow
+} from 'extension/utils';
 import { isNotUndefinedOrNull,isSalesforceId,isEmpty,isUndefinedOrNull } from "shared/utils";
+
 export default class UserExplorerRow extends FeatureElement {
 
     @api item;
@@ -36,26 +41,6 @@ export default class UserExplorerRow extends FeatureElement {
         this.refs.profile.innerHTML     = this.formattedProfile;
     }
 
-    createOrAddToTabGroup = (tab, groupName,windowId) =>{
-        chrome.tabGroups.query({windowId:windowId}, (groups) => {
-            let group = groups.find(g => g.title === groupName);
-        
-            if (group) {
-                // Group exists, add the tab to this group
-                chrome.tabs.group({groupId: group.id, tabIds: tab.id}, () => {
-                    console.log(`Tab added to existing group '${groupName}'`);
-                });
-            } else {
-                // Group does not exist, create a new group with this tab
-                chrome.tabs.group({createProperties: {}, tabIds: tab.id}, (newGroupId) => {
-                    chrome.tabGroups.update(newGroupId, {title: groupName}, () => {
-                        console.log(`New group '${groupName}' created and tab added`);
-                    });
-                });
-            }
-        });
-    }
-
     /** Events **/
 
     loginAsClick = async () => {
@@ -78,8 +63,13 @@ export default class UserExplorerRow extends FeatureElement {
     }
 
     viewClick = () => {
+        console.log('this.connector.header',this.connector.header);
         const targetUrl = encodeURIComponent(`/${this.item.Id}?noredirect=1&isUserEntityOverride=1`);
-        window.open(`${this.currentOrigin}/lightning/setup/ManageUsers/page?address=${targetUrl}`,'_blank');
+        chromeOpenInWindow(
+            `${this.currentOrigin}/lightning/setup/ManageUsers/page?address=${targetUrl}`,
+            this.username,
+            false
+        )
     }
 
     handleCopyRecordId = () => {

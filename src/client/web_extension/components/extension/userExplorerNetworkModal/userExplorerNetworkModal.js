@@ -1,6 +1,11 @@
 import LightningModal from 'lightning/modal';
 import { api } from "lwc";
 import { isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,decodeError,checkIfPresent } from "shared/utils";
+import {
+    CACHE_CONFIG,
+    loadExtensionConfigFromCache,
+    chromeOpenInWindow
+} from 'extension/utils';
 
 export default class UserExplorerNetworkModal extends LightningModal {
 
@@ -8,6 +13,7 @@ export default class UserExplorerNetworkModal extends LightningModal {
     @api standard;
     @api frontDoorUrl;
     @api username;
+    
 
 
     handleCloseClick() {
@@ -18,33 +24,30 @@ export default class UserExplorerNetworkModal extends LightningModal {
         this.close('success');
     }
 
-    openInAnonymousWindow = (groupName,targetUrl) => {
-        chrome.windows.getAll({populate: false, windowTypes: ['normal']}, (windows) => {
-            for (let w of windows) {
-                if (w.incognito) {
-                    // Use this window.
-                    chrome.tabs.create({url: targetUrl, windowId: w.id},(tab) => {
-                        const groupName = this.username;
-                        chrome.tabs.group({createProperties: {}, tabIds: tab.id}, (newGroupId) => {
-                            chrome.tabGroups.update(newGroupId, {title: groupName}, () => {
-                                console.log(`New group '${groupName}' created and tab added`);
-                            });
-                        });
-                    });
-                    return;
-                }
-            }
-            // No incognito window found, open a new one.
-            chrome.windows.create({url: targetUrl, incognito: true});
-        });
-    }
+    
 
     /** events **/
 
     handleStandardLogin = (e) => {
         e.preventDefault();
-        this.openInAnonymousWindow(this.username,`${this.frontDoorUrl}&retURL=${encodeURIComponent(this.standard)}`);
+        chromeOpenInWindow(
+            `${this.frontDoorUrl}&retURL=${encodeURIComponent(this.standard)}`,
+            this.username,
+            true
+        );
+    }
 
+    handleExperienceLogin = async (e) => {
+        e.preventDefault();
+        const targetUrl = e.currentTarget?.href;
+        const configuration = await loadExtensionConfigFromCache([CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO]);
+        console.log('configuration.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO',configuration[CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO]);
+        chromeOpenInWindow(
+            `${this.frontDoorUrl}&retURL=${encodeURIComponent(targetUrl)}`,
+            this.username,
+            configuration[CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO],
+            configuration[CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO]
+        );
     }
 
     /* Getters */
