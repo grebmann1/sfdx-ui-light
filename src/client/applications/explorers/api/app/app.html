@@ -1,0 +1,68 @@
+<template>
+    <div class={pageClass}>
+        <div class="full-page-header slds-page-header slds-page-header_joined">
+            <div class="slds-page-header__row">
+                <div class="slds-page-header__col-title">
+                    <div class="slds-media">
+                        <div class="slds-media__figure">
+                            <lightning-icon icon-name="standard:user"></lightning-icon>
+                        </div>
+                        <div class="slds-media__body">
+                            <div class="slds-page-header__name">
+                                <div class="slds-page-header__name-title">
+                                    <h1>
+                                        <span>Light API Explorer</span>
+                                        <span class="slds-page-header__title slds-truncate" title="API Explorer">API Explorer</span>
+                                    </h1>
+                                </div>
+                            </div>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+            <div class="slds-page-header__row slds-page-header__row_gutters">
+                <div class="slds-page-header__col-details">
+                    <div class="slds-page-header__detail-row slds-is-relative" style="display:block; ">
+                        <!-- actions -->
+                        <h2 class="slds-text-title_bold">In Alpha, just supporting GET</h2>
+                        <p>For advanced functionalities, it's recommended to use Postman</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- API Request -->
+        <div class="slds-full-height slds-overflow-hidden slds-flex-row">
+            <article class="full-page-body slds-card slds-m-top_small">
+                <div class="slds-card__body slds-card__body_inner slds-flex-column">
+                    <div class="slds-grid slds-wrap slds-is-relative">
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning-input lwc:ref="url" label="Endpoint" type="text" value={endpoint}></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <div class="slds-grid slds-grid_align-end slds-m-top_small">
+                                <div class="slds-col">
+                                    <lightning-button 
+                                        icon-name="utility:apex" 
+                                        onclick={executeAPI} 
+                                        label="Execute API" 
+                                        disabled={isExecuteApiDisabled}
+                                    ></lightning-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slds-fill-height slds-m-top_small">
+                        <template lwc:if={isContentDisplayed}>
+                            <slds-code-block code-block={formattedContent} language="json" title="Formatted Response"></slds-code-block>
+                        </template>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
+
+
+    
+    
+
+</template>

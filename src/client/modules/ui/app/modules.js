@@ -10,7 +10,7 @@ import doc_app from "doc/app";
 import soql_app from "soql/app";
 import platformEvent_app from "platformevent/app";
 import anonymousApex_app from "anonymousApex/app";
-//import codeViewer_app from "editor/app";
+import api_app from "api/app";
 
 const KNOWN_TYPE = new Set([
     "home/app",
@@ -24,6 +24,7 @@ const KNOWN_TYPE = new Set([
     "object/app",
     "soql/app",
     "platformevent/app",
+    "api/app"
     //"anonymousApex/app"
 ]);
 const APP_MAPPING = {
@@ -121,6 +122,21 @@ const APP_MAPPING = {
         quickActionIcon:"standard:knowledge",
         shortName:"SObject",
         path:'sobject'
+    },
+    "api/app":{
+        module:api_app,
+        isFullHeight:true,
+        isDeletable:true,
+        isElectronOnly:false,
+        isOfflineAvailable:false,
+        isMenuVisible:true,
+        isTabVisible:true,
+        label:"API Explorer",
+        type:'application',
+        description:"Explore Salesforce API",
+        quickActionIcon:"standard:apex",
+        shortName:"API",
+        path:'api'
     },
     "sarif/app":{
         module:sarif_app,
