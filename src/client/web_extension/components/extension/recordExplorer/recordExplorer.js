@@ -4,7 +4,7 @@ import FeatureElement from 'element/featureElement';
 import { connectStore,store,store_application } from 'shared/store';
 import { DependencyManager } from 'slds/fieldDependencyManager';
 
-import {runActionAfterTimeOut,isEmpty,isNotUndefinedOrNull,isUndefinedOrNull} from 'shared/utils';
+import {runActionAfterTimeOut,isEmpty,isNotUndefinedOrNull,isUndefinedOrNull,runSilent} from 'shared/utils';
 import { getCurrentTab,getCurrentObjectType,fetch_data,fetch_metadata,
     getObjectSetupLink,getObjectFieldsSetupLink,getRecordTypesLink,getObjectListLink,getObjectDocLink
 } from "extension/utils";
@@ -130,8 +130,9 @@ export default class RecordExplorer extends FeatureElement {
                 this.data = this.formatData();
                 
                 if(this.sobjectName === SOBJECT.contact){
-                    const query = `SELECT Id, MemberId, NetworkId,Network.Name,Network.Status FROM NetworkMember Where Member.ContactId = '${this.recordId}' AND Network.Status = 'Live'`
-                    const networkMembers = (await this.connector.conn.query(query)).records;
+                    const query = `SELECT Id, MemberId, NetworkId,Network.Name,Network.Status FROM NetworkMember Where Member.ContactId = '${this.recordId}' AND Network.Status = 'Live'`;
+                    const networkMembers = await runSilent(async ()=>{return (await this.connector.conn.query(query)).records},[]);
+                    console.log('networkMembers',networkMembers);
                     const retUrl = '/';
                     this.networkMembers = networkMembers.map(x => ({
                         ...x,

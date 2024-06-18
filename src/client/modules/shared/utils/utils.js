@@ -297,3 +297,12 @@ export function download(data,type,filename){
 export const ROLES = {
     USER:'user',
 }
+
+export const runSilent = async (func,placeholder) => {
+    try{
+        return await func();
+    }catch(e){
+        console.error('Run Silent',e);
+    }
+    return placeholder;
+}
