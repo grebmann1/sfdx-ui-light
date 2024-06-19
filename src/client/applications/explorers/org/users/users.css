@@ -1,3 +1,4 @@
 .slds-card{
-    height:-webkit-fill-available;
+    /*height:-webkit-fill-available;*/
+    height:inherit;
 }

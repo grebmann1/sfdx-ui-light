@@ -361,8 +361,16 @@ export default class App extends LightningElement {
         return !this.isLimitedMode;
     }
 
+    get formattedAlias(){
+        if(this.connector.header?.username == this.connector.header?.alias || isUndefinedOrNull(this.connector.header?.alias)){
+            return 'No Alias'
+        }
+        return this.connector.header?.alias;
+    }
+
     get loggedInMessage(){
-        return `Logged in as ${this.connector.header?.userInfo?.display_name || 'User'} (${this.connector.header?.alias || 'No Alias'} : ${this.connector.header?.username}). `;
+        const isAliasMissing = this.connector.header?.username == this.connector.header?.alias || isUndefinedOrNull(this.connector.header?.alias);
+        return `Logged in as ${this.connector.header?.userInfo?.display_name || 'User'} (${this.formattedAlias} : ${this.connector.header?.username}). `;
     }
 
     get isUserLoggedIn(){

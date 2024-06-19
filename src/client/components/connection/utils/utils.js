@@ -329,6 +329,7 @@ export async function directConnect(sessionId,serverUrl){
         header.username = identity.username;
         header.orgId    = identity.organization_id;
         header.userInfo = identity;
+        header.alias    = identity.username; // Replacing the alias to take advantage of the cache
     }
     // Dispatch Login Event
     var connector = new Connector(header,connection);

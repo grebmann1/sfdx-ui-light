@@ -123,7 +123,7 @@ const APP_MAPPING = {
         shortName:"SObject",
         path:'sobject'
     },
-    "api/app":{
+    /*"api/app":{
         module:api_app,
         isFullHeight:true,
         isDeletable:true,
@@ -137,7 +137,7 @@ const APP_MAPPING = {
         quickActionIcon:"standard:apex",
         shortName:"API",
         path:'api'
-    },
+    },*/
     "sarif/app":{
         module:sarif_app,
         isFullHeight:false

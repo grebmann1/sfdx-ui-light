@@ -1,5 +1,6 @@
 .slds-card{
-    height:-webkit-fill-available;
+    /*height:-webkit-fill-available;*/
+    height:inherit;
 }
 
 .slds-dl--horizontal__label,.slds-dl_horizontal__label{
