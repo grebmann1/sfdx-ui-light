@@ -17,7 +17,7 @@ export default class Tools extends FeatureElement {
 
     connectedCallback(){
         // Load metadata
-        this.initDefault();
+        //this.initDefault();
     }
 
     

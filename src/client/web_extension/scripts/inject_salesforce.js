@@ -174,12 +174,13 @@ class LWC_CUSTOM {
     
 
     disable = () => {
-        //console.log('disable');
-        this.styleElement.remove();
-        this.disableHighlightElements();
+        console.log('disable');
         if(this.domObserver){
             this.domObserver.disconnect();
         }
+        this.removeStyle();
+        this.disableHighlightElements();
+        
     }
 
     toggleFeature = (value) => {
@@ -191,6 +192,7 @@ class LWC_CUSTOM {
     }
 
     observeDomChange = (callback) => {
+        if(this.domObserver) return;
         //console.log('observeDomChange');
         const targetNode = document;
         this.domObserver = new MutationObserver(callback);
@@ -207,6 +209,7 @@ class LWC_CUSTOM {
 
     createStyleElement = () => {
         const style = document.createElement('style');
+            style.className = 'sf-toolkit-style';
             style.textContent = `
                 .sf-toolkit-custom-component-header {
                     position: relative;
@@ -291,14 +294,36 @@ class LWC_CUSTOM {
     }
 
     disableHighlightElements = () => {
+        console.log('disableHighlightElements');
+        // disable this way in case the chrome extension was closed !
+        document.querySelectorAll('.sf-toolkit-custom-component-header')
+        .forEach(item => {
+            console.log('item',item);
+            item.classList.remove('sf-toolkit-custom-component-header');
+            item.classList.remove('sf-toolkit-custom-element');
+        });
 
+        document.querySelectorAll('.sf-toolkit-custom-component')
+        .forEach(item2 => {
+            console.log('item2',item2);
+            item2.remove();
+        })
+        /*
         // Modified custom elements
         this.lwcElements.forEach(item => {
             item.classList.remove('sf-toolkit-custom-component-header');
         });
 
-        // Injected Element
+        // Injected Element 
         this.injectedElements.forEach(item => {
+            console.log('item',item);
+            item.remove();
+        })*/
+    }
+
+    removeStyle = () => {
+        document.querySelectorAll('.sf-toolkit-style')
+        .forEach(item => {
             item.remove();
         })
     }

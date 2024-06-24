@@ -313,12 +313,12 @@ async function oauth_extend({alias,connection},callback){
 }
 
 export async function directConnect(sessionId,serverUrl){
-    console.log('sessionId,serverUrl',sessionId,serverUrl);
+    console.log('directConnect');
     let params = {
         //oauth2      : {...window.jsforceSettings},
         sessionId   : sessionId,
         serverUrl   : serverUrl,
-        proxyUrl    : window.jsforceSettings.proxyUrl,
+        proxyUrl    : window.jsforceSettings?.proxyUrl || 'https://sf-toolkit.com/proxy/', // variable initialization might be too slow 
         version     : constant.apiVersion
     }
     
