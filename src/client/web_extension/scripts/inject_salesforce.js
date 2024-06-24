@@ -215,7 +215,7 @@ class LWC_CUSTOM {
                 }
                 .sf-toolkit-custom-component {
                     position: absolute;
-                    font-size:'xx-small';
+                    font-size:xx-small;
                     top: 0px;
                     left: 0px;
                     padding: 2px;
@@ -308,7 +308,7 @@ class LWC_CUSTOM {
     handleLinkClick = async (e) => {
         e.preventDefault();
         const developerName = (e.target.dataset.name.substring(2) || '').split('-').join('');
-        const redirectUrl = `${this.baseUrl}&redirectUrl=${encodeURIComponent(`metadata/LightningComponentBundle?param1=${developerName}`)}`;
+        const redirectUrl = `${this.baseUrl}&redirectUrl=${encodeURIComponent(`metadata?sobject=LightningComponentBundle&param1=${developerName}`)}`;
         window.open(redirectUrl,'_blank');
     }
 }

@@ -54,8 +54,8 @@ export default class App extends FeatureElement {
     }
 
     loadFromNavigation = async ({state, attributes}) => {
-        const { applicationName,attribute1 }  = attributes;
-        let { param1,label1,param2,label2 } = state;
+        const { applicationName }  = attributes;
+        let { param1,label1,param2,label2,sobject } = state;
         if(applicationName != 'metadata') return; // Only for metadata
 
         if(!this.isGlobalMetadataLoaded){
@@ -63,15 +63,15 @@ export default class App extends FeatureElement {
         }
         this.isNoRecord = false;
 
-        const exceptionMetadata = attribute1?this.exceptionMetadataList.find(x => x.name === attribute1):null;
-        if(attribute1 && this.currentMetadata != attribute1){
+        const exceptionMetadata = sobject?this.exceptionMetadataList.find(x => x.name === sobject):null;
+        if(sobject && this.currentMetadata != sobject){
             // Metadata
             this.currentLevel = 1;
-            this.currentMetadata = attribute1;
+            this.currentMetadata = sobject;
             if(exceptionMetadata){
                 await this.load_specificMetadataException(exceptionMetadata);
             }else{
-                await this.load_specificMetadata(attribute1);
+                await this.load_specificMetadata(sobject);
             }
         }
         if(param1 && this.param1 != param1){
@@ -124,10 +124,15 @@ export default class App extends FeatureElement {
                 this.param1 = null;
                 this.param2 = null;
                 this.currentLevel = 1;
-                navigate(this.navContext,{type:'application',attributes:{
-                    applicationName:'metadata',
-                    attribute1:name,
-                }});
+                navigate(this.navContext,{type:'application',
+                    attributes:{
+                        applicationName:'metadata',
+                    },
+                    state:{
+                        sobject:name,
+                        label1:label
+                    }
+                });
             break;
             case 1:
                 // Metadata Record selection
@@ -138,9 +143,9 @@ export default class App extends FeatureElement {
                 navigate(this.navContext,{type:'application',
                     attributes:{
                         applicationName:'metadata',
-                        attribute1:this.currentMetadata,
                     },
                     state:{
+                        sobject:this.currentMetadata,
                         param1:name,
                         label1:label
                     }
@@ -153,9 +158,9 @@ export default class App extends FeatureElement {
                 navigate(this.navContext,{type:'application',
                     attributes:{
                         applicationName:'metadata',
-                        attribute1:this.currentMetadata,
                     },
                     state:{
+                        sobject:this.currentMetadata,
                         param1:this._pageRef.state.param1,
                         label1:this._pageRef.state.label1,
                         param2:name,
@@ -183,21 +188,27 @@ export default class App extends FeatureElement {
         
         if(this.currentLevel == 2){
             this.param2 = null;
-            navigate(this.navContext,{type:'application',attributes:{
-                applicationName:'metadata',
-                attribute1:this.currentMetadata,
+            navigate(this.navContext,{type:'application',
+                attributes:{
+                    applicationName:'metadata'
+                },
                 state:{
+                    sobject:this.currentMetadata,
                     param1:this.param1,
                     label1:this.label1
                 }
-            }});
+            });
         }else if(this.currentLevel == 1){
             this.param1 = null;
             this.param2 = null;
-            navigate(this.navContext,{type:'application',attributes:{
-                applicationName:'metadata',
-                attribute1:this.currentMetadata,
-            }});
+            navigate(this.navContext,{type:'application',
+                attributes:{
+                    applicationName:'metadata',
+                },
+                state:{
+                    sobject:this.currentMetadata,
+                }
+            });
         }else if(this.currentLevel == 0){
             this.currentMetadata = null;
             this.param1 = null;

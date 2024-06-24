@@ -355,15 +355,15 @@ export default class App extends FeatureElement {
             this.isEditMode = false;
     
             this.createModels(files);
-            const latestModel = this.models[this.models.length - 1];
+            const firstModel = this.models[0];
             if(this.editor){
-                this.editor.setModel(latestModel.model); // set last model
+                this.editor.setModel(firstModel.model); // set last model
             }else{
                 this.createEditor();
             }
             window.setTimeout(()=>{
                 if(!this.template.querySelector('slds-tabset')) return;
-                this.template.querySelector('slds-tabset').activeTabValue = latestModel.path;
+                this.template.querySelector('slds-tabset').activeTabValue = firstModel.path;
             },1)
         }else{
             window.setTimeout(() => {
