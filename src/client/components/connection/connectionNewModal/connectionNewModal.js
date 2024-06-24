@@ -22,6 +22,12 @@ const CREDENTIAL_TYPES = {
     redirect:'REDIRECT'
 }
 
+const ORG_TYPES = {
+    PRODUCTION:'Production',
+    SANDBOX:'Sandbox',
+    SCRATCH:'Scratch'
+}
+
 
 export default class ConnectionNewModal extends LightningModal {
 
@@ -37,6 +43,7 @@ export default class ConnectionNewModal extends LightningModal {
     name;
     category;
     newCategory;
+    orgType = ORG_TYPES.PRODUCTION;
     credentialType = CREDENTIAL_TYPES.oauth;
 
     _isNewCategoryDisplayed;
@@ -329,6 +336,10 @@ export default class ConnectionNewModal extends LightningModal {
         this.selectedDomain = e.target.value;
     }
 
+    orgType_onChange = (e) => {
+        this.orgType = e.target.value;
+    }
+
     handleCredentialTypeChange = (e) => {
         this.credentialType = e.target.value;
     }
@@ -350,6 +361,13 @@ export default class ConnectionNewModal extends LightningModal {
             { label: 'OAuth (Recommended)', value: CREDENTIAL_TYPES.oauth },
             { label: 'Redirect Only', value: CREDENTIAL_TYPES.redirect },
         ];
+    }
+
+    get orgType_options(){
+        return Object.keys(ORG_TYPES).map(x => ({
+            label:ORG_TYPES[x],
+            value:ORG_TYPES[x]
+        }))
     }
 
     get isOauth(){

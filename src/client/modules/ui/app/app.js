@@ -273,12 +273,14 @@ export default class App extends LightningElement {
             }
 
             if(this.redirectUrl){
+                window.location = `/app/${decodeURI(this.redirectUrl)}`
                 // Temporary solution, only used to open application for now. Might need to be improved to consider more functionalities.
-                navigate(this.navContext,{type:'application',attributes:{applicationName:this.redirectUrl}});
+                //navigate(this.navContext,{type:'application',attributes:{applicationName:this.redirectUrl}});
             }else{
                 navigate(this.navContext,{type:'application',attributes:{applicationName:'org'}}); // org is the default
             }
         }catch(e){
+            console.error(e);
             await LightningAlert.open({
                 message: e.message,//+'\n You might need to remove and OAuth again.',
                 theme: 'error', // a red theme intended for error states

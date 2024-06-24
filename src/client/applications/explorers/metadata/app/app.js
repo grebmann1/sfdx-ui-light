@@ -1,6 +1,6 @@
 import { api,wire,track} from "lwc";
 import FeatureElement from 'element/featureElement';
-import { isEmpty,isElectronApp,classSet,isUndefinedOrNull,isNotUndefinedOrNull,runActionAfterTimeOut,formatFiles,sortObjectsByField,removeDuplicates } from 'shared/utils';
+import { isEmpty,isElectronApp,isSalesforceId,classSet,isUndefinedOrNull,isNotUndefinedOrNull,runActionAfterTimeOut,formatFiles,sortObjectsByField,removeDuplicates } from 'shared/utils';
 import jsonview from '@pgrabovets/json-view';
 import Toast from 'lightning/toast';
 import jszip from 'jszip';
@@ -74,7 +74,6 @@ export default class App extends FeatureElement {
                 await this.load_specificMetadata(attribute1);
             }
         }
-
         if(param1 && this.param1 != param1){
             this.keepFilter = true; // Avoid menu search refresh !
             this.param1 = param1;
@@ -289,7 +288,7 @@ export default class App extends FeatureElement {
                         key:x.Id,
                     }
                 }).sort((a, b) => (a.label || '').localeCompare(b.label));
-            //console.log('result',result);
+
             if(this.metadata.length <= 1){
                 this.metadata.push(null)
             }
@@ -300,39 +299,44 @@ export default class App extends FeatureElement {
         this.isLoading = false;
     }
 
+    load_recordFromRestAPI = async (recordId) => {
+        return await this.connector.conn.request(`/services/data/v${this.connector.conn.version}/tooling/sobjects/${this.metadata}/${recordId}`);
+    }
+
     load_specificMetadataRecord = async (key) => {
+        /*
+        this.currentMetadata
         const metadataRecord = this.metadata[this.metadata.length - 1].records.find(x => x.key == key);
         if(isUndefinedOrNull(metadataRecord)){
             this.isNoRecord = true;
             this.selectedRecordLoading = false;
             return;
         }
+            */
 
         //recordId = metadataRecord.EntityDefinitionId
         try{
-            let result = await this.connector.conn.request(metadataRecord.attributes.url);
-            
-            switch(result.attributes.type){
+            switch(this.currentMetadata){
                 case "LightningComponentBundle":
-                    this.displayEditor(await this.handle_LWC(result));
+                    this.displayEditor(await this.handle_LWC(key)); // Only LWC supporting extra 
                 break;
                 case "ApexClass":
-                    this.displayEditor(await this.handle_APEX(result));
+                    this.displayEditor(await this.handle_APEX(await this.load_recordFromRestAPI(key)));
                 break;
                 case "AuraDefinitionBundle":
-                    this.displayEditor(await this.handle_AURA(result));
+                    this.displayEditor(await this.handle_AURA(await this.load_recordFromRestAPI(key)));
                 break;
                 case "ApexTrigger":
-                    this.displayEditor(await this.handle_APEX(result,'trigger')); // Similar to APEX
+                    this.displayEditor(await this.handle_APEX(await this.load_recordFromRestAPI(key),'trigger')); // Similar to APEX
                 break;
                 case "ApexPage":
-                    this.displayEditor(await this.handle_APEX(result,'page','Markup')); // Similar to APEX
+                    this.displayEditor(await this.handle_APEX(await this.load_recordFromRestAPI(key),'page','Markup')); // Similar to APEX
                 break;
                 case "ApexComponent":
-                    this.displayEditor(await this.handle_APEX(result,'page','Markup')); // Similar to APEX
+                    this.displayEditor(await this.handle_APEX(await this.load_recordFromRestAPI(key),'page','Markup')); // Similar to APEX
                 break;
                 default:
-                    this.selectedRecord = result;
+                    this.selectedRecord = await this.load_recordFromRestAPI(key);
             }
             this.selectedRecordLoading = false
         }catch(e){
@@ -343,6 +347,7 @@ export default class App extends FeatureElement {
                 variant:'error',
                 mode:'dismissible'
             });
+            this.isNoRecord = true;
             this.selectedRecordLoading = false
         }
     }
@@ -353,18 +358,28 @@ export default class App extends FeatureElement {
     }
 
 
-    handle_LWC = async (data) => {
-        let resources = (await this.connector.conn.tooling.query(`SELECT LightningComponentBundleId,Format,FilePath,Source FROM LightningComponentResource WHERE LightningComponentBundleId = '${data.Id}'`)).records || [];
+    handle_LWC = async (key) => {
+        var queryString = `SELECT LightningComponentBundleId,LightningComponentBundle.MasterLabel,Format,FilePath,Source FROM LightningComponentResource WHERE `;
+        if(isSalesforceId(key)){
+            queryString += `LightningComponentBundleId = '${key}'`;
+        }else{
+            queryString += `LightningComponentBundle.DeveloperName = '${key}'`;
+        }
+        let resources = (await this.connector.conn.tooling.query(queryString)).records || [];
         let files = formatFiles(resources.map(x => ({
             path:x.FilePath,
             name:x.FilePath.split('/').pop(),
             body:x.Source,
             apiVersion:x.ApiVersion,
-            metadata:this.metadata[1].label,
-            id:data.Id,
+            metadata:this.currentMetadata,
+            id:x.LightningComponentBundleId,
             _source:x
         })));
 
+        // Added from Extension redirection
+        if(resources.length > 0){
+            this.label1 = resources[0].LightningComponentBundle.MasterLabel;
+        }
         return sortObjectsByField(files,'extension',['html','js','css','xml'])
     }
 
@@ -440,6 +455,7 @@ export default class App extends FeatureElement {
     }
 
     setMenuItems = () => {
+        // Doesn't work all the time if param1 isn't the recordId !!! (Example LWC)
         //console.log('this.metadata',this.metadata);
         if(this.metadata.length == 0){
             this.menuItems = [];

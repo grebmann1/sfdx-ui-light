@@ -46,10 +46,15 @@ export default class UserExplorerRow extends FeatureElement {
     loginAsClick = async () => {
         const query = `SELECT Id, MemberId, NetworkId,Network.Name,Network.Status FROM NetworkMember Where MemberId = '${this.recordId}' AND Network.Status = 'Live'`
         const retUrl = '/';
-        const networkMembers = (await this.connector.conn.query(query)).records.map(x => ({
-            ...x,
-            _redirectLink:`${this.connector.conn.instanceUrl}/servlet/servlet.su?oid=${encodeURIComponent(this.connector.header.orgId)}&retURL=${encodeURIComponent(retUrl)}&sunetworkid=${encodeURIComponent(x.NetworkId)}&sunetworkuserid=${encodeURIComponent(x.MemberId)}`
-        }));
+        var networkMembers = [];
+        try{
+            networkMembers = (await this.connector.conn.query(query)).records.map(x => ({
+                ...x,
+                _redirectLink:`${this.connector.conn.instanceUrl}/servlet/servlet.su?oid=${encodeURIComponent(this.connector.header.orgId)}&retURL=${encodeURIComponent(retUrl)}&sunetworkid=${encodeURIComponent(x.NetworkId)}&sunetworkuserid=${encodeURIComponent(x.MemberId)}`
+            })) || [];
+        }catch(e){
+            console.error(e);
+        }
         
         const targetUrl = `${this.connector.conn.instanceUrl}/servlet/servlet.su?oid=${this.connector.header.orgId}&suorgadminid=${this.item.Id}&retURL=%2Fhome%2Fhome.jsp&targetURL=%2Fhome%2Fhome.jsp`;
         //this.openInAnonymousWindow(this.username,`${this.connector.frontDoorUrl}&retURL=${encodeURIComponent(targetUrl)}`);

@@ -42,7 +42,7 @@
                 <!-- Start -->
                 <template lwc:if={isConnectorLoaded}>
                     <slds-tabset variant="scoped" class="slds-without-tab slds-full-height">
-                        <!-- Default Welcome Section-->
+                        <!-- Default Welcome Section -->
                         <slds-tab class="full-page-body" label="Org Info" value={APPLICATIONS.ORG_INFO}>
                             <ui-information-block title="Info">
                                 <p>The content will automatically change based on your URL.</p>
@@ -51,7 +51,7 @@
                             <org-users class="slds-p-around_x-small slds-show"></org-users>
                             <org-company title="General Info" link-label="Company" class="slds-p-around_x-small slds-show"></org-company>
                         </slds-tab>
-                        <!-- Record Explorer Section-->
+                        <!-- Record Explorer Section -->
                         <template lwc:if={isRecordExplorerAvailable}>
                             <slds-tab class="full-page-body" label="Record Explorer" value={APPLICATIONS.RECORD_EXPLORER}>
                                 <extension-record-explorer lwc:ref="recordexplorer" 
@@ -61,12 +61,16 @@
                                 ></extension-record-explorer>
                             </slds-tab>
                         </template>
-                        <!-- Record Explorer Section-->
+                        <!-- Record Explorer Section -->
                         <template lwc:if={isUserExplorerAvailable}>
                             <slds-tab class="full-page-body" label="Users" value={APPLICATIONS.USER_EXPLORER}>
                                 <extension-user-explorer lwc:ref="userexplorer"></extension-user-explorer>
                             </slds-tab>
                         </template>
+                        <!-- Tools -->
+                        <slds-tab class="full-page-body" label="Tools" value={APPLICATIONS.TOOLS}>
+                            <extension-tools lwc:ref="tools"></extension-tools>
+                        </slds-tab>
 
                     </slds-tabset>
                 </template>

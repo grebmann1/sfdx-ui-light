@@ -173,8 +173,10 @@ export async function getExistingSession(){
     if(sessionStorage.getItem("currentConnection")){
         try{
             // Don't use settings for now, to avoid issues with electron js (see-details need to be called)
-            const {alias,...settings} = JSON.parse(sessionStorage.getItem("currentConnection"));
-            return await connect({alias});
+            console.log('sessionStorage.getItem("currentConnection")',JSON.parse(sessionStorage.getItem("currentConnection")));
+            const settings = JSON.parse(sessionStorage.getItem("currentConnection"));
+            // Using {alias,...settings} before, see if it's better now
+            return isElectronApp()?await connect({alias:settings.alias}):await connect({settings});
         }catch(e){
             console.error(e);
             return null;

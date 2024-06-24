@@ -49,11 +49,26 @@ export default class root extends FeatureElement {
 
     connectedCallback(){
         this.loadComponent(true);
+        //chrome.runtime.onMessage.addListener(this.messageListener);
     }
 
     disconnectedCallback(){
         chrome.tabs.onUpdated.removeListener(this.monitorUrlListener);
+        //chrome.runtime.onMessage.removeListener(this.messageListener);
     }
+
+    /*messageListener = (message, sender, sendResponse) => {
+        if(sender.tab.id != this.currentTab.id) return;
+
+        if(message?.action === 'lwc_hightlight_redirect'){
+            const developerName = message.developerName.substring(2).split('-').join('');
+
+            const redirect = `/metadata/LightningComponentBundle?param1=${developerName}`;
+            sendResponse(
+                `https://sf-toolkit.com/extension?sessionId=${this.connector.conn.accessToken}&serverUrl=${encodeURIComponent(this.connector.conn.instanceUrl)}&redirectUrl=${encodeURIComponent(redirect)}`
+            )
+        }
+    }*/
 
     loadComponent = async (withMonitorChange) => {
        

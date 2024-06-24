@@ -8,7 +8,8 @@ import Toast from 'lightning/toast';
 const APPLICATIONS = {
     RECORD_EXPLORER:'recordExplorer',
     USER_EXPLORER:'userExplorer',
-    ORG_INFO:'orgInfo'
+    ORG_INFO:'orgInfo',
+    TOOLS:'tools'
 }
 
 export default class Salesforce extends LightningElement {
@@ -30,7 +31,7 @@ export default class Salesforce extends LightningElement {
     set isConnectorLoaded(value){
         this._isConnectorLoaded = value;
         //this._isConnectorLoaded = true; // For offline debuging
-        this.openRecordExplorerTab();
+        this.openSpecificTab(APPLICATIONS.RECORD_EXPLORER);
         //this.openUserExplorerTab(); // For offline debuging
     }
     
@@ -41,7 +42,9 @@ export default class Salesforce extends LightningElement {
     }
     set recordId(value){
         this._recordId = value;
-        this.openRecordExplorerTab();
+        if(isNotUndefinedOrNull(this._recordId)){
+            this.openSpecificTab(APPLICATIONS.RECORD_EXPLORER);
+        }
     }
 
     //orgInfo
@@ -114,19 +117,11 @@ export default class Salesforce extends LightningElement {
 
     /** Methods **/
 
-    openRecordExplorerTab = () => {
-        if(isUndefinedOrNull(this._recordId) || this._isConnectorLoaded === false) return;
+    openSpecificTab = (tabName) => {
+        if( this._isConnectorLoaded === false) return;
 
         window.setTimeout(() => {
-            this.template.querySelector('slds-tabset').activeTabValue = APPLICATIONS.RECORD_EXPLORER;
-        },100);
-    }
-
-    openUserExplorerTab = () => {
-        if(this._isConnectorLoaded === false) return;
-
-        window.setTimeout(() => {
-            this.template.querySelector('slds-tabset').activeTabValue = APPLICATIONS.USER_EXPLORER;
+            this.template.querySelector('slds-tabset').activeTabValue = tabName;
         },100);
     }
 
