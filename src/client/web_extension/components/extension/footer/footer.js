@@ -1,6 +1,9 @@
 import { LightningElement,api} from "lwc";
 import Toast from 'lightning/toast';
 import { isUndefinedOrNull } from "shared/utils";
+import {
+    chromeOpenInWindow
+} from 'extension/utils';
 import FeatureElement from 'element/featureElement';
 
 export default class Footer extends FeatureElement {
@@ -20,6 +23,16 @@ export default class Footer extends FeatureElement {
             label: 'Username exported to your clipboard',
             variant:'success',
         });
+    }
+
+    handleUsernameClick = (e) => {
+        e.preventDefault();
+        const targetUrl = encodeURIComponent(`/${this.connector.header?.userInfo?.user_id}?noredirect=1&isUserEntityOverride=1`);
+        chromeOpenInWindow(
+            `${this.connector.header?.userInfo?.urls?.custom_domain}/lightning/setup/ManageUsers/page?address=${targetUrl}`,
+            this.usernameFormatted,
+            false
+        )
     }
 
 

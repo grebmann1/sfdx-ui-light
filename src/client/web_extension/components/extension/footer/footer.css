@@ -7,6 +7,11 @@
     align-items: center;
 }
 
+.custom-utility-bar a{
+    color: white;
+    margin-left: 5px;
+}
+
 .custom-utility-bar .custom-utility-text{
     margin-left: 8px;
     font-weight: 400;

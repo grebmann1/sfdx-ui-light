@@ -48,6 +48,9 @@ export default class RecordExplorer extends FeatureElement {
     isViewChangeFilterEnabled = false;
     fieldErrors = {};
     editingFieldSet = new Set();
+
+    // field & labels
+    isLabelDisplayed = false;
     
 
     @api
@@ -127,7 +130,7 @@ export default class RecordExplorer extends FeatureElement {
                 this.record = await fetch_data(_connector,this.sobjectName,this.recordId);
                 //console.log('this.record',this.record);
                 //console.log('this.metadata',this.metadata);
-                this.data = this.formatData();
+                this.updateData(this.formatData());
                 
                 if(this.sobjectName === SOBJECT.contact){
                     const query = `SELECT Id, MemberId, NetworkId,Network.Name,Network.Status FROM NetworkMember Where Member.ContactId = '${this.recordId}' AND Network.Status = 'Live'`;
@@ -165,7 +168,7 @@ export default class RecordExplorer extends FeatureElement {
             if(isNotUndefinedOrNull(this.metadata)){
                 const _connector = this.metadata?._useToolingApi?this.connector.conn.tooling:this.connector.conn;
                 this.record = await fetch_data(_connector,this.sobjectName,this.recordId);
-                this.data = this.formatData();
+                this.updateData(this.formatData());
             }
             
             this.isLoading = false;
@@ -174,6 +177,12 @@ export default class RecordExplorer extends FeatureElement {
             this.isError = true;
             this.isLoading = false;
         }
+    }
+
+    updateData = (newData) => {
+        // to force refresh
+        this.data = null;
+        this.data = newData;
     }
 
     formatData = () => {
@@ -389,6 +398,10 @@ export default class RecordExplorer extends FeatureElement {
             });*/
     }
 
+    handleToggleFieldName = () => {
+        this.isLabelDisplayed = !this.isLabelDisplayed;
+    }
+
     /*
     registerDependentField(e) {
         e.stopPropagation();
@@ -445,6 +458,10 @@ export default class RecordExplorer extends FeatureElement {
 
     get keyPrefix(){
         return this.metadata?.keyPrefix;
+    }
+
+    get fieldLabel(){
+        return this.isLabelDisplayed ? 'Label' : 'Field';
     }
 
 

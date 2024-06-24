@@ -18,6 +18,17 @@ export default class RecordExplorerRow extends LightningElement {
 
     hasRendered = false;
 
+    // Field & Label
+    @api get isLabelDisplayed(){
+        return this._isLabelDisplayed;
+    }
+    set isLabelDisplayed(value){
+        this._isLabelDisplayed = value;
+        if(this.hasRendered){
+            this.renderRow();
+        }
+    }
+
     // Editing
     @api editingFieldSet; // used for scroll loading !
     @api isEditMode = false;
@@ -231,16 +242,18 @@ export default class RecordExplorerRow extends LightningElement {
     
 
     get formattedFieldName(){
+        var _name = this.isLabelDisplayed?this.label:this.name;
+
         if(isEmpty(this.filter)){
-            return this.name;
+            return _name;
         }
         
         const regex = new RegExp('('+this.filter+')','gmi');
-        if(regex.test(this.name)){
+        if(regex.test(_name)){
             //console.log('this.name.toString()',this.name.toString());
-            return this.name.toString().replace(/<?>?/,'').replace(regex,'<span style="font-weight:Bold; color:blue;">$1</span>');
+            return _name.toString().replace(/<?>?/,'').replace(regex,'<span style="font-weight:Bold; color:blue;">$1</span>');
         }else{
-            return this.name;
+            return _name;
         }
     }
 

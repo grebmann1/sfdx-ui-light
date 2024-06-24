@@ -107,9 +107,15 @@
             <table role="grid" class="slds-table slds-table_cell slds-table_fixed-layout slds-table_bordered slds-table_resizable-cols slds-no-row-hover" id="data-table">
                 <thead>
                     <tr class="slds-line-height_reset head">
-                        <th aria-label="Name" aria-sort="none" class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col" id='leftColumn' draggable="false">
+                        <th aria-label={fieldLabel} aria-sort="none" class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col" id='leftColumn' draggable="false">
                             <div class="slds-th__action slds-text-link_reset">
-                                <span class="slds-truncate" title="Name">Field</span>
+                                <lightning-button-icon
+                                        onclick={handleToggleFieldName}
+                                        icon-name="utility:change_record_type"
+                                        variant="bare"
+                                        alternative-text="Switch Field &amp; Label"
+                                ></lightning-button-icon>
+                                <span class="slds-truncate slds-m-left_x-small" title={fieldLabel}>{fieldLabel}</span>
                             </div>
                         </th>
                         <th aria-label="Product Code" aria-sort="none" class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
@@ -132,6 +138,7 @@
                     <template for:each={virtualList} for:item="item">
                         <extension-record-explorer-row key={item.name} 
                             is-visible={item.isVisible}
+                            is-label-displayed={isLabelDisplayed}
                             item={item} 
                             filter={filter} 
                             current-origin={currentOrigin} 
