@@ -72,6 +72,7 @@ export default class RecordExplorer extends FeatureElement {
         // Load metadata
         //this.getObjects(this.connector.conn,'standard');
         //this.getObjects(this.connector.conn.tooling,'tooling');
+        //this.isSaving = true;
     }
     /*
     addEntity = ({entity,api}) => {

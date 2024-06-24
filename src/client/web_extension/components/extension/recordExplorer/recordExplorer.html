@@ -91,18 +91,21 @@
                 <slds-empty-illustration title="No record" sub-title="The extension only support standard record pages."></slds-empty-illustration>
             </template>
         </div>
+
+        <!-- Loading -->
+        <template lwc:if={isLoading}>
+            <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
+                <slds-spinner alternative-text="Loading" size="small" message="Fetching data from Salesforce"></slds-spinner>
+            </div>
+        </template>
+        <template lwc:elseif={isSaving}>
+            <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
+                <slds-spinner alternative-text="Saving" size="small" message="Updating data to Salesforce"></slds-spinner>
+            </div>
+        </template>
         <!-- Table -->
         <div class="full-page-body tableFixHead" onscroll={handleScroll}>
-            <template lwc:if={isLoading}>
-                <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
-                    <slds-spinner alternative-text="Loading" size="small" message="Fetching data from Salesforce"></slds-spinner>
-                </div>
-            </template>
-            <template lwc:elseif={isSaving}>
-                <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
-                    <slds-spinner alternative-text="Saving" size="small" message="Updating data to Salesforce"></slds-spinner>
-                </div>
-            </template>
+            
             <!--<div lwc:dom="manual" class="custom-table"></div>-->
             <table role="grid" class="slds-table slds-table_cell slds-table_fixed-layout slds-table_bordered slds-table_resizable-cols slds-no-row-hover" id="data-table">
                 <thead>
