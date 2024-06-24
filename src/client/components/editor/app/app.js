@@ -1,6 +1,7 @@
 import { api } from "lwc";
 import FeatureElement from 'element/featureElement';
 import LightningAlert from 'lightning/alert';
+import Toast from 'lightning/toast';
 
 import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeOut,guid } from 'shared/utils';
 import loader from '@monaco-editor/loader';
@@ -103,6 +104,7 @@ export default class App extends FeatureElement {
 
     onCancelClick = () => {
         this.isEditMode = false;
+        console.log('this.metadataType,this.files',this.metadataType,this.files)
         this.displayFiles(this.metadataType,this.files); // we reset
     }
 
@@ -122,6 +124,10 @@ export default class App extends FeatureElement {
                     //console.log('Deployment completed successfully.');
                     this.updateFilesFromModels();
                     this.isEditMode = false;
+                    Toast.show({
+                        label: 'Saved',
+                        variant:'success',
+                    });
                     this.dispatchEvent(new CustomEvent("saved", {bubbles: true }));
                 }else{
                     //console.error('Deployment failed:', request.ErrorMsg);
@@ -191,6 +197,12 @@ export default class App extends FeatureElement {
                 message: message,
                 theme: 'error', // a red theme intended for error states
                 label: 'Error!', // this is the header text
+            });
+        }else{
+            this.isEditMode = false;
+            Toast.show({
+                label: 'Saved',
+                variant:'success',
             });
         }
         this.isLoading = false;
@@ -349,6 +361,7 @@ export default class App extends FeatureElement {
     @api
     displayFiles = (metadataType,files) => {
         if(this.counter >= 10) return;
+        this.files = files;
 
         if(this.hasLoaded){
             this.metadataType = metadataType;
@@ -371,6 +384,7 @@ export default class App extends FeatureElement {
                 this.counter = 1;
             },1000)
         }
+        
     }
 
     
