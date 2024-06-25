@@ -1,0 +1,201 @@
+<template>
+    <article class="slds-card">
+        <div class="slds-card__header slds-grid">
+            <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                <div class="slds-media__body">
+                    <h2 class="slds-card__header-title">
+                        <a href="#" class="slds-card__header-link slds-truncate" title={title}>
+                            <span>{title}</span>
+                        </a>
+                    </h2>
+                </div>
+                <div class="slds-no-flex">
+                    <template lwc:if={isEdit}>
+                        <lightning-button-group>
+                            <lightning-button label="Cancel" disabled={isSaving} onclick={handle_cancel}></lightning-button>
+                            <lightning-button label="Save"   disabled={isSaving} onclick={handle_save} variant="brand"></lightning-button>
+                        </lightning-button-group>
+                    </template>
+                    <template lwc:else>
+                        <lightning-button icon-name="utility:link" label="My User" onclick={goToUrl} data-url={goToMyUserUrl}></lightning-button>
+                    </template>
+                </div>
+            </header>
+        </div>
+        <div class="slds-card__body slds-card__body_inner">
+            <div class="slds-grid  slds-wrap">
+                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2">
+                    <article class="slds-tile">
+                        <h3 class="slds-tile__title slds-truncate slds-text-heading_small slds-color-brand" title="Information">
+                            Information
+                        </h3>
+                        <div class="slds-tile__detail">
+                            <div class="slds-grid  slds-wrap">
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
+                                    <p class="slds-truncate" title="First Name">First Name</p>
+                                </div>
+                                <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2 slds-grid slds-grid_align-spread">
+                                    <template lwc:if={isReadOnly}>
+                                        <p class="slds-truncate" title={user.FirstName}>
+                                            {user.FirstName}
+                                        </p>
+                                        <lightning-button-icon
+                                            onclick={handle_editClick}
+                                            icon-name="utility:edit"
+                                            variant="bare"
+                                            alternative-text="edit"
+                                            disabled={isEditButtonDisabled}
+                                        ></lightning-button-icon>
+                                    </template>
+                                    <template lwc:else>
+                                        <slds-input-field class="slds-contents" lwc:ref="inputfield" field-name="FirstName"></slds-input-field>
+                                    </template>
+                                </div>
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
+                                    <p class="slds-truncate" title="Last Name">Last Name</p>
+                                </div>
+                                <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2 slds-grid slds-grid_align-spread">
+                                    <template lwc:if={isReadOnly}>
+                                        <p class="slds-truncate" title={user.LastName}>
+                                            {user.LastName}
+                                        </p>
+                                        <lightning-button-icon
+                                            onclick={handle_editClick}
+                                            icon-name="utility:edit"
+                                            variant="bare"
+                                            alternative-text="edit"
+                                            disabled={isEditButtonDisabled}
+                                        ></lightning-button-icon>
+                                    </template>
+                                    <template lwc:else>
+                                        <slds-input-field class="slds-contents" lwc:ref="inputfield" field-name="LastName"></slds-input-field>
+                                    </template>
+                                </div>
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
+                                    <p class="slds-truncate" title="Email">Email</p>
+                                </div>
+                                <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2 slds-grid slds-grid_align-spread">
+                                    <template lwc:if={isReadOnly}>
+                                        <p class="slds-truncate" title={user.Email}>
+                                            {user.Email}
+                                        </p>
+                                        <lightning-button-icon
+                                            onclick={handle_editClick}
+                                            icon-name="utility:edit"
+                                            variant="bare"
+                                            alternative-text="edit"
+                                            disabled={isEditButtonDisabled}
+                                        ></lightning-button-icon>
+                                    </template>
+                                    <template lwc:else>
+                                        <slds-input-field class="slds-contents" lwc:ref="inputfield" field-name="Email"></slds-input-field>
+                                    </template>
+                                </div>
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
+                                    <p class="slds-truncate" title="Federation Id">Federation Id</p>
+                                </div>
+                                <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2 slds-grid slds-grid_align-spread">
+                                    <template lwc:if={isReadOnly}>
+                                        <p class="slds-truncate" title={user.FederationIdentifier}>
+                                            {user.FederationIdentifier}
+                                        </p>
+                                        <lightning-button-icon
+                                            onclick={handle_editClick}
+                                            icon-name="utility:edit"
+                                            variant="bare"
+                                            alternative-text="edit"
+                                            disabled={isEditButtonDisabled}
+                                        ></lightning-button-icon>
+                                    </template>
+                                    <template lwc:else>
+                                        <slds-input-field class="slds-contents" lwc:ref="inputfield" field-name="FederationIdentifier"></slds-input-field>
+                                    </template>
+                                </div>
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
+                                    <p class="slds-truncate" title="Language">Language</p>
+                                </div>
+                                <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2 slds-grid slds-grid_align-spread">
+                                    <template lwc:if={isReadOnly}>
+                                        <p class="slds-truncate" title={user.LanguageLocaleKey}>
+                                            {user.LanguageLocaleKey}
+                                        </p>
+                                        <lightning-button-icon
+                                            onclick={handle_editClick}
+                                            icon-name="utility:edit"
+                                            variant="bare"
+                                            alternative-text="edit"
+                                            disabled={isEditButtonDisabled}
+                                        ></lightning-button-icon>
+                                    </template>
+                                    <template lwc:else>
+                                        <slds-input-field class="slds-contents" lwc:ref="inputfield" field-name="LanguageLocaleKey"></slds-input-field>
+                                    </template>
+                                </div>
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
+                                    <p class="slds-truncate" title="CurrencyIsoCode">CurrencyIsoCode</p>
+                                </div>
+                                <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2 slds-grid slds-grid_align-spread">
+                                    <template lwc:if={isReadOnly}>
+                                        <p class="slds-truncate" title={user.CurrencyIsoCode}>
+                                            {user.CurrencyIsoCode}
+                                        </p>
+                                        <lightning-button-icon
+                                            onclick={handle_editClick}
+                                            icon-name="utility:edit"
+                                            variant="bare"
+                                            alternative-text="edit"
+                                            disabled={isEditButtonDisabled}
+                                        ></lightning-button-icon>
+                                    </template>
+                                    <template lwc:else>
+                                        <slds-input-field class="slds-contents" lwc:ref="inputfield" field-name="CurrencyIsoCode"></slds-input-field>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-top_small">
+                    <article class="slds-tile">
+                        <h3 class="slds-tile__title slds-truncate slds-text-heading_small slds-color-brand" title="Technical">
+                            Technical
+                        </h3>
+                        <div class="slds-tile__detail">
+                            <div class="slds-grid  slds-wrap">
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
+                                    <p class="slds-truncate" title="User Id">User Id</p>
+                                </div>
+                                <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2 slds-grid slds-grid_align-spread">
+                                    <p class="slds-truncate" title={user.Id}>{user.Id}</p>
+                                    <lightning-button-icon
+                                        onclick={handle_copyClick}
+                                        data-field="User Id"
+                                        data-value={user.Id}
+                                        icon-name="utility:copy"
+                                        variant="bare"
+                                        alternative-text="copy"
+                                    ></lightning-button-icon>
+                                </div>
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
+                                    <p class="slds-truncate" title="Username">Username</p>
+                                </div>
+                                <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2 slds-grid slds-grid_align-spread">
+                                    <p class="slds-truncate" title={user.Username}>{user.Username}</p>
+                                    <lightning-button-icon
+                                        onclick={handle_copyClick}
+                                        data-field="Username"
+                                        data-value={user.Username}
+                                        icon-name="utility:copy"
+                                        variant="bare"
+                                        alternative-text="copy"
+                                    ></lightning-button-icon>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+            
+        </div>
+    </article>
+</template>

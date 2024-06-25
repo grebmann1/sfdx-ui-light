@@ -1,9 +1,9 @@
 <template>
-    <template if:true={failed}>
+    <template lwc:if={failed}>
        <span class="slds-hide">No input rendered: {errorMessage}</span>
     </template>
-    <template if:true={ready}>
-        <template if:true={isTypeName}>
+    <template lwc:if={ready}>
+        <template lwc:if={isTypeName}>
             <lightning-input-name
                label={label}
                first-name={value.FirstName}
@@ -15,7 +15,7 @@
                field-level-help={inlineHelpText}
                onchange={handleChange}></lightning-input-name>
         </template>
-        <template if:true={isTypeAddress}>
+        <template lwc:elseif={isTypeAddress}>
             <lightning-input-address
                 street-label={addressField.Street.label}
                 city-label={addressField.City.label}
@@ -34,7 +34,7 @@
                 field-level-help={inlineHelpText}
                 onchange={handleChange}></lightning-input-address>
         </template>
-        <template if:true={isTypeNumber}>
+        <template lwc:elseif={isTypeNumber}>
             <lightning-input
                disabled={_disabled}
                name={_fieldName}
@@ -48,7 +48,7 @@
                field-level-help={inlineHelpText}
                onchange={handleChange}></lightning-input>
         </template>
-        <template if:true={isTypeText}>
+        <template lwc:elseif={isTypeText}>
             <lightning-input
                disabled={_disabled}
                label={label}
@@ -59,7 +59,7 @@
                field-level-help={inlineHelpText}
                onchange={handleChange}></lightning-input>
         </template>
-        <template if:true={isTypeCheckbox}>
+        <template lwc:elseif={isTypeCheckbox}>
             <lightning-input
                disabled={_disabled}
                label={label}
@@ -70,7 +70,7 @@
                field-level-help={inlineHelpText}
                onchange={handleChange}></lightning-input>
         </template>
-        <template if:true={isTypePassword}>
+        <template lwc:elseif={isTypePassword}>
             <lightning-input
                disabled={_disabled}
                label={label}
@@ -82,7 +82,7 @@
                field-level-help={inlineHelpText}
                onchange={handleChange}></lightning-input>
         </template>
-        <template if:true={isTypeEmail}>
+        <template lwc:elseif={isTypeEmail}>
             <lightning-input
                disabled={_disabled}
                label={label}
@@ -94,7 +94,7 @@
                field-level-help={inlineHelpText}
                onchange={handleChange}></lightning-input>
         </template>
-        <template if:true={isTypeTextArea}>
+        <template lwc:elseif={isTypeTextArea}>
             <lightning-textarea
                label={label}
                name={_fieldName}
@@ -105,7 +105,7 @@
                field-level-help={inlineHelpText}
                onchange={handleChange}></lightning-textarea>
         </template>
-        <template if:true={isTypeRichText}>
+        <template lwc:elseif={isTypeRichText}>
             <!--<lightning-input-rich-text
                 label={label}
                 value={value}
@@ -123,7 +123,7 @@
                field-level-help={inlineHelpText}
                onchange={handleChange}></lightning-textarea>
         </template>
-        <template if:true={isTypeDate}>
+        <template lwc:elseif={isTypeDate}>
             <lightning-input label={label}
                name={_fieldName}
                type="date"
@@ -134,7 +134,7 @@
                field-level-help={inlineHelpText}
                onchange={handleChange}></lightning-input>
         </template>
-        <template if:true={isTypeDateTime}>
+        <template lwc:elseif={isTypeDateTime}>
             <lightning-input
                label={label}
                name={_fieldName}
@@ -146,7 +146,7 @@
                field-level-help={inlineHelpText}
                onchange={handleChange}> </lightning-input>
         </template>
-        <template if:true={isTypePicklist}>
+        <template lwc:elseif={isTypePicklist}>
             <lightning-picklist
                label={label}
                name={_fieldName}
@@ -158,7 +158,7 @@
                field-level-help={inlineHelpText}
                onchange={handleChange}></lightning-picklist>
         </template>
-        <template if:true={isTypeMultiPicklist}>
+        <template lwc:elseif={isTypeMultiPicklist}>
             <lightning-picklist
                multiple
                label={label}
@@ -171,7 +171,7 @@
                field-level-help={inlineHelpText}
                onchange={handleChange}></lightning-picklist>
         </template>
-        <template if:true={isTypeReference}>
+        <template lwc:elseif={isTypeReference}>
             <!-- To Do in the future !!! -->
             <!--<lightning-lookup
                 disabled={_disabled}
@@ -192,7 +192,7 @@
                field-level-help={inlineHelpText}
                onchange={handleChange}></lightning-input>
         </template>
-        <template if:true={isTypeLocation}>
+        <template lwc:elseif={isTypeLocation}>
             <lightning-input-location
                 longitude={value.longitude}
                 latitude={value.latitude}
@@ -201,7 +201,7 @@
                 required={required}
                 onchange={handleChange}></lightning-input-location>
         </template>
-        <template if:true={isTypeUnsupportedReference}>
+        <template lwc:elseif={isTypeUnsupportedReference}>
             <lightning-input
                 disabled
                 label={label}
@@ -212,5 +212,8 @@
                 field-level-help={inlineHelpText}
                 onchange={handleChange}></lightning-input>
         </template>
+    </template>
+    <template lwc:else>
+        <slds-stencil class="slds-contents" weight-variant="light" height="20" count="1"></slds-stencil>
     </template>
 </template>

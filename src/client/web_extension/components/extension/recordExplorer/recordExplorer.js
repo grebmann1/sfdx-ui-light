@@ -3,10 +3,13 @@ import Toast from 'lightning/toast';
 import FeatureElement from 'element/featureElement';
 import { connectStore,store,store_application } from 'shared/store';
 import { DependencyManager } from 'slds/fieldDependencyManager';
-
-import {runActionAfterTimeOut,isEmpty,isNotUndefinedOrNull,isUndefinedOrNull,runSilent} from 'shared/utils';
-import { getCurrentTab,getCurrentObjectType,fetch_data,fetch_metadata,
-    getObjectSetupLink,getObjectFieldsSetupLink,getRecordTypesLink,getObjectListLink,getObjectDocLink
+import { 
+    runActionAfterTimeOut,isEmpty,isNotUndefinedOrNull,isUndefinedOrNull,runSilent,refreshCurrentTab 
+} from 'shared/utils';
+import { 
+        getCurrentTab,getCurrentObjectType,fetch_data,fetch_metadata,
+        getObjectSetupLink,getObjectFieldsSetupLink,getRecordTypesLink,
+        getObjectListLink,getObjectDocLink
 } from "extension/utils";
 
 const PAGE_LIST_SIZE    = 70;
@@ -248,11 +251,6 @@ export default class RecordExplorer extends FeatureElement {
         }
     }*/
     
-    refreshCurrentTab = () => {
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-            chrome.tabs.reload(tabs[0].id);
-        });
-    }
 
     saveRecord = async () => {
         this.isSaving = true;
@@ -281,7 +279,7 @@ export default class RecordExplorer extends FeatureElement {
                 });
                 //console.log(`Updated Successfully : ${ret.id}`);
                 this.resetEditing();
-                this.refreshCurrentTab();
+                refreshCurrentTab();
             }else{
                 this.isViewChangeFilterEnabled = true; // To display all the modified fields in case of error.
                 const fieldErrorSet = {};

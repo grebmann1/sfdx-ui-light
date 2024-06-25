@@ -7,7 +7,7 @@ import {
     loadExtensionConfigFromCache,
     chromeOpenInWindow
 } from 'extension/utils';
-import { isNotUndefinedOrNull,isSalesforceId,isEmpty,isUndefinedOrNull } from "shared/utils";
+import { isNotUndefinedOrNull,isSalesforceId,isEmpty,isUndefinedOrNull,runSilent } from "shared/utils";
 
 export default class UserExplorerRow extends FeatureElement {
 
@@ -46,15 +46,11 @@ export default class UserExplorerRow extends FeatureElement {
     loginAsClick = async () => {
         const query = `SELECT Id, MemberId, NetworkId,Network.Name,Network.Status FROM NetworkMember Where MemberId = '${this.recordId}' AND Network.Status = 'Live'`
         const retUrl = '/';
-        var networkMembers = [];
-        try{
-            networkMembers = (await this.connector.conn.query(query)).records.map(x => ({
+        var networkMembers = await runSilent(async ()=>{return (await this.connector.conn.query(query)).records},[]);
+            networkMembers = networkMembers.map(x => ({
                 ...x,
                 _redirectLink:`${this.connector.conn.instanceUrl}/servlet/servlet.su?oid=${encodeURIComponent(this.connector.header.orgId)}&retURL=${encodeURIComponent(retUrl)}&sunetworkid=${encodeURIComponent(x.NetworkId)}&sunetworkuserid=${encodeURIComponent(x.MemberId)}`
-            })) || [];
-        }catch(e){
-            console.error(e);
-        }
+            }));
         
         const targetUrl = `${this.connector.conn.instanceUrl}/servlet/servlet.su?oid=${this.connector.header.orgId}&suorgadminid=${this.item.Id}&retURL=%2Fhome%2Fhome.jsp&targetURL=%2Fhome%2Fhome.jsp`;
         //this.openInAnonymousWindow(this.username,`${this.connector.frontDoorUrl}&retURL=${encodeURIComponent(targetUrl)}`);

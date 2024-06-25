@@ -48,8 +48,9 @@
                                 <p>The content will automatically change based on your URL.</p>
                                 <p>Navigate to your salesforce records to display the Data Explorer.</p>
                             </ui-information-block>
+                            <org-me title="Current User" class="slds-p-around_x-small slds-show"></org-me>
+                            <org-company title="Current Org" link-label="Company" class="slds-p-around_x-small slds-show"></org-company>
                             <org-users class="slds-p-around_x-small slds-show"></org-users>
-                            <org-company title="General Info" link-label="Company" class="slds-p-around_x-small slds-show"></org-company>
                         </slds-tab>
                         <!-- Record Explorer Section -->
                         <template lwc:if={isRecordExplorerAvailable}>

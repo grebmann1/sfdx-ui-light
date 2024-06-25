@@ -13,15 +13,19 @@ export default class CardItem extends FeatureElement {
     handleEventClick = (e) => {
         const eventName = e.currentTarget.dataset.event;
         const redirect = e.currentTarget.dataset.redirect;
-        console.log('eventName',eventName);
-        this.dispatchEvent(new CustomEvent("rowaction", { 
-            detail:{
-                action:{name:eventName},
-                redirect:redirect,
-                row:this.item
-            }
-            ,bubbles: true,composed: true 
-        }));
+
+        runActionAfterTimeOut(null,async () => {
+            console.log('eventName',eventName);
+            this.dispatchEvent(new CustomEvent("rowaction", { 
+                detail:{
+                    action:{name:eventName},
+                    redirect:redirect,
+                    row:this.item
+                }
+                ,bubbles: true,composed: true 
+            }));
+        },{timeout:200});
+        
     }
 
 

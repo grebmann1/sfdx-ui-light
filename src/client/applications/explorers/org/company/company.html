@@ -15,30 +15,30 @@
             </header>
         </div>
         <div class="slds-card__body slds-card__body_inner">
-            <div class="slds-grid slds-gutters slds-wrap">
+            <div class="slds-grid  slds-wrap">
                 <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2">
                     <article class="slds-tile">
                         <h3 class="slds-tile__title slds-truncate slds-text-heading_small slds-color-brand" title="Company Information">
                             Company Information
                         </h3>
                         <div class="slds-tile__detail">
-                            <div class="slds-grid slds-gutters slds-wrap">
-                                <div class="slds-col slds-size_1-of-3 slds-small-size_1-of-2">
-                                    <p class="slds-truncate" title="Name">Name:</p>
+                            <div class="slds-grid  slds-wrap">
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
+                                    <p class="slds-truncate" title="Name">Name</p>
                                 </div>
-                                <div class="slds-col slds-size_2-of-3 slds-small-size_1-of-2">
+                                <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2">
                                     <p class="slds-truncate" title={orgInformation.Name}>{orgInformation.Name}</p>
                                 </div>
-                                <div class="slds-col slds-size_1-of-3 slds-small-size_1-of-2">
-                                    <p class="slds-truncate" title="Organization Type">Organization Type:</p>
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
+                                    <p class="slds-truncate" title="Organization Type">Organization Type</p>
                                 </div>
-                                <div class="slds-col slds-size_2-of-3 slds-small-size_1-of-2">
+                                <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2">
                                     <p class="slds-truncate" title={orgInformation.OrganizationType}>{orgInformation.OrganizationType}</p>
                                 </div>
-                                <div class="slds-col slds-size_1-of-3 slds-small-size_1-of-2">
-                                    <p class="slds-truncate" title="Created Date">Created Date:</p>
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
+                                    <p class="slds-truncate" title="Created Date">Created Date</p>
                                 </div>
-                                <div class="slds-col slds-size_2-of-3 slds-small-size_1-of-2">
+                                <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2">
                                     <p class="slds-truncate" title={orgInformation.CreatedDate}>{orgInformation.CreatedDate}</p>
                                 </div>
                             </div>
@@ -51,37 +51,53 @@
                             Org Information
                         </h3>
                         <div class="slds-tile__detail">
-                            <div class="slds-grid slds-gutters slds-wrap">
-                                <div class="slds-col slds-size_1-of-3 slds-small-size_1-of-2">
-                                    <p class="slds-truncate" title="Id">Id:</p>
+                            <div class="slds-grid  slds-wrap">
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
+                                    <p class="slds-truncate" title="Org Id">Org Id</p>
                                 </div>
-                                <div class="slds-col slds-size_2-of-3 slds-small-size_1-of-2">
+                                <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2 slds-grid slds-grid_align-spread">
                                     <p class="slds-truncate" title={orgInformation.Id}>{orgInformation.Id}</p>
+                                    <lightning-button-icon
+                                        onclick={handle_copyClick}
+                                        data-field="OrgId"
+                                        data-value={orgInformation.Id}
+                                        icon-name="utility:copy"
+                                        variant="bare"
+                                        alternative-text="copy"
+                                    ></lightning-button-icon>
                                 </div>
-                                <div class="slds-col slds-size_1-of-3 slds-small-size_1-of-2">
-                                    <p class="slds-truncate" title="Is Sandbox">Is Sandbox:</p>
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
+                                    <p class="slds-truncate" title="Instance">Instance</p>
                                 </div>
-                                <div class="slds-col slds-size_2-of-3 slds-small-size_1-of-2">
+                                <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2 slds-grid slds-grid_align-spread">
+                                    <p class="slds-truncate" title={orgInformation.InstanceName}>{orgInformation.InstanceName}</p>
+                                    <lightning-button-icon
+                                        onclick={handle_copyClick}
+                                        data-field="Instance"
+                                        data-value={orgInformation.InstanceName}
+                                        icon-name="utility:copy"
+                                        variant="bare"
+                                        alternative-text="copy"
+                                    ></lightning-button-icon>
+                                </div>
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
+                                    <p class="slds-truncate" title="Is Sandbox">Is Sandbox</p>
+                                </div>
+                                <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2">
                                     <p class="slds-truncate" title={orgInformation.IsSandbox}>
                                         <lightning-input type="checkbox" label="IsSandbox" variant="label-hidden" checked={orgInformation.IsSandbox} disabled></lightning-input>
                                     </p>
                                 </div>
-                                <div class="slds-col slds-size_1-of-3 slds-small-size_1-of-2">
-                                    <p class="slds-truncate" title="Instance">Instance:</p>
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
+                                    <p class="slds-truncate" title="Language">Language</p>
                                 </div>
-                                <div class="slds-col slds-size_2-of-3 slds-small-size_1-of-2">
-                                    <p class="slds-truncate" title={orgInformation.InstanceName}>{orgInformation.InstanceName}</p>
-                                </div>
-                                <div class="slds-col slds-size_1-of-3 slds-small-size_1-of-2">
-                                    <p class="slds-truncate" title="Language">Language:</p>
-                                </div>
-                                <div class="slds-col slds-size_2-of-3 slds-small-size_1-of-2">
+                                <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2">
                                     <p class="slds-truncate" title={orgInformation.InstanceName}>{orgInformation.LanguageLocaleKey}</p>
                                 </div>
-                                <div class="slds-col slds-size_1-of-3 slds-small-size_1-of-2">
-                                    <p class="slds-truncate" title="Timezone">Timezone:</p>
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
+                                    <p class="slds-truncate" title="Timezone">Timezone</p>
                                 </div>
-                                <div class="slds-col slds-size_2-of-3 slds-small-size_1-of-2">
+                                <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2">
                                     <p class="slds-truncate" title={orgInformation.TimeZoneSidKey}>{orgInformation.TimeZoneSidKey}</p>
                                 </div>
                             </div>

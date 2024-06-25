@@ -238,6 +238,14 @@ doc-app .full-page-body.slds-m-top_small{
     display: inline-flex;
 }
 
+.slds-inline{
+    display: inline;
+}
+
+.slds-contents{
+    display: contents;
+}
+
 lightning-input[variant="label-stacked"] .slds-checkbox_toggle{
     display: flex;
     flex-direction: column;

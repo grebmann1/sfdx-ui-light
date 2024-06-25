@@ -1,6 +1,7 @@
-import { api,wire } from "lwc";
-import { isEmpty,isElectronApp } from 'shared/utils';
 import FeatureElement from 'element/featureElement';
+import { api } from "lwc";
+import { isEmpty,isElectronApp } from 'shared/utils';
+import Toast from 'lightning/toast';
 import { store,store_application } from 'shared/store';
 
 
@@ -44,6 +45,14 @@ export default class Company extends FeatureElement {
 
     /** Events */
 
-    
+    handle_copyClick = (e) => {
+        const value = e.target.dataset.value;
+        const field = e.target.dataset.field;
+        navigator.clipboard.writeText(value);
+        Toast.show({
+            label: `${field} exported to your clipboard'`,
+            variant:'success',
+        });
+    }
 
 }
