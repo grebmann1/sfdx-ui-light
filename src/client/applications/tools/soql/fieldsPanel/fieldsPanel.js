@@ -49,11 +49,12 @@ export default class FieldsPanel extends FeatureElement {
         const fullSObjectName = fullApiName(selectedSObject,this.namespace);
         if (
             sobjects &&
-            !sobjects.data.sobjects.find(o => o.name === fullSObjectName)
+            !sobjects.data.sobjects.find(o => o.name.toLowerCase() === (fullSObjectName || '').toLowerCase())
         ) {
             return;
         }
         if (fullSObjectName !== this._selectedSObject) {
+            
             this._selectedSObject = fullSObjectName;
             store.dispatch(describeSObjectIfNeeded({
                 connector:this.connector.conn,

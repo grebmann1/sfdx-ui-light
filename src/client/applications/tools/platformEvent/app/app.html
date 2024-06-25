@@ -17,28 +17,17 @@
                             <div class="top-left-panel slds-col slds-medium-size_2-of-3 slds-large-size_1-of-2 slds-p-around_small">
 
                                 <div class="slds-grid">
-                                    <div class="slds-col slds-size_1-of-4">
+                                    <div class="slds-col slds-size_1">
                                         <lightning-input
-                                            type="toggle" 
-                                            label="Show Manual Event Selector" 
-                                            name="manuallyEnterChannel"
-                                            variant="label-stacked"
-                                            message-toggle-active=""
-                                            message-toggle-inactive=""
-                                            onchange={handleManualChannelToggleChange}
-                                            checked={isManualChannelDisplayed}
-                                        ></lightning-input>
-                                    </div>
-                                    <div class="slds-col slds-size_1-of-4">
-                                        <lightning-input
+                                            class="slds-float_left"
                                             type="toggle" 
                                             label="Display Apex Editor" 
                                             name="executeApex"
-                                            variant="label-stacked"
                                             message-toggle-active=""
                                             message-toggle-inactive=""
                                             onchange={handleApexToggleChange}
                                             checked={isApexContainerDisplayed}
+                                            variant="label-stacked"
                                         ></lightning-input>
                                     </div>
                                 </div>
@@ -50,7 +39,7 @@
                                         </div>
                                     </h3>
                                     <div class="slds-section__content slds-m-horizontal_small" >
-                                        <div class="slds-grid slds-wrap slds-grid_vertical-align-end">
+                                        <div class="slds-grid slds-wrap slds-gutters_direct slds-grid_vertical-align-end">
                                             <div class="slds-col slds-size_1-of-2">
                                                 <template lwc:if={isManualChannelDisplayed}>
                                                     <lightning-input class="input-validate" value={channelName} label="Manually Entered Channel" placeholder="/event/DummyEvent__e" onchange={handleChannelNameChange}></lightning-input>
@@ -69,7 +58,19 @@
                                                 
                                             </div>
                                             <div class="slds-col slds-size_1-of-2">
-                                                <lightning-button class="slds-float_right" label="Subscribe" variant="brand" title="Subscribe to channel" onclick={subscribeChannel} disabled={isSubscribeDisabled}></lightning-button>
+                                                <lightning-input
+                                                    type="toggle" 
+                                                    label="Show Manual Event Selector" 
+                                                    name="manuallyEnterChannel"
+                                                    message-toggle-active=""
+                                                    message-toggle-inactive=""
+                                                    onchange={handleManualChannelToggleChange}
+                                                    checked={isManualChannelDisplayed}
+                                                    variant="label-stacked"
+                                                ></lightning-input>
+                                            </div>
+                                            <div class="slds-col slds-size_1-of-1 slds-m-top_small">
+                                                <lightning-button class="slds-float_left" label="Subscribe" variant="brand" title="Subscribe to channel" onclick={subscribeChannel} disabled={isSubscribeDisabled}></lightning-button>
                                             </div>
                                         </div>
                                         

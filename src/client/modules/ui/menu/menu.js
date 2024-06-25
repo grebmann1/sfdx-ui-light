@@ -38,7 +38,7 @@ export default class Menu extends FeatureElement {
         
         const {applicationName}  = attributes;
         if(this.selectedItem != applicationName){
-            console.log('Update Menu - From Navigation');
+            //console.log('Update Menu - From Navigation');
             this.selectedItem = applicationName;
             this.updateSelectedItem();
         }

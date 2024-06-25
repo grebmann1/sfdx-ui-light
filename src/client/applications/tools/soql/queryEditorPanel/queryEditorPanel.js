@@ -6,7 +6,8 @@ import {
     store,
     executeQuery,
     updateSoql,
-    formatSoql
+    formatSoql,
+    fetchSObjectsIfNeeded
 } from 'soql/store';
 import { fullApiName,stripNamespace,escapeRegExp,isUndefinedOrNull } from 'shared/utils';
 
@@ -32,7 +33,6 @@ const SOQL_SYNTAX_KEYWORDS = [
 
 export default class QueryEditorPanel extends FeatureElement {
     @api namespace;
-    @api useToolingApi;
 
     isCompletionVisible;
     completionStyle;
@@ -52,6 +52,20 @@ export default class QueryEditorPanel extends FeatureElement {
             inputEl.value = isUndefinedOrNull(value)?'':value;
         }
     }
+
+    @api
+    get useToolingApi(){
+        return this._useToolingApi;
+    }
+    set useToolingApi(value){
+        this._useToolingApi = value === true;
+        store.dispatch(fetchSObjectsIfNeeded({
+            connector:this.connector.conn,
+            useToolingApi:this._useToolingApi
+        }));
+    }
+
+    //fetchSObjectsIfNeeded
 
     @wire(connectStore, { store })
     storeChange({ sobject, ui }) {
@@ -92,7 +106,6 @@ export default class QueryEditorPanel extends FeatureElement {
     }
 
     handleToolingApiCheckboxChange = (e) => {
-        console.log('handleToolingApiCheckboxChange',e.detail.checked);
         this.useToolingApi = e.detail.checked;
     }
 
@@ -318,8 +331,7 @@ export default class QueryEditorPanel extends FeatureElement {
             const postSoql = soql.substring(textarea.selectionStart);
             const strippedItemName = stripNamespace(selectedItem.name,this.namespace);
             this.soql = preSoql + strippedItemName + postSoql;
-            const insertedIndex =
-                this._selectionStart + strippedItemName.length;
+            const insertedIndex = this._selectionStart + strippedItemName.length;
             textarea.focus();
             textarea.setSelectionRange(insertedIndex, insertedIndex);
             store.dispatch(updateSoql({

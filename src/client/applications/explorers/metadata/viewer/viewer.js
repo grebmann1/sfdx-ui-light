@@ -1,6 +1,5 @@
 import { api,track} from "lwc";
 import FeatureElement from 'element/featureElement';
-import jsonview from '@pgrabovets/json-view';
 import { isEmpty,isSalesforceId,isElectronApp,classSet,isUndefinedOrNull,isNotUndefinedOrNull,runActionAfterTimeOut,formatFiles,sortObjectsByField,removeDuplicates } from 'shared/utils';
 
 const AUDIT_FIELDS = [
@@ -39,10 +38,8 @@ export default class Viewer extends FeatureElement {
         this._record = value;
         //console.log('this._record',this._record);
         if(this._record){
-            this.displayData();
             this.formatRecord(this._record);
         }else{
-            this.hideJsonViewer();
             this.formattedArray = null;
             this.formattedMetadata = null;
         }
@@ -50,11 +47,11 @@ export default class Viewer extends FeatureElement {
 
 
     connectedCallback(){
-        console.log('has loaded');
+        //console.log('has loaded');
     }
 
     renderedCallback(){
-        console.log('renderedCallback');
+        //console.log('renderedCallback');
     }
 
     /** Events **/
@@ -140,25 +137,14 @@ export default class Viewer extends FeatureElement {
         //console.log('this.formattedObjects',this.formattedObjects);
     }
 
-    hideJsonViewer = () => {
-        if(this.visualizer){
-            try{
-                jsonview.destroy(this.visualizer);
-            }catch(e){console.error(e)}
-        }
-    }
-
-    displayData = () => {
-        runActionAfterTimeOut(null,async () => {
-            this.hideJsonViewer();
-            this.visualizer = jsonview.create(JSON.stringify(this.record));
-                jsonview.render(this.visualizer,this.refs.container);
-                jsonview.expand(this.visualizer);
-        },{timeout:500});
-    }
+  
 
 
     /** Getters **/
+
+    get content(){
+        return isNotUndefinedOrNull(this.record)?JSON.stringify(this.record, null, 4):null;
+    }
 
     get isArrayDisplayed(){
         return isNotUndefinedOrNull(this.record);

@@ -12,10 +12,10 @@ function requestSObjects() {
     };
 }
 
-function receiveSObjectsSuccess(data,alias) {
+function receiveSObjectsSuccess(data,alias,useToolingApi) {
     return {
         type: RECEIVE_SOBJECTS_SUCCESS,
-        payload: { data,alias }
+        payload: { data,alias,useToolingApi }
     };
 }
 
@@ -26,17 +26,19 @@ function receiveSObjectsError(error) {
     };
 }
 
-function shouldFetchSObjects({ sobjects },alias) {
-    return !sobjects || !sobjects.data || sobjects.alias != alias
+function shouldFetchSObjects({ sobjects },alias,useToolingApi) {
+    return !sobjects || !sobjects.data || sobjects.alias != alias || sobjects.useToolingApi != useToolingApi
 }
 
-function fetchSObjects({connector}) {
+function fetchSObjects({connector,useToolingApi}) {
     return async dispatch => {
         dispatch(requestSObjects());
-        connector
+        const conn = useToolingApi?connector.tooling:connector;
+
+        conn
         .describeGlobal()
         .then(res => {
-            dispatch(receiveSObjectsSuccess(res,connector.alias));
+            dispatch(receiveSObjectsSuccess(res,connector.alias,useToolingApi));
             dispatch(updateApiLimit({connector}));
         })
         .catch(err => {
@@ -45,10 +47,10 @@ function fetchSObjects({connector}) {
     };
 }
 
-export function fetchSObjectsIfNeeded({connector}) {
+export function fetchSObjectsIfNeeded({connector,useToolingApi}) {
     return (dispatch, getState) => {
-        if (shouldFetchSObjects(getState(),connector.alias)) {
-            dispatch(fetchSObjects({connector}));
+        if (shouldFetchSObjects(getState(),connector.alias,useToolingApi)) {
+            dispatch(fetchSObjects({connector,useToolingApi}));
         }
     };
 }

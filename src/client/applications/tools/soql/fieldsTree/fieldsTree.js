@@ -92,13 +92,13 @@ export default class FieldsTree extends FeatureElement {
 
     _updateFields(query, sort) {
         if (!this.sobjectMeta) return;
-        const selectedFields = this._getSelectedFields(query);
+        const selectedFields = this._getSelectedFields(query).map(x => (x || '').toLowerCase());
         this._rawFields = this.sobjectMeta.fields.map(field => {
             return {
                 ...field,
                 details: `${field.type.toUpperCase()} / ${field.label}`,
                 isNotReference: field.type !== 'reference',
-                isActive: selectedFields.includes(this._getRawFieldName(field)),
+                isActive: selectedFields.includes((this._getRawFieldName(field) || '').toLowerCase()),
                 isExpanded: false,
                 ...this._generateRelationshipProperties(field)
             };

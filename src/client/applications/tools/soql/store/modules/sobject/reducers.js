@@ -27,6 +27,7 @@ function sobject(
                 isFetching: false,
                 data: action.payload.data,
                 alias: action.payload.alias,
+                useToolingApi : action.payload.useToolingApi,
                 error: null
             };
 

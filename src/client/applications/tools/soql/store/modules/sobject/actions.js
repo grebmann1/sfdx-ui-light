@@ -15,10 +15,10 @@ function requestSObject({connector,sObjectName}) {
     };
 }
 
-function receiveSObjectSuccess(sObjectName, data,alias) {
+function receiveSObjectSuccess(sObjectName, data,alias,useToolingApi) {
     return {
         type: RECEIVE_SOBJECT_SUCCESS,
-        payload: { sObjectName, data, alias }
+        payload: { sObjectName, data, alias,useToolingApi}
     };
 }
 
@@ -29,18 +29,19 @@ function receiveSObjectError(sObjectName, error) {
     };
 }
 
-function shouldFetchSObject({ sobject }, sObjectName,alias) {
-    return !sobject[sObjectName] || !sobject[sObjectName].data || sobject.alias != alias
+function shouldFetchSObject({ sobject }, sObjectName,alias,useToolingApi) {
+    return !sobject[sObjectName] || !sobject[sObjectName].data || sobject.alias != alias || sobject.useToolingApi != useToolingApi
 }
 
-function describeSObject({connector,sObjectName}) {
+function describeSObject({connector,sObjectName,useToolingApi}) {
     return async dispatch => {
         dispatch(requestSObject({connector,sObjectName}));
+        const conn = useToolingApi?connector.tooling:connector;
 
-        connector
+        conn
         .describe(sObjectName)
         .then(res => {
-            dispatch(receiveSObjectSuccess(sObjectName, res,connector.alias));
+            dispatch(receiveSObjectSuccess(sObjectName, res,connector.alias,useToolingApi));
             dispatch(updateApiLimit({connector}));
         })
         .catch(err => {
@@ -49,10 +50,10 @@ function describeSObject({connector,sObjectName}) {
     };
 }
 
-export function describeSObjectIfNeeded({connector,sObjectName}) {
+export function describeSObjectIfNeeded({connector,sObjectName,useToolingApi}) {
     return (dispatch, getState) => {
-        if (shouldFetchSObject(getState(),sObjectName,connector.alias)) {
-            dispatch(describeSObject({connector,sObjectName}));
+        if (shouldFetchSObject(getState(),sObjectName,connector.alias,useToolingApi)) {
+            dispatch(describeSObject({connector,sObjectName,useToolingApi}));
         }
     };
 }

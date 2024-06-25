@@ -69,7 +69,7 @@ export default class App extends FeatureElement {
             this.currentLevel = 1;
             this.currentMetadata = sobject;
             if(exceptionMetadata){
-                await this.load_specificMetadataException(exceptionMetadata);
+                await this.load_specificMetadataException(exceptionMetadata,null,1);
             }else{
                 await this.load_specificMetadata(sobject);
             }
@@ -85,7 +85,7 @@ export default class App extends FeatureElement {
                 // Advanced with Extra lvl
                 this.currentLevel = 2;
                 const lvl2ExceptionMetadata = this.exceptionMetadataList.find(x => x.name === exceptionMetadata.lvl2Type);
-                await this.load_specificMetadataException(lvl2ExceptionMetadata,param1);
+                await this.load_specificMetadataException(lvl2ExceptionMetadata,param1,2);
                 if(isUndefinedOrNull(param2) && exceptionMetadata.selectDefaultFunc){
                     param2 = exceptionMetadata.selectDefaultFunc(metadataRecord);
                     label2 = exceptionMetadata.selectDefaultLabelFunc(metadataRecord);
@@ -234,6 +234,7 @@ export default class App extends FeatureElement {
 
 
     load_metadataGlobal = async () => {
+        console.log('load_metadataGlobal');
         this.isLoading = true;
         let sobjects = (await this.connector.conn.tooling.describeGlobal()).sobjects.map(x => x.name);
         let result = await this.connector.conn.metadata.describe(this.connector.conn.version);
@@ -247,7 +248,7 @@ export default class App extends FeatureElement {
         this.isGlobalMetadataLoaded = true;
     }
 
-    load_specificMetadataException = async (exceptionMetadata,recordId) => {
+    load_specificMetadataException = async (exceptionMetadata,recordId,level) => {
         console.log('load_specificMetadataException');
         const { name,label,queryFields,queryObject,labelFunc,field_id,manualFilter,badgeFunc,compareFunc,filterFunc } = exceptionMetadata;
         const newCompare = compareFunc?compareFunc:(a, b) => (a.label || '').localeCompare(b.label);
@@ -273,10 +274,10 @@ export default class App extends FeatureElement {
                 }).sort(newCompare);
             
             
-            if(this.metadata.length <= this.currentLevel){
+            if(this.metadata.length <= level){
                 this.metadata.push(null)
             }
-            this.metadata[this.currentLevel] = {records:result,label};
+            this.metadata[level] = {records:result,label};
         }catch(e){
             console.error(e); // We still show the menu
         }
@@ -284,6 +285,7 @@ export default class App extends FeatureElement {
     }
 
     load_specificMetadata = async (name) => {
+        console.log('load_specificMetadata');
         this.isLoading = true;
         const metadataConfig = await this.connector.conn.tooling.sobject(name).describe() || [];
         const fields = metadataConfig.fields.map(x => x.name).filter(x => ['Id','Name','DeveloperName','MasterLabel','NamespacePrefix'].includes(x));
@@ -311,10 +313,13 @@ export default class App extends FeatureElement {
     }
 
     load_recordFromRestAPI = async (recordId) => {
-        return await this.connector.conn.request(`/services/data/v${this.connector.conn.version}/tooling/sobjects/${this.metadata}/${recordId}`);
+        const urlQuery = `/services/data/v${this.connector.conn.version}/tooling/sobjects/${this.currentMetadata}/${recordId}`;
+        return await this.connector.conn.request(urlQuery);
     }
 
     load_specificMetadataRecord = async (key) => {
+        console.log('load_specificMetadataRecord');
+        this.isLoading = true;
         /*
         this.currentMetadata
         const metadataRecord = this.metadata[this.metadata.length - 1].records.find(x => x.key == key);
@@ -350,6 +355,7 @@ export default class App extends FeatureElement {
                     this.selectedRecord = await this.load_recordFromRestAPI(key);
             }
             this.selectedRecordLoading = false
+            this.isLoading = false;
         }catch(e){
             console.error(e);
             Toast.show({
@@ -400,7 +406,7 @@ export default class App extends FeatureElement {
             name:`${data.FullName || data.Name}.${extension}`,
             body:data[bodyField],
             apiVersion:data.ApiVersion,
-            metadata:this.metadata[1].label,
+            metadata:this.currentMetadata,
             id:data.Id,
         }]);
     }
@@ -435,7 +441,7 @@ export default class App extends FeatureElement {
                 name:_name,
                 body:x.Source,
                 apiVersion:data.ApiVersion,
-                metadata:this.metadata[1].label,
+                metadata:this.currentMetadata,
                 id:data.Id,
                 _source:x
             }     
@@ -471,7 +477,6 @@ export default class App extends FeatureElement {
         if(this.metadata.length == 0){
             this.menuItems = [];
         }else{
-            //console.log('this.metadata[this.metadata.length - 1].records',this.metadata[this.metadata.length - 1].records);
             this.menuItems = this.metadata[this.metadata.length - 1].records.map(x => ({
                 ...x,
                 isSelected:this.selectedItem == x.key

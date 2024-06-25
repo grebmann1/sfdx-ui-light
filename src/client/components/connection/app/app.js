@@ -147,7 +147,7 @@ export default class App extends FeatureElement {
         // Browser & Electron version
         this.isLoading = true;
         this.data =  await getAllConnection();
-        console.log('originalList',this.data);
+        //console.log('originalList',this.data);
         //console.log('getAllConnection',this.data);
         this.formattedData = this.formatDataForCardView();
         this.isLoading = false;

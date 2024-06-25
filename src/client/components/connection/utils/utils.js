@@ -28,7 +28,7 @@ export function extractConfig(config){
 }
 
 export async function connect({alias,settings,disableEvent = false, directStorage = false}){
-    console.log('--> connect',alias,settings);
+    //console.log('--> connect',alias,settings);
     if(isUndefinedOrNull(settings) && isUndefinedOrNull(alias)){
         throw new Error('You need to provide the alias or the connection');
     }
@@ -173,7 +173,7 @@ export async function getExistingSession(){
     if(sessionStorage.getItem("currentConnection")){
         try{
             // Don't use settings for now, to avoid issues with electron js (see-details need to be called)
-            console.log('sessionStorage.getItem("currentConnection")',JSON.parse(sessionStorage.getItem("currentConnection")));
+            //console.log('sessionStorage.getItem("currentConnection")',JSON.parse(sessionStorage.getItem("currentConnection")));
             const settings = JSON.parse(sessionStorage.getItem("currentConnection"));
             // Using {alias,...settings} before, see if it's better now
             return isElectronApp()?await connect({alias:settings.alias}):await connect({settings});

@@ -6,8 +6,10 @@
 
             <!-- Left Panel -->
             <div slot="left" class="slds-full-height">
+                <!-- OBJECT PANEL -->
                 <soql-sobject-panel  class={sobjectsPanelClass}></soql-sobject-panel>
                 <template lwc:if={isFieldsPanelDisplayed}>
+                    <!-- FIELDS PANELS -->
                     <soql-fields-panel ></soql-fields-panel>
                 </template>
             </div>
@@ -25,20 +27,20 @@
                                 <div class="right-panel">
                                     <div class="right-top-panel">
                                         <div class="right-top-left-panel">
+                                            <!-- EDITOR -->
                                             <soql-query-editor-panel ></soql-query-editor-panel>
                                         </div>
                                         <div class="right-top-right-panel">
+                                            <!-- RECENT QUERIES -->
                                             <soql-query-list-panel ></soql-query-list-panel>
                                         </div>
                                     </div>
                                     <div class="right-bottom-panel">
+                                        <!-- OUTPUT QUERIES -->
                                         <soql-output-panel ></soql-output-panel>
                                     </div>
                                 </div>
                             </div>
-
-                            
-
                         </template>
                     </div>
                 </div>

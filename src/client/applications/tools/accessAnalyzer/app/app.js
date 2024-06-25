@@ -144,6 +144,10 @@ export default class App extends FeatureElement {
         window.removeEventListener('resize',this.tableResize);
     }
 
+    renderedCallback() {
+        console.log('Access Analyzer - renderedCallback');
+    }
+
     tableResize = () => {
         runActionAfterTimeOut(null,(param) => {
             if(isNotUndefinedOrNull(this.tableInstance)){

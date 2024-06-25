@@ -58,7 +58,7 @@ export default class App extends FeatureElement {
         });
         cometd.handshake(status => {
             if(!status.successful){
-                console.error('Error during handshake');
+                console.error('Error during handshake',status);
             }else{
                 console.log('Connected');
             }

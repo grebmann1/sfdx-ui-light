@@ -80,7 +80,7 @@ export default class App extends LightningElement {
         this.targetPage = pageRef;
         if(!this.pageHasLoaded) return;
         const {type, attributes} = pageRef;
-        console.log('pageRef',pageRef);
+        //console.log('pageRef',pageRef);
         switch(type){
             case 'home':
             case 'application':
@@ -187,7 +187,7 @@ export default class App extends LightningElement {
         if(this.isUserLoggedIn && !url.startsWith('http')){
             // to force refresh in case it's not valid anymore : 
             await this.connector.conn.identity();
-            console.log('this.connector.frontDoorUrl',this.connector);
+            //console.log('this.connector.frontDoorUrl',this.connector);
             url = `${this.connector.frontDoorUrl}&retURL=${encodeURI(url)}`;
         }
 
