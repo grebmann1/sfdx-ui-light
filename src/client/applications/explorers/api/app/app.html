@@ -24,7 +24,7 @@
                 <div class="slds-page-header__col-details">
                     <div class="slds-page-header__detail-row slds-is-relative" style="display:block; ">
                         <!-- actions -->
-                        <h2 class="slds-text-title_bold">In Alpha, just supporting GET</h2>
+                        <h2 class="slds-text-title_bold">In Alpha, basic support for now.</h2>
                         <p>For advanced functionalities, it's recommended to use Postman</p>
                     </div>
                 </div>
@@ -35,26 +35,89 @@
             <article class="full-page-body slds-card slds-m-top_small">
                 <div class="slds-card__body slds-card__body_inner slds-flex-column">
                     <div class="slds-grid slds-wrap slds-is-relative">
-                        <div class="slds-col slds-size_1-of-1">
-                            <lightning-input lwc:ref="url" label="Endpoint" type="text" value={endpoint}></lightning-input>
+                        <div class="slds-col slds-size_1-of-1 slds-horizontal-input">
+                            <lightning-combobox
+                                class="slds-horizontal-input-combobox"
+                                label="Method"
+                                dropdown-alignment="left"
+                                value={method}
+                                placeholder="Method"
+                                disabled={isLoading}
+                                options={method_options}
+                                onchange={method_change}
+                            ></lightning-combobox>
+                            <lightning-input lwc:ref="url" 
+                                class="slds-horizontal-input-url slds-p-left_x-small"
+                                label="Endpoint" 
+                                type="text" 
+                                value={endpoint}
+                                onchange={endpoint_change}
+                            ></lightning-input>
                         </div>
                         <div class="slds-col slds-size_1-of-1">
                             <div class="slds-grid slds-grid_align-end slds-m-top_small">
                                 <div class="slds-col">
                                     <lightning-button 
+                                        icon-name="utility:refresh" 
+                                        onclick={reset_click} 
+                                        label="Reset" 
+                                        disabled={isLoading}
+                                    ></lightning-button>
+                                    <lightning-button 
+                                        class="slds-m-left_small"
                                         icon-name="utility:apex" 
                                         onclick={executeAPI} 
                                         label="Execute API" 
+                                        variant="brand"
                                         disabled={isExecuteApiDisabled}
                                     ></lightning-button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="slds-fill-height slds-m-top_small">
-                        <template lwc:if={isContentDisplayed}>
-                            <slds-code-block code-block={formattedContent} language="json" title="Formatted Response"></slds-code-block>
+                    <div class="slds-fill-height slds-m-top_small slds-api-container">
+                        <slds-tabset variant="scoped" class="slds-without-tab" active-tab-value={currentTab}>
+                            <slds-tab label="Response" value="Response" onactive={handleSelectTab}></slds-tab>
+                            <slds-tab label="Header &amp; Body" value="Parameters" onactive={handleSelectTab}></slds-tab>
+                        </slds-tabset>
+
+                        <!-- Parameters -->
+                        <template lwc:if={isParamsDisplayed}>
+                            <div class="slds-grid slds-wrap slds-p-horizontal_medium slds-p-top_medium">
+                                <div class="slds-col slds-size_1-of-1">
+                                    <div class="slds-form-element">
+                                        <label class="slds-text-title_bold slds-form-element__label">Header</label>
+                                        <div class="slds-form-element__control">
+                                            <textarea class="slds-textarea slds-text-longform" placeholder="Write Header here" disabled={isLoading} oninput={header_change}>
+                                                {header}
+                                            </textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-col slds-size_1-of-1">
+                                    <div class="slds-form-element">
+                                        <label class="slds-text-title_bold slds-form-element__label">Body</label>
+                                        <div class="slds-form-element__control">
+                                            <textarea class="slds-textarea slds-text-longform" placeholder="Write body here" disabled={isLoading} oninput={body_change}>
+                                                {body}
+                                            </textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </template>
+                        <!-- Response -->
+                        <template lwc:if={isResponseDisplayed}>
+                            <div class="slds-grid slds-wrap slds-p-horizontal_medium">
+                                <div class="slds-col slds-size_1-of-1">
+                                    <template lwc:if={isContentDisplayed}>
+                                        <slds-code-block code-block={formattedContent} language="json" title="Formatted Response"></slds-code-block>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+
+                        
                     </div>
                 </div>
             </article>

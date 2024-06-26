@@ -1,3 +1,20 @@
 :host{
     height: 100%;
 }
+
+.slds-horizontal-input {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+.slds-horizontal-input-combobox {
+    width:150px;
+}
+
+.slds-horizontal-input-url {
+    width:100%;
+}
+
+.slds-api-container {
+    background-color: #fafaf9;
+}
