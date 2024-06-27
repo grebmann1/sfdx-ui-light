@@ -34,6 +34,7 @@ export default class FieldsPanel extends FeatureElement {
     sobjectMeta;
     keyword = '';
     isLoading = false;
+    useToolingApi = false;
 
     _selectedSObject;
 
@@ -43,6 +44,10 @@ export default class FieldsPanel extends FeatureElement {
 
     @wire(connectStore, { store })
     storeChange({ sobjects, sobject, ui }) {
+        if(ui && ui.hasOwnProperty('useToolingApi')){
+            this.useToolingApi = ui.useToolingApi;
+        }
+
         const { selectedSObject } = ui;
         if (!selectedSObject) return;
 
@@ -53,8 +58,9 @@ export default class FieldsPanel extends FeatureElement {
         ) {
             return;
         }
+        console.log('fullSObjectName',fullSObjectName,this._selectedSObject);
         if (fullSObjectName !== this._selectedSObject) {
-            
+            console.log('request SObject !!!');
             this._selectedSObject = fullSObjectName;
             store.dispatch(describeSObjectIfNeeded({
                 connector:this.connector.conn,
@@ -79,19 +85,20 @@ export default class FieldsPanel extends FeatureElement {
         }
     }
 
-    get isFieldsActive() {
-        return !!this.tabs.find(tab => tab.id === 'tab-fields' && tab.isActive);
-    }
-
-    get isRelationshipsActive() {
-        return !!this.tabs.find(
-            tab => tab.id === 'tab-relationships' && tab.isActive
-        );
-    }
+    
 
     deselectSObject() {
         store.dispatch(deselectSObject());
     }
+
+    
+
+    
+
+   
+
+    /** Events */
+
 
     selectTab(event) {
         const tabId = event.target.dataset.id;
@@ -123,11 +130,24 @@ export default class FieldsPanel extends FeatureElement {
         }
     }
 
+    handleClear() {
+        this.keyword = '';
+    }
+    
+
+    /** Getters */
+
     get isDisplayClearButton() {
         return this.keyword !== '';
     }
 
-    handleClear() {
-        this.keyword = '';
+    get isFieldsActive() {
+        return !!this.tabs.find(tab => tab.id === 'tab-fields' && tab.isActive);
+    }
+
+    get isRelationshipsActive() {
+        return !!this.tabs.find(
+            tab => tab.id === 'tab-relationships' && tab.isActive
+        );
     }
 }

@@ -12,7 +12,8 @@ import {
     DESELECT_CHILD_RELATIONSHIP,
     SELECT_ALL_FIELDS,
     CLEAR_ALL_FIELDS,
-    SORT_FIELDS
+    SORT_FIELDS,
+    TOGGLE_TOOLINGAPI
 } from './constants';
 
 
@@ -66,6 +67,12 @@ export function updateSoql({connector,soql}) {
     return {
         type: UPDATE_SOQL,
         payload: { connector,soql }
+    };
+}
+export function updateToolingApi(useToolingApi) {
+    return {
+        type: TOGGLE_TOOLINGAPI,
+        payload: { useToolingApi }
     };
 }
 

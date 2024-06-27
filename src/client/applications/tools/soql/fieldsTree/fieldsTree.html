@@ -11,6 +11,7 @@
             </template>
             <template lwc:else>
                 <ul class="slds-tree">
+                    <!-- Inner scrolling not enabled yet !!! onscroll={handleScroll} -->
                     <template for:each={fields} for:item="field">
                         <li aria-level={level} aria-selected={field.isActive} aria-expanded={field.isExpanded} role="treeitem" key={field.name}>
                             <div class="slds-tree__item">

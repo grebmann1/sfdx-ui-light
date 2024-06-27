@@ -188,6 +188,14 @@ export function getObjectFieldsSetupLink({host, sobjectName, durableId, isCustom
       	return `${host}/lightning/setup/ObjectManager/${sobjectName}/FieldsAndRelationships/view`;
     }
 }
+
+export function getObjectFieldDetailSetupLink({host, sobjectName,durableId, fieldName,fieldNameDurableId}) {
+	const _sobjectParam = (sobjectName.endsWith("__c") || sobjectName.endsWith("__kav"))?durableId:sobjectName;
+	const _fieldParam 	= (sobjectName.endsWith("__c") || sobjectName.endsWith("__kav"))?fieldNameDurableId:fieldName;
+
+    return `${host}/lightning/setup/ObjectManager/${_sobjectParam}/FieldsAndRelationships/${_fieldParam}/view`;
+}
+
 export function getObjectListLink({host, sobjectName, keyPrefix, isCustomSetting}) {
     if(sobjectName.endsWith("__mdt")) {
       	return `${host}/lightning/setup/CustomMetadata/page?address=%2F${keyPrefix}`;

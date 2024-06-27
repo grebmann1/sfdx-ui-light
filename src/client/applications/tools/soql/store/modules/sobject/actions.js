@@ -15,10 +15,10 @@ function requestSObject({connector,sObjectName}) {
     };
 }
 
-function receiveSObjectSuccess(sObjectName, data,alias,useToolingApi) {
+function receiveSObjectSuccess(sObjectName, data) {
     return {
         type: RECEIVE_SOBJECT_SUCCESS,
-        payload: { sObjectName, data, alias,useToolingApi}
+        payload: { sObjectName, data}
     };
 }
 
@@ -29,19 +29,20 @@ function receiveSObjectError(sObjectName, error) {
     };
 }
 
-function shouldFetchSObject({ sobject }, sObjectName,alias,useToolingApi) {
-    return !sobject[sObjectName] || !sobject[sObjectName].data || sobject.alias != alias || sobject.useToolingApi != useToolingApi
+function shouldFetchSObject({ sobject,ui }, sObjectName,useToolingApi) {
+    return !sobject[sObjectName] || !sobject[sObjectName].data || ui.useToolingApi != useToolingApi
 }
 
-function describeSObject({connector,sObjectName,useToolingApi}) {
-    return async dispatch => {
+function describeSObject({connector,sObjectName}) {
+    return async (dispatch, getState) => {
+        const { ui } = getState();
         dispatch(requestSObject({connector,sObjectName}));
-        const conn = useToolingApi?connector.tooling:connector;
+        const conn = ui.useToolingApi?connector.tooling:connector;
 
         conn
         .describe(sObjectName)
         .then(res => {
-            dispatch(receiveSObjectSuccess(sObjectName, res,connector.alias,useToolingApi));
+            dispatch(receiveSObjectSuccess(sObjectName, res));
             dispatch(updateApiLimit({connector}));
         })
         .catch(err => {
@@ -52,8 +53,8 @@ function describeSObject({connector,sObjectName,useToolingApi}) {
 
 export function describeSObjectIfNeeded({connector,sObjectName,useToolingApi}) {
     return (dispatch, getState) => {
-        if (shouldFetchSObject(getState(),sObjectName,connector.alias,useToolingApi)) {
-            dispatch(describeSObject({connector,sObjectName,useToolingApi}));
+        if (shouldFetchSObject(getState(),sObjectName,useToolingApi)) {
+            dispatch(describeSObject({connector,sObjectName}));
         }
     };
 }

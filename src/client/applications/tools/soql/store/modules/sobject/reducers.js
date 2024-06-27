@@ -9,8 +9,7 @@ function sobject(
     state = {
         isFetching: false,
         data: null,
-        error: null,
-        alias: null
+        error: null
     },
     action
 ) {
@@ -26,8 +25,6 @@ function sobject(
                 ...state,
                 isFetching: false,
                 data: action.payload.data,
-                alias: action.payload.alias,
-                useToolingApi : action.payload.useToolingApi,
                 error: null
             };
 

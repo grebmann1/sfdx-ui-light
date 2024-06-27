@@ -12,6 +12,8 @@ import {
 
 import { isEmpty,fullApiName,isSame,escapeRegExp,isNotUndefinedOrNull } from 'shared/utils';
 
+const PAGE_LIST_SIZE    = 70;
+
 export default class FieldsTree extends FeatureElement {
     // sObject Name
     @api sobject;
@@ -24,9 +26,13 @@ export default class FieldsTree extends FeatureElement {
     sobjectMeta;
     fields = [];
     isLoading = false;
+    useToolingApi = false;
     _keyword;
     _rawFields = [];
     _expandedFieldNames = {};
+
+    // Scrolling
+    pageNumber = 1;
 
     @api
     get keyword() {
@@ -39,39 +45,33 @@ export default class FieldsTree extends FeatureElement {
         }
     }
 
-    get level() {
-        if (!this.relationship) return this.rootLevelNum;
-        return this.relationship.split('.').length + this.rootLevelNum;
-    }
-
-    get isMaxLevel() {
-        return this.level > 4 + this.rootLevelNum;
-    }
-
-    get rootLevelNum() {
-        return parseInt(this.rootlevel, 10);
-    }
-
-    get isNoFields() {
-        return !this.fields || !this.fields.length;
-    }
+    
 
     @wire(connectStore, { store })
     storeChange({ sobject, ui }) {
+        if(ui.hasOwnProperty('useToolingApi')){
+            console.log('ui.useToolingApi',ui.useToolingApi);
+            this.useToolingApi = ui.useToolingApi;
+        }
+
+        
         const sobjectState = sobject[this.sobject];
         if (!sobjectState) return;
         this.isLoading = sobjectState.isFetching;
         if (sobjectState.data) {
             this.sobjectMeta = sobjectState.data;
         }
+        
 
         this._updateFields(ui.query, ui.sort);
     }
 
     connectedCallback() {
+        console.log('connectedCallback - describeSObjectIfNeeded',this.sobject)
         store.dispatch(describeSObjectIfNeeded({
             connector:this.connector.conn,
-            sObjectName:this.sobject
+            sObjectName:this.sobject,
+            useToolingApi:this.useToolingApi
         }));
     }
 
@@ -165,6 +165,7 @@ export default class FieldsTree extends FeatureElement {
                 isExpanded: !!this._expandedFieldNames[field.name]
             };
         });
+        this.pageNumber = 1; // reset
     }
 
     _getFlattenedFields(query) {
@@ -186,5 +187,43 @@ export default class FieldsTree extends FeatureElement {
                 );
             });
         }
+    }
+
+    /** Events */
+
+
+    handleScroll(event) {
+        console.log('handleScroll');
+        const target = event.target;
+        const scrollDiff = Math.abs(target.clientHeight - (target.scrollHeight - target.scrollTop));
+        const isScrolledToBottom = scrollDiff < 5; //5px of buffer
+        if (isScrolledToBottom) {
+            // Fetch more data when user scrolls to the bottom
+            this.pageNumber++;
+        }
+    }
+
+    /** Getters */
+
+    get level() {
+        if (!this.relationship) return this.rootLevelNum;
+        return this.relationship.split('.').length + this.rootLevelNum;
+    }
+
+    get isMaxLevel() {
+        return this.level > 4 + this.rootLevelNum;
+    }
+
+    get rootLevelNum() {
+        return parseInt(this.rootlevel, 10);
+    }
+
+    get isNoFields() {
+        return !this.fields || !this.fields.length;
+    }
+
+    get virtualList(){
+        // Best UX Improvement !!!!
+        return this.fields.slice(0,this.pageNumber * PAGE_LIST_SIZE);
     }
 }

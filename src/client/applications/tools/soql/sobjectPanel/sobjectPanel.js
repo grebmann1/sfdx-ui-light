@@ -8,21 +8,19 @@ import {
 } from 'soql/store';
 import Toast from 'lightning/toast';
 
-export default class SobjectsPanel extends FeatureElement {
+const PAGE_LIST_SIZE    = 70;
 
+export default class SobjectsPanel extends FeatureElement {
+    
     keyword = '';
     sobjects;
     isLoading = false;
 
     _rawSObjects;
+    // Scrolling
+    pageNumber = 1;
 
-    get isNoSObjects() {
-        return !this.isLoading && (!this.sobjects || !this.sobjects.length);
-    }
-
-    get isDisplayClearButton() {
-        return this.keyword !== '';
-    }
+    
 
     @wire(connectStore, { store })
     storeChange({ sobjects }) {
@@ -36,6 +34,7 @@ export default class SobjectsPanel extends FeatureElement {
                 };
             });
             this.sobjects = this._rawSObjects;
+            //this.pageNumber = 1; // reset
         } else if (sobjects.error) {
             console.error(sobjects.error);
             Toast.show({
@@ -46,10 +45,7 @@ export default class SobjectsPanel extends FeatureElement {
         }
     }
 
-    setKeyword(event) {
-        this.keyword = event.target.value;
-        this.filterSObjects(this.keyword);
-    }
+    
 
     filterSObjects(keyword) {
         if (keyword) {
@@ -61,15 +57,52 @@ export default class SobjectsPanel extends FeatureElement {
         } else {
             this.sobjects = this._rawSObjects;
         }
+        this.pageNumber = 1; // reset
     }
+
+    
+
+
+    /** Events **/
 
     selectSObject(event) {
         const sObjectName = event.target.dataset.name;
         store.dispatch(selectSObject(sObjectName));
     }
 
+    setKeyword(event) {
+        this.keyword = event.target.value;
+        this.filterSObjects(this.keyword);
+    }
+
     handleClear() {
         this.keyword = '';
         this.filterSObjects(this.keyword);
+    }
+
+    handleScroll(event) {
+        //console.log('handleScroll');
+        const target = event.target;
+        const scrollDiff = Math.abs(target.clientHeight - (target.scrollHeight - target.scrollTop));
+        const isScrolledToBottom = scrollDiff < 5; //5px of buffer
+        if (isScrolledToBottom) {
+            // Fetch more data when user scrolls to the bottom
+            this.pageNumber++;
+        }
+    }
+
+    /** Getters */
+
+    get isNoSObjects() {
+        return !this.isLoading && (!this.sobjects || !this.sobjects.length);
+    }
+
+    get isDisplayClearButton() {
+        return this.keyword !== '';
+    }
+
+    get virtualList(){
+        // Best UX Improvement !!!!
+        return this.sobjects.slice(0,this.pageNumber * PAGE_LIST_SIZE);
     }
 }

@@ -43,6 +43,12 @@
     overflow-x: hidden;
     overflow-y: auto;
 }
+.left-panel-non-scrollable {
+    position: absolute;
+    height: 100%;
+    left: 0;
+    right: 0;
+}
 .slds-panel__header {
     padding: 0 0.75rem;
     border-top: 1px solid #dddbda;

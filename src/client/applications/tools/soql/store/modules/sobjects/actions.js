@@ -4,7 +4,7 @@ import {
     RECEIVE_SOBJECTS_ERROR,
     CLEAR_SOBJECTS_ERROR
 } from './constants';
-import { updateApiLimit } from '../ui/actions';
+import { updateApiLimit,updateToolingApi } from '../ui/actions';
 
 function requestSObjects() {
     return {
@@ -12,10 +12,10 @@ function requestSObjects() {
     };
 }
 
-function receiveSObjectsSuccess(data,alias,useToolingApi) {
+function receiveSObjectsSuccess(data) {
     return {
         type: RECEIVE_SOBJECTS_SUCCESS,
-        payload: { data,alias,useToolingApi }
+        payload: { data }
     };
 }
 
@@ -26,19 +26,20 @@ function receiveSObjectsError(error) {
     };
 }
 
-function shouldFetchSObjects({ sobjects },alias,useToolingApi) {
-    return !sobjects || !sobjects.data || sobjects.alias != alias || sobjects.useToolingApi != useToolingApi
+function shouldFetchSObjects({ sobjects,ui },useToolingApi) {
+    return !sobjects || !sobjects.data ||  ui.useToolingApi != useToolingApi
 }
 
-function fetchSObjects({connector,useToolingApi}) {
-    return async dispatch => {
+function fetchSObjects({connector}) {
+    return async (dispatch,getState) => {
+        const { ui } = getState();
         dispatch(requestSObjects());
-        const conn = useToolingApi?connector.tooling:connector;
+        const conn = ui.useToolingApi?connector.tooling:connector;
 
         conn
         .describeGlobal()
         .then(res => {
-            dispatch(receiveSObjectsSuccess(res,connector.alias,useToolingApi));
+            dispatch(receiveSObjectsSuccess(res));
             dispatch(updateApiLimit({connector}));
         })
         .catch(err => {
@@ -49,8 +50,9 @@ function fetchSObjects({connector,useToolingApi}) {
 
 export function fetchSObjectsIfNeeded({connector,useToolingApi}) {
     return (dispatch, getState) => {
-        if (shouldFetchSObjects(getState(),connector.alias,useToolingApi)) {
-            dispatch(fetchSObjects({connector,useToolingApi}));
+        if (shouldFetchSObjects(getState(),useToolingApi)) {
+            dispatch(updateToolingApi(useToolingApi));
+            dispatch(fetchSObjects({connector}));
         }
     };
 }

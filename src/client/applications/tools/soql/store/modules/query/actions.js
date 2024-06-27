@@ -15,8 +15,7 @@ function requestQuery() {
 function receiveQuerySuccess(data, soql, alias) {
     return {
         type: RECEIVE_QUERY_SUCCESS,
-        payload: { data, soql },
-        alias:alias
+        payload: { data, soql,alias },
     };
 }
 

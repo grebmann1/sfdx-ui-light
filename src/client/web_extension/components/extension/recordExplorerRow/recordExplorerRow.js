@@ -1,9 +1,12 @@
-import {LightningElement,api} from "lwc";
+import { api } from "lwc";
+import FeatureElement from 'element/featureElement';
 import Toast from 'lightning/toast';
-import { isNotUndefinedOrNull,isSalesforceId,isEmpty,isUndefinedOrNull,classSet } from "shared/utils";
-export default class RecordExplorerRow extends LightningElement {
+import { isNotUndefinedOrNull,isSalesforceId,isEmpty,isUndefinedOrNull,classSet,chunkPromises } from "shared/utils";
+import { getObjectFieldsSetupLink} from "extension/utils";
+export default class RecordExplorerRow extends FeatureElement {
 
     @api item;
+    @api isLoading;
     @api isVisible;
     @api currentOrigin;
     @api get filter(){
@@ -24,6 +27,17 @@ export default class RecordExplorerRow extends LightningElement {
     }
     set isLabelDisplayed(value){
         this._isLabelDisplayed = value;
+        if(this.hasRendered){
+            this.renderRow();
+        }
+    }
+
+    _isInfoDisplayed = false;
+    @api get isInfoDisplayed(){
+        return this._isInfoDisplayed;
+    }
+    set isInfoDisplayed(value){
+        this._isInfoDisplayed = value;
         if(this.hasRendered){
             this.renderRow();
         }
@@ -73,6 +87,9 @@ export default class RecordExplorerRow extends LightningElement {
         if(this.refs.value){
             this.refs.value.innerHTML = this.formattedValue;
         }
+        if(this.refs.type){
+            this.refs.type.innerHTML = this.formattedType;
+        }
     }
 
     @api
@@ -113,10 +130,55 @@ export default class RecordExplorerRow extends LightningElement {
         );
     }
 
+    generateMatrix = async ( controllingFieldName, dependentFieldName) => {
+        const recordTypeList = await this.fetchAllRecordTypes();
+        
+        const recordTypeMatrix = {}
+        recordTypeList.forEach(recordType => {
+            const controllingField = recordType.picklistFieldValues[controllingFieldName];
+            const dependentField = recordType.picklistFieldValues[dependentFieldName];
+            const matrix = {};
+            controllingField.values.forEach((_,controllerIndex) => {
+                dependentField.values.forEach((option) => {
+                    if (!option.validFor.includes(controllerIndex))return;
+
+                    const controllingValue = controllingField.values[controllerIndex].value;
+                    if (!matrix[controllingValue]) {
+                        matrix[controllingValue] = [];
+                    }
+                    const dependentValue = option.value;
+                    matrix[controllingValue].push(dependentValue);
+                })
+            });
+            recordTypeMatrix[recordType.developerName] = matrix
+            
+        })
+        return recordTypeMatrix;
+    }
+
+    generateCSV = async (controllingField,matrix) => {
+        const header = [controllingField,...Object.keys(matrix)].join(',');
+        const mapping = {};
+        Object.keys(matrix).forEach(recordType => {
+            Object.keys(matrix[recordType]).forEach(controllerField => {
+                if(!mapping.hasOwnProperty(controllerField)){
+                    mapping[controllerField] = [];
+                }
+                mapping[controllerField].push(matrix[recordType][controllerField].join(';'));
+            })
+        })
+        const data = Object.keys(mapping)
+            .map((controllerField,index) => {
+                // controllerField
+                return [controllerField,...mapping[controllerField]].join(',');
+            })
+            .join('\n');
+        return `${header}\n${data}`;
+    }
+
     /* Events */
 
     handleInputChange = (e) => {
-        //console.log('handleInputChange',e.detail);
         if (e.detail.value !== this.value) {
             this.isDirty = true;
         } else {
@@ -136,7 +198,6 @@ export default class RecordExplorerRow extends LightningElement {
     handleUndoClick = () => {
         //this.isEditMode = false; // for now we just reset it by disabling the "Input field"
         this.isDirty = false;
-        const uiField = this.metadata.fields.find(x => x.name === this.name);
         this.refs.inputfield.reset();
     }
     
@@ -155,9 +216,69 @@ export default class RecordExplorerRow extends LightningElement {
             })
         );
     }
+    fetchAllRecordTypes = async (recordTypeId) => {
+        const recordTypes = this.metadata.recordTypeInfos;
+        // /ui-api/object-info/Account/picklist-values/012Hr000001RvqQ
+        const fetchAllPicklists = async (recordType) => {
+            const res = await this.connector.conn.request(`/ui-api/object-info/${this.metadata.name}/picklist-values/${recordType.recordTypeId}`);
+            return {
+                picklistFieldValues:res.picklistFieldValues,
+                name:recordType.name,
+                recordTypeId:recordType.recordTypeId,
+                developerName:recordType.developerName
+            }
+        }
+        return await chunkPromises(recordTypes,4,fetchAllPicklists);
+    }
+
+    
+
+    handleDependentPicklistClick = async () => {
+        this.isLoading = true;
+        Toast.show({
+            label: 'Generating CSV File',
+            variant:'success',
+        });
+        try {
+            const matrix = await this.generateMatrix(this.item.fieldInfo.controllerName, this.item.fieldInfo.name);
+            
+            const data = await this.generateCSV(this.item.fieldInfo.controllerName,matrix);
+            const bom = new Uint8Array([0xef, 0xbb, 0xbf]);
+            const blob = new Blob([bom, data], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const download = document.createElement('a');
+                download.href = window.URL.createObjectURL(blob);
+                download.download = `[PicklistDependencies]${this.metadata.name}-${this.item.fieldInfo.name}.csv`;
+                download.click();
+            URL.revokeObjectURL(url);
+            this.isLoading = false;
+        } catch (e) {
+            console.error(e);
+            this.isLoading = false;
+            Toast.show({
+                message: this.i18n.OUTPUT_PANEL_FAILED_EXPORT_CSV,
+                errors: e
+            });
+        }
+    }
+
+    
+
+    /*handleRedirectSettings = () => {
+        console.log('handleRedirectSettings');
+        const uiField = this.metadata.fields.find(x => x.name === this.name);
+        const retUrl = getObjectFieldDetailSetupLink({
+            host:this.currentOrigin,
+            sobjectName:this.metadata.name,
+            durableId:this.metadata.durableId,
+            fieldName:uiField.name,
+            fieldNameDurableId:uiField.name
+        })
+        const targetUrl = `${this.connector.conn.instanceUrl}/servlet/servlet.su?oid=${encodeURIComponent(this.connector.header.orgId)}&retURL=${encodeURIComponent(retUrl)}}`;
+    }*/
     
     handleFormulaClick = () => {
-        navigator.clipboard.writeText(this.formula);
+        navigator.clipboard.writeText(this.tooltip_formula);
         Toast.show({
             label: 'Formula exported to your clipboard',
             variant:'success',
@@ -201,11 +322,19 @@ export default class RecordExplorerRow extends LightningElement {
     }
 
     get isCopyDisplayed(){
-        return isNotUndefinedOrNull(this.value);
+        return isNotUndefinedOrNull(this.value) && !this.isInfoDisplayed;
     }
 
     get isSalesforceId(){
         return isNotUndefinedOrNull(this.value) && isSalesforceId(this.value);
+    }
+
+    get isDependentPicklist(){
+        return this.item.fieldInfo.dependentPicklist;
+    }
+
+    get isDependentPicklistDisplayed(){
+        return this.isDependentPicklist && !this.isDirty;
     }
 
     get isEditEnabled(){
@@ -232,8 +361,12 @@ export default class RecordExplorerRow extends LightningElement {
         return this.item.fieldInfo.calculated;
     }
 
-    get formula(){
+    get tooltip_formula(){
         return this.item.fieldInfo.calculatedFormula;
+    }
+
+    get tooltip_dependentPicklist(){
+        return `Controlling Field : ${this.item.fieldInfo.controllerName}. Click to download !`;
     }
 
     get isPicklist(){
@@ -254,6 +387,20 @@ export default class RecordExplorerRow extends LightningElement {
             return _name.toString().replace(/<?>?/,'').replace(regex,'<span style="font-weight:Bold; color:blue;">$1</span>');
         }else{
             return _name;
+        }
+    }
+
+    get formattedType(){
+        if(isEmpty(this.filter)){
+            return this.type;
+        }
+        
+        const regex = new RegExp('('+this.filter+')','gmi');
+        if(regex.test(this.type)){
+            //console.log('this.name.toString()',this.name.toString());
+            return this.type.toString().replace(/<?>?/,'').replace(regex,'<span style="font-weight:Bold; color:blue;">$1</span>');
+        }else{
+            return this.type;
         }
     }
 

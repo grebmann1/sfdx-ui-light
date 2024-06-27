@@ -12,6 +12,7 @@
                         </div>
                         <div class="slds-col slds-size_1-of-6">
                             <lightning-button-group class="slds-float_right">
+                                <lightning-button-icon-stateful icon-name="utility:info_alt" title="Info" selected={isInfoDisplayed}  disabled={isLoading} onclick={handleInfoToggle}></lightning-button-icon-stateful>
                                 <lightning-button-icon icon-name="utility:refresh" title="Refresh" disabled={isLoading} onclick={handleRefreshClick}></lightning-button-icon>
                             </lightning-button-group>
                         </div>
@@ -142,6 +143,7 @@
                         <extension-record-explorer-row key={item.name} 
                             is-visible={item.isVisible}
                             is-label-displayed={isLabelDisplayed}
+                            is-info-displayed={isInfoDisplayed}
                             item={item} 
                             filter={filter} 
                             current-origin={currentOrigin} 

@@ -25,8 +25,8 @@
         </div>
         <div class="sobjects-list slds-border_top">
             <div class="slds-p-around_small" if:true={isNoSObjects}>{i18n.SOBJECTS_PANEL_NO_MATCHING}</div>
-            <ul class="slds-tree left-panel-scrollable" if:true={sobjects}>
-                <template for:each={sobjects} for:item="sobject">
+            <ul class="slds-tree left-panel-scrollable" if:true={sobjects} onscroll={handleScroll}>
+                <template for:each={virtualList} for:item="sobject">
                     <li aria-level="1" role="treeitem" key={sobject.name} if:true={sobject.queryable}>
                         <div class="slds-tree__item">
                             <span class="slds-has-flexi-truncate">

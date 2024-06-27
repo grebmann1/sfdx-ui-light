@@ -18,7 +18,8 @@ import {
     DESELECT_CHILD_RELATIONSHIP,
     SELECT_ALL_FIELDS,
     CLEAR_ALL_FIELDS,
-    SORT_FIELDS
+    SORT_FIELDS,
+    TOGGLE_TOOLINGAPI
 } from './constants';
 import { RECEIVE_QUERY_SUCCESS } from '../query/constants';
 import { stripNamespace } from 'shared/utils'
@@ -131,14 +132,14 @@ function _toggleChildRelationshipField(
 }
 
 function recentQueries(state = [], action) {
-    const { soql } = action.payload;
+    const { soql,alias } = action.payload;
     const recentQueriesState = [
         soql,
         ...state.filter(q => q !== soql).slice(0, MAX_RECENT_QUERIES - 1)
     ];
     try {
         localStorage.setItem(
-            `${action.alias}-${RECENT_QUERIES_KEY}`,
+            `${alias}-${RECENT_QUERIES_KEY}`,
             JSON.stringify(recentQueriesState)
         );
     } catch (e) {
@@ -212,7 +213,12 @@ function clearAllFields(query = INITIAL_QUERY) {
     };
 }
 
-export default function ui(state = {}, action) {
+export default function ui(
+    state = {
+        useToolingApi:false
+    }, 
+    action
+) {
     switch (action.type) {
 
         case UPDATE_API_LIMIT: {
@@ -272,6 +278,13 @@ export default function ui(state = {}, action) {
                 ...state,
                 query,
                 soql: composeQuery(query, { format: true })
+            };
+        }
+
+        case TOGGLE_TOOLINGAPI: {
+            return {
+                ...state,
+                useToolingApi: action.payload.useToolingApi === true
             };
         }
 

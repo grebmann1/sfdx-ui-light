@@ -4,45 +4,72 @@
         <td class="cell-value slds-cell-wrap">
             <!-- Value -->
             <div class="slds-grid slds-grid_align-spread">
-                <template lwc:if={isReadOnly}>
-                    <span class="slds-scrollable_x" lwc:ref="value" lwc:dom="manual"></span>
+                <template lwc:if={isInfoDisplayed}>
+                    <!-- INFO Mode -->
+                    <span class="slds-scrollable_x" lwc:ref="type" lwc:dom="manual"></span>
                 </template>
                 <template lwc:else>
-                    <slds-input-field lwc:ref="inputfield" field-name={name}></slds-input-field>
+                    <!-- VALUE Mode -->
+                    <template lwc:if={isReadOnly}>
+                        <span class="slds-scrollable_x" lwc:ref="value" lwc:dom="manual"></span>
+                    </template>
+                    <template lwc:else>
+                        <slds-input-field lwc:ref="inputfield" field-name={name}></slds-input-field>
+                    </template>
                 </template>
-                <template lwc:if={isUndoDisplayed}>
-                    <lightning-button-icon
-                        onclick={handleUndoClick}
-                        icon-name="utility:undo"
-                        variant="bare"
-                        alternative-text="undo"
-                    ></lightning-button-icon>
-                </template>
-                <template lwc:elseif={isEditButtonDisplayed}>
-                    <lightning-button-icon
-                        onclick={handleEditClick}
-                        icon-name="utility:edit"
-                        variant="bare"
-                        alternative-text="edit"
-                    ></lightning-button-icon>
-                </template>
-                <template lwc:elseif={isFormula}>
-                    <lightning-button-icon
-                        onclick={handleFormulaClick}
-                        icon-name="utility:formula"
-                        variant="bare"
-                        alternative-text="formula"
-                        tooltip={formula}
-                    ></lightning-button-icon>
-                </template>
-                <template lwc:elseif={isNotEditable}>
-                    <lightning-button-icon
-                        icon-name="utility:lock"
-                        variant="bare"
-                        alternative-text="lock"
-                        disabled
-                    ></lightning-button-icon>
-                </template>
+                    <!-- Actions -->
+                    <div class="right-actions">
+                        <template lwc:if={isDependentPicklistDisplayed}>
+                            <lightning-button-icon
+                                onclick={handleDependentPicklistClick}
+                                icon-name="utility:crossfilter"
+                                variant="bare"
+                                alternative-text="Dependent Picklist"
+                                tooltip={tooltip_dependentPicklist}
+                                disabled={isLoading}
+                            ></lightning-button-icon>
+                        </template>
+                        <template lwc:if={isInfoDisplayed}>
+                            <!-- Only for info displayed-->
+                        </template>
+                        <template lwc:else>
+                            <!-- Default -->
+                            <template lwc:if={isUndoDisplayed}>
+                                <lightning-button-icon
+                                    onclick={handleUndoClick}
+                                    icon-name="utility:undo"
+                                    variant="bare"
+                                    alternative-text="undo"
+                                ></lightning-button-icon>
+                            </template>
+                            <template lwc:elseif={isEditButtonDisplayed}>
+                                <lightning-button-icon
+                                    onclick={handleEditClick}
+                                    icon-name="utility:edit"
+                                    variant="bare"
+                                    alternative-text="edit"
+                                ></lightning-button-icon>
+                            </template>
+                            <template lwc:elseif={isFormula}>
+                                <lightning-button-icon
+                                    onclick={handleFormulaClick}
+                                    icon-name="utility:formula"
+                                    variant="bare"
+                                    alternative-text="formula"
+                                    tooltip={tooltip_formula}
+                                ></lightning-button-icon>
+                            </template>
+                            <template lwc:elseif={isNotEditable}>
+                                <lightning-button-icon
+                                    icon-name="utility:lock"
+                                    variant="bare"
+                                    alternative-text="lock"
+                                    disabled
+                                ></lightning-button-icon>
+                            </template>
+                        </template>
+                        
+                    </div>
             </div>
         </td>
         <td class="cell-action slds-cell-wrap">

@@ -4,7 +4,7 @@ import FeatureElement from 'element/featureElement';
 import { connectStore,store,store_application } from 'shared/store';
 import { DependencyManager } from 'slds/fieldDependencyManager';
 import { 
-    runActionAfterTimeOut,isEmpty,isNotUndefinedOrNull,isUndefinedOrNull,runSilent,refreshCurrentTab 
+    runActionAfterTimeOut,isEmpty,isNotUndefinedOrNull,isUndefinedOrNull,runSilent,refreshCurrentTab
 } from 'shared/utils';
 import { 
         getCurrentTab,getCurrentObjectType,fetch_data,fetch_metadata,
@@ -54,6 +54,9 @@ export default class RecordExplorer extends FeatureElement {
 
     // field & labels
     isLabelDisplayed = false;
+
+    // Info & Details
+    isInfoDisplayed = false;
     
 
     @api
@@ -153,6 +156,8 @@ export default class RecordExplorer extends FeatureElement {
                 dependentFields: this.recordUi.objectInfo.dependentFields,
                 picklistValues: filteredPicklistValues
             });*/
+
+    
             
             this.isLoading = false;
         }catch(e){
@@ -161,6 +166,8 @@ export default class RecordExplorer extends FeatureElement {
             this.isLoading = false;
         }
     }
+
+    
 
     refreshData = async () => {
         //console.log('refreshData');
@@ -224,8 +231,10 @@ export default class RecordExplorer extends FeatureElement {
             if(typeof item.value == 'object' && item.value !== null){
                 item.value = JSON.stringify(item.value, null, 2);
             }
-            item.isVisible = isEmpty(this.filter) || (this.filter === 'false' && item.value === false || this.filter === 'true' && item.value === true || this.filter === 'null' && item.value === null);
-            item.isVisible = item.isVisible || (item.value != false && item.value != true && regex.test(item.value) || regex.test(item.name) || regex.test(item.label));
+            const _value = this.isInfoDisplayed?item.type:item.value;
+
+            item.isVisible = isEmpty(this.filter) || (this.filter === 'false' && _value === false || this.filter === 'true' && _value === true || this.filter === 'null' && _value === null);
+            item.isVisible = item.isVisible || (_value != false && _value != true && regex.test(_value) || regex.test(item.name) || regex.test(item.label));
             return item;
         })
         /** Extra filter */
@@ -376,6 +385,14 @@ export default class RecordExplorer extends FeatureElement {
 
     handleRefreshClick = () => {
         this.refreshData();
+    }
+
+    handleInfoToggle = () => {
+        this.isloading = true;
+        window.setTimeout(() => {
+            this.isInfoDisplayed = !this.isInfoDisplayed;
+            this.isloading = false;
+        },1)
     }
 
     handleCancelClick = () => {
