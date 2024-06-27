@@ -36,28 +36,42 @@
                 <div class="slds-card__body slds-card__body_inner slds-flex-column">
                     <div class="slds-grid slds-wrap slds-is-relative">
                         <div class="slds-col slds-size_1-of-1 slds-horizontal-input">
-                            <lightning-combobox
-                                class="slds-horizontal-input-combobox"
-                                label="Method"
-                                dropdown-alignment="left"
-                                value={method}
-                                placeholder="Method"
-                                disabled={isLoading}
-                                options={method_options}
-                                onchange={method_change}
-                            ></lightning-combobox>
-                            <lightning-input lwc:ref="url" 
-                                class="slds-horizontal-input-url slds-p-left_x-small"
-                                label="Endpoint" 
-                                type="text" 
-                                value={endpoint}
-                                onchange={endpoint_change}
-                            ></lightning-input>
+                            <lightning-combobox lwc:ref="method" 
+                                    class="slds-horizontal-input-combobox"
+                                    label="Method"
+                                    dropdown-alignment="left"
+                                    value={method}
+                                    placeholder="Method"
+                                    disabled={isLoading}
+                                    options={method_options}
+                                    onchange={method_change}
+                                ></lightning-combobox>
+                                <lightning-input lwc:ref="url" 
+                                    class="slds-horizontal-input-url slds-p-left_x-small"
+                                    label="Endpoint" 
+                                    type="text" 
+                                    value={endpoint}
+                                    onchange={endpoint_change}
+                                ></lightning-input>
                         </div>
                         <div class="slds-col slds-size_1-of-1">
                             <div class="slds-grid slds-grid_align-end slds-m-top_small">
                                 <div class="slds-col">
+                                    <lightning-button-icon 
+                                        icon-name="utility:undo" 
+                                        onclick={undo_click} 
+                                        label="Undo" 
+                                        disabled={isUndoDisabled}
+                                    ></lightning-button-icon>
+                                    <lightning-button-icon 
+                                        class="slds-m-left_small"
+                                        icon-name="utility:redo" 
+                                        onclick={redo_click} 
+                                        label="Redo" 
+                                        disabled={isRedoDisabled}
+                                    ></lightning-button-icon>
                                     <lightning-button 
+                                        class="slds-m-left_small"
                                         icon-name="utility:refresh" 
                                         onclick={reset_click} 
                                         label="Reset" 
@@ -75,47 +89,58 @@
                             </div>
                         </div>
                     </div>
-                    <div class="slds-fill-height slds-m-top_small slds-api-container">
-                        <slds-tabset variant="scoped" class="slds-without-tab" active-tab-value={currentTab}>
-                            <slds-tab label="Response" value="Response" onactive={handleSelectTab}></slds-tab>
-                            <slds-tab label="Header &amp; Body" value="Parameters" onactive={handleSelectTab}></slds-tab>
-                        </slds-tabset>
-
-                        <!-- Parameters -->
-                        <template lwc:if={isParamsDisplayed}>
-                            <div class="slds-grid slds-wrap slds-p-horizontal_medium slds-p-top_medium">
-                                <div class="slds-col slds-size_1-of-1">
-                                    <div class="slds-form-element">
-                                        <label class="slds-text-title_bold slds-form-element__label">Header</label>
-                                        <div class="slds-form-element__control">
-                                            <textarea class="slds-textarea slds-text-longform" placeholder="Write Header here" oninput={header_change} disabled>
-                                                {header}
-                                            </textarea>
+                    <div class="slds-fill-height slds-m-top_small slds-api-container full-page-body">
+                        <slds-split-view left-min-width="200" right-min-width="200">
+                            <div class="bottom-left-panel slds-m-right_small slds-p-around_small slds-full-height" slot="left">
+                                <div class="slds-grid slds-wrap slds-p-horizontal_medium slds-p-top_medium">
+                                    <ui-information-block title="Header Information">
+                                        <p>Only enter 1 header setting per line following this format :</p>
+                                        <p>header_name : header_value </p>
+                                    </ui-information-block>
+                                    <div class="slds-col slds-size_1-of-1">
+                                        <div class="slds-form-element">
+                                            <label class="slds-text-title_bold slds-form-element__label">Header</label>
+                                            <div class="slds-form-element__control">
+                                                <textarea class="slds-textarea slds-text-longform slds-textarea-header" placeholder="Write Header here" disabled={isHeaderDisabled} oninput={header_change}>
+                                                    {header}
+                                                </textarea>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="slds-col slds-size_1-of-1">
-                                    <div class="slds-form-element">
-                                        <label class="slds-text-title_bold slds-form-element__label">Body</label>
-                                        <div class="slds-form-element__control">
-                                            <textarea class="slds-textarea slds-text-longform" placeholder="Write body here" disabled={isLoading} oninput={body_change}>
-                                                {body}
-                                            </textarea>
+                                    <div class="slds-col slds-size_1-of-1">
+                                        <div class="slds-form-element">
+                                            <label class="slds-text-title_bold slds-form-element__label">Body</label>
+                                            <div class="slds-form-element__control">
+                                                <textarea class="slds-textarea slds-text-longform slds-textarea-body" placeholder="Write body here" disabled={isBodyDisabled} oninput={body_change}>
+                                                    {body}
+                                                </textarea>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </template>
-                        <!-- Response -->
-                        <template lwc:if={isResponseDisplayed}>
-                            <div class="slds-grid slds-wrap slds-p-horizontal_medium">
-                                <div class="slds-col slds-size_1-of-1">
-                                    <template lwc:if={isContentDisplayed}>
-                                        <slds-code-block code-block={formattedContent} language="json" title="Formatted Response"></slds-code-block>
-                                    </template>
+                            <div class="bottom-right-panel slds-full-height" slot="right">
+                                <div class="slds-grid slds-wrap slds-p-horizontal_medium slds-full-height slds-is-relative">
+                                    <div class="slds-col slds-size_1-of-1">
+                                        <template lwc:if={isLoading}>
+                                            <slds-spinner 
+                                                alternative-text="Loading" 
+                                                size="small" 
+                                            ></slds-spinner>
+                                        </template>
+                                        <template lwc:elseif={isContentDisplayed}>
+                                            <slds-code-block 
+                                                class="slds-full-height" 
+                                                code-block={formattedContent} 
+                                                language="json" 
+                                                title="Formatted Response"
+                                                oncustomlink={handle_customLinkClick}
+                                            ></slds-code-block>
+                                        </template>
+                                    </div>
                                 </div>
                             </div>
-                        </template>
+                        </slds-split-view>
 
                         
                     </div>

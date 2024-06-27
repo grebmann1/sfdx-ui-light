@@ -1,5 +1,5 @@
 import { api,track } from "lwc";
-import { decodeError,isNotUndefinedOrNull } from 'shared/utils';
+import { decodeError,isEmpty,isNotUndefinedOrNull } from 'shared/utils';
 import Toast from 'lightning/toast';
 import FeatureElement from 'element/featureElement';
 
@@ -16,7 +16,9 @@ const TABS = {
 }
 
 const DEFAULT = {
-    HEADER : 'Content-Type: application/json; charset=UTF-8\nAccept: application/json'
+    HEADER : 'Content-Type: application/json; charset=UTF-8\nAccept: application/json',
+    ENDPOINT : '/services/data/v60.0',
+    BODY : ''
 }
 
 export default class App extends FeatureElement {
@@ -24,89 +26,225 @@ export default class App extends FeatureElement {
     isLoading = false;
 
     @track formattedRequests = [];
-    @track endpoint = '/services/data/v60.0';
+    @track endpoint = DEFAULT.ENDPOINT;
     @track content;
     @track method = METHOD.GET;
-
-    @track currentTab = TABS.RESPONSE;
-
     @api header = DEFAULT.HEADER;
-    @api body;
+    @api body = DEFAULT.BODY;
+
+    // Undo/Redo
+    @track actions = [];
+    actionPointer = 0;
+    isEditing = false;
 
 
     connectedCallback(){
-
+        this.isFieldRendered = true;
     }
 
 
     /** Methods  **/
 
     executeAPI = () => {
-        const request = this.formatRequest();
-        console.log('API Request',request);
-        this.connector.conn.request(request,(err, res) => {
-            if(err){
-                Toast.show({
-                    label: err.message || 'Error during request',
-                    variant:'error',
-                    mode:'dismissible'
-                });
-            }else{
-                Toast.show({
-                    label: 'Success Call',
-                    variant:'success',
-                });
-            }
-            console.log('err',err);
-            console.log('res',res);
-            this.content = res;
-        })
+        const _request = this.formatRequest();
+        this.content = null; // reset content
+        this.isEditing = false;
+        try{
+            this.isLoading = true;
+            this.connector.conn.request(_request,(err, res) => {
+                console.log('err,res',err,res);
+                
+                if(err){
+                    Toast.show({
+                        label: err.message || 'Error during request',
+                        variant:'error',
+                        mode:'dismissible'
+                    });
+                }else{
+                    Toast.show({
+                        label: 'Success Call',
+                        variant:'success',
+                    });
+                }
+                this.content = res;
+
+                // Simple set of pointer and action (When running, we reset at that pointer position !)
+                if(this.actions.length > 0 && this.actionPointer != this.actions.length - 1){
+                    this.actions = this.actions.slice(0,this.actionPointer + 1)
+                }
+                this.actions.push(this.formatAction());
+                this.actionPointer = this.actions.length - 1;
+                this.isLoading = false;
+            })
+        }catch(e){
+            console.error(e);
+        }
+    }
+
+    formatAction = () => {
+        return {
+            body:this.body,
+            method:this.method,
+            endpoint:this.endpoint,
+            header:this.header,
+            content:this.content
+        }
+    }
+
+    reassignAction = () => {
+        const action = this.actions[this.actionPointer];
+
+        if(action){
+            this.body = action.body;
+            this.method = action.method;
+            this.endpoint = action.endpoint;
+            this.header = action.header;
+            this.content = action.content;
+        }else{  
+            this.reset_click();
+        }
+        
+        // Update fields directly (LWC issues)
+        this.forceDomUpdate();
+
+        // reset editing
+        this.isEditing = false;
+    }
+
+    forceDomUpdate = () => {
+        this.refs.method.value      = this.method;
+        this.refs.method.endpoint   = this.endpoint;
+        this.template.querySelector('.slds-textarea-header').value = this.header;
+        this.template.querySelector('.slds-textarea-body').value = this.body;
     }
 
     formatRequest = () => {
-        const request = {
+        const _request = {
             method: this.method, 
             url: `${this.connector.conn.instanceUrl}/${this.endpoint}`
         }
-        if(isNotUndefinedOrNull(this.body)){
-            request.body = this.body;
+        
+        if([METHOD.PATCH,METHOD.POST,METHOD.PUT].includes(this.method)){
+            _request.body = this.body;
         }
-        if(isNotUndefinedOrNull(this.headers)){
+        if(isNotUndefinedOrNull(this.header)){
             // Basic headers for now (Using line split)
+            const _header = {};
+            this.header.split('\n').forEach(line => {
+                const lineArr = line.split(':');
+                if(lineArr.length >= 2){
+                    const key = (lineArr.shift()).trim();
+                    _header[key] = lineArr.join(':').trim();
+                }
+            });
+            if(Object.keys(_header).length > 0){
+                _request.headers = {
+                    ..._request.headers,
+                    ..._header
+                };
+            }
         }
 
 
-        return request;
+        return _request;
     }
 
+    decreaseActionPointer = () => {
+        if(this.actionPointer <= 0){
+            this.actionPointer = 0;
+        }else{
+            this.actionPointer = this.actionPointer - 1;
+        }
+    }
+
+    increaseActionPointer = () => {
+        if(this.actions.length - 1 <= this.actionPointer){
+            this.actionPointer = this.actions.length - 1;
+        }else{
+            this.actionPointer = this.actionPointer + 1;
+        }
+    }
 
     /** Events **/
-    
-    handleSelectTab = (e) => {    
-        this.currentTab = e.target.value;
+
+    undo_click = () => {
+        if(this.isEditing){
+            this.reassignAction();
+        }else if(this.actions.length > 0 && this.actions.length > this.actionPointer){
+            this.decreaseActionPointer();
+            this.reassignAction();
+        }
     }
 
+    redo_click = () => {
+        if(this.actions.length > 0 && this.actions.length -1 >= this.actionPointer){
+            this.increaseActionPointer();
+            this.reassignAction();
+        }
+    }
+
+
     reset_click = (e) => {
+        this.actionPointer = 0;
+        this.actions = [];
+
         this.header = DEFAULT.HEADER;
+        this.endpoint = DEFAULT.ENDPOINT;
+        this.body = DEFAULT.BODY;
+
+        this.content = null;
+        this.isEditing = false;
     }
 
     endpoint_change = (e) => {
+        this.isEditing = true;
         this.endpoint = e.detail.value;
     }
 
     method_change = (e) => {
+        this.isEditing = true;
         this.method = e.detail.value;
     }
 
     body_change = (e) => {
+        this.isEditing = true;
         this.body = e.target.value;
     }
 
     header_change = (e) => {
+        this.isEditing = true;
         this.header = e.target.value;
     }
 
+    handle_customLinkClick = (e) => {
+        this.isEditing = true;
+        // Assuming it's always GET method
+        this.endpoint = e.detail.url;
+        this.method = METHOD.GET;
+        this.header = DEFAULT.HEADER;
+        this.body = DEFAULT.BODY
+
+        this.forceDomUpdate();
+        this.executeAPI();
+    }
+
     /** Getters */
+
+    get isUndoDisabled(){
+        return this.actionPointer <= 0 && !this.isEditing;
+    }
+
+    get isRedoDisabled(){
+        return this.actionPointer >= this.actions.length - 1;
+    }
+
+    get isBodyDisabled(){
+        return this.method == METHOD.GET || this.method == METHOD.DELETE || this.isLoading;
+    }
+
+    get isHeaderDisabled(){
+        return this.isLoading;
+    }
 
     get isParamsDisplayed(){
         return this.currentTab === TABS.PARAMETERS;

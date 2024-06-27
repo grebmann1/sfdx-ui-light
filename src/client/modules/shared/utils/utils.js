@@ -315,3 +315,8 @@ export const refreshCurrentTab = () => {
 		chrome.tabs.reload(tabs[0].id);
 	});
 }
+
+export const forceVariableSave = (variable,value) => {
+    variable = null;
+    variable = value;
+}

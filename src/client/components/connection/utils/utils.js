@@ -50,6 +50,9 @@ export async function connect({alias,settings,disableEvent = false, directStorag
         accessToken : settings.accessToken,
         proxyUrl    : window.jsforceSettings.proxyUrl, // For chrome extension, we run without proxy
         //version     : settings.instanceApiVersion || constant.apiVersion // This might need to be refactored 
+
+        //logLevel:'DEBUG',
+        logLevel: null//'DEBUG',
     }
 
     // Handle Refresh Token
@@ -175,6 +178,7 @@ export async function getExistingSession(){
             // Don't use settings for now, to avoid issues with electron js (see-details need to be called)
             //console.log('sessionStorage.getItem("currentConnection")',JSON.parse(sessionStorage.getItem("currentConnection")));
             const settings = JSON.parse(sessionStorage.getItem("currentConnection"));
+                settings.logLevel = null;
             // Using {alias,...settings} before, see if it's better now
             return isElectronApp()?await connect({alias:settings.alias}):await connect({settings});
         }catch(e){
@@ -202,7 +206,7 @@ export async function oauth_chrome({alias,loginUrl},callback,callbackErrorHandle
     const oauth2 = new window.jsforce.OAuth2({
         clientId : window.jsforceSettings.clientId,
         redirectUri : chrome.identity.getRedirectURL(),
-        loginUrl : loginUrl
+        loginUrl : loginUrl,
     });
 
     const finalUrl = oauth2.getAuthorizationUrl({ prompt:'login consent',scope : 'id api web openid sfap_api refresh_token' });  
@@ -228,7 +232,7 @@ export async function oauth_chrome({alias,loginUrl},callback,callbackErrorHandle
 }
 
 export async function oauth({alias,loginUrl},callback,callbackErrorHandler){
-    
+    console.log('oauth');
     window.jsforce.browserClient = new window.jsforce.browser.Client(Date.now()); // Reset
     //console.log('window.jsforceSettings',window.jsforceSettings);
     window.jsforce.browserClient.init(window.jsforceSettings);
@@ -319,7 +323,8 @@ export async function directConnect(sessionId,serverUrl){
         sessionId   : sessionId,
         serverUrl   : serverUrl,
         proxyUrl    : window.jsforceSettings?.proxyUrl || 'https://sf-toolkit.com/proxy/', // variable initialization might be too slow 
-        version     : constant.apiVersion
+        version     : constant.apiVersion,
+        logLevel: null//'DEBUG',
     }
     
     let connection = await new window.jsforce.Connection(params);

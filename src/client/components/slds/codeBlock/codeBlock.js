@@ -34,6 +34,14 @@ export default class CodeBlock extends LightningElement {
     }
 
 
+	connectedCallback(){
+		this.template.addEventListener('click',this.handleCodeBlockClicks);
+	}
+
+	disconnectedCallback(){
+		this.template.removeEventListener('click',this.handleCodeBlockClicks);
+	}
+
 
 
 	/** Methods  **/
@@ -70,13 +78,57 @@ export default class CodeBlock extends LightningElement {
 			codeEl.innerHTML = this._codeBlock;
 			codeBlockEl.appendChild(codeEl);
 			//console.log('codeBlockEl',codeBlockEl);
+			this.prism.hooks.add('wrap', function (env) {
+				if(env.type !== 'string') return;
+				const text = env.content.replaceAll('"','').replaceAll('\'','');
+				if(text.startsWith('/') || text.startsWith('http')){
+					//console.log('env',env);
+					env.attributes['data-url'] = text;
+					env.tag = 'a';
+					if(env.classes.length > 0){
+						env.classes.push('slds-link')
+					}
+				}
+			});
+
+			//this.prism.hooks.add('after-highlight',(env) => {})
+			
 			this.prism.highlightAllUnder(codeBlockEl,false,()=>{
-				console.log('callback');
+				//console.log('callback');
 			});
 		}
 	}
 
+	/*dynamiseLinks = () => {
+		//console.log('this.refs.codeblockcontainer',this.refs);
+		const elements = [...this.refs.codeblockcontainer.querySelectorAll('.token.string')];
+		//console.log('elements',elements);
+		elements.forEach(x => {
+			const text = x.innerText.replaceAll('"','').replaceAll('\'','');
+			if(text.startsWith('/') || text.startsWith('http')){
+				//console.log('relative link');
+				//x.innerHTML
+			}
+		})
+	}*/
+
 	/** Events **/
+
+	handleCodeBlockClicks =  (e) => {
+		if(e.target.matches('a')) {
+			if(!isEmpty(e.target.dataset?.url)){
+				this.dispatchEvent(
+					new CustomEvent('customlink', {
+						detail: {
+							url:e.target.dataset.url
+						},
+						bubbles: true,
+						composed: true 
+					})
+				);
+			}
+		}
+	}
 
 	handleCopy = () => {
         navigator.clipboard.writeText(this._codeBlock);

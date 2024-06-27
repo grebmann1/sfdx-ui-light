@@ -4840,8 +4840,9 @@
     }
     // if url is given in relative path, prepend base url or instance url before.
     request.url = this._normalizeUrl(request.url);
-  
+    //console.log('Connection.prototype.request');
     var httpApi = new HttpApi(this, options);
+    //console.log('httpApi',httpApi)
   
     // log api usage and its quota
     httpApi.on('response', function(response) {
