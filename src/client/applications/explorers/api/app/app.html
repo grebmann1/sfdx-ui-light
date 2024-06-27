@@ -129,13 +129,20 @@
                                             ></slds-spinner>
                                         </template>
                                         <template lwc:elseif={isContentDisplayed}>
-                                            <slds-code-block 
-                                                class="slds-full-height" 
-                                                code-block={formattedContent} 
-                                                language="json" 
-                                                title="Formatted Response"
-                                                oncustomlink={handle_customLinkClick}
-                                            ></slds-code-block>
+                                            <template lwc:if={isFormattedContentDisplayed}>
+                                                <slds-code-block 
+                                                    class="slds-full-height" 
+                                                    code-block={formattedContent} 
+                                                    language="json" 
+                                                    title="Formatted Response"
+                                                    oncustomlink={handle_customLinkClick}
+                                                ></slds-code-block>
+                                            </template>
+                                            <template lwc:else>
+                                                <slds-default-illustration class="slds-p-top_large" title="File to large for preview">
+                                                    <lightning-button title="Download File" label="Download File" onclick={handle_downloadClick}></lightning-button>
+                                                </slds-default-illustration> 
+                                            </template>
                                         </template>
                                     </div>
                                 </div>

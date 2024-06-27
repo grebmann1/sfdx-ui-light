@@ -1,5 +1,5 @@
 import { api,track } from "lwc";
-import { decodeError,isEmpty,isNotUndefinedOrNull } from 'shared/utils';
+import { decodeError,isEmpty,isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
 import Toast from 'lightning/toast';
 import FeatureElement from 'element/featureElement';
 
@@ -53,7 +53,6 @@ export default class App extends FeatureElement {
             this.isLoading = true;
             this.connector.conn.request(_request,(err, res) => {
                 console.log('err,res',err,res);
-                
                 if(err){
                     Toast.show({
                         label: err.message || 'Error during request',
@@ -228,6 +227,24 @@ export default class App extends FeatureElement {
         this.executeAPI();
     }
 
+    handle_downloadClick = () => {
+        try {
+            const blob = new Blob([this.formattedContent], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const download = document.createElement('a');
+                download.href = window.URL.createObjectURL(blob);
+                download.download = `${Date.now()}.json`;
+                download.click();
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            console.error(e);
+            Toast.show({
+                message: 'Failed Exporting JSON',
+                errors: e
+            });
+        }
+    }
+
     /** Getters */
 
     get isUndoDisabled(){
@@ -262,8 +279,18 @@ export default class App extends FeatureElement {
         return false;
     }
 
+    get contentLength(){
+        if(isUndefinedOrNull(this.content)) return 0;
+        //5726285
+        return (new TextEncoder()).encode(JSON.stringify(this.content)).length;
+    }
+
     get isContentDisplayed(){
         return isNotUndefinedOrNull(this.content);
+    }
+
+    get isFormattedContentDisplayed(){
+        return this.contentLength < 100000;
     }
 
     get formattedContent(){
