@@ -40,8 +40,15 @@ export default class Me extends FeatureElement {
     }
 
     load_myUserInformation = async () => {
-        const query = `SELECT Id, LastName, FirstName, Username,Email,FederationIdentifier,CompanyName, Name, IsActive, CurrencyIsoCode, LanguageLocaleKey FROM User WHERE username = '${this.connector.header.username}'`;
-        const _user = await runSilent(async ()=>{return (await this.connector.conn.query(query)).records[0]},null);
+        const fields = ['Id','LastName','FirstName','Username','Email','FederationIdentifier','CompanyName','Name','IsActive','LanguageLocaleKey'];
+        const exceptionFields = ['CurrencyIsoCode'];
+        console.log('this.connector',this.connector.conn);
+        const query = (fields) => `SELECT ${fields.join(',')} FROM User WHERE username = '${this.connector.header.username}'`;
+        var _user = await runSilent(async ()=>{return (await this.connector.conn.query(query([].concat(fields,exceptionFields)))).records[0]},null);
+        if(_user === null){
+            // Temporary solution, in case we don't have CurrencyIsoCode
+            _user = await runSilent(async ()=>{return (await this.connector.conn.query(query(fields))).records[0]},null);
+        }
         this.user = null;
         this.user = _user;
     }

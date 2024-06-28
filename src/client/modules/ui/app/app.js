@@ -258,6 +258,9 @@ export default class App extends LightningElement {
                     x.isActive = true;
                     x.class = "slds-context-bar__item slds-is-active";
                     x.classVisibility = "slds-show slds-full-height";
+                    x.attributes.isActive = true;
+                }else{
+                    x.attributes.isActive = false;
                 }
             })
         this.applications = _applications;
@@ -422,6 +425,7 @@ export default class App extends LightningElement {
                 isTabVisible:settings.isTabVisible,
                 attributes:{
                     //connector:this.connector
+                    isActive:true
                 }
             };
             let _applications = this.applicationPreFormatted;

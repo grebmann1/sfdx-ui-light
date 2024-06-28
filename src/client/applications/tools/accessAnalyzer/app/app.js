@@ -85,6 +85,11 @@ const CONFIG = [
     }
 ];
 
+const DIFF = {
+    ALL:'All',
+    SIMILARITIES:'Similarity',
+    DIFFERENCE:'Difference',
+}
 export default class App extends FeatureElement {
 
     /* Metadata */
@@ -106,7 +111,7 @@ export default class App extends FeatureElement {
     selectedObject;
 
     /* Compare */
-    isDiffEnabled = false;
+    diff_value = DIFF.ALL;
 
     /* Matrix */
     greenTreshold = 5;
@@ -123,6 +128,7 @@ export default class App extends FeatureElement {
         this._tableInstance = value;
         if(isNotUndefinedOrNull(value)){
             this._tableInstance.on("dataProcessed",() => {
+                //console.log('dataProcessed');
                 this.isLoading = false;
             });
         }
@@ -132,6 +138,17 @@ export default class App extends FeatureElement {
         return this._tableInstance;
     }
     
+    _isActive = false;
+    @api
+    get isActive(){
+        return this._isActive;
+    }
+    set isActive(value){
+        this._isActive = value;
+        if(this._isActive){
+            this.tableResize();
+        }
+    }
 
 
     connectedCallback(){
@@ -149,10 +166,13 @@ export default class App extends FeatureElement {
     }
 
     tableResize = () => {
+        if(!this._isActive)return;
+
         runActionAfterTimeOut(null,(param) => {
-            if(isNotUndefinedOrNull(this.tableInstance)){
-                this.tableInstance.setHeight(this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight);
-            }
+            if(isUndefinedOrNull(this.tableInstance)) return;
+            
+            this.tableInstance.setHeight(this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight);
+
         });
     }
 
@@ -355,12 +375,28 @@ export default class App extends FeatureElement {
         ];
     }
 
+    get diff_options(){
+        return [
+            {label:DIFF.ALL,value:DIFF.ALL},
+            {label:DIFF.DIFFERENCE,value:DIFF.DIFFERENCE},
+            {label:DIFF.SIMILARITIES,value:DIFF.SIMILARITIES}
+        ];
+    }
+
     get userLicenseFiltering_options(){
         let options = [{label:'All',value:'all'}];
         if(isNotUndefinedOrNull(this.permissionSets)){
             options = options.concat(Object.keys(groupBy(Object.values(this.permissionSets),'userLicense')).filter(x => x != 'undefined').map(x => ({label:x,value:x})));
         }
         return options;
+    }
+
+    get isDiffEnabled(){
+        return this.diff_value === DIFF.DIFFERENCE;
+    }
+
+    get isSimilEnabled(){
+        return this.diff_value === DIFF.SIMILARITIES;
     }
 
     get isRefreshDisabled(){
@@ -379,9 +415,6 @@ export default class App extends FeatureElement {
         return this.report === 'Matrix';
     }
 
-    get diffCheckerVariant(){
-        return this.isDiffEnabled?'brand':'neutral';
-    }
     get filteringVariant(){
         return this.displayFilterContainer?'brand':'neutral';
     }
@@ -421,6 +454,16 @@ export default class App extends FeatureElement {
         return Object.values(this.permissionSets).filter(x => this.getBasicFilter(x));
     }
 
+    get noDataAvailable(){
+        if(this.isDiffEnabled){
+            return "No Matching Data (Difference Enabled)"
+        }else if(this.isSimilEnabled){
+            return "No Matching Data (Similarity Enabled)";
+        }else{
+            return "No Data available";
+        }
+    }
+
     sobject_handleChange = (e) => {
         this.isLoading = true;
         this.selectedObject = this.metadata.sobjects[e.detail.value];
@@ -435,28 +478,33 @@ export default class App extends FeatureElement {
     }
 
     diff_handleChange = (e) => {
-        this.isDiffEnabled = e.detail.checked;
-        window.setTimeout(async () => {
-            // for DiffData, we don't store it, we just reprocess the dataList
-            this.updateTable(this.getDiffData(this.dataList));
-        },1)
+        this.diff_value = e.detail.value;
+        this.updateTable(this.getDiffData(this.dataList));
     }
 
-    updateTable = async (data) => {
+    updateTable = (data) => {
         if(!this.tableInstance) return;
 
         this.isLoading = true;
-        await this.tableInstance.replaceData(data);
-        this.isLoading = false;
+        window.setTimeout(async () => {
+            // for DiffData, we don't store it, we just reprocess the dataList
+            await this.tableInstance.replaceData(data);
+        },10)
     }
 
     getDiffData = (data) => {
-        if(!this.isDiffEnabled) return data;
-        const constants = ['label','name','namespacePrefix','category','type','_children','api','isRequired'];
-        
+        //const constants = ['label','name','namespacePrefix','category','type','_children','api','isRequired'];
+        if(this.isDiffEnabled){
+            return this._processDifference(data);
+        }else if(this.isSimilEnabled){
+            return this._processSimiliraty(data);
+        }else{
+            return data;
+        }
+    }
+    _processDifference = data => {
+        const fields = this.filteredPermissions.map(x => x.id);
         return data.filter(row => {
-            //const fields = Object.keys(row).filter(x => !constants.includes(x));
-            const fields = this.filteredPermissions.map(x => x.id);
             const toCompare = fields.reduce((acc,field) => {
                 acc.add(row[field]);
                 return acc;
@@ -464,6 +512,18 @@ export default class App extends FeatureElement {
             return toCompare.size > 1;
         })
     }
+
+    _processSimiliraty = data => {
+        const fields = this.filteredPermissions.map(x => x.id);
+        return data.filter(row => {
+            const toCompare = fields.reduce((acc,field) => {
+                acc.add(row[field]);
+                return acc;
+            },new Set());
+            return toCompare.size == 1 && !toCompare.has(false) && !toCompare.has(undefined);
+        })
+    }
+    
 
     filtering_handleClick = (e) => {
         this.displayFilterContainer = !this.displayFilterContainer;
@@ -761,7 +821,7 @@ export default class App extends FeatureElement {
             movableRows: true,
             maxHeight:"100%",
             placeholder:()=>{
-                return this.isDiffEnabled ? "No Matching Data (Diff Enabled)" : "No Data available"; 
+                return this.noDataAvailable;
             },
             rowFormatter:function(row){
                 if(row.getData().isCategory){
@@ -833,7 +893,7 @@ export default class App extends FeatureElement {
             groupStartOpen:this.namespaceFiltering_isExcluded?false:[false,true],
             maxHeight:"100%",
             placeholder:()=>{
-                return this.isDiffEnabled ? "No Matching Data (Diff Enabled)" : "No Data available"; 
+                return this.noDataAvailable;
             },
             rowFormatter:function(row){
                 if(row.getData().isCategory){
@@ -926,7 +986,7 @@ export default class App extends FeatureElement {
                 groupBy:this.namespaceFiltering_isExcluded?null:"namespacePrefix",
                 maxHeight:"100%",
                 placeholder:()=>{
-                    return this.isDiffEnabled ? "No Matching Data (Diff Enabled)" : "No Data available"; 
+                    return this.noDataAvailable;
                 },
                 rowFormatter:function(row){
                     if(row.getData().isCategory){

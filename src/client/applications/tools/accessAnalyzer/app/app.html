@@ -83,17 +83,16 @@
                         <!-- Diff Checker -->
                         <template lwc:if={isDiffCheckerDisplayed}>
                             <li class="slds-page-header__detail-block">
-                                <lightning-input 
-                                    type="toggle" 
-                                    label="Diff. Checker" 
-                                    name="diffChecker" 
+                                <lightning-combobox
+                                    name="diffChecker"
+                                    label="Similarity/Difference Filter"
+                                    dropdown-alignment="right"
+                                    value={diff_value}
+                                    placeholder="Select a value"
+                                    options={diff_options}
                                     onchange={diff_handleChange}
-                                    checked={isDiffEnabled}
-                                    message-toggle-active="Active"
-                                    message-toggle-inactive="Inactive"
                                     disabled={isLoading}
-                                    variant="label-stacked"
-                                ></lightning-input>
+                                ></lightning-combobox>
                             </li>
                         </template>
 

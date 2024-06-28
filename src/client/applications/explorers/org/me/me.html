@@ -131,26 +131,28 @@
                                         <slds-input-field class="slds-contents" lwc:ref="inputfield" field-name="LanguageLocaleKey"></slds-input-field>
                                     </template>
                                 </div>
-                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
-                                    <p class="slds-truncate" title="CurrencyIsoCode">CurrencyIsoCode</p>
-                                </div>
-                                <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2 slds-grid slds-grid_align-spread">
-                                    <template lwc:if={isReadOnly}>
-                                        <p class="slds-truncate" title={user.CurrencyIsoCode}>
-                                            {user.CurrencyIsoCode}
-                                        </p>
-                                        <lightning-button-icon
-                                            onclick={handle_editClick}
-                                            icon-name="utility:edit"
-                                            variant="bare"
-                                            alternative-text="edit"
-                                            disabled={isEditButtonDisabled}
-                                        ></lightning-button-icon>
-                                    </template>
-                                    <template lwc:else>
-                                        <slds-input-field class="slds-contents" lwc:ref="inputfield" field-name="CurrencyIsoCode"></slds-input-field>
-                                    </template>
-                                </div>
+                                <template lwc:if={user.CurrencyIsoCode}>
+                                    <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
+                                        <p class="slds-truncate" title="CurrencyIsoCode">CurrencyIsoCode</p>
+                                    </div>
+                                    <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2 slds-grid slds-grid_align-spread">
+                                        <template lwc:if={isReadOnly}>
+                                            <p class="slds-truncate" title={user.CurrencyIsoCode}>
+                                                {user.CurrencyIsoCode}
+                                            </p>
+                                            <lightning-button-icon
+                                                onclick={handle_editClick}
+                                                icon-name="utility:edit"
+                                                variant="bare"
+                                                alternative-text="edit"
+                                                disabled={isEditButtonDisabled}
+                                            ></lightning-button-icon>
+                                        </template>
+                                        <template lwc:else>
+                                            <slds-input-field class="slds-contents" lwc:ref="inputfield" field-name="CurrencyIsoCode"></slds-input-field>
+                                        </template>
+                                    </div>
+                                </template>
                             </div>
                         </div>
                     </article>
