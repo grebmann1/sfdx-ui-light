@@ -89,9 +89,20 @@ app.get('/version',function(req,res){
   res.json({version:process.env.npm_package_version});
 })
 app.get('/documentation/search',function(req,res){
-  const keywords = req.query.keywords;
+  const keywords = req.query.keywords || '';
   const filters = req.query.filters;
-  const result = DATA_DOCUMENTATION.contents.filter(x => filters.includes(x.documentationId)).filter(x => this.checkIfPresent(x.title,keywords) || this.checkIfPresent(x.content,keywords)).map(x => ({
+  const mappedResult = {first:[],middle:[],last:[]}
+  DATA_DOCUMENTATION.contents.filter(x => filters.includes(x.documentationId)).forEach(x => {
+      const _title = (x.title || '').toLowerCase();
+      if(_title.startsWith(keywords.toLowerCase())){
+          mappedResult.first.push(x);
+      }else if(_title.includes(keywords.toLowerCase())){
+          mappedResult.middle.push(x);
+      }else if(this.checkIfPresent(x.content,keywords)){
+          mappedResult.last.push(x);
+      }
+  })
+  const result = Object.values(mappedResult).flat().map(x => ({
       name:x.id,
       text:x.title,
       id:x.id,

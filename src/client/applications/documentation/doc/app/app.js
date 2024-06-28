@@ -269,7 +269,7 @@ export default class App extends FeatureElement {
 
     getFilteredItems = async (value) => {
         /** Doesnt work when testing the extension running on a server **/
-        return  await (await fetch(`${this.searchHost}documentation/search?keywords=${encodeURIComponent(value)}&filters=${encodeURIComponent(this.cloud_value)}`)).json();
+        return await (await fetch(`${this.searchHost}documentation/search?keywords=${encodeURIComponent(value)}&filters=${encodeURIComponent(this.cloud_value)}`)).json();
     }
 
     selectPageToView = async () => {
