@@ -1,5 +1,5 @@
 import { api,track} from "lwc";
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import { isEmpty,isSalesforceId,isElectronApp,classSet,isUndefinedOrNull,isNotUndefinedOrNull,runActionAfterTimeOut,formatFiles,sortObjectsByField,removeDuplicates } from 'shared/utils';
 
 const AUDIT_FIELDS = [
@@ -17,7 +17,7 @@ const AUDIT_FIELDS = [
     'Language',
     'DeveloperName',
 ]
-export default class Viewer extends FeatureElement {
+export default class Viewer extends ToolkitElement {
 
     isLoading = false;
     visualizer;

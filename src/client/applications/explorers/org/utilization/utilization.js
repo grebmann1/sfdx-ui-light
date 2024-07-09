@@ -1,8 +1,8 @@
 import { api } from "lwc";
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 
 
-export default class Utilization extends FeatureElement {
+export default class Utilization extends ToolkitElement {
 
     userLicenses = [];
 

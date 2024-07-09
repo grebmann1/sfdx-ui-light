@@ -1,7 +1,9 @@
 
 import * as CONST from '../../constants';
 
-export default function application(state = {}, action) {
+export default function application(state = {
+    connector:null
+}, action) {
     switch (action.type) {
         case CONST.LOGIN:
             return {
@@ -10,7 +12,14 @@ export default function application(state = {}, action) {
             };
         case CONST.LOGOUT:
             return {
-                isLoggedOut: true
+                isLoggedOut: true,
+                connector:null
+            };
+        case CONST.UPDATE_IDENTITY:
+            return {
+                ...state,
+                connector: action.payload.connector,
+                isUpdate:true
             };
         case CONST.NAVIGATE:
             return {

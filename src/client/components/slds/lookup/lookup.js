@@ -332,7 +332,7 @@ export default class Lookup extends LightningElement {
             : () => Promise.resolve();
 
         preNavigateCallback(selection).then(() => {
-            console.log('Supposed to navigate');
+            //console.log('Supposed to navigate');
             this.dispatchEvent(new CustomEvent('newrecord', {
                 detail: {
                     objectApiName,

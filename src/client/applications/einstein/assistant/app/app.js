@@ -1,9 +1,9 @@
 import { LightningElement,api,track} from "lwc";
 import { isUndefinedOrNull,isNotUndefinedOrNull,isEmpty,guid,classSet } from "shared/utils";
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import { getThreadList,deleteThreadList } from 'assistant/utils';
 
-export default class App extends FeatureElement {
+export default class App extends ToolkitElement {
 
     currentTab;
     isLoading = false;
@@ -63,7 +63,7 @@ export default class App extends FeatureElement {
                 name:'Dialog',
                 threadId
             }));
-            console.log('this.tabs',this.tabs);
+            //console.log('this.tabs',this.tabs);
             window.setTimeout(() => {
                 this.template.querySelector('slds-tabset').activeTabValue = this.tabs[0].id;
             },100);

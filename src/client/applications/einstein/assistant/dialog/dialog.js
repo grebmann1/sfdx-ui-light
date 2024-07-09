@@ -1,9 +1,9 @@
 import { LightningElement,api,track} from "lwc";
 import { isUndefinedOrNull,isEmpty,ROLES,guid } from "shared/utils";
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import { upsertThreadList,storeThread,getThread } from 'assistant/utils';
 
-export default class Dialog extends FeatureElement {
+export default class Dialog extends ToolkitElement {
 
     worker;
     @api threadId;

@@ -1,13 +1,13 @@
 import { api,track,wire } from "lwc";
 import { decodeError,isNotUndefinedOrNull } from 'shared/utils';
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import {
     connectStore,
     store,
     loadRecentChannels
 } from 'platformevent/store';
 
-export default class ChannelPanel extends FeatureElement {
+export default class ChannelPanel extends ToolkitElement {
 
     isLoading = false;
 
@@ -18,7 +18,7 @@ export default class ChannelPanel extends FeatureElement {
     @wire(connectStore, { store })
     storeChange({ channel,ui }) {
         if (channel) {
-            console.log('channel',channel);
+            //console.log('channel',channel);
         }
         if(ui && ui.recentChannels){
             this.recentChannels = ui.recentChannels;
@@ -27,7 +27,7 @@ export default class ChannelPanel extends FeatureElement {
 
 
     connectedCallback() {
-        store.dispatch(loadRecentChannels(this.connector.header.alias));
+        store.dispatch(loadRecentChannels(this.connector.configuration.alias));
     }
 
 

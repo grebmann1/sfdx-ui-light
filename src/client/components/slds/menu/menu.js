@@ -1,11 +1,11 @@
 import { api,track} from "lwc";
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeOut,formatFiles,sortObjectsByField } from 'shared/utils';
 
 const DEFAULT_NAMESPACE = 'Default';
 const ALL_NAMESPACE     = 'All';
 const PAGE_LIST_SIZE    = 70;
-export default class Menu extends FeatureElement {
+export default class Menu extends ToolkitElement {
     _isRendered = true;
     @api title;
     @api isLoading = false;

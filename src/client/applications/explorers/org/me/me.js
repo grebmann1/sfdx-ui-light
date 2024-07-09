@@ -1,12 +1,12 @@
 
-import FeatureElement from 'element/featureElement';
-import { api,track,wire } from "lwc";
+import { LightningElement,api,track,wire } from "lwc";
+import ToolkitElement from 'core/ToolkitElement';
 import Toast from 'lightning/toast';
 import { isEmpty,isElectronApp,runSilent,isNotUndefinedOrNull,isUndefinedOrNull,refreshCurrentTab } from 'shared/utils';
-import { store,store_application } from 'shared/store';
+import { connectStore,store,store_application } from 'shared/store';
 
 
-export default class Me extends FeatureElement {
+export default class Me extends ToolkitElement {
 
     @api title = 'Current User';
     
@@ -18,17 +18,38 @@ export default class Me extends FeatureElement {
     isSaving = false;
     fieldErrors;
 
-    connectedCallback(){
-        //this.isFilterting_limits = true;
-        this.init();
+    _connector; 
+    set connector(value){
+        this._connector = value;
+        if(this._connector?.conn){
+            this.load_metadata();
+        }
+        if(this._connector?.conn?.userInfo?.id){
+            this.load_myUserInformation();
+        }
+    }
+    @api
+    get connector(){
+        return this._connector;
     }
 
-    init = async () => {
-        this.load_metadata();
-        this.load_myUserInformation();
+    connectedCallback(){
+        //this.isFilterting_limits = true;
+        //console.log('store.getState()',store.getState());
+        this.connector = store.getState().application?.connector;
+       
+    }
+
+    @wire(connectStore, { store })
+    applicationChange({application}) {
+        if(application.connector){
+            this.connector = null;
+            this.connector = application.connector;
+        }
     }
 
     /** Methods */
+
 
     goToUrl = (e) => {
         const redirectUrl = e.currentTarget.dataset.url;
@@ -40,10 +61,11 @@ export default class Me extends FeatureElement {
     }
 
     load_myUserInformation = async () => {
+        if(isUndefinedOrNull(this.connector?.conn?.userInfo)) return;
         const fields = ['Id','LastName','FirstName','Username','Email','FederationIdentifier','CompanyName','Name','IsActive','LanguageLocaleKey'];
         const exceptionFields = ['CurrencyIsoCode'];
-        console.log('this.connector',this.connector.conn);
-        const query = (fields) => `SELECT ${fields.join(',')} FROM User WHERE username = '${this.connector.header.username}'`;
+        const query = (fields) => `SELECT ${fields.join(',')} FROM User WHERE id = '${this.connector.conn.userInfo.id}'`;
+        //console.log('query',query([].concat(fields,exceptionFields)));
         var _user = await runSilent(async ()=>{return (await this.connector.conn.query(query([].concat(fields,exceptionFields)))).records[0]},null);
         if(_user === null){
             // Temporary solution, in case we don't have CurrencyIsoCode
@@ -51,6 +73,7 @@ export default class Me extends FeatureElement {
         }
         this.user = null;
         this.user = _user;
+        //console.log('this.user',this.user);
     }
 
     renderFieldErrors = () => {
@@ -115,7 +138,7 @@ export default class Me extends FeatureElement {
             
         });
         const response = (await this.connector.conn.sobject("User").update([userUpdate]))[0];
-        console.log('###### userUpdate/response ######',userUpdate,response);
+        //console.log('###### userUpdate/response ######',userUpdate,response);
         this.isSaving = false;
         if (response.success) {
             this.reset();
@@ -172,7 +195,7 @@ export default class Me extends FeatureElement {
     }
 
     get goToMyUserUrl(){
-        const userId = this.connector.header?.userInfo?.user_id;
+        const userId = this.connector?.userInfo?.user_id;
         return `/lightning/setup/ManageUsers/page?address=${encodeURIComponent(`/${userId}?noredirect=1&isUserEntityOverride=1`)}`;
     }
     

@@ -1,22 +1,14 @@
 
 
 import { wire, api } from 'lwc';
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import { getFlattenedFields } from 'soql-parser-js';
-import {
-    connectStore,
-    store,
-    describeSObjectIfNeeded,
-    toggleField
-} from 'soql/store';
-
+import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,UI } from 'core/store';
 import { isEmpty,fullApiName,isSame,escapeRegExp,isNotUndefinedOrNull } from 'shared/utils';
 
 const PAGE_LIST_SIZE    = 70;
 
-export default class FieldsTree extends FeatureElement {
-    // sObject Name
-    @api sobject;
+export default class FieldsTree extends ToolkitElement {
     // relationship Path e.g. "Contact.Owner"
     @api relationship;
     // Child Relationship Name
@@ -26,7 +18,7 @@ export default class FieldsTree extends FeatureElement {
     sobjectMeta;
     fields = [];
     isLoading = false;
-    useToolingApi = false;
+    _useToolingApi = false;
     _keyword;
     _rawFields = [];
     _expandedFieldNames = {};
@@ -45,40 +37,59 @@ export default class FieldsTree extends FeatureElement {
         }
     }
 
+    @api
+    get sobject() {
+        return this._sobject;
+    }
+    set sobject(value) {
+        if (this._sobject !== value) {
+            this._sobject = value;
+            this.updateFieldTree();
+        }
+    }
+
     
 
     @wire(connectStore, { store })
     storeChange({ sobject, ui }) {
         if(ui.hasOwnProperty('useToolingApi')){
-            console.log('ui.useToolingApi',ui.useToolingApi);
-            this.useToolingApi = ui.useToolingApi;
+            this._useToolingApi = ui.useToolingApi;
         }
 
+        this.updateFieldTree();
         
-        const sobjectState = sobject[this.sobject];
+    }
+
+    updateFieldTree = () => {
+        const { sobject, ui } = store.getState();
+
+        const sobjectState = SELECTORS.sobject.selectById({sobject},(this.sobject||'').toLowerCase());
         if (!sobjectState) return;
+        
         this.isLoading = sobjectState.isFetching;
         if (sobjectState.data) {
             this.sobjectMeta = sobjectState.data;
         }
-        
-
         this._updateFields(ui.query, ui.sort);
     }
 
     connectedCallback() {
-        console.log('connectedCallback - describeSObjectIfNeeded',this.sobject)
-        store.dispatch(describeSObjectIfNeeded({
+        //console.log('connectedCallback - describeSObjectIfNeeded',this.sobject)
+        store.dispatch(SOBJECT.describeSObject({    
             connector:this.connector.conn,
             sObjectName:this.sobject,
-            useToolingApi:this.useToolingApi
+            useToolingApi:this._useToolingApi
         }));
     }
 
     selectField(event) {
         const fieldName = event.currentTarget.dataset.name;
         store.dispatch(
-            toggleField(fieldName, this.relationship, this.childrelation)
+            UI.reduxSlice.actions.toggleField({
+                fieldName,
+                relationships:this.relationship,
+                childRelationship:this.childrelation
+            })
         );
     }
 
@@ -178,7 +189,7 @@ export default class FieldsTree extends FeatureElement {
                 ASC: 1,
                 DESC: -1
             };
-            const sortOrderPreNumber = SORT_ORDER_PRE_NUMBER[sort.order];
+            const sortOrderPreNumber = SORT_ORDER_PRE_NUMBER[sort];
             this._rawFields.sort((prev, next) => {
                 return (
                     (prev.name.toLowerCase() > next.name.toLowerCase()
@@ -193,7 +204,7 @@ export default class FieldsTree extends FeatureElement {
 
 
     handleScroll(event) {
-        console.log('handleScroll');
+        //console.log('handleScroll');
         const target = event.target;
         const scrollDiff = Math.abs(target.clientHeight - (target.scrollHeight - target.scrollTop));
         const isScrolledToBottom = scrollDiff < 5; //5px of buffer

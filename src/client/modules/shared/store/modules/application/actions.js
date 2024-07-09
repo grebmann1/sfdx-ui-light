@@ -6,6 +6,12 @@ export function login(connector) {
         payload: { connector }
     };
 }
+export function updateConnector(connector){
+    return {
+        type: CONST.UPDATE_IDENTITY,
+        payload: { connector }
+    };
+}
 
 export function logout() {
     return {

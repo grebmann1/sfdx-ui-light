@@ -1,14 +1,11 @@
 import { api,wire } from 'lwc';
-import FeatureElement from 'element/featureElement';
-import {
-    connectStore,
-    store
-} from 'soql/store';
+import ToolkitElement from 'core/toolkitElement';
+import { store,connectStore } from 'core/store';
 
-export default class Header extends FeatureElement{
+
+export default class Header extends ToolkitElement{
     _apiUsage;
 
-    @api isLeftToggled = false;
 
     @wire(connectStore, { store })
     storeChange({ ui }) {
@@ -16,18 +13,11 @@ export default class Header extends FeatureElement{
     }
 
     connectedCallback(){
-        //this.handleToggle();
+        
     }
 
     /** Events **/
 
-    handleToggle = (e) => {
-        this.isLeftToggled = ! this.isLeftToggled;
-        this.dispatchEvent(new CustomEvent("lefttoggle", { 
-            detail:{value:this.isLeftToggled},
-            bubbles: true,composed: true 
-        }));
-    }
 
     /** Getters **/
 

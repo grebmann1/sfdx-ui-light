@@ -1,7 +1,7 @@
 import { api,track } from "lwc";
 import { decodeError,isEmpty,isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
 import Toast from 'lightning/toast';
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 
 const METHOD = {
     GET:'GET',
@@ -21,7 +21,7 @@ const DEFAULT = {
     BODY : ''
 }
 
-export default class App extends FeatureElement {
+export default class App extends ToolkitElement {
 
     isLoading = false;
 
@@ -52,7 +52,7 @@ export default class App extends FeatureElement {
         try{
             this.isLoading = true;
             this.connector.conn.request(_request,(err, res) => {
-                console.log('err,res',err,res);
+                //console.log('err,res',err,res);
                 if(err){
                     Toast.show({
                         label: err.message || 'Error during request',

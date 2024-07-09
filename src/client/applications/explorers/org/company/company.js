@@ -1,11 +1,11 @@
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import { api } from "lwc";
 import { isEmpty,isElectronApp } from 'shared/utils';
 import Toast from 'lightning/toast';
 import { store,store_application } from 'shared/store';
 
 
-export default class Company extends FeatureElement {
+export default class Company extends ToolkitElement {
 
     @api title = 'General Information';
     @api linkLabel = 'Company Information';

@@ -52,7 +52,7 @@ export default class MarkdownViewer extends LightningElement {
             const newElement = createElement("slds-code-block", {
                 is: sldsCodeBlock
             });
-            console.log('createElement',mapping[c] || c);
+            //console.log('createElement',mapping[c] || c);
             Object.assign(newElement, {
                 codeBlock: el.innerHTML,
                 language: mapping[c] || c,
@@ -110,15 +110,15 @@ export default class MarkdownViewer extends LightningElement {
     
             // Fix class names
             line = fixClassName(line);
-            console.log('line1',line);
+            //console.log('line1',line);
             line = fixClassNameInLinks(line);
-            console.log('line2',line);
+            //console.log('line2',line);
             fixedDiagram.push(line);
 
         });
     
         // Join the fixed lines back into a single string.
-        console.log('test',fixedDiagram.join('\n'));
+        //console.log('test',fixedDiagram.join('\n'));
         return fixedDiagram.join('\n');
     }
     
@@ -135,11 +135,11 @@ export default class MarkdownViewer extends LightningElement {
                 const { svg,bindFunctions } = await window.mermaid.render('graphDiv',diagramText);
                 el.innerHTML = svg;
             }else{
-                console.log('Invalid format')
+                //console.log('Invalid format')
             }
             
         }catch(e){
-            console.log('Unknown diagram & error',e);
+            //console.log('Unknown diagram & error',e);
         }
     }
     

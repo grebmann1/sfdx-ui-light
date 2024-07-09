@@ -18,7 +18,7 @@ export default class FileUploader extends LightningElement {
     parentElement;
 
     connectedCallback(){
-        console.log('connectedCallback');
+        //console.log('connectedCallback');
         if(this.isModal){
             this.parentElement = document.getElementsByTagName('lightning-overlay-container')[0];
         }else{
@@ -30,7 +30,7 @@ export default class FileUploader extends LightningElement {
     }
 
     disconnectedCallback(){
-        console.log('disconnectedCallback');
+        //console.log('disconnectedCallback');
         this.parentElement.removeEventListener("dragenter",this.handleDragEnter);
         this.parentElement.removeEventListener("dragleave",this.handleLeaveGlobal);
         this.parentElement.removeEventListener("drop",this.handleDropGlobal);
@@ -86,7 +86,7 @@ export default class FileUploader extends LightningElement {
 
     @api
     handleDrop(event) {
-        console.log('handleDrop');
+        //console.log('handleDrop');
         event.preventDefault();
         const files = event.dataTransfer?.files || event.target?.files;
         if (files.length > 0 && this.typeList.includes(files[0].type)) {

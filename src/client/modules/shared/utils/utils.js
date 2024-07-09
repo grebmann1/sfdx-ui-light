@@ -195,8 +195,8 @@ const languageMapping = {
     md: 'markdown',
     ts: 'typescript',
     txt: 'text',
-    apex: 'java', // We map apex to JAVA,
-    cls: 'java', // We map cls to JAVA
+    apex: 'apex', // We map apex to JAVA,
+    cls: 'apex', // We map cls to JAVA
     xml: 'xml',
     design: 'xml', // We map cls to xml
     trigger:'apex',
@@ -284,7 +284,7 @@ export function isSalesforceId(str) {
 }
 
 export function download(data,type,filename){
-    console.log('download');
+    //console.log('download');
     const blob = new Blob([data], { type });
     const url = URL.createObjectURL(blob);
     const download = document.createElement('a');
@@ -320,3 +320,7 @@ export const forceVariableSave = (variable,value) => {
     variable = null;
     variable = value;
 }
+
+export const generateExternalId = (connector,key) => `${connector.alias}_${key}`
+
+export const lowerCaseKey = key => isNotUndefinedOrNull(key)?key.toLowerCase():null;

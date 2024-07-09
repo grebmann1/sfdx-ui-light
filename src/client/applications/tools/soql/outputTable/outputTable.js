@@ -1,6 +1,6 @@
 import { api } from 'lwc';
 import Toast from 'lightning/toast';
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 
 class ColumnCollector {
 
@@ -53,7 +53,7 @@ class ColumnCollector {
 
 const PAGE_SIZE = 200;
 
-export default class OutputTable extends FeatureElement {
+export default class OutputTable extends ToolkitElement {
     columns;
     rows;
     _response;

@@ -1,13 +1,9 @@
 import { wire, api } from 'lwc';
-import FeatureElement from 'element/featureElement';
-import {
-    connectStore,
-    store,
-    loadRecentQueries,
-    updateSoql
-} from 'soql/store';
+import ToolkitElement from 'core/toolkitElement';
 
-export default class QueryListPanel extends FeatureElement {
+import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,QUERY,UI } from 'core/store';
+
+export default class QueryListPanel extends ToolkitElement {
     recentQueries;
     
     @wire(connectStore, { store })
@@ -20,7 +16,8 @@ export default class QueryListPanel extends FeatureElement {
     }
 
     connectedCallback() {
-        store.dispatch(loadRecentQueries(this.connector.header.alias));
+        //console.log('Ui',UI);
+        store.dispatch(UI.reduxSlice.actions.loadRecentQueries({alias:this.connector.configuration.alias}));
     }
 
     selectQuery(event) {
@@ -29,7 +26,7 @@ export default class QueryListPanel extends FeatureElement {
             query => query.key === key
         );
         if (selectedQuery) {
-            store.dispatch(updateSoql({connector:this.connector.conn,soql:selectedQuery.soql}));
+            store.dispatch(UI.reduxSlice.actions.updateSoql({connector:this.connector.conn,soql:selectedQuery.soql}));
         }
     }
 }

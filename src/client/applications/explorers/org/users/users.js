@@ -1,9 +1,9 @@
 import { api } from "lwc";
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import { store,store_application } from 'shared/store';
 
 
-export default class Users extends FeatureElement {
+export default class Users extends ToolkitElement {
     total_users;
     total_active;
     total_inactive;

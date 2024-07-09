@@ -1,26 +1,36 @@
 import { LightningElement,api,wire,track} from "lwc";
 import { isEmpty,runActionAfterTimeOut,isNotUndefinedOrNull,fullApiName } from 'shared/utils';
-import FeatureElement from 'element/featureElement';
-import { connectStore,store,fetchSObjectsIfNeeded } from 'soql/store';
+import ToolkitElement from 'core/toolkitElement';
 import { store as appStore,store_application  }  from 'shared/store';
+import { store,connectStore,SELECTORS,DESCRIBE,UI } from 'core/store';
 
 export const isFullPage = true;
-export default class App extends FeatureElement {
+export default class App extends ToolkitElement {
 
     @track selectedSObject;
     @track isLeftToggled = true;
+    @track isRecentToggled = false;
     @api namespace;
 
     connectedCallback() {
-        store.dispatch(fetchSObjectsIfNeeded({
+        store.dispatch(DESCRIBE.describeSObjects({
             connector:this.connector.conn,
             useToolingApi:false
+        }));
+        store.dispatch(DESCRIBE.describeSObjects({
+            connector:this.connector.conn,
+            useToolingApi:true
         }));
         appStore.dispatch(store_application.collapseMenu('soql'));
     }
 
     @wire(connectStore, { store })
-    storeChange({ ui,sobjects }) {
+    storeChange({ ui,describe }) {
+        if(ui && ui.hasOwnProperty('useToolingApi')){
+            this._useToolingApi = ui.useToolingApi;
+        }
+
+        const sobjects = SELECTORS.describe.selectById({describe},DESCRIBE.getDescribeTableName(this._useToolingApi));
         if(this.validateSobject(ui?.selectedSObject,sobjects?.data)){
             this.selectedSObject = ui.selectedSObject;
         }else{
@@ -36,8 +46,12 @@ export default class App extends FeatureElement {
     }
     /** Events **/
 
-    handleLeftToggleChange = (e) => {
-        this.isLeftToggled = e.detail.value;
+    handleLeftToggle = (e) => {
+        this.isLeftToggled = !this.isLeftToggled;
+    }
+
+    handleRecentToggle = (e) => {
+        this.isRecentToggled = !this.isRecentToggled;
     }
 
     /** Getters **/
@@ -48,6 +62,14 @@ export default class App extends FeatureElement {
 
     get isFieldsPanelDisplayed(){
         return isNotUndefinedOrNull(this.selectedSObject);
+    }
+
+    get toggleLeftIconName(){
+        return this.isLeftToggled?'utility:toggle_panel_right':'utility:toggle_panel_left';
+    }
+
+    get toggleRecentIconName(){
+        return this.isRecentToggled?'utility:toggle_panel_right':'utility:toggle_panel_left';
     }
 
 

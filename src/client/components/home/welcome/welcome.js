@@ -1,9 +1,9 @@
 import { api } from "lwc";
 import { isEmpty,isElectronApp } from 'shared/utils';
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 
 
-export default class Welcome extends FeatureElement {
+export default class Welcome extends ToolkitElement {
 
     
     connectedCallback(){}

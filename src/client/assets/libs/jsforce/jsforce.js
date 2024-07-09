@@ -3094,7 +3094,7 @@
    * const fayeClient = conn.streaming.createClient([ authFailureExt ]);
    * 
    * const subscription = fayeClient.subscribe(channel, data => {
-   *   console.log('topic received data', data);
+   *   //console.log('topic received data', data);
    * });
    * 
    * subscription.cancel();
@@ -3136,7 +3136,7 @@
    * const fayeClient = conn.streaming.createClient([ replayExt ]);
    * 
    * const subscription = fayeClient.subscribe(channel, data => {
-   *   console.log('topic received data', data);
+   *   //console.log('topic received data', data);
    * });
    * 
    * subscription.cancel();
@@ -3324,7 +3324,7 @@
         fayeClient.addExtension(extension);
       });
     }
-    if (fayeClient._dispatcher.getConnectionTypes().indexOf('callback-polling') === -1) {
+    if (fayeClient._dispatcher.getConfigurationTypes().indexOf('callback-polling') === -1) {
       // prevent streaming API server error
       fayeClient._dispatcher.selectTransport('long-polling');
       fayeClient._dispatcher._transport.batching = false;
@@ -3408,7 +3408,7 @@
    * const fayeClient = conn.streaming.createClient();
    * 
    * const subscription = fayeClient.subscribe(channel, data => {
-   *   console.log('topic received data', data);
+   *   //console.log('topic received data', data);
    * });
    * 
    * subscription.cancel();
@@ -3434,7 +3434,7 @@
    * ]);
    * 
    * const subscription = fayeClient.subscribe(channel, data => {
-   *   console.log('topic received data', data);
+   *   //console.log('topic received data', data);
    * });
    * 
    * subscription.cancel();
@@ -6964,7 +6964,7 @@
   Logger.prototype.log = function(level, message) {
     if (this._logLevel <= level) {
       if (level < LogLevels.ERROR) {
-        console.log(message);
+        //console.log(message);
       } else {
         console.error(message);
       }
@@ -15391,7 +15391,7 @@
       this._sendMessage({
         channel:                  Channel.HANDSHAKE,
         version:                  constants.BAYEUX_VERSION,
-        supportedConnectionTypes: this._dispatcher.getConnectionTypes()
+        supportedConnectionTypes: this._dispatcher.getConfigurationTypes()
   
       }, {}, function(response) {
   
@@ -15747,8 +15747,8 @@
       if (transport) transport.close();
     },
   
-    getConnectionTypes: function() {
-      return Transport.getConnectionTypes();
+    getConfigurationTypes: function() {
+      return Transport.getConfigurationTypes();
     },
   
     selectTransport: function(transportTypes) {
@@ -16554,7 +16554,7 @@
       klass.prototype.connectionType = type;
     },
   
-    getConnectionTypes: function() {
+    getConfigurationTypes: function() {
       return array.map(this._transports, function(t) { return t[0] });
     },
   
@@ -20148,10 +20148,10 @@
      * var array = [1];
      * var other = _.concat(array, 2, [3], [[4]]);
      *
-     * console.log(other);
+     * //console.log(other);
      * // => [1, 2, 3, [4]]
      *
-     * console.log(array);
+     * //console.log(array);
      * // => [1]
      */
     function concat() {
@@ -20649,12 +20649,12 @@
      * @example
      *
      * _.forEach([1, 2], function(value) {
-     *   console.log(value);
+     *   //console.log(value);
      * });
      * // => Logs `1` then `2`.
      *
      * _.forEach({ 'a': 1, 'b': 2 }, function(value, key) {
-     *   console.log(key);
+     *   //console.log(key);
      * });
      * // => Logs 'a' then 'b' (iteration order is not guaranteed).
      */
@@ -20948,7 +20948,7 @@
      * @example
      *
      * _.defer(function(text) {
-     *   console.log(text);
+     *   //console.log(text);
      * }, 'deferred');
      * // => Logs 'deferred' after one millisecond.
      */
@@ -20971,7 +20971,7 @@
      * @example
      *
      * _.delay(function(text) {
-     *   console.log(text);
+     *   //console.log(text);
      * }, 1000, 'later');
      * // => Logs 'later' after one second.
      */
@@ -21056,7 +21056,7 @@
      * var objects = [{ 'a': 1 }, { 'b': 2 }];
      *
      * var shallow = _.clone(objects);
-     * console.log(shallow[0] === objects[0]);
+     * //console.log(shallow[0] === objects[0]);
      * // => true
      */
     function clone(value) {
@@ -22090,7 +22090,7 @@
      *
      * var object = { 'a': 1 };
      *
-     * console.log(_.identity(object) === object);
+     * //console.log(_.identity(object) === object);
      * // => true
      */
     function identity(value) {
@@ -28437,9 +28437,9 @@
   }
   
   
-  // log is just a thin wrapper to console.log that prepends a timestamp
+  // log is just a thin wrapper to //console.log that prepends a timestamp
   exports.log = function() {
-    console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
+    //console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
   };
   
   

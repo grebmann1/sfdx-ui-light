@@ -1,0 +1,455 @@
+import { LightningElement,track,api,wire } from "lwc";
+import LightningAlert from 'lightning/alert';
+import { guid,isNotUndefinedOrNull,isElectronApp,classSet,isUndefinedOrNull,forceVariableSave } from "shared/utils";
+import { getExistingSession,saveSession,removeSession,directConnect,connect } from "connection/utils";
+import { NavigationContext,CurrentPageReference,navigate } from 'lwr/navigation';
+import { handleRedirect } from './utils';
+/** Apps  **/
+import {APP_MAPPING,APP_LIST,DIRECT_LINK_MAPPING} from './modules';
+
+/** Store **/
+import { connectStore,store,store_application } from 'shared/store';
+
+const LIMITED = 'limited';
+
+export * as CONFIG from './modules';
+
+export default class App extends LightningElement {
+    @wire(NavigationContext)
+    navContext;
+
+    @api mode;
+    @api redirectUrl;
+    // for Extension (Limited Mode)
+    @api sessionId;
+    @api serverUrl;
+    // for Electron (Limited Mode)
+    @api alias;
+
+
+    version;
+    isSalesforceCliInstalled = false;
+    isJavaCliInstalled = false;
+    isCommandCheckFinished = false;
+    isMenuHidden = false;
+    isMenuCollapsed = false;
+    pageHasLoaded = false;
+    targetPage;
+    _isFullAppLoading = false;
+
+    @track applications = [];
+
+    currentApplicationId;
+
+    @api 
+    get connector(){
+        return window.connector;
+    }
+    set connector(value){
+        window.connector = value;
+    }
+
+
+    @wire(connectStore, { store })
+    applicationChange({application}) {
+        console.log('application',application)
+        if(application.connector){
+            //forceVariableSave(this.connector,application.connector);
+            this.connector = null;
+            this.connector = application.connector;
+        }
+        
+        // Open Application
+        if(application.isOpen){
+            const {target} = application;
+            this.handleApplicationSelection(target);
+        }
+
+        if(application.isLoggedIn){
+            this.handleLogin(application.connector);
+        }else if(application.isLoggedOut){
+            this.handleLogout();
+        }
+
+        // Toggle Menu
+        if(isNotUndefinedOrNull(application.isMenuDisplayed)){
+           this.isMenuHidden = !application.isMenuDisplayed;
+        }else if(isNotUndefinedOrNull(application.isMenuExpanded)){
+            this.isMenuCollapsed = !application.isMenuExpanded;
+        }
+
+        // Redirect
+        if(application.redirectTo){
+            this.handleRedirection(application);
+        }
+    }
+
+    @wire(CurrentPageReference)
+    handleNavigation(pageRef){
+        this.targetPage = pageRef;
+        if(!this.pageHasLoaded) return;
+        const {type, attributes} = pageRef;
+        switch(type){
+            case 'home':
+            case 'application':
+                const formattedApplicationName = (attributes.applicationName || '').toLowerCase();
+                const target = APP_LIST.find(x => x.path === formattedApplicationName);
+                if(isNotUndefinedOrNull(target)){
+                    this.handleApplicationSelection(target.name);
+                }else{
+                    this.handleApplicationSelection('home/app');
+                }
+            break;
+        }
+    }
+
+
+    
+
+    connectedCallback(){
+        this.init();
+    }
+
+    init = async () => {
+        if(isElectronApp()){
+            await this.initElectron();
+            this.isCommandCheckFinished = true;
+        }
+        this.loadVersion();
+        this.initMode();
+        this.initDragDrop();
+    }
+
+    /** Events */
+
+    handleStartLogin = () => {
+        //console.log('handleStartLogin  - to refactor');
+        this._isFullAppLoading = true;
+    }
+
+    handleStopLoading = () => {
+        //console.log('handleStopLoading - to refactor');
+        this._isFullAppLoading = false;
+    }
+    
+    handleLogin = async (connector) => {
+        
+        //console.log('handleLogin');
+        if(isUndefinedOrNull(connector)){
+            this._isFullAppLoading = false;
+            return;
+        }
+
+        const { instanceUrl,accessToken,version,refreshToken } = connector.conn;
+        saveSession({
+            ...connector.configuration,
+            instanceUrl,
+            accessToken,
+            instanceApiVersion:version,
+            refreshToken
+        });
+        // Reset first
+        this.applications = this.applications.filter(x => x.name == 'home/app');
+        
+        // Add new module
+        if(this.applications.filter(x => x.name == 'org/app').length == 0){
+            this.openSpecificModule('org/app');
+        }
+        this._isFullAppLoading = false;
+        this.isLoggedIn = true;
+    }
+
+    handleLogout = () => {
+        //console.log('handleLogout');
+        this.isLoggedIn = false;
+        this.connector = null;
+        // Reset first
+        this.applications = this.applications.filter(x => x.name == 'home/app');
+        navigate(this.navContext,{type:'application',attributes:{applicationName:'connections'}});
+    }
+
+    handleLogoutClick = (e) => {
+        e.preventDefault();
+        store.dispatch(store_application.logout());
+
+        removeSession();
+        this.initMode();
+        //location.reload();
+    }
+
+    handleTabChange = (e) => {
+        let applicationId = e.detail.id;
+        this.loadSpecificTab(applicationId);
+    }
+
+    handleTabDelete = (e) => {
+        this.applications = this.applications.filter(x => x.id != e.detail.id);
+    }
+
+    handleNewApp = async (e) => {
+        this.loadModule(e.detail);
+    };
+    
+
+    handleRedirection = async (application) => {
+        let url = application.redirectTo || '';
+
+        if(url.startsWith('sftoolkit:')){
+            /* Inner Navigation */
+            const navigationConfig = url.replace('sftoolkit:','');
+            navigate(this.navContext,JSON.parse(navigationConfig));
+            return;
+        }
+        
+        
+        if(this.isUserLoggedIn && !url.startsWith('http')){
+            // to force refresh in case it's not valid anymore : 
+            await this.connector.conn.identity();
+            url = `${this.connector.frontDoorUrl}&retURL=${encodeURI(url)}`;
+        }
+
+        if(isElectronApp()){
+            window.location = url;
+        }else{
+            window.open(url,'_blank');
+        }
+    }
+
+    handleApplicationSelection = async (target) => {
+        if(this.applications.filter(x => x.name === target).length == 0){
+            this.loadModule(target);
+        }else{
+            const existingAppId = this.applications.find(x => x.name === target).id;
+            this.loadSpecificTab(existingAppId);
+        }
+    }
+
+
+    /** Methods  */
+    
+    openSpecificModule = async (target) => {
+        this.handleApplicationSelection(target);
+    }
+    
+    loadVersion = async () => {
+        const data = await (await fetch('/version')).json();
+        this.version = `v${data.version || '1.0.0'}`;
+    }
+    
+    initElectron = async () => {
+        let {error, result} = await window.electron.ipcRenderer.invoke('util-checkCommands');
+        if (error) {
+            throw decodeError(error);
+        }
+
+        this.isSalesforceCliInstalled   = result.sfdx;
+        this.isJavaCliInstalled         = result.java;
+    }
+
+    initDragDrop = () => {
+        window.addEventListener("dragover",function(e){e.preventDefault();},false);
+        window.addEventListener("drop",function(e){e.preventDefault();},false);
+    }
+
+    initMode = async () => {
+        window.isLimitedMode = this.isLimitedMode; // To hide 
+
+        this.applications   = [];
+        this.applicationId  = null;
+        
+        if(this.isLimitedMode){
+            await this.load_limitedMode();
+        }else{
+            await this.load_fullMode();
+        }
+    }
+
+    loadSpecificTab = (applicationId) => {
+        this.currentApplicationId = applicationId;
+        let _applications = this.applicationPreFormatted;
+            _applications.forEach(x => {
+                if(x.id == applicationId){
+                    x.isActive = true;
+                    x.class = "slds-context-bar__item slds-is-active";
+                    x.classVisibility = "slds-show slds-full-height";
+                    x.attributes.isActive = true;
+                }else{
+                    x.attributes.isActive = false;
+                }
+            })
+        this.applications = _applications;
+    }
+
+    /** Extension & Electron Org Window  **/
+    load_limitedMode = async () => {
+        //console.log('load_limitedMode');
+        try{
+            if(isElectronApp()){
+                await connect({alias:this.alias});
+            }else{
+                await directConnect(this.sessionId,this.serverUrl);
+            }
+
+            if(this.redirectUrl){
+                // This method use LWR redirection or window.location based on the url ! 
+                handleRedirect(this.navContext,this.redirectUrl);
+            }else{
+                navigate(this.navContext,{type:'application',attributes:{applicationName:'org'}}); // org is the default
+            }
+        }catch(e){
+            console.error(e);
+            await LightningAlert.open({
+                message: e.message,//+'\n You might need to remove and OAuth again.',
+                theme: 'error', // a red theme intended for error states
+                label: 'Error!', // this is the header text
+            });
+        }
+        
+        // Default Mode
+        /*await this.loadModule({
+            component:'extension/app',
+            name:"Apps",
+            isDeletable:false,
+        });*/
+
+        // Should be loaded via login !
+        //this.openSpecificModule('org/app'); 
+        //this.openSpecificModule('code/app'); 
+        this.pageHasLoaded = true;
+        if(this.targetPage){
+            this.handleNavigation(this.targetPage);
+        }
+    }
+    
+
+    /** Website & Electron **/
+    load_fullMode = async () => {
+        await getExistingSession(); // await connect({alias:'acet-dev'})//
+        // Default Mode
+        this.loadModule('home/app',true);
+        
+        /** DEV MODE  */
+        if(process.env.NODE_ENV === 'dev' && this.isUserLoggedIn /*&& this.isUserLoggedIn*/){
+            //await this.loadModule('editor/app');
+            /*await this.loadModule({
+                component:'soql/app',
+                name:"SOQL Builder",
+                isDeletable:true
+            });*/
+        }
+
+        /** Direct Opening Mode */
+        /*
+        const hash = (window.location.hash || '').replace('#','');
+        if(DIRECT_LINK_MAPPING.hasOwnProperty(hash)){
+            //await this.loadModule(DIRECT_LINK_MAPPING[hash]);
+        }
+        */
+
+        this.pageHasLoaded = true;
+        if(this.targetPage){
+            this.handleNavigation(this.targetPage);
+        }
+    }
+
+
+    /** Getters */
+
+    get isFullAppLoading(){
+        return this._isFullAppLoading || !this.pageHasLoaded;
+    }
+    
+    get isSFDXMissing(){
+        return isElectronApp() && !this.isSalesforceCliInstalled && this.isCommandCheckFinished;
+    }
+
+    get isLimitedMode(){
+        return this.mode === LIMITED;
+    }
+
+    get dynamicAppContainerClass(){
+        return this.isUserLoggedIn?'app-container-logged-in slds-full-height':'app-container slds-full-height';
+    }
+
+    get isLogoutDisplayed(){
+        return !this.isLimitedMode;
+    }
+
+    get formattedAlias(){
+        if(this.connector?.configuration?.username == this.connector?.configuration?.alias || isUndefinedOrNull(this.connector?.configuration?.alias)){
+            return 'No Alias'
+        }
+        return this.connector.configuration?.alias;
+    }
+
+    get loggedInMessage(){
+        //const isAliasMissing = this.connector?.configuration?.username == this.connector?.configuration?.alias || isUndefinedOrNull(this.connector?.configuration?.alias);
+        return `Logged in as ${this.connector?.configuration?.userInfo?.display_name || 'User'} (${this.formattedAlias} : ${this.connector?.configuration?.username}). `;
+    }
+
+    get isUserLoggedIn(){
+        return this.isLoggedIn;
+    }
+
+    get menuClass(){
+        return classSet('l-cell-content-size home__navigation slds-show_small')
+        .add({
+            'slds-hide':this.isMenuHidden,
+            'slds-menu-collapsed':this.isMenuCollapsed
+        })
+        .toString()
+    }
+
+
+    get applicationPreFormatted(){
+        return this.applications.map(x => ({
+            ...x,
+            ...{
+                isActive:false,
+                class:"slds-context-bar__item",
+                classVisibility:"slds-hide slds-full-height",
+            }
+        }));
+    }
+
+    /** Dynamic Loading */
+    
+
+    loadModule = (target,isFirst = false) => {
+        const settings = APP_LIST.find(x => x.name === target);
+        
+        if (!settings) {
+            console.warn(`Unknown app type: ${target}`);
+            // Run Manual Mode
+        }else{
+            const application = {
+                name:settings.name,
+                constructor:settings.module,
+                path:settings.path,
+                id:guid(),
+                label:settings.label,
+                isActive:true,
+                class:"slds-context-bar__item slds-is-active",
+                classVisibility:"slds-show slds-full-height",
+                isFullHeight:settings.isFullHeight,
+                isDeletable:settings.isDeletable,
+                requireConnection:!settings.isOfflineAvailable,
+                isTabVisible:settings.isTabVisible,
+                attributes:{
+                    //connector:this.connector
+                    isActive:true
+                }
+            };
+            let _applications = this.applicationPreFormatted;
+            if(isFirst){
+                _applications.unshift(application);
+            }else{
+                _applications.push(application);
+            }
+                
+            this.applications = _applications;
+            this.currentApplicationId = application.id;
+        }
+        
+    };
+}

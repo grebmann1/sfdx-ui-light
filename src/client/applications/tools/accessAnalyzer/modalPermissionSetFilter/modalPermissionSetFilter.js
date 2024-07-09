@@ -51,7 +51,7 @@ export default class ModalPermissionSetFilter extends LightningModal {
 			//{ title: '', vertAlign: "middle",hozAlign:"center", field: 'link', width: 15, formatter: "html", headerSort: false},
 			{ title: 'Permission Name', vertAlign: "middle", field: 'label', width: 430, 
                 tooltip: (e,cell) => {
-                    console.log('cell._cell.row',cell._cell.row)
+                    //console.log('cell._cell.row',cell._cell.row)
                     return cell._cell.row.data.description;
                 },
 				cellClick:function(e, cell) {

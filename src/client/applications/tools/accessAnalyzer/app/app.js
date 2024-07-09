@@ -1,5 +1,5 @@
 import { api } from "lwc";
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 
 import { groupBy,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull,getFromStorage,classSet } from 'shared/utils';
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
@@ -90,7 +90,7 @@ const DIFF = {
     SIMILARITIES:'Similarity',
     DIFFERENCE:'Difference',
 }
-export default class App extends FeatureElement {
+export default class App extends ToolkitElement {
 
     /* Metadata */
     metadata;
@@ -162,7 +162,7 @@ export default class App extends FeatureElement {
     }
 
     renderedCallback() {
-        console.log('Access Analyzer - renderedCallback');
+        //console.log('Access Analyzer - renderedCallback');
     }
 
     tableResize = () => {
@@ -177,9 +177,9 @@ export default class App extends FeatureElement {
     }
 
     loadCachedSettings = () => {
-        if(isNotUndefinedOrNull(this.connector.header.alias)){
-            this.filter_permissionSets  = getFromStorage(localStorage.getItem(`${this.connector.header.alias}-accessAnalyzer-filter_permissionSets`),[]);
-            this.filter_profiles        = getFromStorage(localStorage.getItem(`${this.connector.header.alias}-accessAnalyzer-filter_profiles`),[]);
+        if(isNotUndefinedOrNull(this.connector.configuration.alias)){
+            this.filter_permissionSets  = getFromStorage(localStorage.getItem(`${this.connector.configuration.alias}-accessAnalyzer-filter_permissionSets`),[]);
+            this.filter_profiles        = getFromStorage(localStorage.getItem(`${this.connector.configuration.alias}-accessAnalyzer-filter_profiles`),[]);
             this.greenTreshold          = getFromStorage(localStorage.getItem(`global-accessAnalyzer-greenTreshold`),5);
             this.orangeTreshold         = getFromStorage(localStorage.getItem(`global-accessAnalyzer-orangeTreshold`),10);
         }
@@ -209,8 +209,8 @@ export default class App extends FeatureElement {
         var _metadata;
         try{
             // Cache loading only for full mode
-            if(isNotUndefinedOrNull(this.connector.header.alias)){
-                let key = `${this.connector.header.alias}-metadata`;
+            if(isNotUndefinedOrNull(this.connector.configuration.alias)){
+                let key = `${this.connector.configuration.alias}-metadata`;
                 _metadata = await window.defaultStore.getItem(key);
                 if(isUndefinedOrNull(_metadata?.createdDate) || Date.now() > _metadata.createdDate + 2 * 60 * 60 * 1000){
                     refresh = true; // We force the refresh
@@ -246,7 +246,7 @@ export default class App extends FeatureElement {
     }
 
     updateLoadingMessage = (message) => {
-        console.log('updateLoadingMessage');
+        //console.log('updateLoadingMessage');
         this.customLoadingMessage = message;
     }
 
@@ -293,7 +293,7 @@ export default class App extends FeatureElement {
     }
 
     cacheMetadata = async () => {
-        let key = `${this.connector.header.alias}-metadata`;
+        let key = `${this.connector.configuration.alias}-metadata`;
         await window.defaultStore.setItem(key,{
             ...this.metadata,
             permissionSets:this.permissionSets,
@@ -304,7 +304,7 @@ export default class App extends FeatureElement {
     downloadCSV = async () => {
         if(this.tableInstance){
             this.isLoading = true;
-            await this.tableInstance.download("csv", `${this.connector.header.orgId}_${this.report}.csv`);
+            await this.tableInstance.download("csv", `${this.connector.configuration.orgId}_${this.report}.csv`);
             this.isLoading = false;
         }
     }
@@ -312,7 +312,7 @@ export default class App extends FeatureElement {
     downloadPDF = async () => {
         if(this.tableInstance){
             this.isLoading = true;
-            let filename = `${this.connector.header.orgId}_${this.report}.pdf`;
+            let filename = `${this.connector.configuration.orgId}_${this.report}.pdf`;
             await this.tableInstance.download(fileFormatter,filename,{
                 useImage:true,
                 title:this.report_options.find(x => x.value == this.report).label,
@@ -537,7 +537,7 @@ export default class App extends FeatureElement {
         }).then(res => {
             if(res?.action === 'applyFilter'){
                 this.filter_profiles = res.filter || [];
-                localStorage.setItem(`${this.connector.header.alias}-accessAnalyzer-filter_profiles`,JSON.stringify(this.filter_profiles));
+                localStorage.setItem(`${this.connector.configuration.alias}-accessAnalyzer-filter_profiles`,JSON.stringify(this.filter_profiles));
                 this.displayReport();
             }
         })
@@ -573,7 +573,7 @@ export default class App extends FeatureElement {
         }).then(res => {
             if(res?.action === 'applyFilter'){
                 this.filter_permissionSets = res.filter || [];
-                localStorage.setItem(`${this.connector.header.alias}-accessAnalyzer_filter_permissionSets`,JSON.stringify(this.filter_permissionSets));
+                localStorage.setItem(`${this.connector.configuration.alias}-accessAnalyzer_filter_permissionSets`,JSON.stringify(this.filter_permissionSets));
                 this.displayReport();
             }
         })
@@ -602,7 +602,7 @@ export default class App extends FeatureElement {
                 await this.setPermissionGroupReport();
             break;
             default:
-                console.log('No Default Report');
+                //console.log('No Default Report');
             break;
         }
         //this.isLoading = false;
@@ -757,7 +757,7 @@ export default class App extends FeatureElement {
     }
 
     setMatrixReport = async (metadataFilter) => {
-        console.log('setMatrixReport');
+        //console.log('setMatrixReport');
 
 		let colModel = [
 			{ title: 'Permission', field: 'name', resizable: true, headerHozAlign: "center", resizable: true, responsive:0,frozen:true,headerFilter:"input"},
@@ -832,7 +832,7 @@ export default class App extends FeatureElement {
     }
 
     setFullViewReport = async (metadataFilter) => {
-        console.log('setFullViewReport');
+        //console.log('setFullViewReport');
 
 		let colModel = [
 			{ title: 'Developer Name', field: 'name', minWidth:200, resizable: true,frozen:true, headerHozAlign: "center",responsive:0,headerFilter:"input"},

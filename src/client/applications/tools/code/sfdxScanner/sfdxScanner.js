@@ -1,9 +1,9 @@
 import { api } from "lwc";
 import { decodeError,isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import xterm from 'xterm';
 import { theme } from './theme';
-export default class Pmd extends FeatureElement {
+export default class Pmd extends ToolkitElement {
     terminal;
     currCommand = '';
     @api pmdPath;
@@ -16,7 +16,7 @@ export default class Pmd extends FeatureElement {
     }
 
     connectedCallback(){
-        console.log('xterm',xterm);
+        //console.log('xterm',xterm);
         setTimeout(() => {
             //this.createTerminal();
         },300);
@@ -124,7 +124,7 @@ export default class Pmd extends FeatureElement {
                     this.currCommand = this.currCommand.slice(0, -1);
                     break;
                 default:
-                    console.log('key',key);
+                    //console.log('key',key);
                     //Disable left and right keys from changing state, only allow them to change how the terminal looks
                     if (domEvent.keyCode === 37) {
                         this.terminal.write(key);
@@ -144,14 +144,14 @@ export default class Pmd extends FeatureElement {
     runTerminal = async (path,command) => {
         const listenerName = 'sfdx-run-shell';
         await window.electron.ipcRenderer.invoke('code-runShell',{
-            alias:this.connector.header.alias,
+            alias:this.connector.configuration.alias,
             targetPath:this.projectPath,
             listenerName,
             command:command,
         });
         window.electron.listener_on(listenerName,(res) => {
             const {action,data,error} = res;
-            console.log('response',res);
+            //console.log('response',res);
             
             if(action === 'message' || action === 'error'){
                 this.terminal.write('\r\n' + data.toString().replace(/(\r\n|\n|\r)/gm," ") + ' \r\n');
@@ -179,7 +179,7 @@ export default class Pmd extends FeatureElement {
     runSfdxAnalyzer = async () => {
         const listenerName = 'sfdx-code-analyzer';
         const {error, result} = await window.electron.ipcRenderer.invoke('code-runSfdxAnalyzer',{
-            alias:this.connector.header.alias,
+            alias:this.connector.configuration.alias,
             listenerName,
             command:this.sfdxScannerCommand,
         });
@@ -188,7 +188,7 @@ export default class Pmd extends FeatureElement {
         }
         //console.info('runSfdxAnalyzer',result);
         window.electron.listener_on(listenerName,(value) => {
-            console.log('value',value);
+            //console.log('value',value);
             if(value.action === 'done'){
                 window.electron.listener_off(listenerName)
             }else if(value.action === 'error'){

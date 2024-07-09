@@ -4,17 +4,17 @@ body {
     height: 100vh;
 }
 
-div:not(ui-information-block) > h1,
-div:not(ui-information-block) > h2,
-div:not(ui-information-block) > h3,
-div:not(ui-information-block) > h4,
-div:not(ui-information-block) > h5,
-div:not(ui-information-block) > h6{
+div:not(slds-information-block) > h1,
+div:not(slds-information-block) > h2,
+div:not(slds-information-block) > h3,
+div:not(slds-information-block) > h4,
+div:not(slds-information-block) > h5,
+div:not(slds-information-block) > h6{
   font-weight:inherit;
   font-size:0.8em;
 }
 
-div:not(ui-information-block) > .slds-text-heading_medium{
+div:not(slds-information-block) > .slds-text-heading_medium{
     font-size:unset !important;
 }
 
@@ -231,7 +231,7 @@ doc-app .full-page-body.slds-m-top_small{
 }
 
 .slds-tabs_scoped__content{
-    padding: 0; /* Only for Extension */
+    padding: 0.5rem; /* Only for Extension */
 }
 
 .slds-inline-flex{

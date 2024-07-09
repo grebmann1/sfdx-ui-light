@@ -1,8 +1,16 @@
 <template>
     <div class={pageClass}>
-        <builder-editor is-left-panel-toggled={isLeftToggled}>
+        <builder-editor is-left-panel-toggled={isLeftToggled} is-header-hidden>
             <!-- Header -->
-            <soql-header slot="header" is-left-toggled={isLeftToggled} onlefttoggle={handleLeftToggleChange}></soql-header>
+            <soql-header slot="header"></soql-header>
+            <!-- Toolbar - START -->
+            <div slot="toolbar" class="slds-builder-toolbar__item-group" aria-label="Left Actions">
+                <lightning-button-icon icon-name={toggleLeftIconName} d variant="bare" size="large" onclick={handleLeftToggle}></lightning-button-icon>
+            </div>
+            <div slot="toolbar" class="slds-builder-toolbar__actions" aria-label="Right Actions">
+                <lightning-button-icon icon-name={toggleRecentIconName} variant="bare" size="large" onclick={handleRecentToggle}></lightning-button-icon>
+            </div>
+            <!-- Toolbar - END -->
 
             <!-- Left Panel -->
             <div slot="left" class="slds-full-height">
@@ -15,7 +23,7 @@
             </div>
             
             <!-- Body -->
-            <article class="full-page-body full-page-body-builder slds-card">
+            <article class="full-page-body slds-card">
                 <div class="slds-card__body slds-card__body_inner">
                     <div class="slds-full-height slds-is-relative" style="min-height:200px;">
                         <template lwc:if={isLoading}>
@@ -26,14 +34,8 @@
                             <div class="body slds-full-height">
                                 <div class="right-panel">
                                     <div class="right-top-panel">
-                                        <div class="right-top-left-panel">
-                                            <!-- EDITOR -->
-                                            <soql-query-editor-panel ></soql-query-editor-panel>
-                                        </div>
-                                        <div class="right-top-right-panel">
-                                            <!-- RECENT QUERIES -->
-                                            <soql-query-list-panel ></soql-query-list-panel>
-                                        </div>
+                                        <!-- EDITOR -->
+                                        <soql-query-editor-panel ></soql-query-editor-panel>
                                     </div>
                                     <div class="right-bottom-panel">
                                         <!-- OUTPUT QUERIES -->
@@ -45,6 +47,11 @@
                     </div>
                 </div>
             </article>
+            <!-- Panel -->
+            <slds-vertical-panel size="slds-size_medium" is-open={isRecentToggled} onclose={handleRecentToggle}>
+                <!-- RECENT QUERIES -->
+                <soql-query-list-panel ></soql-query-list-panel>
+            </slds-vertical-panel>
         </builder-editor>
         
     </div>

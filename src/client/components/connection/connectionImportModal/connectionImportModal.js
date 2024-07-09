@@ -73,7 +73,7 @@ export default class ConnectionImportModal extends LightningModal {
 
     /** events **/
     inputChange = (e) => {
-        console.log('inputChange',e.target.files);
+        //console.log('inputChange',e.target.files);
         this.refs.uploader.handleDrop(e);
     }
 
@@ -138,7 +138,7 @@ export default class ConnectionImportModal extends LightningModal {
 
     handleDualListChange = (e) => {
         const selectedOptionsList = e.detail.value;
-        console.log('selectedOptionsList',selectedOptionsList,e.detail);
+        //console.log('selectedOptionsList',selectedOptionsList,e.detail);
         this.list_new = e.detail.value;
     }
 

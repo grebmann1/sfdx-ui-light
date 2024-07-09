@@ -1,11 +1,11 @@
 
 import { api } from 'lwc';
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import { isUndefinedOrNull } from 'shared/utils';
-import { store,selectChildRelationship} from 'soql/store';
 import { store as appStore,store_application  }  from 'shared/store';
+import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,UI } from 'core/store';
 
-export default class OutputCell extends FeatureElement {
+export default class OutputCell extends ToolkitElement {
     @api value;
 
     get isChildRelationship() {
@@ -24,7 +24,7 @@ export default class OutputCell extends FeatureElement {
     /** Events */
 
     handleClick() {
-        store.dispatch(selectChildRelationship(this.value.rawData));
+        store.dispatch(UI.reduxSlice.actions.selectChildRelationship({childRelationship:this.value.rawData}));
     }
 
     handleRedirection = (e) =>{

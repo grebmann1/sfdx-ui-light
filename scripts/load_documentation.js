@@ -142,7 +142,7 @@ loadAllDocuments = async (items) => {
         const promises = chunk.map(x => fetchContentDocument(x.documentationId,x.url));
         const results = await Promise.all(promises);
         finalResult = [].concat(finalResult,results);
-        console.log(items.length +' / '+finalResult.length);
+        //console.log(items.length +' / '+finalResult.length);
     }
     
 
@@ -182,15 +182,15 @@ loadAllDocumentAsSeparateFile = async (items) => {
             file: fs.createReadStream(fileName),
             purpose: "assistants",
         });
-        console.log('file',file);
+        //console.log('file',file);
         results.push(file);
     }
-    console.log('results',results);
+    //console.log('results',results);
     const fileChunks = chunkList(results, 500);
     for await (const chunk of fileChunks) {
         const myVectorStoreFileBatch = await openai.beta.vectorStores.fileBatches.create(vectorStore.id,{file_ids: chunk.map(x => x.id)});
         
-        console.log('myVectorStoreFileBatch',myVectorStoreFileBatch);
+        //console.log('myVectorStoreFileBatch',myVectorStoreFileBatch);
     }
     
     /*const myUpdatedAssistant = await openai.beta.assistants.update(
@@ -206,7 +206,7 @@ loadAllDocumentAsSeparateFile = async (items) => {
 
 fetchFilesAndAttachToVector = async () => {
     const list = await openai.files.list();
-    console.log('Files to delete',list.data.length)
+    //console.log('Files to delete',list.data.length)
     const fileChunks = chunkList(list.data, 5);
 
     //let finalResult = [];
@@ -216,7 +216,7 @@ fetchFilesAndAttachToVector = async () => {
         const results = await Promise.all(promises);
         //finalResult = [].concat(finalResult,results);
         counter += results.length;
-        console.log(`Proccessed : ${counter}/${list.data.length}`);
+        //console.log(`Proccessed : ${counter}/${list.data.length}`);
     }
 }
 //fetchFilesAndAttachToVector();

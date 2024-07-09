@@ -1,9 +1,9 @@
 import { track } from "lwc";
 import { decodeError,isNotUndefinedOrNull } from 'shared/utils';
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 
 
-export default class App extends FeatureElement {
+export default class App extends ToolkitElement {
 
     isLoading = false;
     loadingMessage = 'Loading Metadata';
@@ -27,16 +27,16 @@ export default class App extends FeatureElement {
     /** Methods  **/
 
     loadPathFromConfig = async () => {
-        const {error, result} = await window.electron.ipcRenderer.invoke('code-getInitialConfig',{alias:this.connector.header.alias});
+        const {error, result} = await window.electron.ipcRenderer.invoke('code-getInitialConfig',{alias:this.connector.configuration.alias});
         if (error) {
             throw decodeError(error);
         }
-        console.log('result',result);
+        //console.log('result',result);
         this.projectPath = result.projectPath;
         this.initMetadataLoaded = result.metadataLoaded || true; // For DEMO - TODO: Fix issue related to Metadata download
         
-        /*if(isNotUndefinedOrNull(this.connector.header.alias)){
-            const {error, result} = await window.electron.ipcRenderer.invoke('util-getConfig',{key:'projectPath',configName:this.connector.header.alias});
+        /*if(isNotUndefinedOrNull(this.connector.configuration.alias)){
+            const {error, result} = await window.electron.ipcRenderer.invoke('util-getConfig',{key:'projectPath',configName:this.connector.configuration.alias});
             if (error) {
                 throw decodeError(error);
             }
@@ -45,7 +45,7 @@ export default class App extends FeatureElement {
     }
 
     savePathToConfig = async () => {
-        /*let {error, result} = await window.electron.ipcRenderer.invoke('util-setConfig',{key:'projectPath',value:this.projectPath,configName:this.connector.header.alias});
+        /*let {error, result} = await window.electron.ipcRenderer.invoke('util-setConfig',{key:'projectPath',value:this.projectPath,configName:this.connector.configuration.alias});
         if (error) {
             throw decodeError(error);
         }*/
@@ -58,7 +58,7 @@ export default class App extends FeatureElement {
             throw decodeError(error);
         }
 
-        console.log('test',error,result);
+        //console.log('test',error,result);
         this.projectPath = result?.projectPath || null;
         this.savePathToConfig();
         
@@ -71,13 +71,13 @@ export default class App extends FeatureElement {
     }
 
     retrieveCode = async (isRefresh) => {
-        console.log('retrieveCode');
+        //console.log('retrieveCode');
         this.isLoading = true;
 
         /** Electron **/
         let {error, result} = await window.electron.ipcRenderer.invoke('code-retrieveCode',{
             targetPath:this.projectPath,
-            alias:this.connector.header.alias,
+            alias:this.connector.configuration.alias,
             refresh:isRefresh === true
         });
 
@@ -113,7 +113,7 @@ export default class App extends FeatureElement {
     downloadCode = () => {
         window.electron.ipcRenderer.invoke('code-exportMetadata',{
             targetPath:this.projectPath,
-            alias:this.connector.header.alias
+            alias:this.connector.configuration.alias
         });
 
         window.electron.listener_on('metadata',(value) => {

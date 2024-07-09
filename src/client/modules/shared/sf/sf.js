@@ -20,7 +20,7 @@ export const loadMetadata_async = async (conn,callback,updateLoadingMessage) => 
         getTabDefinitions(conn),
         getPermissionGroups(conn)
     ]);
-    console.log('--> Result_1');
+    //console.log('--> Result_1');
 
     updateLoadingMessage('Mapping General permissions and layouts. (2/3)');
 
@@ -38,7 +38,7 @@ export const loadMetadata_async = async (conn,callback,updateLoadingMessage) => 
         setRecordTypes(conn,sobjects),
         setLayoutAssignments(conn,permissionSets,{permissionSetProfileMapping,layouts})
     ]);
-    console.log('--> Result_2');
+    //console.log('--> Result_2');
     updateLoadingMessage('Mapping Entities to Profiles & PermissionSets. (3/3)');
 
     const profileFields = results_2[0];
@@ -48,7 +48,7 @@ export const loadMetadata_async = async (conn,callback,updateLoadingMessage) => 
         setObjectPermissions(conn,permissionSets),
         setPermissionSetTabSetting(conn,permissionSets,{tabDefinitions}),
     ]);
-    console.log('--> results_3');
+    //console.log('--> results_3');
     const entityAccess = results_3[0];
 
     /** Map entity to Profile */
@@ -63,14 +63,14 @@ export const loadMetadata_async = async (conn,callback,updateLoadingMessage) => 
 
     const asyncLoading = async () => {
         /* This can be really slow */
-        console.log('namespaceLoading');
+        //console.log('namespaceLoading');
         // Set Permissions
        let results_4 = await Promise.all([
             getSetupEntityAccess(conn,null,true,{apexClasses,apexPages,appDefinitions})
         ]);
 
         const entityAccess_namespace = results_4[0];
-        console.log('asyncLoading -> callback');
+        //console.log('asyncLoading -> callback');
         callback({entityAccess:entityAccess_namespace});
 
     }
@@ -94,7 +94,7 @@ export const loadMetadata_async = async (conn,callback,updateLoadingMessage) => 
 
 
 export const getPermissionSet = async (conn) => {
-    console.log('getPermissionSet');
+    //console.log('getPermissionSet');
     const permissionSets = {};
     const permissionSetProfileMapping = {}
 
@@ -133,19 +133,19 @@ export const getPermissionSet = async (conn) => {
 }
 
 async function getApexClass(conn) {
-    console.log('getApexClass');
+    //console.log('getApexClass');
     const apexClasses = {};
     let query = conn.query("SELECT Id,Name,NamespacePrefix FROM ApexClass");
     let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
         records.forEach(record => {
             apexClasses[record.Id] = new ApexClass(record);
         });
-    console.log('ApexClass records - ',records.length);
+    //console.log('ApexClass records - ',records.length);
     return apexClasses;
 }
 
 async function getPermissionGroups(conn){
-    console.log('getPermissionGroups');
+    //console.log('getPermissionGroups');
     const permissionGroups = {};
     let query = conn.query('SELECT Description, DeveloperName,  Id, MasterLabel, NamespacePrefix, Status FROM PermissionSetGroup');
     let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
@@ -162,7 +162,7 @@ async function getPermissionGroups(conn){
 }
 
 async function getApexPage(conn) {
-    console.log('getApexPage');
+    //console.log('getApexPage');
     const  apexPages = {};
     let query = conn.query("SELECT Id,Name,MasterLabel FROM ApexPage");
     let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
@@ -174,7 +174,7 @@ async function getApexPage(conn) {
 }
 
 async function getAppDefinition(conn){
-    console.log('getAppDefinition');
+    //console.log('getAppDefinition');
     const  appDefinitions = {};
 
     let records = (await conn.tooling.query("select Id, DeveloperName,Label,NamespacePrefix FROM CustomApplication")).records || [];
@@ -188,7 +188,7 @@ async function getAppDefinition(conn){
 
 
 async function getLayouts(conn){
-    console.log('getLayouts');
+    //console.log('getLayouts');
     const  layouts = {};
     let query = conn.tooling.query("SELECT Id, Name, EntityDefinition.QualifiedApiName, EntityDefinition.Label,EntityDefinition.IsCustomizable,EntityDefinition.IsCompactLayoutable from Layout");
     let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 200000 }) || [];
@@ -204,7 +204,7 @@ async function getLayouts(conn){
 
 
 const getEntityDefinition = async (conn) => {
-    console.log('getEntityDefinition');
+    //console.log('getEntityDefinition');
     const sobjects = {};
     let query = conn.query("select QualifiedApiName,Label from EntityDefinition where IsCustomizable=true and IsCompactLayoutable=true");
     let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 200000 }) || [];
@@ -215,7 +215,7 @@ const getEntityDefinition = async (conn) => {
 }
 
 const getTabDefinitions = async (conn) => {
-    console.log('getTabDefinitions');
+    //console.log('getTabDefinitions');
     const tabDefinitions = {};
     let records = (await conn.tooling.query("select Name, Label from TabDefinition")).records || [];
         records.forEach(record => {
@@ -227,13 +227,13 @@ const getTabDefinitions = async (conn) => {
 
 
 const setRecordTypes = async (conn,sobjects) => {
-    console.log('setRecordTypes');
+    //console.log('setRecordTypes');
     let records = (await conn.query("select Id, DeveloperName, Name, SobjectType from RecordType")).records || [];
         records.forEach(record => sobjects[record.SobjectType].recordTypes[record.Id] = new RecordType(record.Id, record.DeveloperName, record.Name));
 }
 
 const setLayoutAssignments = async (conn,permissionSets,{permissionSetProfileMapping,layouts}) => {
-    console.log('setLayoutAssignments');
+    //console.log('setLayoutAssignments');
     let query = conn.tooling.query("select Profile.Id, LayoutId, RecordTypeId from ProfileLayout where Profile.Id != null");
     let records = await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 200000 }) || [];
         records.forEach(record => {
@@ -251,7 +251,7 @@ const setLayoutAssignments = async (conn,permissionSets,{permissionSetProfileMap
 }
 
 const setUserPermissions = async (conn,permissionSets) => {
-    console.log('setUserPermissions');
+    //console.log('setUserPermissions');
     const profileFields = {};
     
     let permissionDescribe = await conn.sobject('PermissionSet').describe();
@@ -276,7 +276,7 @@ const setUserPermissions = async (conn,permissionSets) => {
 }
 
 const setObjectPermissions = async (conn,permissionSets) => {
-    console.log('setObjectPermissions');
+    //console.log('setObjectPermissions');
 
     let query = conn.query(`select ParentId,SobjectType,PermissionsCreate,PermissionsRead,PermissionsEdit,PermissionsDelete,PermissionsViewAllRecords,PermissionsModifyAllRecords from ObjectPermissions`);
          
@@ -299,7 +299,7 @@ const setObjectPermissions = async (conn,permissionSets) => {
 }
 
 const setPermissionSetTabSetting = async (conn,permissionSets,{tabDefinitions}) => {
-    console.log('setPermissionSetTabSetting');
+    //console.log('setPermissionSetTabSetting');
     const fetchPermissionSetTabSetting = async (ids) => {
         let query = conn.query(`select ParentId, Name, Visibility from PermissionSetTabSetting where ParentId in ('${ids.join("','")}')`);
         return await query.run({ responseTarget:'Records',autoFetch : true, maxFetch : 200000 }) || [];
@@ -320,7 +320,7 @@ const setPermissionSetTabSetting = async (conn,permissionSets,{tabDefinitions}) 
 
 
 const getSetupEntityAccess = async (conn,permissionSets,includeNamespacePrefix = false,{apexClasses,apexPages,appDefinitions}) => {
-    console.log('getSetupEntityAccess');
+    //console.log('getSetupEntityAccess');
     const CHUNK_SIZE = 50;
     const fetchEntityAccess = async (ids) => {
         let query = conn.query(`SELECT ParentId, SetupEntityType, SetupEntityId FROM SetupEntityAccess WHERE SetupEntityId in ('${ids.join("','")}')`);
@@ -367,7 +367,7 @@ const getSetupEntityAccess = async (conn,permissionSets,includeNamespacePrefix =
 }
 
 export const setFieldDefinition = async (conn,targetObject) => {
-    console.log('setFieldDefinition')
+    //console.log('setFieldDefinition')
     let records_fieldDefinition = (await conn.tooling.query(`select EntityDefinitionId,MasterLabel,IsNillable, QualifiedApiName, DataType from FieldDefinition where EntityDefinition.QualifiedApiName ='${targetObject.name}'`)).records || [];
 
     targetObject.fields = {};

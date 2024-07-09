@@ -1,9 +1,9 @@
 import { wire,api } from "lwc";
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import { NavigationContext, navigate } from 'lwr/navigation';
 
 
-export default class RequireConnection extends FeatureElement {
+export default class RequireConnection extends ToolkitElement {
     @wire(NavigationContext)
     navContext;
 

@@ -1,9 +1,9 @@
 import { LightningElement,api,track} from "lwc";
 import { isUndefinedOrNull,classSet,ROLES } from "shared/utils";
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 
 
-export default class Message extends FeatureElement {
+export default class Message extends ToolkitElement {
 
    
     @api item;

@@ -122,7 +122,7 @@ export default class ModalUserSelector extends LightningModal {
 		];
 
 		const dataList = this.records;
-        console.log('dataList',dataList);
+        //console.log('dataList',dataList);
         this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
             maxHeight:"100%",
             data: dataList,

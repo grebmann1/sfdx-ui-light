@@ -1,5 +1,5 @@
 import { LightningElement,api,track} from "lwc";
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 
 import { isEmpty,formatBytes,isUndefinedOrNull,isNotUndefinedOrNull } from 'shared/utils';
 
@@ -7,7 +7,7 @@ import { isEmpty,formatBytes,isUndefinedOrNull,isNotUndefinedOrNull } from 'shar
 const DEFAULT_NAMESPACE = 'Default';
 const ALL_NAMESPACE     = 'All';
 
-export default class Code extends FeatureElement {
+export default class Code extends ToolkitElement {
 
     @api namespaceFiltering_value = DEFAULT_NAMESPACE;
 

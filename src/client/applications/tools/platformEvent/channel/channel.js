@@ -1,12 +1,12 @@
 import { api,track,wire } from "lwc";
 import { decodeError,isNotUndefinedOrNull,classSet } from 'shared/utils';
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import {
     connectStore,
     store,
 } from 'platformevent/store';
 
-export default class Channel extends FeatureElement {
+export default class Channel extends ToolkitElement {
 
     isLoading = false;
     counter = 0;

@@ -1,5 +1,5 @@
 import { api,wire } from "lwc";
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 
 import { isEmpty,isElectronApp } from 'shared/utils';
 import { CONFIG } from 'ui/app';
@@ -9,7 +9,7 @@ import { NavigationContext, generateUrl, navigate } from 'lwr/navigation';
     
 
 
-export default class QuickLauncher extends FeatureElement {
+export default class QuickLauncher extends ToolkitElement {
     @wire(NavigationContext)
     navContext;
     

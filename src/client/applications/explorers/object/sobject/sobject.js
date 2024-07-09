@@ -1,5 +1,5 @@
 import { wire, api, createElement} from "lwc";
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 import { isEmpty,runActionAfterTimeOut,isNotUndefinedOrNull,classSet } from 'shared/utils';
 import {TabulatorFull as Tabulator} from "tabulator-tables";
@@ -8,7 +8,7 @@ import SObjectCell from 'object/sobjectCell';
 /** Store */
 import { store,store_application } from 'shared/store';
 
-export default class Sobject extends FeatureElement {
+export default class Sobject extends ToolkitElement {
 
     @wire(NavigationContext)
     navContext;

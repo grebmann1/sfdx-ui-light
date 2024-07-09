@@ -49,7 +49,7 @@ const getHostAndSession = async () => {
             session: sessionCookie.value,
         };
     }catch(e){
-        console.log('getHostAndSession issue: ',e);
+        //console.log('getHostAndSession issue: ',e);
         return;
     }
 }

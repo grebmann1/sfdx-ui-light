@@ -1,10 +1,10 @@
 import { api } from "lwc";
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import { isEmpty,isElectronApp,classSet,isUndefinedOrNull,isNotUndefinedOrNull,runActionAfterTimeOut,formatFiles,sortObjectsByField,removeDuplicates } from 'shared/utils';
 
 
 
-export default class CardItem extends FeatureElement {
+export default class CardItem extends ToolkitElement {
 
     @api item;
 
@@ -15,7 +15,7 @@ export default class CardItem extends FeatureElement {
         const redirect = e.currentTarget.dataset.redirect;
 
         runActionAfterTimeOut(null,async () => {
-            console.log('eventName',eventName);
+            //console.log('eventName',eventName);
             this.dispatchEvent(new CustomEvent("rowaction", { 
                 detail:{
                     action:{name:eventName},

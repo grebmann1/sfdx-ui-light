@@ -1,6 +1,6 @@
 import { api,track } from "lwc";
 import { decodeError,isNotUndefinedOrNull,isEmpty,guid } from 'shared/utils';
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 
 const INFO = 'INFO';
 const DEBUG = 'DEBUG';
@@ -23,7 +23,7 @@ Schemas.ExecuteAnonymousResult = {
     }
 }
 
-export default class App extends FeatureElement {
+export default class App extends ToolkitElement {
 
     isLoading = false;
     isMonacoLoaded = false;
@@ -67,12 +67,12 @@ export default class App extends FeatureElement {
 
 
     storeToCache = () => {
-        let key = `${this.connector.header.alias}-anonymousapex-scripts`;
+        let key = `${this.connector.configuration.alias}-anonymousapex-scripts`;
         window.defaultStore.setItem(key,JSON.stringify(this.refs.editor.editorUpdatedFiles));
     }
 
     loadFromCache = async () => {
-        let key = `${this.connector.header.alias}-anonymousapex-scripts`;
+        let key = `${this.connector.configuration.alias}-anonymousapex-scripts`;
         let _config = await window.defaultStore.getItem(key);
         try{
             if(isEmpty(_config)) return;
@@ -95,7 +95,7 @@ export default class App extends FeatureElement {
 
     debug_handleChange = (e) => {
         this.debug[e.currentTarget.dataset.key] = e.detail.value;
-        let key = `${this.connector.header.alias}-debuglog`;
+        let key = `${this.connector.configuration.alias}-debuglog`;
         window.defaultStore.setItem(key,JSON.stringify(this.debug));
     }
 
@@ -113,7 +113,7 @@ export default class App extends FeatureElement {
         this.isApexRunning = true;
         // Execute
         this.executeApexSoap( (err, res) => {
-            console.log('err, res',err, res);
+            //console.log('err, res',err, res);
             if (err) { 
                 return console.error(err);
             }
@@ -141,7 +141,7 @@ export default class App extends FeatureElement {
             name:'Script',
             apiVersion:60,
             body:`System.debug('Hello the world');`,
-            language:'java',
+            language:'apex',
         }
     }
 

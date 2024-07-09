@@ -1,4 +1,4 @@
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import { wire,api,createElement } from "lwc";
 import { isEmpty,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull,removeDuplicates,classSet } from 'shared/utils';
 import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'lwr/navigation';
@@ -57,7 +57,7 @@ const CONFIGURATION = {
     }
 }
 
-export default class App extends FeatureElement {
+export default class App extends ToolkitElement {
     @wire(NavigationContext)
     navContext;
 

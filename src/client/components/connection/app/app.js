@@ -1,12 +1,12 @@
 import { api,track } from "lwc";
 import Toast from 'lightning/toast';
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import ConnectionNewModal from "connection/connectionNewModal";
 import ConnectionDetailModal from "connection/connectionDetailModal";
 import ConnectionRenameModal from "connection/connectionRenameModal";
 import ConnectionImportModal from "connection/connectionImportModal";
 import { download,classSet,runActionAfterTimeOut,checkIfPresent,isEmpty,isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,normalizeString as normalize,groupBy } from 'shared/utils';
-import { getAllConnection,setAllConnection,removeConnection,connect,oauth,getConnection,getCurrentTab,oauth_chrome } from 'connection/utils';
+import { getConfigurations,setConfigurations,removeConfiguration,connect,oauth,getConfiguration,getCurrentTab,oauth_chrome } from 'connection/utils';
 import { store,store_application } from 'shared/store';
 
 
@@ -16,14 +16,14 @@ const ACTIONS = [
     { label: 'Export', name: 'export' },
     { label: 'See Details', name: 'seeDetails' },
     { label: 'Edit', name: 'setAlias' },
-    { label: 'Remove', name: 'removeConnection' }
+    { label: 'Remove', name: 'removeConfiguration' }
 ];
 
 const LOGIN_URL = 'https://login.salesforce.com';
 const TEST_URL = 'https://test.salesforce.com';
 const CUSTOM_URL = 'custom';
 
-export default class App extends FeatureElement {
+export default class App extends ToolkitElement {
 
 
 
@@ -103,8 +103,8 @@ export default class App extends FeatureElement {
             case 'seeDetails':
                 this.seeDetails(row);
                 break;
-            case 'removeConnection':
-                this.removeConnection(row);
+            case 'removeConfiguration':
+                this.removeConfiguration(row);
                 break;
             case 'setAlias':
                 this.setAlias(row);
@@ -146,9 +146,9 @@ export default class App extends FeatureElement {
     fetchAllConnections = async () => {
         // Browser & Electron version
         this.isLoading = true;
-        this.data =  await getAllConnection();
+        this.data =  await getConfigurations();
         //console.log('originalList',this.data);
-        //console.log('getAllConnection',this.data);
+        //console.log('getConfigurations',this.data);
         this.formattedData = this.formatDataForCardView();
         this.isLoading = false;
     }
@@ -163,7 +163,7 @@ export default class App extends FeatureElement {
             }
         });
         
-        await setAllConnection(JSON.parse(JSON.stringify(newConnections)));
+        await setConfigurations(JSON.parse(JSON.stringify(newConnections)));
 
         /** Fetch Again **/
         this.fetchAllConnections();
@@ -208,10 +208,8 @@ export default class App extends FeatureElement {
     authorizeExistingOrg = async (row) => {
         if(isElectronApp()) return;
 
-        let {alias,...settings} = this.data.find(x => x.id == row.id);
+        let {alias,loginUrl,...settings} = this.data.find(x => x.id == row.id);
         this.dispatchEvent(new CustomEvent("startlogin", { bubbles: true,composed: true }));
-        //console.log('settings',settings);
-        const loginUrl = 'https://culturalcareaupair--qa.sandbox.my.salesforce.com';
         const _oauthMethod = isChromeExtension()?oauth_chrome:oauth;
 
         _oauthMethod(
@@ -231,7 +229,7 @@ export default class App extends FeatureElement {
     }
 
     openBrowser = async (row,target) => {
-        console.log('openBrowser',target);
+        //console.log('openBrowser',target);
 
         if(isElectronApp()){
             // Electron version
@@ -282,6 +280,7 @@ export default class App extends FeatureElement {
                     window.open(url,target);
                 }
             }catch(e){
+                console.error(e);
                 Toast.show({
                     label: `OAuth Issue | Check your settings [re-authorize the org]`,
                     variant:'error',
@@ -297,8 +296,8 @@ export default class App extends FeatureElement {
             try{
                 const {alias,...settings} = this.data.find(x => x.id == row.id);
                 const connector = await connect({alias,settings,disableEvent:true});
-                var url = `https://sf-toolkit.com/extension?sessionId=${connector.conn.accessToken}&serverUrl=${encodeURIComponent(connector.conn.instanceUrl)}`;
-                //var url = `http://localhost:3000/extension?sessionId=${connector.conn.accessToken}&serverUrl=${encodeURIComponent(connector.conn.instanceUrl)}`;
+                //var url = `https://sf-toolkit.com/extension?sessionId=${connector.conn.accessToken}&serverUrl=${encodeURIComponent(connector.conn.instanceUrl)}`;
+                var url = `http://localhost:3000/extension?sessionId=${connector.conn.accessToken}&serverUrl=${encodeURIComponent(connector.conn.instanceUrl)}`;
                 if(redirect){
                     url+=`&redirectUrl=${encodeURIComponent(redirect)}`;
                 }
@@ -307,7 +306,7 @@ export default class App extends FeatureElement {
                     this.createOrAddToTabGroup(tab, alias);
                 });*/
             }catch(e){
-                console.log('error',e);
+                //console.log('error',e);
                 Toast.show({
                     label: `${e.name} | ${e.message}`,
                     variant:'error',
@@ -341,7 +340,7 @@ export default class App extends FeatureElement {
         .then(async (res) => {
             //console.log('addConnectionClick',res);
             if(isNotUndefinedOrNull(res)){
-                console.log('force refresh');
+                //console.log('force refresh');
                 await this.fetchAllConnections();
             }
             if(isElectronApp()){
@@ -364,7 +363,7 @@ export default class App extends FeatureElement {
             const accessToken   = connector?connector.conn.accessToken:null;
             const frontDoorUrl  = connector?connector.frontDoorUrl:null;
             if(isElectronApp()){
-                let settings = await getConnection(alias);
+                let settings = await getConfiguration(alias);
                 sfdxAuthUrl = settings.sfdxAuthUrl || sfdxAuthUrl;
             }
             ConnectionDetailModal.open({
@@ -391,10 +390,10 @@ export default class App extends FeatureElement {
         });
     }
 
-    removeConnection = async (row) => {
+    removeConfiguration = async (row) => {
         var confirmed = window.confirm(`Are you sure you wish to remove this Connection : ${row.alias}:${row.username} ?`)
         if(confirmed){
-            await removeConnection(row.alias);
+            await removeConfiguration(row.alias);
             await this.fetchAllConnections();
         }
     };
@@ -406,13 +405,13 @@ export default class App extends FeatureElement {
             if (group) {
                 // Group exists, add the tab to this group
                 chrome.tabs.group({groupId: group.id, tabIds: tab.id}, () => {
-                    console.log(`Tab added to existing group '${groupName}'`);
+                    //console.log(`Tab added to existing group '${groupName}'`);
                 });
             } else {
                 // Group does not exist, create a new group with this tab
                 chrome.tabs.group({createProperties: {}, tabIds: tab.id}, (newGroupId) => {
                     chrome.tabGroups.update(newGroupId, {title: groupName}, () => {
-                        console.log(`New group '${groupName}' created and tab added`);
+                        //console.log(`New group '${groupName}' created and tab added`);
                     });
                 });
             }
@@ -453,7 +452,7 @@ export default class App extends FeatureElement {
             'size':isChromeExtension()?'full':'small'
         })
         .then(async (res) => {
-            console.log('force refresh');
+            //console.log('force refresh');
             await this.fetchAllConnections();
         });
     }

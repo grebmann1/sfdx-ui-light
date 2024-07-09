@@ -14,7 +14,7 @@ export default class SobjectCell extends LightningElement {
 
     goToUrl = (e) => {
         const redirectUrl = e.currentTarget.dataset.url;
-        console.log('redirectUrl',redirectUrl);
+        //console.log('redirectUrl',redirectUrl);
         store.dispatch(store_application.navigate(redirectUrl));
     }
 

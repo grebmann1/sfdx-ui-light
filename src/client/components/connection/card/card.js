@@ -1,12 +1,12 @@
 import { api,track } from "lwc";
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import { isEmpty,isElectronApp,classSet,isUndefinedOrNull,isNotUndefinedOrNull,runActionAfterTimeOut,formatFiles,sortObjectsByField,removeDuplicates } from 'shared/utils';
 
 const defaultConfig = {
     isOpen:false
 }
 
-export default class Card extends FeatureElement {
+export default class Card extends ToolkitElement {
 
     @api item;
     @api isOpen = false;

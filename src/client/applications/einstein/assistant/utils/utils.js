@@ -20,7 +20,7 @@ export const getThreadList = async () => {
     if(threadsText && threadsText != ''){
         threads = JSON.parse(threadsText)
     }
-    console.log('threads',threads)
+    //console.log('threads',threads)
     return threads;
 }
 

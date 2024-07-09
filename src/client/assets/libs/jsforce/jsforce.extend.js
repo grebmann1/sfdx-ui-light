@@ -1,5 +1,5 @@
 jsforce.browser.Client.prototype._getTokens = function() {
-    console.log('_getTokens');
+    //console.log('_getTokens');
     var regexp = new RegExp("(^|;\\s*)"+this._prefix+"_loggedin=true(;|$)");
     if (document.cookie.match(regexp)) {
       var issuedAt = Number(localStorage.getItem(this._prefix+'_issued_at'));

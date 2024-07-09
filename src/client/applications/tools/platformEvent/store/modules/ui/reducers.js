@@ -9,7 +9,7 @@ const RECENT_CHANNELS_KEY = 'lsb.recentChannels';
 const MAX_RECENT_CHANNELS = 20;
 
 function recentChannels(state = [], action) {
-    console.log('---> store recentChannels');
+    //console.log('---> store recentChannels');
     const { channel } = action.payload;
     const recentChannelState = [
         channel,
@@ -48,7 +48,7 @@ export default function ui(state = {}, action) {
         }
 
         case SUBSCRIBE_CHANNEL_SUCCESS:
-            console.log('state',state,action)
+            //console.log('state',state,action)
             return {
                 ...state,
                 recentChannels: recentChannels(action.payload?.recentChannels, action)

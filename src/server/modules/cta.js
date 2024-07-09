@@ -7,7 +7,7 @@ const fetchContent = async (callback) => {
     const content = await (await fetch(url)).text();
     
     const files = await extractLinks(content);
-    console.log(`${files.length} files loaded in the cache`);
+    //console.log(`${files.length} files loaded in the cache`);
     callback(files);
 }
 
@@ -36,7 +36,7 @@ const extractFiles = async (url) => {
     try{
         fetchContent(callback);
         schedule.scheduleJob('0 23 * * *', () => { // run every every day at 11PM
-            console.log('Auto run of CTA - fetchContent');
+            //console.log('Auto run of CTA - fetchContent');
             fetchContent(callback);
         });
     }catch(e){

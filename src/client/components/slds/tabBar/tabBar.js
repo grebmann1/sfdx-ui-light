@@ -72,7 +72,8 @@ export default class SldsTabBar extends LightningElement {
         tabHeaders = tabHeaders || [];
         this._tabHeaders = tabHeaders;
         const allTabs = tabHeaders.map((tab) => {
-            const classNames = this._tabClass({});
+            const classNames = this._tabClass({isAdd:tab.isAddTabEnabled});
+            console.log('classNames',classNames);
             const linkClassNames = this.computedLinkClass;
             return {
                 label: tab.label,
@@ -82,7 +83,7 @@ export default class SldsTabBar extends LightningElement {
                 domId: tab.domId,
                 value: String(tab.value),
                 class: classNames,
-                linkClass: tab.isAddTabEnabled?linkClassNames+' slds-tab-add':linkClassNames,
+                linkClass: linkClassNames,
                 tabIndex: -1,
                 ariaSelected: false,
                 contentId: '',
@@ -109,7 +110,7 @@ export default class SldsTabBar extends LightningElement {
                 selectedTab = allTabs[0];
             }
         }
-        if (selectedTab) {
+        if (selectedTab && !selectedTab.isAddTabEnabled) {
             this._selectedTab = selectedTab;
             selectedTab.class = this._tabClass({ selected: true });
             selectedTab.ariaSelected = 'true';
@@ -344,16 +345,17 @@ export default class SldsTabBar extends LightningElement {
         });
     }
 
-    _tabClass({ selected = false, hasFocus = false }) {
+    _tabClass({ selected = false, hasFocus = false,isAdd = false }) {
         const isScopedVariant = this._variant === 'scoped';
         const isVertical = this.isVerticalVariant;
-        return classSet('slds-grid slds-grid_vertical-align-center slds-sub-tabs__item')
+        return classSet('slds-grid slds-grid_vertical-align-center slds-sub-tabs__item slds-m-horizontal_xx-small')
             .add({
                 'slds-tabs_default__item': !isScopedVariant && !isVertical,
                 'slds-tabs_scoped__item': isScopedVariant,
                 'slds-vertical-tabs__nav-item': isVertical,
                 'slds-is-active': selected,
-                'slds-has-focus': hasFocus
+                'slds-has-focus': hasFocus,
+                'slds-tab-add':isAdd
             })
             .toString();
     }

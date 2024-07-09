@@ -1,22 +1,12 @@
 import { wire, api } from 'lwc';
 import Toast from 'lightning/toast';
-import FeatureElement from 'element/featureElement';
-import { ui_constants } from 'soql/store';
-import {
-    connectStore,
-    store,
-    describeSObjectIfNeeded,
-    deselectSObject,
-    clearSObjectError,
-    selectAllFields,
-    clearAllFields,
-    sortFields,
-} from 'soql/store';
+import ToolkitElement from 'core/toolkitElement';
+import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,UI } from 'core/store';
 
-import { isEmpty,fullApiName,isNotUndefinedOrNull } from 'shared/utils';
+import { isEmpty,fullApiName,isNotUndefinedOrNull,generateExternalId } from 'shared/utils';
 
 
-export default class FieldsPanel extends FeatureElement {
+export default class FieldsPanel extends ToolkitElement {
     @api namespace;
 
     tabs = [
@@ -34,7 +24,7 @@ export default class FieldsPanel extends FeatureElement {
     sobjectMeta;
     keyword = '';
     isLoading = false;
-    useToolingApi = false;
+    _useToolingApi = false;
 
     _selectedSObject;
 
@@ -43,14 +33,15 @@ export default class FieldsPanel extends FeatureElement {
     
 
     @wire(connectStore, { store })
-    storeChange({ sobjects, sobject, ui }) {
+    storeChange({ describe, sobject, ui }) {
         if(ui && ui.hasOwnProperty('useToolingApi')){
-            this.useToolingApi = ui.useToolingApi;
+            this._useToolingApi = ui.useToolingApi;
         }
 
         const { selectedSObject } = ui;
         if (!selectedSObject) return;
 
+        const sobjects = SELECTORS.describe.selectById({describe},DESCRIBE.getDescribeTableName(this._useToolingApi));
         const fullSObjectName = fullApiName(selectedSObject,this.namespace);
         if (
             sobjects &&
@@ -58,19 +49,15 @@ export default class FieldsPanel extends FeatureElement {
         ) {
             return;
         }
-        console.log('fullSObjectName',fullSObjectName,this._selectedSObject);
         if (fullSObjectName !== this._selectedSObject) {
-            console.log('request SObject !!!');
             this._selectedSObject = fullSObjectName;
-            store.dispatch(describeSObjectIfNeeded({
+            store.dispatch(SOBJECT.describeSObject({
                 connector:this.connector.conn,
                 sObjectName:this._selectedSObject
             }));
         }
-
-        const sobjectState = sobject[this._selectedSObject];
+        const sobjectState = SELECTORS.sobject.selectById({sobject},(this._selectedSObject||'').toLowerCase());
         if (!sobjectState) return;
-
         this.isLoading = sobjectState.isFetching;
         // Assign Metadata
         if (sobjectState.data) {
@@ -81,21 +68,14 @@ export default class FieldsPanel extends FeatureElement {
                 message: this.i18n.FIELDS_PANEL_FAILED_DESCRIBE_OBJ,
                 errors: sobjectState.error
             });
-            store.dispatch(clearSObjectError(this._selectedSObject));
+            store.dispatch(SOBJECT.reduxSlice.actions.clearDescribeError(this._selectedSObject));
         }
     }
 
-    
-
     deselectSObject() {
-        store.dispatch(deselectSObject());
+        store.dispatch(UI.reduxSlice.actions.deselectSObject());
     }
 
-    
-
-    
-
-   
 
     /** Events */
 
@@ -114,16 +94,16 @@ export default class FieldsPanel extends FeatureElement {
     handleMenuSelect(event) {
         switch (event.detail.value) {
             case 'select_all':
-                store.dispatch(selectAllFields(this.sobjectMeta));
+                store.dispatch(UI.reduxSlice.actions.selectAllFields({sObjectMeta:this.sobjectMeta}));
                 break;
             case 'clear_all':
-                store.dispatch(clearAllFields());
+                store.dispatch(UI.reduxSlice.actions.clearAllFields());
                 break;
             case 'sort_asc':
-                store.dispatch(sortFields(ui_constants.SORT.ORDER.ASC));
+                store.dispatch(UI.reduxSlice.actions.sortFields({sort:UI.SORT.ORDER.ASC}));
                 break;
             case 'sort_desc':
-                store.dispatch(sortFields(ui_constants.SORT.ORDER.DESC));
+                store.dispatch(UI.reduxSlice.actions.sortFields({sort:UI.SORT.ORDER.DESC}));
                 break;
             default:
                 break;

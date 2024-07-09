@@ -1,15 +1,11 @@
 import { LightningElement, wire,api  } from 'lwc';
 import Toast from 'lightning/toast';
-import FeatureElement from 'element/featureElement';
-import {
-    connectStore,
-    store,
-    deselectChildRelationship,
-    clearQueryError
-} from 'soql/store';
+import ToolkitElement from 'core/toolkitElement';
+import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,UI } from 'core/store';
+
 import { isNotUndefinedOrNull } from 'shared/utils';
 
-export default class OutputPanel extends FeatureElement {
+export default class OutputPanel extends ToolkitElement {
 
     response;
     childResponse;
@@ -39,7 +35,7 @@ export default class OutputPanel extends FeatureElement {
     }
 
     closeChildRelationship() {
-        store.dispatch(deselectChildRelationship());
+        store.dispatch(UI.reduxSlice.actions.deselectChildRelationship());
     }
 
     async exportCsv() {
@@ -75,7 +71,7 @@ export default class OutputPanel extends FeatureElement {
         }
         this.error_message = errors.join(':');
         console.error(e);
-        store.dispatch(clearQueryError());
+        store.dispatch(UI.reduxSlice.actions.clearQueryError());
     }
 
     resetError = () => {

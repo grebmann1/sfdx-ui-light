@@ -1,16 +1,13 @@
 import { wire, api } from 'lwc';
-import FeatureElement from 'element/featureElement';
-import {
-    connectStore,
-    store,
-    selectSObject,
-    clearSObjectsError
-} from 'soql/store';
+import ToolkitElement from 'core/toolkitElement';
+
+import { store,connectStore,SELECTORS,DESCRIBE,UI } from 'core/store';
+
 import Toast from 'lightning/toast';
 
 const PAGE_LIST_SIZE    = 70;
 
-export default class SobjectsPanel extends FeatureElement {
+export default class SobjectsPanel extends ToolkitElement {
     
     keyword = '';
     sobjects;
@@ -20,29 +17,36 @@ export default class SobjectsPanel extends FeatureElement {
     // Scrolling
     pageNumber = 1;
 
-    
+    _useToolingApi = false;
 
     @wire(connectStore, { store })
-    storeChange({ sobjects }) {
-        //if (this._rawSObjects) return;
-        this.isLoading = sobjects.isFetching;
-        if (sobjects.data) {
-            this._rawSObjects = sobjects.data.sobjects.map(sobject => {
-                return {
-                    ...sobject,
-                    itemLabel: `${sobject.name} / ${sobject.label}`
-                };
-            });
-            this.sobjects = this._rawSObjects;
-            //this.pageNumber = 1; // reset
-        } else if (sobjects.error) {
-            console.error(sobjects.error);
-            Toast.show({
-                message: this.i18n.SOBJECTS_PANEL_FAILED_FETCH_SOBJECTS,
-                errors: sobjects.error
-            });
-            store.dispatch(clearSObjectsError());
+    storeChange({ describe,ui }) {
+        if(ui && ui.hasOwnProperty('useToolingApi')){
+            this._useToolingApi = ui.useToolingApi;
         }
+        const sobjects = SELECTORS.describe.selectById({describe},DESCRIBE.getDescribeTableName(this._useToolingApi));
+        
+        if(sobjects){
+            this.isLoading = sobjects.isFetching;
+            if (sobjects.data) {
+                this._rawSObjects = sobjects.data.sobjects.map(sobject => {
+                    return {
+                        ...sobject,
+                        itemLabel: `${sobject.name} / ${sobject.label}`
+                    };
+                });
+                this.sobjects = this._rawSObjects;
+                //this.pageNumber = 1; // reset
+            } else if (sobjects.error) {
+                console.error(sobjects.error);
+                Toast.show({
+                    message: this.i18n.SOBJECTS_PANEL_FAILED_FETCH_SOBJECTS,
+                    errors: sobjects.error
+                });
+                store.dispatch(DESCRIBE.clearDescribeError());
+            }
+        }
+        
     }
 
     
@@ -67,7 +71,7 @@ export default class SobjectsPanel extends FeatureElement {
 
     selectSObject(event) {
         const sObjectName = event.target.dataset.name;
-        store.dispatch(selectSObject(sObjectName));
+        store.dispatch(UI.reduxSlice.actions.selectSObject({sObjectName}));
     }
 
     setKeyword(event) {

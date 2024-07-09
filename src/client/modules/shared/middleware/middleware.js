@@ -4,7 +4,7 @@ export default store => next => action => {
 
     let result = next(action);
 
-    console.log('next state', store.getState());
+    //console.log('next state', store.getState());
     console.groupEnd();
 
     return result;

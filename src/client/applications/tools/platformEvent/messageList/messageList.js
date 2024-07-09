@@ -1,8 +1,8 @@
 import { api,track } from "lwc";
 import { decodeError,isNotUndefinedOrNull,isEmpty,runActionAfterTimeOut,checkIfPresent } from 'shared/utils';
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 const PAGE_LIST_SIZE    = 70;
-export default class MessageList extends FeatureElement {
+export default class MessageList extends ToolkitElement {
 
     isLoading = false;
     isPaused = false;

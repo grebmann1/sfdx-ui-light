@@ -3,14 +3,24 @@
         <lightning-spinner variant="brand" alternative-text={spinnerAlternativeText}></lightning-spinner>
     </div>
     <div role="main" class="editor-main-container slds-grid slds-grid_vertical">
-        <div class="slds-builder-header_container slds-is-relative toolbar-header-container">
-            <!-- Header -->
-            <builder-header>
-                <!-- Start Body -->
-                <slot name="header"></slot>
-                <!-- End Body -->
-            </builder-header>
-        </div>
+        <template lwc:if={isHeaderDisplayed}>
+            <div class="slds-builder-header_container slds-is-relative toolbar-header-container">
+                <!-- Header -->
+                <builder-header>
+                    <!-- Start Header -->
+                    <slot name="header"></slot>
+                    <!-- End Header -->
+                </builder-header>
+            </div>
+        </template>
+        <template lwc:if={isToolbarDisplayed}>
+            <builder-toolbar>
+                <!-- Start toolbar -->
+                <slot name="toolbar"></slot>
+                <!-- End toolbar -->
+            </builder-toolbar>
+        </template>
+        
         <template lwc:if={isReadOnlyMode}>
             <div class="slds-scoped-notification slds-media slds-media_center slds-color__background_gray-3" role="status" >
                 <div class="slds-media__figure">

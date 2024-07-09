@@ -1,28 +1,11 @@
-export class Header{
-    alias;
-    company;
-    name;
-    // oauth
-    loginUrl;
-    accessToken;
-    instanceUrl;
-    refreshToken;
-    version;
-    // redirect type
-    redirectUrl;
-    // user info
-    userInfo;
-    orgId;
-    username;
 
-    _hasError;
-    // Used when chrome extension inject connection
-    _isInjected;
-}
 export class Connector {
+    conn;
+    configuration;
 
-    constructor(header,conn) {
-        this.header = header;
+
+    constructor(configuration,conn) {
+        this.configuration = configuration;
         this.conn = conn;
     }
 

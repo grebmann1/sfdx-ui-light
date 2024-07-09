@@ -1,9 +1,9 @@
 import { api,track} from "lwc";
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import { isEmpty,isSalesforceId,classSet,isUndefinedOrNull,isNotUndefinedOrNull} from 'shared/utils';
 import { store,store_application } from 'shared/store';
 
-export default class StructureViewerItem extends FeatureElement {
+export default class StructureViewerItem extends ToolkitElement {
     @api title;
     @api value;
     @api items;
@@ -24,7 +24,7 @@ export default class StructureViewerItem extends FeatureElement {
     goToUrl = (e) => {
         e.preventDefault();
         const redirectUrl = e.currentTarget.dataset.url;
-        console.log('redirectUrl',redirectUrl);
+        //console.log('redirectUrl',redirectUrl);
         store.dispatch(store_application.navigate(redirectUrl));
     }
 

@@ -18,7 +18,7 @@ var DATA_CTA = [];
 CTA_MODULE.launchScheduleFileDownloaded((files) => {
   DATA_CTA = files;
 });
-console.log('DATA_CTA.contents',DATA_CTA);
+//console.log('DATA_CTA.contents',DATA_CTA);
 
 
 const app = express();
@@ -131,7 +131,7 @@ app.get("/*", (req, res) => handler(req, res, {public: "site",...serveJson}));
 
 app.listen(PORT, () => {
     
-    console.log(`✅ App running in PROD mode ${PORT}`);
+    //console.log(`✅ App running in PROD mode ${PORT}`);
 })
 
 
@@ -150,5 +150,5 @@ const server = http.createServer((request, response) => {
 });
 
 server.listen(3000, () => {
-  console.log('Running at http://localhost:3000');
+  //console.log('Running at http://localhost:3000');
 });*/

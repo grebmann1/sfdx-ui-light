@@ -180,7 +180,7 @@ export default class ConnectionNewModal extends LightningModal {
     }
 
     electron_oauth = async () => {
-        console.log('electron_oauth');
+        //console.log('electron_oauth');
         let params = {
             alias: this.alias,
             instanceurl: this.loginUrl
@@ -195,7 +195,7 @@ export default class ConnectionNewModal extends LightningModal {
                 if(value.action === 'done' || value.action === 'exit'){
                     window.electron.listener_off('oauth');
                     setTimeout(() => {
-                        console.log('close connection');
+                        //console.log('close connection');
                         this.close(value.data);
                     }, 1000);
                     
@@ -205,7 +205,7 @@ export default class ConnectionNewModal extends LightningModal {
             })
             
         }catch(e){
-            console.log('error',e);
+            //console.log('error',e);
             this.close();
             await LightningAlert.open({
                 message: e.message,
@@ -216,7 +216,7 @@ export default class ConnectionNewModal extends LightningModal {
     }
     
     standard_oauth = async () => {
-        console.log('standard_oauth');
+        //console.log('standard_oauth');
         const _oauthMethod = isChromeExtension()?oauth_chrome:oauth;
         _oauthMethod({
             alias:this.alias,
@@ -268,7 +268,7 @@ export default class ConnectionNewModal extends LightningModal {
         try {
             const keywords = event.detail.rawSearchTerm;
             const results = this.categories.filter(x => checkIfPresent(x,keywords)).map(x => this.formatForLookup(x));
-            console.log('results',results);
+            //console.log('results',results);
             lookupElement.setSearchResults(results);
         } catch (error) {
             this.notifyUser('Lookup Error', 'An error occurred while searching with the lookup field.', 'error');

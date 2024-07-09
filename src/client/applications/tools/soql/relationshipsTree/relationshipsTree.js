@@ -1,15 +1,11 @@
 import { wire, api } from 'lwc';
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import { getFlattenedFields } from 'soql-parser-js';
-import {
-    connectStore,
-    store,
-    toggleRelationship
-} from 'soql/store';
+import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,UI } from 'core/store';
 import { isEmpty,fullApiName,isSame,escapeRegExp,isNotUndefinedOrNull } from 'shared/utils';
 
 const PAGE_LIST_SIZE    = 70;
-export default class RelationshipsTree extends FeatureElement {
+export default class RelationshipsTree extends ToolkitElement {
 
     // sObject Name
     @api sobject;
@@ -19,6 +15,7 @@ export default class RelationshipsTree extends FeatureElement {
     _rawRelationships = [];
     _expandedRelationshipNames = {};
     _sobjectLabelMap;
+    _useToolingApi = false;
     pageNumber = 1;
 
     @api
@@ -35,12 +32,16 @@ export default class RelationshipsTree extends FeatureElement {
     
 
     @wire(connectStore, { store })
-    storeChange({ sobjects, sobject, ui }) {
+    storeChange({ describe, sobject, ui }) {
+        if(ui && ui.hasOwnProperty('useToolingApi')){
+            this._useToolingApi = ui.useToolingApi;
+        }
+        const sobjects = SELECTORS.describe.selectById({describe},DESCRIBE.getDescribeTableName(this._useToolingApi));
         if (!this._sobjectLabelMap && sobjects.data) {
             //this._sobjectLabelMap = this._getSObjectLabelMap(sobjects.data);
             // Computation heavy !!!!!
         }
-        const sobjectState = sobject[this.sobject];
+        const sobjectState = SELECTORS.sobject.selectById({sobject},(this.sobject||'').toLowerCase());
         if (!sobjectState) return;
         if (sobjectState.data) {
             this.sobjectMeta = sobjectState.data;
@@ -117,7 +118,7 @@ export default class RelationshipsTree extends FeatureElement {
 
     selectRelationship(event) {
         const relationshipName = event.currentTarget.dataset.name;
-        store.dispatch(toggleRelationship(relationshipName));
+        store.dispatch(UI.reduxSlice.actions.toggleRelationship({relationshipName}));
     }
 
     toggleChildRelationship(event) {

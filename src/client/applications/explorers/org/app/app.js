@@ -1,12 +1,12 @@
 import { api,wire } from "lwc";
 import { isEmpty,isElectronApp } from 'shared/utils';
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import { store,store_application } from 'shared/store';
 import { NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 import { CONFIG } from 'ui/app';
 
 
-export default class App extends FeatureElement {
+export default class App extends ToolkitElement {
     @wire(NavigationContext)
     navContext;
 
@@ -49,7 +49,7 @@ export default class App extends FeatureElement {
     openInBrowser = () => {
         if(isElectronApp()){
             // Electron version
-            window.electron.ipcRenderer.invoke('org-openOrgUrl',this.connector.header);
+            window.electron.ipcRenderer.invoke('org-openOrgUrl',this.connector.configuration);
         }else{
             // Browser version
             let url = this.connector.frontDoorUrl;

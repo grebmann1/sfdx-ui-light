@@ -1,5 +1,5 @@
 import { api,wire,track} from "lwc";
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import { isEmpty,isElectronApp,isSalesforceId,classSet,isUndefinedOrNull,isNotUndefinedOrNull,runActionAfterTimeOut,formatFiles,sortObjectsByField,removeDuplicates } from 'shared/utils';
 import jsonview from '@pgrabovets/json-view';
 import Toast from 'lightning/toast';
@@ -8,7 +8,7 @@ import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'l
 
 const METADATA_EXCLUDE_LIST = ['Flow','FlowDefinition'];
 
-export default class App extends FeatureElement {
+export default class App extends ToolkitElement {
     @wire(NavigationContext)
     navContext;
 
@@ -234,7 +234,7 @@ export default class App extends FeatureElement {
 
 
     load_metadataGlobal = async () => {
-        console.log('load_metadataGlobal');
+        //console.log('load_metadataGlobal');
         this.isLoading = true;
         let sobjects = (await this.connector.conn.tooling.describeGlobal()).sobjects.map(x => x.name);
         let result = await this.connector.conn.metadata.describe(this.connector.conn.version);
@@ -249,7 +249,7 @@ export default class App extends FeatureElement {
     }
 
     load_specificMetadataException = async (exceptionMetadata,recordId,level) => {
-        console.log('load_specificMetadataException');
+        //console.log('load_specificMetadataException');
         const { name,label,queryFields,queryObject,labelFunc,field_id,manualFilter,badgeFunc,compareFunc,filterFunc } = exceptionMetadata;
         const newCompare = compareFunc?compareFunc:(a, b) => (a.label || '').localeCompare(b.label);
 
@@ -285,7 +285,7 @@ export default class App extends FeatureElement {
     }
 
     load_specificMetadata = async (name) => {
-        console.log('load_specificMetadata');
+        //console.log('load_specificMetadata');
         this.isLoading = true;
         const metadataConfig = await this.connector.conn.tooling.sobject(name).describe() || [];
         const fields = metadataConfig.fields.map(x => x.name).filter(x => ['Id','Name','DeveloperName','MasterLabel','NamespacePrefix'].includes(x));
@@ -318,7 +318,7 @@ export default class App extends FeatureElement {
     }
 
     load_specificMetadataRecord = async (key) => {
-        console.log('load_specificMetadataRecord');
+        //console.log('load_specificMetadataRecord');
         this.isLoading = true;
         /*
         this.currentMetadata

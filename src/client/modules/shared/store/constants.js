@@ -9,3 +9,4 @@ export const MENU_SHOW = 'MENU_SHOW';
 export const MENU_HIDE = 'MENU_HIDE';
 export const MENU_COLLAPSE = 'MENU_COLLAPSE';
 export const MENU_EXPAND = 'MENU_EXPAND';
+export const UPDATE_IDENTITY = 'UPDATE_IDENTITY';

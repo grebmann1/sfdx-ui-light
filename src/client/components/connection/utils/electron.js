@@ -4,8 +4,8 @@ const CONNECTION_ERRORS = ['JwtAuthError','RefreshTokenAuthError'];
 const CONNECTION_WARNING = ['DomainNotFoundError'];
 
 
-export async function getConnection(alias){
-    console.log('getConnection - electron');
+export async function getConfiguration(alias){
+    //console.log('getConfiguration - electron');
     var {res, error} = await window.electron.ipcRenderer.invoke('org-seeDetails',{alias});
     if (error) {
         throw decodeError(error)
@@ -22,7 +22,7 @@ export async function getConnection(alias){
 }
 
 
-export async function renameConnection({oldAlias,newAlias,username}){
+export async function renameConfiguration({oldAlias,newAlias,username}){
     let {error} = await window.electron.ipcRenderer.invoke('org-setAlias',{
         alias: newAlias,
         username: username
@@ -39,7 +39,7 @@ export async function renameConnection({oldAlias,newAlias,username}){
     }
 }
 
-export async function removeConnection(alias){
+export async function removeConfiguration(alias){
     // todo: need to be refactured
     var {error} = await window.electron.ipcRenderer.invoke('org-logout',{alias});
     if (error) {
@@ -57,8 +57,8 @@ const getStatusClass = (status) => {
     return 'slds-text-color_success slds-text-title_caps';
 }
 
-export async function getAllConnection(){
-    console.log('getAllConnection - electron');
+export async function getConfigurations(){
+    //console.log('getConfigurations - electron');
     const {result,error} = await window.electron.ipcRenderer.invoke('org-getAllOrgs');
     let orgs = [].concat(
         result.nonScratchOrgs.map(x => ({
@@ -72,7 +72,7 @@ export async function getAllConnection(){
             _type:"Scratch"
         }))
     );
-    console.log('orgs',orgs);
+    //console.log('orgs',orgs);
     orgs = orgs.filter(x => isNotUndefinedOrNull(x.alias)); // Remove empty alias
     orgs = orgs.map((item,index) => {
             let alias = item.alias || 'Empty'

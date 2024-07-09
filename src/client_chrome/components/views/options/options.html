@@ -1,0 +1,123 @@
+<template>
+    <div class="slds-card slds-m-top_small slds-m-horizontal_large slds-grid_vertical">
+        <div class="slds-col">
+            <div class="slds-card__header slds-grid">
+                <header class="slds-media slds-has-flexi-truncate slds-media_center">
+                    <div class="slds-media__body">
+                        <h1 class="slds-card__header-title">
+                            <span>SF Toolkit Options</span>
+                        </h1>
+                    </div>
+                    <div class="slds-no-flex"></div>
+                </header>
+            </div>
+            <div class="slds-card__body">
+                <div class="slds-grid slds-wrap">
+                    <div class="slds-col slds-col slds-size_1-of-1">
+                        <div class="slds-section slds-is-open">
+                            <h3 class="slds-section__title">
+                                <div class="slds-section__title-action">
+                                    <span class="slds-truncate" title="OpenAI Settings">OpenAI Settings</span>
+                                </div>
+                            </h3>
+                            <div class="slds-section__content">
+                                <slds-information-block title="Open AI - Beta Mode">
+                                    <p>This is in Beta, might not work as expected and might be removed in the future !</p>
+                                </slds-information-block>
+                                <div class="slds-grid slds-wrap">
+                                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                                        <lightning-input type="text" label="OpenAI API Key" value={openai_key} onchange={handleOpenaiKey_change}></lightning-input>
+                                    </div>
+                                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                                        <lightning-input type="text" label="OpenAI Assistant Id" value={openai_assistant_id} onchange={handleOpenaiAssistantId_change}></lightning-input>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- SECTION - Shortcut -->
+                    <div class="slds-col slds-col slds-size_1-of-1">
+                        <div class="slds-section slds-is-open">
+                            <h3 class="slds-section__title">
+                                <div class="slds-section__title-action">
+                                    <span class="slds-truncate" title="Login As">Login As</span>
+                                </div>
+                            </h3>
+                            <div class="slds-section__content">
+                                <slds-information-block title="Incognito Full Access">
+                                    <p>To have full access to incognito, you need to set "Allow in Incognito".</p>
+                                    <p> Current value : {isFullIncognitoAccess} </p>
+                                </slds-information-block>
+                                <div class="slds-grid slds-wrap">
+                                    <div class="slds-col slds-medium-size_1-of-2 slds-p-horizontal_small">
+                                        <lightning-input 
+                                            type="toggle" 
+                                            label="Open Experience Cloud in Incognito" 
+                                            onchange={handleExperienceCloudLoginAsIncognito_change}
+                                            checked={experienceCloudLoginAsIncognito}
+                                            message-toggle-active="Active"
+                                            message-toggle-inactive="Inactive"
+                                            variant="label-stacked"
+                                        ></lightning-input>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- SECTION - Shortcut -->
+                    <div class="slds-col slds-col slds-size_1-of-1">
+                        <div class="slds-section slds-is-open">
+                            <h3 class="slds-section__title">
+                                <div class="slds-section__title-action">
+                                    <span class="slds-truncate" title="Shortcut Settings">Shortcut Settings</span>
+                                </div>
+                            </h3>
+                            <div class="slds-section__content">
+                                <slds-information-block title="Shortcut - Alpha Mode">
+                                    <p>This is in Alpha, might changed in the future</p>
+                                </slds-information-block>
+                                <div class="slds-grid slds-wrap">
+                                    <div class="slds-col slds-medium-size_1-of-2 slds-p-horizontal_small"></div>
+                                    <div class="slds-col slds-medium-size_1-of-2 slds-p-horizontal_small">
+                                        <lightning-input 
+                                            type="toggle" 
+                                            label="Enable ShortCut Injection" 
+                                            onchange={handleShortcutEnabled_change}
+                                            checked={shortcut_enabled}
+                                            message-toggle-active="Active"
+                                            message-toggle-inactive="Inactive"
+                                            variant="label-stacked"
+                                        ></lightning-input>
+                                    </div>
+                                    <div class="slds-col slds-medium-size_1-of-2 slds-p-horizontal_small">
+                                        <slds-shortcut-selector lwc:ref="recordidshortcut" 
+                                            disabled={isShortcutDisabled} 
+                                            value={shortcut_recordid} 
+                                            onchange={handleShortcutRecordid_change} 
+                                            label="Shortcut - RecordId"
+                                        ></slds-shortcut-selector>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Footer -->
+                <div class="slds-grid slds-grid_align-center slds-p-vertical_small">
+                    <lightning-button
+                        class="slds-float_left slds-button"
+                        variant="neutral"
+                        label="Cancel"
+                        onclick={handleCancelClick}
+                    ></lightning-button>
+                    <lightning-button
+                            class="slds-button"
+                            variant="brand"
+                            label="Save"
+                            onclick={handleSaveClick}
+                    ></lightning-button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

@@ -1,5 +1,5 @@
 import {LightningElement,wire,api,track} from "lwc";
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 import { groupBy,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull,getFromStorage,classSet } from 'shared/utils';
 import { store,store_application } from 'shared/store';
@@ -23,7 +23,7 @@ const METADATAFILTER_OPTIONS = [
     { label: 'Is Retrieveable', value: 'retrieveable'}
 ];
 
-export default class App extends FeatureElement {
+export default class App extends ToolkitElement {
     @wire(NavigationContext)
     navContext;
 
@@ -169,7 +169,7 @@ export default class App extends FeatureElement {
     
 
     loadCachedSettings = () => {
-        if(isNotUndefinedOrNull(this.connector.header.alias)){
+        if(isNotUndefinedOrNull(this.connector.configuration.alias)){
             //this.typeFilter_value       = getFromStorage(localStorage.getItem('global-sobject-typeFilter_value'),['object']);
             //this.metadataFilter_value   = getFromStorage(localStorage.getItem('global-sobject-metadataFilter_value'),['searchable','queryable']);
         }

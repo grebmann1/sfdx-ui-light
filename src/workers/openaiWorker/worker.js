@@ -29,7 +29,7 @@ const OPENAI_RUN = class {
     }
 
     executeRequest_includingContext = (body) => {
-        console.log('executeRequest_includingContext');
+        //console.log('executeRequest_includingContext');
         const { content,extraInformation,threadId } = body; 
     
         return new Promise(async (resolve,reject) => {
@@ -60,7 +60,7 @@ const OPENAI_RUN = class {
                     })
                 }catch(e){
                     //reject(e)
-                    console.log('Issue in the format, sending the default format !');
+                    //console.log('Issue in the format, sending the default format !');
                     res.answer = lastResponse;
                 }
                 resolve(res);
@@ -91,7 +91,7 @@ const OPENAI_RUN = class {
             return response;
         }else{
             await new Promise(resolve => setTimeout(resolve, 500));
-            console.log('Wait 500ms');
+            //console.log('Wait 500ms');
             return this.waitUntilComplete(run);
         }
     }
@@ -101,7 +101,7 @@ const OPENAI_RUN = class {
 // Listen for messages from the main thread
 
 addEventListener('message', async event => {
-    console.log('WORKER ----- event',event,event.data);
+    //console.log('WORKER ----- event',event,event.data);
     const { openai_key,openai_assistant_id,body,type } = event.data;
     try {
         if (type === 'executeRequest_includingContext') {

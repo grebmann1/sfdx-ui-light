@@ -15,7 +15,7 @@ export default async function ctaRouter(
 ): RouteHandlerViewResponse {
   const routeProperties = handlerContext.route.properties || {};
   const message = viewRequest.params.message;
-  console.log('viewRequest',viewRequest);
+  //console.log('viewRequest',viewRequest);
   const staticUrl = "https://raw.githubusercontent.com/grebmann1/cta-cheat-sheet/main";
   const requestPath = viewRequest.requestPath.substring(4);
 
@@ -25,7 +25,7 @@ export default async function ctaRouter(
     routeProperties.markdownUrl = `${staticUrl}/Documentation/${requestPath}`;
   }
   
-  console.log('routeProperties',routeProperties);
+  //console.log('routeProperties',routeProperties);
   return {
     // Required: customize the current route by setting:
     // { rootComponent?, contentTemplate?, layoutTemplate? }

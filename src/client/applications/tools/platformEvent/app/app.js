@@ -3,7 +3,7 @@ import { decodeError,isNotUndefinedOrNull,isUndefinedOrNull,guid,isEmpty,checkIf
 import { PlatformEvent } from 'platformevent/utils';
 import { connectStore,store } from 'platformevent/store';
 
-import FeatureElement from 'element/featureElement';
+import ToolkitElement from 'core/toolkitElement';
 import Toast from 'lightning/toast';
 import lib from 'cometd';
 
@@ -12,7 +12,7 @@ import lib from 'cometd';
 const cometd = new lib.CometD();
 
 
-export default class App extends FeatureElement {
+export default class App extends ToolkitElement {
 
     isLoading = false;
     channelName;// = 'CCR_TaskNotification__e'; 
@@ -60,7 +60,7 @@ export default class App extends FeatureElement {
             if(!status.successful){
                 console.error('Error during handshake',status);
             }else{
-                console.log('Connected');
+                //console.log('Connected');
             }
         });
     }
@@ -78,7 +78,7 @@ export default class App extends FeatureElement {
     /** Events **/
 
     handleMonacoLoaded = (e) => {
-        console.log('loaded');
+        //console.log('loaded');
         this.refs.editor.displayFiles(
             'ApexClass',[
                 {   
@@ -87,16 +87,16 @@ export default class App extends FeatureElement {
                     name:'Script',
                     apiVersion:60,
                     body:this.apexScript,
-                    language:'java',
+                    language:'apex',
                 }
             ]
         );
     }
 
     handleEditorChange = (e) => {
-        console.log('handleEditorChange',e.detail);
+        //console.log('handleEditorChange',e.detail);
         this.apexScript = e.detail.value;
-        let key = `${this.connector.header.alias}-platformevent-script`;
+        let key = `${this.connector.configuration.alias}-platformevent-script`;
         window.defaultStore.setItem(key,this.apexScript);
     }
 
@@ -173,7 +173,7 @@ export default class App extends FeatureElement {
         if(this.lookup_selectedEvents.length == 0) return null;
 
         const apiName = this.lookup_selectedEvents[0].id;
-        console.log('apiName',apiName);
+        //console.log('apiName',apiName);
         const eventName = apiName.endsWith('__e')?`/event/${apiName}`:`/data/${apiName}`;
         if(this.subscribedChannels.map(x => x.name).includes(eventName)){
             this.lookup_errors.push({ message:"Already subscribed !"})
@@ -225,7 +225,7 @@ export default class App extends FeatureElement {
                     message: res.exceptionMessage, // Message is hidden in small screen
                     variant:'error',
                 });
-                console.log('res',res,err);
+                //console.log('res',res,err);
             }
             this.isApexRunning = false;
         });
@@ -272,7 +272,7 @@ export default class App extends FeatureElement {
 
     loadCache = async () => {
         try{
-            let key = `${this.connector.header.alias}-platformevent-script`;
+            let key = `${this.connector.configuration.alias}-platformevent-script`;
             const _script = await window.defaultStore.getItem(key);
             if(!isEmpty(_script)){
                 this.apexScript = _script;
@@ -285,7 +285,7 @@ export default class App extends FeatureElement {
     newPlatformEvent = (name) => {
         return new PlatformEvent({
             name,
-            alias:this.connector.header.alias
+            alias:this.connector.configuration.alias
         });
     }
 

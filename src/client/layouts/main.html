@@ -21,6 +21,10 @@
             slds-spinner.slds-spinner_container{
                 z-index: 1 !important;
             }
+            .slds-spinner_container.no-opacity{
+                opacity: 1;
+                background: rgba(255,255,255,1);
+            }
 
             .slds-form-element_stacked .slds-grid {
                 display:-webkit-box !important;
@@ -194,6 +198,14 @@
             .slds-light-bg{
                 background-color: white;
             }
+            
+            .slds-card{
+                border-radius: unset; /* Remove Border radius*/
+            }
+
+            .slds-page-header{
+                border-radius: unset; /* Remove Border radius*/
+            }
 
             /** Footer **/
             .custom-utility-bar{
@@ -302,10 +314,6 @@
 
             
         </style>
-        <script type="module">
-            import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-            window.mermaid = mermaid;
-        </script>
         <script type="module">
             import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
             window.mermaid = mermaid;

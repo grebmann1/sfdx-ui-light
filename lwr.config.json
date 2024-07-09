@@ -5,7 +5,6 @@
         "modules": [
             { "dir": "$rootDir/src/client/modules" },
             { "dir": "$rootDir/src/client/components" },
-            { "dir": "$rootDir/src/client/web_extension/components" },
             { "dir": "$rootDir/src/client/applications/explorers" },
             { "dir": "$rootDir/src/client/applications/documentation" },
             { "dir": "$rootDir/src/client/applications/tools" },
@@ -22,6 +21,7 @@
         ] 
     },
     "assets": [
+        
         {
             "alias": "assetsDir",
             "dir": "$rootDir/node_modules/@salesforce-ux/design-system/assets",

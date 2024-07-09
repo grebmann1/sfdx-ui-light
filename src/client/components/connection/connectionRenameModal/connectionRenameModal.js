@@ -2,7 +2,7 @@ import { api,track } from "lwc";
 import Toast from 'lightning/toast';
 import LightningAlert from 'lightning/alert';
 import LightningModal from 'lightning/modal';
-import {renameConnection} from 'connection/utils';
+import {renameConfiguration} from 'connection/utils';
 import { isNotUndefinedOrNull,isElectronApp,isChromeExtension,decodeError,checkIfPresent } from "shared/utils";
 
 
@@ -84,7 +84,7 @@ export default class OrgRenameModal extends LightningModal {
     }
 
     renameAlias = async () => {
-        await renameConnection({
+        await renameConfiguration({
             newAlias:this.generatedAlias,
             oldAlias:this.oldAlias,
             username:this.username,

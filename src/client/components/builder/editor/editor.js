@@ -12,6 +12,8 @@ export default class Editor extends LightningElement {
     @api isLoading = false;
     @api isLeftPanelToggled = false;
     @api isRightPanelToggled = false;
+    @api isHeaderHidden = false;
+    @api isToolbarHidden = false;
 
 
     labels = LABELS;
@@ -39,6 +41,14 @@ export default class Editor extends LightningElement {
 
     get showRightPanel() {
         return this.isRightPanelToggled;
+    }
+
+    get isHeaderDisplayed(){
+        return !this.isHeaderHidden;
+    }
+
+    get isToolbarDisplayed(){
+        return !this.isToolbarHidden;
     }
 
 }
