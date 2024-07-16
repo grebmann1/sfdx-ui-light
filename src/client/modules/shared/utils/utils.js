@@ -324,3 +324,19 @@ export const forceVariableSave = (variable,value) => {
 export const generateExternalId = (connector,key) => `${connector.alias}_${key}`
 
 export const lowerCaseKey = key => isNotUndefinedOrNull(key)?key.toLowerCase():null;
+
+export const isObject = obj => typeof obj === 'object' && obj !== null;
+
+export const capitalizeFirstLetter = (string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+export const compareString = (a,b) => lowerCaseKey(a) === lowerCaseKey(b);
+
+export const getFieldValue = (field, record) => {
+    let value = record;
+    field.split('.').forEach(name => {
+        if (value) value = value[name];
+    });
+    return value;
+}

@@ -9,23 +9,29 @@
     </template>
     
     <template lwc:if={response}>
-        <div class="slds-p-around_small slds-grid">
-            <button class="slds-button slds-button_neutral" onclick={exportCsv}>{i18n.OUTPUT_PANEL_EXPORT_CSV}</button>
-            <div class="slds-p-around_x-small slds-col_bump-left">{i18n.OUTPUT_PANEL_TOTAL}: {response.totalSize}</div>
+        <!--
+        <div class="slds-p-around_xx-small slds-grid">
+            <div class="slds-p-around_x-small">{i18n.OUTPUT_PANEL_TOTAL}: {response.totalSize}</div>
+            <lightning-button class="slds-col_bump-left" label={i18n.OUTPUT_PANEL_EXPORT_CSV} onclick={exportCsv}></lightning-button>
         </div>
-        <soql-output-table class="main-output" response={response}></soql-output-table>
-        <template lwc:if={childResponse}>
-            <div class="child-relationsihp-panel">
-                <button class="slds-button slds-button_icon slds-button_icon" title={i18n.OUTPUT_PANEL_CLOSE_CHILD_REL} onclick={closeChildRelationship}>
-                    <svg class="slds-button__icon" aria-hidden="true">
-                        <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
-                    </svg>
-                    <span class="slds-assistive-text">{i18n.OUTPUT_PANEL_CLOSE_CHILD_REL}</span>
-                </button>
-                <soql-output-table response={childResponse}></soql-output-table>
-            </div>
-        </template>
-        
+        -->
+        <div class="table-splitter slds-fill-height">
+            <soql-output-table lwc:ref="maintable" class={mainOutputClass} response={response}></soql-output-table>
+            <template lwc:if={childResponse}>
+                <div class={childRelationshipPanelClass}>
+                    <button class="slds-button slds-button_icon slds-button_icon" title={i18n.OUTPUT_PANEL_CLOSE_CHILD_REL} onclick={closeChildRelationship}>
+                        <svg class="slds-button__icon" aria-hidden="true">
+                            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
+                        </svg>
+                        <span class="slds-assistive-text">{i18n.OUTPUT_PANEL_CLOSE_CHILD_REL}</span>
+                    </button>
+                    <soql-output-table class="slds-full-height" child-title={childResponse.column} response={childResponse}></soql-output-table>
+                </div>
+            </template>
+        </div>
+    </template>
+    <template lwc:else>
+        <illustration-empty title="Click on Run to execute a query" size="small"></illustration-empty>
     </template>
 
 </template>

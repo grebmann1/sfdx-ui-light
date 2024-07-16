@@ -1,9 +1,9 @@
 import { LightningElement, wire,api  } from 'lwc';
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
-import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,UI } from 'core/store';
+import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,UI,QUERY } from 'core/store';
 
-import { isNotUndefinedOrNull } from 'shared/utils';
+import { isNotUndefinedOrNull,lowerCaseKey } from 'shared/utils';
 
 export default class OutputPanel extends ToolkitElement {
 
@@ -15,52 +15,56 @@ export default class OutputPanel extends ToolkitElement {
 
     error_title;
     error_message;
-
+    currentTab;
     @wire(connectStore, { store })
     storeChange({ query, ui }) {
-        this.isLoading = query.isFetching;
-        if (query.data) {
-            if (this.response !== query.data) {
-                this.resetError();
-                this.response = query.data;
-                this._sObject = ui.query.sObject;
+        const queryState = SELECTORS.queries.selectById({query},lowerCaseKey(ui.currentTab?.id));
+        if(queryState){
+            this.isLoading = queryState.isFetching;
+            if (queryState.data) {
+                if (this.response !== queryState.data) {
+                    this.resetError();
+                    this.response = queryState.data;
+                    this._sObject = ui.query.sObject;
+                }
             }
-        } else {
+            if (queryState.error) {
+                this.handleError(queryState.error);
+            }
+        }else {
             this.response = undefined;
         }
-        if (query.error) {
-            this.handleError(query.error);
+        
+        if(ui.currentTab && ui.currentTab.id != this.currentTab?.id){
+            this.currentTab = ui.currentTab;
+            this.resetError();
         }
+        
         this.childResponse = ui.childRelationship;
+        if(this.childResponse){
+            this.selectMainTable();
+        }
     }
 
     closeChildRelationship() {
+        const _tableInstance = this.refs.maintable?.tableInstance;
+        if(_tableInstance ){
+            _tableInstance.deselectRow();
+            this.refs.maintable.tableResize(0);
+        }
         store.dispatch(UI.reduxSlice.actions.deselectChildRelationship());
     }
 
-    async exportCsv() {
-        this.isLoading = true;
-        try {
-            const data = await this.template
-                .querySelector('soql-output-table.main-output')
-                .generateCsv();
-            const bom = new Uint8Array([0xef, 0xbb, 0xbf]);
-            const blob = new Blob([bom, data], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const download = document.createElement('a');
-                download.href = window.URL.createObjectURL(blob);
-                download.download = `${this._sObject}.csv`;
-                download.click();
-            URL.revokeObjectURL(url);
-        } catch (e) {
-            console.error(e);
-            Toast.show({
-                message: this.i18n.OUTPUT_PANEL_FAILED_EXPORT_CSV,
-                errors: e
-            });
+    selectMainTable = () => {
+        const _tableInstance = this.refs.maintable?.tableInstance;
+        if(_tableInstance && this.childResponse){
+            _tableInstance.deselectRow();
+            _tableInstance.selectRow(_tableInstance.getRows().filter(row => row.getData().Id === this.childResponse.recordId));
+            this.refs.maintable.tableResize(0);
         }
-        this.isLoading = false;
     }
+
+    
 
     handleError = e => {
         let errors = e.message.split(':');
@@ -70,8 +74,9 @@ export default class OutputPanel extends ToolkitElement {
             this.error_title = 'Error';
         }
         this.error_message = errors.join(':');
-        console.error(e);
-        store.dispatch(UI.reduxSlice.actions.clearQueryError());
+        //console.error(e);
+        const { ui } = store.getState();
+        store.dispatch(QUERY.reduxSlice.actions.clearQueryError({tabId:ui.currentTab.id}));
     }
 
     resetError = () => {
@@ -81,8 +86,25 @@ export default class OutputPanel extends ToolkitElement {
 
 
     /** Getters */
+
+    @api
+    get columns(){
+        return this.refs.maintable?.columns;
+    }
     
     get isError(){
         return isNotUndefinedOrNull(this.error_message);
+    }
+
+    get childRelationshipPanelClass(){
+        return this.childResponse?'child-relationship-panel slds-height-30':'child-relationship-panel';
+    }
+
+    get childRelationshipPanelClass(){
+        return this.childResponse?'child-relationship-panel slds-height-30':'child-relationship-panel';
+    }
+
+    get mainOutputClass(){
+        return this.childResponse?'main-output slds-height-70':'main-output slds-full-height'
     }
 }

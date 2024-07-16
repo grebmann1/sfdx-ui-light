@@ -3,13 +3,13 @@
         <slot></slot>
     </template>
     <template lwc:else>
-        <slds-connection-illustration 
+        <illustration-default 
             class="slds-full-width" 
             title={title} 
             sub-title={subTitle}
             padding
         >
             <lightning-button label="Go to connection" icon-name="utility:salesforce1" onclick={goToConnection}></lightning-button>
-        </slds-connection-illustration>
+        </illustration-default>
     </template>
 </template>

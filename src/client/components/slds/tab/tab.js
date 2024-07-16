@@ -45,6 +45,15 @@ export default class sldsTab extends LightningElement {
         }
     }
 
+    @api get isDraft() {
+        return this._isDraft;
+    }
+
+    set isDraft(newValue) {
+        this._isDraft = newValue;
+        this._dispatchDataChangeEventIfConnected();
+    }
+
     @api get isCloseable() {
         return this._isCloseable;
     }

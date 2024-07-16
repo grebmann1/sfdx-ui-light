@@ -1,5 +1,16 @@
 <template>
-    <div class="output-panel slds-scrollable_x">
+    <div class="output-panel slds-full-height"> <!-- slds-scrollable_x-->
+        <template lwc:if={isLoading}>
+            <slds-spinner 
+                alternative-text="Loading" 
+                size="small" 
+                message="Generating the table"
+            ></slds-spinner>
+        </template>
+        
+        <div lwc:dom="manual" class="custom-table"></div>
+        
+        <!--
         <div class="slds-table--header-fixed_container">
             <div class="slds-scrollable_y" onscroll={handleScroll}>
                 <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered slds-table--header-fixed">
@@ -26,5 +37,6 @@
                 </table>
             </div>
         </div>
+        -->
     </div>
 </template>

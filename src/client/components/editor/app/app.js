@@ -170,7 +170,7 @@ export default class App extends ToolkitElement {
         });
 
         this.editor.onDidChangeModelContent((event) => {
-            console.log('onDidChangeModelContent');
+            //console.log('onDidChangeModelContent');
             this.isEditMode = true;
 
             runActionAfterTimeOut(this.editor.getValue(),(value) => {

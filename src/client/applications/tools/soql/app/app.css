@@ -20,11 +20,13 @@
     display: flex;
     flex: 1;
     flex-direction: column;
+    width: -webkit-fill-available;
 }
 .right-top-panel {
     border-bottom: 1px solid #dddbda;
     height: 300px;
     display: flex;
+    flex-direction: column;
 }
 .right-top-left-panel {
     flex: 1;
@@ -45,4 +47,5 @@
 
 article{
     background-color: #fafaf9;
+    
 }

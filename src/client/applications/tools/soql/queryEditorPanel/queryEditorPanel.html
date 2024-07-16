@@ -1,61 +1,51 @@
 <template>
-    <div class="slds-p-around_small">
-        <button class="slds-button slds-button_brand" onclick={runQuery}>{i18n.QUERY_EDITOR_PANEL_QUERY}</button>
-        <button class="slds-button slds-button_brand" onclick={runQueryAll} title={i18n.QUERY_EDITOR_PANEL_QUERY_ALL_TITLE}> {i18n.QUERY_EDITOR_PANEL_QUERY_ALL} </button>
-        <button class="slds-button slds-button_neutral" onclick={formatQuery}>{i18n.QUERY_EDITOR_PANEL_FORMAT_SOQL}</button>
-    </div>
-    <div class="soql-editor slds-m-horizontal_small slds-m-bottom_small">
-        <!-- Query Editor Text Area -->
-        <textarea class="slds-textarea soql-input" placeholder={i18n.QUERY_EDITOR_PANEL_INPUT_SOQL} onkeydown={handleKeydownSoql} onkeyup={handleKeyupSoql} onblur={handleBlurSoql}></textarea>
-        <!-- Auto Completion -->
-        <template lwc:if={isCompletionVisible}>
-            <div class="completion-popover slds-popover" style={completionStyle}>
-                <ul class="slds-listbox slds-listbox_vertical" role="presentation">
-                    <template for:each={completionItems} for:item="item">
-                        <li role="presentation" class="slds-listbox__item" key={item.key}>
-                            <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" aria-selected={item.isActive} role="option">
-                                <template lwc:if={item.isSyntax}>
-                                    <span class="slds-icon_container slds-icon-utility-display_text">
-                                        <svg class="slds-icon slds-icon_x-small slds-input__icon_left slds-icon-text-default" aria-hidden="true">
-                                            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#display_text"></use>
-                                        </svg>
-                                    </span>
-                                </template>
-                                <template lwc:elseif={item.isLookup}>
-                                    <span class="slds-icon_container slds-icon-utility-record_lookup">
-                                        <svg class="slds-icon slds-icon_x-small slds-input__icon_left slds-icon-text-default" aria-hidden="true">
-                                            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#record_lookup"></use>
-                                        </svg>
-                                    </span>
-                                </template>
-                                <template lwc:elseif={item.isLoading}>
-                                    <li role="presentation" class="slds-listbox__item">
-                                        <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option">
-                                            <span class="slds-media__body slds-m-left_x-small">
-                                                <slds-spinner size="small"></slds-spinner>
-                                            </span>
-                                        </div>
-                                    </li>
-                                </template>
-                                <template lwc:else>
-                                    <span class="slds-icon_container slds-icon-utility-text">
-                                        <svg class="slds-icon slds-icon_x-small slds-input__icon_left slds-icon-text-default" aria-hidden="true">
-                                            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#text"></use>
-                                        </svg>
-                                    </span>
-                                </template>
-                                <span class="slds-media__body slds-m-left_x-small">
-                                    <span class="slds-truncate" title={item.itemLabel} data-key={item.key} onclick={insertItem}> {item.itemLabel} </span>
-                                </span>
-                            </div>
-                        </li>
-                    </template>
-                </ul>
-            </div>
+     
+    <!-- Tabs -->
+    <slds-tabset variant="scoped" class="slds-without-tab" active-tab-value={currentTab} onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled>
+        <template for:each={formattedTabs} for:item="item">
+            <slds-tab key={item.id} label={item.name} value={item.id} onactive={handleSelectTab} is-closeable={item.isCloseable} is-draft={item.isDraft}></slds-tab>
         </template>
+    </slds-tabset>
+
+    <!-- Query Editor Text Area -->
+    <div class="soql-editor slds-fill-height">
+         <editor-soql lwc:ref="editor" model={currentModel} onmonacoloaded={handleMonacoLoaded} onchange={handleSoqlChange}></editor-soql>
     </div>
     <!-- Tooling API -->
-    <div class="slds-m-horizontal_small slds-m-bottom_small">
-        <lightning-input type="checkbox" label="Use tooling api" name="toolingApi" checked={useToolingApi} onchange={handleToolingApiCheckboxChange}></lightning-input>
+    <div class="slds-grid slds-p-vertical_xx-small">
+        <div class="slds-col_bump-left">
+            <lightning-input 
+                class="slds-p-right_small toolkit-small"
+                type="toggle" 
+                label="Use tooling api" 
+                name="toolingApi" 
+                message-toggle-active=""
+                message-toggle-inactive=""
+                onchange={handleToolingApiCheckboxChange}
+                checked={useToolingApi}
+            ></lightning-input>
+        </div>
     </div>
+   
+    <!--
+    <div class="slds-grid slds-p-around_xx-small">
+        <div class="slds-m-horizontal_small">
+            <lightning-input 
+                type="toggle" 
+                label="Use tooling api" 
+                name="toolingApi" 
+                message-toggle-active=""
+                message-toggle-inactive=""
+                onchange={handleToolingApiCheckboxChange}
+                checked={useToolingApi}
+            ></lightning-input>
+        </div>
+        <div class="slds-col_bump-left">
+            <button class="slds-button slds-button_neutral" onclick={formatQuery}>{i18n.QUERY_EDITOR_PANEL_FORMAT_SOQL}</button>
+            <button class="slds-button slds-button_brand" onclick={runQueryAll} title={i18n.EDITOR_PANEL_RUN_ALL_TITLE}> {i18n.EDITOR_PANEL_RUN_ALL} </button>
+            <button class="slds-button slds-button_brand" onclick={runQuery}>{i18n.EDITOR_PANEL_RUN}</button>
+        </div>
+    </div>
+    -->
+    
 </template>

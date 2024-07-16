@@ -50,7 +50,7 @@ export default class Company extends ToolkitElement {
         const field = e.target.dataset.field;
         navigator.clipboard.writeText(value);
         Toast.show({
-            label: `${field} exported to your clipboard'`,
+            label: `${field} exported to your clipboard`,
             variant:'success',
         });
     }

@@ -1,16 +1,34 @@
-import { LightningElement,api,wire,track} from "lwc";
-import { isEmpty,runActionAfterTimeOut,isNotUndefinedOrNull,fullApiName } from 'shared/utils';
+import { api,wire,track} from "lwc";
 import ToolkitElement from 'core/toolkitElement';
-import { store as appStore,store_application  }  from 'shared/store';
-import { store,connectStore,SELECTORS,DESCRIBE,UI } from 'core/store';
+import Toast from 'lightning/toast';
+import SaveModal from "builder/saveModal";
+import { store,connectStore,SELECTORS,DESCRIBE,UI,QUERY,DOCUMENT } from 'core/store';
+import { guid,isNotUndefinedOrNull,isUndefinedOrNull,fullApiName,compareString,lowerCaseKey,getFieldValue,isObject } from 'shared/utils';
+import { CATEGORY_STORAGE } from 'builder/storagePanel';
+import moment from 'moment';
 
-export const isFullPage = true;
 export default class App extends ToolkitElement {
 
     @track selectedSObject;
     @track isLeftToggled = true;
     @track isRecentToggled = false;
     @api namespace;
+
+    @track recentQueries = [];
+    @track savedQueries = [];
+
+    @track selectedRecords = [];
+
+    soql;
+
+    // Response
+    _response;
+    _responseCreatedDate;
+    _responseCreatedDateFormatted;
+    _responseNextRecordsUrl;
+    _responseRows;
+    _sobject;
+    _interval;
 
     connectedCallback() {
         store.dispatch(DESCRIBE.describeSObjects({
@@ -21,37 +39,313 @@ export default class App extends ToolkitElement {
             connector:this.connector.conn,
             useToolingApi:true
         }));
-        appStore.dispatch(store_application.collapseMenu('soql'));
+        //store.dispatch(QUERY.reduxSlice.actions.dummyData());
+        
+        if(this.alias){
+            store.dispatch((dispatch, getState) => {
+                dispatch(DOCUMENT.reduxSlices.QUERYFILE.actions.loadFromStorage({
+                    alias:this.alias
+                }));
+                dispatch(UI.reduxSlice.actions.loadCacheSettings({
+                    alias:this.alias,
+                    queryFiles:getState().queryFiles
+                }));
+            })
+        }
+        //appStore.dispatch(store_application.collapseMenu('soql'));
+        this.enableAutoDate();
+    }
+
+    disconnectedCallback(){
+        clearInterval(this._interval);
     }
 
     @wire(connectStore, { store })
-    storeChange({ ui,describe }) {
+    storeChange({ query,ui,describe,queryFiles,recents }) {
         if(ui && ui.hasOwnProperty('useToolingApi')){
             this._useToolingApi = ui.useToolingApi;
         }
+        this.isLeftToggled      = ui.leftPanelToggled;
+        this.isRecentToggled    = ui.recentPanelToggled;
+        this.soql               = ui.soql;
 
         const sobjects = SELECTORS.describe.selectById({describe},DESCRIBE.getDescribeTableName(this._useToolingApi));
-        if(this.validateSobject(ui?.selectedSObject,sobjects?.data)){
+        const _sobject = this.validateSobject(ui?.selectedSObject,sobjects?.data);
+        if(_sobject){
             this.selectedSObject = ui.selectedSObject;
+            this._sobject = _sobject;
         }else{
             this.selectedSObject = null;
         }
+
+        /** Responses */
+
+        const queryState = SELECTORS.queries.selectById({query},lowerCaseKey(ui.currentTab?.id));
+        if(queryState && queryState.data){
+            this._response = queryState.data;
+            this._responseCreatedDate = queryState.createdDate;
+            this._responseNextRecordsUrl = queryState.data.nextRecordsUrl;
+            this._responseRows = queryState.data.records;
+        }else {
+            this._response = undefined;
+        }
+
+        /** Recent Queries */
+        if (recents && recents.queries) {
+            this.recentQueries = recents.queries.map((query, index) => {
+                return { id: `${index}`, content: query };
+            });
+        }
+
+        /** Saved Queries */
+        if (queryFiles) {
+            const entities = SELECTORS.queryFiles.selectAll({queryFiles});
+            this.savedQueries = entities.map((item, index) => {
+                return item; // no mutation for now
+            });
+        }
+
+        
     }
 
     validateSobject = (selectedSObject,data) => {
         if(!selectedSObject || !data) return false;
 
         const fullSObjectName = fullApiName(selectedSObject,this.namespace) || '';
-        return data.sobjects.find(o => o.name.toLowerCase() === fullSObjectName.toLowerCase());
+        return data.sobjects.find(o => compareString(o.name,fullSObjectName));
     }
+
+    formatDate = () => {
+        this._responseCreatedDateFormatted = this._responseCreatedDate?moment(this._responseCreatedDate).fromNow():null;
+    }
+
+    enableAutoDate = () => {
+        this.formatDate();
+        this._interval = setInterval(() =>{
+            this.formatDate();
+        },30000);
+    }
+
+
     /** Events **/
 
     handleLeftToggle = (e) => {
-        this.isLeftToggled = !this.isLeftToggled;
+        store.dispatch(UI.reduxSlice.actions.updateLeftPanel({
+            value:!this.isLeftToggled,
+            alias:this.alias,
+        }));
     }
 
     handleRecentToggle = (e) => {
-        this.isRecentToggled = !this.isRecentToggled;
+        store.dispatch(UI.reduxSlice.actions.updateRecentPanel({
+            value:!this.isRecentToggled,
+            alias:this.alias,
+        }));
+    }
+    
+    handleFormatQueryClick = e => {
+        store.dispatch(UI.reduxSlice.actions.formatSoql());
+    }
+
+    handleRunClick = e => {
+        const isAllRows = false;
+        const inputEl = this.refs?.editor?.editor?.currentModel
+        if (!inputEl) return;
+        const query = inputEl.getValue();
+        if (!query) return;
+
+        const { ui } = store.getState();
+        store.dispatch(QUERY.executeQuery({
+            connector:this.queryConnector,
+            soql:query, 
+            tabId:ui.currentTab.id,
+            isAllRows
+        }));
+    }
+
+    handleSaveClick = () => {
+        const { ui,queryFiles } = store.getState();
+        SaveModal.open({
+            title:'Save Query',
+            name:ui.currentTab.fileId // fileId is the name !
+        }).then(res => {
+            const { name,isGlobal } = res.data;
+            store.dispatch(DOCUMENT.reduxSlices.QUERYFILE.actions.upsertOne({
+                id:name, // generic
+                isGlobal, // generic
+                content:this.soql,
+                alias:this.alias,
+                extra:{
+                    useToolingApi:this._useToolingApi === true, // Needed for queries
+                }
+            }));
+            store.dispatch(UI.reduxSlice.actions.linkFileToTab({
+                fileId:name,
+                alias:this.alias,
+                queryFiles
+            }));
+
+            // Reset draft
+
+        })
+    }
+
+    /** Copy & Download */
+
+    
+
+    copyCSV = async (e) => {
+        const data = await this.generateCsv();
+        navigator.clipboard.writeText(data);
+        Toast.show({
+            label: `CSV exported to your clipboard`,
+            variant:'success',
+        });
+    }
+
+    copyExcel = async (e) => {
+        const data = await this.generateCsv("\t");
+        navigator.clipboard.writeText(data);
+        Toast.show({
+            label: `Excel exported to your clipboard`,
+            variant:'success',
+        });
+    }
+
+    copyJSON = async (e) => {
+        await this._fetchSubsequentRecords(this._responseNextRecordsUrl);
+        navigator.clipboard.writeText(this._responseRows);
+        Toast.show({
+            label: `JSON exported to your clipboard`,
+            variant:'success',
+        });
+    }
+
+    downloadCSV = async (e) => {
+        try {
+            const data = await this.generateCsv(',');
+            const bom = new Uint8Array([0xef, 0xbb, 0xbf]);
+            const blob = new Blob([bom, data], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const download = document.createElement('a');
+                download.href = window.URL.createObjectURL(blob);
+                download.download = `${this.sobjectPlurialLabel}.csv`;
+                download.click();
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            console.error(e);
+            Toast.show({
+                message: this.i18n.OUTPUT_PANEL_FAILED_EXPORT_CSV,
+                errors: e
+            });
+        }
+    }
+
+    downloadJSON = async (e) => {
+        try {
+            await this._fetchSubsequentRecords(this._responseNextRecordsUrl);
+            const blob = new Blob([this._responseRows], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const download = document.createElement('a');
+                download.href = window.URL.createObjectURL(blob);
+                download.download = `${this.sobjectPlurialLabel}.json`;
+                download.click();
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            console.error(e);
+            Toast.show({
+                message: this.i18n.OUTPUT_PANEL_FAILED_EXPORT_JSON,
+                errors: e
+            });
+        }
+    }
+
+    async generateCsv(separator) {
+        await this._fetchSubsequentRecords(this._responseNextRecordsUrl);
+        const header = this.refs.output.columns.join(separator);
+        const data = this._responseRows
+            .map(row => {
+                return this.refs.output.columns
+                    .map(column => {
+                        const value = getFieldValue(column,row);
+                        return isObject(value)?JSON.stringify(value.records):value;
+                    })
+                    .join(separator);
+            })
+            .join('\n');
+        return `${header}\n${data}`;
+    }
+
+    async _fetchNextRecords(nextRecordsUrl) {
+        if (!nextRecordsUrl) return;
+        const res = await this.connector.conn.request({
+            method: 'GET',
+            url: nextRecordsUrl,
+            //headers: salesforce.getQueryHeaders()
+        });
+        this._responseNextRecordsUrl = res.nextRecordsUrl;
+        this._responseRows = [...this._responseRows, ...res.records];
+    }
+
+    async _fetchSubsequentRecords(nextRecordsUrl) {
+        await this._fetchNextRecords(nextRecordsUrl);
+        if (this._responseNextRecordsUrl) {
+            await this._fetchSubsequentRecords(this._responseNextRecordsUrl);
+        }
+    }
+
+    
+
+    /** Storage Files  **/
+
+    handleSelectItem = (e) => {
+        e.stopPropagation();
+        const { ui,queryFiles } = store.getState();
+        const { id,content,category,extra } = e.detail;
+        // Check if tab is already open with
+        if(category === CATEGORY_STORAGE.SAVED){
+            // Check if tab is already open or create new one
+            
+            const tabs = ui.tabs;
+            const existingTab = tabs.find(x => compareString(x.fileId,id));
+            if(existingTab){
+                // Existing tab
+                store.dispatch(UI.reduxSlice.actions.selectionTab(existingTab));
+            }else{
+                store.dispatch(UI.reduxSlice.actions.addTab({
+                    id:guid(),
+                    body:content,
+                    useToolingApi:extra?.useToolingApi  === true,
+                    fileId:id,
+                    queryFiles
+                }));
+            }
+        }else if(category === CATEGORY_STORAGE.RECENT){
+            // Open in existing tab
+            if(ui.currentTab.fileId){
+                store.dispatch(UI.reduxSlice.actions.addTab({
+                    id:guid(),
+                    body:content
+                }));
+            }else{
+                store.dispatch(UI.reduxSlice.actions.updateSoql({
+                    connector:this.queryConnector,
+                    soql:content
+                }));
+            }
+            
+        }else{
+            console.warn(`${category} not supported !`);
+        }
+
+        
+
+    }
+
+    handleRemoveItem = (e) => {
+        e.stopPropagation();
+        const { id } = e.detail;
+        store.dispatch(DOCUMENT.reduxSlices.QUERYFILE.actions.removeOne(id))
     }
 
     /** Getters **/
@@ -68,8 +362,32 @@ export default class App extends ToolkitElement {
         return this.isLeftToggled?'utility:toggle_panel_right':'utility:toggle_panel_left';
     }
 
-    get toggleRecentIconName(){
-        return this.isRecentToggled?'utility:toggle_panel_right':'utility:toggle_panel_left';
+    get toggleRecentVariant(){
+        return this.isRecentToggled?'brand':'bare';
+    }
+
+    get queryConnector(){
+        return this.useToolingApi?this.connector.conn.tooling:this.connector.conn;
+    }
+
+    get isMetaDisplayed(){
+        return isNotUndefinedOrNull(this._response);
+    }
+
+    get totalRecords(){
+        return this._response?.totalSize;
+    }
+    
+    get sobjectPlurialLabel(){
+        return this._sobject.labelPlural;
+    }
+
+    get isDownloadDisabled(){
+        return isUndefinedOrNull(this._response);
+    }
+
+    get isDeleteDisabled(){
+        return this.selectedRecords.length == 0;
     }
 
 

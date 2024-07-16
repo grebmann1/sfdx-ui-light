@@ -2,8 +2,7 @@ import { wire, api } from 'lwc';
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
 import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,UI } from 'core/store';
-
-import { isEmpty,fullApiName,isNotUndefinedOrNull,generateExternalId } from 'shared/utils';
+import { fullApiName,lowerCaseKey } from 'shared/utils';
 
 
 export default class FieldsPanel extends ToolkitElement {
@@ -56,7 +55,7 @@ export default class FieldsPanel extends ToolkitElement {
                 sObjectName:this._selectedSObject
             }));
         }
-        const sobjectState = SELECTORS.sobject.selectById({sobject},(this._selectedSObject||'').toLowerCase());
+        const sobjectState = SELECTORS.sobject.selectById({sobject},lowerCaseKey(this._selectedSObject));
         if (!sobjectState) return;
         this.isLoading = sobjectState.isFetching;
         // Assign Metadata

@@ -118,9 +118,12 @@ export default class App extends ToolkitElement {
     }
 
     formatRequest = () => {
+        const _endpoint = this.endpoint.startsWith('/')?this.endpoint:`/${this.endpoint}`;
+        const _targetUrl = this.endpoint.startsWith('http')?this.endpoint:`${this.connector.conn.instanceUrl}${_endpoint}`;
+        console.log('_targetUrl -->',_targetUrl);
         const _request = {
             method: this.method, 
-            url: `${this.connector.conn.instanceUrl}/${this.endpoint}`
+            url: _targetUrl
         }
         
         if([METHOD.PATCH,METHOD.POST,METHOD.PUT].includes(this.method)){

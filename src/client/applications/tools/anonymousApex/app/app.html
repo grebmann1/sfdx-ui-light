@@ -1,89 +1,20 @@
 <template>
     <div class={pageClass}>
         <builder-editor>
+            <builder-header slot="header" title="Tools" sub-title="Anonymous Apex" icon-name="standard:apex">
+                <div slot="actions" class="slds-builder-toolbar__actions">
+                    <lightning-button class="slds-p-right_xx-small" label={i18n.EDITOR_PANEL_SAVE} onclick={runSave}></lightning-button>
+                    <lightning-button class="slds-p-right_xx-small" variant="brand" label={i18n.EDITOR_PANEL_RUN} icon-name="utility:right" onclick={runQuery}></lightning-button>
+                    <lightning-button-icon-stateful selected={isDebugLogToggle} variant="bare" icon-name="utility:bug" size="large" onclick={handleDebugLogToggle}></lightning-button-icon-stateful>    
+                </div>
+            </builder-header>
             <div class="slds-is-relative slds-full-width slds-full-height" style="min-height:200px;">
                 <template lwc:if={isLoading}>
                     <lightning-spinner alternative-text="Loading"></lightning-spinner>
                 </template>
                 <template lwc:else>
-                    <slds-split-view left-min-width="200" right-min-width="200">
+                    <slds-split-view left-min-width="200" right-min-width="200" is-horizontal>
                         <div class="slds-flex-column slds-full-height slds-full-width" slot="left">
-                            <div class="slds-grid slds-wrap">
-                                <div class="slds-col">
-                                    <lightning-combobox class="slds-p-horizontal_small"
-                                        label="DB"
-                                        dropdown-alignment="left"
-                                        data-key="debug_db"
-                                        value={debug.debug_db}
-                                        disabled={isLoading}
-                                        options={debug_db_options}
-                                        onchange={debug_handleChange}
-                                    ></lightning-combobox>
-                                </div>
-                                <div class="slds-col">
-                                    <lightning-combobox class="slds-p-horizontal_small"
-                                        label="DB"
-                                        dropdown-alignment="left"
-                                        data-key="debug_callout"
-                                        value={debug.debug_callout}
-                                        disabled={isLoading}
-                                        options={debug_callout_options}
-                                        onchange={debug_handleChange}
-                                    ></lightning-combobox>
-                                </div>
-                                <div class="slds-col">
-                                    <lightning-combobox class="slds-p-horizontal_small"
-                                        label="ApexCode"
-                                        dropdown-alignment="left"
-                                        data-key="debug_apexCode"
-                                        value={debug.debug_apexCode}
-                                        disabled={isLoading}
-                                        options={debug_apexCode_options}
-                                        onchange={debug_handleChange}
-                                    ></lightning-combobox>
-                                </div>
-                                <div class="slds-col">
-                                    <lightning-combobox class="slds-p-horizontal_small"
-                                        label="Validation"
-                                        dropdown-alignment="left"
-                                        data-key="debug_validation"
-                                        value={debug.debug_validation}
-                                        disabled={isLoading}
-                                        options={debug_validation_options}
-                                        onchange={debug_handleChange}
-                                    ></lightning-combobox>
-                                </div>
-                                <div class="slds-col">
-                                    <lightning-combobox class="slds-p-horizontal_small"
-                                        label="Profiling"
-                                        dropdown-alignment="left"
-                                        data-key="debug_profiling"
-                                        value={debug.debug_profiling}
-                                        disabled={isLoading}
-                                        options={debug_profiling_options}
-                                        onchange={debug_handleChange}
-                                    ></lightning-combobox>
-                                </div>
-                                <div class="slds-col">
-                                    <lightning-combobox class="slds-p-horizontal_small"
-                                        label="System"
-                                        dropdown-alignment="left"
-                                        data-key="debug_system"
-                                        value={debug.debug_system}
-                                        disabled={isLoading}
-                                        options={debug_system_options}
-                                        onchange={debug_handleChange}
-                                    ></lightning-combobox>
-                                </div>
-                                
-                            </div>
-                            <div class="slds-p-around_small slds-grid slds-grid_align-end">
-                                <div class="slds-col">
-                                    <lightning-button-group class="slds-p-horizontal_medium slds-p-bottom_medium">
-                                        <lightning-button icon-name="utility:right" variant="brand"  disabled={isLoading} onclick={executeApex} label="Run"></lightning-button>
-                                    </lightning-button-group>
-                                </div>
-                            </div>
                             <editor-app lwc:ref="editor" class="slds-flex-column slds-fill-height slds-full-width"
                                 onmonacoloaded={handleMonacoLoaded}
                                 onaddtab={handleAddTab}
@@ -94,7 +25,7 @@
                             ></editor-app>
                         </div>
                         
-                        <div class="slds-p-around_small" slot="right">
+                        <div class={rightSlotClass} slot="right">
                             <template lwc:if={isLogDisplayed}>
                                 <div class="slds-grid slds-justify-content-space-between slds-grid_vertical-align-center">
                                     <div class="slds-p-around_small">
@@ -112,10 +43,86 @@
                                 </div>
                                 <slds-code-block code-block={formattedFilterLogs} language="log" title="Log"></slds-code-block>
                             </template>
+                            <template lwc:else>
+                                <illustration-empty title="Click on Run to execute Apex" size="large"></illustration-empty>
+                            </template>
                         </div>
                     </slds-split-view>
                 </template>
             </div>
+            <!-- Panel -->
+            <slds-vertical-panel size="slds-size_medium" title="Debug Logs" is-open={isDebugLogToggle} onclose={handleDebugLogToggle}>
+                <!-- DEBUG LOGS -->
+                <div class="slds-grid slds-wrap">
+                    <div class="slds-col slds-size_1-of-1">
+                        <lightning-combobox class="slds-p-horizontal_small"
+                            label="DB"
+                            dropdown-alignment="left"
+                            data-key="debug_db"
+                            value={debug.debug_db}
+                            disabled={isLoading}
+                            options={debug_db_options}
+                            onchange={debug_handleChange}
+                        ></lightning-combobox>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1">
+                        <lightning-combobox class="slds-p-horizontal_small"
+                            label="Callout"
+                            dropdown-alignment="left"
+                            data-key="debug_callout"
+                            value={debug.debug_callout}
+                            disabled={isLoading}
+                            options={debug_callout_options}
+                            onchange={debug_handleChange}
+                        ></lightning-combobox>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1">
+                        <lightning-combobox class="slds-p-horizontal_small"
+                            label="ApexCode"
+                            dropdown-alignment="left"
+                            data-key="debug_apexCode"
+                            value={debug.debug_apexCode}
+                            disabled={isLoading}
+                            options={debug_apexCode_options}
+                            onchange={debug_handleChange}
+                        ></lightning-combobox>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1">
+                        <lightning-combobox class="slds-p-horizontal_small"
+                            label="Validation"
+                            dropdown-alignment="left"
+                            data-key="debug_validation"
+                            value={debug.debug_validation}
+                            disabled={isLoading}
+                            options={debug_validation_options}
+                            onchange={debug_handleChange}
+                        ></lightning-combobox>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1">
+                        <lightning-combobox class="slds-p-horizontal_small"
+                            label="Profiling"
+                            dropdown-alignment="left"
+                            data-key="debug_profiling"
+                            value={debug.debug_profiling}
+                            disabled={isLoading}
+                            options={debug_profiling_options}
+                            onchange={debug_handleChange}
+                        ></lightning-combobox>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1">
+                        <lightning-combobox class="slds-p-horizontal_small"
+                            label="System"
+                            dropdown-alignment="left"
+                            data-key="debug_system"
+                            value={debug.debug_system}
+                            disabled={isLoading}
+                            options={debug_system_options}
+                            onchange={debug_handleChange}
+                        ></lightning-combobox>
+                    </div>
+                    
+                </div>
+            </slds-vertical-panel>
         </builder-editor>
     </div>
 </template>

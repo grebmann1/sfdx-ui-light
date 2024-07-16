@@ -2,9 +2,9 @@
 
 import { wire, api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { getFlattenedFields } from 'soql-parser-js';
+import { getFlattenedFields } from '@jetstreamapp/soql-parser-js';
 import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,UI } from 'core/store';
-import { isEmpty,fullApiName,isSame,escapeRegExp,isNotUndefinedOrNull } from 'shared/utils';
+import { isEmpty,fullApiName,isSame,escapeRegExp,isNotUndefinedOrNull,lowerCaseKey } from 'shared/utils';
 
 const PAGE_LIST_SIZE    = 70;
 
@@ -51,7 +51,7 @@ export default class FieldsTree extends ToolkitElement {
     
 
     @wire(connectStore, { store })
-    storeChange({ sobject, ui }) {
+    storeChange({ ui }) {
         if(ui.hasOwnProperty('useToolingApi')){
             this._useToolingApi = ui.useToolingApi;
         }
@@ -63,7 +63,7 @@ export default class FieldsTree extends ToolkitElement {
     updateFieldTree = () => {
         const { sobject, ui } = store.getState();
 
-        const sobjectState = SELECTORS.sobject.selectById({sobject},(this.sobject||'').toLowerCase());
+        const sobjectState = SELECTORS.sobject.selectById({sobject},lowerCaseKey(this.sobject));
         if (!sobjectState) return;
         
         this.isLoading = sobjectState.isFetching;
@@ -103,7 +103,7 @@ export default class FieldsTree extends ToolkitElement {
 
     _updateFields(query, sort) {
         if (!this.sobjectMeta) return;
-        const selectedFields = this._getSelectedFields(query).map(x => (x || '').toLowerCase());
+        const selectedFields = this._getSelectedFieldSuggestion(query).map(x => (x || '').toLowerCase());
         this._rawFields = this.sobjectMeta.fields.map(field => {
             return {
                 ...field,
@@ -118,7 +118,7 @@ export default class FieldsTree extends ToolkitElement {
         this._filterFields();
     }
 
-    _getSelectedFields(query) {
+    _getSelectedFieldSuggestion(query) {
         if (!query) return [];
         if (this.childrelation) {
             const subquery = query.fields.find(

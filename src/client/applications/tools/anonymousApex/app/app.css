@@ -51,3 +51,7 @@
 .language-log{
     white-space: break-spaces;
 }
+
+.apex-illustration{
+    width: -webkit-fill-available;
+}

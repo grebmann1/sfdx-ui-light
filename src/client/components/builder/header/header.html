@@ -1,5 +1,56 @@
 <template>
-    <div class="slds-builder-header">
+    <!--<div class="slds-builder-header">
         <slot></slot>
+    </div>-->
+    <div class="slds-page-header">
+        <div class="slds-page-header__row">
+            <div class="slds-page-header__col-title">
+                <div class="slds-media">
+                    <div class="slds-media__figure">
+                        <span class="slds-icon_container">
+                            <lightning-icon icon-name={iconName}></lightning-icon>
+                        </span>
+                    </div>
+                    <div class="slds-media__body">
+                        <div class="slds-page-header__name">
+                            <div class="slds-page-header__name-title">
+                                <h1>
+                                    <span>{title}</span>
+                                    <span class="slds-page-header__title slds-truncate" title={subTitle}>{subTitle}</span>
+                                </h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-page-header__col-actions">
+                <div class="slds-page-header__controls">
+                    <div class="slds-page-header__control">
+                        <!-- actions - start -->
+                        <slot name="actions"></slot>
+                        <!-- actions - end -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slds-page-header__row">
+            <div class="slds-page-header__col-meta">
+                <!-- meta - start -->
+                <slot name="meta"></slot>
+                <template lwc:if={metaText}>
+                    <p class="slds-page-header__meta-text">{metaText}</p>
+                </template>
+                <!-- meta - end -->
+            </div>
+            <div class="slds-page-header__col-controls">
+                <div class="slds-page-header__controls">
+                    <div class="slds-page-header__control">
+                        <!-- sub actions - start -->
+                        <slot name="subactions"></slot>
+                        <!-- sub actions - start -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>

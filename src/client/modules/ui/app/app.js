@@ -8,7 +8,8 @@ import { handleRedirect } from './utils';
 import {APP_MAPPING,APP_LIST,DIRECT_LINK_MAPPING} from './modules';
 
 /** Store **/
-import { connectStore,store,store_application } from 'shared/store';
+import { connectStore,store as applicationStore,store_application } from 'shared/store';
+import { store,DOCUMENT } from 'core/store';
 
 const LIMITED = 'limited';
 
@@ -50,7 +51,7 @@ export default class App extends LightningElement {
     }
 
 
-    @wire(connectStore, { store })
+    @wire(connectStore, { store:applicationStore })
     applicationChange({application}) {
         console.log('application',application)
         if(application.connector){
@@ -133,8 +134,6 @@ export default class App extends LightningElement {
     }
     
     handleLogin = async (connector) => {
-        
-        //console.log('handleLogin');
         if(isUndefinedOrNull(connector)){
             this._isFullAppLoading = false;
             return;
@@ -157,6 +156,11 @@ export default class App extends LightningElement {
         }
         this._isFullAppLoading = false;
         this.isLoggedIn = true;
+
+        // Load Cached data
+        store.dispatch(DOCUMENT.reduxSlices.RECENT.actions.loadFromStorage({
+            alias:this.connector.configuration.alias
+        }));
     }
 
     handleLogout = () => {

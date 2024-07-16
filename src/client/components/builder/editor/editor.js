@@ -15,6 +15,10 @@ export default class Editor extends LightningElement {
     @api isHeaderHidden = false;
     @api isToolbarHidden = false;
 
+    // Header
+    @api title;
+    @api subtitle;
+
 
     labels = LABELS;
 

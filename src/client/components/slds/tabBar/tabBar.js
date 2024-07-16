@@ -73,17 +73,20 @@ export default class SldsTabBar extends LightningElement {
         this._tabHeaders = tabHeaders;
         const allTabs = tabHeaders.map((tab) => {
             const classNames = this._tabClass({isAdd:tab.isAddTabEnabled});
-            console.log('classNames',classNames);
+            //console.log('classNames',classNames);
             const linkClassNames = this.computedLinkClass;
+            const tabActionClass = classSet('slds-col_bump-left slds-p-left_none slds-p-right_xx-small').add({'slds-is-draft-close':tab.isDraft && tab.isCloseable}).toString();
             return {
                 label: tab.label,
                 title: tab.title || tab.label,
                 isCloseable: tab.isCloseable,
+                isDraft : tab.isDraft,
                 linkId: tab.value + '__item',
                 domId: tab.domId,
                 value: String(tab.value),
                 class: classNames,
                 linkClass: linkClassNames,
+                tabActionClass: tabActionClass,
                 tabIndex: -1,
                 ariaSelected: false,
                 contentId: '',
@@ -157,7 +160,7 @@ export default class SldsTabBar extends LightningElement {
         const isScopedVariant = this._variant === 'scoped';
         const isVerticalVariant = this.isVerticalVariant;
 
-        return classSet()
+        return classSet('slds-truncate')
             .add({
                 'slds-tabs_default__link':
                     !isScopedVariant && !isVerticalVariant,
@@ -177,6 +180,10 @@ export default class SldsTabBar extends LightningElement {
 
     get _visibleTabs() {
         return this._allTabs.filter((tab) => tab.visible);
+    }
+
+    get _hiddenTabs(){
+        return this._allTabs.filter((tab) => !tab.visible && !tab.isAddTabEnabled);
     }
 
     get computedAriaOrientation() {
@@ -368,7 +375,7 @@ export default class SldsTabBar extends LightningElement {
                 (tab) => tabLink.getAttribute('data-tab-value') === tab.value
             );
             tabLink.setAttribute('id', tabData.linkId);
-            tabLink.setAttribute('aria-controls', tabData.domId);
+            //tabLink.setAttribute('aria-controls', tabData.domId);
         });
     }
 
@@ -379,12 +386,8 @@ export default class SldsTabBar extends LightningElement {
 
                 if (
                     this._containerWidthWhenLastResized &&
-                    newWidth <
-                        this._containerWidthWhenLastResized +
-                            RECOMPUTE_OVERFLOW_THRESHOLD_PX &&
-                    newWidth >
-                        this._containerWidthWhenLastResized -
-                            RECOMPUTE_OVERFLOW_THRESHOLD_PX
+                    newWidth < this._containerWidthWhenLastResized + RECOMPUTE_OVERFLOW_THRESHOLD_PX &&
+                    newWidth > this._containerWidthWhenLastResized - RECOMPUTE_OVERFLOW_THRESHOLD_PX
                 ) {
                     return;
                 }
@@ -424,9 +427,7 @@ export default class SldsTabBar extends LightningElement {
             // eslint-disable-next-line lightning-global/check-return-value-for-nullable-call
             const computedStyle = getComputedStyle(tabHeaderElement);
             if (computedStyle) {
-                tabWidth +=
-                    parseFloat(computedStyle.marginLeft) +
-                    parseFloat(computedStyle.marginRight);
+                tabWidth += parseFloat(computedStyle.marginLeft) + parseFloat(computedStyle.marginRight);
             }
             tab.width = tabWidth;
         }

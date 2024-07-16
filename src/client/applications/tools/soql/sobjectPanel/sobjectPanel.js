@@ -25,7 +25,6 @@ export default class SobjectsPanel extends ToolkitElement {
             this._useToolingApi = ui.useToolingApi;
         }
         const sobjects = SELECTORS.describe.selectById({describe},DESCRIBE.getDescribeTableName(this._useToolingApi));
-        
         if(sobjects){
             this.isLoading = sobjects.isFetching;
             if (sobjects.data) {

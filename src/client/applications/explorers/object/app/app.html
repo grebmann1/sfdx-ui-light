@@ -64,26 +64,31 @@
             </article>
             <!-- Panel -->
             <slds-vertical-panel is-open={displayFilter} onclose={handleCloseVerticalPanel}>
-                <!-- FILTER -->
-                <li class="slds-item">
-                    <lightning-checkbox-group 
-                        name="sobjectBasicFilter"
-                        label="Metadata Filters"
-                        options={metadataFilter_options}
-                        value={metadataFilter_value}
-                        onchange={metadataFilter_onChange}
-                    ></lightning-checkbox-group>
-                </li>
-                <!-- FILTER -->
-                <li class="slds-item">
-                    <lightning-checkbox-group 
-                        name="sobjectExtraFilter"
-                        label="Advanced Filters"
-                        options={typeFilter_options}
-                        value={typeFilter_value}
-                        onchange={typeFilter_onChange}
-                    ></lightning-checkbox-group>
-                </li>
+                <div class="slds-filters">
+                    <ol class="slds-list_vertical slds-list_vertical-space">
+                        <!-- FILTER -->
+                        <li class="slds-item">
+                            <lightning-checkbox-group 
+                                name="sobjectBasicFilter"
+                                label="Metadata Filters"
+                                options={metadataFilter_options}
+                                value={metadataFilter_value}
+                                onchange={metadataFilter_onChange}
+                            ></lightning-checkbox-group>
+                        </li>
+                        <!-- FILTER -->
+                        <li class="slds-item">
+                            <lightning-checkbox-group 
+                                name="sobjectExtraFilter"
+                                label="Advanced Filters"
+                                options={typeFilter_options}
+                                value={typeFilter_value}
+                                onchange={typeFilter_onChange}
+                            ></lightning-checkbox-group>
+                        </li>
+                    </ol>
+                </div>
+                
             </slds-vertical-panel>
         </div>
         

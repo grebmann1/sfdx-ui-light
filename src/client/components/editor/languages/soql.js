@@ -16,7 +16,11 @@ export function configureSoqlLanguage(monaco) {
 		provideDocumentFormattingEdits: async (model, options, token) => {
 			return [{
 				range: model.getFullModelRange(),
-				text: formatQuery(model.getValue()),
+				text: formatQuery(model.getValue(),{
+					fieldMaxLineLength: 20,
+					fieldSubqueryParensOnOwnLine: false,
+					whereClauseOperatorsIndented: true,
+				  }),
 			}, ];
 		},
 	});
@@ -182,9 +186,17 @@ export async function configureSoqlCompletions(monaco,searchField) {
     monaco.languages.registerCompletionItemProvider('soql', {
         triggerCharacters: ['.',',', ...triggerChars.split(''), ...triggerChars.toUpperCase().split('')],
         provideCompletionItems: async (model, position, context) => {
-
+			const testBefore = model.getValueInRange({
+				startLineNumber: 1,
+				startColumn: 1,
+				endLineNumber: position.lineNumber,
+				endColumn: position.column
+			})
+			const testAfter = model.getValue().substring(testBefore.length);
+			console.log('testBefore',testBefore);
+			console.log('testAfter',testAfter);
             return {
-                suggestions: await getSuggestions(monaco, model, position,searchField),
+                suggestions: []//await getSuggestions(monaco, model, position,searchField),
             };
         },
     });

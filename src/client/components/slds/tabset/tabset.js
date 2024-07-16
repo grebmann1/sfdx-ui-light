@@ -1,5 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
-import { normalizeString,generateUniqueId } from 'shared/utils';
+import { normalizeString,generateUniqueId, } from 'shared/utils';
 
 const tabClassPrefixByVariant = {
     scoped: 'slds-tabs_scoped',
@@ -117,6 +117,7 @@ export default class SldsTabset extends LightningElement {
             title: tab.title,
             iconName: tab.iconName,
             isCloseable: tab.isCloseable,
+            isDraft: tab.isDraft,
             counter: tab.counter,
             badgeColor: tab.badgeColor,
             badgePositionClass: tab.badgePositionClass,
@@ -199,6 +200,7 @@ export default class SldsTabset extends LightningElement {
             matchingTabHeader.badgeColor = changedTab.badgeColor;
             matchingTabHeader.badgePositionClass = changedTab.badgePositionClass;
             matchingTabHeader.isCloseable = changedTab.isCloseable;
+            matchingTabHeader.isDraft = changedTab.isDraft;
             matchingTabHeader.iconAlternativeText = changedTab.iconAssistiveText;
             matchingTabHeader.endIconName = changedTab.endIconName;
             matchingTabHeader.endIconAlternativeText = changedTab.endIconAlternativeText;

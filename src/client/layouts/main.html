@@ -232,6 +232,31 @@
             .menu-header lightning-vertical-navigation-item .slds-nav-vertical__action {
                 padding-left: 3.5rem;
             }
+
+            /** Tab icon **/
+            .slds-tabs_scoped__link .slds-icon{
+                width: 1rem;
+                height: 1rem;
+            }
+
+            slds-tab.slds-tabs_scoped__content{
+                display:none;
+            }
+            /* Smaller Tabs !
+            slds-tabset .slds-tabs--scoped__link, slds-tabset .slds-tabs_scoped__link {
+                height: 1.5rem;
+                line-height: 1.5rem;
+            }
+            
+            slds-tabset .slds-tabs_scoped__overflow-button{
+                height: 1.5rem;
+                line-height: 1.5rem;
+            }
+            */
+            slds-tabset .slds-tabs_scoped__link{
+                padding: 0 0.5rem;
+            }
+            
             .slds-without-tab lightning-tab{
                 display:none;
             }
@@ -281,18 +306,43 @@
                 align-items: center;
             }
 
-            /** Modal Full */
+            /** Smaller Toggle **/
 
-
-            /** Tab icon **/
-            .slds-tabs_scoped__link .slds-icon{
-                width: 1rem;
-                height: 1rem;
+            .toolkit-small .slds-checkbox_toggle .slds-checkbox_faux{
+                width: 2rem;
+                height: 17px;
             }
 
-            slds-tab.slds-tabs_scoped__content{
-                display:none;
+            .toolkit-small .slds-checkbox_toggle [type=checkbox]:checked+.slds-checkbox_faux_container .slds-checkbox_faux:after{
+                top: 0.1rem;
+                left: .3rem;
+                height: .5rem;
+                width: .45rem;
             }
+            
+            .toolkit-small .slds-checkbox_toggle [type=checkbox]:checked+.slds-checkbox_faux_container .slds-checkbox_faux:before{
+                top: 0;
+                right: 0;
+                width: 14px;
+                height: 14px;
+            }
+            
+            .toolkit-small .slds-checkbox_toggle .slds-checkbox_faux:after {
+                top: 0;
+                left: 0;
+                width: 14px;
+                height: 14px;
+            }
+
+            .toolkit-small.slds-form-element .slds-form-element__label{
+                padding-top:unset;
+            }
+
+            .toolkit-small.slds-form-element .slds-checkbox_toggle{
+                align-items: center;
+            }
+
+
 
             .slds-inline-flex{
                 display: inline-flex;
@@ -311,6 +361,48 @@
                 flex-direction: column;
             }
             
+            /** Custom Tabulator **/
+            .tabulator-row.tabulator-row-even {
+                background-color: #fafaf9;
+            }
+
+            .tabulator-row.tabulator-selected {
+                --slds-c-button-text-color:white;
+                --slds-c-button-color-border-hover:white;
+                background-color: #0176d3;
+                color: white;
+            }
+
+            .tabulator .tabulator-header .tabulator-col {
+                background: #f3f3f3;
+            }
+            .tabulator .tabulator-row-header{
+                align-content: center;
+            }
+            
+            .tabulator-row.tabulator-selected a{
+                color:white !important;
+            }
+
+            @media (hover: hover) and (pointer: fine) {
+                .tabulator-row.tabulator-selectable:hover {
+                    background-color: #e5e5e5;
+                    cursor: pointer;
+                }
+                .tabulator-row.tabulator-selected:hover {
+                    --slds-c-button-text-color:white;
+                    --slds-c-icon-color-foreground:white;
+                    --slds-c-button-color-border-hover:white;
+                    --slds-c-button-text-color-hover:white;
+                    background-color: #0176d3;
+                    color: white;
+                }
+
+                .tabulator .tabulator-header .tabulator-col.tabulator-sortable.tabulator-col-sorter-element:hover {
+                    cursor: pointer;
+                    background-color: #e5e5e5;
+                }
+            }
 
             
         </style>

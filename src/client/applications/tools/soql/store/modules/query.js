@@ -1,62 +1,84 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { store,UI } from 'core/store';
+import { createSlice, createAsyncThunk,createEntityAdapter } from '@reduxjs/toolkit';
+import { DOCUMENT } from 'core/store';
+import { lowerCaseKey } from 'shared/utils';
+
+export const queryAdapter = createEntityAdapter();
 
 // Thunks using createAsyncThunk
 export const executeQuery = createAsyncThunk(
     'queries/executeQuery',
-    async ({ connector, soql, isAllRows }, { dispatch }) => {
+    async ({ connector, soql,tabId, isAllRows }, { dispatch }) => {
         //const apiPath = isAllRows ? '/queryAll' : '/query';
         try {
             const res = await connector.query(soql);
-            dispatch(UI.reduxSlice.actions.saveRecentQuery({soql, alias: connector.alias}));
-            // saveRecentQuery
-            return { data: res, soql, alias: connector.alias };
+            dispatch(DOCUMENT.reduxSlices.RECENT.actions.saveQuery({
+                soql, 
+                alias: connector.alias,
+                data: res
+            }));
+            return { data: res, soql, alias: connector.alias,tabId };
         } catch (err) {
             console.error(err);
-            throw { error: err };
+            throw err;
         }
     }
 );
 
-// Create a slice with reducers and extraReducers
-const queriesSlice = createSlice({
-    name: 'queries',
-    initialState: {
+/*
+{
         isFetching: false,
+        createdDate:null,
         alias:null,
         soql:null,
         data: null,
         error: null
-    },
+    }
+*/
+// Create a slice with reducers and extraReducers
+const queriesSlice = createSlice({
+    name: 'queries',
+    initialState:queryAdapter.getInitialState(),
     reducers: {
         clearQueryError: (state, action) => {
-            state.error = null;
+            const { tabId } = action.payload;
+            queryAdapter.upsertOne(state, {
+                id: lowerCaseKey(tabId),
+                error: null
+            });
         }
     },
     extraReducers: (builder) => {
         builder
             .addCase(executeQuery.pending, (state, action) => {
-                state.isFetching = true;
-                state.error = null;
+                const { tabId } = action.meta.arg;
+                queryAdapter.upsertOne(state, {
+                    id: lowerCaseKey(tabId),
+                    isFetching: true,
+                    error: null 
+                });
             })
             .addCase(executeQuery.fulfilled, (state, action) => {
-                const { data, soql, alias } = action.payload;
-                Object.assign(state, { 
-                    isFetching:false,
+                const { data,soql } = action.payload;
+                const { tabId } = action.meta.arg;
+                queryAdapter.upsertOne(state, {
+                    id: lowerCaseKey(tabId),
                     data,
                     soql,
-                    alias,
-                    error:null
-                })
+                    isFetching: false,
+                    createdDate:Date.now(),
+                    error: null
+                });
             })
             .addCase(executeQuery.rejected, (state, action) => {
-                state.isFetching = false;
-                state.error = action.error.message;
+                const { error } = action;
+                const { tabId } = action.meta.arg;
+                queryAdapter.updateOne(state, {
+                    id: lowerCaseKey(tabId),
+                    changes: { isFetching: false, error }
+                });
+                console.error(error);
             });
     }
 });
-
-// Export selectors
-export const selectQueryState = (state) => state.queries;
 
 export const reduxSlice = queriesSlice;

@@ -1,3 +1,13 @@
 :host {
   display: flex;
+  justify-content: space-between;
+  line-height: 32px;
+}
+
+.slds-copy-clipboards {
+  visibility: hidden;
+}
+
+:host:hover .slds-copy-clipboards{
+  visibility: visible;
 }

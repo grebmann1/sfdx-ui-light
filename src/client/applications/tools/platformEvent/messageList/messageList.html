@@ -25,7 +25,7 @@
             ></lightning-input>
             <div class="slds-scrollable_y" onscroll={handleScroll}>
                 <template lwc:if={isEmpty}>
-                    <slds-empty-illustration title="No Messages" sub-title="There is no events received"></slds-empty-illustration>
+                    <illustration-empty title="No Messages" sub-title="There is no events received"></illustration-empty>
                 </template>
                 <template for:each={virtualList} for:item="item">
                     <platformevent-message selected-item-id={selectedItemId} item={item} key={item.id}></platformevent-message>

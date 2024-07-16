@@ -83,7 +83,7 @@
 
                                 
                                 <template lwc:if={isNoRecord}>
-                                    <slds-empty-illustration title="No record" sub-title="There is no data with these parameters"></slds-empty-illustration>
+                                    <illustration-empty title="No record" sub-title="There is no data with these parameters"></illustration-empty>
                                 </template>
                                 <template lwc:else>
                                     <div class="slds-grid slds-m-vertical_small">
@@ -110,25 +110,30 @@
             </article>
             <!-- Panel -->
             <slds-vertical-panel size={filterPanelSize} is-open={displayFilter} onclose={handleCloseVerticalPanel}>
-                <!-- FILTER -->
-                <li class="slds-item">
-                    <lightning-input 
-                        type="toggle" 
-                        label="Filter Fields" 
-                        name="filterFields" 
-                        message-toggle-active=""
-                        message-toggle-inactive=""
-                        onchange={handleToggleChange}
-                    ></lightning-input>
-                </li>
-                <li class="slds-item">
-                    <lightning-checkbox-group name="clouds"
-                            label="Filters"
-                            options={cloud_options}
-                            value={cloud_value}
-                            onchange={cloud_handleChange}
-                    ></lightning-checkbox-group>
-                </li>
+                <div class="slds-filters">
+                    <ol class="slds-list_vertical slds-list_vertical-space">
+                        <!-- FILTER -->
+                        <li class="slds-item">
+                            <lightning-input 
+                                type="toggle" 
+                                label="Filter Fields" 
+                                name="filterFields" 
+                                message-toggle-active=""
+                                message-toggle-inactive=""
+                                onchange={handleToggleChange}
+                            ></lightning-input>
+                        </li>
+                        <li class="slds-item">
+                            <lightning-checkbox-group name="clouds"
+                                    label="Filters"
+                                    options={cloud_options}
+                                    value={cloud_value}
+                                    onchange={cloud_handleChange}
+                            ></lightning-checkbox-group>
+                        </li>
+                    </ol>
+                </div>
+                
             </slds-vertical-panel>
         </div>
         

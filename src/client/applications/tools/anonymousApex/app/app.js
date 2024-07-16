@@ -1,5 +1,5 @@
 import { api,track } from "lwc";
-import { decodeError,isNotUndefinedOrNull,isEmpty,guid } from 'shared/utils';
+import { decodeError,isNotUndefinedOrNull,isEmpty,guid,classSet } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
 
 const INFO = 'INFO';
@@ -32,6 +32,8 @@ export default class App extends ToolkitElement {
     // Apex
     apexScript; // ='CCR_TaskNotification__e event = new CCR_TaskNotification__e();\n// Publish the event\nDatabase.SaveResult result = EventBus.publish(event);';
     isApexRunning = false;
+
+    isDebugLogToggle = false;
 
     _logs = [];
     _cacheFiles = [];
@@ -84,6 +86,10 @@ export default class App extends ToolkitElement {
 
 
     /** Events **/
+
+    handleDebugLogToggle = (e) => {
+        this.isDebugLogToggle = !this.isDebugLogToggle;
+    }
 
     handleEditorChange = (e) => {
         this.storeToCache();
@@ -257,6 +263,13 @@ export default class App extends ToolkitElement {
                 ]
             }
         }
+    }
+
+    get rightSlotClass(){
+        return classSet('slds-p-around_small slds-full-height')
+        .add({
+            'apex-illustration':!this.isLogDisplayed
+        }).toString();
     }
   
 }

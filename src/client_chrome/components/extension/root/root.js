@@ -107,7 +107,6 @@ export default class root extends LightningElement {
         
         runActionAfterTimeOut(tab.url,async (newUrl) => {
             this.currentUrl = newUrl;
-            console.log('tab.url',tab.url);
             if(!this.hasSession){
                 // Reload in case there is existing session found!
                 this.loadComponent(false);

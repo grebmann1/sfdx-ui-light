@@ -7,6 +7,7 @@
     position: relative;
     flex: 1;
     display: flex;
+    border-bottom: 1px solid #dddbda;
 }
 .soql-editor textarea {
     flex: 1;

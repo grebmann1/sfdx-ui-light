@@ -1,6 +1,6 @@
 import { wire, api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { getFlattenedFields } from 'soql-parser-js';
+import { getFlattenedFields } from '@jetstreamapp/soql-parser-js';
 import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,UI } from 'core/store';
 import { isEmpty,fullApiName,isSame,escapeRegExp,isNotUndefinedOrNull } from 'shared/utils';
 

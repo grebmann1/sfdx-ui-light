@@ -6,21 +6,9 @@
         <template lwc:if={isHeaderDisplayed}>
             <div class="slds-builder-header_container slds-is-relative toolbar-header-container">
                 <!-- Header -->
-                <builder-header>
-                    <!-- Start Header -->
-                    <slot name="header"></slot>
-                    <!-- End Header -->
-                </builder-header>
+                <slot name="header"></slot>
             </div>
         </template>
-        <template lwc:if={isToolbarDisplayed}>
-            <builder-toolbar>
-                <!-- Start toolbar -->
-                <slot name="toolbar"></slot>
-                <!-- End toolbar -->
-            </builder-toolbar>
-        </template>
-        
         <template lwc:if={isReadOnlyMode}>
             <div class="slds-scoped-notification slds-media slds-media_center slds-color__background_gray-3" role="status" >
                 <div class="slds-media__figure">

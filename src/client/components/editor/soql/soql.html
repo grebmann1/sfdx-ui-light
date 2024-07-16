@@ -1,0 +1,11 @@
+<template>
+    <div class="slds-flex-column slds-full-height slds-light-bg">
+       
+        <!-- Editor -->
+        <div lwc:ref="editor" class="slds-full-height"></div>
+
+        <template lwc:if={isLoading}>
+            <lightning-spinner alternative-text="Loading"></lightning-spinner>
+        </template>
+    </div>
+</template>

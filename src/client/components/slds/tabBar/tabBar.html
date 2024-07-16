@@ -73,11 +73,15 @@
                             <lightning-badge label={tab.counter} style={tab.badgeColor} class={tab.badgePositionClass}></lightning-badge>
                         </template>
                     </a>
-                    <template lwc:if={tab.isCloseable}>
-                        <div class="slds-col_bump-left slds-p-left_none slds-p-right_xx-small">
-                            <lightning-button-icon variant="bare" size="small" label="close" icon-name="utility:close" data-tab-value={tab.value} onclick={handleCloseTab}></lightning-button-icon>
-                        </div>
-                    </template>
+                    
+                    <div class={tab.tabActionClass}>
+                        <template lwc:if={tab.isCloseable}>
+                            <lightning-button-icon class="slds-is-close" variant="bare" size="small" label="close" icon-name="utility:close" data-tab-value={tab.value} onclick={handleCloseTab}></lightning-button-icon>
+                        </template>
+                        <template lwc:if={tab.isDraft}>
+                            <lightning-button-icon class="slds-is-draft" variant="bare" size="small" label="record" icon-name="utility:record" data-tab-value={tab.value}></lightning-button-icon>
+                        </template>
+                    </div>
                     
                 </li>
             </template>
@@ -97,14 +101,12 @@
                     label={i18n.more}
                     menu-alignment="right"
                 >
-                    <template for:each={_allTabs} for:item="tab">
-                        <template if:false={tab.visible}>
-                            <lightning-menu-item
-                                    key={tab.value}
-                                    label={tab.label}
-                                    value={tab.value}
-                            ></lightning-menu-item>
-                        </template>
+                    <template for:each={_hiddenTabs} for:item="tab">
+                        <lightning-menu-item
+                                key={tab.value}
+                                label={tab.label}
+                                value={tab.value}
+                        ></lightning-menu-item>
                     </template>
                 </lightning-button-menu>
             </li>

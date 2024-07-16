@@ -1,16 +1,23 @@
 <template>
     <template lwc:if={isChildRelationship}>
-        <button class="slds-button slds-button_icon slds-m-right_xx-small" title={i18n.OUTPUT_CELL_SHOW_CHILD_REL} onclick={handleClick}>
-            <svg class="slds-button__icon slds-button__icon_small" aria-hidden="true">
-                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#record_lookup"></use>
-            </svg>
-            <span class="slds-assistive-text">{i18n.OUTPUT_CELL_SHOW_CHILD_REL}</span>
-        </button>
+        <lightning-button variant="base" label={formattedTotalSize} title={i18n.OUTPUT_CELL_SHOW_CHILD_REL} icon-name="utility:record_lookup" icon-position="right" onclick={handleClick}></lightning-button>
     </template>
-    <div class="slds-truncate" title={value.data}>
-        <a href="#" target="_blank" tabindex="-1" if:true={url} onclick={handleRedirection}>{value.data}</a>
-        <template lwc:if={isDataDisplayed}>
-            {value.data}
+    <template lwc:else>
+        <template lwc:if={url}>
+            <a href="#" target="_blank" tabindex="-1" if:true={url} onclick={handleRedirection}>{formattedValue}</a>
         </template>
-    </div>
+        <template lwc:elseif={isDataDisplayed}>
+            <div class="slds-truncate" title={formattedValue}>
+                {formattedValue} 
+            </div>
+        </template>
+        <template lwc:if={isNotEmpty}>
+            <lightning-button-icon class="slds-copy-clipboards"
+                onclick={handle_copyClick}
+                icon-name="utility:copy"
+                variant="bare"
+                alternative-text="copy"
+            ></lightning-button-icon>
+        </template>
+    </template>
 </template>

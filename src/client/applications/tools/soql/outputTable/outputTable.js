@@ -1,6 +1,10 @@
-import { api } from 'lwc';
+import { api,createElement } from 'lwc';
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
+import { TabulatorFull as Tabulator } from 'tabulator-tables';
+import { isObject,isNotUndefinedOrNull,isUndefinedOrNull,runActionAfterTimeOut } from 'shared/utils';
+import outputCell from 'soql/outputCell';
+
 
 class ColumnCollector {
 
@@ -51,91 +55,138 @@ class ColumnCollector {
     }
 }
 
-const PAGE_SIZE = 200;
-
 export default class OutputTable extends ToolkitElement {
-    columns;
+    isLoading = false;
+    _columns;
     rows;
     _response;
     _nextRecordsUrl;
-    _allRows;
+    _hasRendered = false;
+
+    @api tableInstance;
+    @api childTitle;
 
     @api
     set response(res) {
-        this._response = res;
+        this._response = JSON.parse(JSON.stringify(res));
         this._nextRecordsUrl = res.nextRecordsUrl;
         const collector = new ColumnCollector(res.records);
-        this.columns = collector.collect();
-        const rows = this._convertQueryResponse(res);
-        this._allRows = rows;
-        this.rows = rows.slice(0, PAGE_SIZE);
+        this._columns = collector.collect();
+        this.displayTable();
     }
     get response() {
         return this._response;
     }
 
-    @api
-    async generateCsv() {
-        const convertToCsvValue = value => {
-            if (/[\n",]/.test(value)) {
-                return `"${value.replace(/"/g, '""')}"`;
-            }
-            return value;
-        };
-        await this._fetchSubsequentRecords(this._nextRecordsUrl);
-        const header = this.columns.map(convertToCsvValue).join(',');
-        const data = this._allRows
-            .map(row => {
-                return row.values
-                    .map(cell => {
-                        return convertToCsvValue(cell.data);
-                    })
-                    .join(',');
-            })
-            .join('\n');
-        return `${header}\n${data}`;
+    renderedCallback(){
+        if(!this._hasRendered){
+            this.displayTable();
+            window.addEventListener('resize',this.tableResizeEvent);
+        }
+        this._hasRendered = true;
     }
 
-    handleScroll(event) {
-        const { target } = event;
-        if (target.scrollTop + target.clientHeight >= target.scrollHeight) {
-            const index = this.rows.length;
-            if (index < this._allRows.length) {
-                this.rows = [
-                    ...this.rows,
-                    ...this._allRows.slice(index, index + PAGE_SIZE)
-                ];
+    disconnectedCallback(){
+        window.removeEventListener('resize',this.tableResizeEvent);
+    }
+
+
+    /** Methods */
+
+    formatDataForTable = () => {
+        return this._response.records.map(x => {
+            delete x.attributes;
+            return x;
+        })
+    }
+
+    formatColumns = () => {
+        const columns = this._columns.map(key => {
+            return {
+                title: key, 
+                field: key,
+                formatter:this.formatterField_value
             }
-            const { totalSize } = this._response;
-            if (
-                this._nextRecordsUrl &&
-                this._allRows.length < totalSize &&
-                index >= this._allRows.length - PAGE_SIZE * 2
-            ) {
-                this._fetchNextRecords(this._nextRecordsUrl).catch(e => {
-                    console.error(e);
-                    Toast.show({
-                        message: this.i18n.OUTPUT_TABLE_FAILED_FETCH_NEXT,
-                        errors: e
-                    });
-                });
-                this._nextRecordsUrl = null;
-            }
+        });
+
+        if(isNotUndefinedOrNull(this.childTitle)){
+            return [{title:this.childTitle,columns:columns}]
+        }else{
+            return columns;
         }
     }
 
-    /**
-     * Covert query response to the follwoing format.
-     * {
-     *   totalSize: 999,
-     *   columns: ['Field1', 'Field2', ...],
-     *   rows: [
-     *     [ { data:'Value1', rawData:'Value1' }, ...],
-     *     ...
-     *   ]
-     * }
-     * @param {*} res
-     */
+    formatterField_value = (cell, formatterParams, onRendered) => {
+        let value = cell._cell.value;
+        const element = createElement('soql-output-cell', {
+            is: outputCell
+        });
+        Object.assign(element, {
+            value,
+            column:cell._cell.column.field,
+            recordId:cell._cell.row.data.Id
+
+        });
+        return element;
+    }
+
+    tableResizeEvent = (e) => {
+        //console.log('tableResizeEvent');
+        this.tableResize(1);
+    }
+
+    @api
+    tableResize = (timeout) => {
+        runActionAfterTimeOut(null,(param) => {
+            if(isUndefinedOrNull(this.tableInstance)) return;
+            const height = this.template.querySelector(".output-panel").clientHeight;
+            if(height > 0){
+                this.tableInstance.setHeight(height);
+            }
+        },timeout);
+    }
+    
+
+    displayTable = () => {
+        if(this.tableInstance){
+            console.log('Need to destroy table !!!')
+            this.tableInstance.destroy();
+        }
+        const element = this.template.querySelector(".custom-table");
+        if(!element) return;
+        this.tableInstance = new Tabulator(element, {
+            height: "100%",
+            data: this.formatDataForTable(),
+            autoResize:false,
+            layout:"fitDataStretch",
+            renderHorizontal:"virtual",
+            columns: this.formatColumns(),
+            //autoColumns:true,
+            columnHeaderVertAlign: "middle",
+            minHeight:100,
+            //maxHeight:"100%",
+            rowHeader:{
+                headerSort:false, resizable: false, frozen:true, 
+                headerHozAlign:"center", hozAlign:"center", 
+                formatter:"rowSelection", 
+                titleFormatter:"rowSelection", 
+                cellClick:function(e, cell){
+                    console.log('cellClick');
+                    cell.getRow().toggleSelect();
+                }
+            },
+        });
+        this.tableInstance.on("tableBuilding", () => {
+            //console.log('tableBuilding')
+            this.isLoading = true;
+        });
+        this.tableInstance.on("tableBuilt", () => {
+            //console.log('tableBuilt')
+            this.isLoading = false;
+        });
+
+    }
+
     _convertQueryResponse(res) {
         if (!res) return [];
         const startIdx = this._allRows ? this._allRows.length : 0;
@@ -170,21 +221,13 @@ export default class OutputTable extends ToolkitElement {
         return value;
     }
 
-    async _fetchNextRecords(nextRecordsUrl) {
-        if (!nextRecordsUrl) return;
-        const res = await this.connector.conn.request({
-            method: 'GET',
-            url: nextRecordsUrl,
-            //headers: salesforce.getQueryHeaders()
-        });
-        this._nextRecordsUrl = res.nextRecordsUrl;
-        this._allRows = [...this._allRows, ...this._convertQueryResponse(res)];
-    }
+    /** Getters **/
 
-    async _fetchSubsequentRecords(nextRecordsUrl) {
-        await this._fetchNextRecords(nextRecordsUrl);
-        if (this._nextRecordsUrl) {
-            await this._fetchSubsequentRecords(this._nextRecordsUrl);
-        }
+    @api
+    get columns(){
+        return this._columns;
     }
+    
+
+    
 }

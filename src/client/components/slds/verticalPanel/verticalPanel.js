@@ -1,6 +1,5 @@
 import { LightningElement,api} from "lwc";
-import { isEmpty,runActionAfterTimeOut} from 'shared/utils';
-import { classSet } from 'lightning/utils';
+import { isEmpty,runActionAfterTimeOut,normalizeString as normalize, classSet} from 'shared/utils';
 
 
 export default class VerticalPanel extends LightningElement {
@@ -15,22 +14,26 @@ export default class VerticalPanel extends LightningElement {
 
     handleClose = (e) => {
         e.preventDefault();
-        this.dispatchEvent(new CustomEvent("close", {bubbles: true}));
+        this.dispatchEvent(new CustomEvent("close", {bubbles: true,composed:true}));
     }
 
     /** Methods */
 
 
-
-
     /** Getters */
 
     get filterPanelClass(){
-        return classSet(`slds-panel ${this.size} slds-panel_docked slds-panel_docked-right slds-panel_drawer`)
+        return classSet(`slds-panel ${this.normalizedSize} slds-panel_docked slds-panel_docked-right slds-panel_drawer`)
         .add({
-            'slds-is-open':this.isOpen
+            'slds-is-open slds-flex-column':this.isOpen
         }).toString();
     }
 
+    get normalizedSize(){
+        return normalize(this.size, {
+            fallbackValue: 'default',
+            validValues: ['default', 'slds-size_medium','slds-size_full'],
+        });
+    }
 
 }

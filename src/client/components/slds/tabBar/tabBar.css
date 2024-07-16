@@ -15,7 +15,7 @@
 
 .slds-is-active.slds-tabs_scoped__item{
     font-weight: 700;
-    border-top: 3px solid #0176d3;
+    border-top: 3px solid #1b96ff;
     padding-top:0px;
 }
 
@@ -41,6 +41,7 @@
 .slds-tabs_scoped__link{
     border-right: unset;
     border-left: unset;
+    max-width: 150px;
 }
 
 
@@ -62,5 +63,22 @@
     border-top-right-radius:0;
     border-top-left-radius:0;
     border:unset;
-    border-top:1px solid var(--slds-g-color-border-base-4,#c9c9c9);
+    border-bottom:1px solid var(--slds-g-color-border-base-4,#c9c9c9);
+}
+
+/** Draft **/
+
+.slds-is-draft {
+    --slds-g-color-neutral-base-50:#1b96ff;
+    display:block;
+}
+.slds-is-draft-close .slds-is-close{
+    display:none;
+}
+
+.slds-is-draft-close:hover .slds-is-draft {
+    display:none;
+}
+.slds-is-draft-close:hover .slds-is-close{
+    display:block;
 }

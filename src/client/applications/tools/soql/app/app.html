@@ -1,17 +1,42 @@
 <template>
     <div class={pageClass}>
-        <builder-editor is-left-panel-toggled={isLeftToggled} is-header-hidden>
+        <builder-editor is-left-panel-toggled={isLeftToggled}>
             <!-- Header -->
-            <soql-header slot="header"></soql-header>
-            <!-- Toolbar - START -->
-            <div slot="toolbar" class="slds-builder-toolbar__item-group" aria-label="Left Actions">
-                <lightning-button-icon icon-name={toggleLeftIconName} d variant="bare" size="large" onclick={handleLeftToggle}></lightning-button-icon>
-            </div>
-            <div slot="toolbar" class="slds-builder-toolbar__actions" aria-label="Right Actions">
-                <lightning-button-icon icon-name={toggleRecentIconName} variant="bare" size="large" onclick={handleRecentToggle}></lightning-button-icon>
-            </div>
-            <!-- Toolbar - END -->
+            <builder-header slot="header" title="Tools" sub-title="SOQL Builder" icon-name="standard:dataset">
+                <div slot="actions" class="slds-builder-toolbar__actions">
+                    <!--<lightning-button class="slds-p-right_xx-small" label={i18n.QUERY_EDITOR_PANEL_FORMAT_SOQL} onclick={handleFormatQueryClick}></lightning-button>-->
+                    <!-- TODO: Add Download and Clipboard copy
+                        <lightning-button-menu alternative-text="Download" variant="border-filled" icon-name="utility:download" class="slds-p-right_xx-small">
+                            <lightning-menu-item value="csv" label="csv"></lightning-menu-item>
+                        </lightning-button-menu>
+                    -->
+                    <!--<button class="slds-button slds-button_brand" onclick={runQueryAll} title={i18n.EDITOR_PANEL_RUN_ALL_TITLE}> {i18n.EDITOR_PANEL_RUN_ALL} </button>-->
+                    <lightning-button class="slds-p-left_xx-small" label={i18n.EDITOR_PANEL_SAVE} onclick={handleSaveClick}></lightning-button>
+                    <lightning-button class="slds-p-left_xx-small" variant="brand" label={i18n.EDITOR_PANEL_RUN} icon-name="utility:right" onclick={handleRunClick}></lightning-button>
+                </div>
 
+                <div slot="subactions" class="slds-builder-toolbar__actions">
+                    <lightning-button-icon icon-name="utility:delete" onclick={deleteSelectedRecords} disabled={isDeleteDisabled}></lightning-button-icon>
+                    <lightning-button-menu class="slds-p-left_xx-small" variant="border-filled" icon-name="utility:download" disabled={isDownloadDisabled}>
+                        <lightning-menu-item value="csv" label="CSV" onclick={downloadCSV}></lightning-menu-item>
+                        <lightning-menu-item value="json" label="JSON" onclick={downloadJSON}></lightning-menu-item>
+                    </lightning-button-menu>
+                    <lightning-button-menu class="slds-p-left_xx-small" variant="border-filled" icon-name="utility:copy" disabled={isDownloadDisabled}>
+                        <lightning-menu-item value="csv" label="CSV" onclick={copyCSV}></lightning-menu-item>
+                        <lightning-menu-item value="json" label="JSON" onclick={copyJSON}></lightning-menu-item>
+                        <lightning-menu-item value="excel" label="Excel" onclick={copyExcel}></lightning-menu-item>
+                    </lightning-button-menu>
+                    <lightning-button-icon-stateful class="slds-p-left_xx-small" selected={isLeftToggled}   variant="border-filled" icon-name="utility:knowledge_base" size="large" onclick={handleLeftToggle}></lightning-button-icon-stateful>
+                    <lightning-button-icon-stateful class="slds-p-left_xx-small" selected={isRecentToggled} variant="border-filled" icon-name="utility:budget_period"  size="large" onclick={handleRecentToggle}></lightning-button-icon-stateful>
+                </div>
+
+                <template lwc:if={isMetaDisplayed}>
+                    <p slot="meta" class="slds-page-header__meta-text">
+                        {totalRecords} {sobjectPlurialLabel}  • Updated {_responseCreatedDateFormatted}
+                    </p>
+                </template>
+
+            </builder-header>
             <!-- Left Panel -->
             <div slot="left" class="slds-full-height">
                 <!-- OBJECT PANEL -->
@@ -24,34 +49,38 @@
             
             <!-- Body -->
             <article class="full-page-body slds-card">
-                <div class="slds-card__body slds-card__body_inner">
-                    <div class="slds-full-height slds-is-relative" style="min-height:200px;">
-                        <template lwc:if={isLoading}>
-                            <lightning-spinner alternative-text="Loading"></lightning-spinner>
-                        </template>
-                        <template lwc:else>
+                <div class="slds-full-height slds-is-relative" style="min-height:200px;">
+                    <template lwc:if={isLoading}>
+                        <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                    </template>
+                    <template lwc:else>
 
-                            <div class="body slds-full-height">
-                                <div class="right-panel">
-                                    <div class="right-top-panel">
-                                        <!-- EDITOR -->
-                                        <soql-query-editor-panel ></soql-query-editor-panel>
-                                    </div>
-                                    <div class="right-bottom-panel">
-                                        <!-- OUTPUT QUERIES -->
-                                        <soql-output-panel ></soql-output-panel>
-                                    </div>
-                                </div>
+                        <div class="body slds-full-height">
+                            <div class="right-panel slds-full-height">
+                                <slds-split-view top-min-height="250" bottom-min-height="100" splitter-position="30">
+                                    <!-- EDITOR -->
+                                    <soql-query-editor-panel lwc:ref="editor" slot="left" class="slds-full-height" ></soql-query-editor-panel>
+                                    <!-- OUTPUT QUERIES -->
+                                    <soql-output-panel lwc:ref="output" slot="right" class="slds-full-height"></soql-output-panel>
+                                </slds-split-view>
                             </div>
-                        </template>
-                    </div>
+                        </div>
+                    </template>
                 </div>
             </article>
             <!-- Panel -->
-            <slds-vertical-panel size="slds-size_medium" is-open={isRecentToggled} onclose={handleRecentToggle}>
-                <!-- RECENT QUERIES -->
-                <soql-query-list-panel ></soql-query-list-panel>
-            </slds-vertical-panel>
+            <!-- RECENT QUERIES -->
+            <builder-storage-panel 
+                title="Query List" 
+                is-open={isRecentToggled} 
+                recent-title={i18n.QUERY_LIST_PANEL_RECENT_QUERIES}
+                recent-items={recentQueries} 
+                saved-items={savedQueries}
+                saved-title={i18n.QUERY_LIST_PANEL_SAVED_QUERIES}
+                onclose={handleRecentToggle}
+                onremoveitem={handleRemoveItem}
+                onselectitem={handleSelectItem}
+            ></builder-storage-panel>
         </builder-editor>
         
     </div>
