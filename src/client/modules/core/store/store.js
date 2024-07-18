@@ -29,7 +29,7 @@ export * as DESCRIBE from './describe';
 
 export const SELECTORS = {
     sobject:SOBJECT.sObjectsAdapter.getSelectors((state) => state.sobject),
-    describe:DESCRIBE.describeAdapter.getSelectors((state) => state.describe),
+    describe:(state) => state.describe,
     queries:QUERY.queryAdapter.getSelectors((state) => state.query),
     queryFiles:DOCUMENT.queryFileAdapter.getSelectors((state) => state.queryFiles),
 }

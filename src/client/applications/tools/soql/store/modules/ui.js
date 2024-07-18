@@ -305,8 +305,8 @@ const uiSlice = createSlice({
             state.tabs = enrichTabs(state.tabs.map(formatTab),queryFiles)
         },
         addTab:(state,action) => {
-            const { queryFiles,...newTab } = action.payload;
-            const enrichedTab = enrichTab(formatTab(newTab),queryFiles);
+            const { queryFiles,tab } = action.payload;
+            const enrichedTab = enrichTab(formatTab(tab),queryFiles);
             state.tabs.push(enrichedTab);
             // Assign new tab
             state.currentTab = enrichedTab;

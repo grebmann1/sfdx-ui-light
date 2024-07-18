@@ -1,5 +1,5 @@
 import { createSlice,createAsyncThunk,createEntityAdapter } from '@reduxjs/toolkit';
-import { lowerCaseKey } from 'shared/utils';
+import { lowerCaseKey,arrayToMap } from 'shared/utils';
 
 
 const DESCRIBE_ID = {
@@ -8,32 +8,21 @@ const DESCRIBE_ID = {
 }
 
 // Create an entity adapter for sObjects
-export const describeAdapter = createEntityAdapter();
-
-const initialState = describeAdapter.getInitialState();
 
 // Thunks using createAsyncThunk
 export const describeSObjects = createAsyncThunk(
     'describe/describeSObjects',
-    async ({ connector,useToolingApi }, { dispatch, getState }) => {
-        const conn = useToolingApi ? connector.tooling : connector;
+    async ({ connector }, { dispatch, getState }) => {
+        //const conn = useToolingApi ? connector.tooling : connector;
         try {
-            
-            const res = await conn.describeGlobal();
-            //dispatch(updateApiLimit({ connector }));
-            return { useToolingApi,data: res };
+            return { 
+                standard: await connector.describeGlobal(),
+                tooling: await connector.tooling.describeGlobal(),
+            };
         } catch (err) {
             throw { error: err };
         }
-    },
-    {
-        condition: (payload,{ getState, extra }) => {
-            const { useToolingApi } = payload;
-            const targetName = getDescribeTableName(useToolingApi);
-            const { describe } = getState();
-            return !describe.ids.includes(targetName) || !describe.entities[targetName].isFetching
-        },
-    },
+    }
 );
 
 export const getDescribeTableName = useToolingApi => useToolingApi?DESCRIBE_ID.TOOLING:DESCRIBE_ID.STANDARD;
@@ -41,49 +30,32 @@ export const getDescribeTableName = useToolingApi => useToolingApi?DESCRIBE_ID.T
 // Create a slice with reducers
 const describeSlice = createSlice({
     name: 'describe',
-    initialState,
-    reducers: {
-        clearDescribeError: {
-            reducer: (state, action) => {
-                const { useToolingApi } = action.payload;
-                describeAdapter.upsertOne(state, {
-                    id: getEntityName(useToolingApi),
-                    error: null
-                });
-            },
-            prepare: (useToolingApi) => {
-              const id = nanoid()
-              return { payload: { useToolingApi} }
-            },
-        }
+    initialState:{
+        prefixMap:{},
+        nameMap:{},
+        error:null,
+        isFetching:false
     },
     extraReducers: (builder) => {
         builder
             .addCase(describeSObjects.pending, (state, action) => {
-                const { useToolingApi } = action.meta.arg;
-                describeAdapter.upsertOne(state, {
-                    id: getDescribeTableName(useToolingApi),
-                    isFetching: true, 
-                    error: null
-                });
+                state.error = null;
+                state.isFetching = true;
             })
             .addCase(describeSObjects.fulfilled, (state, action) => {
-                const { data } = action.payload;
-                const { useToolingApi } = action.meta.arg;
-                describeAdapter.upsertOne(state, {
-                    id: getDescribeTableName(useToolingApi),
-                    data,
-                    isFetching: false,
-                    error: null
-                });
+                const { standard,tooling } = action.payload;
+                // Standard
+                Object.assign(state.prefixMap,arrayToMap(standard.sobjects,'keyPrefix',{useToolingApi:false},lowerCaseKey));
+                Object.assign(state.nameMap,arrayToMap(standard.sobjects,'name',{useToolingApi:false},lowerCaseKey));
+                // Tooling
+                Object.assign(state.prefixMap,arrayToMap(tooling.sobjects,'keyPrefix',{useToolingApi:true},lowerCaseKey));
+                Object.assign(state.nameMap,arrayToMap(tooling.sobjects,'name',{useToolingApi:true},lowerCaseKey));
+                state.isFetching = false;
             })
             .addCase(describeSObjects.rejected, (state, action) => {
-                const { useToolingApi } = action.meta.arg;
                 const { error } = action;
-                describeAdapter.updateOne(state, {
-                    id: getDescribeTableName(useToolingApi),
-                    changes: { isFetching: false, error }
-                });
+                state.error = error;
+                state.isFetching = false;
                 console.error(error);
             })
     }

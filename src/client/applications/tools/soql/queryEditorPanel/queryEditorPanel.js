@@ -43,10 +43,6 @@ export default class QueryEditorPanel extends ToolkitElement {
     set useToolingApi(value){
         this._useToolingApi = value === true;
         store.dispatch(UI.reduxSlice.actions.toggleToolingApi({useToolingApi:this._useToolingApi}));
-        store.dispatch(DESCRIBE.describeSObjects({
-            connector:this.connector.conn,
-            useToolingApi:this._useToolingApi
-        }));
     }
 
     //fetchSObjectsIfNeeded
@@ -77,9 +73,9 @@ export default class QueryEditorPanel extends ToolkitElement {
                 this.currentFile = SELECTORS.queryFiles.selectById({queryFiles},lowerCaseKey(this.currentTab.fileId));
             }
         }
-        if(ui.useToolingApi != this.useToolingApi){
+        /*if(ui.useToolingApi != this.useToolingApi){
             this._useToolingApi = ui.useToolingApi;
-        }
+        }*/
 
         if(this.soql != soql){
             this.soql = soql;
@@ -96,6 +92,7 @@ export default class QueryEditorPanel extends ToolkitElement {
     mapChildRelationships = (query) => {
         const relationships = query.fields.filter(x => x.type === 'FieldSubquery').map(x => x.subquery.relationshipName);
         const SObjects = this._sobjectMeta.childRelationships.filter(x =>relationships.includes(x.relationshipName)).map(x => x.childSObject);
+        const { describe } = store.getState();
         SObjects
         .filter(sobjectName => !this._childRelationships.includes(sobjectName))
         .forEach(sobjectName => {
@@ -103,7 +100,7 @@ export default class QueryEditorPanel extends ToolkitElement {
             store.dispatch(SOBJECT.describeSObject({
                 connector:this.connector.conn,
                 sObjectName:sobjectName,
-                useToolingApi:this.useToolingApi
+                useToolingApi:describe.nameMap[lowerCaseKey(sobjectName)]?.useToolingApi
             }))
         })
         
@@ -165,8 +162,10 @@ export default class QueryEditorPanel extends ToolkitElement {
 
     handleAddTab = (e) => {
         store.dispatch(UI.reduxSlice.actions.addTab({
-            id:guid(),
-            body:''
+            tab:{
+                id:guid(),
+                body:''
+            }
         }));
     }
 

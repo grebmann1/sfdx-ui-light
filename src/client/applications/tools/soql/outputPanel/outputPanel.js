@@ -8,25 +8,25 @@ import { isNotUndefinedOrNull,lowerCaseKey } from 'shared/utils';
 export default class OutputPanel extends ToolkitElement {
 
     response;
+    sobjectName;
     childResponse;
+    childSobjectName;
     isLoading;
 
-    _sObject;
 
     error_title;
     error_message;
     currentTab;
+    currentChildRecordId;
     @wire(connectStore, { store })
     storeChange({ query, ui }) {
         const queryState = SELECTORS.queries.selectById({query},lowerCaseKey(ui.currentTab?.id));
         if(queryState){
             this.isLoading = queryState.isFetching;
-            if (queryState.data) {
-                if (this.response !== queryState.data) {
-                    this.resetError();
-                    this.response = queryState.data;
-                    this._sObject = ui.query.sObject;
-                }
+            if (queryState.data && this.response !== queryState.data) {
+                this.resetError();
+                this.response = queryState.data;
+                this.sobjectName = queryState.sobjectName;
             }
             if (queryState.error) {
                 this.handleError(queryState.error);
@@ -42,26 +42,34 @@ export default class OutputPanel extends ToolkitElement {
         
         this.childResponse = ui.childRelationship;
         if(this.childResponse){
-            this.selectMainTable();
+            this.childSobjectName = this.childResponse.column;
+            this.selectMainTable(this.childResponse.recordId);
         }
     }
 
     closeChildRelationship() {
-        const _tableInstance = this.refs.maintable?.tableInstance;
-        if(_tableInstance ){
-            _tableInstance.deselectRow();
-            this.refs.maintable.tableResize(0);
-        }
+        this.selectMainTable(null);
         store.dispatch(UI.reduxSlice.actions.deselectChildRelationship());
     }
 
-    selectMainTable = () => {
+    selectMainTable = (recordId) => {
         const _tableInstance = this.refs.maintable?.tableInstance;
-        if(_tableInstance && this.childResponse){
-            _tableInstance.deselectRow();
-            _tableInstance.selectRow(_tableInstance.getRows().filter(row => row.getData().Id === this.childResponse.recordId));
-            this.refs.maintable.tableResize(0);
+        if(_tableInstance){
+            //_tableInstance.deselectRow();
+            const setOfIds = [this.currentChildRecordId,recordId].filter(x => x != null);
+            _tableInstance.getRows()
+            .filter(row => setOfIds.includes(row.getData().Id))
+            .forEach(row => {
+                if(row.getData().Id == this.currentChildRecordId){
+                    row.getElement().classList.remove('tabulator-highlight-row');
+                }else{
+                    row.getElement().classList.add('tabulator-highlight-row');
+                }
+            })
+            //_tableInstance.selectRow(_tableInstance.getRows().filter(row => row.getData().Id === this.childResponse.recordId));
+            //this.refs.maintable.tableResize(0);
         }
+        this.currentChildRecordId = recordId;
     }
 
     

@@ -1,6 +1,6 @@
 {
     "name": "sfdx-ui-light",
-    "version": "1.2.9",
+    "version": "1.3.0",
     "scripts": {
         "start:dev:extension": "rm -r chrome_ext; rollup -c worker.rollup.config.js; rollup -c rollup.config.js --bundleConfigAsCjs --environment NODE_ENV:development --watch | serve chrome_ext",
         "start:dev:client": "NODE_ENV=development node -r dotenv/config src/server/server-dev.js",

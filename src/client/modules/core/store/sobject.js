@@ -4,7 +4,7 @@ import { lowerCaseKey } from 'shared/utils';
 
 // Create an entity adapter for sObjects
 export const sObjectsAdapter = createEntityAdapter({
-    selectId: (sobject) => sobject.id.toLowerCase(),
+    selectId: (sobject) => lowerCaseKey(sobject?.id),
 });
 
 const initialState = sObjectsAdapter.getInitialState();
@@ -37,21 +37,6 @@ export const describeSObject = createAsyncThunk(
 const sObjectsSlice = createSlice({
     name: 'sObject',
     initialState,
-    reducers: {
-        clearSObjectError: {
-            reducer: (state, action) => {
-                const { sObjectName } = action.payload;
-                sObjectsAdapter.upsertOne(state, {
-                    id: lowerCaseKey(sObjectName),
-                    error: null
-                });
-            },
-            prepare: (useToolingApi) => {
-              const id = nanoid()
-              return { payload: { useToolingApi} }
-            },
-        }
-    },
     extraReducers: (builder) => {
         builder
             .addCase(describeSObject.pending, (state, action) => {

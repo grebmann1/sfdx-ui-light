@@ -42,13 +42,6 @@ doc-app .full-page-body.slds-m-top_small{
     flex-direction: column;
 }
 
-.full-page-connected{
-    /*height:calc(97vh - 90px);*/
-}
-
-.full-page-header{
-
-}
 
 .full-page-body{
     /*height: calc(100% - 120px);*/
@@ -231,7 +224,11 @@ doc-app .full-page-body.slds-m-top_small{
 }
 
 .slds-tabs_scoped__content{
-    padding: 0.5rem; /* Only for Extension */
+    padding: 0.5rem; /*  0.5rem; Only for Extension */
+}
+
+.slds-tabs-no-padding{
+    padding:0 !important;
 }
 
 .slds-inline-flex{
@@ -249,4 +246,20 @@ doc-app .full-page-body.slds-m-top_small{
 lightning-input[variant="label-stacked"] .slds-checkbox_toggle{
     display: flex;
     flex-direction: column;
+}
+
+.slds-vertical-separator{
+    background: #ffffff !important;
+    opacity: 0.6;
+    width: 1px;
+    height: 16px;
+    margin: 8px 4px;
+}
+
+.slds-card{
+    border-radius: unset; /* Remove Border radius*/
+}
+
+.slds-page-header{
+    border-radius: unset; /* Remove Border radius*/
 }

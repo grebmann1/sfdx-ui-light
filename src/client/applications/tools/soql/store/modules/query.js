@@ -7,7 +7,7 @@ export const queryAdapter = createEntityAdapter();
 // Thunks using createAsyncThunk
 export const executeQuery = createAsyncThunk(
     'queries/executeQuery',
-    async ({ connector, soql,tabId, isAllRows }, { dispatch }) => {
+    async ({ connector, soql,tabId,sobjectName, isAllRows }, { dispatch }) => {
         //const apiPath = isAllRows ? '/queryAll' : '/query';
         try {
             const res = await connector.query(soql);
@@ -16,7 +16,7 @@ export const executeQuery = createAsyncThunk(
                 alias: connector.alias,
                 data: res
             }));
-            return { data: res, soql, alias: connector.alias,tabId };
+            return { data: res, soql, alias: connector.alias,tabId};
         } catch (err) {
             console.error(err);
             throw err;
@@ -59,13 +59,14 @@ const queriesSlice = createSlice({
             })
             .addCase(executeQuery.fulfilled, (state, action) => {
                 const { data,soql } = action.payload;
-                const { tabId } = action.meta.arg;
+                const { tabId,sobjectName } = action.meta.arg;
                 queryAdapter.upsertOne(state, {
                     id: lowerCaseKey(tabId),
                     data,
                     soql,
                     isFetching: false,
                     createdDate:Date.now(),
+                    sobjectName,
                     error: null
                 });
             })

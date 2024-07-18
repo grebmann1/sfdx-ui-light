@@ -54,7 +54,7 @@
                         </slds-tab>
                         <!-- Record Explorer Section -->
                         <template lwc:if={isRecordExplorerAvailable}>
-                            <slds-tab class="full-page-body" label="Record Explorer" value={APPLICATIONS.RECORD_EXPLORER}>
+                            <slds-tab class="full-page-body slds-tabs-no-padding" label="Record Explorer" value={APPLICATIONS.RECORD_EXPLORER}>
                                 <feature-record-explorer lwc:ref="recordexplorer" 
                                     versions={versions}
                                     record-id={recordId}
@@ -64,12 +64,12 @@
                         </template>
                         <!-- Record Explorer Section -->
                         <template lwc:if={isUserExplorerAvailable}>
-                            <slds-tab class="full-page-body" label="Users" value={APPLICATIONS.USER_EXPLORER}>
+                            <slds-tab class="full-page-body slds-tabs-no-padding" label="Users" value={APPLICATIONS.USER_EXPLORER}>
                                 <feature-user-explorer lwc:ref="userexplorer"></feature-user-explorer>
                             </slds-tab>
                         </template>
                         <!-- Tools -->
-                        <slds-tab class="full-page-body" label="Tools" value={APPLICATIONS.TOOLS}>
+                        <slds-tab class="full-page-body slds-tabs-no-padding" label="Tools" value={APPLICATIONS.TOOLS}>
                             <feature-tools lwc:ref="tools"></feature-tools>
                         </slds-tab>
 

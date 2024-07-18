@@ -8,7 +8,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 console.log('data.version',data.version);
 //  'process.env.NODE_ENV': isProduction?'production':'development',
 export default {
-    input: 'src/chrome_extension/main.js',
+    input: 'src/client_chrome/main.js',
     output: {
         dir: 'chrome_ext/scripts'
     },
@@ -67,9 +67,9 @@ export default {
         }),
         copy({
             targets: [
-              { src: 'src/chrome_extension/views/', dest: 'chrome_ext' },
-              { src: 'src/chrome_extension/scripts', dest: 'chrome_ext' },
-              { src: 'src/chrome_extension/images', dest: 'chrome_ext' },
+              { src: 'src/client_chrome/views/', dest: 'chrome_ext' },
+              { src: 'src/client_chrome/scripts', dest: 'chrome_ext' },
+              { src: 'src/client_chrome/images', dest: 'chrome_ext' },
               { src: 'manifest.json', dest: 'chrome_ext', transform: (contents, filename) => 
                 {
                     let newContents = contents.toString();
@@ -80,7 +80,7 @@ export default {
               },
 
               { src: 'node_modules/hotkeys-js/dist/hotkeys.esm.js', dest: 'chrome_ext/scripts'},
-              { src: 'src/chrome_extension/components/extension/utils/utils.js', dest: 'chrome_ext/scripts' }
+              { src: 'src/client_chrome/components/extension/utils/utils.js', dest: 'chrome_ext/scripts' }
             ]
         })
     ],

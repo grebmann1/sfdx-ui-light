@@ -23,7 +23,6 @@ export default class FieldsPanel extends ToolkitElement {
     sobjectMeta;
     keyword = '';
     isLoading = false;
-    _useToolingApi = false;
 
     _selectedSObject;
 
@@ -33,19 +32,12 @@ export default class FieldsPanel extends ToolkitElement {
 
     @wire(connectStore, { store })
     storeChange({ describe, sobject, ui }) {
-        if(ui && ui.hasOwnProperty('useToolingApi')){
-            this._useToolingApi = ui.useToolingApi;
-        }
-
+        if(!ui.leftPanelToggled) return;
         const { selectedSObject } = ui;
         if (!selectedSObject) return;
 
-        const sobjects = SELECTORS.describe.selectById({describe},DESCRIBE.getDescribeTableName(this._useToolingApi));
-        const fullSObjectName = fullApiName(selectedSObject,this.namespace);
-        if (
-            sobjects &&
-            !sobjects.data.sobjects.find(o => o.name.toLowerCase() === (fullSObjectName || '').toLowerCase())
-        ) {
+        const fullSObjectName = lowerCaseKey(fullApiName(selectedSObject,this.namespace));
+        if ( describe.nameMap && !describe.nameMap[fullSObjectName]) {
             return;
         }
         if (fullSObjectName !== this._selectedSObject) {
@@ -67,7 +59,6 @@ export default class FieldsPanel extends ToolkitElement {
                 message: this.i18n.FIELDS_PANEL_FAILED_DESCRIBE_OBJ,
                 errors: sobjectState.error
             });
-            store.dispatch(SOBJECT.reduxSlice.actions.clearDescribeError(this._selectedSObject));
         }
     }
 

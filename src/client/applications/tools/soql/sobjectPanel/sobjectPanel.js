@@ -17,18 +17,13 @@ export default class SobjectsPanel extends ToolkitElement {
     // Scrolling
     pageNumber = 1;
 
-    _useToolingApi = false;
-
     @wire(connectStore, { store })
     storeChange({ describe,ui }) {
-        if(ui && ui.hasOwnProperty('useToolingApi')){
-            this._useToolingApi = ui.useToolingApi;
-        }
-        const sobjects = SELECTORS.describe.selectById({describe},DESCRIBE.getDescribeTableName(this._useToolingApi));
-        if(sobjects){
-            this.isLoading = sobjects.isFetching;
-            if (sobjects.data) {
-                this._rawSObjects = sobjects.data.sobjects.map(sobject => {
+
+        if(describe){
+            this.isLoading = describe.isFetching;
+            if (describe.isFetching == false && describe.error == null) {
+                this._rawSObjects = Object.values(describe.nameMap).map(sobject => {
                     return {
                         ...sobject,
                         itemLabel: `${sobject.name} / ${sobject.label}`
@@ -36,13 +31,12 @@ export default class SobjectsPanel extends ToolkitElement {
                 });
                 this.sobjects = this._rawSObjects;
                 //this.pageNumber = 1; // reset
-            } else if (sobjects.error) {
-                console.error(sobjects.error);
+            } else if (describe.error) {
+                console.error(describe.error);
                 Toast.show({
                     message: this.i18n.SOBJECTS_PANEL_FAILED_FETCH_SOBJECTS,
-                    errors: sobjects.error
+                    errors: describe.error
                 });
-                store.dispatch(DESCRIBE.clearDescribeError());
             }
         }
         

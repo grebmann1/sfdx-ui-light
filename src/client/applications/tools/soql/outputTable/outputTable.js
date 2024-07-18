@@ -55,6 +55,8 @@ class ColumnCollector {
     }
 }
 
+
+
 export default class OutputTable extends ToolkitElement {
     isLoading = false;
     _columns;
@@ -65,10 +67,13 @@ export default class OutputTable extends ToolkitElement {
 
     @api tableInstance;
     @api childTitle;
+    @api sobjectName;
+    @api isChildTable = false;
 
     @api
     set response(res) {
         this._response = JSON.parse(JSON.stringify(res));
+        console.log('this._response',this._response);
         this._nextRecordsUrl = res.nextRecordsUrl;
         const collector = new ColumnCollector(res.records);
         this._columns = collector.collect();
@@ -105,7 +110,7 @@ export default class OutputTable extends ToolkitElement {
             return {
                 title: key, 
                 field: key,
-                formatter:this.formatterField_value
+                formatter:this.formatterField_value // Bad performances !!
             }
         });
 
@@ -115,19 +120,21 @@ export default class OutputTable extends ToolkitElement {
             return columns;
         }
     }
-
+    
+    elementPool = [];
     formatterField_value = (cell, formatterParams, onRendered) => {
-        let value = cell._cell.value;
-        const element = createElement('soql-output-cell', {
+        //return `<div class="slds-truncate" title="Acme Partners">Acme Partners</div><lightning-button-icon class="slds-copy-clipboards" variant="bare"><button class="slds-button slds-button_icon slds-button_icon-bare" title="copy" type="button" part="button button-icon"><lightning-primitive-icon variant="bare" ><svg class="slds-button__icon" focusable="false" data-key="copy" aria-hidden="true" part="icon"><use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#copy"></use></svg></lightning-primitive-icon><span class="slds-assistive-text">copy</span></button></lightning-button-icon>`;
+        const outputCellElement = createElement('soql-output-cell', {
             is: outputCell
         });
-        Object.assign(element, {
+        let value = cell._cell.value;
+        Object.assign(outputCellElement, {
             value,
             column:cell._cell.column.field,
             recordId:cell._cell.row.data.Id
 
         });
-        return element;
+        return outputCellElement;
     }
 
     tableResizeEvent = (e) => {
@@ -154,6 +161,7 @@ export default class OutputTable extends ToolkitElement {
         }
         const element = this.template.querySelector(".custom-table");
         if(!element) return;
+        this.isLoading = true;
         this.tableInstance = new Tabulator(element, {
             height: "100%",
             data: this.formatDataForTable(),
@@ -171,18 +179,26 @@ export default class OutputTable extends ToolkitElement {
                 formatter:"rowSelection", 
                 titleFormatter:"rowSelection", 
                 cellClick:function(e, cell){
-                    console.log('cellClick');
                     cell.getRow().toggleSelect();
                 }
             },
         });
         this.tableInstance.on("tableBuilding", () => {
-            //console.log('tableBuilding')
+            console.log('tableBuilding')
             this.isLoading = true;
         });
         this.tableInstance.on("tableBuilt", () => {
-            //console.log('tableBuilt')
+            console.log('tableBuilt')
             this.isLoading = false;
+        });
+        this.tableInstance.on("rowSelectionChanged", (data, rows, selected, deselected) => {
+            this.dispatchEvent(new CustomEvent("rowselection", { 
+                detail:{
+                    rows:data,
+                    isChildTable:this.isChildTable
+                },
+                bubbles: true,composed: true 
+            }));
         });
 
     }

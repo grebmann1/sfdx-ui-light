@@ -16,7 +16,7 @@
                 </div>
 
                 <div slot="subactions" class="slds-builder-toolbar__actions">
-                    <lightning-button-icon icon-name="utility:delete" onclick={deleteSelectedRecords} disabled={isDeleteDisabled}></lightning-button-icon>
+                    <lightning-button-icon icon-name="utility:delete" variant="border-filled" onclick={deleteSelectedRecords} disabled={isDeleteDisabled}></lightning-button-icon>
                     <lightning-button-menu class="slds-p-left_xx-small" variant="border-filled" icon-name="utility:download" disabled={isDownloadDisabled}>
                         <lightning-menu-item value="csv" label="CSV" onclick={downloadCSV}></lightning-menu-item>
                         <lightning-menu-item value="json" label="JSON" onclick={downloadJSON}></lightning-menu-item>
@@ -32,7 +32,7 @@
 
                 <template lwc:if={isMetaDisplayed}>
                     <p slot="meta" class="slds-page-header__meta-text">
-                        {totalRecords} {sobjectPlurialLabel}  • Updated {_responseCreatedDateFormatted}
+                        {totalRecords} {sobjectPlurialLabel}  • Queried {_responseCreatedDateFormatted}
                     </p>
                 </template>
 
@@ -61,7 +61,7 @@
                                     <!-- EDITOR -->
                                     <soql-query-editor-panel lwc:ref="editor" slot="left" class="slds-full-height" ></soql-query-editor-panel>
                                     <!-- OUTPUT QUERIES -->
-                                    <soql-output-panel lwc:ref="output" slot="right" class="slds-full-height"></soql-output-panel>
+                                    <soql-output-panel lwc:ref="output" slot="right" class="slds-full-height" onrowselection={handleRowSelection}></soql-output-panel>
                                 </slds-split-view>
                             </div>
                         </div>

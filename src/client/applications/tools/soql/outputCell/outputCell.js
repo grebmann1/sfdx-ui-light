@@ -1,16 +1,14 @@
 
-import { api } from 'lwc';
+import { LightningElement,api } from 'lwc';
 import Toast from 'lightning/toast';
-import ToolkitElement from 'core/toolkitElement';
 import { isUndefinedOrNull,isObject } from 'shared/utils';
 import { store as appStore,store_application  }  from 'shared/store';
 import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,UI } from 'core/store';
 
-export default class OutputCell extends ToolkitElement {
+export default class OutputCell extends LightningElement {
     @api value;
     @api column;
     @api recordId;
-
 
     /** Events */
 

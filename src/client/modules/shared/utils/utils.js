@@ -340,3 +340,13 @@ export const getFieldValue = (field, record) => {
     });
     return value;
 }
+
+export const arrayToMap = (array, idField,attributes,format) => {
+    const _format = format ? format : (x) => x;
+    return array.reduce((map, item) => {
+        if (item.hasOwnProperty(idField)) {
+            map[_format(item[idField])] = attributes?Object.assign({...item},attributes):item;
+        }
+        return map;
+    }, {});
+}

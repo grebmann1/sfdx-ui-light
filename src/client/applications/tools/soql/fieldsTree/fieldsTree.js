@@ -18,7 +18,6 @@ export default class FieldsTree extends ToolkitElement {
     sobjectMeta;
     fields = [];
     isLoading = false;
-    _useToolingApi = false;
     _keyword;
     _rawFields = [];
     _expandedFieldNames = {};
@@ -52,12 +51,7 @@ export default class FieldsTree extends ToolkitElement {
 
     @wire(connectStore, { store })
     storeChange({ ui }) {
-        if(ui.hasOwnProperty('useToolingApi')){
-            this._useToolingApi = ui.useToolingApi;
-        }
-
         this.updateFieldTree();
-        
     }
 
     updateFieldTree = () => {
@@ -75,10 +69,11 @@ export default class FieldsTree extends ToolkitElement {
 
     connectedCallback() {
         //console.log('connectedCallback - describeSObjectIfNeeded',this.sobject)
+        const { describe } = store.getState();
         store.dispatch(SOBJECT.describeSObject({    
             connector:this.connector.conn,
             sObjectName:this.sobject,
-            useToolingApi:this._useToolingApi
+            useToolingApi:describe.nameMap[lowerCaseKey(this.sobject)]?.useToolingApi
         }));
     }
 

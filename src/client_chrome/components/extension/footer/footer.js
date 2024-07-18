@@ -1,6 +1,6 @@
 import { LightningElement,wire} from "lwc";
 import Toast from 'lightning/toast';
-import { isUndefinedOrNull } from "shared/utils";
+import { isUndefinedOrNull,isNotUndefinedOrNull } from "shared/utils";
 import {
     chromeOpenInWindow
 } from 'extension/utils';
@@ -10,7 +10,7 @@ import { connectStore,store,store_application } from 'shared/store';
 
 export default class Footer extends LightningElement {
 
-   connector;
+    connector;
 
     @wire(connectStore, { store })
     applicationChange({application}) {
@@ -23,10 +23,19 @@ export default class Footer extends LightningElement {
 
     /** Events **/
 
-    handleCopy = () => {
+    handleCopyUsername = () => {
         navigator.clipboard.writeText(this.usernameFormatted);
         Toast.show({
             label: 'Username exported to your clipboard',
+            variant:'success',
+        });
+    }
+
+    handleCopyAccessToken = () => {
+        console.log('this.connector',this.connector);
+        navigator.clipboard.writeText(this.accessTokenFormatted);
+        Toast.show({
+            label: 'Access Token exported to your clipboard',
             variant:'success',
         });
     }
@@ -44,8 +53,16 @@ export default class Footer extends LightningElement {
 
     /** Getters **/
 
+    get isConnectorDisplayed(){
+        return isNotUndefinedOrNull(this.connector);
+    }
+
     get usernameFormatted(){
         return isUndefinedOrNull(this.connector.configuration.username)?'':`${this.connector.configuration.username}`;
+    }
+
+    get accessTokenFormatted(){
+        return isUndefinedOrNull(this.connector.conn.accessToken)?'':`${this.connector.conn.accessToken}`;
     }
 
     get versionFormatted(){

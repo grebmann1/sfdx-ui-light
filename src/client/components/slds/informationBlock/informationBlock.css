@@ -10,14 +10,14 @@ blockquote {
     margin: 0 0 1.5rem;
     border: 1px solid #f2f2f2;
     border-left-width: 0.125rem;
-    border-left-color: rgb(0, 102, 204);
-    color: rgb(0, 102, 204);
+    border-left-color: rgb(27 150 255);
+    color: rgb(27 150 255);
 }
 
 blockquote .title {
     margin-bottom: 0;
     font-weight: var(--lwc-fontWeightBold);
-    color: rgb(0, 102, 204);
+    color: rgb(27 150 255);
 }
 
 blockquote .subtitle {
@@ -31,7 +31,7 @@ blockquote h4.title {
 }
 
 blockquote strong{
-    color: rgb(0, 102, 204);
+    color: rgb(27 150 255);
 }
 
 /** Error **/

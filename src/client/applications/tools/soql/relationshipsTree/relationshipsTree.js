@@ -15,7 +15,6 @@ export default class RelationshipsTree extends ToolkitElement {
     _rawRelationships = [];
     _expandedRelationshipNames = {};
     _sobjectLabelMap;
-    _useToolingApi = false;
     pageNumber = 1;
 
     @api
@@ -33,14 +32,15 @@ export default class RelationshipsTree extends ToolkitElement {
 
     @wire(connectStore, { store })
     storeChange({ describe, sobject, ui }) {
-        if(ui && ui.hasOwnProperty('useToolingApi')){
-            this._useToolingApi = ui.useToolingApi;
-        }
+
+        /*
+        const fullSObjectName = lowerCaseKey(fullApiName(selectedSObject,this.namespace));
+        SELECTORS.describe.nameMap[fullSObjectName]
         const sobjects = SELECTORS.describe.selectById({describe},DESCRIBE.getDescribeTableName(this._useToolingApi));
         if (!this._sobjectLabelMap && sobjects.data) {
             //this._sobjectLabelMap = this._getSObjectLabelMap(sobjects.data);
             // Computation heavy !!!!!
-        }
+        }*/
         const sobjectState = SELECTORS.sobject.selectById({sobject},(this.sobject||'').toLowerCase());
         if (!sobjectState) return;
         if (sobjectState.data) {

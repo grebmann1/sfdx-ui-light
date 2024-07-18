@@ -1,6 +1,6 @@
 <template>
     <template lwc:if={isChildRelationship}>
-        <lightning-button variant="base" label={formattedTotalSize} title={i18n.OUTPUT_CELL_SHOW_CHILD_REL} icon-name="utility:record_lookup" icon-position="right" onclick={handleClick}></lightning-button>
+        <lightning-button variant="base" label={formattedTotalSize} title="Show Child Table" icon-name="utility:record_lookup" icon-position="right" onclick={handleClick}></lightning-button>
     </template>
     <template lwc:else>
         <template lwc:if={url}>

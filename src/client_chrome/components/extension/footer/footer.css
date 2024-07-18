@@ -19,6 +19,9 @@
 }
 
 .custom-utility-text-copy{
-    --slds-c-icon-color-foreground	:rgba(255, 255, 255, 1);
+    --slds-c-icon-color-foreground:rgba(255, 255, 255, 1);
+    --slds-c-button-text-color:rgba(255, 255, 255, 1);
+    --slds-c-button-text-color-hover:rgba(255, 255, 255, 1);
+    --slds-c-button-line-height:normal;
     cursor: pointer;
 }

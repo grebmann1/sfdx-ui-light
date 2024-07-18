@@ -32,12 +32,10 @@ export default class StoragePanel extends ToolkitElement {
     selectItem(event) {
         const { id,category } = event.currentTarget.dataset;
         const items = category == CATEGORY_STORAGE.RECENT?this.recentItems:this.savedItems;
-        console.log('items',items,id);
         const selectedItem = items.find(
             item => item.id === id
         );
         if (selectedItem) {
-            console.log('selectItem',selectedItem);
             this.dispatchEvent(new CustomEvent("selectitem", { detail:{
                 category,
                 ...selectedItem

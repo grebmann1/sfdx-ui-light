@@ -1,9 +1,10 @@
 import { api,wire,track} from "lwc";
 import ToolkitElement from 'core/toolkitElement';
+import LightningConfirm from 'lightning/confirm';
 import Toast from 'lightning/toast';
 import SaveModal from "builder/saveModal";
 import { store,connectStore,SELECTORS,DESCRIBE,UI,QUERY,DOCUMENT } from 'core/store';
-import { guid,isNotUndefinedOrNull,isUndefinedOrNull,fullApiName,compareString,lowerCaseKey,getFieldValue,isObject } from 'shared/utils';
+import { guid,isNotUndefinedOrNull,isUndefinedOrNull,fullApiName,compareString,lowerCaseKey,getFieldValue,isObject,arrayToMap } from 'shared/utils';
 import { CATEGORY_STORAGE } from 'builder/storagePanel';
 import moment from 'moment';
 
@@ -18,8 +19,11 @@ export default class App extends ToolkitElement {
     @track savedQueries = [];
 
     @track selectedRecords = [];
+    @track selectedChildRecords = [];
 
     soql;
+    _useToolingApi;
+    sobjectPrefixMapping;
 
     // Response
     _response;
@@ -32,13 +36,9 @@ export default class App extends ToolkitElement {
 
     connectedCallback() {
         store.dispatch(DESCRIBE.describeSObjects({
-            connector:this.connector.conn,
-            useToolingApi:false
-        }));
-        store.dispatch(DESCRIBE.describeSObjects({
-            connector:this.connector.conn,
-            useToolingApi:true
-        }));
+            connector:this.connector.conn
+        }))
+        //this.sobjectPrefixMapping = this.generatePrefixMapping();
         //store.dispatch(QUERY.reduxSlice.actions.dummyData());
         
         if(this.alias){
@@ -62,18 +62,17 @@ export default class App extends ToolkitElement {
 
     @wire(connectStore, { store })
     storeChange({ query,ui,describe,queryFiles,recents }) {
-        if(ui && ui.hasOwnProperty('useToolingApi')){
+        if(ui && this._useToolingApi != ui.useToolingApi){
             this._useToolingApi = ui.useToolingApi;
         }
         this.isLeftToggled      = ui.leftPanelToggled;
         this.isRecentToggled    = ui.recentPanelToggled;
         this.soql               = ui.soql;
 
-        const sobjects = SELECTORS.describe.selectById({describe},DESCRIBE.getDescribeTableName(this._useToolingApi));
-        const _sobject = this.validateSobject(ui?.selectedSObject,sobjects?.data);
-        if(_sobject){
-            this.selectedSObject = ui.selectedSObject;
-            this._sobject = _sobject;
+        const fullSObjectName = ui.selectedSObject ? lowerCaseKey(fullApiName(ui.selectedSObject,this.namespace)):null;
+        if(fullSObjectName && describe.nameMap && describe.nameMap[fullSObjectName]){
+            this.selectedSObject = fullSObjectName;
+            this._sobject = describe.nameMap[fullSObjectName];
         }else{
             this.selectedSObject = null;
         }
@@ -106,13 +105,6 @@ export default class App extends ToolkitElement {
         }
 
         
-    }
-
-    validateSobject = (selectedSObject,data) => {
-        if(!selectedSObject || !data) return false;
-
-        const fullSObjectName = fullApiName(selectedSObject,this.namespace) || '';
-        return data.sobjects.find(o => compareString(o.name,fullSObjectName));
     }
 
     formatDate = () => {
@@ -159,6 +151,7 @@ export default class App extends ToolkitElement {
             connector:this.queryConnector,
             soql:query, 
             tabId:ui.currentTab.id,
+            sobjectName:this.selectedSObject,
             isAllRows
         }));
     }
@@ -190,6 +183,62 @@ export default class App extends ToolkitElement {
         })
     }
 
+    handleRowSelection = (e) => {
+        const { describe } = store.getState();
+        console.log('describe',describe);
+        const {rows,isChildTable} = e.detail;
+        if(isChildTable){
+            this.selectedChildRecords = rows;
+        }else{
+            this.selectedRecords = rows;
+        }
+        console.log('handleRowSelection',rows,isChildTable)
+    } 
+
+    deleteSelectedRecords = async (e) => {
+        const { describe } = store.getState();
+        const customMessages = [];
+        let _sobject,_sobjectChild; 
+        if(this.selectedRecords.length > 0){
+            const _item = this.selectedRecords[0];
+            _sobject = describe.prefixMap[_item.Id.substr(0,3)];
+            if(_sobject){
+                customMessages.push(`${this.selectedRecords.length} ${this.selectedRecords.length == 1 ? _sobject.label:_sobject.labelPlural}`)
+            }
+        }
+        if(this.selectedChildRecords.length > 0){
+            const _item = this.selectedChildRecords[0];
+            _sobjectChild = describe.prefixMap[_item.Id.substr(0,3)];
+            if(_sobjectChild){
+                customMessages.push(`${this.selectedChildRecords.length} ${this.selectedChildRecords.length == 1 ? _sobjectChild.label:_sobjectChild.labelPlural}`)
+            }
+        }
+        const params = {variant: 'headerless',message: `Are you sure that you want to delete ${customMessages.join(' & ')}?`}
+        if(!LightningConfirm.open(params)) return;
+
+
+        // Child
+        const retChild  = await this.deleteRecords(_sobjectChild,this.selectedChildRecords) || [];
+        // Parent
+        const retParent = await this.deleteRecords(_sobject,this.selectedRecords) || [];
+
+        for (const ret of [...retChild,...retParent]) {
+            if (ret.success) {
+                console.log(`Deleted Successfully : ${ret.id}`);
+            }else{
+                console.error(ret);
+            }
+        }
+    }
+
+    deleteRecords = async (sobject,records) => {
+        if(isUndefinedOrNull(sobject)) return;
+        console.log('sobject',sobject);
+        const connector = sobject.useToolingApi?this.connector.conn.tooling:this.connector.conn;
+        const rets = await connector.sobject(sobject.name).delete(records.map(x => x.Id));
+        return rets;
+    }
+
     /** Copy & Download */
 
     
@@ -214,7 +263,7 @@ export default class App extends ToolkitElement {
 
     copyJSON = async (e) => {
         await this._fetchSubsequentRecords(this._responseNextRecordsUrl);
-        navigator.clipboard.writeText(this._responseRows);
+        navigator.clipboard.writeText(JSON.stringify(this._responseRows, null, 4));
         Toast.show({
             label: `JSON exported to your clipboard`,
             variant:'success',
@@ -244,7 +293,7 @@ export default class App extends ToolkitElement {
     downloadJSON = async (e) => {
         try {
             await this._fetchSubsequentRecords(this._responseNextRecordsUrl);
-            const blob = new Blob([this._responseRows], { type: 'application/json' });
+            const blob = new Blob([JSON.stringify(this._responseRows, null, 4)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const download = document.createElement('a');
                 download.href = window.URL.createObjectURL(blob);
@@ -313,10 +362,11 @@ export default class App extends ToolkitElement {
                 store.dispatch(UI.reduxSlice.actions.selectionTab(existingTab));
             }else{
                 store.dispatch(UI.reduxSlice.actions.addTab({
-                    id:guid(),
-                    body:content,
-                    useToolingApi:extra?.useToolingApi  === true,
-                    fileId:id,
+                    tab:{
+                        id:guid(),
+                        body:content,
+                        fileId:id
+                    },
                     queryFiles
                 }));
             }
@@ -324,8 +374,10 @@ export default class App extends ToolkitElement {
             // Open in existing tab
             if(ui.currentTab.fileId){
                 store.dispatch(UI.reduxSlice.actions.addTab({
-                    id:guid(),
-                    body:content
+                    tab:{
+                        id:guid(),
+                        body:content
+                    }
                 }));
             }else{
                 store.dispatch(UI.reduxSlice.actions.updateSoql({
@@ -379,7 +431,7 @@ export default class App extends ToolkitElement {
     }
     
     get sobjectPlurialLabel(){
-        return this._sobject.labelPlural;
+        return this._sobject?.labelPlural;
     }
 
     get isDownloadDisabled(){
@@ -387,7 +439,7 @@ export default class App extends ToolkitElement {
     }
 
     get isDeleteDisabled(){
-        return this.selectedRecords.length == 0;
+        return this.selectedRecords.length == 0 && this.selectedChildRecords.length == 0;
     }
 
 
