@@ -3,7 +3,7 @@ import ToolkitElement from 'core/toolkitElement';
 import LightningConfirm from 'lightning/confirm';
 import Toast from 'lightning/toast';
 import SaveModal from "builder/saveModal";
-import { store,connectStore,SELECTORS,DESCRIBE,UI,QUERY,DOCUMENT } from 'core/store';
+import { store,connectStore,SELECTORS,DESCRIBE,UI,QUERY,DOCUMENT,APPLICATION } from 'core/store';
 import { guid,isNotUndefinedOrNull,isUndefinedOrNull,fullApiName,compareString,lowerCaseKey,getFieldValue,isObject,arrayToMap } from 'shared/utils';
 import { CATEGORY_STORAGE } from 'builder/storagePanel';
 import moment from 'moment';
@@ -50,9 +50,11 @@ export default class App extends ToolkitElement {
                     alias:this.alias,
                     queryFiles:getState().queryFiles
                 }));
+                dispatch(UI.reduxSlice.actions.initTabs({
+                    queryFiles:getState().queryFiles
+                }));
             })
         }
-        //appStore.dispatch(store_application.collapseMenu('soql'));
         this.enableAutoDate();
     }
 
@@ -85,6 +87,7 @@ export default class App extends ToolkitElement {
             this._responseCreatedDate = queryState.createdDate;
             this._responseNextRecordsUrl = queryState.data.nextRecordsUrl;
             this._responseRows = queryState.data.records;
+            this.formatDate();
         }else {
             this._response = undefined;
         }
@@ -119,7 +122,16 @@ export default class App extends ToolkitElement {
     }
 
 
+    deleteRecords = async (sobject,records) => {
+        if(isUndefinedOrNull(sobject)) return;
+        console.log('sobject',sobject);
+        const connector = sobject.useToolingApi?this.connector.conn.tooling:this.connector.conn;
+        const rets = await connector.sobject(sobject.name).delete(records.map(x => x.Id));
+        return rets;
+    }
+
     /** Events **/
+    
 
     handleLeftToggle = (e) => {
         store.dispatch(UI.reduxSlice.actions.updateLeftPanel({
@@ -157,30 +169,56 @@ export default class App extends ToolkitElement {
     }
 
     handleSaveClick = () => {
-        const { ui,queryFiles } = store.getState();
+        const { ui } = store.getState();
+        const file = ui.currentTab.fileId?SELECTORS.queryFiles.selectById(store.getState(),lowerCaseKey(ui.currentTab.fileId)):null;
         SaveModal.open({
             title:'Save Query',
-            name:ui.currentTab.fileId // fileId is the name !
-        }).then(res => {
-            const { name,isGlobal } = res.data;
-            store.dispatch(DOCUMENT.reduxSlices.QUERYFILE.actions.upsertOne({
-                id:name, // generic
-                isGlobal, // generic
-                content:this.soql,
-                alias:this.alias,
-                extra:{
-                    useToolingApi:this._useToolingApi === true, // Needed for queries
-                }
-            }));
-            store.dispatch(UI.reduxSlice.actions.linkFileToTab({
-                fileId:name,
-                alias:this.alias,
-                queryFiles
-            }));
+            _file:file
+        }).then(async data => {
+            if(isUndefinedOrNull(data)) return;
+
+            const { name,isGlobal } = data;
+            store.dispatch(async (dispatch,getState) => {
+                await dispatch(DOCUMENT.reduxSlices.QUERYFILE.actions.upsertOne({
+                    id:name, // generic
+                    isGlobal, // generic
+                    content:this.soql,
+                    alias:this.alias,
+                    extra:{
+                        useToolingApi:this._useToolingApi === true, // Needed for queries
+                    }
+                }));
+                await dispatch(UI.reduxSlice.actions.linkFileToTab({
+                    fileId:name,
+                    alias:this.alias,
+                    queryFiles:getState().queryFiles
+                }));
+            });
 
             // Reset draft
 
         })
+    }
+
+    handleMonacoSave = (e) => {
+        e.stopPropagation();
+        const { ui } = store.getState();
+        const file = ui.currentTab.fileId?SELECTORS.queryFiles.selectById(store.getState(),lowerCaseKey(ui.currentTab.fileId)):null;
+        if(isNotUndefinedOrNull(file)){
+            // Existing file
+            store.dispatch(async (dispatch,getState) => {
+                await dispatch(DOCUMENT.reduxSlices.QUERYFILE.actions.upsertOne({
+                    ...file,
+                    content:this.soql
+                }))
+                await dispatch(UI.reduxSlice.actions.linkFileToTab({
+                    fileId:file.id,
+                    alias:file.alias,
+                    queryFiles:getState().queryFiles
+                }));
+            })
+            
+        }
     }
 
     handleRowSelection = (e) => {
@@ -214,8 +252,8 @@ export default class App extends ToolkitElement {
             }
         }
         const params = {variant: 'headerless',message: `Are you sure that you want to delete ${customMessages.join(' & ')}?`}
-        if(!LightningConfirm.open(params)) return;
-
+        if(!await LightningConfirm.open(params)) return;
+        store.dispatch(APPLICATION.reduxSlice.actions.startLoading());
 
         // Child
         const retChild  = await this.deleteRecords(_sobjectChild,this.selectedChildRecords) || [];
@@ -229,15 +267,9 @@ export default class App extends ToolkitElement {
                 console.error(ret);
             }
         }
+        store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
     }
 
-    deleteRecords = async (sobject,records) => {
-        if(isUndefinedOrNull(sobject)) return;
-        console.log('sobject',sobject);
-        const connector = sobject.useToolingApi?this.connector.conn.tooling:this.connector.conn;
-        const rets = await connector.sobject(sobject.name).delete(records.map(x => x.Id));
-        return rets;
-    }
 
     /** Copy & Download */
 
@@ -401,6 +433,10 @@ export default class App extends ToolkitElement {
     }
 
     /** Getters **/
+
+    get pageClass(){//Overwrite
+        return super.pageClass+' slds-p-around_small';
+    }
     
     get sobjectsPanelClass() {
         return this.selectedSObject ? 'slds-hide' : '';

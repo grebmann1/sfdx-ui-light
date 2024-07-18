@@ -1,15 +1,15 @@
-import { LightningElement,wire } from 'lwc';
+import { LightningElement } from 'lwc';
 import { isEmpty,isElectronApp,isNotUndefinedOrNull } from 'shared/utils';
 import { classSet } from 'shared/utils';
 import { I18nMixin } from 'core/i18n';
-import { connectStore,store,store_application } from 'shared/store';
+import { store } from 'core/store';
 
 export default class ToolkitElement extends I18nMixin(LightningElement) {
 
     //@api connector;
     isLoggedIn = false;
     
-    @wire(connectStore, { store })
+    /*@wire(connectStore, { store })
     applicationChange({application}) {
         //console.log('ToolkitElement - application',application);
         if(application.isLoggedIn){
@@ -17,17 +17,17 @@ export default class ToolkitElement extends I18nMixin(LightningElement) {
         }else if(application.isLoggedOut){
             this.isLoggedIn = false;
         }
-    }
+    }*/
 
   
     /** Getters */
     
     get connector(){
-        return window.connector;
+        return store.getState()?.application?.connector;
     }
 
     get alias(){
-        return window.connector?.configuration?.alias;
+        return this.connector?.configuration?.alias;
     }
     
     get isUserLoggedIn(){

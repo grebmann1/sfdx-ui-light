@@ -58,6 +58,7 @@ const sObjectsSlice = createSlice({
                 });
             })
             .addCase(describeSObject.rejected, (state, action) => {
+                console.log('test',action)
                 const { sObjectName } = action.meta.arg;
                 const { error } = action;
                 sObjectsAdapter.updateOne(state, {

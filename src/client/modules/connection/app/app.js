@@ -7,7 +7,7 @@ import ConnectionRenameModal from "connection/connectionRenameModal";
 import ConnectionImportModal from "connection/connectionImportModal";
 import { download,classSet,runActionAfterTimeOut,checkIfPresent,isEmpty,isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,normalizeString as normalize,groupBy } from 'shared/utils';
 import { getConfigurations,setConfigurations,removeConfiguration,connect,oauth,getConfiguration,getCurrentTab,oauth_chrome } from 'connection/utils';
-import { store,store_application } from 'shared/store';
+import { store,APPLICATION } from 'core/store';
 
 
 const ACTIONS = [
@@ -189,12 +189,12 @@ export default class App extends ToolkitElement {
             }
         }else{
             let {alias,...settings} = this.data.find(x => x.id == row.id);
-            this.dispatchEvent(new CustomEvent("startlogin", { bubbles: true,composed: true }));
+            store.dispatch(APPLICATION.reduxSlice.actions.startLoading());
             let connector = await connect({alias,settings});
             if(connector){
                 this.dispatchEvent(new CustomEvent("login", { detail:{value:connector},bubbles: true }));
             }else{
-                this.dispatchEvent(new CustomEvent("stoploading", {bubbles: true }));
+                store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
                 this.fetchAllConnections();
                 Toast.show({
                     label: `OAuth Issue | Check your settings [re-authorize the org]`,
@@ -209,7 +209,7 @@ export default class App extends ToolkitElement {
         if(isElectronApp()) return;
 
         let {alias,loginUrl,...settings} = this.data.find(x => x.id == row.id);
-        this.dispatchEvent(new CustomEvent("startlogin", { bubbles: true,composed: true }));
+        store.dispatch(APPLICATION.reduxSlice.actions.startLoading());
         const _oauthMethod = isChromeExtension()?oauth_chrome:oauth;
 
         _oauthMethod(
@@ -217,12 +217,12 @@ export default class App extends ToolkitElement {
             (res) => {
                 this.fetchAllConnections();
                 if(isUndefinedOrNull(res)){
-                    this.dispatchEvent(new CustomEvent("stoploading", {bubbles: true }));
+                    store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
                 }
             },(e) => {  
                 console.error(e);
                 if(isUndefinedOrNull(res)){
-                    this.dispatchEvent(new CustomEvent("stoploading", {bubbles: true }));
+                    store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
                 }
             }
         );

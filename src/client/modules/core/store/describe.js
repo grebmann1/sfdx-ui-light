@@ -44,12 +44,13 @@ const describeSlice = createSlice({
             })
             .addCase(describeSObjects.fulfilled, (state, action) => {
                 const { standard,tooling } = action.payload;
-                // Standard
-                Object.assign(state.prefixMap,arrayToMap(standard.sobjects,'keyPrefix',{useToolingApi:false},lowerCaseKey));
-                Object.assign(state.nameMap,arrayToMap(standard.sobjects,'name',{useToolingApi:false},lowerCaseKey));
                 // Tooling
                 Object.assign(state.prefixMap,arrayToMap(tooling.sobjects,'keyPrefix',{useToolingApi:true},lowerCaseKey));
                 Object.assign(state.nameMap,arrayToMap(tooling.sobjects,'name',{useToolingApi:true},lowerCaseKey));
+                // Standard
+                Object.assign(state.prefixMap,arrayToMap(standard.sobjects,'keyPrefix',{useToolingApi:false},lowerCaseKey));
+                Object.assign(state.nameMap,arrayToMap(standard.sobjects,'name',{useToolingApi:false},lowerCaseKey));
+                
                 state.isFetching = false;
             })
             .addCase(describeSObjects.rejected, (state, action) => {

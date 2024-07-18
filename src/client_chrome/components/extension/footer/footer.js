@@ -6,7 +6,7 @@ import {
 } from 'extension/utils';
 
 /** Store **/
-import { connectStore,store,store_application } from 'shared/store';
+import { store,connectStore } from 'core/store';
 
 export default class Footer extends LightningElement {
 

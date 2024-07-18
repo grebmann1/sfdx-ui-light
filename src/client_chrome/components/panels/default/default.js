@@ -1,5 +1,5 @@
 import { LightningElement,api,wire} from "lwc";
-import { connectStore,store,store_application } from 'shared/store';
+import { connectStore,store } from 'shared/store';
 import { isNotUndefinedOrNull} from "shared/utils";
 import { loadExtensionConfigFromCache,CACHE_CONFIG } from "extension/utils";
 

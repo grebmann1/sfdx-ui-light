@@ -178,7 +178,7 @@ export default class QueryEditorPanel extends ToolkitElement {
         const tabId = e.detail.value;
         const currentTab = this.tabs.find(x => x.id === tabId);
         const params = {variant: 'headerless',message: 'This query has unsaved changes ! Do you want delete it ?'}
-        if(!currentTab.isDraft || currentTab.isDraft && await LightningConfirm.open(params)){
+        if(!currentTab.isDraft || currentTab.isDraft && isUndefinedOrNull(currentTab.fileId) || currentTab.isDraft && await LightningConfirm.open(params)){
             store.dispatch(UI.reduxSlice.actions.removeTab({id:tabId,alias:this.alias}));
         }
     }

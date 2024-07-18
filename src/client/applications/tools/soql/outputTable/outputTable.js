@@ -73,7 +73,6 @@ export default class OutputTable extends ToolkitElement {
     @api
     set response(res) {
         this._response = JSON.parse(JSON.stringify(res));
-        console.log('this._response',this._response);
         this._nextRecordsUrl = res.nextRecordsUrl;
         const collector = new ColumnCollector(res.records);
         this._columns = collector.collect();

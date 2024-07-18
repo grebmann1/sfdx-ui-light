@@ -4,9 +4,9 @@
     src: url('/styles/seti.hash.woff') format('woff');
 }
 
-slds-spinner.slds-spinner_container{
+/*slds-spinner.slds-spinner_container{
     z-index: 1 !important;
-}
+}*/
 .slds-spinner_container.no-opacity{
     opacity: 1;
     background: rgba(255,255,255,1);

@@ -232,10 +232,11 @@ function enrichTabs(tabs,queryFiles){
 
 function enrichTab(tab,queryFiles){
     const file = tab.fileId?SELECTORS.queryFiles.selectById({queryFiles},lowerCaseKey(tab.fileId)):null;
+    const fileBody = file?.content || tab.fileBody;
     return {
         ...tab,
-        fileBody:file?.content || tab.fileBody,
-        isDraft:false
+        fileBody:fileBody,
+        isDraft:fileBody != tab.body && isNotUndefinedOrNull(tab.fileId)
     }
 }
 
@@ -251,14 +252,6 @@ function updateSOQL(state,soql){
         state.query = query;
         state.soql = soql;
     }
-}
-
-export const loadCacheAndCreateTabs = ({alias}) => {
-    return (dispatch, getState) => {
-        dispatch(uiSlice.actions.loadCacheSettings({alias}));
-        dispatch(DOCUMENT.reduxSlices.QUERYFILE.actions.loadFromStorage({alias}));
-        dispatch(uiSlice.actions.initTabs({alias}));
-    };
 }
 
 
@@ -281,7 +274,7 @@ const uiSlice = createSlice({
     },
     reducers: {
         loadCacheSettings : (state,action) => {
-            const { alias } = action.payload;
+            const { alias,queryFiles } = action.payload;
             const cachedConfig = loadCacheSettings(alias);
             if(cachedConfig){
                 const { soql, leftPanelToggled,recentPanelToggled,tabs } = cachedConfig; 
@@ -289,7 +282,7 @@ const uiSlice = createSlice({
                     soql:soql || '',
                     leftPanelToggled,
                     recentPanelToggled,
-                    tabs:tabs || INITIAL_TABS
+                    tabs:enrichTabs(tabs || INITIAL_TABS,queryFiles)
                 });
             }
             console.log('#cachedConfig#',cachedConfig);

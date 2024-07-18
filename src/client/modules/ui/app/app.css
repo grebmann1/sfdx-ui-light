@@ -11,22 +11,10 @@
 .slds-menu-collapsed{
     width: 50px !important;
 }
-/*
-.app-container {
-    margin-top: 30px;
-    height: calc(100vh - 30px);
-}
-.app-container-logged-in {
-    margin-top: 75px;
-    
-    height:calc(100vh - 75px);
-}
-.container{
-    padding:1rem;
-}
-*/
 
-
+.main-app-container{
+    z-index: 50;
+}
 
 .custom-utility-bar-alert{
     background-color: var(--slds-g-color-error-base-40,#ea001e);

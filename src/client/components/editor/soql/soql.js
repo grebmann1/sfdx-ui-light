@@ -71,8 +71,18 @@ export default class Soql extends ToolkitElement {
             automaticLayout:true,
             readOnly: false,
             scrollBeyondLastLine: false,
+            fixedOverflowWidgets: true
         });
         this.editor.onDidChangeModelContent(this.handleModelContentChange);
+        /*this.editor.addCommand(this.monaco.KeyMod.CtrlCmd | this.monaco.KeyCode.KEY_S, () => {
+            console.log('SAVE pressed!');
+        });*/
+        this.editor.onKeyDown((e) => {
+            if ((e.ctrlKey || e.metaKey) && e.keyCode === this.monaco.KeyCode.KeyS) {
+                e.preventDefault();
+                this.dispatchEvent(new CustomEvent("monacosave", {bubbles: true,composed:true }));
+            }
+        });
     }
 
     loadMonacoEditor = async () => {
@@ -146,6 +156,7 @@ export default class Soql extends ToolkitElement {
     }
 
     getCompletionItems = (parserInstance, suggestionInstance) => {
+        console.log('parserInstance',parserInstance);
         const isSelectPosition = (parser, sub = false) => {
             return sub ? parser.subquery.position === "select" : parser.position === "select";
         };
@@ -182,7 +193,7 @@ export default class Soql extends ToolkitElement {
                 return getFilterCompletionItems(parserInstance, true);
             }
             if (isSelectPosition(parserInstance, true) && !parserInstance.subquery.fromRelation.length) {
-                return suggestionInstance.getFieldSuggestions();
+                return suggestionInstance.getFieldSuggestions(parserInstance.isSubQuery);
             }
             return null;
         };
@@ -200,7 +211,7 @@ export default class Soql extends ToolkitElement {
     
                 if (isSelectPosition(parserInstance) && hasFromObject(parserInstance) && !parserInstance.fromRelation.length) {
                     //console.log('--> suggestion 2');
-                    return suggestionInstance.getFieldSuggestions();
+                    return suggestionInstance.getFieldSuggestions(parserInstance.isSubQuery);
                 }
     
                 if (parserInstance.position === "from" && parserInstance.lastWord === parserInstance.fromObject /*!hasFromObject(parserInstance, true)*/ || (parserInstance.isSubQuery && (parserInstance.subquery.position === "from" || !parserInstance.subquery.hasSelect))) {

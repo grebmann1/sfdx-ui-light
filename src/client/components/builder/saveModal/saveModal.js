@@ -14,6 +14,17 @@ export default class SaveModal extends LightningModal {
 
     @api name = ''; // Used for direct update
 
+    @api 
+    get _file(){
+        return this._innerFile;
+    }
+    set _file(value){
+        this._innerFile = value;
+        // Define values based on the file
+        this.name = value.id;
+        this.storage = value.isGlobal?STORAGE_TYPE.GLOBAL:STORAGE_TYPE.LOCAL;
+    }
+
 
     connectedCallback(){
 
@@ -21,11 +32,11 @@ export default class SaveModal extends LightningModal {
 
     handleCloseClick() {
         //this.close('canceled');
-		this.close({action:'cancel'});
+		this.close();
     }
 
     closeModal() {
-        this.close({action:'cancel'});
+        this.close();
     }
 
     validateForm = () => {
@@ -61,7 +72,7 @@ export default class SaveModal extends LightningModal {
         const data = this.extractFormValues();
             data.isGlobal = data.storage === STORAGE_TYPE.GLOBAL;
         //console.log('data',data);
-		this.close({action:'save',data});
+		this.close(data);
 	}
 
 	/** Getter **/

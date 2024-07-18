@@ -158,9 +158,9 @@ export default class SuggestionHandler {
 
     // Method to get selectable fields based on the parsed information
     getFieldSuggestions(isSubQuery) {
-        console.log('getFieldSuggestions - isSubQuery',isSubQuery);
+        //console.log('getFieldSuggestions - isSubQuery',isSubQuery,this.parser.isSubQuery);
         let object = this.parser.fromObject;
-        if (this.parser.isSubQuery) {
+        if (isSubQuery) {
             if (this.parser.subquery.type === "select") {
                 object = this.extractObjectFromChild();
             } else {
@@ -273,6 +273,7 @@ export default class SuggestionHandler {
             }));
             const { sobject } = store.getState();
             const sobjectState = SELECTORS.sobject.selectById({sobject},(referenceTo||'').toLowerCase());
+            console.log('----> ',sobjectState);
             const fields = [];
             (sobjectState?.data?.fields || [])
             .forEach(field => {

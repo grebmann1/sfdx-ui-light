@@ -4,7 +4,7 @@ import constant from "core/constant";
 import { Connector } from './mapping';
 import * as webInterface from './web';
 import * as electronInterface from './electron';
-import { store,store_application } from 'shared/store';
+import { store,APPLICATION } from 'core/store';
 
 export * from './chrome';
 export * from './mapping';
@@ -101,7 +101,7 @@ export async function connect({alias,settings,disableEvent = false, directStorag
     // Dispatch Login Event
     const connector = new Connector(configuration,connection);
     if(!disableEvent){
-        store.dispatch(store_application.login(connector));
+        store.dispatch(APPLICATION.reduxSlice.actions.login({connector}));
     }
     
     
@@ -336,7 +336,7 @@ export async function directConnect(sessionId,serverUrl){
     enrichConnector(connector);
 
     // Dispatch Login Event
-    store.dispatch(store_application.login(connector));
+    store.dispatch(APPLICATION.reduxSlice.actions.login({connector}));
     return connector;
 }
 
@@ -358,5 +358,5 @@ async function enrichConnector(connector){
     connector.conn.version = _version[0].version;
     connector.configuration.version = _version[0];
 
-    store.dispatch(store_application.updateConnector(connector));
+    store.dispatch(APPLICATION.reduxSlice.actions.updateConnector(connector));
 }

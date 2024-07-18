@@ -3,9 +3,11 @@ import logger from 'shared/middleware';
 import * as SOBJECT from './sobject';
 import * as DESCRIBE from './describe';
 import * as DOCUMENT from './document';
+import * as APPLICATION from './application';
 import {UI,QUERY} from 'soql/store';
 const store = configureStore({
     reducer: {
+        application:APPLICATION.reduxSlice.reducer,
         sobject: SOBJECT.reduxSlice.reducer,
         describe: DESCRIBE.reduxSlice.reducer,
         ui : UI.reduxSlice.reducer,
@@ -21,11 +23,12 @@ export {
     store,
     UI,
     QUERY,
-    DOCUMENT
+    DOCUMENT,
+    APPLICATION,
+    SOBJECT,
+    DESCRIBE
 };
 export { connectStore } from './wire-adapter';
-export * as SOBJECT from './sobject';
-export * as DESCRIBE from './describe';
 
 export const SELECTORS = {
     sobject:SOBJECT.sObjectsAdapter.getSelectors((state) => state.sobject),

@@ -1,12 +1,12 @@
 import { LightningElement,api,wire } from "lwc";
-import LightningAlert from 'lightning/alert';
 import Toast from 'lightning/toast';
 import { isUndefinedOrNull,isNotUndefinedOrNull,runActionAfterTimeOut,normalizeString as normalize } from "shared/utils";
 import { directConnect,getHostAndSession } from 'connection/utils';
 import { getCurrentTab,getRecordId,PANELS } from 'extension/utils';
 
 /** Store **/
-import { connectStore,store,store_application } from 'shared/store';
+import { store as legacyStore } from 'shared/store';
+import { connectStore,store,APPLICATION } from 'core/store';
 
 const VARIANT = {
     DEFAULT:'default',
@@ -44,16 +44,20 @@ export default class root extends LightningElement {
         this._currentUrl;
     }
 
-    @wire(connectStore, { store })
+    @wire(connectStore, { store:legacyStore })
     applicationChange({application}) {
+        // Redirect
+        if(application.redirectTo){
+            this.handleRedirection(application);
+        }
+    }
+
+    @wire(connectStore, { store })
+    storeChange({application}) {
         // connector
         if(application.connector){
             this.connector = null;
             this.connector = application.connector;
-        }
-        // Redirect
-        if(application.redirectTo){
-            this.handleRedirection(application);
         }
     }
 

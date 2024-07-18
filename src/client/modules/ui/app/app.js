@@ -8,8 +8,8 @@ import { handleRedirect } from './utils';
 import {APP_MAPPING,APP_LIST,DIRECT_LINK_MAPPING} from './modules';
 
 /** Store **/
-import { connectStore,store as applicationStore,store_application } from 'shared/store';
-import { store,DOCUMENT } from 'core/store';
+import { store as legacyStore } from 'shared/store';
+import { connectStore,store,DOCUMENT,APPLICATION } from 'core/store';
 
 const LIMITED = 'limited';
 
@@ -36,40 +36,33 @@ export default class App extends LightningElement {
     isMenuCollapsed = false;
     pageHasLoaded = false;
     targetPage;
+    _isLoggedIn = false;
+
+    // Full App Loading
     _isFullAppLoading = false;
+    _fullAppLoadingMessage;
 
     @track applications = [];
 
     currentApplicationId;
 
-    @api 
+   /* @api 
     get connector(){
         return window.connector;
     }
     set connector(value){
         window.connector = value;
-    }
+    }*/
 
 
-    @wire(connectStore, { store:applicationStore })
+    @wire(connectStore, { store:legacyStore })
     applicationChange({application}) {
         console.log('application',application)
-        if(application.connector){
-            //forceVariableSave(this.connector,application.connector);
-            this.connector = null;
-            this.connector = application.connector;
-        }
         
         // Open Application
         if(application.isOpen){
             const {target} = application;
             this.handleApplicationSelection(target);
-        }
-
-        if(application.isLoggedIn){
-            this.handleLogin(application.connector);
-        }else if(application.isLoggedOut){
-            this.handleLogout();
         }
 
         // Toggle Menu
@@ -83,6 +76,22 @@ export default class App extends LightningElement {
         if(application.redirectTo){
             this.handleRedirection(application);
         }
+    }
+
+    @wire(connectStore,{store})
+    storeChange({application}){
+        this._isFullAppLoading = application.isLoading;
+        this._fullAppLoadingMessage = application.isLoadingMessage;
+
+        if(this._isLoggedIn != application.isLoggedIn){
+            this._isLoggedIn = application.isLoggedIn;
+            if(application.isLoggedIn){
+                this.handleLogin(application.connector);
+            }else if(!application.isLoggedIn){
+                this.handleLogout();
+            }
+        }
+        
     }
 
     @wire(CurrentPageReference)
@@ -104,9 +113,6 @@ export default class App extends LightningElement {
         }
     }
 
-
-    
-
     connectedCallback(){
         this.init();
     }
@@ -123,19 +129,10 @@ export default class App extends LightningElement {
 
     /** Events */
 
-    handleStartLogin = () => {
-        //console.log('handleStartLogin  - to refactor');
-        this._isFullAppLoading = true;
-    }
-
-    handleStopLoading = () => {
-        //console.log('handleStopLoading - to refactor');
-        this._isFullAppLoading = false;
-    }
-    
     handleLogin = async (connector) => {
+        console.log('#### handleLogin ####');
         if(isUndefinedOrNull(connector)){
-            this._isFullAppLoading = false;
+            store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
             return;
         }
 
@@ -154,8 +151,7 @@ export default class App extends LightningElement {
         if(this.applications.filter(x => x.name == 'org/app').length == 0){
             this.openSpecificModule('org/app');
         }
-        this._isFullAppLoading = false;
-        this.isLoggedIn = true;
+        store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
 
         // Load Cached data
         store.dispatch(DOCUMENT.reduxSlices.RECENT.actions.loadFromStorage({
@@ -164,17 +160,14 @@ export default class App extends LightningElement {
     }
 
     handleLogout = () => {
-        //console.log('handleLogout');
-        this.isLoggedIn = false;
-        this.connector = null;
-        // Reset first
+        // Reset Applications
         this.applications = this.applications.filter(x => x.name == 'home/app');
         navigate(this.navContext,{type:'application',attributes:{applicationName:'connections'}});
     }
 
     handleLogoutClick = (e) => {
         e.preventDefault();
-        store.dispatch(store_application.logout());
+        store.dispatch(APPLICATION.reduxSlice.actions.logout());
 
         removeSession();
         this.initMode();
@@ -359,8 +352,16 @@ export default class App extends LightningElement {
 
     /** Getters */
 
+    get connector(){
+        return store.getState()?.application?.connector;
+    }
+
     get isFullAppLoading(){
         return this._isFullAppLoading || !this.pageHasLoaded;
+    }
+
+    get fullAppLoadingMessageFormatted(){
+        return this._fullAppLoadingMessage || null;
     }
     
     get isSFDXMissing(){
@@ -392,7 +393,7 @@ export default class App extends LightningElement {
     }
 
     get isUserLoggedIn(){
-        return this.isLoggedIn;
+        return this._isLoggedIn;
     }
 
     get menuClass(){

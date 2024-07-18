@@ -32,7 +32,7 @@ function loadFromStorage(referenceKey) {
 }
 
 function formatData(payload){
-    if(isUndefinedOrNull(payload.id) || isUndefinedOrNull(payload.isGlobal) || isUndefinedOrNull(payload.alias)){
+    if(isUndefinedOrNull(payload.id) || isUndefinedOrNull(payload.isGlobal) || isUndefinedOrNull(payload.alias) && payload.isGlobal == false){
         throw new Error('Required data missing !');
     }
     return {

@@ -22,7 +22,7 @@
             <div class="l-container-whole-parent">
                 <!-- Full App Loading -->
                 <template lwc:if={isFullAppLoading}>
-                    <lightning-spinner class="no-opacity" alternative-text="Loading"></lightning-spinner>
+                    <slds-spinner class="no-opacity" alternative-text="Loading" size="small" message={fullAppLoadingMessageFormatted}></slds-spinner>
                 </template>
                 <!-- Container & Header -->
                 <div class="home l-container-vertical">
@@ -45,12 +45,12 @@
                             <ui-menu is-user-logged-in={isUserLoggedIn} onapplicationselection={handleApplicationSelection}></ui-menu>
                         </div>
                         <!-- Container - START -->
-                        <div class="l-cell-auto-size">
+                        <div class="l-cell-auto-size main-app-container">
                             <div class="l-container-vertical">
                                 <!-- Page - START -->
                                 <div class={dynamicAppContainerClass}>
                                     <section class="slds-full-height section">
-                                        <div class="slds-full-height container" onopenapplication={handleApplicationSelection} onstartlogin={handleStartLogin} onstoploading={handleStopLoading}>
+                                        <div class="slds-full-height container" onopenapplication={handleApplicationSelection}>
                                             <!-- [Electron only] SFDX Installation required  -->
                                             <template lwc:if={isSFDXMissing}>
                                                 <slds-information-block title="CLI Missing" variant="error">
