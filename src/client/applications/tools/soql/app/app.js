@@ -3,7 +3,7 @@ import ToolkitElement from 'core/toolkitElement';
 import LightningConfirm from 'lightning/confirm';
 import Toast from 'lightning/toast';
 import SaveModal from "builder/saveModal";
-import PerformanceModal from "soql/PerformanceModal";
+import PerformanceModal from "soql/performanceModal";
 import { store,connectStore,SELECTORS,DESCRIBE,UI,QUERY,DOCUMENT,APPLICATION } from 'core/store';
 import { guid,isNotUndefinedOrNull,isUndefinedOrNull,fullApiName,compareString,lowerCaseKey,getFieldValue,isObject,arrayToMap,extractErrorDetails } from 'shared/utils';
 import { CATEGORY_STORAGE } from 'builder/storagePanel';
