@@ -27,6 +27,8 @@ export default class OutputPanel extends ToolkitElement {
                 this.resetError();
                 this.response = queryState.data;
                 this.sobjectName = queryState.sobjectName;
+            }else if(queryState.isFetching == true){
+                this.resetError();
             }
             if (queryState.error) {
                 this.handleError(queryState.error);

@@ -350,3 +350,21 @@ export const arrayToMap = (array, idField,attributes,format) => {
         return map;
     }, {});
 }
+
+export const extractErrorDetails = (errorMessage) => {
+    const rowRegex = /Row:(\d+)/;
+    const columnRegex = /Column:(\d+)/;
+    const rowMatch = errorMessage.match(rowRegex);
+    const columnMatch = errorMessage.match(columnRegex);
+
+    const row = rowMatch ? parseInt(rowMatch[1], 10) : null;
+    const column = columnMatch ? parseInt(columnMatch[1], 10) : null;
+    const messageStartIndex = errorMessage.indexOf('\n') + 1;
+    const message = errorMessage.substring(messageStartIndex).trim();
+
+    return {
+        row: row,
+        column: column,
+        message: message
+    };
+}

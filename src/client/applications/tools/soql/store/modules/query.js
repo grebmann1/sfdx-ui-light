@@ -24,6 +24,20 @@ export const executeQuery = createAsyncThunk(
     }
 );
 
+export const explainQuery = createAsyncThunk(
+    'queries/explainQuery',
+    async ({ connector, soql,tabId }, { dispatch }) => {
+        try {
+            const query = connector.query(soql);
+            const res = await query.explain();
+            //console.log('res',res)
+            return { data: res, soql, alias: connector.alias,tabId};
+        } catch (err) {
+            console.error(err);
+            throw err;
+        }
+    }
+);
 /*
 {
         isFetching: false,
@@ -73,11 +87,38 @@ const queriesSlice = createSlice({
             .addCase(executeQuery.rejected, (state, action) => {
                 const { error } = action;
                 const { tabId } = action.meta.arg;
-                queryAdapter.updateOne(state, {
+                queryAdapter.upsertOne(state, {
                     id: lowerCaseKey(tabId),
-                    changes: { isFetching: false, error }
+                    isFetching:false,
+                    error
                 });
-                console.error(error);
+                //console.error(error);
+            })/** Handling Error for ExplainQuery Rejected */
+            .addCase(explainQuery.pending, (state, action) => {
+                const { tabId } = action.meta.arg;
+                queryAdapter.upsertOne(state, {
+                    id: lowerCaseKey(tabId),
+                    isFetching: true,
+                    error: null 
+                });
+            })
+            .addCase(explainQuery.fulfilled, (state, action) => {
+                const { tabId } = action.meta.arg;
+                queryAdapter.upsertOne(state, {
+                    id: lowerCaseKey(tabId),
+                    isFetching: false,
+                    error: null
+                });
+            })
+            .addCase(explainQuery.rejected, (state, action) => {
+                const { error } = action;
+                const { tabId } = action.meta.arg;
+                queryAdapter.upsertOne(state, {
+                    id: lowerCaseKey(tabId),
+                    isFetching:false,
+                    error
+                });
+                //console.error(error);
             });
     }
 });

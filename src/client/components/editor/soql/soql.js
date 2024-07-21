@@ -4,7 +4,7 @@ import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeO
 import loader from '@monaco-editor/loader';
 import { formatQuery,parseQuery } from '@jetstreamapp/soql-parser-js';
 import { SOQL } from 'editor/languages';
-import { store,connectStore,SELECTORS,SOBJECT,DESCRIBE,QUERY,UI } from 'core/store';
+import { store,connectStore } from 'core/store';
 import SOQLParser from './soqlParser';
 import SuggestionHandler from './suggestion';
 
@@ -175,7 +175,7 @@ export default class Soql extends ToolkitElement {
                 if (query.filter.value.startsWith("(")) {
                     return Promise.all([
                         suggestionInstance.getTypeFieldSuggestions(query.fromObject, query.filter),
-                        suggestionInstance.getSObjectSuggestions(true,this._useToolingApi)
+                        suggestionInstance.getSObjectSuggestions(true)
                     ]).then(results => [...results[0], ...results[1]]);
                 } else {
                     return suggestionInstance.getTypeFieldSuggestions(query.fromObject, query.filter);
@@ -216,7 +216,7 @@ export default class Soql extends ToolkitElement {
     
                 if (parserInstance.position === "from" && parserInstance.lastWord === parserInstance.fromObject /*!hasFromObject(parserInstance, true)*/ || (parserInstance.isSubQuery && (parserInstance.subquery.position === "from" || !parserInstance.subquery.hasSelect))) {
                     //console.log('--> suggestion 3');
-                    return suggestionInstance.getSObjectSuggestions(false,this._useToolingApi);
+                    return suggestionInstance.getSObjectSuggestions(false);
                 }
 
                 if(parserInstance.position === "from" && hasFromObject(parserInstance)){
@@ -240,13 +240,13 @@ export default class Soql extends ToolkitElement {
                 }
             } else if(parserInstance.fromObject !== null) {
                 //console.log('--> suggestion 7');
-                return suggestionInstance.getSObjectSuggestions(true,this._useToolingApi);
+                return suggestionInstance.getSObjectSuggestions(true);
             } else if(parserInstance.fromObject === null && parserInstance.position === 'select'){
                 return suggestionInstance.getFromSuggestions();
             }
         } else {
             //console.log('--> suggestion 8');
-            return suggestionInstance.getSObjectSuggestions(true,this._useToolingApi,true);
+            return suggestionInstance.getSObjectSuggestions(true,true);
         }
     }
     
@@ -282,13 +282,13 @@ export default class Soql extends ToolkitElement {
     }
     
     @api
-    addMarkers = (model,markers) => {
-        this.monaco.editor.setModelMarkers(model, "owner", markers);
+    addMarkers = (markers) => {
+        this.monaco.editor.setModelMarkers(this.currentModel, "owner", markers);
     }
 
     @api
-    resetMarkers = (model) => {
-        this.monaco.editor.setModelMarkers(model, "owner",[]);
+    resetMarkers = () => {
+        this.monaco.editor.setModelMarkers(this.currentModel, "owner",[]);
     }
 
 

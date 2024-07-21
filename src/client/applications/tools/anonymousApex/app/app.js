@@ -170,6 +170,10 @@ export default class App extends ToolkitElement {
 
     /** Getters */
 
+    get pageClass(){//Overwrite
+        return super.pageClass+' slds-p-around_small';
+    }
+
     get isLogDisplayed(){
         return this._logs.length > 0;
     }
@@ -266,7 +270,7 @@ export default class App extends ToolkitElement {
     }
 
     get rightSlotClass(){
-        return classSet('slds-p-around_small slds-full-height')
+        return classSet('slds-p-around_small slds-full-height slds-full-width')
         .add({
             'apex-illustration':!this.isLogDisplayed
         }).toString();

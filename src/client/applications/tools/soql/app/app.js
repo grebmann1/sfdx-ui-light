@@ -3,8 +3,9 @@ import ToolkitElement from 'core/toolkitElement';
 import LightningConfirm from 'lightning/confirm';
 import Toast from 'lightning/toast';
 import SaveModal from "builder/saveModal";
+import PerformanceModal from "soql/PerformanceModal";
 import { store,connectStore,SELECTORS,DESCRIBE,UI,QUERY,DOCUMENT,APPLICATION } from 'core/store';
-import { guid,isNotUndefinedOrNull,isUndefinedOrNull,fullApiName,compareString,lowerCaseKey,getFieldValue,isObject,arrayToMap } from 'shared/utils';
+import { guid,isNotUndefinedOrNull,isUndefinedOrNull,fullApiName,compareString,lowerCaseKey,getFieldValue,isObject,arrayToMap,extractErrorDetails } from 'shared/utils';
 import { CATEGORY_STORAGE } from 'builder/storagePanel';
 import moment from 'moment';
 
@@ -33,6 +34,7 @@ export default class App extends ToolkitElement {
     _responseRows;
     _sobject;
     _interval;
+    
 
     connectedCallback() {
         store.dispatch(DESCRIBE.describeSObjects({
@@ -132,6 +134,30 @@ export default class App extends ToolkitElement {
 
     /** Events **/
     
+    handlePerformanceCheckClick = async (e) => {
+        console.log('handlePerformanceCheckClick');
+
+        console.log('fetchQueryPerformances');
+        try{
+            const { ui } = store.getState();
+            //this.isLoading = true;
+            const result = await store.dispatch(QUERY.explainQuery({
+                connector:this.queryConnector,
+                soql:this.soql,
+                tabId:ui.currentTab.id
+            })).unwrap();
+            //this.isLoading = false;
+            console.log('result',result);
+            const plans = result.data.plans;
+            PerformanceModal.open({plans});
+            
+        } catch (e) {
+            // handle error here
+            console.log('error',e); 
+            
+            //this.isLoading = false;
+        }
+    }
 
     handleLeftToggle = (e) => {
         store.dispatch(UI.reduxSlice.actions.updateLeftPanel({

@@ -3,53 +3,57 @@
         <builder-editor>
             <builder-header slot="header" title="Tools" sub-title="Anonymous Apex" icon-name="standard:apex">
                 <div slot="actions" class="slds-builder-toolbar__actions">
-                    <lightning-button class="slds-p-right_xx-small" label={i18n.EDITOR_PANEL_SAVE} onclick={runSave}></lightning-button>
-                    <lightning-button class="slds-p-right_xx-small" variant="brand" label={i18n.EDITOR_PANEL_RUN} icon-name="utility:right" onclick={runQuery}></lightning-button>
+                    <!--<lightning-button class="slds-p-right_xx-small" label={i18n.EDITOR_PANEL_SAVE} onclick={runSave}></lightning-button>-->
+                    <lightning-button class="slds-p-right_xx-small" variant="brand" label={i18n.EDITOR_PANEL_EXECUTE} icon-name="utility:right" onclick={executeApex}></lightning-button>
                     <lightning-button-icon-stateful selected={isDebugLogToggle} variant="bare" icon-name="utility:bug" size="large" onclick={handleDebugLogToggle}></lightning-button-icon-stateful>    
                 </div>
             </builder-header>
-            <div class="slds-is-relative slds-full-width slds-full-height" style="min-height:200px;">
-                <template lwc:if={isLoading}>
-                    <lightning-spinner alternative-text="Loading"></lightning-spinner>
-                </template>
-                <template lwc:else>
-                    <slds-split-view left-min-width="200" right-min-width="200" is-horizontal>
-                        <div class="slds-flex-column slds-full-height slds-full-width" slot="left">
-                            <editor-app lwc:ref="editor" class="slds-flex-column slds-fill-height slds-full-width"
-                                onmonacoloaded={handleMonacoLoaded}
-                                onaddtab={handleAddTab}
-                                onchange={handleEditorChange}
-                                is-action-hidden
-                                is-tab-enabled
-                                is-add-tab-enabled
-                            ></editor-app>
-                        </div>
-                        
-                        <div class={rightSlotClass} slot="right">
-                            <template lwc:if={isLogDisplayed}>
-                                <div class="slds-grid slds-justify-content-space-between slds-grid_vertical-align-center">
-                                    <div class="slds-p-around_small">
-                                        <lightning-input
-                                            type="toggle" 
-                                            label="Filter User Debug" 
-                                            name="filterUserDebug"
-                                            variant="label-stacked"
-                                            message-toggle-active=""
-                                            message-toggle-inactive=""
-                                            onchange={handleFilterUserDebugChange}
-                                            checked={isFilterUserDebugEnabled}
-                                        ></lightning-input>
+            <article class="full-page-body slds-card">
+                <div class="slds-is-relative slds-full-width slds-full-height" style="min-height:200px;">
+                    <template lwc:if={isLoading}>
+                        <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                    </template>
+                    <template lwc:else>
+                        <slds-split-view left-min-width="200" right-min-width="200" is-horizontal>
+                            <div class="slds-flex-column slds-full-height slds-full-width" slot="left">
+                                <editor-app lwc:ref="editor" class="slds-flex-column slds-fill-height slds-full-width"
+                                    onmonacoloaded={handleMonacoLoaded}
+                                    onaddtab={handleAddTab}
+                                    onchange={handleEditorChange}
+                                    is-action-hidden
+                                    is-tab-enabled
+                                    is-add-tab-enabled
+                                ></editor-app>
+                            </div>
+                            
+                            <div class={rightSlotClass} slot="right">
+                                <template lwc:if={isLogDisplayed}>
+                                    <div class="slds-flex-column slds-full-height slds-full-width">
+                                        <div class="slds-grid slds-justify-content-space-between slds-grid_vertical-align-center">
+                                            <div class="slds-p-around_small">
+                                                <lightning-input
+                                                    type="toggle" 
+                                                    label="Filter User Debug" 
+                                                    name="filterUserDebug"
+                                                    variant="label-stacked"
+                                                    message-toggle-active=""
+                                                    message-toggle-inactive=""
+                                                    onchange={handleFilterUserDebugChange}
+                                                    checked={isFilterUserDebugEnabled}
+                                                ></lightning-input>
+                                            </div>
+                                        </div>
+                                        <slds-code-block class="slds-fill-height" code-block={formattedFilterLogs} language="log" title="Log"></slds-code-block>
                                     </div>
-                                </div>
-                                <slds-code-block code-block={formattedFilterLogs} language="log" title="Log"></slds-code-block>
-                            </template>
-                            <template lwc:else>
-                                <illustration-empty title="Click on Run to execute Apex" size="large"></illustration-empty>
-                            </template>
-                        </div>
-                    </slds-split-view>
-                </template>
-            </div>
+                                </template>
+                                <template lwc:else>
+                                    <illustration-empty title="Click on Run to execute Apex" size="large"></illustration-empty>
+                                </template>
+                            </div>
+                        </slds-split-view>
+                    </template>
+                </div>
+            </article>
             <!-- Panel -->
             <slds-vertical-panel size="slds-size_medium" title="Debug Logs" is-open={isDebugLogToggle} onclose={handleDebugLogToggle}>
                 <!-- DEBUG LOGS -->

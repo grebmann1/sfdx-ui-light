@@ -362,6 +362,10 @@ lightning-input[variant="label-stacked"] .slds-checkbox_toggle{
     color: white;
 }
 
+.tabulator-row.tabulator-highlight-row a{
+    color: white;
+}
+
 /*.tabulator-row.tabulator-row-even {
     background-color: #fafaf9;
 }*/

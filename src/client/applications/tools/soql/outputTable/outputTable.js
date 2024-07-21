@@ -159,6 +159,15 @@ export default class OutputTable extends ToolkitElement {
             this.tableInstance.destroy();
         }
         const element = this.template.querySelector(".custom-table");
+        const rowSelector = {
+            headerSort:false, resizable: false, frozen:true, 
+            headerHozAlign:"center", hozAlign:"center", 
+            formatter:"rowSelection", 
+            titleFormatter:"rowSelection", 
+            cellClick:function(e, cell){
+                cell.getRow().toggleSelect();
+            }
+        }
         if(!element) return;
         this.isLoading = true;
         this.tableInstance = new Tabulator(element, {
@@ -172,15 +181,7 @@ export default class OutputTable extends ToolkitElement {
             columnHeaderVertAlign: "middle",
             minHeight:100,
             //maxHeight:"100%",
-            rowHeader:{
-                headerSort:false, resizable: false, frozen:true, 
-                headerHozAlign:"center", hozAlign:"center", 
-                formatter:"rowSelection", 
-                titleFormatter:"rowSelection", 
-                cellClick:function(e, cell){
-                    cell.getRow().toggleSelect();
-                }
-            },
+            rowHeader:this.isChildTable?null:rowSelector,
         });
         this.tableInstance.on("tableBuilding", () => {
             console.log('tableBuilding')

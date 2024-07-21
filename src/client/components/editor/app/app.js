@@ -166,7 +166,7 @@ export default class App extends ToolkitElement {
             automaticLayout:true,
             readOnly: false,
             scrollBeyondLastLine: false,
-            theme: "vs-dark"
+            //theme: "vs-dark"
         });
 
         this.editor.onDidChangeModelContent((event) => {

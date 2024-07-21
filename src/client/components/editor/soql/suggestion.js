@@ -184,9 +184,9 @@ export default class SuggestionHandler {
     }
 
     // Method to get all queryable objects
-    getSObjectSuggestions = (isSnippet,useToolingApi,includeSelect = false) => {
+    getSObjectSuggestions = (isSnippet,includeSelect = false) => {
         const { describe } = store.getState();
-        const _filteredList = (useToolingApi?describe.entities.TOOLING.data.sobjects:describe.entities.STANDARD.data.sobjects)
+        const _filteredList = Object.values(describe.nameMap)
         .filter(obj => obj.queryable)
         .map(obj => this.suggestionHandler.OBJECT(obj,isSnippet));
         

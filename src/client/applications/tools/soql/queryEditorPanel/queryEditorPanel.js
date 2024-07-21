@@ -1,7 +1,7 @@
 import { wire, api,track } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import { store,connectStore,SELECTORS,SOBJECT,DESCRIBE,QUERY,UI } from 'core/store';
-import { fullApiName,isUndefinedOrNull,lowerCaseKey,guid,classSet,runActionAfterTimeOut } from 'shared/utils';
+import { fullApiName,isUndefinedOrNull,isNotUndefinedOrNull,lowerCaseKey,guid,classSet,runActionAfterTimeOut,extractErrorDetails } from 'shared/utils';
 import LightningConfirm from 'lightning/confirm';
 
 
@@ -12,6 +12,7 @@ export default class QueryEditorPanel extends ToolkitElement {
     _sobjectMeta;
     _soql;
     _hasRendered = false;
+    _error; // Used to inject error in editor
     @track tabs = [];
     currentTab;
 
@@ -51,34 +52,60 @@ export default class QueryEditorPanel extends ToolkitElement {
     _sobjectSize = 0;
 
     @wire(connectStore, { store })
-    storeChange({ ui,sobject,queryFiles }) {
-        const { query, soql,tabs,currentTab } = ui;
-        if (query) {
-            const sobjectState = SELECTORS.sobject.selectById({sobject},lowerCaseKey(fullApiName(query.sObject,this.namespace)));
+    storeChange({ ui,sobject,query,queryFiles }) {
+        const { soql,tabs,currentTab } = ui;
+        if (ui.query) {
+            const sobjectState = SELECTORS.sobject.selectById({sobject},lowerCaseKey(fullApiName(ui.query.sObject,this.namespace)));
             if (sobjectState) {
                 this._sobjectMeta = sobjectState.data;
             }
-            if(query && this._sobjectMeta){
-                this.mapChildRelationships(query);
+            if(ui.query && this._sobjectMeta){
+                this.mapChildRelationships(ui.query);
             }
         }
-
-        
 
         this.tabs = tabs;
         if(currentTab && this._hasRendered){
             this.currentTab = currentTab;
-            //console.log('this.currentTab',this.currentTab);
             if(this.currentTab.fileId != this.currentFile?.id){
                 this.currentFile = SELECTORS.queryFiles.selectById({queryFiles},lowerCaseKey(this.currentTab.fileId));
             }
         }
-        /*if(ui.useToolingApi != this.useToolingApi){
-            this._useToolingApi = ui.useToolingApi;
-        }*/
 
+        const queryState = SELECTORS.queries.selectById({query},lowerCaseKey(currentTab?.id));
+        if(queryState?.error){
+            this.handleError(queryState.error);
+        }
+        
         if(this.soql != soql){
             this.soql = soql;
+        }
+    }
+
+    handleError = (e) => {
+        const error = extractErrorDetails(e.message);
+        console.log('error',error);
+        if(error && isNotUndefinedOrNull(error.row) && isNotUndefinedOrNull(error.column) && this.refs.editor && isUndefinedOrNull(this._error)){
+            this._error = error;
+            this.refs.editor.resetMarkers();
+            this.refs.editor.addMarkers(
+                [{
+                    startLineNumber: error.row,
+                    endLineNumber: error.row,
+                    startColumn: error.column,
+                    endColumn: error.column,
+                    message: error.message,
+                    severity: this.refs.editor.currentMonaco.MarkerSeverity.Error
+                }]
+            );
+        }
+    }
+
+    resetError = () => {
+        if(this.refs.editor){
+            console.log('clear Error');
+            this.refs.editor.resetMarkers();
+            this._error = null;
         }
     }
 
@@ -124,6 +151,10 @@ export default class QueryEditorPanel extends ToolkitElement {
                     soql:value,
                     isDraft:_newDraft
                 }));
+                // Reset Error
+                if(isNotUndefinedOrNull(this._error)){
+                    this.resetError();
+                }
             }
         },{timeout:20});
 

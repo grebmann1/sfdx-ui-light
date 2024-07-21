@@ -28,6 +28,7 @@ export default {
     OUTPUT_TABLE_FAILED_FETCH_NEXT: 'Failed to fetch next records',
     EDITOR_PANEL_SAVE:'Save',
     EDITOR_PANEL_RUN: 'Run',
+    EDITOR_PANEL_EXECUTE: 'Execute',
     EDITOR_PANEL_RUN_ALL: 'Query All',
     EDITOR_PANEL_RUN_ALL_TITLE:
         'Query All will return records that have been deleted',
