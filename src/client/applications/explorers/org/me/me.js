@@ -1,6 +1,6 @@
 
 import { LightningElement,api,track,wire } from "lwc";
-import ToolkitElement from 'core/ToolkitElement';
+import ToolkitElement from 'core/toolkitElement';
 import Toast from 'lightning/toast';
 import { isEmpty,isElectronApp,runSilent,isNotUndefinedOrNull,isUndefinedOrNull,refreshCurrentTab } from 'shared/utils';
 import { connectStore,store,store_application } from 'shared/store';
