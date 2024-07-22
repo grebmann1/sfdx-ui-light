@@ -57,7 +57,6 @@ export default class App extends LightningElement {
 
     @wire(connectStore, { store:legacyStore })
     applicationChange({application}) {
-        console.log('application',application)
         
         // Open Application
         if(application.isOpen){
@@ -279,7 +278,6 @@ export default class App extends LightningElement {
 
     /** Extension & Electron Org Window  **/
     load_limitedMode = async () => {
-        //console.log('load_limitedMode');
         try{
             if(isElectronApp()){
                 await connect({alias:this.alias});
@@ -342,7 +340,6 @@ export default class App extends LightningElement {
             //await this.loadModule(DIRECT_LINK_MAPPING[hash]);
         }
         */
-
         this.pageHasLoaded = true;
         if(this.targetPage){
             this.handleNavigation(this.targetPage);

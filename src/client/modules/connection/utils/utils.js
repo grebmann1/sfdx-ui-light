@@ -75,10 +75,8 @@ export async function connect({alias,settings,disableEvent = false, directStorag
         }
     }
     //console.log('params',params);
-    //console.log('util.connect.connection',params,settings);
     const connection = await new window.jsforce.Connection(params);
         connection.alias = alias || settings.alias;
-
     /** Assign Latest Version **/
     //await assignLatestVersion(connection);
    
@@ -103,7 +101,6 @@ export async function connect({alias,settings,disableEvent = false, directStorag
     if(!disableEvent){
         store.dispatch(APPLICATION.reduxSlice.actions.login({connector}));
     }
-    
     
     return connector;
 }
@@ -250,7 +247,6 @@ export async function oauth({alias,loginUrl},callback,callbackErrorHandler){
 }
 
 async function generateConfiguration({alias,connection,redirectUrl}){
-    //console.log('generateConfiguration');
     
     const {name,company} = extractName(alias);
     let configuration = {
@@ -260,7 +256,6 @@ async function generateConfiguration({alias,connection,redirectUrl}){
         name,
         redirectUrl
     };
-
     if(connection){
         const {
             accessToken,instanceUrl,loginUrl,refreshToken,version,username,orgId,userInfo,
@@ -279,7 +274,7 @@ async function generateConfiguration({alias,connection,redirectUrl}){
             _isInjected,
             sfdxAuthUrl:`force://${window.jsforceSettings.clientId}::${refreshToken}@${(new URL(instanceUrl)).host}`
         });
-
+        
         /** Get Username **/
         try{
             let identity = await connection.identity();
@@ -291,6 +286,7 @@ async function generateConfiguration({alias,connection,redirectUrl}){
                 });
             }
         }catch(e){
+            console.error(e);
             Object.assign(configuration,{
                 _hasError :true,
                 _errorMessage:  e.message
@@ -318,9 +314,8 @@ async function oauth_extend({alias,connection},callback){
 }
 
 export async function directConnect(sessionId,serverUrl){
-    //console.log('directConnect');
     let params = {
-        //oauth2      : {...window.jsforceSettings},
+        //oauth2      : {...window.jsforceSettings},    
         sessionId   : sessionId,
         serverUrl   : serverUrl,
         proxyUrl    : window.jsforceSettings?.proxyUrl || 'https://sf-toolkit.com/proxy/', // variable initialization might be too slow 
@@ -333,7 +328,7 @@ export async function directConnect(sessionId,serverUrl){
     const connector = new Connector({},connection);
 
     /** Get Username **/
-    enrichConnector(connector);
+    await enrichConnector(connector);
 
     // Dispatch Login Event
     store.dispatch(APPLICATION.reduxSlice.actions.login({connector}));
