@@ -184,11 +184,11 @@ export default class OutputTable extends ToolkitElement {
             rowHeader:this.isChildTable || this._response.records.length == 0?null:rowSelector,
         });
         this.tableInstance.on("tableBuilding", () => {
-            console.log('tableBuilding')
+            //console.log('tableBuilding')
             this.isLoading = true;
         });
         this.tableInstance.on("tableBuilt", () => {
-            console.log('tableBuilt')
+            //console.log('tableBuilt')
             this.isLoading = false;
         });
         this.tableInstance.on("rowSelectionChanged", (data, rows, selected, deselected) => {

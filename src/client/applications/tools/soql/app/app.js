@@ -91,7 +91,7 @@ export default class App extends ToolkitElement {
         /** Responses */
 
         const queryState = SELECTORS.queries.selectById({query},lowerCaseKey(ui.currentTab?.id));
-        console.log('queryState',queryState);
+        //console.log('queryState',queryState);
         if(queryState){
             if(queryState.error){
                 this._abortingMap[ui.currentTab.id] = null; // Reset the abortingMap
