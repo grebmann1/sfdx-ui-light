@@ -13,45 +13,45 @@
                     <template lwc:if={isLoading}>
                         <lightning-spinner alternative-text="Loading"></lightning-spinner>
                     </template>
-                    <template lwc:else>
-                        <slds-split-view left-min-width="200" right-min-width="200" is-horizontal>
-                            <div class="slds-flex-column slds-full-height slds-full-width" slot="left">
-                                <editor-app lwc:ref="editor" class="slds-flex-column slds-fill-height slds-full-width"
-                                    onmonacoloaded={handleMonacoLoaded}
-                                    onaddtab={handleAddTab}
-                                    onchange={handleEditorChange}
-                                    is-action-hidden
-                                    is-tab-enabled
-                                    is-add-tab-enabled
-                                ></editor-app>
-                            </div>
-                            
-                            <div class={rightSlotClass} slot="right">
-                                <template lwc:if={isLogDisplayed}>
-                                    <div class="slds-flex-column slds-full-height slds-full-width">
-                                        <div class="slds-grid slds-justify-content-space-between slds-grid_vertical-align-center">
-                                            <div class="slds-p-around_small">
-                                                <lightning-input
-                                                    type="toggle" 
-                                                    label="Filter User Debug" 
-                                                    name="filterUserDebug"
-                                                    variant="label-stacked"
-                                                    message-toggle-active=""
-                                                    message-toggle-inactive=""
-                                                    onchange={handleFilterUserDebugChange}
-                                                    checked={isFilterUserDebugEnabled}
-                                                ></lightning-input>
-                                            </div>
+                    
+                    <slds-split-view left-min-width="200" right-min-width="200" is-horizontal>
+                        <div class="slds-flex-column slds-full-height slds-full-width" slot="left">
+                            <editor-app lwc:ref="editor" class="slds-flex-column slds-fill-height slds-full-width"
+                                onmonacoloaded={handleMonacoLoaded}
+                                onaddtab={handleAddTab}
+                                onchange={handleEditorChange}
+                                is-action-hidden
+                                is-tab-enabled
+                                is-add-tab-enabled
+                            ></editor-app>
+                        </div>
+                        
+                        <div class={rightSlotClass} slot="right">
+                            <template lwc:if={isLogDisplayed}>
+                                <div class="slds-flex-column slds-full-height slds-full-width">
+                                    <div class="slds-grid slds-justify-content-space-between slds-grid_vertical-align-center">
+                                        <div class="slds-p-around_small">
+                                            <lightning-input
+                                                type="toggle" 
+                                                label="Filter User Debug" 
+                                                name="filterUserDebug"
+                                                variant="label-stacked"
+                                                message-toggle-active=""
+                                                message-toggle-inactive=""
+                                                onchange={handleFilterUserDebugChange}
+                                                checked={isFilterUserDebugEnabled}
+                                            ></lightning-input>
                                         </div>
-                                        <slds-code-block class="slds-fill-height" code-block={formattedFilterLogs} language="log" title="Log"></slds-code-block>
                                     </div>
-                                </template>
-                                <template lwc:else>
-                                    <illustration-empty title="Click on Run to execute Apex" size="large"></illustration-empty>
-                                </template>
-                            </div>
-                        </slds-split-view>
-                    </template>
+                                    <slds-code-block class="slds-fill-height" code-block={formattedFilterLogs} language="log" title="Log"></slds-code-block>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <illustration-empty title="Click on Run to execute Apex" size="large"></illustration-empty>
+                            </template>
+                        </div>
+                    </slds-split-view>
+                    
                 </div>
             </article>
             <!-- Panel -->

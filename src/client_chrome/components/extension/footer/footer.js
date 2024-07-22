@@ -66,6 +66,6 @@ export default class Footer extends LightningElement {
     }
 
     get versionFormatted(){
-        return isUndefinedOrNull(this.connector.configuration.version)?'':`${this.connector.configuration.version.label} (${this.connector.configuration.version.version})`;
+        return isUndefinedOrNull(this.connector.configuration.versionDetails)?'':`${this.connector.configuration.versionDetails.label} (${this.connector.configuration.versionDetails.version})`;
     }
 }

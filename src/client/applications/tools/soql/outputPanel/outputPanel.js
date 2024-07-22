@@ -2,8 +2,8 @@ import { LightningElement, wire,api  } from 'lwc';
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
 import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,UI,QUERY } from 'core/store';
-
 import { isNotUndefinedOrNull,lowerCaseKey } from 'shared/utils';
+import moment from 'moment';
 
 export default class OutputPanel extends ToolkitElement {
 
@@ -12,34 +12,49 @@ export default class OutputPanel extends ToolkitElement {
     childResponse;
     childSobjectName;
     isLoading;
+    _loadingMessage;
+    _loadingInterval;
 
 
     error_title;
     error_message;
     currentTab;
     currentChildRecordId;
+    
+
     @wire(connectStore, { store })
     storeChange({ query, ui }) {
         const queryState = SELECTORS.queries.selectById({query},lowerCaseKey(ui.currentTab?.id));
         if(queryState){
             this.isLoading = queryState.isFetching;
-            if (queryState.data && this.response !== queryState.data) {
+            // loading Message
+            if(this.isLoading){
+                this.enableAutoDate(queryState.createdDate);
+            }else{
+                if(this._loadingInterval) clearInterval(this._loadingInterval);
+            }
+            // Response Processing
+            if (queryState.error) {
+                this.handleError(queryState.error);
+                this.response = null;
+            }else if (queryState.data && this.response !== queryState.data) {
                 this.resetError();
                 this.response = queryState.data;
                 this.sobjectName = queryState.sobjectName;
-            }else if(queryState.isFetching == true){
+            }else if(queryState.isFetching) {
+                this.response = null;
                 this.resetError();
             }
-            if (queryState.error) {
-                this.handleError(queryState.error);
-            }
+            
         }else {
-            this.response = undefined;
+            this.response = null;
+            this.isLoading = false;
+            if(this._loadingInterval) clearInterval(this._loadingInterval);
         }
         
         if(ui.currentTab && ui.currentTab.id != this.currentTab?.id){
             this.currentTab = ui.currentTab;
-            this.resetError();
+            //this.resetError();
         }
         
         this.childResponse = ui.childRelationship;
@@ -47,6 +62,19 @@ export default class OutputPanel extends ToolkitElement {
             this.childSobjectName = this.childResponse.column;
             this.selectMainTable(this.childResponse.recordId);
         }
+    }
+
+    formatDate = (createdDate) => {
+        //console.log('formatDate');
+        this._loadingMessage = `Running for ${moment().diff(moment(createdDate), 'seconds')} seconds`;
+    }
+
+    enableAutoDate = (createdDate) => {
+        if(this._loadingInterval) clearInterval(this._loadingInterval);
+        this.formatDate(createdDate);
+        this._loadingInterval = setInterval(() =>{
+            this.formatDate(createdDate);
+        },1000);
     }
 
     closeChildRelationship() {
@@ -84,9 +112,6 @@ export default class OutputPanel extends ToolkitElement {
             this.error_title = 'Error';
         }
         this.error_message = errors.join(':');
-        //console.error(e);
-        const { ui } = store.getState();
-        store.dispatch(QUERY.reduxSlice.actions.clearQueryError({tabId:ui.currentTab.id}));
     }
 
     resetError = () => {
@@ -104,6 +129,10 @@ export default class OutputPanel extends ToolkitElement {
     
     get isError(){
         return isNotUndefinedOrNull(this.error_message);
+    }
+
+    get isResponseTableDisplayed(){
+        return !this.isError && this.response;
     }
 
     get childRelationshipPanelClass(){

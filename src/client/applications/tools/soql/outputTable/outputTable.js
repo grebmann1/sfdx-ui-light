@@ -181,7 +181,7 @@ export default class OutputTable extends ToolkitElement {
             columnHeaderVertAlign: "middle",
             minHeight:100,
             //maxHeight:"100%",
-            rowHeader:this.isChildTable?null:rowSelector,
+            rowHeader:this.isChildTable || this._response.records.length == 0?null:rowSelector,
         });
         this.tableInstance.on("tableBuilding", () => {
             console.log('tableBuilding')

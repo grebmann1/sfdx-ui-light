@@ -9,19 +9,29 @@
         <table role="grid" class="slds-table slds-table_cell slds-table_fixed-layout slds-table_bordered slds-table_resizable-cols slds-no-row-hover slds-m-top_x-small">
             <thead>
                 <tr class="slds-line-height_reset head">
-                    <th class="">
+                    <th class="" style="width:100px">
                         <div class="slds-th__action slds-text-link_reset">
                             <span class="slds-truncate" title="cardinality">Cardinality</span>
                         </div>
                     </th>
-                    <th class="">
+                    <th class="" style="width:100px">
+                        <div class="slds-th__action slds-text-link_reset" >
+                            <span class="slds-truncate" title="relativeCost">Cost</span>
+                        </div>
+                    </th>
+                    <th class="" style="width:150px">
                         <div class="slds-th__action slds-text-link_reset">
                             <span class="slds-truncate" title="leadingOperationType">Operation Type</span>
                         </div>
                     </th>
-                    <th class="">
-                        <div class="slds-th__action slds-text-link_reset" style="width:80px;">
-                            <span class="slds-truncate" title="relativeCost">Cost</span>
+                    <th class="" style="width:120px">
+                        <div class="slds-th__action slds-text-link_reset">
+                            <span class="slds-truncate" title="sobjectCardinality">SObject Card.</span>
+                        </div>
+                    </th>
+                    <th class="" style="width:180px">
+                        <div class="slds-th__action slds-text-link_reset">
+                            <span class="slds-truncate" title="sobjectType">SObject</span>
                         </div>
                     </th>
                     <th class="">
@@ -29,27 +39,17 @@
                             <span class="slds-truncate" title="fields">Fields</span>
                         </div>
                     </th>
-                    <th class="">
-                        <div class="slds-th__action slds-text-link_reset">
-                            <span class="slds-truncate" title="sobjectType">SObject</span>
-                        </div>
-                    </th>
-                    <th class="">
-                        <div class="slds-th__action slds-text-link_reset">
-                            <span class="slds-truncate" title="sobjectCardinality">SObject Cardinality</span>
-                        </div>
-                    </th>
                 </tr> 
             </thead>
             <tbody class="slds-scrollable_y" >
                 <template for:each={formattedPlans} for:item="item">
                     <tr style="height: 0;" key={item._index}>
-                        <td class="cell-field slds-cell-wrap">{item.cardinality}</td>
+                        <td class="cell-field slds-cell-wrap">{item._cardinality}</td>
+                        <td class="cell-value slds-cell-wrap">{item._relativeCost}</td>
                         <td class="cell-value slds-cell-wrap">{item.leadingOperationType}</td>
-                        <td class="cell-value slds-cell-wrap">{item.relativeCost}</td>
-                        <td class="cell-value slds-cell-wrap">{item._fields}</td>
+                        <td class="cell-value slds-cell-wrap">{item._sobjectCardinality}</td>
                         <td class="cell-value slds-cell-wrap">{item.sobjectType}</td>
-                        <td class="cell-value slds-cell-wrap">{item.sobjectCardinality}</td>
+                        <td class="cell-value slds-cell-wrap">{item._fields}</td>
                     </tr>
                     <template for:each={item.notes} for:item="note">
                         <tr key={note._index} class="notes">

@@ -1,5 +1,6 @@
 require('dotenv').config()
 const express =  require("express");
+const timeout = require('connect-timeout'); 
 const handler = require('serve-handler');
 const serveJson = require('../../site/serve.json');
 const jsforce = require('jsforce');
@@ -37,6 +38,13 @@ getOAuth2Instance = (params) => {
 
 checkIfPresent = (a,b) => {
   return (a || '').toLowerCase().includes((b||'').toLowerCase());
+}
+
+app.use(timeout(120000));
+app.use(haltOnTimedout);
+
+function haltOnTimedout(req, res, next){
+  if (!req.timedout) next();
 }
 
 app.get('/oauth2/callback', function(req, res) {
@@ -126,7 +134,6 @@ app.all("/cometd/?*", jsforceAjaxProxy({ enableCORS: true }));
 app.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));
 
 app.get("/*", (req, res) => handler(req, res, {public: "site",...serveJson}));
-
 
 
 app.listen(PORT, () => {

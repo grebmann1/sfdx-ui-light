@@ -1,5 +1,5 @@
 
-import { formatQuery,parseQuery } from '@jetstreamapp/soql-parser-js';
+import { formatQuery } from '@jetstreamapp/soql-parser-js';
 export function configureSoqlLanguage(monaco) {
 	monaco.languages.register({
 		id: 'soql'
@@ -20,28 +20,6 @@ export function configureSoqlLanguage(monaco) {
 		},
 	});
 }
-
-export async function configureSoqlCompletions(monaco,searchField) {
-	const triggerChars = 'adefhijlmnsu';
-    monaco.languages.registerCompletionItemProvider('soql', {
-        triggerCharacters: ['.',',', ...triggerChars.split(''), ...triggerChars.toUpperCase().split('')],
-        provideCompletionItems: async (model, position, context) => {
-			const testBefore = model.getValueInRange({
-				startLineNumber: 1,
-				startColumn: 1,
-				endLineNumber: position.lineNumber,
-				endColumn: position.column
-			})
-			const testAfter = model.getValue().substring(testBefore.length);
-			console.log('testBefore',testBefore);
-			console.log('testAfter',testAfter);
-            return {
-                suggestions: []//await getSuggestions(monaco, model, position,searchField),
-            };
-        },
-    });
-}
-
 
 
 export const languageConfiguration = {

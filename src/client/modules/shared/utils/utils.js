@@ -368,3 +368,9 @@ export const extractErrorDetails = (errorMessage) => {
         message: message
     };
 }
+
+export const shortFormatter = new Intl.NumberFormat('en-US', {
+    notation: 'compact',
+    compactDisplay: 'short',
+    maximumFractionDigits: 1,
+});

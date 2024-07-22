@@ -26,7 +26,6 @@ Schemas.ExecuteAnonymousResult = {
 export default class App extends ToolkitElement {
 
     isLoading = false;
-    isMonacoLoaded = false;
     isFilterUserDebugEnabled = false;
 
     // Apex
@@ -57,7 +56,8 @@ export default class App extends ToolkitElement {
     }
 
     connectedCallback(){
-       this.loadFromCache();
+        this.isLoading = true;
+        this.loadFromCache();
     }
 
     disconnectedCallback() {
@@ -110,9 +110,8 @@ export default class App extends ToolkitElement {
     }
 
     handleMonacoLoaded = (e) => {
-        if(!this.isMonacoLoaded){
-            this.initEditor();
-        }
+        this.initEditor();
+        this.isLoading = false;
     }
 
     executeApex = async (e) => {
@@ -152,7 +151,7 @@ export default class App extends ToolkitElement {
     }
 
     initEditor = () => {
-        this.isMonacoLoaded = true;
+        //console.log('initEditor');
         // Load from cache 
         const initFiles = this._cacheFiles || [];
         if(initFiles.length == 0){

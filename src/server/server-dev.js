@@ -1,11 +1,10 @@
 require('dotenv').config()
 const { createServer } =  require("lwr");
+const timeout = require('connect-timeout'); 
 const jsforceAjaxProxy = require("jsforce-ajax-proxy");
 const jsforce = require('jsforce');
 const qs = require('qs');
 const fs = require('node:fs');
-const httpProxy = require('http-proxy');
-const proxy = httpProxy.createProxyServer({});
 
 
 
@@ -50,8 +49,14 @@ const lwrServer = createServer({
     serverMode: SERVER_MODE,
     port: PORT,
 });
-
 const app = lwrServer.getInternalServer("express");
+
+app.use(timeout(120000));
+app.use(haltOnTimedout);
+
+function haltOnTimedout(req, res, next){
+  if (!req.timedout) next();
+}
 
 /* CometD Proxy */
 app.all("/cometd/?*", jsforceAjaxProxy({ enableCORS: true }));

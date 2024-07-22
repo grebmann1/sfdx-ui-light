@@ -11,8 +11,13 @@
                         </lightning-button-menu>
                     -->
                     <!--<button class="slds-button slds-button_brand" onclick={runQueryAll} title={i18n.EDITOR_PANEL_RUN_ALL_TITLE}> {i18n.EDITOR_PANEL_RUN_ALL} </button>-->
-                    <lightning-button class="slds-p-left_xx-small" label={i18n.EDITOR_PANEL_SAVE} onclick={handleSaveClick} disabled={isLoading}></lightning-button>
-                    <lightning-button class="slds-p-left_xx-small" variant="brand" label={i18n.EDITOR_PANEL_RUN} icon-name="utility:right" onclick={handleRunClick} disabled={isLoading}></lightning-button>
+                    <lightning-button class="slds-p-left_xx-small" label={i18n.EDITOR_PANEL_SAVE} onclick={handleSaveClick} disabled={isSaveButtonDisabled}></lightning-button>
+                    <template lwc:if={isRunButtonDisplayed}>
+                        <lightning-button class="slds-p-left_xx-small" variant="brand" label={i18n.EDITOR_PANEL_RUN} icon-name="utility:right" onclick={handleRunClick} disabled={isRunButtonDisabled}></lightning-button>
+                    </template>
+                    <template lwc:else>
+                        <lightning-button class="slds-p-left_xx-small" variant="destructive" label={i18n.EDITOR_PANEL_ABORT} icon-name="utility:clear" onclick={handleAbortClick} disabled={isLoading}></lightning-button>
+                    </template>
                 </div>
 
                 <div slot="subactions" class="slds-builder-toolbar__actions">

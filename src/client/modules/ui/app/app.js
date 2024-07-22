@@ -278,6 +278,7 @@ export default class App extends LightningElement {
 
     /** Extension & Electron Org Window  **/
     load_limitedMode = async () => {
+        console.log('test',JSON.parse(sessionStorage.getItem("currentConnection")));
         try{
             if(isElectronApp()){
                 await connect({alias:this.alias});

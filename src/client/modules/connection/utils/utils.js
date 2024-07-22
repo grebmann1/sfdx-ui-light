@@ -1,5 +1,5 @@
 import { isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
-import { isElectronApp } from 'shared/utils';
+import { isElectronApp,isObject } from 'shared/utils';
 import constant from "core/constant";
 import { Connector } from './mapping';
 import * as webInterface from './web';
@@ -80,7 +80,7 @@ export async function connect({alias,settings,disableEvent = false, directStorag
     /** Assign Latest Version **/
     //await assignLatestVersion(connection);
    
-
+    console.log('{alias,connection}',{alias,connection});
     const configuration = await generateConfiguration({alias,connection});
     /** Handler Connection Error and save it */
     if(configuration._hasError){
@@ -171,6 +171,7 @@ export async function getExistingSession(){
             //console.log('sessionStorage.getItem("currentConnection")',JSON.parse(sessionStorage.getItem("currentConnection")));
             const settings = JSON.parse(sessionStorage.getItem("currentConnection"));
                 settings.logLevel = null;
+                console.log('settings',settings);
             // Using {alias,...settings} before, see if it's better now
             return isElectronApp()?await connect({alias:settings.alias}):await connect({settings});
         }catch(e){
@@ -320,7 +321,7 @@ export async function directConnect(sessionId,serverUrl){
         serverUrl   : serverUrl,
         proxyUrl    : window.jsforceSettings?.proxyUrl || 'https://sf-toolkit.com/proxy/', // variable initialization might be too slow 
         version     : constant.apiVersion,
-        logLevel: null//'DEBUG',
+        logLevel    : null//'DEBUG',
     }
     
     let connection = await new window.jsforce.Connection(params);
@@ -351,7 +352,7 @@ async function enrichConnector(connector){
     }
     const _version = versions.sort((a, b) => b.version.localeCompare(a.version));
     connector.conn.version = _version[0].version;
-    connector.configuration.version = _version[0];
+    connector.configuration.versionDetails = _version[0];
 
     store.dispatch(APPLICATION.reduxSlice.actions.updateConnector(connector));
 }

@@ -5,7 +5,10 @@ import Toast from 'lightning/toast';
 import SaveModal from "builder/saveModal";
 import PerformanceModal from "soql/performanceModal";
 import { store,connectStore,SELECTORS,DESCRIBE,UI,QUERY,DOCUMENT,APPLICATION } from 'core/store';
-import { guid,isNotUndefinedOrNull,isUndefinedOrNull,fullApiName,compareString,lowerCaseKey,getFieldValue,isObject,arrayToMap,extractErrorDetails } from 'shared/utils';
+import { 
+    guid,isNotUndefinedOrNull,isUndefinedOrNull,fullApiName,compareString,lowerCaseKey,
+    getFieldValue,isObject,arrayToMap,extractErrorDetails,shortFormatter,isEmpty
+} from 'shared/utils';
 import { CATEGORY_STORAGE } from 'builder/storagePanel';
 import moment from 'moment';
 
@@ -34,6 +37,10 @@ export default class App extends ToolkitElement {
     _responseRows;
     _sobject;
     _interval;
+
+    // Aborting
+    _abortingMap = {};
+    _displayStopButton = false;
     
 
     connectedCallback() {
@@ -76,7 +83,7 @@ export default class App extends ToolkitElement {
         const fullSObjectName = ui.selectedSObject ? lowerCaseKey(fullApiName(ui.selectedSObject,this.namespace)):null;
         if(fullSObjectName && describe.nameMap && describe.nameMap[fullSObjectName]){
             this.selectedSObject = fullSObjectName;
-            this._sobject = describe.nameMap[fullSObjectName];
+            
         }else{
             this.selectedSObject = null;
         }
@@ -84,15 +91,27 @@ export default class App extends ToolkitElement {
         /** Responses */
 
         const queryState = SELECTORS.queries.selectById({query},lowerCaseKey(ui.currentTab?.id));
-        if(queryState && queryState.data){
-            this._response = queryState.data;
-            this._responseCreatedDate = queryState.createdDate;
-            this._responseNextRecordsUrl = queryState.data.nextRecordsUrl;
-            this._responseRows = queryState.data.records;
-            this.formatDate();
-        }else {
-            this._response = undefined;
+        console.log('queryState',queryState);
+        if(queryState){
+            if(queryState.error){
+                this._abortingMap[ui.currentTab.id] = null; // Reset the abortingMap
+                this._displayStopButton = false;
+                this.resetResponse();
+            }else if(queryState.data){
+                this._response = queryState.data;
+                this._responseCreatedDate = queryState.createdDate;
+                this._responseNextRecordsUrl = queryState.data.nextRecordsUrl;
+                this._responseRows = queryState.data.records;
+                this._abortingMap[ui.currentTab.id] = null; // Reset the abortingMap
+                this._displayStopButton = false;
+                this._sobject = describe.nameMap[queryState.sobjectName];
+                this.formatDate();
+            }else if(queryState.isFetching){
+                this._displayStopButton = true;
+                this.resetResponse();
+            }
         }
+        
 
         /** Recent Queries */
         if (recents && recents.queries) {
@@ -104,12 +123,18 @@ export default class App extends ToolkitElement {
         /** Saved Queries */
         if (queryFiles) {
             const entities = SELECTORS.queryFiles.selectAll({queryFiles});
-            this.savedQueries = entities.map((item, index) => {
+            this.savedQueries = entities.filter(item => item.isGlobal || item.alias == this.alias).map((item, index) => {
                 return item; // no mutation for now
             });
         }
+    }
 
-        
+    resetResponse = () => {
+        this._response = null;
+        this._responseCreatedDate = null;
+        this._responseNextRecordsUrl = null;
+        this._responseRows = null;
+        this._sobject = null;
     }
 
     formatDate = () => {
@@ -135,9 +160,6 @@ export default class App extends ToolkitElement {
     /** Events **/
     
     handlePerformanceCheckClick = async (e) => {
-        console.log('handlePerformanceCheckClick');
-
-        console.log('fetchQueryPerformances');
         try{
             const { ui } = store.getState();
             //this.isLoading = true;
@@ -147,7 +169,6 @@ export default class App extends ToolkitElement {
                 tabId:ui.currentTab.id
             })).unwrap();
             //this.isLoading = false;
-            console.log('result',result);
             const plans = result.data.plans;
             PerformanceModal.open({plans});
             
@@ -185,13 +206,23 @@ export default class App extends ToolkitElement {
         if (!query) return;
 
         const { ui } = store.getState();
-        store.dispatch(QUERY.executeQuery({
+        const queryPromise = store.dispatch(QUERY.executeQuery({
             connector:this.queryConnector,
             soql:query, 
             tabId:ui.currentTab.id,
             sobjectName:this.selectedSObject,
-            isAllRows
+            isAllRows,
+            createdDate:Date.now()
         }));
+        this._abortingMap[ui.currentTab.id] = queryPromise;
+    }
+
+    handleAbortClick = e => {
+        const { ui } = store.getState();
+        const queryPromise = this._abortingMap[ui.currentTab.id];
+        if(queryPromise){
+            queryPromise.abort();
+        }
     }
 
     handleSaveClick = () => {
@@ -248,8 +279,6 @@ export default class App extends ToolkitElement {
     }
 
     handleRowSelection = (e) => {
-        const { describe } = store.getState();
-        console.log('describe',describe);
         const {rows,isChildTable} = e.detail;
         if(isChildTable){
             this.selectedChildRecords = rows;
@@ -468,6 +497,18 @@ export default class App extends ToolkitElement {
         return this.selectedSObject ? 'slds-hide' : '';
     }
 
+    get isRunButtonDisplayed(){
+        return !this._displayStopButton;
+    }
+
+    get isRunButtonDisabled(){
+        return this.isLoading || isEmpty(this.soql);
+    }
+
+    get isSaveButtonDisabled(){
+        return this.isLoading || isEmpty(this.soql);
+    }
+
     get isFieldsPanelDisplayed(){
         return isNotUndefinedOrNull(this.selectedSObject);
     }
@@ -489,7 +530,7 @@ export default class App extends ToolkitElement {
     }
 
     get totalRecords(){
-        return this._response?.totalSize;
+        return shortFormatter.format(this._response?.totalSize);
     }
     
     get sobjectPlurialLabel(){

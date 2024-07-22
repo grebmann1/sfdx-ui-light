@@ -5,8 +5,7 @@ import Toast from 'lightning/toast';
 
 import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeOut,guid } from 'shared/utils';
 import loader from '@monaco-editor/loader';
-import {setAllLanguages} from './languages';
-import { SOQL } from 'editor/languages';
+import { SOQL,APEX,VF } from 'editor/languages';
 
 /** REQUIRED FIELDS : _source & _bodyField */
 
@@ -157,7 +156,7 @@ export default class App extends ToolkitElement {
         this.refs.editor.appendChild(innerContainer2);
 
         this.currentFile = this.models[0].path;
-        console.log('this.models[0].model',this.models[0].model);
+        //console.log('this.models[0].model',this.models[0].model);
         this.editor = this.monaco.editor.create(innerContainer2, {
             model: this.models[0].model,
             minimap: {
@@ -182,12 +181,12 @@ export default class App extends ToolkitElement {
 
     loadMonacoEditor = async () => {
         this.monaco = await loader.init();
-        this.monaco.languages.register({ id: 'apex' });
-        this.monaco.languages.register({ id: 'visualforce' });
-        this.monaco.languages.register({ id: 'handlebars' });
-        this.monaco.languages.register({ id: 'razor' });
+        // Configure Language
+        APEX.configureApexLanguage(this.monaco);
         SOQL.configureSoqlLanguage(this.monaco);
-        setAllLanguages(this.monaco.languages);
+        VF.configureVisualforceLanguage(this.monaco);
+        // Completion
+        APEX.configureApexCompletions(this.monaco);
 
         this.dispatchEvent(new CustomEvent("monacoloaded", {bubbles: true }));
         this.hasLoaded = true;
@@ -268,32 +267,20 @@ export default class App extends ToolkitElement {
         if(this.counter >= 10) return;
         this.files = files;
 
-        if(this.hasLoaded){
-            this.metadataType = metadataType;
-            this.isEditMode = false;
-    
-            this.createModels(files);
-            const firstModel = this.models[0];
-            if(this.editor){
-                this.editor.setModel(firstModel.model); // set last model
-            }else{
-                this.createEditor();
-            }
-            window.setTimeout(()=>{
-                if(!this.template.querySelector('slds-tabset')) return;
-                this.template.querySelector('slds-tabset').activeTabValue = firstModel.path;
-            },1)
-        }else{
-            window.setTimeout(() => {
-                this.displayFiles(metadataType,files);
-                this.counter = 1;
-            },1000)
-        }
-    }
+        this.metadataType = metadataType;
+        this.isEditMode = false;
 
-    @api 
-    linkAutoComplete = (method) => {
-        SOQL.configureSoqlCompletions(this.monaco,method);
+        this.createModels(files);
+        const firstModel = this.models[0];
+        if(this.editor){
+            this.editor.setModel(firstModel.model); // set last model
+        }else{
+            this.createEditor();
+        }
+        window.setTimeout(()=>{
+            if(!this.template.querySelector('slds-tabset')) return;
+            this.template.querySelector('slds-tabset').activeTabValue = firstModel.path;
+        },1)
     }
 
 

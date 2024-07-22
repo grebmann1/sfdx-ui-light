@@ -1,6 +1,6 @@
 <template>
     <template lwc:if={isLoading}>
-        <lightning-spinner alternative-text="Loading"></lightning-spinner>
+        <slds-spinner message={_loadingMessage}></slds-spinner>
     </template>
     <template lwc:if={isError}>
         <slds-information-block title={error_title} variant="error">
@@ -8,7 +8,7 @@
         </slds-information-block>
     </template>
     
-    <template lwc:if={response}>
+    <template lwc:if={isResponseTableDisplayed}>
         <!--
         <div class="slds-p-around_xx-small slds-grid">
             <div class="slds-p-around_x-small">{i18n.OUTPUT_PANEL_TOTAL}: {response.totalSize}</div>

@@ -306,11 +306,6 @@ export default class Soql extends ToolkitElement {
         return this.monaco.editor.createModel(body,language);
     }
 
-    @api 
-    linkAutoComplete = (method) => {
-        SOQL.configureSoqlCompletions(this.monaco,method);
-    }
-
 
     /** Deployment Methods */
 
