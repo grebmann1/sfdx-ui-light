@@ -27,15 +27,6 @@ export default class root extends LightningElement {
     panel = PANELS.SALESFORCE;
     connector;
 
-    @api 
-    get connector(){
-        return window.connector;
-    }
-    set connector(value){
-        window.connector = value;
-    }
-
-
     set currentUrl(value){
         this._currentUrl = value;
         this.recordId = getRecordId(this._currentUrl);

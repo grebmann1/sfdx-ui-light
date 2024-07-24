@@ -1,5 +1,7 @@
 import { LightningElement,api,wire} from "lwc";
-import { connectStore,store } from 'shared/store';
+import { store } from 'shared/store';
+import { connectStore } from 'core/store';
+
 import { isUndefinedOrNull,isNotUndefinedOrNull,normalizeString as normalize} from "shared/utils";
 import { PANELS } from 'extension/utils';
 

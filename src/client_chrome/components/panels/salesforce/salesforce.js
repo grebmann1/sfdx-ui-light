@@ -1,6 +1,6 @@
 import { LightningElement,api,wire} from "lwc";
 import { connectStore,store } from 'core/store';
-import { store_application } from 'shared/store';
+import { store_application,store as legacyStore } from 'shared/store';
 import { isUndefinedOrNull,isNotUndefinedOrNull,isEmpty,isSalesforceId} from "shared/utils";
 import { PANELS } from 'extension/utils';
 import { getCurrentTab } from 'connection/utils';
@@ -100,7 +100,7 @@ export default class Salesforce extends LightningElement {
             },state:{}
         };
 
-        store.dispatch(store_application.fakeNavigate(params));
+        legacyStore.dispatch(store_application.fakeNavigate(params));
     }
 
     openDefaultPanel = () => {
@@ -111,7 +111,7 @@ export default class Salesforce extends LightningElement {
             },state:{}
         };
 
-        store.dispatch(store_application.fakeNavigate(params));
+        legacyStore.dispatch(store_application.fakeNavigate(params));
     }
 
     /** Methods **/

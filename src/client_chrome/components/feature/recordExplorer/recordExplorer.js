@@ -1,7 +1,7 @@
 import { api,track} from "lwc";
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
-import { connectStore,store,store_application } from 'shared/store';
+import { store,store_application } from 'shared/store';
 import { DependencyManager } from 'slds/fieldDependencyManager';
 import { 
     runActionAfterTimeOut,isEmpty,isNotUndefinedOrNull,isUndefinedOrNull,runSilent,refreshCurrentTab

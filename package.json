@@ -7,7 +7,7 @@
         "start:prod:build": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --minify --clean;",
         "start:prod:run": "NODE_ENV=production node -r dotenv/config src/server/server-prod.js",
         "start:prod:client": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --minify --clean; NODE_ENV=production node -r dotenv/config src/server/server-prod.js",
-        "start:prod:extension": "rm -r chrome_ext; rollup -c rollup.config.js --bundleConfigAsCjs --environment NODE_ENV:production; rollup -c worker.rollup.config.js --bundleConfigAsCjs --environment NODE_ENV:production",
+        "start:prod:extension": "rm -r chrome_ext; rollup -c rollup.config.mjs --bundleConfigAsCjs --environment NODE_ENV:production; rollup -c worker.rollup.config.mjs --bundleConfigAsCjs --environment NODE_ENV:production",
         "clean": "rm -r __lwr_cache__ site __skip_directory_creation__",
         "fix:lightning": "node scripts/fix_lightning.js",
         "script:documentation": "node scripts/load_documentation.js",

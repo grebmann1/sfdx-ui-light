@@ -33,7 +33,6 @@ export default class Tools extends ToolkitElement {
     /** Events **/
     
     highlightLWC_change = (e) => {
-        console.log('highlightLWC_change');
         this.isLWCHighlighted = e.detail.checked;
         this.forwardMessageToContent({
             action:'lwc_highlight',
