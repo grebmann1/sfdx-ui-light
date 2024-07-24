@@ -4,6 +4,10 @@
     src: url('/styles/seti.hash.woff') format('woff');
 }
 
+.fix-slds-button_icon-border-filled {
+    height: 1.5rem;
+}
+
 /*slds-spinner.slds-spinner_container{
     z-index: 1 !important;
 }*/

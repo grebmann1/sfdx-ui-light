@@ -7,7 +7,7 @@ export default {
   output: {
     file: 'chrome_ext/workers/openaiWorker/worker.js',
     format: 'iife', // immediately-invoked function expression — suitable for <script> tags
-    sourcemap: false // optional but helpful for debugging
+    sourcemap: true // optional but helpful for debugging
   },
   plugins: [
     resolve(), // tells Rollup how to find node modules in node_modules

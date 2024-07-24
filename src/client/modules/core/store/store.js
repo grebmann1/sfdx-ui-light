@@ -15,7 +15,16 @@ const store = configureStore({
         queryFiles : DOCUMENT.reduxSlices.QUERYFILE.reducer,
         recents : DOCUMENT.reduxSlices.RECENT.reducer
     },
-    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware({
+        serializableCheck: {
+            // Ignore these action types
+            ignoredActions: ['application/updateConnector','application/login'],
+            // Ignore these field paths in all actions
+            ignoredActionPaths: ['payload.Connector'],
+            // Ignore these paths in the state
+            ignoredPaths: ['application.connector'],
+          },
+    }).concat(logger),
     devTools: process.env.NODE_ENV !== 'production',
 });
 

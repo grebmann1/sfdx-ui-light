@@ -25,6 +25,7 @@ export default class root extends LightningElement {
     recordId;
     hasLoaded = false;
     panel = PANELS.SALESFORCE;
+    connector;
 
     @api 
     get connector(){
@@ -85,7 +86,6 @@ export default class root extends LightningElement {
     }*/
 
     loadComponent = async (withMonitorChange) => {
-       
         let cookie = await getHostAndSession();
         //console.log('cookie',cookie);
         if(cookie){

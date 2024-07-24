@@ -23,6 +23,7 @@ export default class Tools extends ToolkitElement {
 
     forwardMessageToContent = async message => {
         const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
+        console.log('tab',tab);
         const response = await chrome.tabs.sendMessage(tab.id,message);
         // do something with response here, not outside the function
         console.log(response);
@@ -32,6 +33,7 @@ export default class Tools extends ToolkitElement {
     /** Events **/
     
     highlightLWC_change = (e) => {
+        console.log('highlightLWC_change');
         this.isLWCHighlighted = e.detail.checked;
         this.forwardMessageToContent({
             action:'lwc_highlight',

@@ -78,8 +78,7 @@ const injectShortCuts = async () => {
     const hotkeys = await import(chrome.runtime.getURL("scripts/hotkeys.esm.js"));
     const utils = await import(chrome.runtime.getURL("scripts/utils.js"));
 
-
-    console.log('### SF Toolkit - Shortcut Injection ###');
+    console.log('### SF Toolkit - Shortcut Injection ###',);
 
     /** Record Id Shortcut - Alpha - To modify to a generic version */
     if(configuration.hasOwnProperty('shortcut_recordid')){

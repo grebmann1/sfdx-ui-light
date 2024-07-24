@@ -1,9 +1,5 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice,createAsyncThunk } from '@reduxjs/toolkit';
 import { lowerCaseKey,guid,isUndefinedOrNull } from 'shared/utils';
-
-
-// Adapters
-
 
 
 // QUERIES

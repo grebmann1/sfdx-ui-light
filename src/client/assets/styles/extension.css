@@ -27,6 +27,17 @@ div:not(slds-information-block) > .slds-text-heading_medium{
     padding-top: 0.3rem;
 }
 
+.fix-slds-button_icon-border-filled {
+    height: 1.5rem !important;
+}
+
+.footer-utility-truncate button {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 doc-app .full-page.slds-p-around_small{
     padding: 0 !important;
 }

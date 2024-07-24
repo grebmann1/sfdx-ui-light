@@ -1,5 +1,6 @@
 import { LightningElement,api,wire} from "lwc";
-import { connectStore,store,store_application } from 'shared/store';
+import { connectStore,store } from 'core/store';
+import { store_application } from 'shared/store';
 import { isUndefinedOrNull,isNotUndefinedOrNull,isEmpty,isSalesforceId} from "shared/utils";
 import { PANELS } from 'extension/utils';
 import { getCurrentTab } from 'connection/utils';

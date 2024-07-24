@@ -1,5 +1,5 @@
 <template>
-    <div class="slds-flex-column slds-full-height slds-light-bg slds-p-around_small">
+    <div class="slds-flex-column slds-full-height slds-light-bg">
         <slds-tabset variant="scoped" class="slds-without-tab slds-full-height" onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled>
             <template for:each={formattedTabs} for:item="item">
                 <slds-tab class="full-page-body" key={item.id} label={item.name} value={item.id} onactive={handleSelectTab} is-closeable={item.isCloseable}>

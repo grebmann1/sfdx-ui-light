@@ -15,9 +15,9 @@
         "exclude": [
             "lwr/navigation",
             "shared/store",
-            "@lwc/synthetic-shadow",
             "lwc",
-            "lightning/modal"
+            "lightning/modal",
+            "@lwc/synthetic-shadow"
         ] 
     },
     "assets": [

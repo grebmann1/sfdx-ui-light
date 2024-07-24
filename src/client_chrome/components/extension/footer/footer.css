@@ -1,3 +1,6 @@
+:host{
+    font-size: smaller;
+}
 
 .custom-utility-bar{
     background-color: #032d60;
@@ -16,6 +19,17 @@
     margin-left: 8px;
     font-weight: 400;
     align-items: center;
+}
+
+.custom-utility-bar .custom-utility-right {
+    width: 30%;
+    float: right;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.custom-utility-bar .custom-utility-left {
+    width: 70%;
 }
 
 .custom-utility-text-copy{
