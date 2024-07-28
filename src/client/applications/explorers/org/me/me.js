@@ -3,7 +3,8 @@ import { LightningElement,api,track,wire } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
 import Toast from 'lightning/toast';
 import { isEmpty,isElectronApp,runSilent,isNotUndefinedOrNull,isUndefinedOrNull,refreshCurrentTab } from 'shared/utils';
-import { connectStore,store,store_application } from 'shared/store';
+import { store_application } from 'shared/store';
+import { connectStore,store } from 'core/store';
 
 
 export default class Me extends ToolkitElement {
@@ -21,6 +22,7 @@ export default class Me extends ToolkitElement {
     _connector; 
     set connector(value){
         this._connector = value;
+        console.log('this._connector',this._connector);
         if(this._connector?.conn){
             this.load_metadata();
         }
