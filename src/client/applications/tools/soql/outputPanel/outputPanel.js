@@ -23,8 +23,18 @@ export default class OutputPanel extends ToolkitElement {
     
 
     @wire(connectStore, { store })
-    storeChange({ query, ui }) {
+    storeChange({ query, ui, application }) {
+        const isCurrentApp = this.verifyIsActive(application.currentApplication);
+        if(!isCurrentApp) return;
+
         const queryState = SELECTORS.queries.selectById({query},lowerCaseKey(ui.currentTab?.id));
+
+        // Tab Processing
+        if(ui.currentTab && ui.currentTab.id != this.currentTab?.id){
+            this.currentTab = ui.currentTab;
+            this.resetError();
+        }
+        
         if(queryState){
             this.isLoading = queryState.isFetching;
             // loading Message
@@ -33,6 +43,7 @@ export default class OutputPanel extends ToolkitElement {
             }else{
                 if(this._loadingInterval) clearInterval(this._loadingInterval);
             }
+
             // Response Processing
             if (queryState.error) {
                 this.handleError(queryState.error);
@@ -45,18 +56,11 @@ export default class OutputPanel extends ToolkitElement {
                 this.response = null;
                 this.resetError();
             }
-            
         }else {
             this.response = null;
             this.isLoading = false;
             if(this._loadingInterval) clearInterval(this._loadingInterval);
         }
-        
-        if(ui.currentTab && ui.currentTab.id != this.currentTab?.id){
-            this.currentTab = ui.currentTab;
-            //this.resetError();
-        }
-        
         this.childResponse = ui.childRelationship;
         if(this.childResponse){
             this.childSobjectName = this.childResponse.column;
@@ -127,12 +131,12 @@ export default class OutputPanel extends ToolkitElement {
         return this.refs.maintable?.columns;
     }
     
-    get isError(){
+    get hasError(){
         return isNotUndefinedOrNull(this.error_message);
     }
 
     get isResponseTableDisplayed(){
-        return !this.isError && this.response;
+        return !this.hasError && this.response;
     }
 
     get childRelationshipPanelClass(){

@@ -19,7 +19,7 @@
 }
 
 .code-block-content {
-    border-radius: 0px 0px 0.3em 0.3em;
+    /*border-radius: 0px 0px 0.3em 0.3em;*/
     overflow-y: auto;
     overflow-x: auto;
 }   
@@ -38,7 +38,7 @@
 }
 
 .toolbar {
-    border-radius: 0.3em 0.3em 0px 0px;
+    /*border-radius: 0.3em 0.3em 0px 0px;*/
     opacity: 1;
     display: flex;
     align-items: center;

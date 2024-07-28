@@ -5,15 +5,15 @@
                 <div class="slds-scrollable slds-p-top_small">
                     <template lwc:if={hasRecentItems}>
                         <template for:each={recentItems} for:item="item">
-                            <div key={item.id} class="slds-p-around_x-small slds-border_bottom recent-item" data-id={item.id} data-category="recent"
-                                title={item.name} onclick={selectItem}
+                            <div key={item.id} class="slds-p-around_x-small slds-border_bottom recent-item truncate-item" data-id={item.id} data-category="recent"
+                                title={item.content} onclick={selectItem}
                             > 
                                 {item.content} 
                             </div>
                         </template>
                     </template>
                     <template lwc:else>
-                        <illustration-empty sub-title="No Recent Item"></illustration-empty>
+                        <illustration-research sub-title="No Recent Item"></illustration-research>
                     </template>
                 </div>        
             </lightning-tab>
@@ -43,7 +43,7 @@
                         </ol>
                     </template>
                     <template lwc:else>
-                        <illustration-empty title="" sub-title="No Saved Item"></illustration-empty>
+                        <illustration-research title="" sub-title="No Saved Item"></illustration-research>
                     </template>
                     
                 </div>        

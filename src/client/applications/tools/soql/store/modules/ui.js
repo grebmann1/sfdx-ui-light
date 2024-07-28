@@ -140,7 +140,7 @@ function saveCacheSettings(alias,state) {
             tabs
         }));
     } catch (e) {
-        console.warn('Failed to save CONFIG to localstorage', e);
+        console.error('Failed to save CONFIG to localstorage', e);
     }
 }
 
@@ -149,7 +149,7 @@ function loadCacheSettings(alias) {
         const configText = localStorage.getItem(`${alias}-${SETTINGS_KEY}`);
         if (configText) return JSON.parse(configText);
     } catch (e) {
-        console.warn('Failed to load CONFIG from localStorage', e);
+        console.error('Failed to load CONFIG from localStorage', e);
     }
     return null;
 }

@@ -31,7 +31,10 @@ export default class FieldsPanel extends ToolkitElement {
     
 
     @wire(connectStore, { store })
-    storeChange({ describe, sobject, ui }) {
+    storeChange({ describe, sobject, ui,application }) {
+        const isCurrentApp = this.verifyIsActive(application.currentApplication);
+        if(!isCurrentApp) return;
+
         if(!ui.leftPanelToggled) return;
         const { selectedSObject } = ui;
         if (!selectedSObject) return;

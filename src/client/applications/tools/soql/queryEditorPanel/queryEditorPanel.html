@@ -1,7 +1,7 @@
 <template>
      
     <!-- Tabs -->
-    <slds-tabset variant="scoped" class="slds-without-tab" active-tab-value={currentTab} onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled>
+    <slds-tabset variant="scoped" class="slds-without-tab" active-tab-value={currentTab} onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled is-remove-tab-event-disabled>
         <template for:each={formattedTabs} for:item="item">
             <slds-tab key={item.id} label={item.name} value={item.id} onactive={handleSelectTab} is-closeable={item.isCloseable} is-draft={item.isDraft}></slds-tab>
         </template>

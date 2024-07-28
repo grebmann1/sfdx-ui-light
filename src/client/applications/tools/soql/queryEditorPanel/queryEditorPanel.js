@@ -1,7 +1,7 @@
 import { wire, api,track } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import { store,connectStore,SELECTORS,SOBJECT,DESCRIBE,QUERY,UI } from 'core/store';
-import { fullApiName,isUndefinedOrNull,isNotUndefinedOrNull,lowerCaseKey,guid,classSet,runActionAfterTimeOut,extractErrorDetails } from 'shared/utils';
+import { fullApiName,isUndefinedOrNull,isNotUndefinedOrNull,lowerCaseKey,guid,classSet,runActionAfterTimeOut,extractErrorDetailsFromQuery } from 'shared/utils';
 import LightningConfirm from 'lightning/confirm';
 
 
@@ -52,7 +52,10 @@ export default class QueryEditorPanel extends ToolkitElement {
     _sobjectSize = 0;
 
     @wire(connectStore, { store })
-    storeChange({ ui,sobject,query,queryFiles }) {
+    storeChange({ ui,sobject,query,queryFiles,application }) {
+        const isCurrentApp = this.verifyIsActive(application.currentApplication);
+        if(!isCurrentApp) return;
+
         const { soql,tabs,currentTab } = ui;
         if (ui.query) {
             const sobjectState = SELECTORS.sobject.selectById({sobject},lowerCaseKey(fullApiName(ui.query.sObject,this.namespace)));
@@ -83,7 +86,7 @@ export default class QueryEditorPanel extends ToolkitElement {
     }
 
     handleError = (e) => {
-        const error = extractErrorDetails(e.message);
+        const error = extractErrorDetailsFromQuery(e.message);
         console.log('error',error);
         if(error && isNotUndefinedOrNull(error.row) && isNotUndefinedOrNull(error.column) && this.refs.editor && isUndefinedOrNull(this._error)){
             this._error = error;

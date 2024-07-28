@@ -269,6 +269,10 @@ export default class App extends LightningElement {
                     x.class = "slds-context-bar__item slds-is-active";
                     x.classVisibility = "slds-show slds-full-height";
                     x.attributes.isActive = true;
+                    // Update the store
+                    store.dispatch(APPLICATION.reduxSlice.actions.updateCurrentApplication({
+                        application:x.name
+                    }));
                 }else{
                     x.attributes.isActive = false;
                 }
@@ -439,10 +443,15 @@ export default class App extends LightningElement {
                 requireConnection:!settings.isOfflineAvailable,
                 isTabVisible:settings.isTabVisible,
                 attributes:{
+                    applicationName:settings.name,
                     //connector:this.connector
                     isActive:true
                 }
             };
+            // Store current Application in the store
+            store.dispatch(APPLICATION.reduxSlice.actions.updateCurrentApplication({
+                application:settings.name
+            }));
             let _applications = this.applicationPreFormatted;
             if(isFirst){
                 _applications.unshift(application);

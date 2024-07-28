@@ -7,12 +7,14 @@ import PerformanceModal from "soql/performanceModal";
 import { store,connectStore,SELECTORS,DESCRIBE,UI,QUERY,DOCUMENT,APPLICATION } from 'core/store';
 import { 
     guid,isNotUndefinedOrNull,isUndefinedOrNull,fullApiName,compareString,lowerCaseKey,
-    getFieldValue,isObject,arrayToMap,extractErrorDetails,shortFormatter,isEmpty
+    getFieldValue,isObject,arrayToMap,extractErrorDetailsFromQuery,shortFormatter,isEmpty
 } from 'shared/utils';
 import { CATEGORY_STORAGE } from 'builder/storagePanel';
 import moment from 'moment';
 
 export default class App extends ToolkitElement {
+    // used to controle store of childs
+    isActive;
 
     @track selectedSObject;
     @track isLeftToggled = true;
@@ -72,7 +74,10 @@ export default class App extends ToolkitElement {
     }
 
     @wire(connectStore, { store })
-    storeChange({ query,ui,describe,queryFiles,recents }) {
+    storeChange({ query,ui,describe,queryFiles,recents,application }) {
+        const isCurrentApp = this.verifyIsActive(application.currentApplication);
+        if(!isCurrentApp) return;
+
         if(ui && this._useToolingApi != ui.useToolingApi){
             this._useToolingApi = ui.useToolingApi;
         }

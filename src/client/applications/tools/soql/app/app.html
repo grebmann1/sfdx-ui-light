@@ -48,10 +48,10 @@
             <!-- Left Panel -->
             <div slot="left" class="slds-full-height">
                 <!-- OBJECT PANEL -->
-                <soql-sobject-panel  class={sobjectsPanelClass}></soql-sobject-panel>
+                <soql-sobject-panel  class={sobjectsPanelClass} application-name={applicationName}></soql-sobject-panel>
                 <template lwc:if={isFieldsPanelDisplayed}>
                     <!-- FIELDS PANELS -->
-                    <soql-fields-panel ></soql-fields-panel>
+                    <soql-fields-panel application-name={applicationName}></soql-fields-panel>
                 </template>
             </div>
             
@@ -67,9 +67,9 @@
                             <div class="right-panel slds-full-height">
                                 <slds-split-view top-min-height="250" bottom-min-height="100" splitter-position="30">
                                     <!-- EDITOR -->
-                                    <soql-query-editor-panel lwc:ref="editor" slot="left" class="slds-full-height" onmonacosave={handleMonacoSave}></soql-query-editor-panel>
+                                    <soql-query-editor-panel lwc:ref="editor" slot="left" class="slds-full-height" application-name={applicationName} onmonacosave={handleMonacoSave}></soql-query-editor-panel>
                                     <!-- OUTPUT QUERIES -->
-                                    <soql-output-panel lwc:ref="output" slot="right" class="slds-full-height" onrowselection={handleRowSelection}></soql-output-panel>
+                                    <soql-output-panel lwc:ref="output" slot="right" class="slds-full-height" application-name={applicationName} onrowselection={handleRowSelection}></soql-output-panel>
                                 </slds-split-view>
                             </div>
                         </div>

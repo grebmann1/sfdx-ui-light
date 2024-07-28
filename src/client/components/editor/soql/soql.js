@@ -336,17 +336,5 @@ export default class Soql extends ToolkitElement {
             }
         })
     }
-    
-    get formattedModels(){
-        return this.models.map(x => ({
-            ...x,
-            isCloseable:this.models.length > 1,
-            class:classSet('slds-tabs_scoped__item').add({'slds-is-active':x.path === this.currentFile}).toString()
-        }))
-    }
-
-    get isToolDisplayed(){
-        return this.models.length > 0;
-    }
 
 }

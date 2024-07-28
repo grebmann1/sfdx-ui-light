@@ -9,8 +9,12 @@ const applicationSlice = createSlice({
         isLoading:false,
         connector:null,
         isLoggedIn:false,
+        currentApplication:null
     },
     reducers: {
+        updateCurrentApplication: (state, action) => {
+            state.currentApplication = action.payload?.application || null
+        },
         startLoading: (state, action) => {
             state.isLoading = true;
             state.isLoadingMessage = action.payload?.message || null;

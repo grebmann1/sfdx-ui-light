@@ -50,7 +50,10 @@ export default class FieldsTree extends ToolkitElement {
     
 
     @wire(connectStore, { store })
-    storeChange({ ui }) {
+    storeChange({ ui,application }) {
+        const isCurrentApp = this.verifyIsActive(application.currentApplication);
+        if(!isCurrentApp) return;
+        
         this.updateFieldTree();
     }
 

@@ -51,3 +51,13 @@
     line-height: 1.25;
     font-weight: 600;
 }
+
+.truncate-item {
+    max-height: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    line-clamp: 5;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+}

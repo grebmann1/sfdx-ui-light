@@ -4,7 +4,9 @@ import * as SOBJECT from './sobject';
 import * as DESCRIBE from './describe';
 import * as DOCUMENT from './document';
 import * as APPLICATION from './application';
-import {UI,QUERY} from 'soql/store';
+import { UI,QUERY } from 'soql/store';
+import { APEX } from 'anonymousApex/store';
+
 const store = configureStore({
     reducer: {
         application:APPLICATION.reduxSlice.reducer,
@@ -12,7 +14,9 @@ const store = configureStore({
         describe: DESCRIBE.reduxSlice.reducer,
         ui : UI.reduxSlice.reducer,
         query : QUERY.reduxSlice.reducer,
+        apex : APEX.reduxSlice.reducer,
         queryFiles : DOCUMENT.reduxSlices.QUERYFILE.reducer,
+        apexFiles : DOCUMENT.reduxSlices.APEXFILE.reducer,
         recents : DOCUMENT.reduxSlices.RECENT.reducer
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware({
@@ -32,6 +36,7 @@ export {
     store,
     UI,
     QUERY,
+    APEX,
     DOCUMENT,
     APPLICATION,
     SOBJECT,
@@ -43,5 +48,7 @@ export const SELECTORS = {
     sobject:SOBJECT.sObjectsAdapter.getSelectors((state) => state.sobject),
     describe:(state) => state.describe,
     queries:QUERY.queryAdapter.getSelectors((state) => state.query),
+    apex:APEX.apexAdapter.getSelectors((state) => state.apex.apex), // Not using the standard -> So it's Apex (Slice) then Apex variable
     queryFiles:DOCUMENT.queryFileAdapter.getSelectors((state) => state.queryFiles),
+    apexFiles:DOCUMENT.apexFileAdapter.getSelectors((state) => state.apexFiles),
 }

@@ -1,5 +1,6 @@
 import LightningModal from 'lightning/modal';
 import { api } from "lwc";
+import { isUndefinedOrNull } from 'shared/utils';
 
 const STORAGE_TYPE = {
     GLOBAL:'Global',
@@ -19,6 +20,7 @@ export default class SaveModal extends LightningModal {
         return this._innerFile;
     }
     set _file(value){
+        if(isUndefinedOrNull(value)) return;
         this._innerFile = value;
         // Define values based on the file
         this.name = value.id;

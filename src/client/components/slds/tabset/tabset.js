@@ -11,6 +11,7 @@ export default class SldsTabset extends LightningElement {
     @api title;
 
     @api isAddTabEnabled = false;
+    @api isRemoveTabEventDisabled = false;
 
     @track _variant = 'standard';
 
@@ -91,6 +92,7 @@ export default class SldsTabset extends LightningElement {
             if (!this._connected) {
                 return;
             }
+            //console.log('Deregistration callback');
             const index = this._tabHeaders.findIndex(
                 (existingTab) => existingTab.value === tabValue
             );
@@ -103,7 +105,8 @@ export default class SldsTabset extends LightningElement {
                 this._tabByValue[tabValue] = undefined;
                 if (
                     this._activeTabValue === tab.value &&
-                    this._tabHeaders.length > 0
+                    this._tabHeaders.length > 0 && 
+                    !this.isRemoveTabEventDisabled // To avoid selection controlled by the tab
                 ) {
                     this._showTabContentForTabValue(this._tabHeaders[0].value);
                 }

@@ -351,7 +351,7 @@ export const arrayToMap = (array, idField,attributes,format) => {
     }, {});
 }
 
-export const extractErrorDetails = (errorMessage) => {
+export const extractErrorDetailsFromQuery = (errorMessage) => {
     const rowRegex = /Row:(\d+)/;
     const columnRegex = /Column:(\d+)/;
     const rowMatch = errorMessage.match(rowRegex);

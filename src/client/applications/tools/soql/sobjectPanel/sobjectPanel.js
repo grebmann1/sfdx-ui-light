@@ -18,7 +18,9 @@ export default class SobjectsPanel extends ToolkitElement {
     pageNumber = 1;
 
     @wire(connectStore, { store })
-    storeChange({ describe,ui }) {
+    storeChange({ describe,application }) {
+        const isCurrentApp = this.verifyIsActive(application.currentApplication);
+        if(!isCurrentApp) return;
 
         if(describe){
             this.isLoading = describe.isFetching;

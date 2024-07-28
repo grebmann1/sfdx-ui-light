@@ -31,8 +31,9 @@ export default class RelationshipsTree extends ToolkitElement {
     
 
     @wire(connectStore, { store })
-    storeChange({ describe, sobject, ui }) {
-
+    storeChange({ application, sobject, ui }) {
+        const isCurrentApp = this.verifyIsActive(application.currentApplication);
+        if(!isCurrentApp) return;
         /*
         const fullSObjectName = lowerCaseKey(fullApiName(selectedSObject,this.namespace));
         SELECTORS.describe.nameMap[fullSObjectName]

@@ -53,14 +53,14 @@
                     </div>
                     <div class="slds-tabs_default__content" role="tabpanel">
                         <div class="left-panel-scrollable slds-is-relative">
-                            <soql-fields-tree  sobject={sobjectMeta.name} keyword={keyword}></soql-fields-tree>
+                            <soql-fields-tree  sobject={sobjectMeta.name} keyword={keyword} application-name={applicationName}></soql-fields-tree>
                         </div>
                     </div>
                 </template>
                 <template lwc:if={isRelationshipsActive}>
                     <div class="slds-tabs_default__content" role="tabpanel" >
                         <div class="left-panel-non-scrollable">
-                            <soql-relationships-tree  sobject={sobjectMeta.name} keyword={keyword}></soql-relationships-tree>
+                            <soql-relationships-tree  sobject={sobjectMeta.name} keyword={keyword} application-name={applicationName}></soql-relationships-tree>
                         </div>
                     </div>
                 </template>

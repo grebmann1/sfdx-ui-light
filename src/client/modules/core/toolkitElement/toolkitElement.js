@@ -1,4 +1,4 @@
-import { LightningElement } from 'lwc';
+import { LightningElement,api } from 'lwc';
 import { isEmpty,isElectronApp,isNotUndefinedOrNull } from 'shared/utils';
 import { classSet } from 'shared/utils';
 import { I18nMixin } from 'core/i18n';
@@ -6,7 +6,7 @@ import { store } from 'core/store';
 
 export default class ToolkitElement extends I18nMixin(LightningElement) {
 
-    //@api connector;
+    @api applicationName;
     isLoggedIn = false;
     
     /*@wire(connectStore, { store })
@@ -18,9 +18,15 @@ export default class ToolkitElement extends I18nMixin(LightningElement) {
             this.isLoggedIn = false;
         }
     }*/
-
+   
+    
+    /** Methods */
+    verifyIsActive = (applicationName) => {
+        return this.applicationName === applicationName;
+    }
   
     /** Getters */
+    
     
     get connector(){
         return store.getState()?.application?.connector;
