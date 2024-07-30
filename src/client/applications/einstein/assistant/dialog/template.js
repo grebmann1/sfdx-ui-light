@@ -10,7 +10,7 @@ const escapeApexString = (input) => {
     return input.replace(/'/g, "\\'").replace(/\n/g, "\\n");
 }
 
-export const chat_template = modelmessages) => {
+export const chat_template = (model,messages) => {
     return `aiplatform.ModelsAPI.createChatGenerations_Request request = new aiplatform.ModelsAPI.createChatGenerations_Request();
         // Specify model
         request.modelName = '${model}';
