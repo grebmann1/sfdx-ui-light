@@ -4,8 +4,9 @@ import { PlatformEvent } from 'platformevent/utils';
 import { connectStore,store } from 'platformevent/store';
 
 import ToolkitElement from 'core/toolkitElement';
-import Toast from 'lightning/toast';
 import lib from 'cometd';
+
+import EditorModal from "platformevent/editorModal";
 
 
 
@@ -17,10 +18,9 @@ export default class App extends ToolkitElement {
     isLoading = false;
     channelName;// = 'CCR_TaskNotification__e'; 
     // Apex
-    apexScript = ''; // ='CCR_TaskNotification__e event = new CCR_TaskNotification__e();\n// Publish the event\nDatabase.SaveResult result = EventBus.publish(event);';
+    //apexScript = "System.debug('Hello World');"; // ='CCR_TaskNotification__e event = new CCR_TaskNotification__e();\n// Publish the event\nDatabase.SaveResult result = EventBus.publish(event);';
     isApexContainerDisplayed = false;
     isManualChannelDisplayed = false;
-    isApexRunning = false;
 
     @track subscribedChannels = [];
     @track eventObjects = [];
@@ -45,7 +45,7 @@ export default class App extends ToolkitElement {
 
 
     connectedCallback(){
-        this.loadCache();
+        //this.loadCache();
         this.describeAll();
         cometd.configure({
             url: `/cometd/${guid()}`,
@@ -77,31 +77,12 @@ export default class App extends ToolkitElement {
 
     /** Events **/
 
-    handleMonacoLoaded = (e) => {
-        //console.log('loaded');
-        this.refs.editor.displayFiles(
-            'ApexClass',[
-                {   
-                    id:'abc',
-                    path:'abc',
-                    name:'Script',
-                    apiVersion:60,
-                    body:this.apexScript,
-                    language:'apex',
-                }
-            ]
-        );
-    }
 
-    handleEditorChange = (e) => {
-        //console.log('handleEditorChange',e.detail);
-        this.apexScript = e.detail.value;
-        let key = `${this.connector.configuration.alias}-platformevent-script`;
-        window.defaultStore.setItem(key,this.apexScript);
-    }
-
-    handleApexToggleChange = (e) => {
-        this.isApexContainerDisplayed = e.detail.checked;
+    toggle_apexEditor = (e) => {
+        this.isApexContainerDisplayed = !this.isApexContainerDisplayed;
+        if(this.isApexContainerDisplayed){
+            this.openEditorModal();
+        }
     }
 
     handleManualChannelToggleChange = (e) => {
@@ -210,27 +191,6 @@ export default class App extends ToolkitElement {
         }
     }
 
-    executeApex = (e) => {
-        this.isApexRunning = true;
-        this.refs.editor.executeApex(null,(err,res) => {
-            if(res.success){
-                Toast.show({
-                    label: 'Apex run : Success',
-                    //message: 'Exported to your clipboard', // Message is hidden in small screen
-                    variant:'success',
-                });
-            }else{
-                Toast.show({
-                    label: 'Apex run : Failed',
-                    message: res.exceptionMessage, // Message is hidden in small screen
-                    variant:'error',
-                });
-                //console.log('res',res,err);
-            }
-            this.isApexRunning = false;
-        });
-    }
-
     lookup_handleSearch = (e) => {
         const lookupElement = e.target;
         const keywords = e.detail.rawSearchTerm;
@@ -246,6 +206,14 @@ export default class App extends ToolkitElement {
     
 
     /** Methods  **/
+
+    openEditorModal = () => {
+        EditorModal.open({
+            title:'Anonymous Apex',
+        }).then(async data => {
+            this.isApexContainerDisplayed = false;
+        })
+    }
 
     formatForLookup = (item) => {
         return {
@@ -270,17 +238,7 @@ export default class App extends ToolkitElement {
         this.isLoading = false;
     }
 
-    loadCache = async () => {
-        try{
-            let key = `${this.connector.configuration.alias}-platformevent-script`;
-            const _script = await window.defaultStore.getItem(key);
-            if(!isEmpty(_script)){
-                this.apexScript = _script;
-            }
-        }catch(e){
-            console.error(e);
-        }
-    }
+    
 
     newPlatformEvent = (name) => {
         return new PlatformEvent({
@@ -290,6 +248,10 @@ export default class App extends ToolkitElement {
     }
 
     /** Getters */
+
+    get pageClass(){//Overwrite
+        return super.pageClass+' slds-p-around_small';
+    }
 
     get selectedChannelName(){
         return this.selectedChannel?.name;
@@ -303,9 +265,7 @@ export default class App extends ToolkitElement {
         return isNotUndefinedOrNull(this.selectedChannel);
     }
 
-    get isExecuteApexDisabled(){
-        return isEmpty(this.apexScript) || this.isApexRunning;
-    }
+   
 
     get isEventViewerDisplayed(){
         return isNotUndefinedOrNull(this.selectedEventItem);

@@ -1,148 +1,141 @@
 <template>
     <div class={pageClass}>
-        <!-- Header -->
-        
-
-        <!-- Body -->
-        <div class="slds-full-height slds-is-relative" style="min-height:200px;">
-            <template lwc:if={isLoading}>
-                <lightning-spinner alternative-text="Loading"></lightning-spinner>
-            </template>
-            <template lwc:else>
-
-                <div class="body slds-full-height">
-                    <div class="panel slds-full-height">
+        <builder-editor>
+            <!-- Header -->
+            <builder-header slot="header" title="Tools" sub-title="Platform Events" icon-name="standard:events">
+                <div slot="subactions" class="slds-builder-toolbar__actions">
+                    <lightning-button 
+                        class="slds-p-left_xx-small" 
+                        label="Apex Script" 
+                        onclick={toggle_apexEditor} 
+                        variant="border-filled" 
+                        icon-name="utility:apex"
+                        icon-position="right"
+                        size="large"
+                    ></lightning-button>
+                </div>
+            </builder-header>
+            <!-- Body -->
+            <article class="full-page-body slds-card">
+                <template lwc:if={isLoading}>
+                    <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                </template>
+                <template lwc:else>
     
-                        <div class="top-panel slds-grid">
-                            <div class="top-left-panel slds-col slds-medium-size_2-of-3 slds-large-size_1-of-2 slds-p-around_small">
-
-                                <div class="slds-grid">
-                                    <div class="slds-col slds-size_1">
-                                        <lightning-input
-                                            class="slds-float_left"
-                                            type="toggle" 
-                                            label="Display Apex Editor" 
-                                            name="executeApex"
-                                            message-toggle-active=""
-                                            message-toggle-inactive=""
-                                            onchange={handleApexToggleChange}
-                                            checked={isApexContainerDisplayed}
-                                            variant="label-stacked"
-                                        ></lightning-input>
-                                    </div>
-                                </div>
-                                <!-- Event Subscription -->
-                                <div class="slds-section slds-is-open">
-                                    <h3 class="slds-section__title">
-                                        <div class="slds-section__title-action">
-                                            <span class="slds-truncate" title="Subscribe To Events">Subscribe To Events</span>
-                                        </div>
-                                    </h3>
-                                    <div class="slds-section__content slds-m-horizontal_small" >
-                                        <div class="slds-grid slds-wrap slds-gutters_direct slds-grid_vertical-align-end">
-                                            <div class="slds-col slds-size_1-of-2">
-                                                <template lwc:if={isManualChannelDisplayed}>
-                                                    <lightning-input class="input-validate" value={channelName} label="Manually Entered Channel" placeholder="/event/DummyEvent__e" onchange={handleChannelNameChange}></lightning-input>
-                                                </template>
-                                                <template lwc:else>
-                                                    <slds-lookup
-                                                        label="Platform &amp; Change Event"
-                                                        placeholder="Select Event"
-                                                        tooltip="Select an event from your metadata"
-                                                        selection={lookup_selectedEvents}
-                                                        onsearch={lookup_handleSearch}
-                                                        errors={lookup_errors}
-                                                        onselectionchange={lookup_handleSelectionChange}
-                                                    ></slds-lookup>
-                                                </template>
-                                                
-                                            </div>
-                                            <div class="slds-col slds-size_1-of-2">
-                                                <lightning-input
-                                                    type="toggle" 
-                                                    label="Show Manual Event Selector" 
-                                                    name="manuallyEnterChannel"
-                                                    message-toggle-active=""
-                                                    message-toggle-inactive=""
-                                                    onchange={handleManualChannelToggleChange}
-                                                    checked={isManualChannelDisplayed}
-                                                    variant="label-stacked"
-                                                ></lightning-input>
-                                            </div>
-                                            <div class="slds-col slds-size_1-of-1 slds-m-top_small">
-                                                <lightning-button class="slds-float_left" label="Subscribe" variant="brand" title="Subscribe to channel" onclick={subscribeChannel} disabled={isSubscribeDisabled}></lightning-button>
-                                            </div>
-                                        </div>
-                                        
-                                    </div>
-                                </div>
-                                
-                                <!-- Apex Execution-->
-                                <template lwc:if={isApexContainerDisplayed}>
+                    <div class="body slds-full-height">
+                        <div class="panel slds-full-height">
+        
+                            <div class="top-panel slds-grid">
+                                <div class="top-left-panel slds-col slds-medium-size_2-of-3 slds-large-size_1-of-2 slds-p-around_small">
+                                    <!-- Event Subscription -->
                                     <div class="slds-section slds-is-open">
                                         <h3 class="slds-section__title">
                                             <div class="slds-section__title-action">
-                                                <span class="slds-truncate" title="Apex Execution">Apex Execution</span>
+                                                <span class="slds-truncate" title="Subscribe To Events">Subscribe To Events</span>
                                             </div>
                                         </h3>
                                         <div class="slds-section__content slds-m-horizontal_small" >
-                                            <div class="slds-grid slds-wrap">
-                                                
+                                            <div class="slds-grid slds-wrap slds-gutters_direct slds-grid_vertical-align-end">
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <template lwc:if={isManualChannelDisplayed}>
+                                                        <lightning-input class="input-validate" value={channelName} label="Manually Entered Channel" placeholder="/event/DummyEvent__e" onchange={handleChannelNameChange}></lightning-input>
+                                                    </template>
+                                                    <template lwc:else>
+                                                        <slds-lookup
+                                                            label="Platform &amp; Change Event"
+                                                            placeholder="Select Event"
+                                                            tooltip="Select an event from your metadata"
+                                                            selection={lookup_selectedEvents}
+                                                            onsearch={lookup_handleSearch}
+                                                            errors={lookup_errors}
+                                                            onselectionchange={lookup_handleSelectionChange}
+                                                        ></slds-lookup>
+                                                    </template>
+                                                    
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-2">
+                                                    <lightning-input
+                                                        type="toggle" 
+                                                        label="Show Manual Event Selector" 
+                                                        name="manuallyEnterChannel"
+                                                        message-toggle-active=""
+                                                        message-toggle-inactive=""
+                                                        onchange={handleManualChannelToggleChange}
+                                                        checked={isManualChannelDisplayed}
+                                                        variant="label-stacked"
+                                                    ></lightning-input>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-1 slds-m-top_small">
+                                                    <lightning-button class="slds-float_left" label="Subscribe" variant="brand" title="Subscribe to channel" onclick={subscribeChannel} disabled={isSubscribeDisabled}></lightning-button>
+                                                </div>
                                             </div>
-                                            <div class="slds-grid slds-wrap slds-quick-apex-container slds-p-around_small">
-                                                <!--<lightning-textarea class="input-apex" label="Apex Script" value={apexScript} placeholder="Execute Anonymous Apex to publish an event ..." onchange={handleApexScriptChange}></lightning-textarea> -->
-                                                <editor-app lwc:ref="editor" class="slds-col slds-size_1-of-1 slds-flex-column  slds-full-width"
-                                                    onmonacoloaded={handleMonacoLoaded}
-                                                    onchange={handleEditorChange}
-                                                    max-height="200px"
-                                                    is-action-hidden
-                                                ></editor-app>
-                                                <div class="slds-col slds-size_1-of-1 slds-grid slds-grid_align-end">
-                                                    <div class="slds-col slds-p-around_small">
-                                                        <lightning-button label="Execute" title="Execute Apex" onclick={executeApex} disabled={isExecuteApexDisabled}></lightning-button>
+                                            
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Apex Execution-->
+                                    <template lwc:if={isApexContainerDisplayed}>
+                                        <div class="slds-section slds-is-open">
+                                            <h3 class="slds-section__title">
+                                                <div class="slds-section__title-action">
+                                                    <span class="slds-truncate" title="Apex Execution">Apex Execution</span>
+                                                </div>
+                                            </h3>
+                                            <div class="slds-section__content slds-m-horizontal_small" >
+                                                <div class="slds-grid slds-wrap">
+                                                    
+                                                </div>
+                                                <div class="slds-grid slds-wrap slds-quick-apex-container slds-p-around_small">
+                                                    <!--<lightning-textarea class="input-apex" label="Apex Script" value={apexScript} placeholder="Execute Anonymous Apex to publish an event ..." onchange={handleApexScriptChange}></lightning-textarea> -->
+                                                    
+                                                    <div class="slds-col slds-size_1-of-1 slds-grid slds-grid_align-end">
+                                                        <div class="slds-col slds-p-around_small">
+                                                            <lightning-button label="Execute" title="Execute Apex" onclick={executeApex} disabled={isExecuteApexDisabled}></lightning-button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </template>
-                                
-                                
-                                
-                            </div>                   
-                            <div class="top-right-panel slds-col slds-medium-size_1-of-3 slds-large-size_1-of-2 slds-p-around_small">
-                                <platformevent-channel-panel
-                                    items={subscribedChannels}
-                                    selected-item={selectedChannelName}
-                                    onselect={handleChannelSelection}
-                                    onrecentselect={handleRecentChannelSelection}
-                                    ondelete={handleChannelDeletion}
-                                ></platformevent-channel-panel>
+                                    </template>
+                                    
+                                    
+                                    
+                                </div>                   
+                                <div class="top-right-panel slds-col slds-medium-size_1-of-3 slds-large-size_1-of-2 slds-p-around_small">
+                                    <platformevent-channel-panel
+                                        items={subscribedChannels}
+                                        selected-item={selectedChannelName}
+                                        onselect={handleChannelSelection}
+                                        onrecentselect={handleRecentChannelSelection}
+                                        ondelete={handleChannelDeletion}
+                                    ></platformevent-channel-panel>
+                                </div>
                             </div>
+                            <template lwc:if={isSelectedChannelDisplayed}>
+                                <div class="bottom-panel slds-grid full-page-body">
+                                    <slds-split-view left-min-width="200" right-min-width="200" is-horizontal>
+                                        <div class="bottom-left-panel slds-m-right_small slds-p-around_small slds-full-width slds-full-height" slot="left">
+                                            <platformevent-message-list 
+                                                selected-event-item={selectedEventItem}
+                                                title={selectedChannelName} 
+                                                messages={messagesDisplayed}
+                                                onselect={handleEventSelection}
+                                                onempty={handleEmptyMessages}
+                                            ></platformevent-message-list>
+                                        </div>
+                                        <div class="bottom-right-panel slds-full-height" slot="right">
+                                            <template lwc:if={isEventViewerDisplayed}>
+                                                <platformevent-event-viewer item={selectedEventItem}></platformevent-event-viewer>
+                                            </template>
+                                        </div>
+                                    </slds-split-view>
+                                </div>
+                            </template>
                         </div>
-                        <template lwc:if={isSelectedChannelDisplayed}>
-                            <div class="bottom-panel slds-grid full-page-body">
-                                <slds-split-view left-min-width="200" right-min-width="200" is-horizontal>
-                                    <div class="bottom-left-panel slds-m-right_small slds-p-around_small slds-full-height" slot="left">
-                                        <platformevent-message-list 
-                                            selected-event-item={selectedEventItem}
-                                            title={selectedChannelName} 
-                                            messages={messagesDisplayed}
-                                            onselect={handleEventSelection}
-                                            onempty={handleEmptyMessages}
-                                        ></platformevent-message-list>
-                                    </div>
-                                    <div class="bottom-right-panel slds-full-height" slot="right">
-                                        <template lwc:if={isEventViewerDisplayed}>
-                                            <platformevent-event-viewer item={selectedEventItem}></platformevent-event-viewer>
-                                        </template>
-                                    </div>
-                                </slds-split-view>
-                            </div>
-                        </template>
                     </div>
-                </div>
-            </template>
-        </div>
+                </template>
+            </article>
+            
+        </builder-editor>
     </div>
 </template>

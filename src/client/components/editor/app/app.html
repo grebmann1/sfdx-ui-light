@@ -1,8 +1,8 @@
 <template>
     <div class="slds-flex-column slds-full-height slds-light-bg">
-        <div style="height:50px;">
+        <div> <!-- style="height:50px;" -->
             <template lwc:if={isActionsDisplayed}>
-                <div class="slds-grid slds-grid_align-end" style="min-height:48px;">
+                <div class="slds-grid slds-grid_align-end" > <!-- style="min-height:48px;" -->
                     <lightning-button-group class="slds-p-horizontal_medium slds-p-bottom_medium">
                         <!--<lightning-button icon-name="utility:adduser" disabled={isLoading} onclick={adduser_handleClick} label="Select Users"></lightning-button>-->
                         <template lwc:if={isEditMode}>

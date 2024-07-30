@@ -1,0 +1,25 @@
+<template>
+    <lightning-modal-header label={title}></lightning-modal-header>
+    <lightning-modal-body class="slds-is-relative"> 
+        <template lwc:if={hasError}>
+            <slds-information-block class="slds-p-around_x-small" title={error_title} variant="error">
+                <p>{error_message}</p>
+            </slds-information-block>
+        </template>
+        <editor-app lwc:ref="editor" class="slds-col slds-size_1-of-1 slds-flex-column  slds-full-width"
+            onmonacoloaded={handleMonacoLoaded}
+            onchange={handleEditorChange}
+            max-height="200px"
+            is-action-hidden
+        ></editor-app>
+    </lightning-modal-body>
+    <lightning-modal-footer>
+        <lightning-button 
+            label="Execute" 
+            title="Execute Apex" 
+            variant="brand"
+            onclick={executeApex} 
+            disabled={isExecuteApexDisabled}
+        ></lightning-button>
+    </lightning-modal-footer>
+</template>
