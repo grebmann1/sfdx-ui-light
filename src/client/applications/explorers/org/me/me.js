@@ -12,6 +12,7 @@ export default class Me extends ToolkitElement {
     @api title = 'Current User';
     
     @track user = {};
+    _username = null; // Used to control reloading
 
     // Editing
     metadata;
@@ -22,12 +23,10 @@ export default class Me extends ToolkitElement {
     _connector; 
     set connector(value){
         this._connector = value;
-        console.log('this._connector',this._connector);
-        if(this._connector?.conn){
+        if(this._connector?.configuration?.username && this._connector?.configuration?.username != this._username){
             this.load_metadata();
-        }
-        if(this._connector?.conn?.userInfo?.id){
             this.load_myUserInformation();
+            this._username = this._connector.configuration.username;
         }
     }
     @api
@@ -68,6 +67,7 @@ export default class Me extends ToolkitElement {
         const exceptionFields = ['CurrencyIsoCode'];
         const query = (fields) => `SELECT ${fields.join(',')} FROM User WHERE id = '${this.connector.conn.userInfo.id}'`;
         //console.log('query',query([].concat(fields,exceptionFields)));
+        console.log('load_myUserInformation',this.connector);
         var _user = await runSilent(async ()=>{return (await this.connector.conn.query(query([].concat(fields,exceptionFields)))).records[0]},null);
         if(_user === null){
             // Temporary solution, in case we don't have CurrencyIsoCode

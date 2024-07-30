@@ -10,10 +10,10 @@ const escapeApexString = (input) => {
     return input.replace(/'/g, "\\'").replace(/\n/g, "\\n");
 }
 
-export const chat_template = (messages) => {
+export const chat_template = modelmessages) => {
     return `aiplatform.ModelsAPI.createChatGenerations_Request request = new aiplatform.ModelsAPI.createChatGenerations_Request();
         // Specify model
-        request.modelName = 'sfdc_ai__DefaultGPT35Turbo';
+        request.modelName = '${model}';
         // Create request body
         aiplatform.ModelsAPI_ChatGenerationsRequest body = new aiplatform.ModelsAPI_ChatGenerationsRequest();
         request.body = body;

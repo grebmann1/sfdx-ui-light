@@ -1,6 +1,13 @@
 
 import { formatQuery } from '@jetstreamapp/soql-parser-js';
+import { isMonacoLanguageSetup } from 'shared/utils';
+import { store } from 'core/store';
+
+import SOQLParser from './soqlParser';
+import SuggestionHandler from './suggestion';
+
 export function configureSoqlLanguage(monaco) {
+	if(isMonacoLanguageSetup('soql')) return;
 	monaco.languages.register({
 		id: 'soql'
 	});
@@ -19,8 +26,135 @@ export function configureSoqlLanguage(monaco) {
 			}, ];
 		},
 	});
+	monaco.languages.registerCompletionItemProvider('soql', {
+		provideCompletionItems: (model,position,context) => {
+			return new Promise((resolve,reject) => {
+				let completionItems = new Promise((resolve) => resolve([]));
+		
+				const textBefore = model.getValueInRange({
+					startLineNumber: 1,
+					startColumn: 1,
+					endLineNumber: position.lineNumber,
+					endColumn: position.column
+				})
+				const textAfter = model.getValue().substring(textBefore.length);
+			
+				const parserInstance = new SOQLParser().process(textBefore,textAfter);
+				const {application,ui} = store.getState();
+				console.log('application.connector,ui.useToolingApi',application.connector,ui.useToolingApi);
+				const suggestionInstance = new SuggestionHandler(monaco,parserInstance,application.connector,ui.useToolingApi);
+		
+				completionItems = getCompletionItems(parserInstance,suggestionInstance) || completionItems;
+		
+				//console.log('### Text ###',textBefore,textAfter);
+				//console.log('suggestionInstance',suggestionInstance);
+				//console.log('parserInstance',parserInstance);
+				//console.log('##### completionItems #####',completionItems);
+		
+				Promise.resolve(completionItems).then(res => {
+					resolve({
+						suggestions: res,
+					})
+				});
+			})
+		},
+	});
 }
 
+const getCompletionItems = (parserInstance, suggestionInstance) => {
+	console.log('parserInstance',parserInstance);
+	const isSelectPosition = (parser, sub = false) => {
+		return sub ? parser.subquery.position === "select" : parser.position === "select";
+	};
+
+	const hasFromObject = (parser, sub = false) => {
+		return sub ? parser.subquery.fromObject !== null : parser.fromObject !== null;
+	};
+
+	const isWherePosition = (parser, sub = false) => {
+		return sub ? parser.subquery.position === "where" : parser.position === "where";
+	};
+
+	const getFilterCompletionItems = (parser, sub = false) => {
+		const query = sub ? parser.subquery : parser;
+		if (query.filter.field && query.filter.operator) {
+			if (query.filter.value.startsWith("(")) {
+				return Promise.all([
+					suggestionInstance.getTypeFieldSuggestions(query.fromObject, query.filter),
+					suggestionInstance.getSObjectSuggestions(true)
+				]).then(results => [...results[0], ...results[1]]);
+			} else {
+				return suggestionInstance.getTypeFieldSuggestions(query.fromObject, query.filter);
+			}
+		} else {
+			return suggestionInstance.getFieldSuggestions(false);
+		}
+	};
+
+	const getSubqueryItems = () => {
+		if (parserInstance.subquery.type === "select" && !parserInstance.subquery.hasSelect) {
+			return suggestionInstance.getChildRelationshipSuggestions(true);
+		}
+		if (isWherePosition(parserInstance, true) && hasFromObject(parserInstance, true)) {
+			return getFilterCompletionItems(parserInstance, true);
+		}
+		if (isSelectPosition(parserInstance, true) && !parserInstance.subquery.fromRelation.length) {
+			return suggestionInstance.getFieldSuggestions(parserInstance.isSubQuery);
+		}
+		return null;
+	};
+	//console.log('parserInstance',parserInstance)
+	if (parserInstance.isSubQuery || parserInstance.hasSelect) {
+		if (parserInstance.isSubQuery || parserInstance.position !== "select" || parserInstance.fromObject !== null) {
+			const subqueryItems = parserInstance.isSubQuery ? getSubqueryItems() : null;
+			//console.log('--> suggestion 0 - subqueryItems',subqueryItems);
+			if (subqueryItems) return subqueryItems;
+
+			if (parserInstance.fromRelation.length && (isSelectPosition(parserInstance) || isWherePosition(parserInstance)) && hasFromObject(parserInstance)) {
+				//console.log('--> suggestion 1');
+				return suggestionInstance.getLookupFieldSuggestions();
+			}
+
+			if (isSelectPosition(parserInstance) && hasFromObject(parserInstance) && !parserInstance.fromRelation.length) {
+				//console.log('--> suggestion 2');
+				return suggestionInstance.getFieldSuggestions(parserInstance.isSubQuery);
+			}
+
+			if (parserInstance.position === "from" && parserInstance.lastWord === parserInstance.fromObject /*!hasFromObject(parserInstance, true)*/ || (parserInstance.isSubQuery && (parserInstance.subquery.position === "from" || !parserInstance.subquery.hasSelect))) {
+				//console.log('--> suggestion 3');
+				return suggestionInstance.getSObjectSuggestions(false);
+			}
+
+			if(parserInstance.position === "from" && hasFromObject(parserInstance)){
+				//console.log('--> suggestion 3.1');
+				return suggestionInstance.getAfterFromSuggestions(parserInstance);
+			}
+
+			if (isWherePosition(parserInstance) && hasFromObject(parserInstance) && !parserInstance.isSubQuery) {
+				//console.log('--> suggestion 4');
+				return getFilterCompletionItems(parserInstance);
+			}
+
+			if (parserInstance.position === "order by") {
+				//console.log('--> suggestion 5');
+				return suggestionInstance.getFieldSuggestions(false);
+			}
+
+			if (parserInstance.position === "group by" || parserInstance.position === "having") {
+				//console.log('--> suggestion 6');
+				return suggestionInstance.getSelectedFields();
+			}
+		} else if(parserInstance.fromObject !== null) {
+			//console.log('--> suggestion 7');
+			return suggestionInstance.getSObjectSuggestions(true);
+		} else if(parserInstance.fromObject === null && parserInstance.position === 'select'){
+			return suggestionInstance.getFromSuggestions();
+		}
+	} else {
+		//console.log('--> suggestion 8');
+		return suggestionInstance.getSObjectSuggestions(true,true);
+	}
+}
 
 export const languageConfiguration = {
 	comments: {
@@ -316,3 +450,4 @@ export const language = {
 		],
 	},
 };
+

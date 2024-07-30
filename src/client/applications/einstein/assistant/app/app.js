@@ -20,12 +20,12 @@ export default class App extends ToolkitElement {
 
     connectedCallback(){
         //this.isLoading = true;
-        /*store.dispatch(EINSTEIN.reduxSlice.actions.addTab({
-            tab:{
-                id:guid(),
-                body:""
-            }
-        }));*/
+        store.dispatch((dispatch, getState) => {
+            dispatch(EINSTEIN.reduxSlice.actions.loadCacheSettings({
+                alias:this.alias
+            }));
+            dispatch(EINSTEIN.reduxSlice.actions.initTabs());
+        })
     }
 
     renderedCallback(){
@@ -40,7 +40,7 @@ export default class App extends ToolkitElement {
     storeChange({ einstein,application }) {
         const isCurrentApp = this.verifyIsActive(application.currentApplication);
         if(!isCurrentApp) return;
-        //console.log('einstein',einstein);
+        console.log('einstein',einstein);
 
         this.tabs = einstein.tabs;
         this.currentTab = einstein.currentTab;
@@ -61,7 +61,8 @@ export default class App extends ToolkitElement {
     handleSelectTab = (e) => {
         const tabId = e.target.value;
         store.dispatch(EINSTEIN.reduxSlice.actions.selectionTab({
-            id:tabId,alias:this.alias
+            id:tabId,
+            alias:this.alias
         }));
     }
 

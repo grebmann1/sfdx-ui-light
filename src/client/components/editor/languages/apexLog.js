@@ -1,5 +1,7 @@
+import { isMonacoLanguageSetup } from 'shared/utils';
 
 export function configureApexLogLanguage(monaco){
+    if(isMonacoLanguageSetup('apexLog')) return;
     monaco.languages.register({ id: 'apexLog' });
     monaco.languages.setMonarchTokensProvider("apexLog",{
         defaultToken: '',

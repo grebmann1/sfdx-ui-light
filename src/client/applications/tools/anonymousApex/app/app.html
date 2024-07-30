@@ -3,8 +3,6 @@
         <builder-editor>
             <builder-header slot="header" title="Tools" sub-title="Anonymous Apex" icon-name="standard:apex">
                 <div slot="actions" class="slds-builder-toolbar__actions">
-                    <lightning-button class="slds-p-left_xx-small" label="test" onclick={handleTest} disabled={isSaveButtonDisabled}></lightning-button>
-
                     <lightning-button class="slds-p-left_xx-small" label={i18n.EDITOR_PANEL_SAVE} onclick={handleSaveClick} disabled={isSaveButtonDisabled}></lightning-button>
                     <template lwc:if={isExecuteButtonDisplayed}>
                         <lightning-button class="slds-p-left_xx-small" variant="brand" label={i18n.EDITOR_PANEL_EXECUTE} icon-name="utility:right" onclick={handleExecuteApex} disabled={isExecuteButtonDisabled}></lightning-button>

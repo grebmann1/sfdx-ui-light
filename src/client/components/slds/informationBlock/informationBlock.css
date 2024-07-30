@@ -6,8 +6,10 @@ blockquote {
     background-color: #fafaf9;
     /*font-size: 1rem;*/
     font-weight: 300;
-    padding: 0.5rem 1rem;
-    margin: 0 0 1.5rem;
+    /*padding: 0.5rem 1rem;
+    margin: 0 0 1.5rem;*/
+    padding: 0.5rem 0.5rem;
+    margin: 0 0 0;
     border: 1px solid #f2f2f2;
     border-left-width: 0.125rem;
     border-left-color: rgb(27 150 255);

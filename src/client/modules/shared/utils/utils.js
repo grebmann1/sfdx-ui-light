@@ -410,3 +410,12 @@ export const splitTextByTimestamp = (text) =>  {
 
     return result;
 }
+
+export const isMonacoLanguageSetup = (language) => {
+    if (!window._monacoCompletionProviders) {
+        window._monacoCompletionProviders = {};
+    }
+    const _isSetup = window._monacoCompletionProviders[language] === true;
+    window._monacoCompletionProviders[language] = true
+    return _isSetup;
+}

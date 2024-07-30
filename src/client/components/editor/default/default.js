@@ -65,7 +65,6 @@ export default class Default extends ToolkitElement {
                 enabled: false
             },
             automaticLayout:true,
-            readOnly: false,
             scrollBeyondLastLine: false,
             fixedOverflowWidgets: true
         });
@@ -79,6 +78,7 @@ export default class Default extends ToolkitElement {
     }
 
     loadMonacoEditor = async () => {
+        // This always return the same instance, be carefull to not had duplicate !!!!
         this.monaco = await loader.init();
         // Configure Language
         APEX.configureApexLanguage(this.monaco);
@@ -87,7 +87,6 @@ export default class Default extends ToolkitElement {
         LOG.configureApexLogLanguage(this.monaco);
         // Completion
         APEX.configureApexCompletions(this.monaco);
-
         this.dispatchEvent(new CustomEvent("monacoloaded", {bubbles: true }));
         this.hasLoaded = true;
     }

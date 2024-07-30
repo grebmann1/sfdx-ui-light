@@ -1,3 +1,5 @@
+import { isMonacoLanguageSetup } from 'shared/utils';
+
 const EMPTY_ELEMENTS = [
     'area',
     'base',
@@ -18,7 +20,7 @@ const EMPTY_ELEMENTS = [
 ];
 
 export function configureVisualforceLanguage(monaco) {
-
+    if(isMonacoLanguageSetup('visualforce')) return;
     monaco.languages.register({ id: 'visualforce' });
 	monaco.languages.setLanguageConfiguration('visualforce', {
         indentationRules: {

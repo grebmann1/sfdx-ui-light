@@ -5,8 +5,6 @@ import loader from '@monaco-editor/loader';
 import { formatQuery,parseQuery } from '@jetstreamapp/soql-parser-js';
 import { SOQL } from 'editor/languages';
 import { store,connectStore } from 'core/store';
-import SOQLParser from './soqlParser';
-import SuggestionHandler from './suggestion';
 
 export default class Soql extends ToolkitElement {
 
@@ -88,7 +86,7 @@ export default class Soql extends ToolkitElement {
     loadMonacoEditor = async () => {
         this.monaco = await loader.init();
         // Setup
-        this.configureSoqlLanguage(this.monaco);
+        SOQL.configureSoqlLanguage(this.monaco);
         //this.configureTheme(this.monaco)
 
         this.dispatchEvent(new CustomEvent("monacoloaded", {bubbles: true }));
@@ -106,29 +104,6 @@ export default class Soql extends ToolkitElement {
         })
     }*/
 
-    configureSoqlLanguage = (monaco) => {
-        monaco.languages.register({
-            id: 'soql'
-        });
-        monaco.languages.setLanguageConfiguration('soql', SOQL.languageConfiguration);
-        monaco.languages.setMonarchTokensProvider('soql', SOQL.language);
-    
-        monaco.languages.registerDocumentFormattingEditProvider('soql', {
-            provideDocumentFormattingEdits: async (model, options, token) => {
-                return [{
-                    range: model.getFullModelRange(),
-                    text: formatQuery(model.getValue(),{
-                        fieldMaxLineLength: 20,
-                        fieldSubqueryParensOnOwnLine: false,
-                        whereClauseOperatorsIndented: true,
-                      }),
-                }, ];
-            },
-        });
-        monaco.languages.registerCompletionItemProvider('soql', {
-            provideCompletionItems: this.generateCompletion,
-        });
-    }
 
     handleModelContentChange = (event) => {
         //console.log('onDidChangeModelContent');
@@ -250,36 +225,6 @@ export default class Soql extends ToolkitElement {
         }
     }
     
-
-    generateCompletion = (model,position,context) => {
-        return new Promise((resolve,reject) => {
-            let completionItems = new Promise((resolve) => resolve([]));
-
-            const textBefore = model.getValueInRange({
-                startLineNumber: 1,
-                startColumn: 1,
-                endLineNumber: position.lineNumber,
-                endColumn: position.column
-            })
-            const textAfter = model.getValue().substring(textBefore.length);
-        
-            const parserInstance = new SOQLParser().process(textBefore,textAfter);
-            const suggestionInstance = new SuggestionHandler(monaco,parserInstance,this.connector,this._useToolingApi);
-
-            completionItems = this.getCompletionItems(parserInstance,suggestionInstance) || completionItems;
-
-            //console.log('### Text ###',textBefore,textAfter);
-            //console.log('suggestionInstance',suggestionInstance);
-            //console.log('parserInstance',parserInstance);
-            //console.log('##### completionItems #####',completionItems);
-
-            Promise.resolve(completionItems).then(res => {
-                resolve({
-                    suggestions: res,
-                })
-            });
-        })
-    }
     
     @api
     addMarkers = (markers) => {

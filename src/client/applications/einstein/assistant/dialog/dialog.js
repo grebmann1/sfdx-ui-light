@@ -65,6 +65,7 @@ export default class Dialog extends ToolkitElement {
                  // Assign Data
                  this.messages = null;
                  this.messages = JSON.parse(JSON.stringify(einsteinState.data));
+                 this.scrollToBottom();
                  //this._responseCreatedDate = apexState.createdDate;
                  //this._abortingMap[apex.currentTab.id] = null; // Reset the abortingMap`
                  
@@ -78,6 +79,7 @@ export default class Dialog extends ToolkitElement {
         }else{
             this.resetError();
             this.isLoading = false;
+            this.messages = [];
         }
 
         
@@ -122,7 +124,7 @@ export default class Dialog extends ToolkitElement {
                 id:guid()
             });
 
-            const einsteinApexRequest = chat_template(this.messages);
+            const einsteinApexRequest = chat_template('sfdc_ai__DefaultGPT35Turbo',this.messages);
             //console.log('einsteinApexRequest',einsteinApexRequest);
             this.scrollToBottom();
             const einsteinPromise = store.dispatch(

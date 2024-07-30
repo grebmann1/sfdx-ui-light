@@ -61,6 +61,7 @@ Schemas.ExecuteAnonymousResult = {
     }
 }
 const DEBUG = 'DEBUG';
+const EINSTEIN_SETTINGS_KEY = 'EINSTEIN_SETTINGS_KEY';
 
 const INITIAL_TABS = [
     enrichTab(
@@ -91,6 +92,31 @@ function extractEinsteinToolkitContent(log) {
     return match ? match[1].trim() : '';
 }
 
+function loadCacheSettings(alias) {
+    try {
+        const configText = localStorage.getItem(`${alias}-${EINSTEIN_SETTINGS_KEY}`);
+        if (configText) return JSON.parse(configText);
+    } catch (e) {
+        console.error('Failed to load CONFIG from localStorage', e);
+    }
+    return null;
+}
+
+function saveCacheSettings(alias,state) {
+    
+    console.log('saveCacheSettings');
+    try {
+        const { tabs,dialog } = state
+
+        localStorage.setItem(
+            `${alias}-${EINSTEIN_SETTINGS_KEY}`,
+            JSON.stringify({ tabs,dialog })
+        );
+    } catch (e) {
+        console.error('Failed to save CONFIG to localstorage', e);
+    }
+}
+
 /** Redux */
 
 export const einsteinModelAdapter = createEntityAdapter();
@@ -98,7 +124,6 @@ const _executeApexAnonymous = (connector,body,headers) => {
     //console.log('connector,body,headers',connector,body,headers);
     return new Promise((resolve,reject) => {
         connector.conn.soap._invoke("executeAnonymous", { apexcode: body }, Schemas.ExecuteAnonymousResult,(err, res) => {
-            console.log('err, res',err, res);
             if(err){ 
                 reject(err)
             }else{
@@ -156,21 +181,47 @@ const einsteinSlice = createSlice({
         currentTab:INITIAL_TABS[0],
     },
     reducers: {
+        loadCacheSettings : (state,action) => {
+            const { alias } = action.payload;
+            const cachedConfig = loadCacheSettings(alias);
+            if(cachedConfig){
+                const { tabs,dialog } = cachedConfig; 
+                Object.assign(state,{
+                    tabs:enrichTabs(tabs || INITIAL_TABS),
+                    dialog
+                });
+            }
+            console.log('#cachedConfig#',cachedConfig);
+        },
+        saveCacheSettings : (state,action) => {
+            const { alias } = action.payload;
+            if(isNotUndefinedOrNull(alias)){
+                saveCacheSettings(alias,state);
+            }
+        },
+        initTabs:(state,action) => {
+            state.tabs = enrichTabs(state.tabs);
+            // Set first tab
+            if(state.tabs.length > 0){
+                state.currentTab = state.tabs[0];
+            }
+        },
         addTab:(state,action) => {
-            const { apexFiles,tab } = action.payload;
+            const { tab } = action.payload;
             state.tabs.push(tab);
             // Assign new tab
             state.currentTab = tab;
-            state.body = tab.body;
+            //state.body = tab.body;
         },
         removeTab:(state,action) => {
             const { id,alias } = action.payload;
             state.tabs = state.tabs.filter(x => x.id != id);
+            einsteinModelAdapter.removeOne(state.dialog,id);
             // Assign last tab
             if(state.tabs.length > 0 && state.currentTab.id == id){
                 const lastTab = state.tabs[state.tabs.length - 1];
                 state.currentTab = lastTab;
-                state.body = lastTab.body;
+                //state.body = lastTab.body;
             }
         },
         selectionTab:(state,action) => {
@@ -179,7 +230,7 @@ const einsteinSlice = createSlice({
             // Assign new tab
             if(tab){
                 state.currentTab = tab;
-                state.body = tab.body;
+                //state.body = tab.body;
             }
         },
     },
@@ -196,7 +247,7 @@ const einsteinSlice = createSlice({
                 });
             })
             .addCase(einsteinExecuteModel.fulfilled, (state, action) => {
-                const { data,body } = action.payload;
+                const { data,body,alias } = action.payload;
                 const { tabId,createdDate } = action.meta.arg;
                 einsteinModelAdapter.upsertOne(state.dialog, {
                     id: lowerCaseKey(tabId),
@@ -206,6 +257,10 @@ const einsteinSlice = createSlice({
                     createdDate,
                     error: null
                 });
+                if(isNotUndefinedOrNull(alias)){
+                    //console.log('--> save',alias);
+                    saveCacheSettings(alias,state);
+                }
             })
             .addCase(einsteinExecuteModel.rejected, (state, action) => {
                 const { error } = action;

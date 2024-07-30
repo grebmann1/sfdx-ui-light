@@ -1,6 +1,12 @@
-.slds-chat-message__text{
+.slds-chat-message__text {
     max-width: 100%;
     white-space: normal;
+}
+
+@media (min-width: 1024px) {
+    .slds-chat-message__text {
+        max-width: 50%;
+    }
 }
 
 .slds-chat-message{

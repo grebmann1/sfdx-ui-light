@@ -7,6 +7,7 @@ import * as APPLICATION from './application';
 import { UI,QUERY } from 'soql/store';
 import { APEX } from 'anonymousApex/store';
 import { EINSTEIN } from 'assistant/store';
+
 const store = configureStore({
     reducer: {
         application:APPLICATION.reduxSlice.reducer,
@@ -20,16 +21,22 @@ const store = configureStore({
         apexFiles : DOCUMENT.reduxSlices.APEXFILE.reducer,
         recents : DOCUMENT.reduxSlices.RECENT.reducer
     },
-    middleware: (getDefaultMiddleware) => getDefaultMiddleware({
-        serializableCheck: {
-            // Ignore these action types
-            ignoredActions: ['application/updateConnector','application/login'],
-            // Ignore these field paths in all actions
-            ignoredActionPaths: ['payload.Connector'],
-            // Ignore these paths in the state
-            ignoredPaths: ['application.connector'],
-          },
-    }).concat(logger),
+    middleware: (getDefaultMiddleware) => {
+        let middlewares = getDefaultMiddleware({
+            serializableCheck: {
+                // Ignore these action types
+                ignoredActions: ['application/updateConnector','application/login'],
+                // Ignore these field paths in all actions
+                ignoredActionPaths: ['payload.Connector'],
+                // Ignore these paths in the state
+                ignoredPaths: ['application.connector'],
+              },
+        });
+        if (process.env.NODE_ENV !== 'production') {
+            middlewares = [...middlewares,logger];
+        };
+        return middlewares;
+    },
     devTools: process.env.NODE_ENV !== 'production',
 });
 

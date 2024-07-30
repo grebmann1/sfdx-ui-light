@@ -1,14 +1,21 @@
 /** Base Apex Completion from the https://github.com/jetstreamapp repo (Apache 2.0) */
+
+import { isMonacoLanguageSetup } from 'shared/utils';
+
+
 //const completionsImport = import('./monaco-apex-completions-data');
 const triggerChars = 'adefhijlmnsu';
+
+
 
 export function configureApexLanguage(monaco){
     monaco.languages.register({ id: 'apex' });
 }
 
 export async function configureApexCompletions(monaco) {
+    if(isMonacoLanguageSetup('apex')) return;
     //const completionsData = await completionsImport;
-
+    console.log('monaco.languages.registerCompletionItemProvider',monaco.languages.registerCompletionItemProvider);
     monaco.languages.registerCompletionItemProvider('apex', {
         triggerCharacters: ['.', ...triggerChars.split(''), ...triggerChars.toUpperCase().split('')],
         provideCompletionItems: (model, position, context, token) => {
@@ -17,6 +24,7 @@ export async function configureApexCompletions(monaco) {
             };
         },
     });
+    
 }
 
 function getSuggestions(monaco, model, position) {

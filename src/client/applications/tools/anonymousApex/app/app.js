@@ -85,40 +85,6 @@ export default class App extends ToolkitElement {
         this._log = value;
     }
 
-    handleTest = (e) => {
-        const payload = {
-            accessToken: this.connector.conn.accessToken,
-            instanceUrl: this.connector.conn.instanceUrl
-        };
-        console.log('this.connector',this.connector);
-        console.log('payload',payload);
-
-        fetch('/generatejwt', { // Change to your server's endpoint
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('data',data);
-            this.jwtToken = data.jwtToken;
-            this.error = '';
-        })
-        .catch(error => {
-            this.error = error.message;
-            this.jwtToken = '';
-        });
-    }
-
-    
-
 
     connectedCallback(){
         this.isLoading = true;
