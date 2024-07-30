@@ -10,3 +10,4 @@ out/
 *.zip
 chrome_ext/
 src/documentation/*/
+cert/

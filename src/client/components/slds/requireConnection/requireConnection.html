@@ -9,7 +9,21 @@
             sub-title={subTitle}
             padding
         >
-            <lightning-button label="Go to connection" icon-name="utility:salesforce1" onclick={goToConnection}></lightning-button>
+            <div >
+                <lightning-button 
+                    label="Go to connection" 
+                    icon-name="utility:salesforce1" 
+                    onclick={goToConnection}
+                ></lightning-button>
+                <!--
+                <lightning-button class="slds-p-left_x-small" 
+                    label="Quick Connect" 
+                    icon-name="utility:salesforce1"
+                    variant="brand"
+                    onclick={goToConnection}
+                ></lightning-button>
+                -->
+            </div>
         </illustration-default>
     </template>
 </template>

@@ -3,6 +3,7 @@
         <builder-editor>
             <builder-header slot="header" title="Tools" sub-title="Anonymous Apex" icon-name="standard:apex">
                 <div slot="actions" class="slds-builder-toolbar__actions">
+                    <lightning-button class="slds-p-left_xx-small" label="test" onclick={handleTest} disabled={isSaveButtonDisabled}></lightning-button>
 
                     <lightning-button class="slds-p-left_xx-small" label={i18n.EDITOR_PANEL_SAVE} onclick={handleSaveClick} disabled={isSaveButtonDisabled}></lightning-button>
                     <template lwc:if={isExecuteButtonDisplayed}>
@@ -59,7 +60,7 @@
                         
                         <div class={rightSlotClass} slot="right">
                             <template lwc:if={hasError}>
-                                <slds-information-block title={error_title} variant="error">
+                                <slds-information-block class="slds-p-around_x-small" title={error_title} variant="error">
                                     <p>{error_message}</p>
                                 </slds-information-block>
                             </template>
@@ -88,6 +89,7 @@
                                             model={currentLogModel}
                                             onmonacoloaded={handleLogLoaded}
                                             theme="apexLog"
+                                            is-read-only
                                         ></editor-default>
                                     </div>
                                     <!--

@@ -1,20 +1,32 @@
 <template>
-    <div class="slds-flex-column slds-full-height slds-light-bg">
-        <slds-tabset variant="scoped" class="slds-without-tab slds-full-height" onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled>
-            <template for:each={formattedTabs} for:item="item">
-                <slds-tab class="full-page-body" key={item.id} label={item.name} value={item.id} onactive={handleSelectTab} is-closeable={item.isCloseable}>
+    <div class={pageClass}>
+        <builder-editor>
+            <!-- Header -->
+            <builder-header slot="header" title="Tools" sub-title="Einstein Assistant" icon-name="standard:story">
+                <slds-information-block class="slds-p-around_x-small" title="Under Development">
+                    <p>This feature is still under development. You might face issues when using it !</p>
+                </slds-information-block>
+            </builder-header>
+            <!-- Body -->
+            <article class="full-page-body slds-card">
+                <div class="slds-is-relative slds-full-width slds-full-height slds-flex-column" style="min-height:200px;">
+                
+                    <!-- Tabs -->
+                    <slds-tabset variant="scoped" class="slds-without-tab" active-tab-value={currentTab} onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled is-remove-tab-event-disabled>
+                        <template for:each={formattedTabs} for:item="item">
+                            <slds-tab key={item.id} label={item.name} value={item.id} onactive={handleSelectTab} is-closeable={item.isCloseable} is-draft={item.isDraft}></slds-tab>
+                        </template>
+                    </slds-tabset>
                     <!-- Dialogs -->
-                    <assistant-dialog key={item.id} 
-                        openai-key={openaiKey} 
-                        openai-assistant-id={openaiAssistantId}
-                        thread-id={item.threadId}
-                    ></assistant-dialog>
-                </slds-tab>
-            </template>
-        </slds-tabset>
-        <template lwc:if={isLoading}>
-            <lightning-spinner alternative-text="Loading"></lightning-spinner>
-        </template>
+                    <assistant-dialog class="slds-fill-height slds-flex-column" application-name={applicationName}></assistant-dialog>
+            
+                    <template lwc:if={isLoading}>
+                        <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                    </template>
+
+                </div>
+            </article>
+            
+        </builder-editor>
     </div>
-    
 </template>

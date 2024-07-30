@@ -6,7 +6,7 @@ import * as DOCUMENT from './document';
 import * as APPLICATION from './application';
 import { UI,QUERY } from 'soql/store';
 import { APEX } from 'anonymousApex/store';
-
+import { EINSTEIN } from 'assistant/store';
 const store = configureStore({
     reducer: {
         application:APPLICATION.reduxSlice.reducer,
@@ -15,6 +15,7 @@ const store = configureStore({
         ui : UI.reduxSlice.reducer,
         query : QUERY.reduxSlice.reducer,
         apex : APEX.reduxSlice.reducer,
+        einstein: EINSTEIN.reduxSlice.reducer,
         queryFiles : DOCUMENT.reduxSlices.QUERYFILE.reducer,
         apexFiles : DOCUMENT.reduxSlices.APEXFILE.reducer,
         recents : DOCUMENT.reduxSlices.RECENT.reducer
@@ -40,7 +41,8 @@ export {
     DOCUMENT,
     APPLICATION,
     SOBJECT,
-    DESCRIBE
+    DESCRIBE,
+    EINSTEIN
 };
 export { connectStore } from './wire-adapter';
 
@@ -49,6 +51,7 @@ export const SELECTORS = {
     describe:(state) => state.describe,
     queries:QUERY.queryAdapter.getSelectors((state) => state.query),
     apex:APEX.apexAdapter.getSelectors((state) => state.apex.apex), // Not using the standard -> So it's Apex (Slice) then Apex variable
+    einstein:EINSTEIN.einsteinModelAdapter.getSelectors((state) => state.einstein.dialog),
     queryFiles:DOCUMENT.queryFileAdapter.getSelectors((state) => state.queryFiles),
     apexFiles:DOCUMENT.apexFileAdapter.getSelectors((state) => state.apexFiles),
 }

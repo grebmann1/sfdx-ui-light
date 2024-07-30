@@ -8,6 +8,7 @@ import { SOQL,APEX,VF,LOG } from 'editor/languages';
 export default class Default extends ToolkitElement {
 
     @api maxHeight;
+    @api isReadOnly = false;
     @api files = [];
     @api currentFile;
     @api metadataType;
@@ -58,6 +59,7 @@ export default class Default extends ToolkitElement {
         this.editor = this.monaco.editor.create(this.refs.editor, {
             model: model,
             theme:this.theme || 'vs',
+            readOnly:this.isReadOnly,
             wordWrap: "on",
             minimap: {
                 enabled: false

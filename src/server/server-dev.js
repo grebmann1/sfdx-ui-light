@@ -1,10 +1,12 @@
 require('dotenv').config()
+const express = require('express');
 const { createServer } =  require("lwr");
 const timeout = require('connect-timeout'); 
 const jsforceAjaxProxy = require("jsforce-ajax-proxy");
 const jsforce = require('jsforce');
 const qs = require('qs');
 const fs = require('node:fs');
+const jwt = require('jsonwebtoken');
 
 
 
@@ -53,6 +55,7 @@ const app = lwrServer.getInternalServer("express");
 
 app.use(timeout(120000));
 app.use(haltOnTimedout);
+app.use(express.json());
 
 function haltOnTimedout(req, res, next){
   if (!req.timedout) next();
@@ -143,6 +146,47 @@ app.get('/chrome/callback', function(req, res) {
     });
 });
 
+
+app.post('/generatejwt',async (req,res) => {
+    const { accessToken, instanceUrl } = req.body;
+
+    if (!accessToken || !instanceUrl) {
+        return res.status(400).json({ error: 'Access Token and Instance URL are required.' });
+    }
+
+    const conn = new jsforce.Connection({
+        accessToken: accessToken,
+        instanceUrl: instanceUrl
+    });
+
+    try {
+        const identity = await conn.identity();
+
+        // Log the secret key to ensure it's loaded
+        //console.log('JWT_PRIVATE_KEY:', process.env.JWT_PRIVATE_KEY);
+
+        // Generate JWT token
+        const jwtToken = jwt.sign(
+            {
+                iss: process.env.CLIENT_ID, // replace with your OAuth client_id or connected app id
+                sub: identity.username, // or identity.user_id
+                aud: (instanceUrl || '').endsWith('.sandbox.my.salesforce.com')?'https://test.salesforce.com':'https://login.salesforce.com', // https://login.salesforce.com
+                //scp: "sfap_api web einstein_gpt_api api"
+            },
+            process.env.JWT_PRIVATE_KEY,
+            { 
+                expiresIn: '1h',
+                algorithm: 'RS256'
+            }
+        );
+        console.log('jwtToken',jwtToken);
+
+        res.json({ jwtToken: jwtToken });
+    } catch (error) {
+        console.log('error',error);
+        res.status(401).json({ error: 'Invalid Salesforce Access Token.' });
+    }
+})
 
 
 /** LWR Server **/

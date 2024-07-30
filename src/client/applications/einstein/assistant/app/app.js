@@ -1,99 +1,93 @@
-import { LightningElement,api,track} from "lwc";
+import { LightningElement,api,track,wire} from "lwc";
 import { isUndefinedOrNull,isNotUndefinedOrNull,isEmpty,guid,classSet } from "shared/utils";
 import ToolkitElement from 'core/toolkitElement';
 import { getThreadList,deleteThreadList } from 'assistant/utils';
+import { store,connectStore,EINSTEIN} from 'core/store';
 
 export default class App extends ToolkitElement {
 
     currentTab;
     isLoading = false;
+    _hasRendered = false;
+
 
     @api openaiKey;
     @api openaiAssistantId;
 
+    // Tabs
     @track tabs = [];
+    currentTab;
 
     connectedCallback(){
-        this.loadExistingThreads();
+        //this.isLoading = true;
+        /*store.dispatch(EINSTEIN.reduxSlice.actions.addTab({
+            tab:{
+                id:guid(),
+                body:""
+            }
+        }));*/
     }
 
-    disconnectedCallback(){
-        
+    renderedCallback(){
+        this._hasRendered = true;
+
+        if(this._hasRendered && this.template.querySelector('slds-tabset')){
+            this.template.querySelector('slds-tabset').activeTabValue = this.currentTab?.id;
+        }
+    }
+    
+    @wire(connectStore, { store })
+    storeChange({ einstein,application }) {
+        const isCurrentApp = this.verifyIsActive(application.currentApplication);
+        if(!isCurrentApp) return;
+        //console.log('einstein',einstein);
+
+        this.tabs = einstein.tabs;
+        this.currentTab = einstein.currentTab;
+
     }
 
     /** Events **/
 
-    handleCloseTab = (e) => {
-        const tabId = e.detail.value;
-        const threadId = this.tabs.find(x => x.id == tabId).threadId;
-        if(isNotUndefinedOrNull(threadId)){
-            deleteThreadList(threadId);
-        }
-
-        const currentTabId = this.template.querySelector('slds-tabset').activeTabValue;
-        this.tabs = this.tabs.filter(x => x.id != tabId);
-        const latestTab = this.tabs[this.tabs.length - 1];
-        if(currentTabId == tabId){
-            this.template.querySelector('slds-tabset').activeTabValue = latestTab.id;
-        }
-        this.dispatchEvent(new CustomEvent("change", {detail:{value:'delete',type:'tab'},bubbles: true }));
-    }
-
-    handleSelectTab = (e) => {    
-        this.currentTab = e.target.value;
-    }
-
     handleAddTab = (e) => {
-        const newTabId = this.addTab();
-        window.setTimeout(() => {
-            this.template.querySelector('slds-tabset').activeTabValue = newTabId;
-        },100);
+        store.dispatch(EINSTEIN.reduxSlice.actions.addTab({
+            tab:{
+                id:guid(),
+                body:""
+            }
+        }));
+    }
+
+    handleSelectTab = (e) => {
+        const tabId = e.target.value;
+        store.dispatch(EINSTEIN.reduxSlice.actions.selectionTab({
+            id:tabId,alias:this.alias
+        }));
+    }
+
+    handleCloseTab = async (e) => {
+        const tabId = e.detail.value;
+        store.dispatch(EINSTEIN.reduxSlice.actions.removeTab({id:tabId,alias:this.alias}));
     }
 
 
     /** Methods **/
 
-    loadExistingThreads = async() => {
-        const threads = await getThreadList();
-        if(isUndefinedOrNull(threads) || threads.length == 0){
-            this.handleAddTab();
-        }else{
-            this.tabs = threads.map(threadId => ({
-                id:guid(),
-                name:'Dialog',
-                threadId
-            }));
-            //console.log('this.tabs',this.tabs);
-            window.setTimeout(() => {
-                this.template.querySelector('slds-tabset').activeTabValue = this.tabs[0].id;
-            },100);
-        }
-    }
-
-    addTab = () => {
-        const newTab = this.createTab();
-        this.currentTab = newTab.id;
-        this.tabs.push(newTab);
-        return newTab.id;
-    }
-
-    createTab = () => {
-        return {
-            id:guid(),
-            name:'Dialog'
-        }
-    }
-
-
 
     /** Getters **/
 
+    get pageClass(){//Overwrite
+        return super.pageClass+' slds-p-around_small';
+    }
+
     get formattedTabs(){
-        return this.tabs.map((x,index) => ({
-            ...x,
-            isCloseable:this.tabs.length > 1,
-            name:`Dialog ${index + 1}`,
-            class:classSet('slds-tabs_scoped__item').add({'slds-is-active':x.id === this.currentTab}).toString()
-        }))
+        return this.tabs.map((x,index) => {
+            return {
+                ...x,
+                name:`Dialog ${index + 1}`,
+                isCloseable:this.tabs.length > 1,
+                class:classSet('slds-tabs_scoped__item').toString()
+            }
+        })
     }
 }

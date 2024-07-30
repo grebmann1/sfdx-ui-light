@@ -374,3 +374,39 @@ export const shortFormatter = new Intl.NumberFormat('en-US', {
     compactDisplay: 'short',
     maximumFractionDigits: 1,
 });
+
+export const splitTextByTimestamp = (text) =>  {
+    // Regular expression to match the timestamp structure
+    const timestampRegex = /\d{2}:\d{2}:\d{2}\.\d{1,3} \(\d{10,}\)\|/;
+
+    // Split the text by new lines
+    const lines = text.split('\n');
+
+    // Initialize an array to store the resulting chunks
+    let result = [];
+
+    // Initialize a temporary string to build chunks
+    let temp = '';
+
+    // Iterate through each line
+    lines.forEach(line => {
+        if (timestampRegex.test(line)) {
+            // If temp is not empty, push it to the result array
+            if (temp.trim() !== '') {
+                result.push(temp.trim());
+            }
+            // Start a new chunk with the current line
+            temp = line;
+        } else {
+            // Append the current line to the temp string
+            temp += '\n' + line;
+        }
+    });
+
+    // Push the last temp to result if it's not empty
+    if (temp.trim() !== '') {
+        result.push(temp.trim());
+    }
+
+    return result;
+}

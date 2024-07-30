@@ -11,6 +11,7 @@ import soql_app from "soql/app";
 import platformEvent_app from "platformevent/app";
 import anonymousApex_app from "anonymousApex/app";
 import api_app from "api/app";
+import assistant_app from "assistant/app";
 
 const KNOWN_TYPE = new Set([
     "home/app",
@@ -24,8 +25,8 @@ const KNOWN_TYPE = new Set([
     "object/app",
     "soql/app",
     "platformevent/app",
-    "api/app"
-    //"anonymousApex/app"
+    "api/app",
+    "assistant/app"
 ]);
 const APP_MAPPING = {
     "home/app": {
@@ -187,6 +188,21 @@ const APP_MAPPING = {
         quickActionIcon:"standard:apex",
         shortName:"APEX",
         path:'anonymousapex'
+    },
+    "assistant/app":{
+        module:assistant_app,
+        isFullHeight:true,
+        isDeletable:true,
+        isElectronOnly:false,
+        isOfflineAvailable:false,
+        isMenuVisible:true,
+        isTabVisible:true,
+        label:"AI Assistant",
+        type:'tool',
+        description:"Interact with LLM Models",
+        quickActionIcon:"standard:story",
+        shortName:"AI",
+        path:'assistant'
     },
     "platformevent/app":{
         module:platformEvent_app,

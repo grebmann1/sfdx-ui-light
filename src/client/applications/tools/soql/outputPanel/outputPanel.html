@@ -3,7 +3,7 @@
         <slds-spinner message={_loadingMessage}></slds-spinner>
     </template>
     <template lwc:if={hasError}>
-        <slds-information-block title={error_title} variant="error">
+        <slds-information-block class="slds-p-around_x-small" title={error_title} variant="error">
             <p>{error_message}</p>
         </slds-information-block>
     </template>

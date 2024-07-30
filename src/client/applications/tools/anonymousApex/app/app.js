@@ -1,6 +1,6 @@
 import { api,track,wire } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
-import { lowerCaseKey,isUndefinedOrNull,isNotUndefinedOrNull,isEmpty,guid,classSet,runActionAfterTimeOut,compareString } from 'shared/utils';
+import { lowerCaseKey,isUndefinedOrNull,isNotUndefinedOrNull,isEmpty,guid,classSet,runActionAfterTimeOut,compareString,splitTextByTimestamp } from 'shared/utils';
 import { store,connectStore,SELECTORS,DESCRIBE,UI,APEX,DOCUMENT,APPLICATION } from 'core/store';
 import { CATEGORY_STORAGE } from 'builder/storagePanel';
 import SaveModal from "builder/saveModal";
@@ -85,7 +85,37 @@ export default class App extends ToolkitElement {
         this._log = value;
     }
 
-    
+    handleTest = (e) => {
+        const payload = {
+            accessToken: this.connector.conn.accessToken,
+            instanceUrl: this.connector.conn.instanceUrl
+        };
+        console.log('this.connector',this.connector);
+        console.log('payload',payload);
+
+        fetch('/generatejwt', { // Change to your server's endpoint
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('data',data);
+            this.jwtToken = data.jwtToken;
+            this.error = '';
+        })
+        .catch(error => {
+            this.error = error.message;
+            this.jwtToken = '';
+        });
+    }
 
     
 
@@ -311,9 +341,9 @@ export default class App extends ToolkitElement {
 
     handleAbort = () => {
         const { ui } = store.getState();
-        const queryPromise = this._abortingMap[ui.currentTab.id];
-        if(queryPromise){
-            queryPromise.abort();
+        const apexPromise = this._abortingMap[ui.currentTab.id];
+        if(apexPromise){
+            apexPromise.abort();
         }
     }
 
@@ -374,19 +404,21 @@ export default class App extends ToolkitElement {
     handleExecuteApex = async (e) => {
         this.isApexRunning = true;
         // Execute
-        store.dispatch(APEX.executeApexAnonymous({
+        const apexPromise = store.dispatch(APEX.executeApexAnonymous({
             connector:this.connector,
             body:this.refs.editor.currentModel.getValue(),
             tabId:this.currentTab.id,
             createdDate:Date.now()
-        }))
+        }));
+
+        this._abortingMap[this.currentTab.id] = apexPromise;
     }
     
 
     /** Methods  **/
 
     formatFilterLog = (log) => {
-        return log.split('\n').filter(x => this.filterLog(x)).join('\n');
+        return splitTextByTimestamp(log).filter(x => this.filterLog(x)).join('\n');
     }
 
     generateEmptyFile = () => {

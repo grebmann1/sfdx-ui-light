@@ -18,7 +18,8 @@ const APP_LIST = [
   'soql',
   'platformevent',
   'anonymousapex',
-  'api'
+  'api',
+  'assistant'
 ]
 
 function generateRoutes(applications, { contentDir, layoutsDir }) {

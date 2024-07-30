@@ -5,6 +5,7 @@
         "modules": [
             { "dir": "$rootDir/src/client/modules" },
             { "dir": "$rootDir/src/client/components" },
+            { "dir": "$rootDir/src/client/applications/einstein" },
             { "dir": "$rootDir/src/client/applications/explorers" },
             { "dir": "$rootDir/src/client/applications/documentation" },
             { "dir": "$rootDir/src/client/applications/tools" },

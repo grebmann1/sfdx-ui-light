@@ -1,8 +1,9 @@
-import { LightningElement,api,track} from "lwc";
-import { isUndefinedOrNull,isEmpty,ROLES,guid } from "shared/utils";
+import { LightningElement,api,track,wire} from "lwc";
+import { isUndefinedOrNull,isEmpty,ROLES,guid,lowerCaseKey,isNotUndefinedOrNull } from "shared/utils";
 import ToolkitElement from 'core/toolkitElement';
 import { upsertThreadList,storeThread,getThread } from 'assistant/utils';
-
+import { store,connectStore,EINSTEIN,SELECTORS} from 'core/store';
+import {chat_template} from './template';
 export default class Dialog extends ToolkitElement {
 
     worker;
@@ -14,48 +15,81 @@ export default class Dialog extends ToolkitElement {
 
     @track messages = [];
 
+    @api dialogId;
+
+    // prompt
+    prompt;
+
+    // Error
+    error_title;
+    error_message;
+
     connectedCallback(){
-        this.worker = new Worker(chrome.runtime.getURL('workers/openaiWorker/worker.js'));
+        /*this.worker = new Worker(chrome.runtime.getURL('workers/openaiWorker/worker.js'));
 
         this.worker.addEventListener('message',this.handleMessage);
         this.worker.addEventListener('error', this.handleError);
 
-        this.loadExistingThread();
+        this.loadExistingThread();*/
        
     }
 
     disconnectedCallback(){
-        if(this.worker){
+        /*if(this.worker){
             this.worker.removeEventListener('message',this.handleMessage);
             this.worker.removeEventListener('error', this.handleError);
             this.worker.terminate();
-        }
+        }*/
         
     }
 
 
+    @wire(connectStore, { store })
+    storeChange({ einstein,application }) {
+        const isCurrentApp = this.verifyIsActive(application.currentApplication);
+        if(!isCurrentApp) return;
+        //console.log('einstein',einstein)
+        //console.log('einstein.currentTab?.id',einstein.currentTab?.id);
+        const einsteinState = SELECTORS.einstein.selectById({einstein},lowerCaseKey(einstein.currentTab?.id));
+        if(einsteinState){
+            this.isLoading = einsteinState.isFetching;
+            //console.log('einsteinState --->',einsteinState);
+             if(einsteinState.error){
+                 //this._abortingMap[apex.currentTab.id] = null; // Reset the abortingMap
+                 //this.resetResponse();
+                 this.global_handleError(einsteinState.error)
+             }else if(einsteinState.data){
+                 // Reset First
+                 this.resetError();
+                 //this.resetEditorError();
+                 // Assign Data
+                 this.messages = null;
+                 this.messages = JSON.parse(JSON.stringify(einsteinState.data));
+                 //this._responseCreatedDate = apexState.createdDate;
+                 //this._abortingMap[apex.currentTab.id] = null; // Reset the abortingMap`
+                 
+                 //this.header_formatDate();
+             
+             }else if(einsteinState.isFetching){
+                 //this.resetResponse();
+                 this.resetError();
+                 //this.resetEditorError();
+             }
+        }else{
+            this.resetError();
+            this.isLoading = false;
+        }
+
+        
+        
+    }
+
 
     /** Methods **/
 
-    loadExistingThread = async () => {
-        if(this.threadId){
-            this.messages = await getThread(this.threadId);
-            this.scrollToBottom();
-        }
-    }
-    
-
-    generateMessageForWorker = (content,extraInformation,threadId) => {
-        return {
-            type:'executeRequest_includingContext',
-            openai_key:this.openaiKey,
-            openai_assistant_id:this.openaiAssistantId,
-            body:{
-                content,
-                extraInformation,
-                threadId
-            }
-        }
+    resetError = () => {
+        this.error_title = null;
+        this.error_message = null;
     }
 
     scrollToBottom = () => {
@@ -71,49 +105,61 @@ export default class Dialog extends ToolkitElement {
     }
 
     /** Events **/
+
+    handleInputChange = (e) => {
+        this.prompt = e.target.value;
+        //console.log('e.target.value',e.target.value);
+    }
+
     handleSendClick = () => {
+        const { einstein } = store.getState();
         const value = this.template.querySelector('.slds-publisher__input').value;
         if(!isEmpty(value)){
-            this.isLoading = true;
+            //this.isLoading = true;
             this.messages.push({
                 role:ROLES.USER,
-                content:value,
+                content:value.trim(),
                 id:guid()
-            })
+            });
+
+            const einsteinApexRequest = chat_template(this.messages);
+            //console.log('einsteinApexRequest',einsteinApexRequest);
             this.scrollToBottom();
-            this.worker.postMessage(this.generateMessageForWorker(value,null,this.threadId));
+            const einsteinPromise = store.dispatch(
+                EINSTEIN.einsteinExecuteModel({
+                    connector:this.connector,
+                    body:einsteinApexRequest,
+                    tabId:einstein.currentTab.id,
+                    messages:this.messages,
+                    createdDate:Date.now()
+                })
+            )
+            //this.worker.postMessage(this.generateMessageForWorker(value,null,this.threadId));
             this.template.querySelector('.slds-publisher__input').value  = null; // reset
         }
     }
 
-    handleMessage = (event) => {
-        if(event.data.type === 'success'){
-            const { answer,extraInformation,threadId } = event.data.data;
-            this.messages.push({
-                role:ROLES.ASSISTANT,
-                content:answer,
-                id:guid()
-            });
-            //console.log('messages',this.messages);
-            this.threadId = threadId;
-            this.isLoading = false;
-            storeThread(this.threadId,this.messages);
-            upsertThreadList(this.threadId);
-            this.scrollToBottom();
-        //worker.terminate(); // don't forget to delete worker
-        }
-        
-    }
 
-    handleError = (error) => {
-        console.error(error); // handle error
-        worker.terminate(); // don't forget to delete worker
-        this.isLoading = false;
-    };
+    global_handleError = e => {
+        let errors = e.message.split(':');
+        if(errors.length > 1){
+            this.error_title = errors.shift();
+        }else{
+            this.error_title = 'Error';
+        }
+        this.error_message = errors.join(':');
+    }
 
 
 
     /** Getters **/
 
+    get isSendButtonDisabled(){
+        return this.isLoading || isEmpty(this.prompt);
+    }
+
+    get hasError(){
+        return isNotUndefinedOrNull(this.error_message);
+    }
     
 }
