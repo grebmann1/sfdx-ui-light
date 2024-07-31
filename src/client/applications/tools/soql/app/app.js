@@ -96,7 +96,7 @@ export default class App extends ToolkitElement {
         /** Responses */
 
         const queryState = SELECTORS.queries.selectById({query},lowerCaseKey(ui.currentTab?.id));
-        //console.log('queryState',queryState);
+        console.log('queryState',queryState);
         if(queryState){
             if(queryState.error){
                 this._abortingMap[ui.currentTab.id] = null; // Reset the abortingMap
@@ -114,6 +114,10 @@ export default class App extends ToolkitElement {
             }else if(queryState.isFetching){
                 this._displayStopButton = true;
                 this.resetResponse();
+            }else{
+                // For queryExplain as i am reusing the same redux and it doesn't contain any data
+                // TODO: Improve this for performances
+                this._displayStopButton = false;
             }
         }
         
@@ -163,6 +167,24 @@ export default class App extends ToolkitElement {
     }
 
     /** Events **/
+
+    handleLeftToggle = (e) => {
+        store.dispatch(UI.reduxSlice.actions.updateLeftPanel({
+            value:!this.isLeftToggled,
+            alias:this.alias,
+        }));
+    }
+
+    handleRecentToggle = (e) => {
+        store.dispatch(UI.reduxSlice.actions.updateRecentPanel({
+            value:!this.isRecentToggled,
+            alias:this.alias,
+        }));
+    }
+    
+    handleFormatQueryClick = e => {
+        store.dispatch(UI.reduxSlice.actions.formatSoql());
+    }
     
     handlePerformanceCheckClick = async (e) => {
         try{
@@ -183,24 +205,6 @@ export default class App extends ToolkitElement {
             
             //this.isLoading = false;
         }
-    }
-
-    handleLeftToggle = (e) => {
-        store.dispatch(UI.reduxSlice.actions.updateLeftPanel({
-            value:!this.isLeftToggled,
-            alias:this.alias,
-        }));
-    }
-
-    handleRecentToggle = (e) => {
-        store.dispatch(UI.reduxSlice.actions.updateRecentPanel({
-            value:!this.isRecentToggled,
-            alias:this.alias,
-        }));
-    }
-    
-    handleFormatQueryClick = e => {
-        store.dispatch(UI.reduxSlice.actions.formatSoql());
     }
 
     handleRunClick = e => {
