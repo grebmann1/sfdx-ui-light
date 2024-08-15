@@ -12,6 +12,7 @@ export default class Dialog extends ToolkitElement {
 
     @api connector;
     @api dialogId;
+    @api isMobile = false;
 
     // prompt
     prompt;
@@ -65,7 +66,8 @@ export default class Dialog extends ToolkitElement {
 
     @wire(connectStore, { store })
     storeChange({ einstein,application }) {
-        const isCurrentApp = this.verifyIsActive(application.currentApplication);
+        const isCurrentApp = this.verifyIsActive(application.currentApplication)
+        console.log('dialog',isCurrentApp);
         if(!isCurrentApp) return;
         //console.log('einstein',einstein)
         //console.log('einstein.currentDialog?.id',einstein.currentDialog?.id);

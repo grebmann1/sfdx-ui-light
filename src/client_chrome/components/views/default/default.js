@@ -1,6 +1,6 @@
 import { LightningElement,api,wire} from "lwc";
-import { store } from 'shared/store';
-import { connectStore } from 'core/store';
+import { store as deprecatedStore } from 'shared/store';
+import { connectStore,store,APPLICATION } from 'core/store';
 
 import { isUndefinedOrNull,isNotUndefinedOrNull,normalizeString as normalize} from "shared/utils";
 import { PANELS } from 'extension/utils';
@@ -14,7 +14,7 @@ export default class Default extends LightningElement {
     previousPanel;
     isBackButtonDisplayed = false;
 
-    @wire(connectStore, { store })
+    @wire(connectStore, { store:deprecatedStore })
     applicationChange({application}) {
         if(application?.type === 'FAKE_NAVIGATE'){
             const pageRef = application.target;
@@ -68,7 +68,6 @@ export default class Default extends LightningElement {
                 }
             })
         }
-        
     }
 
     /** Getters **/

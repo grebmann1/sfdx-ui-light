@@ -23,7 +23,7 @@
                 <div class="slds-is-relative slds-full-width slds-full-height slds-flex-column" style="min-height:200px;">
                     
                     <!-- Tabs -->
-                    <slds-tabset variant="scoped" class="slds-without-tab" active-tab-value={currentTab} onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled is-remove-tab-event-disabled>
+                    <slds-tabset variant="scoped" class="slds-without-tab slds-tabs-no-padding-extension" active-tab-value={currentTab} onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled is-remove-tab-event-disabled>
                         <template for:each={formattedTabs} for:item="item">
                             <slds-tab key={item.id} label={item.name} value={item.id} onactive={handleSelectTab} is-closeable={item.isCloseable} is-draft={item.isDraft}></slds-tab>
                         </template>

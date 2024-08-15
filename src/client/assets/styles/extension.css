@@ -234,11 +234,15 @@ doc-app .full-page-body.slds-m-top_small{
     overflow: auto;
 }
 
-.slds-tabs_scoped__content{
-    padding: 0rem; /*  0.5rem; Only for Extension */
+.slds-without-tab .slds-tabs_scoped__content{
+    padding: 0.3rem; /*  0.5rem; Only for Extension */
 }
 
 .slds-tabs-no-padding{
+    padding:0 !important;
+}
+
+.slds-tabs-no-padding-extension .slds-tabs_scoped__content{
     padding:0 !important;
 }
 

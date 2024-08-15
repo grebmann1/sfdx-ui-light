@@ -27,13 +27,22 @@
             <div class="slds-full-height slds-col slds-col slds-size_1-of-1 slds-p-top_small">
                 <!-- Start -->
                 <template lwc:if={isConnection}>
-                    <connection-app lwc:ref="connection" variant="card" is-header-less></connection-app>
+                    <connection-app 
+                        lwc:ref="connection" 
+                        variant="card" 
+                        is-header-less
+                    ></connection-app>
                 </template>
                 <template lwc:elseif={isDocumentation}>
-                    <doc-app lwc:ref="documentation" is-responsive></doc-app>
+                    <doc-app lwc:ref="documentation" 
+                        is-responsive
+                    ></doc-app>
                 </template>
                 <template lwc:elseif={isAssistant}>
-                    <assistant-app lwc:ref="assistant" is-mobile></assistant-app>
+                    <assistant-app lwc:ref="assistant" 
+                        application-name="assistant" 
+                        is-mobile
+                    ></assistant-app>
                     <!-- 
                         openai-key={openaiKey} 
                         openai-assistant-id={openaiAssistantId}

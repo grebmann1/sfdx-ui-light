@@ -107,10 +107,10 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
 });
 
 // Message Listener
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-	if (request.action === "launchWebAuthFlow") {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+	if (message.action === "launchWebAuthFlow") {
         chrome.identity.launchWebAuthFlow({
-            'url': request.url,
+            'url': message.url,
             'interactive': true
         }, (responseUrl) => {
             if (chrome.runtime.lastError) {
@@ -122,7 +122,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse({ code });
         });
         return true;
-	}
+	}else if (message.action === 'broadcastMessage') {
+        // Broadcast the message to all other components
+        message.senderId = sender.id;
+        chrome.runtime.sendMessage(message);
+    }
 });
 
 /** Context Menus **/

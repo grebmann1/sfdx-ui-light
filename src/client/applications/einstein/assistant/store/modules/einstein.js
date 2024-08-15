@@ -290,6 +290,10 @@ const einsteinSlice = createSlice({
                     //console.log('--> save',alias);
                     saveCacheSettings(alias,state);
                 }
+
+                if(chrome?.runtime){
+                    chrome.runtime.sendMessage({ action: 'broadcastMessage', content: {action:'refresh'} });
+                }
             })
             .addCase(einsteinExecuteModel.rejected, (state, action) => {
                 const { error } = action;

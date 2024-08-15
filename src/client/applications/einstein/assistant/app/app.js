@@ -34,6 +34,22 @@ export default class App extends ToolkitElement {
             
             //dispatch(EINSTEIN.reduxSlice.actions.initTabs());
         })
+
+        if(chrome?.runtime){
+            // Listening for broadcast messages from the background script
+            chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+                if (message.action === 'broadcastMessage') {
+                    console.log('message.senderId',message.senderId,'sender.id',sender.id);
+                    if (message.senderId != sender.id) {
+                        // Force Refresh of cache setting to sync the messages !
+                        console.log('--> Force Refresh Local Settings <--');
+                        store.dispatch(EINSTEIN.reduxSlice.actions.loadCacheSettings({
+                            alias:GLOBAL_EINSTEIN
+                        }));
+                    }
+                }
+            });
+        }
     }
 
     renderedCallback(){
@@ -54,7 +70,7 @@ export default class App extends ToolkitElement {
     @wire(connectStore, { store })
     storeChange({ einstein,application }) {
         //console.log('application.currentApplication',application.currentApplication,this.applicationName);
-        const isCurrentApp = this.verifyIsActive(application.currentApplication) || this.isMobile;
+        const isCurrentApp = this.verifyIsActive(application.currentApplication);
         console.log('isCurrentApp',isCurrentApp);
         if(!isCurrentApp) return;
         //console.log('einstein',einstein);
@@ -97,7 +113,6 @@ export default class App extends ToolkitElement {
     }
 
     salesforceInstance_handleChange = (e) => {
-        console.log('salesforceInstance_handleChange');
         const alias = e.detail.value;
         this.salesforceInstance_connect(alias);
     }
@@ -108,7 +123,6 @@ export default class App extends ToolkitElement {
     /** Methods **/
 
     salesforceInstance_connect = (alias) => {
-        console.log('salesforceInstance_connect');
         this.connectToOrg(alias);
         store.dispatch(EINSTEIN.reduxSlice.actions.updateConnectionAlias({
             connectionAlias:alias, // Used for the connection

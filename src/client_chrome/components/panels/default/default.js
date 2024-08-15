@@ -1,7 +1,8 @@
 import { LightningElement,api,wire} from "lwc";
-import { connectStore,store } from 'shared/store';
+import { store as deprecatedStore } from 'shared/store';
 import { isNotUndefinedOrNull} from "shared/utils";
 import { loadExtensionConfigFromCache,CACHE_CONFIG } from "extension/utils";
+import { connectStore,store,APPLICATION } from 'core/store';
 
 
 const APPLICATIONS = {
@@ -14,14 +15,25 @@ const APPLICATIONS = {
 
 export default class Default extends LightningElement {
 
-    @api currentApplication = APPLICATIONS.CONNECTION;//APPLICATIONS.ASSISTANT;//
+    _currentApplication = APPLICATIONS.CONNECTION;//APPLICATIONS.ASSISTANT;//
+    @api
+    get currentApplication(){
+        return this._currentApplication;
+    }
+    set currentApplication(value){
+        this._currentApplication = value;
+        store.dispatch(APPLICATION.reduxSlice.actions.updateCurrentApplication({
+            application:value
+        }));
+    }
+
     @api isBackButtonDisplayed = false;
 
     openaiKey;
     openaiAssistantId;
 
 
-    @wire(connectStore, { store })
+    @wire(connectStore, { store:deprecatedStore })
     applicationChange({application}) {
         console.log('application',application)
         if(application?.type === 'FAKE_NAVIGATE'){
