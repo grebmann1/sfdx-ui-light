@@ -21,7 +21,8 @@ export default class Message extends ToolkitElement {
 
 
     /** Getters **/
-
+    
+    @api
     get isUser(){
         return this.item?.role === ROLES.USER;
     }

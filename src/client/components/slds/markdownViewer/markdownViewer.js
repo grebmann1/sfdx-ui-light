@@ -37,7 +37,8 @@ export default class MarkdownViewer extends LightningElement {
     enable_codeViewer = () => {
         //console.log('transformCodeBlockToComponents');
         const mapping = {js: "javascript",apex:"apex"};
-        this.refs.container.querySelectorAll("pre .language-java,pre .language-apex,pre .language-javascript,pre .language-soql")
+        // pre .language-java,pre .language-apex,pre .language-javascript,pre .language-soql
+        this.refs.container.querySelectorAll('pre [class^="language-"]:not(.language-mermaid)')
         .forEach( el => {
             //const newTarget = el.parentNode;
             

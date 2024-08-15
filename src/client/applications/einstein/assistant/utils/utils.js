@@ -1,4 +1,8 @@
 
+/** Template for Apex -> Einstein LLM **/
+export * from './template';
+
+
 export const storeThread = async (threadId,messages) => {
     localStorage.setItem(`assistant-thread-${threadId}`,JSON.stringify(messages));
 }
@@ -40,4 +44,4 @@ export const deleteThreadList = async (threadId) => {
     localStorage.setItem(`assistant-threads`,JSON.stringify([...threads]));
 }
 
-
+export const GLOBAL_EINSTEIN = 'global_einstein';

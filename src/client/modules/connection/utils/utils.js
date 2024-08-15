@@ -219,8 +219,6 @@ export async function oauth_chrome({alias,loginUrl},callback,callbackErrorHandle
         }catch(e){
             callbackErrorHandler(e);
         }
-        
-
     });
 }
 

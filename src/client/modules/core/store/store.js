@@ -25,7 +25,7 @@ const store = configureStore({
         let middlewares = getDefaultMiddleware({
             serializableCheck: {
                 // Ignore these action types
-                ignoredActions: ['application/updateConnector','application/login'],
+                ignoredActions: ['application/updateConnector','application/login','einstein/executeModel'],
                 // Ignore these field paths in all actions
                 ignoredActionPaths: ['payload.Connector'],
                 // Ignore these paths in the state

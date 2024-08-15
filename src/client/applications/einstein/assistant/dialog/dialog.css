@@ -13,7 +13,10 @@
     --slds-g-color-neutral-base-15: #242424;
     --slds-g-color-neutral-base-10: #181818;
 }
-
+.slds-publisher {
+    /*border-top:1px solid;
+    border-color: var(--slds-c-card-color-border,var(--sds-c-card-color-border,var(--slds-g-color-border-base-1,#c9c9c9)));*/
+}
 .assistant-container{
     display: flex;
     flex-direction: column;

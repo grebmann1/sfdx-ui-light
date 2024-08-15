@@ -162,7 +162,7 @@ app.post('/generatejwt',async (req,res) => {
     try {
         const identity = await conn.identity();
 
-        // Log the secret key to ensure it's loaded
+        // Log the secret key to ensure it's loaded (for testing, not in prod)
         //console.log('JWT_PRIVATE_KEY:', process.env.JWT_PRIVATE_KEY);
 
         // Generate JWT token
@@ -186,8 +186,7 @@ app.post('/generatejwt',async (req,res) => {
         console.log('error',error);
         res.status(401).json({ error: 'Invalid Salesforce Access Token.' });
     }
-})
-
+});
 
 /** LWR Server **/
 

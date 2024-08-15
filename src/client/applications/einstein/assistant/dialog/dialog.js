@@ -1,20 +1,16 @@
 import { LightningElement,api,track,wire} from "lwc";
-import { isUndefinedOrNull,isEmpty,ROLES,guid,lowerCaseKey,isNotUndefinedOrNull } from "shared/utils";
+import { loadExtensionConfigFromCache,CACHE_CONFIG } from "extension/utils";
+import { isUndefinedOrNull,isEmpty,ROLES,guid,lowerCaseKey,isNotUndefinedOrNull,isChromeExtension } from "shared/utils";
 import ToolkitElement from 'core/toolkitElement';
-import { upsertThreadList,storeThread,getThread } from 'assistant/utils';
+import { GLOBAL_EINSTEIN,chat_template } from 'assistant/utils';
 import { store,connectStore,EINSTEIN,SELECTORS} from 'core/store';
-import {chat_template} from './template';
 export default class Dialog extends ToolkitElement {
 
-    worker;
-    @api threadId;
     isLoading = false;
-
-    @api openaiKey;
-    @api openaiAssistantId;
 
     @track messages = [];
 
+    @api connector;
     @api dialogId;
 
     // prompt
@@ -24,7 +20,12 @@ export default class Dialog extends ToolkitElement {
     error_title;
     error_message;
 
+    // openaiKey
+    openaiKey;
+    isInjected;
+
     connectedCallback(){
+        this.checkForInjected();
         /*this.worker = new Worker(chrome.runtime.getURL('workers/openaiWorker/worker.js'));
 
         this.worker.addEventListener('message',this.handleMessage);
@@ -43,19 +44,37 @@ export default class Dialog extends ToolkitElement {
         
     }
 
+    /** Actions */
+    checkForInjected = async () => {
+        let el = document.getElementsByClassName('injected-openai-key');
+        if(el){
+            let content = el[0]?.textContent;
+            if(isEmpty(content)) return;
+            this.isInjected = true;
+            try{
+                const {openai_key} = JSON.parse(content);
+                if(isNotUndefinedOrNull(openai_key)){
+                    this.openaiKey = openai_key;
+                }
+            }catch(e){
+                console.error('Issue while injecting',e);
+            }
+        }
+    }
+
 
     @wire(connectStore, { store })
     storeChange({ einstein,application }) {
         const isCurrentApp = this.verifyIsActive(application.currentApplication);
         if(!isCurrentApp) return;
         //console.log('einstein',einstein)
-        //console.log('einstein.currentTab?.id',einstein.currentTab?.id);
-        const einsteinState = SELECTORS.einstein.selectById({einstein},lowerCaseKey(einstein.currentTab?.id));
+        //console.log('einstein.currentDialog?.id',einstein.currentDialog?.id);
+        const einsteinState = SELECTORS.einstein.selectById({einstein},lowerCaseKey(einstein.currentDialog?.id));
         if(einsteinState){
             this.isLoading = einsteinState.isFetching;
             //console.log('einsteinState --->',einsteinState);
              if(einsteinState.error){
-                 //this._abortingMap[apex.currentTab.id] = null; // Reset the abortingMap
+                 //this._abortingMap[apex.currentDialog.id] = null; // Reset the abortingMap
                  //this.resetResponse();
                  this.global_handleError(einsteinState.error)
              }else if(einsteinState.data){
@@ -67,7 +86,7 @@ export default class Dialog extends ToolkitElement {
                  this.messages = JSON.parse(JSON.stringify(einsteinState.data));
                  this.scrollToBottom();
                  //this._responseCreatedDate = apexState.createdDate;
-                 //this._abortingMap[apex.currentTab.id] = null; // Reset the abortingMap`
+                 //this._abortingMap[apex.currentDialog.id] = null; // Reset the abortingMap`
                  
                  //this.header_formatDate();
              
@@ -75,6 +94,11 @@ export default class Dialog extends ToolkitElement {
                  //this.resetResponse();
                  this.resetError();
                  //this.resetEditorError();
+             }else if(!einsteinState.isFetching && isUndefinedOrNull(einsteinState.data)){
+                // Similar to reset 
+                this.resetError();
+                this.isLoading = false;
+                this.messages = [];
              }
         }else{
             this.resetError();
@@ -96,11 +120,11 @@ export default class Dialog extends ToolkitElement {
 
     scrollToBottom = () => {
         window.setTimeout(()=> {
-            const messageElements = this.template.querySelectorAll('assistant-message');
+            const messageElements = [...this.template.querySelectorAll('assistant-message')].filter(x => x.isUser);
             if(this.isLoading){
-                this.template.querySelector('.slds-chat-listitem').scrollIntoView({ behavior: 'smooth', block: 'end' });
+                this.template.querySelector('.slds-chat-listitem').scrollIntoView({ behavior: 'smooth', block: 'start' });
             }else{
-                messageElements[messageElements.length - 1].scrollIntoView({ behavior: 'smooth', block: 'end' });
+                messageElements[messageElements.length - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
             
         },100);
@@ -110,7 +134,22 @@ export default class Dialog extends ToolkitElement {
 
     handleInputChange = (e) => {
         this.prompt = e.target.value;
-        //console.log('e.target.value',e.target.value);
+    }
+
+    handleClearClick = (e) => {
+        const { einstein } = store.getState();
+
+        store.dispatch(EINSTEIN.reduxSlice.actions.clearDialog({
+            id:einstein.currentDialog.id,
+            alias:GLOBAL_EINSTEIN
+        }));
+    }
+
+    handleSpeechChange = (e) => {
+        const speech = e.detail.value;
+        console.log('speech data',speech);
+        this.prompt = speech;
+        this.template.querySelector('.slds-publisher__input').value = speech;
     }
 
     handleSendClick = () => {
@@ -124,14 +163,16 @@ export default class Dialog extends ToolkitElement {
                 id:guid()
             });
 
-            const einsteinApexRequest = chat_template('sfdc_ai__DefaultGPT35Turbo',this.messages);
+            // sfdc_ai__DefaultGPT35Turbo ## Will provide possibility to select your model
+            const einsteinApexRequest = chat_template('sfdc_ai__DefaultGPT4Omni',this.messages);
             //console.log('einsteinApexRequest',einsteinApexRequest);
             this.scrollToBottom();
             const einsteinPromise = store.dispatch(
                 EINSTEIN.einsteinExecuteModel({
                     connector:this.connector,
+                    alias:GLOBAL_EINSTEIN,
                     body:einsteinApexRequest,
-                    tabId:einstein.currentTab.id,
+                    tabId:einstein.currentDialog.id,
                     messages:this.messages,
                     createdDate:Date.now()
                 })
@@ -152,9 +193,18 @@ export default class Dialog extends ToolkitElement {
         this.error_message = errors.join(':');
     }
 
-
+    
 
     /** Getters **/
+
+    get isAudioAssistantDisplayed(){
+        //console.log('this.openaiKey',this.openaiKey)
+        return !isEmpty(this.openaiKey) && !isChromeExtension();
+    }
+
+    get isClearButtonDisabled(){
+        return this.isLoading || this.messages.length == 0;
+    }
 
     get isSendButtonDisabled(){
         return this.isLoading || isEmpty(this.prompt);

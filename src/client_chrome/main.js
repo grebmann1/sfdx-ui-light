@@ -2,7 +2,6 @@ import '@lwc/synthetic-shadow';
 import { createElement } from 'lwc';
 import extensionRoot from 'extension/root';
 
-
 const loadLocalForage = async () => {
     return new Promise((resolve,reject) => {
         localforage.defineDriver(customChromeStorageDriver)

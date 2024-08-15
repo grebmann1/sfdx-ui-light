@@ -1,0 +1,9 @@
+.timer {
+    display: flex;
+    align-items: center;
+}
+
+.slds-cancel-recording{
+    --slds-c-button-text-color: #7474748f;
+    --slds-c-button-text-color-hover: #747474;
+}

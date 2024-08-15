@@ -10,6 +10,8 @@ const escapeApexString = (input) => {
     return input.replace(/'/g, "\\'").replace(/\n/g, "\\n");
 }
 
+export const separator_token = '###5ZCAyq262PAg5hI###';
+
 export const chat_template = (model,messages) => {
     return `aiplatform.ModelsAPI.createChatGenerations_Request request = new aiplatform.ModelsAPI.createChatGenerations_Request();
         // Specify model
@@ -24,7 +26,7 @@ export const chat_template = (model,messages) => {
         aiplatform.ModelsAPI modelsAPI = new aiplatform.ModelsAPI();
         aiplatform.ModelsAPI.createChatGenerations_Response response = modelsAPI.createChatGenerations(request);
         for(aiplatform.ModelsAPI_ChatMessage message : response.Code200.generationDetails.generations) {
-            system.debug('START_EINSTEIN_TOOLKIT'+message.id+'###'+message.role+'###'+message.content+'END_EINSTEIN_TOOLKIT');
+            system.debug('START_EINSTEIN_TOOLKIT'+message.id+'${separator_token}'+message.role+'${separator_token}'+message.content+'END_EINSTEIN_TOOLKIT');
         }
     `;
 }

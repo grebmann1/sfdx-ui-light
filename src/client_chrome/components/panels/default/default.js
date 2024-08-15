@@ -146,7 +146,7 @@ export default class Default extends LightningElement {
     }
 
     get isAssistantDisplayed(){
-        return isNotUndefinedOrNull(this.openaiAssistantId) && isNotUndefinedOrNull(this.openaiKey);
+        return true;//isNotUndefinedOrNull(this.openaiAssistantId) && isNotUndefinedOrNull(this.openaiKey);
     }
 
 }

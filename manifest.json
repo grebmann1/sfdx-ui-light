@@ -49,6 +49,7 @@
             "resources": [
                 "scripts/*",
                 "index.html*",
+                "offscreen.html*",
                 "callback.html*",
                 "openai/index.js",
                 "workers/openaiWorker/worker.js"
@@ -73,6 +74,8 @@
         "storage",
         "tabs",
         "tabGroups",
+        "tabCapture",
+        "activeTab",
         "sidePanel",
         "contextMenus"
     ],

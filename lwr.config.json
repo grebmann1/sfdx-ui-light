@@ -9,6 +9,7 @@
             { "dir": "$rootDir/src/client/applications/explorers" },
             { "dir": "$rootDir/src/client/applications/documentation" },
             { "dir": "$rootDir/src/client/applications/tools" },
+            { "dir": "$rootDir/src/client_chrome/components" },
             { "npm": "lightning-base-components" }
         ]
     },

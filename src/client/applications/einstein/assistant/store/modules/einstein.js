@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk,createEntityAdapter } from '@reduxjs/toolkit';
 import { SELECTORS,DOCUMENT } from 'core/store';
 import { lowerCaseKey,guid,isNotUndefinedOrNull,splitTextByTimestamp } from 'shared/utils';
+import { separator_token,GLOBAL_EINSTEIN } from 'assistant/utils';
 
 const test = `59.0 APEX_CODE,DEBUG
 Execute Anonymous: aiplatform.ModelsAPI.createChatGenerations_Request request = new aiplatform.ModelsAPI.createChatGenerations_Request();
@@ -26,7 +27,7 @@ Execute Anonymous:
 17:52:11.98 (8098242356)|USER_INFO|[EXTERNAL]|005Hr00000GPi4K|storm.454b5500dfa9a9@salesforce.com|(GMT-07:00) Pacific Daylight Time (America/Los_Angeles)|GMT-07:00
 17:52:11.98 (8098266846)|EXECUTION_STARTED
 17:52:11.98 (8098286285)|CODE_UNIT_STARTED|[EXTERNAL]|execute_anonymous_apex
-17:52:18.96 (15096475781)|USER_DEBUG|[18]|DEBUG|START_EINSTEIN_TOOLKIT13f601ff-a260-426f-95c2-657ac56df795###assistant###Subject: Meeting Follow-Up
+17:52:18.96 (15096475781)|USER_DEBUG|[18]|DEBUG|START_EINSTEIN_TOOLKIT13f601ff-a260-426f-95c2-657ac56df795###5ZCAyq262PAg5hI###assistant###5ZCAyq262PAg5hI###Subject: Meeting Follow-Up
 
 Dear Team,
 
@@ -64,10 +65,7 @@ const DEBUG = 'DEBUG';
 const EINSTEIN_SETTINGS_KEY = 'EINSTEIN_SETTINGS_KEY';
 
 const INITIAL_TABS = [
-    enrichTab(
-        {id:guid(),body:""},
-        null
-    )
+    enrichTab({id:guid(),body:""},null)
 ];
 
 /** Methods */
@@ -106,11 +104,11 @@ function saveCacheSettings(alias,state) {
     
     console.log('saveCacheSettings');
     try {
-        const { tabs,dialog } = state
+        const { tabs,dialog,connectionAlias } = state
 
         localStorage.setItem(
             `${alias}-${EINSTEIN_SETTINGS_KEY}`,
-            JSON.stringify({ tabs,dialog })
+            JSON.stringify({ tabs,dialog,connectionAlias })
         );
     } catch (e) {
         console.error('Failed to save CONFIG to localstorage', e);
@@ -148,20 +146,26 @@ const formatHeaders = (state) => ({
 });
 export const einsteinExecuteModel = createAsyncThunk(
     'einstein/executeModel',
-    async ({ connector, body,tabId,messages}, { dispatch,getState }) => {
+    async ({ connector, body,alias,tabId,messages}, { dispatch,getState }) => {
         //console.log('connector, body,tabId',connector, body,tabId);
         //const apiPath = isAllRows ? '/queryAll' : '/query';
         try {
             const res = await _executeApexAnonymous(connector,body,formatHeaders(getState().einstein));
+            console.log('res',res);
             if(!res.success){
-                throw new Error(res.exceptionMessage);
+                console.group('Einstein Error');
+                console.error(res.exceptionMessage || res.compileProblem);
+                console.groupEnd();
+                throw new Error("Einstein Access: You org doesn't provide Einstein access to your user.");
             }
             const text = splitTextByTimestamp((res?._header?.debugLog || test)).filter(x => x.includes('|USER_DEBUG|')).join('');
-            const [id,role,content] = extractEinsteinToolkitContent(text).split('###');
+          
+            const [id,role,content] = extractEinsteinToolkitContent(text).split(separator_token);
             return { 
                 data: [].concat(messages,{id,role,content}),
                 body, 
-                alias: connector.conn.alias,tabId
+                alias,
+                tabId
             };
         } catch (err) {
             console.error(err);
@@ -177,18 +181,19 @@ const einsteinSlice = createSlice({
         debug_apexCode : DEBUG,
         dialog:einsteinModelAdapter.getInitialState(),
         body:null,
-        tabs:INITIAL_TABS,
-        currentTab:INITIAL_TABS[0],
+        currentDialog:INITIAL_TABS[0],
+        connectionAlias:null
     },
     reducers: {
         loadCacheSettings : (state,action) => {
             const { alias } = action.payload;
             const cachedConfig = loadCacheSettings(alias);
             if(cachedConfig){
-                const { tabs,dialog } = cachedConfig; 
+                const { dialog,connectionAlias } = cachedConfig; 
+                console.log('loadCacheSettings',dialog);
                 Object.assign(state,{
-                    tabs:enrichTabs(tabs || INITIAL_TABS),
-                    dialog
+                    dialog,
+                    connectionAlias
                 });
             }
             console.log('#cachedConfig#',cachedConfig);
@@ -199,37 +204,59 @@ const einsteinSlice = createSlice({
                 saveCacheSettings(alias,state);
             }
         },
-        initTabs:(state,action) => {
-            state.tabs = enrichTabs(state.tabs);
-            // Set first tab
-            if(state.tabs.length > 0){
-                state.currentTab = state.tabs[0];
+        updateConnectionAlias:(state,action) => {
+            const {connectionAlias,alias} = action.payload;
+            state.connectionAlias = connectionAlias;
+            if(isNotUndefinedOrNull(alias)){
+                saveCacheSettings(alias,state);
             }
         },
+        clearDialog:(state,action) => {
+            const {id,alias} = action.payload;
+            einsteinModelAdapter.removeOne(state.dialog,id);
+            if(isNotUndefinedOrNull(alias)){
+                saveCacheSettings(alias,state);
+            }
+        },
+        /*initTabs:(state,action) => {
+            state.dialog = enrichTabs(state.tabs);
+            // Set first tab
+            if(state.tabs.length > 0){
+                state.currentDialog = state.tabs[0];
+            }
+        },*/
         addTab:(state,action) => {
             const { tab } = action.payload;
-            state.tabs.push(tab);
+            const tabId = tab.id;
+            einsteinModelAdapter.upsertOne(state.dialog, {
+                id: lowerCaseKey(tabId),
+                data:null,
+                isFetching: false,
+            });
             // Assign new tab
-            state.currentTab = tab;
+            state.currentDialog = state.dialog.entities[tabId];
             //state.body = tab.body;
         },
         removeTab:(state,action) => {
             const { id,alias } = action.payload;
-            state.tabs = state.tabs.filter(x => x.id != id);
+            //state.tabs = state.tabs.filter(x => x.id != id);
             einsteinModelAdapter.removeOne(state.dialog,id);
             // Assign last tab
-            if(state.tabs.length > 0 && state.currentTab.id == id){
-                const lastTab = state.tabs[state.tabs.length - 1];
-                state.currentTab = lastTab;
+            if(state.dialog.ids.length > 0 && state.currentDialog.id == id){
+                const lastTabId = state.dialog.ids.slice(-1)[0];
+                state.currentDialog = state.dialog.entities[lastTabId];
                 //state.body = lastTab.body;
+            }
+            if(isNotUndefinedOrNull(alias)){
+                saveCacheSettings(alias,state);
             }
         },
         selectionTab:(state,action) => {
-            const { id } = action.payload;
-            const tab = state.tabs.find(x => x.id == id);
+            const {id} = action.payload;
+            const dialog = state.dialog.entities[id];
             // Assign new tab
-            if(tab){
-                state.currentTab = tab;
+            if(dialog){
+                state.currentDialog = dialog;
                 //state.body = tab.body;
             }
         },
@@ -257,6 +284,8 @@ const einsteinSlice = createSlice({
                     createdDate,
                     error: null
                 });
+                // Overwrite the alias (Not removing the alias in case we want to store it o)
+                //alias = GLOBAL_EINSTEIN;
                 if(isNotUndefinedOrNull(alias)){
                     //console.log('--> save',alias);
                     saveCacheSettings(alias,state);
