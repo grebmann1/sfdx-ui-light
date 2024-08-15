@@ -66,8 +66,6 @@ export default class App extends ToolkitElement {
         if(isNotUndefinedOrNull(einstein.connectionAlias) && this.salesforceInstance_alias != einstein.connectionAlias){
             this.salesforceInstance_alias = einstein.connectionAlias;
         }
-        console.log('salesforceInstance_alias',this.salesforceInstance_alias);
-        console.log('einstein.connectionAlias',einstein.connectionAlias);
     }
 
     /** Events **/
@@ -91,7 +89,6 @@ export default class App extends ToolkitElement {
 
     handleCloseTab = async (e) => {
         const tabId = e.detail.value;
-        console.log('tabId',tabId);
         store.dispatch(EINSTEIN.reduxSlice.actions.removeTab({
             id:tabId,
             alias:GLOBAL_EINSTEIN
