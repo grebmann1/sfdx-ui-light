@@ -1,11 +1,25 @@
 <template>
-    <div class="dx-theme-dark dx-variant-card">
+    <div class={classTheme}>
         <div class="toolbar">
+            <div class="toolbar-item toolbar-title slds-m-left_small">
+                {language}
+            </div>
             <div class="toolbar-item slds-m-right_small">
+                <template lwc:if={isMermaidDownloadDisplayed}>
+                    <lightning-button-icon 
+                        size="medium" 
+                        icon-name="utility:download" 
+                        variant={variant} 
+                        onclick={download_mermaid}
+                        tooltip="Click to download"
+                    ></lightning-button-icon>
+                </template>
+
                 <lightning-button-icon 
-                    size="medium" 
+                    size="medium"
+                    class="slds-m-left_small" 
                     icon-name="utility:copy" 
-                    variant="bare-inverse" 
+                    variant={variant} 
                     onclick={handleCopy}
                     tooltip="Click to copy"
                 ></lightning-button-icon>

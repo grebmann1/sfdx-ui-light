@@ -70,44 +70,34 @@ export default class Dialog extends ToolkitElement {
         //console.log('einstein',einstein)
         //console.log('einstein.currentDialog?.id',einstein.currentDialog?.id);
         const einsteinState = SELECTORS.einstein.selectById({einstein},lowerCaseKey(einstein.currentDialog?.id));
+        // Reset First
+        this.resetError();
         if(einsteinState){
             this.isLoading = einsteinState.isFetching;
             //console.log('einsteinState --->',einsteinState);
-             if(einsteinState.error){
-                 //this._abortingMap[apex.currentDialog.id] = null; // Reset the abortingMap
-                 //this.resetResponse();
-                 this.global_handleError(einsteinState.error)
-             }else if(einsteinState.data){
-                 // Reset First
-                 this.resetError();
-                 //this.resetEditorError();
-                 // Assign Data
-                 this.messages = null;
-                 this.messages = JSON.parse(JSON.stringify(einsteinState.data));
-                 this.scrollToBottom();
-                 //this._responseCreatedDate = apexState.createdDate;
-                 //this._abortingMap[apex.currentDialog.id] = null; // Reset the abortingMap`
-                 
-                 //this.header_formatDate();
-             
-             }else if(einsteinState.isFetching){
-                 //this.resetResponse();
-                 this.resetError();
-                 //this.resetEditorError();
-             }else if(!einsteinState.isFetching && isUndefinedOrNull(einsteinState.data)){
-                // Similar to reset 
-                this.resetError();
+            if(einsteinState.error){
+                //this._abortingMap[apex.currentDialog.id] = null; // Reset the abortingMap
+                //this.resetResponse();
+                this.global_handleError(einsteinState.error)
+            }else if(einsteinState.data){
+                //this.resetEditorError();
+                // Assign Data
+                this.messages = null;
+                this.messages = JSON.parse(JSON.stringify(einsteinState.data));
+                this.scrollToBottom();
+                //this._responseCreatedDate = apexState.createdDate;
+                //this._abortingMap[apex.currentDialog.id] = null; // Reset the abortingMap`
+                
+                //this.header_formatDate();
+            
+            }else if(!einsteinState.isFetching && isUndefinedOrNull(einsteinState.data)){
                 this.isLoading = false;
                 this.messages = [];
-             }
+            }
         }else{
-            this.resetError();
             this.isLoading = false;
             this.messages = [];
         }
-
-        
-        
     }
 
 

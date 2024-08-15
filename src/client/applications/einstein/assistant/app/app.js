@@ -65,6 +65,7 @@ export default class App extends ToolkitElement {
         this.currentDialog = einstein.currentDialog;
         if(isNotUndefinedOrNull(einstein.connectionAlias) && this.salesforceInstance_alias != einstein.connectionAlias){
             this.salesforceInstance_alias = einstein.connectionAlias;
+            this.salesforceInstance_connect(this.salesforceInstance_alias);
         }
     }
 
@@ -98,17 +99,22 @@ export default class App extends ToolkitElement {
     salesforceInstance_handleChange = (e) => {
         console.log('salesforceInstance_handleChange');
         const alias = e.detail.value;
-        this.connectToOrg(alias);
-        store.dispatch(EINSTEIN.reduxSlice.actions.updateConnectionAlias({
-            connectionAlias:alias, // Used for the connection
-            alias:GLOBAL_EINSTEIN // Used for the local storage
-        }));
+        this.salesforceInstance_connect(alias);
     }
 
 
 
 
     /** Methods **/
+
+    salesforceInstance_connect = (alias) => {
+        console.log('salesforceInstance_connect');
+        this.connectToOrg(alias);
+        store.dispatch(EINSTEIN.reduxSlice.actions.updateConnectionAlias({
+            connectionAlias:alias, // Used for the connection
+            alias:GLOBAL_EINSTEIN // Used for the local storage
+        }));
+    }
     
     // This method is call in case there is no existing default connector
     setDefaultEinsteinConnection = () => {

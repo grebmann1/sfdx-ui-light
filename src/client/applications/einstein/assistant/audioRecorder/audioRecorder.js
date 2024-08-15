@@ -14,14 +14,21 @@ export default class AudioCapture extends LightningElement {
     stream;
     isLoading = false;
 
-
+    /** Events  **/
 
     startRecording = async () => {
         if(isChromeExtension()) return;
         navigator.mediaDevices.getUserMedia({ audio: true }).then(this.handleStreamRecording);
     }
 
+    stopRecording = async () => {
+        if (this.mediaRecorder) {
+            this.mediaRecorder.stop();
+        }
+    }
+
     handleStreamRecording = (stream) => {
+        // Recorder
         this.stream = stream;
         this.mediaRecorder = new MediaRecorder(this.stream);
         this.mediaRecorder.start();
@@ -44,12 +51,8 @@ export default class AudioCapture extends LightningElement {
         });
     }
 
-    stopRecording = async () => {
-        if (this.mediaRecorder) {
-            this.mediaRecorder.stop();
-        }
-        
-    }
+    /** Methods **/
+    
 
     startTimer() {
         this.secondsElapsed = 0;
@@ -101,6 +104,50 @@ export default class AudioCapture extends LightningElement {
                 console.error('Error:', error);
             }
         };
+    }
+
+    visualize() {
+        const WIDTH = 400;
+        const HEIGHT = 100;
+
+        this.canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+
+        const draw = () => {
+            if (!this.isRecording) return;
+
+            requestAnimationFrame(draw);
+
+            this.analyser.getByteTimeDomainData(this.dataArray);
+
+            this.canvasCtx.fillStyle = 'rgb(200, 200, 200)';
+            this.canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+
+            this.canvasCtx.lineWidth = 2;
+            this.canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+
+            this.canvasCtx.beginPath();
+
+            const sliceWidth = WIDTH * 1.0 / this.bufferLength;
+            let x = 0;
+
+            for (let i = 0; i < this.bufferLength; i++) {
+                const v = this.dataArray[i] / 128.0;
+                const y = v * HEIGHT / 2;
+
+                if (i === 0) {
+                    this.canvasCtx.moveTo(x, y);
+                } else {
+                    this.canvasCtx.lineTo(x, y);
+                }
+
+                x += sliceWidth;
+            }
+
+            this.canvasCtx.lineTo(WIDTH, HEIGHT / 2);
+            this.canvasCtx.stroke();
+        };
+
+        draw();
     }
 
     /** Getters **/

@@ -42,10 +42,17 @@
     opacity: 1;
     display: flex;
     align-items: center;
-    height: 40px;
-    justify-content: flex-end;
+    justify-content: space-between;
     padding:5px;
+    height: 40px;
 }
+.toolbar-title{
+    text-transform: capitalize;
+}
+.dx-theme-dark .toolbar-title{
+    color: #fff;
+}
+
 .toolbar-item:not(:first-of-type) {
     margin-right: 4px;
 }

@@ -30,15 +30,14 @@ export default class MarkdownViewer extends LightningElement {
         var html = marked()(markdown);
         this.refs.container.innerHTML = html;
         this.enable_codeViewer();
-        this.enable_mermaid();
-
+        //this.enable_mermaid();
     }
 
     enable_codeViewer = () => {
         //console.log('transformCodeBlockToComponents');
         const mapping = {js: "javascript",apex:"apex"};
         // pre .language-java,pre .language-apex,pre .language-javascript,pre .language-soql
-        this.refs.container.querySelectorAll('pre [class^="language-"]:not(.language-mermaid)')
+        this.refs.container.querySelectorAll('pre [class^="language-"]')
         .forEach( el => {
             //const newTarget = el.parentNode;
             
