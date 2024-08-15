@@ -15,6 +15,10 @@ export default class Message extends ToolkitElement {
 
     /** Methods **/
 
+    formatTextFromEinstein = (text) => {
+        // Mainly related to data issues coming from Apex
+        return  text.replaceAll('&#124;','|');
+    }
     
 
     /** Events **/
@@ -32,7 +36,7 @@ export default class Message extends ToolkitElement {
     }
 
     get body(){
-        return this.item?.content || '';
+        return this.formatTextFromEinstein(this.item?.content || '');
     }
 
     get itemClass(){
