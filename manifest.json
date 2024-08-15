@@ -74,8 +74,6 @@
         "storage",
         "tabs",
         "tabGroups",
-        "tabCapture",
-        "activeTab",
         "sidePanel",
         "contextMenus"
     ],
