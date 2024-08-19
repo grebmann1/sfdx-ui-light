@@ -11,8 +11,13 @@
             <div class="slds-grid slds-wrap slds-grid_align-center">
                 <div class="slds-col slds-size_1-of-1 slds-medium-size_10-of-12 slds-large-size_10-of-12">
                     <ul class="slds-chat-list">
-                        <template for:each={messages} for:item="item">
-                            <assistant-message key={item.id} item={item}></assistant-message>
+                        <template for:each={formattedMessages} for:item="item">
+                            <assistant-message 
+                                key={item.id} 
+                                item={item} 
+                                dialog-id={dialogId}
+                                onretry={handleRetryMessage}
+                            ></assistant-message>
                         </template>
                         <template lwc:if={isLoading}>
                             <li class="slds-chat-listitem slds-chat-listitem_inbound">
@@ -65,7 +70,7 @@
                             
                         </ul>
                         <div>
-                            <lightning-button label="Clear" onclick={handleClearClick} disabled={isClearButtonDisabled}></lightning-button>
+                            <lightning-button label="Clear Dialog" onclick={handleClearClick} disabled={isClearButtonDisabled}></lightning-button>
                             <lightning-button label="Send" onclick={handleSendClick} disabled={isSendButtonDisabled} class="slds-p-left_x-small" variant="brand" ></lightning-button>
                         </div>
                     </div>

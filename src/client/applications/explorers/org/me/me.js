@@ -102,7 +102,7 @@ export default class Me extends ToolkitElement {
         const field = e.target.dataset.field;
         navigator.clipboard.writeText(value);
         Toast.show({
-            label: `${field} exported to your `,
+            label: `${field} exported to your clipboard`,
             variant:'success',
         });
     }

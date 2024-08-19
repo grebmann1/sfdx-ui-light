@@ -144,11 +144,21 @@ const formatHeaders = (state) => ({
         ]
     }
 });
+
+const testTimer = () => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve();
+        },4000);
+    })
+}
 export const einsteinExecuteModel = createAsyncThunk(
     'einstein/executeModel',
     async ({ connector, body,alias,tabId,messages}, { dispatch,getState }) => {
         //console.log('connector, body,tabId',connector, body,tabId);
         //const apiPath = isAllRows ? '/queryAll' : '/query';
+        //await testTimer();
+        //throw new Error('ERROR_HTTP_503:test by gui');
         try {
             const res = await _executeApexAnonymous(connector,body,formatHeaders(getState().einstein));
             console.log('res',res);
@@ -169,7 +179,11 @@ export const einsteinExecuteModel = createAsyncThunk(
             };
         } catch (err) {
             console.error(err);
-            throw err;
+            if((err.message || '').startsWith('ERROR_HTTP_503')){
+                throw new Error('Server Error: Please try again later');
+            }else{
+                throw err;
+            }
         }
     }
 );
@@ -182,7 +196,8 @@ const einsteinSlice = createSlice({
         dialog:einsteinModelAdapter.getInitialState(),
         body:null,
         currentDialog:INITIAL_TABS[0],
-        connectionAlias:null
+        connectionAlias:null,
+        errorIds:[] // No need to have it on dialog lvl
     },
     reducers: {
         loadCacheSettings : (state,action) => {
@@ -225,6 +240,16 @@ const einsteinSlice = createSlice({
                 state.currentDialog = state.tabs[0];
             }
         },*/
+        updateMessage:(state,action) => {
+            const { dialogId,data,alias } = action.payload;
+            einsteinModelAdapter.upsertOne(state.dialog, {
+                id: lowerCaseKey(dialogId),
+                data:data,
+            });
+            if(isNotUndefinedOrNull(alias)){
+                saveCacheSettings(alias,state);
+            }
+        },
         addTab:(state,action) => {
             const { tab } = action.payload;
             const tabId = tab.id;
@@ -275,7 +300,8 @@ const einsteinSlice = createSlice({
             })
             .addCase(einsteinExecuteModel.fulfilled, (state, action) => {
                 const { data,body,alias } = action.payload;
-                const { tabId,createdDate } = action.meta.arg;
+                const { tabId,createdDate,messages } = action.meta.arg;
+                const lastMessage = messages[messages.length - 1];
                 einsteinModelAdapter.upsertOne(state.dialog, {
                     id: lowerCaseKey(tabId),
                     data,
@@ -284,6 +310,10 @@ const einsteinSlice = createSlice({
                     createdDate,
                     error: null
                 });
+
+                // Clean error messages
+                state.errorIds = state.errorIds.filter(x => x != lastMessage.id);
+
                 // Overwrite the alias (Not removing the alias in case we want to store it o)
                 //alias = GLOBAL_EINSTEIN;
                 if(isNotUndefinedOrNull(alias)){
@@ -297,12 +327,19 @@ const einsteinSlice = createSlice({
             })
             .addCase(einsteinExecuteModel.rejected, (state, action) => {
                 const { error } = action;
-                const { tabId } = action.meta.arg;
+                const { tabId,messages } = action.meta.arg;
+                const lastMessage = messages[messages.length - 1];
                 einsteinModelAdapter.upsertOne(state.dialog, {
                     id: lowerCaseKey(tabId),
                     isFetching:false,
                     error
                 });
+
+                // Monitor messages errors
+                state.errorIds = [].concat(
+                    state.errorIds.filter(x => x != lastMessage.id), // to be sure it's unique
+                    lastMessage.id
+                )
             })
     }
 });

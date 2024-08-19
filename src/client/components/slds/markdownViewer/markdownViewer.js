@@ -1,12 +1,13 @@
 import { api, LightningElement,createElement } from 'lwc';
 import { marked } from 'shared/markdown';
-import { isEmpty } from 'shared/utils';
+import { isEmpty,classSet,normalizeString as normalize } from 'shared/utils';
 import sldsCodeBlock from 'slds/codeBlock';
+import MarkdownViewerEditorModal from "slds/MarkdownViewerEditorModal";
 
 export default class MarkdownViewer extends LightningElement {
     
     @api value;
-    
+
 
 
     connectedCallback(){
@@ -21,6 +22,24 @@ export default class MarkdownViewer extends LightningElement {
     
 
     /** Methods */
+
+    @api
+    showEditor = () => {
+        //this.variant = VARIANTS.EDITOR;
+        MarkdownViewerEditorModal.open({
+            title:'Edit Markdown',
+            value:this.value,
+            size:'full'
+        }).then(async data => {
+            if(data){
+                const {value} = data;
+                // update the value 
+                this.value = value;
+                this.getDown(this.value);
+                this.dispatchEvent(new CustomEvent("change", { detail:{value},bubbles: true,composed: true }));
+            }
+        })
+    }
 
     getDown = (content) =>{
         this.setMarkdown(content);
@@ -141,6 +160,18 @@ export default class MarkdownViewer extends LightningElement {
         }catch(e){
             //console.log('Unknown diagram & error',e);
         }
+    }
+
+    /** Getters **/
+
+    @api
+    get internalHtml(){
+        return this.refs.container.innerHTML;
+    }
+
+    @api
+    get internalElement(){
+        return this.refs.container;
     }
     
 }

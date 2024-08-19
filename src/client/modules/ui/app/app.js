@@ -79,6 +79,7 @@ export default class App extends LightningElement {
 
     @wire(connectStore,{store})
     storeChange({application}){
+        console.log('application',application);
         this._isFullAppLoading = application.isLoading;
         this._fullAppLoadingMessage = application.isLoadingMessage;
 

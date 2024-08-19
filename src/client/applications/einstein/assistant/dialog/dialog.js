@@ -20,6 +20,7 @@ export default class Dialog extends ToolkitElement {
     // Error
     error_title;
     error_message;
+    errorIds;
 
     // openaiKey
     openaiKey;
@@ -67,20 +68,22 @@ export default class Dialog extends ToolkitElement {
     @wire(connectStore, { store })
     storeChange({ einstein,application }) {
         const isCurrentApp = this.verifyIsActive(application.currentApplication)
-        console.log('dialog',isCurrentApp);
+        console.log('einstein',einstein);
         if(!isCurrentApp) return;
-        //console.log('einstein',einstein)
         //console.log('einstein.currentDialog?.id',einstein.currentDialog?.id);
         const einsteinState = SELECTORS.einstein.selectById({einstein},lowerCaseKey(einstein.currentDialog?.id));
+        console.log('einsteinState',einsteinState);
         // Reset First
         this.resetError();
         if(einsteinState){
+            this.dialogId = einstein.currentDialog?.id;
             this.isLoading = einsteinState.isFetching;
             //console.log('einsteinState --->',einsteinState);
             if(einsteinState.error){
                 //this._abortingMap[apex.currentDialog.id] = null; // Reset the abortingMap
                 //this.resetResponse();
-                this.global_handleError(einsteinState.error)
+                this.global_handleError(einsteinState.error);
+                console.log('error - messages',this.messages);
             }else if(einsteinState.data){
                 //this.resetEditorError();
                 // Assign Data
@@ -156,7 +159,7 @@ export default class Dialog extends ToolkitElement {
             });
 
             // sfdc_ai__DefaultGPT35Turbo ## Will provide possibility to select your model
-            const einsteinApexRequest = chat_template('sfdc_ai__DefaultGPT4Omni',this.messages);
+            const einsteinApexRequest = chat_template('sfdc_ai__DefaultGPT4Omni',this.cleanedMessages);
             //console.log('einsteinApexRequest',einsteinApexRequest);
             this.scrollToBottom();
             const einsteinPromise = store.dispatch(
@@ -185,9 +188,65 @@ export default class Dialog extends ToolkitElement {
         this.error_message = errors.join(':');
     }
 
+    handleRetryMessage = (e) => {
+        console.log('handleRetryMessage',e.detail);
+        /** Retry **/
+        const { einstein } = store.getState();
+        const retryMessage = e.detail;
+        // sfdc_ai__DefaultGPT35Turbo ## Will provide possibility to select your model
+        this.messages = [].concat(this.messages,retryMessage);
+        const einsteinApexRequest = chat_template('sfdc_ai__DefaultGPT4Omni',this.cleanedMessages);
+
+        const einsteinPromise = store.dispatch(
+            EINSTEIN.einsteinExecuteModel({
+                connector:this.connector,
+                alias:GLOBAL_EINSTEIN,
+                body:einsteinApexRequest,
+                tabId:einstein.currentDialog.id,
+                messages:this.messages,
+                createdDate:Date.now()
+            })
+        )
+    }
+
+    handleRetryMessage = (e) => {
+        console.log('handleRetryMessage',e.detail);
+        /** Retry **/
+        const { einstein } = store.getState();
+        const retryMessage = e.detail;
+        // sfdc_ai__DefaultGPT35Turbo ## Will provide possibility to select your model
+        this.messages = [].concat(this.messages,retryMessage);
+        const einsteinApexRequest = chat_template('sfdc_ai__DefaultGPT4Omni',this.cleanedMessages);
+
+        const einsteinPromise = store.dispatch(
+            EINSTEIN.einsteinExecuteModel({
+                connector:this.connector,
+                alias:GLOBAL_EINSTEIN,
+                body:einsteinApexRequest,
+                tabId:einstein.currentDialog.id,
+                messages:this.messages,
+                createdDate:Date.now()
+            })
+        )
+    }
+
     
 
     /** Getters **/
+
+    get cleanedMessages(){
+        const { einstein } = store.getState();
+        return this.messages.filter(x => !einstein.errorIds.includes(x.id)); // Removing the errors before sending to salesforce
+    }
+
+    get formattedMessages(){
+        const { einstein } = store.getState();
+        return this.messages.map((x, index, array) => ({
+            ...x,
+            hasError: einstein.errorIds.includes(x.id),
+            isLastMessage:index === array.length - 1 // ERROR & LAST MESSAGE from User => hasError (Used for retrial)
+        }))
+    }
 
     get isAudioAssistantDisplayed(){
         //console.log('this.openaiKey',this.openaiKey)

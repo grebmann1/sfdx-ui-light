@@ -2,6 +2,10 @@
     scroll-margin-top: 10px;
 }
 
+.slds-chat-message-error {
+    background-color: #cf0d26;
+}
+
 .slds-chat-message__text_inbound {
     max-width: 100%;
     white-space: normal;
@@ -33,4 +37,30 @@
 
 .slds-chat-listitem_outbound .slds-chat-message__meta{
     margin-left: auto;
+}
+
+.slds-chat-message__meta{
+    text-align: center;
+    display: flex;
+    /* align-content: center; */
+    align-items: center;
+    font-size: 12px;
+    font-weight: 300;
+}
+
+/** Custom **/
+
+.small-icon {
+    --slds-c-button-line-height : 16.5px;
+    --slds-c-button-shadow-focus : 0px white solid;
+    --sds-c-button-shadow-focus: unset;
+    /** Danger mode **/
+}
+
+.slds-chat-message__text_inbound slds-markdown-viewer {
+    width: 100%;
+}
+
+.slds-flex-row{
+    align-items: center
 }
