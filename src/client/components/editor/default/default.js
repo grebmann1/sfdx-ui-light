@@ -1,9 +1,12 @@
 import { api,wire } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
-import { classSet,isNotUndefinedOrNull,runActionAfterTimeOut,guid } from 'shared/utils';
-import loader from '@monaco-editor/loader';
+import { classSet,isNotUndefinedOrNull,runActionAfterTimeOut,guid,isChromeExtension } from 'shared/utils';
 import { store,connectStore } from 'core/store';
 import { SOQL,APEX,VF,LOG } from 'editor/languages';
+import loader from '@monaco-editor/loader';
+if(process.env.IS_CHROME){
+    loader.config({ paths: { vs: '/assets/libs/monaco-editor/vs' } });
+}
 
 export default class Default extends ToolkitElement {
 

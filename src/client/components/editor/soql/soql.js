@@ -1,11 +1,13 @@
 import { api,wire } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
 import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeOut,guid } from 'shared/utils';
-import loader from '@monaco-editor/loader';
 import { formatQuery,parseQuery } from '@jetstreamapp/soql-parser-js';
 import { SOQL } from 'editor/languages';
 import { store,connectStore } from 'core/store';
-
+import loader from '@monaco-editor/loader';
+if(process.env.IS_CHROME){
+    loader.config({ paths: { vs: '/assets/libs/monaco-editor/vs' } });
+}
 export default class Soql extends ToolkitElement {
 
     @api maxHeight;

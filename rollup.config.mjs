@@ -49,6 +49,7 @@ export default (args) => {
             plugins: [
                 replace({
                     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+                    'process.env.IS_CHROME': true,
                     preventAssignment: true,
                 }),
                 resolve(), // tells Rollup how to find node modules in node_modules
@@ -76,7 +77,8 @@ export default (args) => {
                         { src: 'node_modules/@salesforce-ux/design-system/assets', dest: 'chrome_ext' },
                         { src: 'src/client/assets/styles/', dest: 'chrome_ext/assets' },
                         { src: 'src/client/assets/libs/', dest: 'chrome_ext/assets' },
-                        { src: 'src/client/assets/images/', dest: 'chrome_ext/assets' }
+                        { src: 'src/client/assets/images/', dest: 'chrome_ext/assets' },
+                        { src: 'node_modules/monaco-editor/min/vs/', dest: 'chrome_ext/assets/libs/monaco-editor'},
                     ],
                     copyOnce: true
                 }),

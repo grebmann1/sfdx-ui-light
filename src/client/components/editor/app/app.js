@@ -2,11 +2,12 @@ import { api } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
 import LightningAlert from 'lightning/alert';
 import Toast from 'lightning/toast';
-
 import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeOut,guid } from 'shared/utils';
-import loader from '@monaco-editor/loader';
 import { SOQL,APEX,VF } from 'editor/languages';
-
+import loader from '@monaco-editor/loader';
+if(process.env.IS_CHROME){
+    loader.config({ paths: { vs: '/assets/libs/monaco-editor/vs' } });
+}
 /** REQUIRED FIELDS : _source & _bodyField */
 
 const INFO = 'INFO';
