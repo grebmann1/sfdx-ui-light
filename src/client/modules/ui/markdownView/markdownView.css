@@ -1,0 +1,8 @@
+ui-root {
+    height: 100vh;
+    display: block;
+}
+
+.slds-background {
+    background-color: #fafaf9;
+}

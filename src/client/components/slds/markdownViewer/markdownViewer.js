@@ -10,10 +10,13 @@ export default class MarkdownViewer extends LightningElement {
 
 
 
+
     connectedCallback(){
+        
         window.setTimeout(() => {
             this.getDown(this.value);
         },1);
+        
     }
 
 

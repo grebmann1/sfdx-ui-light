@@ -74,6 +74,15 @@
             }
         },
         {
+            "id": "markdown",
+            "path": "/markdown",
+            "rootComponent": "ui/markdownView",
+            "layoutTemplate": "$layoutsDir/main.html",
+            "bootstrap": {
+                "syntheticShadow": true
+            }
+        },
+        {
             "id": "extension",
             "path": "/extension",
             "rootComponent": "ui/directView",
