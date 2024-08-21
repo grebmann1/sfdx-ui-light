@@ -194,7 +194,10 @@ export default class Dialog extends ToolkitElement {
         const { einstein } = store.getState();
         const retryMessage = e.detail;
         // sfdc_ai__DefaultGPT35Turbo ## Will provide possibility to select your model
-        this.messages = [].concat(this.messages,retryMessage);
+        this.messages = [].concat(
+            this.messages.filter(x => x.id != retryMessage.id),
+            [retryMessage]
+        );
         const einsteinApexRequest = chat_template('sfdc_ai__DefaultGPT4Omni',this.cleanedMessages);
 
         const einsteinPromise = store.dispatch(
@@ -208,28 +211,6 @@ export default class Dialog extends ToolkitElement {
             })
         )
     }
-
-    handleRetryMessage = (e) => {
-        console.log('handleRetryMessage',e.detail);
-        /** Retry **/
-        const { einstein } = store.getState();
-        const retryMessage = e.detail;
-        // sfdc_ai__DefaultGPT35Turbo ## Will provide possibility to select your model
-        this.messages = [].concat(this.messages,retryMessage);
-        const einsteinApexRequest = chat_template('sfdc_ai__DefaultGPT4Omni',this.cleanedMessages);
-
-        const einsteinPromise = store.dispatch(
-            EINSTEIN.einsteinExecuteModel({
-                connector:this.connector,
-                alias:GLOBAL_EINSTEIN,
-                body:einsteinApexRequest,
-                tabId:einstein.currentDialog.id,
-                messages:this.messages,
-                createdDate:Date.now()
-            })
-        )
-    }
-
     
 
     /** Getters **/
