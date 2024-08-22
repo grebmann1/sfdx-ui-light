@@ -42,6 +42,7 @@ checkIfPresent = (a,b) => {
 
 app.use(timeout(120000));
 app.use(haltOnTimedout);
+app.use(express.json());
 
 function haltOnTimedout(req, res, next){
   if (!req.timedout) next();
@@ -90,7 +91,8 @@ app.get('/chrome/callback', function(req, res) {
 app.get('/config',function(req,res){
   res.json({
       clientId:process.env.CLIENT_ID,
-      chromeId:CHROME_ID
+      chromeId:CHROME_ID,
+      proxyUrl:process.env.PROXY_URL 
   });
 })
 app.get('/version',function(req,res){

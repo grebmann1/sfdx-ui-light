@@ -72,7 +72,8 @@ app.get('/version',function(req,res){
 app.get('/config',function(req,res){
     res.json({
         clientId:process.env.CLIENT_ID,
-        chromeId:CHROME_ID
+        chromeId:CHROME_ID,
+        proxyUrl:process.env.PROXY_URL // 'https://gkheffb6gpvcv3heh7vl3ipby40cybbo.lambda-url.us-west-2.on.aws/proxy/'
     });
 })
 app.get('/documentation/search',function(req,res){

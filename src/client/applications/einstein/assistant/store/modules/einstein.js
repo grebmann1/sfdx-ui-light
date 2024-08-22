@@ -179,7 +179,9 @@ export const einsteinExecuteModel = createAsyncThunk(
             };
         } catch (err) {
             console.error(err);
-            if((err.message || '').startsWith('ERROR_HTTP_503')){
+            if(
+                err.toString().startsWith('ERROR_HTTP_503')
+            ){
                 throw new Error('Server Error: Please try again later');
             }else{
                 throw err;
