@@ -118,12 +118,12 @@ export default class App extends ToolkitElement {
 
 
     handleLoadFromExtensionChange = async (e) => {
-            // e.detail.checked;
-            this.loadFromExtension = e.detail.checked;
-            await window.defaultStore.setItem('connection-extension-toggle',this.loadFromExtension);
-            if(this.loadFromExtension){
-                this.fetchInjectedConnections();
-            }
+        // e.detail.checked;
+        this.loadFromExtension = e.detail.checked;
+        await window.defaultStore.setItem('connection-extension-toggle',this.loadFromExtension);
+        if(this.loadFromExtension){
+            this.fetchInjectedConnections();
+        }
     }
 
 
@@ -274,13 +274,13 @@ export default class App extends ToolkitElement {
                         chrome.tabs.create({url: url,windowId:current.id},(tab) => {
                             this.createOrAddToTabGroup(tab, alias,current.id);
                         });
-                        
                     }
                 }else{
                     window.open(url,target);
                 }
             }catch(e){
                 console.error(e);
+                this.fetchAllConnections();
                 Toast.show({
                     label: `OAuth Issue | Check your settings [re-authorize the org]`,
                     variant:'error',
@@ -290,6 +290,16 @@ export default class App extends ToolkitElement {
             this.isLoading = false;
         }    
     }
+    /*
+    updateRowFromError = (row) => {
+        const _newValue = this.formattedData;
+        _newValue.forEach((x,index) => {
+            const itemIndex = x.items.findIndex( y => y.id === row.id);
+            if(itemIndex > -1){
+                _newValue[itemIndex]
+            }
+        })
+    }*/
 
     openToolkit = async (row,redirect) => {
         this.isLoading = true;
@@ -307,6 +317,7 @@ export default class App extends ToolkitElement {
                 });*/
             }catch(e){
                 //console.log('error',e);
+                this.fetchAllConnections();
                 Toast.show({
                     label: `${e.name} | ${e.message}`,
                     variant:'error',

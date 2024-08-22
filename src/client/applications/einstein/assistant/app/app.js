@@ -39,7 +39,7 @@ export default class App extends ToolkitElement {
             // Listening for broadcast messages from the background script
             chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 if (message.action === 'broadcastMessage') {
-                    console.log('message.senderId',message.senderId,'sender.id',sender.id);
+                    //console.log('message.senderId',message.senderId,'sender.id',sender.id);
                     if (message.senderId != sender.id) {
                         // Force Refresh of cache setting to sync the messages !
                         console.log('--> Force Refresh Local Settings <--');
@@ -71,7 +71,6 @@ export default class App extends ToolkitElement {
     storeChange({ einstein,application }) {
         //console.log('application.currentApplication',application.currentApplication,this.applicationName);
         const isCurrentApp = this.verifyIsActive(application.currentApplication);
-        console.log('isCurrentApp',isCurrentApp);
         if(!isCurrentApp) return;
         //console.log('einstein',einstein);
         //const entities = SELECTORS.einstein.selectAll({einstein});
