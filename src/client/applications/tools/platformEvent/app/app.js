@@ -21,6 +21,7 @@ export default class App extends ToolkitElement {
     //apexScript = "System.debug('Hello World');"; // ='CCR_TaskNotification__e event = new CCR_TaskNotification__e();\n// Publish the event\nDatabase.SaveResult result = EventBus.publish(event);';
     isApexContainerDisplayed = false;
     isManualChannelDisplayed = false;
+    isConnected = false;
 
     @track subscribedChannels = [];
     @track eventObjects = [];
@@ -47,22 +48,7 @@ export default class App extends ToolkitElement {
     connectedCallback(){
         //this.loadCache();
         this.describeAll();
-        cometd.configure({
-            url: `/cometd/${guid()}`,
-            requestHeaders: {
-              Authorization: `Bearer ${this.connector.conn.accessToken}`,
-              'salesforceproxy-endpoint':`${this.connector.conn.instanceUrl}/cometd/${this.connector.conn.version}/`
-            },
-            appendMessageTypeToURL : false,
-            //logLevel: 'debug'
-        });
-        cometd.handshake(status => {
-            if(!status.successful){
-                console.error('Error during handshake',status);
-            }else{
-                //console.log('Connected');
-            }
-        });
+        
     }
 
     disconnectedCallback() {
@@ -120,6 +106,7 @@ export default class App extends ToolkitElement {
     }
 
     subscribeChannel = (e) => {
+        this.connectToCometD();
         const eventName = this.isManualChannelDisplayed?this.subscribe_manual():this.subscribe_lookup();
         this.cometdSubscribe(eventName);
         this.template.querySelector('platformevent-channel-panel').showSubscribedTab();
@@ -166,6 +153,7 @@ export default class App extends ToolkitElement {
     unsubscribeChannel = (e) => {}
 
     handleChannelSelection = (e) => {
+        this.connectToCometD();
         const name = e.detail.value;
         const _item = this.subscribedChannels.find(x => x.name == name);
         if(_item){
@@ -175,6 +163,7 @@ export default class App extends ToolkitElement {
     }
 
     handleRecentChannelSelection = (e) => {
+        this.connectToCometD();
         const eventName = e.detail.value;
         if(!this.subscribedChannels.map(x => x.name).includes(eventName)){
             this.cometdSubscribe(eventName)
@@ -183,11 +172,21 @@ export default class App extends ToolkitElement {
 
     handleChannelDeletion = (e) => {
         const name = e.detail.value;
+        const _channelToDelete = this.subscribedChannels.find(x => x.name === name);
+        if(_channelToDelete){
+            _channelToDelete.unsubscribe();
+        }
         this.subscribedChannels = this.subscribedChannels.filter(x => x.name != name);
         if(this.selectedChannel?.name == name){
             // reset
             this.selectedChannel = null;
             this.selectedEventItem = null;
+        }
+        
+        /** Disconnect if empty */
+        if(this.subscribedChannels.length === 0){
+            cometd.disconnect(); // we disconnect !
+            this.isConnected = false;
         }
     }
 
@@ -206,6 +205,32 @@ export default class App extends ToolkitElement {
     
 
     /** Methods  **/
+    connectToCometD = () => {
+        if(this.isConnected) return;
+        cometd.configure({
+            url: `${window.jsforceSettings.proxyUrl || '/cometd/'}${guid()}`,
+            requestHeaders: {
+              Authorization: `Bearer ${this.connector.conn.accessToken}`,
+              'salesforceproxy-endpoint':`${this.connector.conn.instanceUrl}/cometd/${this.connector.conn.version}/`
+            },
+            appendMessageTypeToURL : false,
+            advice:{
+                timeout: 60000,
+                interval: 5000,
+                reconnect: undefined,
+                maxInterval: 0
+            }
+            //logLevel: 'debug'
+        });
+        cometd.handshake(status => {
+            if(!status.successful){
+                console.error('Error during handshake',status);
+            }else{
+                this.isConnected = true;
+            }
+        });
+        
+    }
 
     openEditorModal = () => {
         EditorModal.open({
