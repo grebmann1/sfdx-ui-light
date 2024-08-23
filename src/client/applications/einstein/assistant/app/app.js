@@ -152,11 +152,6 @@ export default class App extends ToolkitElement {
             }
         }catch(e){
             store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
-            Toast.show({
-                label: `OAuth Issue | Check your settings [re-authorize the org]`,
-                variant:'error',
-                mode:'dismissible'
-            });
         }
     }
 
