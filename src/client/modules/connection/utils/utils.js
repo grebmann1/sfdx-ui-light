@@ -48,7 +48,7 @@ export async function connect({alias,settings,disableEvent = false, directStorag
         }
         //console.log('loaded settings',settings);
     }else{
-        alias = settings.alias; 
+        alias = settings?.alias; 
     }
 
     // Prevent issue

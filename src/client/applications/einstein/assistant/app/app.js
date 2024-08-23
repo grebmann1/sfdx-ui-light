@@ -139,11 +139,19 @@ export default class App extends ToolkitElement {
         let settings = this.salesforceIntance_connections.find(x => x.id === alias);
         store.dispatch(APPLICATION.reduxSlice.actions.startLoading());
 
-        this.salesforceInstance_connector = null;
-        this.salesforceInstance_connector = await connect({alias,settings,disableEvent:true});
-
-        store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
-        if(!this.salesforceInstance_connector){
+        try{
+            this.salesforceInstance_connector = null;
+            this.salesforceInstance_connector = await connect({alias,settings,disableEvent:true});
+            store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
+            if(!this.salesforceInstance_connector){
+                Toast.show({
+                    label: `OAuth Issue | Check your settings [re-authorize the org]`,
+                    variant:'error',
+                    mode:'dismissible'
+                });
+            }
+        }catch(e){
+            store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
             Toast.show({
                 label: `OAuth Issue | Check your settings [re-authorize the org]`,
                 variant:'error',
