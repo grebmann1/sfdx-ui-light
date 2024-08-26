@@ -13,6 +13,7 @@ export default class QueryEditorPanel extends ToolkitElement {
     _soql;
     _hasRendered = false;
     _error; // Used to inject error in editor
+    _response;
     @track tabs = [];
     currentTab;
 
@@ -76,8 +77,15 @@ export default class QueryEditorPanel extends ToolkitElement {
         }
 
         const queryState = SELECTORS.queries.selectById({query},lowerCaseKey(currentTab?.id));
-        if(queryState?.error){
-            this.handleError(queryState.error);
+        if(queryState){
+            this._response = null;
+            if(queryState.error){
+                this.handleError(queryState.error);
+            }else if(queryState.data){
+                this._response = queryState.data;
+            }
+        }else{
+            this._response = null;
         }
         
         if(this.soql != soql){
@@ -190,6 +198,14 @@ export default class QueryEditorPanel extends ToolkitElement {
                 class:classSet('slds-tabs_scoped__item').add({'slds-is-active':x.path === this.currentFile}).toString()
             }
         })
+    }
+
+    get isTotalRecordDisplayed(){
+        return isNotUndefinedOrNull(this.totalRecords);
+    }
+
+    get totalRecords(){
+        return this._response?.totalSize;
     }
 
     /** Tabs */

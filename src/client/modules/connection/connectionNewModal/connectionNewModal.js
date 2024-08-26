@@ -39,9 +39,9 @@ export default class ConnectionNewModal extends LightningModal {
     @api selectedDomain  = domainOptions[0].value;
     @api alias;
     @api connections = [];
+    @api selectedCategory = [DEFAULT_CATEGORY];
+    @api name;
 
-    name;
-    category;
     newCategory;
     orgType = ORG_TYPES.PRODUCTION;
     credentialType = CREDENTIAL_TYPES.oauth;
@@ -62,7 +62,6 @@ export default class ConnectionNewModal extends LightningModal {
 
     /* Group variables */
     maxSelectionSize = 2;
-    @track selectedCategory = [DEFAULT_CATEGORY];
     errors = [];
     
     newRecordOptions = [
@@ -379,7 +378,11 @@ export default class ConnectionNewModal extends LightningModal {
     }
 
     get categories(){
-        return [...new Set(this.connections.map(x => x.company))];
+        let _connections = this.connections.map(x => x.company);
+        if(this.selectedCategory.length > 0){
+            _connections.push(this.selectedCategory[0].id);
+        }
+        return [...new Set(_connections)];
     }
 
     get generatedAlias(){

@@ -12,7 +12,7 @@ import platformEvent_app from "platformevent/app";
 import anonymousApex_app from "anonymousApex/app";
 import api_app from "api/app";
 import assistant_app from "assistant/app";
-
+/*
 const KNOWN_TYPE = new Set([
     "home/app",
     "connection/app", 
@@ -28,6 +28,7 @@ const KNOWN_TYPE = new Set([
     "api/app",
     "assistant/app"
 ]);
+*/
 const APP_MAPPING = {
     "home/app": {
         module:home_app,
@@ -220,7 +221,7 @@ const APP_MAPPING = {
         path:'platformevent'
     }
 };
-
+/*
 const DIRECT_LINK_MAPPING = {
     "documentation":{
         component:"doc/app",
@@ -233,14 +234,14 @@ const DIRECT_LINK_MAPPING = {
         isDeletable:true
     },
 }
-
+*/
 const APP_LIST = (() => {
     return Object.keys(APP_MAPPING).map(name => ({name,...APP_MAPPING[name]}));
 })()
 
 export {
-    KNOWN_TYPE,
-    APP_MAPPING,
-    DIRECT_LINK_MAPPING,
+    //KNOWN_TYPE,
+    //APP_MAPPING,
+    //DIRECT_LINK_MAPPING,
     APP_LIST
 }

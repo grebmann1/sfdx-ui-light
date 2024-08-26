@@ -37,7 +37,11 @@ export default class Default extends LightningElement {
             this.panel = e.detail.panel;
             this.isBackButtonDisplayed = e.detail.isBackButtonDisplayed;
         }
-        
+
+        // Temporary solution to force refresh of connection list
+        if(this.refs.default){
+            this.refs.default.connection_refresh();
+        }
     }
 
     handleGoBack = () => {

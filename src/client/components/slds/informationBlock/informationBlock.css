@@ -38,10 +38,6 @@ blockquote strong{
 
 /** Error **/
 
-blockquote.error .title {
-    color: var(--slds-g-color-error-base-40,#ea001e);
-}
-
 blockquote.error {
     border-left-color: var(--slds-g-color-error-base-40,#ea001e);
     color: var(--slds-g-color-error-base-40,#ea001e);
@@ -54,4 +50,25 @@ blockquote.error .title {
 
 blockquote.error strong{
     color: var(--slds-g-color-error-base-40,#ea001e);
+}
+
+/** Reverse: **/
+
+blockquote.reverse {
+    border-left-color: white;
+    color: white;
+    font-size: 1rem;
+    background-color: #032d60;
+}
+
+blockquote.reverse .title {
+    color: white;
+    font-weight: bold;
+}
+
+blockquote.reverse strong{
+    color: white;
+}
+blockquote.reverse .subtitle {
+    color: white;
 }

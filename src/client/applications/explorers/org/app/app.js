@@ -116,13 +116,31 @@ export default class App extends ToolkitElement {
             total_inactive:responses[0].records.find(x => !x.IsActive)?.total || 0,
         };
     }
+    
+    formatNumber = (number) => {
+        // Use the toLocaleString method to add suffixes to the number
+        return number.toLocaleString('en-US', {
+            // add suffixes for thousands, millions, and billions
+            // the maximum number of decimal places to use
+            maximumFractionDigits: 2,
+            // specify the abbreviations to use for the suffixes
+            notation: 'compact',
+            compactDisplay: 'short'
+        });
+    }
 
 
     /** Getters */
     
 
     get formattedLimits(){
-        return this.limits.filter( x =>  !this.isFilterting_limits || x.Remaining == 0 || x.Max/x.Remaining <= 0.10) || [];
+        return (this.limits.filter( x =>  !this.isFilterting_limits || x.Remaining == 0 || x.Max/x.Remaining <= 0.10) || []).map(x => ({
+            ...x,
+            ...{
+                Remaining:this.formatNumber(x.Remaining),
+                Max:this.formatNumber(x.Max),
+            }
+        }));
     }
 
     get filtering_limits_variants(){

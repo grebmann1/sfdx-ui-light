@@ -3,7 +3,7 @@
     <lightning-modal-body>
         <section class="min-height-400 slds-is-relative">
             <template lwc:if={isLoading}>
-                <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                <slds-spinner message="Might take a few seconds." alternative-text="Loading"></slds-spinner>
             </template>
             <!-- Group -->
             <div class="slds-grid slds-wrap">
@@ -93,7 +93,7 @@
             <div class="slds-grid slds-wrap slds-m-top_x-small">
                 <div class="slds-col slds-size_1-of-1 slds-p-horizontal_xx-small">
                     <slds-information-block title="Recommendation" class="">
-                        <p>OAuth is the recommended approach.</p>
+                        <p>OAuth is the recommended approach.</br> If you face issues such as "API Access Blocked", consider using the <span class="slds-text-title_bold">Redirect Only</span>.</p>
                     </slds-information-block>
                 </div>
             </div>

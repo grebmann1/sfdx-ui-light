@@ -124,9 +124,10 @@ export default class Default extends LightningElement {
         }
     }
 
-    connection_authorizeOrg = () => {
+    @api
+    connection_refresh = () => {
         if(this.refs.connection){
-            this.refs.connection.addConnectionClick();
+            this.refs.connection.fetchAllConnections();
         }
     }
 

@@ -1,4 +1,5 @@
 import { LightningElement,api,wire} from "lwc";
+import ToolkitElement from 'core/toolkitElement';
 import { connectStore,store } from 'core/store';
 import { store_application,store as legacyStore } from 'shared/store';
 import { isUndefinedOrNull,isNotUndefinedOrNull,isEmpty,isSalesforceId} from "shared/utils";
@@ -13,7 +14,7 @@ const APPLICATIONS = {
     TOOLS:'tools'
 }
 
-export default class Salesforce extends LightningElement {
+export default class Salesforce extends ToolkitElement {
 
     @api currentOrigin;
 
@@ -25,7 +26,11 @@ export default class Salesforce extends LightningElement {
     isConnectorLoaded = false;
     @wire(connectStore, { store })
     applicationChange({application}) {
-        if(application.connector && this.connector == null){
+        console.log('application',application,this.connector);
+        if(
+            isNotUndefinedOrNull(application.connector) && isNotUndefinedOrNull(this.connector) 
+            && application.connector?.conn?.accessToken != this.connector.connector?.conn?.accessToken
+        ){
             this.isConnectorLoaded = true;
             this.openSpecificTab(APPLICATIONS.RECORD_EXPLORER);
         }
@@ -114,6 +119,14 @@ export default class Salesforce extends LightningElement {
         legacyStore.dispatch(store_application.fakeNavigate(params));
     }
 
+    addConnection_authorize = (e) => {
+
+    }
+
+    addConnection_hide = (e) => {
+
+    }
+
     /** Methods **/
 
     openSpecificTab = (tabName) => {
@@ -156,5 +169,9 @@ export default class Salesforce extends LightningElement {
 
     get isFooterDisplayed(){
         return this.isConnectorLoaded;
+    }
+
+    get instanceUrl(){
+        return this.connector?.conn?.instanceUrl;
     }
 }

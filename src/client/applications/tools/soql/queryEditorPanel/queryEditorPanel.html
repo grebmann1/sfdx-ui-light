@@ -13,6 +13,11 @@
     </div>
     <!-- Tooling API -->
     <div class="slds-grid slds-p-vertical_xx-small">
+        <template lwc:if={isTotalRecordDisplayed}>
+            <div class="">
+                <p class="slds-p-left_x-small">{totalRecords} records</p>
+            </div>
+        </template>
         <div class="slds-col_bump-left">
             <lightning-input 
                 class="slds-p-right_small toolkit-small"

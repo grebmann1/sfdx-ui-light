@@ -1,0 +1,12 @@
+<template>
+    <template lwc:if={isDisplayed}>
+        <slds-information-block class="slds-p-around_xx-small" title="New organization detected" variant="reverse">
+            <!--<p>{instanceUrl}</p>-->
+            <p>Add it to your connections list ?</p>
+            <lightning-button-group>
+                <lightning-button label="Yes, Authorize" variant="brand" icon-name="utility:adduser" icon-position="right" onclick={addConnection_authorize}></lightning-button>
+                <lightning-button label="No, hide" icon-name="utility:hide" icon-position="right" onclick={addConnection_hide}></lightning-button>
+            </lightning-button-group>
+        </slds-information-block>
+    </template>
+</template>

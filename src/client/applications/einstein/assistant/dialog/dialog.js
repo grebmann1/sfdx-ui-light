@@ -4,6 +4,7 @@ import { isUndefinedOrNull,isEmpty,ROLES,guid,lowerCaseKey,isNotUndefinedOrNull,
 import ToolkitElement from 'core/toolkitElement';
 import { GLOBAL_EINSTEIN,chat_template } from 'assistant/utils';
 import { store,connectStore,EINSTEIN,SELECTORS} from 'core/store';
+const LATEST_MODEL = 'sfdc_ai__DefaultGPT4Omni';
 export default class Dialog extends ToolkitElement {
 
     isLoading = false;
@@ -68,22 +69,17 @@ export default class Dialog extends ToolkitElement {
     @wire(connectStore, { store })
     storeChange({ einstein,application }) {
         const isCurrentApp = this.verifyIsActive(application.currentApplication)
-        console.log('einstein',einstein);
         if(!isCurrentApp) return;
-        //console.log('einstein.currentDialog?.id',einstein.currentDialog?.id);
         const einsteinState = SELECTORS.einstein.selectById({einstein},lowerCaseKey(einstein.currentDialog?.id));
-        console.log('einsteinState',einsteinState);
         // Reset First
         this.resetError();
         if(einsteinState){
             this.dialogId = einstein.currentDialog?.id;
             this.isLoading = einsteinState.isFetching;
-            //console.log('einsteinState --->',einsteinState);
             if(einsteinState.error){
                 //this._abortingMap[apex.currentDialog.id] = null; // Reset the abortingMap
                 //this.resetResponse();
                 this.global_handleError(einsteinState.error);
-                console.log('error - messages',this.messages);
             }else if(einsteinState.data){
                 //this.resetEditorError();
                 // Assign Data
@@ -142,7 +138,7 @@ export default class Dialog extends ToolkitElement {
 
     handleSpeechChange = (e) => {
         const speech = e.detail.value;
-        console.log('speech data',speech);
+        //console.log('speech data',speech);
         this.prompt = speech;
         this.template.querySelector('.slds-publisher__input').value = speech;
     }
@@ -150,6 +146,16 @@ export default class Dialog extends ToolkitElement {
     handleSendClick = () => {
         const { einstein } = store.getState();
         const value = this.template.querySelector('.slds-publisher__input').value;
+        const connector = this.connector || this.legacyConnector;
+
+        // Validate Connector
+        if(isUndefinedOrNull(connector)){
+            this.error_title = 'Error';
+            this.error_message = 'Select a valid Salesforce Instance';
+            return;
+        }
+
+
         if(!isEmpty(value)){
             //this.isLoading = true;
             this.messages.push({
@@ -159,12 +165,12 @@ export default class Dialog extends ToolkitElement {
             });
 
             // sfdc_ai__DefaultGPT35Turbo ## Will provide possibility to select your model
-            const einsteinApexRequest = chat_template('sfdc_ai__DefaultGPT4Omni',this.cleanedMessages);
+            const einsteinApexRequest = chat_template(LATEST_MODEL,this.cleanedMessages);
             //console.log('einsteinApexRequest',einsteinApexRequest);
             this.scrollToBottom();
             const einsteinPromise = store.dispatch(
                 EINSTEIN.einsteinExecuteModel({
-                    connector:this.connector,
+                    connector,
                     alias:GLOBAL_EINSTEIN,
                     body:einsteinApexRequest,
                     tabId:einstein.currentDialog.id,
@@ -189,20 +195,25 @@ export default class Dialog extends ToolkitElement {
     }
 
     handleRetryMessage = (e) => {
-        console.log('handleRetryMessage',e.detail);
-        /** Retry **/
         const { einstein } = store.getState();
         const retryMessage = e.detail;
-        // sfdc_ai__DefaultGPT35Turbo ## Will provide possibility to select your model
+        const connector = this.connector || this.legacyConnector;
+        // Validate Connector
+        if(isUndefinedOrNull(connector)){
+            this.error_title = 'Error';
+            this.error_message = 'Select a valid Salesforce Instance';
+            return;
+        }
+        /** Retry **/
         this.messages = [].concat(
             this.messages.filter(x => x.id != retryMessage.id),
             [retryMessage]
         );
-        const einsteinApexRequest = chat_template('sfdc_ai__DefaultGPT4Omni',this.cleanedMessages);
+        const einsteinApexRequest = chat_template(LATEST_MODEL,this.cleanedMessages);
 
         const einsteinPromise = store.dispatch(
             EINSTEIN.einsteinExecuteModel({
-                connector:this.connector,
+                connector,
                 alias:GLOBAL_EINSTEIN,
                 body:einsteinApexRequest,
                 tabId:einstein.currentDialog.id,
@@ -214,6 +225,10 @@ export default class Dialog extends ToolkitElement {
     
 
     /** Getters **/
+
+    get legacyConnector(){
+        return super.connector;
+    }
 
     get cleanedMessages(){
         const { einstein } = store.getState();

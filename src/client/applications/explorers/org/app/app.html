@@ -90,9 +90,9 @@
                             </div>
                             <div class="slds-no-flex">
                                 <lightning-button-stateful
-                                    label-when-off="Filter Limits"
-                                    label-when-on="Filtering Limits."
-                                    label-when-hover="Un-Filter Limits."
+                                    label-when-off="Highlight Risks"
+                                    label-when-on="Highlight Risks"
+                                    label-when-hover="Un-Highlight Risks"
                                     icon-name-when-off="utility:filterList"
                                     icon-name-when-on="utility:filterList"
                                     icon-name-when-hover="utility:close"
@@ -105,8 +105,16 @@
                         </header>
                     </div>
                     <div class="slds-card__body slds-card__body_inner">
-                        <lightning-tile label="Org Information">
+                        <lightning-tile>
                             <div class="slds-scrollable_y" style="height:400px;">
+                                <dl class="slds-dl_horizontal">
+                                    <dt class="slds-dl_horizontal__label">
+                                        <p class="slds-truncate" title="Type"><strong>Type</strong></p>
+                                    </dt>
+                                    <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                        <p class="slds-truncate"><strong>Remaining / Allocation</strong></p>
+                                    </dd>
+                                </dl>
                                 <template for:each={formattedLimits} for:item="item">
                                     <dl class="slds-dl_horizontal" key={item.name}>
                                         <dt class="slds-dl_horizontal__label">

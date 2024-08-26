@@ -1,5 +1,5 @@
 import { isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
-import { isElectronApp,isObject } from 'shared/utils';
+import { isElectronApp,isObject,isChromeExtension } from 'shared/utils';
 import constant from "core/constant";
 import { Connector } from './mapping';
 import * as webInterface from './web';
@@ -10,6 +10,7 @@ export * from './chrome';
 export * from './mapping';
 
 const PROXY_EXCLUSION = [];
+const FULL_SCOPE = 'id api web openid sfap_api einstein_gpt_api refresh_token';
 
 function extractName(alias){
     let nameArray = (alias || '').split('-');
@@ -202,7 +203,7 @@ export async function oauth_chrome({alias,loginUrl},callback,callbackErrorHandle
         loginUrl : loginUrl,
     });
 
-    const finalUrl = oauth2.getAuthorizationUrl({ prompt:'login consent',scope : 'id api web openid sfap_api refresh_token' });  
+    const finalUrl = oauth2.getAuthorizationUrl({ prompt:'consent',scope : FULL_SCOPE });  
     chrome.runtime.sendMessage({
         action: "launchWebAuthFlow",
         url:finalUrl
@@ -235,7 +236,7 @@ export async function oauth({alias,loginUrl},callback,callbackErrorHandler){
         ...window.jsforceSettings,
         loginUrl,
         version:constant.apiVersion,
-        scope:'id api web openid sfap_api refresh_token'
+        scope:FULL_SCOPE
     },(_,res) => {
         //console.log('res',res);
         if(res.status === 'cancel'){
@@ -317,7 +318,7 @@ export async function directConnect(sessionId,serverUrl){
         //oauth2      : {...window.jsforceSettings},    
         sessionId   : sessionId,
         serverUrl   : serverUrl,
-        proxyUrl    : window.jsforceSettings?.proxyUrl || 'https://sf-toolkit.com/proxy/', // variable initialization might be too slow 
+        proxyUrl    : window.jsforceSettings?.proxyUrl || isChromeExtension()?null:'https://sf-toolkit.com/proxy/', // variable initialization might be too slow 
         version     : constant.apiVersion,
         logLevel    : null//'DEBUG',
     }

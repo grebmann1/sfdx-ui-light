@@ -9,7 +9,8 @@ export default class InformationBlock extends LightningElement {
     get quoteClass(){
         return classSet('doc')
             .add({
-                'error':this.variant === 'error'
+                'error':this.variant === 'error',
+                'reverse':this.variant === 'reverse'
             })
             .toString()
     }

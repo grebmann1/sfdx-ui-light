@@ -1,7 +1,7 @@
 .slds-dl--horizontal__label,.slds-dl_horizontal__label{
-    width:40% !important;
+    width:45% !important;
 }
 
 .slds-dl--horizontal__detail, .slds-dl_horizontal__detail {
-    width: 60%;
+    width: 55%;
 }

@@ -140,8 +140,9 @@ export default class App extends ToolkitElement {
         store.dispatch(APPLICATION.reduxSlice.actions.startLoading());
 
         try{
+            let _newConnection = await connect({alias,settings,disableEvent:true});
             this.salesforceInstance_connector = null;
-            this.salesforceInstance_connector = await connect({alias,settings,disableEvent:true});
+            this.salesforceInstance_connector = _newConnection;
             store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
             if(!this.salesforceInstance_connector){
                 Toast.show({

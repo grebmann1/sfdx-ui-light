@@ -19,3 +19,7 @@ extension-header{
 .slds-full-height{
     height:100%;
 }
+
+.new-org-message{
+    text-align: center;
+}

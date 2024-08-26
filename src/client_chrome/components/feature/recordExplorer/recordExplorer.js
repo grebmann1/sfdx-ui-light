@@ -247,9 +247,11 @@ export default class RecordExplorer extends ToolkitElement {
 
         if(this.isViewChangeFilterEnabled){
             const allModifiedFields = this.modifiedRows.map(x => x.fieldName);
+            const errorFields = Object.keys(this.fieldErrors);
+            console.log('this.fieldErrors',this.fieldErrors);
             items = items.map(item => ({
                 ...item,
-                isVisible:allModifiedFields.includes(item.name)
+                isVisible:allModifiedFields.includes(item.name) || errorFields.includes(item.name)
             }));
         }
         

@@ -5,7 +5,7 @@ import { getExistingSession,saveSession,removeSession,directConnect,connect } fr
 import { NavigationContext,CurrentPageReference,navigate } from 'lwr/navigation';
 import { handleRedirect } from './utils';
 /** Apps  **/
-import {APP_MAPPING,APP_LIST,DIRECT_LINK_MAPPING} from './modules';
+import {APP_LIST} from './modules';
 
 /** Store **/
 import { store as legacyStore } from 'shared/store';

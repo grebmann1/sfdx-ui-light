@@ -38,9 +38,14 @@
             </div>
             -->
             <!-- SECTION -->
-            <div class="slds-full-height slds-col slds-col slds-size_1-of-1">
+            <div class="slds-full-height slds-col slds-size_1-of-1 slds-flex-column">
                 <!-- Start -->
                 <template lwc:if={isConnectorLoaded}>
+                    <div class="slds-grid slds-grid_align-center">
+                        <div class="slds-col">
+                            <connection-quick-authorize instance-url={instanceUrl}></connection-quick-authorize>
+                        </div>
+                    </div>
                     <slds-tabset variant="scoped" class="slds-without-tab slds-full-height">
                         <!-- Default Welcome Section -->
                         <slds-tab class="full-page-body" label="Org Info" value={APPLICATIONS.ORG_INFO}>

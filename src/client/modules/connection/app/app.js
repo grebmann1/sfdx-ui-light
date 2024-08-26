@@ -142,7 +142,7 @@ export default class App extends ToolkitElement {
         this.authorizeOrg(authorizeParams);
     }
 
-
+    @api
     fetchAllConnections = async () => {
         // Browser & Electron version
         this.isLoading = true;
