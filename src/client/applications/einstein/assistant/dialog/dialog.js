@@ -127,6 +127,13 @@ export default class Dialog extends ToolkitElement {
         this.prompt = e.target.value;
     }
 
+    handleKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault(); // Prevent the default behavior of Enter key
+            this.handleSendClick();
+        }
+    }
+
     handleClearClick = (e) => {
         const { einstein } = store.getState();
 

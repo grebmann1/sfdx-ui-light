@@ -48,6 +48,7 @@
                     <label for="comment-text-input2" class="slds-publisher__toggle-visibility slds-m-bottom_small">To: Assistant </label>
                     <textarea id="comment-text-input2" class="slds-publisher__input slds-textarea slds-text-longform" 
                         placeholder="Write a prompt…" 
+                        onkeydown={handleKeyDown}
                         onkeyup={handleInputChange} 
                         onpaste={handleInputChange}
                         disabled={isLoading}
