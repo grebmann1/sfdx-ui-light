@@ -81,11 +81,14 @@ export default class App extends ToolkitElement {
 
 
     handleRowAction = (event) => {
+        console.log('event.detail',event.detail);
         const actionName = event.detail.action.name;
         const { row,redirect } = event.detail;
         switch (actionName) {
-            case 'login':
-                if(row._hasError){
+            case 'login': // Used for login & logout (in UI)
+                if(row._connectAction === 'logout'){
+                    store.dispatch(APPLICATION.reduxSlice.actions.logout());
+                }else if(row._hasError){
                     this.authorizeExistingOrg(row);
                 }else{
                     this.login(row);
@@ -146,11 +149,22 @@ export default class App extends ToolkitElement {
     fetchAllConnections = async () => {
         // Browser & Electron version
         this.isLoading = true;
-        this.data =  await getConfigurations();
+        this.data =  this.formatConfiguration(await getConfigurations());
         //console.log('originalList',this.data);
         //console.log('getConfigurations',this.data);
         this.formattedData = this.formatDataForCardView();
         this.isLoading = false;
+    }
+
+    formatConfiguration = (data) => {
+        const _username = this.connector?.configuration?.username;
+        console.log('data',data);
+        return data.map(x => ({
+            ...x,
+            _connectLabel:x.username === _username?'Logout':x._connectLabel,
+            _connectVariant:x.username === _username?'destructive':x._connectVariant,
+            _connectAction:x.username === _username?'logout':x._connectAction,
+        }))
     }
 
     fetchInjectedConnections = async () => {
@@ -586,13 +600,14 @@ export default class App extends ToolkitElement {
             },
             { label: 'Expire', fieldName: 'expirationDate', type:'text', initialWidth:100, _filter:'electron'},
             { label: 'API', fieldName: 'instanceApiVersion', type: 'text', initialWidth:70, _filter:'electron'},
-            { label: 'User Name', fieldName: 'username', type: 'text',initialWidth:400,
+            { label: 'User Name', fieldName: 'username', type: 'text', initialWidth:400,
                 cellAttributes: {
                     class: { fieldName: '_typeClass' },
                 },
             },
             {   label:'Connect',
-                type: 'button',initialWidth:110,
+                type: 'button',
+                initialWidth:120,
                 typeAttributes:{    
                     name: 'login',
                     label: { fieldName: '_connectLabel'},

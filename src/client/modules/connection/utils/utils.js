@@ -100,7 +100,10 @@ export async function connect({alias,settings,disableEvent = false, directStorag
     // Dispatch Login Event
     const connector = new Connector(configuration,connection);
     if(!disableEvent){
-        store.dispatch(APPLICATION.reduxSlice.actions.login({connector}));
+        store.dispatch(async (dispatch, getState) => {
+            await dispatch(APPLICATION.reduxSlice.actions.logout());
+            await dispatch(APPLICATION.reduxSlice.actions.login({connector}));
+        })
     }
     
     return connector;
@@ -333,7 +336,10 @@ export async function directConnect(sessionId,serverUrl){
     await enrichConnector(connector);
 
     // Dispatch Login Event
-    store.dispatch(APPLICATION.reduxSlice.actions.login({connector}));
+    store.dispatch(async (dispatch, getState) => {
+        await dispatch(APPLICATION.reduxSlice.actions.logout());
+        await dispatch(APPLICATION.reduxSlice.actions.login({connector}));
+    })
     return connector;
 }
 
