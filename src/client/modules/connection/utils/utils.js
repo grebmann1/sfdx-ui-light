@@ -314,14 +314,16 @@ async function oauth_extend({alias,connection},callback){
 }
 
 export async function directConnect(sessionId,serverUrl){
+    console.log('window.jsforceSettings?.proxyUrl',window.jsforceSettings?.proxyUrl);
     let params = {
         //oauth2      : {...window.jsforceSettings},    
         sessionId   : sessionId,
         serverUrl   : serverUrl,
-        proxyUrl    : window.jsforceSettings?.proxyUrl || isChromeExtension()?null:'https://sf-toolkit.com/proxy/', // variable initialization might be too slow 
+        proxyUrl    : isChromeExtension()?null:(window.jsforceSettings?.proxyUrl || 'https://sf-toolkit.com/proxy/'), // variable initialization might be too slow 
         version     : constant.apiVersion,
         logLevel    : null//'DEBUG',
     }
+    console.log('params',params);
     
     let connection = await new window.jsforce.Connection(params);
 
