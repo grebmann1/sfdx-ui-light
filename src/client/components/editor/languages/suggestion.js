@@ -13,6 +13,13 @@ const DATETIME_EXPRESSION = [
     "TOMORROW", 
     "YESTERDAY", 
 
+    // Days
+    "LAST_N_DAYS:n",
+    "N_DAYS_AGO:n",
+    "NEXT_N_DAYS:n",
+    "LAST_90_DAYS", 
+    "NEXT_90_DAYS", 
+
     // Weeks
     "LAST_WEEK", 
     "THIS_WEEK", 
@@ -26,8 +33,6 @@ const DATETIME_EXPRESSION = [
     "NEXT_MONTH", 
     "LAST_N_MONTHS:n", 
     "NEXT_N_MONTHS:n", 
-    "LAST_90_DAYS", 
-    "NEXT_90_DAYS", 
 
     // Quarters
     "THIS_QUARTER", 
