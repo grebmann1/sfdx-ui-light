@@ -133,6 +133,11 @@ export default class App extends ToolkitElement {
             }
         }
 
+        // Body
+        if(this.body != apex.body){
+            this.body = apex.body;
+        }
+
         // Apex State
         const apexState = SELECTORS.apex.selectById({apex},lowerCaseKey(apex.currentTab?.id));
         if(apexState){
@@ -190,11 +195,6 @@ export default class App extends ToolkitElement {
             this.savedApexItems = entities.filter(item => item.isGlobal || item.alias == this.alias).map((item, index) => {
                 return item; // no mutation for now
             });
-        }
-
-        // Body
-        if(this.body != apex.body){
-            this.body = apex.body;
         }
     }
 
@@ -428,19 +428,24 @@ export default class App extends ToolkitElement {
     }
 
     handleError = (data) => {
+        if(!this.refs.editor)return;
+
         const _model = this.refs.editor.currentModel;
         this.hasEditorError = true;
         this.refs.editor.resetMarkers();
         if(data.line){
-            this.refs.editor.addMarkers([{
-                startLineNumber: data.line,
-                endLineNumber: data.line,
-                startColumn: 1,
-                endColumn: _model.getLineLength(data.line),
-                message: data.compileProblem,
-                severity: this.refs.editor.currentMonaco.MarkerSeverity.Error
-            }]
-        );
+            try{
+                this.refs.editor.addMarkers([{
+                    startLineNumber: data.line,
+                    endLineNumber: data.line,
+                    startColumn: 1,
+                    endColumn: _model.getLineLength(data.line),
+                    message: data.compileProblem,
+                    severity: this.refs.editor.currentMonaco.MarkerSeverity.Error
+                }]);
+            }catch(e){
+                console.error(e);
+            }
         }
         
         this.error_title = data.exceptionMessage?'Exception Error':'Compilation Error';
