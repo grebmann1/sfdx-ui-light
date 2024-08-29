@@ -1,10 +1,10 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const fetch = require("node-fetch");
-const OpenAI = require('openai');
+/*const OpenAI = require('openai');
 const openai = new OpenAI({
     apiKey: '##############################',
-});
+});*/
 
 const CHUNK_SIZE = 50;
 
@@ -56,7 +56,7 @@ const CONFIGURATION = {
     }
 }
 
-const version = '248.0'
+const version = '250.0'
 const documentMapping = {};
 
 function removeDuplicates(arr, prop) {
@@ -80,9 +80,9 @@ fetchDocuments = async () => {
     var items = Object.keys(documentMapping)
     .reduce((acc,documentationId) => acc.concat(documentMapping[documentationId].items.map(x => ({...x,documentationId}))),[]);
     
-    //loadAllDocuments(items);
-    // Separate files
-    loadAllDocumentAsSeparateFile(items);
+    loadAllDocuments(items);
+    // Separate files (openai)
+    //loadAllDocumentAsSeparateFile(items);
 }
 
 fetchDocuments_single = async (documentationId) => {
@@ -160,9 +160,9 @@ loadAllDocumentAsSeparateFile = async (items) => {
 
     // Chunk the URLs
     //const itemChunks = chunkList(items.map(x => ({url:x.a_attr.href,...x})), CHUNK_SIZE);
-    const vectorStore = await openai.beta.vectorStores.create({
+    /*const vectorStore = await openai.beta.vectorStores.create({
         name: "Salesforce Toolkit - Store"
-    });
+    });*/
     // Process each items
     const results = [];
     for await (const x of items.map(x => ({url:x.a_attr.href,...x}))) {
@@ -178,20 +178,20 @@ loadAllDocumentAsSeparateFile = async (items) => {
         //console.log('fileExist',fileExist)
         if(!fs.existsSync(fileName)) return; // Double check as the content can be empty
 
-        const file = await openai.files.create({
+        /*const file = await openai.files.create({
             file: fs.createReadStream(fileName),
             purpose: "assistants",
         });
         //console.log('file',file);
-        results.push(file);
+        results.push(file);*/
     }
     //console.log('results',results);
-    const fileChunks = chunkList(results, 500);
+    /*const fileChunks = chunkList(results, 500);
     for await (const chunk of fileChunks) {
         const myVectorStoreFileBatch = await openai.beta.vectorStores.fileBatches.create(vectorStore.id,{file_ids: chunk.map(x => x.id)});
         
         //console.log('myVectorStoreFileBatch',myVectorStoreFileBatch);
-    }
+    }*/
     
     /*const myUpdatedAssistant = await openai.beta.assistants.update(
         "asst_RpwCiurQtkfHYcO8IVeFBuIE",
