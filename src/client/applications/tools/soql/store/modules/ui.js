@@ -213,7 +213,6 @@ function updateCurrentTab(state,attributes){
     const tabIndex = state.tabs.findIndex(x => x.id === state.currentTab.id);
     if(tabIndex > -1 ){
         state.tabs[tabIndex].body = state.soql;
-        state.tabs[tabIndex].useToolingApi = state.useToolingApi;
         if(attributes){
             // Extra Attributes
             Object.assign(state.tabs[tabIndex],attributes);
@@ -222,8 +221,8 @@ function updateCurrentTab(state,attributes){
 }
 
 function formatTab(tab){
-    const {id,name,body,useToolingApi,isDraft,fileId,fileBody} = tab;
-    return {id,name,body,useToolingApi,isDraft,fileId,fileBody};
+    const {id,name,body,isDraft,fileId,fileBody} = tab;
+    return {id,name,body,isDraft,fileId,fileBody};
 }
 
 function enrichTabs(tabs,queryFiles){
@@ -259,7 +258,6 @@ function updateSOQL(state,soql){
 const uiSlice = createSlice({
     name: 'ui',
     initialState: {
-        useToolingApi: false,
         apiUsage: undefined,
         recentQueries: [],
         tabs:INITIAL_TABS,
@@ -313,7 +311,6 @@ const uiSlice = createSlice({
             if(state.tabs.length > 0 && state.currentTab.id == id){
                 const lastTab = state.tabs[state.tabs.length - 1];
                 state.currentTab = lastTab;
-                state.useToolingApi = lastTab.useToolingApi;
                 updateSOQL(state,lastTab.body);
             }
             if(isNotUndefinedOrNull(alias)){
@@ -327,7 +324,6 @@ const uiSlice = createSlice({
             // Assign new tab
             if(tab){
                 state.currentTab = tab;
-                state.useToolingApi = tab.useToolingApi;
                 updateSOQL(state,tab.body);
             }
         },
@@ -389,10 +385,6 @@ const uiSlice = createSlice({
             const query = toggleRelationship(state.query, action);
             state.query = query;
             state.soql = composeQuery(query, { format: true,formatOptions:QUERY_CONFIG });
-            updateCurrentTab(state);
-        },
-        toggleToolingApi: (state, action) => {
-            state.useToolingApi = action.payload.useToolingApi === true;
             updateCurrentTab(state);
         },
         updateSoql: (state, action) => {

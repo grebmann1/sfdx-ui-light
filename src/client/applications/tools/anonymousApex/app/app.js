@@ -503,7 +503,7 @@ export default class App extends ToolkitElement {
                 }));
             }else{
                 store.dispatch(APEX.reduxSlice.actions.updateBody({
-                    connector:this.queryConnector,
+                    connector:this.connector,
                     body:content
                 }));
             }

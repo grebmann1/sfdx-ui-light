@@ -123,6 +123,7 @@ const recentSlice = createSlice({
         },
         saveQuery: (state, action) => {
             const { soql, alias } = action.payload;
+            console.log('saveQuery',soql,alias)
             const recentQueriesState = [
                 soql,
                 ...state.queries.filter(q => q !== soql).slice(0, MAX_RECENT - 1)

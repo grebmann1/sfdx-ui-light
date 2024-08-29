@@ -43,11 +43,13 @@ export default class FieldsPanel extends ToolkitElement {
         if ( describe.nameMap && !describe.nameMap[fullSObjectName]) {
             return;
         }
-        if (fullSObjectName !== this._selectedSObject) {
+        if (fullSObjectName !== this._selectedSObject) { // useToolingApi
+            //console.log('fullSObjectName',fullSObjectName,describe.nameMap[fullSObjectName])
             this._selectedSObject = fullSObjectName;
             store.dispatch(SOBJECT.describeSObject({
                 connector:this.connector.conn,
-                sObjectName:this._selectedSObject
+                sObjectName:this._selectedSObject,
+                useToolingApi:describe.nameMap[fullSObjectName].useToolingApi
             }));
         }
         const sobjectState = SELECTORS.sobject.selectById({sobject},lowerCaseKey(this._selectedSObject));
@@ -57,7 +59,7 @@ export default class FieldsPanel extends ToolkitElement {
         if (sobjectState.data) {
             this.sobjectMeta = sobjectState.data;
         } else if (sobjectState.error) {
-            console.error(sobjectState.error);
+            console.error(sobjectState);
             Toast.show({
                 message: this.i18n.FIELDS_PANEL_FAILED_DESCRIBE_OBJ,
                 errors: sobjectState.error

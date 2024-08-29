@@ -7,10 +7,11 @@ export const queryAdapter = createEntityAdapter();
 // Thunks using createAsyncThunk
 export const executeQuery = createAsyncThunk(
     'queries/executeQuery',
-    async ({ connector, soql,tabId,createdDate }, { dispatch }) => {
+    async ({ connector, soql,tabId,createdDate,useToolingApi }, { dispatch }) => {
         //const apiPath = isAllRows ? '/queryAll' : '/query';
         try {
-            const res = await connector.query(soql);
+            const _conn = useToolingApi ? connector.conn.tooling : connector.conn;
+            const res = await _conn.query(soql);
             dispatch(DOCUMENT.reduxSlices.RECENT.actions.saveQuery({
                 soql, 
                 alias: connector.alias,
@@ -26,9 +27,10 @@ export const executeQuery = createAsyncThunk(
 
 export const explainQuery = createAsyncThunk(
     'queries/explainQuery',
-    async ({ connector, soql,tabId }, { dispatch }) => {
+    async ({ connector, soql,tabId,useToolingApi }, { dispatch }) => {
         try {
-            const query = connector.query(soql);
+            const _conn = useToolingApi ? connector.conn.tooling : connector.conn;
+            const query = _conn.query(soql);
             const res = await query.explain();
             //console.log('res',res)
             return { data: res, soql, alias: connector.alias,tabId};

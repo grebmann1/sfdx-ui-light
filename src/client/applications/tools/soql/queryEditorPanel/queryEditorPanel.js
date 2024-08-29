@@ -38,14 +38,6 @@ export default class QueryEditorPanel extends ToolkitElement {
         this._soql = value;
     }
 
-    @api
-    get useToolingApi(){
-        return this._useToolingApi;
-    }
-    set useToolingApi(value){
-        this._useToolingApi = value === true;
-        store.dispatch(UI.reduxSlice.actions.toggleToolingApi({useToolingApi:this._useToolingApi}));
-    }
 
     //fetchSObjectsIfNeeded
 
@@ -144,10 +136,6 @@ export default class QueryEditorPanel extends ToolkitElement {
         
     }
 
-    handleToolingApiCheckboxChange = (e) => {
-        this.useToolingApi = e.detail.checked;
-    }
-
     handleSoqlChange(event) {
 
         runActionAfterTimeOut(event,async (lastEvent) => {
@@ -158,7 +146,7 @@ export default class QueryEditorPanel extends ToolkitElement {
                 this._soql = value;
                 this.draft = _newDraft;
                 store.dispatch(UI.reduxSlice.actions.updateSoql({
-                    connector:this.queryConnector,
+                    connector:this.connector,
                     soql:value,
                     isDraft:_newDraft
                 }));
@@ -179,10 +167,6 @@ export default class QueryEditorPanel extends ToolkitElement {
     @api
     get editor(){
         return this.refs?.editor;
-    }
-
-    get queryConnector(){
-        return this.useToolingApi?this.connector.conn.tooling:this.connector.conn;
     }
 
     get iconName(){

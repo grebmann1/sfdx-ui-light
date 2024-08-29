@@ -15,6 +15,9 @@ import moment from 'moment';
 export default class App extends ToolkitElement {
     // used to controle store of childs
     isActive;
+    isLoading = false;
+    isDownloading = false;
+    isDownloadCanceled = false;
 
     @track selectedSObject;
     @track isLeftToggled = true;
@@ -189,12 +192,13 @@ export default class App extends ToolkitElement {
     
     handlePerformanceCheckClick = async (e) => {
         try{
-            const { ui } = store.getState();
+            const { ui,describe } = store.getState();
             //this.isLoading = true;
             const result = await store.dispatch(QUERY.explainQuery({
-                connector:this.queryConnector,
+                connector:this.connector,
                 soql:this.soql,
-                tabId:ui.currentTab.id
+                tabId:ui.currentTab.id,
+                useToolingApi:describe.nameMap[lowerCaseKey(this.selectedSObject)]?.useToolingApi
             })).unwrap();
             //this.isLoading = false;
             const plans = result.data.plans;
@@ -215,14 +219,15 @@ export default class App extends ToolkitElement {
         const query = inputEl.getValue();
         if (!query) return;
 
-        const { ui } = store.getState();
+        const { ui,describe } = store.getState();
         const queryPromise = store.dispatch(QUERY.executeQuery({
-            connector:this.queryConnector,
+            connector:this.connector,
             soql:query, 
             tabId:ui.currentTab.id,
             sobjectName:this.selectedSObject,
             isAllRows,
-            createdDate:Date.now()
+            createdDate:Date.now(),
+            useToolingApi:describe.nameMap[lowerCaseKey(this.selectedSObject)]?.useToolingApi
         }));
         this._abortingMap[ui.currentTab.id] = queryPromise;
     }
@@ -265,6 +270,10 @@ export default class App extends ToolkitElement {
             // Reset draft
 
         })
+    }
+
+    handleCancelDownloadClick = () => {
+        this.isDownloadCanceled = true;
     }
 
     handleMonacoSave = (e) => {
@@ -341,33 +350,74 @@ export default class App extends ToolkitElement {
     
 
     copyCSV = async (e) => {
-        const data = await this.generateCsv();
-        navigator.clipboard.writeText(data);
-        Toast.show({
-            label: `CSV exported to your clipboard`,
-            variant:'success',
-        });
+        this.isDownloading = true;
+        this.isDownloadCanceled = false;
+        try{
+            const data = await this.generateCsv();
+            navigator.clipboard.writeText(data);
+            Toast.show({
+                label: `CSV exported to your clipboard`,
+                variant:'success',
+            });
+        }catch(e){
+            console.error(e);
+            Toast.show({
+                label: this.i18n.OUTPUT_PANEL_FAILED_EXPORT_CSV,
+                errors: e,
+                variant:'error',
+                mode:'dismissible'
+            });
+        }
+        this.isDownloading = false;
     }
 
     copyExcel = async (e) => {
-        const data = await this.generateCsv("\t");
-        navigator.clipboard.writeText(data);
-        Toast.show({
-            label: `Excel exported to your clipboard`,
-            variant:'success',
-        });
+        this.isDownloading = true;
+        this.isDownloadCanceled = false;
+        try{
+            const data = await this.generateCsv("\t");
+            navigator.clipboard.writeText(data);
+            Toast.show({
+                label: `Excel exported to your clipboard`,
+                variant:'success',
+            });
+            this.isDownloading = false;
+        }catch(e){
+            console.error(e);
+            Toast.show({
+                label: this.i18n.OUTPUT_PANEL_FAILED_EXPORT_EXCEL,
+                errors: e,
+                variant:'error',
+                mode:'dismissible'
+            });
+        }
     }
 
     copyJSON = async (e) => {
-        await this._fetchSubsequentRecords(this._responseNextRecordsUrl);
-        navigator.clipboard.writeText(JSON.stringify(this._responseRows, null, 4));
-        Toast.show({
-            label: `JSON exported to your clipboard`,
-            variant:'success',
-        });
+        this.isDownloading = true;
+        this.isDownloadCanceled = false;
+        try{
+            await this._fetchSubsequentRecords(this._responseNextRecordsUrl);
+            navigator.clipboard.writeText(JSON.stringify(this._responseRows, null, 4));
+            Toast.show({
+                label: `JSON exported to your clipboard`,
+                variant:'success',
+            });
+        }catch (e) {
+            console.error(e);
+            Toast.show({
+                label: this.i18n.OUTPUT_PANEL_FAILED_EXPORT_JSON,
+                errors: e,
+                variant:'error',
+                mode:'dismissible'
+            });
+        }
+        this.isDownloading = false;
     }
 
     downloadCSV = async (e) => {
+        this.isDownloading = true;
+        this.isDownloadCanceled = false;
         try {
             const data = await this.generateCsv(',');
             const bom = new Uint8Array([0xef, 0xbb, 0xbf]);
@@ -381,13 +431,18 @@ export default class App extends ToolkitElement {
         } catch (e) {
             console.error(e);
             Toast.show({
-                message: this.i18n.OUTPUT_PANEL_FAILED_EXPORT_CSV,
-                errors: e
+                label: this.i18n.OUTPUT_PANEL_FAILED_EXPORT_CSV,
+                errors: e,
+                variant:'error',
+                mode:'dismissible'
             });
         }
+        this.isDownloading = false;
     }
 
     downloadJSON = async (e) => {
+        this.isDownloading = true;
+        this.isDownloadCanceled = false;
         try {
             await this._fetchSubsequentRecords(this._responseNextRecordsUrl);
             const blob = new Blob([JSON.stringify(this._responseRows, null, 4)], { type: 'application/json' });
@@ -400,10 +455,13 @@ export default class App extends ToolkitElement {
         } catch (e) {
             console.error(e);
             Toast.show({
-                message: this.i18n.OUTPUT_PANEL_FAILED_EXPORT_JSON,
-                errors: e
+                label: this.i18n.OUTPUT_PANEL_FAILED_EXPORT_JSON,
+                errors: e,
+                variant:'error',
+                mode:'dismissible'
             });
         }
+        this.isDownloading = false;
     }
 
     async generateCsv(separator) {
@@ -435,7 +493,7 @@ export default class App extends ToolkitElement {
 
     async _fetchSubsequentRecords(nextRecordsUrl) {
         await this._fetchNextRecords(nextRecordsUrl);
-        if (this._responseNextRecordsUrl) {
+        if (this._responseNextRecordsUrl && !this.isDownloadCanceled) {
             await this._fetchSubsequentRecords(this._responseNextRecordsUrl);
         }
     }
@@ -478,7 +536,7 @@ export default class App extends ToolkitElement {
                 }));
             }else{
                 store.dispatch(UI.reduxSlice.actions.updateSoql({
-                    connector:this.queryConnector,
+                    connector:this.connector,
                     soql:content
                 }));
             }
@@ -498,6 +556,14 @@ export default class App extends ToolkitElement {
     }
 
     /** Getters **/
+
+    get isLoadingAdvanced(){
+        return this.isLoading || this.isDownloading;
+    }
+
+    get loadingMessage(){ // this._responseRows
+        return this.isDownloading ? `Preparing the file. Might take a few seconds. ${this.currentRecordsFormatted}/${this.totalRecordsFormatted} records.`:'Loading';
+    }
 
     get pageClass(){//Overwrite
         return super.pageClass+' slds-p-around_small';
@@ -531,16 +597,20 @@ export default class App extends ToolkitElement {
         return this.isRecentToggled?'brand':'bare';
     }
 
-    get queryConnector(){
-        return this.useToolingApi?this.connector.conn.tooling:this.connector.conn;
-    }
-
     get isMetaDisplayed(){
         return isNotUndefinedOrNull(this._response);
     }
 
     get totalRecords(){
-        return shortFormatter.format(this._response?.totalSize);
+        return this._response?.totalSize || 0;
+    }
+
+    get currentRecordsFormatted(){
+        return shortFormatter.format(this._responseRows?.length || 0);
+    }
+
+    get totalRecordsFormatted(){
+        return shortFormatter.format(this.totalRecords);
     }
     
     get sobjectPlurialLabel(){

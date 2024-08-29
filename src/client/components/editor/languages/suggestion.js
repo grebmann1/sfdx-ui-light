@@ -1,5 +1,5 @@
 import { store,connectStore,SELECTORS,SOBJECT,DESCRIBE,QUERY,UI } from 'core/store';
-import { capitalizeFirstLetter } from 'shared/utils';
+import { capitalizeFirstLetter,lowerCaseKey } from 'shared/utils';
 
 const DATETIME_EXPRESSION = [
     // Date Formats
@@ -177,10 +177,11 @@ export default class SuggestionHandler {
 
     // Method to get relations from objects
     getChildRelationshipSuggestions = (isSnippet) => {
+        const { describe } = store.getState();
         return store.dispatch(SOBJECT.describeSObject({
             connector:this.connector.conn,
             sObjectName:this.parser.fromObject,
-            useToolingApi:this.useToolingApi
+            useToolingApi:describe.nameMap[lowerCaseKey(this.parser.fromObject)]?.useToolingApi
         })).then(() => {
             const { sobject } = store.getState();
             const sobjectState = SELECTORS.sobject.selectById({sobject},(this.parser.fromObject||'').toLowerCase());
@@ -211,7 +212,7 @@ export default class SuggestionHandler {
 
         let currentReferenceTo = referenceTo;
         return Promise.all(relation.map(rel => {
-            const { sobject } = store.getState();
+            const { sobject,describe } = store.getState();
             const sobjectState = SELECTORS.sobject.selectById({sobject},(currentReferenceTo||'').toLowerCase());
             if(!sobjectState || !sobjectState.data) return; // Object no yet fully setup
             const fields = sobjectState.data.fields.filter(field => field.relationshipName && field.relationshipName.toLowerCase() === rel);
@@ -220,7 +221,7 @@ export default class SuggestionHandler {
                 return store.dispatch(SOBJECT.describeSObject({
                     connector:this.connector.conn,
                     sObjectName:currentReferenceTo,
-                    useToolingApi:this.useToolingApi
+                    useToolingApi:describe.nameMap[lowerCaseKey(currentReferenceTo)]?.useToolingApi
                 }))
             }
             return;
@@ -229,6 +230,7 @@ export default class SuggestionHandler {
 
     // Method to get predefined values for a field
     getTypeFieldSuggestions = async (object, fieldData, withSeparator) => {
+        const { describe } = store.getState();
         const { field } = fieldData;
         const referenceTo = this.parser.isSubQuery
             ? (this.parser.subquery.type === "select" ? this.extractObjectFromChild() : this.parser.subquery.fromObject)
@@ -237,7 +239,7 @@ export default class SuggestionHandler {
         await store.dispatch(SOBJECT.describeSObject({
             connector: this.connector.conn,
             sObjectName: referenceTo,
-            useToolingApi: this.useToolingApi
+            useToolingApi: describe.nameMap[lowerCaseKey(referenceTo)]?.useToolingApi
         }));
     
         const { sobject } = store.getState();
@@ -271,10 +273,11 @@ export default class SuggestionHandler {
     getFields = async (referenceTo, withSeparator = true) => {
         console.log('referenceTo',referenceTo);
        return new Promise(async (resolve) => {
+            const { describe } = store.getState();
             await store.dispatch(SOBJECT.describeSObject({
                 connector:this.connector.conn,
                 sObjectName:referenceTo,
-                useToolingApi:this.useToolingApi
+                useToolingApi:describe.nameMap[lowerCaseKey(referenceTo)]?.useToolingApi
             }));
             const { sobject } = store.getState();
             const sobjectState = SELECTORS.sobject.selectById({sobject},(referenceTo||'').toLowerCase());
