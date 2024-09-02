@@ -24,18 +24,18 @@
                     <!-- [TODO - Handle Deletion and show error/success]
                     <lightning-button-icon icon-name="utility:delete" variant="border-filled" onclick={deleteSelectedRecords} disabled={isDeleteDisabled}></lightning-button-icon>
                     -->
-                    <lightning-button-menu class="slds-p-left_xx-small" variant="border-filled" icon-name="utility:download" disabled={isDownloadDisabled}>
+                    <lightning-button-menu class="slds-p-left_xx-small" variant="border-filled" icon-name="utility:download" disabled={isDownloadDisabled} tooltip="Download">
                         <lightning-menu-item value="csv" label="CSV" onclick={downloadCSV}></lightning-menu-item>
                         <lightning-menu-item value="json" label="JSON" onclick={downloadJSON}></lightning-menu-item>
                     </lightning-button-menu>
-                    <lightning-button-menu class="slds-p-left_xx-small" variant="border-filled" icon-name="utility:copy" disabled={isDownloadDisabled}>
+                    <lightning-button-menu class="slds-p-left_xx-small" variant="border-filled" icon-name="utility:copy" disabled={isDownloadDisabled} tooltip="Copy to clipboard">
                         <lightning-menu-item value="csv" label="CSV" onclick={copyCSV}></lightning-menu-item>
                         <lightning-menu-item value="json" label="JSON" onclick={copyJSON}></lightning-menu-item>
                         <lightning-menu-item value="excel" label="Excel" onclick={copyExcel}></lightning-menu-item>
                     </lightning-button-menu>
-                    <lightning-button-icon class="slds-p-left_xx-small" variant="border-filled" icon-name="utility:indicator_performance_period" size="large" onclick={handlePerformanceCheckClick} disabled={isLoading}></lightning-button-icon>
-                    <lightning-button-icon-stateful class="slds-p-left_xx-small" selected={isLeftToggled}   variant="border-filled" icon-name="utility:knowledge_base" size="large" onclick={handleLeftToggle}></lightning-button-icon-stateful>
-                    <lightning-button-icon-stateful class="slds-p-left_xx-small" selected={isRecentToggled} variant="border-filled" icon-name="utility:budget_period"  size="large" onclick={handleRecentToggle}></lightning-button-icon-stateful>
+                    <lightning-button-icon class="slds-p-left_xx-small" variant="border-filled" icon-name="utility:indicator_performance_period" size="large" onclick={handlePerformanceCheckClick} disabled={isLoading} tooltip="Analyze the performance of your query."></lightning-button-icon>
+                    <lightning-button-icon-stateful class="slds-p-left_xx-small" selected={isLeftToggled}   variant="border-filled" icon-name="utility:knowledge_base" size="large" onclick={handleLeftToggle} tooltip="Display the Object/Field Catalog."></lightning-button-icon-stateful>
+                    <lightning-button-icon-stateful class="slds-p-left_xx-small" selected={isRecentToggled} variant="border-filled" icon-name="utility:budget_period"  size="large" onclick={handleRecentToggle} tooltip="Display your Recents/Saved queries."></lightning-button-icon-stateful>
                 </div>
 
                 <template lwc:if={isMetaDisplayed}>

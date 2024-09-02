@@ -132,12 +132,13 @@ function _toggleChildRelationshipField(
 function saveCacheSettings(alias,state) {
     
     try {
-        const { soql, leftPanelToggled, recentPanelToggled,tabs } = state;
+        const { soql, leftPanelToggled, recentPanelToggled,tabs,includeDeletedRecords } = state;
         localStorage.setItem(`${alias}-${SETTINGS_KEY}`,JSON.stringify({
             soql,
             leftPanelToggled,
             recentPanelToggled,
-            tabs
+            tabs,
+            includeDeletedRecords
         }));
     } catch (e) {
         console.error('Failed to save CONFIG to localstorage', e);
@@ -269,18 +270,20 @@ const uiSlice = createSlice({
         sort: undefined,
         leftPanelToggled:false,
         recentPanelToggled:false,
+        includeDeletedRecords:false
     },
     reducers: {
         loadCacheSettings : (state,action) => {
             const { alias,queryFiles } = action.payload;
             const cachedConfig = loadCacheSettings(alias);
             if(cachedConfig){
-                const { soql, leftPanelToggled,recentPanelToggled,tabs } = cachedConfig; 
+                const { soql, leftPanelToggled,recentPanelToggled,tabs,includeDeletedRecords } = cachedConfig; 
                 Object.assign(state,{
                     soql:soql || '',
                     leftPanelToggled,
                     recentPanelToggled,
-                    tabs:enrichTabs(tabs || INITIAL_TABS,queryFiles)
+                    tabs:enrichTabs(tabs || INITIAL_TABS,queryFiles),
+                    includeDeletedRecords
                 });
             }
             console.log('#cachedConfig#',cachedConfig);
@@ -351,6 +354,13 @@ const uiSlice = createSlice({
         updateRecentPanel:(state, action) => {
             const { value,alias } = action.payload;
             state.recentPanelToggled = value === true;
+            if(isNotUndefinedOrNull(alias)){
+                saveCacheSettings(alias,state);
+            }
+        },
+        updateIncludeDeletedRecords:(state, action) => {
+            const { value,alias } = action.payload;
+            state.includeDeletedRecords = value === true;
             if(isNotUndefinedOrNull(alias)){
                 saveCacheSettings(alias,state);
             }

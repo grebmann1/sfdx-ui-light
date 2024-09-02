@@ -227,7 +227,8 @@ export default class App extends ToolkitElement {
             sobjectName:this.selectedSObject,
             isAllRows,
             createdDate:Date.now(),
-            useToolingApi:describe.nameMap[lowerCaseKey(this.selectedSObject)]?.useToolingApi
+            useToolingApi:describe.nameMap[lowerCaseKey(this.selectedSObject)]?.useToolingApi,
+            includeDeletedRecords:ui.includeDeletedRecords || false
         }));
         this._abortingMap[ui.currentTab.id] = queryPromise;
     }

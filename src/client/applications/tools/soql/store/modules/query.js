@@ -7,11 +7,11 @@ export const queryAdapter = createEntityAdapter();
 // Thunks using createAsyncThunk
 export const executeQuery = createAsyncThunk(
     'queries/executeQuery',
-    async ({ connector, soql,tabId,createdDate,useToolingApi }, { dispatch }) => {
-        //const apiPath = isAllRows ? '/queryAll' : '/query';
+    async ({ connector, soql,tabId,createdDate,useToolingApi,includeDeletedRecords }, { dispatch }) => {
         try {
+            console.log('includeDeletedRecords',includeDeletedRecords);
             const _conn = useToolingApi ? connector.conn.tooling : connector.conn;
-            const res = await _conn.query(soql);
+            const res = await _conn.query(soql).scanAll(includeDeletedRecords || false);
             dispatch(DOCUMENT.reduxSlices.RECENT.actions.saveQuery({
                 soql, 
                 alias: connector.alias,

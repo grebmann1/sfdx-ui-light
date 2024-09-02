@@ -7,6 +7,8 @@ import LightningConfirm from 'lightning/confirm';
 
 export default class QueryEditorPanel extends ToolkitElement {
     @api namespace;
+
+    includeDeletedRecords = false;
     
     isMenuSmall = false;
     _sobjectMeta;
@@ -49,7 +51,7 @@ export default class QueryEditorPanel extends ToolkitElement {
         const isCurrentApp = this.verifyIsActive(application.currentApplication);
         if(!isCurrentApp) return;
 
-        const { soql,tabs,currentTab } = ui;
+        const { soql,tabs,currentTab,includeDeletedRecords } = ui;
         if (ui.query) {
             const sobjectState = SELECTORS.sobject.selectById({sobject},lowerCaseKey(fullApiName(ui.query.sObject,this.namespace)));
             if (sobjectState) {
@@ -59,6 +61,8 @@ export default class QueryEditorPanel extends ToolkitElement {
                 this.mapChildRelationships(ui.query);
             }
         }
+        
+        this.includeDeletedRecords = includeDeletedRecords || false;
 
         this.tabs = tabs;
         if(currentTab && this._hasRendered){
@@ -159,6 +163,14 @@ export default class QueryEditorPanel extends ToolkitElement {
 
         
         
+    }
+
+    handleIncludeDeletedRecordChange  = (e) => {
+        this.includeDeletedRecords = e.detail.checked;
+        store.dispatch(UI.reduxSlice.actions.updateIncludeDeletedRecords({
+            value:this.includeDeletedRecords,
+            alias:this.alias
+        }));
     }
 
 
