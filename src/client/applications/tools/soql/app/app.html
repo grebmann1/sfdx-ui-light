@@ -4,23 +4,6 @@
             <!-- Header -->
             <builder-header slot="header" title="Tools" sub-title="SOQL Builder" icon-name="standard:dataset">
                 <div slot="actions" class="slds-builder-toolbar__actions">
-                    <!--<lightning-button class="slds-p-right_xx-small" label={i18n.QUERY_EDITOR_PANEL_FORMAT_SOQL} onclick={handleFormatQueryClick}></lightning-button>-->
-                    <!-- TODO: Add Download and Clipboard copy
-                        <lightning-button-menu alternative-text="Download" variant="border-filled" icon-name="utility:download" class="slds-p-right_xx-small">
-                            <lightning-menu-item value="csv" label="csv"></lightning-menu-item>
-                        </lightning-button-menu>
-                    -->
-                    <!--<button class="slds-button slds-button_brand" onclick={runQueryAll} title={i18n.EDITOR_PANEL_RUN_ALL_TITLE}> {i18n.EDITOR_PANEL_RUN_ALL} </button>-->
-                    <lightning-button class="slds-p-left_xx-small" label={i18n.EDITOR_PANEL_SAVE} onclick={handleSaveClick} disabled={isSaveButtonDisabled}></lightning-button>
-                    <template lwc:if={isRunButtonDisplayed}>
-                        <lightning-button class="slds-p-left_xx-small" variant="brand" label={i18n.EDITOR_PANEL_RUN} icon-name="utility:right" onclick={handleRunClick} disabled={isRunButtonDisabled}></lightning-button>
-                    </template>
-                    <template lwc:else>
-                        <lightning-button class="slds-p-left_xx-small" variant="destructive" label={i18n.EDITOR_PANEL_ABORT} icon-name="utility:clear" onclick={handleAbortClick} disabled={isLoading}></lightning-button>
-                    </template>
-                </div>
-
-                <div slot="subactions" class="slds-builder-toolbar__actions">
                     <!-- [TODO - Handle Deletion and show error/success]
                     <lightning-button-icon icon-name="utility:delete" variant="border-filled" onclick={deleteSelectedRecords} disabled={isDeleteDisabled}></lightning-button-icon>
                     -->
@@ -36,6 +19,23 @@
                     <lightning-button-icon class="slds-p-left_xx-small" variant="border-filled" icon-name="utility:indicator_performance_period" size="large" onclick={handlePerformanceCheckClick} disabled={isLoading} tooltip="Analyze the performance of your query."></lightning-button-icon>
                     <lightning-button-icon-stateful class="slds-p-left_xx-small" selected={isLeftToggled}   variant="border-filled" icon-name="utility:knowledge_base" size="large" onclick={handleLeftToggle} tooltip="Display the Object/Field Catalog."></lightning-button-icon-stateful>
                     <lightning-button-icon-stateful class="slds-p-left_xx-small" selected={isRecentToggled} variant="border-filled" icon-name="utility:budget_period"  size="large" onclick={handleRecentToggle} tooltip="Display your Recents/Saved queries."></lightning-button-icon-stateful>
+                </div>
+
+                <div slot="subactions" class="slds-builder-toolbar__actions">
+                    <!--<lightning-button class="slds-p-right_xx-small" label={i18n.QUERY_EDITOR_PANEL_FORMAT_SOQL} onclick={handleFormatQueryClick}></lightning-button>-->
+                    <!-- TODO: Add Download and Clipboard copy
+                        <lightning-button-menu alternative-text="Download" variant="border-filled" icon-name="utility:download" class="slds-p-right_xx-small">
+                            <lightning-menu-item value="csv" label="csv"></lightning-menu-item>
+                        </lightning-button-menu>
+                    -->
+                    <!--<button class="slds-button slds-button_brand" onclick={runQueryAll} title={i18n.EDITOR_PANEL_RUN_ALL_TITLE}> {i18n.EDITOR_PANEL_RUN_ALL} </button>-->
+                    <lightning-button class="slds-p-left_xx-small" label={i18n.EDITOR_PANEL_SAVE} onclick={handleSaveClick} disabled={isSaveButtonDisabled}></lightning-button>
+                    <template lwc:if={isRunButtonDisplayed}>
+                        <lightning-button class="slds-p-left_xx-small" variant="brand" label={i18n.EDITOR_PANEL_RUN} icon-name="utility:right" onclick={handleRunClick} disabled={isRunButtonDisabled}></lightning-button>
+                    </template>
+                    <template lwc:else>
+                        <lightning-button class="slds-p-left_xx-small" variant="destructive" label={i18n.EDITOR_PANEL_ABORT} icon-name="utility:clear" onclick={handleAbortClick} disabled={isLoading}></lightning-button>
+                    </template>
                 </div>
 
                 <template lwc:if={isMetaDisplayed}>
