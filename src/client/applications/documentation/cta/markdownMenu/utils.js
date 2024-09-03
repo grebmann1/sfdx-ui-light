@@ -48,5 +48,14 @@ export function structurizedMarkdown(markdownContent) {
             
         }
     });
+    
+    // Add left over
+    if(currentSubCategory && currentCategory){
+        currentCategory.children.push(currentSubCategory);
+    }
+    if(currentCategory){
+        content.push(currentCategory);
+    }
+
     return content;
 }
