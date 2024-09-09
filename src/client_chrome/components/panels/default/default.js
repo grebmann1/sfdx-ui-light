@@ -35,7 +35,7 @@ export default class Default extends LightningElement {
 
     @wire(connectStore, { store:deprecatedStore })
     applicationChange({application}) {
-        console.log('application',application)
+        //console.log('application',application)
         if(application?.type === 'FAKE_NAVIGATE'){
             const pageRef = application.target;
             this.loadFromNavigation(pageRef);

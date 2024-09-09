@@ -81,7 +81,7 @@ export async function connect({alias,settings,disableEvent = false, directStorag
     /** Assign Latest Version **/
     //await assignLatestVersion(connection);
    
-    console.log('{alias,connection}',{alias,connection});
+    //console.log('{alias,connection}',{alias,connection});
     const configuration = await generateConfiguration({alias,connection});
     /** Handler Connection Error and save it */
     if(configuration._hasError){
@@ -105,7 +105,6 @@ export async function connect({alias,settings,disableEvent = false, directStorag
             await dispatch(APPLICATION.reduxSlice.actions.login({connector}));
         })
     }
-    
     return connector;
 }
 
@@ -175,7 +174,7 @@ export async function getExistingSession(){
             //console.log('sessionStorage.getItem("currentConnection")',JSON.parse(sessionStorage.getItem("currentConnection")));
             const settings = JSON.parse(sessionStorage.getItem("currentConnection"));
                 settings.logLevel = null;
-                console.log('settings',settings);
+                //console.log('settings',settings);
             // Using {alias,...settings} before, see if it's better now
             return isElectronApp()?await connect({alias:settings.alias}):await connect({settings});
         }catch(e){
@@ -228,10 +227,11 @@ export async function oauth_chrome({alias,loginUrl},callback,callbackErrorHandle
 
 export async function oauth({alias,loginUrl},callback,callbackErrorHandler){
     //console.log('oauth');
-    window.jsforce.browserClient = new window.jsforce.browser.Client(Date.now()); // Reset
+    window.jsforce.browserClient = new window.jsforce.BrowserClient(Date.now()); // Reset
     //console.log('window.jsforceSettings',window.jsforceSettings);
     window.jsforce.browserClient.init(window.jsforceSettings);
     window.jsforce.browserClient.on('connect', async (connection) =>{
+        console.log('new connection',connection)
         oauth_extend({alias,connection},callback);
     });
 
@@ -240,13 +240,13 @@ export async function oauth({alias,loginUrl},callback,callbackErrorHandler){
         loginUrl,
         version:constant.apiVersion,
         scope:FULL_SCOPE
-    },(_,res) => {
+    }).then(res => {
         //console.log('res',res);
         if(res.status === 'cancel'){
             //this.close(null)
             callback(null);
         }
-    });
+    })
 }
 
 async function generateConfiguration({alias,connection,redirectUrl}){
@@ -280,14 +280,8 @@ async function generateConfiguration({alias,connection,redirectUrl}){
         
         /** Get Username **/
         try{
-            let identity = await connection.identity();
-            if(isNotUndefinedOrNull(identity)){
-                Object.assign(configuration,{
-                    username :identity.username,
-                    orgId: identity.organization_id,
-                    userInfo: identity
-                });
-            }
+            /** Get Username & Version **/
+            await enrichConnector({connection,configuration},false);
         }catch(e){
             console.error(e);
             Object.assign(configuration,{
@@ -317,7 +311,6 @@ async function oauth_extend({alias,connection},callback){
 }
 
 export async function directConnect(sessionId,serverUrl){
-    console.log('window.jsforceSettings?.proxyUrl',window.jsforceSettings?.proxyUrl);
     let params = {
         //oauth2      : {...window.jsforceSettings},    
         sessionId   : sessionId,
@@ -326,40 +319,42 @@ export async function directConnect(sessionId,serverUrl){
         version     : constant.apiVersion,
         logLevel    : null//'DEBUG',
     }
-    console.log('params',params);
     
     let connection = await new window.jsforce.Connection(params);
 
-    const connector = new Connector({},connection);
-
-    /** Get Username **/
-    await enrichConnector(connector);
+    /** Get Username & Version **/
+    const connector = await enrichConnector({configuration:{},connection},true);
 
     // Dispatch Login Event
     store.dispatch(async (dispatch, getState) => {
-        await dispatch(APPLICATION.reduxSlice.actions.logout());
+        //await dispatch(APPLICATION.reduxSlice.actions.logout());
         await dispatch(APPLICATION.reduxSlice.actions.login({connector}));
     })
     return connector;
 }
 
-async function enrichConnector(connector){
+async function enrichConnector({connection,configuration},dispathUpdate){
     const [identity,versions] = await Promise.all([
-        connector.conn.identity(),
-        connector.conn.request('/services/data/')
+        connection.identity(),
+        connection.request('/services/data/')
     ]);
     
     if(isNotUndefinedOrNull(identity)){
-        Object.assign(connector.configuration,{
+        Object.assign(configuration,{
             username:identity.username,
             orgId:identity.organization_id,
             userInfo:identity,
-            alias:identity.username // Replacing the alias to take advantage of the cache
+            alias:identity.username, // Replacing the alias to take advantage of the cache
+            id:identity.username
         });
     }
     const _version = versions.sort((a, b) => b.version.localeCompare(a.version));
-    connector.conn.version = _version[0].version;
-    connector.configuration.versionDetails = _version[0];
+    connection.version = _version[0].version;
+    configuration.versionDetails = _version[0];
 
-    store.dispatch(APPLICATION.reduxSlice.actions.updateConnector(connector));
+    const connector = new Connector(configuration,connection);
+    if(dispathUpdate){
+        store.dispatch(APPLICATION.reduxSlice.actions.updateConnector(connector));
+    }
+    return connector; 
 }

@@ -208,20 +208,18 @@ export default class App extends ToolkitElement {
     connectToCometD = () => {
         if(this.isConnected) return;
         cometd.configure({
-            url: `${window.jsforceSettings.proxyUrl || '/cometd/'}${guid()}`,
+            url: `${'/cometd/'}${guid()}`,
             requestHeaders: {
               Authorization: `Bearer ${this.connector.conn.accessToken}`,
               'salesforceproxy-endpoint':`${this.connector.conn.instanceUrl}/cometd/${this.connector.conn.version}/`
             },
             appendMessageTypeToURL : false,
             advice:{
-                timeout: 60000,
-                interval: 5000,
-                reconnect: undefined,
-                maxInterval: 0
+                timeout: 29000,
             }
             //logLevel: 'debug'
         });
+        cometd.websocketEnabled = false;
         cometd.handshake(status => {
             if(!status.successful){
                 console.error('Error during handshake',status);

@@ -1,9 +1,9 @@
 <template>
     <!-- Record List ( slds-p-left_small )-->
     <div class="slds-p-top_small">
-        <div class="slds-grid"> <!-- slds-grid_align-spread slds-grid_vertical-align-center -->
+        <div class="slds-grid slds-align-items_center"> <!-- slds-grid_align-spread slds-grid_vertical-align-center -->
             <template lwc:if={isBackDisplayed}>
-                <button class="slds-button slds-button_icon" title="Back" onclick={goBack} disabled={isLoading}>
+                <button class="slds-button slds-button_icon" title="Back" onclick={back_handleClick} disabled={isLoading}>
                     <svg class="slds-button__icon" aria-hidden="true">
                         <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#back"></use>
                     </svg>
@@ -12,6 +12,17 @@
             </template>
             
             <h2 class="slds-m-left_x-small slds-tree__group-header slds-truncate">{title}</h2>
+            <div class="slds-col_bump-left">
+                <template lwc:if={isRefreshAvailable}>
+                    <lightning-button-icon 
+                        variant="bare"
+                        icon-name="utility:refresh" 
+                        title="Refresh" 
+                        disabled={isLoading} 
+                        onclick={refresh_handleClick}
+                    ></lightning-button-icon>
+                </template>
+            </div>
         </div>
     </div>
     <div class="slds-flex-column min-height-200">

@@ -8,9 +8,8 @@ const qs = require('qs');
 const fs = require('node:fs');
 const jwt = require('jsonwebtoken');
 
-
-
 const CTA_MODULE = require('./modules/cta.js');
+const proxy = require('./modules/proxy.js');
 
 /** Documentation Temporary Code until a DB is incorporated **/
 const VERSION = process.env.DOC_VERSION || '248.0';
@@ -51,20 +50,18 @@ const lwrServer = createServer({
     serverMode: SERVER_MODE,
     port: PORT,
 });
-const app = lwrServer.getInternalServer("express");
 
-app.use(timeout(120000));
+const app = lwrServer.getInternalServer("express");
+app.use(timeout(295000)); // Related to Heroku 30s timeout
 app.use(haltOnTimedout);
-app.use(express.json());
 
 function haltOnTimedout(req, res, next){
   if (!req.timedout) next();
 }
-
 /* CometD Proxy */
-app.all("/cometd/?*", jsforceAjaxProxy({ enableCORS: true }));
+app.all("/cometd/*", proxy({enableCORS:true}));
 /* jsForce Proxy */
-app.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));
+app.all("/proxy/*", proxy({enableCORS:true}));
 
 app.get('/version',function(req,res){
     res.json({version:process.env.npm_package_version});
@@ -111,7 +108,7 @@ app.get('/oauth2/callback', function(req, res) {
     var code = req.query.code;
     var states = req.query.state.split('#');
     var params = qs.parse(states[1]);
-
+    console.log('callback',code,states,params);
     var conn = new jsforce.Connection({ oauth2 : getOAuth2Instance(params) });
     
     conn.authorize(code, function(err, userInfo) {

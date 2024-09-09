@@ -41,7 +41,7 @@ export function configureSoqlLanguage(monaco) {
 			
 				const parserInstance = new SOQLParser().process(textBefore,textAfter);
 				const {application,ui} = store.getState();
-				console.log('application.connector,ui.useToolingApi',application.connector,ui.useToolingApi);
+				//console.log('application.connector,ui.useToolingApi',application.connector,ui.useToolingApi);
 				const suggestionInstance = new SuggestionHandler(monaco,parserInstance,application.connector,ui.useToolingApi);
 		
 				completionItems = getCompletionItems(parserInstance,suggestionInstance) || completionItems;

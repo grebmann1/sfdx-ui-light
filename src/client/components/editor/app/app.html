@@ -27,8 +27,40 @@
                 <lightning-button-icon class="slds-float_right" variant="bare" icon-name="utility:copy"></lightning-button-icon>
             </div>
         </template>
-        <!-- Editor -->
-        <div lwc:ref="editor" style={dynamicStyle}></div>
+
+        <div class="slds-is-relative slds-flex-column slds-full-height">
+            <!-- Editor Button -->
+            <div class="editor-toolkit">
+                <div class="slds-flex-column slds-vertical-button-group">
+                    
+
+                    <template lwc:if={isCodeCoverageDisplayed}>
+                        <lightning-button-icon 
+                            icon-name="utility:copy" 
+                            tooltip="Copy to clipboard" 
+                            class="slds-button-first" 
+                            onclick={handleCopyClick}
+                        ></lightning-button-icon>
+                        <lightning-button-icon-stateful 
+                            icon-name="utility:asset_audit" 
+                            variant="border-filled"  
+                            tooltip="Highlight Coverage" 
+                            selected={isCoverageHighlighted} 
+                            onclick={handleCoverageHighlightToggle}
+                        ></lightning-button-icon-stateful>
+                    </template>
+                    <template lwc:else>
+                        <lightning-button-icon 
+                            icon-name="utility:copy" 
+                            tooltip="Copy to clipboard"  
+                            onclick={handleCopyClick}
+                        ></lightning-button-icon>
+                    </template>
+                </div>
+            </div>
+            <!-- Editor -->
+            <div lwc:ref="editor" style={dynamicStyle}></div>
+        </div>
 
         <template lwc:if={isLoading}>
             <lightning-spinner alternative-text="Loading"></lightning-spinner>

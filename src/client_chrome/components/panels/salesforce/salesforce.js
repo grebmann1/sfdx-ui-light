@@ -26,7 +26,7 @@ export default class Salesforce extends ToolkitElement {
     isConnectorLoaded = false;
     @wire(connectStore, { store })
     applicationChange({application}) {
-        console.log('application',application,this.connector);
+        //console.log('application',application,this.connector);
         if(
             isNotUndefinedOrNull(application.connector) && isNotUndefinedOrNull(this.connector) 
             && application.connector?.conn?.accessToken != this.connector.connector?.conn?.accessToken

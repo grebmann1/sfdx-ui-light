@@ -197,6 +197,14 @@ code-analyzer .slds-vertical-tabs{
     border-radius: unset; /* Remove Border radius*/
 }
 
+.slds-vertical-button-group  button {
+    border-radius: 0;
+}
+
+.slds-vertical-button-group .slds-button-first button {
+    border-bottom: 0;
+}
+
 /** Footer **/
 .custom-utility-bar{
     background-color: #032d60;

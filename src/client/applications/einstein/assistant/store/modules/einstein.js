@@ -119,20 +119,11 @@ function saveCacheSettings(alias,state) {
 
 export const einsteinModelAdapter = createEntityAdapter();
 const _executeApexAnonymous = (connector,body,headers) => {
-    //console.log('connector,body,headers',connector,body,headers);
-    return new Promise((resolve,reject) => {
-        connector.conn.soap._invoke("executeAnonymous", { apexcode: body }, Schemas.ExecuteAnonymousResult,(err, res) => {
-            if(err){ 
-                reject(err)
-            }else{
-                resolve(res);
-            }
-        },{
-            xmlns: "http://soap.sforce.com/2006/08/apex",
-            endpointUrl:connector.conn.instanceUrl + "/services/Soap/s/" + connector.conn.version,
-            headers
-        });
-    })
+    return connector.conn.soap._invoke("executeAnonymous", { apexcode: body }, Schemas.ExecuteAnonymousResult,{
+        xmlns: "http://soap.sforce.com/2006/08/apex",
+        endpointUrl:connector.conn.instanceUrl + "/services/Soap/s/" + connector.conn.version,
+        headers
+    });
 }
 const formatHeaders = (state) => ({
     DebuggingHeader:{

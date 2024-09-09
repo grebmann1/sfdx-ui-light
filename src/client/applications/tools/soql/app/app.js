@@ -294,7 +294,9 @@ export default class App extends ToolkitElement {
                     queryFiles:getState().queryFiles
                 }));
             })
-            
+        }else{
+            // New File
+            this.handleSaveClick();
         }
     }
 

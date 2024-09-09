@@ -81,7 +81,7 @@ export default class App extends ToolkitElement {
 
 
     handleRowAction = (event) => {
-        console.log('event.detail',event.detail);
+        //console.log('event.detail',event.detail);
         const actionName = event.detail.action.name;
         const { row,redirect } = event.detail;
         switch (actionName) {
@@ -158,12 +158,12 @@ export default class App extends ToolkitElement {
 
     formatConfiguration = (data) => {
         const _username = this.connector?.configuration?.username;
-        console.log('data',data);
+        //console.log('data',data);
         return data.map(x => ({
             ...x,
-            _connectLabel:x.username === _username?'Logout':x._connectLabel,
-            _connectVariant:x.username === _username?'destructive':x._connectVariant,
-            _connectAction:x.username === _username?'logout':x._connectAction,
+            _connectLabel:x.username === _username && !x._hasError?'Logout':x._connectLabel,
+            _connectVariant:x.username === _username && !x._hasError?'destructive':x._connectVariant,
+            _connectAction:x.username === _username && !x._hasError?'logout':x._connectAction,
         }))
     }
 
@@ -230,14 +230,10 @@ export default class App extends ToolkitElement {
             {alias,loginUrl},
             (res) => {
                 this.fetchAllConnections();
-                if(isUndefinedOrNull(res)){
-                    store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
-                }
+                store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
             },(e) => {  
                 console.error(e);
-                if(isUndefinedOrNull(res)){
-                    store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
-                }
+                store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
             }
         );
     }

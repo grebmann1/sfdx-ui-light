@@ -36,7 +36,9 @@ export default class App extends ToolkitElement {
     label1;
     label2;
 
-    // Menu
+    // Internal Caching
+    _caching = {};
+    _byPassCaching = false;
 
     // Mode
     advancedMode = false;
@@ -172,6 +174,19 @@ export default class App extends ToolkitElement {
         }
     }
 
+    handleRefresh = async () => {
+        this._byPassCaching = true;
+        if(this.currentLevel === 1){
+            const exceptionMetadata = this.currentMetadata?this.exceptionMetadataList.find(x => x.name === this.currentMetadata):null;
+            if(exceptionMetadata){
+                await this.load_specificMetadataException(exceptionMetadata,null,1);
+            }else{
+                await this.load_specificMetadata(this.currentMetadata);
+            }
+        }
+        this._byPassCaching = false;
+    }
+
     handleMenuBack = () => {
         this.keepFilter = false;
         this.hideEditor();
@@ -234,10 +249,9 @@ export default class App extends ToolkitElement {
 
 
     load_metadataGlobal = async () => {
-        //console.log('load_metadataGlobal');
         this.isLoading = true;
-        let sobjects = (await this.connector.conn.tooling.describeGlobal()).sobjects.map(x => x.name);
-        let result = await this.connector.conn.metadata.describe(this.connector.conn.version);
+        let sobjects = (await this.connector.conn.tooling.describeGlobal$()).sobjects.map(x => x.name);
+        let result = await this.connector.conn.metadata.describe('60.0');
             result = (result?.metadataObjects || [])
             result = result.filter(x => sobjects.includes(x.xmlName)).map(x => ({...x,...{name:x.xmlName,label:x.xmlName,key:x.xmlName}}));
             result = result.filter(x => !METADATA_EXCLUDE_LIST.includes(x.name));
@@ -248,17 +262,31 @@ export default class App extends ToolkitElement {
         this.isGlobalMetadataLoaded = true;
     }
 
+    runAndCacheQuery = async (query) => {
+        if(this._caching[query] && new Date() - this._caching[query].date < 1000 * 60 * 5 && !this._byPassCaching){
+            return this._caching[query].data;
+        }else{
+            let queryExec = this.connector.conn.tooling.query(query);
+            let result = (await queryExec.run({ responseTarget:'Records',autoFetch : true, maxFetch : 10000 })) || [];
+            this._caching[query] = {
+                data:result,
+                date:new Date()
+            }
+            return result;
+        }
+    }
+
     load_specificMetadataException = async (exceptionMetadata,recordId,level) => {
         //console.log('load_specificMetadataException');
         const { name,label,queryFields,queryObject,labelFunc,field_id,manualFilter,badgeFunc,compareFunc,filterFunc } = exceptionMetadata;
         const newCompare = compareFunc?compareFunc:(a, b) => (a.label || '').localeCompare(b.label);
 
         this.isLoading = true;
-        const metadataConfig = await this.connector.conn.tooling.sobject(queryObject).describe() || [];
+        const metadataConfig = await this.connector.conn.tooling.describeSObject$(queryObject) || [];
         const fields = [].concat(metadataConfig.fields.map(x => x.name).filter(x => ['Id','Name','DeveloperName','MasterLabel','NamespacePrefix'].includes(x)),queryFields);
         try{
-            let queryExec = this.connector.conn.tooling.query(`SELECT ${fields.join(',')} FROM ${queryObject} ${filterFunc(recordId)}`);
-            let result = (await queryExec.run({ responseTarget:'Records',autoFetch : true, maxFetch : 10000 })) || [];
+            const query = `SELECT ${fields.join(',')} FROM ${queryObject} ${filterFunc(recordId)}`;
+            let result = (await this.runAndCacheQuery(query)) || [];
                 result = result.filter(x => manualFilter(x))
             
                 result = result.map(x => {
@@ -285,13 +313,12 @@ export default class App extends ToolkitElement {
     }
 
     load_specificMetadata = async (name) => {
-        //console.log('load_specificMetadata');
         this.isLoading = true;
-        const metadataConfig = await this.connector.conn.tooling.sobject(name).describe() || [];
+        const metadataConfig = await this.connector.conn.tooling.describeSObject$(name) || [];
         const fields = metadataConfig.fields.map(x => x.name).filter(x => ['Id','Name','DeveloperName','MasterLabel','NamespacePrefix'].includes(x));
         try{
-            let queryExec = this.connector.conn.tooling.query(`SELECT ${fields.join(',')} FROM ${name}`);
-            let result = (await queryExec.run({ responseTarget:'Records',autoFetch : true, maxFetch : 10000 })) || [];
+            const query = `SELECT ${fields.join(',')} FROM ${name}`;
+            let result = (await this.runAndCacheQuery(query)) || [];
                 result = result.map(x => {
                     const _tempName = this.formatName(x);
                     return {
@@ -454,7 +481,7 @@ export default class App extends ToolkitElement {
     }
     
     displayEditor = (files) => {
-        this.refs.editor.displayFiles(this.metadata[this.metadata.length - 1].label,files);
+        this.refs.editor.displayFiles(this.currentMetadata,files);
         this.isEditorDisplayed = true;
     }
 
@@ -572,6 +599,10 @@ export default class App extends ToolkitElement {
 
     get noRecordMessage(){
         return `This record wasn't found in your metadata.`;
+    }
+
+    get isRefreshButtonDisplayed(){
+        return this.currentLevel === 1;
     }
     
     /*get menuItems(){

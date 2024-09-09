@@ -103,6 +103,12 @@ export default class Code extends ToolkitElement {
                 "SELECT Id,DurableId,ApiName,Label,Description,ProcessType,NamespacePrefix,TriggerType,IsActive,VersionNumber,ApiVersion FROM FlowDefinitionView",
                 "flow",
                 this.process_flow,
+            ),
+            this.load_data(
+                "SELECT Id, CreatedDate, NumLinesCovered, NumLinesUncovered, CoverageLastModifiedDate FROM ApexCodeCoverageAggregate",
+                "apexCodeCoverage",
+                this.process_apex_coverage,
+                true
             )
         ]);
 
@@ -110,6 +116,7 @@ export default class Code extends ToolkitElement {
         let temp = this.data;
         this.data = null;
         this.data = temp;
+        console.log('data',this.data);
     }
 
     process_apex = (key = 'apex') => {
@@ -139,6 +146,29 @@ export default class Code extends ToolkitElement {
 
         this.data[key] = data;
         
+    }
+
+    process_apex_coverage = (key = 'apexCodeCoverage') => {
+        let records = this.filterRecords(key);
+        let data = {
+            "totalLinesCovered":0,
+            "totalLinesUncovered":0,
+            "totalLines":0,
+            "coveragePercentage":0,
+            "coveragePercentageFormatted":null
+        }
+
+        data.totalLinesCovered = records.reduce((acc, record) => acc + record.NumLinesCovered, 0);
+        data.totalLinesUncovered = records.reduce((acc, record) => acc + record.NumLinesUncovered, 0);
+        data.totalLines = data.totalLinesCovered + data.totalLinesUncovered;
+        data.coveragePercentage = (isNotUndefinedOrNull(data.totalLines) && data.totalLines != 0)?(data.totalLinesCovered / data.totalLines) * 100:0;
+        data.coveragePercentageFormatted = `${data.coveragePercentage.toFixed(0)}%`;
+
+        data.coverageStep = this.generateCoverageStep(data.coveragePercentage);
+        data.coverageStepFormatted = data.coverageStep + 1;
+        data.coverageMarkDescription = this.calculateCoverageMarkDescription(data.coverageStep);
+
+        this.data[key] = data;
     }
     
 
@@ -251,6 +281,19 @@ export default class Code extends ToolkitElement {
         return descriptions[step];
     }
 
+    generateCoverageStep = (coverage) => {
+        const ranking = [75,90,100];
+        let currentRank = this.getCurrentRank(ranking,(item) => {
+            return coverage < item;
+        });
+        return currentRank;
+    }
+
+    calculateCoverageMarkDescription = (step) => {
+        const descriptions = [' < 75%',' < 90%',' > 90%'];
+        return descriptions[step];
+    }
+
     filterRecords = (key) => {
         if(!this.records.hasOwnProperty(key)) return [];
         return [...this.records[key]].filter(x => isEmpty(x.NamespacePrefix) && this.namespaceFiltering_value === DEFAULT_NAMESPACE || this.namespaceFiltering_value === x.NamespacePrefix || this.namespaceFiltering_value === ALL_NAMESPACE);
@@ -290,10 +333,6 @@ export default class Code extends ToolkitElement {
         return [...this.namespaces].length + 1;
     }
 
-    get totalApiVersionsMarkDescription(){
-        const descriptions = [' > 6 versions',' > 3 versions',' < 3 versions'];
-        return descriptions[this.lwc_totalApiVersionsStep];
-    }
 
     // Apex
 

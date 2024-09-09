@@ -31,7 +31,8 @@ export default class SobjectsPanel extends ToolkitElement {
                         itemLabel: `${sobject.name} / ${sobject.label}`
                     };
                 });
-                this.sobjects = this._rawSObjects;
+                //this.sobjects = this._rawSObjects;
+                this.filterSObjects(this.keyword);
                 //this.pageNumber = 1; // reset
             } else if (describe.error) {
                 console.error(describe.error);

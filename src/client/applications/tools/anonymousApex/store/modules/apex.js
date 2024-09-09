@@ -4,20 +4,15 @@ import { lowerCaseKey,guid,isNotUndefinedOrNull } from 'shared/utils';
 
 const Schemas = {}
 Schemas.ExecuteAnonymousResult = {
-    body:{
-        result:{
-            column: 'number',
-            compileProblem: 'string',
-            compiled: 'boolean',
-            exceptionMessage: 'boolean',
-            exceptionStackTrace: 'boolean',
-            line: 'number',
-            success:'boolean'
-        }
-    },
-    header:{
-        debugLog:'string'
-    }
+    column: 'number',
+    compileProblem: 'string',
+    compiled: 'boolean',
+    exceptionMessage: 'boolean',
+    exceptionStackTrace: 'boolean',
+    line: 'number',
+    success:'boolean',
+    // From Header
+    debugLog:'string'
 }
 const INFO = 'INFO';
 const DEBUG = 'DEBUG';
@@ -97,18 +92,10 @@ function saveCacheSettings(alias,state) {
 export const apexAdapter = createEntityAdapter();
 const _executeApexAnonymous = (connector,body,headers) => {
     //console.log('connector,body,headers',connector,body,headers);
-    return new Promise((resolve,reject) => {
-        connector.conn.soap._invoke("executeAnonymous", { apexcode: body }, Schemas.ExecuteAnonymousResult,(err, res) => {
-            if(err){ 
-                reject(err)
-            }else{
-                resolve(res);
-            }
-        },{
-            xmlns: "http://soap.sforce.com/2006/08/apex",
-            endpointUrl:connector.conn.instanceUrl + "/services/Soap/s/" + connector.conn.version,
-            headers
-        });
+    return connector.conn.soap._invoke("executeAnonymous", { apexcode: body }, Schemas.ExecuteAnonymousResult,{
+        xmlns: "http://soap.sforce.com/2006/08/apex",
+        endpointUrl:connector.conn.instanceUrl + "/services/Soap/s/" + connector.conn.version,
+        headers
     })
 }
 const formatHeaders = (state) => ({

@@ -377,11 +377,10 @@ export const shortFormatter = new Intl.NumberFormat('en-US', {
 
 export const splitTextByTimestamp = (text) =>  {
     // Regular expression to match the timestamp structure
-    const timestampRegex = /\d{2}:\d{2}:\d{2}\.\d{1,3} \(\d{10,}\)\|/;
+    const timestampRegex = /\d{2}:\d{2}:\d{2}\.\d{1,3} \(\d{8,}\)\|/;
 
     // Split the text by new lines
     const lines = text.split('\n');
-
     // Initialize an array to store the resulting chunks
     let result = [];
 

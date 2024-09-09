@@ -55,7 +55,8 @@ export default class EditorModal extends LightningModal {
     executeApex = (e) => {
         this.isApexRunning = true;
         this.resetError();
-        this.refs.editor.executeApex(null,(err,res) => {
+        this.refs.editor.executeApex(null)
+        .then(res => {
             if(res.success){
                 Toast.show({
                     label: 'Apex run : Success',
@@ -64,12 +65,15 @@ export default class EditorModal extends LightningModal {
                 });
                 this.close();
             }else{
-                console.log('res,err',res,err);
+                console.log('res',res);
                 this.error_title = 'Apex run : Failed';
                 this.error_message = res.exceptionMessage || res.compileProblem;
             }
             this.isApexRunning = false;
-        });
+        })
+        .catch(e => {
+            console.error(e);
+        }) ;
     }
 
     handleMonacoLoaded = (e) => {

@@ -161,7 +161,7 @@ export default class App extends ToolkitElement {
                 this._responseCreatedDate = apexState.createdDate;
                 this._abortingMap[apex.currentTab.id] = null; // Reset the abortingMap`
                 // Update log
-                this.log = this.formatFilterLog(this._response?._header?.debugLog || '');
+                this.log = this.formatFilterLog(this._response?.debugLog || '');
                 
                 this.header_formatDate();
                 // Handle Error from Salesforce
@@ -363,7 +363,6 @@ export default class App extends ToolkitElement {
                     apexFiles:getState().apexFiles
                 }));
             })
-            
         }
     }
 

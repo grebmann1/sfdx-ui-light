@@ -12,12 +12,13 @@ export const executeQuery = createAsyncThunk(
             console.log('includeDeletedRecords',includeDeletedRecords);
             const _conn = useToolingApi ? connector.conn.tooling : connector.conn;
             const res = await _conn.query(soql).scanAll(includeDeletedRecords || false);
+            console.log('connector',connector);
             dispatch(DOCUMENT.reduxSlices.RECENT.actions.saveQuery({
                 soql, 
-                alias: connector.alias,
+                alias: connector.configuration.alias,
                 data: res
             }));
-            return { data: res, soql, alias: connector.alias,tabId};
+            return { data: res, soql, alias: connector.configuration.alias,tabId};
         } catch (err) {
             console.error(err);
             throw err;
@@ -33,7 +34,7 @@ export const explainQuery = createAsyncThunk(
             const query = _conn.query(soql);
             const res = await query.explain();
             //console.log('res',res)
-            return { data: res, soql, alias: connector.alias,tabId};
+            return { data: res, soql, alias: connector.configuration.alias,tabId};
         } catch (err) {
             console.error(err);
             throw err;

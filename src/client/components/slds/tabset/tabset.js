@@ -12,6 +12,7 @@ export default class SldsTabset extends LightningElement {
 
     @api isAddTabEnabled = false;
     @api isRemoveTabEventDisabled = false;
+    @api isRemoveTabDisabled = false;
 
     @track _variant = 'standard';
 

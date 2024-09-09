@@ -51,7 +51,7 @@ export default class OutputCell extends LightningElement {
     }
 
     get formattedTotalSize(){
-        return `${isObject(this.value)?this.value.totalSize:0} records`;
+        return `${Array.isArray(this.value)?this.value.length : (isObject(this.value)?this.value.totalSize:0)} records`;
     }
 
     get isChildRelationship() {

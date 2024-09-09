@@ -38,6 +38,7 @@
         "@reduxjs/toolkit": "2.2.6",
         "@rollup/plugin-babel": "^6.0.4",
         "@salesforce-ux/design-system": "2.22.2",
+        "body-parser-xml": "^2.0.5",
         "cometd": "^7.0.12",
         "connect-timeout": "1.9.0",
         "dotenv": "^16.3.1",

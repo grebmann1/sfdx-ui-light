@@ -79,12 +79,13 @@ export default class App extends LightningElement {
 
     @wire(connectStore,{store})
     storeChange({application}){
-        console.log('application',application);
+        //console.log('application',application);
         this._isFullAppLoading = application.isLoading;
         this._fullAppLoadingMessage = application.isLoadingMessage;
 
         if(this._isLoggedIn != application.isLoggedIn){
             this._isLoggedIn = application.isLoggedIn;
+            console.log('isLoggedIn',application);
             if(application.isLoggedIn){
                 this.handleLogin(application.connector);
             }else if(!application.isLoggedIn){

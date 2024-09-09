@@ -6,3 +6,15 @@
 .slds-tabs_scoped{
     height:unset;
 }
+
+.editor-toolkit {
+    position: absolute;
+    z-index: 2;
+    right: 10px;
+    top: 20px;
+    background:white;
+}
+
+.highlighted-line{
+    background-color: red;
+}

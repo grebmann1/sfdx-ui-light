@@ -13,6 +13,7 @@ export default class Menu extends ToolkitElement {
     @api hideSearch = false;
     @api level;
     @api highlight; // Like filtering but only highlighting the record
+    @api isRefreshAvailable = false;
 
     // Filter
     filter;
@@ -82,8 +83,12 @@ export default class Menu extends ToolkitElement {
         },bubbles: true }));
     }
 
-    goBack = (e) => {
+    back_handleClick = (e) => {
         this.dispatchEvent(new CustomEvent("back", {bubbles: true }));
+    }
+
+    refresh_handleClick = (e) => {
+        this.dispatchEvent(new CustomEvent("refresh", {bubbles: true }));
     }
 
     /** Methods **/

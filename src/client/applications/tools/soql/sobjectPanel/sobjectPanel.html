@@ -15,12 +15,14 @@
                     </svg>
                 </span>
                 <input type="search" placeholder={i18n.SOBJECTS_PANEL_QUICK_FIND} class="slds-input" value={keyword} onkeyup={setKeyword} />
-                <button class="slds-button slds-button_icon slds-input__icon slds-input__icon_right" title={i18n.SOBJECTS_PANEL_KEYWORD_CLEAR} onclick={handleClear} if:true={isDisplayClearButton}>
-                    <svg class="slds-button__icon slds-icon-text-light" aria-hidden="true">
-                        <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#clear"></use>
-                    </svg>
-                    <span class="slds-assistive-text">{i18n.SOBJECTS_PANEL_KEYWORD_CLEAR}</span>
-                </button>
+                <template lwc:if={isDisplayClearButton}>
+                    <button class="slds-button slds-button_icon slds-input__icon slds-input__icon_right" title={i18n.SOBJECTS_PANEL_KEYWORD_CLEAR} onclick={handleClear}>
+                        <svg class="slds-button__icon slds-icon-text-light" aria-hidden="true">
+                            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#clear"></use>
+                        </svg>
+                        <span class="slds-assistive-text">{i18n.SOBJECTS_PANEL_KEYWORD_CLEAR}</span>
+                    </button>
+                </template>
             </div>
         </div>
         <div class="sobjects-list slds-border_top">

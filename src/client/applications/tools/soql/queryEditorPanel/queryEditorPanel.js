@@ -79,6 +79,7 @@ export default class QueryEditorPanel extends ToolkitElement {
                 this.handleError(queryState.error);
             }else if(queryState.data){
                 this._response = queryState.data;
+                this.resetError();
             }
         }else{
             this._response = null;
@@ -110,7 +111,7 @@ export default class QueryEditorPanel extends ToolkitElement {
 
     resetError = () => {
         if(this.refs.editor){
-            console.log('clear Error');
+            //console.log('clear Error');
             this.refs.editor.resetMarkers();
             this._error = null;
         }

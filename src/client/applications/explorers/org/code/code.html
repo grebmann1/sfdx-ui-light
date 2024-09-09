@@ -87,14 +87,27 @@
                 <lightning-tabset>
                     <lightning-tab label="Apex">
                         <div class="slds-grid slds-wrap slds-gutters">
+                            <!-- API Versions -->
                             <div class="slds-col slds-m-top_x-small slds-grow-none min-width-300">
-                                <!--<dashboard-basic-stats title="API Versions" value={apex_totalApiVersions}></dashboard-basic-stats>-->
+                                <!--<dashboard-basic-stats title="API Versions" value={apex_totalApiVersions}></dashboard-basic-stats>--> 
                                 <dashboard-horizontal-rank 
                                     mark={data.apex.totalApiVersions} 
                                     title="API Versions" 
                                     sub-title="Total versions" 
                                     description={data.apex.totalApiVersionsMarkDescription} 
                                     current-step={data.apex.totalApiVersionsStepFormatted} 
+                                    is-light
+                                    is-dark-theme
+                                ></dashboard-horizontal-rank>
+                            </div>
+                            <!-- Code Coverage -->
+                            <div class="slds-col slds-m-top_x-small slds-grow-none min-width-300">
+                                <dashboard-horizontal-rank 
+                                    mark={data.apexCodeCoverage.coveragePercentageFormatted} 
+                                    title="Code Coverage" 
+                                    sub-title="" 
+                                    description={data.apexCodeCoverage.coverageMarkDescription} 
+                                    current-step={data.apexCodeCoverage.coverageStepFormatted} 
                                     is-light
                                     is-dark-theme
                                 ></dashboard-horizontal-rank>

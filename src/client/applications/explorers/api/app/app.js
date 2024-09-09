@@ -51,20 +51,12 @@ export default class App extends ToolkitElement {
         this.isEditing = false;
         try{
             this.isLoading = true;
-            this.connector.conn.request(_request,(err, res) => {
-                //console.log('err,res',err,res);
-                if(err){
-                    Toast.show({
-                        label: err.message || 'Error during request',
-                        variant:'error',
-                        mode:'dismissible'
-                    });
-                }else{
-                    Toast.show({
-                        label: 'Success Call',
-                        variant:'success',
-                    });
-                }
+            this.connector.conn.request(_request)
+            .then(res => {
+                Toast.show({
+                    label: 'Success Call',
+                    variant:'success',
+                });
                 this.content = res;
 
                 // Simple set of pointer and action (When running, we reset at that pointer position !)
@@ -74,6 +66,12 @@ export default class App extends ToolkitElement {
                 this.actions.push(this.formatAction());
                 this.actionPointer = this.actions.length - 1;
                 this.isLoading = false;
+            }).catch(e => {
+                Toast.show({
+                    label: e.message || 'Error during request',
+                    variant:'error',
+                    mode:'dismissible'
+                });
             })
         }catch(e){
             console.error(e);

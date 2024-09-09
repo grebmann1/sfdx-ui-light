@@ -9,6 +9,7 @@ const qs = require('qs');
 const fs = require('node:fs');
 
 const CTA_MODULE = require('./modules/cta.js');
+const proxy = require('./modules/proxy.js');
 
 /** Temporary Code until a DB is incorporated **/
 const VERSION = process.env.DOC_VERSION || '248.0';
@@ -40,13 +41,13 @@ checkIfPresent = (a,b) => {
   return (a || '').toLowerCase().includes((b||'').toLowerCase());
 }
 
-app.use(timeout(120000));
-app.use(haltOnTimedout);
+/* CometD Proxy */
+app.all("/cometd/*", proxy({enableCORS:true}));
+/* jsForce Proxy */
+app.all("/proxy/*", proxy({enableCORS:true}));
+
 app.use(express.json());
 
-function haltOnTimedout(req, res, next){
-  if (!req.timedout) next();
-}
 
 app.get('/oauth2/callback', function(req, res) {
   var code = req.query.code;
@@ -130,10 +131,6 @@ app.get('/cta/search',function(req,res){
   res.json(result);
 });
 
-/* CometD Proxy */
-app.all("/cometd/?*", jsforceAjaxProxy({ enableCORS: true }));
-/* JS Force Proxy */
-app.all("/proxy/?*", jsforceAjaxProxy({ enableCORS: true }));
 
 app.get("/*", (req, res) => handler(req, res, {public: "site",...serveJson}));
 

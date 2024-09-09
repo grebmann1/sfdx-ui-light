@@ -6,7 +6,7 @@ export const CATEGORY_STORAGE = {
     SAVED:'saved'
 }
 export default class StoragePanel extends ToolkitElement {
-    @api recentItems;
+    @api recentItems = [];
     @api savedItems;
     @api size;
     @api title;
