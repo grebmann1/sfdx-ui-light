@@ -8,6 +8,10 @@
     height: 1.5rem;
 }
 
+.fix-arrow-button .fix-slds-button_icon-border-filled {
+    height: 1.5rem !important;
+}
+
 /*slds-spinner.slds-spinner_container{
     z-index: 1 !important;
 }*/

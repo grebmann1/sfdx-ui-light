@@ -79,6 +79,11 @@ export default class App extends ToolkitElement {
         this.addNewOrg({connections:this.data});
     }
 
+    @api
+    directConnectClick = () => {
+        console.log('directConnectClick');
+    }
+
 
     handleRowAction = (event) => {
         //console.log('event.detail',event.detail);
