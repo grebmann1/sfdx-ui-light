@@ -7,7 +7,7 @@ import {
     runActionAfterTimeOut,isEmpty,isNotUndefinedOrNull,isUndefinedOrNull,runSilent,refreshCurrentTab
 } from 'shared/utils';
 import { 
-        getCurrentTab,getCurrentObjectType,fetch_data,fetch_metadata,
+        getCurrentTab,getCurrentObjectType,
         getObjectSetupLink,getObjectFieldsSetupLink,getRecordTypesLink,
         getObjectListLink,getObjectDocLink
 } from "extension/utils";
@@ -113,25 +113,28 @@ export default class RecordExplorer extends ToolkitElement {
     /** Methods **/
 
     initRecordExplorer = async () => {
-        //console.log('initRecordExplorer');
+        console.log('initRecordExplorer');
         try{
             this.isError = false;
             this.isLoading = true;
             
             this.currentTab = await getCurrentTab();
+            console.log('this.currentTab',this.currentTab);
             this.currentOrigin = (new URL(this.currentTab.url)).origin;
+            console.log('this.currentOrigin',this.currentOrigin);
             // Get sobjectName (Step 2) // Should be optimized to save 1 API Call [Caching]
-            this.sobjectName = await getCurrentObjectType(this.connector.conn,this.recordId);
+            this.sobjectName = await getCurrentObjectType(this.connector.conn,this.recordId); // to replace with describeGlobal using lastModified to fetch only the changes !
+
+            console.log('this.sobjectName',this.sobjectName);
             // Get Metadata (Step 3) // Should be optimized to save 1 API Call [Caching]
             var [metadata,record] = await Promise.all([
-                fetch_metadata(this.connector.conn,this.sobjectName),
-                fetch_data(this.connector.conn,this.sobjectName,this.recordId)
+                this.connector.conn.sobject(this.sobjectName).describe$(),
+                this.connector.conn.sobject(this.sobjectName).retrieve(this.recordId)
             ]);
-            
             if(isUndefinedOrNull(metadata)){
                 var [metadata,record] = await Promise.all([
-                    fetch_metadata(this.connector.conn.tooling,this.sobjectName),
-                    fetch_data(this.connector.conn.tooling,this.sobjectName,this.recordId)
+                    this.connector.conn.tooling.sobject(this.sobjectName).describe$(),
+                    this.connector.conn.tooling.sobject(this.sobjectName).retrieve(this.recordId)
                 ]);
                 this.metadata = metadata;
                 this.record = record;
@@ -184,7 +187,12 @@ export default class RecordExplorer extends ToolkitElement {
             // Get data
             if(isNotUndefinedOrNull(this.metadata)){
                 const _connector = this.metadata?._useToolingApi?this.connector.conn.tooling:this.connector.conn;
-                this.record = await fetch_data(_connector,this.sobjectName,this.recordId);
+                var [metadata,record] = await Promise.all([
+                    _connector.sobject(this.sobjectName).describe$(), // Refresh Metadata
+                    _connector.sobject(this.sobjectName).retrieve(this.recordId)
+                ]);
+                this.metadata = metadata;
+                this.record = record;
                 this.updateData(this.formatData());
             }
             

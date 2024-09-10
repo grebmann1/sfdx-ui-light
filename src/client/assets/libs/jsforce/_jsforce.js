@@ -5092,7 +5092,7 @@
     Connection.prototype._supports = function(feature) {
       switch (feature) {
         case 'sobject-collection':
-          return this._ensureVersion(42);
+          return !this.tooling;
         default:
           return false;
       }

@@ -105,7 +105,7 @@ function saveCacheSettings(alias,state) {
     console.log('saveCacheSettings');
     try {
         const { tabs,dialog,connectionAlias } = state
-
+        console.log(`${alias}-${EINSTEIN_SETTINGS_KEY}`,{ tabs,dialog,connectionAlias });
         localStorage.setItem(
             `${alias}-${EINSTEIN_SETTINGS_KEY}`,
             JSON.stringify({ tabs,dialog,connectionAlias })
@@ -159,7 +159,7 @@ export const einsteinExecuteModel = createAsyncThunk(
                 console.groupEnd();
                 throw new Error("Einstein Access: You org doesn't provide Einstein access to your user.");
             }
-            const text = splitTextByTimestamp((res?._header?.debugLog || test)).filter(x => x.includes('|USER_DEBUG|')).join('');
+            const text = splitTextByTimestamp((res?.debugLog || test)).filter(x => x.includes('|USER_DEBUG|')).join('');
           
             const [id,role,content] = extractEinsteinToolkitContent(text).split(separator_token);
             return { 

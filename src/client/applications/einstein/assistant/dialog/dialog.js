@@ -85,6 +85,7 @@ export default class Dialog extends ToolkitElement {
                 // Assign Data
                 this.messages = null;
                 this.messages = JSON.parse(JSON.stringify(einsteinState.data));
+                console.log('this.messages',this.messages);
                 this.scrollToBottom();
                 //this._responseCreatedDate = apexState.createdDate;
                 //this._abortingMap[apex.currentDialog.id] = null; // Reset the abortingMap`
@@ -154,7 +155,7 @@ export default class Dialog extends ToolkitElement {
         const { einstein } = store.getState();
         const value = this.template.querySelector('.slds-publisher__input').value;
         const connector = this.connector || this.legacyConnector;
-
+        console.log('einstein.currentDialog.id',einstein.currentDialog.id);
         // Validate Connector
         if(isUndefinedOrNull(connector)){
             this.error_title = 'Error';

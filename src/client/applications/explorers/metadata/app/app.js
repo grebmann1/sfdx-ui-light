@@ -251,7 +251,7 @@ export default class App extends ToolkitElement {
     load_metadataGlobal = async () => {
         this.isLoading = true;
         let sobjects = (await this.connector.conn.tooling.describeGlobal$()).sobjects.map(x => x.name);
-        let result = await this.connector.conn.metadata.describe('60.0');
+        let result = await this.connector.conn.metadata.describe(this.connector.conn.version);
             result = (result?.metadataObjects || [])
             result = result.filter(x => sobjects.includes(x.xmlName)).map(x => ({...x,...{name:x.xmlName,label:x.xmlName,key:x.xmlName}}));
             result = result.filter(x => !METADATA_EXCLUDE_LIST.includes(x.name));

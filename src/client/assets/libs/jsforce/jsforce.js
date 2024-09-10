@@ -2696,7 +2696,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
       switch (feature) {
         case 'sobject-collection':
           // sobject collection is available only in API ver 42.0+
-          return this._ensureVersion(42);
+          return !this.tooling;
         default:
           return false;
       }

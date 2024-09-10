@@ -1,9 +1,7 @@
 import { api } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
-import {runActionAfterTimeOut,isEmpty,isNotUndefinedOrNull,isUndefinedOrNull,classSet} from 'shared/utils';
-import { getCurrentTab,getCurrentObjectType,fetch_data,fetch_metadata,
-    getObjectSetupLink,getObjectFieldsSetupLink,getRecordTypesLink,getObjectListLink,getObjectDocLink
-} from "extension/utils";
+import {isEmpty,classSet} from 'shared/utils';
+import { getCurrentTab} from "extension/utils";
 
 const PAGE_LIST_SIZE = 70;
 const BASE_QUERY = 'SELECT Id, Username, Name,Email,IsActive,ProfileId,Profile.Name,Profile.UserType FROM User ';

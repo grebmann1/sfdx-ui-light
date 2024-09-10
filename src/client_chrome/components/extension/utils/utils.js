@@ -85,44 +85,19 @@ export function getSfPathFromUrl(href) {
 
 export function getCurrentObjectType(conn,recordId){
     return new Promise( (resolve,reject) => {
-        conn.tooling.executeAnonymous("ID a='" + recordId + "';Integer.valueOf(String.valueOf(a.getSObjectType()));", (err, res) => {
-            if (err) { 
-                console.err(err);
-                reject(err); 
-            }else{
-                let _sobjectString = res.exceptionMessage.replace(/^.* (.*)$/,'$1');
-                resolve(_sobjectString == 'null'?null:_sobjectString);
-            }
-           
-          });
+        conn.tooling.executeAnonymous("ID a='" + recordId + "';Integer.valueOf(String.valueOf(a.getSObjectType()));")
+		.then(res => {
+			let _sobjectString = res.exceptionMessage.replace(/^.* (.*)$/,'$1');
+			resolve(_sobjectString == 'null'?null:_sobjectString);
+		})
+		.catch(e => {
+			console.err(err);
+            reject(err); 
+		}) 
     }) 
 }
 
-export function fetch_metadata(conn,sobjectName){
-	return new Promise((resolve,reject) => {
-		conn.sobject(sobjectName).describe((err, meta) => {
-			if (err) {
-				console.error(err);
-				resolve(null);
-			}else{
-				resolve(meta)
-			}
-		});
-	});
-}
 
-export function fetch_data(conn,sobjectName,recordId){
-	return new Promise((resolve,reject) => {
-		conn.sobject(sobjectName).retrieve(recordId, (err, record) =>{
-			if (err) {
-				console.error(err);
-				resolve(null);
-			}else{
-				resolve(record)
-			}
-		});
-	});
-}
 
 export function loadConfiguration(text){
 	var result = {};
