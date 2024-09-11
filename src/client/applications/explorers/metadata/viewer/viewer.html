@@ -19,7 +19,18 @@
                         </div>
 
                         <div class={jsonContainerClass}>
-                            <slds-code-block code-block={content} language="json" title="Event Content"></slds-code-block>
+                            <editor-default lwc:ref="editor" 
+                                class="slds-full-height"
+                                model={currentModel}
+                                onmonacoloaded={handleMonacoLoaded}
+                            ></editor-default>
+                            <!--
+                            <slds-code-block 
+                                code-block={content} 
+                                language="json" 
+                                title="Event Content"
+                            ></slds-code-block>
+                            -->
                         </div> 
 
                     </div>

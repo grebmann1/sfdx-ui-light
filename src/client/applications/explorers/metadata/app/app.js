@@ -82,6 +82,7 @@ export default class App extends ToolkitElement {
             this.label1 = label1;
             //this.selectedRecordLoading = true;
             if(exceptionMetadata && exceptionMetadata.hasLvl2){
+                this.keepFilter = false; // For exception we refresh !
                 let metadataRecord = this.metadata[this.metadata.length - 1].records.find(x => x.key == param1);
 
                 // Advanced with Extra lvl
@@ -94,6 +95,7 @@ export default class App extends ToolkitElement {
                 }
             }else{
                 // Basic
+                this.selectedRecordLoading = true;
                 await this.load_specificMetadataRecord(this.param1);
             }
         }
@@ -101,6 +103,8 @@ export default class App extends ToolkitElement {
         if(param2 && this.param2 != param2){
             this.param2 = param2;
             this.label2 = label2;
+
+            this.selectedRecordLoading = true;
             await this.load_specificMetadataRecord(this.param2);
             //this.currentLevel = 2;
         }
@@ -139,7 +143,6 @@ export default class App extends ToolkitElement {
             case 1:
                 // Metadata Record selection
                 this.selectedRecord = null;
-                this.selectedRecordLoading = true;
                 this.param1 = null;
                 this.param2 = null;
                 navigate(this.navContext,{type:'application',

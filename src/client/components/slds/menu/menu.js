@@ -77,6 +77,10 @@ export default class Menu extends ToolkitElement {
         if(index > -1){
             this._items[index].isSelected = true;
         }
+
+        if(this.resetOnSelection){
+            
+        }
         
         this.dispatchEvent(new CustomEvent("menuselection", { detail:{
             ...this.items[index]

@@ -22,6 +22,7 @@ export default class Viewer extends ToolkitElement {
     isLoading = false;
     visualizer;
     currentTab = 'Default';
+    currentModel;
 
     @track formattedArray;
     @track formattedMetadata;
@@ -58,6 +59,15 @@ export default class Viewer extends ToolkitElement {
 
     handleSelectTab(event) {
         this.currentTab = event.target.value;
+    }
+
+    handleMonacoLoaded = () => {
+        //this.isLoading = false;
+        this.currentModel = this.refs.editor.createModel({
+            body:this.content,
+            language:'json'
+        });
+        this.refs.editor.displayModel(this.currentModel);
     }
 
 
