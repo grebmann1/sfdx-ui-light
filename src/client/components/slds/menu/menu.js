@@ -35,6 +35,10 @@ export default class Menu extends ToolkitElement {
     set items(value){
         this._items = (JSON.parse(JSON.stringify(value)));
         this.namespacePrefixes = this.extractNamespaces(this._items);
+        if(!this.namespacePrefixes.includes(this.namespaceFilteringValue)){
+            // Reset just in case it doesn't match the previous value
+            this.namespaceFilteringValue = DEFAULT_NAMESPACE;
+        }
         this.pageNumber = 1; // reset
         if(!this.keepFilter){
             this.filter = null; // reset;
