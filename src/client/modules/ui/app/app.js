@@ -385,15 +385,17 @@ export default class App extends LightningElement {
     }
 
     get formattedAlias(){
-        if(this.connector?.configuration?.username == this.connector?.configuration?.alias || isUndefinedOrNull(this.connector?.configuration?.alias)){
-            return 'No Alias'
+        if(isUndefinedOrNull(this.connector?.configuration?.alias)){
+            return 'No Alias : '
+        }else if(this.connector?.configuration?.username == this.connector?.configuration?.alias){
+            return '';
+        }else{
+            return `${this.connector.configuration?.alias} : `;
         }
-        return this.connector.configuration?.alias;
     }
 
     get loggedInMessage(){
-        //const isAliasMissing = this.connector?.configuration?.username == this.connector?.configuration?.alias || isUndefinedOrNull(this.connector?.configuration?.alias);
-        return `Logged in as ${this.connector?.configuration?.userInfo?.display_name || 'User'} (${this.formattedAlias} : ${this.connector?.configuration?.username}). `;
+        return `Logged in as ${this.connector?.configuration?.userInfo?.display_name || 'User'} (${this.formattedAlias}${this.connector?.configuration?.username}). `;
     }
 
     get isUserLoggedIn(){

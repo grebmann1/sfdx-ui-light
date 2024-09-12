@@ -208,7 +208,7 @@ export default class App extends ToolkitElement {
             }
         }else{
             let {alias,...settings} = this.data.find(x => x.id == row.id);
-            store.dispatch(APPLICATION.reduxSlice.actions.startLoading());
+            store.dispatch(APPLICATION.reduxSlice.actions.startLoading({message:`Connecting to ${alias}`}));
             let connector = await connect({alias,settings});
             if(connector){
                 this.dispatchEvent(new CustomEvent("login", { detail:{value:connector},bubbles: true }));
@@ -228,7 +228,7 @@ export default class App extends ToolkitElement {
         if(isElectronApp()) return;
 
         let {alias,loginUrl,...settings} = this.data.find(x => x.id == row.id);
-        store.dispatch(APPLICATION.reduxSlice.actions.startLoading());
+        store.dispatch(APPLICATION.reduxSlice.actions.startLoading({message:`Authorizing ${alias}`}));
         const _oauthMethod = isChromeExtension()?oauth_chrome:oauth;
 
         _oauthMethod(

@@ -15,17 +15,17 @@ export default class App extends ToolkitElement {
 
     // Tabs
     @track dialogs = [];
-    currentDialog;
+    currentDialogId;
 
     // Salesforce Instance
     @track salesforceIntance_connections = [];
     salesforceInstance_alias;
     salesforceInstance_connector;
 
-    connectedCallback(){
+    async connectedCallback(){
         //this.isLoading = true;
+        await this.fetchAllConnections();
         this.setDefaultEinsteinConnection();
-        this.fetchAllConnections();
         store.dispatch(async (dispatch, getState) => {
             dispatch(EINSTEIN.reduxSlice.actions.loadCacheSettings({
                 alias:GLOBAL_EINSTEIN
@@ -56,15 +56,13 @@ export default class App extends ToolkitElement {
         this._hasRendered = true;
 
         if(this._hasRendered && this.template.querySelector('slds-tabset')){
-            this.template.querySelector('slds-tabset').activeTabValue = this.currentDialog?.id;
+            this.template.querySelector('slds-tabset').activeTabValue = this.currentDialogId;
         }
     }
 
     fetchAllConnections = async () => {
         // Browser & Electron version
-        this.isLoading = true;
         this.salesforceIntance_connections =  await getConfigurations();
-        this.isLoading = false;
     }
     
     @wire(connectStore, { store })
@@ -76,11 +74,23 @@ export default class App extends ToolkitElement {
         //const entities = SELECTORS.einstein.selectAll({einstein});
         //console.log('entities',entities);
         //this.tabs = einstein.tabs;
+        console.log('einstein',einstein)
         this.dialogs = SELECTORS.einstein.selectAll({einstein});
-        this.currentDialog = einstein.currentDialog;
-        if(isNotUndefinedOrNull(einstein.connectionAlias) && this.salesforceInstance_alias != einstein.connectionAlias){
-            this.salesforceInstance_alias = einstein.connectionAlias;
-            this.salesforceInstance_connect(this.salesforceInstance_alias);
+        this.currentDialogId = einstein.currentDialogId;
+        if(isUndefinedOrNull(this.currentDialogId) && this.dialogs.length > 0){
+            this.currentDialogId = this.dialogs[0].id
+        }
+        if(
+            isNotUndefinedOrNull(einstein.connectionAlias) 
+            && this.salesforceInstance_alias != einstein.connectionAlias 
+        ){
+            // Only reconnect if the connction is different
+            if(this.salesforceInstance_alias !== einstein.connectionAlias){
+                this.salesforceInstance_alias = einstein.connectionAlias;
+                this.salesforceInstance_connect(einstein.connectionAlias);
+            }else{
+                this.setDefaultEinsteinConnection();
+            }
         }
     }
 
@@ -112,8 +122,7 @@ export default class App extends ToolkitElement {
     }
 
     salesforceInstance_handleChange = (e) => {
-        const alias = e.detail.value;
-        this.salesforceInstance_connect(alias);
+        this.salesforceInstance_connect(e.detail.value);
     }
 
 
@@ -122,6 +131,8 @@ export default class App extends ToolkitElement {
     /** Methods **/
 
     salesforceInstance_connect = (alias) => {
+        console.log('salesforceInstance_connect');
+        if(isEmpty(alias)) return;
         this.connectToOrg(alias);
         store.dispatch(EINSTEIN.reduxSlice.actions.updateConnectionAlias({
             connectionAlias:alias, // Used for the connection
@@ -136,9 +147,18 @@ export default class App extends ToolkitElement {
     }
 
     connectToOrg = async (alias) => {
-        let settings = this.salesforceIntance_connections.find(x => x.id === alias);
-        store.dispatch(APPLICATION.reduxSlice.actions.startLoading());
 
+        
+        
+        // Check if sharing the same connection (If yes, exist)
+        await this.fetchAllConnections();
+        let settings = this.salesforceIntance_connections.find(x => x.alias === alias || x.username === alias);
+        if(isNotUndefinedOrNull(settings?.username) 
+            && settings?.username == this.connector?.configuration?.username
+        )return;
+        console.log('connectToOrg',alias,settings?.username,this.connector?.configuration?.username,this.salesforceIntance_connections);
+
+        store.dispatch(APPLICATION.reduxSlice.actions.startLoading({message:`Connecting Einstein to ${alias}`}));
         try{
             let _newConnection = await connect({alias,settings,disableEvent:true});
             this.salesforceInstance_connector = null;
@@ -159,6 +179,7 @@ export default class App extends ToolkitElement {
     /** Getters **/
 
     get salesforceInstance_options(){
+        // use the username to smooth the process instead of relying on the alias 
         return this.salesforceIntance_connections.filter(x => !x._isRedirect).map(x => ({value:x.alias,label:x.alias}));
     }
 
@@ -175,5 +196,9 @@ export default class App extends ToolkitElement {
                 class:classSet('slds-tabs_scoped__item').toString()
             }
         })
+    }
+
+    get picklistClass(){
+        return this.isMobile?'slds-max-150':'';
     }
 }

@@ -5,7 +5,8 @@ import { lowerCaseKey,guid,isUndefinedOrNull } from 'shared/utils';
 // Adapters
 export const queryFileAdapter = createEntityAdapter();
 export const apexFileAdapter = createEntityAdapter();
-export const recentAdapter = createEntityAdapter();
+export const platformEventFileAdapter = createEntityAdapter();
+
 
 const REFERENCES = {
     QUERYFILES:'QUERYFILES',
@@ -15,6 +16,7 @@ const REFERENCES = {
 const MAX_RECENT = 20;
 const RECENT_QUERIES_KEY = 'lsb.recentQueries';
 const RECENT_APEX_KEY = 'lsb.recentApex';
+const RECENT_PLATFORM_EVENT_KEY = 'lsb.recentPlatformEvents';
 
 function setInLocalStorage(referenceKey,entities) {
     try {
@@ -68,6 +70,16 @@ function loadRecentApex(alias) {
     return [];
 }
 
+function loadRecentPlatformEvents(alias) {
+    try {
+        const recentPlatformEventText = localStorage.getItem(`${alias}-${RECENT_PLATFORM_EVENT_KEY}`);
+        if (recentPlatformEventText) return JSON.parse(recentPlatformEventText);
+    } catch (e) {
+        console.error('Failed to load recent apex from localStorage', e);
+    }
+    return [];
+}
+
 // APEX
 const apexFileSlice = createSlice({
     name: 'apexFiles',
@@ -114,16 +126,17 @@ const recentSlice = createSlice({
     name: 'recents',
     initialState:{
         queries:[],
-        apex:[]
+        apex:[],
+        platformEvents:[]
     },
     reducers: {
         loadFromStorage: (state, action) => {
             state.queries   = loadRecentQueries(action.payload.alias);
-            state.apex      = loadRecentApex(action.payload.alias)
+            state.apex      = loadRecentApex(action.payload.alias);
+            state.platformEvents = loadRecentPlatformEvents(action.payload.alias)
         },
         saveQuery: (state, action) => {
             const { soql, alias } = action.payload;
-            console.log('saveQuery',soql,alias)
             const recentQueriesState = [
                 soql,
                 ...state.queries.filter(q => q !== soql).slice(0, MAX_RECENT - 1)
@@ -153,7 +166,23 @@ const recentSlice = createSlice({
                 console.warn('Failed to save recent apex to localStorage', e);
             }
             state.apex = recentApexState;
-        }
+        },
+        savePlatformEvents: (state, action) => {
+            const { channel, alias } = action.payload;
+            const recentPlatformEventState = [
+                channel,
+                ...state.platformEvents.filter(q => q !== channel).slice(0, MAX_RECENT - 1)
+            ];
+            try {
+                localStorage.setItem(
+                    `${alias}-${RECENT_PLATFORM_EVENT_KEY}`,
+                    JSON.stringify(recentPlatformEventState)
+                );
+            } catch (e) {
+                console.warn('Failed to save recent apex to localStorage', e);
+            }
+            state.platformEvents = recentPlatformEventState;
+        },
     },
 });
 

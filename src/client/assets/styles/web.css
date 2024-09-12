@@ -129,6 +129,10 @@ code-analyzer .slds-vertical-tabs{
     flex-direction: column;
 }
 
+.slds-align-flex-end{
+    align-items: flex-end;
+}
+
 .slds-flex-row{
     display: flex;
     flex-direction: row;
@@ -267,12 +271,21 @@ slds-tabset .slds-tabs_scoped__link{
     padding: 0 0.5rem;
 }
 
+.slds-tabs_no-max .slds-tabs_scoped__link{
+    max-width: unset !important;
+}
+
 .slds-without-tab lightning-tab{
     display:none;
 }
 
 .slds-without-tab .slds-tabs_scoped__item {
     margin-bottom: unset;
+}
+
+.slds-tabs_scoped__nav{
+    border-top-right-radius:0;
+    border-top-left-radius:0;
 }
 
 .slds-menu-collapsed lightning-vertical-navigation-section .slds-nav-vertical__title{

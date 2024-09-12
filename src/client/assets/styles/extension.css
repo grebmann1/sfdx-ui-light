@@ -136,9 +136,18 @@ doc-app .full-page-body.slds-m-top_small{
     transform: unset;
 }
 
+.slds-tabs_scoped__nav{
+    border-top-right-radius:0;
+    border-top-left-radius:0;
+}
+
 .slds-tabs_scoped__link .slds-icon{
     width: 1rem;
     height: 1rem;
+}
+
+.slds-tabs_no-max .slds-tabs_scoped__link{
+    max-width: unset;
 }
 
 .slds-color-brand{
@@ -277,4 +286,9 @@ lightning-input[variant="label-stacked"] .slds-checkbox_toggle{
 
 .slds-page-header{
     border-radius: unset; /* Remove Border radius*/
+}
+
+/** Fixed Picklist length for Picklists (Einstein Actions) **/
+.slds-max-150 .slds-combobox_container{
+    width: 150px;
 }

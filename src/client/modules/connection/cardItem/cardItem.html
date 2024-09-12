@@ -35,9 +35,11 @@
         </div>
         <template lwc:if={isErrorDisplayed}>
             <p class="card-title">
-                <lightning-icon icon-name="utility:error" size="x-small" variant="error"></lightning-icon>
-                <span class="slds-m-left_x-small slds-text-title slds-text-color_error">
-                   {errorMessage}
+                <span>
+                    <lightning-icon icon-name="utility:error" size="x-small" variant="error"></lightning-icon>
+                    <span class="slds-m-left_x-small slds-text-title slds-text-color_error">
+                        {errorMessage}
+                    </span>
                 </span>
                 <lightning-button class="slds-m-left_x-small" variant="base" label="Authorize Org" onclick={handleEventClick} data-event="login"></lightning-button>
             </p>

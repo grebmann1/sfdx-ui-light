@@ -39,6 +39,7 @@ export default {
     QUERY_LIST_PANEL_SAVED_QUERIES: 'Saved Queries',
     APEX_LIST_PANEL_RECENT_APEX: 'Recent Apex',
     APEX_LIST_PANEL_SAVED_APEX: 'Saved Apex',
+    EVENT_LIST_PANEL_RECENT: 'Recent Events',
     RELATIONSHIPS_TREE_NO_MATCHING: 'No matching child relationships found',
     RELATIONSHIPS_TREE_EXPAND_CHILD_REL: 'Expand Child Relationship',
     SOBJECTS_PANEL_FAILED_FETCH_SOBJECTS: 'Failed to fetch sObjects.',

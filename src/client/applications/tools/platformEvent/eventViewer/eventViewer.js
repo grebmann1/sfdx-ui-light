@@ -1,6 +1,7 @@
-import { api,track } from "lwc";
-import { decodeError,isNotUndefinedOrNull } from 'shared/utils';
+import { api,track,wire } from "lwc";
+import { decodeError,isNotUndefinedOrNull,classSet } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
+import { connectStore,store,EVENT } from 'core/store';
 
 
 export default class EventViewer extends ToolkitElement {
@@ -8,16 +9,45 @@ export default class EventViewer extends ToolkitElement {
     isLoading = false;
 
     @api item;
-   
-
+    currentModel;
+    viewerTab = 'Default';
 
     connectedCallback(){
       
     }
 
+    renderedCallback(){
+        this._hasRendered = true;
+
+        if(this._hasRendered && this.template.querySelector('slds-tabset')){
+            this.template.querySelector('slds-tabset').activeTabValue = this.viewerTab;
+        }
+    }
+
+    @wire(connectStore, { store })
+    storeChange({ platformEvent }) {
+        if(platformEvent){  
+            this.viewerTab = platformEvent.viewerTab;
+        }
+    }
 
     /** Events **/
 
+    handleSelectTab(event) {
+        store.dispatch(EVENT.reduxSlice.actions.updateViewerTab({
+            value:event.target.value,
+            alias:this.alias,
+        }));
+    }
+
+    handleMonacoLoaded = () => {
+        //this.isLoading = false;
+        this.currentModel = this.refs.editor.createModel({
+            body:this.content,
+            language:'json'
+        });
+        this.refs.editor.displayModel(this.currentModel);
+    }
 
     /** Methods  **/
 
@@ -27,6 +57,18 @@ export default class EventViewer extends ToolkitElement {
     get content(){
         const data = this.item?.content || this.item;
         return JSON.stringify(data, null, 4);
+    }
+
+    get defaultContainerClass(){
+        return classSet("slds-full-height slds-scrollable_y").add({'slds-hide':!(this.viewerTab === 'Default')}).toString();
+    }
+
+    get customContainerClass(){
+        return classSet("slds-full-height slds-scrollable_y").add({'slds-hide':!(this.viewerTab === 'Custom')}).toString();
+    }
+
+    get jsonContainerClass(){
+        return classSet("slds-full-height slds-scrollable_y").add({'slds-hide':!(this.viewerTab === 'JSON')}).toString();
     }
 
   

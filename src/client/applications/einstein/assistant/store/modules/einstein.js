@@ -46,20 +46,14 @@ Best regards,
 17:52:18.96 (15101271193)|EXECUTION_FINISHED`;
 const Schemas = {}
 Schemas.ExecuteAnonymousResult = {
-    body:{
-        result:{
-            column: 'number',
-            compileProblem: 'string',
-            compiled: 'boolean',
-            exceptionMessage: 'boolean',
-            exceptionStackTrace: 'boolean',
-            line: 'number',
-            success:'boolean'
-        }
-    },
-    header:{
-        debugLog:'string'
-    }
+    column: 'number',
+    compileProblem: 'string',
+    compiled: 'boolean',
+    exceptionMessage: 'boolean',
+    exceptionStackTrace: 'boolean',
+    line: 'number',
+    success:'boolean',
+    debugLog:'string'
 }
 const DEBUG = 'DEBUG';
 const EINSTEIN_SETTINGS_KEY = 'EINSTEIN_SETTINGS_KEY';
@@ -188,7 +182,7 @@ const einsteinSlice = createSlice({
         debug_apexCode : DEBUG,
         dialog:einsteinModelAdapter.getInitialState(),
         body:null,
-        currentDialog:INITIAL_TABS[0],
+        currentDialogId:null,
         connectionAlias:null,
         errorIds:[] // No need to have it on dialog lvl
     },
@@ -252,7 +246,7 @@ const einsteinSlice = createSlice({
                 isFetching: false,
             });
             // Assign new tab
-            state.currentDialog = state.dialog.entities[tabId];
+            state.currentDialogId = tabId;
             //state.body = tab.body;
         },
         removeTab:(state,action) => {
@@ -260,9 +254,9 @@ const einsteinSlice = createSlice({
             //state.tabs = state.tabs.filter(x => x.id != id);
             einsteinModelAdapter.removeOne(state.dialog,id);
             // Assign last tab
-            if(state.dialog.ids.length > 0 && state.currentDialog.id == id){
+            if(state.dialog.ids.length > 0 && state.currentDialogid == id){
                 const lastTabId = state.dialog.ids.slice(-1)[0];
-                state.currentDialog = state.dialog.entities[lastTabId];
+                state.currentDialogId = lastTabId;
                 //state.body = lastTab.body;
             }
             if(isNotUndefinedOrNull(alias)){
@@ -271,12 +265,7 @@ const einsteinSlice = createSlice({
         },
         selectionTab:(state,action) => {
             const {id} = action.payload;
-            const dialog = state.dialog.entities[id];
-            // Assign new tab
-            if(dialog){
-                state.currentDialog = dialog;
-                //state.body = tab.body;
-            }
+            state.currentDialogId = id;
         },
     },
     extraReducers: (builder) => {

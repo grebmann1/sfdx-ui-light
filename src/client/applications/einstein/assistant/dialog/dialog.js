@@ -2,6 +2,7 @@ import { LightningElement,api,track,wire} from "lwc";
 import { loadExtensionConfigFromCache,CACHE_CONFIG } from "extension/utils";
 import { isUndefinedOrNull,isEmpty,ROLES,guid,lowerCaseKey,isNotUndefinedOrNull,isChromeExtension } from "shared/utils";
 import ToolkitElement from 'core/toolkitElement';
+import SaveModal from "assistant/saveModal";
 import { GLOBAL_EINSTEIN,chat_template } from 'assistant/utils';
 import { store,connectStore,EINSTEIN,SELECTORS} from 'core/store';
 const LATEST_MODEL = 'sfdc_ai__DefaultGPT4Omni';
@@ -70,11 +71,11 @@ export default class Dialog extends ToolkitElement {
     storeChange({ einstein,application }) {
         const isCurrentApp = this.verifyIsActive(application.currentApplication)
         if(!isCurrentApp) return;
-        const einsteinState = SELECTORS.einstein.selectById({einstein},lowerCaseKey(einstein.currentDialog?.id));
+        const einsteinState = SELECTORS.einstein.selectById({einstein},lowerCaseKey(einstein.currentDialogId));
         // Reset First
         this.resetError();
         if(einsteinState){
-            this.dialogId = einstein.currentDialog?.id;
+            this.dialogId = einstein.currentDialogId;
             this.isLoading = einsteinState.isFetching;
             if(einsteinState.error){
                 //this._abortingMap[apex.currentDialog.id] = null; // Reset the abortingMap
@@ -85,7 +86,7 @@ export default class Dialog extends ToolkitElement {
                 // Assign Data
                 this.messages = null;
                 this.messages = JSON.parse(JSON.stringify(einsteinState.data));
-                console.log('this.messages',this.messages);
+                //console.log('this.messages',this.messages);
                 this.scrollToBottom();
                 //this._responseCreatedDate = apexState.createdDate;
                 //this._abortingMap[apex.currentDialog.id] = null; // Reset the abortingMap`
@@ -124,6 +125,17 @@ export default class Dialog extends ToolkitElement {
 
     /** Events **/
 
+    handleRenameClick = () => {
+        const { einstein } = store.getState();
+        console.log('einstein',einstein);
+        SaveModal.open({
+            title:'Rename Dialog',
+            name:einstein.name
+        }).then(async data => {
+            console.log('data',data);
+        })
+    }
+
     handleInputChange = (e) => {
         this.prompt = e.target.value;
     }
@@ -139,7 +151,7 @@ export default class Dialog extends ToolkitElement {
         const { einstein } = store.getState();
 
         store.dispatch(EINSTEIN.reduxSlice.actions.clearDialog({
-            id:einstein.currentDialog.id,
+            id:einstein.currentDialogId,
             alias:GLOBAL_EINSTEIN
         }));
     }
@@ -155,7 +167,7 @@ export default class Dialog extends ToolkitElement {
         const { einstein } = store.getState();
         const value = this.template.querySelector('.slds-publisher__input').value;
         const connector = this.connector || this.legacyConnector;
-        console.log('einstein.currentDialog.id',einstein.currentDialog.id);
+        console.log('einstein.currentDialog.id',einstein.currentDialogId);
         // Validate Connector
         if(isUndefinedOrNull(connector)){
             this.error_title = 'Error';
@@ -181,7 +193,7 @@ export default class Dialog extends ToolkitElement {
                     connector,
                     alias:GLOBAL_EINSTEIN,
                     body:einsteinApexRequest,
-                    tabId:einstein.currentDialog.id,
+                    tabId:einstein.currentDialogId,
                     messages:this.messages,
                     createdDate:Date.now()
                 })
@@ -224,7 +236,7 @@ export default class Dialog extends ToolkitElement {
                 connector,
                 alias:GLOBAL_EINSTEIN,
                 body:einsteinApexRequest,
-                tabId:einstein.currentDialog.id,
+                tabId:einstein.currentDialogId,
                 messages:this.messages,
                 createdDate:Date.now()
             })

@@ -1,6 +1,8 @@
 :host{
     height: 100%;
     --slds-c-textarea-sizing-min-height: 100px;
+    --slds-g-spacing-4:4px;
+    --slds-g-spacing-6:6px;
 }
 
 .body {
@@ -54,4 +56,8 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+}
+
+.slds-page-header__title{
+    font-weight: 500;
 }

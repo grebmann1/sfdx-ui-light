@@ -1,7 +1,8 @@
-import { api,track } from "lwc";
-import { decodeError,isEmpty,isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
+import { api,track,wire } from "lwc";
+import { decodeError,isEmpty,isNotUndefinedOrNull,isUndefinedOrNull,classSet } from 'shared/utils';
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
+import { connectStore,store,API } from 'core/store';
 
 const METHOD = {
     GET:'GET',
@@ -38,8 +39,26 @@ export default class App extends ToolkitElement {
     isEditing = false;
 
 
+    currentModel;
+    viewerTab = 'Default';
+
     connectedCallback(){
         this.isFieldRendered = true;
+    }
+
+    renderedCallback(){
+        this._hasRendered = true;
+
+        if(this._hasRendered && this.template.querySelector('slds-tabset')){
+            this.template.querySelector('slds-tabset').activeTabValue = this.viewerTab;
+        }
+    }
+
+    @wire(connectStore, { store })
+    storeChange({ api }) {
+        if(api){  
+            this.viewerTab = api.viewerTab;
+        }
     }
 
 
@@ -118,7 +137,6 @@ export default class App extends ToolkitElement {
     formatRequest = () => {
         const _endpoint = this.endpoint.startsWith('/')?this.endpoint:`/${this.endpoint}`;
         const _targetUrl = this.endpoint.startsWith('http')?this.endpoint:`${this.connector.conn.instanceUrl}${_endpoint}`;
-        console.log('_targetUrl -->',_targetUrl);
         const _request = {
             method: this.method, 
             url: _targetUrl
@@ -166,6 +184,22 @@ export default class App extends ToolkitElement {
     }
 
     /** Events **/
+
+    handleSelectTab(event) {
+        store.dispatch(API.reduxSlice.actions.updateViewerTab({
+            value:event.target.value,
+            alias:this.alias,
+        }));
+    }
+
+    handleMonacoLoaded = () => {
+        //this.isLoading = false;
+        this.currentModel = this.refs.editor.createModel({
+            body:this.formattedContent,
+            language:'json'
+        });
+        this.refs.editor.displayModel(this.currentModel);
+    }
 
     undo_click = () => {
         if(this.isEditing){
@@ -299,5 +333,14 @@ export default class App extends ToolkitElement {
     }
     get pageClass(){
         return super.pageClass+' slds-p-around_small';
+    }
+
+    get defaultContainerClass(){
+        return classSet("slds-full-height slds-scrollable_y").add({'slds-hide':!(this.viewerTab === 'Default')}).toString();
+    }
+
+
+    get jsonContainerClass(){
+        return classSet("slds-full-height slds-scrollable_y").add({'slds-hide':!(this.viewerTab === 'JSON')}).toString();
     }
 }

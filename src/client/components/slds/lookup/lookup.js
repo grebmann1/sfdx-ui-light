@@ -1,4 +1,4 @@
-import { LightningElement, api } from 'lwc';
+import { LightningElement, api,track } from 'lwc';
 
 const SEARCH_DELAY = 300; // Wait 300 ms after user stops typing then, perform search
 
@@ -22,7 +22,7 @@ export default class Lookup extends LightningElement {
     @api disabled = false;
     @api placeholder = '';
     @api isMultiEntry = false;
-    @api scrollAfterNItems = null;
+    @api scrollAfterNItems = 10;
     @api newRecordOptions = [];
     @api minSearchTermLength = 2;
 
@@ -31,7 +31,7 @@ export default class Lookup extends LightningElement {
     loading = false;
 
     // Private properties
-    _errors = [];
+    @track _errors = [];
     _hasFocus = false;
     _isDirty = false;
     _searchTerm = '';
@@ -299,6 +299,7 @@ export default class Lookup extends LightningElement {
     }
 
     handleBlur() {
+        return;
         // Prevent action if selection is either not allowed or cancelled
         if (!this.isSelectionAllowed() || this._cancelBlur) {
             return;

@@ -65,7 +65,6 @@ export default class EditorModal extends LightningModal {
                 });
                 this.close();
             }else{
-                console.log('res',res);
                 this.error_title = 'Apex run : Failed';
                 this.error_message = res.exceptionMessage || res.compileProblem;
             }
@@ -85,7 +84,7 @@ export default class EditorModal extends LightningModal {
                     path:'abc',
                     name:'Script',
                     apiVersion:60,
-                    body:isEmpty(this.apexScript)?"System.debug('Hello the world');":this.apexScript,
+                    body:isEmpty(this.apexScript)?"Update new Account(Id='001Hr000023GsE9IAK');":this.apexScript,
                     language:'apex',
                 }
             ]

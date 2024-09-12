@@ -14,6 +14,9 @@ export default class StoragePanel extends ToolkitElement {
 
     @api savedTitle
     @api recentTitle;
+
+    // Disable Save Section
+    @api isSavedItemDisabled = false;
     
     @wire(connectStore, { store })
     storeChange({ ui }) {
@@ -64,6 +67,10 @@ export default class StoragePanel extends ToolkitElement {
 
     get hasRecentItems(){
         return this?.recentItems.length > 0;
+    }
+
+    get isSavedItemsDisplayed(){
+        return !this.isSavedItemDisabled;
     }
 
     get formattedSavedItems(){

@@ -24,13 +24,13 @@
                                 <div class="slds-chat-message">
                                     <div class="slds-chat-message__body">
                                         <div class="slds-chat-message__text slds-chat-message__text_inbound slds-chat-loading">
-                                            <span class="slds-icon-typing slds-is-animated" title="Assistant is typing">
+                                            <span class="slds-icon-typing slds-is-animated" title="Analyzing you request">
                                                 <span class="slds-icon-typing__dot"></span>
                                                 <span class="slds-icon-typing__dot"></span>
                                                 <span class="slds-icon-typing__dot"></span>
-                                                <span class="slds-assistive-text">Assistant is typing</span>
+                                                <span class="slds-assistive-text">Analyzing you request</span>
                                             </span>
-                                            <span aria-hidden="true"> Your Assistant is searching</span>
+                                            <span aria-hidden="true"> Analyzing you request</span>
                                         </div>
                                     </div>
                                 </div>
@@ -55,6 +55,9 @@
                     ></textarea>
                     <div class="slds-publisher__actions slds-grid slds-grid_align-spread">
                         <ul class="slds-grid slds-publisher__toggle-visibility">
+                            <!--
+                                <lightning-button variant="base" label="Rename" icon-name="utility:edit" onclick={handleRenameClick}></lightning-button>
+                            -->
                             <!-- 
                             <li>
                                 <lightning-button-icon icon-name="utility:attach"  variant="bare" alternative-text="Attach File" title="Attach File" disabled></lightning-button-icon>

@@ -6,6 +6,8 @@ import * as DOCUMENT from './document';
 import * as APPLICATION from './application';
 import { UI,QUERY } from 'soql/store';
 import { APEX } from 'anonymousApex/store';
+import { API } from 'api/store';
+import { EVENT } from 'platformevent/store';
 import { EINSTEIN } from 'assistant/store';
 
 const store = configureStore({
@@ -16,6 +18,8 @@ const store = configureStore({
         ui : UI.reduxSlice.reducer,
         query : QUERY.reduxSlice.reducer,
         apex : APEX.reduxSlice.reducer,
+        platformEvent : EVENT.reduxSlice.reducer,
+        api : API.reduxSlice.reducer,
         einstein: EINSTEIN.reduxSlice.reducer,
         queryFiles : DOCUMENT.reduxSlices.QUERYFILE.reducer,
         apexFiles : DOCUMENT.reduxSlices.APEXFILE.reducer,
@@ -52,6 +56,8 @@ export {
     UI,
     QUERY,
     APEX,
+    EVENT,
+    API,
     DOCUMENT,
     APPLICATION,
     SOBJECT,
@@ -64,6 +70,7 @@ export const SELECTORS = {
     sobject:SOBJECT.sObjectsAdapter.getSelectors((state) => state.sobject),
     describe:(state) => state.describe,
     queries:QUERY.queryAdapter.getSelectors((state) => state.query),
+    platformEvents:EVENT.platformEventAdapter.getSelectors((state) => state.platformEvent.subscriptions),
     apex:APEX.apexAdapter.getSelectors((state) => state.apex.apex), // Not using the standard -> So it's Apex (Slice) then Apex variable
     einstein:EINSTEIN.einsteinModelAdapter.getSelectors((state) => state.einstein.dialog),
     queryFiles:DOCUMENT.queryFileAdapter.getSelectors((state) => state.queryFiles),

@@ -7,6 +7,7 @@ const generateItems = (variableName,content,role) => {
 }
 
 const escapeApexString = (input) => {
+    if(!input) return '';
     return input.replace(/'/g, "\\'").replace(/\n/g, "\\n");
 }
 
