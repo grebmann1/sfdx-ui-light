@@ -33,6 +33,11 @@
             "urlPath": "/assets"
         },
         {
+            "alias": "salesforceAssetsDir",
+            "dir": "$rootDir/node_modules/@salesforce-ux/design-system/assets",
+            "urlPath": "/salesforceAssets"
+        },
+        {
             "file":"$rootDir/node_modules/xterm/css/xterm.css",
             "urlPath":"/xterm.css"
         },
