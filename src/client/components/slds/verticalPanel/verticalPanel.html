@@ -4,12 +4,7 @@
             <div class="slds-panel__header">
                 <h2 class="slds-panel__header-title slds-text-heading_small slds-truncate" title={title}>{title}</h2>
                 <div class="slds-panel__header-actions">
-                    <button class="slds-button slds-button_icon slds-button_icon-small slds-panel__close" title="Collapse Filter" onclick={handleClose}>
-                        <svg class="slds-button__icon" aria-hidden="true">
-                            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
-                        </svg>
-                        <span class="slds-assistive-text">Collapse Filter</span>
-                    </button>
+                    <lightning-button-icon class="slds-panel__close" icon-name="utility:close" onclick={handleClose} tab-index="-1"></lightning-button-icon>
                 </div>
             </div>
             <div class="slds-panel__body slds-fill-height">

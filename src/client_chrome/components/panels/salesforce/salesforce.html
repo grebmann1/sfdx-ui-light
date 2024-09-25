@@ -5,11 +5,15 @@
             <template lwc:if={isDefaultMenu}>
                 <!-- Actions for record Explorer -->
                 <lightning-button-group slot="action">
-                    <lightning-button-icon icon-name="utility:new_window" title="Open SF Toolkit" onclick={redirectToWebsite}></lightning-button-icon>
+                    <lightning-button-icon icon-name="utility:new_window" onclick={redirectToWebsite}
+                                           title="Open SF Toolkit"></lightning-button-icon>
                     <!--<lightning-button-icon icon-name="utility:einstein" title="Open Einstein" onclick={einsteinClick}></lightning-button-icon>-->
-                    <lightning-button-icon icon-name="utility:apex" title="Open Anonymous Apex" onclick={redirectToAnonymousApex}></lightning-button-icon>
-                    <lightning-button-icon icon-name="utility:database" title="Open SOQL Builder" onclick={redirectToSoqlBuilder}></lightning-button-icon>
-                    <lightning-button-icon icon-name="utility:threedots_vertical" title="See more Apps" onclick={openDefaultPanel}></lightning-button-icon>
+                    <lightning-button-icon icon-name="utility:apex" onclick={redirectToAnonymousApex}
+                                           title="Open Anonymous Apex"></lightning-button-icon>
+                    <lightning-button-icon icon-name="utility:database" onclick={redirectToSoqlBuilder}
+                                           title="Open SOQL Builder"></lightning-button-icon>
+                    <lightning-button-icon icon-name="utility:threedots_vertical" onclick={openDefaultPanel}
+                                           title="See more Apps"></lightning-button-icon>
                 </lightning-button-group>
             </template>
         </extension-header>
@@ -41,35 +45,40 @@
             <div class="slds-full-height slds-col slds-size_1-of-1 slds-flex-column">
                 <!-- Start -->
                 <template lwc:if={isConnectorLoaded}>
+                    <!-- Quick Authorize -->
                     <div class="slds-grid slds-grid_align-center">
                         <div class="slds-col">
                             <connection-quick-authorize instance-url={instanceUrl}></connection-quick-authorize>
                         </div>
                     </div>
-                    <slds-tabset variant="scoped" class="slds-without-tab slds-full-height">
+                    <!-- Salesforce Informations -->
+                    <slds-tabset class="slds-without-tab slds-fill-height" variant="scoped">
                         <!-- Default Welcome Section -->
                         <slds-tab class="full-page-body" label="Org Info" value={APPLICATIONS.ORG_INFO}>
                             <slds-information-block title="Info">
                                 <p>The content will automatically change based on your URL.</p>
                                 <p>Navigate to your salesforce records to display the Data Explorer.</p>
                             </slds-information-block>
-                            <org-me title="Current User" class="slds-p-vertical_x-small slds-show"></org-me>
-                            <org-company title="Current Org" link-label="Company" class="slds-p-vertical_x-small slds-show"></org-company>
+                            <org-me class="slds-p-vertical_x-small slds-show" title="Current User"></org-me>
+                            <org-company class="slds-p-vertical_x-small slds-show" link-label="Company"
+                                         title="Current Org"></org-company>
                             <org-users class="slds-p-vertical_x-small slds-show"></org-users>
                         </slds-tab>
                         <!-- Record Explorer Section -->
                         <template lwc:if={isRecordExplorerAvailable}>
-                            <slds-tab class="full-page-body slds-tabs-no-padding" label="Record Explorer" value={APPLICATIONS.RECORD_EXPLORER}>
-                                <feature-record-explorer lwc:ref="recordexplorer" 
-                                    versions={versions}
-                                    record-id={recordId}
-                                    current-origin={currentOrigin}
+                            <slds-tab class="full-page-body slds-tabs-no-padding" label="Record Explorer"
+                                      value={APPLICATIONS.RECORD_EXPLORER}>
+                                <feature-record-explorer current-origin={currentOrigin}
+                                                         lwc:ref="recordexplorer"
+                                                         record-id={recordId}
+                                                         versions={versions}
                                 ></feature-record-explorer>
                             </slds-tab>
                         </template>
                         <!-- Record Explorer Section -->
                         <template lwc:if={isUserExplorerAvailable}>
-                            <slds-tab class="full-page-body slds-tabs-no-padding" label="Users" value={APPLICATIONS.USER_EXPLORER}>
+                            <slds-tab class="full-page-body slds-tabs-no-padding" label="Users"
+                                      value={APPLICATIONS.USER_EXPLORER}>
                                 <feature-user-explorer lwc:ref="userexplorer"></feature-user-explorer>
                             </slds-tab>
                         </template>
@@ -82,10 +91,14 @@
                 </template>
                 <template lwc:else>
                     <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
-                        <slds-spinner alternative-text="Loading" size="small" message="Connecting to Salesforce."></slds-spinner>
+                        <slds-spinner
+                                alternative-text="Loading"
+                                message="Connecting to Salesforce."
+                                size="small"
+                        ></slds-spinner>
                     </div>
                 </template>
-                
+
                 <!-- End -->
             </div>
         </div>

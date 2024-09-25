@@ -1,0 +1,125 @@
+<template>
+    <div lwc:ref="container" tabindex="-1">
+        <div class={sldsButtonGroupClass}>
+            <div class="slds-flex-column slds-vertical-button-group">
+                <lightning-button-icon
+                        icon-name="utility:toggle_panel_right"
+                        class="slds-button-first"
+                        onclick={handleOpenSideBar}
+                        tab-index="-1"
+                ></lightning-button-icon>
+                <lightning-button-icon-stateful
+                        icon-name="utility:search"
+                        class="slds-button-last"
+                        selected={isOverlayDisplayed}
+                        onclick={toggleOverlay}
+                        tab-index="-1"
+                ></lightning-button-icon-stateful>
+            </div>
+        </div>
+        <template lwc:if={isOverlayDisplayed}>
+            <div class="sf-toolkit slds-toolkit-overlay slds-is-relative" tabindex="0" style="background-color:white; width:500px;">
+                <template lwc:if={isLoading}>
+                    <slds-spinner
+                            message="Fetching Metadata"
+                            alternative-text="Loading"
+                            size="small"
+                    ></slds-spinner>
+                </template>
+                <div class={sldsPopupContainerClass}>
+                    <div class="slds-full-height slds-overflow-hidden slds-flex-row">
+                        <!-- Panel -->
+                        <slds-vertical-panel size="slds-size_small" is-open={filter_display} position="left" onclose={filter_handleClose}>
+                            <div>
+                                <lightning-button variant="base" label="Select All" onclick={selectAll_handleClick} tab-index="-1"></lightning-button>/
+                                <lightning-button variant="base" label="Unselect All" onclick={unselectAll_handleClick} tab-index="-1"></lightning-button>
+                            </div>
+                            <div class="slds-filters">
+                                <ol class="slds-list_vertical slds-list_vertical-space">
+                                    <li class="slds-item">
+                                        <lightning-checkbox-group
+                                                label="Filters"
+                                                options={filter_options}
+                                                value={filter_value}
+                                                onchange={filter_handleChange}
+                                        ></lightning-checkbox-group>
+                                    </li>
+                                </ol>
+                            </div>
+                        </slds-vertical-panel>
+                        <!-- Content -->
+                        <div class="slds-full-width">
+                            <!-- HEADER -->
+                            <extension-header
+                                    search-value={searchValue}
+                                    onsearch={handleSearch}
+                                    onfilter={handleCategoryFilter}
+                                    placeholder="Search Object, Profiles and more"
+                                    is-icon-disabled
+                                    is-combobox-displayed
+                            >
+                                <!-- filter -->
+                                <lightning-button-icon slot="presearch"
+                                                       class="slds-p-right_x-small"
+                                                       icon-name="utility:filterList"
+                                                       disabled={isLoading}
+                                                       onclick={filter_handleVisibilityToggle}
+                                                       variant={filter_variant}
+                                                       tooltip="Open/Hide filters panel"
+                                ></lightning-button-icon>
+
+                                <!-- action -->
+                                <lightning-button-group slot="action">
+                                    <lightning-button-icon icon-name="utility:new_window" label="Open" onclick={handleOpenToolkit} size="medium"></lightning-button-icon>
+                                </lightning-button-group>
+                            </extension-header>
+                            <span class="slds-metadata-info slds-p-around_x-small">
+                                <div class="slds-truncate">
+                                    <template lwc:if={hasItems}>
+                                      <span>{formattedResults.length} results</span>
+                                      <span class="slds-p-horizontal_xx-small"> • </span>
+                                    </template>
+                                    <span>Metadata refreshed {lastRefreshDateFormatted}</span>
+                                </div>
+                                <lightning-button-icon class="slds-float_right" icon-name="utility:refresh" variant="bare" onclick={handleRefresh}></lightning-button-icon>
+                            </span>
+                            <div class="slds-is-relative slds-grid slds-wrap slds-grid_vertical-stretch full-page-body slds-flex-column">
+                                <div class="slds-flex-column slds-full-height">
+                                    <lightning-tabset class="slds-without-tab slds-full-width" active-tab-value={viewerTab}>
+                                        <lightning-tab class="full-page-body" label={tab_searchLabel} value={FORMATTED_TABS.SEARCH} onactive={handleSelectTab}></lightning-tab>
+                                        <lightning-tab class="full-page-body" label={tab_quickLinkLabel} value={FORMATTED_TABS.QUICKLINK} onactive={handleSelectTab}></lightning-tab>
+                                        <lightning-tab class="full-page-body" label={tab_userLabel} value={FORMATTED_TABS.USER} onactive={handleSelectTab}></lightning-tab>
+                                    </lightning-tabset>
+                                    <!-- SECTION -->
+                                    <div class="slds-fill-height slds-col slds-size_1-of-1">
+                                        <!-- Start -->
+                                        <ul class="slds-scrollable_y scroll-container-header" onscroll={handleScroll}>
+                                            <li for:each={virtualList} for:item="item" key={item.id}>
+                                                <overlay-item filter={searchValue} name={item.name} item={item}></overlay-item>
+                                            </li>
+                                        </ul>
+                                        <template lwc:if={hasNoItems}>
+                                            <illustration-empty sub-title="No Data matching your criteria"></illustration-empty>
+                                        </template>
+                                        <template lwc:if={isFetchingMetadata}>
+                                            <slds-spinner
+                                                    alternative-text="Loading"
+                                                    size="small"
+                                            ></slds-spinner>
+                                        </template>
+                                        <!-- End -->
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Footer -->
+                    <template lwc:if={isFooterDisplayed}>
+                        <extension-footer version={version}></extension-footer>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

@@ -5,13 +5,8 @@
     <template lwc:if={sobjectMeta}>
         <div class="slds-tree_container">
             <div class="slds-p-left_small">
-                <div class="slds-grid">
-                    <button class="slds-button slds-button_icon" title="Back" onclick={deselectSObject}>
-                        <svg class="slds-button__icon" aria-hidden="true">
-                            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#back"></use>
-                        </svg>
-                        <span class="slds-assistive-text">{i18n.FIELDS_PANEL_BACK}</span>
-                    </button>
+                <div class="slds-grid slds-grid--vertical-align-center">
+                    <lightning-button-icon variant="bare" icon-name="utility:back" onclick={deselectSObject} label={i18n.FIELDS_PANEL_BACK}></lightning-button-icon>
                     <h2 class="slds-tree__group-header slds-truncate">{sobjectMeta.name} / {sobjectMeta.label}</h2>
                 </div>
             </div>

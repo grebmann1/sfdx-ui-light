@@ -16,6 +16,31 @@
                    -->
                 </li>
             </template>
+            <li class="slds-utility-bar__item custom-utility-text custom-utility-left">
+                <template lwc:if={isConnectorDisplayed}>
+                    <lightning-button-icon
+                        class="custom-utility-text-copy"
+                        onclick={handleCopyUsername}
+                        icon-name="utility:copy"
+                        variant="bare"
+                        alternative-text="copy"
+                        title="Copy Username"
+                    ></lightning-button-icon>
+                    <a class="slds-truncate" href="#" onclick={handleUsernameClick}>{usernameFormatted}</a>
+                    <div class="slds-vertical-separator"></div>
+                    <lightning-button 
+                        variant="base" 
+                        label="Access Token" 
+                        title="Copy Access Token" 
+                        icon-name="utility:copy" 
+                        class="footer-utility-truncate custom-utility-text-copy"
+                        onclick={handleCopyAccessToken}
+                    ></lightning-button>
+                </template>
+            </li>
+            <li class="slds-utility-bar__item custom-utility-text custom-utility-right">
+                <h2 class="slds-truncate">{versionFormatted}</h2>
+            </li>
         </ul>
     </div>
 </template>

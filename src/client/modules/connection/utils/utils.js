@@ -4,6 +4,7 @@ import constant from "core/constant";
 import { Connector } from './mapping';
 import * as webInterface from './web';
 import * as electronInterface from './electron';
+export * as BASIC from './basic';
 import { store,APPLICATION } from 'core/store';
 
 export * from './chrome';
@@ -250,7 +251,6 @@ export async function oauth({alias,loginUrl},callback,callbackErrorHandler){
 }
 
 async function generateConfiguration({alias,connection,redirectUrl}){
-    
     const {name,company} = extractName(alias);
     let configuration = {
         id:alias,
@@ -278,7 +278,7 @@ async function generateConfiguration({alias,connection,redirectUrl}){
             sfdxAuthUrl:`force://${window.jsforceSettings.clientId}::${refreshToken}@${(new URL(instanceUrl)).host}`
         });
         
-        /** Get Username **/
+        /** Get Username,Version .... this is also usefull to verify if the token is still valid !!!!! **/
         try{
             /** Get Username & Version **/
             await enrichConnector({connection,configuration},false);
@@ -289,6 +289,8 @@ async function generateConfiguration({alias,connection,redirectUrl}){
                 _errorMessage:  e.message
             });
         }
+
+
         
     }
     return configuration;
@@ -310,15 +312,17 @@ async function oauth_extend({alias,connection},callback){
     callback({alias,connector});//this.close({alias:alias,connection});
 }
 
-export async function directConnect(sessionId,serverUrl){
+export async function directConnect(sessionId,serverUrl,extra){
+    const isProxyDisabled = extra?.isProxyDisabled || false;
     let params = {
         //oauth2      : {...window.jsforceSettings},    
         sessionId   : sessionId,
         serverUrl   : serverUrl,
-        proxyUrl    : isChromeExtension()?null:(window.jsforceSettings?.proxyUrl || 'https://sf-toolkit.com/proxy/'), // variable initialization might be too slow 
+        proxyUrl    : (isProxyDisabled || isChromeExtension())?null:(window.jsforceSettings?.proxyUrl || 'https://sf-toolkit.com/proxy/'), // variable initialization might be too slow
         version     : constant.apiVersion,
         logLevel    : null//'DEBUG',
     }
+    console.log('params',params);
     
     let connection = await new window.jsforce.Connection(params);
 
@@ -348,9 +352,9 @@ async function enrichConnector({connection,configuration},dispathUpdate){
             id:identity.username
         });
     }
-    const _version = versions.sort((a, b) => b.version.localeCompare(a.version));
-    connection.version = _version[0].version;
-    configuration.versionDetails = _version[0];
+    const versionRecord = versions.sort((a, b) => b.version.localeCompare(a.version))[0];
+    connection.version = versionRecord.version;
+    configuration.versionDetails = versionRecord;
 
     const connector = new Connector(configuration,connection);
     if(dispathUpdate){

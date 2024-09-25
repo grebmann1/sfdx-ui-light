@@ -63,7 +63,9 @@ export default class App extends ToolkitElement {
     @track lookup_errors = [];
 
     @wire(connectStore, { store })
-    storeChange({ platformEvent,recents }) {
+    storeChange({ application,platformEvent,recents }) {
+        const isCurrentApp = this.verifyIsActive(application.currentApplication);
+        if(!isCurrentApp) return;
 
         this.currentChannelName = lowerCaseKey(platformEvent.currentChannel);
 

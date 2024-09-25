@@ -1,9 +1,13 @@
 import { api } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
 import { store,store_application } from 'shared/store';
+import { isEmpty,isElectronApp,runSilent,isNotUndefinedOrNull,isUndefinedOrNull,refreshCurrentTab,classSet } from 'shared/utils';
 
 
 export default class Users extends ToolkitElement {
+
+    @api isInjected = false;
+
     total_users;
     total_active;
     total_inactive;
@@ -42,5 +46,12 @@ export default class Users extends ToolkitElement {
 
     }
 
+    /** Getters **/
+    get containerClass(){
+        return classSet('slds-col slds-size_1-of-1 slds-m-top_x-small')
+            .add({
+                'slds-small-size_1-of-2 slds-medium-size_1-of-3':!this.isInjected,
+            }).toString();
+    }
 
 }

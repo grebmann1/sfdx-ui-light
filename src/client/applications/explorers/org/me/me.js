@@ -2,7 +2,7 @@
 import { LightningElement,api,track,wire } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
 import Toast from 'lightning/toast';
-import { isEmpty,isElectronApp,runSilent,isNotUndefinedOrNull,isUndefinedOrNull,refreshCurrentTab } from 'shared/utils';
+import { isEmpty,isElectronApp,runSilent,isNotUndefinedOrNull,isUndefinedOrNull,refreshCurrentTab,classSet } from 'shared/utils';
 import { store_application } from 'shared/store';
 import { connectStore,store } from 'core/store';
 
@@ -10,8 +10,10 @@ import { connectStore,store } from 'core/store';
 export default class Me extends ToolkitElement {
 
     @api title = 'Current User';
-    
+    @api isInjected = false;
     @track user = {};
+
+
     _username = null; // Used to control reloading
 
     // Editing
@@ -200,7 +202,13 @@ export default class Me extends ToolkitElement {
         const userId = this.connector?.userInfo?.user_id;
         return `/lightning/setup/ManageUsers/page?address=${encodeURIComponent(`/${userId}?noredirect=1&isUserEntityOverride=1`)}`;
     }
-    
+
+    get containerClass(){
+        return classSet('slds-col slds-size_1-of-1 slds-p-top_x-small slds-p-left_x-small')
+            .add({
+                'slds-large-size_1-of-2':!this.isInjected,
+            }).toString();
+    }
 
     
 

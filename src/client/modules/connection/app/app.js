@@ -6,7 +6,7 @@ import ConnectionDetailModal from "connection/connectionDetailModal";
 import ConnectionRenameModal from "connection/connectionRenameModal";
 import ConnectionImportModal from "connection/connectionImportModal";
 import { download,classSet,runActionAfterTimeOut,checkIfPresent,isEmpty,isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,normalizeString as normalize,groupBy } from 'shared/utils';
-import { getConfigurations,setConfigurations,removeConfiguration,connect,oauth,getConfiguration,getCurrentTab,oauth_chrome } from 'connection/utils';
+import { getConfigurations,setConfigurations,removeConfiguration,connect,oauth,getConfiguration,getCurrentTab,oauth_chrome,BASIC } from 'connection/utils';
 import { store,APPLICATION } from 'core/store';
 
 
@@ -233,8 +233,8 @@ export default class App extends ToolkitElement {
 
         _oauthMethod(
             {alias,loginUrl},
-            (res) => {
-                this.fetchAllConnections();
+            async (res) => {
+                await this.fetchAllConnections();
                 store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
             },(e) => {  
                 console.error(e);
@@ -256,21 +256,21 @@ export default class App extends ToolkitElement {
         }else{
             this.isLoading = true;
             try{
-                const {alias,redirectUrl,...settings} = this.data.find(x => x.id == row.id);
+                const {alias,redirectUrl,...settings} = this.data.find(x => x.id === row.id);
                 let url;
                 if(isEmpty(redirectUrl)){
-                    const connector = await connect({alias,settings,disableEvent:true});
-                    if(isUndefinedOrNull(connector)){
+                    const jwt = await BASIC.generateAccessToken({alias});
+                    if(isUndefinedOrNull(jwt)){
                         throw new Error('Issue while connecting !');
                     }
-                    url = connector.frontDoorUrl;
+                    url = jwt.frontDoorUrl;
                 }else{
                     url = redirectUrl;
                 }
                 
 
                 if(isChromeExtension()){
-                    if(target == 'incognito'){
+                    if(target === 'incognito'){
                         chrome.windows.getAll({populate: false, windowTypes: ['normal']}, (windows) => {
                             for (let w of windows) {
                                 if (w.incognito) {

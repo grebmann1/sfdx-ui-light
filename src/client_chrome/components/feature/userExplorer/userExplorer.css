@@ -1,6 +1,6 @@
 
 .slds-breadcrumb .slds-breadcrumb__item:first-child > span {
-    --slds-c-breadcrumbs-spacing-inline-start:0;
+    --slds-c-breadcrumbs-spacing-inline-start: 0;
 }
 
 .slds-breadcrumb .slds-breadcrumb__item > span {
@@ -11,5 +11,13 @@
     padding-left: var(--slds-c-breadcrumbs-spacing-inline-start, var(--sds-c-breadcrumbs-spacing-inline-start, 0.5rem));
 }
 
-.tableFixHead table { border-collapse: inherit; width: 100%; }
-.tableFixHead thead { position: sticky; top: 0; z-index: 2; }
+.tableFixHead table {
+    border-collapse: inherit;
+    width: 100%;
+}
+
+.tableFixHead thead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}

@@ -7,6 +7,14 @@
     width: 100%;
 }
 
+.card-item-fix {
+    flex: 0 1 auto;
+}
+
+.card-item-grow {
+    flex: 1;
+}
+
 .card-left{
     display: flex;
 }

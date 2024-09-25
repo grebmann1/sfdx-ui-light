@@ -10,7 +10,11 @@
             { "dir": "$rootDir/src/client/applications/documentation" },
             { "dir": "$rootDir/src/client/applications/tools" },
             { "dir": "$rootDir/src/client_chrome/components" },
-            { "npm": "lightning-base-components" }
+            { "npm": "lightning-base-components" },
+            {
+                "name": "imported/jsforce",
+                "path": "$rootDir/src/client/assets/libs/jsforce/jsforce.js"
+            }
         ]
     },
     "bundleConfig": { 
@@ -23,10 +27,9 @@
         ] 
     },
     "assets": [
-        
         {
-            "alias": "assetsDir",
-            "dir": "$rootDir/node_modules/@salesforce-ux/design-system/assets",
+            "alias":"assetDir",
+            "dir": "$rootDir/src/client/assets",
             "urlPath": "/assets"
         },
         {
@@ -68,6 +71,15 @@
             "id": "app",
             "path": "/app",
             "rootComponent": "ui/fullView",
+            "layoutTemplate": "$layoutsDir/main.html",
+            "bootstrap": {
+                "syntheticShadow": true
+            }
+        },
+        {
+            "id": "test",
+            "path": "/test",
+            "rootComponent": "extension/test",
             "layoutTemplate": "$layoutsDir/main.html",
             "bootstrap": {
                 "syntheticShadow": true

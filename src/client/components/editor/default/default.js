@@ -1,12 +1,11 @@
 import { api,wire } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
+import Toast from 'lightning/toast';
 import { classSet,isNotUndefinedOrNull,runActionAfterTimeOut,guid,isChromeExtension } from 'shared/utils';
 import { store,connectStore } from 'core/store';
 import { SOQL,APEX,VF,LOG } from 'editor/languages';
 import loader from '@monaco-editor/loader';
-if(process.env.IS_CHROME){
-    loader.config({ paths: { vs: '/assets/libs/monaco-editor/vs' } });
-}
+
 
 export default class Default extends ToolkitElement {
 
@@ -41,12 +40,21 @@ export default class Default extends ToolkitElement {
     */
 
     async connectedCallback(){
+        if(process.env.IS_CHROME){
+            loader.config({ paths: { vs: window.monacoUrl || '/assets/libs/monaco-editor/vs' } });
+        }
         await this.loadMonacoEditor();
     }
 
     /** Events */
 
-
+    handleCopyClick = () => {
+        navigator.clipboard.writeText(this.currentModel.getValue());
+        Toast.show({
+            label: `Exported to your clipboard`,
+            variant:'success',
+        });
+    }
 
     /** Methods **/
 

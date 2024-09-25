@@ -221,6 +221,7 @@ export default class ConnectionNewModal extends LightningModal {
             alias:this.alias,
             loginUrl:this.loginUrl,
         },(res) => {
+            console.log('res',res);
             this.close(res);
         },(e) => {
             this.notifyUser('OAuth Error', e.message, 'error');

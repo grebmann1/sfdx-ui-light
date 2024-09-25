@@ -1,25 +1,24 @@
-'use strict';
-const buffer = {}
-const runActionAfterTimeOut = (value, action,{timeout = 300} = {}) => {
-    if (buffer._clearBufferId) {
-        clearTimeout(buffer._clearBufferId);
-    }
-    // eslint-disable-next-line @lwc/lwc/no-async-operation
-    buffer._clearBufferId = setTimeout(() => {
-        action(value);
-    }, timeout);
-}
+import '@webcomponents/custom-elements';
+import '@lwc/synthetic-shadow';
+import {createElement} from 'lwc';
+import ViewsOverlay from 'views/overlay';
+
+import {getRecordId} from 'extension/utils';
+import {isEmpty, runActionAfterTimeOut} from 'shared/utils';
+import hotkeys from 'hotkeys-js';
+import loader from '@monaco-editor/loader';
+
 const _showCopiedNotification = (copiedValue) => {
     // Create the notification element
     const notification = document.createElement('div');
-        notification.className = 'sf-toolkit-notification';
+    notification.className = 'sf-toolkit-notification';
 
     const sfToolkit = document.createElement('div');
-        sfToolkit.className = 'sf-toolkit';
-        sfToolkit.textContent = 'SF toolkit';
+    sfToolkit.className = 'sf-toolkit';
+    sfToolkit.textContent = 'SF toolkit';
 
     const message = document.createElement('span');
-        message.textContent = `${copiedValue} copied to clipboard`;
+    message.textContent = `${copiedValue} copied to clipboard`;
 
     // Append the logo and message to the notification
     notification.appendChild(sfToolkit);
@@ -28,7 +27,7 @@ const _showCopiedNotification = (copiedValue) => {
 
     // Style the notification element
     const style = document.createElement('style');
-        style.textContent = `
+    style.textContent = `
             .sf-toolkit-notification {
                 position: fixed;
                 bottom: 20px;
@@ -68,41 +67,72 @@ const _showCopiedNotification = (copiedValue) => {
         document.body.removeChild(notification);
         document.head.removeChild(style);
     }, 3000);
-}
+};
 
 const injectShortCuts = async () => {
-    const configuration = await chrome.storage.local.get(['shortcut_injection_enabled','shortcut_recordid']);
+    const configuration = chrome.storage?await chrome.storage.local.get(['shortcut_injection_enabled', 'shortcut_recordid']):{};
 
-    if(!configuration.shortcut_injection_enabled) return;
+    if (!configuration.shortcut_injection_enabled) return;
 
-    const hotkeys = await import(chrome.runtime.getURL("scripts/hotkeys.esm.js"));
-    const utils = await import(chrome.runtime.getURL("scripts/utils.js"));
 
     console.log('### SF Toolkit - Shortcut Injection ###',);
-
     /** Record Id Shortcut - Alpha - To modify to a generic version */
-    if(configuration.hasOwnProperty('shortcut_recordid')){
+    if (configuration.hasOwnProperty('shortcut_recordid')) {
         const combo = configuration['shortcut_recordid'].join('+');
-        hotkeys.default(combo, function(event, handler){
+        hotkeys(combo, function (event, handler) {
             // Prevent the default refresh event under WINDOWS system
             event.preventDefault();
-            const recordId = utils.getRecordId(window.location.href);
-            if(!utils.isEmpty(recordId)){
+            const recordId = getRecordId(window.location.href);
+            if (!isEmpty(recordId)) {
                 navigator.clipboard.writeText(recordId);
                 _showCopiedNotification(recordId);
             }
         });
     }
-    
-}
+
+};
+
+
+const injectOverlay = async () => {
+    console.log('injectOverlay');
+    const isEnabled = (await chrome.storage.sync.get('overlayEnabled')).overlayEnabled;
+    if(!isEnabled) return;
+    // Style
+    const styles = [
+        {href:'assets/libs/monaco-editor/vs/editor/editor.main.css',name:'vs/editor/editor.main'},
+    ];
+    styles.forEach(item => {
+        const sldsStyle = document.createElement('link');
+        sldsStyle.rel = 'stylesheet';
+        sldsStyle.href = chrome.runtime.getURL(item.href); // Or use a CDN link
+        sldsStyle.setAttribute('data-name',item.name);
+        // Append the SLDS styles to the shadow root
+        document.head.appendChild(sldsStyle);
+    });
+
+    // Inject monaco directly
+    loader.config({
+        paths: {
+            vs: chrome.runtime.getURL('assets/libs/monaco-editor/vs'),
+        }
+    });
+
+    const test = await loader.init();
+    console.log('test',test);
+    // LWC
+    const elm = createElement('views-overlay', {is: ViewsOverlay});
+    Object.assign(elm, {variant:'overlay'});
+    document.body.appendChild(elm);
+};
+
 
 const searchCustomElements = async (enable) => {
     //console.log('searchCustomElements');
-  
+
 
     // Style the notification element
     const style = document.createElement('style');
-        style.textContent = `
+    style.textContent = `
             .sf-toolkit-custom-component-header {
                 position: relative;
                 border:2px solid #0176d4;
@@ -139,8 +169,8 @@ const searchCustomElements = async (enable) => {
 
             // Inject component
             const sfToolkit = document.createElement('div');
-                sfToolkit.className = 'sf-toolkit-custom-component';
-                sfToolkit.textContent = 'SF toolkit';
+            sfToolkit.className = 'sf-toolkit-custom-component';
+            sfToolkit.textContent = 'SF toolkit';
             element.appendChild(sfToolkit);
         }
     }
@@ -148,12 +178,12 @@ const searchCustomElements = async (enable) => {
     // Log the custom components to the console
     //console.log('Custom components found:', customComponents);
 
-}
+};
 
 const send = async (message) => {
     return await chrome.runtime.sendMessage(message);
     // Optional: do something with response
-}
+};
 
 
 class LWC_CUSTOM {
@@ -162,54 +192,53 @@ class LWC_CUSTOM {
     styleElement;
     lwcElements = [];
     injectedElements = [];
-    
+
     enable = () => {
         //console.log('enable');
         document.head.appendChild(this.createStyleElement());
         this.enableHighlightElements();
         this.observeDomChange(this.handleDomChange);
-    }
+    };
 
-    
 
     disable = () => {
         //console.log('disable');
-        if(this.domObserver){
+        if (this.domObserver) {
             this.domObserver.disconnect();
         }
         this.removeStyle();
         this.disableHighlightElements();
-        
-    }
+
+    };
 
     toggleFeature = (value) => {
-        if(value === true){
+        if (value === true) {
             this.enable();
-        }else{
+        } else {
             this.disable();
         }
-    }
+    };
 
     observeDomChange = (callback) => {
-        if(this.domObserver) return;
+        if (this.domObserver) return;
         //console.log('observeDomChange');
         const targetNode = document;
         this.domObserver = new MutationObserver(callback);
         // Start observing the target node for configured mutations
-        this.domObserver.observe(targetNode, { attributes: true, childList: true, subtree: true });
-    }
+        this.domObserver.observe(targetNode, {attributes: true, childList: true, subtree: true});
+    };
 
     handleDomChange = (mutationList, observer) => {
-        runActionAfterTimeOut(mutationList,async (newValue) => {
+        runActionAfterTimeOut(mutationList, async (newValue) => {
             //console.log('handleDomChange - process');
             this.enableHighlightElements();
-        },{timeout:500});
+        }, {timeout: 500});
     };
 
     createStyleElement = () => {
         const style = document.createElement('style');
-            style.className = 'sf-toolkit-style';
-            style.textContent = `
+        style.className = 'sf-toolkit-style';
+        style.textContent = `
                 .sf-toolkit-custom-component-header {
                     position: relative;
                     border:2px solid #0176d4;
@@ -239,7 +268,7 @@ class LWC_CUSTOM {
             `;
         this.styleElement = style;
         return this.styleElement;
-    }
+    };
 
     enableHighlightElements = () => {
         const allElements = document.getElementsByTagName('*');
@@ -251,22 +280,22 @@ class LWC_CUSTOM {
         // Initial Loop to tag all custom elements :
         [...allElements].forEach(element => {
             if (
-                element.tagName.startsWith('C-') && !element.classList.contains('sf-toolkit-custom-element') 
+                element.tagName.startsWith('C-') && !element.classList.contains('sf-toolkit-custom-element')
             ) {
                 element.classList.add('sf-toolkit-custom-element');
             }
-            
+
         });
 
         // Loop through all elements and check if the tag name starts with "c-"
         document.querySelectorAll('.sf-toolkit-custom-element').forEach(element => {
             // For now, we only include the 1st lvl
             if (
-                element.tagName.startsWith('C-') 
-                && !element.classList.contains('sf-toolkit-custom-component-header') 
-                && ! element.closest('.sf-toolkit-custom-component')
+                element.tagName.startsWith('C-')
+                && !element.classList.contains('sf-toolkit-custom-component-header')
+                && !element.closest('.sf-toolkit-custom-component')
             ) {
-                
+
                 _lwcElements.push(element);
 
 
@@ -275,38 +304,38 @@ class LWC_CUSTOM {
 
                 // Inject component
                 const sfToolkit_link = document.createElement('a');
-                    sfToolkit_link.href = "#";
-                    sfToolkit_link.onclick = this.handleLinkClick;
-                    sfToolkit_link.dataset.name = element.tagName;
-                    sfToolkit_link.textContent = 'View/Edit';
+                sfToolkit_link.href = "#";
+                sfToolkit_link.onclick = this.handleLinkClick;
+                sfToolkit_link.dataset.name = element.tagName;
+                sfToolkit_link.textContent = 'View/Edit';
 
                 const sfToolkit = document.createElement('div');
-                    sfToolkit.className = 'sf-toolkit-custom-component';
-                    sfToolkit.textContent = `${element.tagName} - `;
-                    sfToolkit.appendChild(sfToolkit_link);
+                sfToolkit.className = 'sf-toolkit-custom-component';
+                sfToolkit.textContent = `${element.tagName} - `;
+                sfToolkit.appendChild(sfToolkit_link);
                 element.appendChild(sfToolkit);
                 _injectedElements.push(sfToolkit);
             }
         });
         this.lwcElements = _lwcElements;
         this.injectedElements = _injectedElements;
-    }
+    };
 
     disableHighlightElements = () => {
         //console.log('disableHighlightElements');
         // disable this way in case the chrome extension was closed !
         document.querySelectorAll('.sf-toolkit-custom-component-header')
-        .forEach(item => {
-            //console.log('item',item);
-            item.classList.remove('sf-toolkit-custom-component-header');
-            item.classList.remove('sf-toolkit-custom-element');
-        });
+            .forEach(item => {
+                //console.log('item',item);
+                item.classList.remove('sf-toolkit-custom-component-header');
+                item.classList.remove('sf-toolkit-custom-element');
+            });
 
         document.querySelectorAll('.sf-toolkit-custom-component')
-        .forEach(item2 => {
-            //console.log('item2',item2);
-            item2.remove();
-        })
+            .forEach(item2 => {
+                //console.log('item2',item2);
+                item2.remove();
+            })
         /*
         // Modified custom elements
         this.lwcElements.forEach(item => {
@@ -318,14 +347,14 @@ class LWC_CUSTOM {
             //console.log('item',item);
             item.remove();
         })*/
-    }
+    };
 
     removeStyle = () => {
         document.querySelectorAll('.sf-toolkit-style')
-        .forEach(item => {
-            item.remove();
-        })
-    }
+            .forEach(item => {
+                item.remove();
+            })
+    };
 
     /** Events */
 
@@ -333,7 +362,7 @@ class LWC_CUSTOM {
         e.preventDefault();
         const developerName = (e.target.dataset.name.substring(2) || '').split('-').join('');
         const redirectUrl = `${this.baseUrl}&redirectUrl=${encodeURIComponent(`metadata?sobject=LightningComponentBundle&param1=${developerName}`)}`;
-        window.open(redirectUrl,'_blank');
+        window.open(redirectUrl, '_blank');
     }
 }
 
@@ -341,20 +370,20 @@ class INJECTOR {
     lwc_custom_instance = new LWC_CUSTOM();
 
     init = () => {
-        chrome.runtime.onMessage.addListener(this.handleMessage);
+        if(chrome.runtime)chrome.runtime.onMessage.addListener(this.handleMessage);
         this.injectCode();
         //this.lwc_custom_instance.toggleFeature(true);
-    }
+    };
 
 
     injectCode = () => {
         injectShortCuts();
-    }
+        injectOverlay();
+    };
 
-    
 
     handleMessage = (request, sender, sendResponse) => {
-        if(request.action == "lwc_highlight"){
+        if (request.action === "lwc_highlight") {
             //console.log('handleMessage',request);
             this.lwc_custom_instance.baseUrl = request.baseUrl;
             this.lwc_custom_instance.toggleFeature(request.value);
@@ -365,7 +394,7 @@ class INJECTOR {
 
 (async () => {
     const injectorInstance = new INJECTOR();
-        injectorInstance.init();
-    
+    injectorInstance.init();
+
 })();
 

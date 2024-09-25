@@ -1,8 +1,8 @@
 <template>
-    
+
     <div class="slds-full-height slds-flex-column">
         <!-- Header -->
-        
+
         <div class="slds-full-height slds-overflow-hidden slds-flex-row">
             <div class="full-page slds-card slds-col">
                 <!--
@@ -25,18 +25,18 @@
                                     <span class="slds-truncate" title="LWC">LWC</span>
                                 </div>
                             </h3>
-                            <div class="slds-section__content slds-m-horizontal_small" >
+                            <div class="slds-section__content slds-m-horizontal_small">
                                 <div class="slds-full-height slds-grid slds-wrap">
                                     <!-- Total Records -->
                                     <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
-                                        <lightning-input 
-                                            type="toggle" 
-                                            label="Highlight LWC" 
-                                            name="highlightLWC" 
-                                            message-toggle-active=""
-                                            message-toggle-inactive=""
-                                            checked={isLWCHighlighted}
-                                            onchange={highlightLWC_change}
+                                        <lightning-input
+                                                checked={isLWCHighlighted}
+                                                label="Highlight LWC"
+                                                message-toggle-active=""
+                                                message-toggle-inactive=""
+                                                name="highlightLWC"
+                                                onchange={highlightLWC_change}
+                                                type="toggle"
                                         ></lightning-input>
                                     </div>
                                 </div>
@@ -48,5 +48,5 @@
             </div>
         </div>
     </div>
-    
+
 </template>

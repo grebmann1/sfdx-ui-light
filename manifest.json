@@ -9,6 +9,35 @@
     "action": {
         "default_title": "Click to open Salesforce Toolkit"
     },
+    "commands": {
+        "overlay_toggle": {
+            "suggested_key": {
+                "default": "Ctrl+Shift+E",
+                "linux": "Ctrl+Shift+E",
+                "mac": "Command+Shift+E",
+                "windows": "Ctrl+Shift+E"
+            },
+            "description": "Enable/Disable the Overlay"
+        },
+        "open_overlay_search": {
+            "description": "Overlay Open Search",
+            "suggested_key": {
+                "default": "Ctrl+Shift+S",
+                "linux": "Ctrl+Shift+S",
+                "mac": "Command+Shift+S",
+                "windows": "Ctrl+Shift+S"
+            }
+        },
+        "open_side_panel": {
+            "description": "Open Side Panel",
+            "suggested_key": {
+                "default": "Ctrl+Shift+Space",
+                "linux": "Ctrl+Shift+Space",
+                "mac": "Command+Shift+Space",
+                "windows": "Ctrl+Shift+Space"
+            }
+        }
+    },
     "content_scripts": [
         {
             "matches": [
@@ -21,21 +50,43 @@
         {
             "matches": [
                 "https://*.salesforce.com/*",
-                "https://*.visual.force.com/*",
-                "https://*.vf.force.com/*",
                 "https://*.lightning.force.com/*",
-                "https://*.cloudforce.com/*",
-                "https://*.visualforce.com/*",
                 "https://*.salesforce.mil/*",
-                "https://*.visual.force.mil/*",
-                "https://*.vf.force.mil/*",
-                "https://*.lightning.force.mil/*",
-                "https://*.cloudforce.mil/*",
-                "https://*.visualforce.mil/*",
-                "https://*.crmforce.mil/*"
+                "https://*.lightning.force.mil/*"
+            ],
+            "exclude_globs": [ "*salesforce.com/#/*" ],
+            "exclude_matches": [
+                "https://*/setup/secur/RemoteAccessAuthorizationPage.apexp*",
+                "https://*/_ui/common/apex/debug/*",
+                "https://*/_ui/*",
+                "https://test.salesforce.com/",
+                "https://login.salesforce.com/",
+                "https://*/loginflow/*"
             ],
             "run_at":"document_end",
-            "js": ["scripts/inject_salesforce.js"]
+            "js": [
+                "scripts/inject_salesforce.js",
+                "assets/libs/require/require.js",
+                "assets/libs/monaco-editor/vs/editor/editor.main.js",
+                "assets/libs/monaco-editor/vs/basic-languages/javascript/javascript.js",
+                "assets/libs/monaco-editor/vs/basic-languages/apex/apex.js",
+                "assets/libs/monaco-editor/vs/basic-languages/css/css.js",
+                "assets/libs/monaco-editor/vs/basic-languages/html/html.js",
+                "assets/libs/monaco-editor/vs/basic-languages/java/java.js",
+                "assets/libs/monaco-editor/vs/basic-languages/xml/xml.js",
+                "assets/libs/monaco-editor/vs/basic-languages/markdown/markdown.js",
+                "assets/libs/monaco-editor/vs/basic-languages/typescript/typescript.js",
+                "assets/libs/monaco-editor/vs/language/html/htmlMode.js",
+                "assets/libs/monaco-editor/vs/language/json/jsonMode.js",
+                "assets/libs/monaco-editor/vs/language/typescript/tsMode.js",
+                "assets/libs/monaco-editor/vs/language/css/cssMode.js"
+            ],
+            "css" : [
+                "assets/styles/slds-sf-toolkit.css",
+                "assets/styles/inject.css",
+                "assets/styles/extension.css",
+                "assets/styles/web.css"
+            ]
         }
     ],
     "content_security_policy": {
@@ -48,6 +99,7 @@
             ],
             "resources": [
                 "scripts/*",
+                "assets/*",
                 "index.html*",
                 "offscreen.html*",
                 "callback.html*",
@@ -75,7 +127,8 @@
         "tabs",
         "tabGroups",
         "sidePanel",
-        "contextMenus"
+        "contextMenus",
+        "unlimitedStorage"
     ],
     "incognito": "spanning"
   }

@@ -92,9 +92,11 @@
                 
             </div>
         </div>
+
+        <!-- Shared Footer -->
+        <template lwc:if={isUserLoggedIn}>
+            <ui-footer></ui-footer>
+        </template>
     </div>
     
-
-    <!-- Shared Footer -->
-    <!-- <ui-footer></ui-footer> -->
 </template>

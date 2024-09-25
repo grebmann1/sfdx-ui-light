@@ -2,20 +2,20 @@
     <tr style="height: 0;">
         <td class="cell-value slds-cell-wrap">
             <lightning-button-icon
-                    onclick={handleCopyRecordId}
-                    icon-name="utility:copy"
-                    variant="bare"
                     alternative-text={recordId}
+                    icon-name="utility:copy"
+                    onclick={handleCopyRecordId}
+                    variant="bare"
             ></lightning-button-icon>
         </td>
-        <td lwc:ref="username" lwc:dom="manual" class="cell-field slds-cell-wrap"></td>
+        <td class="cell-field slds-cell-wrap" lwc:dom="manual" lwc:ref="username"></td>
         <td class="cell-value slds-cell-wrap">
             <!-- Value -->
-            <span lwc:ref="name" lwc:dom="manual"></span>
+            <span lwc:dom="manual" lwc:ref="name"></span>
         </td>
         <td class="cell-value slds-cell-wrap">
             <!-- Value -->
-            <span lwc:ref="profile" lwc:dom="manual"></span>
+            <span lwc:dom="manual" lwc:ref="profile"></span>
         </td>
         <td class="cell-value slds-cell-wrap">
             <!-- Value -->
@@ -28,8 +28,11 @@
         </td>
         <td class="cell-action slds-cell-wrap">
             <lightning-button-group>
-                <lightning-button-icon disabled={isDisabled} onclick={loginAsClick} icon-name="utility:change_owner" variant="border-filled" alternative-text="Login As" title="Login As"></lightning-button-icon>
-                <lightning-button-icon  onclick={viewClick} icon-name="utility:preview" variant="border-filled" alternative-text="View" title="View"></lightning-button-icon>
+                <lightning-button-icon alternative-text="Login As" disabled={isDisabled} icon-name="utility:change_owner"
+                                       onclick={loginAsClick} title="Login As"
+                                       variant="border-filled"></lightning-button-icon>
+                <lightning-button-icon alternative-text="View" icon-name="utility:preview" onclick={viewClick}
+                                       title="View" variant="border-filled"></lightning-button-icon>
                 <!--
                     <lightning-button-menu alternative-text="Show menu" menu-alignment="auto">
                         <lightning-menu-item value="MenuItemOne" label="Menu Item One"></lightning-menu-item>

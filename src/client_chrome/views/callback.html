@@ -4,8 +4,11 @@
         <meta charset="UTF-8">
         <title>JSforce Callback</title>
     </head>
-    <body>
-        <script src="/assets/libs/jsforce/jsforce.js"></script>
-        <script type="module" src="/scripts/callback.js"></script>
+    <body style="margin:0px;">
+        <script type="module">
+            import jsforce from '/libs/jsforce/jsforce.js';
+            window.jsforce = jsforce;
+        </script>
+        <script src="/scripts/callback.js" type="module"></script>
     </body>
 </html>

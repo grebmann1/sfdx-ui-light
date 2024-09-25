@@ -4,6 +4,7 @@ import { isEmpty,runActionAfterTimeOut,normalizeString as normalize, classSet} f
 
 export default class VerticalPanel extends LightningElement {
 
+    @api position;
     @api isOpen;
     @api size = 'slds-size_medium';
     @api title = 'Filter';
@@ -23,7 +24,7 @@ export default class VerticalPanel extends LightningElement {
     /** Getters */
 
     get filterPanelClass(){
-        return classSet(`slds-panel ${this.normalizedSize} slds-panel_docked slds-panel_docked-right slds-panel_drawer`)
+        return classSet(`slds-panel ${this.normalizedSize} slds-panel_docked slds-panel_docked-${this.normalizedPosition} slds-panel_drawer`)
         .add({
             'slds-is-open slds-flex-column':this.isOpen
         }).toString();
@@ -33,6 +34,13 @@ export default class VerticalPanel extends LightningElement {
         return normalize(this.size, {
             fallbackValue: 'default',
             validValues: ['default', 'slds-size_medium','slds-size_full'],
+        });
+    }
+
+    get normalizedPosition(){
+        return normalize(this.position, {
+            fallbackValue: 'right',
+            validValues: ['left', 'right'],
         });
     }
 

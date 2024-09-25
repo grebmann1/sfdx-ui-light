@@ -1,6 +1,6 @@
 import ToolkitElement from 'core/toolkitElement';
 import { api } from "lwc";
-import { isEmpty,isElectronApp } from 'shared/utils';
+import { isEmpty,isElectronApp,classSet } from 'shared/utils';
 import Toast from 'lightning/toast';
 import { store,store_application } from 'shared/store';
 
@@ -9,6 +9,7 @@ export default class Company extends ToolkitElement {
 
     @api title = 'General Information';
     @api linkLabel = 'Company Information';
+    @api isInjected = false;
     
     orgInformation = {};
 
@@ -40,6 +41,13 @@ export default class Company extends ToolkitElement {
 
     get organisationAddress(){
         return `${this.orgInformation.Address?.country} ${this.orgInformation.Address?.city}, ${this.orgInformation.Address?.street}`;
+    }
+
+    get containerClass(){
+        return classSet('slds-col slds-size_1-of-1 slds-p-top_x-small slds-p-left_x-small')
+            .add({
+                'slds-large-size_1-of-2':!this.isInjected,
+            }).toString();
     }
     
 

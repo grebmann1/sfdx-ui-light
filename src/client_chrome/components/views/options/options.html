@@ -22,14 +22,18 @@
                             </h3>
                             <div class="slds-section__content">
                                 <slds-information-block title="Open AI - Beta Mode">
-                                    <p>This is in Beta, might not work as expected and might be removed in the future !</p>
+                                    <p>This is in Beta, might not work as expected and might be removed in the future
+                                        !</p>
                                 </slds-information-block>
                                 <div class="slds-grid slds-wrap">
                                     <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
-                                        <lightning-input type="text" label="OpenAI API Key" value={openai_key} onchange={handleOpenaiKey_change}></lightning-input>
+                                        <lightning-input label="OpenAI API Key" onchange={handleOpenaiKey_change} type="text"
+                                                         value={openai_key}></lightning-input>
                                     </div>
                                     <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
-                                        <lightning-input type="text" label="OpenAI Assistant Id" value={openai_assistant_id} onchange={handleOpenaiAssistantId_change}></lightning-input>
+                                        <lightning-input label="OpenAI Assistant Id" onchange={handleOpenaiAssistantId_change}
+                                                         type="text"
+                                                         value={openai_assistant_id}></lightning-input>
                                     </div>
                                 </div>
                             </div>
@@ -50,14 +54,14 @@
                                 </slds-information-block>
                                 <div class="slds-grid slds-wrap">
                                     <div class="slds-col slds-medium-size_1-of-2 slds-p-horizontal_small">
-                                        <lightning-input 
-                                            type="toggle" 
-                                            label="Open Experience Cloud in Incognito" 
-                                            onchange={handleExperienceCloudLoginAsIncognito_change}
-                                            checked={experienceCloudLoginAsIncognito}
-                                            message-toggle-active="Active"
-                                            message-toggle-inactive="Inactive"
-                                            variant="label-stacked"
+                                        <lightning-input
+                                                checked={experienceCloudLoginAsIncognito}
+                                                label="Open Experience Cloud in Incognito"
+                                                message-toggle-active="Active"
+                                                message-toggle-inactive="Inactive"
+                                                onchange={handleExperienceCloudLoginAsIncognito_change}
+                                                type="toggle"
+                                                variant="label-stacked"
                                         ></lightning-input>
                                     </div>
                                 </div>
@@ -79,22 +83,22 @@
                                 <div class="slds-grid slds-wrap">
                                     <div class="slds-col slds-medium-size_1-of-2 slds-p-horizontal_small"></div>
                                     <div class="slds-col slds-medium-size_1-of-2 slds-p-horizontal_small">
-                                        <lightning-input 
-                                            type="toggle" 
-                                            label="Enable ShortCut Injection" 
-                                            onchange={handleShortcutEnabled_change}
-                                            checked={shortcut_enabled}
-                                            message-toggle-active="Active"
-                                            message-toggle-inactive="Inactive"
-                                            variant="label-stacked"
+                                        <lightning-input
+                                                checked={shortcut_enabled}
+                                                label="Enable ShortCut Injection"
+                                                message-toggle-active="Active"
+                                                message-toggle-inactive="Inactive"
+                                                onchange={handleShortcutEnabled_change}
+                                                type="toggle"
+                                                variant="label-stacked"
                                         ></lightning-input>
                                     </div>
                                     <div class="slds-col slds-medium-size_1-of-2 slds-p-horizontal_small">
-                                        <slds-shortcut-selector lwc:ref="recordidshortcut" 
-                                            disabled={isShortcutDisabled} 
-                                            value={shortcut_recordid} 
-                                            onchange={handleShortcutRecordid_change} 
-                                            label="Shortcut - RecordId"
+                                        <slds-shortcut-selector disabled={isShortcutDisabled}
+                                                                label="Shortcut - RecordId"
+                                                                lwc:ref="recordidshortcut"
+                                                                onchange={handleShortcutRecordid_change}
+                                                                value={shortcut_recordid}
                                         ></slds-shortcut-selector>
                                     </div>
                                 </div>
@@ -105,16 +109,16 @@
                 <!-- Footer -->
                 <div class="slds-grid slds-grid_align-center slds-p-vertical_small">
                     <lightning-button
-                        class="slds-float_left slds-button"
-                        variant="neutral"
-                        label="Cancel"
-                        onclick={handleCancelClick}
+                            class="slds-float_left slds-button"
+                            label="Cancel"
+                            onclick={handleCancelClick}
+                            variant="neutral"
                     ></lightning-button>
                     <lightning-button
                             class="slds-button"
-                            variant="brand"
                             label="Save"
                             onclick={handleSaveClick}
+                            variant="brand"
                     ></lightning-button>
                 </div>
             </div>

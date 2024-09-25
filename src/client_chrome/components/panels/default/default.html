@@ -4,20 +4,26 @@
         <extension-header onsearch={handleSearch}>
             <lightning-button-group slot="action">
                 <template lwc:if={isBackButtonDisplayed}>
-                    <lightning-button class="back-button" icon-name="utility:back" label="Back" size="medium" onclick={handleBackClick}></lightning-button>
+                    <lightning-button class="back-button" icon-name="utility:back" label="Back" onclick={handleBackClick}
+                                      size="medium"></lightning-button>
                 </template>
                 <!-- Actions for connections -->
-                <lightning-button-icon variant={connectionVariant} icon-name="utility:salesforce1" title="Home" onclick={openConnectionClick}></lightning-button-icon>
+                <lightning-button-icon icon-name="utility:salesforce1" onclick={openConnectionClick} title="Home"
+                                       variant={connectionVariant}></lightning-button-icon>
                 <template lwc:if={isAssistantDisplayed}>
-                    <lightning-button-icon variant={assistantVariant} icon-name="utility:einstein" title="Assistant" onclick={einsteinClick}></lightning-button-icon>
+                    <lightning-button-icon icon-name="utility:einstein" onclick={einsteinClick} title="Assistant"
+                                           variant={assistantVariant}></lightning-button-icon>
                 </template>
-                <lightning-button-icon variant={documentationVariant} icon-name="utility:knowledge_base" title="Documentation" onclick={documentationClick}></lightning-button-icon>
-                <lightning-button-menu menu-alignment="auto" alternative-text="Show menu">
-                    <lightning-menu-item prefix-icon-name="utility:upload" value="Import" label="Import Orgs" onclick={importClick}></lightning-menu-item>
-                    <lightning-menu-item prefix-icon-name="utility:download" value="Export" label="Export Orgs" onclick={exportClick}></lightning-menu-item>
+                <lightning-button-icon icon-name="utility:knowledge_base" onclick={documentationClick}
+                                       title="Documentation" variant={documentationVariant}></lightning-button-icon>
+                <lightning-button-menu alternative-text="Show menu" menu-alignment="auto">
+                    <lightning-menu-item label="Import Orgs" onclick={importClick} prefix-icon-name="utility:upload"
+                                         value="Import"></lightning-menu-item>
+                    <lightning-menu-item label="Export Orgs" onclick={exportClick} prefix-icon-name="utility:download"
+                                         value="Export"></lightning-menu-item>
                 </lightning-button-menu>
             </lightning-button-group>
-            
+
         </extension-header>
 
         <!-- BODY slds-background-white -->
@@ -27,21 +33,21 @@
             <div class="slds-full-height slds-col slds-col slds-size_1-of-1 slds-p-top_small">
                 <!-- Start -->
                 <template lwc:if={isConnection}>
-                    <connection-app 
-                        lwc:ref="connection" 
-                        variant="card" 
-                        is-header-less
+                    <connection-app
+                            is-header-less
+                            lwc:ref="connection"
+                            variant="card"
                     ></connection-app>
                 </template>
                 <template lwc:elseif={isDocumentation}>
-                    <doc-app lwc:ref="documentation" 
-                        is-responsive
+                    <doc-app is-responsive
+                             lwc:ref="documentation"
                     ></doc-app>
                 </template>
                 <template lwc:elseif={isAssistant}>
-                    <assistant-app lwc:ref="assistant" 
-                        application-name="assistant" 
-                        is-mobile
+                    <assistant-app application-name="assistant"
+                                   is-mobile
+                                   lwc:ref="assistant"
                     ></assistant-app>
                     <!-- 
                         openai-key={openaiKey} 

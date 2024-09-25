@@ -49,7 +49,12 @@ const getHostAndSession = async () => {
             session: sessionCookie.value,
         };
     }catch(e){
-        //console.log('getHostAndSession issue: ',e);
+        console.log('getHostAndSession issue: ',e);
+        /** To be removed, only for development **/
+        /*return {
+            session:'00DHr0000074EN7!ARYAQC.svEahDG8iLsqkAf5Aj2qlceiBVRiELevf5hTUTDKVCAzJBkCsHcRlVbJeihSQ9MHj7zHuXBhW47janaeP7IZZWLVv',
+            domain:'storm-454b5500dfa9a9.my.salesforce.com'
+        }*/
         return;
     }
 }

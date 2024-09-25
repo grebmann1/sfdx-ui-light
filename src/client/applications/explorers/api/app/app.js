@@ -55,7 +55,10 @@ export default class App extends ToolkitElement {
     }
 
     @wire(connectStore, { store })
-    storeChange({ api }) {
+    storeChange({ application,api }) {
+        const isCurrentApp = this.verifyIsActive(application.currentApplication);
+        if(!isCurrentApp) return;
+
         if(api){  
             this.viewerTab = api.viewerTab;
         }
@@ -86,6 +89,8 @@ export default class App extends ToolkitElement {
                 this.actionPointer = this.actions.length - 1;
                 this.isLoading = false;
             }).catch(e => {
+                console.error(e);
+                this.isLoading = false;
                 Toast.show({
                     label: e.message || 'Error during request',
                     variant:'error',
@@ -93,6 +98,7 @@ export default class App extends ToolkitElement {
                 });
             })
         }catch(e){
+            this.isLoading = false;
             console.error(e);
         }
     }

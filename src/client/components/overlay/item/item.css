@@ -1,0 +1,43 @@
+.slds-listbox__option:hover{
+    background-color: #f3f2f2;
+    text-decoration: none;
+}
+
+.slds-listbox__option_entity {
+    padding: .25rem .75rem;
+}
+
+.slds-listbox__option_has-meta .slds-media__figure {
+    margin-top: .25rem;
+}
+
+.slds-listbox__option-text_entity {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+    margin-bottom: .125rem;
+}
+
+.slds-listbox__option-text, .slds-listbox__option-meta{
+    height: 18px;
+    line-height: 18px;
+}
+
+.slds-listbox__option-meta {
+    display: block;
+    margin-top: -.25rem;
+    color: #3e3e3c;
+    font-size:x-small;
+    opacity: 0.9;
+}
+
+
+/** Icons **/
+
+.icon-extra-object{
+    --slds-c-icon-color-background:#2a739e;
+    --slds-c-icon-color-foreground:white;
+    --slds-c-icon-color-foreground-default:white;
+}

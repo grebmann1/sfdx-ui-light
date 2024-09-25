@@ -1,10 +1,9 @@
 
-
-.slds-background-white{
+.slds-background-white {
     background-color: white;;
 }
 
-.slds-popup-container{
+.slds-popup-container {
     /*height: 512px;*/ /* 600px*/
     /* overflow: visible; */
     display: flex;
@@ -12,6 +11,6 @@
     background-color: white;
 }
 
-.slds-full-height{
-    height:100%;
+.slds-full-height {
+    height: 100%;
 }

@@ -1,22 +1,25 @@
 <template>
     <template lwc:if={hasLoaded}>
         <template lwc:if={isDefault}>
-            <views-default 
-                panel={panel}
-                class="slds-full-height"
-                record-id={recordId}
+            <views-default
+                    class="slds-full-height"
+                    panel={panel}
+                    record-id={recordId}
             ></views-default>
         </template>
         <template lwc:elseif={isOptions}>
             <views-options class="slds-full-height"></views-options>
         </template>
+        <template lwc:elseif={isOverlay}>
+            <views-overlay class="slds-full-height"></views-overlay>
+        </template>
     </template>
     <template lwc:else>
         <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
-            <slds-spinner alternative-text="Loading" size="small" message="Connecting to Salesforce"></slds-spinner>
+            <slds-spinner alternative-text="Loading" message="Connecting to Salesforce" size="small"></slds-spinner>
         </div>
     </template>
-    
+
     <!--
         <template lwc:if={hasLoaded}>
         </template>
@@ -26,6 +29,6 @@
         </div>
     </template>
     -->
-    
-    
+
+
 </template>

@@ -1,20 +1,26 @@
-import { LightningElement,api,wire } from "lwc";
+import {api, LightningElement, wire} from "lwc";
 import Toast from 'lightning/toast';
-import { isUndefinedOrNull,isNotUndefinedOrNull,runActionAfterTimeOut,normalizeString as normalize } from "shared/utils";
-import { directConnect,getHostAndSession } from 'connection/utils';
-import { getCurrentTab,getRecordId,PANELS } from 'extension/utils';
+import {
+    isNotUndefinedOrNull,
+    isUndefinedOrNull,
+    normalizeString as normalize,
+    runActionAfterTimeOut
+} from "shared/utils";
+import {directConnect, getHostAndSession} from 'connection/utils';
+import {getCurrentTab, getRecordId, PANELS} from 'extension/utils';
 
 /** Store **/
-import { store as legacyStore } from 'shared/store';
-import { connectStore,store,APPLICATION } from 'core/store';
+import {store as legacyStore} from 'shared/store';
+import {connectStore, store} from 'core/store';
 
 const VARIANT = {
-    DEFAULT:'default',
-    OPTIONS:'options'
-}
+    DEFAULT: 'default',
+    OPTIONS: 'options',
+    OVERLAY: 'overlay'
+};
 
-export default class root extends LightningElement {
-   
+export default class Root extends LightningElement {
+
 
     @api variant;
     sessionId;
@@ -27,40 +33,38 @@ export default class root extends LightningElement {
     panel = PANELS.SALESFORCE;
     connector;
 
-    set currentUrl(value){
+    get currentUrl() {
+        this._currentUrl;
+    }
+
+    set currentUrl(value) {
         this._currentUrl = value;
         this.recordId = getRecordId(this._currentUrl);
     }
 
-    get currentUrl(){
-        this._currentUrl;
+    /** Getters **/
+
+    get hasSession() {
+        return isNotUndefinedOrNull(this.sessionId) && isNotUndefinedOrNull(this.serverUrl)
     }
 
-    @wire(connectStore, { store:legacyStore })
-    applicationChange({application}) {
-        // Redirect
-        if(application.redirectTo){
-            this.handleRedirection(application);
-        }
+    get normalizedVariant() {
+        return normalize(this.variant, {
+            fallbackValue: VARIANT.DEFAULT,
+            validValues: Object.values(VARIANT)
+        });
     }
 
-    @wire(connectStore, { store })
-    storeChange({application}) {
-        // connector
-        if(application.connector){
-            this.connector = null;
-            this.connector = application.connector;
-        }
+    get isDefault() {
+        return this.normalizedVariant === VARIANT.DEFAULT;
     }
 
-    connectedCallback(){
-        this.loadComponent(true);
-        //chrome.runtime.onMessage.addListener(this.messageListener);
+    get isOptions() {
+        return this.normalizedVariant === VARIANT.OPTIONS;
     }
 
-    disconnectedCallback(){
-        chrome.tabs.onUpdated.removeListener(this.monitorUrlListener);
-        //chrome.runtime.onMessage.removeListener(this.messageListener);
+    get isOverlay(){
+        return this.normalizedVariant === VARIANT.OVERLAY;
     }
 
     /*messageListener = (message, sender, sendResponse) => {
@@ -76,72 +80,33 @@ export default class root extends LightningElement {
         }
     }*/
 
-    loadComponent = async (withMonitorChange) => {
-        let cookie = await getHostAndSession();
-        //console.log('cookie',cookie);
-        if(cookie){
-            this.init_existingSession(cookie);
-            this.panel = PANELS.SALESFORCE;
-        }else{
-            this.redirectToDefaultView();
+    @wire(connectStore, {store: legacyStore})
+    applicationChange({application}) {
+        // Redirect
+        if (application.redirectTo) {
+            this.handleRedirection(application);
         }
-
-        this.currentTab = await getCurrentTab();
-        this.currentUrl = this.currentTab.url;
-        //this.currentOrigin = (new URL(this.currentTab.url)).origin;
-        if(withMonitorChange){
-            chrome.tabs.onUpdated.addListener(this.monitorUrlListener);
-        }
-        this.hasLoaded = true;
     }
 
-
-    monitorUrlListener = async (tabId, info, tab) => {
-        //console.log('onUpdated',tabId, info, tab)
-        if (!tab.url || info.status !== 'complete' || tabId != this.currentTab.id) return;
-        
-        runActionAfterTimeOut(tab.url,async (newUrl) => {
-            this.currentUrl = newUrl;
-            if(!this.hasSession){
-                // Reload in case there is existing session found!
-                this.loadComponent(false);
-            }else{
-                // verify cookie
-                let cookie = await getHostAndSession();
-                if(isUndefinedOrNull(cookie)){
-                    this.redirectToDefaultView();
-                }
-            }
-        },{timeout:300});
-    }
-
-    redirectToDefaultView = () => {
-        //console.log('redirectToDefaultView');
-        // Redirect to default view as there is no cookie !!!
-        this.panel = PANELS.DEFAULT;
-    }
-
-
-    init_existingSession = async (cookie) => {
-        this.sessionId = cookie.session;
-        this.serverUrl = cookie.domain;
-        /** Set as global **/
-        window.sessionId = this.sessionId;
-        window.serverUrl = this.serverUrl;
-        if(isUndefinedOrNull(this.sessionId) || isUndefinedOrNull(this.serverUrl)){
-            this.sendError('Missing SessionId AND/OR ServerUrl'); // Shouldn't be used all the time
-            this.redirectToDefaultView();
+    @wire(connectStore, {store})
+    storeChange({application}) {
+        // connector
+        if (application.connector) {
+            this.connector = null;
+            this.connector = application.connector;
         }
-
-        try{
-            await directConnect(this.sessionId,'https://' + this.serverUrl);
-        }catch(e){
-            this.sendError(e.message); // Shouldn't be used all the time
-            this.redirectToDefaultView();
-        }
-        
     }
-    
+
+    connectedCallback() {
+        this.loadComponent(true);
+        //chrome.runtime.onMessage.addListener(this.messageListener);
+    }
+
+    disconnectedCallback() {
+        chrome.tabs.onUpdated.removeListener(this.monitorUrlListener);
+        //chrome.runtime.onMessage.removeListener(this.messageListener);
+    }
+
     /*
     getSessionId = () => {
         return new URLSearchParams(window.location.search).get('sessionId');
@@ -152,6 +117,75 @@ export default class root extends LightningElement {
     }
     */
 
+    loadComponent = async (withMonitorChange) => {
+        let cookie = await getHostAndSession();
+        console.log('cookie',cookie);
+        if (cookie) {
+            this.init_existingSession(cookie);
+            this.panel = PANELS.SALESFORCE;
+        } else {
+            this.redirectToDefaultView();
+        }
+
+        // Handle Tabs
+        try{
+            this.currentTab = await getCurrentTab();
+            this.currentUrl = this.currentTab.url;
+            //this.currentOrigin = (new URL(this.currentTab.url)).origin;
+            if (withMonitorChange) {
+                chrome.tabs.onUpdated.addListener(this.monitorUrlListener);
+            }
+        }catch(e){
+            console.error(e);
+        }
+        this.hasLoaded = true;
+    };
+
+    monitorUrlListener = async (tabId, info, tab) => {
+        //console.log('onUpdated',tabId, info, tab)
+        if (!tab.url || info.status !== 'complete' || tabId != this.currentTab.id) return;
+
+        runActionAfterTimeOut(tab.url, async (newUrl) => {
+            this.currentUrl = newUrl;
+            if (!this.hasSession) {
+                // Reload in case there is existing session found!
+                this.loadComponent(false);
+            } else {
+                // verify cookie
+                let cookie = await getHostAndSession();
+                if (isUndefinedOrNull(cookie)) {
+                    this.redirectToDefaultView();
+                }
+            }
+        }, {timeout: 300});
+    };
+
+    redirectToDefaultView = () => {
+        //console.log('redirectToDefaultView');
+        // Redirect to default view as there is no cookie !!!
+        this.panel = PANELS.DEFAULT;
+    };
+
+    init_existingSession = async (cookie) => {
+        this.sessionId = cookie.session;
+        this.serverUrl = cookie.domain;
+        /** Set as global **/
+        window.sessionId = this.sessionId;
+        window.serverUrl = this.serverUrl;
+        if (isUndefinedOrNull(this.sessionId) || isUndefinedOrNull(this.serverUrl)) {
+            this.sendError('Missing SessionId AND/OR ServerUrl'); // Shouldn't be used all the time
+            this.redirectToDefaultView();
+        }
+
+        try {
+            await directConnect(this.sessionId, 'https://' + this.serverUrl);
+        } catch (e) {
+            this.sendError(e.message); // Shouldn't be used all the time
+            this.redirectToDefaultView();
+        }
+
+    };
+
     sendError = (message) => {
         /*LightningAlert.open({
             message: 'Invalid Session',
@@ -160,10 +194,10 @@ export default class root extends LightningElement {
         });*/
         Toast.show({
             label: message || 'Error during connection',
-            variant:'error',
-            mode:'dismissible'
+            variant: 'error',
+            mode: 'dismissible'
         });
-    }
+    };
 
     handleRedirection = async (application) => {
         let url = application.redirectTo || '';
@@ -174,34 +208,13 @@ export default class root extends LightningElement {
             navigate(this.navContext,JSON.parse(navigationConfig));
             return;
         }*/
-        
-        if(!url.startsWith('http')){
-            // to force refresh in case it's not valid anymore : 
+
+        if (!url.startsWith('http')) {
+            // to force refresh in case it's not valid anymore :
             await this.connector.conn.identity();
             url = `${this.connector.frontDoorUrl}&retURL=${encodeURI(url)}`;
         }
 
-        window.open(url,'_blank');
-    }
-
-    /** Getters **/
-
-    get hasSession(){
-        return isNotUndefinedOrNull(this.sessionId) && isNotUndefinedOrNull(this.serverUrl)
-    }
-
-    get normalizedVariant() {
-        return normalize(this.variant, {
-            fallbackValue: VARIANT.DEFAULT,
-            validValues: Object.values(VARIANT)
-        });
-    }
-
-    get isDefault(){
-        return this.normalizedVariant === VARIANT.DEFAULT;
-    }
-
-    get isOptions(){
-        return this.normalizedVariant === VARIANT.OPTIONS;
-    }
+        window.open(url, '_blank');
+    };
 }

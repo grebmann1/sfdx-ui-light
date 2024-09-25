@@ -5,7 +5,7 @@
         <title>SF Toolkit</title>
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="$assetsDir/styles/salesforce-lightning-design-system.min.css" />
+        <link rel="stylesheet" href="$stylesDir/slds-sf-toolkit.css" />
         <style>
             .slds-modal__container {
                 margin: 0 auto;
@@ -25,6 +25,9 @@
             code-analyzer .slds-vertical-tabs{
                 display : -webkit-box !important;
             }
+            body{
+                margin:0px;
+            }
         </style>
     </head>
     <!-- Google tag (gtag.js) -->
@@ -36,7 +39,7 @@
 
         gtag('config', 'G-J8XPLSRY91');
     </script>
-    <body>
+    <body class="sf-toolkit">
         <!-- triple braces prevents HTML escaping -->
         {{{body}}} {{{lwr_resources}}}
     </body>

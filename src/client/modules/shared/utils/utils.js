@@ -5,12 +5,21 @@ export * from './normalize';
 export { generateUniqueId } from './idGenerator';
 export { calculateOverflow } from './sldsOverflowLibrary';
 export { LightningResizeObserver } from './sldsResizeObserver';
+export * as SETUP_LINKS from './links';
 export {
     keyCodes,
     runActionOnBufferedTypedCharacters,
     normalizeKeyValue,
     isShiftMetaOrControlKey
 } from './keyboard';
+
+export function enableBodyScroll(){
+    document.querySelector("body").style.overflow = '';
+}
+
+export function disableBodyScroll(){
+    document.querySelector("body").style.overflow = 'hidden';
+}
 
 export function isUndefinedOrNull(value) {
     return value === null || value === undefined;
@@ -212,14 +221,14 @@ export function getLanguage(extension){
     return languageMapping.hasOwnProperty(extension)?languageMapping[extension]:null;
 }
 
-export function formatFiles(files){
+export function formatFiles(files,defaultLanguage){
     return [...files].map(file =>{
       const extension = file?.name.includes('.')?file?.name.split('.').pop():null;
       return { 
         ...file,
         ...{
           extension:extension, // we remove the '.' for the editor
-          language:getLanguage(extension)
+          language:getLanguage(extension) || defaultLanguage
         }
       }
     })

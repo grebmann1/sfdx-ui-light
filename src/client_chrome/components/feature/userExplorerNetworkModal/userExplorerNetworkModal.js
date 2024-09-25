@@ -1,11 +1,7 @@
 import LightningModal from 'lightning/modal';
-import { api } from "lwc";
-import { isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,decodeError,checkIfPresent } from "shared/utils";
-import {
-    CACHE_CONFIG,
-    loadExtensionConfigFromCache,
-    chromeOpenInWindow
-} from 'extension/utils';
+import {api} from "lwc";
+import {isNotUndefinedOrNull} from "shared/utils";
+import {CACHE_CONFIG, chromeOpenInWindow, loadExtensionConfigFromCache} from 'extension/utils';
 
 export default class UserExplorerNetworkModal extends LightningModal {
 
@@ -13,8 +9,14 @@ export default class UserExplorerNetworkModal extends LightningModal {
     @api standard;
     @api frontDoorUrl;
     @api username;
-    
 
+    get isStandardDisplayed() {
+        return isNotUndefinedOrNull(this.standard);
+    }
+
+    get isNetworkMembersDisplayed() {
+        return this.networkMembers.length > 0;
+    }
 
     handleCloseClick() {
         this.close('canceled');
@@ -24,7 +26,7 @@ export default class UserExplorerNetworkModal extends LightningModal {
         this.close('success');
     }
 
-    
+    /* Getters */
 
     /** events **/
 
@@ -35,7 +37,7 @@ export default class UserExplorerNetworkModal extends LightningModal {
             this.username,
             true
         );
-    }
+    };
 
     handleExperienceLogin = async (e) => {
         e.preventDefault();
@@ -49,21 +51,6 @@ export default class UserExplorerNetworkModal extends LightningModal {
             configuration[CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO]
         );
     }
-
-    /* Getters */
-
-    get isStandardDisplayed(){
-        return isNotUndefinedOrNull(this.standard);
-    }
-
-    get isNetworkMembersDisplayed(){
-        return this.networkMembers.length > 0;
-    }
-  
-
-    
-
-   
 
 
 }

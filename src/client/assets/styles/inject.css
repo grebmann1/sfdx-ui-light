@@ -1,0 +1,29 @@
+
+
+/** Only to Inject **/
+.sf-toolkit{
+    --slds-c-button-shadow-focus:none !important;
+    --_slds-g-shadow-outset-focus:none !important;
+}
+
+.sf-toolkit .slds-custom-search-item svg.slds-icon{
+    padding:2px !important;
+}
+
+.sf-toolkit .slds-combobox-addon_end .slds-input{
+    --slds-c-input-radius-border: 0px 0.25rem 0.25rem 0px !important;
+}
+
+.sf-toolkit .slds-vertical-button-group  button {
+    border-radius: 0;
+}
+
+.sf-toolkit .slds-vertical-button-group .slds-button-first button {
+    border-bottom: 0;
+}
+
+.sf-toolkit .slds-button.slds-is-selected{
+    background-color: #032d60 !important;
+    border-color: #032d60 !important;
+}
+

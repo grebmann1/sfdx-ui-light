@@ -10,16 +10,17 @@
         <link rel="stylesheet" href="$stylesDir/highlight.css">
         <link rel="stylesheet" href="$stylesDir/prism.css">
         <link rel="stylesheet" href="$stylesDir/monaco.css">
-        <link rel="stylesheet" href="$assetsDir/styles/salesforce-lightning-design-system.min.css" />
+        <link rel="stylesheet" href="$stylesDir/slds-sf-toolkit.css" />
         <link rel="stylesheet" href="/xterm.css"/>
         <link rel="stylesheet" href="$stylesDir/web.css">
+        <script src="$libsDir/prism/prism.js"></script>
+        <script src="$libsDir/localforage/localforage.min.js"></script>
         <script type="module">
             import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
             window.mermaid = mermaid;
+            import jsforce from '/libs/jsforce/jsforce.js';
+            window.jsforce = jsforce;
         </script>
-        <script src="$libsDir/prism/prism.js"></script>
-        <script src="$libsDir/jsforce/jsforce.js"></script>
-        <script src="$libsDir/localforage/localforage.min.js"></script>
         <script>
             let host = window.location.origin;
             fetch(`${host}/config`)
@@ -32,8 +33,7 @@
                     proxyUrl:  config.proxyUrl ? config.proxyUrl: `${host}/proxy/`,
                 };
                 //jsforce.browser.init(window.jsforceSettings); // Reset
-            })         
-            window.jsforce = jsforce;
+            });
             window.Prism = Prism;
             
 
@@ -50,7 +50,7 @@
 
         gtag('config', 'G-J8XPLSRY91');
     </script>
-    <body>
+    <body class="sf-toolkit" style="margin:0px;">
         <!-- triple braces prevents HTML escaping -->
         {{{body}}} {{{lwr_resources}}}
     </body>

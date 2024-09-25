@@ -1,11 +1,11 @@
-:host{
-    display:contents;
+:host {
+    display: contents;
 }
 
-pre{
-    margin:0px;
+pre {
+    margin: 0px;
 }
 
-.slds-is-dirty{
+.slds-is-dirty {
     background-color: antiquewhite;
 }

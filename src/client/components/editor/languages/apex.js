@@ -15,7 +15,7 @@ export function configureApexLanguage(monaco){
 export async function configureApexCompletions(monaco) {
     if(isMonacoLanguageSetup('apex')) return;
     //const completionsData = await completionsImport;
-    console.log('monaco.languages.registerCompletionItemProvider',monaco.languages.registerCompletionItemProvider);
+    //console.log('monaco.languages.registerCompletionItemProvider',monaco.languages.registerCompletionItemProvider);
     monaco.languages.registerCompletionItemProvider('apex', {
         triggerCharacters: ['.', ...triggerChars.split(''), ...triggerChars.toUpperCase().split('')],
         provideCompletionItems: (model, position, context, token) => {

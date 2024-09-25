@@ -109393,3 +109393,5 @@ var core = __webpack_require__(46113);
 jsforce = __webpack_exports__;
 /******/ })()
 ;
+
+export default jsforce;

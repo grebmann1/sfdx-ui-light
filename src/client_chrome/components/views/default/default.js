@@ -1,82 +1,22 @@
-import { LightningElement,api,wire} from "lwc";
-import { store as deprecatedStore } from 'shared/store';
-import { connectStore,store,APPLICATION } from 'core/store';
+import {api, LightningElement, wire} from "lwc";
+import {store as deprecatedStore} from 'shared/store';
+import {connectStore} from 'core/store';
 
-import { isUndefinedOrNull,isNotUndefinedOrNull,normalizeString as normalize} from "shared/utils";
-import { PANELS } from 'extension/utils';
+import {normalizeString as normalize} from "shared/utils";
+import {PANELS} from 'extension/utils';
 
 export default class Default extends LightningElement {
 
     @api currentApplication;
     @api recordId;
     @api panel = PANELS.DEFAULT;
-    
+
     previousPanel;
     isBackButtonDisplayed = false;
 
-    @wire(connectStore, { store:deprecatedStore })
-    applicationChange({application}) {
-        if(application?.type === 'FAKE_NAVIGATE'){
-            const pageRef = application.target;
-            this.loadFromNavigation(pageRef);
-        }
-        //console.log('application',application)
-    }
-
-    connectedCallback(){
-        this.panel = this.urlOverwrittenPanel || this.panel;
-    }
-    
-
-    /** Events **/
-
-    handlePanelChange = (e) => {
-        //console.log('handlePanelChange',e.detail);
-        //this.previousPanel = this.panel;
-        if(this.panel != e.detail.panel){
-            this.panel = e.detail.panel;
-            this.isBackButtonDisplayed = e.detail.isBackButtonDisplayed;
-        }
-
-        // Temporary solution to force refresh of connection list
-        if(this.refs.default){
-            this.refs.default.connection_refresh();
-        }
-    }
-
-    handleGoBack = () => {
-        //console.log('handleGoBack');
-        //this.panel = this.previousPanel;
-        this.panel = PANELS.SALESFORCE; // For now only salesforce is returned with go back, In the futur, store the navigation events to go back !
-        this.isBackButtonDisplayed = false;
-        //this.previousPanel = null;
-    }
-
-    /** Methods **/
-
-    @api
-    resetToDefaultView = () => {
-        //console.log('resetToDefaultView');
-        this.panel = PANELS.DEFAULT;
-    }
-
-    loadFromNavigation = async ({state, attributes}) => {
-        //('documentation - loadFromNavigation');
-        const {applicationName,attribute1}  = attributes;
-        //console.log('applicationName',applicationName);
-        if(applicationName == 'documentation' || applicationName == 'home'){
-            this.handlePanelChange({
-                detail:{
-                    panel:PANELS.DEFAULT,
-                    isBackButtonDisplayed:true
-                }
-            })
-        }
-    }
-
     /** Getters **/
 
-    get urlOverwrittenPanel(){
+    get urlOverwrittenPanel() {
         return new URLSearchParams(window.location.search).get('panel');
     }
 
@@ -87,17 +27,76 @@ export default class Default extends LightningElement {
         });
     }
 
-    get isSalesforcePanel(){
-        return this.normalizedPanel == PANELS.SALESFORCE;
+    get isSalesforcePanel() {
+        return this.normalizedPanel === PANELS.SALESFORCE;
     }
 
-    get salesforcePanelClass(){
-        return this.isSalesforcePanel ? '':'slds-hide';
+    get salesforcePanelClass() {
+        return this.isSalesforcePanel ? '' : 'slds-hide';
     }
 
-    get defaultPanelClass(){
-        return this.isSalesforcePanel ? 'slds-hide':'';
+    get defaultPanelClass() {
+        return this.isSalesforcePanel ? 'slds-hide' : '';
     }
 
-  
+    @wire(connectStore, {store: deprecatedStore})
+    applicationChange({application}) {
+        if (application?.type === 'FAKE_NAVIGATE') {
+            const pageRef = application.target;
+            this.loadFromNavigation(pageRef);
+        }
+        //console.log('application',application)
+    }
+
+    connectedCallback() {
+        this.panel = this.urlOverwrittenPanel || this.panel;
+    }
+
+    /** Events **/
+
+    handlePanelChange = (e) => {
+        //console.log('handlePanelChange',e.detail);
+        //this.previousPanel = this.panel;
+        if (this.panel !== e.detail.panel) {
+            this.panel = e.detail.panel;
+            this.isBackButtonDisplayed = e.detail.isBackButtonDisplayed;
+        }
+
+        // Temporary solution to force refresh of connection list
+        if (this.refs.default) {
+            this.refs.default.connection_refresh();
+        }
+    };
+
+    handleGoBack = () => {
+        //console.log('handleGoBack');
+        //this.panel = this.previousPanel;
+        this.panel = PANELS.SALESFORCE; // For now only salesforce is returned with go back, In the futur, store the navigation events to go back !
+        this.isBackButtonDisplayed = false;
+        //this.previousPanel = null;
+    };
+
+    /** Methods **/
+
+    @api
+    resetToDefaultView = () => {
+        //console.log('resetToDefaultView');
+        this.panel = PANELS.DEFAULT;
+    };
+
+    loadFromNavigation = async ({state, attributes}) => {
+        //('documentation - loadFromNavigation');
+        const {applicationName, attribute1} = attributes;
+        //console.log('applicationName',applicationName);
+        if (applicationName === 'documentation' || applicationName === 'home') {
+            this.handlePanelChange({
+                detail: {
+                    panel: PANELS.DEFAULT,
+                    isBackButtonDisplayed: true
+                }
+            })
+        }
+    }
+
+
 }

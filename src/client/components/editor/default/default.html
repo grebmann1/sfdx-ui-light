@@ -1,6 +1,16 @@
 <template>
     <div class="slds-flex-column slds-full-height slds-light-bg">
-       
+
+        <!-- Editor Button -->
+        <div class="editor-toolkit">
+            <div class="slds-flex-column slds-vertical-button-group">
+                <lightning-button-icon
+                        icon-name="utility:copy"
+                        tooltip="Copy to clipboard"
+                        onclick={handleCopyClick}
+                ></lightning-button-icon>
+            </div>
+        </div>
         <!-- Editor -->
         <div lwc:ref="editor" class="slds-full-height"></div>
 

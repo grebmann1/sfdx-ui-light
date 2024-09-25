@@ -7,11 +7,11 @@
                     Standard
                 </dt>
                 <dd class="slds-item_detail">
-                    <a href={standard} target="_blank" onclick={handleStandardLogin}>Standard Login</a>
+                    <a href={standard} onclick={handleStandardLogin} target="_blank">Standard Login</a>
                 </dd>
             </dl>
         </template>
-        
+
         <template lwc:if={isNetworkMembersDisplayed}>
             <dl class="slds-list_horizontal slds-wrap slds-m-top_medium">
                 <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Experience Cloud">
@@ -19,8 +19,8 @@
                 </dt>
                 <dd class="slds-item_detail">
                     <template iterator:item={networkMembers}>
-                        <div key={item.value.Id} class="slds-grid">
-                            <a href={item.value._redirectLink} target="_blank" onclick={handleExperienceLogin}>{item.value.Network.Name}</a>
+                        <div class="slds-grid" key={item.value.Id}>
+                            <a href={item.value._redirectLink} onclick={handleExperienceLogin} target="_blank">{item.value.Network.Name}</a>
                         </div>
                     </template>
                 </dd>

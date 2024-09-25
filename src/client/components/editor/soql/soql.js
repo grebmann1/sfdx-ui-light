@@ -1,5 +1,6 @@
 import { api,wire } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
+import Toast from 'lightning/toast';
 import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeOut,guid } from 'shared/utils';
 import { formatQuery,parseQuery } from '@jetstreamapp/soql-parser-js';
 import { SOQL } from 'editor/languages';
@@ -48,7 +49,16 @@ export default class Soql extends ToolkitElement {
 
     /** Events */
 
-
+    handleCopyClick = () => {
+        const formattedValue = (
+            this.currentModel.getValue() || ''
+        ).replaceAll('\n',' ');
+        navigator.clipboard.writeText(formattedValue);
+        Toast.show({
+            label: `Exported to your clipboard`,
+            variant:'success',
+        });
+    }
 
     /** Methods **/
 

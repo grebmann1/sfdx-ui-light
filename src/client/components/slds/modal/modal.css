@@ -1,0 +1,12 @@
+
+.overflow-hidden{
+    overflow: unset;
+}
+
+.inline-table{
+    display: inline-table;
+}
+
+.slds-modal__content slot{
+    height: 100%;
+}

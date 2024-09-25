@@ -1,0 +1,32 @@
+<template>
+	<div class="sf-toolkit">
+		<lightning-modal-header label="SF Toolkit - Light Editor"></lightning-modal-header>
+		<lightning-modal-body class="body-full-height">
+			<editor-app lwc:ref="editor"
+						class="slds-full-height slds-is-relative"
+						is-tab-enabled
+						is-action-hidden
+						is-coverage-enabled={isCoverageEnabled}
+						is-tab-closeable-disabled
+						onmonacoloaded={handleMonacoLoaded}
+						onchange={handleEditorChange}
+			></editor-app>
+		</lightning-modal-body>
+		<lightning-modal-footer>
+			<lightning-button
+					class="slds-float_left slds-button"
+					disabled={isLoading}
+					variant="neutral"
+					label="Cancel"
+					onclick={handleCloseClick}
+			></lightning-button>
+			<lightning-button
+					class="slds-button"
+					disabled={isSaveDisabled}
+					variant="brand"
+					label="Save"
+					onclick={handleSaveClick}
+			></lightning-button>
+		</lightning-modal-footer>
+	</div>
+</template>

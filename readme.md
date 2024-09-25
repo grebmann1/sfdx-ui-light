@@ -118,9 +118,10 @@ This tool incorporates components from the following open source project:
   Description: LWC SOQL Builder is an open source tool designed to build Salesforce Object Query Language (SOQL) queries in a dynamic and user-friendly interface.
   License: MIT
   Technology: LWC & NodeJS
-
-We are thankful to the developers and contributors of the LWC SOQL Builder for their exceptional work. Their project plays a crucial role in the functionality of our tool.
-
+- **[Salesforce Inspector Reloaded](https://github.com/tprouvot/Salesforce-Inspector-reloaded)**  
+    Description: Reloaded version of the famous Salesforce Inspector chrome extension.
+    License: MIT
+    Technology: JS
 
 ## Support
 

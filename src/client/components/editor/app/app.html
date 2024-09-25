@@ -14,7 +14,7 @@
                 </div>
             </template>
             <template lwc:if={isTabDisplayed}>
-                <slds-tabset variant="scoped" class="slds-without-tab" onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled={isAddTabEnabledFormatted}>
+                <slds-tabset variant="scoped" class="slds-without-tab slds-tabs_no-max" onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled={isAddTabEnabledFormatted}>
                     <template for:each={formattedModels} for:item="item">
                         <slds-tab key={item.path} label={item.name} value={item.path} onactive={handleSelectTab} is-closeable={item.isCloseable}></slds-tab>
                     </template>
@@ -32,7 +32,6 @@
             <!-- Editor Button -->
             <div class="editor-toolkit">
                 <div class="slds-flex-column slds-vertical-button-group">
-                    
 
                     <template lwc:if={isCodeCoverageDisplayed}>
                         <lightning-button-icon 
@@ -59,7 +58,7 @@
                 </div>
             </div>
             <!-- Editor -->
-            <div lwc:ref="editor" style={dynamicStyle}></div>
+            <div lwc:ref="editor"  style={dynamicStyle}></div>
         </div>
 
         <template lwc:if={isLoading}>

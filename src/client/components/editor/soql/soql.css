@@ -2,3 +2,11 @@
     display: block;
     width: 100%;
 }
+
+.editor-toolkit {
+    position: absolute;
+    z-index: 2;
+    right: 10px;
+    top: 50px;
+    background:white;
+}
