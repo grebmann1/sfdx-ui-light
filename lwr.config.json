@@ -27,15 +27,11 @@
         ] 
     },
     "assets": [
+       
         {
-            "alias":"assetDir",
-            "dir": "$rootDir/src/client/assets",
-            "urlPath": "/assets"
-        },
-        {
-            "alias": "salesforceAssetsDir",
+            "alias": "assets",
             "dir": "$rootDir/node_modules/@salesforce-ux/design-system/assets",
-            "urlPath": "/salesforceAssets"
+            "urlPath": "/assets"
         },
         {
             "file":"$rootDir/node_modules/xterm/css/xterm.css",

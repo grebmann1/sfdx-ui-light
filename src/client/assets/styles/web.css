@@ -1,4 +1,4 @@
-.sf-toolkit @font-face {
+@font-face {
     font-family: 'seti';
     /* Replace myFont with your resource name */
     src: url('/styles/seti.hash.woff') format('woff');
