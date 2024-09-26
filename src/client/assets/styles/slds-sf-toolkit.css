@@ -9218,8 +9218,8 @@
   width:100%;
 }
 .sf-toolkit .slds-brand-band:before{
-  background-image:url(../assets/images/themes/oneSalesforce/banner-brand-default.png), -webkit-gradient(linear, left bottom, left top, color-stop(0, rgba(1,68,134,0)), to(#014486));
-  background-image:url(../assets/images/themes/oneSalesforce/banner-brand-default.png), linear-gradient(0deg, rgba(1,68,134,0) 0, #014486);
+  background-image:url(https://sf-toolkit.com/assets/images/themes/oneSalesforce/banner-brand-default.png), -webkit-gradient(linear, left bottom, left top, color-stop(0, rgba(1,68,134,0)), to(#014486));
+  background-image:url(https://sf-toolkit.com/assets/images/themes/oneSalesforce/banner-brand-default.png), linear-gradient(0deg, rgba(1,68,134,0) 0, #014486);
   background-position:0 0;
   background-repeat:repeat-x;
   bottom:0;
@@ -9280,10 +9280,10 @@
   height:0;
 }
 .sf-toolkit .slds-brand-band.slds-brand-band_group:before{
-  background-image:url(../assets/images/themes/oneSalesforce/banner-group-public-default.png);
+  background-image:url(https://sf-toolkit.com/assets/images/themes/oneSalesforce/banner-group-public-default.png);
 }
 .sf-toolkit .slds-brand-band.slds-brand-band_user:before{
-  background-image:url(../assets/images/themes/oneSalesforce/banner-user-default.png);
+  background-image:url(https://sf-toolkit.com/assets/images/themes/oneSalesforce/banner-user-default.png);
 }
 .sf-toolkit .slds-brand-band .slds-brand-band_blank{
   background:var(--slds-g-color-neutral-base-100, #fff);
@@ -10285,7 +10285,7 @@
 .sf-toolkit .slds-popover_walkthrough .slds-popover__header,
 .sf-toolkit .slds-popover--walkthrough .slds-popover__header{
   background-color:var(--slds-g-color-brand-base-20, #032d60);
-  background-image:url(../assets/images/popovers/popover-header.png);
+  background-image:url(https://sf-toolkit.com/assets/images/popovers/popover-header.png);
   background-position:bottom;
   background-repeat:no-repeat;
   background-size:contain;
@@ -10332,7 +10332,7 @@
 .sf-toolkit .slds-popover_walkthrough-alt,
 .sf-toolkit .slds-popover_feature{
   background-color:var(--slds-g-color-brand-base-50, #0176d3);
-  background-image:url(../assets/images/popovers/popover-action.png);
+  background-image:url(https://sf-toolkit.com/assets/images/popovers/popover-action.png);
   background-position:bottom;
   background-repeat:no-repeat;
   background-size:100% 2.25rem;
@@ -12383,7 +12383,7 @@
   padding:0;
 }
 .sf-toolkit .slds-global-header__logo{
-  background-image:url(../assets/images/logo-noname.svg);
+  background-image:url(https://sf-toolkit.com/assets/images/logo-noname.svg);
   background-position:0;
   background-repeat:no-repeat;
   background-size:contain;
@@ -19249,22 +19249,22 @@
   color:var(--slds-c-avatar-text-color-hover, currentColor);
 }
 .sf-toolkit .slds-avatar.slds-avatar_group-image-small{
-  background:url(../assets/images/group_avatar_96.png) 0 0/cover no-repeat;
+  background:url(https://sf-toolkit.com/assets/images/group_avatar_96.png) 0 0/cover no-repeat;
 }
 .sf-toolkit .slds-avatar.slds-avatar_group-image-medium{
-  background:url(../assets/images/group_avatar_160.png) 0 0/cover no-repeat;
+  background:url(https://sf-toolkit.com/assets/images/group_avatar_160.png) 0 0/cover no-repeat;
 }
 .sf-toolkit .slds-avatar.slds-avatar_group-image-large{
-  background:url(../assets/images/group_avatar_200.png) 0 0/cover no-repeat;
+  background:url(https://sf-toolkit.com/assets/images/group_avatar_200.png) 0 0/cover no-repeat;
 }
 .sf-toolkit .slds-avatar.slds-avatar_profile-image-small{
-  background:url(../assets/images/profile_avatar_96.png) 0 0/cover no-repeat;
+  background:url(https://sf-toolkit.com/assets/images/profile_avatar_96.png) 0 0/cover no-repeat;
 }
 .sf-toolkit .slds-avatar.slds-avatar_profile-image-medium{
-  background:url(../assets/images/profile_avatar_160.png) 0 0/cover no-repeat;
+  background:url(https://sf-toolkit.com/assets/images/profile_avatar_160.png) 0 0/cover no-repeat;
 }
 .sf-toolkit .slds-avatar.slds-avatar_profile-image-large{
-  background:url(../assets/images/profile_avatar_200.png) 0 0/cover no-repeat;
+  background:url(https://sf-toolkit.com/assets/images/profile_avatar_200.png) 0 0/cover no-repeat;
 }
 .sf-toolkit .slds-avatar_x-small,
 .sf-toolkit .slds-avatar--x-small{
@@ -20948,7 +20948,7 @@
 }
 .sf-toolkit .slds-einstein-header{
   background-color:var(--slds-g-color-palette-cloud-blue-80, #90d0fe);
-  background-image:url(../assets/images/einstein-headers/einstein-header-background.svg);
+  background-image:url(https://sf-toolkit.com/assets/images/einstein-headers/einstein-header-background.svg);
   background-position:0 0;
   background-repeat:no-repeat;
   background-size:cover;
@@ -20964,7 +20964,7 @@
 }
 .sf-toolkit .slds-einstein-header .slds-einstein-header__figure,
 .sf-toolkit .slds-einstein-header .slds-einstein-header__figure:last-child{
-  background-image:url(../assets/images/einstein-headers/einstein-figure.svg);
+  background-image:url(https://sf-toolkit.com/assets/images/einstein-headers/einstein-figure.svg);
   background-position:100% 100%;
   background-repeat:no-repeat;
   height:4.75rem;
@@ -21238,7 +21238,7 @@
       -ms-flex-align:center;
           align-items:center;
   background-color:var(--sds-g-color-palette-cloud-blue-90, #cfe9fe);
-  background-image:url(../assets/images/welcome-mat/bg-info@2x.png);
+  background-image:url(https://sf-toolkit.com/assets/images/welcome-mat/bg-info@2x.png);
   background-position:bottom;
   background-repeat:no-repeat;
   background-size:contain;

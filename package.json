@@ -2,17 +2,17 @@
     "name": "sfdx-ui-light",
     "version": "1.3.9",
     "scripts": {
-        "start:dev:extension": "rm -r chrome_ext; rollup -c worker.rollup.config.mjs --logLevel error; rollup -c rollup.config.mjs --bundleConfigAsCjs --environment NODE_ENV:development --watch --logLevel error | serve chrome_ext",
+        "start:dev:extension": "rm -r chrome_ext;  rollup -c worker.rollup.config.mjs --logLevel error; rollup -c rollup.config.mjs --bundleConfigAsCjs --environment NODE_ENV:development --watch --logLevel error | serve chrome_ext",
         "start:dev:client": "NODE_ENV=development node -r dotenv/config src/server/server-dev.js",
-        "start:prod:build": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --minify --clean;",
-        "start:prod:run": "NODE_ENV=production node -r dotenv/config src/server/server-prod.js",
         "start:prod:client": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --minify --clean; NODE_ENV=production node -r dotenv/config src/server/server-prod.js",
         "start:prod:extension": "rm -r chrome_ext; rollup -c rollup.config.mjs --bundleConfigAsCjs --environment NODE_ENV:production; rollup -c worker.rollup.config.mjs --bundleConfigAsCjs --environment NODE_ENV:production",
         "clean": "rm -r __lwr_cache__ site __skip_directory_creation__",
         "fix:lightning": "node scripts/fix_lightning.js",
         "script:documentation": "node scripts/load_documentation.js",
         "start:heroku": "NODE_ENV=production REDIRECT_URI=https://sf-toolkit.com/oauth2/callback node -r dotenv/config src/server/server-prod.js",
-        "heroku-postbuild": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --clean"
+        "heroku-postbuild": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --clean",
+        "start:prod:build": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --minify --clean;",
+        "start:prod:run": "NODE_ENV=production node -r dotenv/config src/server/server-prod.js"
     },
     "nx": {
         "targets": {
@@ -27,6 +27,10 @@
         {
             "from": "node_modules/@salesforce-ux/design-system/assets",
             "to": "src/client/assets"
+        },
+        {
+            "from": "node_modules/xterm/css/xterm.css",
+            "to": "src/client/assets/styles"
         }
     ],
     "dependencies": {
@@ -75,6 +79,7 @@
         "soql-parser-js": "^5.0.2",
         "tabulator-tables": "6.2.1",
         "textarea-caret": "^3.1.0",
+        "xml2js": "^0.6.2",
         "xterm": "^5.3.0"
     },
     "devDependencies": {

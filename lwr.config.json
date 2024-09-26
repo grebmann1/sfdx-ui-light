@@ -27,7 +27,6 @@
         ] 
     },
     "assets": [
-       
         {
             "alias": "assets",
             "dir": "$rootDir/node_modules/@salesforce-ux/design-system/assets",
