@@ -5,6 +5,7 @@ import { store,connectStore,SELECTORS,DESCRIBE,UI,APEX,DOCUMENT,APPLICATION } fr
 import { CATEGORY_STORAGE } from 'builder/storagePanel';
 import SaveModal from "builder/saveModal";
 import moment from 'moment';
+import LightningConfirm from 'lightning/confirm';
 
 export default class App extends ToolkitElement {
     
