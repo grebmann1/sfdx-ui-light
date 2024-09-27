@@ -173,10 +173,14 @@ export default class Item extends ToolkitElement {
         return this.item?.username;
     }
 
+    get isActive(){
+        return this.item?.isActive ? '<span class="slds-text-color_success">Active</span>':'<span class="slds-text-color_error">Inactive</span>';
+    }
+
     get descriptionArray(){
         switch (this.type){
             case TYPE.USER:
-                return [this.type,this.email,this.profile].filter(x => x != null);
+                return [this.type,this.email,this.profile,this.isActive].filter(x => x != null);
             case TYPE.FLOW:
                 return [this.type,this.apiVersion].filter(x => x != null);
             case TYPE.LINK:

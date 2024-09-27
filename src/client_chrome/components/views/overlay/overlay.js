@@ -226,7 +226,7 @@ export default class Overlay extends ToolkitElement {
         if(chrome.runtime){
             cookieInfo = await chrome.runtime.sendMessage({ action: 'fetchCookie', content:null});
         }else{
-            // Only for testing
+            // Only for testing, replace it when testing with a sessionId
             cookieInfo = {
                 session:'00DHr0000074EN7!ARYAQCGAQu93mkYW9TORwVuqSqLUWIgAH7cm5u6PrmFb9j77jVBFEsT7QJv1SjAmTu4YUYZ_.ZZfpaPN7.eeJEvVa03pl2vF',
                 domain:'storm-454b5500dfa9a9.my.salesforce.com'
@@ -281,8 +281,9 @@ export default class Overlay extends ToolkitElement {
         try {
             if(!isEmpty(lowerCaseTerm) && this.checkCategory(TYPE.USER)){
                 const escapedTerm = searchTerm.replace(/'/g, "\\'"); // Escape single quotes
-                const query = `SELECT Id, Name, Username,Email,Profile.Name FROM User WHERE Name LIKE '%${escapedTerm}%' OR Username LIKE '%${escapedTerm}%' LIMIT 50`;
+                const query = `SELECT Id, Name, Username,Email,Profile.Name,IsActive FROM User WHERE Name LIKE '%${escapedTerm}%' OR Username LIKE '%${escapedTerm}%' LIMIT 50`;
                 const result = await this.connector.conn.query(query);
+                console.log('result',result);
                 combinedResults.push(
                     ...result.records.map((x) => ({
                         id: x.Id,
@@ -291,6 +292,7 @@ export default class Overlay extends ToolkitElement {
                         email: x.Email,
                         profile: x.Profile.Name,
                         username: x.Username,
+                        isActive : x.IsActive,
                         relevance: calculateRelevance(x.Name, searchTerm),
                     }))
                 );
@@ -620,5 +622,9 @@ export default class Overlay extends ToolkitElement {
 
     get FORMATTED_TABS(){
         return TABS;
+    }
+
+    get isUserTabDisplayed(){
+        return this.filter_value.includes(TYPE.USER);
     }
 }

@@ -84,11 +84,13 @@
                                 <lightning-button-icon class="slds-float_right" icon-name="utility:refresh" variant="bare" onclick={handleRefresh}></lightning-button-icon>
                             </span>
                             <div class="slds-is-relative slds-grid slds-wrap slds-grid_vertical-stretch full-page-body slds-flex-column">
-                                <div class="slds-flex-column slds-full-height">
+                                <div class="slds-flex-column slds-full-height slds-full-width">
                                     <lightning-tabset class="slds-without-tab slds-full-width" active-tab-value={viewerTab}>
                                         <lightning-tab class="full-page-body" label={tab_searchLabel} value={FORMATTED_TABS.SEARCH} onactive={handleSelectTab}></lightning-tab>
                                         <lightning-tab class="full-page-body" label={tab_quickLinkLabel} value={FORMATTED_TABS.QUICKLINK} onactive={handleSelectTab}></lightning-tab>
-                                        <lightning-tab class="full-page-body" label={tab_userLabel} value={FORMATTED_TABS.USER} onactive={handleSelectTab}></lightning-tab>
+                                        <template lwc:if={isUserTabDisplayed}>
+                                            <lightning-tab class="full-page-body" label={tab_userLabel} value={FORMATTED_TABS.USER} onactive={handleSelectTab}></lightning-tab>
+                                        </template>
                                     </lightning-tabset>
                                     <!-- SECTION -->
                                     <div class="slds-fill-height slds-col slds-size_1-of-1">

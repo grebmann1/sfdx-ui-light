@@ -1,3 +1,7 @@
+:host{
+    --slds-c-badge-font-size:x-small
+}
+
 .slds-listbox__option:hover{
     background-color: #f3f2f2;
     text-decoration: none;
@@ -32,7 +36,6 @@
     font-size:x-small;
     opacity: 0.9;
 }
-
 
 /** Icons **/
 
