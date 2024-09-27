@@ -228,8 +228,8 @@ export default class Overlay extends ToolkitElement {
         }else{
             // Only for testing
             cookieInfo = {
-                session:'To replace during Testing',
-                domain:'To replace during testing'
+                session:'00DHr0000074EN7!ARYAQCGAQu93mkYW9TORwVuqSqLUWIgAH7cm5u6PrmFb9j77jVBFEsT7QJv1SjAmTu4YUYZ_.ZZfpaPN7.eeJEvVa03pl2vF',
+                domain:'storm-454b5500dfa9a9.my.salesforce.com'
             }
         }
         console.log('cookieInfo',cookieInfo);

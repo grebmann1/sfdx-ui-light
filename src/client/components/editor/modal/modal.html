@@ -1,7 +1,16 @@
 <template>
 	<div class="sf-toolkit">
 		<lightning-modal-header label="SF Toolkit - Light Editor"></lightning-modal-header>
-		<lightning-modal-body class="body-full-height">
+		<lightning-modal-body class="body-full-height ">
+			<template lwc:if={isLoading}>
+				<div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium slds-is-relative slds-full-height min-height-400">
+					<slds-spinner 
+						alternative-text="Loading" 
+						size="small" 
+						message="Loading Metadata files"
+					></slds-spinner>
+				</div>
+			</template>
 			<editor-app lwc:ref="editor"
 						class="slds-full-height slds-is-relative"
 						is-tab-enabled

@@ -11,10 +11,10 @@ import loader from '@monaco-editor/loader';
 const _showCopiedNotification = (copiedValue) => {
     // Create the notification element
     const notification = document.createElement('div');
-    notification.className = 'sf-toolkit-notification';
+    notification.className = 'sf-toolkit-notification-container';
 
     const sfToolkit = document.createElement('div');
-    sfToolkit.className = 'sf-toolkit';
+    sfToolkit.className = 'sf-toolkit-notification-header';
     sfToolkit.textContent = 'SF toolkit';
 
     const message = document.createElement('span');
@@ -28,26 +28,26 @@ const _showCopiedNotification = (copiedValue) => {
     // Style the notification element
     const style = document.createElement('style');
     style.textContent = `
-            .sf-toolkit-notification {
+            .sf-toolkit-notification-container {
                 position: fixed;
                 bottom: 20px;
                 left: 20px;
                 padding: 10px;
-                background-color: #0176d4;
+                background-color: #032d60;
                 color: white;
                 border-radius: 5px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
                 z-index: 1000;
                 display: none;
             }
-            .sf-toolkit {
+            .sf-toolkit-notification-header {
                 display: block;
                 position: absolute;
                 top: -10px;
                 left: calc(50% - 63px);
-                background: #0176d4;
-                padding-left: 3px;
-                padding-right: 3px;
+                background: #032d60;
+                padding-left: 10px;
+                padding-right: 10px;
                 border-radius: 5px;
                 z-index: 1000;
                 transform: translateX(50%);
@@ -369,9 +369,15 @@ class LWC_CUSTOM {
 class INJECTOR {
     lwc_custom_instance = new LWC_CUSTOM();
 
+    isValidPage = () => {
+        return document.querySelector("body.sfdcBody, body.ApexCSIPage, #auraLoadingBox") || location.host.endsWith("visualforce.com");
+    }
+
     init = () => {
         if(chrome.runtime)chrome.runtime.onMessage.addListener(this.handleMessage);
-        this.injectCode();
+        if(this.isValidPage()){
+            this.injectCode();
+        }
         //this.lwc_custom_instance.toggleFeature(true);
     };
 

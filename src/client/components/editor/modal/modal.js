@@ -8,6 +8,7 @@ import { store } from 'core/store';
 export default class Modal extends LightningModal {
 
     isLoading = false;
+    hasEditorLoaded = false;
 
     @api title;
     @api currentMetadata;
@@ -21,18 +22,25 @@ export default class Modal extends LightningModal {
     // Editor Change Tracker
     isEditMode = false;
 
+    // files
+    files;
+
     connectedCallback(){
         this.init();
     }
     /** Events **/
 
     handleEditorChange = (e) => {
-        console.log('new value',e.detail);
+        //console.log('new value',e.detail);
         this.isEditMode = e.detail.isEditMode;
     }
 
     handleMonacoLoaded = () => {
-        this.load_specificMetadataRecord(this.recordId);
+        this.hasEditorLoaded = true;
+        //console.log('this.files',this.files);
+        if(isNotUndefinedOrNull(this.files)){
+            this.displayEditor(this.files);
+        }
     }
 
     handleCloseClick() {
@@ -46,8 +54,8 @@ export default class Modal extends LightningModal {
     /** Methods */
 
     init = () => {
-        console.log('Initialize Editor');
-        //this.load_specificMetadataRecord(this.recordId);
+        //console.log('Initialize Editor');
+        this.load_specificMetadataRecord(this.recordId);
     }
 
     displayEditor = (files) => {
@@ -86,25 +94,29 @@ export default class Modal extends LightningModal {
         try{
             switch(this.currentMetadata){
                 case "LightningComponentBundle":
-                    this.displayEditor(await this.handle_LWC(key)); // Only LWC supporting extra
+                    this.files = await this.handle_LWC(key); // Only LWC supporting extra
                     break;
                 case "ApexClass":
-                    this.displayEditor(await this.handle_APEX(await this.load_recordFromRestAPI(key)));
+                    this.files = await this.handle_APEX(await this.load_recordFromRestAPI(key));
                     break;
                 case "AuraDefinitionBundle":
-                    this.displayEditor(await this.handle_AURA(await this.load_recordFromRestAPI(key)));
+                    this.files = await this.handle_AURA(await this.load_recordFromRestAPI(key));
                     break;
                 case "ApexTrigger":
-                    this.displayEditor(await this.handle_APEX(await this.load_recordFromRestAPI(key),'trigger')); // Similar to APEX
+                    this.files = await this.handle_APEX(await this.load_recordFromRestAPI(key),'trigger'); // Similar to APEX
                     break;
                 case "ApexPage":
-                    this.displayEditor(await this.handle_APEX(await this.load_recordFromRestAPI(key),'page','Markup')); // Similar to APEX
+                    this.files = await this.handle_APEX(await this.load_recordFromRestAPI(key),'page','Markup'); // Similar to APEX
                     break;
                 case "ApexComponent":
-                    this.displayEditor(await this.handle_APEX(await this.load_recordFromRestAPI(key),'page','Markup')); // Similar to APEX
+                    this.files = await this.handle_APEX(await this.load_recordFromRestAPI(key),'page','Markup'); // Similar to APEX
                     break;
             }
+            //console.log('load specific',this.files);
             this.isLoading = false;
+            if(this.hasEditorLoaded){
+                this.displayEditor(this.files);
+            }
         }catch(e){
             console.error(e);
             Toast.show({

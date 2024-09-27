@@ -24,6 +24,7 @@ const Schemas = {
 export default class App extends ToolkitElement {
     @api isCoverageEnabled = false;
     @api maxHeight;
+    @api isReadOnly = false;
     @api files = [];
     @api currentFile;
     @api metadataType;
@@ -31,6 +32,7 @@ export default class App extends ToolkitElement {
     @api isAddTabEnabled = false;
     @api isTabCloseableDisabled = false;
     @api isTabEnabled = false; // by default, we display tabs
+    @api theme;
 
     // Coverage
     @api isCoverageHighlighted = false;
@@ -226,17 +228,22 @@ export default class App extends ToolkitElement {
         this.currentFile = this.models[0].path;
         this.editor = this.monaco.editor.create(innerContainer, {
             model: this.models[0].model,
+            theme:this.theme || 'vs',
+            readOnly:this.isReadOnly,
+            wordWrap: "on",
+            autoIndent: true,
+            formatOnType: true,
+            formatOnPaste: true,
             minimap: {
-                enabled: false,
+                enabled: false
             },
-            automaticLayout: true,
-            readOnly: false,
+            automaticLayout:true,
             scrollBeyondLastLine: false,
-            wordWrap: 'on',
+            fixedOverflowWidgets: true
         });
 
         this.editor.onDidChangeModelContent(() => {
-            console.log('this.models',this.models);
+            //console.log('this.models',this.models);
             this.isEditMode = this.models.some(
                 (x) => x.versionId !== x.model.getAlternativeVersionId()
             );
