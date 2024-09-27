@@ -68,35 +68,43 @@
             <article class="full-page-body slds-card">
                 <div class="slds-full-height slds-api-container full-page-body">
                     <slds-split-view left-min-width="200" right-min-width="200" is-horizontal>
-                        <div class="bottom-left-panel slds-m-right_small slds-full-height" slot="left">
-                            <div class="slds-grid slds-wrap slds-p-horizontal_medium slds-p-top_medium">
+                        <div class="bottom-left-panel slds-p-around_small slds-full-height slds-full-width" slot="left">
+                            <div class="slds-full-height slds-flex-column slds-full-width">
                                 <slds-information-block title="Header Information">
                                     <p>Only enter 1 header setting per line following this format :</p>
                                     <p>header_name : header_value </p>
                                 </slds-information-block>
-                                <div class="slds-col slds-size_1-of-1">
-                                    <div class="slds-form-element">
-                                        <label class="slds-text-title_bold slds-form-element__label">Header</label>
-                                        <div class="slds-form-element__control">
-                                            <textarea class="slds-textarea slds-text-longform slds-textarea-header" placeholder="Write Header here" disabled={isHeaderDisabled} oninput={header_change}>
-                                                {header}
-                                            </textarea>
-                                        </div>
+                                <div class="slds-form-element">
+                                    <label class="slds-text-title_bold slds-form-element__label">Header</label>
+                                    <div class="slds-form-element__control">
+                                        <textarea class="slds-textarea slds-text-longform slds-textarea-header" placeholder="Write Header here" disabled={isHeaderDisabled} oninput={header_change}>
+                                            {header}
+                                        </textarea>
                                     </div>
                                 </div>
-                                <div class="slds-col slds-size_1-of-1">
-                                    <div class="slds-form-element">
-                                        <label class="slds-text-title_bold slds-form-element__label">Body</label>
-                                        <div class="slds-form-element__control">
-                                            <textarea class="slds-textarea slds-text-longform slds-textarea-body" placeholder="Write body here" disabled={isBodyDisabled} oninput={body_change}>
-                                                {body}
-                                            </textarea>
-                                        </div>
+                                <div class="slds-form-element slds-fill-height slds-flex-column">
+                                    <label class="slds-text-title_bold slds-form-element__label">Body</label>
+                                    <div class="slds-form-element__control slds-full-height">
+                                        <!--
+                                        <textarea class="slds-textarea slds-text-longform slds-textarea-body" placeholder="Write body here" disabled={isBodyDisabled} oninput={body_change}>
+                                            {body}
+                                        </textarea>
+                                        -->
+                                        <editor-default lwc:ref="bodyEditor" 
+                                            class="slds-full-height slds-is-relative"
+                                            model={currentModel}
+                                            onmonacoloaded={initBodyEditor}
+                                            is-toolkit-hidden
+                                            onchange={body_change}
+                                        ></editor-default>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="bottom-right-panel slds-full-height slds-full-width" slot="right">
+                            
+                            
+                            
                             <div class="slds-grid slds-wrap slds-full-height slds-is-relative">
                                 <div class="slds-col slds-size_1-of-1">
                                     <template lwc:if={isLoading}>
@@ -106,46 +114,92 @@
                                         ></slds-spinner>
                                     </template>
                                     <template lwc:elseif={isContentDisplayed}>
-                                        <template lwc:if={isFormattedContentDisplayed}>
-                                            <div>
-                                                <div class="slds-grid"></div>
-                                                <lightning-tabset variant="scoped" class="slds-without-tab" active-tab-value={viewerTab}>
-                                                    <lightning-tab label="Salesforce" value="Default"  onactive={handleSelectTab}></lightning-tab>
-                                                    <!--<lightning-tab label="Default" value="Custom"  onactive={handleSelectTab}></lightning-tab>-->
-                                                    <lightning-tab label="JSON"    value="JSON"     onactive={handleSelectTab}></lightning-tab>
-                                                </lightning-tabset>
+
+                                        <div class="slds-p-around_x-small">
+                                            <div class="slds-float_right">
+                                                <lightning-badge class={badgeClass} label={statusCode}></lightning-badge>
+                                                <span> • {duration} ms</span>
                                             </div>
-                                        
-                                            <div class={defaultContainerClass}>
-                                                <slds-code-block 
-                                                    class="slds-full-height" 
-                                                    code-block={formattedContent} 
-                                                    language="json" 
-                                                    title="Formatted Response"
-                                                    oncustomlink={handle_customLinkClick}
-                                                ></slds-code-block>
-                                            </div>
-                                        
-                                            <div class={jsonContainerClass}>
-                                                <editor-default lwc:ref="editor" 
-                                                    class="slds-full-height"
-                                                    model={currentModel}
-                                                    onmonacoloaded={handleMonacoLoaded}
-                                                    is-read-only
-                                                ></editor-default>
-                                                <!--
-                                                <slds-code-block 
-                                                    code-block={content} 
-                                                    language="json" 
-                                                    title="Event Content"
-                                                ></slds-code-block>
-                                                -->
-                                            </div> 
+                                        </div>
+                                        <!-- Viewers (Body, Headers , etc) -->
+                                        <div>
+                                            <lightning-tabset variant="scoped" class="slds-without-tab" active-tab-value={tab_normalizedCurrent}>
+                                                <lightning-tab label={PAGE_CONFIG.TABS.BODY} value={PAGE_CONFIG.TABS.BODY}  onactive={handleSelectTab}></lightning-tab>
+                                                <lightning-tab label={PAGE_CONFIG.TABS.HEADERS} value={PAGE_CONFIG.TABS.HEADERS}     onactive={handleSelectTab}></lightning-tab>
+                                            </lightning-tabset>
+                                        </div>
+                                        <!-- BODY Section-->
+                                        <template lwc:if={isBodyDisplayed}>
+                                            <template lwc:if={isFormattedContentDisplayed}>
+                                                <div>
+                                                    <lightning-radio-group name="radioGroup"
+                                                        label="Radio Group"
+                                                        options={viewer_options}
+                                                        value={viewer_value}
+                                                        required
+                                                        type="button"
+                                                        variant="label-hidden"
+                                                        class="slds-p-around_x-small"
+                                                        onchange={viewer_handleChange}
+                                                    ></lightning-radio-group>
+                                                </div>
+                                            
+                                                <div class={prettyContainerClass}>
+                                                    <slds-code-block 
+                                                        class="slds-full-height" 
+                                                        code-block={formattedContent} 
+                                                        language={formattedContentType} 
+                                                        title="Formatted Response"
+                                                        oncustomlink={handle_customLinkClick}
+                                                    ></slds-code-block>
+                                                </div>
+                                            
+                                                <div class={rawContainerClass}>
+                                                    <editor-default lwc:ref="contentEditor" 
+                                                        class="slds-full-height slds-is-relative"
+                                                        model={currentModel}
+                                                        onmonacoloaded={initContentEditor}
+                                                        is-read-only
+                                                    ></editor-default>
+                                                </div> 
+                                                <div class={previewContainerClass}>
+                                                    <iframe onload={injectHTML} ref="iframe" width="100%" height="100%" style="border: unset;"></iframe>
+                                                </div> 
+                                            </template>
+                                            <template lwc:else>
+                                                <illustration-default class="slds-p-top_large" title="File to large for preview">
+                                                    <lightning-button title="Download File" label="Download File" onclick={handle_downloadClick}></lightning-button>
+                                                </illustration-default> 
+                                            </template>
                                         </template>
-                                        <template lwc:else>
-                                            <illustration-default class="slds-p-top_large" title="File to large for preview">
-                                                <lightning-button title="Download File" label="Download File" onclick={handle_downloadClick}></lightning-button>
-                                            </illustration-default> 
+                                        <!-- HEADERS Section-->
+                                        <template lwc:if={isHeadersDisplayed}>
+                                            <div class="slds-p-top_x-small">
+                                                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_fixed-layout slds-table_striped">
+                                                    <thead>
+                                                        <tr class="slds-text-title_bold">
+                                                            <th scope="col">
+                                                                <div class="slds-truncate" title="Key">Key</div>
+                                                            </th>
+                                                            <th scope="col">
+                                                                <div class="slds-truncate" title="Value">Value</div>
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <template for:each={contentHeaders} for:item="item">
+                                                            <tr key={item.key}>
+                                                                <td>
+                                                                    <div class="slds-truncate" title={item.key}>{item.key}</div>
+                                                                </td>
+                                                                <td class="slds-cell-wrap">
+                                                                    <div  title={item.value}>{item.value}</div>
+                                                                </td>
+                                                            </tr>
+                                                        </template>
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </template>
                                     </template>
                                     <template lwc:else>

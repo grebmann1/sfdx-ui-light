@@ -1,8 +1,9 @@
 import { api,track,wire } from "lwc";
-import { decodeError,isEmpty,isNotUndefinedOrNull,isUndefinedOrNull,classSet } from 'shared/utils';
+import { decodeError,isEmpty,isNotUndefinedOrNull,isUndefinedOrNull,classSet,normalizeString as normalize } from 'shared/utils';
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
 import { connectStore,store,API } from 'core/store';
+import moment from 'moment';
 
 const METHOD = {
     GET:'GET',
@@ -11,15 +12,23 @@ const METHOD = {
     PATCH:'PATCH',
     DELETE:'DELETE'
 }
-const TABS = {
-    PARAMETERS:'Parameters',
-    RESPONSE:'Response'
-}
+
 
 const DEFAULT = {
     HEADER : 'Content-Type: application/json; charset=UTF-8\nAccept: application/json',
     ENDPOINT : '/services/data/v60.0',
     BODY : ''
+}
+
+const VIEWERS = {
+    PRETTY : 'Pretty',
+    RAW : 'Raw',
+    PREVIEW : 'Preview'
+}
+
+const TABS = {
+    BODY:'Body',
+    HEADERS:'Headers'
 }
 
 export default class App extends ToolkitElement {
@@ -28,7 +37,6 @@ export default class App extends ToolkitElement {
 
     @track formattedRequests = [];
     @track endpoint = DEFAULT.ENDPOINT;
-    @track content;
     @track method = METHOD.GET;
     @api header = DEFAULT.HEADER;
     @api body = DEFAULT.BODY;
@@ -40,7 +48,20 @@ export default class App extends ToolkitElement {
 
 
     currentModel;
-    viewerTab = 'Default';
+
+    // Content
+    @track content;
+    @track contentType = 'json';
+    @track contentHeaders = [];
+    @track statusCode;
+    @track executionStartDate;
+    @track executionEndDate;
+
+    // Viewer
+    viewer_value = VIEWERS.PRETTY;
+
+    // Tab
+    tab_current = TABS.BODY;
 
     connectedCallback(){
         this.isFieldRendered = true;
@@ -50,7 +71,7 @@ export default class App extends ToolkitElement {
         this._hasRendered = true;
 
         if(this._hasRendered && this.template.querySelector('slds-tabset')){
-            this.template.querySelector('slds-tabset').activeTabValue = this.viewerTab;
+            this.template.querySelector('slds-tabset').activeTabValue = this.tab_current;
         }
     }
 
@@ -60,7 +81,7 @@ export default class App extends ToolkitElement {
         if(!isCurrentApp) return;
 
         if(api){  
-            this.viewerTab = api.viewerTab;
+            this.tab_current = api.viewerTab;
         }
     }
 
@@ -68,18 +89,29 @@ export default class App extends ToolkitElement {
     /** Methods  **/
 
     executeAPI = () => {
-        const _request = this.formatRequest();
-        this.content = null; // reset content
-        this.isEditing = false;
+        
         try{
+            const _request = this.formatRequest();
+            if(isUndefinedOrNull(_request)) return;
+
+            this.content = null; // reset content
             this.isLoading = true;
-            this.connector.conn.request(_request)
-            .then(res => {
-                Toast.show({
-                    label: 'Success Call',
-                    variant:'success',
-                });
-                this.content = res;
+
+            const instance = this.connector.conn.httpApi();
+            instance.on('response', async (res) => {
+                console.log('response',res);
+                // Set Response variables
+                this.content = res.body;
+                this.statusCode = res.statusCode;
+                const _headers = res.headers || {};
+                this.contentHeaders = Object.keys(_headers).map(key => ({key,value:_headers[key]}));
+                this.contentType = instance.getResponseContentType(res);
+                if(this.formattedContentType !== 'xml'){
+                    this.content = await instance.getResponseBody(res);
+                }
+
+                this.executionEndDate = new Date();
+                this.isLoading = false;
 
                 // Simple set of pointer and action (When running, we reset at that pointer position !)
                 if(this.actions.length > 0 && this.actionPointer != this.actions.length - 1){
@@ -87,21 +119,18 @@ export default class App extends ToolkitElement {
                 }
                 this.actions.push(this.formatAction());
                 this.actionPointer = this.actions.length - 1;
-                this.isLoading = false;
-            }).catch(e => {
-                console.error(e);
-                this.isLoading = false;
-                Toast.show({
-                    label: e.message || 'Error during request',
-                    variant:'error',
-                    mode:'dismissible'
-                });
-            })
+            });
+
+            // Execute the request
+            this.executionStartDate = new Date();
+            instance.request(_request);
+
         }catch(e){
             this.isLoading = false;
-            console.error(e);
+            console.error('caught by the catch',e);
         }
     }
+    
 
     formatAction = () => {
         return {
@@ -115,8 +144,9 @@ export default class App extends ToolkitElement {
 
     reassignAction = () => {
         const action = this.actions[this.actionPointer];
-
+        console.log('this.actions',this.actions);
         if(action){
+            console.log('action',action);
             this.body = action.body;
             this.method = action.method;
             this.endpoint = action.endpoint;
@@ -129,49 +159,78 @@ export default class App extends ToolkitElement {
         // Update fields directly (LWC issues)
         this.forceDomUpdate();
 
-        // reset editing
-        this.isEditing = false;
     }
 
     forceDomUpdate = () => {
         this.refs.method.value      = this.method;
         this.refs.method.endpoint   = this.endpoint;
         this.template.querySelector('.slds-textarea-header').value = this.header;
-        this.template.querySelector('.slds-textarea-body').value = this.body;
+        this.refs.bodyEditor.currentModel.setValue(this.body);
+        if(this.refs.contentEditor){
+            //this.refs.contentEditor.currentModel.setValue(this.content);
+        }
     }
 
     formatRequest = () => {
-        const _endpoint = this.endpoint.startsWith('/')?this.endpoint:`/${this.endpoint}`;
-        const _targetUrl = this.endpoint.startsWith('http')?this.endpoint:`${this.connector.conn.instanceUrl}${_endpoint}`;
-        const _request = {
-            method: this.method, 
-            url: _targetUrl
+        // Ensure the endpoint starts with a leading slash if not a full URL
+        const formattedEndpoint = this.endpoint.startsWith('/') ? this.endpoint : `/${this.endpoint}`;
+    
+        // If the endpoint is a full URL, use it, otherwise, prepend the instance URL
+        const targetUrl = this.endpoint.startsWith('http') ? this.endpoint : `${this.connector.conn.instanceUrl}${formattedEndpoint}`;
+    
+        // Create the base request object with method and URL
+        const request = {
+            method: this.method,
+            url: targetUrl,
+        };
+    
+        // Include body for PATCH, POST, or PUT requests
+        if ([METHOD.PATCH, METHOD.POST, METHOD.PUT].includes(this.method)) {
+            request.body = this.body;
         }
-        
-        if([METHOD.PATCH,METHOD.POST,METHOD.PUT].includes(this.method)){
-            _request.body = this.body;
-        }
-        if(isNotUndefinedOrNull(this.header)){
-            // Basic headers for now (Using line split)
-            const _header = {};
-            this.header.split('\n').forEach(line => {
-                const lineArr = line.split(':');
-                if(lineArr.length >= 2){
-                    const key = (lineArr.shift()).trim();
-                    _header[key] = lineArr.join(':').trim();
+    
+        // Process headers if they are defined
+        if (isNotUndefinedOrNull(this.header)) {
+            const headers = {};
+            let isValidHeader = true;
+    
+            // Clean up the header string and process each line
+            this.header
+                .replace(/^\s*[\r\n]/gm, "") // Remove empty lines
+                .trim()
+                .split('\n')
+                .forEach(line => {
+                    const lineArr = line.split(':');
+                    if (lineArr.length >= 2) {
+                        const key = lineArr.shift().trim(); // Get the header name
+                        headers[key] = lineArr.join(':').trim(); // Combine the remaining parts of the header value
+                    } else {
+                        isValidHeader = false; // Flag invalid header
+                    }
+                });
+    
+            // If any headers are invalid, show a toast notification
+            if (!isValidHeader) {
+                Toast.show({
+                    label: `Invalid Header`,
+                    variant: 'error',
+                    mode: 'dismissible',
+                });
+                return null;
+            } else {
+                // Add headers to the request if valid and not empty
+                if (Object.keys(headers).length > 0) {
+                    request.headers = {
+                        ...request.headers,
+                        ...headers,
+                    };
                 }
-            });
-            if(Object.keys(_header).length > 0){
-                _request.headers = {
-                    ..._request.headers,
-                    ..._header
-                };
             }
         }
-
-
-        return _request;
-    }
+    
+        return request; // Return the formatted request object
+    };
+    
 
     decreaseActionPointer = () => {
         if(this.actionPointer <= 0){
@@ -189,7 +248,45 @@ export default class App extends ToolkitElement {
         }
     }
 
+    injectHTML = () => {
+        const iframe = this.template.querySelector('iframe');
+        const iframeDocument = iframe.contentWindow.document;
+
+        // Check if the content type is an image (e.g., PNG or JPG)
+        if (['png','jpeg','jpg'].includes(this.formattedContentType)) {
+
+        } else {
+            // If it's not an image, inject the content as HTML
+            iframeDocument.open();
+            iframeDocument.write(this.formattedContent);
+            iframeDocument.close();
+        }
+    }
+
     /** Events **/
+
+
+    initBodyEditor = () => {
+        const newModel = this.refs.bodyEditor.createModel({
+            body:'',
+            language:'txt'
+        });
+        this.refs.bodyEditor.displayModel(newModel);
+    }
+
+    initContentEditor = () => {
+        //this.isLoading = false;
+        this.currentModel = this.refs.contentEditor.createModel({
+            body:this.formattedContent,
+            language:this.formattedContentType
+        });
+        this.refs.contentEditor.displayModel(this.currentModel);
+    }
+
+
+    viewer_handleChange = (e) => {
+        this.viewer_value = e.detail.value;
+    }
 
     handleSelectTab(event) {
         store.dispatch(API.reduxSlice.actions.updateViewerTab({
@@ -198,19 +295,10 @@ export default class App extends ToolkitElement {
         }));
     }
 
-    handleMonacoLoaded = () => {
-        //this.isLoading = false;
-        this.currentModel = this.refs.editor.createModel({
-            body:this.formattedContent,
-            language:'json'
-        });
-        this.refs.editor.displayModel(this.currentModel);
-    }
+    
 
     undo_click = () => {
-        if(this.isEditing){
-            this.reassignAction();
-        }else if(this.actions.length > 0 && this.actions.length > this.actionPointer){
+         if(this.actions.length > 0 && this.actions.length > this.actionPointer){
             this.decreaseActionPointer();
             this.reassignAction();
         }
@@ -233,31 +321,26 @@ export default class App extends ToolkitElement {
         this.body = DEFAULT.BODY;
 
         this.content = null;
-        this.isEditing = false;
     }
 
     endpoint_change = (e) => {
-        this.isEditing = true;
         this.endpoint = e.detail.value;
     }
 
     method_change = (e) => {
-        this.isEditing = true;
         this.method = e.detail.value;
     }
 
     body_change = (e) => {
-        this.isEditing = true;
-        this.body = e.target.value;
+        //console.log('body_change',e.detail);
+        this.body = e.detail.value;
     }
 
     header_change = (e) => {
-        this.isEditing = true;
         this.header = e.target.value;
     }
 
     handle_customLinkClick = (e) => {
-        this.isEditing = true;
         // Assuming it's always GET method
         this.endpoint = e.detail.url;
         this.method = METHOD.GET;
@@ -270,11 +353,11 @@ export default class App extends ToolkitElement {
 
     handle_downloadClick = () => {
         try {
-            const blob = new Blob([this.formattedContent], { type: 'application/json' });
+            const blob = new Blob([this.formattedContent], { type: this.contentType });
             const url = URL.createObjectURL(blob);
             const download = document.createElement('a');
                 download.href = window.URL.createObjectURL(blob);
-                download.download = `${Date.now()}.json`;
+                download.download = `${Date.now()}.${this.formattedContentType}`;
                 download.click();
             URL.revokeObjectURL(url);
         } catch (e) {
@@ -288,8 +371,13 @@ export default class App extends ToolkitElement {
 
     /** Getters */
 
+    get duration(){
+        let total = this.executionEndDate - this.executionStartDate;
+        return moment(total || 0).millisecond();
+    }
+
     get isUndoDisabled(){
-        return this.actionPointer <= 0 && !this.isEditing;
+        return this.actionPointer <= 0;
     }
 
     get isRedoDisabled(){
@@ -304,12 +392,12 @@ export default class App extends ToolkitElement {
         return this.isLoading;
     }
 
-    get isParamsDisplayed(){
-        return this.currentTab === TABS.PARAMETERS;
+    get isBodyDisplayed(){
+        return this.tab_normalizedCurrent === TABS.BODY;
     }
 
-    get isResponseDisplayed(){
-        return this.currentTab === TABS.RESPONSE;
+    get isHeadersDisplayed(){
+        return this.tab_normalizedCurrent === TABS.HEADERS;
     }
 
     get method_options(){
@@ -335,18 +423,80 @@ export default class App extends ToolkitElement {
     }
 
     get formattedContent(){
-        return isNotUndefinedOrNull(this.content)?JSON.stringify(this.content, null, 4):'';
+        if(typeof this.content === 'object' && isNotUndefinedOrNull(this.content)){
+            return JSON.stringify(this.content, null, 4);
+        }
+        return this.content;
     }
     get pageClass(){
         return super.pageClass+' slds-p-around_small';
     }
 
-    get defaultContainerClass(){
-        return classSet("slds-full-height slds-scrollable_y").add({'slds-hide':!(this.viewerTab === 'Default')}).toString();
+    get prettyContainerClass(){
+        return classSet("slds-full-height slds-scrollable_y").add({'slds-hide':!(this.viewer_value === VIEWERS.PRETTY)}).toString();
     }
 
 
-    get jsonContainerClass(){
-        return classSet("slds-full-height slds-scrollable_y").add({'slds-hide':!(this.viewerTab === 'JSON')}).toString();
+    get rawContainerClass(){
+        return classSet("slds-full-height slds-scrollable_y").add({'slds-hide':!(this.viewer_value === VIEWERS.RAW)}).toString();
+    }
+
+    get previewContainerClass(){
+        return classSet("slds-full-height slds-scrollable_y").add({'slds-hide':!(this.viewer_value === VIEWERS.PREVIEW)}).toString();
+    }
+
+    get formattedContentType(){
+        if(isUndefinedOrNull(this.contentType)) return 'text';
+
+        if (/^(text|application)\/xml(;|$)/.test(this.contentType)) {
+            return 'xml';
+        } 
+        if (/^application\/json(;|$)/.test(this.contentType)) {
+            return 'json';
+        } 
+
+        if (/^text\/csv(;|$)/.test(this.contentType)) {
+            return 'csv';
+        }
+
+        if (/^text\/html(;|$)/.test(this.contentType)) {
+            return 'html';
+        }
+
+        if (/^image\/png(;|$)/.test(this.contentType)) {
+            return 'png';
+        }
+
+        if (/^image\/jpeg(;|$)/.test(this.contentType)) {
+            return 'jpeg';
+        }
+
+        if (/^image\/jpg(;|$)/.test(this.contentType)) {
+            return 'jpg';
+        }
+        
+        return 'text';
+    }
+
+    get viewer_options(){
+        return Object.values(VIEWERS).map(x => ({value:x,label:x}))
+    }
+
+    get tab_normalizedCurrent(){
+        return normalize(this.tab_current, {
+            fallbackValue: TABS.BODY,
+            validValues: [TABS.BODY,TABS.HEADERS],
+            toLowerCase:false
+        });
+    }
+
+    get PAGE_CONFIG(){
+        return {
+            TABS
+        }
+    }
+
+    get badgeClass(){
+        return (this.statusCode < 400 ? 'slds-theme_success': 'slds-theme_error');
     }
 }

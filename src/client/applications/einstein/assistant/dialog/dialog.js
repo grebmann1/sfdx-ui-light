@@ -252,7 +252,9 @@ export default class Dialog extends ToolkitElement {
 
     get cleanedMessages(){
         const { einstein } = store.getState();
-        return this.messages.filter(x => !einstein.errorIds.includes(x.id)); // Removing the errors before sending to salesforce
+        const filteredMessages = this.messages.filter(x => !einstein.errorIds.includes(x.id)); // Removing the errors
+        const lastTenMessages = filteredMessages.slice(-10); // Taking only the last 10 messages
+        return lastTenMessages;
     }
 
     get formattedMessages(){

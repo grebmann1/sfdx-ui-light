@@ -1,5 +1,6 @@
 :host{
     height: 100%;
+    --_slds-g-shadow-inset-focus : 0 0 0 0px #fff inset, 0 0 0 0px #0b5cab inset
 }
 
 .slds-horizontal-input {

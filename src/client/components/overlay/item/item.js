@@ -53,7 +53,9 @@ export default class Item extends ToolkitElement {
                 EditorModal.open({
                     currentMetadata:this.currentMeddataFormat,
                     recordId:this.item?.id,
-                    size:'full'
+                    size:'full',
+                    isReadOnly:true,
+                    isFooterDisplayed:false
                 });
             break;
             default:

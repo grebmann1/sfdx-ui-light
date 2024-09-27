@@ -27,21 +27,13 @@ Execute Anonymous:
 17:52:11.98 (8098242356)|USER_INFO|[EXTERNAL]|005Hr00000GPi4K|storm.454b5500dfa9a9@salesforce.com|(GMT-07:00) Pacific Daylight Time (America/Los_Angeles)|GMT-07:00
 17:52:11.98 (8098266846)|EXECUTION_STARTED
 17:52:11.98 (8098286285)|CODE_UNIT_STARTED|[EXTERNAL]|execute_anonymous_apex
-17:52:18.96 (15096475781)|USER_DEBUG|[18]|DEBUG|START_EINSTEIN_TOOLKIT13f601ff-a260-426f-95c2-657ac56df795###5ZCAyq262PAg5hI###assistant###5ZCAyq262PAg5hI###Subject: Meeting Follow-Up
+17:52:18.96 (15096475781)|USER_DEBUG|[18]|DEBUG|START_EINSTEIN_TOOLKIT13f601ff-a260-426f-95c2-657ac56df795###5ZCAyq262PAg5hI###assistant###5ZCAyq262PAg5hI###Oops! Something went wrong.
 
-Dear Team,
+It looks like there was an error processing your request. 
+This could be due to issues with the text characters or formatting, or possibly because there are too many messages in the current dialog.
+Please try creating a new dialog, or log the issue on GitHub if the problem persists.
 
-I hope this email finds you well. I wanted to follow up on our recent meeting to discuss the progress we made on our project. I believe we had a productive discussion and came up with some great ideas to move forward.
-
-As we discussed, I will be assigning tasks to each team member and setting deadlines for completion. I will also be scheduling regular check-ins to ensure we are on track and address any issues that may arise.
-
-Please let me know if you have any questions or concerns about your tasks or the project in general. I am here to support you and help in any way that I can.
-
-Thank you all for your hard work and dedication to this project. I am confident that with our combined efforts, we will achieve great success.
-
-Best regards,
-
-[Your Name]END_EINSTEIN_TOOLKIT
+END_EINSTEIN_TOOLKIT
 17:52:18.96 (15101249217)|CODE_UNIT_FINISHED|execute_anonymous_apex
 17:52:18.96 (15101271193)|EXECUTION_FINISHED`;
 const Schemas = {}

@@ -1,3 +1,5 @@
+
+import path from 'path'; // Import the path module
 import lwc from '@lwc/rollup-plugin';
 import replace from '@rollup/plugin-replace';
 import resolve from '@rollup/plugin-node-resolve';
@@ -5,7 +7,6 @@ import cjs from '@rollup/plugin-commonjs';
 import { babel } from '@rollup/plugin-babel';
 import copy from 'rollup-plugin-copy';
 import * as data from './package.json';
-import path from 'path'; // Import the path module
 import css from "rollup-plugin-import-css";
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -131,7 +132,7 @@ export default (args) => {
                         },
                     ],
                 }),
-            ],
+            ]
         },
         basicBundler(
             'src/client_chrome/workers/background.js',

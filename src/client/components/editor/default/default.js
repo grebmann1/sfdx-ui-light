@@ -15,6 +15,7 @@ export default class Default extends ToolkitElement {
     @api currentFile;
     @api metadataType;
     @api isActionHidden = false;
+    @api isToolkitHidden = false;
     @api isAddTabEnabled = false;
 
     @api isTabEnabled = false; // by default, we display tabs
@@ -72,6 +73,9 @@ export default class Default extends ToolkitElement {
             theme:this.theme || 'vs',
             readOnly:this.isReadOnly,
             wordWrap: "on",
+            autoIndent: true,
+            formatOnType: true,
+            formatOnPaste: true,
             minimap: {
                 enabled: false
             },
@@ -86,6 +90,37 @@ export default class Default extends ToolkitElement {
                 this.dispatchEvent(new CustomEvent("monacosave", {bubbles: true,composed:true }));
             }
         });
+        this.editor.onDidPaste((e) => {
+            const pastedText = this.editor.getModel()?.getValueInRange(e.range);
+    
+            // Auto-detect format and apply formatting
+            const _format = this.autoDetectAndFormat(pastedText);
+    
+            // Replace the editor content with the formatted text if found !
+            if(_format){
+                this.monaco.editor.setModelLanguage(this.editor.getModel(), _format); 
+            }
+            
+            
+        });
+    }
+
+
+    // Auto-detect format and apply appropriate formatting
+    
+    autoDetectAndFormat = (text) => {
+        const trimmedText = text.trim();
+
+        // Detect if the content is JSON
+        if (trimmedText.startsWith('{') || trimmedText.startsWith('[')) {
+            return 'json';
+        }
+
+        // Detect if the content is XML
+        if (trimmedText.startsWith('<')) {
+            return 'xml';
+        }
+        return null;
     }
 
     loadMonacoEditor = async () => {
@@ -108,7 +143,7 @@ export default class Default extends ToolkitElement {
                 new CustomEvent("change", {
                     detail:{
                         value:this.editor.getValue(),
-                        type:'body'
+                        type:this.autoDetectAndFormat(this.editor.getValue()),
                     },
                     bubbles: true 
                 })
@@ -156,6 +191,10 @@ export default class Default extends ToolkitElement {
     @api
     get currentMonaco(){
         return this.monaco;
+    }
+
+    get isToolkitDisplayed(){
+        return !this.isToolkitHidden;
     }
 
 }

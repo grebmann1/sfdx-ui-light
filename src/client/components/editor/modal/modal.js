@@ -12,9 +12,11 @@ export default class Modal extends LightningModal {
     @api title;
     @api currentMetadata;
     @api recordId;
+    @api isFooterDisplayed = false;
 
     // Editor Specific
     @api isCoverageEnabled = false;
+    @api isReadOnly = false;
 
     // Editor Change Tracker
     isEditMode = false;

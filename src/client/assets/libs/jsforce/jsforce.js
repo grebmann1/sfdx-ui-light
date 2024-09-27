@@ -2531,7 +2531,15 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
      * , relative path from root ('/services/data/v32.0/sobjects/Account/describe')
      * , or relative path from version root ('/sobjects/Account/describe').
      */
-  }, {
+  },
+  {
+    key:'httpApi',
+    value: function httpApi(){
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      return new http_api/* default */.A(this, options);
+    }
+  },
+  {
     key: "requestGet",
     value: function requestGet(url, options) {
       var request = {
@@ -7093,14 +7101,14 @@ var HttpApi = /*#__PURE__*/function (_EventEmitter) {
                 errorCode: "ERROR_HTTP_".concat(response.statusCode),
                 message: response.body
               };
-              if (!(response.headers['content-type'] === 'text/html')) {
+              if (!(response.headers['content-type'] != null && response.headers['content-type'].includes('text/html'))) {
                 _context8.next = 17;
                 break;
               }
               this._logger.debug("html response.body: ".concat(response.body));
-              return _context8.abrupt("return", new HttpApiError("HTTP response contains html content.\nCheck that the org exists and can be reached.\nSee error.content for the full html response.", error.errorCode, error.message));
+              return _context8.abrupt("return", new HttpApiError("HTTP response contains html content.\nCheck that the org exists and can be reached.\nSee error.content for the full html response.", error.errorCode, error.message,response,response.headers['content-type']));
             case 17:
-              return _context8.abrupt("return", new HttpApiError(error.message, error.errorCode));
+              return _context8.abrupt("return", new HttpApiError(error.message, error.errorCode,error.message,response,response.headers['content-type']));
             case 18:
             case "end":
               return _context8.stop();
@@ -7120,13 +7128,15 @@ var HttpApi = /*#__PURE__*/function (_EventEmitter) {
  */
 (0,_babel_runtime_corejs3_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_28__/* ["default"] */ .A)(HttpApi, "_logger", (0,_util_logger__WEBPACK_IMPORTED_MODULE_18__/* .getLogger */ .tZ)('http-api'));
 var HttpApiError = /*#__PURE__*/function (_Error) {
-  function HttpApiError(message, errorCode, content) {
+  function HttpApiError(message, errorCode, content,response,contentType) {
     var _this3;
     (0,_babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_24__/* ["default"] */ .A)(this, HttpApiError);
     _this3 = _callSuper(this, HttpApiError, [message]);
     _this3.name = errorCode || _this3.name;
     _this3.errorCode = _this3.name;
     _this3.content = content;
+    _this3.response = response;
+    _this3.contentType = contentType;
     return _this3;
   }
   (0,_babel_runtime_corejs3_helpers_inherits__WEBPACK_IMPORTED_MODULE_25__/* ["default"] */ .A)(HttpApiError, _Error);
