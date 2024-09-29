@@ -268,27 +268,24 @@ export default class App extends ToolkitElement {
                     url = redirectUrl;
                 }
                 
-
+                console.log('isChromeExtension',isChromeExtension(),target);
                 if(isChromeExtension()){
                     if(target === 'incognito'){
-                        chrome.windows.getAll({populate: false, windowTypes: ['normal']}, (windows) => {
-                            for (let w of windows) {
-                                if (w.incognito) {
-                                    // Use this window.
-                                    chrome.tabs.create({url: url, windowId: w.id},(tab) => {
-                                        this.createOrAddToTabGroup(tab, alias,w.id);
-                                    });
-                                    return;
-                                }
+                        const windows = await chrome.windows.getAll({populate: false, windowTypes: ['normal']});
+                        for (let w of windows) {
+                            if (w.incognito) {
+                                // Use this window.
+                                const tab = await chrome.tabs.create({url: url, windowId: w.id});
+                                await this.createOrAddToTabGroup(tab, alias,w.id);
+                                return;
                             }
-                            // No incognito window found, open a new one.
-                            chrome.windows.create({url: url, incognito: true});
-                        });
+                        }
+                        // No incognito window found, open a new one.
+                        chrome.windows.create({url: url, incognito: true});
                     }else{
                         const current = await chrome.windows.getCurrent();
-                        chrome.tabs.create({url: url,windowId:current.id},(tab) => {
-                            this.createOrAddToTabGroup(tab, alias,current.id);
-                        });
+                        const tab = await chrome.tabs.create({url: url,windowId:current.id});
+                        await this.createOrAddToTabGroup(tab, alias,current.id);
                     }
                 }else{
                     window.open(url,target);
@@ -424,24 +421,17 @@ export default class App extends ToolkitElement {
         }
     };
 
-    createOrAddToTabGroup = (tab, groupName,windowId) =>{
-        chrome.tabGroups.query({windowId:windowId}, (groups) => {
-            let group = groups.find(g => g.title === groupName);
-        
-            if (group) {
-                // Group exists, add the tab to this group
-                chrome.tabs.group({groupId: group.id, tabIds: tab.id}, () => {
-                    //console.log(`Tab added to existing group '${groupName}'`);
-                });
-            } else {
-                // Group does not exist, create a new group with this tab
-                chrome.tabs.group({createProperties: {}, tabIds: tab.id}, (newGroupId) => {
-                    chrome.tabGroups.update(newGroupId, {title: groupName}, () => {
-                        //console.log(`New group '${groupName}' created and tab added`);
-                    });
-                });
-            }
-        });
+    createOrAddToTabGroup = async (tab, groupName,windowId) =>{
+        const groups = await chrome.tabGroups.query({windowId:windowId});
+        let group = groups.find(g => g.title === groupName);
+        if (group) {
+            // Group exists, add the tab to this group
+            await chrome.tabs.group({groupId: group.id, tabIds: tab.id});
+        } else {
+            // Group does not exist, create a new group with this tab
+            const newGroupId = await chrome.tabs.group({createProperties: {}, tabIds: tab.id});
+            await chrome.tabGroups.update(newGroupId, {title: groupName});
+        }
     }
 
     handleFieldsFilter = (e) => {

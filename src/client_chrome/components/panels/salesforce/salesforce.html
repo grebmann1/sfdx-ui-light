@@ -59,26 +59,38 @@
                                 <p>The content will automatically change based on your URL.</p>
                                 <p>Navigate to your salesforce records to display the Data Explorer.</p>
                             </slds-information-block>
-                            <org-me class="slds-p-vertical_x-small slds-show" title="Current User"></org-me>
-                            <org-company class="slds-p-vertical_x-small slds-show" link-label="Company"
-                                         title="Current Org"></org-company>
-                            <org-users class="slds-p-vertical_x-small slds-show"></org-users>
+                            <org-me 
+                                class="slds-p-vertical_x-small slds-show" 
+                                title="Current User"
+                            ></org-me>
+                            <org-company 
+                                class="slds-p-vertical_x-small slds-show" 
+                                link-label="Company"
+                                title="Current Org"
+                            ></org-company>
+                            <org-users 
+                                class="slds-p-vertical_x-small slds-show"
+                            ></org-users>
                         </slds-tab>
                         <!-- Record Explorer Section -->
                         <template lwc:if={isRecordExplorerAvailable}>
                             <slds-tab class="full-page-body slds-tabs-no-padding" label="Record Explorer"
                                       value={APPLICATIONS.RECORD_EXPLORER}>
-                                <feature-record-explorer current-origin={currentOrigin}
-                                                         lwc:ref="recordexplorer"
-                                                         record-id={recordId}
-                                                         versions={versions}
+                                <feature-record-explorer 
+                                    current-origin={currentOrigin}
+                                    lwc:ref="recordexplorer"
+                                    record-id={recordId}
+                                    versions={versions}
                                 ></feature-record-explorer>
                             </slds-tab>
                         </template>
                         <!-- Record Explorer Section -->
                         <template lwc:if={isUserExplorerAvailable}>
-                            <slds-tab class="full-page-body slds-tabs-no-padding" label="Users"
-                                      value={APPLICATIONS.USER_EXPLORER}>
+                            <slds-tab 
+                                class="full-page-body slds-tabs-no-padding" 
+                                label="Users"
+                                value={APPLICATIONS.USER_EXPLORER}
+                            >
                                 <feature-user-explorer lwc:ref="userexplorer"></feature-user-explorer>
                             </slds-tab>
                         </template>

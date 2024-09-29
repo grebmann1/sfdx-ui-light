@@ -128,6 +128,11 @@ export default class Lookup extends LightningElement {
     }
 
     @api
+    get searchTerm(){
+        return this._searchTerm;
+    }
+
+    @api
     getSelection() {
         return this._curSelection;
     }

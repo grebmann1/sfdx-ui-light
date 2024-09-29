@@ -15,11 +15,16 @@ export default class Default extends ToolkitElement {
     @api currentFile;
     @api metadataType;
     @api isActionHidden = false;
-    @api isToolkitHidden = false;
     @api isAddTabEnabled = false;
 
     @api isTabEnabled = false; // by default, we display tabs
     @api theme;
+
+    // Hidden feature
+
+    @api isToolkitHidden = false;
+    @api isEinsteinHidden = false;
+    @api isCopyHidden = false;
     
 
 
@@ -56,6 +61,7 @@ export default class Default extends ToolkitElement {
             variant:'success',
         });
     }
+
 
     /** Methods **/
 
@@ -195,6 +201,14 @@ export default class Default extends ToolkitElement {
 
     get isToolkitDisplayed(){
         return !this.isToolkitHidden;
+    }
+
+    get isCopyDisplayed(){
+        return !this.isCopyHidden;
+    }
+
+    get isEinsteinDisplayed(){
+        return !this.isEinsteinHidden;
     }
 
 }

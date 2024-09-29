@@ -80,6 +80,14 @@ export default class OrgRenameModal extends LightningModal {
                 isValid = false;
             }
         });
+
+        // Categories
+        if(this.isNewCategoryDisplayed && this.refs.newCategory){
+            this.refs.newCategory.setCustomValidity('Confirm the new Category');
+            this.refs.newCategory.reportValidity();
+            isValid = false;
+        }
+
         return isValid;
     }
 
@@ -179,6 +187,7 @@ export default class OrgRenameModal extends LightningModal {
 
     handleLookupNewRecordSelection = (event) => {
         this.isNewCategoryDisplayed = true;
+        this.newCategory = this.refs.category.searchTerm;
         window.setTimeout(() => {
             this.template.querySelector('.new-category-to-validate')?.focus();
         })
@@ -210,7 +219,7 @@ export default class OrgRenameModal extends LightningModal {
      /** getters */
 
      get categories(){
-        return [...new Set(this.connections.map(x => x.company))];
+        return [...new Set(this.connections.map(x => x.company).filter(x => !isEmpty(x)))];
     }
 
     get generatedAlias(){

@@ -12,13 +12,15 @@
                         <!-- New Record Form -->
                         <div class="slds-grid">
                             <div class="slds-col slds-p-horizontal_xx-small">
-                                <lightning-input
+                                <lightning-input lwc:ref="newCategory"
                                         class="new-category-to-validate"
                                         name="newCategory"
                                         type="text"
                                         label="New Category"
                                         value={newCategory}
                                         onchange={newCategory_onChange}
+                                        message-when-pattern-mismatch="Hyphen '-' is not allowed"
+                                        pattern="[^\-]"
                                         required
                                 ></lightning-input>
                             </div>
@@ -36,7 +38,7 @@
                         </div>
                     </template>
                     <template lwc:else>
-                        <slds-lookup
+                        <slds-lookup lwc:ref="category"
                             label="Category"
                             placeholder="Select Category"
                             tooltip="Select the category to group your credentials"

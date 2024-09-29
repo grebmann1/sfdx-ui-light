@@ -162,7 +162,7 @@ export default class Overlay extends ToolkitElement {
     }
 
     handleRefresh = () => {
-        console.log('handleRefresh');
+
         this._forceRefresh = true;
         this.init();
     }
@@ -220,7 +220,7 @@ export default class Overlay extends ToolkitElement {
     }
 
     getSessionId = async () => {
-        console.log('getSessionId');
+
         /** To be modified before deploying **/
         let cookieInfo;
         if(chrome.runtime){
@@ -232,7 +232,6 @@ export default class Overlay extends ToolkitElement {
                 domain:'storm-454b5500dfa9a9.my.salesforce.com'
             }
         }
-        console.log('cookieInfo',cookieInfo);
 
         // Use as key for storage
         this.currentDomain = cookieInfo.domain;
@@ -521,7 +520,6 @@ export default class Overlay extends ToolkitElement {
             // Fetch Flow
             const flowQuery = this.connector.conn.tooling.query("SELECT Id, ActiveVersionId,LatestVersionId, Description, MasterLabel, DeveloperName, NamespacePrefix FROM FlowDefinition WHERE NamespacePrefix = null");
             const flows = await flowQuery.run({ responseTarget:'Records',autoFetch : true, maxFetch : 100000 }) || [];
-
             const data = { objects, profiles, permissionSets,apexClass,apexTrigger,flows,aura,lwc };
 
             // Cache data with an expiry timestamp
@@ -529,7 +527,6 @@ export default class Overlay extends ToolkitElement {
             window.defaultStore.setItem(`${CACHE_EXPIRY_KEY}-${this.currentDomain}`, (Date.now() + CACHE_DURATION).toString());
             window.defaultStore.setItem(`${CACHE_LAST_KEY}-${this.currentDomain}`, (Date.now()).toString());
             this.header_formatDate();
-
             return data;
         } catch (error) {
             console.error('Error loading data:', error);

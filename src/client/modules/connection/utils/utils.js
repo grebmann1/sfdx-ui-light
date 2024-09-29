@@ -207,23 +207,23 @@ export async function oauth_chrome({alias,loginUrl},callback,callbackErrorHandle
     });
 
     const finalUrl = oauth2.getAuthorizationUrl({ prompt:'consent',scope : FULL_SCOPE });  
-    chrome.runtime.sendMessage({
+    const response = await chrome.runtime.sendMessage({
         action: "launchWebAuthFlow",
         url:finalUrl
-    },async (response) => {
-        const { code } = response;
-        //console.log('code',code);
-        if(isUndefinedOrNull(code)) return;
-        
-        const connection = new window.jsforce.Connection({ oauth2 });
-        try{
-            await connection.authorize(code);
-            //console.log('userInfo',userInfo);
-            oauth_extend({alias,connection},callback);
-        }catch(e){
-            callbackErrorHandler(e);
-        }
     });
+    console.log('response',response);
+    const { code } = response;
+    //console.log('code',code);
+    if(isUndefinedOrNull(code)) return;
+    
+    const connection = new window.jsforce.Connection({ oauth2 });
+    try{
+        await connection.authorize(code);
+        //console.log('userInfo',userInfo);
+        oauth_extend({alias,connection},callback);
+    }catch(e){
+        callbackErrorHandler(e);
+    }
 }
 
 export async function oauth({alias,loginUrl},callback,callbackErrorHandler){
@@ -348,8 +348,8 @@ async function enrichConnector({connection,configuration},dispathUpdate){
             username:identity.username,
             orgId:identity.organization_id,
             userInfo:identity,
-            alias:identity.username, // Replacing the alias to take advantage of the cache
-            id:identity.username
+            alias:configuration.alias || identity.username, // Replacing the alias to take advantage of the cache
+            id:configuration.id || identity.username
         });
     }
     const versionRecord = versions.sort((a, b) => b.version.localeCompare(a.version))[0];

@@ -3,7 +3,7 @@ import Toast from 'lightning/toast';
 import LightningAlert from 'lightning/alert';
 import LightningModal from 'lightning/modal';
 import { oauth,oauth_chrome,setRedirectCredential } from 'connection/utils';
-import { isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,decodeError,checkIfPresent } from "shared/utils";
+import { isEmpty,isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,decodeError,checkIfPresent } from "shared/utils";
 
 const domainOptions = [
     { id: 'prod',   label: 'login.salesforce.com', value: 'login.salesforce.com' },
@@ -98,6 +98,12 @@ export default class ConnectionNewModal extends LightningModal {
                     isValid = false;
                 }
             });
+        // Categories
+        if(this.isNewCategoryDisplayed && this.refs.newCategory){
+            this.refs.newCategory.setCustomValidity('Confirm the new Category');
+            this.refs.newCategory.reportValidity();
+            isValid = false;
+        }
         // Custom Domain
         const domainToValidate = this.template.querySelector('.domain-to-validate');
         if(domainToValidate){
@@ -139,6 +145,7 @@ export default class ConnectionNewModal extends LightningModal {
         // Default
         let inputFields = this.template.querySelectorAll('.new-category-to-validate');
             inputFields.forEach(inputField => {
+                inputField.setCustomValidity(''); // reset
                 if(!inputField.checkValidity()) {
                     inputField.reportValidity();
                     isValid = false;
@@ -217,6 +224,7 @@ export default class ConnectionNewModal extends LightningModal {
     standard_oauth = async () => {
         //console.log('standard_oauth');
         const _oauthMethod = isChromeExtension()?oauth_chrome:oauth;
+        console.log('this.alias',this.alias);
         _oauthMethod({
             alias:this.alias,
             loginUrl:this.loginUrl,
@@ -284,6 +292,7 @@ export default class ConnectionNewModal extends LightningModal {
 
     handleLookupNewRecordSelection = (event) => {
         this.isNewCategoryDisplayed = true;
+        this.newCategory = this.refs.category.searchTerm;
         window.setTimeout(() => {
             this.template.querySelector('.new-category-to-validate')?.focus();
         })
@@ -379,7 +388,7 @@ export default class ConnectionNewModal extends LightningModal {
     }
 
     get categories(){
-        let _connections = this.connections.map(x => x.company);
+        let _connections = this.connections.map(x => x.company).filter(x => !isEmpty(x));
         if(this.selectedCategory.length > 0){
             _connections.push(this.selectedCategory[0].id);
         }

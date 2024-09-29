@@ -19,6 +19,10 @@
                     <illustration-empty title="No orgs"></illustration-empty>
                 </template>
             </template>
+            <!-- Loading -->
+            <template lwc:if={isLoading}>
+                <slds-spinner message="Authorizing &amp; Redirecting" alternative-text="Loading"></slds-spinner>
+            </template>
         </div>
     </template>
     <template lwc:else>

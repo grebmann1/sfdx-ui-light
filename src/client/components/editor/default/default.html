@@ -5,11 +5,13 @@
         <template lwc:if={isToolkitDisplayed}>
             <div class="editor-toolkit">
                 <div class="slds-flex-column slds-vertical-button-group">
-                    <lightning-button-icon
-                            icon-name="utility:copy"
-                            tooltip="Copy to clipboard"
-                            onclick={handleCopyClick}
-                    ></lightning-button-icon>
+                    <template lwc:if={isCopyDisplayed}>
+                        <lightning-button-icon
+                                icon-name="utility:copy"
+                                tooltip="Copy to clipboard"
+                                onclick={handleCopyClick}
+                        ></lightning-button-icon>
+                    </template>
                 </div>
             </div>
         </template>
