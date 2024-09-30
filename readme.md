@@ -1,179 +1,173 @@
-
 # SF Toolkit
 
-This repository hosts the SF Toolkit , offering a comprehensive suite of tools for Salesforce administration, accessible through multiple platforms including the SF Toolkit website, an Electron desktop application, and a Chrome Extension.
+The SF Toolkit repository provides a comprehensive suite of tools designed for Salesforce administration. These tools are accessible across multiple platforms, including the SF Toolkit website, an Electron desktop application, and a Chrome Extension, ensuring flexibility and convenience for Salesforce administrators.
 
 ![Welcome Page of SF Toolkit](./git_images/welcome.png)
 
-
 ## Roadmap
 
-## General
+### Installation and Onboarding
+- A custom installation page featuring a basic **How To** video or step-by-step guide to facilitate easy onboarding.
 
-- ✅ User (Access & Usage) reporting (with PDF export)
-- ✅ Profile/Permission comparator (with PDF export)
-- ✅ Org Dashboard (Work in progress)
-- ✅ SOQL Builder
-- ✅ Metadata Viewer
-- ✅ Light Metadata Editor (for **LWC**, Aura and Apex)
-- ✅ Code Extractor & Analyzer (Work in progress)
-- ✅ Electron App for Mac OS [Install Latest Release](https://github.com/grebmann1/sfdx-ui-light/releases/latest)
-- ✅ Chrome Extension available in the [Install Chrome Extension](https://chromewebstore.google.com/detail/sf-toolkit-light/konbmllgicfccombdckckakhnmejjoei)
-- Metadata Global Loader with Cache mechanisme to optimize metadata loading and use of api calls. Include a refresh capability.
-- ✅ Profile comparaison (to find easily similiarities in Access Analyzer & Separatly) so we can print it and display it nicely
-- Middleware hooks to debug callouts
-- Datamodel viewer
-- Experience Cloud (Guest User review)
-- One Time Use batch generator (To create, deploy, run and delete a batch)
-- Nebula Logger Connector (To install and monitor Nebular Logs)
-- Full Localhost support for Chrome Extension (Only Desktop is supporting it for now as LWR is blocking)
-- Integration with SFDX-HARDIS to monitor org (Only Desktop)
+### Release Highlights
+- A dedicated page showcasing all new features and updates.
+- Direct links to the latest releases available within the Chrome Extension.
+
+### Access, Profile, and Permission Analyzer
+- ✅ Comprehensive user access and usage reporting, with options for PDF export.
+- ✅ Profile and permission comparison tools, also supporting PDF export.
+- ✅ Enhanced profile comparison features to easily identify similarities in access permissions, with printable formats.
+
+### Metadata Explorer
+- ✅ A robust metadata viewer for Salesforce components.
+- ✅ A lightweight metadata editor supporting **LWC**, Aura, and Apex.
 
 ### SOQL Builder
-- ✅ Field/Object dictionary
-- ✅ Monaco Editor
-- ✅ Data Export
-- ✅ Multi Tabs
-- ✅ Recent + Saved queries
-- Einstein integration
+- ✅ Comprehensive field and object dictionary.
+- ✅ Integrated Monaco Editor for superior code editing.
+- ✅ Capabilities for data export and multi-tab management.
+- ✅ Features for recent and saved queries, with Einstein integration.
 
 ### Anonymous Apex
-- ✅ Multi Tabs
-- ✅ Monaco Editor
-- ✅ Recent + Saved queries
-- Einstein integration
+- ✅ Multi-tab support for managing multiple scripts.
+- ✅ Monaco Editor for streamlined code writing.
+- ✅ Features for recent and saved queries, with Einstein integration.
 
 ### API Explorer
-- ✅ Support GET, POST, PUT, PATCH, DELETE
-- ✅ Monaco Editor
-- Recent + Saved requests
-- Multi Tabs
-- Einstein integration
+- ✅ Support for HTTP methods: GET, POST, PUT, PATCH, DELETE.
+- ✅ Integrated Monaco Editor for API request crafting.
+- Features for recent and saved requests, multi-tab management, and Einstein integration.
 
 ### Platform Events Explorer
-- ✅ Platform Event & Change Data Capture
-- ✅ Replay Capabilities
-- ✅ Monaco Editor
-- ✅ Quick Apex Script
-- ✅ Multi Tabs/subscriptions
-- Recent subscriptions
+- ✅ Comprehensive support for platform events and Change Data Capture.
+- ✅ Replay capabilities for events.
+- ✅ Integrated Monaco Editor for event scripts.
+- ✅ Quick Apex script execution and multi-tab subscription management.
+- Features for managing recent subscriptions.
 
-### AI Assisants
-- ✅ Connected with Einstein
-- ✅ Multi Dialog (tabs)
-- ✅ Mermaid Diagram
-- ✅ Salesforce Code Styling
-- ✅ Chrome & Web app
+### AI Assistants
+- ✅ Seamless integration with Einstein for AI-driven insights.
+- ✅ Multi-dialog support within tabs.
+- ✅ Support for Mermaid Diagrams and Salesforce Code Styling.
+- ✅ Available as a Chrome and web app, with shortcut key activation and modal functionality on any webpage.
+- Use the assistant to interact with any input field across platforms.
 
 ### Salesforce Documentation
-- ✅ Full Data Model
-- API/REST documentation
-
+- ✅ Access to a full data model and API/REST documentation for in-depth understanding.
 
 ### Credential Manager
-- ✅ Support OAuth2.0
-- ✅ Group connection using Category concept
-- ✅ import/export from extension/web app and desktop
-- ✅ Support Redirect url (for org blocking API connection)
-- Modify Alias concept to separate Category & Name (High impact on SF CLI as we are using the alias)
+- ✅ OAuth2.0 support for secure authentication.
+- ✅ Group connection management using a category concept.
+- ✅ Import/export capabilities from the extension, web app, and desktop application.
+- ✅ Support for redirect URLs for organizations blocking API connections.
+- Enhanced alias management to separate categories and names, impacting SF CLI usage.
 
-### Org Analysis/Overview
-- ✅ License use
-- Data/file storage use
-- Application Count
-- Managed packaged count
-- unlocked package count
-- Profile count
-- Permission Count
-- Reports Count
-- Flow Count
-- Validation Rules Count
-- etc
-- Multi Currency Enabled ?
+### Org Analysis and Overview
+- ✅ Comprehensive org dashboard with insights into license usage.
+- Data and file storage usage metrics.
+- Application, managed package, unlocked package, profile, permission, report, flow, and validation rule counts.
+- Multi-currency support analysis.
 
-### Data - Object assignment and sage
-  - Layouts assignements and usage
-  - Fields Counts (by objects)
-  - List View Counts by Page layouts
+### Chrome Extension
+- ✅ Available in the Chrome Web Store with core features like Credential Manager, AI Assistant, and Documentation & Context Information.
+- ✅ Injected quick search functionality for Salesforce pages.
+- Enhanced option page and full localhost support for processing.
 
+### Multi-Platform Support
+- ✅ Chrome Extension available for installation [here](https://chromewebstore.google.com/detail/sf-toolkit-light/konbmllgicfccombdckckakhnmejjoei).
+- ✅ Electron App for Mac OS available for download [here](https://github.com/grebmann1/sfdx-ui-light/releases/latest).
+- Planned Electron App for Windows.
+
+### Code Analyzer
+- Ongoing development of a code extractor and analyzer.
+- Planned integration with SFDX-HARDIS for org monitoring (Desktop only).
+
+### Data and Object Assignment
+- Analysis of layout assignments and usage.
+- Field counts by object and list view counts by page layout.
+
+### Future Ideas
+- Metadata Global Loader with caching to optimize loading and API usage, including refresh capabilities.
+- Middleware hooks for debugging callouts.
+- Data model viewer and Experience Cloud guest user review.
+- One-time use batch generator for streamlined batch processing.
+- Nebula Logger Connector for monitoring logs.
+- Full localhost support for the Chrome Extension (currently desktop only due to LWR restrictions).
 
 ## Features
 
 ### SF Toolkit Website
 
-Visit [SF Toolkit](https://www.sf-toolkit.com) to access the full suite of Salesforce management tools, including user access verification, connection management, and in-depth analysis of profiles, permissions, and more.
+Access the full suite of Salesforce management tools at [SF Toolkit](https://www.sf-toolkit.com), including user access verification, connection management, and detailed profile and permission analysis.
 
 ### Electron Desktop App
 
-Utilize the Electron-based desktop application powered by Salesforce Developer Experience (SFDX) in the background. This app provides a seamless desktop experience for managing Salesforce connections, analyzing access rights, and visualizing user permissions. Instructions for setup and usage are available in the respective app directories.
+The Electron-based desktop application leverages the Salesforce Developer Experience (SFDX) to provide a seamless desktop environment for managing Salesforce connections, analyzing access rights, and visualizing user permissions. Detailed setup and usage instructions are available within the app directories.
 
-![Elecron](./git_images/electron.png)
+![Electron](./git_images/electron.png)
 
 ### Chrome Extension
 
-The Chrome Extension integrates directly into your browser, offering quick access to SF Toolkit functionality. Visualize profiles, manage connections, and export data as CSV or PDF—all from within your browser for streamlined Salesforce access management.
+The Chrome Extension integrates directly into your browser, offering quick access to SF Toolkit functionalities. It allows you to visualize profiles, manage connections, and export data as CSV or PDF, streamlining Salesforce access management from within the browser.
 
 ![Chrome Extension](./git_images/chrome.png)
 
 ## Installation and Usage
 
-### Install entire repo
-1. Clone the repo.
-2. Run `npm install`
-3. Create a Salesforce Connected APP:
-
-Create a .env file with the clientId and clientSecret from your salesforce connected app : 
-```
-CLIENT_SECRET='XXXXX'
-CLIENT_ID='XXXX'
-```
-
+### Install the Entire Repository
+1. Clone the repository.
+2. Run `npm install`.
+3. Create a Salesforce Connected App and set up the following in a `.env` file:
+   ```
+   CLIENT_SECRET='XXXXX'
+   CLIENT_ID='XXXX'
+   ```
 
 ### SF Toolkit Website
-- Visit [SF Toolkit](https://www.sf-toolkit.com) and connect your orgs (Org informations are only store localy in the browser)
+- Visit [SF Toolkit](https://www.sf-toolkit.com) and connect your orgs. Note that org information is stored locally in the browser.
 
-#### Run Dev mode
-Run `npm run start:dev:client`
+#### Run in Development Mode
+- Execute `npm run start:dev:client`.
 
-#### Run Prod mode (static version)
-1. Run `npm run heroku-postbuild`.
-2. Run `npm run start:heroku`
+#### Run in Production Mode (Static Version)
+1. Execute `npm run heroku-postbuild`.
+2. Execute `npm run start:heroku`.
 
-Heroku isn't needed but if you want to test it with heroku, you need to follow these steps (After Heroku CLI installation)
-1. Run `npm run heroku-postbuild`.
-2. Run `heroku local --port 3000`
+To test with Heroku (optional), after installing the Heroku CLI:
+1. Execute `npm run heroku-postbuild`.
+2. Execute `heroku local --port 3000`.
 
 ### Electron Desktop App
-- Navigate to the specific 'repo' : [github](https://github.com/grebmann1/sfdx-ui-desktop)
+- Navigate to the specific repository: [GitHub](https://github.com/grebmann1/sfdx-ui-desktop).
 
 ### Chrome Extension
-- Refer to the 'extension' directory for installation steps and usage guidelines of the Chrome Extension.
+- Refer to the 'extension' directory for installation steps and usage guidelines.
 
-#### Test with developer mode enabled (In Chrome)
-1. Clone the repo.
-2. Run `npm install`
+#### Testing in Developer Mode (Chrome)
+1. Clone the repository.
+2. Run `npm install`.
 3. Open `chrome://extensions/`.
 4. Enable `Developer mode`.
 5. Click `Load unpacked extension...`.
-6. Select the folder `extension` that contain the extension module
-
+6. Select the folder `extension` containing the extension module.
 
 ## Contribution
 
-We welcome contributions to enhance SF Toolkit. Feel free to fork the repository, make improvements, and create pull requests.
+We welcome contributions to enhance SF Toolkit. Feel free to fork the repository, make improvements, and submit pull requests.
 
 ## Open Source Acknowledgments
 
-This tool incorporates components from the following open source project:
+This tool incorporates components from the following open-source projects:
 
 - **[LWC SOQL Builder](https://github.com/lwc-soql-builder/lwc-soql-builder)**  
-  Description: LWC SOQL Builder is an open source tool designed to build Salesforce Object Query Language (SOQL) queries in a dynamic and user-friendly interface.
-  License: MIT
-  Technology: LWC & NodeJS
+  - Description: A dynamic and user-friendly tool for building Salesforce Object Query Language (SOQL) queries.
+  - License: MIT
+  - Technology: LWC & NodeJS
+
 - **[Salesforce Inspector Reloaded](https://github.com/tprouvot/Salesforce-Inspector-reloaded)**  
-    Description: Reloaded version of the famous Salesforce Inspector chrome extension.
-    License: MIT
-    Technology: JS
+  - Description: A reloaded version of the popular Salesforce Inspector Chrome extension.
+  - License: MIT
+  - Technology: JavaScript
 
 ## Support
 
@@ -181,4 +175,4 @@ For any issues, queries, or suggestions, please open an issue in the respective 
 
 ## License
 
-This project is licensed under the MIT License
+This project is licensed under the MIT License.
