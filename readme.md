@@ -8,6 +8,8 @@ This repository hosts the SF Toolkit , offering a comprehensive suite of tools f
 
 ## Roadmap
 
+## General
+
 - ✅ User (Access & Usage) reporting (with PDF export)
 - ✅ Profile/Permission comparator (with PDF export)
 - ✅ Org Dashboard (Work in progress)
@@ -24,6 +26,56 @@ This repository hosts the SF Toolkit , offering a comprehensive suite of tools f
 - Experience Cloud (Guest User review)
 - One Time Use batch generator (To create, deploy, run and delete a batch)
 - Nebula Logger Connector (To install and monitor Nebular Logs)
+- Full Localhost support for Chrome Extension (Only Desktop is supporting it for now as LWR is blocking)
+- Integration with SFDX-HARDIS to monitor org (Only Desktop)
+
+### SOQL Builder
+- ✅ Field/Object dictionary
+- ✅ Monaco Editor
+- ✅ Data Export
+- ✅ Multi Tabs
+- ✅ Recent + Saved queries
+- Einstein integration
+
+### Anonymous Apex
+- ✅ Multi Tabs
+- ✅ Monaco Editor
+- ✅ Recent + Saved queries
+- Einstein integration
+
+### API Explorer
+- ✅ Support GET, POST, PUT, PATCH, DELETE
+- ✅ Monaco Editor
+- Recent + Saved requests
+- Multi Tabs
+- Einstein integration
+
+### Platform Events Explorer
+- ✅ Platform Event & Change Data Capture
+- ✅ Replay Capabilities
+- ✅ Monaco Editor
+- ✅ Quick Apex Script
+- ✅ Multi Tabs/subscriptions
+- Recent subscriptions
+
+### AI Assisants
+- ✅ Connected with Einstein
+- ✅ Multi Dialog (tabs)
+- ✅ Mermaid Diagram
+- ✅ Salesforce Code Styling
+- ✅ Chrome & Web app
+
+### Salesforce Documentation
+- ✅ Full Data Model
+- API/REST documentation
+
+
+### Credential Manager
+- ✅ Support OAuth2.0
+- ✅ Group connection using Category concept
+- ✅ import/export from extension/web app and desktop
+- ✅ Support Redirect url (for org blocking API connection)
+- Modify Alias concept to separate Category & Name (High impact on SF CLI as we are using the alias)
 
 ### Org Analysis/Overview
 - ✅ License use
