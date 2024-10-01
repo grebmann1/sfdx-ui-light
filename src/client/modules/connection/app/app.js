@@ -32,6 +32,7 @@ export default class App extends ToolkitElement {
     @track data = [];
     @track formattedData = [];
     isLoading   = false;
+    customLoadingMessage;
 
     // Injection
     isInjected  = false;
@@ -154,11 +155,13 @@ export default class App extends ToolkitElement {
     fetchAllConnections = async () => {
         // Browser & Electron version
         this.isLoading = true;
+        this.customLoadingMessage = 'Loading Credentials from Cache';
         this.data =  this.formatConfiguration(await getConfigurations());
         //console.log('originalList',this.data);
         //console.log('getConfigurations',this.data);
         this.formattedData = this.formatDataForCardView();
         this.isLoading = false;
+        this.customLoadingMessage = null;
     }
 
     formatConfiguration = (data) => {
@@ -174,7 +177,7 @@ export default class App extends ToolkitElement {
 
     fetchInjectedConnections = async () => {
         this.isLoading = true;
-
+        this.customLoadingMessage = 'Loading Credentials from Extension';
         const newConnections = this.injectedConnections.map(x => {
             return {
                 ...x,
@@ -187,6 +190,7 @@ export default class App extends ToolkitElement {
         /** Fetch Again **/
         this.fetchAllConnections();
         this.isLoading = false;
+        this.customLoadingMessage = null;
     }
 
     formatDataForCardView = () => {
@@ -621,6 +625,10 @@ export default class App extends ToolkitElement {
         }else{
             return _columns.filter(x => x._filter == null || x._filter === 'web');
         }
+    }
+
+    get loadingMessage(){
+        return this.customLoadingMessage || "Authorizing & Redirecting"; 
     }
 
 }

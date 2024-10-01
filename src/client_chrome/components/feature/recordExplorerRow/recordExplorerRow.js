@@ -249,7 +249,6 @@ export default class RecordExplorerRow extends ToolkitElement {
     }
 
     renderedCallback() {
-        console.log('renderedCallback -->');
         this.renderRow();
         if (
             !this.hasRendered
@@ -258,6 +257,7 @@ export default class RecordExplorerRow extends ToolkitElement {
                 || (isNotUndefinedOrNull(this.fieldErrors) && this.fieldErrors.hasOwnProperty(this.name)) // Error Mode
             )
         ) {
+            console.log('will enable input')
             // Only happening for new row created during scrolling
             this.enableInputField();
         }
@@ -272,10 +272,13 @@ export default class RecordExplorerRow extends ToolkitElement {
                 && isNotUndefinedOrNull(this.fieldErrors)
                 && this.fieldErrors.hasOwnProperty(this.name)
             ) {
-                console.log('renderFieldErrors');
-                this.refs.inputfield.setErrors(this.fieldErrors);
+                if(this.refs.inputfield){
+                    this.refs.inputfield.setErrors(this.fieldErrors);
+                }else{
+                    this.enableInputField(); // in case not displayed
+                }
             }
-        }, 1);
+        }, 10);
     };
 
     renderRow = () => {
@@ -294,7 +297,6 @@ export default class RecordExplorerRow extends ToolkitElement {
     enableInputField = () => {
         if (!this.isEditEnabled) return;
         this.isEditMode = true;
-        console.log('enableInputField -->');
         setTimeout(() => {
             const uiField = this.metadata.fields.find(x => x.name === this.name);
             this.refs.inputfield.wireRecordAndMetadata({

@@ -3094,7 +3094,6 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
      * @param options
      */
     function update(type, records) {
-      //console.log('sobject-collection');
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
       return is_array_default()(records) ?
       // check the version whether SObject collection API is supported (42.0)
@@ -7106,9 +7105,9 @@ var HttpApi = /*#__PURE__*/function (_EventEmitter) {
                 break;
               }
               this._logger.debug("html response.body: ".concat(response.body));
-              return _context8.abrupt("return", new HttpApiError("HTTP response contains html content.\nCheck that the org exists and can be reached.\nSee error.content for the full html response.", error.errorCode, error.message,response,response.headers['content-type']));
+              return _context8.abrupt("return", new HttpApiError("HTTP response contains html content.\nCheck that the org exists and can be reached.\nSee error.content for the full html response.", error,response,response.headers['content-type']));
             case 17:
-              return _context8.abrupt("return", new HttpApiError(error.message, error.errorCode,error.message,response,response.headers['content-type']));
+              return _context8.abrupt("return", new HttpApiError(error.message, error,response,response.headers['content-type']));
             case 18:
             case "end":
               return _context8.stop();
@@ -7128,15 +7127,22 @@ var HttpApi = /*#__PURE__*/function (_EventEmitter) {
  */
 (0,_babel_runtime_corejs3_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_28__/* ["default"] */ .A)(HttpApi, "_logger", (0,_util_logger__WEBPACK_IMPORTED_MODULE_18__/* .getLogger */ .tZ)('http-api'));
 var HttpApiError = /*#__PURE__*/function (_Error) {
-  function HttpApiError(message, errorCode, content,response,contentType) {
+  function HttpApiError(message, error, response, contentType) {
+    const errorCode = error.errorCode;
+    const content = error.message;
     var _this3;
-    (0,_babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_24__/* ["default"] */ .A)(this, HttpApiError);
+    (0, _babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_24__ /* ["default"] */.A)(this, HttpApiError);
     _this3 = _callSuper(this, HttpApiError, [message]);
     _this3.name = errorCode || _this3.name;
     _this3.errorCode = _this3.name;
     _this3.content = content;
+    // Extra fields for sf-toolkit
     _this3.response = response;
     _this3.contentType = contentType;
+    // fields support //sf-toolkit [Was missing from old versions]
+    if(error.fields){
+      _this3.fields = error.fields;
+    }
     return _this3;
   }
   (0,_babel_runtime_corejs3_helpers_inherits__WEBPACK_IMPORTED_MODULE_25__/* ["default"] */ .A)(HttpApiError, _Error);

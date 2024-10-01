@@ -161,7 +161,9 @@ export default class Salesforce extends ToolkitElement {
         //if(isUndefinedOrNull(this.connector)) return;
 
         window.setTimeout(() => {
-            this.template.querySelector('slds-tabset').activeTabValue = tabName;
+            if(this.template.querySelector('slds-tabset')){
+                this.template.querySelector('slds-tabset').activeTabValue = tabName;
+            }
         }, 100);
     };
 

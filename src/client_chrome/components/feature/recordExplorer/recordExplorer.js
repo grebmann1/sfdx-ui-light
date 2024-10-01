@@ -431,7 +431,7 @@ export default class RecordExplorer extends ToolkitElement {
 
             const res = await _connector.sobject(this.sobjectName).update([toUpdate]);
             const response = res[0];
-            //console.log('###### response ######',response);
+            console.log('###### response ######',response);
             if (response.success) {
                 Toast.show({
                     label: 'Record saved successfully',
@@ -446,17 +446,19 @@ export default class RecordExplorer extends ToolkitElement {
                 const fieldErrorGlobal = [];
                 // Need to improve in the futur
                 response.errors.forEach(error => {
-                    error.fields.forEach(field => {
+                    const errorFields = error.fields || [];
+                    
+                    errorFields.forEach(field => {
                         fieldErrorSet[field] = error;
                     });
-                    if (error.fields.length == 0) {
+                    if (errorFields.length == 0) {
                         fieldErrorGlobal.push(error);
                     }
                 });
                 this.fieldErrors = fieldErrorSet;
 
                 if (fieldErrorGlobal.length > 0) {
-                    let label = fieldErrorGlobal[0].statusCode ? fieldErrorGlobal[0].statusCode : 'Update Error';
+                    let label = fieldErrorGlobal[0].statusCode || fieldErrorGlobal[0].errorCode || 'Update Error';
                     Toast.show({
                         message: fieldErrorGlobal[0].message,
                         label: label,
@@ -489,9 +491,9 @@ export default class RecordExplorer extends ToolkitElement {
         this.modifiedRows = [];
         this.isViewChangeFilterEnabled = false;
         let rows = this.template.querySelectorAll('feature-record-explorer-row');
-        rows.forEach(row => {
-            row.disableInputField();
-        });
+            rows.forEach(row => {
+                row.disableInputField();
+            });
         this.refreshData();
     };
 
