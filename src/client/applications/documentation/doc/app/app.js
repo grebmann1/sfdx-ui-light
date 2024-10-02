@@ -1,6 +1,6 @@
 import ToolkitElement from 'core/toolkitElement';
 import { wire,api,createElement } from "lwc";
-import { isEmpty,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull,removeDuplicates,classSet } from 'shared/utils';
+import { isEmpty,getFromStorage,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull,removeDuplicates,classSet } from 'shared/utils';
 import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 import { connectStore,store,store_application } from 'shared/store';
 import sldsCodeBlock from 'slds/codeBlock';
@@ -63,6 +63,7 @@ const CONFIGURATION = {
         label: 'Scheduler'
     }
 }
+const DOCUMENTATION_CLOUD_VALUE = 'DOCUMENTATION_CLOUD_VALUE';
 
 export default class App extends ToolkitElement {
     @wire(NavigationContext)
@@ -120,8 +121,8 @@ export default class App extends ToolkitElement {
 
     loadFromNavigation = async ({state, attributes}) => {
         //('documentation - loadFromNavigation');
-        const {applicationName,attribute1}  = attributes;
-        const {name}      = state;
+        const {applicationName}  = attributes;
+        const {name,attribute1}  = state;
         if(applicationName != 'documentation') return; // Only for metadata
 
         this.isNoRecord = false;
@@ -142,13 +143,14 @@ export default class App extends ToolkitElement {
 
 
     connectedCallback(){
-        this.loadDocumentation();
         this.loadFromCache();
+        this.loadDocumentation();
     }
 
     loadFromCache = async () => {
         //console.log('cache',localStorage.getItem(`doc-isDiagramDisplayed`));
         this.isDiagramDisplayed = localStorage.getItem(`doc-isDiagramDisplayed`) === 'true';
+        this.cloud_value = getFromStorage(localStorage.getItem(DOCUMENTATION_CLOUD_VALUE),[DEFAULT_CONFIG]);
     }
 
     loadDocumentation = async () => {
@@ -167,6 +169,10 @@ export default class App extends ToolkitElement {
         this.isMenuLoading = false;
     }
 
+    updateCloudValueInCache = () => {
+        localStorage.setItem(DOCUMENTATION_CLOUD_VALUE,JSON.stringify(this.cloud_value));
+    }
+
     /** Events */
 
     openFilter = (e) => {
@@ -178,6 +184,7 @@ export default class App extends ToolkitElement {
         this.displayFilter = true; // always open the filter menu
         if(this.cloud_value.length == 1) return; // dont allow to remove the last one
         this.cloud_value = this.cloud_value.filter(x => x != e.detail.item.name);
+        this.updateCloudValueInCache();
         this.refreshDocumentsFromCloud();
     }
 
@@ -249,11 +256,11 @@ export default class App extends ToolkitElement {
         const params = {
             type:'application',
             attributes:{
-                applicationName:'documentation',
-                attribute1:documentationId
+                applicationName:'documentation'
             },
             state:{
-                name:name
+                name:name,
+                attribute1:documentationId
             }
         };
 
@@ -458,7 +465,6 @@ export default class App extends ToolkitElement {
     fetchDocuments = async () => {
 
         this.isMenuLoading = true;
-        //console.log('fetchDocuments',this.cloud_value);
         for (const item of this.cloud_value) {
             await this.fetchDocuments_single(item);
         }
@@ -535,6 +541,7 @@ export default class App extends ToolkitElement {
 
     cloud_handleChange = async (e) => {
         this.cloud_value = e.detail.value;
+        this.updateCloudValueInCache();
         this.refreshDocumentsFromCloud();
     }
     
@@ -601,7 +608,7 @@ export default class App extends ToolkitElement {
         return classSet("slds-page-header__row slds-page-header__row_gutters")
         .add({
             'slds-show':this.displayFilter,
-            'slds-show_large':!this.displayFilter
+            'slds-show_small':!this.displayFilter
         }).toString();
     }
 
@@ -611,7 +618,7 @@ export default class App extends ToolkitElement {
             'slds-size_1-of-1 slds-large-size_1-of-4':this.isResponsive,
             'slds-size_1-of-4':!this.isResponsive,
             'slds-show':this.displayMenu,
-            'slds-show_small':!this.displayMenu
+            'slds-show_large':!this.displayMenu && this.isResponsive
         }).toString();
     }
 
