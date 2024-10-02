@@ -77,15 +77,6 @@
             }
         },
         {
-            "id": "test",
-            "path": "/test",
-            "rootComponent": "extension/test",
-            "layoutTemplate": "$layoutsDir/main.html",
-            "bootstrap": {
-                "syntheticShadow": true
-            }
-        },
-        {
             "id": "markdown",
             "path": "/markdown",
             "rootComponent": "ui/markdownView",
