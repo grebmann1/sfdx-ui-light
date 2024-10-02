@@ -9,54 +9,57 @@ const openai = new OpenAI({
 const CHUNK_SIZE = 50;
 
 const CONFIGURATION = {
+    'atlas.en-us.automotive_cloud.meta': {
+        label: 'Automotive Cloud'
+    },
+    'atlas.en-us.retail_api.meta': {
+        label: 'Consumer Goods Cloud'
+    },
     'atlas.en-us.object_reference.meta': {
-        label:'Core Salesforce'
+        label: 'Core Salesforce'
     },
-    'atlas.en-us.salesforce_feedback_management_dev_guide.meta':{
-        label:'Feedback Management'
+    'atlas.en-us.c360a_api.meta': {
+        label: 'Data Cloud'
     },
-    'atlas.en-us.salesforce_scheduler_developer_guide.meta' : {
-        label:'Scheduler'
+    'atlas.en-us.edu_cloud_dev_guide.meta': {
+        label: 'Education Cloud'
     },
-    'atlas.en-us.field_service_dev.meta':{
-        label:'Field Service Lightning'
+    'atlas.en-us.eu_developer_guide.meta': {
+        label: 'Energy and Utilities Cloud'
     },
-    'atlas.en-us.loyalty.meta':{
-        label:'Loyalty'
+    'atlas.en-us.salesforce_feedback_management_dev_guide.meta': {
+        label: 'Feedback Management'
     },
-    'atlas.en-us.psc_api.meta':{
-        label:'Public Sector Cloud'
+    'atlas.en-us.field_service_dev.meta': {
+        label: 'Field Service Lightning'
     },
-    'atlas.en-us.netzero_cloud_dev_guide.meta':{
-        label:'Net Zero Cloud'
+    'atlas.en-us.financial_services_cloud_object_reference.meta': {
+        label: 'Financial Service Cloud'
     },
-    'atlas.en-us.edu_cloud_dev_guide.meta':{
-        label:'Education Cloud'
+    'atlas.en-us.health_cloud_object_reference.meta': {
+        label: 'Health Cloud'
     },
-    'atlas.en-us.automotive_cloud.meta':{
-        label:'Automotive Cloud'
+    'atlas.en-us.loyalty.meta': {
+        label: 'Loyalty'
     },
-    'atlas.en-us.eu_developer_guide.meta':{
-        label:'Energy and Utilities Cloud'
+    'atlas.en-us.mfg_api_devguide.meta': {
+        label: 'Manufacturing Cloud'
     },
-    'atlas.en-us.health_cloud_object_reference.meta':{
-        label:'Health Cloud'
+    'atlas.en-us.netzero_cloud_dev_guide.meta': {
+        label: 'Net Zero Cloud'
     },
-    'atlas.en-us.retail_api.meta':{
-        label:'Consumer Goods Cloud'
+    'atlas.en-us.nonprofit_cloud.meta': {
+        label: 'Non profit Cloud'
     },
-    'atlas.en-us.financial_services_cloud_object_reference.meta':{
-        label:'Financial Service Cloud'
+    'atlas.en-us.psc_api.meta': {
+        label: 'Public Sector Cloud'
     },
-    'atlas.en-us.mfg_api_devguide.meta':{
-        label:'Manufacturing Cloud'
-    },
-    'atlas.en-us.nonprofit_cloud.meta':{
-        label:'Non profit Cloud'
+    'atlas.en-us.salesforce_scheduler_developer_guide.meta': {
+        label: 'Scheduler'
     }
 }
 
-const version = '250.0'
+const version = '252.0'
 const documentMapping = {};
 
 function removeDuplicates(arr, prop) {
@@ -104,7 +107,7 @@ extraDataFromJson = (documentationId,items,result) => {
         if(x.children){
             result = result.concat(extraDataFromJson(documentationId,x.children,[]));
         }else{
-            if((itemId).startsWith('sforce_api_objects_')){
+            if((itemId).startsWith('sforce_api_objects_') || (itemId).startsWith('c360dm_')){
                 result.push(x)
             }
         }

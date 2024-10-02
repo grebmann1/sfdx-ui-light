@@ -12,7 +12,7 @@ const CTA_MODULE = require('./modules/cta.js');
 const proxy = require('./modules/proxy.js');
 
 /** Documentation Temporary Code until a DB is incorporated **/
-const VERSION = process.env.DOC_VERSION || '248.0';
+const VERSION = process.env.DOC_VERSION || '252.0';
 const DATA_DOCUMENTATION = JSON.parse(fs.readFileSync(`./src/documentation/${VERSION}.json`, 'utf-8'));
 
 
