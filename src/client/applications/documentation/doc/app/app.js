@@ -5,55 +5,62 @@ import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'l
 import { connectStore,store,store_application } from 'shared/store';
 import sldsCodeBlock from 'slds/codeBlock';
 
-const OBJECT_PREFIX = 'sforce_api_objects_';
+const PREFIX = {
+    DEFAULT : 'sforce_api_objects_',
+    DATA_CLOUD : 'c360dm_'
+}
+
 const ACCOUNT_ID = 'sforce_api_objects_account';
 const SEPARATOR = '###';
 const DEFAULT_CONFIG = 'atlas.en-us.object_reference.meta'; // 234.0
 const CONFIGURATION = {
+    'atlas.en-us.automotive_cloud.meta': {
+        label: 'Automotive Cloud'
+    },
+    'atlas.en-us.retail_api.meta': {
+        label: 'Consumer Goods Cloud'
+    },
     'atlas.en-us.object_reference.meta': {
-        label:'Core Salesforce'
+        label: 'Core Salesforce'
     },
-    'atlas.en-us.salesforce_feedback_management_dev_guide.meta':{
-        label:'Feedback Management'
+    'atlas.en-us.c360a_api.meta': {
+        label: 'Data Cloud'
     },
-    'atlas.en-us.salesforce_scheduler_developer_guide.meta' : {
-        label:'Scheduler'
+    'atlas.en-us.edu_cloud_dev_guide.meta': {
+        label: 'Education Cloud'
     },
-    'atlas.en-us.field_service_dev.meta':{
-        label:'Field Service Lightning'
+    'atlas.en-us.eu_developer_guide.meta': {
+        label: 'Energy and Utilities Cloud'
     },
-    'atlas.en-us.loyalty.meta':{
-        label:'Loyalty'
+    'atlas.en-us.salesforce_feedback_management_dev_guide.meta': {
+        label: 'Feedback Management'
     },
-    'atlas.en-us.psc_api.meta':{
-        label:'Public Sector Cloud'
+    'atlas.en-us.field_service_dev.meta': {
+        label: 'Field Service Lightning'
     },
-    'atlas.en-us.netzero_cloud_dev_guide.meta':{
-        label:'Net Zero Cloud'
+    'atlas.en-us.financial_services_cloud_object_reference.meta': {
+        label: 'Financial Service Cloud'
     },
-    'atlas.en-us.edu_cloud_dev_guide.meta':{
-        label:'Education Cloud'
+    'atlas.en-us.health_cloud_object_reference.meta': {
+        label: 'Health Cloud'
     },
-    'atlas.en-us.automotive_cloud.meta':{
-        label:'Automotive Cloud'
+    'atlas.en-us.loyalty.meta': {
+        label: 'Loyalty'
     },
-    'atlas.en-us.eu_developer_guide.meta':{
-        label:'Energy and Utilities Cloud'
+    'atlas.en-us.mfg_api_devguide.meta': {
+        label: 'Manufacturing Cloud'
     },
-    'atlas.en-us.health_cloud_object_reference.meta':{
-        label:'Health Cloud'
+    'atlas.en-us.netzero_cloud_dev_guide.meta': {
+        label: 'Net Zero Cloud'
     },
-    'atlas.en-us.retail_api.meta':{
-        label:'Consumer Goods Cloud'
+    'atlas.en-us.nonprofit_cloud.meta': {
+        label: 'Non profit Cloud'
     },
-    'atlas.en-us.financial_services_cloud_object_reference.meta':{
-        label:'Financial Service Cloud'
+    'atlas.en-us.psc_api.meta': {
+        label: 'Public Sector Cloud'
     },
-    'atlas.en-us.mfg_api_devguide.meta':{
-        label:'Manufacturing Cloud'
-    },
-    'atlas.en-us.nonprofit_cloud.meta':{
-        label:'Non profit Cloud'
+    'atlas.en-us.salesforce_scheduler_developer_guide.meta': {
+        label: 'Scheduler'
     }
 }
 
@@ -298,9 +305,9 @@ export default class App extends ToolkitElement {
         const content = this.currentSobject.content;
         let formattedContent = this.cleanContent(content);
         if(!isEmpty(this.filter)){
-            var regex = new RegExp('(?<=>)([^<]*?)(?:'+this.filter+')','gim');
+            var regex = new RegExp('(?<=>)([^<]*?)('+this.filter+')','gim');
             if(regex.test(formattedContent)){
-                formattedContent = formattedContent.toString().replace(regex,`$1<span style="font-weight:Bold; color:blue;">${this.filter}</span>`);
+                formattedContent = formattedContent.toString().replace(regex,`<span style="font-weight:Bold; color:blue;">$2</span>`);
             }
         }
 
@@ -394,8 +401,10 @@ export default class App extends ToolkitElement {
 
     interactWithDiagram = (nodeId) => {
         try{
-            const lookupName = OBJECT_PREFIX+nodeId.split('-')[1].toLowerCase();
-            if(this.items.find(x => x.id === lookupName)){
+            const defaultLookupName     = PREFIX.DEFAULT+nodeId.split('-')[1].toLowerCase();
+            const dataCloudLookupName   = PREFIX.DATA_CLOUD+nodeId.split('-')[1].toLowerCase();
+            const bundleList = [defaultLookupName,dataCloudLookupName];
+            if(this.items.find(x => bundleList.includes(x.id))){
                 this.redirectTo(`${this.documentationId}${SEPARATOR}${lookupName}`);
             }
         }catch(e){
@@ -474,7 +483,6 @@ export default class App extends ToolkitElement {
             items:items,
             header:result
         }
-        //console.log('this.documentMapping[documentationId]',documentationId,this.documentMapping[documentationId]);
     }
 
     extraDataFromJson = (documentationId,items,result) => {
@@ -483,7 +491,7 @@ export default class App extends ToolkitElement {
             if(x.children){
                 result = result.concat(this.extraDataFromJson(documentationId,x.children,[]));
             }else{
-                if((itemId).startsWith('sforce_api_objects_')){
+                if((itemId).startsWith(PREFIX.DEFAULT) || (itemId).startsWith(PREFIX.DATA_CLOUD)){
                     result.push(x)
                 }
             }
@@ -579,11 +587,13 @@ export default class App extends ToolkitElement {
     get articleContainerClass(){
         return classSet('full-page slds-card slds-col')
         .add({
-            //'slds-m-top_small':!this.isResponsive,
-            'slds-25-width':this.displayFilter && this.isResponsive,
-            'slds-100-width':!this.isResponsive || !this.displayFilter
+            //'slds-m-top_small':!this.isResponsive, slds-calculated-width
+            //'slds-25-width':this.displayFilter && this.isResponsive,
+            //'slds-100-width':!this.isResponsive || !this.displayFilter
             //'slds-scrollable_y':this.isResponsive
             //'slds-show_large':this.displayFilter || this.displayMenu
+            'slds-calculated-width':this.displayFilter,
+            'slds-100-width':!this.displayFilter
         }).toString();
     }
 
@@ -596,16 +606,20 @@ export default class App extends ToolkitElement {
     }
 
     get menuContainerClass(){
-        return classSet('slds-flex-column slds-p-left_x-small slds-full-height slds-col min-height-200 slds-size_1-of-1 slds-large-size_1-of-4 background-gray')
+        return classSet('slds-flex-column slds-p-left_x-small slds-full-height slds-col min-height-200 background-gray')
         .add({
+            'slds-size_1-of-1 slds-large-size_1-of-4':this.isResponsive,
+            'slds-size_1-of-4':!this.isResponsive,
             'slds-show':this.displayMenu,
-            'slds-show_large':!this.displayMenu
+            'slds-show_small':!this.displayMenu
         }).toString();
     }
 
     get documentationContainerClass(){
-        return classSet('documentation-container slds-scrollable_y slds-p-horizontal_small slds-flex-column slds-full-height slds-col slds-size_1-of-1 slds-large-size_3-of-4 slds-is-relative')
+        return classSet('documentation-container slds-scrollable_y slds-p-horizontal_small slds-flex-column slds-full-height slds-col slds-is-relative')
         .add({
+            'slds-size_1-of-1 slds-large-size_3-of-4':this.isResponsive,
+            'slds-size_3-of-4':!this.isResponsive,
             //'slds-scrollable_y':!this.isResponsive
             //'slds-show_large':this.displayFilter || this.displayMenu
         }).toString();

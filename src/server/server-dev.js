@@ -76,8 +76,10 @@ app.get('/config',function(req,res){
 app.get('/documentation/search',function(req,res){
     const keywords = req.query.keywords || '';
     const filters = req.query.filters;
-    const mappedResult = {first:[],middle:[],last:[]}
-    DATA_DOCUMENTATION.contents.filter(x => filters.includes(x.documentationId)).forEach(x => {
+    const mappedResult = {first:[],middle:[],last:[]};
+    DATA_DOCUMENTATION.contents
+    .filter(x => filters.includes(x.documentationId))
+    .forEach(x => {
         const _title = (x.title || '').toLowerCase();
         if(_title.startsWith(keywords.toLowerCase())){
             mappedResult.first.push(x);

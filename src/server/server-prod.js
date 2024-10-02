@@ -12,7 +12,7 @@ const CTA_MODULE = require('./modules/cta.js');
 const proxy = require('./modules/proxy.js');
 
 /** Temporary Code until a DB is incorporated **/
-const VERSION = process.env.DOC_VERSION || '248.0';
+const VERSION = process.env.DOC_VERSION || '252.0';
 const DATA_DOCUMENTATION = JSON.parse(fs.readFileSync(`./src/documentation/${VERSION}.json`, 'utf-8'));
 
 /** CTA Documentation **/
@@ -102,8 +102,10 @@ app.get('/version',function(req,res){
 app.get('/documentation/search',function(req,res){
   const keywords = req.query.keywords || '';
   const filters = req.query.filters;
-  const mappedResult = {first:[],middle:[],last:[]}
-  DATA_DOCUMENTATION.contents.filter(x => filters.includes(x.documentationId)).forEach(x => {
+  const mappedResult = {first:[],middle:[],last:[]};
+  DATA_DOCUMENTATION.contents
+  .filter(x => filters.includes(x.documentationId))
+  .forEach(x => {
       const _title = (x.title || '').toLowerCase();
       if(_title.startsWith(keywords.toLowerCase())){
           mappedResult.first.push(x);
