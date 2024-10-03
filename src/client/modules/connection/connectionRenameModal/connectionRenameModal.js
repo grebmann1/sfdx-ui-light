@@ -3,7 +3,7 @@ import Toast from 'lightning/toast';
 import LightningAlert from 'lightning/alert';
 import LightningModal from 'lightning/modal';
 import {renameConfiguration} from 'connection/utils';
-import { isNotUndefinedOrNull,isElectronApp,isChromeExtension,decodeError,checkIfPresent } from "shared/utils";
+import { isEmpty,isNotUndefinedOrNull,isElectronApp,isChromeExtension,decodeError,checkIfPresent } from "shared/utils";
 
 
 const DEFAULT_CATEGORY = {
