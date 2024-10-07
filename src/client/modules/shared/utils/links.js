@@ -61,7 +61,7 @@ export const setupLinks = [
     {label: "Outlook Integration and Sync", link: "/lightning/setup/LightningForOutlookAndSyncSettings/home", section: "Administration > Email", prod: false},
     {label: "Send through External Email Services", link: "/lightning/setup/EmailTransportServiceSetupPage/home", section: "Administration > Email", prod: false},
     {label: "Test Deliverability", link: "/lightning/setup/TestEmailDeliverability/home", section: "Administration > Email", prod: false},
-
+    
     //Platform Tools > Apps
     {label: "App Manager", link: "/lightning/setup/NavigationMenus/home", section: "Platform Tools > Apps", prod: false},
     {label: "AppExchange Marketplace", link: "/lightning/setup/AppExchangeMarketplace/home", section: "Platform Tools > Apps", prod: false},
@@ -364,7 +364,11 @@ export const setupLinks = [
     {label: "Trusted URLs", link: "/lightning/setup/SecurityCspTrustedSite/home", section: "Settings > Security", prod: false},
     {label: "Trusted URLs for Redirects", link: "/lightning/setup/SecurityRedirectWhitelistUrl/home", section: "Settings > Security", prod: false},
     {label: "View Setup Audit Trail", link: "/lightning/setup/SecurityEvents/home", section: "Settings > Security", prod: false},
-
+    // Feature Settings
+    // Feature Settings > Sales 
+    {label: "Territory Models", link: "/lightning/setup/Territory2Models/home", section: "Feature Settings > Sales > Territories", prod: false},
+    {label: "Territory Settings", link: "/lightning/setup/Territory2Settings/home", section: "Feature Settings > Sales > Territories", prod: false},
+    {label: "Territory Types", link: "/lightning/setup/Territory2Types/home", section: "Feature Settings > Sales > Territories", prod: false},
     //Custom Link:
     {label: "Create New Flow", link: "/builder_platform_interaction/flowBuilder.app", section: "Platform Tools > Objects and Fields > New", prod: false},
     {label: "Create New Custom Object", link: "/lightning/setup/ObjectManager/new", section: "Platform Tools > Process Automation", prod: false},

@@ -1,21 +1,25 @@
 const generateItems = (variableName,content,role) => {
     return `aiplatform.ModelsAPI_ChatMessageRequest ${variableName} = new aiplatform.ModelsAPI_ChatMessageRequest();
-        ${variableName}.content = '${escapeApexString(content)}';
+        ${variableName}.content = '${role === 'user' ? instructionFormatted()+'\\n':''}${escapeApexString(content)}';
         ${variableName}.role = '${role}';
         messagesList.add(${variableName});
     `;
 }
 
-const instructionItem = () => {
+const instructionFormatted = () => {
     const instructions = [
-        'Follow these instructions: If the user is asking about a diagram, always return a valid mermaid diagram.',
-        'Avoid using characters that might break the mermaid renderer.'
+        'Follow these instructions:',
+        'Process the request of the user taking the following points into consideration:',
+        '- If the user is asking for a Flow and/or Diagram, return a valid Mermaid Diagram. Avoid using characters that might break the mermaid renderer. Always use the best type of mermaid diagram based on the context.',
+        '- If you need more information from the user, ask the user to provide you more specific informations.',
+        'User Request:'
     ];
-    return `aiplatform.ModelsAPI_ChatMessageRequest initial = new aiplatform.ModelsAPI_ChatMessageRequest();
+    return instructions.join('\\n');
+    /*return `aiplatform.ModelsAPI_ChatMessageRequest initial = new aiplatform.ModelsAPI_ChatMessageRequest();
         initial.content = '${instructions.join('\\n')}';
         initial.role = 'user';
         messagesList.add(initial);
-    `;
+    `;*/
 }
 
 const escapeApexString = (input) => {
@@ -34,7 +38,6 @@ export const chat_template = (model,messages) => {
         request.body = body;
         // Add chat messages to body
         List <aiplatform.ModelsAPI_ChatMessageRequest> messagesList = new List <aiplatform.ModelsAPI_ChatMessageRequest> ();
-        ${instructionItem()}
         ${messages.map((x,index) => generateItems(`item_${index}`,x.content,x.role)).join('')}
         body.messages = messagesList;
         aiplatform.ModelsAPI modelsAPI = new aiplatform.ModelsAPI();

@@ -246,7 +246,7 @@ const einsteinSlice = createSlice({
             //state.tabs = state.tabs.filter(x => x.id != id);
             einsteinModelAdapter.removeOne(state.dialog,id);
             // Assign last tab
-            if(state.dialog.ids.length > 0 && state.currentDialogid == id){
+            if(state.dialog.ids.length > 0 && state.currentDialogId == id){
                 const lastTabId = state.dialog.ids.slice(-1)[0];
                 state.currentDialogId = lastTabId;
                 //state.body = lastTab.body;
