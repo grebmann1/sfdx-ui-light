@@ -163,11 +163,10 @@ export default class App extends ToolkitElement {
                 this._abortingMap[apex.currentTab.id] = null; // Reset the abortingMap`
                 // Update log
                 this.log = this.formatFilterLog(this._response?.debugLog || '');
-                
                 this.header_formatDate();
                 // Handle Error from Salesforce
                 //console.log('this.handleError',!apexState.data.success && !apexState.data.compiled)
-                if(!apexState.data.success && !apexState.data.compiled){
+                if(!apexState.data.success /**&& apexState.data.compiled**/){
                     this.handleError(apexState.data);
                 }
             }else if(apexState.isFetching){
@@ -572,7 +571,7 @@ export default class App extends ToolkitElement {
     }
 
     get isLogDisplayed(){
-        return !isEmpty(this.log);
+        return isNotUndefinedOrNull(this._response); //return !isEmpty(this.log);
     }
 
     get isMetaDisplayed(){
@@ -669,7 +668,7 @@ export default class App extends ToolkitElement {
     }
 
     get rightSlotClass(){
-        return classSet('slds-full-height slds-full-width')
+        return classSet('slds-full-height slds-full-width slds-flex-column')
         .add({
             'apex-illustration':!this.isLogDisplayed
         }).toString();

@@ -4,12 +4,12 @@ import { lowerCaseKey,guid,isNotUndefinedOrNull } from 'shared/utils';
 
 const Schemas = {}
 Schemas.ExecuteAnonymousResult = {
-    column: 'number',
     compileProblem: 'string',
     compiled: 'boolean',
-    exceptionMessage: 'boolean',
-    exceptionStackTrace: 'boolean',
     line: 'number',
+    column: 'number',
+    exceptionMessage: 'string',
+    exceptionStackTrace: 'string',
     success:'boolean',
     // From Header
     debugLog:'string'
@@ -139,6 +139,7 @@ export const executeApexAnonymous = createAsyncThunk(
                 body, 
                 alias: connector.conn.alias,
             }));
+            console.log('res',res);
             return { data: res, body, alias: connector.conn.alias,tabId};
         } catch (err) {
             console.error(err);
