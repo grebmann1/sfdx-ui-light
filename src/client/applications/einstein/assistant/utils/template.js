@@ -1,6 +1,6 @@
 const generateItems = (variableName,content,role) => {
     return `aiplatform.ModelsAPI_ChatMessageRequest ${variableName} = new aiplatform.ModelsAPI_ChatMessageRequest();
-        ${variableName}.content = '${role === 'user' ? instructionFormatted()+'\\n':''}${escapeApexString(content)}';
+        ${variableName}.content = '${role === 'user' ? instructionFormatted()+'\\n """'+escapeApexString(content)+'"""':escapeApexString(content)}';
         ${variableName}.role = '${role}';
         messagesList.add(${variableName});
     `;
@@ -9,10 +9,12 @@ const generateItems = (variableName,content,role) => {
 const instructionFormatted = () => {
     const instructions = [
         'Follow these instructions:',
-        'Process the request of the user taking the following points into consideration:',
-        '- If the user is asking for a Flow and/or Diagram, return a valid Mermaid Diagram. Avoid using characters that might break the mermaid renderer. Always use the best type of mermaid diagram based on the context.',
+        'Process the user request taking the following points into consideration:',
+        '- Try to be precise,technical and provide details in your answer.',
+        '- Whenever it make sense to provide multiple solution, include multiple solution.',
+        '- If the user is asking for a Diagram, return a valid Mermaid Diagram. Avoid using characters that might break the mermaid renderer. Always use the best type of mermaid diagram based on the context.',
         '- If you need more information from the user, ask the user to provide you more specific informations.',
-        'User Request:'
+        'This is the User Request:'
     ];
     return instructions.join('\\n');
     /*return `aiplatform.ModelsAPI_ChatMessageRequest initial = new aiplatform.ModelsAPI_ChatMessageRequest();
