@@ -94,7 +94,7 @@ The SF Toolkit repository provides a comprehensive suite of tools designed for S
 - Nebula Logger Connector for monitoring logs.
 - Full localhost support for the Chrome Extension (currently desktop only due to LWR restrictions).
 
-## Features
+## Platform
 
 ### SF Toolkit Website
 
@@ -111,6 +111,38 @@ The Electron-based desktop application leverages the Salesforce Developer Experi
 The Chrome Extension integrates directly into your browser, offering quick access to SF Toolkit functionalities. It allows you to visualize profiles, manage connections, and export data as CSV or PDF, streamlining Salesforce access management from within the browser.
 
 ![Chrome Extension](./git_images/chrome.png)
+
+## Features Overview
+
+### Feature Availability by Platform
+
+| Category  | Features  | Chrome Extension | Web App | Desktop App  |
+|-----------|-----------|------------------|---------|--------------|
+| **Credentials**| Manage Org Credentials    | ✅                | ✅       | ✅ using SFDX CLI    |
+| **Monitoring** | Org Health Info           | ✅                | ✅       | ✅                  |
+|                | License Utilization       | ✅                | ✅       | ✅                  |
+|                | Limits Monitoring         | ✅                | ✅       | ✅                  |
+| **Documentation** | Data Model            | ✅                | ✅       | ✅                  |
+| **Explorer**   | API Explorer              | ✅                | ✅       | ✅                  |
+|                | Platform Events Explorer  | ✅                | ✅       | ✅                  |
+|                | Metadata Explorer         | ✅                | ✅       | ✅                  |
+|                | SObject Explorer          | ✅                | ✅       | ✅                  |
+| **Tools**      | APEX Editor               | ✅                | ✅       | ✅                  |
+|                | SOQL Editor               | ✅                | ✅       | ✅                  |
+| **AI**         | AI Assistant              | ✅                | ✅       | ✅                  |
+| **Code Analysis** | SFDX Scanner          | ❌                | ❌       | ✅                  |
+|                | Quick Launch VSCode       | ❌                | ❌       | ✅                  |
+|                | PMD                       | ❌                | ❌       | ✅                  |
+| **Configuration** | Tech Debt Management   | ✅                | ✅       | ✅                  |
+
+### Chrome Extension Specific Features Based on Current Page (Context)
+
+| Features             | Chrome Extension |
+|----------------------|------------------|
+| Current Page Context | ✅               |
+| View/Edit Record     | ✅               |
+| Quick Search         | ✅               |
+| Quick Edit Code      | ✅               |
 
 ## Installation and Usage
 

@@ -322,7 +322,7 @@ export async function directConnect(sessionId,serverUrl,extra){
         version     : constant.apiVersion,
         logLevel    : null//'DEBUG',
     }
-    console.log('params',params);
+    //console.log('directConnect',params);
     
     let connection = await new window.jsforce.Connection(params);
 

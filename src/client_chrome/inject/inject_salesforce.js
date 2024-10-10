@@ -117,12 +117,11 @@ const injectOverlay = async () => {
         }
     });
 
-    const test = await loader.init();
-    console.log('test',test);
+    await loader.init();
     // LWC
     const elm = createElement('views-overlay', {is: ViewsOverlay});
     Object.assign(elm, {variant:'overlay'});
-    document.body.appendChild(elm);
+    //document.body.appendChild(elm);
 };
 
 

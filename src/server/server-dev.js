@@ -1,8 +1,8 @@
 require('dotenv').config()
-const express = require('express');
+//const express = require('express');
 const { createServer } =  require("lwr");
 const timeout = require('connect-timeout'); 
-const jsforceAjaxProxy = require("jsforce-ajax-proxy");
+//const jsforceAjaxProxy = require("jsforce-ajax-proxy");
 const jsforce = require('jsforce');
 const qs = require('qs');
 const fs = require('node:fs');
@@ -106,16 +106,17 @@ app.get('/cta/search',function(req,res){
     }));
     res.json(result);
 })
-app.get('/oauth2/callback', function(req, res) {
+app.get('/oauth2/callback', async function(req, res) {
     var code = req.query.code;
     var states = req.query.state.split('#');
     var params = qs.parse(states[1]);
     console.log('callback',code,states,params);
-    var conn = new jsforce.Connection({ oauth2 : getOAuth2Instance(params) });
+    console.log('params',getOAuth2Instance(params));
     
-    conn.authorize(code, function(err, userInfo) {
-      if (err) { return console.error(err); }
-      res.redirect(`/callback#${qs.stringify({ 
+    try{
+        const conn = new jsforce.Connection({ oauth2 : getOAuth2Instance(params) });
+        const userInfo = await conn.authorize(code);
+        res.redirect(`/callback#${qs.stringify({ 
             access_token:   conn.accessToken, 
             instance_url:   conn.instanceUrl,
             refresh_token:  conn.refreshToken,
@@ -123,19 +124,21 @@ app.get('/oauth2/callback', function(req, res) {
             id: userInfo.url,
             state:states[0]
         })}`);
-    });
+    }catch(e){
+        console.log('Error',e);
+        res.redirect('/');
+    }
 });
 
-app.get('/chrome/callback', function(req, res) {
+app.get('/chrome/callback', async function(req, res) {
     var code = req.query.code;
     var states = req.query.state.split('#');
     var params = qs.parse(states[1]);
 
-    var conn = new jsforce.Connection({ oauth2 : getOAuth2Instance(params) });
-    
-    conn.authorize(code, function(err, userInfo) {
-      if (err) { return console.error(err); }
-      res.redirect(`chrome-extension://${CHROME_ID}/callback.html#${qs.stringify({ 
+    try{
+        const conn = new jsforce.Connection({ oauth2 : getOAuth2Instance(params) });
+        const userInfo = await conn.authorize(code);
+        res.redirect(`chrome-extension://${CHROME_ID}/callback.html#${qs.stringify({ 
             access_token:   conn.accessToken, 
             instance_url:   conn.instanceUrl,
             refresh_token:  conn.refreshToken,
@@ -143,7 +146,10 @@ app.get('/chrome/callback', function(req, res) {
             id: userInfo.url,
             state:states[0]
         })}`);
-    });
+    }catch(e){
+        console.log('Error',e);
+        res.redirect('/');
+    }
 });
 
 
