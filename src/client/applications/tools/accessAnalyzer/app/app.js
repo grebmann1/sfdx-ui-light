@@ -650,7 +650,8 @@ export default class App extends ToolkitElement {
                             }
                         });
 
-                        if(configItem.key === 'layouts'){
+                        if(configItem.key === 'layouts' && item?.recordTypes){
+                            // TODO: Check why we can have item.recordTypes === undefined
                             // Run special logic for layouts
                             const children = Object.values(item.recordTypes).map(recordType => {
                                 const permissionKey = `${item.name}-${recordType.id}`; // to be replaced in the SF method
