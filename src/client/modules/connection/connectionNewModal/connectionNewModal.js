@@ -224,12 +224,11 @@ export default class ConnectionNewModal extends LightningModal {
     standard_oauth = async () => {
         //console.log('standard_oauth');
         const _oauthMethod = isChromeExtension()?oauth_chrome:oauth;
-        console.log('this.alias',this.alias);
+        
         _oauthMethod({
             alias:this.alias,
             loginUrl:this.loginUrl,
         },(res) => {
-            console.log('res',res);
             this.close(res);
         },(e) => {
             this.notifyUser('OAuth Error', e.message, 'error');

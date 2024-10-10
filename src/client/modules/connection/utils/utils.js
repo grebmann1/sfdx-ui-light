@@ -230,16 +230,17 @@ export async function oauth({alias,loginUrl},callback,callbackErrorHandler){
     //console.log('oauth');
     window.jsforce.browserClient = new window.jsforce.BrowserClient(Date.now()); // Reset
     //console.log('window.jsforceSettings',window.jsforceSettings);
-    window.jsforce.browserClient.init(window.jsforceSettings);
+    window.jsforce.browserClient.init({
+        ...window.jsforceSettings,
+        loginUrl,
+        version:constant.apiVersion
+    });
     window.jsforce.browserClient.on('connect', async (connection) =>{
         console.log('new connection',connection)
         oauth_extend({alias,connection},callback);
     });
 
     window.jsforce.browserClient.login({
-        ...window.jsforceSettings,
-        loginUrl,
-        version:constant.apiVersion,
         scope:FULL_SCOPE
     }).then(res => {
         //console.log('res',res);
