@@ -1,13 +1,24 @@
 import {isUndefinedOrNull} from "shared/utils";
 import {getConfiguration} from "./utils";
 
+import * as webInterface from './web';
+
 export const generateAccessToken = async ({alias}) => {
-    const conn = await basicConnection({alias});
-    const jwt = await conn.oauth2.refreshToken(conn.refreshToken);
-    return {
-        ...jwt,
-        frontDoorUrl:jwt.instance_url+'/secur/frontdoor.jsp?sid='+jwt.access_token
+    let {conn,configuration} = await basicConnection({alias});
+    try{
+        const jwt = await conn.oauth2.refreshToken(conn.refreshToken);
+        return {
+            ...jwt,
+            frontDoorUrl:jwt.instance_url+'/secur/frontdoor.jsp?sid='+jwt.access_token
+        }
+    }catch(e){
+        Object.assign(configuration,{
+            _hasError :true,
+            _errorMessage:  e.message
+        });
+        await webInterface.saveConfiguration(alias,configuration);
     }
+    return null;
 }
 
 export const basicConnection = async ({alias}) => {
@@ -34,5 +45,8 @@ export const basicConnection = async ({alias}) => {
         }
     }
 
-    return new window.jsforce.Connection(params);
+    return {
+        conn:new window.jsforce.Connection(params),
+        configuration:settings,
+    };
 }

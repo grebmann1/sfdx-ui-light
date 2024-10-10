@@ -38,6 +38,13 @@
 
             </div>
         </div>
+        <div class="slds-col slds-size_1-of-1">
+            <p class="card-title slds-truncate">
+                <span class="slds-text-title">
+                    <lightning-formatted-rich-text value={username} disable-linkify></lightning-formatted-rich-text>
+                </span>
+            </p>
+        </div>
         <template lwc:if={isErrorDisplayed}>
             <!-- Display Error -->
             <p class="card-title">
@@ -50,12 +57,5 @@
                 <lightning-button class="slds-m-left_x-small" variant="base" label="Authorize Org" onclick={handleEventClick} data-event="login"></lightning-button>
             </p>
         </template>
-        <div class="slds-col slds-size_1-of-1">
-            <p class="card-title slds-truncate">
-                <span class="slds-text-title">
-                    <lightning-formatted-rich-text value={username} disable-linkify></lightning-formatted-rich-text>
-                </span>
-            </p>
-        </div>
     </div>
 </template>

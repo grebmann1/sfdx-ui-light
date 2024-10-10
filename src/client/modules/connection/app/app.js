@@ -230,19 +230,21 @@ export default class App extends ToolkitElement {
 
     authorizeExistingOrg = async (row) => {
         if(isElectronApp()) return;
-
+        this.isLoading = true;
         let {alias,loginUrl,...settings} = this.data.find(x => x.id == row.id);
-        store.dispatch(APPLICATION.reduxSlice.actions.startLoading({message:`Authorizing ${alias}`}));
+        //store.dispatch(APPLICATION.reduxSlice.actions.startLoading({message:`Authorizing ${alias}`}));
         const _oauthMethod = isChromeExtension()?oauth_chrome:oauth;
 
         _oauthMethod(
             {alias,loginUrl},
             async (res) => {
                 await this.fetchAllConnections();
-                store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
+                //store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
+                this.isLoading = false;
             },(e) => {  
                 console.error(e);
-                store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
+                this.isLoading = false;
+                //store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
             }
         );
     }
