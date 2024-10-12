@@ -93,11 +93,7 @@ export default (args) => {
                         {
                             src: path.resolve(__dirname, 'src/client/assets/images/'),
                             dest: path.resolve(__dirname, 'chrome_ext/assets'),
-                        },
-                        {
-                            src: path.resolve(__dirname, 'node_modules/monaco-editor/min/vs/'),
-                            dest: path.resolve(__dirname, 'chrome_ext/assets/libs/monaco-editor'),
-                        },
+                        }
                     ],
                     copyOnce: true,
                 }),
