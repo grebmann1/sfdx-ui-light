@@ -94,8 +94,8 @@ const injectShortCuts = async () => {
 
 
 const injectOverlay = async () => {
-    console.log('injectOverlay');
     const isEnabled = (await chrome.storage.sync.get('overlayEnabled')).overlayEnabled;
+    console.log('injectOverlay',isEnabled);
     if(!isEnabled) return;
     // Style
     const styles = [

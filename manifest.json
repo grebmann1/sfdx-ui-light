@@ -50,6 +50,7 @@
         {
             "matches": [
                 "https://*.salesforce.com/*",
+                "https://*.salesforce-setup.com/*",
                 "https://*.lightning.force.com/*",
                 "https://*.salesforce.mil/*",
                 "https://*.lightning.force.mil/*"
