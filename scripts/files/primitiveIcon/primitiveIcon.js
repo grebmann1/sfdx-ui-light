@@ -1,4 +1,5 @@
-import { LightningElement, api } from 'lwc';
+import { api } from 'lwc';
+import LightningShadowBaseClass from 'lightning/shadowBaseClassPrivate';
 import { classSet } from 'lightning/utils';
 import { normalizeString as normalize, isCSR } from 'lightning/utilsPrivate';
 
@@ -9,7 +10,10 @@ import { getName, isValidName } from 'lightning/iconUtils';
 import dir from '@salesforce/i18n/dir';
 import { fetchIconLibrary, hasIconLibrary, getIconLibrary } from './fetch';
 
-export default class LightningPrimitiveIcon extends LightningElement {
+export default class LightningPrimitiveIcon extends LightningShadowBaseClass {
+
+    static stylesheets = [iconStylesheets] // stylesheets that apply to every rendered template
+
     @api src;
     @api svgClass;
     _size = 'medium';
@@ -102,15 +106,11 @@ export default class LightningPrimitiveIcon extends LightningElement {
                     const template =
                         this._iconLibrary[`${spriteName}_${iconName}`];
                     
-                    if (template) {
-                        // manually attach the stylesheets in native shadow mode
-                        if (!this.template.synthetic) {
-                            template.stylesheets = iconStylesheets;
-                        }
+                   if (template) {
                         return template;
                     }*/
                     this._manualHref = `/assets/icons/${spriteName}-sprite/svg/symbols.svg#${iconName}`;
-                }
+               }
             }
         }
         return standardTemplate;

@@ -1,5 +1,5 @@
 import { LightningElement,api,track } from "lwc";
-import { isEmpty,runActionAfterTimeOut } from 'shared/utils';
+import { isEmpty,runActionAfterTimeOut,guid } from 'shared/utils';
 
 export default class CodeBlock extends LightningElement {
 
@@ -184,10 +184,8 @@ export default class CodeBlock extends LightningElement {
         try{
 			el.innerHTML 	  = this._codeBlock;
             const diagramText = this.fixDiagram(el.innerText);
-            //console.log('diagramText');
-            //console.log(diagramText);
             if(await mermaid.parse(diagramText)){
-                const { svg } = await window.mermaid.render('graphDiv',diagramText);
+                const { svg } = await window.mermaid.render(`id-${guid()}`,diagramText); // 'graphDiv'
                 el.innerHTML = svg;
             }else{
                 console.log('Invalid format')

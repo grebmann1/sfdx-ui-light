@@ -168,6 +168,7 @@ export default class Sobject extends ToolkitElement {
         ]; //aggregatable
 
         if (this.tableFieldInstance) {
+            console.log('this.tableFieldInstance',this.tableFieldInstance);
 			this.tableFieldInstance.destroy();
 		}
 

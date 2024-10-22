@@ -1,7 +1,7 @@
 <template>
     <!-- Container -->
     <template lwc:if={isLoading}>
-        <lightning-spinner alternative-text="Loading"></lightning-spinner>
+        <slds-spinner message="Loading SObject informations" alternative-text="Loading"></slds-spinner>
     </template>
     <template lwc:elseif={isNoRecord}>
         <illustration-empty title="No record" sub-title={noRecordMessage}></illustration-empty>
@@ -184,9 +184,9 @@
                                             onchange={handleFieldsFilter}
                                         ></lightning-input>
                                         <template lwc:if={isTableLoading}>
-                                            <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                                            <slds-spinner message="Loading Metadata" alternative-text="Loading" class="slds-is-relative"></slds-spinner>
                                         </template>
-                                        <div lwc:dom="manual" class="custom-table"></div>
+                                        <div lwc:dom="manual" class="custom-table-fields"></div>
                                     </div>
                                 </div>
                             </div>
@@ -211,7 +211,7 @@
                                             onchange={handleChildFilter}
                                         ></lightning-input>
                                         <template lwc:if={isTableLoading}>
-                                            <lightning-spinner alternative-text="Loading" class="slds-is-relative"></lightning-spinner>
+                                            <slds-spinner message="Loading Metadata" alternative-text="Loading" class="slds-is-relative"></slds-spinner>
                                         </template>
                                         <div lwc:dom="manual" class="custom-table-child"></div>
                                     </div>

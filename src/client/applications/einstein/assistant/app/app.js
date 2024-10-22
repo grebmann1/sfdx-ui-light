@@ -191,6 +191,7 @@ export default class App extends ToolkitElement {
         return this.dialogs.map((x,index) => {
             return {
                 ...x,
+                key:x.id || index, // Facing some issues with Id being null. To investigate
                 name:`Dialog ${index + 1}`,
                 isCloseable:this.dialogs.length > 1,
                 class:classSet('slds-tabs_scoped__item').toString()
