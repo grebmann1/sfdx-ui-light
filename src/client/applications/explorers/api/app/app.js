@@ -68,6 +68,10 @@ export default class App extends ToolkitElement {
     connectedCallback(){
         this.isFieldRendered = true;
         store.dispatch((dispatch, getState) => {
+            dispatch(API.reduxSlice.actions.updateCurrentApiVersion({
+                alias:this.alias,
+                version:this.currentApiVersion
+            }));
             dispatch(API.reduxSlice.actions.loadCacheSettings({
                 alias:this.alias,
                 apiFiles:getState().apiFiles
@@ -567,7 +571,7 @@ export default class App extends ToolkitElement {
     /** Tabs */
 
     handleAddTab = (e) => {
-        const tab = generateDefaultTab(this.connector.conn.version);
+        const tab = generateDefaultTab(this.currentApiVersion);
         store.dispatch(API.reduxSlice.actions.addTab({tab}));
     }
 
@@ -608,7 +612,7 @@ export default class App extends ToolkitElement {
                 // Existing tab
                 store.dispatch(API.reduxSlice.actions.selectionTab(existingTab));
             }else{
-                const tab = generateDefaultTab(this.connector.conn.version);
+                const tab = generateDefaultTab(this.currentApiVersion);
                     tab.body = extra.body;
                     tab.header = extra.header;
                     tab.method = extra.method;
@@ -618,7 +622,7 @@ export default class App extends ToolkitElement {
             }
         }else if(category === CATEGORY_STORAGE.RECENT){
             // Open in new tab
-            const tab = generateDefaultTab(this.connector.conn.version);
+            const tab = generateDefaultTab(this.currentApiVersion);
                 tab.body = extra.body;
                 tab.header = extra.header;
                 tab.method = extra.method;
@@ -638,6 +642,10 @@ export default class App extends ToolkitElement {
     }
 
     /** Getters */
+
+    get currentApiVersion(){
+        return this.connector.conn.version || '60.0';
+    }
 
     get formattedTabs(){
         return this.tabs.map((x,index) => {

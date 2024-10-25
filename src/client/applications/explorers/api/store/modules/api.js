@@ -4,10 +4,10 @@ import { DEFAULT, generateDefaultTab,formattedContentType } from 'api/utils';
 import { SELECTORS,DOCUMENT } from 'core/store';
 
 const API_SETTINGS_KEY = 'API_SETTINGS_KEY';
-
+const DEFAULT_API_VERSION = '60.0';
 const INITIAL_TABS = [
     enrichTab(
-        generateDefaultTab(),
+        generateDefaultTab(DEFAULT_API_VERSION),
         null
     )
 ];
@@ -178,7 +178,8 @@ const apiSlice = createSlice({
         body:null,
         method:null,
         endpoint:null,
-        header:null
+        header:null,
+        currentApiVersion:DEFAULT_API_VERSION
     },
     reducers: {
         loadCacheSettings : (state,action) => {
@@ -224,6 +225,10 @@ const apiSlice = createSlice({
             }
             
         },
+        updateCurrentApiVersion :(state, action) => {
+            const { version } = action.payload;
+            state.currentApiVersion = version || DEFAULT_API_VERSION;
+        },
         updateRecentPanel :(state, action) => {
             const { value,alias } = action.payload;
             state.recentPanelToggled = value === true;
@@ -253,7 +258,7 @@ const apiSlice = createSlice({
                         formatTab({...state.tabs[tabIndex],fileId}),{apiFiles},SELECTORS.apiFiles
                     );
                 }else{
-                    enrichedTab = enrichTab(generateDefaultTab(),null);
+                    enrichedTab = enrichTab(generateDefaultTab(state.currentApiVersion),null);
                 }
                 state.tabs[tabIndex] = enrichedTab;
                 state.currentTab = enrichedTab;
