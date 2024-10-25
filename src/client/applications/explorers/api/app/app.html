@@ -25,7 +25,7 @@
                         icon-name="utility:refresh" 
                         onclick={reset_click} 
                         label="Reset" 
-                        disabled={isLoading}
+                        disabled={isApiRunning}
                     ></lightning-button>
                     <lightning-button-icon-stateful 
                         class="slds-p-left_xx-small" 
@@ -43,7 +43,7 @@
                         dropdown-alignment="left"
                         value={method}
                         placeholder="Method"
-                        disabled={isLoading}
+                        disabled={isApiRunning}
                         options={method_options}
                         onchange={method_change}
                     ></lightning-combobox>
@@ -53,6 +53,7 @@
                         type="text" 
                         value={endpoint}
                         onchange={endpoint_change}
+                        disabled={isApiRunning}
                     ></lightning-input>
                 </div>
 

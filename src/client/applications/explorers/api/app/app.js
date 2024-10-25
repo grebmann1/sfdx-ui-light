@@ -115,9 +115,7 @@ export default class App extends ToolkitElement {
         // Variables (Need to handle some exceptions)
         if(this.body != api.body){
             this.body = api.body;
-            if(this._hasRendered && this.refs.bodyEditor && this.refs.bodyEditor.currentModel){
-                this.refs.bodyEditor.currentModel.setValue(this.body);
-            }
+            this.updateBodyEditor();
         }
         if(this.method != api.method){
             this.method = api.method;
@@ -376,6 +374,18 @@ export default class App extends ToolkitElement {
         this.executionEndDate = null;
     }
 
+    updateContentEditor = () => {
+        if(!this._hasRendered || !this.refs.contentEditor || isUndefinedOrNull(this.currentModel) || isUndefinedOrNull(this.refs.contentEditor.currentModel)) return;
+        this.refs.contentEditor.currentModel.setValue(this.formattedContent);
+        this.refs.contentEditor.currentMonaco.editor.setModelLanguage(this.refs.contentEditor.currentModel, formattedContentType(this.contentType));
+    }
+
+    updateBodyEditor = () => {
+        if(!this._hasRendered || !this.refs.bodyEditor || !this.refs.bodyEditor.currentModel) return;
+        this.refs.bodyEditor.currentModel.setValue(this.body);
+        this.refs.bodyEditor.currentMonaco.editor.setModelLanguage(this.refs.bodyEditor.currentModel, autoDetectAndFormat(this.body) || 'txt');
+    }
+
     // Loading
     
     loading_formatDate = (createdDate) => {
@@ -410,11 +420,7 @@ export default class App extends ToolkitElement {
         this.refs.contentEditor.displayModel(this.currentModel);
     }
 
-    updateContentEditor = () => {
-        if(!this._hasRendered || !this.refs.contentEditor || isUndefinedOrNull(this.currentModel) || isUndefinedOrNull(this.refs.contentEditor.currentModel)) return;
-        this.refs.contentEditor.currentModel.setValue(this.formattedContent);
-        this.refs.contentEditor.currentMonaco.editor.setModelLanguage(this.refs.contentEditor.currentModel, formattedContentType(this.contentType));
-    }
+    
 
 
     viewer_handleChange = (e) => {
@@ -688,19 +694,19 @@ export default class App extends ToolkitElement {
     }
 
     get isUndoDisabled(){
-        return this.actionPointer <= 0;
+        return this.actionPointer <= 0 || this.isApiRunning;
     }
 
     get isRedoDisabled(){
-        return this.actionPointer >= this.actions.length - 1;
+        return this.actionPointer >= this.actions.length - 1 || this.isApiRunning;
     }
 
     get isBodyDisabled(){
-        return this.method == METHOD.GET || this.method == METHOD.DELETE || this.isLoading;
+        return this.method == METHOD.GET || this.method == METHOD.DELETE || this.isLoading || this.isApiRunning;
     }
 
     get isHeaderDisabled(){
-        return this.isLoading;
+        return this.isLoading || this.isApiRunning;
     }
 
     get isBodyDisplayed(){

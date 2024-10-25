@@ -98,7 +98,6 @@ function addAction({state,tabId,request,response}){
 
 export const apiAdapter = createEntityAdapter();
 const _executeApiRequest = (connector,request,formattedRequest) => {
-    console.log('---> _executeApiRequest',formattedRequest);
     //console.log('connector,body,headers',connector,body,headers);
     return new Promise((resolve,reject) => {
         try{
@@ -106,7 +105,6 @@ const _executeApiRequest = (connector,request,formattedRequest) => {
             const executionStartDate = new Date();
             const instance = connector.conn.httpApi();
                 instance.on('response', async (res) => {
-                    console.log('response',res);
                     
                     // Set Response variables
                     let content = res.body;
@@ -144,7 +142,6 @@ export const executeApiRequest = createAsyncThunk(
         //console.log('connector, body,tabId',connector, body,tabId);
         //const apiPath = isAllRows ? '/queryAll' : '/query';
         try {
-            console.log('executeApiRequest init')
             const response = await _executeApiRequest(connector,request,formattedRequest);
             // Add to Recent Panel :
             dispatch(DOCUMENT.reduxSlices.RECENT.actions.saveApi({
@@ -268,7 +265,6 @@ const apiSlice = createSlice({
         addTab:(state,action) => {
             const { apiFiles,tab } = action.payload;
             const enrichedTab = enrichTab(formatTab(tab),{apiFiles},SELECTORS.apiFiles);
-            console.log('enrichedTab',enrichedTab);
             state.tabs.push(enrichedTab);
             // Assign new tab
             state.currentTab = enrichedTab;
