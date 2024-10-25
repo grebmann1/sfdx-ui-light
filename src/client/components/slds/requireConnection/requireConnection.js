@@ -16,7 +16,7 @@ export default class RequireConnection extends ToolkitElement {
     goToConnection = () => {
         navigate(this.navContext,{
             type:'application',
-            attributes:{
+            state:{
                 applicationName:'connections',
             }
         });

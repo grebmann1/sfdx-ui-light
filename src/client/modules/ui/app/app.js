@@ -99,11 +99,11 @@ export default class App extends LightningElement {
     handleNavigation(pageRef){
         this.targetPage = pageRef;
         if(!this.pageHasLoaded) return;
-        const {type, attributes} = pageRef;
+        const {type, state} = pageRef;
         switch(type){
             case 'home':
             case 'application':
-                const formattedApplicationName = (attributes.applicationName || '').toLowerCase();
+                const formattedApplicationName = (state.applicationName || '').toLowerCase();
                 const target = APP_LIST.find(x => x.path === formattedApplicationName);
                 if(isNotUndefinedOrNull(target)){
                     this.handleApplicationSelection(target.name);
@@ -163,7 +163,7 @@ export default class App extends LightningElement {
     handleLogout = () => {
         // Reset Applications
         this.applications = this.applications.filter(x => x.name == 'home/app');
-        navigate(this.navContext,{type:'application',attributes:{applicationName:'connections'}});
+        navigate(this.navContext,{type:'application',state:{applicationName:'connections'}});
     }
 
     handleLogoutClick = (e) => {
@@ -296,7 +296,7 @@ export default class App extends LightningElement {
                 // This method use LWR redirection or window.location based on the url ! 
                 handleRedirect(this.navContext,this.redirectUrl);
             }else{
-                navigate(this.navContext,{type:'application',attributes:{applicationName:'org'}}); // org is the default
+                navigate(this.navContext,{type:'application',state:{applicationName:'org'}}); // org is the default
             }
         }catch(e){
             console.error(e);

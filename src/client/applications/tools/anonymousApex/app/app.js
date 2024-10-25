@@ -106,9 +106,8 @@ export default class App extends ToolkitElement {
 
     renderedCallback(){
         this._hasRendered = true;
-
-        if(this._hasRendered && this.template.querySelector('slds-tabset')){
-            this.template.querySelector('slds-tabset').activeTabValue = this.currentTab?.id;
+        if(this.refs.apexTab){
+            this.refs.apexTab.activeTabValue = this.currentTab?.id;
         }
     }
 
@@ -255,9 +254,9 @@ export default class App extends ToolkitElement {
         },{timeout:20});
     }
 
-    handleAddTab = (e) => {
+    /*handleAddTab = (e) => {
         this.refs.editor.addFiles([this.generateEmptyFile()]);
-    }
+    }*/
 
     debug_handleChange = (e) => {
         //this.debug[e.currentTarget.dataset.key] = e.detail.value;
@@ -277,13 +276,6 @@ export default class App extends ToolkitElement {
     toggle_filterUserDebug = (e) => {
         store.dispatch(APEX.reduxSlice.actions.updateFilterDebug({
             value:!this.isFilterUserDebugEnabled,
-            alias:this.alias
-        }));
-    }
-
-    toggle_recent = (e) => {
-        store.dispatch(APEX.reduxSlice.actions.updateRecentPanel({
-            value:!this.isRecentToggled,
             alias:this.alias
         }));
     }

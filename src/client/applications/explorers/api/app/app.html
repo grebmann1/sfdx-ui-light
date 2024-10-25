@@ -4,7 +4,22 @@
             <builder-header slot="header" title="Light API Explorer" sub-title="API Explorer" icon-name="standard:user">
                 <div slot="actions" class="slds-builder-toolbar__actions">
                     
-                    
+                    <lightning-button-icon 
+                        icon-name="utility:undo" 
+                        onclick={undo_click} 
+                        label="Undo"
+                        variant="border-filled"
+                        disabled={isUndoDisabled}
+                    ></lightning-button-icon>
+
+                    <lightning-button-icon 
+                        class="slds-m-left_small"
+                        icon-name="utility:redo" 
+                        onclick={redo_click} 
+                        label="Redo"
+                        variant="border-filled"
+                        disabled={isRedoDisabled}
+                    ></lightning-button-icon>
                     <lightning-button 
                         class="slds-m-left_small"
                         icon-name="utility:refresh" 
@@ -12,15 +27,14 @@
                         label="Reset" 
                         disabled={isLoading}
                     ></lightning-button>
-
-                    <lightning-button
-                        class="slds-m-left_small"
-                        icon-name="utility:apex" 
-                        onclick={executeAPI} 
-                        label="Execute API" 
-                        variant="brand"
-                        disabled={isExecuteApiDisabled}
-                    ></lightning-button>
+                    <lightning-button-icon-stateful 
+                        class="slds-p-left_xx-small" 
+                        selected={isRecentToggled} 
+                        variant="border-filled" 
+                        icon-name="utility:budget_period" 
+                        size="large" 
+                        onclick={handleRecentToggle}
+                    ></lightning-button-icon-stateful>
                 </div>
                 <div slot="meta" class="slds-flex-row slds-align-flex-end">
                     <lightning-combobox lwc:ref="method" 
@@ -43,19 +57,20 @@
                 </div>
 
                 <div slot="subactions" class="slds-builder-toolbar__actions">
-                    <lightning-button-icon 
-                        icon-name="utility:undo" 
-                        onclick={undo_click} 
-                        label="Undo" 
-                        disabled={isUndoDisabled}
-                    ></lightning-button-icon>
-                    <lightning-button-icon 
+                    <lightning-button 
+                        class="slds-p-left_xx-small" 
+                        label={i18n.EDITOR_PANEL_SAVE} 
+                        onclick={handleSaveClick} 
+                        disabled={isSaveButtonDisabled}
+                    ></lightning-button>
+                    <lightning-button
                         class="slds-m-left_small"
-                        icon-name="utility:redo" 
-                        onclick={redo_click} 
-                        label="Redo" 
-                        disabled={isRedoDisabled}
-                    ></lightning-button-icon>
+                        icon-name="utility:apex" 
+                        onclick={executeAPI} 
+                        label="Execute API" 
+                        variant="brand"
+                        disabled={isExecuteApiDisabled}
+                    ></lightning-button>
                 </div>
 
                 <template lwc:if={isMetaDisplayed}>
@@ -66,13 +81,21 @@
                 </template>
             </builder-header>
             <article class="full-page-body slds-card">
-                <div class="slds-full-height slds-api-container full-page-body">
-                    <slds-split-view left-min-width="200" right-min-width="200" is-horizontal>
+                <div class="slds-flex-column slds-full-height slds-api-container full-page-body">
+                    <!-- Tabs -->
+                    <slds-tabset lwc:ref="requestTab" variant="scoped" class="slds-without-tab" active-tab-value={currentTab} onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled is-remove-tab-event-disabled>
+                        <template for:each={formattedTabs} for:item="item">
+                            <slds-tab key={item.id} label={item.name} value={item.id} onactive={handleSelectTab} is-closeable={item.isCloseable} is-draft={item.isDraft}></slds-tab>
+                        </template>
+                    </slds-tabset>
+                    <!-- Content -->
+                    <slds-split-view class="slds-fill-height" left-min-width="200" right-min-width="200" is-horizontal>
                         <div class="bottom-left-panel slds-p-around_small slds-full-height slds-full-width" slot="left">
                             <div class="slds-full-height slds-flex-column slds-full-width">
-                                <slds-information-block title="Header Information">
+                                <slds-information-block title="Information">
                                     <p>Only enter 1 header setting per line following this format :</p>
                                     <p>header_name : header_value </p>
+                                    <p>The <span class="slds-text-title_bold">&#123;sessionId&#125;</span> variable can be passed in the body (Helpfull for SOAP)</p>
                                 </slds-information-block>
                                 <div class="slds-form-element">
                                     <label class="slds-text-title_bold slds-form-element__label">Header</label>
@@ -84,7 +107,7 @@
                                 </div>
                                 <div class="slds-form-element slds-fill-height slds-flex-column">
                                     <label class="slds-text-title_bold slds-form-element__label">Body</label>
-                                    <div class="slds-form-element__control slds-full-height">
+                                    <div class="slds-form-element__control slds-fill-height">
                                         <!--
                                         <textarea class="slds-textarea slds-text-longform slds-textarea-body" placeholder="Write body here" disabled={isBodyDisabled} oninput={body_change}>
                                             {body}
@@ -106,11 +129,8 @@
                             
                             <div class="slds-grid slds-wrap slds-full-height slds-is-relative">
                                 <div class="slds-col slds-size_1-of-1">
-                                    <template lwc:if={isLoading}>
-                                        <slds-spinner 
-                                            alternative-text="Loading" 
-                                            size="small" 
-                                        ></slds-spinner>
+                                    <template lwc:if={isApiRunning}>
+                                        <slds-spinner message={_loadingMessage}></slds-spinner>
                                     </template>
                                     <template lwc:elseif={isContentDisplayed}>
 
@@ -122,9 +142,9 @@
                                         </div>
                                         <!-- Viewers (Body, Headers , etc) -->
                                         <div>
-                                            <lightning-tabset variant="scoped" class="slds-without-tab" active-tab-value={tab_normalizedCurrent}>
-                                                <lightning-tab label={PAGE_CONFIG.TABS.BODY} value={PAGE_CONFIG.TABS.BODY}  onactive={handleSelectTab}></lightning-tab>
-                                                <lightning-tab label={PAGE_CONFIG.TABS.HEADERS} value={PAGE_CONFIG.TABS.HEADERS}     onactive={handleSelectTab}></lightning-tab>
+                                            <lightning-tabset lwc:ref="resultTab" variant="scoped" class="slds-without-tab" active-tab-value={tab_normalizedCurrent}>
+                                                <lightning-tab label={PAGE_CONFIG.TABS.BODY} value={PAGE_CONFIG.TABS.BODY}  onactive={viewer_handleSelectTab}></lightning-tab>
+                                                <lightning-tab label={PAGE_CONFIG.TABS.HEADERS} value={PAGE_CONFIG.TABS.HEADERS}     onactive={viewer_handleSelectTab}></lightning-tab>
                                             </lightning-tabset>
                                         </div>
                                         <!-- BODY Section-->
@@ -213,6 +233,19 @@
                     </slds-split-view>
                 </div>
             </article>
+            <!-- RECENT Anonymous Apex -->
+            <builder-storage-panel 
+                title="API List" 
+                is-open={isRecentToggled} 
+                recent-title={i18n.API_LIST_PANEL_RECENT}
+                recent-items={recentApiItems} 
+                saved-items={savedApiItems}
+                saved-title={i18n.API_LIST_PANEL_SAVED}
+                onclose={handleRecentToggle}
+                onremoveitem={handleRemoveItem}
+                onselectitem={handleSelectItem}
+            ></builder-storage-panel>
+
         </builder-editor>
     </div>
 

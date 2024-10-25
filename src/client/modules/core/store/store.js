@@ -21,9 +21,10 @@ const store = configureStore({
         platformEvent : EVENT.reduxSlice.reducer,
         api : API.reduxSlice.reducer,
         einstein: EINSTEIN.reduxSlice.reducer,
-        queryFiles : DOCUMENT.reduxSlices.QUERYFILE.reducer,
-        apexFiles : DOCUMENT.reduxSlices.APEXFILE.reducer,
-        recents : DOCUMENT.reduxSlices.RECENT.reducer
+        queryFiles  : DOCUMENT.reduxSlices.QUERYFILE.reducer,
+        apexFiles   : DOCUMENT.reduxSlices.APEXFILE.reducer,
+        apiFiles    : DOCUMENT.reduxSlices.APIFILE.reducer,
+        recents     : DOCUMENT.reduxSlices.RECENT.reducer
     },
     middleware: (getDefaultMiddleware) => {
         let middlewares = getDefaultMiddleware({
@@ -72,7 +73,9 @@ export const SELECTORS = {
     queries:QUERY.queryAdapter.getSelectors((state) => state.query),
     platformEvents:EVENT.platformEventAdapter.getSelectors((state) => state.platformEvent.subscriptions),
     apex:APEX.apexAdapter.getSelectors((state) => state.apex.apex), // Not using the standard -> So it's Apex (Slice) then Apex variable
+    api:API.apiAdapter.getSelectors((state) => state.api.api), // Not using the standard -> So it's Apex (Slice) then Apex variable
     einstein:EINSTEIN.einsteinModelAdapter.getSelectors((state) => state.einstein.dialog),
     queryFiles:DOCUMENT.queryFileAdapter.getSelectors((state) => state.queryFiles),
     apexFiles:DOCUMENT.apexFileAdapter.getSelectors((state) => state.apexFiles),
+    apiFiles:DOCUMENT.apiFileAdapter.getSelectors((state) => state.apiFiles),
 }

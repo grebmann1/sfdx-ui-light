@@ -50,7 +50,7 @@ export default class Header extends LightningElement {
     selectTab = (e) => {
         const target = e.currentTarget.dataset.path;
         if(!isEmpty(target)){
-            navigate(this.navContext,{type:'application',attributes:{applicationName:target}});
+            navigate(this.navContext,{type:'application',state:{applicationName:target}});
         }else{
             navigate(this.navContext,{type:'home'});
         }
@@ -65,7 +65,7 @@ export default class Header extends LightningElement {
         this.dispatchEvent(new CustomEvent("tabdelete",{detail:{id:applicationId}}));
         // Navigate
         if(index > 0){
-            navigate(this.navContext,{type:'application',attributes:{applicationName:filteredTabs[index - 1].path} });
+            navigate(this.navContext,{type:'application',state:{applicationName:filteredTabs[index - 1].path} });
         }else{
             navigate(this.navContext,{type:'home'});
         }

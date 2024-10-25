@@ -253,7 +253,7 @@ export default class Sobject extends ToolkitElement {
             const referenceTo = data?.referenceTo?.length > 0 ? data.referenceTo[0]:null; // We take only 1 for now
             if(this.objectRecords.find(x => x.name == referenceTo)){
                 config.urlLabel     = referenceTo;
-                config.urlLink      = 'sftoolkit:'+JSON.stringify({type:'application',attributes:{applicationName:'sobject',attribute1:referenceTo}});
+                config.urlLink      = 'sftoolkit:'+JSON.stringify({type:'application',state:{applicationName:'sobject',attribute1:referenceTo}});
             } 
         }
 

@@ -34,12 +34,12 @@ export default class Menu extends ToolkitElement {
         this.updateMenuItemFromNavigation(pageRef);
     }
 
-    updateMenuItemFromNavigation = async ({attributes}) => {
+    updateMenuItemFromNavigation = async ({state}) => {
         
-        const {applicationName}  = attributes;
+        const {applicationName}  = state;
         if(this.selectedItem != applicationName){
             //console.log('Update Menu - From Navigation');
-            this.selectedItem = applicationName;
+            this.selectedItem = applicationName || 'home';
             this.updateSelectedItem();
         }
         
@@ -59,7 +59,7 @@ export default class Menu extends ToolkitElement {
         e.stopPropagation();
         const target = e.detail.name || e.detail.value;
         if(!isEmpty(target)){
-            navigate(this.navContext,{type:'application',attributes:{applicationName:target}});
+            navigate(this.navContext,{type:'application',state:{applicationName:target}});
         }else{
             navigate(this.navContext,{type:'home'});
         }
@@ -205,5 +205,9 @@ export default class Menu extends ToolkitElement {
 
     get iconName(){
         return this.isMenuSmall?'utility:toggle_panel_left':'utility:toggle_panel_right';
+    }
+
+    get isNotMenuSmall(){
+        return !this.isMenuSmall;
     }
 }

@@ -29,9 +29,12 @@ export default class App extends ToolkitElement {
     /** Methods */
     
     goToTarget = (target) => {
-        navigate(this.navContext,{type:'application',attributes:{
-            applicationName:CONFIG.APP_LIST.find(x => x.name === target).path
-        }});
+        navigate(this.navContext,{
+            type:'application',
+            state:{
+                applicationName:CONFIG.APP_LIST.find(x => x.name === target).path
+            }
+        });
     }
     
     openMetadataExplorer = () => {

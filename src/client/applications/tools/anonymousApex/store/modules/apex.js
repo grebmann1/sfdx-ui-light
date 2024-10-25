@@ -139,7 +139,6 @@ export const executeApexAnonymous = createAsyncThunk(
                 body, 
                 alias: connector.conn.alias,
             }));
-            console.log('res',res);
             return { data: res, body, alias: connector.conn.alias,tabId};
         } catch (err) {
             console.error(err);

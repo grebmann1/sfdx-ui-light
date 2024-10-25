@@ -8,9 +8,20 @@ export default class EventViewer extends ToolkitElement {
 
     isLoading = false;
 
-    @api item;
     currentModel;
     viewerTab = 'Default';
+
+    @track _item;
+    @api
+    get item(){
+        return this._item;
+    }
+    set item(value){
+        this._item = value;
+        if(this._hasRendered && this.refs.editor){
+            this.refs.editor.currentModel.setValue(this.content);
+        }
+    }
 
     connectedCallback(){
       
@@ -28,6 +39,7 @@ export default class EventViewer extends ToolkitElement {
     storeChange({ platformEvent }) {
         if(platformEvent){  
             this.viewerTab = platformEvent.viewerTab;
+            console.log('platformEvent',platformEvent);
         }
     }
 
@@ -55,7 +67,7 @@ export default class EventViewer extends ToolkitElement {
     /** Getters */
 
     get content(){
-        const data = this.item?.content || this.item;
+        const data = this._item?.content || this._item;
         return JSON.stringify(data, null, 4);
     }
 

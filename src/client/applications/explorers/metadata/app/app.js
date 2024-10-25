@@ -49,15 +49,14 @@ export default class App extends ToolkitElement {
         if(isUndefinedOrNull(pageRef)) return;
         //if(JSON.stringify(this._pageRef) == JSON.stringify(pageRef)) return;
         
-        if(pageRef?.attributes?.applicationName == 'metadata'){
+        if(pageRef?.state?.applicationName == 'metadata'){
             this._pageRef = pageRef;
             this.loadFromNavigation(pageRef);
         }
     }
 
-    loadFromNavigation = async ({state, attributes}) => {
-        const { applicationName }  = attributes;
-        let { param1,label1,param2,label2,sobject } = state;
+    loadFromNavigation = async ({state}) => {
+        let { param1,label1,param2,label2,sobject,applicationName } = state;
         if(applicationName != 'metadata') return; // Only for metadata
 
         if(!this.isGlobalMetadataLoaded){
@@ -130,48 +129,54 @@ export default class App extends ToolkitElement {
                 this.param1 = null;
                 this.param2 = null;
                 this.currentLevel = 1;
-                navigate(this.navContext,{type:'application',
-                    attributes:{
-                        applicationName:'metadata',
-                    },
-                    state:{
-                        sobject:name,
-                        label1:label
+                navigate(
+                    this.navContext,
+                    {
+                        type:'application',
+                        state:{
+                            applicationName:'metadata',
+                            sobject:name,
+                            label1:label
+                        }
                     }
-                });
+                );
             break;
             case 1:
                 // Metadata Record selection
                 this.selectedRecord = null;
                 this.param1 = null;
                 this.param2 = null;
-                navigate(this.navContext,{type:'application',
-                    attributes:{
-                        applicationName:'metadata',
-                    },
-                    state:{
-                        sobject:this.currentMetadata,
-                        param1:name,
-                        label1:label
+                navigate(
+                    this.navContext,
+                    {
+                        type:'application',
+                        state:{
+                            applicationName:'metadata',
+                            sobject:this.currentMetadata,
+                            param1:name,
+                            label1:label
+                        }
                     }
-                });
+                );
                 
                 //this.currentLevel = 2; // Only for the flows
             break;
             case 2:
                 this.param2 = null;
-                navigate(this.navContext,{type:'application',
-                    attributes:{
-                        applicationName:'metadata',
-                    },
-                    state:{
-                        sobject:this.currentMetadata,
-                        param1:this._pageRef.state.param1,
-                        label1:this._pageRef.state.label1,
-                        param2:name,
-                        label2:label
+                navigate(
+                    this.navContext,
+                    {
+                        type:'application',
+                        state:{
+                            applicationName:'metadata',
+                            sobject:this.currentMetadata,
+                            param1:this._pageRef.state.param1,
+                            label1:this._pageRef.state.label1,
+                            param2:name,
+                            label2:label
+                        }
                     }
-                });
+                );
                 // Only work for items such as flows
             break;
         }
@@ -207,10 +212,8 @@ export default class App extends ToolkitElement {
         if(this.currentLevel == 2){
             this.param2 = null;
             navigate(this.navContext,{type:'application',
-                attributes:{
-                    applicationName:'metadata'
-                },
                 state:{
+                    applicationName:'metadata',
                     sobject:this.currentMetadata,
                     param1:this.param1,
                     label1:this.label1
@@ -219,21 +222,27 @@ export default class App extends ToolkitElement {
         }else if(this.currentLevel == 1){
             this.param1 = null;
             this.param2 = null;
-            navigate(this.navContext,{type:'application',
-                attributes:{
-                    applicationName:'metadata',
-                },
-                state:{
-                    sobject:this.currentMetadata,
+            navigate(this.navContext,
+                {
+                    type:'application',
+                    state:{
+                        applicationName:'metadata',
+                        sobject:this.currentMetadata,
+                    }
                 }
-            });
+            );
         }else if(this.currentLevel == 0){
             this.currentMetadata = null;
             this.param1 = null;
             this.param2 = null;
-            navigate(this.navContext,{type:'application',attributes:{
-                applicationName:'metadata'
-            }});
+            navigate(this.navContext,
+                {
+                    type:'application',
+                    state:{
+                        applicationName:'metadata'
+                    }
+                }
+            );
         } 
     }
     

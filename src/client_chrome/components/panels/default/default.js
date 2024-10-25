@@ -126,9 +126,9 @@ export default class Default extends LightningElement {
         this.openaiAssistantId = configuration[CACHE_CONFIG.OPENAI_ASSISTANT_ID];
     };
 
-    loadFromNavigation = async ({state, attributes}) => {
+    loadFromNavigation = async ({state}) => {
         //('documentation - loadFromNavigation');
-        const {applicationName, attribute1} = attributes;
+        const {applicationName, attribute1} = state;
         //console.log('applicationName',applicationName);
         if (applicationName == 'documentation') {
             this.currentApplication = APPLICATIONS.DOCUMENTATION;

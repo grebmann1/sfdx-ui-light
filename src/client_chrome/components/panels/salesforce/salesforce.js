@@ -128,9 +128,9 @@ export default class Salesforce extends ToolkitElement {
     einsteinClick = () => {
         const params = {
             type: 'application',
-            attributes: {
-                applicationName: 'assistant',
-            }, state: {}
+            state: {
+                applicationName: 'assistant'
+            }
         };
 
         legacyStore.dispatch(store_application.fakeNavigate(params));
@@ -139,9 +139,9 @@ export default class Salesforce extends ToolkitElement {
     openDefaultPanel = () => {
         const params = {
             type: 'application',
-            attributes: {
-                applicationName: 'home',
-            }, state: {}
+            state: {
+                applicationName: 'home'
+            }
         };
 
         legacyStore.dispatch(store_application.fakeNavigate(params));

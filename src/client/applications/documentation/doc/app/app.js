@@ -103,7 +103,7 @@ export default class App extends ToolkitElement {
         if(isUndefinedOrNull(pageRef)) return;
         if(JSON.stringify(this._pageRef) == JSON.stringify(pageRef)) return;
         
-        if(pageRef?.attributes?.applicationName == 'documentation'){
+        if(pageRef?.state?.applicationName == 'documentation'){
             this._pageRef = pageRef;
             this.loadFromNavigation(pageRef);
         }
@@ -119,10 +119,9 @@ export default class App extends ToolkitElement {
         //console.log('application',application)
     }
 
-    loadFromNavigation = async ({state, attributes}) => {
+    loadFromNavigation = async ({state}) => {
         //('documentation - loadFromNavigation');
-        const {applicationName}  = attributes;
-        const {name,attribute1}  = state;
+        const {name,attribute1,applicationName}  = state;
         if(applicationName != 'documentation') return; // Only for metadata
 
         this.isNoRecord = false;
@@ -255,10 +254,8 @@ export default class App extends ToolkitElement {
         const [documentationId,name] = (key || '').split(SEPARATOR);
         const params = {
             type:'application',
-            attributes:{
-                applicationName:'documentation'
-            },
             state:{
+                applicationName:'documentation',
                 name:name,
                 attribute1:documentationId
             }

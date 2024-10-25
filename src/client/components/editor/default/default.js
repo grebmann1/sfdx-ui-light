@@ -1,7 +1,7 @@
 import { api,wire } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
 import Toast from 'lightning/toast';
-import { classSet,isNotUndefinedOrNull,runActionAfterTimeOut,guid,isChromeExtension } from 'shared/utils';
+import { classSet,isNotUndefinedOrNull,runActionAfterTimeOut,guid,isChromeExtension,autoDetectAndFormat } from 'shared/utils';
 import { store,connectStore } from 'core/store';
 import { SOQL,APEX,VF,LOG } from 'editor/languages';
 import loader from '@monaco-editor/loader';
@@ -100,7 +100,7 @@ export default class Default extends ToolkitElement {
             const pastedText = this.editor.getModel()?.getValueInRange(e.range);
     
             // Auto-detect format and apply formatting
-            const _format = this.autoDetectAndFormat(pastedText);
+            const _format = autoDetectAndFormat(this.editor.getValue());
     
             // Replace the editor content with the formatted text if found !
             if(_format){
@@ -109,24 +109,6 @@ export default class Default extends ToolkitElement {
             
             
         });
-    }
-
-
-    // Auto-detect format and apply appropriate formatting
-    
-    autoDetectAndFormat = (text) => {
-        const trimmedText = text.trim();
-
-        // Detect if the content is JSON
-        if (trimmedText.startsWith('{') || trimmedText.startsWith('[')) {
-            return 'json';
-        }
-
-        // Detect if the content is XML
-        if (trimmedText.startsWith('<')) {
-            return 'xml';
-        }
-        return null;
     }
 
     loadMonacoEditor = async () => {
@@ -149,7 +131,7 @@ export default class Default extends ToolkitElement {
                 new CustomEvent("change", {
                     detail:{
                         value:this.editor.getValue(),
-                        type:this.autoDetectAndFormat(this.editor.getValue()),
+                        type:autoDetectAndFormat(this.editor.getValue()),
                     },
                     bubbles: true 
                 })

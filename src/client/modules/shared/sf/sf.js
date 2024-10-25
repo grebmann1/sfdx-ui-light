@@ -229,7 +229,7 @@ const getTabDefinitions = async (conn) => {
 const setRecordTypes = async (conn,sobjects) => {
     //console.log('setRecordTypes');
     let records = (await conn.query("select Id, DeveloperName, Name, SobjectType from RecordType")).records || [];
-        records.forEach(record => sobjects[record.SobjectType].recordTypes[record.Id] = new RecordType(record.Id, record.DeveloperName, record.Name));
+        records.filter(record => sobjects[record.SobjectType]).forEach(record => sobjects[record.SobjectType].recordTypes[record.Id] = new RecordType(record.Id, record.DeveloperName, record.Name));
 }
 
 const setLayoutAssignments = async (conn,permissionSets,{permissionSetProfileMapping,layouts}) => {

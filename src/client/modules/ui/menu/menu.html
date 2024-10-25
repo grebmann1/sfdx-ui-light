@@ -87,6 +87,9 @@
         <template lwc:else>
             <!-- LARGE MENU - START -->
             <!-- Applications -->
+            <template lwc:if={hasApplications}>
+                <h2 class="slds-nav-vertical__title">Applications</h2>
+            </template>
             <template for:each={applications} for:item="item">
                 <template lwc:if={item.menuIcon}>
                     <lightning-vertical-navigation-item-icon
@@ -109,7 +112,9 @@
             <!-- Tools -->
             <template lwc:if={hasTools}>
                 <div class="slds-has-divider_top-space"></div>
+                <h2 class="slds-nav-vertical__title">Tools</h2>
             </template>
+            
             <template for:each={tools} for:item="item">
                 <template lwc:if={item.menuIcon}>
                     <lightning-vertical-navigation-item-icon
@@ -178,6 +183,9 @@
     </lightning-vertical-navigation>
     <div class="slds-has-divider_top-space"></div>
     <!-- Others -->
+    <template lwc:if={isNotMenuSmall}>
+        <h2 class="slds-nav-vertical__title">Others</h2>
+    </template>
     <lightning-vertical-navigation-section>
         <template for:each={others} for:item="item">
             <lightning-vertical-navigation-item-icon key={item.name} onclick={handleRedirection} data-url={item.url}

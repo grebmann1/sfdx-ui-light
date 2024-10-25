@@ -29,6 +29,14 @@ const KNOWN_TYPE = new Set([
     "assistant/app"
 ]);
 */
+
+const i18n = {
+    HOME : 'home',
+    TOOL : 'tool',
+    APPLICATION : 'application',
+    CONNECTION : 'connection',
+    DOCUMENTATION : 'documentation'
+}
 const APP_MAPPING = {
     "home/app": {
         module:home_app,
@@ -37,8 +45,9 @@ const APP_MAPPING = {
         isElectronOnly:false,
         isOfflineAvailable:true,
         isTabVisible:false,
-        type:'home',
-        menuIcon:'utility:home'
+        type:i18n.HOME,
+        menuIcon:'utility:home',
+        path:'home'
     },
     "connection/app": {
         module:connection_app,
@@ -47,7 +56,7 @@ const APP_MAPPING = {
         isElectronOnly:false,
         isOfflineAvailable:true,
         isTabVisible:false,
-        type:'connection',
+        type:i18n.CONNECTION,
         menuIcon:'utility:salesforce1',
         menuLabel:'Connections',
         path:'connections'
@@ -61,7 +70,7 @@ const APP_MAPPING = {
         isMenuVisible:false,
         isTabVisible:true,
         label:"Org. Overview",
-        type:'application',
+        type:i18n.APPLICATION,
         shortName:"Org",
         path:'org'
     },
@@ -74,7 +83,7 @@ const APP_MAPPING = {
         isMenuVisible:true,
         isTabVisible:true,
         label:"Access Analyzer",
-        type:'application',
+        type:i18n.APPLICATION,
         description:"Review/Compare the access provided by the Permission sets & Profiles.",
         quickActionIcon:"standard:portal",
         shortName:"Access.",
@@ -89,7 +98,7 @@ const APP_MAPPING = {
         isMenuVisible:true,
         isTabVisible:true,
         label:"Code Toolkit",
-        type:'tool',
+        type:i18n.TOOL,
         description:"Retrieve Code, Run Static code analysis, Open visualforce. A perfect toolkit to simplify your life (Electron only).",
         quickActionIcon:"standard:apex",
         shortName:"Code",
@@ -104,7 +113,7 @@ const APP_MAPPING = {
         isMenuVisible:true,
         isTabVisible:true,
         label:"Metadata Explorer",
-        type:'application',
+        type:i18n.APPLICATION,
         description:"Review & Modify all your metadata. (Beta)",
         quickActionIcon:"standard:knowledge",
         shortName:"Metad.",
@@ -119,7 +128,7 @@ const APP_MAPPING = {
         isMenuVisible:true,
         isTabVisible:true,
         label:"SObject Explorer",
-        type:'application',
+        type:i18n.APPLICATION,
         description:"Explore in details all your SObjects",
         quickActionIcon:"standard:knowledge",
         shortName:"SObject",
@@ -134,7 +143,7 @@ const APP_MAPPING = {
         isMenuVisible:true,
         isTabVisible:true,
         label:"API Explorer",
-        type:'application',
+        type:i18n.TOOL,
         description:"Explore Salesforce API",
         quickActionIcon:"standard:apex",
         shortName:"API",
@@ -153,7 +162,7 @@ const APP_MAPPING = {
         isMenuVisible:true,
         isTabVisible:true,
         label:"Documentation",
-        type:'documentation',
+        type:i18n.DOCUMENTATION,
         description:"Search through the Salesforce Documentation",
         menuIcon:"utility:knowledge_base",
         quickActionIcon:"standard:article",
@@ -168,12 +177,27 @@ const APP_MAPPING = {
         isOfflineAvailable:false,
         isMenuVisible:true,
         isTabVisible:true,
-        label:"SOQL Builder",
-        type:'tool',
+        label:"Data Explorer",
+        type:i18n.TOOL,
         description:"Build SOQL queries with fields suggestion and export them.",
         quickActionIcon:"standard:data_model",
         shortName:"SOQL",
         path:'soql'
+    },
+    "platformevent/app":{
+        module:platformEvent_app,
+        isFullHeight:true,
+        isDeletable:true,
+        isElectronOnly:false,
+        isOfflineAvailable:false,
+        isMenuVisible:true,
+        isTabVisible:true,
+        label:"Event Explorer",
+        type:i18n.TOOL,
+        description:"Subscribe to platform event to visualize them.",
+        quickActionIcon:"standard:events",
+        shortName:"PLEV",
+        path:'platformevent'
     },
     "anonymousApex/app":{
         module:anonymousApex_app,
@@ -184,7 +208,7 @@ const APP_MAPPING = {
         isMenuVisible:true,
         isTabVisible:true,
         label:"Anonymous Apex",
-        type:'tool',
+        type:i18n.TOOL,
         description:"Execute Apex Scripts",
         quickActionIcon:"standard:apex",
         shortName:"APEX",
@@ -199,26 +223,11 @@ const APP_MAPPING = {
         isMenuVisible:true,
         isTabVisible:true,
         label:"AI Assistant",
-        type:'tool',
+        type:i18n.APPLICATION,
         description:"Interact with LLM Models",
         quickActionIcon:"standard:story",
         shortName:"AI",
         path:'assistant'
-    },
-    "platformevent/app":{
-        module:platformEvent_app,
-        isFullHeight:true,
-        isDeletable:true,
-        isElectronOnly:false,
-        isOfflineAvailable:false,
-        isMenuVisible:true,
-        isTabVisible:true,
-        label:"Platform Event Hook",
-        type:'tool',
-        description:"Subscribe to platform event to visualize them.",
-        quickActionIcon:"standard:events",
-        shortName:"PLEV",
-        path:'platformevent'
     }
 };
 /*

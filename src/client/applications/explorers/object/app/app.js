@@ -47,7 +47,7 @@ export default class App extends ToolkitElement {
         if(isUndefinedOrNull(pageRef)) return;
         //if(JSON.stringify(this._pageRef) == JSON.stringify(pageRef)) return;
        
-        if(pageRef?.attributes?.applicationName == 'sobject'){
+        if(pageRef?.state?.applicationName == 'sobject'){
             this._pageRef = pageRef;
             this.loadFromNavigation(pageRef);
         }
@@ -77,7 +77,7 @@ export default class App extends ToolkitElement {
         const objectName = e.detail.name;
         navigate(this.navContext,{
             type:'application',
-            attributes:{
+            state:{
                 applicationName:'sobject',
                 attribute1:objectName,
             }
@@ -109,9 +109,9 @@ export default class App extends ToolkitElement {
     /** Methods */
     
 
-    loadFromNavigation = async ({state, attributes}) => {
+    loadFromNavigation = async ({state}) => {
         this.keepFilter = false;
-        const {applicationName,attribute1}  = attributes;
+        const {applicationName,attribute1}  = state;
         if(applicationName != 'sobject') return; // Only for sobject
 
         if(attribute1){

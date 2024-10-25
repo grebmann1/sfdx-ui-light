@@ -84,9 +84,9 @@ export default class Default extends LightningElement {
         this.panel = PANELS.DEFAULT;
     };
 
-    loadFromNavigation = async ({state, attributes}) => {
+    loadFromNavigation = async ({state}) => {
         //('documentation - loadFromNavigation');
-        const {applicationName, attribute1} = attributes;
+        const {applicationName, attribute1} = state;
         //console.log('applicationName',applicationName);
         if (applicationName === 'documentation' || applicationName === 'home') {
             this.handlePanelChange({

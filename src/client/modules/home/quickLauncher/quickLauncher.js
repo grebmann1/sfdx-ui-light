@@ -22,7 +22,7 @@ export default class QuickLauncher extends ToolkitElement {
     handleQuickAction = (e) => {
         const target = e.currentTarget.dataset.path;
         if(!isEmpty(target)){
-            navigate(this.navContext,{type:'application',attributes:{applicationName:target}});
+            navigate(this.navContext,{type:'application',state:{applicationName:target}});
         }else{
             navigate(this.navContext,{type:'home'});
         }

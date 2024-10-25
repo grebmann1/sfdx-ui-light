@@ -13,7 +13,7 @@
                 </div>
                 <div slot="subactions" class="slds-builder-toolbar__actions">
                     <lightning-button-icon-stateful class="slds-p-left_xx-small" selected={isDebugLogToggle} variant="border-filled" icon-name="utility:bug" size="large" onclick={toggle_debugLog}></lightning-button-icon-stateful>    
-                    <lightning-button-icon-stateful class="slds-p-left_xx-small" selected={isRecentToggled}  variant="border-filled" icon-name="utility:budget_period"  size="large" onclick={toggle_recent}></lightning-button-icon-stateful>
+                    <lightning-button-icon-stateful class="slds-p-left_xx-small" selected={isRecentToggled}  variant="border-filled" icon-name="utility:budget_period"  size="large" onclick={handleRecentToggle}></lightning-button-icon-stateful>
                 </div>
 
                 <template lwc:if={isMetaDisplayed}>
@@ -28,7 +28,7 @@
                         <lightning-spinner alternative-text="Loading"></lightning-spinner>
                     </template>
                     <!-- Tabs -->
-                    <slds-tabset variant="scoped" class="slds-without-tab" active-tab-value={currentTab} onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled is-remove-tab-event-disabled>
+                    <slds-tabset lwc:ref="apexTab" variant="scoped" class="slds-without-tab" active-tab-value={currentTab} onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled is-remove-tab-event-disabled>
                         <template for:each={formattedTabs} for:item="item">
                             <slds-tab key={item.id} label={item.name} value={item.id} onactive={handleSelectTab} is-closeable={item.isCloseable} is-draft={item.isDraft}></slds-tab>
                         </template>

@@ -12,11 +12,11 @@ const routes = [
     },
     {
         id: 'namedApp',
-        uri: '/app/:applicationName',
+        uri: '/app?applicationName=:applicationName',
         handler: () => import('router/applicationHandler'),
         page: {
             type: 'application',
-            attributes: {
+            state: {
                 applicationName: ':applicationName',
             },
         },
@@ -27,7 +27,7 @@ const routes = [
         handler: () => import('router/applicationHandler'),
         page: {
             type: 'application',
-            attributes: {
+            state: {
                 applicationName: ':applicationName',
                 attribute1:':attribute1',
             },
@@ -39,16 +39,15 @@ const routes = [
         handler: () => import('router/applicationHandler'),
         page: {
             type: 'application',
-            attributes: {
+            state:{
                 applicationName: ':applicationName',
                 attribute1:':attribute1',
-            },
-            state:{
                 param1:':param1'
             }
         },
     },
 ];
+
 export default class Root extends LightningElement {
     router = createRouter({ routes });
 

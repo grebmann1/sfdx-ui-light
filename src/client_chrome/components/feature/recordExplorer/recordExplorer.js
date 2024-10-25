@@ -524,11 +524,9 @@ export default class RecordExplorer extends ToolkitElement {
         e.stopPropagation();
         const params = {
             type: 'application',
-            attributes: {
-                applicationName: 'documentation',
-                attribute1: this.isUsingToolingApi ? 'atlas.en-us.api_tooling.meta' : 'atlas.en-us.object_reference.meta'
-            },
             state: {
+                applicationName: 'documentation',
+                attribute1: this.isUsingToolingApi ? 'atlas.en-us.api_tooling.meta' : 'atlas.en-us.object_reference.meta',
                 name: this.isUsingToolingApi ? `tooling_api_objects_${this.sobjectName.toLowerCase()}` : `sforce_api_objects_${this.sobjectName.toLowerCase()}`
             }
         };
