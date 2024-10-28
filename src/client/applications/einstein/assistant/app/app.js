@@ -74,7 +74,7 @@ export default class App extends ToolkitElement {
         //const entities = SELECTORS.einstein.selectAll({einstein});
         //console.log('entities',entities);
         //this.tabs = einstein.tabs;
-        console.log('einstein',einstein)
+        //console.log('einstein',einstein)
         this.dialogs = SELECTORS.einstein.selectAll({einstein});
         this.currentDialogId = einstein.currentDialogId;
         if(isUndefinedOrNull(this.currentDialogId) && this.dialogs.length > 0){
@@ -131,7 +131,7 @@ export default class App extends ToolkitElement {
     /** Methods **/
 
     salesforceInstance_connect = (alias) => {
-        console.log('salesforceInstance_connect');
+        //console.log('salesforceInstance_connect');
         if(isEmpty(alias)) return;
         this.connectToOrg(alias);
         store.dispatch(EINSTEIN.reduxSlice.actions.updateConnectionAlias({
@@ -156,7 +156,7 @@ export default class App extends ToolkitElement {
         if(isNotUndefinedOrNull(settings?.username) 
             && settings?.username == this.connector?.configuration?.username
         )return;
-        console.log('connectToOrg',alias,settings?.username,this.connector?.configuration?.username,this.salesforceIntance_connections);
+        //console.log('connectToOrg',alias,settings?.username,this.connector?.configuration?.username,this.salesforceIntance_connections);
 
         store.dispatch(APPLICATION.reduxSlice.actions.startLoading({message:`Connecting Einstein to ${alias}`}));
         try{

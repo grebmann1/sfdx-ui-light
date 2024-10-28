@@ -236,7 +236,7 @@ export async function oauth({alias,loginUrl},callback,callbackErrorHandler){
         version:constant.apiVersion
     });
     window.jsforce.browserClient.on('connect', async (connection) =>{
-        console.log('new connection',connection)
+        //console.log('new connection',connection)
         oauth_extend({alias,connection},callback);
     });
 

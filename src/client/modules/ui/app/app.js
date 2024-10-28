@@ -85,7 +85,6 @@ export default class App extends LightningElement {
 
         if(this._isLoggedIn != application.isLoggedIn){
             this._isLoggedIn = application.isLoggedIn;
-            console.log('isLoggedIn',application);
             if(application.isLoggedIn){
                 this.handleLogin(application.connector);
             }else if(!application.isLoggedIn){
@@ -284,7 +283,7 @@ export default class App extends LightningElement {
 
     /** Extension & Electron Org Window  **/
     load_limitedMode = async () => {
-        console.log('test',JSON.parse(sessionStorage.getItem("currentConnection")));
+        //console.log('test',JSON.parse(sessionStorage.getItem("currentConnection")));
         try{
             if(isElectronApp()){
                 await connect({alias:this.alias});

@@ -261,19 +261,15 @@ export default class RecordExplorer extends ToolkitElement {
     /** Methods **/
 
     initRecordExplorer = async () => {
-        console.log('initRecordExplorer');
         try {
             this.isError = false;
             this.isLoading = true;
 
             this.currentTab = await getCurrentTab();
-            console.log('this.currentTab', this.currentTab);
             this.currentOrigin = (new URL(this.currentTab.url)).origin;
-            console.log('this.currentOrigin', this.currentOrigin);
             // Get sobjectName (Step 2) // Should be optimized to save 1 API Call [Caching]
             this.sobjectName = await getCurrentObjectType(this.connector.conn, this.recordId); // to replace with describeGlobal using lastModified to fetch only the changes !
 
-            console.log('this.sobjectName', this.sobjectName);
             // Get Metadata (Step 3) // Should be optimized to save 1 API Call [Caching]
             var [metadata, record] = await Promise.all([
                 this.connector.conn.sobject(this.sobjectName).describe$(),
@@ -401,7 +397,6 @@ export default class RecordExplorer extends ToolkitElement {
         if (this.isViewChangeFilterEnabled) {
             const allModifiedFields = this.modifiedRows.map(x => x.fieldName);
             const errorFields = Object.keys(this.fieldErrors);
-            console.log('this.fieldErrors', this.fieldErrors);
             items = items.map(item => ({
                 ...item,
                 isVisible: allModifiedFields.includes(item.name) || errorFields.includes(item.name)

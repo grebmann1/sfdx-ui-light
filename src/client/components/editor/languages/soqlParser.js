@@ -139,7 +139,7 @@ class SubQueryHandler {
 
     setSelectSubquery() {
         const subQueryMatch = this.textHandler.findSubQuery(/(select|,)\s*\(\s*\w/gm);
-        console.log('setSelectSubquery',subQueryMatch);
+        //console.log('setSelectSubquery',subQueryMatch);
         if (subQueryMatch) {
             this.parsedData.isSubQuery = !!subQueryMatch;
             this.textHandler.setTexts(subQueryMatch.textBeforeCursor, subQueryMatch.textAfterCursor);
@@ -154,7 +154,7 @@ class SubQueryHandler {
 
     setWhereSubquery() {
         const subQueryMatch = this.textHandler.findSubQuery(/(in)\s*\(\s*select/gm);
-        console.log('setWhereSubquery',subQueryMatch);
+        //console.log('setWhereSubquery',subQueryMatch);
         if (subQueryMatch) {
             this.parsedData.isSubQuery = !!subQueryMatch;
             this.textHandler.setTexts(subQueryMatch.textBeforeCursor, subQueryMatch.textAfterCursor);

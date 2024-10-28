@@ -62,7 +62,6 @@ export function configureSoqlLanguage(monaco) {
 }
 
 const getCompletionItems = (parserInstance, suggestionInstance) => {
-	console.log('parserInstance',parserInstance);
 	const isSelectPosition = (parser, sub = false) => {
 		return sub ? parser.subquery.position === "select" : parser.position === "select";
 	};

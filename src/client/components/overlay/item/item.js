@@ -44,7 +44,6 @@ export default class Item extends ToolkitElement {
     }
 
     handleItemClick = (e) => {
-        console.log('handleItemClick',this.type,this.item);
         switch (this.type) {
             case TYPE.APEX_CLASS:
             case TYPE.APEX_TRIGGER:
@@ -61,7 +60,6 @@ export default class Item extends ToolkitElement {
             default:
                 // todo: Include option to open as new tab
                 const link = this.generateLink();
-                console.log('link',link);
                 window.location = link;
         }
     }

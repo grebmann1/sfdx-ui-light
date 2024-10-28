@@ -286,7 +286,6 @@ const uiSlice = createSlice({
                     includeDeletedRecords
                 });
             }
-            console.log('#cachedConfig#',cachedConfig);
         },
         saveCacheSettings : (state,action) => {
             const { alias } = action.payload;

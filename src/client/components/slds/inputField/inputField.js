@@ -283,7 +283,6 @@ export default class InputField extends LightningElement {
     @api
     setErrors(fieldError) {
         if (fieldError && fieldError.hasOwnProperty(this.fieldName)) {
-            console.log('this.setCustomValidity');
             this.setCustomValidity(
                 fieldError[this.fieldName].message
             );
@@ -543,7 +542,6 @@ export default class InputField extends LightningElement {
 
     setCustomValidity(message) {
         const input = this.getInputComponent();
-        console.log('input',input);
         if (input && input.setCustomValidity) {
             input.setCustomValidity(message ? message : '');
             input.showHelpMessageIfInvalid();

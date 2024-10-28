@@ -17,8 +17,6 @@ function loadCacheSettings(alias) {
 }
 
 function saveCacheSettings(alias,state) {
-    
-    console.log('saveCacheSettings');
     try {
         const { 
             recentPanelToggled,viewerTab
@@ -58,7 +56,6 @@ const platformEventSlice = createSlice({
                     recentPanelToggled,viewerTab
                 });
             }
-            console.log('#cachedConfig#',cachedConfig);
         },
         saveCacheSettings : (state,action) => {
             const { alias } = action.payload;

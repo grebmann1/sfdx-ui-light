@@ -68,8 +68,6 @@ export default class Me extends ToolkitElement {
         const fields = ['Id','LastName','FirstName','Username','Email','FederationIdentifier','CompanyName','Name','IsActive','LanguageLocaleKey'];
         const exceptionFields = ['CurrencyIsoCode'];
         const query = (fields) => `SELECT ${fields.join(',')} FROM User WHERE id = '${this.connector.conn.userInfo.id}'`;
-        //console.log('query',query([].concat(fields,exceptionFields)));
-        console.log('load_myUserInformation',this.connector);
         var _user = await runSilent(async ()=>{return (await this.connector.conn.query(query([].concat(fields,exceptionFields)))).records[0]},null);
         if(_user === null){
             // Temporary solution, in case we don't have CurrencyIsoCode
@@ -77,7 +75,6 @@ export default class Me extends ToolkitElement {
         }
         this.user = null;
         this.user = _user;
-        //console.log('this.user',this.user);
     }
 
     renderFieldErrors = () => {

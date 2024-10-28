@@ -204,7 +204,7 @@ export default class SuggestionHandler {
         let relation = this.parser.fromRelation;
         let referenceTo = this.parser.fromObject;
 
-        console.log('getLookupFieldSuggestions',relation,referenceTo)
+        //console.log('getLookupFieldSuggestions',relation,referenceTo)
         if (this.parser.isSubQuery) {
             relation = this.parser.subquery.fromRelation;
             referenceTo = this.extractObjectFromChild();
@@ -271,8 +271,8 @@ export default class SuggestionHandler {
 
     // Method to get fields of an object
     getFields = async (referenceTo, withSeparator = true) => {
-        console.log('referenceTo',referenceTo);
-       return new Promise(async (resolve) => {
+        //console.log('referenceTo',referenceTo);
+        return new Promise(async (resolve) => {
             const { describe } = store.getState();
             await store.dispatch(SOBJECT.describeSObject({
                 connector:this.connector.conn,
@@ -281,7 +281,6 @@ export default class SuggestionHandler {
             }));
             const { sobject } = store.getState();
             const sobjectState = SELECTORS.sobject.selectById({sobject},(referenceTo||'').toLowerCase());
-            console.log('----> ',sobjectState);
             const fields = [];
             (sobjectState?.data?.fields || [])
             .forEach(field => {

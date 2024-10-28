@@ -86,7 +86,6 @@ export default class Header extends LightningElement {
     }
 
     get iconName() {
-        console.log('filter_options',this.filter_options)
         return this.isMenuSmall ? 'utility:toggle_panel_left' : 'utility:toggle_panel_right';
     }
 

@@ -257,7 +257,6 @@ export default class RecordExplorerRow extends ToolkitElement {
                 || (isNotUndefinedOrNull(this.fieldErrors) && this.fieldErrors.hasOwnProperty(this.name)) // Error Mode
             )
         ) {
-            console.log('will enable input')
             // Only happening for new row created during scrolling
             this.enableInputField();
         }

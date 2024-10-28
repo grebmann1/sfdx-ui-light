@@ -49,7 +49,6 @@ const getHostAndSession = async (tab) => {
         const cookies = await chrome.cookies.getAll(secureCookieDetails);
         //console.log('cookies',cookies);
         let sessionCookie = cookies.find((c) => c.value.startsWith(orgId + "!"));
-        console.log('sessionCookie',sessionCookie);
         if (!sessionCookie) {
             return;
         }
@@ -283,7 +282,7 @@ chrome.runtime.onMessage.addListener(wrapAsyncFunction(async (message, sender) =
             'url': message.url,
             'interactive': true
         });
-        console.log('responseUrl',responseUrl);
+        //console.log('responseUrl',responseUrl);
         if (chrome.runtime.lastError) {
             return {error: chrome.runtime.lastError.message};
         }

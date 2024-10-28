@@ -274,7 +274,7 @@ export default class App extends ToolkitElement {
                     url = redirectUrl;
                 }
                 
-                console.log('isChromeExtension',isChromeExtension(),target);
+                //console.log('isChromeExtension',isChromeExtension(),target);
                 if(isChromeExtension()){
                     if(target === 'incognito'){
                         const windows = await chrome.windows.getAll({populate: false, windowTypes: ['normal']});

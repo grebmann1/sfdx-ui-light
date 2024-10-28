@@ -125,16 +125,16 @@ export default class Dialog extends ToolkitElement {
 
     /** Events **/
 
-    handleRenameClick = () => {
+    /*handleRenameClick = () => {
         const { einstein } = store.getState();
-        console.log('einstein',einstein);
+        //console.log('einstein',einstein);
         SaveModal.open({
             title:'Rename Dialog',
             name:einstein.name
         }).then(async data => {
-            console.log('data',data);
+            //console.log('data',data);
         })
-    }
+    }*/
 
     handleInputChange = (e) => {
         this.prompt = e.target.value;
@@ -167,7 +167,6 @@ export default class Dialog extends ToolkitElement {
         const { einstein } = store.getState();
         const value = this.template.querySelector('.slds-publisher__input').value;
         const connector = this.connector || this.legacyConnector;
-        console.log('einstein.currentDialog.id',einstein.currentDialogId);
         // Validate Connector
         if(isUndefinedOrNull(connector)){
             this.error_title = 'Error';

@@ -164,7 +164,6 @@ export default class App extends ToolkitElement {
 
     deleteRecords = async (sobject,records) => {
         if(isUndefinedOrNull(sobject)) return;
-        console.log('sobject',sobject);
         const connector = sobject.useToolingApi?this.connector.conn.tooling:this.connector.conn;
         const rets = await connector.sobject(sobject.name).delete(records.map(x => x.Id));
         return rets;
@@ -307,7 +306,6 @@ export default class App extends ToolkitElement {
         }else{
             this.selectedRecords = rows;
         }
-        console.log('handleRowSelection',rows,isChildTable)
     } 
 
     deleteSelectedRecords = async (e) => {

@@ -116,7 +116,6 @@ export default class Code extends ToolkitElement {
         let temp = this.data;
         this.data = null;
         this.data = temp;
-        console.log('data',this.data);
     }
 
     process_apex = (key = 'apex') => {

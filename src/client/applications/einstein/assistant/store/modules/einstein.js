@@ -88,10 +88,9 @@ function loadCacheSettings(alias) {
 
 function saveCacheSettings(alias,state) {
     
-    console.log('saveCacheSettings');
     try {
         const { tabs,dialog,connectionAlias } = state
-        console.log(`${alias}-${EINSTEIN_SETTINGS_KEY}`,{ tabs,dialog,connectionAlias });
+        //console.log(`${alias}-${EINSTEIN_SETTINGS_KEY}`,{ tabs,dialog,connectionAlias });
         localStorage.setItem(
             `${alias}-${EINSTEIN_SETTINGS_KEY}`,
             JSON.stringify({ tabs,dialog,connectionAlias })
@@ -138,7 +137,6 @@ export const einsteinExecuteModel = createAsyncThunk(
         //throw new Error('ERROR_HTTP_503:test by gui');
         try {
             const res = await _executeApexAnonymous(connector,body,formatHeaders(getState().einstein));
-            console.log('res',res);
             if(!res.success){
                 console.group('Einstein Error');
                 console.error(res.exceptionMessage || res.compileProblem);
@@ -184,13 +182,11 @@ const einsteinSlice = createSlice({
             const cachedConfig = loadCacheSettings(alias);
             if(cachedConfig){
                 const { dialog,connectionAlias } = cachedConfig; 
-                console.log('loadCacheSettings',dialog);
                 Object.assign(state,{
                     dialog,
                     connectionAlias
                 });
             }
-            console.log('#cachedConfig#',cachedConfig);
         },
         saveCacheSettings : (state,action) => {
             const { alias } = action.payload;

@@ -48,7 +48,6 @@ export default class Footer extends LightningElement {
     };
 
     handleCopyAccessToken = () => {
-        console.log('this.connector', this.connector);
         navigator.clipboard.writeText(this.accessTokenFormatted);
         Toast.show({
             label: 'Access Token exported to your clipboard',

@@ -39,7 +39,6 @@ export default class EventViewer extends ToolkitElement {
     storeChange({ platformEvent }) {
         if(platformEvent){  
             this.viewerTab = platformEvent.viewerTab;
-            console.log('platformEvent',platformEvent);
         }
     }
 

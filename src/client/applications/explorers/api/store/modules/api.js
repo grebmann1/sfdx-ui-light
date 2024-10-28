@@ -25,8 +25,6 @@ function loadCacheSettings(alias) {
 }
 
 function saveCacheSettings(alias,state) {
-    
-    console.log('saveCacheSettings');
     try {
         const { 
             viewerTab,recentPanelToggled,tabs
@@ -190,7 +188,6 @@ const apiSlice = createSlice({
                     tabs:enrichTabs(tabs || INITIAL_TABS,{apiFiles})
                 });
             }
-            console.log('#cachedConfig#',cachedConfig);
         },
         saveCacheSettings : (state,action) => {
             const { alias } = action.payload;

@@ -119,7 +119,7 @@ export default class Root extends LightningElement {
 
     loadComponent = async (withMonitorChange) => {
         let cookie = await getHostAndSession();
-        console.log('cookie',cookie);
+        //console.log('cookie',cookie);
         if (cookie) {
             this.init_existingSession(cookie);
             this.panel = PANELS.SALESFORCE;

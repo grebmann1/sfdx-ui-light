@@ -174,7 +174,6 @@ const recentSlice = createSlice({
             state.apex = recentApexState;
         },
         saveApi: (state, action) => {
-            console.log('state.api',state.api);
             // item = body, url and header
             const { item, alias } = action.payload;
             const recentApiState = [
