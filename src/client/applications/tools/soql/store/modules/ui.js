@@ -85,8 +85,7 @@ function _toggleChildRelationshipField(
     const childField = state.fields.find(
         field =>
             field.subquery &&
-            stripNamespace(field.subquery.relationshipName) ===
-                childRelationship
+            stripNamespace(field.subquery.relationshipName) === childRelationship
     );
     if (!childField) {
         return {
@@ -111,8 +110,7 @@ function _toggleChildRelationshipField(
     const newFields = state.fields.map(field => {
         if (
             field.subquery &&
-            stripNamespace(field.subquery.relationshipName) ===
-                childRelationship
+            stripNamespace(field.subquery.relationshipName) === childRelationship
         ) {
             return {
                 ...field,
@@ -218,6 +216,7 @@ function updateCurrentTab(state,attributes){
             // Extra Attributes
             Object.assign(state.tabs[tabIndex],attributes);
         }
+        state.currentTab = state.tabs[tabIndex];
     }
 }
 
@@ -406,10 +405,12 @@ const uiSlice = createSlice({
             updateCurrentTab(state);
         },
         selectChildRelationship: (state, action) => {
-            state.childRelationship = action.payload.childRelationship;
+            const childRelationship = action.payload.childRelationship;
+            updateCurrentTab(state,{childRelationship});
         },
         deselectChildRelationship: (state) => {
-            state.childRelationship = undefined;
+            const childRelationship = undefined;
+            updateCurrentTab(state,{childRelationship});
         },
         selectAllFields: (state, action) => {
             const query = selectAllFields(state.query, action);

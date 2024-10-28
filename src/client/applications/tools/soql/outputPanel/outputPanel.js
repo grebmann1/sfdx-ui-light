@@ -26,9 +26,7 @@ export default class OutputPanel extends ToolkitElement {
     storeChange({ query, ui, application }) {
         const isCurrentApp = this.verifyIsActive(application.currentApplication);
         if(!isCurrentApp) return;
-
         const queryState = SELECTORS.queries.selectById({query},lowerCaseKey(ui.currentTab?.id));
-
         // Tab Processing
         if(ui.currentTab && ui.currentTab.id != this.currentTab?.id){
             this.currentTab = ui.currentTab;
@@ -61,7 +59,7 @@ export default class OutputPanel extends ToolkitElement {
             this.isLoading = false;
             if(this._loadingInterval) clearInterval(this._loadingInterval);
         }
-        this.childResponse = ui.childRelationship;
+        this.childResponse = ui.currentTab.childRelationship;
         if(this.childResponse){
             this.childSobjectName = this.childResponse.column;
             this.selectMainTable(this.childResponse.recordId);
@@ -87,18 +85,20 @@ export default class OutputPanel extends ToolkitElement {
     }
 
     selectMainTable = (recordId) => {
+        
         const _tableInstance = this.refs.maintable?.tableInstance;
         if(_tableInstance){
             //_tableInstance.deselectRow();
-            const setOfIds = [this.currentChildRecordId,recordId].filter(x => x != null);
             _tableInstance.getRows()
-            .filter(row => setOfIds.includes(row.getData().Id))
+            .filter(row => row.getElement().classList.contains('tabulator-highlight-row'))
             .forEach(row => {
-                if(row.getData().Id == this.currentChildRecordId){
-                    row.getElement().classList.remove('tabulator-highlight-row');
-                }else{
-                    row.getElement().classList.add('tabulator-highlight-row');
-                }
+                row.getElement().classList.remove('tabulator-highlight-row');
+            })
+
+            _tableInstance.getRows()
+            .filter(row => recordId === row.getData().Id)
+            .forEach(row => {
+                row.getElement().classList.add('tabulator-highlight-row')
             })
             //_tableInstance.selectRow(_tableInstance.getRows().filter(row => row.getData().Id === this.childResponse.recordId));
             //this.refs.maintable.tableResize(0);
@@ -106,6 +106,9 @@ export default class OutputPanel extends ToolkitElement {
         this.currentChildRecordId = recordId;
     }
 
+    handleTableBuilt = () => {
+        this.selectMainTable(this.currentChildRecordId);
+    }
     
 
     handleError = e => {

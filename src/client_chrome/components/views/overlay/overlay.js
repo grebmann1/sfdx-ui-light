@@ -324,7 +324,7 @@ export default class Overlay extends ToolkitElement {
         if (this.cachedData?.objects && this.checkCategory(TYPE.OBJECT)) {
             combinedResults.push(
                 ...this.cachedData.objects
-                    .filter((x) => x.label.toLowerCase().includes(lowerCaseTerm) || isUndefinedOrNull(searchTerm))
+                    .filter((x) => x.label.toLowerCase().includes(lowerCaseTerm) || x.name.toLowerCase().includes(lowerCaseTerm) || isUndefinedOrNull(searchTerm))
                     .map((x) => ({
                         id: x.Id,
                         type: TYPE.OBJECT,
@@ -333,7 +333,7 @@ export default class Overlay extends ToolkitElement {
                         keyPrefix:x.keyPrefix,
                         isCustomSetting:x.isCustomSetting,
                         durableId:x.durableId,
-                        //extra: obj,
+                        extra: x,
                         relevance: calculateRelevance(x.label, searchTerm),
                     }))
             );
@@ -342,7 +342,7 @@ export default class Overlay extends ToolkitElement {
         if (this.cachedData?.profiles && this.checkCategory(TYPE.PROFILE)) {
             combinedResults.push(
                 ...this.cachedData.profiles
-                    .filter((x) => x.Name.toLowerCase().includes(lowerCaseTerm) || isUndefinedOrNull(searchTerm))
+                    .filter((x) => x.Name.toLowerCase().includes(lowerCaseTerm)|| (x.Label || '').toLowerCase().includes(lowerCaseTerm) || isUndefinedOrNull(searchTerm))
                     .map((x) => ({
                         id: x.Id,
                         type: TYPE.PROFILE,
@@ -357,7 +357,7 @@ export default class Overlay extends ToolkitElement {
         if (this.cachedData?.permissionSets && this.checkCategory(TYPE.PERMISSION_SET)) {
             combinedResults.push(
                 ...this.cachedData.permissionSets
-                    .filter((x) => x.Name.toLowerCase().includes(lowerCaseTerm)|| isUndefinedOrNull(searchTerm))
+                    .filter((x) => x.Name.toLowerCase().includes(lowerCaseTerm)|| (x.Label || '').toLowerCase().includes(lowerCaseTerm)|| isUndefinedOrNull(searchTerm))
                     .map((x) => ({
                         id: x.Id,
                         type: TYPE.PERMISSION_SET,

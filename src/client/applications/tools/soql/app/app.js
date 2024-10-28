@@ -219,6 +219,7 @@ export default class App extends ToolkitElement {
         if (!query) return;
 
         const { ui,describe } = store.getState();
+        store.dispatch(UI.reduxSlice.actions.deselectChildRelationship());
         const queryPromise = store.dispatch(QUERY.executeQuery({
             connector:this.connector,
             soql:query, 

@@ -188,8 +188,10 @@ export default class OutputTable extends ToolkitElement {
             this.isLoading = true;
         });
         this.tableInstance.on("tableBuilt", () => {
-            //console.log('tableBuilt')
             this.isLoading = false;
+            if(!this.isChildTable){
+                this.dispatchEvent(new CustomEvent("tablebuilt", { bubbles: true,composed: true }));
+            }
         });
         this.tableInstance.on("rowSelectionChanged", (data, rows, selected, deselected) => {
             this.dispatchEvent(new CustomEvent("rowselection", { 

@@ -16,7 +16,7 @@
         </div>
         -->
         <div class="table-splitter slds-fill-height">
-            <soql-output-table lwc:ref="maintable" class={mainOutputClass} response={response} sobject-name={sobjectName}></soql-output-table>
+            <soql-output-table lwc:ref="maintable" class={mainOutputClass} response={response} sobject-name={sobjectName} ontablebuilt={handleTableBuilt}></soql-output-table>
             <template lwc:if={childResponse}>
                 <div class={childRelationshipPanelClass}>
                     <button class="slds-button slds-button_icon slds-button_icon" title={i18n.OUTPUT_PANEL_CLOSE_CHILD_REL} onclick={closeChildRelationship}>

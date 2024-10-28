@@ -139,7 +139,7 @@ export function getObjectSetupLink({host, sobjectName, durableId, isCustomSettin
         return getCustomMetadataLink(durableId);
     } else if (isCustomSetting) {
         return `${host}/lightning/setup/CustomSettings/page?address=%2F${durableId}?setupid=CustomSettings`;
-    } else if (sobjectName.endsWith("__c")) {
+    } else if (!isEmpty(durableId) && sobjectName.endsWith("__c")) {
         return `${host}/lightning/setup/ObjectManager/${durableId}/Details/view`;
     } else {
         return `${host}/lightning/setup/ObjectManager/${sobjectName}/Details/view`;
@@ -155,7 +155,7 @@ export function getObjectFieldsSetupLink({host, sobjectName, durableId, isCustom
         return getCustomMetadataLink(durableId);
     } else if (isCustomSetting) {
         return `${host}/lightning/setup/CustomSettings/page?address=%2F${durableId}?setupid=CustomSettings`;
-    } else if (sobjectName.endsWith("__c") || sobjectName.endsWith("__kav")) {
+    } else if (!isEmpty(durableId) && (sobjectName.endsWith("__c") || sobjectName.endsWith("__kav"))) {
         return `${host}/lightning/setup/ObjectManager/${durableId}/FieldsAndRelationships/view`;
     } else {
         return `${host}/lightning/setup/ObjectManager/${sobjectName}/FieldsAndRelationships/view`;
