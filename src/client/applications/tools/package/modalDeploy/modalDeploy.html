@@ -186,7 +186,7 @@
                         </div>
                     </template>
                     <template lwc:else>
-                        <illustration-empty title="Click on Deploy to deploy metadata" size="large"></illustration-empty>
+                        <illustration-empty title="Click on Run to deploy metadata" size="large"></illustration-empty>
                     </template>
                 </div>
             </slds-split-view>
@@ -216,7 +216,7 @@
                 class="slds-button"
                 disabled={isRunning}
                 variant="brand"
-                label="Deploy"
+                label="Run"
                 onclick={handleApplyClick}
             ></lightning-button>
         </template>
