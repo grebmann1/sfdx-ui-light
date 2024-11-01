@@ -1,0 +1,50 @@
+:host{
+    width: 300px;
+}
+
+.item {
+    /* max-height: 30px; */
+    overflow: hidden;
+    font-weight: 700;
+}
+
+.item .slds-split-view__list-item-action:focus {
+    background: unset;
+    color: currentColor;
+    outline: none;
+    text-decoration: none;
+}
+
+.item:hover:not(.slds-is-active) {
+    background: #e3e5ed;
+    cursor: pointer;
+    -webkit-box-shadow: inset 4px 0 0 #1b96ff;
+    box-shadow: inset 4px 0 0 #1b96ff;
+}
+
+.item.slds-is-active{
+    background: antiquewhite;
+}
+
+.item.slds-is-new{
+    background: #1b96ff2b;/* #f3f2f2;*/
+}
+
+.slds-split-view__list-item-action:focus{
+    box-shadow:unset;
+    -webkit-box-shadow:unset;
+}
+
+.slds-is-failure{
+    -webkit-box-shadow: inset 4px 0 0 var(--slds-g-color-error-base-40);
+    box-shadow: inset 4px 0 0 var(--slds-g-color-error-base-40);
+}
+
+.slds-is-success{
+    -webkit-box-shadow: inset 4px 0 0 var(--slds-g-color-success-base-50);
+    box-shadow: inset 4px 0 0 var(--slds-g-color-success-base-50);
+}
+
+.slds-is-running{
+    background: antiquewhite;
+}

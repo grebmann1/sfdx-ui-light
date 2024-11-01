@@ -29,6 +29,7 @@ export default {
     EDITOR_PANEL_SAVE:'Save',
     EDITOR_PANEL_RUN: 'Run',
     EDITOR_PANEL_ABORT: 'Abort',
+    EDITOR_PANEL_ABORTING: 'Aborting',
     EDITOR_PANEL_EXECUTE: 'Execute',
     EDITOR_PANEL_RUN_ALL: 'Query All',
     EDITOR_PANEL_RUN_ALL_TITLE:
@@ -55,5 +56,12 @@ export default {
         'LWC SOQL Builder is a SOQL execution tool developed in Lightning Web Components Open Source, which provides useful features such as viewing the list of items, completing item names, saving queries, and exporting execution results to CSV.',
     WELCOME_LOGIN_PRODUCTION: 'Login to Production Org',
     WELCOME_LOGIN_SANDBOX: 'Login to Sandbox Org',
-    WELCOME_BACK_HOME: 'Back to Home'
+    WELCOME_BACK_HOME: 'Back to Home',
+    TAB_DEPLOY: 'Deploy',
+    TAB_RETRIEVE: 'Retrieve',
+    RETRIEVE_RUN: 'Run',
+    PACKAGE_NEW_DEPLOYMENT: 'New Deployment',
+    PACKAGE_DEPLOY: 'Deploy',
+    PACKAGE_RETRIEVE: 'Retrieve'
+
 };

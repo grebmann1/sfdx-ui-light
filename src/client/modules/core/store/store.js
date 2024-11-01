@@ -6,6 +6,7 @@ import * as DOCUMENT from './document';
 import * as APPLICATION from './application';
 import { UI,QUERY } from 'soql/store';
 import { APEX } from 'anonymousApex/store';
+import { PACKAGE } from 'package/store';
 import { API } from 'api/store';
 import { EVENT } from 'platformevent/store';
 import { EINSTEIN } from 'assistant/store';
@@ -18,6 +19,7 @@ const store = configureStore({
         ui : UI.reduxSlice.reducer,
         query : QUERY.reduxSlice.reducer,
         apex : APEX.reduxSlice.reducer,
+        package2 : PACKAGE.reduxSlice.reducer,
         platformEvent : EVENT.reduxSlice.reducer,
         api : API.reduxSlice.reducer,
         einstein: EINSTEIN.reduxSlice.reducer,
@@ -57,6 +59,7 @@ export {
     UI,
     QUERY,
     APEX,
+    PACKAGE,
     EVENT,
     API,
     DOCUMENT,

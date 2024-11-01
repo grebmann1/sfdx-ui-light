@@ -1,0 +1,70 @@
+<template>
+    <slds-split-view class="slds-fill-height" left-min-width="200" right-min-width="200" is-horizontal>
+        <div class="slds-flex-column slds-full-height slds-full-width slds-is-relative" slot="left">
+            <!-- List of deployments -->
+             <package-deploy-list class="slds-flex-column slds-full-height" 
+                requests={requests} 
+                selected-item={selectedItem}
+                onrefresh={handleRefresh}
+                onselect={handleItemSelection}
+            ></package-deploy-list>
+             <template lwc:if={isLoading}>
+                <slds-spinner message="Fetching latest requests"></slds-spinner>
+            </template>
+        </div>
+        <div class={rightSlotClass} slot="right">
+            <template lwc:if={isItemSelected}>
+                <div class="editor slds-flex-column slds-fill-height">
+                    <div class="slds-grid slds-grid_align-spread">
+
+                        <lightning-radio-group name="radioGroup"
+                            label="Radio Group"
+                            options={viewer_options}
+                            value={viewer_value}
+                            required
+                            type="button"
+                            variant="label-hidden"
+                            class="slds-col slds-p-around_x-small"
+                            onchange={viewer_handleChange}
+                        ></lightning-radio-group>
+
+                        <lightning-button 
+                            class="slds-col slds-p-around_x-small" 
+                            variant="destructive" 
+                            label={abortLabel} 
+                            icon-name="utility:clear" 
+                            onclick={handleAbort}
+                            disabled={isAbortDisabled}
+                        ></lightning-button>
+
+                    </div>
+                
+                    <div class={prettyContainerClass}>
+                        <slds-code-block 
+                            class="slds-full-height" 
+                            code-block={formattedResponse} 
+                            language="json" 
+                            title="Formatted Response"
+                        ></slds-code-block>
+                    </div>
+                
+                    <div class={rawContainerClass}>
+                        <editor-default lwc:ref="response"
+                            class="slds-full-height slds-is-relative" 
+                            model={responseModel}
+                            onmonacoloaded={handleResponseLoad}
+                            is-read-only
+                        ></editor-default>
+                    </div> 
+                </div>
+            </template>
+            <template lwc:else>
+                <illustration-empty title="Select a deployment to see the details" size="large"></illustration-empty>
+            </template>
+
+            <template lwc:if={isLoadingSpecificRequest}>
+                <slds-spinner message="Fetching details"></slds-spinner>
+            </template>
+        </div>
+    </slds-split-view>
+</template>

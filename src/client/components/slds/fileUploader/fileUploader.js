@@ -10,6 +10,9 @@ export default class FileUploader extends LightningElement {
 
     @api typeList = [];
 
+    // To refactor later to replace the import/export mode
+    @api isBasic = false;
+
 
     drag = false;
     dragOver = false; // New property to track drag over state
@@ -90,7 +93,16 @@ export default class FileUploader extends LightningElement {
         event.preventDefault();
         const files = event.dataTransfer?.files || event.target?.files;
         if (files.length > 0 && this.typeList.includes(files[0].type)) {
-            this.readFile(files[0]);
+            if(this.isBasic){
+                this.dispatchEvent(new CustomEvent("filechange", { 
+                    detail:{
+                        files,
+                        value:`C:\\fakepath\\${files[0].name}` // Take the first file name
+                    },composed: true,bubbles: true 
+                }));
+            }else{
+                this.readFile(files[0]);
+            }
         } else {
             LightningAlert.open({
                 message: `The format ${files[0].type} isn\'t supported !`,

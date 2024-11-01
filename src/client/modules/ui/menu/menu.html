@@ -180,20 +180,40 @@
             </template>
             <!-- LARGE MENU - END -->
         </template>
-    </lightning-vertical-navigation>
-    <div class="slds-has-divider_top-space"></div>
-    <!-- Others -->
-    <template lwc:if={isNotMenuSmall}>
-        <h2 class="slds-nav-vertical__title">Others</h2>
-    </template>
-    <lightning-vertical-navigation-section>
-        <template for:each={others} for:item="item">
-            <lightning-vertical-navigation-item-icon key={item.name} onclick={handleRedirection} data-url={item.url}
-                data-key={item.path}
-                label={item.menuLabel}
-                name={item.name}
-                icon-name={item.menuIcon}>
-            </lightning-vertical-navigation-item-icon>
+        <div class="slds-has-divider_top-space"></div>
+        <!-- Others -->
+        <template lwc:if={isNotMenuSmall}>
+            <h2 class="slds-nav-vertical__title">Others</h2>
         </template>
-    </lightning-vertical-navigation-section>
+        <lightning-vertical-navigation-section>
+            <template for:each={extras} for:item="item">
+                <template lwc:if={isMenuSmall}>
+                    <lightning-vertical-navigation-item-icon
+                        data-key={item.path}
+                        key={item.name}
+                        name={item.path}
+                        icon-name={item.menuIcon}
+                    ></lightning-vertical-navigation-item-icon>
+                </template>
+                <template lwc:else>
+                    <lightning-vertical-navigation-item-icon
+                        data-key={item.path}
+                        label={item.menuLabel}
+                        key={item.name}
+                        name={item.path}
+                        icon-name={item.menuIcon}
+                    ></lightning-vertical-navigation-item-icon>
+                </template>
+                
+            </template>
+            <template for:each={others} for:item="item">
+                <lightning-vertical-navigation-item-icon key={item.name} onclick={handleRedirection} data-url={item.url}
+                    data-key={item.path}
+                    label={item.menuLabel}
+                    name={item.name}
+                    icon-name={item.menuIcon}>
+                </lightning-vertical-navigation-item-icon>
+            </template>
+        </lightning-vertical-navigation-section>
+    </lightning-vertical-navigation>
 </template>

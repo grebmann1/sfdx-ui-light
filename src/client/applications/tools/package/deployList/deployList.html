@@ -1,0 +1,32 @@
+<template>
+    <div class="slds-fill-height slds-flex-column slds-m-top_x-small" role="tabpanel">
+        
+        <div class="slds-grid slds-grid_align-end">
+            <div class="slds-col">
+                <template lwc:if={isAutoRefreshMessageDisplayed}>
+                    <span class="slds-p-right_x-small">Auto refresh in {timeLeft} seconds</span>
+                </template>
+                <lightning-button-group class="slds-m-right_medium">
+                    <lightning-button-icon icon-name="utility:refresh" tooltip="Refresh the requests" onclick={handleRefreshClick}></lightning-button-icon>
+                    <template lwc:if={isAutoRefreshMessageDisplayed}>
+                        <lightning-button-icon icon-name="utility:stop" tooltip="Stop auto-refresh" onclick={handleStopAutoRefreshClick}></lightning-button-icon>
+                    </template>
+                    <template lwc:else>
+                        <lightning-button-icon icon-name="utility:right" tooltip="Enable auto-refresh" onclick={handleStartAutoRefreshClick}></lightning-button-icon>
+                    </template>
+                </lightning-button-group>
+            </div>
+        </div>
+        <lightning-input class="slds-m-around_medium" type="search" label="Search" variant="label-hidden"
+            value={filter} onchange={handleSearch}
+        ></lightning-input>
+        <div class="slds-scrollable_y" onscroll={handleScroll}>
+            <template lwc:if={isEmpty}>
+                <illustration-empty title="No Requests" sub-title="There is no requests received"></illustration-empty>
+            </template>
+            <template for:each={virtualList} for:item="item">
+                <package-deploy-list-item selected-item-id={selectedItemId} item={item} key={item.Id}></package-deploy-list-item>
+            </template>
+        </div>
+    </div>
+</template>

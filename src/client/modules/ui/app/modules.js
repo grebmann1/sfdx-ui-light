@@ -12,6 +12,9 @@ import platformEvent_app from "platformevent/app";
 import anonymousApex_app from "anonymousApex/app";
 import api_app from "api/app";
 import assistant_app from "assistant/app";
+import package_app from "package/app";
+import release_app from "release/app";
+
 /*
 const KNOWN_TYPE = new Set([
     "home/app",
@@ -35,8 +38,10 @@ const i18n = {
     TOOL : 'tool',
     APPLICATION : 'application',
     CONNECTION : 'connection',
-    DOCUMENTATION : 'documentation'
+    DOCUMENTATION : 'documentation',
+    EXTRA : 'extra'
 }
+
 const APP_MAPPING = {
     "home/app": {
         module:home_app,
@@ -214,6 +219,21 @@ const APP_MAPPING = {
         shortName:"APEX",
         path:'anonymousapex'
     },
+    "package/app":{
+        module:package_app,
+        isFullHeight:true,
+        isDeletable:true,
+        isElectronOnly:false,
+        isOfflineAvailable:false,
+        isMenuVisible:true,
+        isTabVisible:true,
+        label:"Deploy/Retrieve",
+        type:i18n.TOOL,
+        description:"",
+        quickActionIcon:"standard:maintenance_asset",
+        shortName:"PACK",
+        path:'package'
+    },
     "assistant/app":{
         module:assistant_app,
         isFullHeight:true,
@@ -228,6 +248,22 @@ const APP_MAPPING = {
         quickActionIcon:"standard:story",
         shortName:"AI",
         path:'assistant'
+    },
+    "release/app":{
+        module:release_app,
+        isFullHeight:true,
+        isDeletable:true,
+        isElectronOnly:false,
+        isOfflineAvailable:true,
+        isMenuVisible:true,
+        isTabVisible:true,
+        label:"Release Notes",
+        type:i18n.EXTRA,
+        description:"Review the changes.",
+        menuIcon:"utility:notebook",
+        quickActionIcon:"standard:entitlement",
+        shortName:"RN",
+        path:'release'
     }
 };
 /*

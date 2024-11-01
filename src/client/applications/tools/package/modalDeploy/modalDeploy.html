@@ -1,0 +1,224 @@
+<template>
+    <lightning-modal-header label="Deploy Metadata"></lightning-modal-header>
+    <lightning-modal-body> 
+        <slds-file-uploader lwc:ref="uploader" onfilechange={handleFileChange} type-list="['application/zip']" disabled={isInputDisabled} is-basic>
+            <slds-split-view class="slds-fill-height" left-min-width="200" right-min-width="200" is-horizontal>
+                <div class="slds-flex-column slds-full-height slds-full-width" slot="left">
+                    <section class="min-height-400 slds-is-relative">
+                        <div class="slds-flex-column slds-full-height slds-full-width" slot="left">
+                            <div class="slds-form slds-p-around_medium" role="list">
+                                <div class="slds-section slds-is-open">
+                                    <h3 class="slds-section__title">
+                                        <div class="slds-section__title-action">
+                                            <span class="slds-truncate" title="Package">Package</span>
+                                        </div>
+                                    </h3>
+                                    <div class="slds-section__content">
+                                        <div class="slds-form slds-p-around_x-small" role="list">
+                                            <div class="slds-form__row">
+                                                <div class="slds-form__item" role="listitem">
+                                                    <template lwc:if={isFileListDisplayed}>
+                                                        <!-- List of files-->
+                                                        <div style="width:20rem;">
+                                                            <div class="slds-file slds-file_card slds-has-title">
+                                                                <figure>
+                                                                    <a href="javascript:void(0);" class="slds-file__crop">
+                                                                        <span class="slds-assistive-text">Preview:</span>
+                                                                        <span class="slds-file__icon slds-icon_container">
+                                                                            <svg class="slds-icon" aria-hidden="true">
+                                                                                <use xlink:href="/assets/icons/doctype-sprite/svg/symbols.svg#image"></use>
+                                                                            </svg>
+                                                                        </span>
+                                                                    </a>
+                                                                    <figcaption class="slds-file__title slds-file__title_card slds-file-has-actions">
+                                                                        <div class="slds-media slds-media_small slds-media_center">
+                                                                            <div class="slds-media__figure slds-line-height_reset">
+                                                                                <span class="slds-icon_container" >
+                                                                                    <svg class="slds-icon slds-icon_x-small" aria-hidden="true">
+                                                                                        <use xlink:href="/assets/icons/doctype-sprite/svg/symbols.svg#image"></use>
+                                                                                    </svg>
+                                                                                </span>
+                                                                            </div>
+                                                                            <div class="slds-media__body">
+                                                                                <span class="slds-file__text slds-truncate" title={fileName}>{fileName}</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </figcaption>
+                                                                </figure>
+                                                                <div class="slds-file__actions-menu">
+                                                                    <lightning-button-icon icon-name="utility:delete" variant="container" size="x-small" onclick={handleRemoveFile} disabled={isInputDisabled}></lightning-button-icon>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                    <template lwc:else>
+                                                        <lightning-input type="file" label="Upload Metadata File" accept=".zip" onchange={handleFileChange} disabled={isInputDisabled}></lightning-input>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-section slds-is-open">
+                                    <h3 class="slds-section__title">
+                                        <div class="slds-section__title-action">
+                                            <span class="slds-truncate" title="Settings">Settings</span>
+                                        </div>
+                                    </h3>
+                                    <div class="slds-section__content">
+                                        <div class="slds-form slds-p-around_x-small" role="list">
+                                            <div class="slds-form__row">
+                                                <div class="slds-form__item" role="listitem">
+                                                    <lightning-input class="deployment-option" type="checkbox" label="Allow Missing Files" name="allowMissingFiles" disabled={isInputDisabled}></lightning-input>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form__row">
+                                                <div class="slds-form__item" role="listitem">
+                                                    <lightning-input class="deployment-option" type="checkbox" label="Auto Update Package" name="autoUpdatePackage" disabled={isInputDisabled}></lightning-input>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form__row">
+                                                <div class="slds-form__item" role="listitem">
+                                                    <lightning-input class="deployment-option" type="checkbox" label="Check Only" name="checkOnly" disabled={isInputDisabled}></lightning-input>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form__row">
+                                                <div class="slds-form__item" role="listitem">
+                                                    <lightning-input class="deployment-option" type="checkbox" label="Ignore Warnings" name="ignoreWarnings" disabled={isInputDisabled}></lightning-input>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form__row">
+                                                <div class="slds-form__item" role="listitem">
+                                                    <lightning-input class="deployment-option" type="checkbox" label="Perform Retrieve" name="performRetrieve" disabled={isInputDisabled}></lightning-input>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form__row">
+                                                <div class="slds-form__item" role="listitem">
+                                                    <lightning-input class="deployment-option" type="checkbox" label="Purge On Delete" name="purgeOnDelete" disabled={isInputDisabled}></lightning-input>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form__row">
+                                                <div class="slds-form__item" role="listitem">
+                                                    <lightning-input class="deployment-option" type="checkbox" label="Rollback On Error" name="rollbackOnError" disabled={isInputDisabled}></lightning-input>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form__row">
+                                                <div class="slds-form__item" role="listitem">
+                                                    <lightning-input class="deployment-option" type="checkbox" label="Single Package" name="singlePackage" disabled={isInputDisabled}></lightning-input>
+                                                </div>
+                                            </div>
+                                            <!-- Add Test Picklist -->
+                                            <div class="slds-form__row">
+                                                <div class="slds-form__item" role="listitem">
+                                                    <lightning-combobox lwc:ref="method" 
+                                                        class="deployment-option"
+                                                        label="Test Level"
+                                                        name="testLevel"
+                                                        dropdown-alignment="left"
+                                                        value={testLevel_value}
+                                                        disabled={isInputDisabled}
+                                                        options={testLevel_options}
+                                                        onchange={testLevel_change}
+                                                    ></lightning-combobox>                                    
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Add Test List to run -->
+                                            <div class="slds-form__row">
+                                                <div class="slds-form__item" role="listitem">
+                                                    <lightning-input class="deployment-option" label="Run Tests" name="runTests" disabled={isRunTestInputDisabled}></lightning-input>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="text-align: center;">
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class={rightSlotClass} slot="right">
+                    <template lwc:if={hasError}>
+                        <slds-information-block class="slds-p-around_x-small" title={error_title} variant="error">
+                            <p>{error_message}</p>
+                        </slds-information-block>
+                    </template>
+                    <template lwc:if={isRunning}>
+                        <slds-spinner message={_loadingMessage} additional-message="Uploading Package &amp; Monitoring."></slds-spinner>
+                    </template>
+                    <template lwc:elseif={isResultDisplayed}>
+                        <slds-information-block class="slds-p-around_x-small" title={resultTitle} variant={resultVariant}>
+                            <p>{resultMessage}</p>
+                            <p>{resultMessageDetails}</p>
+                        </slds-information-block>
+                        <div class="editor slds-flex-column slds-fill-height">
+                            <div>
+                                <lightning-radio-group name="radioGroup"
+                                    label="Radio Group"
+                                    options={viewer_options}
+                                    value={viewer_value}
+                                    required
+                                    type="button"
+                                    variant="label-hidden"
+                                    class="slds-p-around_x-small"
+                                    onchange={viewer_handleChange}
+                                ></lightning-radio-group>
+                            </div>
+                        
+                            <div class={prettyContainerClass}>
+                                <slds-code-block 
+                                    class="slds-full-height" 
+                                    code-block={formattedResponse} 
+                                    language="json" 
+                                    title="Formatted Response"
+                                ></slds-code-block>
+                            </div>
+                        
+                            <div class={rawContainerClass}>
+                                <editor-default lwc:ref="response"
+                                    class="slds-full-height slds-is-relative" 
+                                    model={responseModel}
+                                    onmonacoloaded={handleResponseLoad}
+                                    is-read-only
+                                ></editor-default>
+                            </div> 
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <illustration-empty title="Click on Deploy to deploy metadata" size="large"></illustration-empty>
+                    </template>
+                </div>
+            </slds-split-view>
+        </slds-file-uploader>
+    </lightning-modal-body>
+    <lightning-modal-footer>
+        <template lwc:if={isDone}>
+            <!-- Only display close when finish -->
+            <lightning-button
+                class="slds-button"
+                disabled={isRunning}
+                variant="brand"
+                label="Close"
+                onclick={handleCloseClick}
+            ></lightning-button>
+        </template>
+        <template lwc:else>
+            <!-- Is Done -->
+            <lightning-button
+                class="slds-float_left slds-button"
+                disabled={isRunning}
+                variant="neutral"
+                label="Cancel"
+                onclick={handleCancelClick}
+            ></lightning-button>
+            <lightning-button
+                class="slds-button"
+                disabled={isRunning}
+                variant="brand"
+                label="Deploy"
+                onclick={handleApplyClick}
+            ></lightning-button>
+        </template>
+      </lightning-modal-footer>
+</template>

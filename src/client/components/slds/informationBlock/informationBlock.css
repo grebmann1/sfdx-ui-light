@@ -52,6 +52,22 @@ blockquote.error strong{
     color: var(--slds-g-color-error-base-40,#ea001e);
 }
 
+/** Success **/
+
+blockquote.success {
+    border-left-color: var(--slds-g-color-success-base-60,#3ba755);
+    color: var(--slds-g-color-success-base-60,#3ba755);
+    font-size: 1rem;
+}
+
+blockquote.success .title {
+    color: var(--slds-g-color-success-base-60,#3ba755);
+}
+
+blockquote.success strong{
+    color: var(--slds-g-color-success-base-60,#3ba755);
+}
+
 /** Reverse: **/
 
 blockquote.reverse {

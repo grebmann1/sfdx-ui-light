@@ -10,6 +10,7 @@ export default class InformationBlock extends LightningElement {
         return classSet('doc')
             .add({
                 'error':this.variant === 'error',
+                'success':this.variant === 'success',
                 'reverse':this.variant === 'reverse'
             })
             .toString()

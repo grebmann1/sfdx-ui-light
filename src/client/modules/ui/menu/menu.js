@@ -164,6 +164,10 @@ export default class Menu extends ToolkitElement {
         return this.generateFilter('documentation');
     }
 
+    get extras(){
+        return this.generateFilter('extra');
+    }
+
     get tools(){
         return this.generateFilter('tool');
     }
@@ -193,12 +197,6 @@ export default class Menu extends ToolkitElement {
                 url:"https://github.com/grebmann1/sfdx-ui-light",
                 menuIcon:'utility:recipe',
                 menuLabel:this.isMenuSmall?'':'Contribute'
-            },
-            {
-                name:'extra_release',
-                url:"https://github.com/grebmann1/sfdx-ui-light/blob/master/release.md",
-                menuIcon:'utility:alert',
-                menuLabel:this.isMenuSmall?'':'Release Info'
             }
         ]
     }

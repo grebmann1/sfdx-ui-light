@@ -70,7 +70,6 @@ export default class App extends LightningElement {
         }else if(isNotUndefinedOrNull(application.isMenuExpanded)){
             this.isMenuCollapsed = !application.isMenuExpanded;
         }
-
         // Redirect
         if(application.redirectTo){
             this.handleRedirection(application);
@@ -79,7 +78,6 @@ export default class App extends LightningElement {
 
     @wire(connectStore,{store})
     storeChange({application}){
-        //console.log('application',application);
         this._isFullAppLoading = application.isLoading;
         this._fullAppLoadingMessage = application.isLoadingMessage;
 

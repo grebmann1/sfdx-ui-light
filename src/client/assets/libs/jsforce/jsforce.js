@@ -96520,6 +96520,7 @@ var SOAP = /*#__PURE__*/function (_HttpApi) {
         return regenerator_default().wrap(function _callee$(_context4) {
           while (1) switch (_context4.prev = _context4.next) {
             case 0:
+              const t= (0,defineProperty/* default */.A)({}, method, args);
               _context4.next = 2;
               return this.request({
                 method: 'POST',
