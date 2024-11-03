@@ -95,7 +95,7 @@
                     </slds-information-block>
                 </template>
                 <template lwc:if={isRunning}>
-                    <slds-spinner message={_loadingMessage} additional-message="Sending Export Request &amp; Retrieving Metadata."></slds-spinner>
+                    <slds-spinner message={_loadingMessage} additional-message="Fetching metadata"></slds-spinner>
                 </template>
                 <template lwc:elseif={isResultDisplayed}>
                     <slds-information-block class="slds-p-around_x-small" title={resultTitle} variant={resultVariant}>
@@ -103,6 +103,10 @@
                         <p> RequestId : {resultId} </p>
                     </slds-information-block>
                     <div class="editor slds-flex-column slds-fill-height">
+                        <illustration-default class="slds-p-top_large" title="Your metadata have been exported.">
+                            <lightning-button variant="brand" title={formattedZipDownloadLabel} label={formattedZipDownloadLabel} onclick={handle_downloadClick} disabled={isDownloading}></lightning-button>
+                        </illustration-default> 
+                        <!--
                         <template lwc:if={isFormattedContentDisplayed}>
                             <div>
                                 <lightning-radio-group name="radioGroup"
@@ -138,6 +142,7 @@
                                 <lightning-button variant="brand" title={formattedZipDownloadLabel} label={formattedZipDownloadLabel} onclick={handle_downloadClick} disabled={isDownloading}></lightning-button>
                             </illustration-default> 
                         </template>
+                        -->
                     </div>
                 </template>
                 <template lwc:else>

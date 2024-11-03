@@ -53,15 +53,13 @@
                     onchange={handleSearch}
                 ></lightning-input>
             </template>
-
-    
-            <template lwc:if={displayIfEmpty}>
-                <div class="slds-p-around_small">No items found</div>
-            </template>
-            
             <div class="slds-flex-column slds-fill-height slds-is-relative">
                 <template lwc:if={isLoading}>
-                    <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                    <slds-spinner alternative-text="Loading" size="small"></slds-spinner>
+                </template>
+                <slot name="listmenu"></slot>
+                <template lwc:if={displayIfEmpty}>
+                    <div class="slds-p-around_small">No items found</div>
                 </template>
                 <lightning-vertical-navigation onselect={handleSelection} compact class="slds-scrollable_y" onscroll={handleScroll}>
                     <lightning-vertical-navigation-section>

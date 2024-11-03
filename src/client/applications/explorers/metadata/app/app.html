@@ -56,48 +56,43 @@
             <div class="slds-card__body slds-card__body_inner slds-full-height" style="overflow:hidden;">
                 <div class="slds-full-height slds-grid slds-gutters_direct slds-wrap slds-is-relative" style="min-height:200px;">
                     <!-- Container -->
-                        
-                    <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-4 slds-border-right">
-                        <!-- Metadata List -->
-                        <slds-menu class="slds-flex-column slds-full-height"
-                            items={menuItems}
-                            title={menuBackTitle}
-                            is-back-displayed={isBackDisplayed}
-                            level={currentLevel}
-                            is-loading={isLoading}
-                            keep-filter={keepFilter}
-                            namespace-filtering-value="Default"
-                            is-refresh-available={isRefreshButtonDisplayed}
-                            onmenuselection={handleMenuSelection}
-                            onback={handleMenuBack}
-                            onrefresh={handleRefresh}
-                        ></slds-menu>
-                    </div>
-                    <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_3-of-4 slds-is-relative">
-
-                        <!-- Editor view -->
-                        <editor-app lwc:ref="editor" class={editorClass} is-tab-enabled is-coverage-enabled is-tab-closeable-disabled></editor-app>
-                        
-
-                        <!-- JSON Viewer view -->
-                        <template lwc:if={isMetadataViewerDisplayed}>
-                            <metadata-viewer class="slds-full-height" lwc:ref="viewer" record={selectedRecord} ></metadata-viewer>
-                        </template>
-                        <template lwc:elseif={selectedRecordLoading}>
-                            <lightning-spinner alternative-text="Loading"></lightning-spinner>
-                        </template>
-                        <template lwc:elseif={isNoRecord}>
-                            <illustration-empty title="No record" sub-title={noRecordMessage}></illustration-empty>
-                        </template>
-
-                        <!--<div class="slds-scrollable_y">
-                            <template lwc:if={isRecordDisplayed}>
-                                <metadata-code-viewer></metadata-code-viewer>
-                                <div lwc:dom="manual" lwc:ref="container"></div>
-                            </template>
+                    <slds-split-view class="slds-fill-height" left-min-width="200" right-min-width="200" splitter-position="30" is-horizontal>
+                        <div class="slds-flex-column slds-full-height slds-full-width slds-is-relative" slot="left">
+                            <metadata-menu lwc:ref="menu" class="slds-full-height slds-p-horizontal_x-small"
+                                label1={label1}
+                                label2={label2}
+                                param1={param1}
+                                param2={param2}
+                                sobject={sobject}
+                                onselect={handleItemSelection}
+                                is-navigation-enabled
+                            ></metadata-menu>
                         </div>
-                        -->
-                    </div>
+                        <div class="slds-flex-column slds-full-height slds-full-width slds-is-relative" slot="right">
+                            <!-- Editor view -->
+                            <editor-app lwc:ref="editor" class={editorClass} is-tab-enabled is-coverage-enabled is-tab-closeable-disabled></editor-app>
+                            
+
+                            <!-- JSON Viewer view -->
+                            <template lwc:if={isMetadataViewerDisplayed}>
+                                <metadata-viewer class="slds-full-height" lwc:ref="viewer" record={selectedRecord} ></metadata-viewer>
+                            </template>
+                            <template lwc:elseif={selectedRecordLoading}>
+                                <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                            </template>
+                            <template lwc:elseif={isNoRecord}>
+                                <illustration-empty title="No record" sub-title={noRecordMessage}></illustration-empty>
+                            </template>
+
+                            <!--<div class="slds-scrollable_y">
+                                <template lwc:if={isRecordDisplayed}>
+                                    <metadata-code-viewer></metadata-code-viewer>
+                                    <div lwc:dom="manual" lwc:ref="container"></div>
+                                </template>
+                            </div>
+                            -->
+                        </div>
+                    </slds-split-view>
                 </div>
             </div>
         </article>

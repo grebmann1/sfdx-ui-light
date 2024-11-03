@@ -1,6 +1,6 @@
 import {isUndefinedOrNull} from "shared/utils";
 import {getConfiguration} from "./utils";
-
+import constant from 'core/constant';
 import * as webInterface from './web';
 
 export const generateAccessToken = async ({alias}) => {

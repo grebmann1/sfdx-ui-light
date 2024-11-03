@@ -1,10 +1,11 @@
 <template>
     <div class={pageClass}>
-        <builder-editor>
+        <builder-editor is-left-panel-toggled={isLeftToggled}>
             <builder-header slot="header" title="Tools" sub-title="Package Import/Export" icon-name="standard:maintenance_asset">
                 <div slot="actions" class="slds-builder-toolbar__actions">
                     
                     <lightning-button icon-name="utility:link" label="Deployment Manager" onclick={goToUrl} data-url="/lightning/setup/DeployStatus/home"></lightning-button>
+
                     <!-- For Deploy -->
                     <template lwc:if={isDeployVisible}>
                         <template lwc:if={isNewDeploymentButtonDisplayed}>
@@ -33,13 +34,27 @@
                 <p slot="meta" class="slds-page-header__meta-text">
                     Currently in Beta
                 </p>
-                <!--
-                    <div slot="subactions" class="slds-builder-toolbar__actions">
-                        <lightning-button-icon-stateful class="slds-p-left_xx-small" selected={isDebugLogToggle} variant="border-filled" icon-name="utility:bug" size="large" onclick={toggle_debugLog}></lightning-button-icon-stateful>    
-                        <lightning-button-icon-stateful class="slds-p-left_xx-small" selected={isRecentToggled}  variant="border-filled" icon-name="utility:budget_period"  size="large" onclick={handleRecentToggle}></lightning-button-icon-stateful>
-                    </div>
-                -->
+                <div slot="subactions" class="slds-builder-toolbar__actions">
+                    <lightning-button-icon-stateful class="slds-p-left_xx-small" disabled={isCatalogDisabled} selected={isLeftToggled} variant="border-filled" icon-name="utility:knowledge_base" size="large" onclick={handleLeftToggle} tooltip="Display the Metadata Catalog."></lightning-button-icon-stateful>
+                </div>
             </builder-header>
+
+            <!-- Left Panel -->
+            <div slot="left" class="slds-full-height slds-full-width slds-flex-column">
+                <metadata-menu lwc:ref="menu" class="slds-full-height slds-p-horizontal_x-small"
+                    label1={label1}
+                    label2={label2}
+                    param1={param1}
+                    param2={param2}
+                    sobject={sobject}
+                    onselect={handleItemSelection}
+                    onselectall={handleSelectAll}
+                    onunselectall={handleUnselectAll}
+                    is-basic-selection-enabled
+                    is-select-all-displayed
+                ></metadata-menu>
+            </div>
+
             <article class="full-page-body slds-card">
                 <div class="slds-is-relative slds-full-width slds-full-height slds-flex-column" style="min-height:200px;">
                     <template lwc:if={isLoading}>

@@ -23,13 +23,13 @@ function saveCacheSettings(alias,state) {
     console.log('saveCacheSettings');
     try {
         const { 
-            currentMethod
+            currentMethod,leftPanelToggled
         } = state
 
         localStorage.setItem(
             `${alias}-${PACKAGE_SETTINGS_KEY}`,
             JSON.stringify({ 
-                currentMethod
+                currentMethod,leftPanelToggled
             })
         );
     } catch (e) {
@@ -114,6 +114,7 @@ export const cancelPackageDeploy = createAsyncThunk(
 const packageSlice = createSlice({
     name: 'package',
     initialState:{
+        leftPanelToggled:false,
         currentMethod:null,
         currentDeploymentJob:null,
         currentRetrieveJob:null
@@ -139,6 +140,13 @@ const packageSlice = createSlice({
         updateCurrentMethodPanel :(state, action) => {
             const { value,alias } = action.payload;
             state.currentMethod = value;
+            if(isNotUndefinedOrNull(alias)){
+                saveCacheSettings(alias,state);
+            }
+        },
+        updateLeftPanel : (state,action) => {
+            const { value,alias } = action.payload;
+            state.leftPanelToggled = value === true;
             if(isNotUndefinedOrNull(alias)){
                 saveCacheSettings(alias,state);
             }

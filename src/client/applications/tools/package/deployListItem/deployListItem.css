@@ -15,8 +15,12 @@
     text-decoration: none;
 }
 
+.item .slds-split-view__list-item-action:hover {
+    background: unset;
+}
+
 .item:hover:not(.slds-is-active) {
-    background: #e3e5ed;
+    background: antiquewhite;
     cursor: pointer;
     -webkit-box-shadow: inset 4px 0 0 #1b96ff;
     box-shadow: inset 4px 0 0 #1b96ff;

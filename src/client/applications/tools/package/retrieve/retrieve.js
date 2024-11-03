@@ -1,7 +1,7 @@
-import { api,track,wire } from "lwc";
+import { api, track, wire } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
-import { lowerCaseKey,isUndefinedOrNull,isNotUndefinedOrNull,isEmpty,guid,classSet,runActionAfterTimeOut,compareString,splitTextByTimestamp,prettifyXml } from 'shared/utils';
-import { store,connectStore,PACKAGE,SELECTORS } from 'core/store';
+import { lowerCaseKey, isUndefinedOrNull, isNotUndefinedOrNull, isEmpty, guid, classSet, runActionAfterTimeOut, compareString, splitTextByTimestamp, prettifyXml } from 'shared/utils';
+import { store, connectStore, PACKAGE, SELECTORS } from 'core/store';
 import { VIEWERS } from 'api/utils';
 import Toast from 'lightning/toast';
 import moment from 'moment';
@@ -10,10 +10,10 @@ import xml2js from 'xml2js';
 
 
 const TESTLEVEL = {
-    NoTestRun:'NoTestRun',
-    RunLocalTests:'RunLocalTests',
-    RunAllTestsInOrg:'RunAllTestsInOrg',
-    RunSpecifiedTests:'RunSpecifiedTests',
+    NoTestRun: 'NoTestRun',
+    RunLocalTests: 'RunLocalTests',
+    RunAllTestsInOrg: 'RunAllTestsInOrg',
+    RunSpecifiedTests: 'RunSpecifiedTests',
 }
 
 export default class Retrieve extends ToolkitElement {
@@ -51,85 +51,174 @@ export default class Retrieve extends ToolkitElement {
     }
 
     set body(value) {
-        if(this._hasRendered){
+        if (this._hasRendered) {
             const inputEl = this.refs?.manifest?.currentModel;
-            if (inputEl && this._body != value){
-                inputEl.setValue(isUndefinedOrNull(value)?'':value);
+            if (inputEl && this._body != value) {
+                inputEl.setValue(isUndefinedOrNull(value) ? '' : value);
             }
         }
         this._body = value;
     }
 
-    connectedCallback(){
-        this.body = prettifyXml(TEMPLATE.BASIC.replace('{0}',this.currentApiVersion));
+    connectedCallback() {
+        this.body = prettifyXml(TEMPLATE.BASIC.replace('{0}', this.currentApiVersion));
     }
 
-    renderedCallback(){
+    renderedCallback() {
         this._hasRendered = true;
     }
 
 
 
     @wire(connectStore, { store })
-    storeChange({ package2,application }) {
+    storeChange({ package2, application }) {
         const isCurrentApp = this.verifyIsActive(application.currentApplication);
-        if(!isCurrentApp) return;
+        if (!isCurrentApp) return;
 
         // Retrieve 
         const retrieveState = package2.currentRetrieveJob;
-        if(retrieveState){        
+        if (retrieveState) {
             this.isRunning = retrieveState.isFetching;
-            if(this.isRunning){
+            if (this.isRunning) {
                 this.loading_enableAutoDate(retrieveState.createdDate);
-            }else{
-                if(this._loadingInterval) clearInterval(this._loadingInterval);
+            } else {
+                if (this._loadingInterval) clearInterval(this._loadingInterval);
             }
 
-            if(retrieveState.error){
+            if (retrieveState.error) {
                 this.global_handleError(retrieveState.error);
                 this.resetResponse();
-            }else if(retrieveState.data){
+            } else if (retrieveState.data) {
                 // Reset First
                 this.resetError();
                 // Assign Data
                 this._response = retrieveState.data;
 
-            }else if(retrieveState.isFetching){
+            } else if (retrieveState.isFetching) {
                 this.resetError();
                 this.resetResponse();
             }
-        }else {
+        } else {
             this.resetError();
             this.resetResponse();
-            if(this._loadingInterval) clearInterval(this._loadingInterval);
+            if (this._loadingInterval) clearInterval(this._loadingInterval);
         }
 
     }
 
     /** Methods  **/
+
+    @api
+    toggleMetadata = async (param) => {
+        const { sobject, label, selectAll, unselectAll } = param;
+        const membersToAdd = {};
+        if (sobject && label) {
+            membersToAdd[sobject] = [label];
+        }
+
+        const manifestXml = this.refs.manifest.currentModel.getValue();
+
+        this.updateManifest(manifestXml, membersToAdd, selectAll || [], unselectAll || [])
+            .then(newManifest => {
+                this.refs.manifest.currentModel.setValue(newManifest);
+            }).catch(e => {
+                console.error(e);
+            })
+    }
+
+    updateManifest = async (xml, membersToToggle, selectAll, unselectAll) => {
+        const parser = new xml2js.Parser();
+        const builder = new xml2js.Builder();
+
+        try {
+            // Parse the XML
+            const parsedData = await parser.parseStringPromise(xml);
+
+            // Ensure Package and types array exist
+            if (!parsedData.Package) parsedData.Package = {};
+            if (!parsedData.Package.types) parsedData.Package.types = [];
+
+            // Convert types array to a map for easy lookup
+            const typesMap = {};
+            parsedData.Package.types.forEach(type => {
+                typesMap[type.name[0]] = type;
+            });
+
+            // Process each type in membersToToggle
+            for (const [typeName, newMembers] of Object.entries(membersToToggle)) {
+                let type = typesMap[typeName];
+
+                if (!type) {
+                    // If type doesn't exist, create a new type object and add to the types array
+                    type = { members: [], name: [typeName] };
+                    parsedData.Package.types.push(type);
+                }
+
+                // Get existing members, remove '*' if present
+                let existingMembers = type.members || [];
+                existingMembers = existingMembers.filter(member => member !== '*');
+
+                // Add new members that are not already in the list
+                newMembers.forEach(newMember => {
+                    if (!existingMembers.includes(newMember)) {
+                        existingMembers.push(newMember);
+                    } else {
+                        existingMembers = existingMembers.filter(member => member !== newMember);
+                    }
+                });
+
+                // Update the members in the object
+                type.members = existingMembers;
+            }
+
+            // Process select all
+            selectAll.forEach(typeName => {
+                let type = typesMap[typeName];
+
+                if (!type) {
+                    // If type doesn't exist, create a new type object and add to the types array
+                    type = { members: [], name: [typeName] };
+                    parsedData.Package.types.push(type);
+                }
+                type.members = ['*'];
+            });
+            // Process unselect all
+            parsedData.Package.types = parsedData.Package.types.filter(type => !unselectAll.includes(type.name[0]));
+
+            // Filter and sort
+            parsedData.Package.types = parsedData.Package.types.filter(type => type.members.length > 0).sort((a, b) => a.name[0].localeCompare(b.name[0]));
+            // Build the modified XML back into a string
+            const updatedXml = builder.buildObject(parsedData);
+            return updatedXml;
+        } catch (err) {
+            console.error("Error processing XML:", err);
+        }
+    }
+
+
     @api
     run = async () => {
         const request = this.fetchTaskForWorker();
         const manifestXml = this.refs.manifest.currentModel.getValue();
-        
-        try{
+
+        try {
             const jsonFormatted = await xml2js.parseStringPromise(manifestXml, { explicitArray: false });
             const _request = {
-                unpackaged:{types:jsonFormatted.hasOwnProperty('Package')?jsonFormatted.Package.types:jsonFormatted.types},
-                apiVersion:(jsonFormatted.hasOwnProperty('Package')?jsonFormatted.Package.version:jsonFormatted.version) || this.currentApiVersion,
-                singlePackage:request.options.singlePackage || false
+                unpackaged: { types: jsonFormatted.hasOwnProperty('Package') ? jsonFormatted.Package.types : jsonFormatted.types },
+                apiVersion: (jsonFormatted.hasOwnProperty('Package') ? jsonFormatted.Package.version : jsonFormatted.version) || this.currentApiVersion,
+                singlePackage: request.options.singlePackage || false
             };
 
             this.retrievePromise = store.dispatch(PACKAGE.executePackageRetrieve({
-                connector:this.connector,
-                request:_request,
-                createdDate:new Date(),
-                proxyUrl:window.jsforceSettings.proxyUrl
+                connector: this.connector,
+                request: _request,
+                createdDate: new Date(),
+                proxyUrl: window.jsforceSettings.proxyUrl
             }));
-        }catch(e){
+        } catch (e) {
             Toast.show({
                 label: `Error while retrieving`,
-                description:e.message,
+                description: e.message,
                 variant: 'error',
                 mode: 'dismissible',
             });
@@ -140,35 +229,35 @@ export default class Retrieve extends ToolkitElement {
     abort = async () => {
         // cancelDeploy
         try {
-            if(this.retrievePromise){
+            if (this.retrievePromise) {
                 this.retrievePromise.abort();
             }
-          } catch (e) {
+        } catch (e) {
             // handle error here
             console.error(e)
-          }
+        }
     }
 
     @api
     reset = () => {
-        
+
     }
-    
-    
+
+
     fetchTaskForWorker = () => {
         const options = {}
         let inputFields = this.template.querySelectorAll('.deployment-option');
-            inputFields.forEach(inputField => {
-                if(inputField.type === 'checkbox'){
-                    options[inputField.name] = inputField.checked;
-                }else{
-                    // Avoid empty value
-                    if(!isEmpty(inputField.value)){
-                        options[inputField.name] = inputField.value;
-                    }
+        inputFields.forEach(inputField => {
+            if (inputField.type === 'checkbox') {
+                options[inputField.name] = inputField.checked;
+            } else {
+                // Avoid empty value
+                if (!isEmpty(inputField.value)) {
+                    options[inputField.name] = inputField.value;
                 }
-            });
-            
+            }
+        });
+
 
         return {
             options
@@ -179,7 +268,7 @@ export default class Retrieve extends ToolkitElement {
         const byteCharacters = atob(base64);
         const byteNumbers = new Array(byteCharacters.length);
         for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
         }
         const byteArray = new Uint8Array(byteNumbers);
         return new Blob([byteArray], { type: mime });
@@ -192,23 +281,23 @@ export default class Retrieve extends ToolkitElement {
         link.click();
     }
 
-    
-    
-    
+
+
+
 
     loading_formatDate = (createdDate) => {
         this._loadingMessage = `Running for ${moment().diff(moment(createdDate), 'seconds')} seconds`;
     }
 
     loading_enableAutoDate = (createdDate) => {
-        if(this._loadingInterval) clearInterval(this._loadingInterval);
+        if (this._loadingInterval) clearInterval(this._loadingInterval);
         this.loading_formatDate(createdDate);
-        this._loadingInterval = setInterval(() =>{
+        this._loadingInterval = setInterval(() => {
             this.loading_formatDate(createdDate);
-        },1000);
+        }, 1000);
     }
 
-    
+
 
     processFile() {
         if (this.file && this.file.type === 'text/xml') {
@@ -237,9 +326,9 @@ export default class Retrieve extends ToolkitElement {
 
     global_handleError = e => {
         let errors = e.message.split(':');
-        if(errors.length > 1){
+        if (errors.length > 1) {
             this.error_title = errors.shift();
-        }else{
+        } else {
             this.error_title = 'Error';
         }
         this.error_message = errors.join(':');
@@ -250,20 +339,20 @@ export default class Retrieve extends ToolkitElement {
         this.error_message = null;
         this.isDownloading = false;
     }
-    
+
 
     /** Events **/
 
     handle_downloadClick = (e) => {
         this.isDownloading = true;
         setTimeout(() => {
-            if(this._response?.zipFile) {
+            if (this._response?.zipFile) {
                 const zipFileBase64 = this._response?.zipFile;
                 const blob = this.base64ToBlob(zipFileBase64, 'application/zip');
                 this.downloadBlob(blob, `retrieve_${this._response.id}.zip`);
                 this.isDownloading = false;
             }
-        },1);
+        }, 1);
     }
 
     handleFileChange = (e) => {
@@ -274,21 +363,21 @@ export default class Retrieve extends ToolkitElement {
 
     handleRemoveFile = (e) => {
         this.file = null;
-        this.body = prettifyXml(TEMPLATE.BASIC.replace('{0}',this.currentApiVersion));
+        this.body = prettifyXml(TEMPLATE.BASIC.replace('{0}', this.currentApiVersion));
     }
 
     handleResponseLoad = (e) => {
         this.responseModel = this.refs.response.createModel({
-            body:this.formattedResponse,
-            language:'json'
+            body: this.formattedResponse,
+            language: 'json'
         });
         this.refs.response.displayModel(this.responseModel);
     }
 
     handleManifestLoad = () => {
         this.manifestModel = this.refs.manifest.createModel({
-            body:this.body,
-            language:'xml'
+            body: this.body,
+            language: 'xml'
         });
         this.refs.manifest.displayModel(this.manifestModel);
     }
@@ -303,97 +392,97 @@ export default class Retrieve extends ToolkitElement {
 
     /** Getters **/
 
-    get currentApiVersion(){
+    get currentApiVersion() {
         return this.connector.conn.version || '60.0';
     }
 
-    get fileName(){
+    get fileName() {
         return this.file?.name || '';
     }
 
-    get isFileListDisplayed(){
+    get isFileListDisplayed() {
         return isNotUndefinedOrNull(this.file);
     }
 
-    get rightSlotClass(){
+    get rightSlotClass() {
         return classSet('slds-full-height slds-full-width slds-flex-column')
-        .add({
-            'apex-illustration':!this.isRunning
-        }).toString();
+            .add({
+                'apex-illustration': !this.isRunning
+            }).toString();
     }
 
-    get hasError(){
+    get hasError() {
         return isNotUndefinedOrNull(this.error_message);
     }
 
-    get isResultDisplayed(){
+    get isResultDisplayed() {
         return isNotUndefinedOrNull(this._response); //return !isEmpty(this.log);
     }
 
-    get resultTitle(){
+    get resultTitle() {
         return this._response?.status;
     }
 
-    get resultId(){
+    get resultId() {
         return this._response?.id;
     }
 
-    get resultVariant(){
-        return this._response?.success ? 'success':'error';
+    get resultVariant() {
+        return this._response?.success ? 'success' : 'error';
     }
 
-    get resultMessage(){
-        return `${this._response?.success ? 'Successfull':'Failed'} retrieval.`;
+    get resultMessage() {
+        return `${this._response?.success ? 'Successfull' : 'Failed'} retrieval.`;
     }
 
     @api
-    get isInputDisabled(){
+    get isInputDisabled() {
         return this.isRunning;
     }
 
-    get prettyContainerClass(){
-        return classSet("slds-full-height slds-scrollable_y").add({'slds-hide':!(this.viewer_value === VIEWERS.PRETTY)}).toString();
+    get prettyContainerClass() {
+        return classSet("slds-full-height slds-scrollable_y").add({ 'slds-hide': !(this.viewer_value === VIEWERS.PRETTY) }).toString();
     }
 
 
-    get rawContainerClass(){
-        return classSet("slds-full-height slds-scrollable_y").add({'slds-hide':!(this.viewer_value === VIEWERS.RAW)}).toString();
+    get rawContainerClass() {
+        return classSet("slds-full-height slds-scrollable_y").add({ 'slds-hide': !(this.viewer_value === VIEWERS.RAW) }).toString();
     }
 
 
-    get viewer_options(){
-        return [VIEWERS.PRETTY,VIEWERS.RAW].map(x => ({value:x,label:x}))
+    get viewer_options() {
+        return [VIEWERS.PRETTY, VIEWERS.RAW].map(x => ({ value: x, label: x }))
     }
 
-    get formattedResponse(){
+    get formattedResponse() {
         return JSON.stringify(this._response, null, 4);
     }
 
-    get contentLength(){
-        if(isUndefinedOrNull(this._response)) return 0;
+    get contentLength() {
+        if (isUndefinedOrNull(this._response)) return 0;
         //5726285
         return (new TextEncoder()).encode(this._response.zipFile).length;
     }
 
-    get isFormattedContentDisplayed(){
+    get isFormattedContentDisplayed() {
         return this.contentLength < 100000;
     }
 
     get formattedContentLength() {
         const bytes = (this.contentLength * 3) / 4;
-    
-      
+
+
         const mb = bytes / (1024 * 1024); // Convert to MB
         if (mb >= 1) {
-          return `${mb.toFixed(2)} MB`;
+            return `${mb.toFixed(2)} MB`;
         }
-      
+
         const kb = bytes / 1024; // Convert to KB
         return `${kb.toFixed(2)} KB`;
     }
 
-    get formattedZipDownloadLabel(){
-        return this.isDownloading?'Downloading':`Download file (${this.formattedContentLength})`;
+    get formattedZipDownloadLabel() {
+        return this.isDownloading ? 'Downloading' : `Download file (${this.formattedContentLength})`;
     }
 
 }

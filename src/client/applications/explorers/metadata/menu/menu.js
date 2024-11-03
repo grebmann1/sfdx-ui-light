@@ -1,128 +1,219 @@
-import { api, wire, track } from "lwc";
+import { api, wire,track } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
-import { isEmpty, isElectronApp, isSalesforceId, classSet, isUndefinedOrNull, isNotUndefinedOrNull, runActionAfterTimeOut, formatFiles, sortObjectsByField, removeDuplicates } from 'shared/utils';
-import { getMetadataWorker } from 'core/worker';
-import jsonview from '@pgrabovets/json-view';
-import Toast from 'lightning/toast';
-import jszip from 'jszip';
+import { isEmpty, isSalesforceId, classSet, isUndefinedOrNull, isNotUndefinedOrNull, runActionAfterTimeOut, formatFiles, sortObjectsByField, removeDuplicates } from 'shared/utils';
 import { CurrentPageReference, NavigationContext, generateUrl, navigate } from 'lwr/navigation';
+
 
 const METADATA_EXCLUDE_LIST = ['Flow', 'FlowDefinition'];
 
-export default class App extends ToolkitElement {
+export default class Menu extends ToolkitElement {
     @wire(NavigationContext)
     navContext;
+    
+    @api isNavigationEnabled = false;
+    @api isBasicSelectionEnabled = false;
+    @api isSelectAllDisplayed = false;
 
     isLoading = false;
     isNoRecord = false;
     isGlobalMetadataLoaded = false;
 
-    @track selection = [];
     @track metadata = [{ records: [], label: 'Metadata' }];
     currentLevel = 0;
-    @track selectedRecord;
-    @track selectedRecordLoading = false;
-
-    //@track selection = {};
-    //@track items = {}
-    isEditorDisplayed = false;
 
     // Filters
     @track menuItems = [];
     keepFilter = false;
 
-    sobject;
-    param1;
-    param2;
-    label1;
-    label2;
+    currentMetadata;
+
+    
+    @api sobject;
+    @api param1;
+    @api param2;
+    @api label1;
+    @api label2;
+
 
     // Internal Caching
     _caching = {};
     _byPassCaching = false;
-
-    // Mode
-    advancedMode = false;
 
     // Worker
     metadataResult;
     tasks = {};
     error;
 
-    _hasRendered = false;
-
-
-    _pageRef;
-    @wire(CurrentPageReference)
-    handleNavigation(pageRef) {
-        if (isUndefinedOrNull(pageRef)) return;
-        //if(JSON.stringify(this._pageRef) == JSON.stringify(pageRef)) return;
-
-        if (pageRef?.state?.applicationName == 'metadata') {
-            this._pageRef = pageRef;
-            this.loadFromNavigation(pageRef);
-        }
-    }
-
-    loadFromNavigation = async ({ state }) => {
-        let { param1, label1, param2, label2, sobject, applicationName } = state;
-        if (applicationName != 'metadata') return; // Only for metadata
-
-        this.param1 = param1;
-        this.param2 = param2;
-        this.label1 = label1;
-        this.label2 = label2;
-        this.sobject = sobject;
-        if(this._hasRendered && this.refs.menu){
-            this.refs.menu.process({
-                sobject: this.sobject,
-                param1: this.param1,
-                label1: this.label1,
-                param2: this.param2,
-                label2: this.label2
-            });
-        }
-    }
 
 
     connectedCallback() {
-        //this.load_metadataGlobal();
-
-        // Get the singleton instance of the worker
-        /*const metadataWorker = getMetadataWorker(this.connector.conn);
-            metadataWorker.onmessage = this.handleWorkerMessage.bind(this);
-            metadataWorker.postMessage({ action: 'loadFullMetadataSet'});*/
+        this.processMetadata({});
     }
 
-    renderedCallback(){
-        this._hasRendered = true;
+    /** Methods */
+
+    @api
+    process = (attributes) => {
+        this.processMetadata(attributes);
     }
+
+    processMetadata = async ({ param1, label1, param2, label2, sobject }) => {
+        let isSelection = false;
+        if (!this.isGlobalMetadataLoaded) {
+            await this.load_metadataGlobal();
+        }
+        this.isNoRecord = false;
+
+        const exceptionMetadata = sobject ? this.exceptionMetadataList.find(x => x.name === sobject) : null;
+        if (sobject && this.currentMetadata != sobject) {
+            // Metadata
+            this.currentLevel = 1;
+            this.currentMetadata = sobject;
+            if (exceptionMetadata) {
+                await this.load_specificMetadataException(exceptionMetadata, null, 1);
+            } else {
+                await this.load_specificMetadata(sobject);
+            }
+        }
+        if (param1 && this.param1 != param1) {
+            this.keepFilter = true; // Avoid menu search refresh !
+            this.param1 = param1;
+            this.label1 = label1;
+            if (exceptionMetadata && exceptionMetadata.hasLvl2) {
+                this.keepFilter = false; // For exception we refresh !
+                let metadataRecord = this.metadata[this.metadata.length - 1].records.find(x => x.key == param1);
+
+                // Advanced with Extra lvl
+                this.currentLevel = 2;
+                const lvl2ExceptionMetadata = this.exceptionMetadataList.find(x => x.name === exceptionMetadata.lvl2Type);
+                await this.load_specificMetadataException(lvl2ExceptionMetadata, param1, 2);
+                if (isUndefinedOrNull(param2) && exceptionMetadata.selectDefaultFunc) {
+                    param2 = exceptionMetadata.selectDefaultFunc(metadataRecord);
+                    label2 = exceptionMetadata.selectDefaultLabelFunc(metadataRecord);
+                }
+            } else {
+                // Basic
+                isSelection = true;
+                this.dispatchEvent(
+                    new CustomEvent("select", { 
+                        detail:{
+                            param:this.param1,
+                            label:this.label1,
+                            sobject: this.currentMetadata
+                        },
+                        bubbles: true,composed: true 
+                    })
+                );
+            }
+        }
+
+        if (param2 && this.param2 != param2) {
+            this.param2 = param2;
+            this.label2 = label2;
+            //this.currentLevel = 2;
+            isSelection = true;
+            this.dispatchEvent(
+                new CustomEvent("select", { 
+                    detail:{
+                        param:this.param2,
+                        label:this.label2,
+                        sobject: this.currentMetadata
+                    },
+                    bubbles: true,composed: true 
+                })
+            );
+        }
+        // At the end to avoid multiple refresh
+        if(!this.isBasicSelectionEnabled || !isSelection){
+            this.setMenuItems();
+        }
+        
+    }
+
+    dispatchMetadataRequest = (params) => {
+        if(this.isNavigationEnabled){
+            navigate(this.navContext, {
+                type: 'application',
+                state: {
+                    applicationName: 'metadata',
+                    ...params
+                }
+            });
+        }else{
+            this.processMetadata(params);
+        }
+    }
+
 
     /** Events */
 
-    handleItemSelection = (e) => {
-        this.load_specificMetadataRecord(e.detail.param);
+    selectAll_handleClick = (e) => {
+        this.dispatchEvent(new CustomEvent("selectall", { 
+            detail:{
+                sobject: this.currentMetadata
+            },
+            bubbles: true,composed: true 
+        }));
+    }
+
+    unselectAll_handleClick = (e) => {
+        this.dispatchEvent(new CustomEvent("unselectall", { 
+            detail:{
+                sobject: this.currentMetadata
+            },
+            bubbles: true,composed: true 
+        }));
     }
 
     handleMenuSelection = (e) => {
-        const { name,label } = e.detail;
-        navigate(this.navContext, {
-            type: 'application',
-            state: {
-                applicationName: 'metadata',
-                sobject: name,
-            }
-        });
+        const { name, label } = e.detail;
+        switch (this.currentLevel) {
+            case 0:
+                // Metadata Type selection
+                //this.load_specificMetadata({name,label});
+                this.currentMetadata = null;
+                this.param1 = null;
+                this.param2 = null;
+                this.currentLevel = 1;
+                this.dispatchMetadataRequest({
+                    sobject: name,
+                    label1: label
+                })
+                break;
+            case 1:
+                // Metadata Record selection
+                this.param1 = null;
+                this.param2 = null;
+                this.dispatchMetadataRequest({
+                    sobject: this.currentMetadata,
+                    param1: name,
+                    label1: label
+                });
+
+                //this.currentLevel = 2; // Only for the flows
+                break;
+            case 2:
+                this.param2 = null;
+                this.dispatchMetadataRequest({
+                    sobject: this.currentMetadata,
+                    param1: this.param1,
+                    label1: this.label1,
+                    param2: name,
+                    label2: label
+                })
+                // Only work for items such as flows
+                break;
+        }
     }
 
     handleRefresh = async () => {
         this._byPassCaching = true;
         if (this.currentLevel === 1) {
-            const exceptionMetadata = this.sobject ? this.exceptionMetadataList.find(x => x.name === this.sobject) : null;
+            const exceptionMetadata = this.currentMetadata ? this.exceptionMetadataList.find(x => x.name === this.currentMetadata) : null;
             if (exceptionMetadata) {
                 await this.load_specificMetadataException(exceptionMetadata, null, 1);
             } else {
-                await this.load_specificMetadata(this.sobject);
+                await this.load_specificMetadata(this.currentMetadata);
             }
         }
         this._byPassCaching = false;
@@ -130,10 +221,6 @@ export default class App extends ToolkitElement {
 
     handleMenuBack = () => {
         this.keepFilter = false;
-        this.hideEditor();
-        this.hideJsonViewer();
-        this.selectedRecord = null;
-
         if (this.currentLevel > 0) {
             this.currentLevel--;
         } else {
@@ -141,55 +228,25 @@ export default class App extends ToolkitElement {
         }
 
         this.metadata = this.metadata.slice(0, this.currentLevel + 1);
-
         if (this.currentLevel == 2) {
             this.param2 = null;
-            navigate(this.navContext, {
-                type: 'application',
-                state: {
-                    applicationName: 'metadata',
-                    sobject: this.sobject,
-                    param1: this.param1,
-                    label1: this.label1
-                }
-            });
+            this.dispatchMetadataRequest({
+                sobject: this.currentMetadata,
+                param1: this.param1,
+                label1: this.label1
+            })
         } else if (this.currentLevel == 1) {
             this.param1 = null;
             this.param2 = null;
-            navigate(this.navContext,
-                {
-                    type: 'application',
-                    state: {
-                        applicationName: 'metadata',
-                        sobject: this.sobject,
-                    }
-                }
-            );
+            this.dispatchMetadataRequest({
+                sobject: this.currentMetadata,
+            })
         } else if (this.currentLevel == 0) {
+            this.currentMetadata = null;
             this.param1 = null;
             this.param2 = null;
-            navigate(this.navContext,
-                {
-                    type: 'application',
-                    state: {
-                        applicationName: 'metadata'
-                    }
-                }
-            );
+            this.dispatchMetadataRequest({})
         }
-    }
-
-    goToMetadata = (e) => {
-        this.hideEditor();
-        this.hideJsonViewer();
-        this.currentLevel = 0;
-        this.metadata = this.metadata.slice(0, 1);
-        this.handleMenuSelection({
-            detail: {
-                name: e.currentTarget.dataset.name,
-                label: e.currentTarget.dataset.name
-            }
-        });
     }
 
     /** Methods */
@@ -286,60 +343,11 @@ export default class App extends ToolkitElement {
     }
 
     load_recordFromRestAPI = async (recordId) => {
-        const urlQuery = `/services/data/v${this.connector.conn.version}/tooling/sobjects/${this.sobject}/${recordId}`;
+        const urlQuery = `/services/data/v${this.connector.conn.version}/tooling/sobjects/${this.currentMetadata}/${recordId}`;
         return await this.connector.conn.request(urlQuery);
     }
 
-    load_specificMetadataRecord = async (key) => {
-        this.isLoading = true;
-        this.selectedRecord = null;
-        /*
-        const metadataRecord = this.metadata[this.metadata.length - 1].records.find(x => x.key == key);
-        if(isUndefinedOrNull(metadataRecord)){
-            this.isNoRecord = true;
-            this.selectedRecordLoading = false;
-            return;
-        }
-            */
-
-        //recordId = metadataRecord.EntityDefinitionId
-        try {
-            switch (this.sobject) {
-                case "LightningComponentBundle":
-                    this.displayEditor(await this.handle_LWC(key)); // Only LWC supporting extra 
-                    break;
-                case "ApexClass":
-                    this.displayEditor(await this.handle_APEX(await this.load_recordFromRestAPI(key)));
-                    break;
-                case "AuraDefinitionBundle":
-                    this.displayEditor(await this.handle_AURA(await this.load_recordFromRestAPI(key)));
-                    break;
-                case "ApexTrigger":
-                    this.displayEditor(await this.handle_APEX(await this.load_recordFromRestAPI(key), 'trigger')); // Similar to APEX
-                    break;
-                case "ApexPage":
-                    this.displayEditor(await this.handle_APEX(await this.load_recordFromRestAPI(key), 'page', 'Markup')); // Similar to APEX
-                    break;
-                case "ApexComponent":
-                    this.displayEditor(await this.handle_APEX(await this.load_recordFromRestAPI(key), 'page', 'Markup')); // Similar to APEX
-                    break;
-                default:
-                    this.selectedRecord = await this.load_recordFromRestAPI(key);
-            }
-            this.selectedRecordLoading = false
-            this.isLoading = false;
-        } catch (e) {
-            console.error(e);
-            Toast.show({
-                message: e.message,
-                label: 'API Error',
-                variant: 'error',
-                mode: 'dismissible'
-            });
-            this.isNoRecord = true;
-            this.selectedRecordLoading = false
-        }
-    }
+    
 
     formatName = (x) => {
         const name = x.MasterLabel || x.Name || x.DeveloperName || x.Id;
@@ -360,7 +368,7 @@ export default class App extends ToolkitElement {
             name: x.FilePath.split('/').pop(),
             body: x.Source,
             apiVersion: x.ApiVersion,
-            metadata: this.sobject,
+            metadata: this.currentMetadata,
             id: x.LightningComponentBundleId,
             _source: x
         })));
@@ -378,7 +386,7 @@ export default class App extends ToolkitElement {
             name: `${data.FullName || data.Name}.${extension}`,
             body: data[bodyField],
             apiVersion: data.ApiVersion,
-            metadata: this.sobject,
+            metadata: this.currentMetadata,
             id: data.Id,
         }]);
     }
@@ -413,7 +421,7 @@ export default class App extends ToolkitElement {
                 name: _name,
                 body: x.Source,
                 apiVersion: data.ApiVersion,
-                metadata: this.sobject,
+                metadata: this.currentMetadata,
                 id: data.Id,
                 _source: x
             }
@@ -425,23 +433,6 @@ export default class App extends ToolkitElement {
         return (a || '').toLowerCase().includes((b || '').toLowerCase());
     }
 
-    displayEditor = (files) => {
-        this.refs.editor.displayFiles(this.sobject, files);
-        this.isEditorDisplayed = true;
-    }
-
-    hideEditor = () => {
-        //this.refs.editor.displayFiles(files);
-        this.isEditorDisplayed = false;
-    }
-
-    hideJsonViewer = () => {
-        if (this.visualizer) {
-            try {
-                jsonview.destroy(this.visualizer);
-            } catch (e) { console.error(e) }
-        }
-    }
 
     setMenuItems = () => {
         // Doesn't work all the time if param1 isn't the recordId !!! (Example LWC)
@@ -563,7 +554,7 @@ export default class App extends ToolkitElement {
         } else if (this.currentLevel == 1) {
             return this.param1;
         } else if (this.currentLevel == 0) {
-            return this.sobject;
+            return this.currentMetadata;
         } else {
             return null;
         }
@@ -574,7 +565,7 @@ export default class App extends ToolkitElement {
         if (this.currentLevel == 2) {
             return this.label1;
         } else if (this.currentLevel == 1) {
-            return this.sobject;
+            return this.currentMetadata;
         } else if (this.currentLevel == 0) {
             return '';
         }
@@ -592,45 +583,9 @@ export default class App extends ToolkitElement {
         return classSet("slds-full-height").add({ 'slds-hide': !this.isEditorDisplayed }).toString();
     }
 
-    get isMetadataViewerDisplayed() {
-        return isNotUndefinedOrNull(this.selectedRecord);
+    get isSelectAllDisplayedAdvanced(){
+        return this.isSelectAllDisplayed && this.currentLevel >= 1
     }
 
-
-    /** Web Worker */
-
-    // Handle messages from the web worker
-    handleWorkerMessage = (event) => {
-        const { type, action, result, tasks, taskId, message } = event.data;
-
-        switch (type) {
-            case 'result':
-                if (action === 'fetchMetadata') {
-                    this.metadataResult = result;
-                }
-                break;
-
-            case 'tasks':
-                this.tasks = tasks;
-                break;
-
-            case 'error':
-                this.error = `Error in task ${taskId}: ${message}`;
-                break;
-
-            case 'taskUpdate':
-                if (this.tasks[taskId]) {
-                    this.tasks[taskId].status = event.data.status;
-                }
-                break;
-
-            case 'taskRemoved':
-                delete this.tasks[taskId];
-                break;
-
-            default:
-                console.error('Unknown message type:', type);
-        }
-    }
-
+    
 }

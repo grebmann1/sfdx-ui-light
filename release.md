@@ -1,5 +1,12 @@
 # sfdx-ui-light Release Notes
 
+
+## Version 1.3.19 - 2024-11-04
+
+TBD
+
+
+
 ## Version 1.0.3 - 2024-01-30
 
 ### New Features

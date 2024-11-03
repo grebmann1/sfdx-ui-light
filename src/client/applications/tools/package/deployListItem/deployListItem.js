@@ -2,6 +2,7 @@ import { api,track,wire } from "lwc";
 import { decodeError,isNotUndefinedOrNull,classSet } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
 import moment from 'moment';
+import { store,store_application } from 'shared/store';
 
 
 export default class Message extends ToolkitElement {
@@ -37,6 +38,14 @@ export default class Message extends ToolkitElement {
 
 
     /** Events **/
+
+    goToUrl = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const redirectUrl = `/lightning/setup/DeployStatus/page?address=/changemgmt/monitorDeploymentsDetails.apexp?asyncId=${this.item.Id}&retURL=%2Fchangemgmt%2FmonitorDeployment.apexp`;
+        //console.log('redirectUrl',redirectUrl);
+        store.dispatch(store_application.navigate(redirectUrl));
+    }
 
     handleItemSelection = (e) => {
         e.preventDefault();

@@ -54,6 +54,11 @@
         {
             "file": "$rootDir/src/client/assets/favicon.ico",
             "urlPath": "/favicon.ico"
+        },
+        {
+            "alias":"workersDir",
+            "dir": "$rootDir/workers",
+            "urlPath": "/workers"
         }
     ],
     "hooks": ["$rootDir/src/client/hooks/application-hook.js"],

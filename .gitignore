@@ -13,3 +13,4 @@ out/
 chrome_ext/
 src/documentation/*/
 cert/
+/workers/
