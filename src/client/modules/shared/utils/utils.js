@@ -2,6 +2,7 @@
 export { classSet } from './classSet';
 export * from './salesforce';
 export * from './normalize';
+export * from './cache';
 export { generateUniqueId } from './idGenerator';
 export { calculateOverflow } from './sldsOverflowLibrary';
 export { LightningResizeObserver } from './sldsResizeObserver';

@@ -4,7 +4,7 @@ import LightningAlert from 'lightning/alert';
 import Toast from 'lightning/toast';
 import { classSet, isNotUndefinedOrNull, runActionAfterTimeOut, guid } from 'shared/utils';
 import { SOQL, APEX, VF } from 'editor/languages';
-import loader from '@monaco-editor/loader';
+import { setupMonaco } from 'editor/utils';
 
 /** REQUIRED FIELDS: _source & _bodyField */
 
@@ -48,11 +48,17 @@ export default class App extends ToolkitElement {
     hasLoaded = false;
 
 
-    async connectedCallback() {
-        await this.loadMonacoEditor();
-    }
+    connectedCallback(){}
 
-    renderedCallback() {
+    renderedCallback(){
+        if(!this._hasRendered){
+            this._hasRendered = true;
+            setupMonaco()
+            .then(monaco => {
+                this.monaco = monaco;
+                this.loadMonacoEditor();
+            });
+        }
     }
 
     /** Events */
@@ -268,8 +274,6 @@ export default class App extends ToolkitElement {
     };
 
     loadMonacoEditor = async () => {
-        this.monaco = await loader.init();
-        console.log('Monaco editor loaded:', this.monaco);
         // Configure Languages
         APEX.configureApexLanguage(this.monaco);
         SOQL.configureSoqlLanguage(this.monaco);

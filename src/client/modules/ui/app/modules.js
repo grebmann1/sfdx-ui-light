@@ -14,7 +14,7 @@ import api_app from "api/app";
 import assistant_app from "assistant/app";
 import package_app from "package/app";
 import release_app from "release/app";
-
+import settings_app from "settings/app";
 /*
 const KNOWN_TYPE = new Set([
     "home/app",
@@ -68,7 +68,7 @@ const APP_MAPPING = {
     },
     "org/app":{
         module:org_app,
-        isFullHeight:false,
+        isFullHeight:true,
         isDeletable:false,
         isElectronOnly:false,
         isOfflineAvailable:false,
@@ -81,7 +81,7 @@ const APP_MAPPING = {
     },
     "accessAnalyzer/app": {
         module:accessAnalyzer_app,
-        isFullHeight:false,
+        isFullHeight:true,
         isDeletable:true,
         isElectronOnly:false,
         isOfflineAvailable:false,
@@ -96,7 +96,7 @@ const APP_MAPPING = {
     },
     "code/app":{
         module:code_app,
-        isFullHeight:false,
+        isFullHeight:true,
         isDeletable:true,
         isElectronOnly:true,
         isOfflineAvailable:false,
@@ -139,21 +139,6 @@ const APP_MAPPING = {
         shortName:"SObject",
         path:'sobject'
     },
-    "api/app":{
-        module:api_app,
-        isFullHeight:true,
-        isDeletable:true,
-        isElectronOnly:false,
-        isOfflineAvailable:false,
-        isMenuVisible:true,
-        isTabVisible:true,
-        label:"API Explorer",
-        type:i18n.TOOL,
-        description:"Explore Salesforce API",
-        quickActionIcon:"standard:apex",
-        shortName:"API",
-        path:'api'
-    },
     "sarif/app":{
         module:sarif_app,
         isFullHeight:false
@@ -188,6 +173,21 @@ const APP_MAPPING = {
         quickActionIcon:"standard:data_model",
         shortName:"SOQL",
         path:'soql'
+    },
+    "api/app":{
+        module:api_app,
+        isFullHeight:true,
+        isDeletable:true,
+        isElectronOnly:false,
+        isOfflineAvailable:false,
+        isMenuVisible:true,
+        isTabVisible:true,
+        label:"API Explorer",
+        type:i18n.TOOL,
+        description:"Explore Salesforce API",
+        quickActionIcon:"standard:apex",
+        shortName:"API",
+        path:'api'
     },
     "platformevent/app":{
         module:platformEvent_app,
@@ -249,6 +249,22 @@ const APP_MAPPING = {
         shortName:"AI",
         path:'assistant'
     },
+    "settings/app":{
+        module:settings_app,
+        isFullHeight:true,
+        isDeletable:true,
+        isElectronOnly:false,
+        isOfflineAvailable:true,
+        isMenuVisible:true,
+        isTabVisible:true,
+        label:"Settings",
+        type:i18n.EXTRA,
+        description:"App settings.",
+        menuIcon:"utility:settings",
+        quickActionIcon:"standard:settings",
+        shortName:"SE",
+        path:'settings'
+    },
     "release/app":{
         module:release_app,
         isFullHeight:true,
@@ -264,7 +280,7 @@ const APP_MAPPING = {
         quickActionIcon:"standard:entitlement",
         shortName:"RN",
         path:'release'
-    }
+    },
 };
 /*
 const DIRECT_LINK_MAPPING = {

@@ -1,10 +1,9 @@
 import { api, wire, track } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
 import { isEmpty, isElectronApp, isSalesforceId, classSet, isUndefinedOrNull, isNotUndefinedOrNull, runActionAfterTimeOut, formatFiles, sortObjectsByField, removeDuplicates } from 'shared/utils';
-import { getMetadataWorker } from 'core/worker';
+import { getWorker } from 'core/worker';
 import jsonview from '@pgrabovets/json-view';
 import Toast from 'lightning/toast';
-import jszip from 'jszip';
 import { CurrentPageReference, NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 
 const METADATA_EXCLUDE_LIST = ['Flow', 'FlowDefinition'];
@@ -65,6 +64,7 @@ export default class App extends ToolkitElement {
     }
 
     loadFromNavigation = async ({ state }) => {
+        console.log('loadFromNavigation')
         let { param1, label1, param2, label2, sobject, applicationName } = state;
         if (applicationName != 'metadata') return; // Only for metadata
 
@@ -95,7 +95,10 @@ export default class App extends ToolkitElement {
     }
 
     renderedCallback(){
-        this._hasRendered = true;
+        if(!this._hasRendered){
+            this._hasRendered = true;
+            this.loadFromNavigation(this._pageRef);
+        }
     }
 
     /** Events */

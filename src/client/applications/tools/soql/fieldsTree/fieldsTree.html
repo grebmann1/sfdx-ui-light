@@ -1,7 +1,7 @@
 <template>
     <template lwc:if={isLoading}>
         <div class="slds-is-relative" style="height: 2rem">
-            <lightning-spinner variant="brand" size="x-small" alternative-text="Loading"></lightning-spinner>
+            <slds-spinner variant="brand" size="small" alternative-text="Loading"></slds-spinner>
         </div>
     </template>
     <template lwc:else>
@@ -22,7 +22,15 @@
                                     <span class="slds-assistive-text">{i18n.FIELDS_TREE_EXPAND_REFERENCE}</span>
                                 </button>
                                 <span class="slds-has-flexi-truncate" onclick={selectField} data-name={field.name}>
-                                    <a class="slds-tree__item-label slds-truncate" title={field.name}> {field.name} </a>
+                                    <template lwc:if={field.formattedName}>
+                                        <a class="slds-tree__item-label slds-truncate" title={field.name}>
+                                            <lightning-formatted-rich-text value={field.formattedName}></lightning-formatted-rich-text>
+                                        </a>
+                                    </template>
+                                    <template lwc:else>
+                                        <a class="slds-tree__item-label slds-truncate" title={field.name}> {field.name} </a>
+                                    </template>
+                                    
                                     <div class="field-details" title={field.details}>{field.details}</div>
                                 </span>
                             </div>

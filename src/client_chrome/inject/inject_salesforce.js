@@ -3,10 +3,10 @@ import '@lwc/synthetic-shadow';
 import {createElement} from 'lwc';
 import ViewsOverlay from 'views/overlay';
 
-import {getRecordId} from 'extension/utils';
+import {getRecordId,redirectToUrlViaChrome} from 'extension/utils';
 import {isEmpty, runActionAfterTimeOut} from 'shared/utils';
 import hotkeys from 'hotkeys-js';
-import loader from '@monaco-editor/loader';
+
 
 const _showCopiedNotification = (copiedValue) => {
     // Create the notification element
@@ -97,27 +97,7 @@ const injectOverlay = async () => {
     const isEnabled = (await chrome.storage.sync.get('overlayEnabled')).overlayEnabled;
     console.log('injectOverlay',isEnabled);
     if(!isEnabled) return;
-    // Style
-    const styles = [
-        {href:'assets/libs/monaco-editor/vs/editor/editor.main.css',name:'vs/editor/editor.main'},
-    ];
-    styles.forEach(item => {
-        const sldsStyle = document.createElement('link');
-        sldsStyle.rel = 'stylesheet';
-        sldsStyle.href = chrome.runtime.getURL(item.href); // Or use a CDN link
-        sldsStyle.setAttribute('data-name',item.name);
-        // Append the SLDS styles to the shadow root
-        document.head.appendChild(sldsStyle);
-    });
 
-    // Inject monaco directly
-    loader.config({
-        paths: {
-            vs: chrome.runtime.getURL('assets/libs/monaco-editor/vs'),
-        }
-    });
-
-    await loader.init();
     // LWC
     const elm = createElement('views-overlay', {is: ViewsOverlay});
     Object.assign(elm, {variant:'overlay'});
@@ -125,68 +105,8 @@ const injectOverlay = async () => {
 };
 
 
-const searchCustomElements = async (enable) => {
-    //console.log('searchCustomElements');
-
-
-    // Style the notification element
-    const style = document.createElement('style');
-    style.textContent = `
-            .sf-toolkit-custom-component-header {
-                position: relative;
-                border:2px solid #0176d4;
-                display:inline-block;
-            }
-            .sf-toolkit-custom-component {
-                position: absolute;
-                top: 0px;
-                left: 0px;
-                padding: 10px;
-                background-color: #0176d4;
-                color: white;
-                border-radius: 5px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-                z-index: 1000;
-            }
-        `;
-
-    document.head.appendChild(style);
-
-    // Get all elements in the DOM
-    const allElements = document.getElementsByTagName('*');
-
-    // Initialize an array to hold the custom components
-    let customComponents = [];
-
-    // Loop through all elements and check if the tag name starts with "c-"
-    for (let i = 0; i < allElements.length; i++) {
-        if (allElements[i].tagName.startsWith('C-')) {
-            const element = allElements[i];
-            customComponents.push(element);
-            // Modify element
-            element.classList.add('sf-toolkit-custom-component-header');
-
-            // Inject component
-            const sfToolkit = document.createElement('div');
-            sfToolkit.className = 'sf-toolkit-custom-component';
-            sfToolkit.textContent = 'SF toolkit';
-            element.appendChild(sfToolkit);
-        }
-    }
-
-    // Log the custom components to the console
-    //console.log('Custom components found:', customComponents);
-
-};
-
-const send = async (message) => {
-    return await chrome.runtime.sendMessage(message);
-    // Optional: do something with response
-};
-
-
 class LWC_CUSTOM {
-    baseUrl;
+    config;
     domObserver;
     styleElement;
     lwcElements = [];
@@ -360,8 +280,13 @@ class LWC_CUSTOM {
     handleLinkClick = async (e) => {
         e.preventDefault();
         const developerName = (e.target.dataset.name.substring(2) || '').split('-').join('');
-        const redirectUrl = `${this.baseUrl}&redirectUrl=${encodeURIComponent(`metadata?sobject=LightningComponentBundle&param1=${developerName}`)}`;
-        window.open(redirectUrl, '_blank');
+        const redirectUrl = `${encodeURIComponent(`metadata?sobject=LightningComponentBundle&param1=${developerName}`)}`;
+        redirectToUrlViaChrome({
+            sessionId: config.sessionId,
+            serverUrl: config.serverUrl,
+            baseUrl: chrome.runtime.getURL('/views/app.html'),
+            redirectUrl
+        })
     }
 }
 
@@ -390,7 +315,7 @@ class INJECTOR {
     handleMessage = (request, sender, sendResponse) => {
         if (request.action === "lwc_highlight") {
             //console.log('handleMessage',request);
-            this.lwc_custom_instance.baseUrl = request.baseUrl;
+            this.lwc_custom_instance.config = request.config;
             this.lwc_custom_instance.toggleFeature(request.value);
         }
     }

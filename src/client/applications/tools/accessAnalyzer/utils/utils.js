@@ -1,5 +1,5 @@
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+//import jsPDF from 'jspdf';
+//import autoTable from 'jspdf-autotable';
 import { isNotUndefinedOrNull } from 'shared/utils';
 
 const image_checked     = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAMAAAAolt3jAAAAe1BMVEUAAAAA/wAA/wBVqgAzzAAr1QArvxUwvxgtwxcwwRUuxBQswhYrwxYrxRUtwxQsxBQuwxQswRMswhQuwhQtwRMtwhMtwhUswRUtwhQtwxQtwhQuwhQtwhQswhMtwhQtwhQtwhQtwhQtwhQswhQtwhUtwhQtwhQtwhT///9LLE7JAAAAJ3RSTlMAAQIDBQYYICIlJy4vMDM0TYSWl52foKGjqbGztbje4uPl6uvs7vkQLrq7AAAAAWJLR0QovbC1sgAAAGBJREFUCB0FwQUCggAABLABYmNgdwDe/3/oBgAAgHICAEX72wBQ7pMngGKXDGuj7RzKQ9I33POZUR2TvkGbvKfVKemWUJ6T1yPplkB1SZJhBVDfkm4BQH39LgCgHgMAAP7dMwdDlXIbegAAAABJRU5ErkJggg==';
@@ -84,83 +84,7 @@ export const fileFormatter = function(list, options, setFileContents){
     
     let pageHeight = 80 + list.length*30;
     let pageWidth = 80 + tableWidth;
-    var originalDoc = new jsPDF({
-        orientation:rows.length < 30 ? "landscape":"portrait",
-        format:[pageHeight, pageWidth],
-        unit:"px"
-    })           
-
-    //trigger file download, passing the formatted data and mime type
-    //doc.output('blob')
     
-    autoTable.default(originalDoc, {
-        head: headers,
-        body: rows,
-        theme:'striped',
-        didParseCell: async ({cell,doc,section}) => {
-            if (section === 'body') {
-                // Matrix Reporting
-                if(report == 'Matrix'){
-                    if(typeof cell.raw.content == 'object'){
-                        if( isNotUndefinedOrNull(cell.raw.content.perm1) 
-                            && cell.raw.content.perm1 == cell.raw.content.perm2
-                        ){
-                            cell.styles.fillColor = "#747474";
-                            cell.text = ''; // reset
-                        }else{
-                            const total =  Object.values(cell.raw.content)
-                            .filter(x => typeof x === "number")
-                            .reduce((acc,item) => acc + item,0);
-
-                            if(total < greenTreshold){
-                                cell.styles.fillColor = "#669900";
-                            }else if(total < orangeTreshold){
-                                cell.styles.fillColor = "#ff5d2d";
-                            }
-                            cell.text  = [`${total}`];
-                        }
-                        
-                    }
-                    
-                    
-                }
-                //  Boolean procesing
-                if(cell.raw.content === true || cell.raw.content === false){
-                    cell.text = [];
-                    if(!useImage){
-                        if(cell.raw.content === true){
-                            cell.styles.fillColor = 'green';
-                        }else if(cell.raw.content === false){
-                            cell.styles.fillColor = 'red';
-                        }
-                    }
-                }
-                
-                
-            }
-        },
-        didDrawCell: async ({cell,doc,section}) => {
-            //console.log('doc',doc);
-            //console.log('cell.raw.cellIndent',cell.raw.cellIndent);
-            if (section === 'body' && useImage) {
-                if(cell.raw.content === true){
-                    doc.addImage(image_checked, cell.x + cell.width/2 - 4, cell.y + cell.contentHeight/2 - 4 , 8, 8)
-                }else if(cell.raw.content === false){
-                    doc.addImage(image_unchecked, cell.x + cell.width/2 - 4, cell.y + cell.contentHeight/2 - 4, 8, 8)
-                }
-            }
-            if(cell.raw.cellIndent){
-                doc.addImage(image_leveldown,cell.x + 4 ,cell.y + cell.contentHeight/2 - 5,10,10)
-            }
-        },
-        didDrawPage: function (data) {
-            originalDoc.setFontSize(18)
-            originalDoc.text(title, data.settings.margin.left, 22)
-        },
-    })
-    const newWindow = window.open(originalDoc.output('bloburl',{filename}));
-    newWindow.document.title = filename;
-
 
     //setFileContents(doc.output('blob'), "application/pdf");
 }

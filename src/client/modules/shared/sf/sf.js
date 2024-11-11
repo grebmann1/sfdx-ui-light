@@ -4,12 +4,8 @@ import {
     User
 } from "./mapping";
 
-import { chunkPromises,chunkArray,isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
-
-
-
 export const loadMetadata_async = async (conn,callback,updateLoadingMessage) => {
-    window.test = conn;
+    console.log('executing -> loadMetadata_async');
     let results_1 = await Promise.all([
         getPermissionSet(conn),
         getEntityDefinition(conn),
@@ -77,7 +73,18 @@ export const loadMetadata_async = async (conn,callback,updateLoadingMessage) => 
 
     /** Execute Async call for background processing */
     asyncLoading();
-    
+    console.log('return the results',{
+        permissionSets,
+        sobjects,
+        apexClasses,
+        apexPages,
+        appDefinitions,
+        profileFields,
+        layouts,
+        tabDefinitions,
+        entityAccess,
+        permissionGroups
+    });
     return {
         permissionSets,
         sobjects,
@@ -387,4 +394,45 @@ export const setFieldPermission = async (conn,permissionSets,{targetObject}) => 
             // profiles[profilesForPermissionSet[record.ParentId]].fieldPermissions[targetObject.name].push(new FieldPermission(record.SobjectType, fieldName, record.PermissionsRead, record.PermissionsEdit));
             permissionSets[record.ParentId].fieldPermissions[fieldName] = new FieldPermission(record.SobjectType, fieldName, record.PermissionsRead, record.PermissionsEdit);
         });
+}
+
+/** Utils for worker */
+
+function isUndefinedOrNull(value) {
+    return value === null || value === undefined;
+}
+
+function isNotUndefinedOrNull(value) {
+    return !isUndefinedOrNull(value);
+}
+function chunkPromises(arr, size, method) {
+    if (!Array.isArray(arr) || !arr.length) {
+        return Promise.resolve([]);
+    }
+  
+    size = size ? size : 10;
+  
+    const chunks = [];
+    for (let i = 0, j = arr.length; i < j; i += size) {
+        chunks.push(arr.slice(i, i + size));
+    }
+  
+    let collector = Promise.resolve([]);
+    for (const chunk of chunks) {
+        collector = collector.then((results) =>
+            Promise.all(chunk.map((params) => method(params))).then(
+                (subResults) =>results.concat(subResults)
+            )
+        );
+    }
+    return collector;
+};
+
+export function chunkArray(arr,chunkSize = 5){
+    const chunks = [];
+    for (let i = 0; i < arr.length; i += chunkSize) {
+        const chunk = arr.slice(i, i + chunkSize);
+        chunks.push(chunk);
+    }
+    return chunks;
 }

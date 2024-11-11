@@ -23,7 +23,8 @@
             "shared/store",
             "lwc",
             "lightning/modal",
-            "@lwc/synthetic-shadow"
+            "@lwc/synthetic-shadow",
+            "monaco-editor"
         ] 
     },
     "assets": [

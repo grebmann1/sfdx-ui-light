@@ -3,6 +3,7 @@ import ToolkitElement from 'core/toolkitElement';
 import {connectStore, store} from 'core/store';
 import {store as legacyStore, store_application} from 'shared/store';
 import {isEmpty, isNotUndefinedOrNull, isSalesforceId} from "shared/utils";
+import {redirectToUrlViaChrome} from 'extension/utils';
 
 const APPLICATIONS = {
     RECORD_EXPLORER: 'recordExplorer',
@@ -88,32 +89,31 @@ export default class Salesforce extends ToolkitElement {
 
 
     redirectToWebsite = () => {
-        this.redirectToUrlViaChrome({});
+        redirectToUrlViaChrome({
+            sessionId: this.connector.conn.accessToken,
+            serverUrl: this.connector.conn.instanceUrl,
+            baseUrl: chrome.runtime.getURL('/views/app.html')
+        });
     };
 
     redirectToAnonymousApex = () => {
-        this.redirectToUrlViaChrome({redirectUrl: 'anonymousapex'});
+        redirectToUrlViaChrome({
+            sessionId: this.connector.conn.accessToken,
+            serverUrl: this.connector.conn.instanceUrl,
+            baseUrl: chrome.runtime.getURL('/views/app.html'),
+            redirectUrl: 'anonymousapex'
+        });
     };
 
     redirectToSoqlBuilder = () => {
-        this.redirectToUrlViaChrome({redirectUrl: 'soql'});
-    };
-
-    redirectToUrlViaChrome = ({redirectUrl}) => {
-        let url = new URL('https://sf-toolkit.com/extension');
-        let params = new URLSearchParams();
-        params.append('sessionId', window.sessionId);
-        params.append('serverUrl', 'https://' + window.serverUrl);
-        if (redirectUrl) {
-            params.append('redirectUrl', redirectUrl);
-        }
-        url.search = params.toString();
-
-        chrome.tabs.create({
-            url: url.href
-        }, tab => {
+        redirectToUrlViaChrome({
+            sessionId: this.connector.conn.accessToken,
+            serverUrl: this.connector.conn.instanceUrl,
+            baseUrl: chrome.runtime.getURL('/views/app.html'),
+            redirectUrl: 'soql'
         });
     };
+
 
     handleSearch = (e) => {
         //console.log('handleSearch',this.refs.userexplorer);

@@ -5,10 +5,8 @@ import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeO
 import { formatQuery,parseQuery } from '@jetstreamapp/soql-parser-js';
 import { SOQL } from 'editor/languages';
 import { store,connectStore } from 'core/store';
-import loader from '@monaco-editor/loader';
-if(process.env.IS_CHROME){
-    loader.config({ paths: { vs: '/assets/libs/monaco-editor/vs' } });
-}
+import { setupMonaco } from 'editor/utils';
+
 export default class Soql extends ToolkitElement {
 
     @api maxHeight;
@@ -43,8 +41,19 @@ export default class Soql extends ToolkitElement {
     }
 
 
-    async connectedCallback(){
-        await this.loadMonacoEditor();
+    connectedCallback(){}
+
+    renderedCallback(){
+        if(!this._hasRendered){
+            this._hasRendered = true;
+            setupMonaco()
+            .then(monaco => {
+                this.monaco = monaco;
+                this.loadMonacoEditor();
+            })
+            
+        }
+        
     }
 
     /** Events */
@@ -96,11 +105,9 @@ export default class Soql extends ToolkitElement {
     }
 
     loadMonacoEditor = async () => {
-        this.monaco = await loader.init();
         // Setup
         SOQL.configureSoqlLanguage(this.monaco);
-        //this.configureTheme(this.monaco)
-
+        
         this.dispatchEvent(new CustomEvent("monacoloaded", {bubbles: true }));
         this.hasLoaded = true;
     }

@@ -1,6 +1,9 @@
 <template>
     <template lwc:if={isLoading}>
-        <slds-spinner message={_loadingMessage}></slds-spinner>
+        <slds-spinner 
+            size="small" 
+            message={_loadingMessage}
+        ></slds-spinner>
     </template>
     <template lwc:if={hasError}>
         <slds-information-block class="slds-p-around_x-small" title={error_title} variant="error">

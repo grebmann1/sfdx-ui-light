@@ -4,8 +4,7 @@ import Toast from 'lightning/toast';
 import { classSet,isNotUndefinedOrNull,runActionAfterTimeOut,guid,isChromeExtension,autoDetectAndFormat } from 'shared/utils';
 import { store,connectStore } from 'core/store';
 import { SOQL,APEX,VF,LOG } from 'editor/languages';
-import loader from '@monaco-editor/loader';
-
+import { setupMonaco } from 'editor/utils';
 
 export default class Default extends ToolkitElement {
 
@@ -30,7 +29,6 @@ export default class Default extends ToolkitElement {
 
     models = [];
     editor;
-    monaco;
 
     isEditMode = false;
     isLoading = false;
@@ -45,11 +43,17 @@ export default class Default extends ToolkitElement {
     storeChange({ ui,sobject }) {}
     */
 
-    async connectedCallback(){
-        if(process.env.IS_CHROME){
-            loader.config({ paths: { vs: window.monacoUrl || '/assets/libs/monaco-editor/vs' } });
+    connectedCallback(){}
+
+    renderedCallback(){
+        if(!this._hasRendered){
+            this._hasRendered = true;
+            setupMonaco()
+            .then(monaco => {
+                this.monaco = monaco;
+                this.loadMonacoEditor();
+            });
         }
-        await this.loadMonacoEditor();
     }
 
     /** Events */
@@ -112,8 +116,7 @@ export default class Default extends ToolkitElement {
     }
 
     loadMonacoEditor = async () => {
-        // This always return the same instance, be carefull to not had duplicate !!!!
-        this.monaco = await loader.init();
+        //console.log('loadMonacoEditor');
         // Configure Language
         APEX.configureApexLanguage(this.monaco);
         SOQL.configureSoqlLanguage(this.monaco);

@@ -37,7 +37,10 @@ export default class Tools extends ToolkitElement {
         this.forwardMessageToContent({
             action: 'lwc_highlight',
             value: e.detail.checked,
-            baseUrl: `https://sf-toolkit.com/extension?sessionId=${this.connector.conn.accessToken}&serverUrl=${encodeURIComponent(this.connector.conn.instanceUrl)}`
+            config : {
+                sessionId:this.connector.conn.accessToken,
+                serverUrl:this.connector.conn.instanceUrl,
+            }
         });
     }
 

@@ -422,6 +422,29 @@
     color: white !important;
 }
 
+.sf-toolkit .slds-section.slds-reverse{
+    color: white;
+}
+
+.sf-toolkit .slds-section.slds-reverse .slds-section__title-action{
+    background-color: #032d60;
+}
+
+/** Settings **/
+
+
+.sf-toolkit .settings .slds-truncate{
+    white-space:normal;
+}
+
+.sf-toolkit .settings .slds-truncate{
+    white-space:normal;
+}
+
+.sf-toolkit .settings .slds-media_center{
+    align-items: flex-start;
+}
+
 @media (hover: hover) and (pointer: fine) {
     .sf-toolkit .tabulator-row.tabulator-selectable:hover {
         background-color: #e5e5e5;

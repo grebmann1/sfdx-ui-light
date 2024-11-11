@@ -52,7 +52,7 @@
                             <lightning-button-group>
                                 <!--<lightning-button icon-name="utility:salesforce1" label="Quick Login" title="login" variant="brand" onclick={directConnectClick}></lightning-button>-->
                                 <lightning-button icon-name="utility:add" label="Add Org" title="org" onclick={addConnectionClick}></lightning-button>
-                                <lightning-button-menu variant="border-filled" menu-alignment="auto" alternative-text="Show menu">
+                                <lightning-button-menu variant="border-filled" menu-alignment="auto" alternative-text="Show menu" class="connection-drop-button">
                                     <lightning-menu-item prefix-icon-name="utility:upload" icon-size="small"    value="Import" label="Import orgs" onclick={importClick}></lightning-menu-item>
                                     <lightning-menu-item prefix-icon-name="utility:download" icon-size="small"   value="Export" label="Export orgs" onclick={exportClick}></lightning-menu-item>
                                 </lightning-button-menu>
@@ -86,7 +86,7 @@
                             </div>
                         </template>
                         <template lwc:if={isLoading}>
-                            <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                            <slds-spinner alternative-text="Loading"></slds-spinner>
                         </template>
 
                         <!-- Search -->
@@ -101,10 +101,10 @@
 
                         <!-- Table Variant -->
                         <template lwc:if={isTableVariant}>
-                            <lightning-datatable
+                            <lightning-datatable 
+                                    key-field="id"
                                     data={filteredOriginal}
                                     columns={columns}
-                                    key-field="id"
                                     onrowaction={handleRowAction}
                                     hide-checkbox-column
                             ></lightning-datatable>

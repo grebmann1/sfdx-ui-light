@@ -1,0 +1,247 @@
+<template>
+    <div class={pageClass}>
+        <builder-editor>
+            <builder-header slot="header" title="Settings" sub-title="SF Toolkit Options" icon-name="standard:settings">
+                <div slot="actions" class="slds-builder-toolbar__actions">
+                    <lightning-button class="slds-button" label="Cancel" onclick={handleCancelClick} variant="neutral" disabled={isCancelDisabled}></lightning-button>
+                    <lightning-button class="slds-button" label="Save" onclick={handleSaveClick} variant="brand" disabled={isSaveDisabled}></lightning-button>
+                </div>
+                <div slot="subactions" class="slds-builder-toolbar__actions">
+                </div>
+
+                <p slot="meta" class="slds-page-header__meta-text">
+                    All these settings are stored in Cache.
+               </p>
+            </builder-header>
+            <article class="full-page-body">
+                <div class="slds-is-relative slds-full-width slds-full-height slds-flex-column slds-p-around_medium" style="min-height:200px;">
+
+					<!-- General Settings -->
+                    <div class="slds-grid slds-gutters_direct slds-wrap slds-grid_vertical-stretch">
+                        <!--
+                        <div class="slds-col slds-col slds-size_1-of-1">
+                            <div class="slds-section slds-is-open">
+                                <h3 class="slds-section__title">
+                                    <div class="slds-section__title-action">
+                                        <span class="slds-truncate" title="OpenAI Settings">OpenAI Settings</span>
+                                    </div>
+                                </h3>
+                                <div class="slds-section__content">
+                                    <slds-information-block title="Open AI - Beta Mode">
+                                        <p>This is in Beta, might not work as expected and might be removed in the future !</p>
+                                    </slds-information-block>
+                                    <div class="slds-grid slds-wrap">
+                                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                                            <lightning-input 
+                                                label="OpenAI API Key" 
+                                                onchange={handleOpenaiKey_change} 
+                                                type="text"
+                                                value={openai_key}
+                                            ></lightning-input>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                                            <lightning-input 
+                                                label="OpenAI Assistant Id" 
+                                                onchange={handleOpenaiAssistantId_change}
+                                                type="text"
+                                                value={openai_assistant_id}
+                                            ></lightning-input>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        -->
+                        
+                    </div>
+
+					<!-- Chrome Extension -->
+					<template lwc:if={isChrome}>
+						<div class="slds-section slds-reverse slds-is-open">
+							<h3 class="slds-section__title">
+								<div class="slds-section__title-action slds-p-vertical_x-small">
+									<span class="slds-truncate" title="Chrome Extension Settings">Chrome Extension Settings</span>
+								</div>
+							</h3>
+						</div>
+						<div class="slds-grid slds-gutters_direct slds-wrap slds-grid_vertical-stretch">
+							<!-- SECTION - Login As -->
+							<lightning-card class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
+								<div slot="title">
+									<h1>Injected Extension</h1>
+									<p class="description">Cover the settings related to the component injected in your Salesforce Page.</p>
+								</div>
+								<div slot="actions"></div>
+								<div class="slds-grid slds-wrap">
+									<!-- Short Cut -->
+									<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small" is-first>
+										<div slot="title">
+											<h1>Shortcut Settings</h1>
+											<p class="description slds-truncate">Short cuts to interact with the page and/or the extension.</p>
+										</div>
+										<div slot="actions">
+											<lightning-input data-key="shortcut_injection_enabled"
+												label="Enable ShortCut Injection"
+												message-toggle-active=""
+												message-toggle-inactive=""
+												type="toggle"
+												variant="label-hidden"
+												checked={config.shortcut_injection_enabled}
+												onchange={inputfield_change}
+											></lightning-input>
+										</div>
+										<div class="slds-grid slds-wrap">
+											<div class="slds-col slds-medium-size_1-of-2 slds-p-horizontal_small">
+												<slds-shortcut-selector lwc:ref="recordidshortcut" data-key="shortcut_recordid"
+													disabled={isShortcutDisabled}
+													label="Shortcut to fetch &rarr;	 Record Id"
+													value={config.shortcut_recordid}
+													onchange={inputfield_change}
+												></slds-shortcut-selector>
+											</div>
+										</div>
+									</settings-card>
+								</div>
+							</lightning-card>
+							<lightning-card class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
+								<div slot="title">
+									<h1>Standard Extension</h1>
+									<p class="description slds-truncate">General settings specific to the Chrome Extension.</p>
+								</div>
+								<div slot="actions"></div>
+								<div class="slds-grid slds-wrap">
+									<!-- Login As -->
+									<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small" is-first>
+										<div slot="title">
+											<h1>Login As</h1>
+											<p class="description slds-truncate">LoginAs in <span class="slds-text-title_bold">Experience Cloud</span> in an Incognito Window.</p>
+										</div>
+										<div slot="actions">
+											<lightning-input data-key="experienceCloudLoginAsIncognito"
+												label="Open Experience Cloud in Incognito"
+												message-toggle-active=""
+												message-toggle-inactive=""
+												type="toggle"
+												variant="label-hidden"
+												checked={config.experienceCloudLoginAsIncognito}
+												onchange={inputfield_change}
+											></lightning-input>
+										</div>
+	
+										<slds-information-block class="slds-p-horizontal_small slds-flex-column">
+											<p>To have full access to incognito, you need to set "Allow in Incognito" in your chrome extension settings.</p>
+										</slds-information-block>
+									</settings-card>
+								</div>
+							</lightning-card>
+						</div>
+					</template>
+
+					<!-- General -->
+					<div class="slds-section slds-reverse slds-is-open">
+						<h3 class="slds-section__title">
+							<div class="slds-section__title-action slds-p-vertical_x-small">
+								<span class="slds-truncate" title="General settings">General Settings</span>
+							</div>
+						</h3>
+					</div>
+					<div class="slds-grid slds-gutters_direct slds-wrap slds-grid_vertical-stretch">
+						<!-- SECTION - Cache Metadata -->
+                        <lightning-card class="settings slds-col slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
+							<div slot="title">
+								<h1>Caching Metadata</h1>
+								<p class="description slds-truncate">Fetch &amp; Store metadata in your cache to improve performances.</p>
+							</div>
+							<div slot="actions">
+								<!--
+								<lightning-input data-key="isCached_enabled"
+									label="Caching Metadata"
+									message-toggle-active=""
+									message-toggle-inactive=""
+									type="toggle"
+									variant="label-hidden"
+									checked={config.isCached_enabled}
+									onchange={inputfield_change}
+								></lightning-input>
+							-->
+							</div>
+							<div class="slds-grid slds-wrap">
+								<!--
+								<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small" is-first>
+									<div slot="title">
+										<h1>Profile</h1>
+									</div>
+									<div slot="actions">
+										<lightning-input data-key="isCached_profiles"
+											label="Profile"
+											type="toggle"
+											message-toggle-active=""
+											message-toggle-inactive=""
+											variant="label-hidden"
+											checked={config.isCached_profiles}
+											onchange={inputfield_change}
+										></lightning-input>
+									</div>
+								</settings-card>
+								-->
+								
+								<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small" is-first>
+									<div slot="title">
+										<h1>SObjects</h1>
+									</div>
+									<div slot="actions">
+										<lightning-input data-key="isCached_sobjects"
+											label="SObjects"
+											type="toggle"
+											message-toggle-active=""
+											message-toggle-inactive=""
+											variant="label-hidden"
+											checked={config.isCached_sobjects}
+											onchange={inputfield_change}
+										></lightning-input>
+									</div>
+								</settings-card>
+								<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+									<div slot="title">
+										<h1>Cache Refresh Rate</h1>
+										<p class="description slds-truncate"> (In hour)</p>
+									</div>
+									<div slot="actions">
+										<lightning-input class="slds-text-align-end" data-key="cache_refreshRate"
+											label="CacheLifetime"
+											type="number"
+											step="1"
+											message-toggle-active=""
+											message-toggle-inactive=""
+											variant="label-hidden"
+											value={config.cache_refreshRate}
+											onchange={inputfield_change}
+										></lightning-input>
+									</div>
+								</settings-card>
+								<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small" is-first>
+									<div slot="title">
+										<h1>Exclusion List</h1>
+										<p class="description slds-truncate"> Enter username (1 per line)</p>
+									</div>
+									<div slot="actions">
+										<lightning-textarea class="slds-text-align-end" data-key="cache_exclusionList"
+											label="cache_exclusionList"
+											type="text"
+											step="1"
+											message-toggle-active=""
+											message-toggle-inactive=""
+											variant="label-hidden"
+											value={config.cache_exclusionList}
+											onchange={inputfield_change}
+										></lightning-textarea>
+									</div>
+								</settings-card>
+							</div>
+						</lightning-card>
+					</div>
+                </div>
+            </article>
+        </builder-editor>
+    </div>
+</template>

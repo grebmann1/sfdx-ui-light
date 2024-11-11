@@ -113,21 +113,6 @@ export function loadConfiguration(text) {
     return result;
 }
 
-export async function loadExtensionConfigFromCache(keys) {
-    const configuration = {};
-    for await (const key of keys) {
-        configuration[key] = await window.defaultStore.getItem(key);
-    }
-    return configuration;
-}
-
-export async function saveExtensionConfigToCache(config) {
-    const keys = Object.keys(config);
-    for await (const key of keys) {
-        await window.defaultStore.setItem(key, config[key]);
-    }
-}
-
 export const PANELS = {
     SALESFORCE: 'salesforce',
     DEFAULT: 'default'
@@ -231,14 +216,28 @@ export const chromeOpenInWindow = async (targetUrl, groupName, incognito = false
     } else {
         console.warning('You need to Authorize the extension to have access to Incognito');
     }
-
 };
 
-export const CACHE_CONFIG = {
-    CONFIG_POPUP: 'openAsPopup',
-    OPENAI_ASSISTANT_ID: 'openai_assistant_id',
-    OPENAI_KEY: 'openai_key',
-    SHORTCUT_RECORDID: 'shortcut_recordid',
-    SHORTCUT_INJECTION_ENABLED: 'shortcut_injection_enabled',
-    EXPERIENCE_CLOUD_LOGINAS_INCOGNITO: 'experienceCloudLoginAsIncognito'
+
+
+/** Redirections */
+
+
+
+export const redirectToUrlViaChrome = ({baseUrl,redirectUrl,sessionId,serverUrl}) => {
+    let params = new URLSearchParams();
+    if(sessionId){
+        params.append('sessionId', sessionId);
+        params.append('serverUrl', serverUrl);
+    }
+        
+    if (redirectUrl) {
+        params.append('redirectUrl', redirectUrl);
+    }
+    console.log('baseUrl',baseUrl);
+    let url = new URL(baseUrl);
+    url.search = params.toString();
+    console.log('url.href',url.href);
+    window.open(url.href,'_blank');
+    
 };

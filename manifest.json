@@ -66,27 +66,13 @@
             ],
             "run_at":"document_end",
             "js": [
-                "scripts/inject_salesforce.js",
-                "assets/libs/require/require.js",
-                "assets/libs/monaco-editor/vs/editor/editor.main.js",
-                "assets/libs/monaco-editor/vs/basic-languages/javascript/javascript.js",
-                "assets/libs/monaco-editor/vs/basic-languages/apex/apex.js",
-                "assets/libs/monaco-editor/vs/basic-languages/css/css.js",
-                "assets/libs/monaco-editor/vs/basic-languages/html/html.js",
-                "assets/libs/monaco-editor/vs/basic-languages/java/java.js",
-                "assets/libs/monaco-editor/vs/basic-languages/xml/xml.js",
-                "assets/libs/monaco-editor/vs/basic-languages/markdown/markdown.js",
-                "assets/libs/monaco-editor/vs/basic-languages/typescript/typescript.js",
-                "assets/libs/monaco-editor/vs/language/html/htmlMode.js",
-                "assets/libs/monaco-editor/vs/language/json/jsonMode.js",
-                "assets/libs/monaco-editor/vs/language/typescript/tsMode.js",
-                "assets/libs/monaco-editor/vs/language/css/cssMode.js"
+                "scripts/inject_salesforce.js"
             ],
             "css" : [
-                "assets/styles/slds-sf-toolkit.css",
-                "assets/styles/inject.css",
-                "assets/styles/extension.css",
-                "assets/styles/web.css"
+                "styles/slds-sf-toolkit.css",
+                "styles/inject.css",
+                "styles/extension.css",
+                "styles/web.css"
             ]
         }
     ],
@@ -101,9 +87,9 @@
             "resources": [
                 "scripts/*",
                 "assets/*",
-                "index.html*",
-                "offscreen.html*",
-                "callback.html*",
+                "styles/*",
+                "libs/*",
+                "views/*",
                 "openai/index.js",
                 "workers/openaiWorker/worker.js"
             ]

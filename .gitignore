@@ -4,7 +4,6 @@
 .sfdx
 
 node_modules
-dist
 package-lock.json
 __lwr_cache__
 site

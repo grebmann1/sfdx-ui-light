@@ -109,6 +109,7 @@ export default class OutputTable extends ToolkitElement {
             return {
                 title: key, 
                 field: key,
+                maxWidth:500,
                 formatter:this.formatterField_value // Bad performances !!
             }
         });
@@ -174,14 +175,27 @@ export default class OutputTable extends ToolkitElement {
             height: "100%",
             data: this.formatDataForTable(),
             autoResize:false,
-            layout:"fitDataStretch",
-            renderHorizontal:"virtual",
+            layout:"fitDataFill",
             columns: this.formatColumns(),
             //autoColumns:true,
             columnHeaderVertAlign: "middle",
             minHeight:100,
-            //maxHeight:"100%",
+            rowHeight:28,
+            //maxHeight:"100%"
             rowHeader:this.isChildTable || this._response.records.length == 0?null:rowSelector,
+            headerSortElement: function(column, dir){
+                //column - column component for current column
+                //dir - current sort direction ("asc", "desc", "none")
+                const _arrowIcon = (iconName) => `<svg class="slds-icon slds-icon-text-default slds-is-sortable__icon " aria-hidden="true"><use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#${iconName}"></use></svg>`;
+                switch(dir){
+                    case "asc":
+                        return _arrowIcon('arrowup');
+                    case "desc":
+                        return _arrowIcon('arrowdown');
+                    default:
+                        return _arrowIcon('arrowdown');
+                }
+            },
         });
         this.tableInstance.on("tableBuilding", () => {
             //console.log('tableBuilding')

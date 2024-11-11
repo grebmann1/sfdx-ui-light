@@ -1,6 +1,7 @@
 import '@lwc/synthetic-shadow';
 import {createElement} from 'lwc';
 import extensionRoot from 'extension/root';
+import uiFullView from 'ui/fullView';
 import jsforce from 'imported/jsforce';
 
 const loadLocalForage = async () => {
@@ -35,6 +36,15 @@ const init = async () => {
 window.extension_initLwc = async (variant) => {
     await init();
     const elm = createElement('extension-root', {is: extensionRoot});
+    Object.assign(elm, {
+        variant
+    });
+    document.body.appendChild(elm);
+};
+
+window.extension_initApp = async (variant) => {
+    await init();
+    const elm = createElement('ui-full-View', {is: uiFullView});
     Object.assign(elm, {
         variant
     });

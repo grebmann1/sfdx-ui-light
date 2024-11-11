@@ -145,11 +145,11 @@ export default class Overlay extends ToolkitElement {
     };
 
     handleOpenToolkit = () => {
-        let url = `https://sf-toolkit.com/extension?sessionId=${this.connector.conn.accessToken}&serverUrl=${encodeURIComponent(this.connector.conn.instanceUrl)}`;
-        /*if(redirect){
-            url+=`&redirectUrl=${encodeURIComponent(redirect)}`;
-        }*/
-        window.open(url,'_blank');
+        redirectToUrlViaChrome({
+            sessionId: this.connector.conn.accessToken,
+            serverUrl: this.connector.conn.instanceUrl,
+            baseUrl: chrome.runtime.getURL('/views/app.html')
+        });
     }
 
     handleOpenSideBar = async (e) => {

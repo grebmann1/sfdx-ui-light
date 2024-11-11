@@ -134,6 +134,10 @@ export default class App extends ToolkitElement {
 
 
     /** Getters */
+
+    get pageClass(){//Overwrite
+        return super.pageClass+' slds-p-around_small';
+    }
     
 
     get formattedLimits(){

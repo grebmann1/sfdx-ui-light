@@ -1,261 +1,221 @@
 <template>
-    <div class="grid-container">
-        <!-- HEADER-->
-        <div class="slds-page-header slds-page-header_joined">
-            <div class="slds-page-header__row">
-                <div class="slds-page-header__col-title">
-                    <div class="slds-media">
-                        <div class="slds-media__figure">
-                            <lightning-icon icon-name="standard:user"></lightning-icon>
-                        </div>
-                        <div class="slds-media__body">
-                            <div class="slds-page-header__name">
-                                <div class="slds-page-header__name-title">
-                                    <h1>
-                                        <span>Profiles &amp; Permission Sets</span>
-                                        <span class="slds-page-header__title slds-truncate" title="Access Analyzer">Access Analyzer</span>
-                                    </h1>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <div class={pageClass}>
+        <builder-editor>
+            <builder-header slot="header" title="Profiles &amp; Permission Sets" sub-title="Access Analyzer" icon-name="standard:apex">
+                <div slot="actions" class="slds-builder-toolbar__actions">
+                    <lightning-button-group>
+                        <!--<lightning-button icon-name="utility:adduser" disabled={isLoading} onclick={adduser_handleClick} label="Select Users"></lightning-button>-->
+                        <lightning-button-icon icon-name="utility:filterList" disabled={isLoading} onclick={filtering_handleClick} variant={filtering_variant}></lightning-button-icon>
+                        <lightning-button icon-name="utility:download"  disabled={isLoading} onclick={downloadPDF} label="PDF" ></lightning-button>
+                        <lightning-button icon-name="utility:download"  disabled={isLoading} onclick={downloadCSV} label="CSV" ></lightning-button>
+                        <lightning-button-icon icon-name="utility:refresh" disabled={isRefreshDisabled} onclick={refreshMetadata}    variant="border-filled"></lightning-button-icon>
+                    </lightning-button-group>
                 </div>
-                <div class="slds-page-header__col-actions slds-align-middle slds-p-bottom_none">
-                    <div class="slds-page-header__controls">
-                        <div class="slds-page-header__control">
-                            <lightning-button-group>
-                                <!--<lightning-button icon-name="utility:adduser" disabled={isLoading} onclick={adduser_handleClick} label="Select Users"></lightning-button>-->
-                                <lightning-button-icon icon-name="utility:filterList" disabled={isLoading} onclick={filtering_handleClick} variant={filtering_variant}></lightning-button-icon>
-                                <lightning-button icon-name="utility:download"  disabled={isLoading} onclick={downloadPDF} label="PDF" ></lightning-button>
-                                <lightning-button icon-name="utility:download"  disabled={isLoading} onclick={downloadCSV} label="CSV" ></lightning-button>
-                                <lightning-button-icon icon-name="utility:refresh" disabled={isRefreshDisabled} onclick={refreshMetadata}    variant="border-filled"></lightning-button-icon>
-                            </lightning-button-group>
-                        </div>
-                    </div>
+                <div slot="subactions" class="slds-builder-toolbar__actions">
                 </div>
-            </div>
-            <div class="slds-page-header__row slds-page-header__row_gutters">
-                <div class="slds-page-header__col-details">
-                    <!-- Users START 
+                <ul slot="details" class="slds-page-header__detail-row">
+                    <!-- MODE -->
+                    <li class="slds-page-header__detail-block-report">
+                        <lightning-combobox
+                            label="Reports"
+                            dropdown-alignment="left"
+                            value={report}
+                            placeholder="Select Report Type"
+                            disabled={isLoading}
+                            options={report_options}
+                            onchange={report_handleChange}
+                        ></lightning-combobox>
+                    </li>
                     
-                        <ul class="slds-page-header__detail-row">
-                            <li class="slds-page-header__detail-block-report">
-                                <slds-information-block title="Export/Printing Information">
-                                    <p>Only the expanded sections will be exported/printed</p>
-                                </slds-information-block>
-                            </li>
-                        </ul>
-                    
-                    Users - END -->
-                    <!-- Filters - START -->
-                    <ul class="slds-page-header__detail-row">
-                        
-                        
-                        <!-- MODE -->
+                    <!-- For Field Level Security-->
+                    <template lwc:if={isSObjectSelectorDisplayed}>
                         <li class="slds-page-header__detail-block-report">
                             <lightning-combobox
-                                label="Reports"
-                                dropdown-alignment="left"
-                                value={report}
-                                placeholder="Select Report Type"
+                                name="sobject"
+                                label="Object Selection"
+                                dropdown-alignment="right"
+                                value={selectedObjectName}
+                                placeholder="Select Object"
+                                options={sobject_options}
+                                onchange={sobject_handleChange}
                                 disabled={isLoading}
-                                options={report_options}
-                                onchange={report_handleChange}
                             ></lightning-combobox>
                         </li>
-                        
-                        <!-- For Field Level Security-->
-                        <template lwc:if={isSObjectSelectorDisplayed}>
-                            <li class="slds-page-header__detail-block-report">
-                                <lightning-combobox
-                                    name="sobject"
-                                    label="Object Selection"
-                                    dropdown-alignment="right"
-                                    value={selectedObjectName}
-                                    placeholder="Select Object"
-                                    options={sobject_options}
-                                    onchange={sobject_handleChange}
-                                    disabled={isLoading}
-                                ></lightning-combobox>
-                            </li>
+                    </template>
+
+                    <!-- Diff Checker -->
+                    <template lwc:if={isDiffCheckerDisplayed}>
+                        <li class="slds-page-header__detail-block">
+                            <lightning-combobox
+                                name="diffChecker"
+                                label="Similarity/Difference Filter"
+                                dropdown-alignment="right"
+                                value={diff_value}
+                                placeholder="Select a value"
+                                options={diff_options}
+                                onchange={diff_handleChange}
+                                disabled={isLoading}
+                            ></lightning-combobox>
+                        </li>
+                    </template>
+
+                    <!-- Metadata Selector -->
+                    <template lwc:if={isMetadataFilterDisplayed}>
+                        <li class="slds-page-header__detail-block">
+                            <lightning-checkbox-group 
+                                name="metadata"
+                                class="slds-checkbox-flex"
+                                label="Metadata Selector"
+                                options={metadataFilter_options}
+                                value={metadataFilter_value}
+                                disabled={isLoading}
+                                onchange={metadataFilter_handleChange}
+                            ></lightning-checkbox-group>
+                        </li>
+                    </template>
+                    <!-- EMPTY -->
+                    <li class="slds-page-header__detail-separator" style="width:100%;"></li>
+                </ul>
+            </builder-header>
+            <article class="full-page-body slds-card">
+                <!-- CONTAINER -->
+                <div class="slds-full-height slds-overflow-hidden slds-flex-row">
+                    <div class="slds-col slds-fill-height column region-main slds-is-relative">
+                        <template lwc:if={isLoading}>
+                            <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
+                                <slds-spinner 
+                                    alternative-text="Loading" 
+                                    size="small" 
+                                    message={loadingMessage}
+                                    additional-message={customAdditionalMessage}
+                                ></slds-spinner>
+                            </div>
                         </template>
-
-                        <!-- Diff Checker -->
-                        <template lwc:if={isDiffCheckerDisplayed}>
-                            <li class="slds-page-header__detail-block">
-                                <lightning-combobox
-                                    name="diffChecker"
-                                    label="Similarity/Difference Filter"
-                                    dropdown-alignment="right"
-                                    value={diff_value}
-                                    placeholder="Select a value"
-                                    options={diff_options}
-                                    onchange={diff_handleChange}
-                                    disabled={isLoading}
-                                ></lightning-combobox>
-                            </li>
-                        </template>
-
-                        <!-- Metadata Selector -->
-                        <template lwc:if={isMetadataFilterDisplayed}>
-                            <li class="slds-page-header__detail-block">
-                                <lightning-checkbox-group 
-                                    name="metadata"
-                                    class="slds-checkbox-flex"
-                                    label="Metadata Selector"
-                                    options={metadataFilter_options}
-                                    value={metadataFilter_value}
-                                    disabled={isLoading}
-                                    onchange={metadataFilter_handleChange}
-                                ></lightning-checkbox-group>
-                            </li>
-                        </template>
-                        
-
-                        <!-- EMPTY -->
-                        <li class="slds-page-header__detail-separator" style="width:100%;"></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- CONTAINER -->
-        <div class="slds-full-height slds-overflow-hidden slds-flex-row">
-            <div class="slds-col slds-fill-height column region-main slds-is-relative">
-                <template lwc:if={isLoading}>
-                    <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
-                        <slds-spinner 
-                            alternative-text="Loading" 
-                            size="small" 
-                            message={loadingMessage}
-                            additional-message={customAdditionalMessage}
-                        ></slds-spinner>
+                        <!-- Table -->
+                        <div lwc:dom="manual" class="custom-table"></div>
                     </div>
-                </template>
-                <!-- Table -->
-                <div lwc:dom="manual" class="custom-table"></div>
-            </div>
-            <!-- Panel -->
-            <slds-vertical-panel is-open={displayFilterContainer} onclose={handleCloseVerticalPanel}>
-                <div class="slds-filters">
-                    <ol class="slds-list_vertical slds-list_vertical-space">
-                        <!-- FILTER -->
-                        <li class="slds-item">
-                            <lightning-combobox
-                                    label="Namespaces"
-                                    dropdown-alignment="left"
-                                    value={namespaceFiltering_value}
-                                    placeholder="Select Namespace filter"
-                                    disabled={isLoading}
-                                    options={namespaceFiltering_options}
-                                    onchange={namespaceFiltering_handleChange}
-                            ></lightning-combobox>
-                        </li>
-                        <!-- FILTER -->
-                        <li class="slds-item">
-                            <lightning-combobox
-                                    label="User Licenses"
-                                    dropdown-alignment="left"
-                                    value={userLicenseFiltering_value}
-                                    placeholder="Select User License filter"
-                                    disabled={isLoading}
-                                    options={userLicenseFiltering_options}
-                                    onchange={userLicenseFiltering_handleChange}
-                            ></lightning-combobox>
-                        </li>
-                        <!-- FILTER -->
-                        <li class="slds-item">
-                            <div >
-                                <label class="slds-form-element__label">Profiles</label>
-                                <div  class="slds-form-element__control">
-                                    <lightning-button-stateful
-                                        label-when-off="Filter Profiles"
-                                        label-when-on="Filtering Profiles"
-                                        label-when-hover="Un-Filter Profiles"
-                                        icon-name-when-off="utility:filterList"
-                                        icon-name-when-on="utility:filterList"
-                                        icon-name-when-hover="utility:close"
-                                        selected={isFiltering_profiles}
-                                        onclick={profileFiltering_handleClick}
-                                        variant={profileFilteringVariant}
+                    <!-- Panel -->
+                    <slds-vertical-panel is-open={displayFilterContainer} onclose={handleCloseVerticalPanel}>
+                        <div class="slds-filters">
+                            <ol class="slds-list_vertical slds-list_vertical-space">
+                                <!-- FILTER -->
+                                <li class="slds-item">
+                                    <lightning-combobox
+                                            label="Namespaces"
+                                            dropdown-alignment="left"
+                                            value={namespaceFiltering_value}
+                                            placeholder="Select Namespace filter"
+                                            disabled={isLoading}
+                                            options={namespaceFiltering_options}
+                                            onchange={namespaceFiltering_handleChange}
+                                    ></lightning-combobox>
+                                </li>
+                                <!-- FILTER -->
+                                <li class="slds-item">
+                                    <lightning-combobox
+                                            label="User Licenses"
+                                            dropdown-alignment="left"
+                                            value={userLicenseFiltering_value}
+                                            placeholder="Select User License filter"
+                                            disabled={isLoading}
+                                            options={userLicenseFiltering_options}
+                                            onchange={userLicenseFiltering_handleChange}
+                                    ></lightning-combobox>
+                                </li>
+                                <!-- FILTER -->
+                                <li class="slds-item">
+                                    <div >
+                                        <label class="slds-form-element__label">Profiles</label>
+                                        <div  class="slds-form-element__control">
+                                            <lightning-button-stateful
+                                                label-when-off="Filter Profiles"
+                                                label-when-on="Filtering Profiles"
+                                                label-when-hover="Un-Filter Profiles"
+                                                icon-name-when-off="utility:filterList"
+                                                icon-name-when-on="utility:filterList"
+                                                icon-name-when-hover="utility:close"
+                                                selected={isFiltering_profiles}
+                                                onclick={profileFiltering_handleClick}
+                                                variant={profileFilteringVariant}
+                                                disabled={isLoading}
+                                            >
+                                            </lightning-button-stateful>
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- FILTER -->
+                                <li class="slds-item">
+                                    <div >
+                                        <label class="slds-form-element__label">Permission Sets</label>
+                                        <div  class="slds-form-element__control">
+                                            <lightning-button-stateful
+                                                label-when-off="Filter Perm."
+                                                label-when-on="Filtering Perm."
+                                                label-when-hover="Un-Filter Perm."
+                                                icon-name-when-off="utility:filterList"
+                                                icon-name-when-on="utility:filterList"
+                                                icon-name-when-hover="utility:close"
+                                                selected={isFiltering_permissionSets}
+                                                onclick={permissionSetsFiltering_handleClick}
+                                                variant={permissionSetsFilteringVariant}
+                                                disabled={isLoading}
+                                            >
+                                            </lightning-button-stateful>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="slds-item slds-has-divider_top-space"></li>
+                                <li class="slds-item">
+                                    <lightning-slider 
+                                        label="Matrix - Green Treshold" 
+                                        value={greenTreshold}
                                         disabled={isLoading}
-                                    >
-                                    </lightning-button-stateful>
-                                </div>
-                            </div>
-                        </li>
-                        <!-- FILTER -->
-                        <li class="slds-item">
-                            <div >
-                                <label class="slds-form-element__label">Permission Sets</label>
-                                <div  class="slds-form-element__control">
-                                    <lightning-button-stateful
-                                        label-when-off="Filter Perm."
-                                        label-when-on="Filtering Perm."
-                                        label-when-hover="Un-Filter Perm."
-                                        icon-name-when-off="utility:filterList"
-                                        icon-name-when-on="utility:filterList"
-                                        icon-name-when-hover="utility:close"
-                                        selected={isFiltering_permissionSets}
-                                        onclick={permissionSetsFiltering_handleClick}
-                                        variant={permissionSetsFilteringVariant}
+                                        onchange={handleChangeGreenTreshold}
+                                    ></lightning-slider>
+                                    <lightning-slider 
+                                        label="Matrix - Orange Treshold" 
+                                        value={orangeTreshold}
                                         disabled={isLoading}
-                                    >
-                                    </lightning-button-stateful>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="slds-item slds-has-divider_top-space"></li>
-                        <li class="slds-item">
-                            <lightning-slider 
-                                label="Matrix - Green Treshold" 
-                                value={greenTreshold}
-                                disabled={isLoading}
-                                onchange={handleChangeGreenTreshold}
-                            ></lightning-slider>
-                            <lightning-slider 
-                                label="Matrix - Orange Treshold" 
-                                value={orangeTreshold}
-                                disabled={isLoading}
-                                onchange={handleChangeOrangeTreshold}
-                            ></lightning-slider>
-                            <template lwc:if={isTresholdButtonDisplayed}>
-                                <div class="slds-text-align_center slds-m-top_small">
-                                    <lightning-button-group>
-                                        <lightning-button label="Apply" variant="brand" onclick={handleApplyTreshold}></lightning-button>
-                                        <lightning-button label="Cancel" disabled={isUndoDisabled} onclick={handleUndoTreshold}></lightning-button>
-                                    </lightning-button-group>
-                                </div>
-                            </template>
-                        </li>
-                    </ol>
-                </div>
-                
-                <!-- FILTER -->
-                <!-- TODO:
-                    <li class="slds-item">
-                        <div >
-                            <label class="slds-form-element__label">Users</label>
-                            <div  class="slds-form-element__control">
-                                <lightning-button-stateful
-                                    label-when-off="Users"
-                                    label-when-on="Filtering User."
-                                    label-when-hover="Un-Filter Users."
-                                    icon-name-when-off="utility:filterList"
-                                    icon-name-when-on="utility:filterList"
-                                    icon-name-when-hover="utility:close"
-                                    selected={isFiltering_users}
-                                    onclick={userFiltering_handleClick}
-                                    variant={userFilteringVariant}
-                                    disabled={isLoading}
-                                >
-                                </lightning-button-stateful>
-                            </div>
+                                        onchange={handleChangeOrangeTreshold}
+                                    ></lightning-slider>
+                                    <template lwc:if={isTresholdButtonDisplayed}>
+                                        <div class="slds-text-align_center slds-m-top_small">
+                                            <lightning-button-group>
+                                                <lightning-button label="Apply" variant="brand" onclick={handleApplyTreshold}></lightning-button>
+                                                <lightning-button label="Cancel" disabled={isUndoDisabled} onclick={handleUndoTreshold}></lightning-button>
+                                            </lightning-button-group>
+                                        </div>
+                                    </template>
+                                </li>
+                            </ol>
                         </div>
-                    </li>
-                -->
-            </slds-vertical-panel>
-        </div>
-        
+                        
+                        <!-- FILTER -->
+                        <!-- TODO:
+                            <li class="slds-item">
+                                <div >
+                                    <label class="slds-form-element__label">Users</label>
+                                    <div  class="slds-form-element__control">
+                                        <lightning-button-stateful
+                                            label-when-off="Users"
+                                            label-when-on="Filtering User."
+                                            label-when-hover="Un-Filter Users."
+                                            icon-name-when-off="utility:filterList"
+                                            icon-name-when-on="utility:filterList"
+                                            icon-name-when-hover="utility:close"
+                                            selected={isFiltering_users}
+                                            onclick={userFiltering_handleClick}
+                                            variant={userFilteringVariant}
+                                            disabled={isLoading}
+                                        >
+                                        </lightning-button-stateful>
+                                    </div>
+                                </div>
+                            </li>
+                        -->
+                    </slds-vertical-panel>
+                </div>
+            </article>
+        </builder-editor>
     </div>
 </template>

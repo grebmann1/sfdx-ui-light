@@ -12,10 +12,10 @@
             </div>
         </div>
         <!-- Editor -->
-        <div lwc:ref="editor" class="slds-full-height"></div>
+        <div lwc:ref="editor" class="slds-full-height" lwc:dom="manual"></div>
 
         <template lwc:if={isLoading}>
-            <lightning-spinner alternative-text="Loading"></lightning-spinner>
+            <slds-spinner alternative-text="Loading"></slds-spinner>
         </template>
     </div>
 </template>

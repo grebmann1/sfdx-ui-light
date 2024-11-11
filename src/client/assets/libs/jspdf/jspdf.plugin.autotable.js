@@ -2185,6 +2185,7 @@ function __drawTable(d, table) {
 }
 try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
+    console.log()
     var jsPDF = require('jspdf');
     // Webpack imported jspdf instead of jsPDF for some reason
     // while it seemed to work everywhere else.

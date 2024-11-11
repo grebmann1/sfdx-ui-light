@@ -1,7 +1,11 @@
 :host {
   display: flex;
   justify-content: space-between;
-  line-height: 32px;
+  /*line-height: 32px;*/
+  height: 100%;
+  align-items: center;
+  margin-left: 4px;
+  margin-right: 4px;
 }
 
 .slds-copy-clipboards {

@@ -57,14 +57,6 @@ export default class Header extends LightningElement {
         }));
     }
 
-    redirectToWebsite = () => {
-        chrome.tabs.create({
-            url: 'https://sf-toolkit.com/app',
-            //url:'https://sf-toolkit.com/extension?sessionId='+window.sessionId+'&serverUrl=https://'+window.serverUrl
-        }, tab => {
-        });
-    };
-
     handleToggle = () => {
         this.isMenuSmall = !this.isMenuSmall;
         if (this.isMenuSmall) {

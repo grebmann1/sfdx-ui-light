@@ -54,10 +54,11 @@ export default class Menu extends ToolkitElement {
 
     @api
     process = (attributes) => {
-        this.processMetadata(attributes);
+        console.log('---> process');
+        this.processMetadata(attributes,true);
     }
 
-    processMetadata = async ({ param1, label1, param2, label2, sobject }) => {
+    processMetadata = async ({ param1, label1, param2, label2, sobject },forceUpdate) => {
         let isSelection = false;
         if (!this.isGlobalMetadataLoaded) {
             await this.load_metadataGlobal();
@@ -75,7 +76,7 @@ export default class Menu extends ToolkitElement {
                 await this.load_specificMetadata(sobject);
             }
         }
-        if (param1 && this.param1 != param1) {
+        if (param1 && (this.param1 != param1 || forceUpdate)) {
             this.keepFilter = true; // Avoid menu search refresh !
             this.param1 = param1;
             this.label1 = label1;
@@ -107,7 +108,7 @@ export default class Menu extends ToolkitElement {
             }
         }
 
-        if (param2 && this.param2 != param2) {
+        if (param2 && (this.param2 != param2 || forceUpdate)) {
             this.param2 = param2;
             this.label2 = label2;
             //this.currentLevel = 2;

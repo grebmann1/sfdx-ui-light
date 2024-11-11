@@ -1,7 +1,6 @@
 import {api, LightningElement, wire} from "lwc";
 import {store as deprecatedStore} from 'shared/store';
-import {isNotUndefinedOrNull} from "shared/utils";
-import {CACHE_CONFIG, loadExtensionConfigFromCache} from "extension/utils";
+import {isNotUndefinedOrNull,CACHE_CONFIG, loadExtensionConfigFromCache} from "shared/utils";
 import {APPLICATION, connectStore, store} from 'core/store';
 
 

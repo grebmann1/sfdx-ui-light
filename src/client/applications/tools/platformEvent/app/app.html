@@ -54,7 +54,7 @@
             <article class="full-page-body slds-card">
                 <div class="slds-is-relative slds-full-width slds-full-height slds-flex-column" style="min-height:200px;">
                     <template lwc:if={isLoading}>
-                        <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                        <slds-spinner alternative-text="Loading" size="small"></slds-spinner>
                     </template>
                     <!-- Tabs -->
                     <slds-tabset variant="scoped" class="slds-without-tab slds-tabs_no-max" active-tab-value={currentChannelName} onclosetab={handleCloseTab}>

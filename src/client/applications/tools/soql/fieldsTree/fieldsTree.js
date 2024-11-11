@@ -157,14 +157,26 @@ export default class FieldsTree extends ToolkitElement {
         };
     }
 
-    _filterFields() {
+    _formatField = (field) => {
+        var regex = new RegExp('('+this.keyword+')','gi');
+        if(regex.test(field)){
+            return field.toString().replace(/<?>?/,'').replace(regex,'<span style="font-weight:Bold; color:blue;">$1</span>');
+        }else{
+            return field;
+        }
+    }
+
+    _filterFields = () => {
         let fields;
         if (this.level === 1 && this.keyword) {
             const escapedKeyword = escapeRegExp(this.keyword);
             const keywordPattern = new RegExp(escapedKeyword, 'i');
             fields = this._rawFields.filter(field => {
                 return keywordPattern.test(`${field.name} ${field.label}`);
-            });
+            }).map(field => ({
+                ...field,
+                formattedName:this._formatField(field.name || '')
+            }))
         } else {
             fields = this._rawFields;
         }

@@ -4,7 +4,11 @@
     display: flex;
 }
 
-thead { position: sticky; top: 0; z-index: 2; }
+thead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
 
 .output-panel {
     position: relative;
@@ -19,12 +23,14 @@ thead { position: sticky; top: 0; z-index: 2; }
     border-top: 1px solid #dddbda;
     border-right: 1px solid #dddbda;
 }
+
 th,
 td,
 .slds-cell-fixed {
     max-width: 400px;
     min-width: 50px;
 }
+
 .slds-cell-fixed {
     /*padding-left: 0.5rem;*/
     /*transform: translate(-0.25rem);*/
@@ -39,3 +45,41 @@ td,
     /*left: calc(0.25rem - 1px);*/
 }
 
+.tabulator {
+    border: 1px solid #dddbda;
+    border-radius: 4px;
+}
+.tabulator-header {
+    background-color: #f3f2f2;
+    border-bottom: 1px solid #dddbda;
+}
+.tabulator-header .tabulator-col {
+    color: #3e3e3c;
+    font-weight: bold;
+    border-right: 1px solid #dddbda;
+}
+.tabulator-row {
+    border-bottom: 1px solid #dddbda;
+}
+.tabulator-row:hover {
+    background-color: #e0e5ee;
+}
+.tabulator-cell {
+    padding: 0px !important;
+    border-right: 1px solid #dddbda !important;
+}
+.tabulator-col.tabulator-col-sortable .tabulator-arrow {
+    border-color: #3e3e3c;
+}
+
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {
+    white-space: normal;
+}
+
+.slds-is-sortable__icon{
+    display: inline-block;
+}
+
+.tabulator-col-sorter-element:hover .slds-is-sortable__icon{
+    fill: #0176d3;
+}

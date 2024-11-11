@@ -1,139 +1,121 @@
 <template>
     <div class={pageClass}>
-        <div class="slds-page-header slds-page-header_joined">
-            <div class="slds-page-header__row">
-                <div class="slds-page-header__col-title">
-                    <div class="slds-media">
-                        <div class="slds-media__figure">
-                            <lightning-icon icon-name="standard:user"></lightning-icon>
-                        </div>
-                        <div class="slds-media__body">
-                            <div class="slds-page-header__name">
-                                <div class="slds-page-header__name-title">
-                                    <h1>
-                                        <span>Org Overview </span>
-                                        <span class="slds-page-header__title slds-truncate" title="System Overview Dashboard">System Overview Dashboard</span>
-                                    </h1>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        <builder-editor>
+            <builder-header slot="header" title="Org Overview" sub-title="System Overview Dashboard" icon-name="standard:user">
+                <div slot="actions" class="slds-builder-toolbar__actions">
+                    <!-- actions -->
+                    <lightning-button-group>
+                        <lightning-button 
+                            icon-name="utility:home" label="SF → Home"
+                            onclick={goToUrl} data-url="/lightning/page/home"
+                        ></lightning-button>
+                        <lightning-button 
+                            icon-name="utility:setup" label="SF → Setup"
+                            onclick={goToUrl} data-url="/lightning/setup/SetupOneHome/home"
+                        ></lightning-button>
+                    </lightning-button-group>
                 </div>
-                <div class="slds-page-header__col-actions slds-align-middle slds-p-bottom_none">
-                    <div class="slds-page-header__controls">
-                        <div class="slds-page-header__control">
-                            <!-- actions -->
-                            <lightning-button-group>
-                                <lightning-button 
-                                    icon-name="utility:home" label="SF → Home"
-                                    onclick={goToUrl} data-url="/lightning/page/home"
-                                ></lightning-button>
-                                <lightning-button 
-                                    icon-name="utility:setup" label="SF → Setup"
-                                    onclick={goToUrl} data-url="/lightning/setup/SetupOneHome/home"
-                                ></lightning-button>
-                            </lightning-button-group>
-                        </div>
-                    </div>
+                <div slot="subactions" class="slds-builder-toolbar__actions">
                 </div>
-            </div>
-            <div class="slds-page-header__row slds-page-header__row_gutters">
-                <div class="slds-page-header__col-details">
-                    <div class="slds-page-header__detail-row slds-is-relative" style="display:block; ">
+                <ul slot="details" class="slds-page-header__detail-row">
+                    <!-- MODE -->
+                    <li class="slds-page-header__detail-block-report">
                         <!-- Display dashboard Info -->
                         <lightning-button-group>
                             <lightning-button icon-name="utility:component_customization" onclick={openSOQLExplorer} label="SOQL Builder"></lightning-button>
                             <lightning-button icon-name="utility:component_customization" onclick={openMetadataExplorer} label="Metadata Explorer"></lightning-button>
                             <lightning-button icon-name="utility:component_customization" onclick={openSobjectExplorer} label="SObject Explorer"></lightning-button>
                         </lightning-button-group>
+                    </li>
+                </ul>
+            </builder-header>
+            <article class="full-page-body ">
+                <!-- DASHBOARD -->
+                <div class="slds-grid slds-gutters_direct slds-wrap slds-grid_vertical-stretch">
+            
+                    <!-- SECTION -->
+                    <div class="slds-auto-height slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-top_small">
+                        <org-company class="slds-full-height slds-show"></org-company>
+                    </div>
+
+                    <!-- SECTION -->
+                    <div class="slds-auto-height slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-top_small">
+                        <org-me class="slds-full-height slds-show"></org-me>
+                    </div>
+            
+                    <!-- SECTION -->
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-top_small">
+                        <org-users class="slds-full-height slds-show"></org-users>
+                    </div>
+            
+            
+                    <!-- SECTION -->
+                    <div class="slds-col slds-size_1-of-1 slds-p-top_small">
+                        <org-code></org-code>
+                    </div>
+            
+                    <!-- SECTION -->
+                    <div class="slds-full-height slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-top_small">
+                        <article class="slds-card" style="max-height:500px;">
+                            <div class="slds-card__header slds-grid">
+                                <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                    <div class="slds-media__body">
+                                        <h2 class="slds-card__header-title">
+                                            <a href="#" class="slds-card__header-link slds-truncate" title="Sytem Limits">
+                                                <span>System Limits</span>
+                                            </a>
+                                        </h2>
+                                    </div>
+                                    <div class="slds-no-flex">
+                                        <lightning-button-stateful
+                                            label-when-off="Highlight Risks"
+                                            label-when-on="Highlight Risks"
+                                            label-when-hover="Un-Highlight Risks"
+                                            icon-name-when-off="utility:filterList"
+                                            icon-name-when-on="utility:filterList"
+                                            icon-name-when-hover="utility:close"
+                                            selected={isFilterting_limits}
+                                            onclick={filtering_limits_handleClick}
+                                            variant={filtering_limits_variants}
+                                        >
+                                        </lightning-button-stateful>
+                                    </div>                    
+                                </header>
+                            </div>
+                            <div class="slds-card__body slds-card__body_inner">
+                                <lightning-tile>
+                                    <div class="slds-scrollable_y" style="height:400px;">
+                                        <dl class="slds-dl_horizontal">
+                                            <dt class="slds-dl_horizontal__label">
+                                                <p class="slds-truncate" title="Type"><strong>Type</strong></p>
+                                            </dt>
+                                            <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                                <p class="slds-truncate"><strong>Remaining / Allocation</strong></p>
+                                            </dd>
+                                        </dl>
+                                        <template for:each={formattedLimits} for:item="item">
+                                            <dl class="slds-dl_horizontal" key={item.name}>
+                                                <dt class="slds-dl_horizontal__label">
+                                                    <p class="slds-truncate" title={item.label}>{item.label}</p>
+                                                </dt>
+                                                <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                                    <p class="slds-truncate">{item.Remaining} / <Strong>{item.Max}</Strong></p>
+                                                </dd>
+                                            </dl>
+                                        </template>
+                                    </div>
+                                </lightning-tile>
+                            </div>
+                        </article>
+                    </div>
+            
+                    <!-- SECTION -->
+                    <div class="slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-top_small">
+                        <org-utilization></org-utilization>
                     </div>
                 </div>
-            </div>
-        </div>
-    
-        <!-- DASHBOARD -->
-        <div class="slds-grid slds-gutters_direct slds-wrap slds-grid_vertical-stretch">
-    
-            <!-- SECTION -->
-            <div class="slds-auto-height slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-top_small">
-                <org-company class="slds-full-height slds-show"></org-company>
-            </div>
-
-            <!-- SECTION -->
-            <div class="slds-auto-height slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-top_small">
-                <org-me class="slds-full-height slds-show"></org-me>
-            </div>
-    
-            <!-- SECTION -->
-            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-top_small">
-                <org-users class="slds-full-height slds-show"></org-users>
-            </div>
-    
-    
-            <!-- SECTION -->
-            <div class="slds-col slds-size_1-of-1 slds-p-top_small">
-                <org-code></org-code>
-            </div>
-    
-            <!-- SECTION -->
-            <div class="slds-full-height slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-top_small">
-                <article class="slds-card" style="max-height:500px;">
-                    <div class="slds-card__header slds-grid">
-                        <header class="slds-media slds-media_center slds-has-flexi-truncate">
-                            <div class="slds-media__body">
-                                <h2 class="slds-card__header-title">
-                                    <a href="#" class="slds-card__header-link slds-truncate" title="Sytem Limits">
-                                        <span>System Limits</span>
-                                    </a>
-                                </h2>
-                            </div>
-                            <div class="slds-no-flex">
-                                <lightning-button-stateful
-                                    label-when-off="Highlight Risks"
-                                    label-when-on="Highlight Risks"
-                                    label-when-hover="Un-Highlight Risks"
-                                    icon-name-when-off="utility:filterList"
-                                    icon-name-when-on="utility:filterList"
-                                    icon-name-when-hover="utility:close"
-                                    selected={isFilterting_limits}
-                                    onclick={filtering_limits_handleClick}
-                                    variant={filtering_limits_variants}
-                                >
-                                </lightning-button-stateful>
-                            </div>                    
-                        </header>
-                    </div>
-                    <div class="slds-card__body slds-card__body_inner">
-                        <lightning-tile>
-                            <div class="slds-scrollable_y" style="height:400px;">
-                                <dl class="slds-dl_horizontal">
-                                    <dt class="slds-dl_horizontal__label">
-                                        <p class="slds-truncate" title="Type"><strong>Type</strong></p>
-                                    </dt>
-                                    <dd class="slds-dl_horizontal__detail slds-tile__meta">
-                                        <p class="slds-truncate"><strong>Remaining / Allocation</strong></p>
-                                    </dd>
-                                </dl>
-                                <template for:each={formattedLimits} for:item="item">
-                                    <dl class="slds-dl_horizontal" key={item.name}>
-                                        <dt class="slds-dl_horizontal__label">
-                                            <p class="slds-truncate" title={item.label}>{item.label}</p>
-                                        </dt>
-                                        <dd class="slds-dl_horizontal__detail slds-tile__meta">
-                                            <p class="slds-truncate">{item.Remaining} / <Strong>{item.Max}</Strong></p>
-                                        </dd>
-                                    </dl>
-                                </template>
-                            </div>
-                        </lightning-tile>
-                    </div>
-                </article>
-            </div>
-    
-            <!-- SECTION -->
-            <div class="slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-top_small">
-                <org-utilization></org-utilization>
-            </div>
-        </div>
+            </article>
+        </builder-editor>
+        
     </div>
 </template>

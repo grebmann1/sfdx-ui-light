@@ -7,10 +7,11 @@ import ModalProfileFilter from "accessAnalyzer/modalProfileFilter";
 import ModalPermissionSetFilter from "accessAnalyzer/modalPermissionSetFilter";
 import ModalUserSelector from "slds/modalUserSelector";
 //import ModalPermissionSelector from "slds/modalPermissionSelector";
-
+import { getWorker } from 'core/worker';
 
 import { loadMetadata_async,setFieldPermission } from "shared/sf";
 import { fileFormatter } from 'accessAnalyzer/utils';
+
 const SVG_CHECKED = '<svg enable-background="new 0 0 24 24" height="14" width="14" viewBox="0 0 24 24" xml:space="preserve" lwc-1ctolp3d4fm=""><path fill="#2DC214" clip-rule="evenodd" d="M21.652,3.211c-0.293-0.295-0.77-0.295-1.061,0L9.41,14.34  c-0.293,0.297-0.771,0.297-1.062,0L3.449,9.351C3.304,9.203,3.114,9.13,2.923,9.129C2.73,9.128,2.534,9.201,2.387,9.351  l-2.165,1.946C0.078,11.445,0,11.63,0,11.823c0,0.194,0.078,0.397,0.223,0.544l4.94,5.184c0.292,0.296,0.771,0.776,1.062,1.07  l2.124,2.141c0.292,0.293,0.769,0.293,1.062,0l14.366-14.34c0.293-0.294,0.293-0.777,0-1.071L21.652,3.211z" fill-rule="evenodd" lwc-1ctolp3d4fm=""></path></svg>';
 const SVG_UNCHECKED = '<svg enable-background="new 0 0 24 24" height="14" width="14" viewBox="0 0 24 24" xml:space="preserve" lwc-1ctolp3d4fm=""><path fill="#CE1515" d="M22.245,4.015c0.313,0.313,0.313,0.826,0,1.139l-6.276,6.27c-0.313,0.312-0.313,0.826,0,1.14l6.273,6.272  c0.313,0.313,0.313,0.826,0,1.14l-2.285,2.277c-0.314,0.312-0.828,0.312-1.142,0l-6.271-6.271c-0.313-0.313-0.828-0.313-1.141,0  l-6.276,6.267c-0.313,0.313-0.828,0.313-1.141,0l-2.282-2.28c-0.313-0.313-0.313-0.826,0-1.14l6.278-6.269  c0.313-0.312,0.313-0.826,0-1.14L1.709,5.147c-0.314-0.313-0.314-0.827,0-1.14l2.284-2.278C4.308,1.417,4.821,1.417,5.135,1.73  L11.405,8c0.314,0.314,0.828,0.314,1.141,0.001l6.276-6.267c0.312-0.312,0.826-0.312,1.141,0L22.245,4.015z" lwc-1ctolp3d4fm=""></path></svg>';
 const CONFIG = [
@@ -90,6 +91,7 @@ const DIFF = {
     SIMILARITIES:'Similarity',
     DIFFERENCE:'Difference',
 }
+
 export default class App extends ToolkitElement {
 
     /* Metadata */
@@ -150,6 +152,38 @@ export default class App extends ToolkitElement {
         }
     }
 
+    worker;
+    loadFromWebWorker = async () => {
+        return new Promise((resolve,reject) => {
+            this.worker = getWorker(this.connector.conn,'accessAnalyzer.worker.js').instance; // Path to your worker.js file
+
+            // Handle messages from the worker
+            this.worker.onmessage = (e) => {
+                const { type,status, value } = e.data;
+                if (status === 'running') {
+                    if(type === 'callback'){
+                        // execute callback;
+                        this.loadMetadata_withNameSpaceCallback(value);
+                    }else if(type === 'message'){
+                        this.updateLoadingMessage(value);
+                    }
+                } else if (status === 'finished') {
+                    // Use the data returned by the worker
+                    this.updateLoadingMessage("Generating the Table.");
+                    resolve(value);
+                    this.worker.terminate();
+                    this.worker = null;
+                }else if(status === 'error'){
+                    reject(value);
+                    this.worker.terminate();
+                    this.worker = null;
+                }
+            };
+            // Send launch worker
+            this.worker.postMessage({action:'run'});
+        })
+    }
+
 
     connectedCallback(){
         this.loadCachedSettings();
@@ -171,7 +205,7 @@ export default class App extends ToolkitElement {
         runActionAfterTimeOut(null,(param) => {
             if(isUndefinedOrNull(this.tableInstance)) return;
             
-            this.tableInstance.setHeight(this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight);
+            this.tableInstance.setHeight(this.calculatedHeight);
 
         });
     }
@@ -208,20 +242,21 @@ export default class App extends ToolkitElement {
         this.customAdditionalMessage = 'This request might take up to a few minutes.';
         var _metadata;
         try{
+            console.log('this.connector.configuration.alias',this.connector.configuration.alias);
             // Cache loading only for full mode
             if(isNotUndefinedOrNull(this.connector.configuration.alias)){
                 let key = `${this.connector.configuration.alias}-metadata`;
                 _metadata = await window.defaultStore.getItem(key);
-                if(isUndefinedOrNull(_metadata?.createdDate) || Date.now() > _metadata.createdDate + 2 * 60 * 60 * 1000){
+                if(isUndefinedOrNull(_metadata?.createdDate) || Date.now() > _metadata.createdDate + 3 * 24 * 60 * 60 * 1000){ // 72h
                     refresh = true; // We force the refresh
                 }
             }
             if(!_metadata || refresh){
-                _metadata = await loadMetadata_async(this.connector.conn,this.loadMetadata_withNameSpaceCallback,this.updateLoadingMessage);
+                _metadata = await this.loadFromWebWorker();
             }
         }catch(e){
             console.error(e);
-            _metadata = await loadMetadata_async(this.connector.conn,this.loadMetadata_withNameSpaceCallback,this.updateLoadingMessage);
+            _metadata = await this.loadFromWebWorker();
         }
         
         let {permissionSets,...metadata} = _metadata;
@@ -333,6 +368,10 @@ export default class App extends ToolkitElement {
 
 
     /** Getters **/
+
+    get pageClass(){//Overwrite
+        return super.pageClass+' slds-p-around_small grid-container';
+    }
 
     get loadingMessage(){
         return this.customLoadingMessage?this.customLoadingMessage:'Loading';
@@ -462,6 +501,12 @@ export default class App extends ToolkitElement {
         }else{
             return "No Data available";
         }
+    }
+
+
+
+    get calculatedHeight(){
+        return this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('builder-header').clientHeight;
     }
 
     sobject_handleChange = (e) => {
@@ -812,7 +857,7 @@ export default class App extends ToolkitElement {
         this.dataList = this.calculateMatrixData(metadataFilter);
         //console.log('this.dataList',this.dataList);
 		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
-			height: this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight,
+			height: this.calculatedHeight,
 			data: this.dataList,
 			layout: "fitDataFill",
 			columns: colModel,
@@ -881,7 +926,7 @@ export default class App extends ToolkitElement {
         const _dataList = this.getDiffData(this.dataList);
 
 		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
-			height: this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight,
+			height: this.calculatedHeight,
 			data: _dataList,
             dataTree:true,
             dataTreeStartExpanded:true,
@@ -977,7 +1022,7 @@ export default class App extends ToolkitElement {
             await this.tableInstance.replaceData(_dataList);
         }else{
             this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
-                height: this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight,
+                height: this.calculatedHeight,
                 data: _dataList,
                 selectable:true,
                 layout: "fitDataFill",
@@ -1048,7 +1093,7 @@ export default class App extends ToolkitElement {
 
         
 		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
-			height: this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight,
+			height: this.calculatedHeight,
 			data: dataList,
             selectable:true,
 			layout: "fitDataFill",
@@ -1115,7 +1160,7 @@ export default class App extends ToolkitElement {
 		});
 
 		this.tableInstance = new Tabulator(this.template.querySelector(".custom-table"), {
-			height: this.template.querySelector(".grid-container").clientHeight - this.template.querySelector('.slds-page-header_joined').clientHeight,
+			height: this.calculatedHeight,
 			data: dataList,
             selectable:true,
 			layout: "fitDataFill",

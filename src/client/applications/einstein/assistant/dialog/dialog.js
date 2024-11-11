@@ -1,6 +1,5 @@
 import { LightningElement,api,track,wire} from "lwc";
-import { loadExtensionConfigFromCache,CACHE_CONFIG } from "extension/utils";
-import { isUndefinedOrNull,isEmpty,ROLES,guid,lowerCaseKey,isNotUndefinedOrNull,isChromeExtension } from "shared/utils";
+import { isUndefinedOrNull,isEmpty,ROLES,guid,lowerCaseKey,isNotUndefinedOrNull,isChromeExtension,loadExtensionConfigFromCache,CACHE_CONFIG } from "shared/utils";
 import ToolkitElement from 'core/toolkitElement';
 import SaveModal from "assistant/saveModal";
 import { GLOBAL_EINSTEIN,chat_template } from 'assistant/utils';

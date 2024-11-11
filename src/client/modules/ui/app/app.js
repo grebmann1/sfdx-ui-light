@@ -1,6 +1,6 @@
 import { LightningElement,track,api,wire } from "lwc";
 import LightningAlert from 'lightning/alert';
-import { guid,isNotUndefinedOrNull,isElectronApp,classSet,isUndefinedOrNull,forceVariableSave } from "shared/utils";
+import { guid,isNotUndefinedOrNull,isElectronApp,classSet,isUndefinedOrNull,forceVariableSave,isChromeExtension } from "shared/utils";
 import { getExistingSession,saveSession,removeSession,directConnect,connect } from "connection/utils";
 import { NavigationContext,CurrentPageReference,navigate } from 'lwr/navigation';
 import { handleRedirect } from './utils';
@@ -227,7 +227,8 @@ export default class App extends LightningElement {
     }
     
     loadVersion = async () => {
-        const data = await (await fetch('/version')).json();
+        let url = isChromeExtension()?'/manifest.json':'/version';
+        const data = await (await fetch(url)).json();
         this.version = `v${data.version || '1.0.0'}`;
     }
     
@@ -323,27 +324,21 @@ export default class App extends LightningElement {
 
     /** Website & Electron **/
     load_fullMode = async () => {
-        await getExistingSession(); // await connect({alias:'acet-dev'})//
-        // Default Mode
-        this.loadModule('home/app',true);
+        if(isNotUndefinedOrNull(this.sessionId) && isNotUndefinedOrNull(this.serverUrl)){
+            await directConnect(this.sessionId,this.serverUrl);
+        }else{
+            await getExistingSession(); // await connect({alias:'acet-dev'})//
+        }
         
-        /** DEV MODE  */
-        if(process.env.NODE_ENV === 'dev' && this.isUserLoggedIn /*&& this.isUserLoggedIn*/){
-            //await this.loadModule('editor/app');
-            /*await this.loadModule({
-                component:'soql/app',
-                name:"SOQL Builder",
-                isDeletable:true
-            });*/
+        if(this.redirectUrl){
+            // This method use LWR redirection or window.location based on the url ! 
+            handleRedirect(this.navContext,this.redirectUrl);
+        }else{
+            // Default Mode
+            this.loadModule('home/app',true);
+
         }
 
-        /** Direct Opening Mode */
-        /*
-        const hash = (window.location.hash || '').replace('#','');
-        if(DIRECT_LINK_MAPPING.hasOwnProperty(hash)){
-            //await this.loadModule(DIRECT_LINK_MAPPING[hash]);
-        }
-        */
         this.pageHasLoaded = true;
         if(this.targetPage){
             this.handleNavigation(this.targetPage);
@@ -400,7 +395,7 @@ export default class App extends LightningElement {
     }
 
     get menuClass(){
-        return classSet('l-cell-content-size home__navigation slds-show_small')
+        return classSet('l-cell-content-size home__navigation slds-show_small slds-is-relative')
         .add({
             'slds-hide':this.isMenuHidden,
             'slds-menu-collapsed':this.isMenuCollapsed

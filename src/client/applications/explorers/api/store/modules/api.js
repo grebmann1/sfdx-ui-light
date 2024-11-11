@@ -119,7 +119,7 @@ const _executeApiRequest = (connector,request,formattedRequest) => {
                         statusCode,
                         contentHeaders,
                         contentType,
-                        executionEndDate:new Date(),
+                        executionEndDate:Date.now(),
                         executionStartDate
                     };
                     resolve(result);

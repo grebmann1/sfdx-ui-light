@@ -25,7 +25,7 @@
             <article class="full-page-body slds-card">
                 <div class="slds-is-relative slds-full-width slds-full-height slds-flex-column" style="min-height:200px;">
                     <template lwc:if={isLoading}>
-                        <lightning-spinner alternative-text="Loading"></lightning-spinner>
+                        <slds-spinner alternative-text="Loading" size="small"></slds-spinner>
                     </template>
                     <!-- Tabs -->
                     <slds-tabset lwc:ref="apexTab" variant="scoped" class="slds-without-tab" active-tab-value={currentTab} onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled is-remove-tab-event-disabled>
@@ -64,7 +64,7 @@
                             </template>
 
                             <template lwc:if={isApexRunning}>
-                                <slds-spinner message={_loadingMessage}></slds-spinner>
+                                <slds-spinner message={_loadingMessage} size="small"></slds-spinner>
                             </template>
                             <template lwc:elseif={isLogDisplayed}>
                                 <div class="slds-flex-column slds-fill-height slds-full-width">

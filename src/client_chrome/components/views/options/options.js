@@ -1,5 +1,5 @@
 import {LightningElement} from "lwc";
-import {CACHE_CONFIG, loadExtensionConfigFromCache, saveExtensionConfigToCache} from "extension/utils";
+import {CACHE_CONFIG, loadExtensionConfigFromCache, saveExtensionConfigToCache} from "shared/utils";
 import Toast from 'lightning/toast';
 
 

@@ -38,12 +38,22 @@ const store = configureStore({
                     'einstein/executeModel',
                     'einstein/executeModel/rejected',
                     'einstein/executeModel/fulfilled',
-                    'einstein/executeModel/pending'
+                    'einstein/executeModel/pending',
+                    'application/updateCurrentApplication',
+                    'platformEvent/updateReadStatusOnSpecificMessage'
                 ],
                 // Ignore these field paths in all actions
-                ignoredActionPaths: ['payload.Connector',''],
+                ignoredActionPaths: [
+                    'meta.arg',
+                    'payload.Connector',
+                    'payload.connector'
+                ],
                 // Ignore these paths in the state
-                ignoredPaths: ['application.connector'],
+                ignoredPaths: [
+                    'application.connector',
+                    'currentRetrieveJob.createdDate',
+                    'payload.connector'
+                ],
               },
         });
         if (process.env.NODE_ENV !== 'production') {
