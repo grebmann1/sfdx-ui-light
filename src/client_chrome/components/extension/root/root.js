@@ -15,7 +15,6 @@ import {connectStore, store} from 'core/store';
 
 const VARIANT = {
     DEFAULT: 'default',
-    OPTIONS: 'options',
     OVERLAY: 'overlay'
 };
 
@@ -57,10 +56,6 @@ export default class Root extends LightningElement {
 
     get isDefault() {
         return this.normalizedVariant === VARIANT.DEFAULT;
-    }
-
-    get isOptions() {
-        return this.normalizedVariant === VARIANT.OPTIONS;
     }
 
     get isOverlay(){

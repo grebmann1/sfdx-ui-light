@@ -1,6 +1,7 @@
 import { wire,api } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
 import {isEmpty, isNotUndefinedOrNull,isUndefinedOrNull, runActionAfterTimeOut,SETUP_LINKS} from "shared/utils";
+import {redirectToUrlViaChrome} from 'extension/utils';
 import {connectStore, store} from 'core/store';
 import { TYPE } from 'overlay/utils';
 import { directConnect } from "connection/utils";
@@ -144,12 +145,20 @@ export default class Overlay extends ToolkitElement {
         }, 1000);
     };
 
-    handleOpenToolkit = () => {
-        redirectToUrlViaChrome({
+    handleOpenToolkit = (e) => {
+        const application = e.currentTarget.dataset.application;
+        const settings = {
             sessionId: this.connector.conn.accessToken,
             serverUrl: this.connector.conn.instanceUrl,
             baseUrl: chrome.runtime.getURL('/views/app.html')
-        });
+        };
+        if(application){
+            const params = new URLSearchParams({
+                applicationName: application
+            });
+            settings.redirectUrl = encodeURIComponent(params.toString());
+        }
+        redirectToUrlViaChrome(settings);
     }
 
     handleOpenSideBar = async (e) => {

@@ -216,7 +216,7 @@ export default class RecordExplorerRow extends ToolkitElement {
             case "reference":
                 return `<a href="${this.currentOrigin}/${this.value}" target="_blank">${_formattedValue}</a>`; // in the futur, return a link
             case 'boolean':
-                return this.value == true ? '<img src="/assets/images/checkbox_checked.gif"/>' : '<img src="/assets/images/checkbox_unchecked.gif"/>';
+                return this.value == true ? '<img src="/images/checkbox_checked.gif"/>' : '<img src="/images/checkbox_unchecked.gif"/>';
         }
 
         /** in case of HTML  **/

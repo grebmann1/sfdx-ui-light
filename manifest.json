@@ -96,7 +96,7 @@
         }
     ],
     "options_ui": {
-        "page": "views/options.html",
+        "page": "views/app.html?applicationName=settings",
         "open_in_tab": true
     },
     "host_permissions": [

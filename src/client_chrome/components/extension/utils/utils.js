@@ -224,7 +224,7 @@ export const chromeOpenInWindow = async (targetUrl, groupName, incognito = false
 
 
 
-export const redirectToUrlViaChrome = ({baseUrl,redirectUrl,sessionId,serverUrl}) => {
+export const redirectToUrlViaChrome = ({baseUrl,redirectUrl,sessionId,serverUrl,isNewTab}) => {
     let params = new URLSearchParams();
     if(sessionId){
         params.append('sessionId', sessionId);
@@ -234,10 +234,12 @@ export const redirectToUrlViaChrome = ({baseUrl,redirectUrl,sessionId,serverUrl}
     if (redirectUrl) {
         params.append('redirectUrl', redirectUrl);
     }
-    console.log('baseUrl',baseUrl);
     let url = new URL(baseUrl);
-    url.search = params.toString();
-    console.log('url.href',url.href);
-    window.open(url.href,'_blank');
+        url.search = params.toString();
+    if(isNewTab){
+        window.open(url.href,'_blank');
+    }else{
+        window.open(url.href);
+    }
     
 };

@@ -86,9 +86,10 @@ export default class Salesforce extends ToolkitElement {
 
     /** Events **/
 
-
+    
 
     redirectToWebsite = () => {
+        
         redirectToUrlViaChrome({
             sessionId: this.connector.conn.accessToken,
             serverUrl: this.connector.conn.instanceUrl,
@@ -97,20 +98,26 @@ export default class Salesforce extends ToolkitElement {
     };
 
     redirectToAnonymousApex = () => {
+        const params = new URLSearchParams({
+            applicationName: 'anonymousapex'
+        });
         redirectToUrlViaChrome({
             sessionId: this.connector.conn.accessToken,
             serverUrl: this.connector.conn.instanceUrl,
             baseUrl: chrome.runtime.getURL('/views/app.html'),
-            redirectUrl: 'anonymousapex'
+            redirectUrl: encodeURIComponent(params.toString())
         });
     };
 
     redirectToSoqlBuilder = () => {
+        const params = new URLSearchParams({
+            applicationName: 'soql'
+        });
         redirectToUrlViaChrome({
             sessionId: this.connector.conn.accessToken,
             serverUrl: this.connector.conn.instanceUrl,
             baseUrl: chrome.runtime.getURL('/views/app.html'),
-            redirectUrl: 'soql'
+            redirectUrl: encodeURIComponent(params.toString())
         });
     };
 

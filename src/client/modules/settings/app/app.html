@@ -185,58 +185,60 @@
 								</settings-card>
 								-->
 								
-								<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small" is-first>
-									<div slot="title">
-										<h1>SObjects</h1>
-									</div>
-									<div slot="actions">
-										<lightning-input data-key="isCached_sobjects"
-											label="SObjects"
-											type="toggle"
-											message-toggle-active=""
-											message-toggle-inactive=""
-											variant="label-hidden"
-											checked={config.isCached_sobjects}
-											onchange={inputfield_change}
-										></lightning-input>
-									</div>
-								</settings-card>
-								<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
-									<div slot="title">
-										<h1>Cache Refresh Rate</h1>
-										<p class="description slds-truncate"> (In hour)</p>
-									</div>
-									<div slot="actions">
-										<lightning-input class="slds-text-align-end" data-key="cache_refreshRate"
-											label="CacheLifetime"
-											type="number"
-											step="1"
-											message-toggle-active=""
-											message-toggle-inactive=""
-											variant="label-hidden"
-											value={config.cache_refreshRate}
-											onchange={inputfield_change}
-										></lightning-input>
-									</div>
-								</settings-card>
-								<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small" is-first>
-									<div slot="title">
-										<h1>Exclusion List</h1>
-										<p class="description slds-truncate"> Enter username (1 per line)</p>
-									</div>
-									<div slot="actions">
-										<lightning-textarea class="slds-text-align-end" data-key="cache_exclusionList"
-											label="cache_exclusionList"
-											type="text"
-											step="1"
-											message-toggle-active=""
-											message-toggle-inactive=""
-											variant="label-hidden"
-											value={config.cache_exclusionList}
-											onchange={inputfield_change}
-										></lightning-textarea>
-									</div>
-								</settings-card>
+								<!--
+									<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small" is-first>
+										<div slot="title">
+											<h1>SObjects</h1>
+										</div>
+										<div slot="actions">
+											<lightning-input data-key="isCached_sobjects"
+												label="SObjects"
+												type="toggle"
+												message-toggle-active=""
+												message-toggle-inactive=""
+												variant="label-hidden"
+												checked={config.isCached_sobjects}
+												onchange={inputfield_change}
+											></lightning-input>
+										</div>
+									</settings-card>
+									<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+										<div slot="title">
+											<h1>Cache Refresh Rate</h1>
+											<p class="description slds-truncate"> (In hour)</p>
+										</div>
+										<div slot="actions">
+											<lightning-input class="slds-text-align-end" data-key="cache_refreshRate"
+												label="CacheLifetime"
+												type="number"
+												step="1"
+												message-toggle-active=""
+												message-toggle-inactive=""
+												variant="label-hidden"
+												value={config.cache_refreshRate}
+												onchange={inputfield_change}
+											></lightning-input>
+										</div>
+									</settings-card>
+									<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small" is-first>
+										<div slot="title">
+											<h1>Exclusion List</h1>
+											<p class="description slds-truncate"> Enter username (1 per line)</p>
+										</div>
+										<div slot="actions">
+											<lightning-textarea class="slds-text-align-end" data-key="cache_exclusionList"
+												label="cache_exclusionList"
+												type="text"
+												step="1"
+												message-toggle-active=""
+												message-toggle-inactive=""
+												variant="label-hidden"
+												value={config.cache_exclusionList}
+												onchange={inputfield_change}
+											></lightning-textarea>
+										</div>
+									</settings-card>
+								-->
 							</div>
 						</lightning-card>
 					</div>

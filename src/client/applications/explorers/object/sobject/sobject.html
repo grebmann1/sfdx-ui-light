@@ -1,7 +1,7 @@
 <template>
     <!-- Container -->
     <template lwc:if={isLoading}>
-        <slds-spinner message="Loading SObject informations" alternative-text="Loading"></slds-spinner>
+        <slds-spinner message="Loading SObject informations" alternative-text="Loading" size="small"></slds-spinner>
     </template>
     <template lwc:elseif={isNoRecord}>
         <illustration-empty title="No record" sub-title={noRecordMessage}></illustration-empty>

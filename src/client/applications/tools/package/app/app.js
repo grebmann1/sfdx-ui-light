@@ -3,6 +3,7 @@ import ToolkitElement from 'core/toolkitElement';
 import { lowerCaseKey, isUndefinedOrNull, isNotUndefinedOrNull, isEmpty, guid, classSet, runActionAfterTimeOut, compareString, splitTextByTimestamp } from 'shared/utils';
 import { store, connectStore, PACKAGE, SELECTORS } from 'core/store';
 import { store_application, store as legacyStore } from 'shared/store';
+import Toast from 'lightning/toast';
 
 
 export default class App extends ToolkitElement {
@@ -104,14 +105,15 @@ export default class App extends ToolkitElement {
     }
 
 
-
     /** Events **/
 
     handleItemSelection = (e) => {
         if(this.refs.retrieve){
             this.refs.retrieve.toggleMetadata(e.detail);
         }
+        //this.load_specificMetadataRecord(e.detail);
     }
+    
 
     handleSelectAll = (e) => {
         const { sobject } = e.detail;

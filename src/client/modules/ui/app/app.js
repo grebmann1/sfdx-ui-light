@@ -57,7 +57,7 @@ export default class App extends LightningElement {
 
     @wire(connectStore, { store:legacyStore })
     applicationChange({application}) {
-        
+        console.log('application',application)
         // Open Application
         if(application.isOpen){
             const {target} = application;
@@ -102,6 +102,7 @@ export default class App extends LightningElement {
             case 'application':
                 const formattedApplicationName = (state.applicationName || '').toLowerCase();
                 const target = APP_LIST.find(x => x.path === formattedApplicationName);
+                console.log('handleNavigation',target);
                 if(isNotUndefinedOrNull(target)){
                     this.handleApplicationSelection(target.name);
                 }else{
@@ -160,14 +161,14 @@ export default class App extends LightningElement {
     handleLogout = () => {
         // Reset Applications
         this.applications = this.applications.filter(x => x.name == 'home/app');
-        navigate(this.navContext,{type:'application',state:{applicationName:'connections'}});
+        navigate(this.navContext,{type:'application',state:{applicationName:'home'}});
     }
 
-    handleLogoutClick = (e) => {
-        e.preventDefault();
-        store.dispatch(APPLICATION.reduxSlice.actions.logout());
-
-        removeSession();
+    handleLogoutClick = async (e) => {
+        e.preventDefault(); // currentApplication
+        
+        await store.dispatch(APPLICATION.reduxSlice.actions.logout());
+        await removeSession();
         this.initMode();
         //location.reload();
     }
@@ -252,7 +253,6 @@ export default class App extends LightningElement {
 
         this.applications   = [];
         this.applicationId  = null;
-        
         if(this.isLimitedMode){
             await this.load_limitedMode();
         }else{
@@ -282,7 +282,6 @@ export default class App extends LightningElement {
 
     /** Extension & Electron Org Window  **/
     load_limitedMode = async () => {
-        //console.log('test',JSON.parse(sessionStorage.getItem("currentConnection")));
         try{
             if(isElectronApp()){
                 await connect({alias:this.alias});
@@ -317,6 +316,7 @@ export default class App extends LightningElement {
         //this.openSpecificModule('code/app'); 
         this.pageHasLoaded = true;
         if(this.targetPage){
+            console.log('__inner handleNavigation load_limitedMode');
             this.handleNavigation(this.targetPage);
         }
     }
@@ -341,6 +341,7 @@ export default class App extends LightningElement {
 
         this.pageHasLoaded = true;
         if(this.targetPage){
+            console.log('__inner handleNavigation load_fullMode');
             this.handleNavigation(this.targetPage);
         }
     }

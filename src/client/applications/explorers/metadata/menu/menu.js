@@ -4,7 +4,7 @@ import { isEmpty, isSalesforceId, classSet, isUndefinedOrNull, isNotUndefinedOrN
 import { CurrentPageReference, NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 
 
-const METADATA_EXCLUDE_LIST = ['Flow', 'FlowDefinition'];
+const METADATA_EXCLUDE_LIST = ['Flow'];
 
 export default class Menu extends ToolkitElement {
     @wire(NavigationContext)
@@ -13,6 +13,7 @@ export default class Menu extends ToolkitElement {
     @api isNavigationEnabled = false;
     @api isBasicSelectionEnabled = false;
     @api isSelectAllDisplayed = false;
+    @api isLevel2Excluded = false;
 
     isLoading = false;
     isNoRecord = false;
@@ -58,7 +59,7 @@ export default class Menu extends ToolkitElement {
         this.processMetadata(attributes,true);
     }
 
-    processMetadata = async ({ param1, label1, param2, label2, sobject },forceUpdate) => {
+    processMetadata = async ({ param1, label1, param2, label2, sobject,_developerName },forceUpdate) => {
         let isSelection = false;
         if (!this.isGlobalMetadataLoaded) {
             await this.load_metadataGlobal();
@@ -80,7 +81,7 @@ export default class Menu extends ToolkitElement {
             this.keepFilter = true; // Avoid menu search refresh !
             this.param1 = param1;
             this.label1 = label1;
-            if (exceptionMetadata && exceptionMetadata.hasLvl2) {
+            if (!this.isLevel2Excluded && exceptionMetadata && exceptionMetadata.hasLvl2) {
                 this.keepFilter = false; // For exception we refresh !
                 let metadataRecord = this.metadata[this.metadata.length - 1].records.find(x => x.key == param1);
 
@@ -100,7 +101,8 @@ export default class Menu extends ToolkitElement {
                         detail:{
                             param:this.param1,
                             label:this.label1,
-                            sobject: this.currentMetadata
+                            sobject: this.currentMetadata,
+                            _developerName
                         },
                         bubbles: true,composed: true 
                     })
@@ -118,7 +120,8 @@ export default class Menu extends ToolkitElement {
                     detail:{
                         param:this.param2,
                         label:this.label2,
-                        sobject: this.currentMetadata
+                        sobject: this.currentMetadata,
+                        _developerName
                     },
                     bubbles: true,composed: true 
                 })
@@ -167,7 +170,7 @@ export default class Menu extends ToolkitElement {
     }
 
     handleMenuSelection = (e) => {
-        const { name, label } = e.detail;
+        const { name, label,_developerName } = e.detail;
         switch (this.currentLevel) {
             case 0:
                 // Metadata Type selection
@@ -178,7 +181,8 @@ export default class Menu extends ToolkitElement {
                 this.currentLevel = 1;
                 this.dispatchMetadataRequest({
                     sobject: name,
-                    label1: label
+                    label1: label,
+                    _developerName
                 })
                 break;
             case 1:
@@ -188,7 +192,8 @@ export default class Menu extends ToolkitElement {
                 this.dispatchMetadataRequest({
                     sobject: this.currentMetadata,
                     param1: name,
-                    label1: label
+                    label1: label,
+                    _developerName
                 });
 
                 //this.currentLevel = 2; // Only for the flows
@@ -200,7 +205,8 @@ export default class Menu extends ToolkitElement {
                     param1: this.param1,
                     label1: this.label1,
                     param2: name,
-                    label2: label
+                    label2: label,
+                    _developerName
                 })
                 // Only work for items such as flows
                 break;
@@ -295,16 +301,17 @@ export default class Menu extends ToolkitElement {
 
             result = result.map(x => {
                 const badge = badgeFunc(x);
+                const _tempName = labelFunc(x);
                 return {
                     ...x,
                     name: x[field_id],
-                    label: labelFunc(x),
+                    label: _tempName,
                     key: x[field_id],
                     badgeLabel: badge ? badge.label : null,
-                    badgeClass: badge ? badge.class : null
+                    badgeClass: badge ? badge.class : null,
+                    _developerName:_tempName,
                 }
             }).sort(newCompare);
-
 
             if (this.metadata.length <= level) {
                 this.metadata.push(null)
@@ -330,6 +337,7 @@ export default class Menu extends ToolkitElement {
                     name: x.Id,
                     label: _tempName,
                     key: x.Id,
+                    _developerName:_tempName,
                 }
             }).sort((a, b) => (a.label || '').localeCompare(b.label));
 
@@ -351,7 +359,7 @@ export default class Menu extends ToolkitElement {
     
 
     formatName = (x) => {
-        const name = x.MasterLabel || x.Name || x.DeveloperName || x.Id;
+        const name = x.DeveloperName || x.MasterLabel || x.Name || x.Id;
         return x.NamespacePrefix ? `${x.NamespacePrefix}__${name}` : name;
     }
 

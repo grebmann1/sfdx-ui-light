@@ -280,12 +280,16 @@ class LWC_CUSTOM {
     handleLinkClick = async (e) => {
         e.preventDefault();
         const developerName = (e.target.dataset.name.substring(2) || '').split('-').join('');
-        const redirectUrl = `${encodeURIComponent(`metadata?sobject=LightningComponentBundle&param1=${developerName}`)}`;
+        const params = new URLSearchParams({
+            applicationName: 'metadata',
+            sobject:'LightningComponentBundle',
+            param1:developerName
+        });
         redirectToUrlViaChrome({
-            sessionId: config.sessionId,
-            serverUrl: config.serverUrl,
+            sessionId: this.config.sessionId,
+            serverUrl: this.config.serverUrl,
             baseUrl: chrome.runtime.getURL('/views/app.html'),
-            redirectUrl
+            redirectUrl:encodeURIComponent(params.toString())
         })
     }
 }

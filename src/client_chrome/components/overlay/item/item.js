@@ -1,6 +1,5 @@
 import { api } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
-import Toast from 'lightning/toast';
 
 import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeOut,guid } from 'shared/utils';
 import { TYPE } from 'overlay/utils';
@@ -44,6 +43,9 @@ export default class Item extends ToolkitElement {
     }
 
     handleItemClick = (e) => {
+
+        const isNewTab = e.metaKey || e.ctrlKey;
+
         switch (this.type) {
             case TYPE.APEX_CLASS:
             case TYPE.APEX_TRIGGER:
@@ -59,13 +61,18 @@ export default class Item extends ToolkitElement {
                     sessionId: this.connector.conn.accessToken,
                     serverUrl: this.connector.conn.instanceUrl,
                     baseUrl: chrome.runtime.getURL('/views/app.html'),
-                    redirectUrl:encodeURIComponent(params.toString())
+                    redirectUrl:encodeURIComponent(params.toString()),
+                    isNewTab
                 })
             break;
             default:
                 // todo: Include option to open as new tab
                 const link = this.generateLink();
-                window.location = link;
+                if(isNewTab){
+                    window.open(link,'_blank');
+                }else{
+                    window.location = link;
+                }
         }
     }
 

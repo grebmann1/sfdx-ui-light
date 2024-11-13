@@ -110,10 +110,10 @@ export default class Retrieve extends ToolkitElement {
 
     @api
     toggleMetadata = async (param) => {
-        const { sobject, label, selectAll, unselectAll } = param;
+        const { sobject, label,_developerName, selectAll, unselectAll } = param;
         const membersToAdd = {};
-        if (sobject && label) {
-            membersToAdd[sobject] = [label];
+        if (sobject && _developerName) {
+            membersToAdd[sobject] = [_developerName];
         }
 
         const manifestXml = this.refs.manifest.currentModel.getValue();

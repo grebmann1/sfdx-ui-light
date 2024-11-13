@@ -87,7 +87,7 @@ export default class Message extends ToolkitElement {
     }
 
     get isFailure(){
-        return this.item.Status === 'Failed' || this.item.Status === 'Canceled';
+        return this.item.Status === 'Failed' || this.item.Status === 'Canceled' || this.item.Status === 'SucceededPartial';
     }
 
     get isPending(){

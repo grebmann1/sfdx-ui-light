@@ -30,6 +30,7 @@ const applicationSlice = createSlice({
         logout: (state, action) => {
             state.connector = null;
             state.isLoggedIn = false;
+            state.currentApplication = null;
         },
         updateConnector: (state, action) => {
             const { connector } = action.payload;
