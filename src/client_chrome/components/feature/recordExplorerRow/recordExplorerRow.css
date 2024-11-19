@@ -1,5 +1,6 @@
 :host {
     display: contents;
+    font-size: smaller;
 }
 
 pre {

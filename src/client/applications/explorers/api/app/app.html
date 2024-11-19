@@ -150,21 +150,21 @@
                                         </div>
                                         <!-- BODY Section-->
                                         <template lwc:if={isBodyDisplayed}>
-                                            <template lwc:if={isFormattedContentDisplayed}>
-                                                <div>
-                                                    <lightning-radio-group name="radioGroup"
-                                                        label="Radio Group"
-                                                        options={viewer_options}
-                                                        value={viewer_value}
-                                                        required
-                                                        type="button"
-                                                        variant="label-hidden"
-                                                        class="slds-p-around_x-small"
-                                                        onchange={viewer_handleChange}
-                                                    ></lightning-radio-group>
-                                                </div>
-                                            
-                                                <div class={prettyContainerClass}>
+                                            <div>
+                                                <lightning-radio-group name="radioGroup"
+                                                    label="Radio Group"
+                                                    options={viewer_options}
+                                                    value={viewer_value}
+                                                    required
+                                                    type="button"
+                                                    variant="label-hidden"
+                                                    class="slds-p-around_x-small"
+                                                    onchange={viewer_handleChange}
+                                                ></lightning-radio-group>
+                                            </div>
+                                        
+                                            <div class={prettyContainerClass}>
+                                                <template lwc:if={isFormattedContentDisplayed}>
                                                     <slds-code-block 
                                                         class="slds-full-height" 
                                                         code-block={formattedContent} 
@@ -172,25 +172,40 @@
                                                         title="Formatted Response"
                                                         oncustomlink={handle_customLinkClick}
                                                     ></slds-code-block>
-                                                </div>
-                                            
-                                                <div class={rawContainerClass}>
-                                                    <editor-default lwc:ref="contentEditor" 
-                                                        class="slds-full-height slds-is-relative"
-                                                        model={currentModel}
-                                                        onmonacoloaded={initContentEditor}
-                                                        is-read-only
-                                                    ></editor-default>
-                                                </div> 
-                                                <div class={previewContainerClass}>
+                                                </template>
+                                                <template lwc:else>
+                                                    <illustration-default class="slds-p-top_large" title="File to large for preview">
+                                                        <lightning-button title={formattedZipDownloadLabel} label={formattedZipDownloadLabel} onclick={handle_downloadClick}></lightning-button>
+                                                    </illustration-default> 
+                                                </template>
+                                            </div>
+
+                                            <div class={workbenchContainerClass}>
+                                                <slds-structure-viewer class="slds-flex-column slds-fill-height slds-m-horizontal_x-small" record={content}></slds-structure-viewer>
+                                            </div>
+                                        
+                                            <div class={rawContainerClass}>
+                                                <editor-default lwc:ref="contentEditor" 
+                                                    class="slds-full-height slds-is-relative"
+                                                    model={currentModel}
+                                                    onmonacoloaded={initContentEditor}
+                                                    is-read-only
+                                                ></editor-default>
+                                            </div> 
+
+                                            <!-- Preview hidden for large files -->
+                                            <div class={previewContainerClass}>
+                                                <template lwc:if={isFormattedContentDisplayed}>
                                                     <iframe onload={injectHTML} ref="iframe" width="100%" height="100%" style="border: unset;"></iframe>
-                                                </div> 
-                                            </template>
-                                            <template lwc:else>
-                                                <illustration-default class="slds-p-top_large" title="File to large for preview">
-                                                    <lightning-button title="Download File" label="Download File" onclick={handle_downloadClick}></lightning-button>
-                                                </illustration-default> 
-                                            </template>
+                                                </template>
+                                                <template lwc:else>
+                                                    <illustration-default class="slds-p-top_large" title="File to large for preview">
+                                                        <lightning-button title={formattedZipDownloadLabel} label={formattedZipDownloadLabel} onclick={handle_downloadClick}></lightning-button>
+                                                    </illustration-default> 
+                                                </template>
+                                            </div>
+                                            
+
                                         </template>
                                         <!-- HEADERS Section-->
                                         <template lwc:if={isHeadersDisplayed}>

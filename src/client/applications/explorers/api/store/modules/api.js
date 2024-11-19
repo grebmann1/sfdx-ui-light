@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk,createEntityAdapter } from '@reduxjs/toolkit';
-import { lowerCaseKey,guid,isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
+import { lowerCaseKey,guid,isNotUndefinedOrNull,isUndefinedOrNull,isChromeExtension } from 'shared/utils';
 import { DEFAULT, generateDefaultTab,formattedContentType } from 'api/utils';
 import { SELECTORS,DOCUMENT } from 'core/store';
 
@@ -14,31 +14,61 @@ const INITIAL_TABS = [
 
 /** Methods */
 
-function loadCacheSettings(alias) {
-    try {
-        const configText = localStorage.getItem(`${alias}-${API_SETTINGS_KEY}`);
-        if (configText) return JSON.parse(configText);
-    } catch (e) {
-        console.error('Failed to load CONFIG from localStorage', e);
-    }
-    return null;
+export function loadCacheSettings(alias) {
+    const key = `${alias}-${API_SETTINGS_KEY}`;
+
+    return new Promise((resolve) => {
+        if (isChromeExtension()) {
+            // Use Chrome storage
+            chrome.storage.local.get(key, (result) => {
+                if (chrome.runtime.lastError) {
+                    console.error('Failed to load CONFIG from chrome.storage', chrome.runtime.lastError);
+                    resolve(null);
+                } else {
+                    const configText = result[key];
+                    resolve(configText ? JSON.parse(configText) : null);
+                }
+            });
+        } else {
+            // Use localStorage
+            try {
+                const configText = localStorage.getItem(key);
+                resolve(configText ? JSON.parse(configText) : null);
+            } catch (e) {
+                console.error('Failed to load CONFIG from localStorage', e);
+                resolve(null);
+            }
+        }
+    });
 }
 
-function saveCacheSettings(alias,state) {
-    try {
-        const { 
-            viewerTab,recentPanelToggled,tabs
-        } = state
+function saveCacheSettings(alias, state) {
+    const { viewerTab, recentPanelToggled, tabs } = state;
+    const key = `${alias}-${API_SETTINGS_KEY}`;
+    const data = JSON.stringify({ viewerTab, recentPanelToggled, tabs });
 
-        localStorage.setItem(
-            `${alias}-${API_SETTINGS_KEY}`,
-            JSON.stringify({ 
-                viewerTab,recentPanelToggled,tabs
-            })
-        );
-    } catch (e) {
-        console.error('Failed to save CONFIG to localstorage', e);
-    }
+    return new Promise((resolve, reject) => {
+        if (isChromeExtension()) {
+            // Use Chrome extension storage
+            chrome.storage.local.set({ [key]: data }, () => {
+                if (chrome.runtime.lastError) {
+                    console.error('Failed to save CONFIG to chrome.storage', chrome.runtime.lastError);
+                    reject(chrome.runtime.lastError);
+                } else {
+                    resolve();
+                }
+            });
+        } else {
+            // Use localStorage
+            try {
+                localStorage.setItem(key, data);
+                resolve();
+            } catch (e) {
+                console.error('Failed to save CONFIG to localStorage', e);
+                reject(e);
+            }
+        }
+    });
 }
 
 
@@ -113,12 +143,15 @@ const _executeApiRequest = (connector,request,formattedRequest) => {
                     if(formattedContentType(contentType) !== 'xml'){
                         content = await instance.getResponseBody(res);
                     }
+                    
+                    let contentLength = (new TextEncoder()).encode(JSON.stringify(content)).length;
 
                     const result = {
                         content,
                         statusCode,
                         contentHeaders,
                         contentType,
+                        contentLength,
                         executionEndDate:Date.now(),
                         executionStartDate
                     };
@@ -178,8 +211,7 @@ const apiSlice = createSlice({
     },
     reducers: {
         loadCacheSettings : (state,action) => {
-            const { alias,apiFiles } = action.payload;
-            const cachedConfig = loadCacheSettings(alias);
+            const { cachedConfig,apiFiles } = action.payload;
             if(cachedConfig){
                 const { viewerTab,recentPanelToggled,tabs } = cachedConfig; 
                 Object.assign(state,{

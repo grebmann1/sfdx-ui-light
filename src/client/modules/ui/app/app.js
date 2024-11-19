@@ -316,7 +316,6 @@ export default class App extends LightningElement {
         //this.openSpecificModule('code/app'); 
         this.pageHasLoaded = true;
         if(this.targetPage){
-            console.log('__inner handleNavigation load_limitedMode');
             this.handleNavigation(this.targetPage);
         }
     }
@@ -341,7 +340,6 @@ export default class App extends LightningElement {
 
         this.pageHasLoaded = true;
         if(this.targetPage){
-            console.log('__inner handleNavigation load_fullMode');
             this.handleNavigation(this.targetPage);
         }
     }

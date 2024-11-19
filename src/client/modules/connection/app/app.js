@@ -322,14 +322,21 @@ export default class App extends ToolkitElement {
     openToolkit = async (row,redirect) => {
         this.isLoading = true;
             try{
+                let url = new URL(isChromeExtension()?chrome.runtime.getURL('/views/app.html'):'https://sf-toolkit.com/extension');
+
                 const {alias,...settings} = this.data.find(x => x.id == row.id);
                 const connector = await connect({alias,settings,disableEvent:true});
-                var url = `https://sf-toolkit.com/extension?sessionId=${connector.conn.accessToken}&serverUrl=${encodeURIComponent(connector.conn.instanceUrl)}`;
-                //var url = `http://localhost:3000/extension?sessionId=${connector.conn.accessToken}&serverUrl=${encodeURIComponent(connector.conn.instanceUrl)}`;
-                if(redirect){
-                    url+=`&redirectUrl=${encodeURIComponent(redirect)}`;
+
+                // Build URL
+                let params = new URLSearchParams();
+                    params.append('sessionId', connector.conn.accessToken);
+                    params.append('serverUrl', connector.conn.instanceUrl);
+                if (redirect) {
+                    params.append('redirectUrl', encodeURIComponent(redirect));
                 }
-                window.open(url,'_blank');
+                // Add params
+                url.search = params.toString();
+                window.open(url.href,'_blank');
                 /*chrome.tabs.create({url: url},(tab) => {
                     this.createOrAddToTabGroup(tab, alias);
                 });*/

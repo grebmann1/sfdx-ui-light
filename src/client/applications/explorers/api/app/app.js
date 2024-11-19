@@ -12,10 +12,10 @@ import LightningConfirm from 'lightning/confirm';
 
 
 
-
 export default class App extends ToolkitElement {
 
     isLoading = false;
+    isDownloading = false;
 
     @track formattedRequests = [];
     @track endpoint;
@@ -45,6 +45,7 @@ export default class App extends ToolkitElement {
 
     // Content
     @track content;
+    @track contentLength;
     @track contentType = 'json';
     @track contentHeaders = [];
     @track statusCode;
@@ -67,13 +68,15 @@ export default class App extends ToolkitElement {
 
     connectedCallback(){
         this.isFieldRendered = true;
-        store.dispatch((dispatch, getState) => {
+
+        store.dispatch(async (dispatch, getState) => {
+            const cachedConfig = await API.loadCacheSettings(this.alias);
             dispatch(API.reduxSlice.actions.updateCurrentApiVersion({
                 alias:this.alias,
                 version:this.currentApiVersion
             }));
             dispatch(API.reduxSlice.actions.loadCacheSettings({
-                alias:this.alias,
+                cachedConfig,
                 apiFiles:getState().apiFiles
             }));
             dispatch(DOCUMENT.reduxSlices.APIFILE.actions.loadFromStorage({
@@ -101,7 +104,6 @@ export default class App extends ToolkitElement {
     storeChange({ application,api,recents,apiFiles }) {
         const isCurrentApp = this.verifyIsActive(application.currentApplication);
         if(!isCurrentApp) return;
-        // if(api){}
         this.tab_current = api.viewerTab;
         this.isRecentToggled = api.recentPanelToggled;
         this.tabs = api.tabs;
@@ -163,6 +165,7 @@ export default class App extends ToolkitElement {
                 this.statusCode = apiState.response.statusCode;
                 this.contentType = apiState.response.contentType;
                 this.contentHeaders = apiState.response.contentHeaders;
+                this.contentLength = apiState.response.contentLength;
                 this.executionStartDate = apiState.response.executionStartDate;
                 this.executionEndDate   = apiState.response.executionEndDate;
                 if(this.content != apiState.response.content){
@@ -524,6 +527,7 @@ export default class App extends ToolkitElement {
     }
 
     handle_downloadClick = () => {
+        this.isDownloading = true;
         try {
             const blob = new Blob([this.formattedContent], { type: this.contentType });
             const url = URL.createObjectURL(blob);
@@ -539,6 +543,7 @@ export default class App extends ToolkitElement {
                 errors: e
             });
         }
+        this.isDownloading = false;
     }
 
     handleSaveClick = () => {
@@ -725,11 +730,6 @@ export default class App extends ToolkitElement {
         return false;
     }
 
-    get contentLength(){
-        if(isUndefinedOrNull(this.content)) return 0;
-        //5726285
-        return (new TextEncoder()).encode(JSON.stringify(this.content)).length;
-    }
 
     get isContentDisplayed(){
         return isNotUndefinedOrNull(this.content);
@@ -760,13 +760,21 @@ export default class App extends ToolkitElement {
         return classSet("slds-full-height slds-scrollable_y").add({'slds-hide':!(this.viewer_value === VIEWERS.PRETTY)}).toString();
     }
 
+    get workbenchContainerClass(){
+        return classSet("slds-fill-height slds-flex-column").add({'slds-hide':!(this.viewer_value === VIEWERS.WORKBENCH)}).toString();
+    }
 
     get rawContainerClass(){
         return classSet("slds-full-height slds-scrollable_y").add({'slds-hide':!(this.viewer_value === VIEWERS.RAW)}).toString();
     }
+    
 
     get previewContainerClass(){
         return classSet("slds-full-height slds-scrollable_y").add({'slds-hide':!(this.viewer_value === VIEWERS.PREVIEW)}).toString();
+    }
+
+    get isPreviewMode(){
+        return '';
     }
 
     get viewer_options(){
@@ -793,5 +801,22 @@ export default class App extends ToolkitElement {
 
     get isSaveButtonDisabled(){
         return this.isLoading;
+    }
+
+    get formattedContentLength() {
+        const bytes = (this.contentLength * 3) / 4;
+
+
+        const mb = bytes / (1024 * 1024); // Convert to MB
+        if (mb >= 1) {
+            return `${mb.toFixed(2)} MB`;
+        }
+
+        const kb = bytes / 1024; // Convert to KB
+        return `${kb.toFixed(2)} KB`;
+    }
+
+    get formattedZipDownloadLabel() {
+        return this.isDownloading ? 'Downloading' : `Download file (${this.formattedContentLength})`;
     }
 }

@@ -55,7 +55,6 @@ export default class Menu extends ToolkitElement {
 
     @api
     process = (attributes) => {
-        console.log('---> process');
         this.processMetadata(attributes,true);
     }
 

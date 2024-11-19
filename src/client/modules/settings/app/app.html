@@ -241,6 +241,37 @@
 								-->
 							</div>
 						</lightning-card>
+
+						<lightning-card class="settings slds-col slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
+							<div slot="title">
+								<h1>Restrict API calls</h1>
+								<p class="description slds-truncate">Restrict the API calls for specific organization to avoid triggering alert when using Salesforce Shield</p>
+							</div>
+							<div slot="actions">
+							</div>
+							<div class="slds-grid slds-wrap">
+								<!--
+								<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small" is-first>
+									<div slot="title">
+										<h1>Exclusion List</h1>
+										<p class="description slds-truncate"> Enter username (1 per line)</p>
+									</div>
+									<div slot="actions">
+										<lightning-textarea class="slds-text-align-end" data-key="cache_exclusionList"
+											label="cache_exclusionList"
+											type="text"
+											step="1"
+											message-toggle-active=""
+											message-toggle-inactive=""
+											variant="label-hidden"
+											value={config.cache_exclusionList}
+											onchange={inputfield_change}
+										></lightning-textarea>
+									</div>
+								</settings-card>
+								-->
+							</div>
+						</lightning-card>
 					</div>
                 </div>
             </article>

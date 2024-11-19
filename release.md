@@ -1,5 +1,15 @@
 # SF Toolkit - Release Notes
 
+## Version 1.3.20 - ....
+
+### Bug Fixes :
+- **Connection Module** :
+    - Fix Loading spinner when authorizing and redirecting to an organization
+- **User Explorer** :
+    - Font Size modification (small)
+- **API Explorer** :
+    - Improve UI for Large files to provide Monaco and Workbench visualizer.
+
 ## Version 1.3.19 - November 11, 2024
 
 ### New Features

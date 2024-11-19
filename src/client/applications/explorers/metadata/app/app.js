@@ -64,7 +64,6 @@ export default class App extends ToolkitElement {
     }
 
     loadFromNavigation = async ({ state }) => {
-        console.log('loadFromNavigation')
         let { param1, label1, param2, label2, sobject, applicationName } = state;
         if (applicationName != 'metadata') return; // Only for metadata
 

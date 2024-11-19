@@ -270,7 +270,7 @@ export default class CodeBlock extends LightningElement {
 	}
 
 	handleCopy = () => {
-		const value = this._codeBlock.replaceAll("&lt;", "<").replaceAll("&gt;", ">");
+		const value = this._codeBlock.replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&amp;", "&");
         navigator.clipboard.writeText(value);
     }
 

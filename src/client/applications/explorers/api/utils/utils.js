@@ -4,6 +4,7 @@ import { guid,isUndefinedOrNull } from 'shared/utils';
 
 export const VIEWERS = {
     PRETTY : 'Pretty',
+    WORKBENCH : 'Workbench',
     RAW : 'Raw',
     PREVIEW : 'Preview'
 }
