@@ -272,6 +272,15 @@ export function getFromStorage(item,byDefault){
         return byDefault;
     }
 }
+
+export function safeParseJson(item){
+    try{
+        const parsedItem = JSON.parse(item);
+        return parsedItem;
+    }catch(e){
+        return null;
+    }
+}
 /*
 export function goToUrl(conn,redirectUrl){
     let url = conn.instanceUrl+'/secur/frontdoor.jsp?sid='+conn.accessToken;
@@ -306,6 +315,8 @@ export function download(data,type,filename){
 
 export const ROLES = {
     USER:'user',
+    SYSTEM:'system',
+    TOOL:'tool'
 }
 
 export const runSilent = async (func,placeholder) => {

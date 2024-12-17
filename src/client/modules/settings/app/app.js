@@ -82,9 +82,8 @@ export default class App extends ToolkitElement {
             label: 'Configuration Saved',
             variant: 'success',
         });
-        window.setTimeout(() => {
-            window.close();
-        }, 1500);
+        // we update the originalConfig
+        this.originalConfig = {...config};
     };
 
     loadConfigFromCache = async () => {

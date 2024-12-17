@@ -16,45 +16,6 @@
             <article class="full-page-body">
                 <div class="slds-is-relative slds-full-width slds-full-height slds-flex-column slds-p-around_medium" style="min-height:200px;">
 
-					<!-- General Settings -->
-                    <div class="slds-grid slds-gutters_direct slds-wrap slds-grid_vertical-stretch">
-                        <!--
-                        <div class="slds-col slds-col slds-size_1-of-1">
-                            <div class="slds-section slds-is-open">
-                                <h3 class="slds-section__title">
-                                    <div class="slds-section__title-action">
-                                        <span class="slds-truncate" title="OpenAI Settings">OpenAI Settings</span>
-                                    </div>
-                                </h3>
-                                <div class="slds-section__content">
-                                    <slds-information-block title="Open AI - Beta Mode">
-                                        <p>This is in Beta, might not work as expected and might be removed in the future !</p>
-                                    </slds-information-block>
-                                    <div class="slds-grid slds-wrap">
-                                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
-                                            <lightning-input 
-                                                label="OpenAI API Key" 
-                                                onchange={handleOpenaiKey_change} 
-                                                type="text"
-                                                value={openai_key}
-                                            ></lightning-input>
-                                        </div>
-                                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
-                                            <lightning-input 
-                                                label="OpenAI Assistant Id" 
-                                                onchange={handleOpenaiAssistantId_change}
-                                                type="text"
-                                                value={openai_assistant_id}
-                                            ></lightning-input>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        -->
-                        
-                    </div>
-
 					<!-- Chrome Extension -->
 					<template lwc:if={isChrome}>
 						<div class="slds-section slds-reverse slds-is-open">
@@ -269,6 +230,40 @@
 										></lightning-textarea>
 									</div>
 								</settings-card>
+								-->
+							</div>
+						</lightning-card>
+
+						<lightning-card class="settings slds-col slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
+							<div slot="title">
+								<h1>OpenAI</h1>
+								<p class="description slds-truncate">Settings related to OpenAI integration.</p>
+							</div>
+							<div slot="actions">
+							</div>
+							<div class="slds-grid slds-wrap">
+								<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small" is-first>
+									<div slot="title">
+										<h1>API Key</h1>
+										<p class="description slds-truncate"> Key to be used to integrate with OpenAI Platform</p>
+									</div>
+									<div slot="actions"></div>
+									<lightning-input data-key="openai_key"
+											label="openai_key" 
+											onchange={inputfield_change} 
+											type="text"
+											value={config.openai_key}
+											variant="label-hidden"
+										></lightning-input>
+								</settings-card>
+								<!--
+								<lightning-input 
+									label="OpenAI Assistant Id [Disabled]" 
+									onchange={handleOpenaiAssistantId_change}
+									type="text"
+									value={openai_assistant_id}
+									disabled
+								></lightning-input>
 								-->
 							</div>
 						</lightning-card>
