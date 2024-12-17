@@ -15,6 +15,8 @@ import assistant_app from "assistant/app";
 import package_app from "package/app";
 import release_app from "release/app";
 import settings_app from "settings/app";
+import agentBuilder_app from "agent/app";
+
 /*
 const KNOWN_TYPE = new Set([
     "home/app",
@@ -248,6 +250,21 @@ const APP_MAPPING = {
         quickActionIcon:"standard:story",
         shortName:"AI",
         path:'assistant'
+    },
+    "agent/app":{
+        module:agentBuilder_app,
+        isFullHeight:true,
+        isDeletable:true,
+        isElectronOnly:false,
+        isOfflineAvailable:false,
+        isMenuVisible:true,
+        isTabVisible:true,
+        label:"Agent Builder",
+        type:i18n.APPLICATION,
+        description:"Build your agent using LLM",
+        quickActionIcon:"standard:story",
+        shortName:"AB",
+        path:'agentbuilder'
     },
     "settings/app":{
         module:settings_app,

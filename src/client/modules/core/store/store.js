@@ -10,6 +10,7 @@ import { PACKAGE } from 'package/store';
 import { API } from 'api/store';
 import { EVENT } from 'platformevent/store';
 import { EINSTEIN } from 'assistant/store';
+import { AGENTBUILDER } from 'agent/store';
 
 const store = configureStore({
     reducer: {
@@ -23,6 +24,7 @@ const store = configureStore({
         platformEvent : EVENT.reduxSlice.reducer,
         api : API.reduxSlice.reducer,
         einstein: EINSTEIN.reduxSlice.reducer,
+        agentBuilder : AGENTBUILDER.reduxSlice.reducer,
         queryFiles  : DOCUMENT.reduxSlices.QUERYFILE.reducer,
         apexFiles   : DOCUMENT.reduxSlices.APEXFILE.reducer,
         apiFiles    : DOCUMENT.reduxSlices.APIFILE.reducer,
@@ -76,7 +78,8 @@ export {
     APPLICATION,
     SOBJECT,
     DESCRIBE,
-    EINSTEIN
+    EINSTEIN,
+    AGENTBUILDER
 };
 export { connectStore } from './wire-adapter';
 
@@ -88,6 +91,7 @@ export const SELECTORS = {
     apex:APEX.apexAdapter.getSelectors((state) => state.apex.apex), // Not using the standard -> So it's Apex (Slice) then Apex variable
     api:API.apiAdapter.getSelectors((state) => state.api.api), // Not using the standard -> So it's Apex (Slice) then Apex variable
     einstein:EINSTEIN.einsteinModelAdapter.getSelectors((state) => state.einstein.dialog),
+    //agentBuilder:AGENTBUILDER.agentBuilderModelAdapter.getSelectors((state) => state.agentBuilder.dialog),
     queryFiles:DOCUMENT.queryFileAdapter.getSelectors((state) => state.queryFiles),
     apexFiles:DOCUMENT.apexFileAdapter.getSelectors((state) => state.apexFiles),
     apiFiles:DOCUMENT.apiFileAdapter.getSelectors((state) => state.apiFiles),

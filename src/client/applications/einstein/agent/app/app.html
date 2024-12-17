@@ -1,0 +1,60 @@
+<template>
+    <div class={pageClass}>
+        <builder-editor is-left-panel-toggled={isLeftToggled}>
+            <builder-header slot="header" title="Tools" sub-title="AgentForce Builder" icon-name="standard:maintenance_asset">
+                <div slot="actions" class="slds-builder-toolbar__actions">
+                    <lightning-button class="slds-p-left_xx-small" variant="brand" label="New Agent" icon-name="utility:einstein" onclick={handleStartProcess}></lightning-button>
+                </div>
+                <p slot="meta" class="slds-page-header__meta-text">
+                    Welcome to the agent builder assistant. Press the <span class="slds-text-title_bold">start</span> button to launch the process.
+                </p>
+            </builder-header>
+
+            <!-- Left Panel -->
+            <div slot="left" class="slds-full-height slds-full-width slds-flex-column">
+                
+            </div>
+
+            <article class="full-page-body slds-card">
+                <div class="slds-is-relative slds-full-width slds-full-height slds-flex-column" style="min-height:200px;">
+                    <!-- Tabs -->
+                    <!-- 
+                        <slds-tabset lwc:ref="tab" variant="scoped" class="slds-without-tab" active-tab-value={currentTab} onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled is-remove-tab-event-disabled>
+                            <template for:each={formattedTabs} for:item="item">
+                                <slds-tab key={item.id} label={item.name} value={item.id} onactive={handleSelectTab} is-closeable={item.isCloseable} is-draft={item.isDraft}></slds-tab>
+                            </template>
+                        </slds-tabset>
+                    
+                    -->
+                    
+                    <!-- Content -->
+                    <slds-split-view class="slds-fill-height" left-min-width="200" right-min-width="200" is-horizontal>
+                        <div class="slds-flex-column slds-full-height slds-full-width" slot="left">
+                            <editor-default lwc:ref="agentCode"
+                                class="slds-full-height slds-is-relative" 
+                                model={agentCodeModel}
+                                onmonacoloaded={handleMonacoLoad}
+                            ></editor-default>
+                        </div>
+                        
+                        <div class="slds-full-height slds-full-width slds-flex-column" slot="right">
+                            
+                            <agent-dialog  lwc:ref="dialog"
+                                openai-key={openaiKey}
+                                application-name={applicationName}
+                                class="slds-is-relative slds-full-width slds-full-height slds-flex-column" 
+                                dialog-id={dialogId}
+                            ></agent-dialog>
+                        </div>
+                    </slds-split-view>
+
+                    
+
+                </div>
+            </article>
+            <!-- Panel -->
+
+            
+        </builder-editor>
+    </div>
+</template>

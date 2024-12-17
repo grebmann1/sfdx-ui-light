@@ -1,0 +1,66 @@
+<template>
+    <template lwc:if={isDisplayed}>
+        <div class={itemClass}>
+            <a href="#" role="option" class="slds-split-view__list-item-action slds-grow slds-has-flexi-truncate" tabindex="0" onclick={handleItemSelection}>
+                <div class="slds-grid slds-wrap slds-has-flexi-truncate">
+                    <div class="slds-col slds-size_6-of-12 slds-truncate">
+                        <span class="slds-truncate slds-text-title_caps" title="Id">Id</span>
+                        <span class="slds-p-left_small slds-truncate slds-col_bump-left" title={item.Id}>{item.Id}</span>
+                    </div>
+                    <div class="slds-col slds-size_5-of-12 slds-truncate">
+                        <span class="slds-truncate slds-text-title_caps" title="Status">Status</span>
+                        <span class={statusClass} title={formattedStatus}>{formattedStatus}</span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-12">
+                        <lightning-button-icon 
+                            class="slds-p-horizontal_x-small" 
+                            variant="base" 
+                            icon-name="utility:link" 
+                            label="Fields"          
+                            onclick={goToUrl} 
+                        ></lightning-button-icon>
+                    </div>
+                    <div class="slds-col slds-size_1-of-2 slds-truncate">
+                        <span class="slds-truncate slds-text-title_caps slds-text-color_default" title="Submitted">Submitted</span>
+                        <span class="slds-p-left_small slds-truncate slds-col_bump-left" title={formattedCreatedDate}>{formattedCreatedDate}</span>
+                    </div>
+                    <div class="slds-col slds-size_1-of-2 slds-truncate">
+                        <span class="slds-truncate slds-text-title_caps slds-text-color_default" title="Components">Components</span>
+                        <span class="slds-p-left_small slds-truncate slds-col_bump-left" title={item.NumberComponentsTotal}>{item.NumberComponentsTotal}</span>
+                    </div>
+                </div>
+                <template lwc:if={isPending}>
+    
+                </template>
+                <template lwc:else>
+                    <div class="slds-grid slds-wrap slds-has-flexi-truncate">
+                        <div class="slds-col slds-size_1-of-2 slds-truncate">
+                            <span class="slds-truncate slds-text-title_caps" title="Duration">Duration</span>
+                            <span class="slds-p-left_small slds-truncate slds-col_bump-left" title={formattedDurationDate}>{formattedDurationDate}</span>
+                        </div>
+    
+                        <template lwc:if={hasTest}>
+                            <div class="slds-col slds-size_1-of-2 slds-truncate">
+                                <span class="slds-truncate slds-text-title_caps" title="Tests">Tests</span>
+                                <span class="slds-p-left_small slds-truncate slds-col_bump-left" title={formattedTests}>{formattedTests}</span>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2 slds-truncate"></div>
+                            <div class="slds-col slds-size_1-of-2 slds-truncate">
+                                <span class="slds-truncate slds-text-title_caps" title="Success">Success</span>
+                                <span class="slds-p-left_small slds-truncate slds-col_bump-left slds-text-color_success" title={item.NumberTestsCompleted}>{item.NumberTestsCompleted}</span>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2 slds-truncate"></div>
+    
+                            <div class="slds-col slds-size_1-of-2 slds-truncate">
+                                <span class="slds-truncate slds-text-title_caps" title="Failed">Failed</span>
+                                <span class="slds-p-left_small slds-truncate slds-col_bump-left slds-text-color_error" title={item.NumberTestErrors}>{item.NumberTestErrors}</span>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                
+            </a>
+        </div>
+    </template>
+    
+</template>

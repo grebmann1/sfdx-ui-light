@@ -1,0 +1,63 @@
+<template>
+    <li class={itemClass}>
+        <div class="slds-chat-message">
+            <div class="slds-chat-message__body">
+                <div class={itemMessageClass}>
+                    <!--<lightning-formatted-rich-text value={body}></lightning-formatted-rich-text>-->
+                    <template lwc:if={isUser}>
+                        {body}
+                    </template>
+                    <template lwc:else>
+                        <slds-markdown-viewer 
+                            lwc:ref="container" 
+                            class="slds-flex-column slds-full-height" 
+                            value={body}
+                            onchange={handleChange}
+                        ></slds-markdown-viewer>
+                    </template>
+                </div>
+                <div class="slds-chat-message__meta">
+                    <template lwc:if={isUser}>
+                        <!-- User -->
+                        <template lwc:if={isRetryDisplayed}>
+                            <lightning-button 
+                                icon-name="utility:refresh"  
+                                variant="base" 
+                                icon-position="right"
+                                alternative-text="refresh" 
+                                label="Retry"
+                                onclick={handleRetry}
+                                class="slds-p-right_xx-small small-icon"
+                            ></lightning-button>
+                        </template>
+                    </template>
+                    <template lwc:else>
+                        <div class="slds-flex-column">
+                            {originMessage}
+                            <lightning-button-group class="slds-p-right_xx-small slds-m-bottom_x-small">
+                                <lightning-button-icon 
+                                    icon-name="utility:download"  
+                                    variant="container" 
+                                    size="x-small"
+                                    alternative-text="download" 
+                                    title="Download"
+                                    onclick={handleDownload}
+                                ></lightning-button-icon>
+                                <lightning-button-icon 
+                                    icon-name="utility:edit"  
+                                    variant="container" 
+                                    size="x-small"
+                                    alternative-text="edit" 
+                                    title="Edit"
+                                    onclick={handleEdit}
+                                ></lightning-button-icon>
+                            </lightning-button-group>
+                        </div>
+                    </template>
+                    
+                    <!-- • 4:59 PM -->
+                </div>
+            </div>
+        </div>
+    </li>
+</template>
