@@ -217,7 +217,8 @@ export default class App extends ToolkitElement {
 
     /** Methods  **/
 
-    executeAPI = () => {
+    // Execute Action - Execute API Call
+    executeAction = () => {
         const _originalRequest = this.currentRequestToStore;
         const _formattedRequest = this.formatRequest();
         if(isUndefinedOrNull(_formattedRequest)) return;
@@ -523,7 +524,7 @@ export default class App extends ToolkitElement {
             tabId:this.currentTab?.id
         }));
         //this.forceDomUpdate();
-        this.executeAPI();
+        this.executeAction();
     }
 
     handle_downloadClick = () => {
@@ -546,7 +547,7 @@ export default class App extends ToolkitElement {
         this.isDownloading = false;
     }
 
-    handleSaveClick = () => {
+    executeSave = () => {
         console.log('save click');
         
         const { api } = store.getState();

@@ -1,6 +1,17 @@
 # SF Toolkit - Release Notes
 
-## Version 1.3.20 - ....
+
+## Version 1.3.21 - December 24, 2024
+
+### New Features :
+- **All Editors** :
+    - Enable shortcuts to Save & Run.
+        - CTRL/CMD + S to Save
+        - CTRL/CMD + Enter to run    
+- **Data Explorer** :
+    - Allow commenting with "//" to exclude part of the query.
+
+## Version 1.3.20 - November 20, 2024
 
 ### Bug Fixes :
 - **Connection Module** :

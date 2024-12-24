@@ -161,7 +161,6 @@ export default class App extends ToolkitElement {
         },30000);
     }
 
-
     deleteRecords = async (sobject,records) => {
         if(isUndefinedOrNull(sobject)) return;
         const connector = sobject.useToolingApi?this.connector.conn.tooling:this.connector.conn;
@@ -211,12 +210,31 @@ export default class App extends ToolkitElement {
         }
     }
 
-    handleRunClick = e => {
+    executeAction = e => {
+        console.log('---> executeAction');
         const isAllRows = false;
         const inputEl = this.refs?.editor?.editor?.currentModel
         if (!inputEl) return;
-        const query = inputEl.getValue();
+        let query = inputEl.getValue();
         if (!query) return;
+
+        // Reformat query to remove comments
+        query = query
+            .split('\n')
+            .map(line => {
+                const commentIndex = line.indexOf('//');
+                if (commentIndex !== -1) {
+                    // Include everything before `//`, excluding the comment
+                    return line.slice(0, commentIndex).trim();
+                }
+                // Include the entire line if no `//` is found
+                return line.trim();
+            })
+            .filter(line => line.length > 0) // Exclude empty lines
+            .join(' '); // Join back into a single query string
+
+        // Log the filtered query
+        console.log('Filtered Query:', query);
 
         const { ui,describe } = store.getState();
         store.dispatch(UI.reduxSlice.actions.deselectChildRelationship());
@@ -277,7 +295,7 @@ export default class App extends ToolkitElement {
         this.isDownloadCanceled = true;
     }
 
-    handleMonacoSave = (e) => {
+    executeSave = (e) => {
         e.stopPropagation();
         const { ui } = store.getState();
         const file = ui.currentTab.fileId?SELECTORS.queryFiles.selectById(store.getState(),lowerCaseKey(ui.currentTab.fileId)):null;

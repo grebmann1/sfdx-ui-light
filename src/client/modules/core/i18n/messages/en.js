@@ -28,9 +28,11 @@ export default {
     OUTPUT_TABLE_FAILED_FETCH_NEXT: 'Failed to fetch next records',
     EDITOR_PANEL_SAVE:'Save',
     EDITOR_PANEL_RUN: 'Run',
+    EDITOR_PANEL_RESET: 'Reset',
     EDITOR_PANEL_ABORT: 'Abort',
     EDITOR_PANEL_ABORTING: 'Aborting',
     EDITOR_PANEL_EXECUTE: 'Execute',
+    EDITOR_PANEL_EXECUTE_API: 'Execute API',
     EDITOR_PANEL_RUN_ALL: 'Query All',
     EDITOR_PANEL_RUN_ALL_TITLE:
         'Query All will return records that have been deleted',
@@ -51,9 +53,9 @@ export default {
     SOBJECTS_PANEL_QUICK_FIND: 'Quick Find',
     SOBJECTS_PANEL_NO_MATCHING: 'No matching sObjects found',
     SOBJECTS_PANEL_KEYWORD_CLEAR: 'Clear',
-    WELCOME_TITLE: 'Welcome to LWC SOQL Builder!',
+    WELCOME_TITLE: 'Welcome to LWC Data Explorer!',
     WELCOME_DESCRIPTION:
-        'LWC SOQL Builder is a SOQL execution tool developed in Lightning Web Components Open Source, which provides useful features such as viewing the list of items, completing item names, saving queries, and exporting execution results to CSV.',
+        'LWC Data Explorer is a SOQL execution tool developed in Lightning Web Components Open Source, which provides useful features such as viewing the list of items, completing item names, saving queries, and exporting execution results to CSV.',
     WELCOME_LOGIN_PRODUCTION: 'Login to Production Org',
     WELCOME_LOGIN_SANDBOX: 'Login to Sandbox Org',
     WELCOME_BACK_HOME: 'Back to Home',

@@ -126,6 +126,7 @@ export default class App extends LightningElement {
         this.initDragDrop();
     }
 
+
     /** Events */
 
     handleLogin = async (connector) => {

@@ -34,7 +34,11 @@
         </div>
     </template>
     <template lwc:else>
-        <illustration-empty title="Click on Run to execute a query" size="small"></illustration-empty>
+        <illustration-empty size="small" use-slot-format>
+            <div slot="title">
+                <p>Click <span class="slds-text-heading_small">Run</span> or use <span class="slds-text-heading_small">CMD/CTRL + Enter</span> to execute a query</p>
+            </div>
+        </illustration-empty>
     </template>
 
 </template>

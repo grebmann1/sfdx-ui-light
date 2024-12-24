@@ -1,6 +1,6 @@
 <template>
     <div class={pageClass}>
-        <builder-editor>
+        <builder-editor onexecuteaction={executeAction} onexecutesave={executeSave}>
             <builder-header slot="header" title="Light API Explorer" sub-title="API Explorer" icon-name="standard:user">
                 <div slot="actions" class="slds-builder-toolbar__actions">
                     
@@ -24,7 +24,7 @@
                         class="slds-m-left_small"
                         icon-name="utility:refresh" 
                         onclick={reset_click} 
-                        label="Reset" 
+                        label={i18n.EDITOR_PANEL_RESET} 
                         disabled={isApiRunning}
                     ></lightning-button>
                     <lightning-button-icon-stateful 
@@ -61,14 +61,14 @@
                     <lightning-button 
                         class="slds-p-left_xx-small" 
                         label={i18n.EDITOR_PANEL_SAVE} 
-                        onclick={handleSaveClick} 
+                        onclick={executeSave} 
                         disabled={isSaveButtonDisabled}
                     ></lightning-button>
                     <lightning-button
                         class="slds-m-left_small"
                         icon-name="utility:apex" 
-                        onclick={executeAPI} 
-                        label="Execute API" 
+                        onclick={executeAction} 
+                        label={i18n.EDITOR_PANEL_RUN} 
                         variant="brand"
                         disabled={isExecuteApiDisabled}
                     ></lightning-button>
@@ -238,10 +238,11 @@
                                         </template>
                                     </template>
                                     <template lwc:else>
-                                        <illustration-empty 
-                                            title="No data to visualize" 
-                                            size="large"
-                                        ></illustration-empty>
+                                        <illustration-empty size="large" use-slot-format>
+                                            <div slot="title">
+                                                <p>Click <span class="slds-text-heading_small">Run</span> or use <span class="slds-text-heading_small">CMD/CTRL + Enter</span> to execute an API Call</p>
+                                            </div>
+                                        </illustration-empty>
                                     </template>
                                 </div>
                             </div>

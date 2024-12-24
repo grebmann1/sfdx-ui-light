@@ -97,7 +97,12 @@ export default class Default extends ToolkitElement {
         this.editor.onKeyDown((e) => {
             if ((e.ctrlKey || e.metaKey) && e.keyCode === this.monaco.KeyCode.KeyS) {
                 e.preventDefault();
-                this.dispatchEvent(new CustomEvent("monacosave", {bubbles: true,composed:true }));
+                //this.dispatchEvent(new CustomEvent("executesave", {bubbles: true,composed:true }));
+            }
+            if ((e.ctrlKey || e.metaKey) && e.keyCode === this.monaco.KeyCode.Enter) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.dispatchEvent(new CustomEvent("executeaction", {bubbles: true,composed:true }));
             }
         });
         this.editor.onDidPaste((e) => {

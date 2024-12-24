@@ -304,44 +304,12 @@ export default class App extends ToolkitElement {
             apexPromise.abort();
         }
     }
-
-    handleSaveClick = () => {
+    
+    executeSave = () => {
+        console.log('---> executeSave');
         const { apex } = store.getState();
         const file = apex.currentTab.fileId?SELECTORS.apexFiles.selectById(store.getState(),lowerCaseKey(apex.currentTab.fileId)):null;
-        SaveModal.open({
-            title:'Save Apex Script',
-            _file:file
-        }).then(async data => {
-            console.log('Save Apex Script',data);
-            if(isUndefinedOrNull(data)) return;
-
-            const { name,isGlobal } = data;
-            store.dispatch(async (dispatch,getState) => {
-                await dispatch(DOCUMENT.reduxSlices.APEXFILE.actions.upsertOne({
-                    id:name, // generic
-                    isGlobal, // generic
-                    content:this.body,
-                    alias:this.alias,
-                    extra:{
-                        //useToolingApi:this._useToolingApi === true, // Needed for queries
-                    }
-                }));
-                await dispatch(APEX.reduxSlice.actions.linkFileToTab({
-                    fileId:name,
-                    alias:this.alias,
-                    apexFiles:getState().apexFiles
-                }));
-            });
-
-            // Reset draft
-
-        })
-    }
-
-    handleMonacoSave = (e) => {
-        e.stopPropagation();
-        const { apex } = store.getState();
-        const file = apex.currentTab.fileId?SELECTORS.apexFiles.selectById(store.getState(),lowerCaseKey(apex.currentTab.fileId)):null;
+        
         if(isNotUndefinedOrNull(file)){
             // Existing file
             store.dispatch(async (dispatch,getState) => {
@@ -355,10 +323,39 @@ export default class App extends ToolkitElement {
                     apexFiles:getState().apexFiles
                 }));
             })
+        }else{
+            // Create new file
+            SaveModal.open({
+                title:'Save Apex Script',
+                _file:file
+            }).then(async data => {
+                console.log('Save Apex Script',data);
+                if(isUndefinedOrNull(data)) return;
+    
+                const { name,isGlobal } = data;
+                store.dispatch(async (dispatch,getState) => {
+                    await dispatch(DOCUMENT.reduxSlices.APEXFILE.actions.upsertOne({
+                        id:name, // generic
+                        isGlobal, // generic
+                        content:this.body,
+                        alias:this.alias,
+                        extra:{
+                            //useToolingApi:this._useToolingApi === true, // Needed for queries
+                        }
+                    }));
+                    await dispatch(APEX.reduxSlice.actions.linkFileToTab({
+                        fileId:name,
+                        alias:this.alias,
+                        apexFiles:getState().apexFiles
+                    }));
+                });
+                // Reset draft
+            })
         }
     }
 
-    handleExecuteApex = async (e) => {
+    // Execute Action : Execute Apex script
+    executeAction = async (e) => {
         this.isApexRunning = true;
         // Execute
         const apexPromise = store.dispatch(APEX.executeApexAnonymous({

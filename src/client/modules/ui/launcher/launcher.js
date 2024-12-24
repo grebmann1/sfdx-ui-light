@@ -56,7 +56,7 @@ const application_mapping = [
     },
     {
         id:"soql",
-        name:"SOQL Builder",
+        name:"Data Explorer",
         shortName:"SE",
         component:"soql/app",
         description:"Build SOQL queries",

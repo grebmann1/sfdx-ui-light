@@ -5,6 +5,8 @@ export default class Illustration extends LightningElement {
 
     @api title;
     @api subTitle;
+
+    @api useSlotFormat = false;
     //slds-illustration_large
 
     @api
@@ -17,6 +19,8 @@ export default class Illustration extends LightningElement {
     
 
     /** Getter */
+
+
     get normalizedSize(){
         return normalize(this.size, {
             fallbackValue: 'small',

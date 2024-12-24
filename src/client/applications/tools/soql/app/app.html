@@ -1,8 +1,8 @@
 <template>
     <div class={pageClass}>
-        <builder-editor is-left-panel-toggled={isLeftToggled}>
+        <builder-editor is-left-panel-toggled={isLeftToggled} onexecuteaction={executeAction} onexecutesave={executeSave}>
             <!-- Header -->
-            <builder-header slot="header" title="Tools" sub-title="SOQL Builder" icon-name="standard:dataset">
+            <builder-header slot="header" title="Tools" sub-title="Data Explorer" icon-name="standard:dataset">
                 <div slot="actions" class="slds-builder-toolbar__actions">
                     <!-- [TODO - Handle Deletion and show error/success]
                     <lightning-button-icon icon-name="utility:delete" variant="border-filled" onclick={deleteSelectedRecords} disabled={isDeleteDisabled}></lightning-button-icon>
@@ -31,7 +31,7 @@
                     <!--<button class="slds-button slds-button_brand" onclick={runQueryAll} title={i18n.EDITOR_PANEL_RUN_ALL_TITLE}> {i18n.EDITOR_PANEL_RUN_ALL} </button>-->
                     <lightning-button class="slds-p-left_xx-small" label={i18n.EDITOR_PANEL_SAVE} onclick={handleSaveClick} disabled={isSaveButtonDisabled}></lightning-button>
                     <template lwc:if={isRunButtonDisplayed}>
-                        <lightning-button class="slds-p-left_xx-small" variant="brand" label={i18n.EDITOR_PANEL_RUN} icon-name="utility:right" onclick={handleRunClick} disabled={isRunButtonDisabled}></lightning-button>
+                        <lightning-button class="slds-p-left_xx-small" variant="brand" label={i18n.EDITOR_PANEL_RUN} icon-name="utility:right" onclick={executeAction} disabled={isRunButtonDisabled}></lightning-button>
                     </template>
                     <template lwc:else>
                         <lightning-button class="slds-p-left_xx-small" variant="destructive" label={i18n.EDITOR_PANEL_ABORT} icon-name="utility:clear" onclick={handleAbortClick} disabled={isLoading}></lightning-button>
@@ -74,9 +74,16 @@
                         <div class="right-panel slds-full-height">
                             <slds-split-view top-min-height="250" bottom-min-height="100" splitter-position="30">
                                 <!-- EDITOR -->
-                                <soql-query-editor-panel lwc:ref="editor" slot="left" class="slds-full-height" application-name={applicationName} onmonacosave={handleMonacoSave}></soql-query-editor-panel>
+                                <soql-query-editor-panel lwc:ref="editor" slot="left" 
+                                    class="slds-full-height" 
+                                    application-name={applicationName}
+                                ></soql-query-editor-panel>
                                 <!-- OUTPUT QUERIES -->
-                                <soql-output-panel lwc:ref="output" slot="right" class="slds-full-height" application-name={applicationName} onrowselection={handleRowSelection}></soql-output-panel>
+                                <soql-output-panel lwc:ref="output" slot="right" 
+                                    class="slds-full-height" 
+                                    application-name={applicationName} 
+                                    onrowselection={handleRowSelection}
+                                ></soql-output-panel>
                             </slds-split-view>
                         </div>
                     </div>

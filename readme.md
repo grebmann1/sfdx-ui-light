@@ -22,7 +22,7 @@ The SF Toolkit repository provides a comprehensive suite of tools designed for S
 - ✅ A robust metadata viewer for Salesforce components.
 - ✅ A lightweight metadata editor supporting **LWC**, Aura, and Apex.
 
-### SOQL Builder
+### Data Explorer
 - ✅ Comprehensive field and object dictionary.
 - ✅ Integrated Monaco Editor for superior code editing.
 - ✅ Capabilities for data export and multi-tab management.

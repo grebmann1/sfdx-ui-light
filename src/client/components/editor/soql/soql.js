@@ -95,13 +95,19 @@ export default class Soql extends ToolkitElement {
         this.editor.onDidChangeModelContent(this.handleModelContentChange);
         /*this.editor.addCommand(this.monaco.KeyMod.CtrlCmd | this.monaco.KeyCode.KEY_S, () => {
             console.log('SAVE pressed!');
-        });*/
+        });*///
         this.editor.onKeyDown((e) => {
             if ((e.ctrlKey || e.metaKey) && e.keyCode === this.monaco.KeyCode.KeyS) {
                 e.preventDefault();
-                this.dispatchEvent(new CustomEvent("monacosave", {bubbles: true,composed:true }));
+                //this.dispatchEvent(new CustomEvent("executesave", {bubbles: true,composed:true }));
+            }
+            if ((e.ctrlKey || e.metaKey) && e.keyCode === this.monaco.KeyCode.Enter) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.dispatchEvent(new CustomEvent("executeaction", {bubbles: true,composed:true }));
             }
         });
+        this.editor.focus();
     }
 
     loadMonacoEditor = async () => {

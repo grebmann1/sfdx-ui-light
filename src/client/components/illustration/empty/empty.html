@@ -121,8 +121,16 @@
             </g>
         </svg>
         <div class="slds-text-longform">
-            <h3 class="slds-text-heading_medium">{title}</h3>
-            <p class="slds-text-body_regular">{subTitle}</p>
+
+            <template lwc:if={useSlotFormat}>
+                <slot name="title"></slot>
+                <slot name="subtitle"></slot>
+            </template>
+            <template lwc:else>
+                <h3 class="slds-text-heading_medium">{title}</h3>
+                <p class="slds-text-body_regular">{subTitle}</p>
+            </template>
+            
         </div>
     </div>
 </template>
