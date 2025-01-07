@@ -159,7 +159,19 @@ export const isElectronApp = () => {
 }
 
 export const isChromeExtension = () => {
-    return isNotUndefinedOrNull(chrome?.windows);
+    try {
+        if (typeof chrome !== 'undefined' && chrome.runtime?.id) {
+            // Check for Chrome and Chromium-based browsers
+            return true;
+        }
+        if (typeof browser !== 'undefined' && browser.runtime?.id) {
+            // Check for Firefox
+            return true;
+        }
+    } catch (error) {
+        console.error('Error detecting browser extension environment:', error);
+    }
+    return false; // Not a recognized browser extension
 }
 
 export function formatBytes(bytes, decimals = 2) {
