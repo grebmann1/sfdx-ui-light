@@ -55,7 +55,7 @@
             </template>
             <div class="slds-flex-column slds-fill-height slds-is-relative">
                 <template lwc:if={isLoading}>
-                    <slds-spinner alternative-text="Loading" size="small"></slds-spinner>
+                    <slds-spinner alternative-text="Loading" size="small" message={loadingMessage}></slds-spinner>
                 </template>
                 <slot name="listmenu"></slot>
                 <template lwc:if={displayIfEmpty}>

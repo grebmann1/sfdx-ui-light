@@ -23,9 +23,7 @@ class HotkeysManager {
     unsubscribe(keyCombo, callback) {
         if (this.subscribers.has(keyCombo)) {
             const callbacks = this.subscribers.get(keyCombo);
-            console.log('callbacks',callbacks);
             callbacks.delete(callback);
-            console.log('callbacks',callbacks);
             // If no callbacks remain for this key combo, unbind it
             if (callbacks.size === 0) {
                 this.subscribers.delete(keyCombo);

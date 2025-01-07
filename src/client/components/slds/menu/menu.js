@@ -9,6 +9,7 @@ export default class Menu extends ToolkitElement {
     _isRendered = true;
     @api title;
     @api isLoading = false;
+    @api loadingMessage;
     @api isBackDisplayed = false;
     @api hideSearch = false;
     @api level;

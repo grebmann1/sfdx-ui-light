@@ -1,571 +1,150 @@
-import { api, wire,track } from "lwc";
+import { api, wire, track } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
-import { isEmpty, isSalesforceId, classSet, isUndefinedOrNull, isNotUndefinedOrNull, runActionAfterTimeOut, formatFiles, sortObjectsByField, removeDuplicates } from 'shared/utils';
-import { CurrentPageReference, NavigationContext, generateUrl, navigate } from 'lwr/navigation';
-
-
-const METADATA_EXCLUDE_LIST = ['Flow'];
+import { isUndefinedOrNull,isNotUndefinedOrNull, sortObjectsByField, removeDuplicates } from 'shared/utils';
+import { CurrentPageReference, NavigationContext, navigate } from 'lwr/navigation';
+import { store, connectStore,METADATA } from 'core/store';
+import { METADATA_EXCLUDE_LIST } from 'metadata/utils'
+// Constants
+const METADATA_FIELDS = ['Id', 'Name', 'DeveloperName', 'MasterLabel', 'NamespacePrefix'];
+const CACHE_EXPIRY_MS = 5 * 60 * 1000;
 
 export default class Menu extends ToolkitElement {
-    @wire(NavigationContext)
-    navContext;
-    
-    @api isNavigationEnabled = false;
-    @api isBasicSelectionEnabled = false;
-    @api isSelectAllDisplayed = false;
-    @api isLevel2Excluded = false;
+    @wire(NavigationContext) navContext;
 
-    isLoading = false;
-    isNoRecord = false;
-    isGlobalMetadataLoaded = false;
-
-    @track metadata = [{ records: [], label: 'Metadata' }];
-    currentLevel = 0;
-
-    // Filters
+    // Trackable Properties
+    @track metadata_global = null;
+    @track metadata_records = null;
     @track menuItems = [];
-    keepFilter = false;
 
-    currentMetadata;
-
-    
     @api sobject;
     @api param1;
     @api param2;
     @api label1;
     @api label2;
 
-
-    // Internal Caching
-    _caching = {};
-    _byPassCaching = false;
-
-    // Worker
-    metadataResult;
-    tasks = {};
+    // Internal State
+    currentMetadata;
+    isLoading = false;
+    loadingMessage;
+    isGlobalMetadataLoaded = false;
     error;
 
+    // Cache
+    _cache = {};
+    _bypassCache = false;
 
-
-    connectedCallback() {
-        this.processMetadata({});
-    }
-
-    /** Methods */
-
-    @api
-    process = (attributes) => {
-        this.processMetadata(attributes,true);
-    }
-
-    processMetadata = async ({ param1, label1, param2, label2, sobject,_developerName },forceUpdate) => {
-        let isSelection = false;
-        if (!this.isGlobalMetadataLoaded) {
-            await this.load_metadataGlobal();
-        }
-        this.isNoRecord = false;
-
-        const exceptionMetadata = sobject ? this.exceptionMetadataList.find(x => x.name === sobject) : null;
-        if (sobject && this.currentMetadata != sobject) {
-            // Metadata
-            this.currentLevel = 1;
-            this.currentMetadata = sobject;
-            if (exceptionMetadata) {
-                await this.load_specificMetadataException(exceptionMetadata, null, 1);
-            } else {
-                await this.load_specificMetadata(sobject);
+    // Page Reference
+    @wire(CurrentPageReference)
+    handlePageReference(pageRef) {
+        if (!isUndefinedOrNull(pageRef) && pageRef?.state?.applicationName === 'metadata') {
+            // Check if the new pageRef is different
+            if (this._hasRendered) { // JSON.stringify(this._pageRef) !== JSON.stringify(pageRef) 
+                this._pageRef = pageRef;
+                this.loadFromNavigation(pageRef);
             }
         }
-        if (param1 && (this.param1 != param1 || forceUpdate)) {
-            this.keepFilter = true; // Avoid menu search refresh !
-            this.param1 = param1;
-            this.label1 = label1;
-            if (!this.isLevel2Excluded && exceptionMetadata && exceptionMetadata.hasLvl2) {
-                this.keepFilter = false; // For exception we refresh !
-                let metadataRecord = this.metadata[this.metadata.length - 1].records.find(x => x.key == param1);
+    }
 
-                // Advanced with Extra lvl
-                this.currentLevel = 2;
-                const lvl2ExceptionMetadata = this.exceptionMetadataList.find(x => x.name === exceptionMetadata.lvl2Type);
-                await this.load_specificMetadataException(lvl2ExceptionMetadata, param1, 2);
-                if (isUndefinedOrNull(param2) && exceptionMetadata.selectDefaultFunc) {
-                    param2 = exceptionMetadata.selectDefaultFunc(metadataRecord);
-                    label2 = exceptionMetadata.selectDefaultLabelFunc(metadataRecord);
-                }
-            } else {
-                // Basic
-                isSelection = true;
-                this.dispatchEvent(
-                    new CustomEvent("select", { 
-                        detail:{
-                            param:this.param1,
-                            label:this.label1,
-                            sobject: this.currentMetadata,
-                            _developerName
-                        },
-                        bubbles: true,composed: true 
-                    })
-                );
-            }
-        }
+    @wire(connectStore, { store })
+    handleStoreChange({ metadata, application }) {
+        if (!this.verifyIsActive(application.currentApplication)) return;
+        //Object.assign(this, metadata);
+        //this.currentLevel = metadata.currentLevel;
+        const _hasParam1Changed = this.param1 != metadata.param1;
+        this.param1 = metadata.param1;
+        this.label1 = metadata.label1;
+        this.sobject = metadata.sobject;
+        this.isLoading = metadata.isLoading;
+        this.loadingMessage = metadata.loadingMessage;
+        this.currentMetadata = metadata.currentMetadata;
 
-        if (param2 && (this.param2 != param2 || forceUpdate)) {
-            this.param2 = param2;
-            this.label2 = label2;
-            //this.currentLevel = 2;
-            isSelection = true;
-            this.dispatchEvent(
-                new CustomEvent("select", { 
-                    detail:{
-                        param:this.param2,
-                        label:this.label2,
-                        sobject: this.currentMetadata,
-                        _developerName
-                    },
-                    bubbles: true,composed: true 
-                })
-            );
+        if(JSON.stringify(this.metadata_global) !== JSON.stringify(metadata.metadata_global)){
+            this.metadata_global = metadata.metadata_global;
+            this.setMenuItems();
         }
-        // At the end to avoid multiple refresh
-        if(!this.isBasicSelectionEnabled || !isSelection){
+        if(JSON.stringify(this.metadata_records) !== JSON.stringify(metadata.metadata_records) || _hasParam1Changed){
+            this.metadata_records = metadata.metadata_records;
+            this.forceRefresh = false;
             this.setMenuItems();
         }
         
     }
 
-    dispatchMetadataRequest = (params) => {
-        if(this.isNavigationEnabled){
-            navigate(this.navContext, {
-                type: 'application',
-                state: {
-                    applicationName: 'metadata',
-                    ...params
-                }
-            });
-        }else{
-            this.processMetadata(params);
+    connectedCallback() {
+        // Initialization logic here
+        store.dispatch(METADATA.fetchGlobalMetadata());
+    }
+
+    renderedCallback(){
+        if(!this._hasRendered){
+            this._hasRendered = true;
+            //this.loadFromNavigation(this._pageRef);
         }
     }
 
+    // Methods
+
+    loadFromNavigation = async ({ state }) => {
+        let { applicationName,sobject,param1,label1 } = state;
+        if (applicationName != 'metadata') return; // Only for metadata
+        store.dispatch(async (dispatch, getState) => {
+            await dispatch(METADATA.fetchSpecificMetadata({ sobject,force:true }));
+            const params = { sobject,param1,label1 };
+            if(isNotUndefinedOrNull(param1) && isNotUndefinedOrNull(label1)){
+                dispatch(METADATA.reduxSlice.actions.setAttributes(params));
+                this.dispatchSelectionEvent(params);
+            }
+            
+        })
+        //store.dispatch(METADATA.reduxSlice.actions.setAttributes(state));
+    }
+
+    setMenuItems = () => {
+        const records = this.metadata_records?this.metadata_records.records:this.metadata_global?.records || [];
+        this.menuItems = records.map(record => ({
+            ...record,
+            isSelected: this.selectedItem === record.key,
+        }))
+        .sort((a, b) => (a.label || '')
+        .localeCompare(b.label)) || [];
+    }
+
+
+    dispatchSelectionEvent = (detail) => {
+        this.dispatchEvent(new CustomEvent('select', { detail, bubbles: true, composed: true }));
+    }
 
     /** Events */
 
-    selectAll_handleClick = (e) => {
-        this.dispatchEvent(new CustomEvent("selectall", { 
-            detail:{
-                sobject: this.currentMetadata
-            },
-            bubbles: true,composed: true 
-        }));
-    }
-
-    unselectAll_handleClick = (e) => {
-        this.dispatchEvent(new CustomEvent("unselectall", { 
-            detail:{
-                sobject: this.currentMetadata
-            },
-            bubbles: true,composed: true 
-        }));
-    }
-
-    handleMenuSelection = (e) => {
-        const { name, label,_developerName } = e.detail;
-        switch (this.currentLevel) {
-            case 0:
-                // Metadata Type selection
-                //this.load_specificMetadata({name,label});
-                this.currentMetadata = null;
-                this.param1 = null;
-                this.param2 = null;
-                this.currentLevel = 1;
-                this.dispatchMetadataRequest({
-                    sobject: name,
-                    label1: label,
-                    _developerName
-                })
-                break;
-            case 1:
-                // Metadata Record selection
-                this.param1 = null;
-                this.param2 = null;
-                this.dispatchMetadataRequest({
-                    sobject: this.currentMetadata,
-                    param1: name,
-                    label1: label,
-                    _developerName
-                });
-
-                //this.currentLevel = 2; // Only for the flows
-                break;
-            case 2:
-                this.param2 = null;
-                this.dispatchMetadataRequest({
-                    sobject: this.currentMetadata,
-                    param1: this.param1,
-                    label1: this.label1,
-                    param2: name,
-                    label2: label,
-                    _developerName
-                })
-                // Only work for items such as flows
-                break;
+    handleMenuSelection = async (e) => {
+        const { name, label } = e.detail;
+        if (this.currentLevel === 0) {
+            //this.currentMetadata = name;
+            store.dispatch(METADATA.fetchSpecificMetadata({ sobject:name }));
+        } else if (this.currentLevel === 1) {
+            //this.param1 = name;
+            //this.label1 = label;
+            const params = { sobject: this.currentMetadata, param1: name, label1: label };
+            await store.dispatch(METADATA.reduxSlice.actions.setAttributes(params));
+            this.dispatchSelectionEvent(params);
+            /*store.dispatch(METADATA.reduxSlice.actions.setAttributes({
+                ...this.attributes,
+                param1: name,
+                label1: label
+            }));*/
         }
-    }
-
-    handleRefresh = async () => {
-        this._byPassCaching = true;
-        if (this.currentLevel === 1) {
-            const exceptionMetadata = this.currentMetadata ? this.exceptionMetadataList.find(x => x.name === this.currentMetadata) : null;
-            if (exceptionMetadata) {
-                await this.load_specificMetadataException(exceptionMetadata, null, 1);
-            } else {
-                await this.load_specificMetadata(this.currentMetadata);
-            }
-        }
-        this._byPassCaching = false;
     }
 
     handleMenuBack = () => {
         this.keepFilter = false;
-        if (this.currentLevel > 0) {
-            this.currentLevel--;
-        } else {
-            this.currentLevel = 0;
-        }
-
-        this.metadata = this.metadata.slice(0, this.currentLevel + 1);
-        if (this.currentLevel == 2) {
-            this.param2 = null;
-            this.dispatchMetadataRequest({
-                sobject: this.currentMetadata,
-                param1: this.param1,
-                label1: this.label1
-            })
-        } else if (this.currentLevel == 1) {
-            this.param1 = null;
-            this.param2 = null;
-            this.dispatchMetadataRequest({
-                sobject: this.currentMetadata,
-            })
-        } else if (this.currentLevel == 0) {
-            this.currentMetadata = null;
-            this.param1 = null;
-            this.param2 = null;
-            this.dispatchMetadataRequest({})
-        }
-    }
-
-    /** Methods */
-
-
-    load_metadataGlobal = async () => {
-        this.isLoading = true;
-        let sobjects = (await this.connector.conn.tooling.describeGlobal$()).sobjects.map(x => x.name);
-        let result = await this.connector.conn.metadata.describe(this.connector.conn.version);
-            result = (result?.metadataObjects || [])
-            result = result.filter(x => sobjects.includes(x.xmlName)).map(x => ({ ...x, ...{ name: x.xmlName, label: x.xmlName, key: x.xmlName } }));
-            result = result.filter(x => !METADATA_EXCLUDE_LIST.includes(x.name));
-            result = [].concat(result, this.exceptionMetadataList.filter(x => x.isSearchable));
-            result = result.sort((a, b) => a.name.localeCompare(b.name));
-        this.metadata[0] = { records: result, label: 'Metadata' };
-        this.isLoading = false;
-        this.isGlobalMetadataLoaded = true;
-    }
-
-    runAndCacheQuery = async (query) => {
-        if (this._caching[query] && new Date() - this._caching[query].date < 1000 * 60 * 5 && !this._byPassCaching) {
-            return this._caching[query].data;
-        } else {
-            let queryExec = this.connector.conn.tooling.query(query);
-            let result = (await queryExec.run({ responseTarget: 'Records', autoFetch: true, maxFetch: 10000 })) || [];
-            this._caching[query] = {
-                data: result,
-                date: new Date()
-            }
-            return result;
-        }
-    }
-
-    load_specificMetadataException = async (exceptionMetadata, recordId, level) => {
-        const { name, label, queryFields, queryObject, labelFunc, field_id, manualFilter, badgeFunc, compareFunc, filterFunc } = exceptionMetadata;
-        const newCompare = compareFunc ? compareFunc : (a, b) => (a.label || '').localeCompare(b.label);
-
-        this.isLoading = true;
-        const metadataConfig = await this.connector.conn.tooling.describeSObject$(queryObject) || [];
-        const fields = [].concat(metadataConfig.fields.map(x => x.name).filter(x => ['Id', 'Name', 'DeveloperName', 'MasterLabel', 'NamespacePrefix'].includes(x)), queryFields);
-        try {
-            const query = `SELECT ${fields.join(',')} FROM ${queryObject} ${filterFunc(recordId)}`;
-            let result = (await this.runAndCacheQuery(query)) || [];
-            result = result.filter(x => manualFilter(x))
-
-            result = result.map(x => {
-                const badge = badgeFunc(x);
-                const _tempName = labelFunc(x);
-                return {
-                    ...x,
-                    name: x[field_id],
-                    label: _tempName,
-                    key: x[field_id],
-                    badgeLabel: badge ? badge.label : null,
-                    badgeClass: badge ? badge.class : null,
-                    _developerName:_tempName,
-                }
-            }).sort(newCompare);
-
-            if (this.metadata.length <= level) {
-                this.metadata.push(null)
-            }
-            this.metadata[level] = { records: result, label };
-        } catch (e) {
-            console.error(e); // We still show the menu
-        }
-        this.isLoading = false;
-    }
-
-    load_specificMetadata = async (name) => {
-        this.isLoading = true;
-        const metadataConfig = await this.connector.conn.tooling.describeSObject$(name) || [];
-        const fields = metadataConfig.fields.map(x => x.name).filter(x => ['Id', 'Name', 'DeveloperName', 'MasterLabel', 'NamespacePrefix'].includes(x));
-        try {
-            const query = `SELECT ${fields.join(',')} FROM ${name}`;
-            let result = (await this.runAndCacheQuery(query)) || [];
-            result = result.map(x => {
-                const _tempName = this.formatName(x);
-                return {
-                    ...x,
-                    name: x.Id,
-                    label: _tempName,
-                    key: x.Id,
-                    _developerName:_tempName,
-                }
-            }).sort((a, b) => (a.label || '').localeCompare(b.label));
-
-            if (this.metadata.length <= 1) {
-                this.metadata.push(null)
-            }
-            this.metadata[1] = { records: result, label: name };
-        } catch (e) {
-            console.error(e); // We still show the menu
-        }
-        this.isLoading = false;
-    }
-
-    load_recordFromRestAPI = async (recordId) => {
-        const urlQuery = `/services/data/v${this.connector.conn.version}/tooling/sobjects/${this.currentMetadata}/${recordId}`;
-        return await this.connector.conn.request(urlQuery);
-    }
-
-    
-
-    formatName = (x) => {
-        const name = x.DeveloperName || x.MasterLabel || x.Name || x.Id;
-        return x.NamespacePrefix ? `${x.NamespacePrefix}__${name}` : name;
+        store.dispatch(METADATA.reduxSlice.actions.goBack());
     }
 
 
-    handle_LWC = async (key) => {
-        var queryString = `SELECT LightningComponentBundleId,LightningComponentBundle.MasterLabel,Format,FilePath,Source FROM LightningComponentResource WHERE `;
-        if (isSalesforceId(key)) {
-            queryString += `LightningComponentBundleId = '${key}'`;
-        } else {
-            queryString += `LightningComponentBundle.DeveloperName = '${key}'`;
-        }
-        let resources = (await this.connector.conn.tooling.query(queryString)).records || [];
-        let files = formatFiles(resources.map(x => ({
-            path: x.FilePath,
-            name: x.FilePath.split('/').pop(),
-            body: x.Source,
-            apiVersion: x.ApiVersion,
-            metadata: this.currentMetadata,
-            id: x.LightningComponentBundleId,
-            _source: x
-        })));
+    // Getters
 
-        // Added from Extension redirection
-        if (resources.length > 0) {
-            this.label1 = resources[0].LightningComponentBundle.MasterLabel;
-        }
-        return sortObjectsByField(files, 'extension', ['html', 'js', 'css', 'xml'])
-    }
-
-    handle_APEX = async (data, extension = 'cls', bodyField = 'Body') => {
-        return formatFiles([{
-            path: `${data.FullName || data.Name}.${extension}`,
-            name: `${data.FullName || data.Name}.${extension}`,
-            body: data[bodyField],
-            apiVersion: data.ApiVersion,
-            metadata: this.currentMetadata,
-            id: data.Id,
-        }]);
-    }
-
-    _auraNameMapping = (name, type) => {
-        switch (type) {
-            case 'COMPONENT':
-                return `${name}.cmp`;
-            case 'CONTROLLER':
-                return `${name}Controller.js`;
-            case 'HELPER':
-                return `${name}Helper.js`;
-            case 'RENDERER':
-                return `${name}Renderer.js`;
-            case 'DOCUMENTATION':
-                return `${name}.auradoc`;
-            case 'DESIGN':
-                return `${name}.design`;
-            case 'SVG':
-                return `${name}.svg`;
-            default:
-                return name;
-        }
-    }
-
-    handle_AURA = async (data) => {
-        let resources = (await this.connector.conn.tooling.query(`SELECT AuraDefinitionBundleId,Format,DefType,Source FROM AuraDefinition WHERE AuraDefinitionBundleId = '${data.Id}'`)).records || [];
-        let files = formatFiles(resources.map(x => {
-            let _name = this._auraNameMapping(data.FullName, x.DefType);
-            return {
-                path: _name,
-                name: _name,
-                body: x.Source,
-                apiVersion: data.ApiVersion,
-                metadata: this.currentMetadata,
-                id: data.Id,
-                _source: x
-            }
-        }));
-        return sortObjectsByField(files, 'extension', ['cmp', 'html', 'js', 'css', 'xml'])
-    }
-
-    checkIfPresent = (a, b) => {
-        return (a || '').toLowerCase().includes((b || '').toLowerCase());
-    }
-
-
-    setMenuItems = () => {
-        // Doesn't work all the time if param1 isn't the recordId !!! (Example LWC)
-        if (this.metadata.length == 0) {
-            this.menuItems = [];
-        } else {
-            this.menuItems = this.metadata[this.metadata.length - 1].records.map(x => ({
-                ...x,
-                isSelected: this.selectedItem == x.key
-            }));
-        }
-    }
-
-
-    /** Getters */
-
-    get exceptionMetadataList() {
-        return [
-            {
-                isSearchable: true,
-                name: 'Flow',
-                label: 'Flow',
-                key: 'Flow',
-                isException: true,
-                hasLvl2: true,
-                lvl2Type: 'FlowVersion',
-                queryObject: 'FlowDefinition',
-                queryFields: ['ActiveVersion.ProcessType', 'ActiveVersion.Status', 'ActiveVersionId'],
-                labelFunc: this.formatName,
-                filterFunc: (x) => " WHERE ActiveVersion.ProcessType <> 'Workflow'",
-                field_id: 'Id',
-                selectDefaultFunc: (x) => x.ActiveVersionId,
-                selectDefaultLabelFunc: (x) => 'Active',
-                badgeFunc: (x) => {
-                    return x.ActiveVersion?.Status ? {
-                        label: 'Active',
-                        class: 'slds-theme_success'
-                    } : {
-                        label: 'Inactive',
-                        class: ''
-                    }
-                },
-                manualFilter: (x) => { return x.ActiveVersion?.ProcessType !== 'Workflow' }
-
-
-            },
-            {
-                isSearchable: true,
-                name: 'WorkFlow',
-                label: 'WorkFlow',
-                key: 'WorkFlow',
-                isException: true,
-                hasLvl2: true,
-                lvl2Type: 'FlowVersion',
-                queryObject: 'FlowDefinition',
-                queryFields: ['ActiveVersion.ProcessType', 'ActiveVersion.Status', 'ActiveVersionId'],
-                labelFunc: this.formatName,
-                filterFunc: (x) => " WHERE ActiveVersion.ProcessType = 'Workflow'",
-                field_id: 'Id',
-                selectDefaultFunc: (x) => x.ActiveVersionId,
-                selectDefaultLabelFunc: (x) => 'Active',
-                badgeFunc: (x) => {
-                    return x.ActiveVersion?.Status ? {
-                        label: 'Active',
-                        class: 'slds-theme_success'
-                    } : {
-                        label: 'Inactive',
-                        class: ''
-                    }
-                },
-                manualFilter: (x) => { return x.ActiveVersion?.ProcessType === 'Workflow' }
-            },
-            {
-                isSearchable: false,
-                name: 'FlowVersion',
-                label: 'FlowVersion',
-                key: 'FlowVersion',
-                isException: true,
-                hasLvl2: false,
-                queryObject: 'Flow',
-                queryFields: ['ProcessType', 'Status', 'VersionNumber'],
-                labelFunc: (x) => `Version ${x.VersionNumber}`,
-                filterFunc: (x) => ` WHERE Definition.Id = '${x}'`,
-                field_id: 'Id',
-                badgeFunc: (x) => {
-                    return x.Status === 'Active' ? {
-                        label: 'Active',
-                        class: 'slds-theme_success'
-                    } : {
-                        label: x.Status,
-                        class: ''
-                    }
-                },
-                manualFilter: (x) => { return true; },
-                compareFunc: (a, b) => (a.Status || '').localeCompare(b.Status)
-            }
-        ]
-    }
-
-    get noRecordMessage() {
-        return `This record wasn't found in your metadata.`;
-    }
-
-    get isRefreshButtonDisplayed() {
-        return this.currentLevel === 1;
-    }
-
-    /*get menuItems(){
-        if(this.metadata.length == 0) return [];
-        return this.metadata[this.metadata.length - 1].records.map(x => ({
-            ...x,
-            isSelected:this.selectedItem == x.key
-        }));
-    }*/
-
-    get selectedItem() {
-        if (this.currentLevel == 2) {
-            return this.param2;
-        } else if (this.currentLevel == 1) {
-            return this.param1;
-        } else if (this.currentLevel == 0) {
-            return this.currentMetadata;
-        } else {
-            return null;
-        }
+    get currentLevel(){
+        return isNotUndefinedOrNull(this.metadata_records)?1:0;
     }
 
     get menuBackTitle() {
@@ -579,21 +158,19 @@ export default class Menu extends ToolkitElement {
         }
     }
 
+    get attributes(){
+        return {
+            sobject:this.sobject,
+            param1:this.param1,
+            label1:this.label1
+        }
+    }
+
     get isBackDisplayed() {
         return this.currentLevel > 0;
     }
 
-    get pageClass() {
-        return super.pageClass + ' slds-p-around_small';
+    get selectedItem() {
+        return this.currentLevel === 2 ? this.param2 : this.currentLevel === 1 ? this.param1 : this.currentMetadata;
     }
-
-    get editorClass() {
-        return classSet("slds-full-height").add({ 'slds-hide': !this.isEditorDisplayed }).toString();
-    }
-
-    get isSelectAllDisplayedAdvanced(){
-        return this.isSelectAllDisplayed && this.currentLevel >= 1
-    }
-
-    
 }

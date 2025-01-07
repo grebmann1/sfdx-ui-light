@@ -6,6 +6,7 @@ import * as DOCUMENT from './document';
 import * as APPLICATION from './application';
 import { UI,QUERY } from 'soql/store';
 import { APEX } from 'anonymousApex/store';
+import { METADATA } from 'metadata/store';
 import { PACKAGE } from 'package/store';
 import { API } from 'api/store';
 import { EVENT } from 'platformevent/store';
@@ -19,6 +20,7 @@ const store = configureStore({
         ui : UI.reduxSlice.reducer,
         query : QUERY.reduxSlice.reducer,
         apex : APEX.reduxSlice.reducer,
+        metadata : METADATA.reduxSlice.reducer,
         package2 : PACKAGE.reduxSlice.reducer,
         platformEvent : EVENT.reduxSlice.reducer,
         api : API.reduxSlice.reducer,
@@ -69,6 +71,7 @@ export {
     UI,
     QUERY,
     APEX,
+    METADATA,
     PACKAGE,
     EVENT,
     API,

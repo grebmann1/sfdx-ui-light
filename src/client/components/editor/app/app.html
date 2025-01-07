@@ -1,9 +1,9 @@
 <template>
-    <div class="slds-flex-column slds-full-height slds-light-bg">
-        <div> <!-- style="height:50px;" -->
+    <div class={editorClass}>
+        <div class="slds-flex-column"> <!-- style="height:50px;" -->
             <template lwc:if={isActionsDisplayed}>
                 <div class="slds-grid slds-grid_align-end" > <!-- style="min-height:48px;" -->
-                    <lightning-button-group class="slds-p-horizontal_medium slds-p-bottom_medium">
+                    <lightning-button-group class="slds-p-horizontal_medium slds-p-vertical_small">
                         <!--<lightning-button icon-name="utility:adduser" disabled={isLoading} onclick={adduser_handleClick} label="Select Users"></lightning-button>-->
                         <template lwc:if={isEditMode}>
                             <lightning-button icon-name="utility:save" variant="brand"  disabled={isLoading} onclick={onSaveClick} label="Save"></lightning-button>
@@ -14,7 +14,7 @@
                 </div>
             </template>
             <template lwc:if={isTabDisplayed}>
-                <slds-tabset variant="scoped" class="slds-without-tab slds-tabs_no-max" onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled={isAddTabEnabledFormatted}>
+                <slds-tabset variant="scoped" class="slds-without-tab slds-tabs_no-max slds-tab-grey" onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled={isAddTabEnabledFormatted}>
                     <template for:each={formattedModels} for:item="item">
                         <slds-tab key={item.path} label={item.name} value={item.path} onactive={handleSelectTab} is-closeable={item.isCloseable}></slds-tab>
                     </template>
@@ -28,7 +28,7 @@
             </div>
         </template>
 
-        <div class="slds-is-relative slds-flex-column slds-full-height">
+        <div class="slds-is-relative slds-flex-column slds-fill-height">
             <!-- Editor Button -->
             <div class="editor-toolkit">
                 <div class="slds-flex-column slds-vertical-button-group">

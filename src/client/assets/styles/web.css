@@ -201,6 +201,10 @@
     background-color: white;
 }
 
+.sf-toolkit .slds-grey-bg {
+    background-color: #f3f3f3;
+}
+
 .sf-toolkit .slds-card {
     border-radius: unset; /* Remove Border radius*/
 }
@@ -278,6 +282,10 @@
 
 .sf-toolkit .slds-tabs_no-max .slds-tabs_scoped__link {
     max-width: unset !important;
+}
+
+.sf-toolkit .slds-tabs_max-300 .slds-tabs_scoped__link {
+    max-width: 300px !important;
 }
 
 .sf-toolkit .slds-without-tab lightning-tab {

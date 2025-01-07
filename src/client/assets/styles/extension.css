@@ -151,6 +151,10 @@
     max-width: unset;
 }
 
+.sf-toolkit .slds-tabs_max-300 .slds-tabs_scoped__link {
+    max-width: 300px !important;
+}
+
 .sf-toolkit .slds-color-brand{
     color:rgb(7, 87, 133);
 }

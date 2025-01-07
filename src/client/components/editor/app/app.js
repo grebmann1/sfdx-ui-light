@@ -2,7 +2,7 @@ import { api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import LightningAlert from 'lightning/alert';
 import Toast from 'lightning/toast';
-import { classSet, isNotUndefinedOrNull, runActionAfterTimeOut, guid } from 'shared/utils';
+import { classSet, isNotUndefinedOrNull, runActionAfterTimeOut, guid, normalizeString as normalize } from 'shared/utils';
 import { SOQL, APEX, VF } from 'editor/languages';
 import { setupMonaco } from 'editor/utils';
 
@@ -33,6 +33,7 @@ export default class App extends ToolkitElement {
     @api isTabCloseableDisabled = false;
     @api isTabEnabled = false; // by default, we display tabs
     @api theme;
+    @api backgroundColor;
 
     // Coverage
     @api isCoverageHighlighted = false;
@@ -359,10 +360,15 @@ export default class App extends ToolkitElement {
     };
 
     @api
-    displayFiles = (metadataType, files) => {
+    displayFiles = (metadataType, files,attributes) => {
         this.files = files;
         this.metadataType = metadataType;
         this.isEditMode = false;
+
+        // Handle Attributes exception from displayFiles
+        if(isNotUndefinedOrNull(attributes)){
+            this.isTabEnabled = attributes.isTabEnabled;// || this.isTabEnabled;
+        }
 
         this.createModels(files);
         const firstModel = this.models[0];
@@ -517,7 +523,7 @@ export default class App extends ToolkitElement {
         return this.editor;
     }
 
-    @api
+    @api 
     get currentMonaco() {
         return this.monaco;
     }
@@ -561,6 +567,17 @@ export default class App extends ToolkitElement {
 
     get isAddTabEnabledFormatted() {
         return this.isAddTabEnabled && this.models.length < 5;
+    }
+
+    get normalizedBackgroundColor(){
+        return normalize(this.backgroundColor, {
+            fallbackValue: 'slds-light-bg',
+            validValues: ['slds-light-bg', 'slds-grey-bg'],
+        });
+    }
+
+    get editorClass(){
+        return `slds-flex-column slds-full-height ${this.normalizedBackgroundColor}`;
     }
 
 }

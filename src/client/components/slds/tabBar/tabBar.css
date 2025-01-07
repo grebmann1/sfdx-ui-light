@@ -10,13 +10,13 @@
     border-color: var(--slds-g-color-border-base-4, #e5e5e5);
     font-weight: 700;
     color: var(--slds-g-color-neutral-base-10, #181818);
-    padding-top:3px;
+    padding-top:0px;
 }
 
 .slds-is-active.slds-tabs_scoped__item{
     font-weight: 700;
-    border-top: 3px solid #1b96ff;
-    padding-top:0px;
+    border-top: 3px solid var(--slds-tab-custom-color, #1b96ff);
+    margin-top:-3px;
 }
 
 .slds-tabs_scoped__item{

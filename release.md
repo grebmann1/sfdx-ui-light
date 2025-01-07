@@ -1,39 +1,52 @@
 # SF Toolkit - Release Notes
 
+## Version 1.3.22 - January 7th, 2024
+### Enhancements
+- **Metadata Explorer**:
+  - Improved performance for faster data retrieval and processing.
+  - Added multi-tab support to enhance user experience and facilitate simultaneous metadata exploration.
 
-## Version 1.3.21 - December 24, 2024
-
-### New Features :
-- **All Editors** :
-    - Enable shortcuts to Save & Run.
-        - CTRL/CMD + S to Save
-        - CTRL/CMD + Enter to run    
-- **Data Explorer** :
-    - Allow commenting with "//" to exclude part of the query.
-
-## Version 1.3.20 - November 20, 2024
-
-### Bug Fixes :
-- **Connection Module** :
-    - Fix Loading spinner when authorizing and redirecting to an organization
-- **User Explorer** :
-    - Font Size modification (small)
-- **API Explorer** :
-    - Improve UI for Large files to provide Monaco and Workbench visualizer.
-
-## Version 1.3.19 - November 11, 2024
-
+## Version 1.3.21 - December 24th, 2024
 ### New Features
-- **UI Overhaul**: A complete redesign of the user interface, delivering a modern look and enhanced usability. The update includes a new "Multi-Tab" feature for streamlined navigation across applications.
-- **Deploy/Retrieve Module**: Introduced functionality to deploy packages to Salesforce or retrieve them from Salesforce effortlessly.
-- **Injected Overlay Module**: An overlay seamlessly integrated into Salesforce pages, enabling quick search and navigation. This feature lays the groundwork for a future "bridge" between the app and the Chrome extension.
+- **All Editors**:
+  - Enabled shortcuts for Save & Run operations:
+    - `CTRL/CMD + S` to Save
+    - `CTRL/CMD + Enter` to Run
+- **Data Explorer**:
+  - Introduced commenting functionality using `//` to exclude parts of a query for better query management.
+
+## Version 1.3.20 - November 20th, 2024
+### Bug Fixes
+- **Connection Module**:
+  - Fixed the issue with the loading spinner during authorization and redirection to an organization.
+- **User Explorer**:
+  - Adjusted font size for improved readability.
+- **API Explorer**:
+  - Enhanced UI for handling large files by integrating Monaco and Workbench visualizers.
+
+## Version 1.3.19 - November 11th, 2024
+### New Features
+- **UI Overhaul**:
+  - Completely redesigned user interface for a modern look and improved usability.
+  - Introduced a "Multi-Tab" feature for streamlined navigation across applications.
+- **Deploy/Retrieve Module**:
+  - Added functionality to deploy packages to Salesforce or retrieve them from Salesforce efficiently.
+- **Injected Overlay Module**:
+  - Integrated an overlay into Salesforce pages to enable quick search and navigation.
+  - Laid the groundwork for a future "bridge" between the app and the Chrome extension.
 
 ### Enhancements
-- **Localhost Extension**: Transformed the cloud-based application into a fully functional browser-based app, eliminating the need for a proxy server.
-- **Performance Improvements**: Optimized load times and overall application responsiveness for a smoother user experience.
-- **Extended Salesforce API Support**: Expanded support for additional Salesforce APIs, enhancing the toolkit’s capabilities.
-- **Access Analyzer with Web Worker**: Improved performance by executing Access Analyzer computations using web workers.
+- **Localhost Extension**:
+  - Transformed the cloud-based application into a fully functional browser-based app, eliminating the need for a proxy server.
+- **Performance Improvements**:
+  - Optimized load times and overall application responsiveness for a smoother user experience.
+- **Extended Salesforce API Support**:
+  - Expanded support for additional Salesforce APIs, enhancing the toolkit’s capabilities.
+- **Access Analyzer with Web Worker**:
+  - Improved performance by executing Access Analyzer computations using web workers.
 
 ### Bug Fixes
-- **Login Issue**: Fixed an intermittent bug preventing some users from logging in to their Salesforce accounts.
-- **Data Sync Error**: Resolved occasional data synchronization failures between the toolkit and Salesforce.
+- **Login Issue**:
+  - Fixed an intermittent bug preventing some users from logging in to their Salesforce accounts.
+- **Data Sync Error**:
+  - Resolved occasional data synchronization failures between the toolkit and Salesforce.

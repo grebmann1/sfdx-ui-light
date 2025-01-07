@@ -58,39 +58,57 @@
                     <!-- Container -->
                     <slds-split-view class="slds-fill-height" left-min-width="200" right-min-width="200" splitter-position="30" is-horizontal>
                         <div class="slds-flex-column slds-full-height slds-full-width slds-is-relativ slds-p-horizontal_x-small" slot="left">
-                            <metadata-menu lwc:ref="menu" class="slds-full-height"
-                                label1={label1}
-                                label2={label2}
-                                param1={param1}
-                                param2={param2}
-                                sobject={sobject}
+                            <metadata-menu lwc:ref="menu" class="slds-full-height" 
+                                application-name={applicationName}
                                 onselect={handleItemSelection}
                                 is-navigation-enabled
                             ></metadata-menu>
                         </div>
                         <div class="slds-flex-column slds-full-height slds-full-width slds-is-relative slds-p-horizontal_xx-small" slot="right">
-                            <!-- Editor view -->
-                            <editor-app lwc:ref="editor" class={editorClass} is-tab-enabled is-coverage-enabled is-tab-closeable-disabled></editor-app>
-                            
-
-                            <!-- JSON Viewer view -->
-                            <template lwc:if={isMetadataViewerDisplayed}>
-                                <metadata-viewer class="slds-full-height" lwc:ref="viewer" record={selectedRecord} ></metadata-viewer>
-                            </template>
-                            <template lwc:elseif={selectedRecordLoading}>
-                                <slds-spinner alternative-text="Loading" size="small"></slds-spinner>
-                            </template>
-                            <template lwc:elseif={isNoRecord}>
-                                <illustration-empty title="No record" sub-title={noRecordMessage}></illustration-empty>
-                            </template>
-
-                            <!--<div class="slds-scrollable_y">
-                                <template lwc:if={isRecordDisplayed}>
-                                    <metadata-code-viewer></metadata-code-viewer>
-                                    <div lwc:dom="manual" lwc:ref="container"></div>
+                            <!-- Tabs -->
+                            <slds-tabset lwc:ref="metadataTab" variant="scoped" class="slds-without-tab slds-tabs_max-300" active-tab-value={currentTabId} onclosetab={handleCloseTab} is-remove-tab-event-disabled>
+                                <template for:each={formattedTabs} for:item="item">
+                                    <slds-tab key={item.id} label={item.name} value={item.id} onactive={handleSelectTab} is-closeable></slds-tab>
                                 </template>
+                            </slds-tabset>
+                            <!-- Content -->
+                            <div class="slds-is-relative slds-flex-column slds-fill-height slds-full-width">
+                                <!-- Editor view -->
+                                <editor-app lwc:ref="editor" class={editorClass}
+                                    background-color="slds-grey-bg"
+                                    is-tab-enabled 
+                                    is-coverage-enabled 
+                                    is-tab-closeable-disabled
+                                ></editor-app>
+
+                                <!-- Exception picklist for Flow/Workflow -->
+                                <template lwc:if={isFlowPicklistDisplayed}>
+                                    <div class="slds-grid slds-grid_align-end">
+                                        <lightning-picklist
+                                            label="Versions"
+                                            name="version"
+                                            value={flowVersion_value}
+                                            options={flowVersion_options}
+                                            field-level-help="Select Flow Version"
+                                            onchange={flowVersion_handleChange}
+                                            class="slds-max-150 slds-float_right"
+                                            suppress-none-option
+                                        ></lightning-picklist>
+                                    </div>
+                                </template>
+                                <!-- JSON Viewer view -->
+                                <template lwc:if={isMetadataViewerDisplayed}>
+                                    <metadata-viewer class="slds-full-height slds-m-top_x-small" lwc:ref="viewer" record={selectedRecord} ></metadata-viewer>
+                                </template>
+                                <template lwc:elseif={isLoadingRecord}>
+                                    <slds-spinner alternative-text="Loading" size="small" message={selectedRecordLoadingMessage}></slds-spinner>
+                                </template>
+                                <template lwc:elseif={isNoRecord}>
+                                    <illustration-empty title="No record" sub-title={noRecordMessage}></illustration-empty>
+                                </template>
+                                
                             </div>
-                            -->
+                                
                         </div>
                     </slds-split-view>
                 </div>
