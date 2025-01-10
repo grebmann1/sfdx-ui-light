@@ -7,7 +7,7 @@ import * as APPLICATION from './application';
 import { UI,QUERY } from 'soql/store';
 import { APEX } from 'anonymousApex/store';
 import { METADATA } from 'metadata/store';
-import { RECORDVIEWER } from 'recordViewer/store';
+import { RECORDVIEWER } from 'recordviewer/store';
 import { PACKAGE } from 'package/store';
 import { API } from 'api/store';
 import { EVENT } from 'platformevent/store';
