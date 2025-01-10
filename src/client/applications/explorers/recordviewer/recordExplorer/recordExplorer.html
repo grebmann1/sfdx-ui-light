@@ -12,11 +12,27 @@
                         </div>
                         <div class="slds-col slds-size_1-of-6">
                             <lightning-button-group class="slds-float_right">
-                                <lightning-button-icon-stateful disabled={isLoading} icon-name="utility:info_alt"
-                                                                onclick={handleInfoToggle} selected={isInfoDisplayed}
-                                                                title="Info"></lightning-button-icon-stateful>
-                                <lightning-button-icon disabled={isLoading} icon-name="utility:refresh" onclick={handleRefreshClick}
-                                                       title="Refresh"></lightning-button-icon>
+								<template lwc:if={isRedirectionDisplayed}>
+									<lightning-button-icon 
+										disabled={isLoading} 
+										icon-name="utility:builder"
+										onclick={handleRedirectToApp}
+										title="Redirect to app"
+									></lightning-button-icon>
+								</template>
+                                <lightning-button-icon-stateful 
+									disabled={isLoading} 
+									icon-name="utility:info_alt"
+                                    onclick={handleInfoToggle} 
+									selected={isInfoDisplayed}
+                                    title="Info"
+                                ></lightning-button-icon-stateful>
+                                <lightning-button-icon 
+									disabled={isLoading} 
+									icon-name="utility:refresh"
+									onclick={handleRefreshClick}
+                                    title="Refresh"
+								></lightning-button-icon>
                             </lightning-button-group>
                         </div>
                     </div>
@@ -53,6 +69,12 @@
                                     variant="bare"
                             ></lightning-button-icon>
                         </dd>
+                        <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Record Type">
+                            Record Type
+                        </dt>
+                        <dd class="slds-item_detail slds-truncate">
+                            {recordTypeName}
+                        </dd>               
                         <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Links">
                             Links
                         </dt>
@@ -121,52 +143,52 @@
                    id="data-table"
                    role="grid">
                 <thead>
-                <tr class="slds-line-height_reset head">
-                    <th aria-label={fieldLabel} aria-sort="none"
-                        class="slds-is-sortable slds-is-resizable slds-text-title_caps" draggable="false" id='leftColumn'
-                        scope="col">
-                        <div class="slds-th__action slds-text-link_reset">
-                            <lightning-button-icon
-                                    alternative-text="Switch Field &amp; Label"
-                                    icon-name="utility:change_record_type"
-                                    onclick={handleToggleFieldName}
-                                    variant="bare"
-                            ></lightning-button-icon>
-                            <span class="slds-truncate slds-m-left_x-small" title={fieldLabel}>{fieldLabel}</span>
-                        </div>
-                    </th>
-                    <th aria-label="Product Code" aria-sort="none"
-                        class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
-                        <div class="slds-th__action slds-text-link_reset">
-                            <span class="slds-truncate" title="Product Code">Value</span>
-                        </div>
-                    </th>
-                    <th aria-label="" aria-sort="none" class="" scope="col" style="width:30px;"></th>
-                </tr>
+                    <tr class="slds-line-height_reset head">
+                        <th aria-label={fieldLabel} aria-sort="none"
+                            class="slds-is-sortable slds-is-resizable slds-text-title_caps" draggable="false" id='leftColumn'
+                            scope="col">
+                            <div class="slds-th__action slds-text-link_reset">
+                                <lightning-button-icon
+                                        alternative-text="Switch Field &amp; Label"
+                                        icon-name="utility:change_record_type"
+                                        onclick={handleToggleFieldName}
+                                        variant="bare"
+                                ></lightning-button-icon>
+                                <span class="slds-truncate slds-m-left_x-small" title={fieldLabel}>{fieldLabel}</span>
+                            </div>
+                        </th>
+                        <th aria-label="Product Code" aria-sort="none"
+                            class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
+                            <div class="slds-th__action slds-text-link_reset">
+                                <span class="slds-truncate" title="Product Code">Value</span>
+                            </div>
+                        </th>
+                        <th aria-label="" aria-sort="none" class="" scope="col" style="width:30px;"></th>
+                    </tr>
                 </thead>
                 <tbody class="record-explorer-table slds-scrollable_y" id="data-toDisplay"
                        onenableeditmode={handleEnabledEditMode}
                        onfieldchange={handleRowInputChange}
                 >
-                <!--
-                    onregisterfielddependency={registerDependentField}
-                    onupdatedependentfields={updateDependentFields}
-                -->
-                <!-- DATA are going here -->
-                <template for:each={virtualList} for:item="item">
-                    <feature-record-explorer-row current-origin={currentOrigin}
-                                                 field-errors={fieldErrors}
-                                                 filter={filter}
-                                                 is-info-displayed={isInfoDisplayed}
-                                                 is-label-displayed={isLabelDisplayed}
-                                                 is-visible={item.isVisible}
-                                                 item={item}
-                                                 key={item.name}
-                                                 metadata={metadata}
-                                                 record={record}
-                    ></feature-record-explorer-row>
-                    <!-- is-edit-mode={isEditMode} -->
-                </template>
+                    <!--
+                        onregisterfielddependency={registerDependentField}
+                        onupdatedependentfields={updateDependentFields}
+                    -->
+                    <!-- DATA are going here -->
+                    <template for:each={virtualList} for:item="item">
+                        <recordviewer-record-explorer-row current-origin={currentOrigin}
+                                                    field-errors={fieldErrors}
+                                                    filter={filter}
+                                                    is-info-displayed={isInfoDisplayed}
+                                                    is-label-displayed={isLabelDisplayed}
+                                                    is-visible={item.isVisible}
+                                                    item={item}
+                                                    key={item.name}
+                                                    metadata={metadata}
+                                                    record={record}
+                        ></recordviewer-record-explorer-row>
+                        <!-- is-edit-mode={isEditMode} -->
+                    </template>
                 </tbody>
             </table>
         </div>

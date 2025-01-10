@@ -19,7 +19,8 @@ const MAX_RECENT = 20;
 const RECENT_QUERIES_KEY = 'lsb.recentQueries';
 const RECENT_APEX_KEY = 'lsb.recentApex';
 const RECENT_API_KEY = 'lsb.recentApi';
-const RECENT_PLATFORM_EVENT_KEY = 'lsb.recentPlatformEvents';
+const RECENT_PLATFORM_EVENT_KEY = 'lsb.recentPlatformEvents'; 
+const RECENT_RECORD_VIEWER_KEY = 'lsb.recentRecordViewer';
 
 function setInLocalStorage(referenceKey,entities) {
     try {
@@ -140,7 +141,8 @@ const recentSlice = createSlice({
         queries:[],
         apex:[],
         platformEvents:[],
-        api:[]
+        api:[],
+        recordViewers:[]
     },
     reducers: {
         loadFromStorage: (state, action) => {
@@ -148,6 +150,7 @@ const recentSlice = createSlice({
             state.apex      = loadRecent(`${action.payload.alias}-${RECENT_APEX_KEY}`);
             state.api       = loadRecent(`${action.payload.alias}-${RECENT_API_KEY}`);
             state.platformEvents = loadRecent(`${action.payload.alias}-${RECENT_PLATFORM_EVENT_KEY}`);
+            state.recordViewers = loadRecent(`${action.payload.alias}-${RECENT_RECORD_VIEWER_KEY}`);
         },
         saveQuery: (state, action) => {
             const { soql, alias } = action.payload;
@@ -178,9 +181,7 @@ const recentSlice = createSlice({
             const { item, alias } = action.payload;
             const recentApiState = [
                 item,
-                ...state.api.filter(q => 
-                    q.method !== item.method || q.endpoint !== item.endpoint 
-                ).slice(0, MAX_RECENT - 1)
+                ...state.api.filter(q => q.method !== item.method || q.endpoint !== item.endpoint).slice(0, MAX_RECENT - 1)
             ];
             saveItem(
                 `${alias}-${RECENT_API_KEY}`,
@@ -199,6 +200,18 @@ const recentSlice = createSlice({
                 JSON.stringify(recentPlatformEventState)
             );
             state.platformEvents = recentPlatformEventState;
+        },
+        saveRecordViewers: (state, action) => {
+            const { item, alias } = action.payload;
+            const recentRecordViewerState = [
+                item,
+                ...state.recordViewers.filter(q => q.recordId !== item.recordId).slice(0, MAX_RECENT - 1)
+            ];
+            saveItem(
+                `${alias}-${RECENT_RECORD_VIEWER_KEY}`,
+                JSON.stringify(recentRecordViewerState)
+            );
+            state.recordViewers = recentRecordViewerState;
         },
     },
 });

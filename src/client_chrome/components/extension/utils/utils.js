@@ -9,62 +9,6 @@ export function isEmpty(str) {
     return (!str || str.length === 0);
 }
 
-function extractRecordId(href) {
-    if (!href) return null;
-    try {
-        let url = new URL(href);
-        // Find record ID from URL
-        let searchParams = new URLSearchParams(url.search.substring(1));
-        // Salesforce Classic and Console
-        if (url.hostname.endsWith(".salesforce.com") || url.hostname.endsWith(".salesforce.mil")) {
-            let match = url.pathname.match(/\/([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})(?:\/|$)/);
-            if (match) {
-                let res = match[1];
-                if (res.includes("0000") || res.length == 3) {
-                    return match[1];
-                }
-            }
-        }
-
-        // Lightning Experience and Salesforce1
-        if (url.hostname.endsWith(".lightning.force.com") || url.hostname.endsWith(".lightning.force.mil") || url.hostname.endsWith(".lightning.crmforce.mil")) {
-            let match;
-
-            if (url.pathname == "/one/one.app") {
-                // Pre URL change: https://docs.releasenotes.salesforce.com/en-us/spring18/release-notes/rn_general_enhanced_urls_cruc.htm
-                match = url.hash.match(/\/sObject\/([a-zA-Z0-9]+)(?:\/|$)/);
-            } else {
-                match = url.pathname.match(/\/lightning\/[r|o]\/[a-zA-Z0-9_]+\/([a-zA-Z0-9]+)/);
-            }
-            if (match) {
-                return match[1];
-            }
-        }
-        // Visualforce
-        {
-            let idParam = searchParams.get("id");
-            if (idParam) {
-                return idParam;
-            }
-        }
-        // Visualforce page that does not follow standard Visualforce naming
-        for (let [, p] of searchParams) {
-            if (p.match(/^([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/) && p.includes("0000")) {
-                return p;
-            }
-        }
-
-    } catch (e) {
-        console.errror('Error while extracting the recordId')
-    }
-    return null;
-}
-
-export function getRecordId(href) {
-    const recordId = extractRecordId(href);
-    return recordId && recordId.match(/^([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/) ? recordId : null;
-}
-
 export function getSobject(href) {
     let url = new URL(href);
     if (url.pathname && url.pathname.endsWith("/list")) {
@@ -118,67 +62,6 @@ export const PANELS = {
     DEFAULT: 'default'
 };
 
-
-export function getObjectSetupLink({host, sobjectName, durableId, isCustomSetting}) {
-    if (sobjectName.endsWith("__mdt")) {
-        return getCustomMetadataLink(durableId);
-    } else if (isCustomSetting) {
-        return `${host}/lightning/setup/CustomSettings/page?address=%2F${durableId}?setupid=CustomSettings`;
-    } else if (!isEmpty(durableId) && sobjectName.endsWith("__c")) {
-        return `${host}/lightning/setup/ObjectManager/${durableId}/Details/view`;
-    } else {
-        return `${host}/lightning/setup/ObjectManager/${sobjectName}/Details/view`;
-    }
-}
-
-export function getCustomMetadataLink(durableId) {
-    return `${host}/lightning/setup/CustomMetadata/page?address=%2F${durableId}%3Fsetupid%3DCustomMetadata`;
-}
-
-export function getObjectFieldsSetupLink({host, sobjectName, durableId, isCustomSetting}) {
-    if (sobjectName.endsWith("__mdt")) {
-        return getCustomMetadataLink(durableId);
-    } else if (isCustomSetting) {
-        return `${host}/lightning/setup/CustomSettings/page?address=%2F${durableId}?setupid=CustomSettings`;
-    } else if (!isEmpty(durableId) && (sobjectName.endsWith("__c") || sobjectName.endsWith("__kav"))) {
-        return `${host}/lightning/setup/ObjectManager/${durableId}/FieldsAndRelationships/view`;
-    } else {
-        return `${host}/lightning/setup/ObjectManager/${sobjectName}/FieldsAndRelationships/view`;
-    }
-}
-
-export function getObjectFieldDetailSetupLink({host, sobjectName, durableId, fieldName, fieldNameDurableId}) {
-    const _sobjectParam = (sobjectName.endsWith("__c") || sobjectName.endsWith("__kav")) ? durableId : sobjectName;
-    const _fieldParam = (sobjectName.endsWith("__c") || sobjectName.endsWith("__kav")) ? fieldNameDurableId : fieldName;
-
-    return `${host}/lightning/setup/ObjectManager/${_sobjectParam}/FieldsAndRelationships/${_fieldParam}/view`;
-}
-
-export function getObjectListLink({host, sobjectName, keyPrefix, isCustomSetting}) {
-    if (sobjectName.endsWith("__mdt")) {
-        return `${host}/lightning/setup/CustomMetadata/page?address=%2F${keyPrefix}`;
-    } else if (isCustomSetting) {
-        return `${host}/lightning/setup/CustomSettings/page?address=%2Fsetup%2Fui%2FlistCustomSettingsData.apexp?id=${keyPrefix}`;
-    } else {
-        return `${host}/lightning/o/${sobjectName}/list`;
-    }
-}
-
-export function getRecordTypesLink({host, sobjectName, durableId}) {
-    if (sobjectName.endsWith("__c") || sobjectName.endsWith("__kav")) {
-        return `${host}/lightning/setup/ObjectManager/${durableId}/RecordTypes/view`;
-    } else {
-        return `${host}/lightning/setup/ObjectManager/${sobjectName}/RecordTypes/view`;
-    }
-}
-
-export function getObjectDocLink(sobjectName, isUsingToolingApi) {
-    if (isUsingToolingApi) {
-        return `https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_${sobjectName.toLowerCase()}.htm`;
-    }
-    return `https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_${sobjectName.toLowerCase()}.htm`;
-}
-
 export const chromeOpenInWindow = async (targetUrl, groupName, incognito = false, newWindow = false) => {
     const windows = await chrome.windows.getAll({populate: false, windowTypes: ['normal']});
     for (let w of windows) {
@@ -216,30 +99,4 @@ export const chromeOpenInWindow = async (targetUrl, groupName, incognito = false
     } else {
         console.warning('You need to Authorize the extension to have access to Incognito');
     }
-};
-
-
-
-/** Redirections */
-
-
-
-export const redirectToUrlViaChrome = ({baseUrl,redirectUrl,sessionId,serverUrl,isNewTab}) => {
-    let params = new URLSearchParams();
-    if(sessionId){
-        params.append('sessionId', sessionId);
-        params.append('serverUrl', serverUrl);
-    }
-        
-    if (redirectUrl) {
-        params.append('redirectUrl', redirectUrl);
-    }
-    let url = new URL(baseUrl);
-        url.search = params.toString();
-    if(isNewTab){
-        window.open(url.href,'_blank');
-    }else{
-        window.open(url.href);
-    }
-    
 };

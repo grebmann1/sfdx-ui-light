@@ -2,8 +2,7 @@ import {api, wire} from "lwc";
 import ToolkitElement from 'core/toolkitElement';
 import {connectStore, store} from 'core/store';
 import {store as legacyStore, store_application} from 'shared/store';
-import {isEmpty, isNotUndefinedOrNull, isSalesforceId} from "shared/utils";
-import {redirectToUrlViaChrome} from 'extension/utils';
+import {isEmpty, isNotUndefinedOrNull, isSalesforceId,redirectToUrlViaChrome} from "shared/utils";
 
 const APPLICATIONS = {
     RECORD_EXPLORER: 'recordExplorer',

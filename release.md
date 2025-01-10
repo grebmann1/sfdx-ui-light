@@ -1,5 +1,11 @@
 # SF Toolkit - Release Notes
 
+## Version 1.3.23 - January 10th, 2024
+### New Features
+- **Record Viewer**:
+  - Introduced a user-friendly interface for visualizing records, akin to the "Chrome Panel" experience.
+  - Enabled direct editing of records within the Record Viewer app, streamlining workflows.
+
 ## Version 1.3.22 - January 7th, 2024
 ### Enhancements
 - **Metadata Explorer**:

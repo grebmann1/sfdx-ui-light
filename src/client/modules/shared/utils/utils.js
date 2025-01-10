@@ -489,3 +489,164 @@ export const autoDetectAndFormat = (text) => {
     }
     return null;
 }
+
+/** Migrated from Extension/utils **/
+
+export const redirectToUrlViaChrome = ({baseUrl,redirectUrl,sessionId,serverUrl,isNewTab}) => {
+    let params = new URLSearchParams();
+    if(sessionId){
+        params.append('sessionId', sessionId);
+        params.append('serverUrl', serverUrl);
+    }
+        
+    if (redirectUrl) {
+        params.append('redirectUrl', redirectUrl);
+    }
+    let url = new URL(baseUrl);
+        url.search = params.toString();
+    if(isNewTab){
+        window.open(url.href,'_blank');
+    }else{
+        window.open(url.href);
+    }
+    
+};
+
+export function getCurrentObjectType(conn, recordId) {
+    return new Promise((resolve, reject) => {
+        conn.tooling.executeAnonymous("ID a='" + recordId + "';Integer.valueOf(String.valueOf(a.getSObjectType()));")
+            .then(res => {
+                let _sobjectString = res.exceptionMessage.replace(/^.* (.*)$/, '$1');
+                resolve(_sobjectString == 'null' ? null : _sobjectString);
+            })
+            .catch(e => {
+                console.err(err);
+                reject(err);
+            })
+    })
+}
+
+export async function getCurrentTab() {
+    if(!isChromeExtension()) return null;
+    let queryOptions = {active: true, lastFocusedWindow: true};
+    // `tab` will either be a `tabs.Tab` instance or `undefined`.
+    let [tab] = await chrome.tabs.query(queryOptions);
+    return tab;
+}
+
+
+export function getObjectSetupLink({host, sobjectName, durableId, isCustomSetting}) {
+    if (sobjectName.endsWith("__mdt")) {
+        return getCustomMetadataLink(durableId);
+    } else if (isCustomSetting) {
+        return `${host}/lightning/setup/CustomSettings/page?address=%2F${durableId}?setupid=CustomSettings`;
+    } else if (!isEmpty(durableId) && sobjectName.endsWith("__c")) {
+        return `${host}/lightning/setup/ObjectManager/${durableId}/Details/view`;
+    } else {
+        return `${host}/lightning/setup/ObjectManager/${sobjectName}/Details/view`;
+    }
+}
+
+export function getCustomMetadataLink(durableId) {
+    return `${host}/lightning/setup/CustomMetadata/page?address=%2F${durableId}%3Fsetupid%3DCustomMetadata`;
+}
+
+export function getObjectFieldsSetupLink({host, sobjectName, durableId, isCustomSetting}) {
+    if (sobjectName.endsWith("__mdt")) {
+        return getCustomMetadataLink(durableId);
+    } else if (isCustomSetting) {
+        return `${host}/lightning/setup/CustomSettings/page?address=%2F${durableId}?setupid=CustomSettings`;
+    } else if (!isEmpty(durableId) && (sobjectName.endsWith("__c") || sobjectName.endsWith("__kav"))) {
+        return `${host}/lightning/setup/ObjectManager/${durableId}/FieldsAndRelationships/view`;
+    } else {
+        return `${host}/lightning/setup/ObjectManager/${sobjectName}/FieldsAndRelationships/view`;
+    }
+}
+
+export function getObjectFieldDetailSetupLink({host, sobjectName, durableId, fieldName, fieldNameDurableId}) {
+    const _sobjectParam = (sobjectName.endsWith("__c") || sobjectName.endsWith("__kav")) ? durableId : sobjectName;
+    const _fieldParam = (sobjectName.endsWith("__c") || sobjectName.endsWith("__kav")) ? fieldNameDurableId : fieldName;
+
+    return `${host}/lightning/setup/ObjectManager/${_sobjectParam}/FieldsAndRelationships/${_fieldParam}/view`;
+}
+
+export function getObjectListLink({host, sobjectName, keyPrefix, isCustomSetting}) {
+    if (sobjectName.endsWith("__mdt")) {
+        return `${host}/lightning/setup/CustomMetadata/page?address=%2F${keyPrefix}`;
+    } else if (isCustomSetting) {
+        return `${host}/lightning/setup/CustomSettings/page?address=%2Fsetup%2Fui%2FlistCustomSettingsData.apexp?id=${keyPrefix}`;
+    } else {
+        return `${host}/lightning/o/${sobjectName}/list`;
+    }
+}
+
+export function getRecordTypesLink({host, sobjectName, durableId}) {
+    if (sobjectName.endsWith("__c") || sobjectName.endsWith("__kav")) {
+        return `${host}/lightning/setup/ObjectManager/${durableId}/RecordTypes/view`;
+    } else {
+        return `${host}/lightning/setup/ObjectManager/${sobjectName}/RecordTypes/view`;
+    }
+}
+
+export function getObjectDocLink(sobjectName, isUsingToolingApi) {
+    if (isUsingToolingApi) {
+        return `https://developer.salesforce.com/docs/atlas.en-us.api_tooling.meta/api_tooling/tooling_api_objects_${sobjectName.toLowerCase()}.htm`;
+    }
+    return `https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_${sobjectName.toLowerCase()}.htm`;
+}
+
+const extractRecordId = (href) => {
+    if (!href) return null;
+    try {
+        let url = new URL(href);
+        // Find record ID from URL
+        let searchParams = new URLSearchParams(url.search.substring(1));
+        // Salesforce Classic and Console
+        if (url.hostname.endsWith(".salesforce.com") || url.hostname.endsWith(".salesforce.mil")) {
+            let match = url.pathname.match(/\/([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})(?:\/|$)/);
+            if (match) {
+                let res = match[1];
+                if (res.includes("0000") || res.length == 3) {
+                    return match[1];
+                }
+            }
+        }
+
+        // Lightning Experience and Salesforce1
+        if (url.hostname.endsWith(".lightning.force.com") || url.hostname.endsWith(".lightning.force.mil") || url.hostname.endsWith(".lightning.crmforce.mil")) {
+            let match;
+
+            if (url.pathname == "/one/one.app") {
+                // Pre URL change: https://docs.releasenotes.salesforce.com/en-us/spring18/release-notes/rn_general_enhanced_urls_cruc.htm
+                match = url.hash.match(/\/sObject\/([a-zA-Z0-9]+)(?:\/|$)/);
+            } else {
+                match = url.pathname.match(/\/lightning\/[r|o]\/[a-zA-Z0-9_]+\/([a-zA-Z0-9]+)/);
+            }
+            if (match) {
+                return match[1];
+            }
+        }
+        // Visualforce
+        {
+            let idParam = searchParams.get("id");
+            if (idParam) {
+                return idParam;
+            }
+        }
+        // Visualforce page that does not follow standard Visualforce naming
+        for (let [, p] of searchParams) {
+            if (p.match(/^([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/) && p.includes("0000")) {
+                return p;
+            }
+        }
+
+    } catch (e) {
+        console.error('Error while extracting the recordId')
+    }
+    return null;
+}
+
+export function getRecordId(href) {
+    const recordId = extractRecordId(href);
+    return recordId && recordId.match(/^([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/) ? recordId : null;
+}

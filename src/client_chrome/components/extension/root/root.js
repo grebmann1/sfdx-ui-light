@@ -4,10 +4,11 @@ import {
     isNotUndefinedOrNull,
     isUndefinedOrNull,
     normalizeString as normalize,
-    runActionAfterTimeOut
+    runActionAfterTimeOut,
+    getRecordId
 } from "shared/utils";
 import {directConnect, getHostAndSession} from 'connection/utils';
-import {getCurrentTab, getRecordId, PANELS} from 'extension/utils';
+import {getCurrentTab, PANELS} from 'extension/utils';
 
 /** Store **/
 import {store as legacyStore} from 'shared/store';

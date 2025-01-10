@@ -4,6 +4,7 @@ import accessAnalyzer_app from "accessAnalyzer/app";
 import code_app from "code/app";
 import metadata_app from "metadata/app";
 import sobjectExplorer_app from "object/app";
+import recordViewer_app from "recordviewer/app";
 import org_app from "org/app";
 import sarif_app from "sarif/app";
 import doc_app from "doc/app";
@@ -173,6 +174,21 @@ const APP_MAPPING = {
         quickActionIcon:"standard:data_model",
         shortName:"SOQL",
         path:'soql'
+    },
+    "recordviewer/app":{
+        module:recordViewer_app,
+        isFullHeight:true,
+        isDeletable:true,
+        isElectronOnly:false,
+        isOfflineAvailable:false,
+        isMenuVisible:true,
+        isTabVisible:true,
+        label:"Record Viewer",
+        type:i18n.TOOL,
+        description:"Explore in details your records",
+        quickActionIcon:"standard:knowledge",
+        shortName:"Rec. Viewer",
+        path:'recordviewer'
     },
     "api/app":{
         module:api_app,

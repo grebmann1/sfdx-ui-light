@@ -1,7 +1,6 @@
 import { wire,api } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
-import {isEmpty, isNotUndefinedOrNull,isUndefinedOrNull, runActionAfterTimeOut,SETUP_LINKS} from "shared/utils";
-import {redirectToUrlViaChrome} from 'extension/utils';
+import {isEmpty, isNotUndefinedOrNull,isUndefinedOrNull, runActionAfterTimeOut,SETUP_LINKS,redirectToUrlViaChrome} from "shared/utils";
 import {connectStore, store} from 'core/store';
 import { TYPE } from 'overlay/utils';
 import { directConnect } from "connection/utils";

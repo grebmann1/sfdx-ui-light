@@ -3,8 +3,7 @@ import '@lwc/synthetic-shadow';
 import {createElement} from 'lwc';
 import ViewsOverlay from 'views/overlay';
 
-import {getRecordId,redirectToUrlViaChrome} from 'extension/utils';
-import {isEmpty, runActionAfterTimeOut} from 'shared/utils';
+import {isEmpty, runActionAfterTimeOut,redirectToUrlViaChrome,getRecordId} from 'shared/utils';
 import hotkeys from 'hotkeys-js';
 
 

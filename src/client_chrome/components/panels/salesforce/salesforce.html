@@ -76,12 +76,13 @@
                         <template lwc:if={isRecordExplorerAvailable}>
                             <slds-tab class="full-page-body slds-tabs-no-padding" label="Record Explorer"
                                       value={APPLICATIONS.RECORD_EXPLORER}>
-                                <feature-record-explorer 
+                                <recordViewer-record-explorer 
                                     current-origin={currentOrigin}
                                     lwc:ref="recordexplorer"
                                     record-id={recordId}
                                     versions={versions}
-                                ></feature-record-explorer>
+                                    is-redirection-displayed
+                                ></recordViewer-record-explorer>
                             </slds-tab>
                         </template>
                         <!-- Record Explorer Section -->

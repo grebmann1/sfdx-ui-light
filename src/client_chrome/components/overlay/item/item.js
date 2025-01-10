@@ -1,18 +1,12 @@
 import { api } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
 
-import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeOut,guid } from 'shared/utils';
-import { TYPE } from 'overlay/utils';
-import {
-    getCurrentObjectType,
-    getCurrentTab,
-    getObjectDocLink,
-    getObjectFieldsSetupLink,
-    getObjectListLink,
-    getObjectSetupLink,
-    getRecordTypesLink,
+import { 
+    isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeOut,guid,
+    getCurrentObjectType,getCurrentTab,getObjectDocLink,getObjectFieldsSetupLink,getObjectListLink,getObjectSetupLink,getRecordTypesLink,
     redirectToUrlViaChrome
-} from "extension/utils";
+} from 'shared/utils';
+import { TYPE } from 'overlay/utils';
 
 export default class Item extends ToolkitElement {
     @api item;

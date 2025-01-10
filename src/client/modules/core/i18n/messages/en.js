@@ -26,6 +26,8 @@ export default {
     OUTPUT_PANEL_TOTAL: 'Total',
     OUTPUT_PANEL_CLOSE_CHILD_REL: 'Close Child Relationship',
     OUTPUT_TABLE_FAILED_FETCH_NEXT: 'Failed to fetch next records',
+    RECORDVIEWER_PANEL_SAVE:'Search',
+    RECORDVIEWER_PANEL_RECENT: 'Recent Records',
     EDITOR_PANEL_SAVE:'Save',
     EDITOR_PANEL_RUN: 'Run',
     EDITOR_PANEL_RESET: 'Reset',
