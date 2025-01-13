@@ -292,6 +292,10 @@ export default class App extends ToolkitElement {
         })
     }
 
+    get isTabHeaderDisplayed(){
+        return this.tabs.length > 0;
+    }
+
     get noRecordMessage() {
         return `This record wasn't found in your metadata.`;
     }

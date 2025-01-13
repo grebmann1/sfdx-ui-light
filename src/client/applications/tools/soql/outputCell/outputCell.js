@@ -1,11 +1,15 @@
 
-import { LightningElement,api } from 'lwc';
+import { LightningElement,api,wire } from 'lwc';
 import Toast from 'lightning/toast';
 import { isUndefinedOrNull,isObject } from 'shared/utils';
 import { store as appStore,store_application  }  from 'shared/store';
 import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,UI } from 'core/store';
+import { navigate,NavigationContext } from 'lwr/navigation';
 
 export default class OutputCell extends LightningElement {
+    @wire(NavigationContext)
+    navContext;
+
     @api value;
     @api column;
     @api recordId;
@@ -25,6 +29,7 @@ export default class OutputCell extends LightningElement {
     }
 
     handle_copyClick = (e) => {
+        console.log('handle_copyClick',this.recordId,this.column,this.value);
         e.preventDefault();
         e.stopPropagation();
         navigator.clipboard.writeText(this.value);
@@ -34,6 +39,17 @@ export default class OutputCell extends LightningElement {
         });
     }
 
+    handle_editClick = (e) => {
+        const params = {
+            type:'application',
+            state:{
+                applicationName:'recordviewer',
+                recordId:this.recordId
+            }
+        };
+        navigate(this.navContext,params);
+    }
+
     handleRedirection = (e) =>{
         e.preventDefault();
         e.stopPropagation();
@@ -41,6 +57,10 @@ export default class OutputCell extends LightningElement {
     }
 
     /** Getters */
+
+    get isRecordIdField(){
+        return this.column === 'Id';
+    }
 
     get formattedValue(){
         return isObject(this.value)?null:this.value;

@@ -8,10 +8,12 @@
   margin-right: 4px;
 }
 
-.slds-copy-clipboards {
+.slds-cell-button {
   visibility: hidden;
+  display: flex;
+  align-items: center;
 }
 
-:host:hover .slds-copy-clipboards{
+:host:hover .slds-cell-button{
   visibility: visible;
 }

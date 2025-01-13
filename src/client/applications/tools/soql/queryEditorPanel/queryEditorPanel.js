@@ -15,7 +15,7 @@ export default class QueryEditorPanel extends ToolkitElement {
     _soql;
     _hasRendered = false;
     _error; // Used to inject error in editor
-    _response;
+    @track _response;
     @track tabs = [];
     currentTab;
 
@@ -172,6 +172,10 @@ export default class QueryEditorPanel extends ToolkitElement {
             value:this.includeDeletedRecords,
             alias:this.alias
         }));
+    }
+
+    handleFormatBody = () => {
+        store.dispatch(UI.reduxSlice.actions.formatSoql());
     }
 
 

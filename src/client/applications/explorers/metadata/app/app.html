@@ -66,11 +66,13 @@
                         </div>
                         <div class="slds-flex-column slds-full-height slds-full-width slds-is-relative slds-p-horizontal_xx-small" slot="right">
                             <!-- Tabs -->
-                            <slds-tabset lwc:ref="metadataTab" variant="scoped" class="slds-without-tab slds-tabs_max-300" active-tab-value={currentTabId} onclosetab={handleCloseTab} is-remove-tab-event-disabled>
-                                <template for:each={formattedTabs} for:item="item">
-                                    <slds-tab key={item.id} label={item.name} value={item.id} onactive={handleSelectTab} is-closeable></slds-tab>
-                                </template>
-                            </slds-tabset>
+                            <template lwc:if={isTabHeaderDisplayed}>
+                                <slds-tabset lwc:ref="metadataTab" variant="scoped" class="slds-without-tab slds-tabs_max-300" active-tab-value={currentTabId} onclosetab={handleCloseTab} is-remove-tab-event-disabled>
+                                    <template for:each={formattedTabs} for:item="item">
+                                        <slds-tab key={item.id} label={item.name} value={item.id} onactive={handleSelectTab} is-closeable></slds-tab>
+                                    </template>
+                                </slds-tabset>
+                            </template>
                             <!-- Content -->
                             <div class="slds-is-relative slds-flex-column slds-fill-height slds-full-width">
                                 <!-- Editor view -->

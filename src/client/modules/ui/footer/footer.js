@@ -1,4 +1,4 @@
-import { LightningElement,wire} from "lwc";
+import { LightningElement,wire,api} from "lwc";
 import Toast from 'lightning/toast';
 import { isUndefinedOrNull,isNotUndefinedOrNull } from "shared/utils";
 import {
@@ -10,6 +10,8 @@ import { store,connectStore } from 'core/store';
 
 export default class Footer extends LightningElement {
 
+    @api version;
+    
     isFooterDisplayed = true;
 
     connector;
@@ -68,6 +70,10 @@ export default class Footer extends LightningElement {
     }
 
     get versionFormatted(){
+        return isNotUndefinedOrNull(this.version)?this.version+' / ':'';
+    }
+
+    get salesforceVersionFormatted(){
         return isUndefinedOrNull(this.connector.configuration.versionDetails)?'':`${this.connector.configuration.versionDetails.label} (${this.connector.configuration.versionDetails.version})`;
     }
 

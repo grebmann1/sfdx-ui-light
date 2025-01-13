@@ -69,6 +69,10 @@ export default class Soql extends ToolkitElement {
         });
     }
 
+    handleFormatBodyClick = () => {
+        this.dispatchEvent(new CustomEvent("formatbody", {bubbles: true,composed:true }));
+    }
+
     /** Methods **/
 
     createEditor = (model) => {

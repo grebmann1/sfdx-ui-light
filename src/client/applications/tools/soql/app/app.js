@@ -11,7 +11,7 @@ import {
 } from 'shared/utils';
 import { CATEGORY_STORAGE } from 'builder/storagePanel';
 import moment from 'moment';
-
+import { escapeCsvValue,formatQueryWithComment } from './util.js';
 export default class App extends ToolkitElement {
     // used to controle store of childs
     isActive;
@@ -184,17 +184,13 @@ export default class App extends ToolkitElement {
         }));
     }
     
-    handleFormatQueryClick = e => {
-        store.dispatch(UI.reduxSlice.actions.formatSoql());
-    }
-    
     handlePerformanceCheckClick = async (e) => {
         try{
             const { ui,describe } = store.getState();
             //this.isLoading = true;
             const result = await store.dispatch(QUERY.explainQuery({
                 connector:this.connector,
-                soql:this.soql,
+                soql:formatQueryWithComment(this.soql),
                 tabId:ui.currentTab.id,
                 useToolingApi:describe.nameMap[lowerCaseKey(this.selectedSObject)]?.useToolingApi
             })).unwrap();
@@ -218,29 +214,11 @@ export default class App extends ToolkitElement {
         let query = inputEl.getValue();
         if (!query) return;
 
-        // Reformat query to remove comments
-        query = query
-            .split('\n')
-            .map(line => {
-                const commentIndex = line.indexOf('//');
-                if (commentIndex !== -1) {
-                    // Include everything before `//`, excluding the comment
-                    return line.slice(0, commentIndex).trim();
-                }
-                // Include the entire line if no `//` is found
-                return line.trim();
-            })
-            .filter(line => line.length > 0) // Exclude empty lines
-            .join(' '); // Join back into a single query string
-
-        // Log the filtered query
-        console.log('Filtered Query:', query);
-
         const { ui,describe } = store.getState();
         store.dispatch(UI.reduxSlice.actions.deselectChildRelationship());
         const queryPromise = store.dispatch(QUERY.executeQuery({
             connector:this.connector,
-            soql:query, 
+            soql:formatQueryWithComment(query), 
             tabId:ui.currentTab.id,
             sobjectName:this.selectedSObject,
             isAllRows,
@@ -328,7 +306,7 @@ export default class App extends ToolkitElement {
     } 
 
     deleteSelectedRecords = async (e) => {
-        const { describe } = store.getState();
+        const { describe,ui } = store.getState();
         const customMessages = [];
         let _sobject,_sobjectChild; 
         if(this.selectedRecords.length > 0){
@@ -338,29 +316,58 @@ export default class App extends ToolkitElement {
                 customMessages.push(`${this.selectedRecords.length} ${this.selectedRecords.length == 1 ? _sobject.label:_sobject.labelPlural}`)
             }
         }
-        if(this.selectedChildRecords.length > 0){
+        /*if(this.selectedChildRecords.length > 0){
             const _item = this.selectedChildRecords[0];
             _sobjectChild = describe.prefixMap[_item.Id.substr(0,3)];
             if(_sobjectChild){
                 customMessages.push(`${this.selectedChildRecords.length} ${this.selectedChildRecords.length == 1 ? _sobjectChild.label:_sobjectChild.labelPlural}`)
             }
+        }*/
+        const params = {
+            variant: 'header',
+            theme:'error',
+            message: `Are you sure you want to delete the selected records (${customMessages.join(' & ')})? This action cannot be undone.`,
+            label:'Confirm Deletion'
         }
-        const params = {variant: 'headerless',message: `Are you sure that you want to delete ${customMessages.join(' & ')}?`}
         if(!await LightningConfirm.open(params)) return;
         store.dispatch(APPLICATION.reduxSlice.actions.startLoading());
 
         // Child
-        const retChild  = await this.deleteRecords(_sobjectChild,this.selectedChildRecords) || [];
+        //const retChild  = await this.deleteRecords(_sobjectChild,this.selectedChildRecords) || [];
         // Parent
         const retParent = await this.deleteRecords(_sobject,this.selectedRecords) || [];
-
-        for (const ret of [...retChild,...retParent]) {
+        const deletedRecordIds = new Set();
+        const errorMessages = [];
+        for (const ret of [...retParent]) { // ...retChild,
             if (ret.success) {
                 console.log(`Deleted Successfully : ${ret.id}`);
+                deletedRecordIds.add(ret.id);
             }else{
-                console.error(ret);
+                errorMessages.push(ret.errors.length > 0?ret.errors[0].content:'Undefined error, please try again.');
             }
         }
+        // Error
+        if(errorMessages.length > 0){
+            Toast.show({
+                label: 'Error during deletion',
+                message: errorMessages[0],
+                variant:'error',
+                mode:'sticky'
+            });
+        }
+        // Success
+        if(deletedRecordIds.size > 0){
+            Toast.show({
+                label: 'Successfull Deletion',
+                message: `${deletedRecordIds.size} record(s) were deleted successfully.`,
+                variant:'success',
+                mode:'dismissible'
+            });
+        }
+        store.dispatch(QUERY.reduxSlice.actions.deleteRecords({
+            deletedRecordIds:[...deletedRecordIds],
+            tabId:ui.currentTab.id
+        }));
         store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
     }
 
@@ -491,8 +498,9 @@ export default class App extends ToolkitElement {
             .map(row => {
                 return this.refs.output.columns
                     .map(column => {
-                        const value = getFieldValue(column,row);
-                        return isObject(value)?JSON.stringify(value.records):value;
+                        const value = getFieldValue(column, row);
+                        const processedValue = isObject(value) ? JSON.stringify(value.records) : value;
+                        return escapeCsvValue(separator,processedValue);
                     })
                     .join(separator);
             })

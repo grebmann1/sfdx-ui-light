@@ -94,10 +94,6 @@ export async function connect({alias,settings,disableEvent = false, directStorag
         await webInterface.saveConfiguration(connection.alias,configuration);
     }
     
-    connection.on("refresh", async function(accessToken, res) {
-        //console.log('refresh !!!',settings.accessToken,accessToken);
-    });
-    
     // Dispatch Login Event
     const connector = new Connector(configuration,connection);
     if(!disableEvent){
@@ -169,13 +165,14 @@ export async function getConfigurations(){
 
 
 export async function getExistingSession(){
+    console.log('getExistingSession');
     if(sessionStorage.getItem("currentConnection")){
         try{
             // Don't use settings for now, to avoid issues with electron js (see-details need to be called)
             //console.log('sessionStorage.getItem("currentConnection")',JSON.parse(sessionStorage.getItem("currentConnection")));
             const settings = JSON.parse(sessionStorage.getItem("currentConnection"));
                 settings.logLevel = null;
-                //console.log('settings',settings);
+                console.log('settings',settings);
             // Using {alias,...settings} before, see if it's better now
             return isElectronApp()?await connect({alias:settings.alias}):await connect({settings});
         }catch(e){
@@ -211,7 +208,7 @@ export async function oauth_chrome({alias,loginUrl},callback,callbackErrorHandle
         action: "launchWebAuthFlow",
         url:finalUrl
     });
-    console.log('response',response);
+    //console.log('response',response);
     const { code } = response;
     //console.log('code',code);
     if(isUndefinedOrNull(code)) return;
@@ -315,27 +312,55 @@ async function oauth_extend({alias,connection},callback){
 
 export async function directConnect(sessionId,serverUrl,extra){
     const isProxyDisabled = extra?.isProxyDisabled || false;
+    const isAliasMatchingDisabled = extra?.isAliasMatchingDisabled || false;
+    const isEnrichDisabled = extra?.isEnrichDisabled || false;
     let params = {
         //oauth2      : {...window.jsforceSettings},    
         sessionId   : sessionId,
         serverUrl   : serverUrl,
+        instanceUrl : serverUrl,
         proxyUrl    : (isProxyDisabled || isChromeExtension())?null:(window.jsforceSettings?.proxyUrl || 'https://sf-toolkit.com/proxy/'), // variable initialization might be too slow
         version     : constant.apiVersion,
         logLevel    : null//'DEBUG',
     }
-    //console.log('directConnect',params);
+
+    const standardDirectConnect = async () => {
+        console.log('--> Direct connect (Standard)')
+        // no existing org, so use sessionId
+        connection.on("sessionExpired", async function(accessToken, res) {
+            console.log('--> sessionExpired <--');
+            store.dispatch(APPLICATION.reduxSlice.actions.sessionExpired({sessionHasExpired:true}));
+        });
+        /** Get Username & Version **/
+        const connector = isEnrichDisabled?new Connector({},connection):await enrichConnector({configuration:{},connection},true);
+        // Dispatch Login Event
+        store.dispatch(async (dispatch, getState) => {
+            //await dispatch(APPLICATION.reduxSlice.actions.logout());
+            await dispatch(APPLICATION.reduxSlice.actions.login({connector}));
+        })
+        return connector;
+    }
+
+    const aliasDirectConnect = async (alias) => {
+        console.log('--> Direct connect (Alias)')
+        // Link connection to existing org
+        return await connect({alias});
+    }
     
     let connection = await new window.jsforce.Connection(params);
-
-    /** Get Username & Version **/
-    const connector = await enrichConnector({configuration:{},connection},true);
-
-    // Dispatch Login Event
-    store.dispatch(async (dispatch, getState) => {
-        //await dispatch(APPLICATION.reduxSlice.actions.logout());
-        await dispatch(APPLICATION.reduxSlice.actions.login({connector}));
-    })
-    return connector;
+    if(!isAliasMatchingDisabled){
+        let identity = await connection.identity();
+        const configurations = await getConfigurations();
+        const matchingConfigurations = configurations.filter(x => x.orgId == identity.organization_id && x.userInfo.user_id == identity.user_id);
+        // Listen to session expired for direct connect
+        // Todo : replace with alias connection whener it's possible 
+        if(matchingConfigurations.length > 0){
+            return aliasDirectConnect(matchingConfigurations[0].alias);
+        }
+    }
+    
+    
+    return standardDirectConnect();
 }
 
 async function enrichConnector({connection,configuration},dispathUpdate){
@@ -359,7 +384,7 @@ async function enrichConnector({connection,configuration},dispathUpdate){
 
     const connector = new Connector(configuration,connection);
     if(dispathUpdate){
-        store.dispatch(APPLICATION.reduxSlice.actions.updateConnector(connector));
+        store.dispatch(APPLICATION.reduxSlice.actions.updateConnector({connector}));
     }
     return connector; 
 }

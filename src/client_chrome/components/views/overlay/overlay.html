@@ -10,9 +10,16 @@
                 ></lightning-button-icon>
                 <lightning-button-icon-stateful
                         icon-name="utility:search"
-                        class="slds-button-last"
                         selected={isOverlayDisplayed}
                         onclick={toggleOverlay}
+                        class={searchButtonClass}
+                        tab-index="-1"
+                ></lightning-button-icon-stateful>
+                <lightning-button-icon-stateful
+                        icon-name="utility:edit"
+                        class={editButtonClass}
+                        selected={isOverlayDisplayed}
+                        onclick={checkRecordId}
                         tab-index="-1"
                 ></lightning-button-icon-stateful>
             </div>

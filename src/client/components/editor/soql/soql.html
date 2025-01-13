@@ -4,10 +4,17 @@
         <!-- Editor Button -->
         <div class="editor-toolkit">
             <div class="slds-flex-column slds-vertical-button-group">
-                <lightning-button-icon
+                <lightning-button-icon 
+                        class="slds-button-first"
                         icon-name="utility:copy"
                         tooltip="Copy to clipboard"
                         onclick={handleCopyClick}
+                ></lightning-button-icon>
+                <lightning-button-icon
+                        class="slds-button-last"
+                        icon-name="utility:left_align_text"
+                        tooltip="Format Body"
+                        onclick={handleFormatBodyClick}
                 ></lightning-button-icon>
             </div>
         </div>

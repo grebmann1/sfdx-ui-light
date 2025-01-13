@@ -1,5 +1,6 @@
 import { createSlice,createAsyncThunk } from '@reduxjs/toolkit';
 import { lowerCaseKey,guid,isUndefinedOrNull } from 'shared/utils';
+import { saveSession,removeSession } from "connection/utils";
 
 
 // QUERIES
@@ -9,7 +10,8 @@ const applicationSlice = createSlice({
         isLoading:false,
         connector:null,
         isLoggedIn:false,
-        currentApplication:null
+        currentApplication:null,
+        sessionHasExpired:false
     },
     reducers: {
         updateCurrentApplication: (state, action) => {
@@ -26,15 +28,33 @@ const applicationSlice = createSlice({
             const { connector } = action.payload;
             state.connector = connector;
             state.isLoggedIn = true;
+            state.sessionHasExpired = false;
+            // Save Session
+            const { instanceUrl,accessToken,version,refreshToken } = connector.conn;
+            saveSession({
+                ...connector.configuration,
+                instanceUrl,
+                accessToken,
+                instanceApiVersion:version,
+                refreshToken
+            });
         },
         logout: (state, action) => {
             state.connector = null;
             state.isLoggedIn = false;
             state.currentApplication = null;
+            state.sessionHasExpired = false;
+            // Remove Session
+            removeSession();
+        },
+        sessionExpired: (state, action) => {
+            const { sessionHasExpired } = action.payload;
+            state.sessionHasExpired = sessionHasExpired;
         },
         updateConnector: (state, action) => {
             const { connector } = action.payload;
             state.connector = connector;
+            state.sessionHasExpired = false;
         }
     },
 });

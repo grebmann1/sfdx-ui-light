@@ -1,6 +1,6 @@
 import { wire,api } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
-import {isEmpty, isNotUndefinedOrNull,isUndefinedOrNull, runActionAfterTimeOut,SETUP_LINKS,redirectToUrlViaChrome} from "shared/utils";
+import {isEmpty, isNotUndefinedOrNull,isUndefinedOrNull, runActionAfterTimeOut,SETUP_LINKS,redirectToUrlViaChrome,getRecordId} from "shared/utils";
 import {connectStore, store} from 'core/store';
 import { TYPE } from 'overlay/utils';
 import { directConnect } from "connection/utils";
@@ -24,8 +24,10 @@ const TABS = {
 }
 
 export default class Overlay extends ToolkitElement {
+    
     @api isProxyDisabled = false;
 
+    recordId; 
     isConnectorLoaded = false;
     isLoading = false;
     hasRendered = false;
@@ -67,14 +69,14 @@ export default class Overlay extends ToolkitElement {
 
     @wire(connectStore, {store})
     applicationChange({application}) {
-        //console.log('application',application,this.connector);
+        //('application',application,this.connector);
         if (
             isNotUndefinedOrNull(application.connector) && isNotUndefinedOrNull(this.connector)
             && application.connector?.conn?.accessToken != this.connector.connector?.conn?.accessToken
         ) {
-            console.log('Connected');
+            //console.log('Connected');
             this.isConnectorLoaded = true;
-            this.init()
+            this.init();
         }
     }
 
@@ -83,15 +85,17 @@ export default class Overlay extends ToolkitElement {
         window.jsforce = jsforce;
         window.defaultStore = window.defaultStore || localForage.createInstance({name: "defaultStore"});
         this.getSessionId();
+        //this.checkRecordId();
         this.header_enableAutoDate();
         // Default filter options
         this.filter_setValue();
         this.viewerTab_setValue();
+        //this.stopListening = this.onUrlChange(this.checkUrl);
     }
-
 
     disconnectedCallback() {
         clearInterval(this._headerInterval);
+        //this.onUrlChange();
         this.refs.container.removeEventListener('focusout',this.listenToContainerFocus);
     }
 
@@ -175,7 +179,37 @@ export default class Overlay extends ToolkitElement {
         this.init();
     }
 
+    /*onUrlChange = (callback) => {
+        let currentUrl = window.location.href;
+    
+        const checkUrl = () => {
+            if (currentUrl !== window.location.href) {
+                currentUrl = window.location.href;
+                callback(currentUrl);
+            }
+        };
+
+        window.navigation.addEventListener("navigate",checkUrl)
+        // Return a cleanup function to remove the event listeners
+        return () => {
+            window.navigation.removeEventListener('navigate', checkUrl);
+        };
+    }*/
+
     /** Methods **/
+
+    /*
+    checkUrl = (newUrl) => {
+        runActionAfterTimeOut(newUrl,async (newUrlValue) => {
+            console.log('newUrlValue',newUrlValue);
+            this.checkRecordId();
+        },{timeout:500});
+    }
+
+    checkRecordId = async () => {
+        this.recordId = await getRecordId(window.location);
+    }*/
+
     viewerTab_setValue = async () => {
         this.viewerTab = (await window.defaultStore.getItem(CACHE_TAB_SETTINGS)) || TABS.QUICKLINK;
     }
@@ -244,7 +278,15 @@ export default class Overlay extends ToolkitElement {
         // Use as key for storage
         this.currentDomain = cookieInfo.domain;
         // Direct Connection
-        directConnect(cookieInfo.session,`https://${cookieInfo.domain}`,{isProxyDisabled:false});
+        directConnect(
+            cookieInfo.session,
+            `https://${cookieInfo.domain}`,
+            {
+                isProxyDisabled:false,
+                isAliasMatchingDisabled:true,
+                isEnrichDisabled:true
+            }
+        );
     }
 
     manualSearch = async () => {
@@ -290,7 +332,7 @@ export default class Overlay extends ToolkitElement {
                 const escapedTerm = searchTerm.replace(/'/g, "\\'"); // Escape single quotes
                 const query = `SELECT Id, Name, Username,Email,Profile.Name,IsActive FROM User WHERE Name LIKE '%${escapedTerm}%' OR Username LIKE '%${escapedTerm}%' LIMIT 50`;
                 const result = await this.connector.conn.query(query);
-                console.log('result',result);
+                //console.log('result',result);
                 combinedResults.push(
                     ...result.records.map((x) => ({
                         id: x.Id,
@@ -553,6 +595,14 @@ export default class Overlay extends ToolkitElement {
     }
 
     /** Getters **/
+
+    get searchButtonClass(){
+        return isUndefinedOrNull(this.recordId)?'slds-button-last':'';
+    }
+
+    get editButtonClass(){
+        return isNotUndefinedOrNull(this.recordId) ? 'slds-button-last':'slds-hide';
+    }
 
     get tab_searchLabel(){
         return `Search (${this.formattedResults.filter(x => x.type !== TYPE.LINK).length})`

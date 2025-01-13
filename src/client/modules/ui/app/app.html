@@ -26,8 +26,8 @@
                 </template>
                 <!-- Container & Header -->
                 <div class="home l-container-vertical">
+                    <!-- Header is replaced by a smaller header in the ui-menu to have more HEIGHT 
                     <div class="l-cell-content-size">
-                        <!-- Header -->
                         <ui-header 
                             current-application-name="Org"
                             current-tab-name="Home"
@@ -39,10 +39,15 @@
                             version={version}
                         ></ui-header>
                     </div>
+                    -->
                     <div class="slds-show_medium l-cell-auto-size l-container-horizontal">
                         <!-- Menu -->
                         <div class={menuClass}>
-                            <ui-menu class="l-container-vertical" is-user-logged-in={isUserLoggedIn} onapplicationselection={handleApplicationSelection}></ui-menu>
+                            <ui-menu 
+                                class="l-container-vertical"
+                                is-user-logged-in={isUserLoggedIn} 
+                                onapplicationselection={handleApplicationSelection}
+                            ></ui-menu>
                         </div>
                         <!-- Container - START -->
                         <div class="l-cell-auto-size main-app-container">
@@ -95,7 +100,7 @@
 
         <!-- Shared Footer -->
         <template lwc:if={isUserLoggedIn}>
-            <ui-footer></ui-footer>
+            <ui-footer version={version}></ui-footer>
         </template>
     </div>
     

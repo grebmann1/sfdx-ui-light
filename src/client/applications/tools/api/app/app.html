@@ -3,7 +3,43 @@
         <builder-editor onexecuteaction={executeAction} onexecutesave={executeSave}>
             <builder-header slot="header" title="Light API Explorer" sub-title="API Explorer" icon-name="standard:user">
                 <div slot="actions" class="slds-builder-toolbar__actions">
-                    
+                    <lightning-button 
+                        class="slds-p-left_xx-small" 
+                        label={i18n.EDITOR_PANEL_SAVE} 
+                        onclick={executeSave} 
+                        disabled={isSaveButtonDisabled}
+                    ></lightning-button>
+                    <lightning-button
+                        class="slds-m-left_small"
+                        icon-name="utility:apex" 
+                        onclick={executeAction} 
+                        label={i18n.EDITOR_PANEL_RUN} 
+                        variant="brand"
+                        disabled={isExecuteApiDisabled}
+                    ></lightning-button>
+                </div>
+                <div slot="meta" class="slds-flex-row slds-align-flex-end">
+                    <lightning-combobox lwc:ref="method" 
+                        class="slds-horizontal-input-combobox"
+                        label="Method"
+                        dropdown-alignment="left"
+                        value={method}
+                        placeholder="Method"
+                        disabled={isApiRunning}
+                        options={method_options}
+                        onchange={method_change}
+                    ></lightning-combobox>
+                    <lightning-input lwc:ref="url" 
+                        class="slds-horizontal-input-url slds-p-left_x-small"
+                        label="Endpoint" 
+                        type="text" 
+                        value={endpoint}
+                        onchange={endpoint_change}
+                        disabled={isApiRunning}
+                    ></lightning-input>
+                </div>
+
+                <div slot="subactions" class="slds-builder-toolbar__actions">
                     <lightning-button-icon 
                         icon-name="utility:undo" 
                         onclick={undo_click} 
@@ -35,43 +71,6 @@
                         size="large" 
                         onclick={handleRecentToggle}
                     ></lightning-button-icon-stateful>
-                </div>
-                <div slot="meta" class="slds-flex-row slds-align-flex-end">
-                    <lightning-combobox lwc:ref="method" 
-                        class="slds-horizontal-input-combobox"
-                        label="Method"
-                        dropdown-alignment="left"
-                        value={method}
-                        placeholder="Method"
-                        disabled={isApiRunning}
-                        options={method_options}
-                        onchange={method_change}
-                    ></lightning-combobox>
-                    <lightning-input lwc:ref="url" 
-                        class="slds-horizontal-input-url slds-p-left_x-small"
-                        label="Endpoint" 
-                        type="text" 
-                        value={endpoint}
-                        onchange={endpoint_change}
-                        disabled={isApiRunning}
-                    ></lightning-input>
-                </div>
-
-                <div slot="subactions" class="slds-builder-toolbar__actions">
-                    <lightning-button 
-                        class="slds-p-left_xx-small" 
-                        label={i18n.EDITOR_PANEL_SAVE} 
-                        onclick={executeSave} 
-                        disabled={isSaveButtonDisabled}
-                    ></lightning-button>
-                    <lightning-button
-                        class="slds-m-left_small"
-                        icon-name="utility:apex" 
-                        onclick={executeAction} 
-                        label={i18n.EDITOR_PANEL_RUN} 
-                        variant="brand"
-                        disabled={isExecuteApiDisabled}
-                    ></lightning-button>
                 </div>
 
                 <template lwc:if={isMetaDisplayed}>

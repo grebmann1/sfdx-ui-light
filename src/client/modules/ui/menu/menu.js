@@ -9,7 +9,7 @@ import { NavigationContext, CurrentPageReference,generateUrl, navigate } from 'l
 export default class Menu extends ToolkitElement {
     
     @api isUserLoggedIn = false; // to enforce t
-
+    @api version;
     isMenuSmall = false;
     selectedItem = 'home';
 
@@ -122,11 +122,15 @@ export default class Menu extends ToolkitElement {
 
 
     /** Getters **/
+
+    get isTitleDisplayed(){
+        return !this.isMenuSmall;
+    }
     
     get collapseClass(){
-        return classSet("slds-grid slds-p-top_x-small")
+        return classSet("slds-grid")
         .add({
-            'slds-grid_align-end slds-p-right_x-small':!this.isMenuSmall,
+            'slds-grid_align-end':!this.isMenuSmall,
             'slds-grid_align-center':this.isMenuSmall,
         })
         .toString()
@@ -207,5 +211,9 @@ export default class Menu extends ToolkitElement {
 
     get isNotMenuSmall(){
         return !this.isMenuSmall;
+    }
+
+    get formattedVersion(){
+        return `${this.version}`;
     }
 }

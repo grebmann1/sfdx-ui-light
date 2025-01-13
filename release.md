@@ -1,10 +1,25 @@
 # SF Toolkit - Release Notes
 
 ## Version 1.3.23 - January 10th, 2024
-### New Features
-- **Record Viewer**:
-  - Introduced a user-friendly interface for visualizing records, akin to the "Chrome Panel" experience.
-  - Enabled direct editing of records within the Record Viewer app, streamlining workflows.
+### New Features  
+- **Record Viewer**:  
+  - Introduced a user-friendly interface for visualizing records, akin to the "Chrome Panel" experience.  
+  - Enabled direct editing of records within the Record Viewer app, streamlining workflows.  
+
+### Enhancements  
+- **SOQL (Data Explorer)**:  
+  - Added support for record deletion directly from the SOQL interface.  
+  - Implemented query formatting to enhance readability and usability.  
+
+### Bug Fixes  
+- **OAuth Error**:  
+  - Improved error handling for OAuth session management. If the registered org is not found or the session has expired, a popup message will now notify the user.  
+- **Metadata Issues**:  
+  - Resolved various metadata-related issues to improve reliability and performance.  
+
+### Other Changes  
+- **Removal of Application Tab**:  
+  - The Application Tab has been removed to simplify navigation and improve user experience.  
 
 ## Version 1.3.22 - January 7th, 2024
 ### Enhancements

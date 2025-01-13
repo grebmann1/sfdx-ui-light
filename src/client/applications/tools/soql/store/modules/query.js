@@ -54,6 +54,28 @@ const queriesSlice = createSlice({
     name: 'queries',
     initialState:queryAdapter.getInitialState(),
     reducers: {
+        deleteRecords: (state,action) => {
+            const { tabId, deletedRecordIds } = action.payload;
+
+            // Find the specific query adapter record
+            const existingRecord = queryAdapter.getSelectors().selectById(state, lowerCaseKey(tabId))
+            if (existingRecord && existingRecord.data) {
+                // Filter out the deleted record IDs
+                const updatedRecords = existingRecord.data.records.filter(
+                    (x) => !deletedRecordIds.includes(x.Id)
+                );
+
+                // Update the state
+                queryAdapter.upsertOne(state, {
+                    ...existingRecord,
+                    data: {
+                        ...existingRecord.data,
+                        totalSize:existingRecord.data.totalSize - deletedRecordIds.length || 0,
+                        records:updatedRecords
+                    }
+                });
+            }
+        },
         clearQueryError: (state, action) => {
             const { tabId } = action.payload;
             queryAdapter.upsertOne(state, {

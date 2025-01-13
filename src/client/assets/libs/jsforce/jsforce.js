@@ -1347,7 +1347,11 @@ var SessionRefreshDelegate = /*#__PURE__*/function () {
                     _this._conn.accessToken = accessToken;
                     _this._conn.emit('refresh', accessToken, res);
                     resolve();
-                  } else {
+                  } else if(err == 'defaultRefreshFn'){
+                    _this._logger.debug('Connection refresh failed.');
+                    _this._conn.emit('sessionExpired', null,res);
+                    reject(new Error('SessionId has expired'));
+                  }else{
                     reject(err);
                   }
                 });
@@ -1812,6 +1816,17 @@ function parseIdUrl(url) {
 }
 
 /**
+ * Send basic message in case a refresh is needed when the session expired but there is no OAuth setup !!! SF-toolkit
+ * @private 
+ */ 
+function defaultRefreshFn(connector,callback){
+  callback('defaultRefreshFn', null,{
+    type:'defaultRefreshFn',
+    connector,
+  });
+}
+
+/**
  * Session Refresh delegate function for OAuth2 authz code flow
  * @private
  */
@@ -1986,6 +2001,8 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
     var refreshFn = config.refreshFn;
     if (!refreshFn && _this.oauth2.clientId) {
       refreshFn = oauthRefreshFn;
+    }else if(!refreshFn && !_this.oauth2.clientId){
+      refreshFn = defaultRefreshFn;
     }
     if (refreshFn) {
       _this._refreshDelegate = new session_refresh_delegate(_this, refreshFn);
@@ -11237,6 +11254,7 @@ function _startFetchRequest() {
               return startFetchRequest(req, options, undefined, output, emitter, counter + 1);
             });
           } catch (err) {
+            console.log('big error !!!')
             emitter.emit('error', err);
           }
           return _context5.abrupt("return");

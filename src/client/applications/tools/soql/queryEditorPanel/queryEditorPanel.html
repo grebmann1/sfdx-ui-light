@@ -9,7 +9,12 @@
 
     <!-- Query Editor Text Area -->
     <div class="soql-editor slds-fill-height">
-         <editor-soql lwc:ref="editor" model={currentModel} onmonacoloaded={handleMonacoLoaded} onchange={handleSoqlChange}></editor-soql>
+         <editor-soql lwc:ref="editor" 
+            model={currentModel} 
+            onmonacoloaded={handleMonacoLoaded} 
+            onchange={handleSoqlChange}
+            onformatbody={handleFormatBody}
+        ></editor-soql>
     </div>
     <!-- Tooling API -->
     <div class="slds-grid slds-p-vertical_xx-small">

@@ -63,6 +63,14 @@
                         </template>
                     </slds-tabset>
                     <!-- Content -->
+
+                    <template lwc:if={isNoRecord}>
+                        <illustration-empty size="large" title="No record" sub-title="This record wasn't found in your org."></illustration-empty>
+                    </template>
+
+                    <template lwc:if={isEmptyTab}>
+                        <illustration-empty size="large" title="Click on Search to retrieve a record" sub-title="You can use the recordId or a valid salesforce url"></illustration-empty>
+                    </template>
                     
                     <template lwc:if={isViewerDisplayed}>
                         <recordviewer-record-explorer 
@@ -73,13 +81,7 @@
                         ></recordviewer-record-explorer>
                     </template>
 
-                    <template lwc:if={isNoRecord}>
-                        <illustration-empty size="large" title="No record" sub-title="This record wasn't found in your org."></illustration-empty>
-                    </template>
-
-                    <template lwc:if={isEmptyTab}>
-                        <illustration-empty size="large" title="Click on Search to retrieve a record" sub-title="You can use the recordId or a valid salesforce url"></illustration-empty>
-                    </template>
+                    
                     
                 </div>
             </article>

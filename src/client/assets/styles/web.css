@@ -487,3 +487,9 @@
 .sf-toolkit [kx-scope=button][kx-type=underline]:hover:after {
     content:unset !important;
 }
+
+/** lightning-alert **/
+.sf-toolkit lightning-alert p,
+.sf-toolkit lightning-confirm p{
+    padding:1rem;
+}

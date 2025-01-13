@@ -108,6 +108,7 @@ export default class App extends ToolkitElement {
     loadFromNavigation = ({state}) => {
         const { recordId }  = state;
         if(isNotUndefinedOrNull(recordId)){
+            this.hasError = false;
             const tab = RECORDVIEWER.formatTab({id:recordId});
             store.dispatch(RECORDVIEWER.reduxSlice.actions.upsertTab({tab}));
         }

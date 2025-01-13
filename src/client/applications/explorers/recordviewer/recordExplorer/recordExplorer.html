@@ -12,10 +12,10 @@
                         </div>
                         <div class="slds-col slds-size_1-of-6">
                             <lightning-button-group class="slds-float_right">
-								<template lwc:if={isRedirectionDisplayed}>
+								<template lwc:if={isPanel}>
 									<lightning-button-icon 
 										disabled={isLoading} 
-										icon-name="utility:builder"
+										icon-name="utility:new_window"
 										onclick={handleRedirectToApp}
 										title="Redirect to app"
 									></lightning-button-icon>
@@ -115,10 +115,12 @@
                     </dl>
                 </template>
             </template>
-            <template lwc:else>
+            <template lwc:elseif={isPanel}>
                 <!-- Place Holder -->
-                <illustration-empty sub-title="The extension only support standard record pages."
-                                    title="No record"></illustration-empty>
+                <illustration-empty 
+                    title="No record" 
+                    sub-title="The extension only support standard record pages."
+                ></illustration-empty>
             </template>
         </div>
 
@@ -136,62 +138,63 @@
             </div>
         </template>
         <!-- Table -->
-        <div class="full-page-body tableFixHead" onscroll={handleScroll}>
-
-            <!--<div lwc:dom="manual" class="custom-table"></div>-->
-            <table class="slds-table slds-table_cell slds-table_fixed-layout slds-table_bordered slds-table_resizable-cols slds-no-row-hover"
-                   id="data-table"
-                   role="grid">
-                <thead>
-                    <tr class="slds-line-height_reset head">
-                        <th aria-label={fieldLabel} aria-sort="none"
-                            class="slds-is-sortable slds-is-resizable slds-text-title_caps" draggable="false" id='leftColumn'
-                            scope="col">
-                            <div class="slds-th__action slds-text-link_reset">
-                                <lightning-button-icon
-                                        alternative-text="Switch Field &amp; Label"
-                                        icon-name="utility:change_record_type"
-                                        onclick={handleToggleFieldName}
-                                        variant="bare"
-                                ></lightning-button-icon>
-                                <span class="slds-truncate slds-m-left_x-small" title={fieldLabel}>{fieldLabel}</span>
-                            </div>
-                        </th>
-                        <th aria-label="Product Code" aria-sort="none"
-                            class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
-                            <div class="slds-th__action slds-text-link_reset">
-                                <span class="slds-truncate" title="Product Code">Value</span>
-                            </div>
-                        </th>
-                        <th aria-label="" aria-sort="none" class="" scope="col" style="width:30px;"></th>
-                    </tr>
-                </thead>
-                <tbody class="record-explorer-table slds-scrollable_y" id="data-toDisplay"
-                       onenableeditmode={handleEnabledEditMode}
-                       onfieldchange={handleRowInputChange}
-                >
-                    <!--
-                        onregisterfielddependency={registerDependentField}
-                        onupdatedependentfields={updateDependentFields}
-                    -->
-                    <!-- DATA are going here -->
-                    <template for:each={virtualList} for:item="item">
-                        <recordviewer-record-explorer-row current-origin={currentOrigin}
-                                                    field-errors={fieldErrors}
-                                                    filter={filter}
-                                                    is-info-displayed={isInfoDisplayed}
-                                                    is-label-displayed={isLabelDisplayed}
-                                                    is-visible={item.isVisible}
-                                                    item={item}
-                                                    key={item.name}
-                                                    metadata={metadata}
-                                                    record={record}
-                        ></recordviewer-record-explorer-row>
-                        <!-- is-edit-mode={isEditMode} -->
-                    </template>
-                </tbody>
-            </table>
-        </div>
+        <template lwc:if={isRecordIdAvailable}>
+            <div class="full-page-body tableFixHead" onscroll={handleScroll}>
+                <!--<div lwc:dom="manual" class="custom-table"></div>-->
+                <table class="slds-table slds-table_cell slds-table_fixed-layout slds-table_bordered slds-table_resizable-cols slds-no-row-hover"
+                       id="data-table"
+                       role="grid">
+                    <thead>
+                        <tr class="slds-line-height_reset head">
+                            <th aria-label={fieldLabel} aria-sort="none"
+                                class="slds-is-sortable slds-is-resizable slds-text-title_caps" draggable="false" id='leftColumn'
+                                scope="col">
+                                <div class="slds-th__action slds-text-link_reset">
+                                    <lightning-button-icon
+                                            alternative-text="Switch Field &amp; Label"
+                                            icon-name="utility:change_record_type"
+                                            onclick={handleToggleFieldName}
+                                            variant="bare"
+                                    ></lightning-button-icon>
+                                    <span class="slds-truncate slds-m-left_x-small" title={fieldLabel}>{fieldLabel}</span>
+                                </div>
+                            </th>
+                            <th aria-label="Product Code" aria-sort="none"
+                                class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
+                                <div class="slds-th__action slds-text-link_reset">
+                                    <span class="slds-truncate" title="Product Code">Value</span>
+                                </div>
+                            </th>
+                            <th aria-label="" aria-sort="none" class="" scope="col" style="width:30px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="record-explorer-table slds-scrollable_y" id="data-toDisplay"
+                           onenableeditmode={handleEnabledEditMode}
+                           onfieldchange={handleRowInputChange}
+                    >
+                        <!--
+                            onregisterfielddependency={registerDependentField}
+                            onupdatedependentfields={updateDependentFields}
+                        -->
+                        <!-- DATA are going here -->
+                        <template for:each={virtualList} for:item="item">
+                            <recordviewer-record-explorer-row current-origin={currentOrigin}
+                                                        field-errors={fieldErrors}
+                                                        filter={filter}
+                                                        is-info-displayed={isInfoDisplayed}
+                                                        is-label-displayed={isLabelDisplayed}
+                                                        is-visible={item.isVisible}
+                                                        item={item}
+                                                        key={item.name}
+                                                        metadata={metadata}
+                                                        record={record}
+                            ></recordviewer-record-explorer-row>
+                            <!-- is-edit-mode={isEditMode} -->
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </template>
         <!-- Only if editing mode -->
         <template lwc:if={isEditMode}>
             <div class="slds-editor-footer">

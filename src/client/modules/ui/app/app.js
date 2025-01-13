@@ -1,7 +1,7 @@
 import { LightningElement,track,api,wire } from "lwc";
 import LightningAlert from 'lightning/alert';
 import { guid,isNotUndefinedOrNull,isElectronApp,classSet,isUndefinedOrNull,forceVariableSave,isChromeExtension } from "shared/utils";
-import { getExistingSession,saveSession,removeSession,directConnect,connect } from "connection/utils";
+import { getExistingSession,directConnect,connect } from "connection/utils";
 import { NavigationContext,CurrentPageReference,navigate } from 'lwr/navigation';
 import { handleRedirect } from './utils';
 /** Apps  **/
@@ -46,6 +46,9 @@ export default class App extends LightningElement {
 
     currentApplicationId;
 
+    // To manage expired session
+    sessionHasExpiredIsDisplayed = false;
+
    /* @api 
     get connector(){
         return window.connector;
@@ -57,7 +60,6 @@ export default class App extends LightningElement {
 
     @wire(connectStore, { store:legacyStore })
     applicationChange({application}) {
-        console.log('application',application)
         // Open Application
         if(application.isOpen){
             const {target} = application;
@@ -89,7 +91,10 @@ export default class App extends LightningElement {
                 this.handleLogout();
             }
         }
-        
+
+        if(application.sessionHasExpired){
+            this.redirectAfterExpiration();
+         }
     }
 
     @wire(CurrentPageReference)
@@ -102,7 +107,6 @@ export default class App extends LightningElement {
             case 'application':
                 const formattedApplicationName = (state.applicationName || '').toLowerCase();
                 const target = APP_LIST.find(x => x.path === formattedApplicationName);
-                console.log('handleNavigation',target);
                 if(isNotUndefinedOrNull(target)){
                     this.handleApplicationSelection(target.name);
                 }else{
@@ -130,20 +134,11 @@ export default class App extends LightningElement {
     /** Events */
 
     handleLogin = async (connector) => {
-        console.log('#### handleLogin ####');
         if(isUndefinedOrNull(connector)){
             store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
             return;
         }
 
-        const { instanceUrl,accessToken,version,refreshToken } = connector.conn;
-        saveSession({
-            ...connector.configuration,
-            instanceUrl,
-            accessToken,
-            instanceApiVersion:version,
-            refreshToken
-        });
         // Reset first
         this.applications = this.applications.filter(x => x.name == 'home/app');
         
@@ -169,7 +164,7 @@ export default class App extends LightningElement {
         e.preventDefault(); // currentApplication
         
         await store.dispatch(APPLICATION.reduxSlice.actions.logout());
-        await removeSession();
+        
         this.initMode();
         //location.reload();
     }
@@ -223,6 +218,21 @@ export default class App extends LightningElement {
 
 
     /** Methods  */
+
+    redirectAfterExpiration = async () => {
+        if(this.sessionHasExpiredIsDisplayed) return;
+
+        this.sessionHasExpiredIsDisplayed = true;
+        //this.sessionHasExpired = false;
+        //store.dispatch(APPLICATION.reduxSlice.actions.sessionExpired({sessionHasExpired:false}));
+        await LightningAlert.open({
+            message: 'Session has expired. \n Please consider adding it to your list of orgs.',//+'\n You might need to remove and OAuth again.',
+            theme: 'offline', // a red theme intended for error states
+            label: 'Session Expired', // this is the header text
+        });
+        this.sessionHasExpiredIsDisplayed = false;
+        await store.dispatch(APPLICATION.reduxSlice.actions.logout());
+    }
     
     openSpecificModule = async (target) => {
         this.handleApplicationSelection(target);
@@ -288,6 +298,9 @@ export default class App extends LightningElement {
                 await connect({alias:this.alias});
             }else{
                 await directConnect(this.sessionId,this.serverUrl);
+                // Reset after to prevent looping
+                this.sessionId = null;
+                this.serverUrl = null;
             }
 
             if(this.redirectUrl){
@@ -326,6 +339,9 @@ export default class App extends LightningElement {
     load_fullMode = async () => {
         if(isNotUndefinedOrNull(this.sessionId) && isNotUndefinedOrNull(this.serverUrl)){
             await directConnect(this.sessionId,this.serverUrl);
+            // Reset after to prevent looping
+            this.sessionId = null;
+            this.serverUrl = null;
         }else{
             await getExistingSession(); // await connect({alias:'acet-dev'})//
         }

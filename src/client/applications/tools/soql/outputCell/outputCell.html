@@ -11,8 +11,17 @@
                 {formattedValue} 
             </div>
         </template>
+
+        <template lwc:if={isRecordIdField}>
+            <lightning-button-icon class="slds-cell-button"
+                onclick={handle_editClick}
+                icon-name="utility:edit"
+                variant="bare"
+                alternative-text="edit"
+            ></lightning-button-icon>
+        </template>
         <template lwc:if={isNotEmpty}>
-            <lightning-button-icon class="slds-copy-clipboards"
+            <lightning-button-icon class="slds-cell-button"
                 onclick={handle_copyClick}
                 icon-name="utility:copy"
                 variant="bare"

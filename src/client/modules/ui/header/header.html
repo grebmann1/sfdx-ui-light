@@ -14,7 +14,7 @@
             </div>
             <nav class="slds-context-bar__secondary" role="navigation">
                 <ul class="slds-grid">
-                    <template for:each={applications} for:item="application">
+                    <!--<template for:each={applications} for:item="application">
                         <template lwc:if={application.isTabVisible}>
                             <li key={application.id} class={application.class} onclick={selectTab} data-key={application.id} data-path={application.path}>
                                 <a class="slds-context-bar__label-action" title={application.label}>
@@ -28,6 +28,7 @@
                             </li>
                         </template>
                     </template>
+                -->
                 </ul>
                 <span class="slds-float_right">
                     <span class="slds-truncate" title={formattedVersion}>{formattedVersion}</span>

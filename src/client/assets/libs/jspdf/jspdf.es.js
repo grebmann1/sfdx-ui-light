@@ -3876,7 +3876,8 @@ function jsPDF(options) {
 
       case "pdfobjectnewwindow":
         if (Object.prototype.toString.call(globalObject) === "[object Window]") {
-          var pdfObjectUrl = "https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js";
+          console.error('pdfobjectnewwindow isn\'t working anymore.');
+          /*var pdfObjectUrl = "https://cdnjs.cloudflare.com/ajax/libs/pdfobject/2.1.1/pdfobject.min.js";
           var integrity = ' integrity="sha512-4ze/a9/4jqu+tX9dfOqJYSvyYd5M6qum/3HpCLr+/Jqf0whc37VUbkpNGHR7/8pSnCFw47T1fmIpwBV7UySh3g==" crossorigin="anonymous"';
 
           if (options.pdfObjectUrl) {
@@ -3891,7 +3892,7 @@ function jsPDF(options) {
             nW.document.write(htmlForNewWindow);
           }
 
-          return nW;
+          return nW;*/
         } else {
           throw new Error("The option pdfobjectnewwindow just works in a browser-environment.");
         }

@@ -17,7 +17,7 @@ const SOBJECT = {
 export default class RecordExplorer extends ToolkitElement {
 
     @api versions = [];
-    @api isRedirectionDisplayed = false;
+    @api isPanel = false;
 
 
     tableInstance;
