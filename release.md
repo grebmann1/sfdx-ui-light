@@ -1,5 +1,17 @@
 # SF Toolkit - Release Notes
 
+## Version 1.3.24 - January 15th, 2025
+### Enhancements  
+- **SOQL (Data Explorer)**:  
+  - Introduced the ability to open the Data Explorer directly from the Record Viewer (right panel) with a prepopulated query. This streamlines the workflow and saves time.
+
+### Bug Fixes  
+- **Data Explorer**:  
+  - Resolved an issue where the UI would break if the `Id` field was not selected.  
+- **Redirection issue**:  
+  - Fixed an issue where certain redirection links were not functioning as expected.
+
+
 ## Version 1.3.23 - January 10th, 2025
 ### New Features  
 - **Record Viewer**:  
