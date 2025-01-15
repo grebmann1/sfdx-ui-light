@@ -1,3 +1,6 @@
+:host{
+    --slds-c-button-spacing-block-end : 4px;
+}
 
 .slds-breadcrumb .slds-breadcrumb__item:first-child > span {
     --slds-c-breadcrumbs-spacing-inline-start: 0;

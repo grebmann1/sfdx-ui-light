@@ -1,4 +1,4 @@
-import {api, track} from "lwc";
+import {wire,api, track} from "lwc";
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
 import {store, store_application} from 'shared/store';
@@ -7,6 +7,7 @@ import {
     getCurrentObjectType,getCurrentTab,getObjectDocLink,getObjectFieldsSetupLink,getObjectListLink,getObjectSetupLink,getRecordTypesLink,
     redirectToUrlViaChrome
 } from 'shared/utils';
+import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 
 const PAGE_LIST_SIZE = 70;
 const TOOLING = 'tooling';
@@ -15,6 +16,8 @@ const SOBJECT = {
 };
 
 export default class RecordExplorer extends ToolkitElement {
+    @wire(NavigationContext)
+    navContext;
 
     @api versions = [];
     @api isPanel = false;
@@ -351,22 +354,48 @@ export default class RecordExplorer extends ToolkitElement {
         this.refreshData();
     };
 
+    generateDefaultQuery = () => {
+        return `SELECT Id FROM ${this.metadata.name}`;
+    }
+
     /** Events **/
 
+    handleRedirectDataExplorer = () => {
+        const applicationName = 'soql';
+        const query = this.generateDefaultQuery();
+        const params = new URLSearchParams({applicationName,query});
+        if(this.isPanel){
+            const settings = {
+                sessionId: this.connector.conn.accessToken,
+                serverUrl: this.connector.conn.instanceUrl,
+                baseUrl: chrome.runtime.getURL('/views/app.html'),
+                redirectUrl:encodeURIComponent(params.toString())
+            };
+            redirectToUrlViaChrome(settings);
+        }else{
+            navigate(this.navContext,
+                {
+                    type:'application',
+                    state:{
+                        applicationName,
+                        query
+                    }
+                }
+            );
+        }
+    }
+
     handleRedirectToApp = () => {
-        const application = 'recordviewer';
+        const params = new URLSearchParams({
+            applicationName: 'recordviewer',
+            recordId:this.recordId
+        });
         const settings = {
             sessionId: this.connector.conn.accessToken,
             serverUrl: this.connector.conn.instanceUrl,
-            baseUrl: chrome.runtime.getURL('/views/app.html')
+            baseUrl: chrome.runtime.getURL('/views/app.html'),
+            redirectUrl:encodeURIComponent(params.toString())
         };
-        if(application){
-            const params = new URLSearchParams({
-                applicationName: application,
-                recordId:this.recordId
-            });
-            settings.redirectUrl = encodeURIComponent(params.toString());
-        }
         redirectToUrlViaChrome(settings);
     }
 
@@ -382,10 +411,11 @@ export default class RecordExplorer extends ToolkitElement {
         }
     }
 
-    handleCopyId = () => {
-        navigator.clipboard.writeText(this.recordId);
+    handleCopy = (e) => {
+        const {value,label} = e.currentTarget.dataset;
+        navigator.clipboard.writeText(value);
         Toast.show({
-            label: 'RecordId exported to your clipboard',
+            label,
             variant: 'success',
         });
     };
@@ -501,7 +531,12 @@ export default class RecordExplorer extends ToolkitElement {
     }
 
     get label() {
+        console.log('this.metadata',this.metadata);
         return this.metadata?.label;
+    }
+
+    get developerName(){
+        return this.metadata?.name;
     }
 
     get keyPrefix() {
@@ -634,6 +669,10 @@ export default class RecordExplorer extends ToolkitElement {
 
     get docLinkTitle() {
         return this.metadata?._useToolingApi ? 'Tooling' : 'Standard';
+    }
+
+    get buttonSize(){
+        return this.isPanel?'small':'medium';
     }
 
 }

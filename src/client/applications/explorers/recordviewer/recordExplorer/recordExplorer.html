@@ -12,12 +12,20 @@
                         </div>
                         <div class="slds-col slds-size_1-of-6">
                             <lightning-button-group class="slds-float_right">
+                                <lightning-button-icon 
+										disabled={isLoading} 
+										icon-name="utility:database"
+										onclick={handleRedirectDataExplorer}
+										title="Redirect to Data Explorer"
+                                        size={buttonSize}
+									></lightning-button-icon>
 								<template lwc:if={isPanel}>
 									<lightning-button-icon 
 										disabled={isLoading} 
 										icon-name="utility:new_window"
 										onclick={handleRedirectToApp}
 										title="Redirect to app"
+                                        size={buttonSize}
 									></lightning-button-icon>
 								</template>
                                 <lightning-button-icon-stateful 
@@ -26,12 +34,14 @@
                                     onclick={handleInfoToggle} 
 									selected={isInfoDisplayed}
                                     title="Info"
+                                    size={buttonSize}
                                 ></lightning-button-icon-stateful>
                                 <lightning-button-icon 
 									disabled={isLoading} 
 									icon-name="utility:refresh"
 									onclick={handleRefreshClick}
                                     title="Refresh"
+                                    size={buttonSize}
 								></lightning-button-icon>
                             </lightning-button-group>
                         </div>
@@ -55,17 +65,27 @@
                             SObject
                         </dt>
                         <dd class="slds-item_detail slds-truncate">
-                            <a href={objectListLink}>{label}</a>
+                            <a href={objectListLink}>{label} </a>/ {developerName}
+                            <lightning-button-icon
+                                    alternative-text="copy"
+                                    icon-name="utility:copy"
+                                    onclick={handleCopy}
+                                    data-value={developerName}
+                                    data-label="DeveloperName exported to your clipboard"
+                                    variant="bare"
+                            ></lightning-button-icon>
                         </dd>
                         <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Record Id">
                             Record Id
                         </dt>
-                        <dd class="slds-item_detail slds-truncate">
+                        <dd class="slds-item_detail slds-truncate slds-flex-row">
                             {keyPrefix} / {recordId}
                             <lightning-button-icon
                                     alternative-text="copy"
                                     icon-name="utility:copy"
-                                    onclick={handleCopyId}
+                                    onclick={handleCopy}
+                                    data-value={recordId}
+                                    data-label="RecordId exported to your clipboard"
                                     variant="bare"
                             ></lightning-button-icon>
                         </dd>
@@ -79,10 +99,10 @@
                             Links
                         </dt>
                         <dd class="slds-item_detail slds-truncate">
-                            <a href={objectSetupLink} target="_blank">Setup</a> / <a href={objectFieldsSetupLink}
-                                                                                     target="_blank">Fields</a> / <a
-                                href={recordTypesLink} target="_blank">Records Types</a> / <a href={objectListLink}
-                                                                                              target="_blank">List</a>
+                            <a href={objectSetupLink} target="_blank">Setup</a> / 
+                            <a href={objectFieldsSetupLink} target="_blank"> Fields</a> / 
+                            <a href={recordTypesLink} target="_blank"> Records Types</a> / 
+                            <a href={objectListLink} target="_blank"> List</a>
                         </dd>
                         <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Documentation">
                             Documentation

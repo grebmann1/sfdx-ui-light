@@ -185,7 +185,7 @@ export default class App extends LightningElement {
 
     handleRedirection = async (application) => {
         let url = application.redirectTo || '';
-
+        console.log('application',application,url)
         if(url.startsWith('sftoolkit:')){
             /* Inner Navigation */
             const navigationConfig = url.replace('sftoolkit:','');

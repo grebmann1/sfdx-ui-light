@@ -1,12 +1,13 @@
 import { api,wire,track} from "lwc";
 import ToolkitElement from 'core/toolkitElement';
+import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 import LightningConfirm from 'lightning/confirm';
 import Toast from 'lightning/toast';
 import SaveModal from "builder/saveModal";
 import PerformanceModal from "soql/performanceModal";
 import { store,connectStore,SELECTORS,DESCRIBE,UI,QUERY,DOCUMENT,APPLICATION } from 'core/store';
 import { 
-    guid,isNotUndefinedOrNull,isUndefinedOrNull,fullApiName,compareString,lowerCaseKey,
+    guid,guidFromHash,isNotUndefinedOrNull,isUndefinedOrNull,fullApiName,compareString,lowerCaseKey,
     getFieldValue,isObject,arrayToMap,extractErrorDetailsFromQuery,shortFormatter,isEmpty
 } from 'shared/utils';
 import { CATEGORY_STORAGE } from 'builder/storagePanel';
@@ -46,6 +47,9 @@ export default class App extends ToolkitElement {
     // Aborting
     _abortingMap = {};
     _displayStopButton = false;
+
+    //
+    querySet = new Set();
     
 
     connectedCallback() {
@@ -74,6 +78,54 @@ export default class App extends ToolkitElement {
 
     disconnectedCallback(){
         clearInterval(this._interval);
+    }
+
+    _hasRendered = false;
+    renderedCallback(){
+        if(!this._hasRendered){
+            this._hasRendered = true;
+            this.loadFromNavigation(this._pageRef);
+        }
+        
+    }
+
+    _pageRef;
+    @wire(CurrentPageReference)
+    handleNavigation(pageRef){
+        if(isUndefinedOrNull(pageRef)) return;
+        if(JSON.stringify(this._pageRef) == JSON.stringify(pageRef)) return;
+        
+        this._pageRef = pageRef;
+        if(this._hasRendered){
+            this.loadFromNavigation(pageRef);
+        }
+        //  this.loadFromNavigation(pageRef);
+        //('this._hasRendered',this._hasRendered);
+    }
+
+    loadFromNavigation = async ({state}) => {
+        // Use state.query to force a specific query to be loaded !
+        if(isNotUndefinedOrNull(state.query)){
+            const _guid = guidFromHash(state.query);
+            const { ui } = store.getState();
+            const existingTab = ui.tabs.find(x => x.id === _guid);
+            if(existingTab){
+                store.dispatch(UI.reduxSlice.actions.selectionTab(existingTab));
+            }else{
+                store.dispatch(UI.reduxSlice.actions.addTab({
+                    tab:{
+                        id:_guid,
+                        body:state.query
+                    }
+                }));
+            }
+            
+            // Remove query from url
+            const searchParams = new URLSearchParams(window.location.search);
+                searchParams.delete('query'); // Remove the 'query' parameter
+            // Update the URL without reloading the page
+            window.history.replaceState({}, '', `${window.location.origin}${window.location.pathname}?${searchParams.toString()}`);
+        }
     }
 
     @wire(connectStore, { store })
@@ -269,6 +321,12 @@ export default class App extends ToolkitElement {
         })
     }
 
+    handleClearTabs = () => {
+        store.dispatch(UI.reduxSlice.actions.clearTabs({
+            alias:this.alias
+        }));
+    }
+
     handleCancelDownloadClick = () => {
         this.isDownloadCanceled = true;
     }
@@ -311,6 +369,16 @@ export default class App extends ToolkitElement {
         let _sobject,_sobjectChild; 
         if(this.selectedRecords.length > 0){
             const _item = this.selectedRecords[0];
+            // Verify if the Id is included
+            if(isUndefinedOrNull(_item.Id)){
+                Toast.show({
+                    label: 'Error during deletion',
+                    message: 'You need to provide the Record Id',
+                    variant:'error',
+                    mode:'sticky'
+                });
+                return;
+            }
             _sobject = describe.prefixMap[_item.Id.substr(0,3)];
             if(_sobject){
                 customMessages.push(`${this.selectedRecords.length} ${this.selectedRecords.length == 1 ? _sobject.label:_sobject.labelPlural}`)

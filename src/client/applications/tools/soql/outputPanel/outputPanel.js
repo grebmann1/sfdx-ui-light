@@ -84,8 +84,7 @@ export default class OutputPanel extends ToolkitElement {
         store.dispatch(UI.reduxSlice.actions.deselectChildRelationship());
     }
 
-    selectMainTable = (recordId) => {
-        
+    selectMainTable = (recordId) => {        
         const _tableInstance = this.refs.maintable?.tableInstance;
         if(_tableInstance){
             //_tableInstance.deselectRow();
@@ -96,7 +95,7 @@ export default class OutputPanel extends ToolkitElement {
             })
 
             _tableInstance.getRows()
-            .filter(row => recordId === row.getData().Id)
+            .filter(row => isNotUndefinedOrNull(recordId) && recordId === row.getData().Id)
             .forEach(row => {
                 row.getElement().classList.add('tabulator-highlight-row')
             })

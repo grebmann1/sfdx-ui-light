@@ -3,7 +3,7 @@ import { LightningElement,api,track,wire } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
 import Toast from 'lightning/toast';
 import { isEmpty,isElectronApp,runSilent,isNotUndefinedOrNull,isUndefinedOrNull,refreshCurrentTab,classSet } from 'shared/utils';
-import { store_application } from 'shared/store';
+import { store as legacyStore,store_application } from 'shared/store';
 import { connectStore,store } from 'core/store';
 
 
@@ -56,7 +56,7 @@ export default class Me extends ToolkitElement {
 
     goToUrl = (e) => {
         const redirectUrl = e.currentTarget.dataset.url;
-        store.dispatch(store_application.navigate(redirectUrl));
+        legacyStore.dispatch(store_application.navigate(redirectUrl));
     }
 
     load_metadata = async () => {
@@ -196,7 +196,7 @@ export default class Me extends ToolkitElement {
     }
 
     get goToMyUserUrl(){
-        const userId = this.connector?.userInfo?.user_id;
+        const userId = this.connector?.conn?.userInfo?.id;
         return `/lightning/setup/ManageUsers/page?address=${encodeURIComponent(`/${userId}?noredirect=1&isUserEntityOverride=1`)}`;
     }
 

@@ -4,6 +4,7 @@
             <!-- Header -->
             <builder-header slot="header" title="Tools" sub-title="Data Explorer" icon-name="standard:dataset">
                 <div slot="actions" class="slds-builder-toolbar__actions">
+                    <lightning-button class="slds-p-left_xx-small" label="Clear Tabs" onclick={handleClearTabs}></lightning-button>
                     <lightning-button class="slds-p-left_xx-small" label={i18n.EDITOR_PANEL_SAVE} onclick={handleSaveClick} disabled={isSaveButtonDisabled}></lightning-button>
                     <template lwc:if={isRunButtonDisplayed}>
                         <lightning-button class="slds-p-left_xx-small" variant="brand" label={i18n.EDITOR_PANEL_RUN} icon-name="utility:right" onclick={executeAction} disabled={isRunButtonDisabled}></lightning-button>

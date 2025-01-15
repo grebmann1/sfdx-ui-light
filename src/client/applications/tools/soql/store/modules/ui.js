@@ -292,6 +292,13 @@ const uiSlice = createSlice({
                 saveCacheSettings(alias,state);
             }
         },
+        clearTabs:(state,action) => {
+            const { alias } = action.payload;
+            state.tabs = enrichTabs(INITIAL_TABS);
+            if(isNotUndefinedOrNull(alias)){
+                saveCacheSettings(alias,state);
+            }
+        },
         initTabs:(state,action) => {
             const { queryFiles } = action.payload;
             state.tabs = enrichTabs(state.tabs.map(formatTab),queryFiles)
