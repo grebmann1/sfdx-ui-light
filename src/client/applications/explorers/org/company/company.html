@@ -81,6 +81,20 @@
                                     ></lightning-button-icon>
                                 </div>
                                 <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
+                                    <p class="slds-truncate" title="Instance Url">Instance Url</p>
+                                </div>
+                                <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2 slds-grid slds-grid_align-spread">
+                                    <p class="slds-truncate" title={instanceUrlFormatted}>{instanceUrlFormatted}</p>
+                                    <lightning-button-icon
+                                        onclick={handle_copyClick}
+                                        data-field="InstanceUrl"
+                                        data-value={instanceUrl}
+                                        icon-name="utility:copy"
+                                        variant="bare"
+                                        alternative-text="copy"
+                                    ></lightning-button-icon>
+                                </div>
+                                <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-2">
                                     <p class="slds-truncate" title="Is Sandbox">Is Sandbox</p>
                                 </div>
                                 <div class="slds-col slds-size_2-of-3 slds-medium-size_1-of-2">

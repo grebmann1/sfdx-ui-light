@@ -1,5 +1,12 @@
 # SF Toolkit - Release Notes
 
+## Version 1.3.25 - January 20th, 2025
+### Bug Fixes  
+- **Shortcut Setting**:  
+  - Resolved an issue preventing user from using Shortcuts and configuring them in the settings.  
+- **Instance Url**:  
+  - Instance Url was missing from the Org -> Company information component.
+
 ## Version 1.3.24 - January 15th, 2025
 ### Enhancements  
 - **SOQL (Data Explorer)**:  

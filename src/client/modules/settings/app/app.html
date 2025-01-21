@@ -3,6 +3,7 @@
         <builder-editor>
             <builder-header slot="header" title="Settings" sub-title="SF Toolkit Options" icon-name="standard:settings">
                 <div slot="actions" class="slds-builder-toolbar__actions">
+					<lightning-button class="slds-button" label="Clear All" onclick={handleClearAllClick} variant="neutral"></lightning-button>
                     <lightning-button class="slds-button" label="Cancel" onclick={handleCancelClick} variant="neutral" disabled={isCancelDisabled}></lightning-button>
                     <lightning-button class="slds-button" label="Save" onclick={handleSaveClick} variant="brand" disabled={isSaveDisabled}></lightning-button>
                 </div>

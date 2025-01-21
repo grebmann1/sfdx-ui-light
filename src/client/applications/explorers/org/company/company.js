@@ -1,6 +1,6 @@
 import ToolkitElement from 'core/toolkitElement';
 import { api } from "lwc";
-import { isEmpty,isElectronApp,classSet } from 'shared/utils';
+import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull } from 'shared/utils';
 import Toast from 'lightning/toast';
 import { store,store_application } from 'shared/store';
 
@@ -21,6 +21,7 @@ export default class Company extends ToolkitElement {
 
     init = async () => {
         this.orgInformation = await this.load_orgInformations();
+        console.log('this.orgInformation',this.orgInformation);
     }
 
     /** Methods */
@@ -38,6 +39,14 @@ export default class Company extends ToolkitElement {
 
 
     /** Getters */
+
+    get instanceUrl(){
+        return this.connector?.conn?.instanceUrl;
+    }
+
+    get instanceUrlFormatted(){
+        return isNotUndefinedOrNull(this.instanceUrl)?(new URL(this.instanceUrl))?.host:'';
+    }
 
     get organisationAddress(){
         return `${this.orgInformation.Address?.country} ${this.orgInformation.Address?.city}, ${this.orgInformation.Address?.street}`;

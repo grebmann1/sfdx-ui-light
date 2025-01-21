@@ -109,6 +109,9 @@ export default class QuickAuthorize extends ToolkitElement {
 
     isStandardOrg = (host) => {
         return host.endsWith(SALESFORCE_HOST);
+        const pattern = /^.*\.my(.*)\.salesforce\.com$/;
+        // Test the URL against the pattern
+        return pattern.test(host);
     }
 
     /** getters */

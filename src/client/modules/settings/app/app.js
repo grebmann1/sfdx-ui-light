@@ -1,22 +1,21 @@
 import { api,track,wire } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
-import { isChromeExtension, CACHE_CONFIG, loadExtensionConfigFromCache, saveExtensionConfigToCache} from "shared/utils";
+import { isChromeExtension,isUndefinedOrNull, CACHE_CONFIG, loadExtensionConfigFromCache, saveExtensionConfigToCache} from "shared/utils";
 import Toast from 'lightning/toast';
 
 
 export default class App extends ToolkitElement {
 
-    openAsPopup_checked = false;
-    openai_key;
-    openai_assistant_id;
-    shortcut_recordid;
-    shortcut_enabled;
-    experienceCloudLoginAsIncognito;
+    //openAsPopup_checked = false;
+    //openai_key;
+    //openai_assistant_id;
+    //shortcut_recordid;
+    //experienceCloudLoginAsIncognito;
 
     // Cache
-    isCached_enabled;
-    isCached_profiles;
-    isCached_sobjects;
+    //isCached_enabled;
+    //isCached_profiles;
+    //isCached_sobjects;
 
     // Extension Permissions
     hasIncognitoAccess = false;
@@ -27,9 +26,6 @@ export default class App extends ToolkitElement {
 
     /** Getters **/
 
-    get isShortcutDisabled() {
-        return !this.shortcut_enabled;
-    }
 
     get isFullIncognitoAccess() {
         return this.hasIncognitoAccess;
@@ -63,6 +59,16 @@ export default class App extends ToolkitElement {
         await this.loadConfigFromCache();
         //window.close();
     };
+
+    handleClearAllClick = async (e) => {
+        const configurationList = Object.values(CACHE_CONFIG);
+        const config = {};
+        Object.values(configurationList).forEach(item => {
+            config[item.key] = item.value;
+        });
+        this.config = config;
+        await this.saveToCache();
+    }
 
     /** Methods **/
 
@@ -126,6 +132,10 @@ export default class App extends ToolkitElement {
 
     get isSaveDisabled(){
         return !this.hasChanged;
+    }
+
+    get isShortcutDisabled(){
+        return isUndefinedOrNull(this.config) || !this.config?.shortcut_injection_enabled
     }
 
 }

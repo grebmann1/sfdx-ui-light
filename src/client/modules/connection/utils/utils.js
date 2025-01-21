@@ -6,7 +6,7 @@ import * as webInterface from './web';
 import * as electronInterface from './electron';
 export * as BASIC from './basic';
 import { store,APPLICATION } from 'core/store';
-
+import LOGGER from 'shared/logger';
 export * from './chrome';
 export * from './mapping';
 
@@ -204,6 +204,7 @@ export async function oauth_chrome({alias,loginUrl},callback,callbackErrorHandle
     });
 
     const finalUrl = oauth2.getAuthorizationUrl({ prompt:'consent',scope : FULL_SCOPE });  
+    LOGGER.debug('finalUrl',finalUrl);
     const response = await chrome.runtime.sendMessage({
         action: "launchWebAuthFlow",
         url:finalUrl
