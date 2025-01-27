@@ -5,6 +5,7 @@ import { classSet,isNotUndefinedOrNull,runActionAfterTimeOut,guid,isChromeExtens
 import { store,connectStore } from 'core/store';
 import { SOQL,APEX,VF,LOG } from 'editor/languages';
 import { setupMonaco } from 'editor/utils';
+import { WIDGETS } from 'editor/utils';
 
 export default class Default extends ToolkitElement {
 
@@ -26,6 +27,7 @@ export default class Default extends ToolkitElement {
     @api isCopyHidden = false;
     
 
+    currentPromptWidget;
 
     models = [];
     editor;
@@ -66,6 +68,13 @@ export default class Default extends ToolkitElement {
         });
     }
 
+    handleOpenContextCopilot = () => {
+        // Add the widget to Monaco editor
+        if(!this.currentPromptWidget.isVisible){
+            this.currentPromptWidget.show();
+        }
+    }
+
 
     /** Methods **/
 
@@ -93,6 +102,9 @@ export default class Default extends ToolkitElement {
             scrollBeyondLastLine: false,
             fixedOverflowWidgets: true
         });
+        // Add Prompt Widget
+        this.currentPromptWidget = new WIDGETS.MonacoLwcWidget(this.monaco,this.editor,model.getLanguageId());
+
         this.editor.onDidChangeModelContent(this.handleModelContentChange);
         this.editor.onKeyDown((e) => {
             if ((e.ctrlKey || e.metaKey) && e.keyCode === this.monaco.KeyCode.KeyS) {
@@ -103,6 +115,10 @@ export default class Default extends ToolkitElement {
                 e.preventDefault();
                 e.stopPropagation();
                 this.dispatchEvent(new CustomEvent("executeaction", {bubbles: true,composed:true }));
+            }
+            if(e.key === 'Escape'){
+                e.preventDefault();
+                e.stopPropagation();
             }
         });
         this.editor.onDidPaste((e) => {
@@ -135,6 +151,7 @@ export default class Default extends ToolkitElement {
 
     handleModelContentChange = (event) => {
         runActionAfterTimeOut(this.editor.getValue(),(value) => {
+            //
             this.dispatchEvent(
                 new CustomEvent("change", {
                     detail:{

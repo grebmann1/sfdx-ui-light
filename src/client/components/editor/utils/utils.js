@@ -1,4 +1,9 @@
 import { isChromeExtension } from 'shared/utils';
+import MonacoLwcWidget from './widgets/monacoLwcWidget.js';
+
+export const WIDGETS = {
+    MonacoLwcWidget
+}
 
 function buildWorkerDefinition(workerPath, basePath, useModuleWorker) {
     const monWin = self;
@@ -58,3 +63,14 @@ export const setupMonaco = async () => {
     return window.monaco;
 }
 
+export const registerCopilot = (monaco, editor,language,handleOpenContextCopilot) => {
+    LOGGER.info('registerCopilot', language);
+ 
+    editor.addCommand(
+        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK,
+        () => {
+            LOGGER.info('openEditor');
+            handleOpenContextCopilot();
+        },
+    );
+}

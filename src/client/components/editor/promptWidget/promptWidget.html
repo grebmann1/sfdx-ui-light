@@ -1,0 +1,40 @@
+<!-- textInputWidget.html -->
+<template>
+    <section class="slds-popover slds-popover_prompt slds-popover_brand" role="dialog" aria-describedby="dialog-body" aria-labelledby="dialog-heading">
+        <div class="slds-p-horizontal_xx-small slds-flex-row slds-m-top_xx-small">
+            <textarea 
+                class="slds-textarea" 
+                part="textarea" 
+                placeholder="Enter your instructions"
+                disabled={isLoading}
+                onkeyup={handleTextChange}
+                onkeydown={handleKeyDown}
+                onpaste={handleTextChange}
+            ></textarea>
+            <button class="slds-button slds-button_icon slds-button_icon-small" 
+                title="Close dialog" onclick={handleClose}>
+                <svg class="slds-button__icon" aria-hidden="true">
+                    <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
+                </svg>
+                <span class="slds-assistive-text">Close dialog</span>
+            </button>
+        </div>
+
+        <footer>
+            <div class="slds-grid slds-grid_vertical-align-center slds-p-horizontal_small slds-p-vertical_xx-small">
+                <template lwc:if={hasText}>
+                    <lightning-button class="slds-col_bump-right"
+                        label={label} 
+                        variant="brand" 
+                        disabled={isLoading}
+                        onclick={handleGenerate}
+                    ></lightning-button>
+                </template>
+                <template lwc:else>
+                    <button class="slds-button slds-button_text slds-col_bump-right" 
+                        onclick={handleClose}>Esc to close</button>
+                </template>
+            </div>
+        </footer>
+    </section>
+</template>

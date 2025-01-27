@@ -1,0 +1,36 @@
+/* textInputWidget.css */
+.text-input-widget {
+    padding: 10px;
+    background: #f3f3f3;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.text-input-widget textarea {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.text-input-widget button {
+    display: block;
+    cursor: pointer;
+}
+
+.slds-button_text {
+    border: 0;
+    padding-left: 0;
+    padding-right: 0;
+    text-decoration: none;
+    color: var(--slds-g-color-neutral-base-30, #706e6b);
+}
+
+.slds-button_text:hover {
+    background: none;
+    text-decoration: underline;
+}
+
+.slds-textarea {
+    border:unset;
+    box-shadow: unset;
+}
