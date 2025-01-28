@@ -1,10 +1,10 @@
 import { createElement } from 'lwc';
-import PromptWidget from 'slds/promptWidget';
+import PromptWidget from 'editor/promptWidget';
+import { CompletionFormatter } from 'editor/utils';
 import LOGGER from 'shared/logger';
-import { UTILS} from 'slds/editor';
 
 class MonacoLwcWidget {
-    constructor(monaco, editor,language) {
+    constructor(monaco, editor,language,extraInstructions) {
         this.editor = editor;
         this.monaco = monaco;
         this.domNode = null;
@@ -16,7 +16,7 @@ class MonacoLwcWidget {
         this.savedSelection = null;
         this.lwcElement = null;
         this.language = language || null;
-
+        this.extraInstructions = extraInstructions || null;
         this.disposable = editor.onDidChangeCursorSelection((e) => {
             // Only update position if widget is not visible
             if (!this.isVisible) {
@@ -33,8 +33,11 @@ class MonacoLwcWidget {
             is: PromptWidget,
         });
 
+        // Add extra instructions
+        this.lwcElement.extraInstructions = this.extraInstructions;
         // Attach an event listener for the "Generate" button
         this.lwcElement.addEventListener('generate', (event) => {
+            LOGGER.debug('copilot generated output',event.detail.output);
             this.applyTextToEditor(event.detail.output);
             this.hide();
         });
@@ -70,7 +73,7 @@ class MonacoLwcWidget {
     formatOutput = (output) => {
         const selection = this.editor.getSelection();
         const startColumn = selection.isEmpty() ? 1 : selection.startColumn;
-        return new UTILS.CompletionFormatter(
+        return new CompletionFormatter(
             output,
             startColumn
           )

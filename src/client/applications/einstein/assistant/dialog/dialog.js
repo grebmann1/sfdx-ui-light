@@ -49,7 +49,8 @@ export default class Dialog extends ToolkitElement {
 
     /** Actions */
     checkForInjected = async () => {
-        let el = document.getElementsByClassName('injected-openai-key');
+        /** Deprecated: OpenAI Key is now stored in the store !!!!!  */
+        /* let el = document.getElementsByClassName('injected-openai-key');
         if(el){
             let content = el[0]?.textContent;
             if(isEmpty(content)) return;
@@ -62,7 +63,7 @@ export default class Dialog extends ToolkitElement {
             }catch(e){
                 console.error('Issue while injecting',e);
             }
-        }
+        } */
     }
 
 

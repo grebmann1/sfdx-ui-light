@@ -13,6 +13,8 @@ import {
 import { CATEGORY_STORAGE } from 'builder/storagePanel';
 import moment from 'moment';
 import { escapeCsvValue,formatQueryWithComment } from './util.js';
+import LOGGER from 'shared/logger';
+
 export default class App extends ToolkitElement {
     // used to controle store of childs
     isActive;
@@ -147,7 +149,6 @@ export default class App extends ToolkitElement {
         }else{
             this.selectedSObject = null;
         }
-
         /** Responses */
 
         const queryState = SELECTORS.queries.selectById({query},lowerCaseKey(ui.currentTab?.id));

@@ -4,8 +4,7 @@ import Toast from 'lightning/toast';
 import { classSet,isNotUndefinedOrNull,runActionAfterTimeOut,guid,isChromeExtension,autoDetectAndFormat } from 'shared/utils';
 import { store,connectStore } from 'core/store';
 import { SOQL,APEX,VF,LOG } from 'editor/languages';
-import { setupMonaco } from 'editor/utils';
-import { WIDGETS } from 'editor/utils';
+import { WIDGETS,registerCopilot,setupMonaco } from 'editor/utils';
 
 export default class Default extends ToolkitElement {
 
@@ -102,6 +101,8 @@ export default class Default extends ToolkitElement {
             scrollBeyondLastLine: false,
             fixedOverflowWidgets: true
         });
+        // Add Copilot
+        registerCopilot(this.monaco, this.editor, model.getLanguageId(),this.handleOpenContextCopilot);
         // Add Prompt Widget
         this.currentPromptWidget = new WIDGETS.MonacoLwcWidget(this.monaco,this.editor,model.getLanguageId());
 

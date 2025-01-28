@@ -4,7 +4,7 @@ import LightningAlert from 'lightning/alert';
 import Toast from 'lightning/toast';
 import { classSet, isNotUndefinedOrNull, runActionAfterTimeOut, guid, normalizeString as normalize } from 'shared/utils';
 import { SOQL, APEX, VF } from 'editor/languages';
-import { setupMonaco } from 'editor/utils';
+import { WIDGETS,registerCopilot,setupMonaco } from 'editor/utils';
 
 /** REQUIRED FIELDS: _source & _bodyField */
 
@@ -47,6 +47,8 @@ export default class App extends ToolkitElement {
     isLoading = false;
     hasRendered = false;
     hasLoaded = false;
+
+    currentPromptWidget;
 
 
     connectedCallback(){}
@@ -130,6 +132,13 @@ export default class App extends ToolkitElement {
             this.editor.deltaDecorations(this.decorations, []);
         }
     };
+
+    handleOpenContextCopilot = () => {
+        // Add the widget to Monaco editor
+        if(!this.currentPromptWidget.isVisible){
+            this.currentPromptWidget.show();
+        }
+    }
 
     /** Methods **/
 
@@ -248,6 +257,11 @@ export default class App extends ToolkitElement {
             scrollBeyondLastLine: false,
             fixedOverflowWidgets: true
         });
+
+        // Add Prompt Widget
+        this.currentPromptWidget = new WIDGETS.MonacoLwcWidget(this.monaco,this.editor,null);
+        // Add Copilot
+        registerCopilot(this.monaco, this.editor, null,this.handleOpenContextCopilot);
 
         this.editor.onDidChangeModelContent(() => {
             //console.log('this.models',this.models);

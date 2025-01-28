@@ -12,7 +12,6 @@ class Assistant {
     messages;
     toolLogic;
     instructions;
-
     constructor({name,model,instructions,tools,outputSchema,messages,toolLogic = {}}) {
         this.name = name;
         this.model = model || 'gpt-4o-mini';
@@ -83,7 +82,7 @@ class Assistant {
     }
 
     _executePrompt = async (_messages) => {
-        LOGGER.agent('messages',_messages);
+        LOGGER.debug('messages',_messages);
         let messages = [..._messages];
         for (let i = 0; i < 5; i++) {
             const params = {
@@ -91,12 +90,12 @@ class Assistant {
                 messages,
                 ...this._addAdditionalParams()
             };
-            LOGGER.agent('params',params);
+            LOGGER.debug('params',params);
             const response = await (await fetchCompletion(params)).json();
-            LOGGER.agent('response',response);
+            LOGGER.debug('response',response);
             if (isUndefinedOrNull(response)) throw new Error('No data returned from the assistant');
 
-            const { finish_reason, message } = response.data.choices[0];
+            const { finish_reason, message } = response.choices[0];
             message.id = message.id || guid();
 
             if (finish_reason === "tool_calls" && message.tool_calls) {

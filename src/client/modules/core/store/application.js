@@ -1,7 +1,7 @@
 import { createSlice,createAsyncThunk } from '@reduxjs/toolkit';
 import { lowerCaseKey,guid,isUndefinedOrNull } from 'shared/utils';
 import { saveSession,removeSession } from "connection/utils";
-
+import { getOpenAIKeyFromCache } from 'shared/utils';
 
 // QUERIES
 const applicationSlice = createSlice({
@@ -11,7 +11,8 @@ const applicationSlice = createSlice({
         connector:null,
         isLoggedIn:false,
         currentApplication:null,
-        sessionHasExpired:false
+        sessionHasExpired:false,
+        openaiKey:await getOpenAIKeyFromCache()
     },
     reducers: {
         updateCurrentApplication: (state, action) => {
@@ -55,6 +56,10 @@ const applicationSlice = createSlice({
             const { connector } = action.payload;
             state.connector = connector;
             state.sessionHasExpired = false;
+        },
+        updateOpenAIKey: (state, action) => {
+            const { openaiKey } = action.payload;
+            state.openaiKey = openaiKey;
         }
     },
 });

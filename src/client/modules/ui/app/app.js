@@ -1,9 +1,10 @@
 import { LightningElement,track,api,wire } from "lwc";
 import LightningAlert from 'lightning/alert';
-import { guid,isNotUndefinedOrNull,isElectronApp,classSet,isUndefinedOrNull,forceVariableSave,isChromeExtension } from "shared/utils";
+import { guid,isNotUndefinedOrNull,isElectronApp,classSet,isUndefinedOrNull,forceVariableSave,isChromeExtension,isEmpty } from "shared/utils";
 import { getExistingSession,directConnect,connect } from "connection/utils";
 import { NavigationContext,CurrentPageReference,navigate } from 'lwr/navigation';
 import { handleRedirect } from './utils';
+import LOGGER from 'shared/logger';
 /** Apps  **/
 import {APP_LIST} from './modules';
 
@@ -118,6 +119,7 @@ export default class App extends LightningElement {
 
     connectedCallback(){
         this.init();
+        this.checkForInjected();
     }
 
     init = async () => {
@@ -218,6 +220,25 @@ export default class App extends LightningElement {
 
 
     /** Methods  */
+
+    checkForInjected = async () => {
+        let el = document.getElementsByClassName('injected-openai-key');
+        if(el){
+            let content = el[0]?.textContent;
+            if(isEmpty(content)) return;
+            try{
+                const { openai_key } = JSON.parse(content);
+                LOGGER.debug('openai_key',openai_key);
+                if(isNotUndefinedOrNull(openai_key)){
+                    store.dispatch(APPLICATION.reduxSlice.actions.updateOpenAIKey({
+                        openaiKey:openai_key
+                    }));
+                }
+            }catch(e){
+                console.error('Issue while injecting',e);
+            }
+        }
+    }
 
     redirectAfterExpiration = async () => {
         if(this.sessionHasExpiredIsDisplayed) return;

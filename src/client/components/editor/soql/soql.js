@@ -5,8 +5,8 @@ import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeO
 import { formatQuery,parseQuery } from '@jetstreamapp/soql-parser-js';
 import { SOQL } from 'editor/languages';
 import { store,connectStore } from 'core/store';
-import { setupMonaco } from 'editor/utils';
-
+import { setupMonaco,WIDGETS,registerCopilot } from 'editor/utils';
+import instructions from './instructions/instructions';
 export default class Soql extends ToolkitElement {
 
     @api maxHeight;
@@ -29,6 +29,8 @@ export default class Soql extends ToolkitElement {
     hasLoaded = false;
 
     counter = 0;
+
+    currentPromptWidget;
 
 
     _useToolingApi = false;
@@ -73,6 +75,13 @@ export default class Soql extends ToolkitElement {
         this.dispatchEvent(new CustomEvent("formatbody", {bubbles: true,composed:true }));
     }
 
+    handleOpenContextCopilot = () => {
+        // Add the widget to Monaco editor
+        if(!this.currentPromptWidget.isVisible){
+            this.currentPromptWidget.show();
+        }
+    }
+
     /** Methods **/
 
     createEditor = (model) => {
@@ -96,6 +105,12 @@ export default class Soql extends ToolkitElement {
             scrollBeyondLastLine: false,
             fixedOverflowWidgets: true
         });
+
+        // Add Prompt Widget
+        this.currentPromptWidget = new WIDGETS.MonacoLwcWidget(this.monaco,this.editor,model.getLanguageId(),instructions);
+        // Add Copilot
+        registerCopilot(this.monaco, this.editor, model.getLanguageId(),this.handleOpenContextCopilot);
+
         this.editor.onDidChangeModelContent(this.handleModelContentChange);
         /*this.editor.addCommand(this.monaco.KeyMod.CtrlCmd | this.monaco.KeyCode.KEY_S, () => {
             console.log('SAVE pressed!');
