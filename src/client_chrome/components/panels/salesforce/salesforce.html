@@ -11,7 +11,7 @@
                     <lightning-button-icon icon-name="utility:apex" onclick={redirectToAnonymousApex}
                                            title="Open Anonymous Apex"></lightning-button-icon>
                     <lightning-button-icon icon-name="utility:database" onclick={redirectToSoqlBuilder}
-                                           title="Open Data Explorer"></lightning-button-icon>
+                                           title="Open SOQL Explorer"></lightning-button-icon>
                     <lightning-button-icon icon-name="utility:threedots_vertical" onclick={openDefaultPanel}
                                            title="See more Apps"></lightning-button-icon>
                 </lightning-button-group>
@@ -57,7 +57,7 @@
                         <slds-tab class="full-page-body" label="Org Info" value={APPLICATIONS.ORG_INFO}>
                             <slds-information-block title="Info">
                                 <p>The content will automatically change based on your URL.</p>
-                                <p>Navigate to your salesforce records to display the Data Explorer.</p>
+                                <p>Navigate to your salesforce records to display the SOQL Explorer.</p>
                             </slds-information-block>
                             <org-me 
                                 class="slds-p-vertical_x-small slds-show" 

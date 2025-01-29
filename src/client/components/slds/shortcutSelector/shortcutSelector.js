@@ -1,5 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
-import { normalizeString,generateUniqueId } from 'shared/utils';
+import { normalizeString,generateUniqueId,isUndefinedOrNull } from 'shared/utils';
 import hotkeys from 'hotkeys-js';
 
 export default class ShortcutSelector extends LightningElement {
@@ -7,7 +7,14 @@ export default class ShortcutSelector extends LightningElement {
 
     @api disabled = false;
 
-    @api value = null;
+    _value = null;
+    @api 
+    get value(){
+        return this._value.join('+');
+    }
+    set value(val){
+        this._value = isUndefinedOrNull(val) || typeof val !== 'string' ? [] : val.split('+');
+    }
 
 
 
@@ -36,8 +43,10 @@ export default class ShortcutSelector extends LightningElement {
 
     shortcutHandler = (e,handler) => {
         e.preventDefault();
-        this.value = hotkeys.getPressedKeyString();
-        this.dispatchEvent(new CustomEvent("change", {detail:{value:this.value},bubbles: true,composed: true  }));
+        this._value = hotkeys.getPressedKeyString();
+        this.dispatchEvent(new CustomEvent("change", {detail:{
+            value:this.value,
+        },bubbles: true,composed: true  }));
     }
 
     bindShortcut = () => {

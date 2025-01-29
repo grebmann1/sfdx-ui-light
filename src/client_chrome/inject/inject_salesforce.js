@@ -2,7 +2,7 @@ import '@webcomponents/custom-elements';
 import '@lwc/synthetic-shadow';
 import {createElement} from 'lwc';
 import ViewsOverlay from 'views/overlay';
-
+import test from 'feature/test';
 import {isEmpty, runActionAfterTimeOut,redirectToUrlViaChrome,getRecordId} from 'shared/utils';
 import hotkeys from 'hotkeys-js';
 
@@ -77,7 +77,7 @@ const injectShortCuts = async () => {
     console.log('### SF Toolkit - Shortcut Injection ###',);
     /** Record Id Shortcut - Alpha - To modify to a generic version */
     if (configuration.hasOwnProperty('shortcut_recordid')) {
-        const combo = configuration['shortcut_recordid'].join('+');
+        const combo = configuration['shortcut_recordid'];
         hotkeys(combo, function (event, handler) {
             // Prevent the default refresh event under WINDOWS system
             event.preventDefault();
@@ -101,6 +101,25 @@ const injectOverlay = async () => {
     const elm = createElement('views-overlay', {is: ViewsOverlay});
     Object.assign(elm, {variant:'overlay'});
     document.body.appendChild(elm);
+};
+
+const injectPromptWidget = async () => {
+    const isEnabled = (await chrome.storage.sync.get('overlayEnabled')).overlayEnabled;
+    //console.log('injectOverlay',isEnabled);
+    if(!isEnabled) return;
+
+    const elm = createElement('feature-test', {is: test});
+    Object.assign(elm, {
+        isMovable:true
+    });
+    document.body.appendChild(elm);
+
+    hotkeys('cmd+k', function (event, handler) {
+        // Prevent the default refresh event under WINDOWS system
+        event.preventDefault();
+        console.log('cmd+k');
+        elm.display();
+    });
 };
 
 
@@ -312,6 +331,7 @@ class INJECTOR {
     injectCode = () => {
         injectShortCuts();
         injectOverlay();
+        //injectPromptWidget();
     };
 
 

@@ -95,8 +95,6 @@ export default class App extends ToolkitElement {
     loadConfigFromCache = async () => {
         const cachedConfiguration = await loadExtensionConfigFromCache(Object.values(CACHE_CONFIG).map(x => x.key));
         const configurationList = Object.values(CACHE_CONFIG);
-        //console.log('configurationList',configurationList);
-        //console.log('cachedConfiguration',cachedConfiguration);
         const config = {};
         Object.values(configurationList).forEach(item => {
             config[item.key] = cachedConfiguration[item.key] || item.value;

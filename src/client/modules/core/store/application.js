@@ -12,7 +12,7 @@ const applicationSlice = createSlice({
         isLoggedIn:false,
         currentApplication:null,
         sessionHasExpired:false,
-        openaiKey:await getOpenAIKeyFromCache()
+        openaiKey:null
     },
     reducers: {
         updateCurrentApplication: (state, action) => {

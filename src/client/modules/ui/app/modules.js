@@ -168,7 +168,7 @@ const APP_MAPPING = {
         isOfflineAvailable:false,
         isMenuVisible:true,
         isTabVisible:true,
-        label:"Data Explorer",
+        label:"SOQL Explorer",
         type:i18n.TOOL,
         description:"Build SOQL queries with fields suggestion and export them.",
         quickActionIcon:"standard:data_model",

@@ -1,6 +1,6 @@
 import { store,connectStore,SELECTORS,SOBJECT,DESCRIBE,QUERY,UI } from 'core/store';
 import { capitalizeFirstLetter,lowerCaseKey } from 'shared/utils';
-
+import LOGGER from 'shared/logger';
 const DATETIME_EXPRESSION = [
     // Date Formats
     "YYYY-MM-DD", 
@@ -73,6 +73,11 @@ const AFTER_FROM_STATEMENT = [
     "FOR UPDATE"
 ]
 
+const EXPRESSION_BOOLEAN = [
+    "AND",
+    "OR",
+];
+
 const FROM_STATEMENT = [
     "FROM"
 ]
@@ -111,11 +116,11 @@ class SuggestionTypeHandler{
         insertText: value
     });
 
-    PICKLIST =(value,withSeparator) => ({
+    PICKLIST =(item,withSeparator) => ({
         kind: this.monaco.languages.CompletionItemKind.Property,
         detail: "Picklist",
-        label: value,
-        insertText: `'${value}'${withSeparator ? ", " : ""}`
+        label: item.label,
+        insertText: `'${item.value}'${withSeparator ? ", " : ""}`
     });
 
     DATE =(value,withSeparator) => ({
@@ -159,6 +164,13 @@ export default class SuggestionHandler {
 
     getFromSuggestions(){
         return FROM_STATEMENT.map(value => this.suggestionHandler.DEFAULT(value,false));
+    }
+
+    getExpressionBooleanAfter(){
+        return [
+            ...AFTER_FROM_STATEMENT.filter(value => value !== "WHERE").map(value => this.suggestionHandler.DEFAULT(value,false)),
+            ...EXPRESSION_BOOLEAN.map(value => this.suggestionHandler.DEFAULT(value,false))
+        ];
     }
 
     // Method to get selectable fields based on the parsed information
@@ -245,12 +257,11 @@ export default class SuggestionHandler {
         const { sobject } = store.getState();
         const sobjectState = SELECTORS.sobject.selectById({ sobject }, (referenceTo || '').toLowerCase());
         const fieldInfo = sobjectState?.data?.fields?.find(x => x.name.toLowerCase() === field);
-    
         if (!fieldInfo) return [];
     
         switch (fieldInfo.type) {
             case "picklist":
-                return fieldInfo.picklistValues.map(value => this.suggestionHandler.PICKLIST(value,withSeparator));
+                return fieldInfo.picklistValues.map(item => this.suggestionHandler.PICKLIST(item,withSeparator));
             case "date":
             case "datetime":
                 return DATETIME_EXPRESSION.map(value => this.suggestionHandler.DATE(value));

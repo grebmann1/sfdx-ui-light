@@ -1,3 +1,8 @@
+import LOGGER from 'shared/logger';
+
+const removeLastXChars = (input, length) => length > input.length ? "" : input.slice(0, -length);
+
+
 class TextHandler {
     constructor() {
         this.textBeforeCursor = "";
@@ -115,17 +120,14 @@ class FilterParser {
 
     parseFilterData() {
         this.parsedData.filter = { field: null, operator: null, value: null };
-
-        if (this.parsedData.position === "where" && !this.parsedData.isSubQuery ||
-            this.parsedData.subquery.position === "where") {
+        if (this.parsedData.position === "where" && !this.parsedData.isSubQuery || this.parsedData.subquery.position === "where") {
             const filterMatch = this.fullText.match(/(((or|and|not|where)\s)(?!.*((or|and|not|where)\s)))(.*)/m)[6];
-            const operatorMatch = filterMatch.match(/(=|<=|>=|<|>|!=|LIKE|IN|NOT IN|INCLUDES|EXCLUDES)/im);
-
+            const operatorMatch = filterMatch.match(/(=|<=|>=|<|>|!=|LIKE|\bIN\b|\bNOT IN\b|\bINCLUDES\b|\bEXCLUDES\b)/im);
             if (operatorMatch) {
                 const [field, value] = filterMatch.split(operatorMatch[0]);
                 this.parsedData.filter.field = field.trim();
                 this.parsedData.filter.operator = operatorMatch[0].trim();
-                this.parsedData.filter.value = value.trim();
+                this.parsedData.filter.value = this.parsedData.lastWord.trim() != value.trim() ? removeLastXChars(value,this.parsedData.lastWord.length).trim() : value.trim();
             }
         }
     }
@@ -219,7 +221,7 @@ export default class SOQLParser {
             this.subQueryHandler.setSelectSubquery();
         } else if (this.parsedData.position === "where") {
             this.subQueryHandler.setWhereSubquery();
-            const filterParser = new FilterParser(this.textHandler.fullText, this.parsedData);
+            const filterParser = new FilterParser(this.textHandler.textBeforeCursor, this.parsedData);
             filterParser.parseFilterData();
         }
 

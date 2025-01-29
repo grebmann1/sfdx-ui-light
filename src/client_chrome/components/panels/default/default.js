@@ -118,11 +118,11 @@ export default class Default extends LightningElement {
 
     loadAssistantConfig = async () => {
         const configuration = await loadExtensionConfigFromCache([
-            CACHE_CONFIG.OPENAI_KEY,
-            CACHE_CONFIG.OPENAI_ASSISTANT_ID
+            CACHE_CONFIG.OPENAI_KEY.key,
+            CACHE_CONFIG.OPENAI_ASSISTANT_ID.key
         ]);
-        this.openaiKey = configuration[CACHE_CONFIG.OPENAI_KEY];
-        this.openaiAssistantId = configuration[CACHE_CONFIG.OPENAI_ASSISTANT_ID];
+        this.openaiKey = configuration[CACHE_CONFIG.OPENAI_KEY.key];
+        this.openaiAssistantId = configuration[CACHE_CONFIG.OPENAI_ASSISTANT_ID.key];
     };
 
     loadFromNavigation = async ({state}) => {

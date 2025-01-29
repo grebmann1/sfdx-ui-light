@@ -47,6 +47,6 @@ export const CACHE_CONFIG = {
 
 export const getOpenAIKeyFromCache = async () => {
     // Logic to fetch the OpenAI key, e.g., from a config or environment variable
-    const configuration = await loadExtensionConfigFromCache([CACHE_CONFIG.OPENAI_KEY]);
-    return configuration[CACHE_CONFIG.OPENAI_KEY] || ''; // Return the key or an empty string
+    const configuration = await loadExtensionConfigFromCache([CACHE_CONFIG.OPENAI_KEY.key]);
+    return configuration[CACHE_CONFIG.OPENAI_KEY.key] || ''; // Return the key or an empty string
 }

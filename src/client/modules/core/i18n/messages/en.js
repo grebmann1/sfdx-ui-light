@@ -55,9 +55,9 @@ export default {
     SOBJECTS_PANEL_QUICK_FIND: 'Quick Find',
     SOBJECTS_PANEL_NO_MATCHING: 'No matching sObjects found',
     SOBJECTS_PANEL_KEYWORD_CLEAR: 'Clear',
-    WELCOME_TITLE: 'Welcome to LWC Data Explorer!',
+    WELCOME_TITLE: 'Welcome to LWC SOQL Explorer!',
     WELCOME_DESCRIPTION:
-        'LWC Data Explorer is a SOQL execution tool developed in Lightning Web Components Open Source, which provides useful features such as viewing the list of items, completing item names, saving queries, and exporting execution results to CSV.',
+        'LWC SOQL Explorer is a SOQL execution tool developed in Lightning Web Components Open Source, which provides useful features such as viewing the list of items, completing item names, saving queries, and exporting execution results to CSV.',
     WELCOME_LOGIN_PRODUCTION: 'Login to Production Org',
     WELCOME_LOGIN_SANDBOX: 'Login to Sandbox Org',
     WELCOME_BACK_HOME: 'Back to Home',

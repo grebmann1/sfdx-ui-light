@@ -1,4 +1,4 @@
-
+import LOGGER from 'shared/logger';
 import { formatQuery } from '@jetstreamapp/soql-parser-js';
 import { isMonacoLanguageSetup } from 'shared/utils';
 import { store } from 'core/store';
@@ -82,6 +82,8 @@ const getCompletionItems = (parserInstance, suggestionInstance) => {
 					suggestionInstance.getTypeFieldSuggestions(query.fromObject, query.filter),
 					suggestionInstance.getSObjectSuggestions(true)
 				]).then(results => [...results[0], ...results[1]]);
+			} else if(query.filter.value !== parser.lastWord){
+				return suggestionInstance.getExpressionBooleanAfter();
 			} else {
 				return suggestionInstance.getTypeFieldSuggestions(query.fromObject, query.filter);
 			}

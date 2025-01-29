@@ -1,6 +1,6 @@
 import { LightningElement,track,api,wire } from "lwc";
 import LightningAlert from 'lightning/alert';
-import { guid,isNotUndefinedOrNull,isElectronApp,classSet,isUndefinedOrNull,forceVariableSave,isChromeExtension,isEmpty } from "shared/utils";
+import { guid,isNotUndefinedOrNull,isElectronApp,classSet,isUndefinedOrNull,forceVariableSave,isChromeExtension,isEmpty,getOpenAIKeyFromCache } from "shared/utils";
 import { getExistingSession,directConnect,connect } from "connection/utils";
 import { NavigationContext,CurrentPageReference,navigate } from 'lwr/navigation';
 import { handleRedirect } from './utils';
@@ -11,7 +11,6 @@ import {APP_LIST} from './modules';
 /** Store **/
 import { store as legacyStore } from 'shared/store';
 import { connectStore,store,DOCUMENT,APPLICATION } from 'core/store';
-
 const LIMITED = 'limited';
 
 export * as CONFIG from './modules';
@@ -119,7 +118,9 @@ export default class App extends LightningElement {
 
     connectedCallback(){
         this.init();
-        this.checkForInjected();
+        //this.checkForInjected();
+        this.checkForOpenAIKey();
+        //this.test();
     }
 
     init = async () => {
@@ -237,6 +238,17 @@ export default class App extends LightningElement {
             }catch(e){
                 console.error('Issue while injecting',e);
             }
+        }
+    }
+
+    checkForOpenAIKey = async () => {
+        const openaiKey = await getOpenAIKeyFromCache();
+        if(openaiKey){
+            store.dispatch(APPLICATION.reduxSlice.actions.updateOpenAIKey({
+                openaiKey
+            }));
+        }else{
+            this.checkForInjected()
         }
     }
 

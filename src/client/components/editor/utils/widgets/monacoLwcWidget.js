@@ -91,6 +91,7 @@ class MonacoLwcWidget {
             model.getFullModelRange() : 
             selection;
         const formattedOutput = this.formatOutput(output);
+        LOGGER.debug('formattedOutput',formattedOutput);
         model.pushEditOperations([], [{
             range,
             text: formattedOutput  

@@ -6,6 +6,7 @@ import { ROLES } from 'ai/utils';
 import ASSISTANTS from 'ai/assistants';
 export default class PromptWidget extends LightningElement {
     
+    
     @api value = ''; // For text input binding
     @api context = '';
     @api selectedText = '';
@@ -14,7 +15,6 @@ export default class PromptWidget extends LightningElement {
 
     @track isLoading = false;
 
-    /** Methods */
     connectedCallback(){
         this.setFocus();
     }
@@ -28,6 +28,10 @@ export default class PromptWidget extends LightningElement {
     }
 
     /** Event Handlers */
+
+    handleInput = (e) => {
+        this.value = e.target.value;
+    }
 
     handleKeyDown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey && !this.isLoading) {
@@ -44,7 +48,7 @@ export default class PromptWidget extends LightningElement {
 
     // Emit an event when the button is clicked
     handleGenerate = async ()=> {
-        const instructions = this.template.querySelector('textarea').value;
+        const instructions = this.value;
         this.isLoading = true;
         try{
             const assistant = new ASSISTANTS.Assistant({
@@ -57,9 +61,11 @@ export default class PromptWidget extends LightningElement {
             const messages = await assistant.addMessages([
                 {
                     role:ROLES.USER,
-                    content: `Instructions: ${instructions}
+                    content: `Instructions: \`\`\`${instructions}\`\`\`
                                 Selected Text to modify: \`\`\`${isEmpty(this.selectedText) ? this.context : this.selectedText}\`\`\`
-                                Output the selected text with the modification requested without any additional text or comments.
+                                Output the selected text with the modification/enhancement requested without any additional text or comments.
+                                Output the code in the same language as the selected text in this format:
+                                \`\`\`<language>\n<code>\n\`\`\`
                             `
                 }
             ]).execute();
@@ -68,6 +74,7 @@ export default class PromptWidget extends LightningElement {
             const output = message.content;
             if(output){
                 this.template.querySelector('textarea').value = null; // Clear the input field
+                this.value = null;
                 this.dispatchEvent(new CustomEvent('generate', { 
                     detail: { output }
                 }));

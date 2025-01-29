@@ -7,6 +7,8 @@ import { SOQL } from 'editor/languages';
 import { store,connectStore } from 'core/store';
 import { setupMonaco,WIDGETS,registerCopilot } from 'editor/utils';
 import instructions from './instructions/instructions';
+import LOGGER from 'shared/logger';
+
 export default class Soql extends ToolkitElement {
 
     @api maxHeight;
@@ -165,7 +167,7 @@ export default class Soql extends ToolkitElement {
         let objectRegexResult = objectRegex.exec(query);
         if(isNotUndefinedOrNull(objectRegexResult)){
             let referenceTo = objectRegexResult[2];
-            if(isNotUndefinedOrNull(referenceTo) && (beforeText.endsWith("AND ") || beforeText.endsWith("OR ") || beforeText.endsWith(", "))){
+            if(isNotUndefinedOrNull(referenceTo) && (beforeText.endsWith("AND ") || beforeText.endsWith("OR ") || beforeText.endsWith(", ") || beforeText.endsWith("= "))){
                 this.editor.trigger("", "editor.action.triggerSuggest");
             }
         }

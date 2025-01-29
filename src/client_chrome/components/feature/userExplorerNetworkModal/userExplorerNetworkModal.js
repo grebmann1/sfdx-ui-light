@@ -43,13 +43,13 @@ export default class UserExplorerNetworkModal extends LightningModal {
     handleExperienceLogin = async (e) => {
         e.preventDefault();
         const targetUrl = e.currentTarget?.href;
-        const configuration = await loadExtensionConfigFromCache([CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO]);
+        const configuration = await loadExtensionConfigFromCache([CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO.key]);
         //console.log('configuration.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO',configuration[CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO]);
         chromeOpenInWindow(
             `${this.frontDoorUrl}&retURL=${encodeURIComponent(targetUrl)}`,
             this.username,
-            configuration[CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO],
-            configuration[CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO]
+            configuration[CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO.key],
+            configuration[CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO.key]
         );
     }
 

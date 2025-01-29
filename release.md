@@ -1,5 +1,19 @@
 # SF Toolkit - Release Notes
 
+## Version 1.3.26 - January 28th, 2025
+### Enhancements  
+- **Copilot**:  
+  - All editors now have a copilot button to help you write your queries, code, etc. To activate it, you need to have an OpenAI key configured in the settings.
+  - The shortcut to activate the copilot is `CTRL/CMD + K` while the editor is focused.
+  - This feature is available in all editors in Beta phase
+### Bug Fixes  
+- **Shortcut Setting**:  
+  - Resolved an issue preventing user from using Shortcuts and configuring them in the settings. (Another issue) 
+  - Fixed an issue where the shortcut was not being saved in the settings and preventing the extension from injecting the shortcuts in the Salesforce Page.
+- **Picklist suggestion in SOQL Editor**:  
+  - It's now possible to use the picklist suggestion in the SOQL Editor.
+
+
 ## Version 1.3.25 - January 20th, 2025
 ### Bug Fixes  
 - **Shortcut Setting**:  

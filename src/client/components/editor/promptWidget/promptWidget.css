@@ -34,3 +34,12 @@
     border:unset;
     box-shadow: unset;
 }
+
+.draggable {
+    background-color: #f3f3f3;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+    cursor: move;
+}
