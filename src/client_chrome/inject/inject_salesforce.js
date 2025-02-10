@@ -102,7 +102,7 @@ const injectOverlay = async () => {
     Object.assign(elm, {variant:'overlay'});
     document.body.appendChild(elm);
 };
-
+/* TODO : Add prompt widget in the web page with vanila JS/HTML/CSS
 const injectPromptWidget = async () => {
     const isEnabled = (await chrome.storage.sync.get('overlayEnabled')).overlayEnabled;
     //console.log('injectOverlay',isEnabled);
@@ -121,7 +121,7 @@ const injectPromptWidget = async () => {
         elm.display();
     });
 };
-
+*/
 
 class LWC_CUSTOM {
     config;

@@ -146,7 +146,8 @@ export const executeApexAnonymous = createAsyncThunk(
         }
     }
 );
-
+// TODO : Add model to the state to be able to display the model in the editor instead of the body !!!!!
+// Priority : 1 (for full Editor concept)
 // Create a slice with reducers and extraReducers
 const apexSlice = createSlice({
     name: 'apex',

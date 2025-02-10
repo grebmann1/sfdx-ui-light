@@ -23,23 +23,23 @@ var jsforce;
 /* harmony export */   y: () => (/* binding */ BrowserClient)
 /* harmony export */ });
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(54818);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(82173);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_1___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(68040);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_2___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(62675);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_3___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(25988);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_4___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(36678);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_5___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(13003);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_6___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_6__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(45658);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_7___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_7__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(74294);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_8__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_8___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_8__);
 /* harmony import */ var _babel_runtime_corejs3_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(24839);
 /* harmony import */ var _babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_38__ = __webpack_require__(14953);
 /* harmony import */ var _babel_runtime_corejs3_helpers_createClass__WEBPACK_IMPORTED_MODULE_40__ = __webpack_require__(4449);
@@ -48,51 +48,51 @@ var jsforce;
 /* harmony import */ var _babel_runtime_corejs3_helpers_inherits__WEBPACK_IMPORTED_MODULE_39__ = __webpack_require__(80025);
 /* harmony import */ var _babel_runtime_corejs3_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_37__ = __webpack_require__(89213);
 /* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(6764);
-/* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_12__);
+/* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_12___default = __webpack_require__.n(core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(71698);
-/* harmony import */ var core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_13___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_13__);
+/* harmony import */ var core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_13___default = __webpack_require__.n(core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_13__);
 /* harmony import */ var core_js_modules_es_number_constructor_js__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(12888);
-/* harmony import */ var core_js_modules_es_number_constructor_js__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_number_constructor_js__WEBPACK_IMPORTED_MODULE_14__);
+/* harmony import */ var core_js_modules_es_number_constructor_js__WEBPACK_IMPORTED_MODULE_14___default = __webpack_require__.n(core_js_modules_es_number_constructor_js__WEBPACK_IMPORTED_MODULE_14__);
 /* harmony import */ var core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(52508);
-/* harmony import */ var core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_15__);
+/* harmony import */ var core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_15___default = __webpack_require__.n(core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_15__);
 /* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(11190);
-/* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_16___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_16__);
+/* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_16___default = __webpack_require__.n(core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_16__);
 /* harmony import */ var core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(94711);
-/* harmony import */ var core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_17___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_17__);
+/* harmony import */ var core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_17___default = __webpack_require__.n(core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_17__);
 /* harmony import */ var core_js_modules_es_regexp_constructor_js__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(94644);
-/* harmony import */ var core_js_modules_es_regexp_constructor_js__WEBPACK_IMPORTED_MODULE_18___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_constructor_js__WEBPACK_IMPORTED_MODULE_18__);
+/* harmony import */ var core_js_modules_es_regexp_constructor_js__WEBPACK_IMPORTED_MODULE_18___default = __webpack_require__.n(core_js_modules_es_regexp_constructor_js__WEBPACK_IMPORTED_MODULE_18__);
 /* harmony import */ var core_js_modules_es_regexp_dot_all_js__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(67053);
-/* harmony import */ var core_js_modules_es_regexp_dot_all_js__WEBPACK_IMPORTED_MODULE_19___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_dot_all_js__WEBPACK_IMPORTED_MODULE_19__);
+/* harmony import */ var core_js_modules_es_regexp_dot_all_js__WEBPACK_IMPORTED_MODULE_19___default = __webpack_require__.n(core_js_modules_es_regexp_dot_all_js__WEBPACK_IMPORTED_MODULE_19__);
 /* harmony import */ var core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(82067);
-/* harmony import */ var core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_20___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_20__);
+/* harmony import */ var core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_20___default = __webpack_require__.n(core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_20__);
 /* harmony import */ var core_js_modules_es_regexp_sticky_js__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(23829);
-/* harmony import */ var core_js_modules_es_regexp_sticky_js__WEBPACK_IMPORTED_MODULE_21___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_sticky_js__WEBPACK_IMPORTED_MODULE_21__);
+/* harmony import */ var core_js_modules_es_regexp_sticky_js__WEBPACK_IMPORTED_MODULE_21___default = __webpack_require__.n(core_js_modules_es_regexp_sticky_js__WEBPACK_IMPORTED_MODULE_21__);
 /* harmony import */ var core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(67873);
-/* harmony import */ var core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_22___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_22__);
+/* harmony import */ var core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_22___default = __webpack_require__.n(core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_22__);
 /* harmony import */ var core_js_modules_es_string_match_js__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(56501);
-/* harmony import */ var core_js_modules_es_string_match_js__WEBPACK_IMPORTED_MODULE_23___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_string_match_js__WEBPACK_IMPORTED_MODULE_23__);
+/* harmony import */ var core_js_modules_es_string_match_js__WEBPACK_IMPORTED_MODULE_23___default = __webpack_require__.n(core_js_modules_es_string_match_js__WEBPACK_IMPORTED_MODULE_23__);
 /* harmony import */ var core_js_modules_es_string_search_js__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(28566);
-/* harmony import */ var core_js_modules_es_string_search_js__WEBPACK_IMPORTED_MODULE_24___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_string_search_js__WEBPACK_IMPORTED_MODULE_24__);
+/* harmony import */ var core_js_modules_es_string_search_js__WEBPACK_IMPORTED_MODULE_24___default = __webpack_require__.n(core_js_modules_es_string_search_js__WEBPACK_IMPORTED_MODULE_24__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(14109);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_25___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_25__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_25___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_25__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_from_entries__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(23304);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_from_entries__WEBPACK_IMPORTED_MODULE_26___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_from_entries__WEBPACK_IMPORTED_MODULE_26__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_from_entries__WEBPACK_IMPORTED_MODULE_26___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_from_entries__WEBPACK_IMPORTED_MODULE_26__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_url_search_params__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(34748);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_url_search_params__WEBPACK_IMPORTED_MODULE_27___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_url_search_params__WEBPACK_IMPORTED_MODULE_27__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_url_search_params__WEBPACK_IMPORTED_MODULE_27___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_url_search_params__WEBPACK_IMPORTED_MODULE_27__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_set_timeout__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(80627);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_set_timeout__WEBPACK_IMPORTED_MODULE_28___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_set_timeout__WEBPACK_IMPORTED_MODULE_28__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_set_timeout__WEBPACK_IMPORTED_MODULE_28___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_set_timeout__WEBPACK_IMPORTED_MODULE_28__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(44124);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_29___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_29__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_29___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_29__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_set_interval__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(37635);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_set_interval__WEBPACK_IMPORTED_MODULE_30___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_set_interval__WEBPACK_IMPORTED_MODULE_30__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_set_interval__WEBPACK_IMPORTED_MODULE_30___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_set_interval__WEBPACK_IMPORTED_MODULE_30__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_date_now__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(75770);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_date_now__WEBPACK_IMPORTED_MODULE_31___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_date_now__WEBPACK_IMPORTED_MODULE_31__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_date_now__WEBPACK_IMPORTED_MODULE_31___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_date_now__WEBPACK_IMPORTED_MODULE_31__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_reverse__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(3835);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_reverse__WEBPACK_IMPORTED_MODULE_32___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_reverse__WEBPACK_IMPORTED_MODULE_32__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_reverse__WEBPACK_IMPORTED_MODULE_32___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_reverse__WEBPACK_IMPORTED_MODULE_32__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_json_stringify__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(78205);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_json_stringify__WEBPACK_IMPORTED_MODULE_33___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_json_stringify__WEBPACK_IMPORTED_MODULE_33__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_json_stringify__WEBPACK_IMPORTED_MODULE_33___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_json_stringify__WEBPACK_IMPORTED_MODULE_33__);
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(64785);
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_34___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_34__);
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_34___default = __webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_34__);
 /* harmony import */ var _connection__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(10631);
 /* harmony import */ var _oauth2__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(69557);
 /* harmony import */ var querystring__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(96448);
@@ -202,7 +202,7 @@ var clientIdx = 0;
 /**
  *
  */
-var BrowserClient = /*#__PURE__*/function (_EventEmitter) {
+var BrowserClient = function (_EventEmitter) {
   /**
    *
    */
@@ -450,7 +450,7 @@ __webpack_require__.d(__webpack_exports__, {
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/reflect/construct.js
 var construct = __webpack_require__(54818);
-var construct_default = /*#__PURE__*/__webpack_require__.n(construct);
+var construct_default = __webpack_require__.n(construct);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/helpers/esm/classCallCheck.js
 var classCallCheck = __webpack_require__(14953);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/helpers/esm/createClass.js
@@ -469,31 +469,31 @@ var asyncToGenerator = __webpack_require__(62207);
 var defineProperty = __webpack_require__(24839);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/regenerator/index.js
 var regenerator = __webpack_require__(41400);
-var regenerator_default = /*#__PURE__*/__webpack_require__.n(regenerator);
+var regenerator_default = __webpack_require__.n(regenerator);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/keys.js
 var keys = __webpack_require__(82173);
-var keys_default = /*#__PURE__*/__webpack_require__.n(keys);
+var keys_default = __webpack_require__.n(keys);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/get-own-property-symbols.js
 var get_own_property_symbols = __webpack_require__(68040);
-var get_own_property_symbols_default = /*#__PURE__*/__webpack_require__.n(get_own_property_symbols);
+var get_own_property_symbols_default = __webpack_require__.n(get_own_property_symbols);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/filter.js
 var filter = __webpack_require__(62675);
-var filter_default = /*#__PURE__*/__webpack_require__.n(filter);
+var filter_default = __webpack_require__.n(filter);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor.js
 var get_own_property_descriptor = __webpack_require__(25988);
-var get_own_property_descriptor_default = /*#__PURE__*/__webpack_require__.n(get_own_property_descriptor);
+var get_own_property_descriptor_default = __webpack_require__.n(get_own_property_descriptor);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/for-each.js
 var for_each = __webpack_require__(36678);
-var for_each_default = /*#__PURE__*/__webpack_require__.n(for_each);
+var for_each_default = __webpack_require__.n(for_each);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptors.js
 var get_own_property_descriptors = __webpack_require__(13003);
-var get_own_property_descriptors_default = /*#__PURE__*/__webpack_require__.n(get_own_property_descriptors);
+var get_own_property_descriptors_default = __webpack_require__.n(get_own_property_descriptors);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-properties.js
 var define_properties = __webpack_require__(45658);
-var define_properties_default = /*#__PURE__*/__webpack_require__.n(define_properties);
+var define_properties_default = __webpack_require__.n(define_properties);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-property.js
 var define_property = __webpack_require__(74294);
-var define_property_default = /*#__PURE__*/__webpack_require__.n(define_property);
+var define_property_default = __webpack_require__.n(define_property);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.error.cause.js
 var es_error_cause = __webpack_require__(6764);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.push.js
@@ -508,8 +508,8 @@ var connection = __webpack_require__(10631);
 
 var _excluded = ["client"],
   _excluded2 = ["oauth2"];
-function ownKeys(e, r) { var t = keys_default()(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context10, _context11; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context10 = ownKeys(Object(t), !0)).call(_context10, function (r) { (0,defineProperty/* default */.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context11 = ownKeys(Object(t))).call(_context11, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
+function ownKeys(e, r) { var t = Object.keys(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context10, _context11; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context10 = ownKeys(Object(t), !0)).call(_context10, function (r) { (0,defineProperty.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context11 = ownKeys(Object(t))).call(_context11, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
 
 
 
@@ -525,12 +525,12 @@ function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _co
 /**
  *
  */
-var BaseRegistry = /*#__PURE__*/function () {
+var BaseRegistry = function () {
   function BaseRegistry() {
-    (0,classCallCheck/* default */.A)(this, BaseRegistry);
-    (0,defineProperty/* default */.A)(this, "_registryConfig", {});
+    (0,classCallCheck.A)(this, BaseRegistry);
+    (0,defineProperty.A)(this, "_registryConfig", {});
   }
-  return (0,createClass/* default */.A)(BaseRegistry, [{
+  return (0,createClass.A)(BaseRegistry, [{
     key: "_saveConfig",
     value: function _saveConfig() {
       throw new Error('_saveConfig must be implemented in subclass');
@@ -550,11 +550,11 @@ var BaseRegistry = /*#__PURE__*/function () {
   }, {
     key: "getConnectionNames",
     value: function () {
-      var _getConnectionNames = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee() {
+      var _getConnectionNames = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee() {
         return regenerator_default().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
             case 0:
-              return _context.abrupt("return", keys_default()(this._getConnections()));
+              return _context.abrupt("return", Object.keys(this._getConnections()));
             case 1:
             case "end":
               return _context.stop();
@@ -569,7 +569,7 @@ var BaseRegistry = /*#__PURE__*/function () {
   }, {
     key: "getConnection",
     value: function () {
-      var _getConnection = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee2(name) {
+      var _getConnection = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee2(name) {
         var config;
         return regenerator_default().wrap(function _callee2$(_context2) {
           while (1) switch (_context2.prev = _context2.next) {
@@ -578,7 +578,7 @@ var BaseRegistry = /*#__PURE__*/function () {
               return this.getConnectionConfig(name);
             case 2:
               config = _context2.sent;
-              return _context2.abrupt("return", config ? new connection/* default */.A(config) : null);
+              return _context2.abrupt("return", config ? new connection.A(config) : null);
             case 4:
             case "end":
               return _context2.stop();
@@ -593,7 +593,7 @@ var BaseRegistry = /*#__PURE__*/function () {
   }, {
     key: "getConnectionConfig",
     value: function () {
-      var _getConnectionConfig = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee3(name) {
+      var _getConnectionConfig = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee3(name) {
         var connections, connConfig, client, connConfig_;
         return regenerator_default().wrap(function _callee3$(_context3) {
           while (1) switch (_context3.prev = _context3.next) {
@@ -609,7 +609,7 @@ var BaseRegistry = /*#__PURE__*/function () {
               }
               return _context3.abrupt("return", null);
             case 5:
-              client = connConfig.client, connConfig_ = (0,objectWithoutProperties/* default */.A)(connConfig, _excluded);
+              client = connConfig.client, connConfig_ = (0,objectWithoutProperties.A)(connConfig, _excluded);
               if (!client) {
                 _context3.next = 18;
                 break;
@@ -644,13 +644,13 @@ var BaseRegistry = /*#__PURE__*/function () {
   }, {
     key: "saveConnectionConfig",
     value: function () {
-      var _saveConnectionConfig = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee4(name, connConfig) {
+      var _saveConnectionConfig = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee4(name, connConfig) {
         var connections, oauth2, connConfig_, persistConnConfig, clientName;
         return regenerator_default().wrap(function _callee4$(_context4) {
           while (1) switch (_context4.prev = _context4.next) {
             case 0:
               connections = this._getConnections();
-              oauth2 = connConfig.oauth2, connConfig_ = (0,objectWithoutProperties/* default */.A)(connConfig, _excluded2);
+              oauth2 = connConfig.oauth2, connConfig_ = (0,objectWithoutProperties.A)(connConfig, _excluded2);
               persistConnConfig = connConfig_;
               if (oauth2) {
                 clientName = this._findClientName(oauth2);
@@ -680,7 +680,7 @@ var BaseRegistry = /*#__PURE__*/function () {
       var clientId = _ref.clientId,
         loginUrl = _ref.loginUrl;
       var clients = this._getClients();
-      for (var _i = 0, _Object$keys2 = keys_default()(clients); _i < _Object$keys2.length; _i++) {
+      for (var _i = 0, _Object$keys2 = Object.keys(clients); _i < _Object$keys2.length; _i++) {
         var name = _Object$keys2[_i];
         var client = clients[name];
         if (client.clientId === clientId && (client.loginUrl || 'https://login.salesforce.com') === loginUrl) {
@@ -694,7 +694,7 @@ var BaseRegistry = /*#__PURE__*/function () {
   }, {
     key: "setDefaultConnection",
     value: function () {
-      var _setDefaultConnection = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee5(name) {
+      var _setDefaultConnection = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee5(name) {
         return regenerator_default().wrap(function _callee5$(_context5) {
           while (1) switch (_context5.prev = _context5.next) {
             case 0:
@@ -714,7 +714,7 @@ var BaseRegistry = /*#__PURE__*/function () {
   }, {
     key: "removeConnectionConfig",
     value: function () {
-      var _removeConnectionConfig = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee6(name) {
+      var _removeConnectionConfig = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee6(name) {
         var connections;
         return regenerator_default().wrap(function _callee6$(_context6) {
           while (1) switch (_context6.prev = _context6.next) {
@@ -736,7 +736,7 @@ var BaseRegistry = /*#__PURE__*/function () {
   }, {
     key: "getClientConfig",
     value: function () {
-      var _getClientConfig = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee7(name) {
+      var _getClientConfig = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee7(name) {
         var clients, clientConfig;
         return regenerator_default().wrap(function _callee7$(_context7) {
           while (1) switch (_context7.prev = _context7.next) {
@@ -758,11 +758,11 @@ var BaseRegistry = /*#__PURE__*/function () {
   }, {
     key: "getClientNames",
     value: function () {
-      var _getClientNames = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee8() {
+      var _getClientNames = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee8() {
         return regenerator_default().wrap(function _callee8$(_context8) {
           while (1) switch (_context8.prev = _context8.next) {
             case 0:
-              return _context8.abrupt("return", keys_default()(this._getClients()));
+              return _context8.abrupt("return", Object.keys(this._getClients()));
             case 1:
             case "end":
               return _context8.stop();
@@ -777,7 +777,7 @@ var BaseRegistry = /*#__PURE__*/function () {
   }, {
     key: "registerClientConfig",
     value: function () {
-      var _registerClientConfig = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee9(name, clientConfig) {
+      var _registerClientConfig = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee9(name, clientConfig) {
         var clients;
         return regenerator_default().wrap(function _callee9$(_context9) {
           while (1) switch (_context9.prev = _context9.next) {
@@ -806,20 +806,20 @@ var BaseRegistry = /*#__PURE__*/function () {
 
 
 
-function _callSuper(t, o, e) { return o = (0,getPrototypeOf/* default */.A)(o), (0,possibleConstructorReturn/* default */.A)(t, _isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf/* default */.A)(t).constructor) : o.apply(t, e)); }
+function _callSuper(t, o, e) { return o = (0,getPrototypeOf.A)(o), (0,possibleConstructorReturn.A)(t, _isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf.A)(t).constructor) : o.apply(t, e)); }
 function _isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(construct_default()(Boolean, [], function () {})); } catch (t) {} return (_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
 
 
 /**
  *
  */
-var EmptyRegistry = /*#__PURE__*/function (_BaseRegistry) {
+var EmptyRegistry = function (_BaseRegistry) {
   function EmptyRegistry() {
-    (0,classCallCheck/* default */.A)(this, EmptyRegistry);
+    (0,classCallCheck.A)(this, EmptyRegistry);
     return _callSuper(this, EmptyRegistry, arguments);
   }
-  (0,inherits/* default */.A)(EmptyRegistry, _BaseRegistry);
-  return (0,createClass/* default */.A)(EmptyRegistry, [{
+  (0,inherits.A)(EmptyRegistry, _BaseRegistry);
+  return (0,createClass.A)(EmptyRegistry, [{
     key: "_saveConfig",
     value: function _saveConfig() {
       // ignore all call requests
@@ -844,7 +844,7 @@ var registry = new EmptyRegistry();
 /* harmony export */ });
 /* unused harmony export Cache */
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(54818);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(62207);
 /* harmony import */ var _babel_runtime_corejs3_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(28331);
 /* harmony import */ var _babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(14953);
@@ -854,25 +854,25 @@ var registry = new EmptyRegistry();
 /* harmony import */ var _babel_runtime_corejs3_helpers_inherits__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(80025);
 /* harmony import */ var _babel_runtime_corejs3_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(24839);
 /* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(41400);
-/* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default = __webpack_require__.n(_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6764);
-/* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_2___default = __webpack_require__.n(core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(71698);
-/* harmony import */ var core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_3___default = __webpack_require__.n(core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(14109);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_4___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(44499);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_5___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_json_stringify__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(78205);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_json_stringify__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_json_stringify__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_json_stringify__WEBPACK_IMPORTED_MODULE_6___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_json_stringify__WEBPACK_IMPORTED_MODULE_6__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(82173);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_7___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_7__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_starts_with__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(67977);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_starts_with__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_starts_with__WEBPACK_IMPORTED_MODULE_8__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_starts_with__WEBPACK_IMPORTED_MODULE_8___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_starts_with__WEBPACK_IMPORTED_MODULE_8__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(44124);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_9___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_9__);
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(64785);
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_12__);
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_12___default = __webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_12__);
 
 
 
@@ -910,7 +910,7 @@ function _isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.
  * @constructor
  * @template T
  */
-var CacheEntry = /*#__PURE__*/function (_EventEmitter) {
+var CacheEntry = function (_EventEmitter) {
   function CacheEntry() {
     var _context;
     var _this;
@@ -987,7 +987,7 @@ function generateKeyString(options, scope, args) {
  * @class
  * @constructor
  */
-var Cache = /*#__PURE__*/function () {
+var Cache = function () {
   function Cache() {
     (0,_babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_13__/* ["default"] */ .A)(this, Cache);
     (0,_babel_runtime_corejs3_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_14__/* ["default"] */ .A)(this, "_entries", {});
@@ -1042,8 +1042,8 @@ var Cache = /*#__PURE__*/function () {
         }
         var key = generateKeyString(options, scope, args);
         var entry = _this2.get(key);
-        var executeFetch = /*#__PURE__*/function () {
-          var _ref = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_18__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee() {
+        var executeFetch = function () {
+          var _ref = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_18__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee() {
             var result;
             return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().wrap(function _callee$(_context4) {
               while (1) switch (_context4.prev = _context4.next) {
@@ -1089,7 +1089,7 @@ var Cache = /*#__PURE__*/function () {
             }
             return value.result;
           case 'HIT':
-            return (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_18__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee2() {
+            return (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_18__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee2() {
               return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().wrap(function _callee2$(_context5) {
                 while (1) switch (_context5.prev = _context5.next) {
                   case 0:
@@ -1147,40 +1147,40 @@ __webpack_require__.d(__webpack_exports__, {
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/reflect/construct.js
 var construct = __webpack_require__(54818);
-var construct_default = /*#__PURE__*/__webpack_require__.n(construct);
+var construct_default = __webpack_require__.n(construct);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/keys.js
 var keys = __webpack_require__(82173);
-var keys_default = /*#__PURE__*/__webpack_require__.n(keys);
+var keys_default = __webpack_require__.n(keys);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/get-own-property-symbols.js
 var get_own_property_symbols = __webpack_require__(68040);
-var get_own_property_symbols_default = /*#__PURE__*/__webpack_require__.n(get_own_property_symbols);
+var get_own_property_symbols_default = __webpack_require__.n(get_own_property_symbols);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/filter.js
 var filter = __webpack_require__(62675);
-var filter_default = /*#__PURE__*/__webpack_require__.n(filter);
+var filter_default = __webpack_require__.n(filter);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor.js
 var get_own_property_descriptor = __webpack_require__(25988);
-var get_own_property_descriptor_default = /*#__PURE__*/__webpack_require__.n(get_own_property_descriptor);
+var get_own_property_descriptor_default = __webpack_require__.n(get_own_property_descriptor);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptors.js
 var get_own_property_descriptors = __webpack_require__(13003);
-var get_own_property_descriptors_default = /*#__PURE__*/__webpack_require__.n(get_own_property_descriptors);
+var get_own_property_descriptors_default = __webpack_require__.n(get_own_property_descriptors);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-properties.js
 var define_properties = __webpack_require__(45658);
-var define_properties_default = /*#__PURE__*/__webpack_require__.n(define_properties);
+var define_properties_default = __webpack_require__.n(define_properties);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-property.js
 var define_property = __webpack_require__(74294);
-var define_property_default = /*#__PURE__*/__webpack_require__.n(define_property);
+var define_property_default = __webpack_require__.n(define_property);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/array/from.js
 var from = __webpack_require__(71223);
-var from_default = /*#__PURE__*/__webpack_require__.n(from);
+var from_default = __webpack_require__.n(from);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/symbol.js
 var symbol = __webpack_require__(20153);
-var symbol_default = /*#__PURE__*/__webpack_require__.n(symbol);
+var symbol_default = __webpack_require__.n(symbol);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js/get-iterator-method.js
 var get_iterator_method = __webpack_require__(97106);
-var get_iterator_method_default = /*#__PURE__*/__webpack_require__.n(get_iterator_method);
+var get_iterator_method_default = __webpack_require__.n(get_iterator_method);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/symbol/to-primitive.js
 var to_primitive = __webpack_require__(84381);
-var to_primitive_default = /*#__PURE__*/__webpack_require__.n(to_primitive);
+var to_primitive_default = __webpack_require__.n(to_primitive);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/helpers/esm/typeof.js
 var esm_typeof = __webpack_require__(13040);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/helpers/esm/toConsumableArray.js + 3 modules
@@ -1205,40 +1205,40 @@ var asyncToGenerator = __webpack_require__(62207);
 var slicedToArray = __webpack_require__(89213);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/regenerator/index.js
 var regenerator = __webpack_require__(41400);
-var regenerator_default = /*#__PURE__*/__webpack_require__.n(regenerator);
+var regenerator_default = __webpack_require__.n(regenerator);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/starts-with.js
 var starts_with = __webpack_require__(67977);
-var starts_with_default = /*#__PURE__*/__webpack_require__.n(starts_with);
+var starts_with_default = __webpack_require__.n(starts_with);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/slice.js
 var slice = __webpack_require__(34047);
-var slice_default = /*#__PURE__*/__webpack_require__.n(slice);
+var slice_default = __webpack_require__.n(slice);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/concat.js
 var concat = __webpack_require__(14109);
-var concat_default = /*#__PURE__*/__webpack_require__.n(concat);
+var concat_default = __webpack_require__.n(concat);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/promise.js
 var promise = __webpack_require__(44124);
-var promise_default = /*#__PURE__*/__webpack_require__.n(promise);
+var promise_default = __webpack_require__.n(promise);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/parse-int.js
 var parse_int = __webpack_require__(32886);
-var parse_int_default = /*#__PURE__*/__webpack_require__.n(parse_int);
+var parse_int_default = __webpack_require__.n(parse_int);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/json/stringify.js
 var stringify = __webpack_require__(78205);
-var stringify_default = /*#__PURE__*/__webpack_require__.n(stringify);
+var stringify_default = __webpack_require__.n(stringify);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/array/is-array.js
 var is_array = __webpack_require__(75403);
-var is_array_default = /*#__PURE__*/__webpack_require__.n(is_array);
+var is_array_default = __webpack_require__.n(is_array);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/map.js
 var map = __webpack_require__(44499);
-var map_default = /*#__PURE__*/__webpack_require__.n(map);
+var map_default = __webpack_require__.n(map);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/for-each.js
 var for_each = __webpack_require__(36678);
-var for_each_default = /*#__PURE__*/__webpack_require__.n(for_each);
+var for_each_default = __webpack_require__.n(for_each);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/entries.js
 var entries = __webpack_require__(26321);
-var entries_default = /*#__PURE__*/__webpack_require__.n(entries);
+var entries_default = __webpack_require__.n(entries);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/includes.js
 var includes = __webpack_require__(38336);
-var includes_default = /*#__PURE__*/__webpack_require__.n(includes);
+var includes_default = __webpack_require__.n(includes);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.error.cause.js
 var es_error_cause = __webpack_require__(6764);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.join.js
@@ -1279,7 +1279,7 @@ var cache = __webpack_require__(20638);
 var http_api = __webpack_require__(32439);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/date/now.js
 var now = __webpack_require__(75770);
-var now_default = /*#__PURE__*/__webpack_require__.n(now);
+var now_default = __webpack_require__.n(now);
 ;// CONCATENATED MODULE: ./browser/session-refresh-delegate.js
 
 
@@ -1301,11 +1301,11 @@ var now_default = /*#__PURE__*/__webpack_require__.n(now);
 /**
  *
  */
-var SessionRefreshDelegate = /*#__PURE__*/function () {
+var SessionRefreshDelegate = function () {
   function SessionRefreshDelegate(conn, refreshFn) {
-    (0,classCallCheck/* default */.A)(this, SessionRefreshDelegate);
-    (0,defineProperty/* default */.A)(this, "_lastRefreshedAt", undefined);
-    (0,defineProperty/* default */.A)(this, "_refreshPromise", undefined);
+    (0,classCallCheck.A)(this, SessionRefreshDelegate);
+    (0,defineProperty.A)(this, "_lastRefreshedAt", undefined);
+    (0,defineProperty.A)(this, "_refreshPromise", undefined);
     this._conn = conn;
     this._logger = conn._logLevel ? SessionRefreshDelegate._logger.createInstance(conn._logLevel) : SessionRefreshDelegate._logger;
     this._refreshFn = refreshFn;
@@ -1315,10 +1315,10 @@ var SessionRefreshDelegate = /*#__PURE__*/function () {
    * Refresh access token
    * @private
    */
-  return (0,createClass/* default */.A)(SessionRefreshDelegate, [{
+  return (0,createClass.A)(SessionRefreshDelegate, [{
     key: "refresh",
     value: (function () {
-      var _refresh = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee(since) {
+      var _refresh = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee(since) {
         var _this = this;
         return regenerator_default().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
@@ -1390,7 +1390,7 @@ var SessionRefreshDelegate = /*#__PURE__*/function () {
   }, {
     key: "waitRefresh",
     value: function () {
-      var _waitRefresh = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee2() {
+      var _waitRefresh = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee2() {
         return regenerator_default().wrap(function _callee2$(_context2) {
           while (1) switch (_context2.prev = _context2.next) {
             case 0:
@@ -1408,7 +1408,7 @@ var SessionRefreshDelegate = /*#__PURE__*/function () {
     }()
   }]);
 }();
-(0,defineProperty/* default */.A)(SessionRefreshDelegate, "_logger", (0,logger/* getLogger */.tZ)('session-refresh-delegate'));
+(0,defineProperty.A)(SessionRefreshDelegate, "_logger", (0,logger/* getLogger */.tZ)('session-refresh-delegate'));
 /* harmony default export */ const session_refresh_delegate = (SessionRefreshDelegate);
 
 // EXTERNAL MODULE: ./browser/query.js + 1 modules
@@ -1423,8 +1423,8 @@ var quick_action = __webpack_require__(18778);
 
 
 
-function ownKeys(e, r) { var t = keys_default()(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context3, _context4; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context3 = ownKeys(Object(t), !0)).call(_context3, function (r) { (0,defineProperty/* default */.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context4 = ownKeys(Object(t))).call(_context4, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
+function ownKeys(e, r) { var t = Object.keys(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context3, _context4; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context3 = ownKeys(Object(t), !0)).call(_context3, function (r) { (0,defineProperty.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context4 = ownKeys(Object(t))).call(_context4, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
 
 
 
@@ -1453,22 +1453,22 @@ function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _co
 /**
  * A class which manages process (workflow) rules
  */
-var ProcessRule = /*#__PURE__*/function () {
+var ProcessRule = function () {
   /**
    *
    */
   function ProcessRule(conn) {
-    (0,classCallCheck/* default */.A)(this, ProcessRule);
+    (0,classCallCheck.A)(this, ProcessRule);
     this._conn = conn;
   }
 
   /**
    * Get all process rule definitions registered to sobjects
    */
-  return (0,createClass/* default */.A)(ProcessRule, [{
+  return (0,createClass.A)(ProcessRule, [{
     key: "list",
     value: (function () {
-      var _list = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee() {
+      var _list = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee() {
         var res;
         return regenerator_default().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
@@ -1527,22 +1527,22 @@ var ProcessRule = /*#__PURE__*/function () {
 /**
  * A class which manages approval processes
  */
-var ApprovalProcess = /*#__PURE__*/function () {
+var ApprovalProcess = function () {
   /**
    *
    */
   function ApprovalProcess(conn) {
-    (0,classCallCheck/* default */.A)(this, ApprovalProcess);
+    (0,classCallCheck.A)(this, ApprovalProcess);
     this._conn = conn;
   }
 
   /**
    * Get all approval process definitions registered to sobjects
    */
-  return (0,createClass/* default */.A)(ApprovalProcess, [{
+  return (0,createClass.A)(ApprovalProcess, [{
     key: "list",
     value: (function () {
-      var _list2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee2() {
+      var _list2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee2() {
         var res;
         return regenerator_default().wrap(function _callee2$(_context2) {
           while (1) switch (_context2.prev = _context2.next) {
@@ -1638,9 +1638,9 @@ var ApprovalProcess = /*#__PURE__*/function () {
 /**
  * A class representing approval process request
  */
-var ApprovalProcessRequest = /*#__PURE__*/function () {
+var ApprovalProcessRequest = function () {
   function ApprovalProcessRequest(process, request) {
-    (0,classCallCheck/* default */.A)(this, ApprovalProcessRequest);
+    (0,classCallCheck.A)(this, ApprovalProcessRequest);
     this._process = process;
     this._request = request;
   }
@@ -1649,7 +1649,7 @@ var ApprovalProcessRequest = /*#__PURE__*/function () {
    * Promise/A+ interface
    * http://promises-aplus.github.io/promises-spec/
    */
-  return (0,createClass/* default */.A)(ApprovalProcessRequest, [{
+  return (0,createClass.A)(ApprovalProcessRequest, [{
     key: "then",
     value: function then(onResolve, onReject) {
       if (!this._promise) {
@@ -1664,12 +1664,12 @@ var ApprovalProcessRequest = /*#__PURE__*/function () {
 /**
  * A class which manages process rules and approval processes
  */
-var Process = /*#__PURE__*/(0,createClass/* default */.A)(
+var Process = (0,createClass.A)(
 /**
  *
  */
 function Process(conn) {
-  (0,classCallCheck/* default */.A)(this, Process);
+  (0,classCallCheck.A)(this, Process);
   this.rule = new ProcessRule(conn);
   this.approval = new ApprovalProcess(conn);
 });
@@ -1679,7 +1679,7 @@ function Process(conn) {
 var formatter = __webpack_require__(8819);
 // EXTERNAL MODULE: ./node_modules/form-data/lib/browser.js
 var browser = __webpack_require__(72964);
-var browser_default = /*#__PURE__*/__webpack_require__.n(browser);
+var browser_default = __webpack_require__.n(browser);
 ;// CONCATENATED MODULE: ./browser/connection.js
 /* provided dependency */ var Buffer = __webpack_require__(32313)["Buffer"];
 
@@ -1709,14 +1709,14 @@ var _excluded = ["Id", "type", "attributes"],
   _excluded2 = ["Id", "type", "attributes"],
   _excluded3 = ["Id", "type", "attributes"],
   _excluded4 = ["Id", "type", "attributes"];
-function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == (0,esm_typeof/* default */.A)(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != (0,esm_typeof/* default */.A)(t) || !t) return t; var e = t[(to_primitive_default())]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != (0,esm_typeof/* default */.A)(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == (0,esm_typeof.A)(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != (0,esm_typeof.A)(t) || !t) return t; var e = t[(to_primitive_default())]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != (0,esm_typeof.A)(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof (symbol_default()) !== "undefined" && get_iterator_method_default()(o) || o["@@iterator"]; if (!it) { if (is_array_default()(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
 function _unsupportedIterableToArray(o, minLen) { var _context55; if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = slice_default()(_context55 = Object.prototype.toString.call(o)).call(_context55, 8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return from_default()(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function connection_ownKeys(e, r) { var t = keys_default()(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function connection_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context53, _context54; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context53 = connection_ownKeys(Object(t), !0)).call(_context53, function (r) { (0,defineProperty/* default */.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context54 = connection_ownKeys(Object(t))).call(_context54, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
-function _callSuper(t, o, e) { return o = (0,getPrototypeOf/* default */.A)(o), (0,possibleConstructorReturn/* default */.A)(t, _isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf/* default */.A)(t).constructor) : o.apply(t, e)); }
+function connection_ownKeys(e, r) { var t = Object.keys(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function connection_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context53, _context54; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context53 = connection_ownKeys(Object(t), !0)).call(_context53, function (r) { (0,defineProperty.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context54 = connection_ownKeys(Object(t))).call(_context54, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
+function _callSuper(t, o, e) { return o = (0,getPrototypeOf.A)(o), (0,possibleConstructorReturn.A)(t, _isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf.A)(t).constructor) : o.apply(t, e)); }
 function _isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(construct_default()(Boolean, [], function () {})); } catch (t) {} return (_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
 
 
@@ -1805,7 +1805,7 @@ function parseSignedRequest(sr) {
 function parseIdUrl(url) {
   var _context;
   var _url$split$slice = slice_default()(_context = url.split('/')).call(_context, -2),
-    _url$split$slice2 = (0,slicedToArray/* default */.A)(_url$split$slice, 2),
+    _url$split$slice2 = (0,slicedToArray.A)(_url$split$slice, 2),
     organizationId = _url$split$slice2[0],
     id = _url$split$slice2[1];
   return {
@@ -1838,7 +1838,7 @@ function oauthRefreshFn(_x, _x2) {
  * @private
  */
 function _oauthRefreshFn() {
-  _oauthRefreshFn = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee35(conn, callback) {
+  _oauthRefreshFn = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee35(conn, callback) {
     var res, userInfo;
     return regenerator_default().wrap(function _callee35$(_context52) {
       while (1) switch (_context52.prev = _context52.next) {
@@ -1884,8 +1884,8 @@ function _oauthRefreshFn() {
   return _oauthRefreshFn.apply(this, arguments);
 }
 function createUsernamePasswordRefreshFn(username, password) {
-  return /*#__PURE__*/function () {
-    var _ref = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee(conn, callback) {
+  return function () {
+    var _ref = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee(conn, callback) {
       return regenerator_default().wrap(function _callee$(_context2) {
         while (1) switch (_context2.prev = _context2.next) {
           case 0:
@@ -1952,33 +1952,33 @@ var MAX_DML_COUNT = 200;
 /**
  *
  */
-var Connection = /*#__PURE__*/function (_EventEmitter) {
+var Connection = function (_EventEmitter) {
   /**
    *
    */
   function Connection() {
     var _this;
     var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-    (0,classCallCheck/* default */.A)(this, Connection);
+    (0,classCallCheck.A)(this, Connection);
     _this = _callSuper(this, Connection);
-    (0,defineProperty/* default */.A)(_this, "limitInfo", {});
-    (0,defineProperty/* default */.A)(_this, "sobjects", {});
+    (0,defineProperty.A)(_this, "limitInfo", {});
+    (0,defineProperty.A)(_this, "sobjects", {});
     /**
      * Synonym of Connection#create()
      */
-    (0,defineProperty/* default */.A)(_this, "insert", _this.create);
+    (0,defineProperty.A)(_this, "insert", _this.create);
     /**
      * Synonym of Connection#destroy()
      */
-    (0,defineProperty/* default */.A)(_this, "delete", _this.destroy);
+    (0,defineProperty.A)(_this, "delete", _this.destroy);
     /**
      * Synonym of Connection#destroy()
      */
-    (0,defineProperty/* default */.A)(_this, "del", _this.destroy);
+    (0,defineProperty.A)(_this, "del", _this.destroy);
     /**
      * Module which manages process rules and approval processes
      */
-    (0,defineProperty/* default */.A)(_this, "process", new process(_this));
+    (0,defineProperty.A)(_this, "process", new process(_this));
     var loginUrl = config.loginUrl,
       instanceUrl = config.instanceUrl,
       version = config.version,
@@ -1993,7 +1993,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
       throw new Error('lightning URLs are not valid as instance URLs');
     }
     _this.version = version || defaultConnectionConfig.version;
-    _this.oauth2 = oauth2 instanceof browser_oauth2/* default */.A ? oauth2 : new browser_oauth2/* default */.A(connection_objectSpread({
+    _this.oauth2 = oauth2 instanceof browser_oauth2.A ? oauth2 : new browser_oauth2.A(connection_objectSpread({
       loginUrl: _this.loginUrl,
       proxyUrl: proxyUrl,
       httpProxy: httpProxy
@@ -2010,9 +2010,9 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
     _this._maxRequest = maxRequest || defaultConnectionConfig.maxRequest;
     _this._logger = logLevel ? Connection._logger.createInstance(logLevel) : Connection._logger;
     _this._logLevel = logLevel;
-    _this._transport = proxyUrl ? new transport/* XdProxyTransport */._4(proxyUrl) : httpProxy ? new transport/* HttpProxyTransport */.AX(httpProxy) : new transport/* default */.Ay();
+    _this._transport = proxyUrl ? new transport/* XdProxyTransport */._4(proxyUrl) : httpProxy ? new transport/* HttpProxyTransport */.AX(httpProxy) : new transport.Ay();
     _this._callOptions = config.callOptions;
-    _this.cache = new cache/* default */.A();
+    _this.cache = new cache.A();
     var describeCacheKey = function describeCacheKey(type) {
       return type ? "describe.".concat(type) : 'describe';
     };
@@ -2058,13 +2058,13 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
       serverUrl: serverUrl,
       signedRequest: signedRequest
     });
-    jsforce/* default */.A.emit('connection:new', _this);
+    jsforce.A.emit('connection:new', _this);
     return _this;
   }
 
   /* @private */
-  (0,inherits/* default */.A)(Connection, _EventEmitter);
-  return (0,createClass/* default */.A)(Connection, [{
+  (0,inherits.A)(Connection, _EventEmitter);
+  return (0,createClass.A)(Connection, [{
     key: "analytics",
     get:
     // describe: (name: string) => Promise<DescribeSObjectResult>;
@@ -2201,7 +2201,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "authorize",
     value: (function () {
-      var _authorize = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee2(codeOrParams) {
+      var _authorize = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee2(codeOrParams) {
         var _context5;
         var params,
           res,
@@ -2242,7 +2242,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "login",
     value: (function () {
-      var _login = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee3(username, password) {
+      var _login = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee3(username, password) {
         var _this$oauth;
         return regenerator_default().wrap(function _callee3$(_context7) {
           while (1) switch (_context7.prev = _context7.next) {
@@ -2273,7 +2273,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "loginByOAuth2",
     value: (function () {
-      var _loginByOAuth = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee4(username, password) {
+      var _loginByOAuth = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee4(username, password) {
         var _context8;
         var res, userInfo;
         return regenerator_default().wrap(function _callee4$(_context9) {
@@ -2309,7 +2309,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "loginBySoap",
     value: (function () {
-      var _loginBySoap = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee5(username, password) {
+      var _loginBySoap = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee5(username, password) {
         var _context10, _context11;
         var body, soapLoginEndpoint, response, m, faultstring, serverUrl, sessionId, userId, organizationId, idUrl, userInfo;
         return regenerator_default().wrap(function _callee5$(_context12) {
@@ -2395,7 +2395,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "logout",
     value: (function () {
-      var _logout = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee6(revoke) {
+      var _logout = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee6(revoke) {
         return regenerator_default().wrap(function _callee6$(_context13) {
           while (1) switch (_context13.prev = _context13.next) {
             case 0:
@@ -2425,7 +2425,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "logoutByOAuth2",
     value: (function () {
-      var _logoutByOAuth = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee7(revoke) {
+      var _logoutByOAuth = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee7(revoke) {
         var token;
         return regenerator_default().wrap(function _callee7$(_context14) {
           while (1) switch (_context14.prev = _context14.next) {
@@ -2459,7 +2459,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "logoutBySoap",
     value: (function () {
-      var _logoutBySoap = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee8(revoke) {
+      var _logoutBySoap = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee8(revoke) {
         var _context15;
         var body, response, m, faultstring;
         return regenerator_default().wrap(function _callee8$(_context16) {
@@ -2523,7 +2523,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
       request_ = connection_objectSpread(connection_objectSpread({}, request_), {}, {
         url: this._normalizeUrl(request_.url)
       });
-      var httpApi = new http_api/* default */.A(this, options);
+      var httpApi = new http_api.A(this, options);
       // log api usage and its quota
       httpApi.on('response', function (response) {
         if (response.headers && response.headers['sforce-limit-info']) {
@@ -2553,7 +2553,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
     key:'httpApi',
     value: function httpApi(){
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      return new http_api/* default */.A(this, options);
+      return new http_api.A(this, options);
     }
   },
   {
@@ -2678,7 +2678,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "query",
     value: function query(soql, options) {
-      return new browser_query/* default */.Ay(this, soql, options);
+      return new browser_query.Ay(this, soql, options);
     }
 
     /**
@@ -2701,7 +2701,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "queryMore",
     value: function queryMore(locator, options) {
-      return new browser_query/* default */.Ay(this, {
+      return new browser_query.Ay(this, {
         locator: locator
       }, options);
     }
@@ -2733,7 +2733,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "retrieve",
     value: function () {
-      var _retrieve = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee9(type, ids) {
+      var _retrieve = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee9(type, ids) {
         var options,
           _args9 = arguments;
         return regenerator_default().wrap(function _callee9$(_context17) {
@@ -2757,7 +2757,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_retrieveSingle",
     value: (function () {
-      var _retrieveSingle2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee10(type, id, options) {
+      var _retrieveSingle2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee10(type, id, options) {
         var url, fields, headers;
         return regenerator_default().wrap(function _callee10$(_context18) {
           while (1) switch (_context18.prev = _context18.next) {
@@ -2792,7 +2792,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_retrieveParallel",
     value: (function () {
-      var _retrieveParallel2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee11(type, ids, options) {
+      var _retrieveParallel2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee11(type, ids, options) {
         var _this4 = this;
         return regenerator_default().wrap(function _callee11$(_context19) {
           while (1) switch (_context19.prev = _context19.next) {
@@ -2825,7 +2825,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_retrieveMany",
     value: (function () {
-      var _retrieveMany2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee12(type, ids, options) {
+      var _retrieveMany2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee12(type, ids, options) {
         var _context20;
         var url, fields;
         return regenerator_default().wrap(function _callee12$(_context21) {
@@ -2888,7 +2888,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
      * @param options
      */
     function () {
-      var _create = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee13(type, records) {
+      var _create = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee13(type, records) {
         var options,
           ret,
           _args13 = arguments;
@@ -2941,12 +2941,12 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_createSingle",
     value: (function () {
-      var _createSingle2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee14(type, record, options) {
+      var _createSingle2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee14(type, record, options) {
         var Id, rtype, attributes, rec, sobjectType, url, contentType, body, _context23, form;
         return regenerator_default().wrap(function _callee14$(_context24) {
           while (1) switch (_context24.prev = _context24.next) {
             case 0:
-              Id = record.Id, rtype = record.type, attributes = record.attributes, rec = (0,objectWithoutProperties/* default */.A)(record, _excluded);
+              Id = record.Id, rtype = record.type, attributes = record.attributes, rec = (0,objectWithoutProperties.A)(record, _excluded);
               sobjectType = type || (attributes === null || attributes === void 0 ? void 0 : attributes.type) || rtype;
               if (sobjectType) {
                 _context24.next = 4;
@@ -2959,7 +2959,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
                 // Send the record as a multipart/form-data request. Useful for fields containing large binary blobs.
                 form = new (browser_default())(); // Extract the fields requested to be sent separately from the JSON
                 for_each_default()(_context23 = entries_default()(options.multipartFileFields)).call(_context23, function (_ref3) {
-                  var _ref4 = (0,slicedToArray/* default */.A)(_ref3, 2),
+                  var _ref4 = (0,slicedToArray.A)(_ref3, 2),
                     fieldName = _ref4[0],
                     fileDetails = _ref4[1];
                   form.append(fieldName, Buffer.from(rec[fieldName], 'base64'), fileDetails);
@@ -2998,7 +2998,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_createParallel",
     value: (function () {
-      var _createParallel2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee15(type, records, options) {
+      var _createParallel2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee15(type, records, options) {
         var _this5 = this;
         return regenerator_default().wrap(function _callee15$(_context25) {
           while (1) switch (_context25.prev = _context25.next) {
@@ -3033,7 +3033,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_createMany",
     value: (function () {
-      var _createMany2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee16(type, records, options) {
+      var _createMany2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee16(type, records, options) {
         var _context26, _records, url;
         return regenerator_default().wrap(function _callee16$(_context27) {
           while (1) switch (_context27.prev = _context27.next) {
@@ -3050,13 +3050,13 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
               }
               _context27.t0 = concat_default()(_context26 = []);
               _context27.t1 = _context26;
-              _context27.t2 = toConsumableArray/* default */.A;
+              _context27.t2 = toConsumableArray.A;
               _context27.next = 8;
               return this._createMany(type, slice_default()(records).call(records, 0, MAX_DML_COUNT), options);
             case 8:
               _context27.t3 = _context27.sent;
               _context27.t4 = (0, _context27.t2)(_context27.t3);
-              _context27.t5 = toConsumableArray/* default */.A;
+              _context27.t5 = toConsumableArray.A;
               _context27.next = 13;
               return this._createMany(type, slice_default()(records).call(records, MAX_DML_COUNT), options);
             case 13:
@@ -3068,7 +3068,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
                 var Id = record.Id,
                   rtype = record.type,
                   attributes = record.attributes,
-                  rec = (0,objectWithoutProperties/* default */.A)(record, _excluded2);
+                  rec = (0,objectWithoutProperties.A)(record, _excluded2);
                 var sobjectType = type || (attributes === null || attributes === void 0 ? void 0 : attributes.type) || rtype;
                 if (!sobjectType) {
                   throw new Error('No SObject Type defined in record');
@@ -3121,12 +3121,12 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_updateSingle",
     value: (function () {
-      var _updateSingle2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee17(type, record, options) {
+      var _updateSingle2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee17(type, record, options) {
         var id, rtype, attributes, rec, sobjectType, url;
         return regenerator_default().wrap(function _callee17$(_context28) {
           while (1) switch (_context28.prev = _context28.next) {
             case 0:
-              id = record.Id, rtype = record.type, attributes = record.attributes, rec = (0,objectWithoutProperties/* default */.A)(record, _excluded3);
+              id = record.Id, rtype = record.type, attributes = record.attributes, rec = (0,objectWithoutProperties.A)(record, _excluded3);
               if (id) {
                 _context28.next = 3;
                 break;
@@ -3169,7 +3169,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_updateParallel",
     value: (function () {
-      var _updateParallel2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee18(type, records, options) {
+      var _updateParallel2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee18(type, records, options) {
         var _this6 = this;
         return regenerator_default().wrap(function _callee18$(_context29) {
           while (1) switch (_context29.prev = _context29.next) {
@@ -3204,7 +3204,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_updateMany",
     value: (function () {
-      var _updateMany2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee19(type, records, options) {
+      var _updateMany2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee19(type, records, options) {
         var _context30, _records, url;
         return regenerator_default().wrap(function _callee19$(_context31) {
           while (1) switch (_context31.prev = _context31.next) {
@@ -3221,13 +3221,13 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
               }
               _context31.t0 = concat_default()(_context30 = []);
               _context31.t1 = _context30;
-              _context31.t2 = toConsumableArray/* default */.A;
+              _context31.t2 = toConsumableArray.A;
               _context31.next = 8;
               return this._updateMany(type, slice_default()(records).call(records, 0, MAX_DML_COUNT), options);
             case 8:
               _context31.t3 = _context31.sent;
               _context31.t4 = (0, _context31.t2)(_context31.t3);
-              _context31.t5 = toConsumableArray/* default */.A;
+              _context31.t5 = toConsumableArray.A;
               _context31.next = 13;
               return this._updateMany(type, slice_default()(records).call(records, MAX_DML_COUNT), options);
             case 13:
@@ -3239,7 +3239,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
                 var id = record.Id,
                   rtype = record.type,
                   attributes = record.attributes,
-                  rec = (0,objectWithoutProperties/* default */.A)(record, _excluded4);
+                  rec = (0,objectWithoutProperties.A)(record, _excluded4);
                 if (!id) {
                   throw new Error('Record id is not found in record.');
                 }
@@ -3292,7 +3292,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
      * @param options
      */
     function () {
-      var _upsert = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee20(type, records, extIdField) {
+      var _upsert = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee20(type, records, extIdField) {
         var _this7 = this;
         var options,
           isArray,
@@ -3317,7 +3317,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
                 var extId = record[extIdField],
                   rtype = record.type,
                   attributes = record.attributes,
-                  rec = (0,objectWithoutProperties/* default */.A)(record, map_default()(_context32 = [extIdField, "type", "attributes"]).call(_context32, _toPropertyKey));
+                  rec = (0,objectWithoutProperties.A)(record, map_default()(_context32 = [extIdField, "type", "attributes"]).call(_context32, _toPropertyKey));
                 var url = [_this7._baseUrl(), 'sobjects', type, extIdField, extId].join('/');
                 return _this7.request({
                   method: 'PATCH',
@@ -3368,7 +3368,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
      * @param options
      */
     function () {
-      var _destroy = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee21(type, ids) {
+      var _destroy = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee21(type, ids) {
         var options,
           _args21 = arguments;
         return regenerator_default().wrap(function _callee21$(_context34) {
@@ -3392,7 +3392,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_destroySingle",
     value: (function () {
-      var _destroySingle2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee22(type, id, options) {
+      var _destroySingle2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee22(type, id, options) {
         var url;
         return regenerator_default().wrap(function _callee22$(_context35) {
           while (1) switch (_context35.prev = _context35.next) {
@@ -3423,7 +3423,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_destroyParallel",
     value: (function () {
-      var _destroyParallel2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee23(type, ids, options) {
+      var _destroyParallel2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee23(type, ids, options) {
         var _this8 = this;
         return regenerator_default().wrap(function _callee23$(_context36) {
           while (1) switch (_context36.prev = _context36.next) {
@@ -3459,7 +3459,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_destroyMany",
     value: (function () {
-      var _destroyMany2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee24(type, ids, options) {
+      var _destroyMany2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee24(type, ids, options) {
         var _context37, url;
         return regenerator_default().wrap(function _callee24$(_context38) {
           while (1) switch (_context38.prev = _context38.next) {
@@ -3476,13 +3476,13 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
               }
               _context38.t0 = concat_default()(_context37 = []);
               _context38.t1 = _context37;
-              _context38.t2 = toConsumableArray/* default */.A;
+              _context38.t2 = toConsumableArray.A;
               _context38.next = 8;
               return this._destroyMany(type, slice_default()(ids).call(ids, 0, MAX_DML_COUNT), options);
             case 8:
               _context38.t3 = _context38.sent;
               _context38.t4 = (0, _context38.t2)(_context38.t3);
-              _context38.t5 = toConsumableArray/* default */.A;
+              _context38.t5 = toConsumableArray.A;
               _context38.next = 13;
               return this._destroyMany(type, slice_default()(ids).call(ids, MAX_DML_COUNT), options);
             case 13:
@@ -3517,7 +3517,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
      * Describe SObject metadata
      */
     function () {
-      var _describe = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee25(type) {
+      var _describe = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee25(type) {
         var url, body;
         return regenerator_default().wrap(function _callee25$(_context39) {
           while (1) switch (_context39.prev = _context39.next) {
@@ -3546,7 +3546,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "describeGlobal",
     value: (function () {
-      var _describeGlobal = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee26() {
+      var _describeGlobal = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee26() {
         var url, body;
         return regenerator_default().wrap(function _callee26$(_context40) {
           while (1) switch (_context40.prev = _context40.next) {
@@ -3575,7 +3575,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "sobject",
     value: function sobject(type) {
-      var so = this.sobjects[type] || new browser_sobject/* default */.A(this, type);
+      var so = this.sobjects[type] || new browser_sobject.A(this, type);
       this.sobjects[type] = so;
       return so;
     }
@@ -3586,7 +3586,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "identity",
     value: (function () {
-      var _identity = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee27() {
+      var _identity = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee27() {
         var _this$userInfo;
         var options,
           url,
@@ -3647,7 +3647,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "recent",
     value: (function () {
-      var _recent = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee28(type, limit) {
+      var _recent = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee28(type, limit) {
         var url, _yield$this$request, recentItems;
         return regenerator_default().wrap(function _callee28$(_context42) {
           while (1) switch (_context42.prev = _context42.next) {
@@ -3692,7 +3692,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "updated",
     value: (function () {
-      var _updated = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee29(type, start, end) {
+      var _updated = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee29(type, start, end) {
         var url, body;
         return regenerator_default().wrap(function _callee29$(_context43) {
           while (1) switch (_context43.prev = _context43.next) {
@@ -3732,7 +3732,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "deleted",
     value: (function () {
-      var _deleted = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee30(type, start, end) {
+      var _deleted = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee30(type, start, end) {
         var url, body;
         return regenerator_default().wrap(function _callee30$(_context44) {
           while (1) switch (_context44.prev = _context44.next) {
@@ -3772,7 +3772,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "tabs",
     value: (function () {
-      var _tabs = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee31() {
+      var _tabs = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee31() {
         var url, body;
         return regenerator_default().wrap(function _callee31$(_context45) {
           while (1) switch (_context45.prev = _context45.next) {
@@ -3801,7 +3801,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "limits",
     value: (function () {
-      var _limits = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee32() {
+      var _limits = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee32() {
         var url, body;
         return regenerator_default().wrap(function _callee32$(_context46) {
           while (1) switch (_context46.prev = _context46.next) {
@@ -3830,7 +3830,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "theme",
     value: (function () {
-      var _theme = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee33() {
+      var _theme = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee33() {
         var url, body;
         return regenerator_default().wrap(function _callee33$(_context47) {
           while (1) switch (_context47.prev = _context47.next) {
@@ -3859,7 +3859,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "quickActions",
     value: (function () {
-      var _quickActions = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee34() {
+      var _quickActions = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee34() {
         var body;
         return regenerator_default().wrap(function _callee34$(_context48) {
           while (1) switch (_context48.prev = _context48.next) {
@@ -3887,7 +3887,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "quickAction",
     value: function quickAction(actionName) {
-      return new quick_action/* default */.A(this, "/quickActions/".concat(actionName));
+      return new quick_action.A(this, "/quickActions/".concat(actionName));
     }
   }, {
     key: "isLightningInstance",
@@ -3897,7 +3897,7 @@ var Connection = /*#__PURE__*/function (_EventEmitter) {
     }
   }]);
 }(events.EventEmitter);
-(0,defineProperty/* default */.A)(Connection, "_logger", (0,logger/* getLogger */.tZ)('connection'));
+(0,defineProperty.A)(Connection, "_logger", (0,logger/* getLogger */.tZ)('connection'));
 /* harmony default export */ const connection = (Connection);
 
 
@@ -3973,28 +3973,28 @@ __webpack_require__.d(__webpack_exports__, {
 var es_array_push = __webpack_require__(11190);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/keys.js
 var keys = __webpack_require__(82173);
-var keys_default = /*#__PURE__*/__webpack_require__.n(keys);
+var keys_default = __webpack_require__.n(keys);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/get-own-property-symbols.js
 var get_own_property_symbols = __webpack_require__(68040);
-var get_own_property_symbols_default = /*#__PURE__*/__webpack_require__.n(get_own_property_symbols);
+var get_own_property_symbols_default = __webpack_require__.n(get_own_property_symbols);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/filter.js
 var filter = __webpack_require__(62675);
-var filter_default = /*#__PURE__*/__webpack_require__.n(filter);
+var filter_default = __webpack_require__.n(filter);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor.js
 var get_own_property_descriptor = __webpack_require__(25988);
-var get_own_property_descriptor_default = /*#__PURE__*/__webpack_require__.n(get_own_property_descriptor);
+var get_own_property_descriptor_default = __webpack_require__.n(get_own_property_descriptor);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/for-each.js
 var for_each = __webpack_require__(36678);
-var for_each_default = /*#__PURE__*/__webpack_require__.n(for_each);
+var for_each_default = __webpack_require__.n(for_each);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptors.js
 var get_own_property_descriptors = __webpack_require__(13003);
-var get_own_property_descriptors_default = /*#__PURE__*/__webpack_require__.n(get_own_property_descriptors);
+var get_own_property_descriptors_default = __webpack_require__.n(get_own_property_descriptors);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-properties.js
 var define_properties = __webpack_require__(45658);
-var define_properties_default = /*#__PURE__*/__webpack_require__.n(define_properties);
+var define_properties_default = __webpack_require__.n(define_properties);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-property.js
 var define_property = __webpack_require__(74294);
-var define_property_default = /*#__PURE__*/__webpack_require__.n(define_property);
+var define_property_default = __webpack_require__.n(define_property);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/helpers/esm/defineProperty.js
 var defineProperty = __webpack_require__(24839);
 // EXTERNAL MODULE: ./node_modules/stream-browserify/index.js
@@ -6332,8 +6332,8 @@ const sync_stringify = function(records, opts={}){
 
 
 
-function ownKeys(e, r) { var t = keys_default()(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context, _context2; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context = ownKeys(Object(t), !0)).call(_context, function (r) { (0,defineProperty/* default */.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context2 = ownKeys(Object(t))).call(_context2, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
+function ownKeys(e, r) { var t = Object.keys(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context, _context2; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context = ownKeys(Object(t), !0)).call(_context, function (r) { (0,defineProperty.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context2 = ownKeys(Object(t))).call(_context2, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
 /**
  *
  */
@@ -6394,17 +6394,17 @@ function serializeCSVStream(options) {
 /* harmony import */ var _babel_runtime_corejs3_helpers_createClass__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(4449);
 /* harmony import */ var _babel_runtime_corejs3_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(24839);
 /* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6764);
-/* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_0___default = __webpack_require__.n(core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(71698);
-/* harmony import */ var core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_1___default = __webpack_require__.n(core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(82067);
-/* harmony import */ var core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_2___default = __webpack_require__.n(core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var core_js_modules_es_string_match_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(56501);
-/* harmony import */ var core_js_modules_es_string_match_js__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_string_match_js__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var core_js_modules_es_string_match_js__WEBPACK_IMPORTED_MODULE_3___default = __webpack_require__.n(core_js_modules_es_string_match_js__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(14109);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_4___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_parse_int__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(32886);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_parse_int__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_parse_int__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_parse_int__WEBPACK_IMPORTED_MODULE_5___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_parse_int__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _util_formatter__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(8819);
 
 
@@ -6436,7 +6436,7 @@ function createLiteralBuilder(literal) {
  * @constructor
  * @see http://www.salesforce.com/us/developer/docs/soql_sosl/Content/sforce_api_calls_soql_select_dateformats.htm
  */
-var SfDate = /*#__PURE__*/function () {
+var SfDate = function () {
   /**
    *
    */
@@ -6642,7 +6642,7 @@ _SfDate = SfDate;
 /* harmony export */ });
 /* unused harmony export HttpApi */
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(54818);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _babel_runtime_corejs3_helpers_wrapNativeSuper__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(78979);
 /* harmony import */ var _babel_runtime_corejs3_helpers_typeof__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(13040);
 /* harmony import */ var _babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(14953);
@@ -6653,35 +6653,35 @@ _SfDate = SfDate;
 /* harmony import */ var _babel_runtime_corejs3_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(24839);
 /* harmony import */ var _babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(62207);
 /* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(41400);
-/* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default = __webpack_require__.n(_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(14109);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_2___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_date_now__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(75770);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_date_now__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_date_now__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_date_now__WEBPACK_IMPORTED_MODULE_3___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_date_now__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(82173);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_4___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_includes__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(38336);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_includes__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_includes__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_includes__WEBPACK_IMPORTED_MODULE_5___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_includes__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_array_is_array__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(75403);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_array_is_array__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_array_is_array__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_array_is_array__WEBPACK_IMPORTED_MODULE_6___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_array_is_array__WEBPACK_IMPORTED_MODULE_6__);
 /* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(6764);
-/* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_9___default = __webpack_require__.n(core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_9__);
 /* harmony import */ var core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(71698);
-/* harmony import */ var core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_10__);
+/* harmony import */ var core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_10___default = __webpack_require__.n(core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_10__);
 /* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(11190);
-/* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_11__);
+/* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_11___default = __webpack_require__.n(core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_11__);
 /* harmony import */ var core_js_modules_es_function_name_js__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(16374);
-/* harmony import */ var core_js_modules_es_function_name_js__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_function_name_js__WEBPACK_IMPORTED_MODULE_12__);
+/* harmony import */ var core_js_modules_es_function_name_js__WEBPACK_IMPORTED_MODULE_12___default = __webpack_require__.n(core_js_modules_es_function_name_js__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(52508);
-/* harmony import */ var core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_13___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_13__);
+/* harmony import */ var core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_13___default = __webpack_require__.n(core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_13__);
 /* harmony import */ var core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(82067);
-/* harmony import */ var core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_14__);
+/* harmony import */ var core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_14___default = __webpack_require__.n(core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_14__);
 /* harmony import */ var core_js_modules_es_regexp_test_js__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(37230);
-/* harmony import */ var core_js_modules_es_regexp_test_js__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_test_js__WEBPACK_IMPORTED_MODULE_15__);
+/* harmony import */ var core_js_modules_es_regexp_test_js__WEBPACK_IMPORTED_MODULE_15___default = __webpack_require__.n(core_js_modules_es_regexp_test_js__WEBPACK_IMPORTED_MODULE_15__);
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(64785);
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_16___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_16__);
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_16___default = __webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_16__);
 /* harmony import */ var xml2js__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(79327);
-/* harmony import */ var xml2js__WEBPACK_IMPORTED_MODULE_17___default = /*#__PURE__*/__webpack_require__.n(xml2js__WEBPACK_IMPORTED_MODULE_17__);
+/* harmony import */ var xml2js__WEBPACK_IMPORTED_MODULE_17___default = __webpack_require__.n(xml2js__WEBPACK_IMPORTED_MODULE_17__);
 /* harmony import */ var _util_logger__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(74833);
 /* harmony import */ var _util_promise__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(88376);
 /* harmony import */ var _csv__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(31703);
@@ -6734,7 +6734,7 @@ function parseXML(_x) {
 }
 /** @private */
 function _parseXML() {
-  _parseXML = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_23__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee5(str) {
+  _parseXML = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_23__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee5(str) {
     return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().wrap(function _callee5$(_context9) {
       while (1) switch (_context9.prev = _context9.next) {
         case 0:
@@ -6756,7 +6756,7 @@ function parseText(str) {
 /**
  * HTTP based API class with authorization hook
  */
-var HttpApi = /*#__PURE__*/function (_EventEmitter) {
+var HttpApi = function (_EventEmitter) {
   function HttpApi(conn, options) {
     var _this;
     (0,_babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_24__/* ["default"] */ .A)(this, HttpApi);
@@ -6782,7 +6782,7 @@ var HttpApi = /*#__PURE__*/function (_EventEmitter) {
         var _createLazyStream = (0,_util_stream__WEBPACK_IMPORTED_MODULE_21__/* .createLazyStream */ .Zt)(),
           stream = _createLazyStream.stream,
           setStream = _createLazyStream.setStream;
-        var promise = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_23__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee() {
+        var promise = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_23__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee() {
           var _context, _context2;
           var refreshDelegate, bodyPromise, _body2, requestTime, requestPromise, response, responseTime, err, body;
           return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().wrap(function _callee$(_context3) {
@@ -6959,7 +6959,7 @@ var HttpApi = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "parseResponseBody",
     value: (function () {
-      var _parseResponseBody = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_23__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee2(response) {
+      var _parseResponseBody = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_23__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee2(response) {
         var contentType, parseBody;
         return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().wrap(function _callee2$(_context6) {
           while (1) switch (_context6.prev = _context6.next) {
@@ -6991,7 +6991,7 @@ var HttpApi = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "getResponseBody",
     value: (function () {
-      var _getResponseBody = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_23__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee3(response) {
+      var _getResponseBody = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_23__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee3(response) {
         var body, err;
         return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().wrap(function _callee3$(_context7) {
           while (1) switch (_context7.prev = _context7.next) {
@@ -7088,7 +7088,7 @@ var HttpApi = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "getError",
     value: (function () {
-      var _getError = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_23__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee4(response, body) {
+      var _getError = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_23__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee4(response, body) {
         var error;
         return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().wrap(function _callee4$(_context8) {
           while (1) switch (_context8.prev = _context8.next) {
@@ -7143,7 +7143,7 @@ var HttpApi = /*#__PURE__*/function (_EventEmitter) {
  *
  */
 (0,_babel_runtime_corejs3_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_28__/* ["default"] */ .A)(HttpApi, "_logger", (0,_util_logger__WEBPACK_IMPORTED_MODULE_18__/* .getLogger */ .tZ)('http-api'));
-var HttpApiError = /*#__PURE__*/function (_Error) {
+var HttpApiError = function (_Error) {
   function HttpApiError(message, error, response, contentType) {
     const errorCode = error.errorCode;
     const content = error.message;
@@ -7164,7 +7164,7 @@ var HttpApiError = /*#__PURE__*/function (_Error) {
   }
   (0,_babel_runtime_corejs3_helpers_inherits__WEBPACK_IMPORTED_MODULE_25__/* ["default"] */ .A)(HttpApiError, _Error);
   return (0,_babel_runtime_corejs3_helpers_createClass__WEBPACK_IMPORTED_MODULE_26__/* ["default"] */ .A)(HttpApiError);
-}( /*#__PURE__*/(0,_babel_runtime_corejs3_helpers_wrapNativeSuper__WEBPACK_IMPORTED_MODULE_29__/* ["default"] */ .A)(Error));
+}( (0,_babel_runtime_corejs3_helpers_wrapNativeSuper__WEBPACK_IMPORTED_MODULE_29__/* ["default"] */ .A)(Error));
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (HttpApi);
 
 
@@ -7179,7 +7179,7 @@ var HttpApiError = /*#__PURE__*/function (_Error) {
 /* harmony export */   E: () => (/* binding */ registerModule)
 /* harmony export */ });
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(54818);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _babel_runtime_corejs3_helpers_createClass__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(4449);
 /* harmony import */ var _babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(14953);
 /* harmony import */ var _babel_runtime_corejs3_helpers_possibleConstructorReturn__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(4821);
@@ -7187,11 +7187,11 @@ var HttpApiError = /*#__PURE__*/function (_Error) {
 /* harmony import */ var _babel_runtime_corejs3_helpers_inherits__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(80025);
 /* harmony import */ var _babel_runtime_corejs3_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(24839);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(14109);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_1___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(74294);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_2___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(64785);
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_5___default = __webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _VERSION__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(97268);
 /* harmony import */ var _connection__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(10631);
 /* harmony import */ var _oauth2__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(69557);
@@ -7220,7 +7220,7 @@ function _isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.
 /**
  *
  */
-var JSforce = /*#__PURE__*/function (_EventEmitter) {
+var JSforce = function (_EventEmitter) {
   function JSforce() {
     var _context;
     var _this;
@@ -7271,23 +7271,23 @@ var jsforce = new JSforce();
 /* harmony export */   s: () => (/* binding */ OAuth2)
 /* harmony export */ });
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(82173);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_0___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(68040);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_1___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(62675);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_2___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(25988);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_3___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(36678);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_4___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(13003);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_5___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(45658);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_6___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_6__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(74294);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_7___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_7__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(54818);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_8__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_8___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_8__);
 /* harmony import */ var _babel_runtime_corejs3_helpers_possibleConstructorReturn__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(4821);
 /* harmony import */ var _babel_runtime_corejs3_helpers_getPrototypeOf__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(47686);
 /* harmony import */ var _babel_runtime_corejs3_helpers_inherits__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(80025);
@@ -7297,29 +7297,29 @@ var jsforce = new JSforce();
 /* harmony import */ var _babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(14953);
 /* harmony import */ var _babel_runtime_corejs3_helpers_createClass__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(4449);
 /* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(41400);
-/* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11__);
+/* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default = __webpack_require__.n(_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_slice__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(34047);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_slice__WEBPACK_IMPORTED_MODULE_13___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_slice__WEBPACK_IMPORTED_MODULE_13__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_slice__WEBPACK_IMPORTED_MODULE_13___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_slice__WEBPACK_IMPORTED_MODULE_13__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_includes__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(38336);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_includes__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_includes__WEBPACK_IMPORTED_MODULE_14__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_includes__WEBPACK_IMPORTED_MODULE_14___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_includes__WEBPACK_IMPORTED_MODULE_14__);
 /* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(6764);
-/* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_15__);
+/* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_15___default = __webpack_require__.n(core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_15__);
 /* harmony import */ var core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(71698);
-/* harmony import */ var core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_16___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_16__);
+/* harmony import */ var core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_16___default = __webpack_require__.n(core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_16__);
 /* harmony import */ var core_js_modules_es_function_name_js__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(16374);
-/* harmony import */ var core_js_modules_es_function_name_js__WEBPACK_IMPORTED_MODULE_17___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_function_name_js__WEBPACK_IMPORTED_MODULE_17__);
+/* harmony import */ var core_js_modules_es_function_name_js__WEBPACK_IMPORTED_MODULE_17___default = __webpack_require__.n(core_js_modules_es_function_name_js__WEBPACK_IMPORTED_MODULE_17__);
 /* harmony import */ var core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(52508);
-/* harmony import */ var core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_18___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_18__);
+/* harmony import */ var core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_18___default = __webpack_require__.n(core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_18__);
 /* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(11190);
-/* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_19___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_19__);
+/* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_19___default = __webpack_require__.n(core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_19__);
 /* harmony import */ var core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(94711);
-/* harmony import */ var core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_20___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_20__);
+/* harmony import */ var core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_20___default = __webpack_require__.n(core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_20__);
 /* harmony import */ var core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(82067);
-/* harmony import */ var core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_21___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_21__);
+/* harmony import */ var core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_21___default = __webpack_require__.n(core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_21__);
 /* harmony import */ var core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(67873);
-/* harmony import */ var core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_22___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_22__);
+/* harmony import */ var core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_22___default = __webpack_require__.n(core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_22__);
 /* harmony import */ var core_js_modules_es_string_replace_js__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(3484);
-/* harmony import */ var core_js_modules_es_string_replace_js__WEBPACK_IMPORTED_MODULE_23___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_string_replace_js__WEBPACK_IMPORTED_MODULE_23__);
+/* harmony import */ var core_js_modules_es_string_replace_js__WEBPACK_IMPORTED_MODULE_23___default = __webpack_require__.n(core_js_modules_es_string_replace_js__WEBPACK_IMPORTED_MODULE_23__);
 /* harmony import */ var crypto__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(4451);
 /* harmony import */ var querystring__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(96448);
 /* harmony import */ var _transport__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(73258);
@@ -7381,7 +7381,7 @@ function base64UrlEscape(base64Encoded) {
 /**
  * OAuth2 class
  */
-var OAuth2 = /*#__PURE__*/function () {
+var OAuth2 = function () {
   /**
    *
    */
@@ -7452,7 +7452,7 @@ var OAuth2 = /*#__PURE__*/function () {
   }, {
     key: "refreshToken",
     value: (function () {
-      var _refreshToken2 = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_29__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().mark(function _callee(_refreshToken) {
+      var _refreshToken2 = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_29__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().mark(function _callee(_refreshToken) {
         var params, ret;
         return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().wrap(function _callee$(_context3) {
           while (1) switch (_context3.prev = _context3.next) {
@@ -7496,7 +7496,7 @@ var OAuth2 = /*#__PURE__*/function () {
   }, {
     key: "requestToken",
     value: (function () {
-      var _requestToken = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_29__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().mark(function _callee2(codeOrParams) {
+      var _requestToken = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_29__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().mark(function _callee2(codeOrParams) {
         var params,
           _params,
           ret,
@@ -7547,7 +7547,7 @@ var OAuth2 = /*#__PURE__*/function () {
   }, {
     key: "authenticate",
     value: (function () {
-      var _authenticate = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_29__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().mark(function _callee3(username, password) {
+      var _authenticate = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_29__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().mark(function _callee3(username, password) {
         var ret;
         return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().wrap(function _callee3$(_context5) {
           while (1) switch (_context5.prev = _context5.next) {
@@ -7587,7 +7587,7 @@ var OAuth2 = /*#__PURE__*/function () {
   }, {
     key: "revokeToken",
     value: (function () {
-      var _revokeToken = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_29__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().mark(function _callee4(token) {
+      var _revokeToken = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_29__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().mark(function _callee4(token) {
         var response, res;
         return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().wrap(function _callee4$(_context6) {
           while (1) switch (_context6.prev = _context6.next) {
@@ -7616,7 +7616,7 @@ var OAuth2 = /*#__PURE__*/function () {
                   error_description: response.body
                 };
               }
-              throw new ( /*#__PURE__*/function (_Error) {
+              throw new ( function (_Error) {
                 function _class(_ref) {
                   var _this;
                   var error = _ref.error,
@@ -7628,7 +7628,7 @@ var OAuth2 = /*#__PURE__*/function () {
                 }
                 (0,_babel_runtime_corejs3_helpers_inherits__WEBPACK_IMPORTED_MODULE_30__/* ["default"] */ .A)(_class, _Error);
                 return (0,_babel_runtime_corejs3_helpers_createClass__WEBPACK_IMPORTED_MODULE_28__/* ["default"] */ .A)(_class);
-              }( /*#__PURE__*/(0,_babel_runtime_corejs3_helpers_wrapNativeSuper__WEBPACK_IMPORTED_MODULE_31__/* ["default"] */ .A)(Error)))(res);
+              }( (0,_babel_runtime_corejs3_helpers_wrapNativeSuper__WEBPACK_IMPORTED_MODULE_31__/* ["default"] */ .A)(Error)))(res);
             case 7:
             case "end":
               return _context6.stop();
@@ -7647,7 +7647,7 @@ var OAuth2 = /*#__PURE__*/function () {
   }, {
     key: "_postParams",
     value: (function () {
-      var _postParams2 = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_29__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().mark(function _callee5(params) {
+      var _postParams2 = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_29__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().mark(function _callee5(params) {
         var response, res;
         return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().wrap(function _callee5$(_context7) {
           while (1) switch (_context7.prev = _context7.next) {
@@ -7677,7 +7677,7 @@ var OAuth2 = /*#__PURE__*/function () {
                 error: "ERROR_HTTP_".concat(response.statusCode),
                 error_description: response.body
               };
-              throw new ( /*#__PURE__*/function (_Error2) {
+              throw new ( function (_Error2) {
                 function _class2(_ref2) {
                   var _this2;
                   var error = _ref2.error,
@@ -7689,7 +7689,7 @@ var OAuth2 = /*#__PURE__*/function () {
                 }
                 (0,_babel_runtime_corejs3_helpers_inherits__WEBPACK_IMPORTED_MODULE_30__/* ["default"] */ .A)(_class2, _Error2);
                 return (0,_babel_runtime_corejs3_helpers_createClass__WEBPACK_IMPORTED_MODULE_28__/* ["default"] */ .A)(_class2);
-              }( /*#__PURE__*/(0,_babel_runtime_corejs3_helpers_wrapNativeSuper__WEBPACK_IMPORTED_MODULE_31__/* ["default"] */ .A)(Error)))(res);
+              }( (0,_babel_runtime_corejs3_helpers_wrapNativeSuper__WEBPACK_IMPORTED_MODULE_31__/* ["default"] */ .A)(Error)))(res);
             case 8:
               return _context7.abrupt("return", res);
             case 9:
@@ -7725,37 +7725,37 @@ __webpack_require__.d(__webpack_exports__, {
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/get-own-property-symbols.js
 var get_own_property_symbols = __webpack_require__(68040);
-var get_own_property_symbols_default = /*#__PURE__*/__webpack_require__.n(get_own_property_symbols);
+var get_own_property_symbols_default = __webpack_require__.n(get_own_property_symbols);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/filter.js
 var filter = __webpack_require__(62675);
-var filter_default = /*#__PURE__*/__webpack_require__.n(filter);
+var filter_default = __webpack_require__.n(filter);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor.js
 var get_own_property_descriptor = __webpack_require__(25988);
-var get_own_property_descriptor_default = /*#__PURE__*/__webpack_require__.n(get_own_property_descriptor);
+var get_own_property_descriptor_default = __webpack_require__.n(get_own_property_descriptor);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/for-each.js
 var for_each = __webpack_require__(36678);
-var for_each_default = /*#__PURE__*/__webpack_require__.n(for_each);
+var for_each_default = __webpack_require__.n(for_each);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptors.js
 var get_own_property_descriptors = __webpack_require__(13003);
-var get_own_property_descriptors_default = /*#__PURE__*/__webpack_require__.n(get_own_property_descriptors);
+var get_own_property_descriptors_default = __webpack_require__.n(get_own_property_descriptors);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-properties.js
 var define_properties = __webpack_require__(45658);
-var define_properties_default = /*#__PURE__*/__webpack_require__.n(define_properties);
+var define_properties_default = __webpack_require__.n(define_properties);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-property.js
 var define_property = __webpack_require__(74294);
-var define_property_default = /*#__PURE__*/__webpack_require__.n(define_property);
+var define_property_default = __webpack_require__.n(define_property);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/reflect/construct.js
 var construct = __webpack_require__(54818);
-var construct_default = /*#__PURE__*/__webpack_require__.n(construct);
+var construct_default = __webpack_require__.n(construct);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/array/from.js
 var from = __webpack_require__(71223);
-var from_default = /*#__PURE__*/__webpack_require__.n(from);
+var from_default = __webpack_require__.n(from);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/symbol.js
 var symbol = __webpack_require__(20153);
-var symbol_default = /*#__PURE__*/__webpack_require__.n(symbol);
+var symbol_default = __webpack_require__.n(symbol);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js/get-iterator-method.js
 var get_iterator_method = __webpack_require__(97106);
-var get_iterator_method_default = /*#__PURE__*/__webpack_require__.n(get_iterator_method);
+var get_iterator_method_default = __webpack_require__.n(get_iterator_method);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/helpers/esm/typeof.js
 var esm_typeof = __webpack_require__(13040);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/helpers/esm/asyncToGenerator.js
@@ -7780,7 +7780,7 @@ var inherits = __webpack_require__(80025);
 var defineProperty = __webpack_require__(24839);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/regenerator/index.js
 var regenerator = __webpack_require__(41400);
-var regenerator_default = /*#__PURE__*/__webpack_require__.n(regenerator);
+var regenerator_default = __webpack_require__.n(regenerator);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.error.cause.js
 var es_error_cause = __webpack_require__(6764);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.includes.js
@@ -7807,37 +7807,37 @@ var es_string_includes = __webpack_require__(82308);
 var es_string_split = __webpack_require__(19148);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/reduce.js
 var reduce = __webpack_require__(45031);
-var reduce_default = /*#__PURE__*/__webpack_require__.n(reduce);
+var reduce_default = __webpack_require__.n(reduce);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/sort.js
 var instance_sort = __webpack_require__(76485);
-var sort_default = /*#__PURE__*/__webpack_require__.n(instance_sort);
+var sort_default = __webpack_require__.n(instance_sort);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/includes.js
 var instance_includes = __webpack_require__(38336);
-var includes_default = /*#__PURE__*/__webpack_require__.n(instance_includes);
+var includes_default = __webpack_require__.n(instance_includes);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/json/stringify.js
 var stringify = __webpack_require__(78205);
-var stringify_default = /*#__PURE__*/__webpack_require__.n(stringify);
+var stringify_default = __webpack_require__.n(stringify);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/promise.js
 var core_js_stable_promise = __webpack_require__(44124);
-var promise_default = /*#__PURE__*/__webpack_require__.n(core_js_stable_promise);
+var promise_default = __webpack_require__.n(core_js_stable_promise);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/array/is-array.js
 var is_array = __webpack_require__(75403);
-var is_array_default = /*#__PURE__*/__webpack_require__.n(is_array);
+var is_array_default = __webpack_require__.n(is_array);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/map.js
 var map = __webpack_require__(44499);
-var map_default = /*#__PURE__*/__webpack_require__.n(map);
+var map_default = __webpack_require__.n(map);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/concat.js
 var concat = __webpack_require__(14109);
-var concat_default = /*#__PURE__*/__webpack_require__.n(concat);
+var concat_default = __webpack_require__.n(concat);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/entries.js
 var entries = __webpack_require__(26321);
-var entries_default = /*#__PURE__*/__webpack_require__.n(entries);
+var entries_default = __webpack_require__.n(entries);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/keys.js
 var keys = __webpack_require__(82173);
-var keys_default = /*#__PURE__*/__webpack_require__.n(keys);
+var keys_default = __webpack_require__.n(keys);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/slice.js
 var slice = __webpack_require__(34047);
-var slice_default = /*#__PURE__*/__webpack_require__.n(slice);
+var slice_default = __webpack_require__.n(slice);
 // EXTERNAL MODULE: ./node_modules/events/events.js
 var events = __webpack_require__(64785);
 // EXTERNAL MODULE: ./browser/util/logger.js
@@ -7846,10 +7846,10 @@ var logger = __webpack_require__(74833);
 var record_stream = __webpack_require__(1816);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/values.js
 var values = __webpack_require__(96171);
-var values_default = /*#__PURE__*/__webpack_require__.n(values);
+var values_default = __webpack_require__.n(values);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/starts-with.js
 var starts_with = __webpack_require__(67977);
-var starts_with_default = /*#__PURE__*/__webpack_require__.n(starts_with);
+var starts_with_default = __webpack_require__.n(starts_with);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.string.replace.js
 var es_string_replace = __webpack_require__(3484);
 // EXTERNAL MODULE: ./browser/date.js
@@ -7892,7 +7892,7 @@ function createFieldsClause(fields) {
   var childQueries = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   var cqueries = values_default()(childQueries);
   // eslint-disable-next-line no-use-before-define
-  return concat_default()(_context = []).call(_context, (0,toConsumableArray/* default */.A)(fields || ['Id']), (0,toConsumableArray/* default */.A)(map_default()(cqueries).call(cqueries, function (cquery) {
+  return concat_default()(_context = []).call(_context, (0,toConsumableArray.A)(fields || ['Id']), (0,toConsumableArray.A)(map_default()(cqueries).call(cqueries, function (cquery) {
     return "(".concat(createSOQL(cquery), ")");
   }))).join(', ');
 }
@@ -7902,7 +7902,7 @@ function createValueExpression(value) {
   if (is_array_default()(value)) {
     return value.length > 0 ? "(".concat(map_default()(value).call(value, createValueExpression).join(', '), ")") : undefined;
   }
-  if (value instanceof date/* default */.A) {
+  if (value instanceof date.A) {
     return value.toString();
   }
   if (typeof value === 'string') {
@@ -7946,9 +7946,9 @@ function createFieldExpression(field, value) {
   // Assume the `$in` operator if value is an array and none was supplied.
   if (is_array_default()(value)) {
     op = '$in';
-  } else if ((0,esm_typeof/* default */.A)(value) === 'object' && value !== null) {
+  } else if ((0,esm_typeof.A)(value) === 'object' && value !== null) {
     // Otherwise, if an object was passed then process the supplied ops.
-    for (var _i = 0, _Object$keys = keys_default()(value); _i < _Object$keys.length; _i++) {
+    for (var _i = 0, _Object$keys = Object.keys(value); _i < _Object$keys.length; _i++) {
       var k = _Object$keys[_i];
       if (starts_with_default()(k).call(k, '$')) {
         op = k;
@@ -8003,7 +8003,7 @@ function createOrderByClause() {
   } else {
     var _context3;
     _sort = map_default()(_context3 = entries_default()(sort)).call(_context3, function (_ref) {
-      var _ref2 = (0,slicedToArray/* default */.A)(_ref, 2),
+      var _ref2 = (0,slicedToArray.A)(_ref, 2),
         field = _ref2[0],
         dir = _ref2[1];
       return [field, dir];
@@ -8011,7 +8011,7 @@ function createOrderByClause() {
   }
   return map_default()(_sort).call(_sort, function (_ref3) {
     var _context4;
-    var _ref4 = (0,slicedToArray/* default */.A)(_ref3, 2),
+    var _ref4 = (0,slicedToArray.A)(_ref3, 2),
       field = _ref4[0],
       dir = _ref4[1];
     /* eslint-disable no-param-reassign */
@@ -8043,7 +8043,7 @@ function createConditionClause() {
     var _context5;
     // if passed in hash object
     var conditionsMap = conditions;
-    conditionList = map_default()(_context5 = keys_default()(conditionsMap)).call(_context5, function (key) {
+    conditionList = map_default()(_context5 = Object.keys(conditionsMap)).call(_context5, function (key) {
       return {
         key: key,
         value: conditionsMap[key]
@@ -8052,7 +8052,7 @@ function createConditionClause() {
   } else {
     conditionList = map_default()(conditions).call(conditions, function (cond) {
       var _context6;
-      var conds = map_default()(_context6 = keys_default()(cond)).call(_context6, function (key) {
+      var conds = map_default()(_context6 = Object.keys(cond)).call(_context6, function (key) {
         return {
           key: key,
           value: cond[key]
@@ -8061,7 +8061,7 @@ function createConditionClause() {
       return conds.length > 1 ? {
         key: '$and',
         value: map_default()(conds).call(conds, function (c) {
-          return (0,defineProperty/* default */.A)({}, c.key, c.value);
+          return (0,defineProperty.A)({}, c.key, c.value);
         })
       } : conds[0];
     });
@@ -8158,10 +8158,10 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 
 
-function _callSuper(t, o, e) { return o = (0,getPrototypeOf/* default */.A)(o), (0,possibleConstructorReturn/* default */.A)(t, _isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf/* default */.A)(t).constructor) : o.apply(t, e)); }
+function _callSuper(t, o, e) { return o = (0,getPrototypeOf.A)(o), (0,possibleConstructorReturn.A)(t, _isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf.A)(t).constructor) : o.apply(t, e)); }
 function _isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(construct_default()(Boolean, [], function () {})); } catch (t) {} return (_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
-function ownKeys(e, r) { var t = keys_default()(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context35, _context36; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context35 = ownKeys(Object(t), !0)).call(_context35, function (r) { (0,defineProperty/* default */.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context36 = ownKeys(Object(t))).call(_context36, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
+function ownKeys(e, r) { var t = Object.keys(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context35, _context36; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context35 = ownKeys(Object(t), !0)).call(_context35, function (r) { (0,defineProperty.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context36 = ownKeys(Object(t))).call(_context36, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
 
 
 
@@ -8196,7 +8196,7 @@ function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _co
 
 var ResponseTargetValues = ['QueryResult', 'Records', 'SingleRecord', 'Count'];
 var ResponseTargets = reduce_default()(ResponseTargetValues).call(ResponseTargetValues, function (values, target) {
-  return _objectSpread(_objectSpread({}, values), {}, (0,defineProperty/* default */.A)({}, target, target));
+  return _objectSpread(_objectSpread({}, values), {}, (0,defineProperty.A)({}, target, target));
 }, {});
 
 // QRT extends 'Count'
@@ -8210,46 +8210,46 @@ var DEFAULT_BULK_API_VERSION = 1;
 /**
  * Query
  */
-var Query = /*#__PURE__*/function (_EventEmitter) {
+var Query = function (_EventEmitter) {
   /**
    *
    */
   function Query(conn, config, options) {
     var _this;
-    (0,classCallCheck/* default */.A)(this, Query);
+    (0,classCallCheck.A)(this, Query);
     _this = _callSuper(this, Query);
-    (0,defineProperty/* default */.A)(_this, "_config", {});
-    (0,defineProperty/* default */.A)(_this, "_children", []);
-    (0,defineProperty/* default */.A)(_this, "_executed", false);
-    (0,defineProperty/* default */.A)(_this, "_finished", false);
-    (0,defineProperty/* default */.A)(_this, "_chaining", false);
-    (0,defineProperty/* default */.A)(_this, "totalSize", 0);
-    (0,defineProperty/* default */.A)(_this, "totalFetched", 0);
-    (0,defineProperty/* default */.A)(_this, "records", []);
+    (0,defineProperty.A)(_this, "_config", {});
+    (0,defineProperty.A)(_this, "_children", []);
+    (0,defineProperty.A)(_this, "_executed", false);
+    (0,defineProperty.A)(_this, "_finished", false);
+    (0,defineProperty.A)(_this, "_chaining", false);
+    (0,defineProperty.A)(_this, "totalSize", 0);
+    (0,defineProperty.A)(_this, "totalFetched", 0);
+    (0,defineProperty.A)(_this, "records", []);
     /**
      * Synonym of Query#skip()
      */
-    (0,defineProperty/* default */.A)(_this, "offset", _this.skip);
+    (0,defineProperty.A)(_this, "offset", _this.skip);
     /**
      * Synonym of Query#sort()
      */
-    (0,defineProperty/* default */.A)(_this, "orderby", sort_default()(_this));
+    (0,defineProperty.A)(_this, "orderby", sort_default()(_this));
     /**
      * Synonym of Query#execute()
      */
-    (0,defineProperty/* default */.A)(_this, "exec", _this.execute);
+    (0,defineProperty.A)(_this, "exec", _this.execute);
     /**
      * Synonym of Query#execute()
      */
-    (0,defineProperty/* default */.A)(_this, "run", _this.execute);
+    (0,defineProperty.A)(_this, "run", _this.execute);
     /**
      * Synonym of Query#destroy()
      */
-    (0,defineProperty/* default */.A)(_this, "delete", _this.destroy);
+    (0,defineProperty.A)(_this, "delete", _this.destroy);
     /**
      * Synonym of Query#destroy()
      */
-    (0,defineProperty/* default */.A)(_this, "del", _this.destroy);
+    (0,defineProperty.A)(_this, "del", _this.destroy);
     _this._conn = conn;
     _this._logger = conn._logLevel ? Query._logger.createInstance(conn._logLevel) : Query._logger;
     if (typeof config === 'string') {
@@ -8265,7 +8265,7 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
         _fields = _ref.fields,
         includes = includes_default()(_ref),
         _sort2 = sort_default()(_ref),
-        _config = (0,objectWithoutProperties/* default */.A)(_ref, _excluded);
+        _config = (0,objectWithoutProperties.A)(_ref, _excluded);
       _this._config = _config;
       _this.select(_fields);
       if (includes) {
@@ -8307,8 +8307,8 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
   /**
    * Select fields to include in the returning result
    */
-  (0,inherits/* default */.A)(Query, _EventEmitter);
-  return (0,createClass/* default */.A)(Query, [{
+  (0,inherits.A)(Query, _EventEmitter);
+  return (0,createClass.A)(Query, [{
     key: "select",
     value: function select() {
       var fields = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '*';
@@ -8319,9 +8319,9 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
         var _context, _context2, _context4, _context5;
         return typeof fields === 'string' ? fields.split(/\s*,\s*/) : is_array_default()(fields) ? reduce_default()(_context = map_default()(_context2 = fields).call(_context2, toFieldArray)).call(_context, function (fs, f) {
           var _context3;
-          return concat_default()(_context3 = []).call(_context3, (0,toConsumableArray/* default */.A)(fs), (0,toConsumableArray/* default */.A)(f));
+          return concat_default()(_context3 = []).call(_context3, (0,toConsumableArray.A)(fs), (0,toConsumableArray.A)(f));
         }, []) : reduce_default()(_context4 = map_default()(_context5 = entries_default()(fields)).call(_context5, function (_ref2) {
-          var _ref3 = (0,slicedToArray/* default */.A)(_ref2, 2),
+          var _ref3 = (0,slicedToArray.A)(_ref2, 2),
             f = _ref3[0],
             v = _ref3[1];
           if (typeof v === 'number' || typeof v === 'boolean') {
@@ -8335,7 +8335,7 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
           }
         })).call(_context4, function (fs, f) {
           var _context8;
-          return concat_default()(_context8 = []).call(_context8, (0,toConsumableArray/* default */.A)(fs), (0,toConsumableArray/* default */.A)(f));
+          return concat_default()(_context8 = []).call(_context8, (0,toConsumableArray.A)(fs), (0,toConsumableArray.A)(f));
         }, []);
       }
       if (fields) {
@@ -8434,12 +8434,12 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
       if (this._soql) {
         throw Error('Cannot include child relationship into the query which has already built SOQL.');
       }
-      for (var _i = 0, _arr = keys_default()(includes); _i < _arr.length; _i++) {
+      for (var _i = 0, _arr = Object.keys(includes); _i < _arr.length; _i++) {
         var crname = _arr[_i];
         var _ref4 = includes[crname],
           _conditions = _ref4.conditions,
           _fields2 = _ref4.fields,
-          _options = (0,objectWithoutProperties/* default */.A)(_ref4, _excluded2);
+          _options = (0,objectWithoutProperties.A)(_ref4, _excluded2);
         this.include(crname, _conditions, _fields2, _options);
       }
       return this;
@@ -8530,7 +8530,7 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
 
       // flag to prevent re-execution
       this._executed = true;
-      (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee() {
+      (0,asyncToGenerator.A)( regenerator_default().mark(function _callee() {
         return regenerator_default().wrap(function _callee$(_context9) {
           while (1) switch (_context9.prev = _context9.next) {
             case 0:
@@ -8596,7 +8596,7 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_execute",
     value: (function () {
-      var _execute2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee2(options) {
+      var _execute2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee2(options) {
         var _this$records2, _context10, _data$records$length, _data$records;
         var headers, responseTarget, autoFetch, maxFetch, scanAll, url, soql, data, numRecords, totalFetched, i, record, response;
         return regenerator_default().wrap(function _callee2$(_context11) {
@@ -8716,7 +8716,7 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_expandFields",
     value: (function () {
-      var _expandFields2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee4(sobject_) {
+      var _expandFields2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee4(sobject_) {
         var _context12, _context13, _context14, _context16, _context17;
         var _this$_config, _this$_config$fields, fields, _this$_config$table, table, sobject, _yield$Promise$all, _yield$Promise$all2, efields;
         return regenerator_default().wrap(function _callee4$(_context18) {
@@ -8732,8 +8732,8 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
               sobject = sobject_ || table;
               this._logger.debug(concat_default()(_context12 = "_expandFields: sobject = ".concat(sobject, ", fields = ")).call(_context12, fields.join(', ')));
               _context18.next = 7;
-              return promise_default().all(concat_default()(_context13 = [this._expandAsteriskFields(sobject, fields)]).call(_context13, (0,toConsumableArray/* default */.A)(map_default()(_context14 = this._children).call(_context14, /*#__PURE__*/function () {
-                var _ref6 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee3(childQuery) {
+              return promise_default().all(concat_default()(_context13 = [this._expandAsteriskFields(sobject, fields)]).call(_context13, (0,toConsumableArray.A)(map_default()(_context14 = this._children).call(_context14, function () {
+                var _ref6 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee3(childQuery) {
                   return regenerator_default().wrap(function _callee3$(_context15) {
                     while (1) switch (_context15.prev = _context15.next) {
                       case 0:
@@ -8753,17 +8753,17 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
               }()))));
             case 7:
               _yield$Promise$all = _context18.sent;
-              _yield$Promise$all2 = (0,slicedToArray/* default */.A)(_yield$Promise$all, 1);
+              _yield$Promise$all2 = (0,slicedToArray.A)(_yield$Promise$all, 1);
               efields = _yield$Promise$all2[0];
               this._config.fields = efields;
               this._config.includes = reduce_default()(_context16 = map_default()(_context17 = this._children).call(_context17, function (cquery) {
                 var cconfig = cquery._query._config;
                 return [cconfig.table, cconfig];
               })).call(_context16, function (includes, _ref7) {
-                var _ref8 = (0,slicedToArray/* default */.A)(_ref7, 2),
+                var _ref8 = (0,slicedToArray.A)(_ref7, 2),
                   ctable = _ref8[0],
                   cconfig = _ref8[1];
-                return _objectSpread(_objectSpread({}, includes), {}, (0,defineProperty/* default */.A)({}, ctable, cconfig));
+                return _objectSpread(_objectSpread({}, includes), {}, (0,defineProperty.A)({}, ctable, cconfig));
               }, {});
             case 12:
             case "end":
@@ -8783,7 +8783,7 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_findRelationObject",
     value: (function () {
-      var _findRelationObject2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee5(relName) {
+      var _findRelationObject2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee5(relName) {
         var _context19;
         var table, sobject, upperRname, _iterator, _step, cr;
         return regenerator_default().wrap(function _callee5$(_context20) {
@@ -8850,15 +8850,15 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_expandAsteriskFields",
     value: (function () {
-      var _expandAsteriskFields2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee7(sobject, fields) {
+      var _expandAsteriskFields2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee7(sobject, fields) {
         var _this3 = this;
         var expandedFields;
         return regenerator_default().wrap(function _callee7$(_context23) {
           while (1) switch (_context23.prev = _context23.next) {
             case 0:
               _context23.next = 2;
-              return promise_default().all(map_default()(fields).call(fields, /*#__PURE__*/function () {
-                var _ref9 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee6(field) {
+              return promise_default().all(map_default()(fields).call(fields, function () {
+                var _ref9 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee6(field) {
                   return regenerator_default().wrap(function _callee6$(_context21) {
                     while (1) switch (_context21.prev = _context21.next) {
                       case 0:
@@ -8877,7 +8877,7 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
               expandedFields = _context23.sent;
               return _context23.abrupt("return", reduce_default()(expandedFields).call(expandedFields, function (eflds, flds) {
                 var _context22;
-                return concat_default()(_context22 = []).call(_context22, (0,toConsumableArray/* default */.A)(eflds), (0,toConsumableArray/* default */.A)(flds));
+                return concat_default()(_context22 = []).call(_context22, (0,toConsumableArray.A)(eflds), (0,toConsumableArray.A)(flds));
               }, []));
             case 4:
             case "end":
@@ -8897,7 +8897,7 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_expandAsteriskField",
     value: (function () {
-      var _expandAsteriskField2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee8(sobject, field) {
+      var _expandAsteriskField2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee8(sobject, field) {
         var _context24;
         var fpath, _context26, so, rname, _iterator2, _step2, f, rfield, referenceTo, rtable, fpaths;
         return regenerator_default().wrap(function _callee8$(_context27) {
@@ -8983,7 +8983,7 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "explain",
     value: (function () {
-      var _explain = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee9() {
+      var _explain = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee9() {
         var soql, url;
         return regenerator_default().wrap(function _callee9$(_context28) {
           while (1) switch (_context28.prev = _context28.next) {
@@ -9013,7 +9013,7 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "toSOQL",
     value: (function () {
-      var _toSOQL = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee10() {
+      var _toSOQL = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee10() {
         return regenerator_default().wrap(function _callee10$(_context29) {
           while (1) switch (_context29.prev = _context29.next) {
             case 0:
@@ -9077,7 +9077,7 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
     value: function destroy(type, options) {
       var _options$bulkApiVersi,
         _this4 = this;
-      if ((0,esm_typeof/* default */.A)(type) === 'object' && type !== null) {
+      if ((0,esm_typeof.A)(type) === 'object' && type !== null) {
         options = type;
         type = undefined;
       }
@@ -9151,7 +9151,7 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
     value: function update(mapping, type, options) {
       var _options$bulkApiVersi2,
         _this5 = this;
-      if ((0,esm_typeof/* default */.A)(type) === 'object' && type !== null) {
+      if ((0,esm_typeof.A)(type) === 'object' && type !== null) {
         options = type;
         type = undefined;
       }
@@ -9160,7 +9160,7 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
       if (!type_) {
         throw new Error('SOQL based query needs SObject type information to bulk update.');
       }
-      var updateStream = typeof mapping === 'function' ? map_default()(record_stream/* default */.Ay).call(record_stream/* default */.Ay, mapping) : record_stream/* default */.Ay.recordMapStream(mapping);
+      var updateStream = typeof mapping === 'function' ? map_default()(record_stream.Ay).call(record_stream.Ay, mapping) : record_stream.Ay.recordMapStream(mapping);
       // Set the threshold number to pass to bulk API
       var thresholdNum = options.allowBulk === false ? -1 : typeof options.bulkThreshold === 'number' ? options.bulkThreshold :
       // determine threshold if the connection version supports SObject collection API or not
@@ -9232,7 +9232,7 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
         };
         return saveResult;
       });
-      return concat_default()(_context32 = []).call(_context32, (0,toConsumableArray/* default */.A)(successSaveResults), (0,toConsumableArray/* default */.A)(failedSaveResults));
+      return concat_default()(_context32 = []).call(_context32, (0,toConsumableArray.A)(successSaveResults), (0,toConsumableArray.A)(failedSaveResults));
     }
   }]);
 }(events.EventEmitter);
@@ -9242,21 +9242,21 @@ var Query = /*#__PURE__*/function (_EventEmitter) {
 /**
  * SubQuery object for representing child relationship query
  */
-(0,defineProperty/* default */.A)(Query, "_logger", (0,logger/* getLogger */.tZ)('query'));
-var SubQuery = /*#__PURE__*/function () {
+(0,defineProperty.A)(Query, "_logger", (0,logger/* getLogger */.tZ)('query'));
+var SubQuery = function () {
   /**
    *
    */
   function SubQuery(conn, relName, config, parent) {
-    (0,classCallCheck/* default */.A)(this, SubQuery);
+    (0,classCallCheck.A)(this, SubQuery);
     /**
      * Synonym of SubQuery#skip()
      */
-    (0,defineProperty/* default */.A)(this, "offset", this.skip);
+    (0,defineProperty.A)(this, "offset", this.skip);
     /**
      * Synonym of SubQuery#sort()
      */
-    (0,defineProperty/* default */.A)(this, "orderby", sort_default()(this));
+    (0,defineProperty.A)(this, "orderby", sort_default()(this));
     this._relName = relName;
     this._query = new Query(conn, config);
     this._parent = parent;
@@ -9265,7 +9265,7 @@ var SubQuery = /*#__PURE__*/function () {
   /**
    *
    */
-  return (0,createClass/* default */.A)(SubQuery, [{
+  return (0,createClass.A)(SubQuery, [{
     key: "select",
     value: function select(fields) {
       // force convert query record type without changing instance
@@ -9324,7 +9324,7 @@ var SubQuery = /*#__PURE__*/function () {
      *
      */
     function () {
-      var _expandFields3 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee11() {
+      var _expandFields3 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee11() {
         var sobject;
         return regenerator_default().wrap(function _callee11$(_context34) {
           while (1) switch (_context34.prev = _context34.next) {
@@ -9373,7 +9373,7 @@ var SubQuery = /*#__PURE__*/function () {
 /* harmony import */ var _babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(14953);
 /* harmony import */ var _babel_runtime_corejs3_helpers_createClass__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(4449);
 /* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(41400);
-/* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_0___default = __webpack_require__.n(_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_0__);
 
 
 
@@ -9390,7 +9390,7 @@ var SubQuery = /*#__PURE__*/function () {
 /**
  * A class for quick action
  */
-var QuickAction = /*#__PURE__*/function () {
+var QuickAction = function () {
   /**
    *
    */
@@ -9406,7 +9406,7 @@ var QuickAction = /*#__PURE__*/function () {
   return (0,_babel_runtime_corejs3_helpers_createClass__WEBPACK_IMPORTED_MODULE_2__/* ["default"] */ .A)(QuickAction, [{
     key: "describe",
     value: (function () {
-      var _describe = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_3__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee() {
+      var _describe = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_3__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee() {
         var url, body;
         return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
@@ -9435,7 +9435,7 @@ var QuickAction = /*#__PURE__*/function () {
   }, {
     key: "defaultValues",
     value: (function () {
-      var _defaultValues = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_3__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee2(contextId) {
+      var _defaultValues = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_3__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee2(contextId) {
         var url, body;
         return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee2$(_context2) {
           while (1) switch (_context2.prev = _context2.next) {
@@ -9467,7 +9467,7 @@ var QuickAction = /*#__PURE__*/function () {
   }, {
     key: "execute",
     value: (function () {
-      var _execute = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_3__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee3(contextId, record) {
+      var _execute = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_3__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee3(contextId, record) {
         var requestBody, resBody;
         return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee3$(_context3) {
           while (1) switch (_context3.prev = _context3.next) {
@@ -9508,31 +9508,31 @@ var QuickAction = /*#__PURE__*/function () {
 /* harmony export */ });
 /* unused harmony export RecordReference */
 /* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(11190);
-/* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_0___default = __webpack_require__.n(core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(82173);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_1___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(68040);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_2___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(62675);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_3___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(25988);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_4___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(36678);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_5___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(13003);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_6___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_6__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(45658);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_7___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_7__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(74294);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_8__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_8___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_8__);
 /* harmony import */ var _babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(62207);
 /* harmony import */ var _babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(14953);
 /* harmony import */ var _babel_runtime_corejs3_helpers_createClass__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(4449);
 /* harmony import */ var _babel_runtime_corejs3_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(24839);
 /* harmony import */ var core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(71698);
-/* harmony import */ var core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_9___default = __webpack_require__.n(core_js_modules_es_array_join_js__WEBPACK_IMPORTED_MODULE_9__);
 /* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(41400);
-/* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11__);
+/* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default = __webpack_require__.n(_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11__);
 
 
 
@@ -9557,7 +9557,7 @@ function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _co
 /**
  * Remote reference to record information
  */
-var RecordReference = /*#__PURE__*/function () {
+var RecordReference = function () {
   /**
    *
    */
@@ -9582,7 +9582,7 @@ var RecordReference = /*#__PURE__*/function () {
   return (0,_babel_runtime_corejs3_helpers_createClass__WEBPACK_IMPORTED_MODULE_13__/* ["default"] */ .A)(RecordReference, [{
     key: "retrieve",
     value: (function () {
-      var _retrieve = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_14__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().mark(function _callee(options) {
+      var _retrieve = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_14__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().mark(function _callee(options) {
         var rec;
         return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
@@ -9610,7 +9610,7 @@ var RecordReference = /*#__PURE__*/function () {
   }, {
     key: "update",
     value: (function () {
-      var _update = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_14__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().mark(function _callee2(record, options) {
+      var _update = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_14__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().mark(function _callee2(record, options) {
         var record_;
         return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_11___default().wrap(function _callee2$(_context2) {
           while (1) switch (_context2.prev = _context2.next) {
@@ -9670,29 +9670,29 @@ var RecordReference = /*#__PURE__*/function () {
 /* harmony export */ });
 /* unused harmony export RecordStream */
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(68040);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_0___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(25988);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_1___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(36678);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_2___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(13003);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_3___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(45658);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_4___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(74294);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_5___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(54818);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_6___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_6__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_slice__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(34047);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_slice__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_slice__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_slice__WEBPACK_IMPORTED_MODULE_7___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_slice__WEBPACK_IMPORTED_MODULE_7__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_array_from__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(71223);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_array_from__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_array_from__WEBPACK_IMPORTED_MODULE_8__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_array_from__WEBPACK_IMPORTED_MODULE_8___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_array_from__WEBPACK_IMPORTED_MODULE_8__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_symbol__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(20153);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_symbol__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_symbol__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_symbol__WEBPACK_IMPORTED_MODULE_9___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_symbol__WEBPACK_IMPORTED_MODULE_9__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_get_iterator_method__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(97106);
-/* harmony import */ var _babel_runtime_corejs3_core_js_get_iterator_method__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_get_iterator_method__WEBPACK_IMPORTED_MODULE_10__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_get_iterator_method__WEBPACK_IMPORTED_MODULE_10___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_get_iterator_method__WEBPACK_IMPORTED_MODULE_10__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_array_is_array__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(75403);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_array_is_array__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_array_is_array__WEBPACK_IMPORTED_MODULE_11__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_array_is_array__WEBPACK_IMPORTED_MODULE_11___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_array_is_array__WEBPACK_IMPORTED_MODULE_11__);
 /* harmony import */ var _babel_runtime_corejs3_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_37__ = __webpack_require__(89213);
 /* harmony import */ var _babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(14953);
 /* harmony import */ var _babel_runtime_corejs3_helpers_createClass__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(4449);
@@ -9704,33 +9704,33 @@ var RecordReference = /*#__PURE__*/function () {
 /* harmony import */ var _babel_runtime_corejs3_helpers_typeof__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(13040);
 /* harmony import */ var _babel_runtime_corejs3_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(24839);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_reduce__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(45031);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_reduce__WEBPACK_IMPORTED_MODULE_17___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_reduce__WEBPACK_IMPORTED_MODULE_17__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_reduce__WEBPACK_IMPORTED_MODULE_17___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_reduce__WEBPACK_IMPORTED_MODULE_17__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(82173);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_14__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_14___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_14__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(14109);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_18___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_18__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_18___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_18__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(44499);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_19___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_19__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_19___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_19__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(62675);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_15__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_15___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_15__);
 /* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(6764);
-/* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_20___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_20__);
+/* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_20___default = __webpack_require__.n(core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_20__);
 /* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(11190);
-/* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_21___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_21__);
+/* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_21___default = __webpack_require__.n(core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_21__);
 /* harmony import */ var core_js_modules_es_function_name_js__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(16374);
-/* harmony import */ var core_js_modules_es_function_name_js__WEBPACK_IMPORTED_MODULE_22___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_function_name_js__WEBPACK_IMPORTED_MODULE_22__);
+/* harmony import */ var core_js_modules_es_function_name_js__WEBPACK_IMPORTED_MODULE_22___default = __webpack_require__.n(core_js_modules_es_function_name_js__WEBPACK_IMPORTED_MODULE_22__);
 /* harmony import */ var core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(94711);
-/* harmony import */ var core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_23___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_23__);
+/* harmony import */ var core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_23___default = __webpack_require__.n(core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_23__);
 /* harmony import */ var core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(82067);
-/* harmony import */ var core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_24___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_24__);
+/* harmony import */ var core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_24___default = __webpack_require__.n(core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_24__);
 /* harmony import */ var core_js_modules_es_regexp_test_js__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(37230);
-/* harmony import */ var core_js_modules_es_regexp_test_js__WEBPACK_IMPORTED_MODULE_25___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_test_js__WEBPACK_IMPORTED_MODULE_25__);
+/* harmony import */ var core_js_modules_es_regexp_test_js__WEBPACK_IMPORTED_MODULE_25___default = __webpack_require__.n(core_js_modules_es_regexp_test_js__WEBPACK_IMPORTED_MODULE_25__);
 /* harmony import */ var core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(67873);
-/* harmony import */ var core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_26___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_26__);
+/* harmony import */ var core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_26___default = __webpack_require__.n(core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_26__);
 /* harmony import */ var core_js_modules_es_string_replace_js__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(3484);
-/* harmony import */ var core_js_modules_es_string_replace_js__WEBPACK_IMPORTED_MODULE_27___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_string_replace_js__WEBPACK_IMPORTED_MODULE_27__);
+/* harmony import */ var core_js_modules_es_string_replace_js__WEBPACK_IMPORTED_MODULE_27___default = __webpack_require__.n(core_js_modules_es_string_replace_js__WEBPACK_IMPORTED_MODULE_27__);
 /* harmony import */ var stream__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(9760);
-/* harmony import */ var stream__WEBPACK_IMPORTED_MODULE_28___default = /*#__PURE__*/__webpack_require__.n(stream__WEBPACK_IMPORTED_MODULE_28__);
+/* harmony import */ var stream__WEBPACK_IMPORTED_MODULE_28___default = __webpack_require__.n(stream__WEBPACK_IMPORTED_MODULE_28__);
 /* harmony import */ var _csv__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(31703);
 /* harmony import */ var _util_stream__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(18261);
 
@@ -9877,7 +9877,7 @@ var DataStreamConverters = {
  * @constructor
  * @extends stream.Transform
  */
-var RecordStream = /*#__PURE__*/function (_PassThrough) {
+var RecordStream = function (_PassThrough) {
   /**
    *
    */
@@ -9981,7 +9981,7 @@ var RecordStream = /*#__PURE__*/function (_PassThrough) {
  * @class RecordStream.Serializable
  * @extends {RecordStream}
  */
-var Serializable = /*#__PURE__*/function (_RecordStream2) {
+var Serializable = function (_RecordStream2) {
   function Serializable() {
     var _context4;
     var _this2;
@@ -10022,7 +10022,7 @@ var Serializable = /*#__PURE__*/function (_RecordStream2) {
  * @class RecordStream.Parsable
  * @extends {RecordStream}
  */
-var Parsable = /*#__PURE__*/function (_RecordStream3) {
+var Parsable = function (_RecordStream3) {
   function Parsable() {
     var _context5;
     var _this3;
@@ -10115,38 +10115,38 @@ var Parsable = /*#__PURE__*/function (_RecordStream3) {
 /* harmony export */   T: () => (/* binding */ SObject)
 /* harmony export */ });
 /* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(11190);
-/* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_0___default = __webpack_require__.n(core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _babel_runtime_corejs3_helpers_objectWithoutProperties__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(89423);
 /* harmony import */ var _babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(62207);
 /* harmony import */ var _babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(14953);
 /* harmony import */ var _babel_runtime_corejs3_helpers_createClass__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(4449);
 /* harmony import */ var _babel_runtime_corejs3_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(24839);
 /* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(41400);
-/* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_10__);
+/* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_10___default = __webpack_require__.n(_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_10__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(14109);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_11__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_11___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_11__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_sort__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(76485);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_sort__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_sort__WEBPACK_IMPORTED_MODULE_12__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_sort__WEBPACK_IMPORTED_MODULE_12___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_sort__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_includes__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(38336);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_includes__WEBPACK_IMPORTED_MODULE_13___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_includes__WEBPACK_IMPORTED_MODULE_13__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_includes__WEBPACK_IMPORTED_MODULE_13___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_includes__WEBPACK_IMPORTED_MODULE_13__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_find__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(65150);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_find__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_find__WEBPACK_IMPORTED_MODULE_14__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_find__WEBPACK_IMPORTED_MODULE_14___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_find__WEBPACK_IMPORTED_MODULE_14__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(82173);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_1___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_keys__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(68040);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_2___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_symbols__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(62675);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_3___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_filter__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(25988);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_4___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptor__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(36678);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_5___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_for_each__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(13003);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_7___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_get_own_property_descriptors__WEBPACK_IMPORTED_MODULE_7__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(45658);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_8__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_8___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_properties__WEBPACK_IMPORTED_MODULE_8__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(74294);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_9___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_object_define_property__WEBPACK_IMPORTED_MODULE_9__);
 /* harmony import */ var _util_logger__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(74833);
 /* harmony import */ var _record_reference__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(56111);
 /* harmony import */ var _query__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(65571);
@@ -10183,7 +10183,7 @@ function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _co
 /**
  * A class for organizing all SObject access
  */
-var SObject = /*#__PURE__*/function () {
+var SObject = function () {
   // layouts: (ln?: string) => Promise<DescribeLayoutResult>;
 
   // compactLayouts: () => Promise<DescribeCompactLayoutsResult>;
@@ -10436,7 +10436,7 @@ var SObject = /*#__PURE__*/function () {
   }, {
     key: "layouts",
     value: (function () {
-      var _layouts = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_21__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_10___default().mark(function _callee(layoutName) {
+      var _layouts = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_21__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_10___default().mark(function _callee(layoutName) {
         var _context;
         var url, body;
         return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_10___default().wrap(function _callee$(_context2) {
@@ -10475,7 +10475,7 @@ var SObject = /*#__PURE__*/function () {
   }, {
     key: "compactLayouts",
     value: (function () {
-      var _compactLayouts = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_21__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_10___default().mark(function _callee2() {
+      var _compactLayouts = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_21__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_10___default().mark(function _callee2() {
         var url, body;
         return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_10___default().wrap(function _callee2$(_context3) {
           while (1) switch (_context3.prev = _context3.next) {
@@ -10507,7 +10507,7 @@ var SObject = /*#__PURE__*/function () {
   }, {
     key: "approvalLayouts",
     value: (function () {
-      var _approvalLayouts = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_21__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_10___default().mark(function _callee3() {
+      var _approvalLayouts = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_21__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_10___default().mark(function _callee3() {
         var url, body;
         return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_10___default().wrap(function _callee3$(_context4) {
           while (1) switch (_context4.prev = _context4.next) {
@@ -10652,7 +10652,7 @@ var SObject = /*#__PURE__*/function () {
  * @param {String} id - List view ID
  */
 (0,_babel_runtime_corejs3_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_6__/* ["default"] */ .A)(SObject, "_logger", (0,_util_logger__WEBPACK_IMPORTED_MODULE_15__/* .getLogger */ .tZ)('sobject'));
-var ListView = /*#__PURE__*/function () {
+var ListView = function () {
   /**
    *
    */
@@ -10727,28 +10727,28 @@ __webpack_require__.d(__webpack_exports__, {
 var es_array_push = __webpack_require__(11190);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/reflect/construct.js
 var construct = __webpack_require__(54818);
-var construct_default = /*#__PURE__*/__webpack_require__.n(construct);
+var construct_default = __webpack_require__.n(construct);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/get-own-property-symbols.js
 var get_own_property_symbols = __webpack_require__(68040);
-var get_own_property_symbols_default = /*#__PURE__*/__webpack_require__.n(get_own_property_symbols);
+var get_own_property_symbols_default = __webpack_require__.n(get_own_property_symbols);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/filter.js
 var filter = __webpack_require__(62675);
-var filter_default = /*#__PURE__*/__webpack_require__.n(filter);
+var filter_default = __webpack_require__.n(filter);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor.js
 var get_own_property_descriptor = __webpack_require__(25988);
-var get_own_property_descriptor_default = /*#__PURE__*/__webpack_require__.n(get_own_property_descriptor);
+var get_own_property_descriptor_default = __webpack_require__.n(get_own_property_descriptor);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/for-each.js
 var for_each = __webpack_require__(36678);
-var for_each_default = /*#__PURE__*/__webpack_require__.n(for_each);
+var for_each_default = __webpack_require__.n(for_each);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptors.js
 var get_own_property_descriptors = __webpack_require__(13003);
-var get_own_property_descriptors_default = /*#__PURE__*/__webpack_require__.n(get_own_property_descriptors);
+var get_own_property_descriptors_default = __webpack_require__.n(get_own_property_descriptors);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-properties.js
 var define_properties = __webpack_require__(45658);
-var define_properties_default = /*#__PURE__*/__webpack_require__.n(define_properties);
+var define_properties_default = __webpack_require__.n(define_properties);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-property.js
 var define_property = __webpack_require__(74294);
-var define_property_default = /*#__PURE__*/__webpack_require__.n(define_property);
+var define_property_default = __webpack_require__.n(define_property);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/helpers/esm/objectWithoutProperties.js + 1 modules
 var objectWithoutProperties = __webpack_require__(89423);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/helpers/esm/get.js + 1 modules
@@ -10767,44 +10767,44 @@ var classCallCheck = __webpack_require__(14953);
 var createClass = __webpack_require__(4449);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/parse-int.js
 var parse_int = __webpack_require__(32886);
-var parse_int_default = /*#__PURE__*/__webpack_require__.n(parse_int);
+var parse_int_default = __webpack_require__.n(parse_int);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/promise.js
 var core_js_stable_promise = __webpack_require__(44124);
-var promise_default = /*#__PURE__*/__webpack_require__.n(core_js_stable_promise);
+var promise_default = __webpack_require__.n(core_js_stable_promise);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/keys.js
 var keys = __webpack_require__(82173);
-var keys_default = /*#__PURE__*/__webpack_require__.n(keys);
+var keys_default = __webpack_require__.n(keys);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/concat.js
 var concat = __webpack_require__(14109);
-var concat_default = /*#__PURE__*/__webpack_require__.n(concat);
+var concat_default = __webpack_require__.n(concat);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/date/now.js
 var now = __webpack_require__(75770);
-var now_default = /*#__PURE__*/__webpack_require__.n(now);
+var now_default = __webpack_require__.n(now);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/starts-with.js
 var starts_with = __webpack_require__(67977);
-var starts_with_default = /*#__PURE__*/__webpack_require__.n(starts_with);
+var starts_with_default = __webpack_require__.n(starts_with);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.regexp.exec.js
 var es_regexp_exec = __webpack_require__(82067);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/slice.js
 var slice = __webpack_require__(34047);
-var slice_default = /*#__PURE__*/__webpack_require__.n(slice);
+var slice_default = __webpack_require__.n(slice);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/array/from.js
 var from = __webpack_require__(71223);
-var from_default = /*#__PURE__*/__webpack_require__.n(from);
+var from_default = __webpack_require__.n(from);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/symbol.js
 var symbol = __webpack_require__(20153);
-var symbol_default = /*#__PURE__*/__webpack_require__.n(symbol);
+var symbol_default = __webpack_require__.n(symbol);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js/get-iterator-method.js
 var get_iterator_method = __webpack_require__(97106);
-var get_iterator_method_default = /*#__PURE__*/__webpack_require__.n(get_iterator_method);
+var get_iterator_method_default = __webpack_require__.n(get_iterator_method);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/array/is-array.js
 var is_array = __webpack_require__(75403);
-var is_array_default = /*#__PURE__*/__webpack_require__.n(is_array);
+var is_array_default = __webpack_require__.n(is_array);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/helpers/esm/asyncToGenerator.js
 var asyncToGenerator = __webpack_require__(62207);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/regenerator/index.js
 var regenerator = __webpack_require__(41400);
-var regenerator_default = /*#__PURE__*/__webpack_require__.n(regenerator);
+var regenerator_default = __webpack_require__.n(regenerator);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.error.cause.js
 var es_error_cause = __webpack_require__(6764);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.function.name.js
@@ -10821,29 +10821,29 @@ var es_regexp_to_string = __webpack_require__(67873);
 var es_string_split = __webpack_require__(19148);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/trim.js
 var trim = __webpack_require__(7621);
-var trim_default = /*#__PURE__*/__webpack_require__.n(trim);
+var trim_default = __webpack_require__.n(trim);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/map.js
 var map = __webpack_require__(44499);
-var map_default = /*#__PURE__*/__webpack_require__.n(map);
+var map_default = __webpack_require__.n(map);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/keys.js
 var instance_keys = __webpack_require__(99761);
-var instance_keys_default = /*#__PURE__*/__webpack_require__.n(instance_keys);
+var instance_keys_default = __webpack_require__.n(instance_keys);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/reduce.js
 var reduce = __webpack_require__(45031);
-var reduce_default = /*#__PURE__*/__webpack_require__.n(reduce);
+var reduce_default = __webpack_require__.n(reduce);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/set-timeout.js
 var set_timeout = __webpack_require__(80627);
-var set_timeout_default = /*#__PURE__*/__webpack_require__.n(set_timeout);
+var set_timeout_default = __webpack_require__.n(set_timeout);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/set.js
 var set = __webpack_require__(63625);
-var set_default = /*#__PURE__*/__webpack_require__.n(set);
+var set_default = __webpack_require__.n(set);
 // EXTERNAL MODULE: ./node_modules/stream-browserify/index.js
 var stream_browserify = __webpack_require__(9760);
 // EXTERNAL MODULE: ./browser/util/stream.js
 var stream = __webpack_require__(18261);
 // EXTERNAL MODULE: ./node_modules/form-data/lib/browser.js
 var browser = __webpack_require__(72964);
-var browser_default = /*#__PURE__*/__webpack_require__.n(browser);
+var browser_default = __webpack_require__.n(browser);
 ;// CONCATENATED MODULE: ./browser/request-helper.js
 
 
@@ -10858,8 +10858,8 @@ var browser_default = /*#__PURE__*/__webpack_require__.n(browser);
 
 
 
-function ownKeys(e, r) { var t = keys_default()(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context3, _context4; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context3 = ownKeys(Object(t), !0)).call(_context3, function (r) { (0,defineProperty/* default */.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context4 = ownKeys(Object(t))).call(_context4, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
+function ownKeys(e, r) { var t = Object.keys(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context3, _context4; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context3 = ownKeys(Object(t), !0)).call(_context3, function (r) { (0,defineProperty.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context4 = ownKeys(Object(t))).call(_context4, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
 
 
 
@@ -10884,8 +10884,8 @@ function createHttpRequestHandlerStreams(req) {
       }
     }, 0);
   }
-  duplex.on('response', /*#__PURE__*/function () {
-    var _ref = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee(res) {
+  duplex.on('response', function () {
+    var _ref = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee(res) {
       var resBody;
       return regenerator_default().wrap(function _callee$(_context) {
         while (1) switch (_context.prev = _context.next) {
@@ -10963,7 +10963,7 @@ function executeWithTimeout(_x2, _x3, _x4) {
   return _executeWithTimeout.apply(this, arguments);
 }
 function _executeWithTimeout() {
-  _executeWithTimeout = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee2(execFn, msec, cancelCallback) {
+  _executeWithTimeout = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee2(execFn, msec, cancelCallback) {
     var timeout, pid, res;
     return regenerator_default().wrap(function _callee2$(_context2) {
       while (1) switch (_context2.prev = _context2.next) {
@@ -11023,8 +11023,8 @@ function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof (symbol
 function _unsupportedIterableToArray(o, minLen) { var _context9; if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = slice_default()(_context9 = Object.prototype.toString.call(o)).call(_context9, 8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return from_default()(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 
-function request_ownKeys(e, r) { var t = keys_default()(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function request_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context7, _context8; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context7 = request_ownKeys(Object(t), !0)).call(_context7, function (r) { (0,defineProperty/* default */.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context8 = request_ownKeys(Object(t))).call(_context8, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
+function request_ownKeys(e, r) { var t = Object.keys(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function request_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context7, _context8; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context7 = request_ownKeys(Object(t), !0)).call(_context7, function (r) { (0,defineProperty.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context8 = request_ownKeys(Object(t))).call(_context8, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
 
 
 
@@ -11102,13 +11102,13 @@ function readWhatwgReadableStream(_x, _x2) {
  *
  */
 function _readWhatwgReadableStream() {
-  _readWhatwgReadableStream = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee2(rs, outs) {
+  _readWhatwgReadableStream = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee2(rs, outs) {
     var reader, readAndWrite, _readAndWrite;
     return regenerator_default().wrap(function _callee2$(_context3) {
       while (1) switch (_context3.prev = _context3.next) {
         case 0:
           _readAndWrite = function _readAndWrite3() {
-            _readAndWrite = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee() {
+            _readAndWrite = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee() {
               var _yield$reader$read, done, value;
               return regenerator_default().wrap(function _callee$(_context2) {
                 while (1) switch (_context2.prev = _context2.next) {
@@ -11166,7 +11166,7 @@ function startFetchRequest(_x3, _x4, _x5, _x6, _x7) {
  *
  */
 function _startFetchRequest() {
-  _startFetchRequest = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee3(request, options, input, output, emitter) {
+  _startFetchRequest = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee3(request, options, input, output, emitter) {
     var _context4;
     var counter,
       followRedirect,
@@ -11187,7 +11187,7 @@ function _startFetchRequest() {
         case 0:
           counter = _args3.length > 5 && _args3[5] !== undefined ? _args3[5] : 0;
           followRedirect = options.followRedirect;
-          url = request.url, reqBody = request.body, rreq = (0,objectWithoutProperties/* default */.A)(request, _excluded);
+          url = request.url, reqBody = request.body, rreq = (0,objectWithoutProperties.A)(request, _excluded);
           if (!(input && /^(post|put|patch)$/i.test(request.method))) {
             _context5.next = 14;
             break;
@@ -11293,7 +11293,7 @@ function startXmlHttpRequest(_x8, _x9, _x10, _x11, _x12) {
  *
  */
 function _startXmlHttpRequest() {
-  _startXmlHttpRequest = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee4(request, options, input, output, emitter) {
+  _startXmlHttpRequest = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee4(request, options, input, output, emitter) {
     var counter,
       method,
       url,
@@ -11354,7 +11354,7 @@ function _startXmlHttpRequest() {
         case 14:
           headerNames = getResponseHeaderNames(xhr);
           headers = reduce_default()(headerNames).call(headerNames, function (headers, headerName) {
-            return request_objectSpread(request_objectSpread({}, headers), {}, (0,defineProperty/* default */.A)({}, headerName, xhr.getResponseHeader(headerName) || ''));
+            return request_objectSpread(request_objectSpread({}, headers), {}, (0,defineProperty.A)({}, headerName, xhr.getResponseHeader(headerName) || ''));
           }, {});
           response = {
             statusCode: xhr.status,
@@ -11421,10 +11421,10 @@ function request(req) {
 var promise = __webpack_require__(88376);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/index-of.js
 var index_of = __webpack_require__(19019);
-var index_of_default = /*#__PURE__*/__webpack_require__.n(index_of);
+var index_of_default = __webpack_require__.n(index_of);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/json/stringify.js
 var stringify = __webpack_require__(78205);
-var stringify_default = /*#__PURE__*/__webpack_require__.n(stringify);
+var stringify_default = __webpack_require__.n(stringify);
 ;// CONCATENATED MODULE: ./browser/browser/jsonp.js
 
 
@@ -11444,7 +11444,7 @@ function processJsonpRequest(_x, _x2, _x3) {
   return _processJsonpRequest.apply(this, arguments);
 }
 function _processJsonpRequest() {
-  _processJsonpRequest = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee2(params, jsonpParam, timeout) {
+  _processJsonpRequest = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee2(params, jsonpParam, timeout) {
     var _context2;
     var cbFuncName, callbacks, url, script, pid, res;
     return regenerator_default().wrap(function _callee2$(_context3) {
@@ -11510,7 +11510,7 @@ function createRequest() {
         callback();
       },
       flush: function flush() {
-        (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee() {
+        (0,asyncToGenerator.A)( regenerator_default().mark(function _callee() {
           var response;
           return regenerator_default().wrap(function _callee$(_context) {
             while (1) switch (_context.prev = _context.next) {
@@ -11583,7 +11583,7 @@ function parseHeaders(hs) {
     for (_iterator.s(); !(_step = _iterator.n()).done;) {
       var line = _step.value;
       var _line$split = line.split(/\s*:\s*/),
-        _line$split2 = (0,slicedToArray/* default */.A)(_line$split, 2),
+        _line$split2 = (0,slicedToArray.A)(_line$split, 2),
         name = _line$split2[0],
         value = _line$split2[1];
       headers[name.toLowerCase()] = value;
@@ -11599,7 +11599,7 @@ function processCanvasRequest(_x, _x2, _x3) {
   return _processCanvasRequest.apply(this, arguments);
 }
 function _processCanvasRequest() {
-  _processCanvasRequest = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee2(params, signedRequest, requestBody) {
+  _processCanvasRequest = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee2(params, signedRequest, requestBody) {
     var settings, paramHeaders, _i, _Object$keys, name, data, headers, responseBody;
     return regenerator_default().wrap(function _callee2$(_context2) {
       while (1) switch (_context2.prev = _context2.next) {
@@ -11612,7 +11612,7 @@ function _processCanvasRequest() {
           paramHeaders = params.headers;
           if (paramHeaders) {
             settings.headers = {};
-            for (_i = 0, _Object$keys = keys_default()(paramHeaders); _i < _Object$keys.length; _i++) {
+            for (_i = 0, _Object$keys = Object.keys(paramHeaders); _i < _Object$keys.length; _i++) {
               name = _Object$keys[_i];
               if (name.toLowerCase() === 'content-type') {
                 settings.contentType = paramHeaders[name];
@@ -11656,7 +11656,7 @@ function canvas_createRequest(signedRequest) {
         callback();
       },
       flush: function flush() {
-        (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee() {
+        (0,asyncToGenerator.A)( regenerator_default().mark(function _callee() {
           var body, response;
           return regenerator_default().wrap(function _callee$(_context) {
             while (1) switch (_context.prev = _context.next) {
@@ -11685,7 +11685,7 @@ function canvas_createRequest(signedRequest) {
   };
 }
 /* harmony default export */ const canvas = ({
-  supported: (typeof Sfdc === "undefined" ? "undefined" : (0,esm_typeof/* default */.A)(Sfdc)) === 'object' && typeof Sfdc.canvas !== 'undefined',
+  supported: (typeof Sfdc === "undefined" ? "undefined" : (0,esm_typeof.A)(Sfdc)) === 'object' && typeof Sfdc.canvas !== 'undefined',
   createRequest: canvas_createRequest
 });
 
@@ -11710,9 +11710,9 @@ function canvas_createRequest(signedRequest) {
 
 var transport_excluded = ["url", "body"];
 var _ref, _process$env$HTTPS_PR;
-function transport_ownKeys(e, r) { var t = keys_default()(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function transport_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context3, _context4; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context3 = transport_ownKeys(Object(t), !0)).call(_context3, function (r) { (0,defineProperty/* default */.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context4 = transport_ownKeys(Object(t))).call(_context4, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
-function _callSuper(t, o, e) { return o = (0,getPrototypeOf/* default */.A)(o), (0,possibleConstructorReturn/* default */.A)(t, _isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf/* default */.A)(t).constructor) : o.apply(t, e)); }
+function transport_ownKeys(e, r) { var t = Object.keys(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function transport_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context3, _context4; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context3 = transport_ownKeys(Object(t), !0)).call(_context3, function (r) { (0,defineProperty.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context4 = transport_ownKeys(Object(t))).call(_context4, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
+function _callSuper(t, o, e) { return o = (0,getPrototypeOf.A)(o), (0,possibleConstructorReturn.A)(t, _isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf.A)(t).constructor) : o.apply(t, e)); }
 function _isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(construct_default()(Boolean, [], function () {})); } catch (t) {} return (_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
 
 
@@ -11754,11 +11754,11 @@ var baseUrl = typeof window !== 'undefined' && window.location && window.locatio
  * @class
  * @protected
  */
-var Transport = /*#__PURE__*/function () {
+var Transport = function () {
   function Transport() {
-    (0,classCallCheck/* default */.A)(this, Transport);
+    (0,classCallCheck.A)(this, Transport);
   }
-  return (0,createClass/* default */.A)(Transport, [{
+  return (0,createClass.A)(Transport, [{
     key: "httpRequest",
     value:
     /**
@@ -11795,16 +11795,16 @@ var Transport = /*#__PURE__*/function () {
 /**
  * Class for JSONP request transport
  */
-var JsonpTransport = /*#__PURE__*/function (_Transport) {
+var JsonpTransport = function (_Transport) {
   function JsonpTransport(jsonpParam) {
     var _this2;
-    (0,classCallCheck/* default */.A)(this, JsonpTransport);
+    (0,classCallCheck.A)(this, JsonpTransport);
     _this2 = _callSuper(this, JsonpTransport);
     _this2._jsonpParam = jsonpParam;
     return _this2;
   }
-  (0,inherits/* default */.A)(JsonpTransport, _Transport);
-  return (0,createClass/* default */.A)(JsonpTransport, [{
+  (0,inherits.A)(JsonpTransport, _Transport);
+  return (0,createClass.A)(JsonpTransport, [{
     key: "getRequestStreamCreator",
     value: function getRequestStreamCreator() {
       var jsonpRequest = jsonp.createRequest(this._jsonpParam);
@@ -11818,17 +11818,17 @@ var JsonpTransport = /*#__PURE__*/function (_Transport) {
 /**
  * Class for Sfdc Canvas request transport
  */
-(0,defineProperty/* default */.A)(JsonpTransport, "supprted", jsonp.supported);
-var CanvasTransport = /*#__PURE__*/function (_Transport2) {
+(0,defineProperty.A)(JsonpTransport, "supprted", jsonp.supported);
+var CanvasTransport = function (_Transport2) {
   function CanvasTransport(signedRequest) {
     var _this3;
-    (0,classCallCheck/* default */.A)(this, CanvasTransport);
+    (0,classCallCheck.A)(this, CanvasTransport);
     _this3 = _callSuper(this, CanvasTransport);
     _this3._signedRequest = signedRequest;
     return _this3;
   }
-  (0,inherits/* default */.A)(CanvasTransport, _Transport2);
-  return (0,createClass/* default */.A)(CanvasTransport, [{
+  (0,inherits.A)(CanvasTransport, _Transport2);
+  return (0,createClass.A)(CanvasTransport, [{
     key: "getRequestStreamCreator",
     value: function getRequestStreamCreator() {
       var canvasRequest = canvas.createRequest(this._signedRequest);
@@ -11840,14 +11840,14 @@ var CanvasTransport = /*#__PURE__*/function (_Transport2) {
 }(Transport);
 
 /* @private */
-(0,defineProperty/* default */.A)(CanvasTransport, "supported", canvas.supported);
+(0,defineProperty.A)(CanvasTransport, "supported", canvas.supported);
 function createXdProxyRequest(req, proxyUrl) {
   var _context, _context2;
   var headers = {
     'salesforceproxy-endpoint': req.url
   };
   if (req.headers) {
-    for (var _i = 0, _Object$keys = keys_default()(req.headers); _i < _Object$keys.length; _i++) {
+    for (var _i = 0, _Object$keys = Object.keys(req.headers); _i < _Object$keys.length; _i++) {
       var name = _Object$keys[_i];
       headers[name] = req.headers[name];
     }
@@ -11865,10 +11865,10 @@ function createXdProxyRequest(req, proxyUrl) {
 /**
  * Class for HTTP request transport using cross-domain AJAX proxy service
  */
-var XdProxyTransport = /*#__PURE__*/function (_Transport3) {
+var XdProxyTransport = function (_Transport3) {
   function XdProxyTransport(xdProxyUrl) {
     var _this4;
-    (0,classCallCheck/* default */.A)(this, XdProxyTransport);
+    (0,classCallCheck.A)(this, XdProxyTransport);
     _this4 = _callSuper(this, XdProxyTransport);
     _this4._xdProxyUrl = xdProxyUrl;
     return _this4;
@@ -11877,21 +11877,21 @@ var XdProxyTransport = /*#__PURE__*/function (_Transport3) {
   /**
    * Make HTTP request via AJAX proxy
    */
-  (0,inherits/* default */.A)(XdProxyTransport, _Transport3);
-  return (0,createClass/* default */.A)(XdProxyTransport, [{
+  (0,inherits.A)(XdProxyTransport, _Transport3);
+  return (0,createClass.A)(XdProxyTransport, [{
     key: "httpRequest",
     value: function httpRequest(req) {
       var _options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var xdProxyUrl = this._xdProxyUrl;
       var url = req.url,
         body = req.body,
-        rreq = (0,objectWithoutProperties/* default */.A)(req, transport_excluded);
+        rreq = (0,objectWithoutProperties.A)(req, transport_excluded);
       var canonicalUrl = starts_with_default()(url).call(url, '/') ? baseUrl + url : url;
       var xdProxyReq = createXdProxyRequest(transport_objectSpread(transport_objectSpread({}, rreq), {}, {
         url: canonicalUrl,
         body: body
       }), xdProxyUrl);
-      return (0,get/* default */.A)((0,getPrototypeOf/* default */.A)(XdProxyTransport.prototype), "httpRequest", this).call(this, xdProxyReq, {
+      return (0,get.A)((0,getPrototypeOf.A)(XdProxyTransport.prototype), "httpRequest", this).call(this, xdProxyReq, {
         followRedirect: function followRedirect(redirectUrl) {
           return createXdProxyRequest(transport_objectSpread(transport_objectSpread({}, rreq), {}, {
             method: 'GET',
@@ -11906,10 +11906,10 @@ var XdProxyTransport = /*#__PURE__*/function (_Transport3) {
 /**
  * Class for HTTP request transport using a proxy server
  */
-var HttpProxyTransport = /*#__PURE__*/function (_Transport4) {
+var HttpProxyTransport = function (_Transport4) {
   function HttpProxyTransport(httpProxy) {
     var _this5;
-    (0,classCallCheck/* default */.A)(this, HttpProxyTransport);
+    (0,classCallCheck.A)(this, HttpProxyTransport);
     _this5 = _callSuper(this, HttpProxyTransport);
     _this5._httpProxy = httpProxy;
     return _this5;
@@ -11918,15 +11918,15 @@ var HttpProxyTransport = /*#__PURE__*/function (_Transport4) {
   /**
    * Make HTTP request via proxy server
    */
-  (0,inherits/* default */.A)(HttpProxyTransport, _Transport4);
-  return (0,createClass/* default */.A)(HttpProxyTransport, [{
+  (0,inherits.A)(HttpProxyTransport, _Transport4);
+  return (0,createClass.A)(HttpProxyTransport, [{
     key: "httpRequest",
     value: function httpRequest(req) {
       var options_ = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var options = transport_objectSpread(transport_objectSpread({}, options_), {}, {
         httpProxy: this._httpProxy
       });
-      return (0,get/* default */.A)((0,getPrototypeOf/* default */.A)(HttpProxyTransport.prototype), "httpRequest", this).call(this, req, options);
+      return (0,get.A)((0,getPrototypeOf.A)(HttpProxyTransport.prototype), "httpRequest", this).call(this, req, options);
     }
   }]);
 }(Transport);
@@ -11944,7 +11944,7 @@ var HttpProxyTransport = /*#__PURE__*/function (_Transport4) {
 /* harmony export */   e: () => (/* binding */ zeroPad)
 /* harmony export */ });
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(14109);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_0___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_0__);
 
 /**
  *
@@ -11980,13 +11980,13 @@ function formatDate(date) {
 /* harmony export */   a: () => (/* binding */ getBodySize)
 /* harmony export */ });
 /* harmony import */ var core_js_modules_es_number_constructor_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(12888);
-/* harmony import */ var core_js_modules_es_number_constructor_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_number_constructor_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var core_js_modules_es_number_constructor_js__WEBPACK_IMPORTED_MODULE_0___default = __webpack_require__.n(core_js_modules_es_number_constructor_js__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(94711);
-/* harmony import */ var core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_1___default = __webpack_require__.n(core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(67873);
-/* harmony import */ var core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_2___default = __webpack_require__.n(core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _sindresorhus_is__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(41468);
-/* harmony import */ var _sindresorhus_is__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_sindresorhus_is__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _sindresorhus_is__WEBPACK_IMPORTED_MODULE_3___default = __webpack_require__.n(_sindresorhus_is__WEBPACK_IMPORTED_MODULE_3__);
 /* provided dependency */ var Buffer = __webpack_require__(32313)["Buffer"];
 
 
@@ -12039,13 +12039,13 @@ function getBodySize(body) {
 /* harmony import */ var _babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(14953);
 /* harmony import */ var _babel_runtime_corejs3_helpers_createClass__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(4449);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(14109);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_0___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(52508);
-/* harmony import */ var core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_1___default = __webpack_require__.n(core_js_modules_es_object_keys_js__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(82067);
-/* harmony import */ var core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_2___default = __webpack_require__.n(core_js_modules_es_regexp_exec_js__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var core_js_modules_es_regexp_test_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(37230);
-/* harmony import */ var core_js_modules_es_regexp_test_js__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_test_js__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var core_js_modules_es_regexp_test_js__WEBPACK_IMPORTED_MODULE_3___default = __webpack_require__.n(core_js_modules_es_regexp_test_js__WEBPACK_IMPORTED_MODULE_3__);
 /* provided dependency */ var process = __webpack_require__(9964);
 
 
@@ -12089,7 +12089,7 @@ function getModuleLogLevel(logLevelConfig, moduleName) {
 /**
  *
  */
-var Logger = /*#__PURE__*/function () {
+var Logger = function () {
   function Logger(moduleName) {
     var logLevelConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : globalLogLevelConfig;
     (0,_babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_4__/* ["default"] */ .A)(this, Logger);
@@ -12198,7 +12198,7 @@ function getLogger(moduleName) {
 /* harmony export */   U: () => (/* binding */ StreamPromise)
 /* harmony export */ });
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(54818);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(14953);
 /* harmony import */ var _babel_runtime_corejs3_helpers_createClass__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(4449);
 /* harmony import */ var _babel_runtime_corejs3_helpers_possibleConstructorReturn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4821);
@@ -12206,9 +12206,9 @@ function getLogger(moduleName) {
 /* harmony import */ var _babel_runtime_corejs3_helpers_inherits__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(80025);
 /* harmony import */ var _babel_runtime_corejs3_helpers_wrapNativeSuper__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(78979);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(44124);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_1___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var stream__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(9760);
-/* harmony import */ var stream__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(stream__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var stream__WEBPACK_IMPORTED_MODULE_4___default = __webpack_require__.n(stream__WEBPACK_IMPORTED_MODULE_4__);
 
 
 
@@ -12231,7 +12231,7 @@ function _isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.
 /**
  *
  */
-var StreamPromise = /*#__PURE__*/function (_Promise) {
+var StreamPromise = function (_Promise) {
   function StreamPromise() {
     (0,_babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_5__/* ["default"] */ .A)(this, StreamPromise);
     return _callSuper(this, StreamPromise, arguments);
@@ -12258,7 +12258,7 @@ var StreamPromise = /*#__PURE__*/function (_Promise) {
       return streamPromise;
     }
   }]);
-}( /*#__PURE__*/(0,_babel_runtime_corejs3_helpers_wrapNativeSuper__WEBPACK_IMPORTED_MODULE_8__/* ["default"] */ .A)((_babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_1___default())));
+}( (0,_babel_runtime_corejs3_helpers_wrapNativeSuper__WEBPACK_IMPORTED_MODULE_8__/* ["default"] */ .A)((_babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_1___default())));
 
 
 /***/ }),
@@ -12273,7 +12273,7 @@ var StreamPromise = /*#__PURE__*/function (_Promise) {
 /* harmony export */   yw: () => (/* binding */ readAll)
 /* harmony export */ });
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(54818);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_reflect_construct__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(62207);
 /* harmony import */ var _babel_runtime_corejs3_helpers_toConsumableArray__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(28331);
 /* harmony import */ var _babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(14953);
@@ -12282,23 +12282,23 @@ var StreamPromise = /*#__PURE__*/function (_Promise) {
 /* harmony import */ var _babel_runtime_corejs3_helpers_getPrototypeOf__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(47686);
 /* harmony import */ var _babel_runtime_corejs3_helpers_inherits__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(80025);
 /* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(41400);
-/* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default = __webpack_require__.n(_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(14109);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_2___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_concat__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(44499);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_3___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_instance_map__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(44124);
-/* harmony import */ var _babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_4___default = __webpack_require__.n(_babel_runtime_corejs3_core_js_stable_promise__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(6764);
-/* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_7___default = __webpack_require__.n(core_js_modules_es_error_cause_js__WEBPACK_IMPORTED_MODULE_7__);
 /* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(11190);
-/* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_8__);
+/* harmony import */ var core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_8___default = __webpack_require__.n(core_js_modules_es_array_push_js__WEBPACK_IMPORTED_MODULE_8__);
 /* harmony import */ var core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(94711);
-/* harmony import */ var core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_9___default = __webpack_require__.n(core_js_modules_es_object_to_string_js__WEBPACK_IMPORTED_MODULE_9__);
 /* harmony import */ var core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(67873);
-/* harmony import */ var core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_10__);
+/* harmony import */ var core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_10___default = __webpack_require__.n(core_js_modules_es_regexp_to_string_js__WEBPACK_IMPORTED_MODULE_10__);
 /* harmony import */ var stream__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(9760);
-/* harmony import */ var stream__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(stream__WEBPACK_IMPORTED_MODULE_11__);
+/* harmony import */ var stream__WEBPACK_IMPORTED_MODULE_11___default = __webpack_require__.n(stream__WEBPACK_IMPORTED_MODULE_11__);
 /* provided dependency */ var Buffer = __webpack_require__(32313)["Buffer"];
 
 
@@ -12336,7 +12336,7 @@ function createLazyStream() {
     setStream: setStream
   };
 }
-var MemoryWriteStream = /*#__PURE__*/function (_Writable) {
+var MemoryWriteStream = function (_Writable) {
   function MemoryWriteStream() {
     var _this;
     (0,_babel_runtime_corejs3_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_12__/* ["default"] */ .A)(this, MemoryWriteStream);
@@ -12373,7 +12373,7 @@ function readAll(_x) {
   return _readAll.apply(this, arguments);
 }
 function _readAll() {
-  _readAll = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_16__/* ["default"] */ .A)( /*#__PURE__*/_babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee(rs) {
+  _readAll = (0,_babel_runtime_corejs3_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_16__/* ["default"] */ .A)( _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee(rs) {
     var encoding,
       _args = arguments;
     return _babel_runtime_corejs3_regenerator__WEBPACK_IMPORTED_MODULE_1___default().wrap(function _callee$(_context2) {
@@ -12394,7 +12394,7 @@ function _readAll() {
   }));
   return _readAll.apply(this, arguments);
 }
-var DuplexifiedStream = /*#__PURE__*/function (_Duplex) {
+var DuplexifiedStream = function (_Duplex) {
   function DuplexifiedStream(ws, rs) {
     var _opts$writableObjectM, _opts$readableObjectM;
     var _this2;
@@ -58851,7 +58851,7 @@ function createErrorType(code, message, Base) {
   }
 
   var NodeError =
-  /*#__PURE__*/
+  
   function (_Base) {
     _inheritsLoose(NodeError, _Base);
 
@@ -61231,7 +61231,7 @@ var custom = inspect && inspect.custom || 'inspect';
 function copyBuffer(src, target, offset) {
   Buffer.prototype.copy.call(src, target, offset);
 }
-module.exports = /*#__PURE__*/function () {
+module.exports = function () {
   function BufferList() {
     _classCallCheck(this, BufferList);
     this.head = null;
@@ -92056,7 +92056,7 @@ var getPrototypeOf = __webpack_require__(47686);
 
 function _superPropBase(object, property) {
   while (!Object.prototype.hasOwnProperty.call(object, property)) {
-    object = (0,getPrototypeOf/* default */.A)(object);
+    object = (0,getPrototypeOf.A)(object);
     if (object === null) break;
   }
   return object;
@@ -92213,7 +92213,7 @@ function _assertThisInitialized(self) {
 
 
 function _possibleConstructorReturn(self, call) {
-  if (call && ((0,esm_typeof/* default */.A)(call) === "object" || typeof call === "function")) {
+  if (call && ((0,esm_typeof.A)(call) === "object" || typeof call === "function")) {
     return call;
   } else if (call !== void 0) {
     throw new TypeError("Derived constructors may only return object or undefined");
@@ -92311,7 +92311,7 @@ function _nonIterableRest() {
 
 
 function _slicedToArray(arr, i) {
-  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || (0,unsupportedIterableToArray/* default */.A)(arr, i) || _nonIterableRest();
+  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || (0,unsupportedIterableToArray.A)(arr, i) || _nonIterableRest();
 }
 
 /***/ }),
@@ -92334,7 +92334,7 @@ var arrayLikeToArray = __webpack_require__(76125);
 
 
 function _arrayWithoutHoles(arr) {
-  if (is_array(arr)) return (0,arrayLikeToArray/* default */.A)(arr);
+  if (is_array(arr)) return (0,arrayLikeToArray.A)(arr);
 }
 // EXTERNAL MODULE: ./node_modules/core-js-pure/full/symbol/index.js
 var symbol = __webpack_require__(97245);
@@ -92361,7 +92361,7 @@ function _nonIterableSpread() {
 
 
 function _toConsumableArray(arr) {
-  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || (0,unsupportedIterableToArray/* default */.A)(arr) || _nonIterableSpread();
+  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || (0,unsupportedIterableToArray.A)(arr) || _nonIterableSpread();
 }
 
 /***/ }),
@@ -92384,11 +92384,11 @@ var to_primitive = __webpack_require__(89188);
 
 
 function toPrimitive(t, r) {
-  if ("object" != (0,esm_typeof/* default */.A)(t) || !t) return t;
+  if ("object" != (0,esm_typeof.A)(t) || !t) return t;
   var e = t[to_primitive];
   if (void 0 !== e) {
     var i = e.call(t, r || "default");
-    if ("object" != (0,esm_typeof/* default */.A)(i)) return i;
+    if ("object" != (0,esm_typeof.A)(i)) return i;
     throw new TypeError("@@toPrimitive must return a primitive value.");
   }
   return ("string" === r ? String : Number)(t);
@@ -92398,7 +92398,7 @@ function toPrimitive(t, r) {
 
 function toPropertyKey(t) {
   var i = toPrimitive(t, "string");
-  return "symbol" == (0,esm_typeof/* default */.A)(i) ? i : i + "";
+  return "symbol" == (0,esm_typeof.A)(i) ? i : i + "";
 }
 
 /***/ }),
@@ -92508,7 +92508,7 @@ function _construct(t, e, r) {
   var o = [null];
   push(o).apply(o, e);
   var p = new (bind(t).apply(t, o))();
-  return r && (0,setPrototypeOf/* default */.A)(p, r.prototype), p;
+  return r && (0,setPrototypeOf.A)(p, r.prototype), p;
 }
 ;// CONCATENATED MODULE: ./node_modules/@babel/runtime-corejs3/helpers/esm/wrapNativeSuper.js
 
@@ -92529,7 +92529,7 @@ function _wrapNativeSuper(Class) {
       _cache.set(Class, Wrapper);
     }
     function Wrapper() {
-      return _construct(Class, arguments, (0,getPrototypeOf/* default */.A)(this).constructor);
+      return _construct(Class, arguments, (0,getPrototypeOf.A)(this).constructor);
     }
     Wrapper.prototype = create(Class.prototype, {
       constructor: {
@@ -92539,7 +92539,7 @@ function _wrapNativeSuper(Class) {
         configurable: true
       }
     });
-    return (0,setPrototypeOf/* default */.A)(Wrapper, Class);
+    return (0,setPrototypeOf.A)(Wrapper, Class);
   };
   return _wrapNativeSuper(Class);
 }
@@ -92550,7 +92550,7 @@ function _wrapNativeSuper(Class) {
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"aes-128-ecb":{"cipher":"AES","key":128,"iv":0,"mode":"ECB","type":"block"},"aes-192-ecb":{"cipher":"AES","key":192,"iv":0,"mode":"ECB","type":"block"},"aes-256-ecb":{"cipher":"AES","key":256,"iv":0,"mode":"ECB","type":"block"},"aes-128-cbc":{"cipher":"AES","key":128,"iv":16,"mode":"CBC","type":"block"},"aes-192-cbc":{"cipher":"AES","key":192,"iv":16,"mode":"CBC","type":"block"},"aes-256-cbc":{"cipher":"AES","key":256,"iv":16,"mode":"CBC","type":"block"},"aes128":{"cipher":"AES","key":128,"iv":16,"mode":"CBC","type":"block"},"aes192":{"cipher":"AES","key":192,"iv":16,"mode":"CBC","type":"block"},"aes256":{"cipher":"AES","key":256,"iv":16,"mode":"CBC","type":"block"},"aes-128-cfb":{"cipher":"AES","key":128,"iv":16,"mode":"CFB","type":"stream"},"aes-192-cfb":{"cipher":"AES","key":192,"iv":16,"mode":"CFB","type":"stream"},"aes-256-cfb":{"cipher":"AES","key":256,"iv":16,"mode":"CFB","type":"stream"},"aes-128-cfb8":{"cipher":"AES","key":128,"iv":16,"mode":"CFB8","type":"stream"},"aes-192-cfb8":{"cipher":"AES","key":192,"iv":16,"mode":"CFB8","type":"stream"},"aes-256-cfb8":{"cipher":"AES","key":256,"iv":16,"mode":"CFB8","type":"stream"},"aes-128-cfb1":{"cipher":"AES","key":128,"iv":16,"mode":"CFB1","type":"stream"},"aes-192-cfb1":{"cipher":"AES","key":192,"iv":16,"mode":"CFB1","type":"stream"},"aes-256-cfb1":{"cipher":"AES","key":256,"iv":16,"mode":"CFB1","type":"stream"},"aes-128-ofb":{"cipher":"AES","key":128,"iv":16,"mode":"OFB","type":"stream"},"aes-192-ofb":{"cipher":"AES","key":192,"iv":16,"mode":"OFB","type":"stream"},"aes-256-ofb":{"cipher":"AES","key":256,"iv":16,"mode":"OFB","type":"stream"},"aes-128-ctr":{"cipher":"AES","key":128,"iv":16,"mode":"CTR","type":"stream"},"aes-192-ctr":{"cipher":"AES","key":192,"iv":16,"mode":"CTR","type":"stream"},"aes-256-ctr":{"cipher":"AES","key":256,"iv":16,"mode":"CTR","type":"stream"},"aes-128-gcm":{"cipher":"AES","key":128,"iv":12,"mode":"GCM","type":"auth"},"aes-192-gcm":{"cipher":"AES","key":192,"iv":12,"mode":"GCM","type":"auth"},"aes-256-gcm":{"cipher":"AES","key":256,"iv":12,"mode":"GCM","type":"auth"}}');
+module.exports = JSON.parse('{"aes-128-ecb":{"cipher":"AES","key":128,"iv":0,"mode":"ECB","type":"block"},"aes-192-ecb":{"cipher":"AES","key":192,"iv":0,"mode":"ECB","type":"block"},"aes-256-ecb":{"cipher":"AES","key":256,"iv":0,"mode":"ECB","type":"block"},"aes-128-cbc":{"cipher":"AES","key":128,"iv":16,"mode":"CBC","type":"block"},"aes-192-cbc":{"cipher":"AES","key":192,"iv":16,"mode":"CBC","type":"block"},"aes-256-cbc":{"cipher":"AES","key":256,"iv":16,"mode":"CBC","type":"block"},"aes128":{"cipher":"AES","key":128,"iv":16,"mode":"CBC","type":"block"},"aes192":{"cipher":"AES","key":192,"iv":16,"mode":"CBC","type":"block"},"aes256":{"cipher":"AES","key":256,"iv":16,"mode":"CBC","type":"block"},"aes-128-cfb":{"cipher":"AES","key":128,"iv":16,"mode":"CFB","type":"stream"},"aes-192-cfb":{"cipher":"AES","key":192,"iv":16,"mode":"CFB","type":"stream"},"aes-256-cfb":{"cipher":"AES","key":256,"iv":16,"mode":"CFB","type":"stream"},"aes-128-cfb8":{"cipher":"AES","key":128,"iv":16,"mode":"CFB8","type":"stream"},"aes-192-cfb8":{"cipher":"AES","key":192,"iv":16,"mode":"CFB8","type":"stream"},"aes-256-cfb8":{"cipher":"AES","key":256,"iv":16,"mode":"CFB8","type":"stream"},"aes-128-cfb1":{"cipher":"AES","key":128,"iv":16,"mode":"CFB1","type":"stream"},"aes-192-cfb1":{"cipher":"AES","key":192,"iv":16,"mode":"CFB1","type":"stream"},"aes-256-cfb1":{"cipher":"AES","key":256,"iv":16,"mode":"CFB1","type":"stream"},"aes-128-ofb":{"cipher":"AES","key":128,"iv":16,"mode":"OFB","type":"stream"},"aes-192-ofb":{"cipher":"AES","key":192,"iv":16,"mode":"OFB","type":"stream"},"aes-256-ofb":{"cipher":"AES","key":256,"iv":16,"mode":"OFB","type":"stream"},"aes-128-ctr":{"cipher":"AES","key":128,"iv":16,"mode":"CTR","type":"stream"},"aes-192-ctr":{"cipher":"AES","key":192,"iv":16,"mode":"CTR","type":"stream"},"aes-256-ctr":{"cipher":"AES","key":256,"iv":16,"mode":"CTR","type":"stream"},"aes-128-gcm":{"cipher":"AES","key":128,"iv":12,"mode":"GCM","type":"auth"},"aes-192-gcm":{"cipher":"AES","key":192,"iv":12,"mode":"GCM","type":"auth"},"aes-256-gcm":{"cipher":"AES","key":256,"iv":12,"mode":"GCM","type":"auth"}}');
 
 /***/ }),
 
@@ -92558,7 +92558,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"aes-128-ecb":{"cipher":"AES","key":1
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"sha224WithRSAEncryption":{"sign":"rsa","hash":"sha224","id":"302d300d06096086480165030402040500041c"},"RSA-SHA224":{"sign":"ecdsa/rsa","hash":"sha224","id":"302d300d06096086480165030402040500041c"},"sha256WithRSAEncryption":{"sign":"rsa","hash":"sha256","id":"3031300d060960864801650304020105000420"},"RSA-SHA256":{"sign":"ecdsa/rsa","hash":"sha256","id":"3031300d060960864801650304020105000420"},"sha384WithRSAEncryption":{"sign":"rsa","hash":"sha384","id":"3041300d060960864801650304020205000430"},"RSA-SHA384":{"sign":"ecdsa/rsa","hash":"sha384","id":"3041300d060960864801650304020205000430"},"sha512WithRSAEncryption":{"sign":"rsa","hash":"sha512","id":"3051300d060960864801650304020305000440"},"RSA-SHA512":{"sign":"ecdsa/rsa","hash":"sha512","id":"3051300d060960864801650304020305000440"},"RSA-SHA1":{"sign":"rsa","hash":"sha1","id":"3021300906052b0e03021a05000414"},"ecdsa-with-SHA1":{"sign":"ecdsa","hash":"sha1","id":""},"sha256":{"sign":"ecdsa","hash":"sha256","id":""},"sha224":{"sign":"ecdsa","hash":"sha224","id":""},"sha384":{"sign":"ecdsa","hash":"sha384","id":""},"sha512":{"sign":"ecdsa","hash":"sha512","id":""},"DSA-SHA":{"sign":"dsa","hash":"sha1","id":""},"DSA-SHA1":{"sign":"dsa","hash":"sha1","id":""},"DSA":{"sign":"dsa","hash":"sha1","id":""},"DSA-WITH-SHA224":{"sign":"dsa","hash":"sha224","id":""},"DSA-SHA224":{"sign":"dsa","hash":"sha224","id":""},"DSA-WITH-SHA256":{"sign":"dsa","hash":"sha256","id":""},"DSA-SHA256":{"sign":"dsa","hash":"sha256","id":""},"DSA-WITH-SHA384":{"sign":"dsa","hash":"sha384","id":""},"DSA-SHA384":{"sign":"dsa","hash":"sha384","id":""},"DSA-WITH-SHA512":{"sign":"dsa","hash":"sha512","id":""},"DSA-SHA512":{"sign":"dsa","hash":"sha512","id":""},"DSA-RIPEMD160":{"sign":"dsa","hash":"rmd160","id":""},"ripemd160WithRSA":{"sign":"rsa","hash":"rmd160","id":"3021300906052b2403020105000414"},"RSA-RIPEMD160":{"sign":"rsa","hash":"rmd160","id":"3021300906052b2403020105000414"},"md5WithRSAEncryption":{"sign":"rsa","hash":"md5","id":"3020300c06082a864886f70d020505000410"},"RSA-MD5":{"sign":"rsa","hash":"md5","id":"3020300c06082a864886f70d020505000410"}}');
+module.exports = JSON.parse('{"sha224WithRSAEncryption":{"sign":"rsa","hash":"sha224","id":"302d300d06096086480165030402040500041c"},"RSA-SHA224":{"sign":"ecdsa/rsa","hash":"sha224","id":"302d300d06096086480165030402040500041c"},"sha256WithRSAEncryption":{"sign":"rsa","hash":"sha256","id":"3031300d060960864801650304020105000420"},"RSA-SHA256":{"sign":"ecdsa/rsa","hash":"sha256","id":"3031300d060960864801650304020105000420"},"sha384WithRSAEncryption":{"sign":"rsa","hash":"sha384","id":"3041300d060960864801650304020205000430"},"RSA-SHA384":{"sign":"ecdsa/rsa","hash":"sha384","id":"3041300d060960864801650304020205000430"},"sha512WithRSAEncryption":{"sign":"rsa","hash":"sha512","id":"3051300d060960864801650304020305000440"},"RSA-SHA512":{"sign":"ecdsa/rsa","hash":"sha512","id":"3051300d060960864801650304020305000440"},"RSA-SHA1":{"sign":"rsa","hash":"sha1","id":"3021300906052b0e03021a05000414"},"ecdsa-with-SHA1":{"sign":"ecdsa","hash":"sha1","id":""},"sha256":{"sign":"ecdsa","hash":"sha256","id":""},"sha224":{"sign":"ecdsa","hash":"sha224","id":""},"sha384":{"sign":"ecdsa","hash":"sha384","id":""},"sha512":{"sign":"ecdsa","hash":"sha512","id":""},"DSA-SHA":{"sign":"dsa","hash":"sha1","id":""},"DSA-SHA1":{"sign":"dsa","hash":"sha1","id":""},"DSA":{"sign":"dsa","hash":"sha1","id":""},"DSA-WITH-SHA224":{"sign":"dsa","hash":"sha224","id":""},"DSA-SHA224":{"sign":"dsa","hash":"sha224","id":""},"DSA-WITH-SHA256":{"sign":"dsa","hash":"sha256","id":""},"DSA-SHA256":{"sign":"dsa","hash":"sha256","id":""},"DSA-WITH-SHA384":{"sign":"dsa","hash":"sha384","id":""},"DSA-SHA384":{"sign":"dsa","hash":"sha384","id":""},"DSA-WITH-SHA512":{"sign":"dsa","hash":"sha512","id":""},"DSA-SHA512":{"sign":"dsa","hash":"sha512","id":""},"DSA-RIPEMD160":{"sign":"dsa","hash":"rmd160","id":""},"ripemd160WithRSA":{"sign":"rsa","hash":"rmd160","id":"3021300906052b2403020105000414"},"RSA-RIPEMD160":{"sign":"rsa","hash":"rmd160","id":"3021300906052b2403020105000414"},"md5WithRSAEncryption":{"sign":"rsa","hash":"md5","id":"3020300c06082a864886f70d020505000410"},"RSA-MD5":{"sign":"rsa","hash":"md5","id":"3020300c06082a864886f70d020505000410"}}');
 
 /***/ }),
 
@@ -92566,7 +92566,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"sha224WithRSAEncryption":{"sign":"rs
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"1.3.132.0.10":"secp256k1","1.3.132.0.33":"p224","1.2.840.10045.3.1.1":"p192","1.2.840.10045.3.1.7":"p256","1.3.132.0.34":"p384","1.3.132.0.35":"p521"}');
+module.exports = JSON.parse('{"1.3.132.0.10":"secp256k1","1.3.132.0.33":"p224","1.2.840.10045.3.1.1":"p192","1.2.840.10045.3.1.7":"p256","1.3.132.0.34":"p384","1.3.132.0.35":"p521"}');
 
 /***/ }),
 
@@ -92574,7 +92574,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"1.3.132.0.10":"secp256k1","1.3.132.0
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"modp1":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a63a3620ffffffffffffffff"},"modp2":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece65381ffffffffffffffff"},"modp5":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca237327ffffffffffffffff"},"modp14":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca18217c32905e462e36ce3be39e772c180e86039b2783a2ec07a28fb5c55df06f4c52c9de2bcbf6955817183995497cea956ae515d2261898fa051015728e5a8aacaa68ffffffffffffffff"},"modp15":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca18217c32905e462e36ce3be39e772c180e86039b2783a2ec07a28fb5c55df06f4c52c9de2bcbf6955817183995497cea956ae515d2261898fa051015728e5a8aaac42dad33170d04507a33a85521abdf1cba64ecfb850458dbef0a8aea71575d060c7db3970f85a6e1e4c7abf5ae8cdb0933d71e8c94e04a25619dcee3d2261ad2ee6bf12ffa06d98a0864d87602733ec86a64521f2b18177b200cbbe117577a615d6c770988c0bad946e208e24fa074e5ab3143db5bfce0fd108e4b82d120a93ad2caffffffffffffffff"},"modp16":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca18217c32905e462e36ce3be39e772c180e86039b2783a2ec07a28fb5c55df06f4c52c9de2bcbf6955817183995497cea956ae515d2261898fa051015728e5a8aaac42dad33170d04507a33a85521abdf1cba64ecfb850458dbef0a8aea71575d060c7db3970f85a6e1e4c7abf5ae8cdb0933d71e8c94e04a25619dcee3d2261ad2ee6bf12ffa06d98a0864d87602733ec86a64521f2b18177b200cbbe117577a615d6c770988c0bad946e208e24fa074e5ab3143db5bfce0fd108e4b82d120a92108011a723c12a787e6d788719a10bdba5b2699c327186af4e23c1a946834b6150bda2583e9ca2ad44ce8dbbbc2db04de8ef92e8efc141fbecaa6287c59474e6bc05d99b2964fa090c3a2233ba186515be7ed1f612970cee2d7afb81bdd762170481cd0069127d5b05aa993b4ea988d8fddc186ffb7dc90a6c08f4df435c934063199ffffffffffffffff"},"modp17":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca18217c32905e462e36ce3be39e772c180e86039b2783a2ec07a28fb5c55df06f4c52c9de2bcbf6955817183995497cea956ae515d2261898fa051015728e5a8aaac42dad33170d04507a33a85521abdf1cba64ecfb850458dbef0a8aea71575d060c7db3970f85a6e1e4c7abf5ae8cdb0933d71e8c94e04a25619dcee3d2261ad2ee6bf12ffa06d98a0864d87602733ec86a64521f2b18177b200cbbe117577a615d6c770988c0bad946e208e24fa074e5ab3143db5bfce0fd108e4b82d120a92108011a723c12a787e6d788719a10bdba5b2699c327186af4e23c1a946834b6150bda2583e9ca2ad44ce8dbbbc2db04de8ef92e8efc141fbecaa6287c59474e6bc05d99b2964fa090c3a2233ba186515be7ed1f612970cee2d7afb81bdd762170481cd0069127d5b05aa993b4ea988d8fddc186ffb7dc90a6c08f4df435c93402849236c3fab4d27c7026c1d4dcb2602646dec9751e763dba37bdf8ff9406ad9e530ee5db382f413001aeb06a53ed9027d831179727b0865a8918da3edbebcf9b14ed44ce6cbaced4bb1bdb7f1447e6cc254b332051512bd7af426fb8f401378cd2bf5983ca01c64b92ecf032ea15d1721d03f482d7ce6e74fef6d55e702f46980c82b5a84031900b1c9e59e7c97fbec7e8f323a97a7e36cc88be0f1d45b7ff585ac54bd407b22b4154aacc8f6d7ebf48e1d814cc5ed20f8037e0a79715eef29be32806a1d58bb7c5da76f550aa3d8a1fbff0eb19ccb1a313d55cda56c9ec2ef29632387fe8d76e3c0468043e8f663f4860ee12bf2d5b0b7474d6e694f91e6dcc4024ffffffffffffffff"},"modp18":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca18217c32905e462e36ce3be39e772c180e86039b2783a2ec07a28fb5c55df06f4c52c9de2bcbf6955817183995497cea956ae515d2261898fa051015728e5a8aaac42dad33170d04507a33a85521abdf1cba64ecfb850458dbef0a8aea71575d060c7db3970f85a6e1e4c7abf5ae8cdb0933d71e8c94e04a25619dcee3d2261ad2ee6bf12ffa06d98a0864d87602733ec86a64521f2b18177b200cbbe117577a615d6c770988c0bad946e208e24fa074e5ab3143db5bfce0fd108e4b82d120a92108011a723c12a787e6d788719a10bdba5b2699c327186af4e23c1a946834b6150bda2583e9ca2ad44ce8dbbbc2db04de8ef92e8efc141fbecaa6287c59474e6bc05d99b2964fa090c3a2233ba186515be7ed1f612970cee2d7afb81bdd762170481cd0069127d5b05aa993b4ea988d8fddc186ffb7dc90a6c08f4df435c93402849236c3fab4d27c7026c1d4dcb2602646dec9751e763dba37bdf8ff9406ad9e530ee5db382f413001aeb06a53ed9027d831179727b0865a8918da3edbebcf9b14ed44ce6cbaced4bb1bdb7f1447e6cc254b332051512bd7af426fb8f401378cd2bf5983ca01c64b92ecf032ea15d1721d03f482d7ce6e74fef6d55e702f46980c82b5a84031900b1c9e59e7c97fbec7e8f323a97a7e36cc88be0f1d45b7ff585ac54bd407b22b4154aacc8f6d7ebf48e1d814cc5ed20f8037e0a79715eef29be32806a1d58bb7c5da76f550aa3d8a1fbff0eb19ccb1a313d55cda56c9ec2ef29632387fe8d76e3c0468043e8f663f4860ee12bf2d5b0b7474d6e694f91e6dbe115974a3926f12fee5e438777cb6a932df8cd8bec4d073b931ba3bc832b68d9dd300741fa7bf8afc47ed2576f6936ba424663aab639c5ae4f5683423b4742bf1c978238f16cbe39d652de3fdb8befc848ad922222e04a4037c0713eb57a81a23f0c73473fc646cea306b4bcbc8862f8385ddfa9d4b7fa2c087e879683303ed5bdd3a062b3cf5b3a278a66d2a13f83f44f82ddf310ee074ab6a364597e899a0255dc164f31cc50846851df9ab48195ded7ea1b1d510bd7ee74d73faf36bc31ecfa268359046f4eb879f924009438b481c6cd7889a002ed5ee382bc9190da6fc026e479558e4475677e9aa9e3050e2765694dfc81f56e880b96e7160c980dd98edd3dfffffffffffffffff"}}');
+module.exports = JSON.parse('{"modp1":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a63a3620ffffffffffffffff"},"modp2":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece65381ffffffffffffffff"},"modp5":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca237327ffffffffffffffff"},"modp14":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca18217c32905e462e36ce3be39e772c180e86039b2783a2ec07a28fb5c55df06f4c52c9de2bcbf6955817183995497cea956ae515d2261898fa051015728e5a8aacaa68ffffffffffffffff"},"modp15":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca18217c32905e462e36ce3be39e772c180e86039b2783a2ec07a28fb5c55df06f4c52c9de2bcbf6955817183995497cea956ae515d2261898fa051015728e5a8aaac42dad33170d04507a33a85521abdf1cba64ecfb850458dbef0a8aea71575d060c7db3970f85a6e1e4c7abf5ae8cdb0933d71e8c94e04a25619dcee3d2261ad2ee6bf12ffa06d98a0864d87602733ec86a64521f2b18177b200cbbe117577a615d6c770988c0bad946e208e24fa074e5ab3143db5bfce0fd108e4b82d120a93ad2caffffffffffffffff"},"modp16":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca18217c32905e462e36ce3be39e772c180e86039b2783a2ec07a28fb5c55df06f4c52c9de2bcbf6955817183995497cea956ae515d2261898fa051015728e5a8aaac42dad33170d04507a33a85521abdf1cba64ecfb850458dbef0a8aea71575d060c7db3970f85a6e1e4c7abf5ae8cdb0933d71e8c94e04a25619dcee3d2261ad2ee6bf12ffa06d98a0864d87602733ec86a64521f2b18177b200cbbe117577a615d6c770988c0bad946e208e24fa074e5ab3143db5bfce0fd108e4b82d120a92108011a723c12a787e6d788719a10bdba5b2699c327186af4e23c1a946834b6150bda2583e9ca2ad44ce8dbbbc2db04de8ef92e8efc141fbecaa6287c59474e6bc05d99b2964fa090c3a2233ba186515be7ed1f612970cee2d7afb81bdd762170481cd0069127d5b05aa993b4ea988d8fddc186ffb7dc90a6c08f4df435c934063199ffffffffffffffff"},"modp17":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca18217c32905e462e36ce3be39e772c180e86039b2783a2ec07a28fb5c55df06f4c52c9de2bcbf6955817183995497cea956ae515d2261898fa051015728e5a8aaac42dad33170d04507a33a85521abdf1cba64ecfb850458dbef0a8aea71575d060c7db3970f85a6e1e4c7abf5ae8cdb0933d71e8c94e04a25619dcee3d2261ad2ee6bf12ffa06d98a0864d87602733ec86a64521f2b18177b200cbbe117577a615d6c770988c0bad946e208e24fa074e5ab3143db5bfce0fd108e4b82d120a92108011a723c12a787e6d788719a10bdba5b2699c327186af4e23c1a946834b6150bda2583e9ca2ad44ce8dbbbc2db04de8ef92e8efc141fbecaa6287c59474e6bc05d99b2964fa090c3a2233ba186515be7ed1f612970cee2d7afb81bdd762170481cd0069127d5b05aa993b4ea988d8fddc186ffb7dc90a6c08f4df435c93402849236c3fab4d27c7026c1d4dcb2602646dec9751e763dba37bdf8ff9406ad9e530ee5db382f413001aeb06a53ed9027d831179727b0865a8918da3edbebcf9b14ed44ce6cbaced4bb1bdb7f1447e6cc254b332051512bd7af426fb8f401378cd2bf5983ca01c64b92ecf032ea15d1721d03f482d7ce6e74fef6d55e702f46980c82b5a84031900b1c9e59e7c97fbec7e8f323a97a7e36cc88be0f1d45b7ff585ac54bd407b22b4154aacc8f6d7ebf48e1d814cc5ed20f8037e0a79715eef29be32806a1d58bb7c5da76f550aa3d8a1fbff0eb19ccb1a313d55cda56c9ec2ef29632387fe8d76e3c0468043e8f663f4860ee12bf2d5b0b7474d6e694f91e6dcc4024ffffffffffffffff"},"modp18":{"gen":"02","prime":"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca18217c32905e462e36ce3be39e772c180e86039b2783a2ec07a28fb5c55df06f4c52c9de2bcbf6955817183995497cea956ae515d2261898fa051015728e5a8aaac42dad33170d04507a33a85521abdf1cba64ecfb850458dbef0a8aea71575d060c7db3970f85a6e1e4c7abf5ae8cdb0933d71e8c94e04a25619dcee3d2261ad2ee6bf12ffa06d98a0864d87602733ec86a64521f2b18177b200cbbe117577a615d6c770988c0bad946e208e24fa074e5ab3143db5bfce0fd108e4b82d120a92108011a723c12a787e6d788719a10bdba5b2699c327186af4e23c1a946834b6150bda2583e9ca2ad44ce8dbbbc2db04de8ef92e8efc141fbecaa6287c59474e6bc05d99b2964fa090c3a2233ba186515be7ed1f612970cee2d7afb81bdd762170481cd0069127d5b05aa993b4ea988d8fddc186ffb7dc90a6c08f4df435c93402849236c3fab4d27c7026c1d4dcb2602646dec9751e763dba37bdf8ff9406ad9e530ee5db382f413001aeb06a53ed9027d831179727b0865a8918da3edbebcf9b14ed44ce6cbaced4bb1bdb7f1447e6cc254b332051512bd7af426fb8f401378cd2bf5983ca01c64b92ecf032ea15d1721d03f482d7ce6e74fef6d55e702f46980c82b5a84031900b1c9e59e7c97fbec7e8f323a97a7e36cc88be0f1d45b7ff585ac54bd407b22b4154aacc8f6d7ebf48e1d814cc5ed20f8037e0a79715eef29be32806a1d58bb7c5da76f550aa3d8a1fbff0eb19ccb1a313d55cda56c9ec2ef29632387fe8d76e3c0468043e8f663f4860ee12bf2d5b0b7474d6e694f91e6dbe115974a3926f12fee5e438777cb6a932df8cd8bec4d073b931ba3bc832b68d9dd300741fa7bf8afc47ed2576f6936ba424663aab639c5ae4f5683423b4742bf1c978238f16cbe39d652de3fdb8befc848ad922222e04a4037c0713eb57a81a23f0c73473fc646cea306b4bcbc8862f8385ddfa9d4b7fa2c087e879683303ed5bdd3a062b3cf5b3a278a66d2a13f83f44f82ddf310ee074ab6a364597e899a0255dc164f31cc50846851df9ab48195ded7ea1b1d510bd7ee74d73faf36bc31ecfa268359046f4eb879f924009438b481c6cd7889a002ed5ee382bc9190da6fc026e479558e4475677e9aa9e3050e2765694dfc81f56e880b96e7160c980dd98edd3dfffffffffffffffff"}}');
 
 /***/ }),
 
@@ -92590,7 +92590,7 @@ module.exports = {"rE":"6.5.5"};
 /***/ ((module) => {
 
 "use strict";
-module.exports = /*#__PURE__*/JSON.parse('{"2.16.840.1.101.3.4.1.1":"aes-128-ecb","2.16.840.1.101.3.4.1.2":"aes-128-cbc","2.16.840.1.101.3.4.1.3":"aes-128-ofb","2.16.840.1.101.3.4.1.4":"aes-128-cfb","2.16.840.1.101.3.4.1.21":"aes-192-ecb","2.16.840.1.101.3.4.1.22":"aes-192-cbc","2.16.840.1.101.3.4.1.23":"aes-192-ofb","2.16.840.1.101.3.4.1.24":"aes-192-cfb","2.16.840.1.101.3.4.1.41":"aes-256-ecb","2.16.840.1.101.3.4.1.42":"aes-256-cbc","2.16.840.1.101.3.4.1.43":"aes-256-ofb","2.16.840.1.101.3.4.1.44":"aes-256-cfb"}');
+module.exports = JSON.parse('{"2.16.840.1.101.3.4.1.1":"aes-128-ecb","2.16.840.1.101.3.4.1.2":"aes-128-cbc","2.16.840.1.101.3.4.1.3":"aes-128-ofb","2.16.840.1.101.3.4.1.4":"aes-128-cfb","2.16.840.1.101.3.4.1.21":"aes-192-ecb","2.16.840.1.101.3.4.1.22":"aes-192-cbc","2.16.840.1.101.3.4.1.23":"aes-192-ofb","2.16.840.1.101.3.4.1.24":"aes-192-cfb","2.16.840.1.101.3.4.1.41":"aes-256-ecb","2.16.840.1.101.3.4.1.42":"aes-256-cbc","2.16.840.1.101.3.4.1.43":"aes-256-ofb","2.16.840.1.101.3.4.1.44":"aes-256-cfb"}');
 
 /***/ })
 
@@ -92717,28 +92717,28 @@ __webpack_require__.d(__webpack_exports__, {
 var jsforce = __webpack_require__(25650);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/keys.js
 var keys = __webpack_require__(82173);
-var keys_default = /*#__PURE__*/__webpack_require__.n(keys);
+var keys_default = __webpack_require__.n(keys);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/get-own-property-symbols.js
 var get_own_property_symbols = __webpack_require__(68040);
-var get_own_property_symbols_default = /*#__PURE__*/__webpack_require__.n(get_own_property_symbols);
+var get_own_property_symbols_default = __webpack_require__.n(get_own_property_symbols);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/filter.js
 var filter = __webpack_require__(62675);
-var filter_default = /*#__PURE__*/__webpack_require__.n(filter);
+var filter_default = __webpack_require__.n(filter);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptor.js
 var get_own_property_descriptor = __webpack_require__(25988);
-var get_own_property_descriptor_default = /*#__PURE__*/__webpack_require__.n(get_own_property_descriptor);
+var get_own_property_descriptor_default = __webpack_require__.n(get_own_property_descriptor);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/for-each.js
 var for_each = __webpack_require__(36678);
-var for_each_default = /*#__PURE__*/__webpack_require__.n(for_each);
+var for_each_default = __webpack_require__.n(for_each);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/get-own-property-descriptors.js
 var get_own_property_descriptors = __webpack_require__(13003);
-var get_own_property_descriptors_default = /*#__PURE__*/__webpack_require__.n(get_own_property_descriptors);
+var get_own_property_descriptors_default = __webpack_require__.n(get_own_property_descriptors);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-properties.js
 var define_properties = __webpack_require__(45658);
-var define_properties_default = /*#__PURE__*/__webpack_require__.n(define_properties);
+var define_properties_default = __webpack_require__.n(define_properties);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/object/define-property.js
 var define_property = __webpack_require__(74294);
-var define_property_default = /*#__PURE__*/__webpack_require__.n(define_property);
+var define_property_default = __webpack_require__.n(define_property);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/helpers/esm/defineProperty.js
 var defineProperty = __webpack_require__(24839);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/helpers/esm/classCallCheck.js
@@ -92747,10 +92747,10 @@ var classCallCheck = __webpack_require__(14953);
 var createClass = __webpack_require__(4449);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/json/stringify.js
 var stringify = __webpack_require__(78205);
-var stringify_default = /*#__PURE__*/__webpack_require__.n(stringify);
+var stringify_default = __webpack_require__.n(stringify);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/array/is-array.js
 var is_array = __webpack_require__(75403);
-var is_array_default = /*#__PURE__*/__webpack_require__.n(is_array);
+var is_array_default = __webpack_require__.n(is_array);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.join.js
 var es_array_join = __webpack_require__(71698);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.push.js
@@ -92767,8 +92767,8 @@ var es_array_push = __webpack_require__(11190);
 
 
 
-function ownKeys(e, r) { var t = keys_default()(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context, _context2; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context = ownKeys(Object(t), !0)).call(_context, function (r) { (0,defineProperty/* default */.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context2 = ownKeys(Object(t))).call(_context2, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
+function ownKeys(e, r) { var t = Object.keys(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context, _context2; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context = ownKeys(Object(t), !0)).call(_context, function (r) { (0,defineProperty.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context2 = ownKeys(Object(t))).call(_context2, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
 
 
 
@@ -92785,12 +92785,12 @@ function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _co
 /**
  * Report object class in Analytics API
  */
-var ReportInstance = /*#__PURE__*/function () {
+var ReportInstance = function () {
   /**
    *
    */
   function ReportInstance(report, id) {
-    (0,classCallCheck/* default */.A)(this, ReportInstance);
+    (0,classCallCheck.A)(this, ReportInstance);
     this._report = report;
     this._conn = report._conn;
     this.id = id;
@@ -92799,7 +92799,7 @@ var ReportInstance = /*#__PURE__*/function () {
   /**
    * Retrieve report result asynchronously executed
    */
-  return (0,createClass/* default */.A)(ReportInstance, [{
+  return (0,createClass.A)(ReportInstance, [{
     key: "retrieve",
     value: function retrieve() {
       var url = [this._conn._baseUrl(), 'analytics', 'reports', this._report.id, 'instances', this.id].join('/');
@@ -92812,28 +92812,28 @@ var ReportInstance = /*#__PURE__*/function () {
 /**
  * Report object class in Analytics API
  */
-var Report = /*#__PURE__*/function () {
+var Report = function () {
   /**
    *
    */
   function Report(conn, id) {
-    (0,classCallCheck/* default */.A)(this, Report);
+    (0,classCallCheck.A)(this, Report);
     /**
      * Synonym of Analytics~Report#destroy()
      */
-    (0,defineProperty/* default */.A)(this, "delete", this.destroy);
+    (0,defineProperty.A)(this, "delete", this.destroy);
     /**
      * Synonym of Analytics~Report#destroy()
      */
-    (0,defineProperty/* default */.A)(this, "del", this.destroy);
+    (0,defineProperty.A)(this, "del", this.destroy);
     /**
      * Synonym of Analytics~Report#execute()
      */
-    (0,defineProperty/* default */.A)(this, "run", this.execute);
+    (0,defineProperty.A)(this, "run", this.execute);
     /**
      * Synonym of Analytics~Report#execute()
      */
-    (0,defineProperty/* default */.A)(this, "exec", this.execute);
+    (0,defineProperty.A)(this, "exec", this.execute);
     this._conn = conn;
     this.id = id;
   }
@@ -92841,7 +92841,7 @@ var Report = /*#__PURE__*/function () {
   /**
    * Describe report metadata
    */
-  return (0,createClass/* default */.A)(Report, [{
+  return (0,createClass.A)(Report, [{
     key: "describe",
     value: function describe() {
       var url = [this._conn._baseUrl(), 'analytics', 'reports', this.id, 'describe'].join('/');
@@ -92960,20 +92960,20 @@ var Report = /*#__PURE__*/function () {
 /**
  * Dashboard object class in the Analytics API
  */
-var Dashboard = /*#__PURE__*/function () {
+var Dashboard = function () {
   /**
    *
    */
   function Dashboard(conn, id) {
-    (0,classCallCheck/* default */.A)(this, Dashboard);
+    (0,classCallCheck.A)(this, Dashboard);
     /**
      * Synonym of Analytics~Dashboard#destroy()
      */
-    (0,defineProperty/* default */.A)(this, "delete", this.destroy);
+    (0,defineProperty.A)(this, "delete", this.destroy);
     /**
      * Synonym of Analytics~Dashboard#destroy()
      */
-    (0,defineProperty/* default */.A)(this, "del", this.destroy);
+    (0,defineProperty.A)(this, "del", this.destroy);
     this._conn = conn;
     this.id = id;
   }
@@ -92985,7 +92985,7 @@ var Dashboard = /*#__PURE__*/function () {
    * @param {Callback.<Analytics-DashboardMetadata>} [callback] - Callback function
    * @returns {Promise.<Analytics-DashboardMetadata>}
    */
-  return (0,createClass/* default */.A)(Dashboard, [{
+  return (0,createClass.A)(Dashboard, [{
     key: "describe",
     value: function describe() {
       var url = [this._conn._baseUrl(), 'analytics', 'dashboards', this.id, 'describe'].join('/');
@@ -93078,19 +93078,19 @@ var Dashboard = /*#__PURE__*/function () {
 /**
  * API class for Analytics API
  */
-var Analytics = /*#__PURE__*/function () {
+var Analytics = function () {
   /**
    *
    */
   function Analytics(conn) {
-    (0,classCallCheck/* default */.A)(this, Analytics);
+    (0,classCallCheck.A)(this, Analytics);
     this._conn = conn;
   }
 
   /**
    * Get report object of Analytics API
    */
-  return (0,createClass/* default */.A)(Analytics, [{
+  return (0,createClass.A)(Analytics, [{
     key: "report",
     value: function report(id) {
       return new Report(this._conn, id);
@@ -93158,21 +93158,21 @@ var es_regexp_test = __webpack_require__(37230);
 /**
  * API class for Apex REST endpoint call
  */
-var Apex = /*#__PURE__*/function () {
+var Apex = function () {
   /**
    *
    */
   function Apex(conn) {
-    (0,classCallCheck/* default */.A)(this, Apex);
+    (0,classCallCheck.A)(this, Apex);
     /**
      * Synonym of Apex#delete()
      */
-    (0,defineProperty/* default */.A)(this, "del", this.delete);
+    (0,defineProperty.A)(this, "del", this.delete);
     this._conn = conn;
   }
 
   /* @private */
-  return (0,createClass/* default */.A)(Apex, [{
+  return (0,createClass.A)(Apex, [{
     key: "_baseUrl",
     value: function _baseUrl() {
       return "".concat(this._conn.instanceUrl, "/services/apexrest");
@@ -93185,7 +93185,7 @@ var Apex = /*#__PURE__*/function () {
     key: "_createRequestParams",
     value: function _createRequestParams(method, path, body) {
       var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
-      var headers = (0,esm_typeof/* default */.A)(options.headers) === 'object' ? options.headers : {};
+      var headers = (0,esm_typeof.A)(options.headers) === 'object' ? options.headers : {};
       if (!/^(GET|DELETE)$/i.test(method)) {
         headers['content-type'] = 'application/json';
       }
@@ -93261,19 +93261,19 @@ var Apex = /*#__PURE__*/function () {
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/reflect/construct.js
 var construct = __webpack_require__(54818);
-var construct_default = /*#__PURE__*/__webpack_require__.n(construct);
+var construct_default = __webpack_require__.n(construct);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/slice.js
 var slice = __webpack_require__(34047);
-var slice_default = /*#__PURE__*/__webpack_require__.n(slice);
+var slice_default = __webpack_require__.n(slice);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/array/from.js
 var from = __webpack_require__(71223);
-var from_default = /*#__PURE__*/__webpack_require__.n(from);
+var from_default = __webpack_require__.n(from);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/symbol.js
 var symbol = __webpack_require__(20153);
-var symbol_default = /*#__PURE__*/__webpack_require__.n(symbol);
+var symbol_default = __webpack_require__.n(symbol);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js/get-iterator-method.js
 var get_iterator_method = __webpack_require__(97106);
-var get_iterator_method_default = /*#__PURE__*/__webpack_require__.n(get_iterator_method);
+var get_iterator_method_default = __webpack_require__.n(get_iterator_method);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/helpers/esm/objectWithoutProperties.js + 1 modules
 var objectWithoutProperties = __webpack_require__(89423);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/helpers/esm/wrapNativeSuper.js + 3 modules
@@ -93288,28 +93288,28 @@ var getPrototypeOf = __webpack_require__(47686);
 var inherits = __webpack_require__(80025);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/regenerator/index.js
 var regenerator = __webpack_require__(41400);
-var regenerator_default = /*#__PURE__*/__webpack_require__.n(regenerator);
+var regenerator_default = __webpack_require__.n(regenerator);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/trim.js
 var trim = __webpack_require__(7621);
-var trim_default = /*#__PURE__*/__webpack_require__.n(trim);
+var trim_default = __webpack_require__.n(trim);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/concat.js
 var concat = __webpack_require__(14109);
-var concat_default = /*#__PURE__*/__webpack_require__.n(concat);
+var concat_default = __webpack_require__.n(concat);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/promise.js
 var core_js_stable_promise = __webpack_require__(44124);
-var promise_default = /*#__PURE__*/__webpack_require__.n(core_js_stable_promise);
+var promise_default = __webpack_require__.n(core_js_stable_promise);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/parse-int.js
 var parse_int = __webpack_require__(32886);
-var parse_int_default = /*#__PURE__*/__webpack_require__.n(parse_int);
+var parse_int_default = __webpack_require__.n(parse_int);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/set-timeout.js
 var set_timeout = __webpack_require__(80627);
-var set_timeout_default = /*#__PURE__*/__webpack_require__.n(set_timeout);
+var set_timeout_default = __webpack_require__.n(set_timeout);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/map.js
 var map = __webpack_require__(44499);
-var map_default = /*#__PURE__*/__webpack_require__.n(map);
+var map_default = __webpack_require__.n(map);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/includes.js
 var includes = __webpack_require__(38336);
-var includes_default = /*#__PURE__*/__webpack_require__.n(includes);
+var includes_default = __webpack_require__.n(includes);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.error.cause.js
 var es_error_cause = __webpack_require__(6764);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.iterator.js
@@ -93344,7 +93344,7 @@ var events = __webpack_require__(64785);
 var stream_browserify = __webpack_require__(9760);
 // EXTERNAL MODULE: ./node_modules/multistream/index.js
 var multistream = __webpack_require__(88884);
-var multistream_default = /*#__PURE__*/__webpack_require__.n(multistream);
+var multistream_default = __webpack_require__.n(multistream);
 // EXTERNAL MODULE: ./browser/record-stream.js
 var record_stream = __webpack_require__(1816);
 // EXTERNAL MODULE: ./browser/http-api.js
@@ -93353,7 +93353,7 @@ var http_api = __webpack_require__(32439);
 var stream = __webpack_require__(18261);
 // EXTERNAL MODULE: ./node_modules/@sindresorhus/is/dist/index.js
 var dist = __webpack_require__(41468);
-var dist_default = /*#__PURE__*/__webpack_require__.n(dist);
+var dist_default = __webpack_require__.n(dist);
 ;// CONCATENATED MODULE: ./browser/api/bulk.js
 
 
@@ -93381,8 +93381,8 @@ var _excluded = ["Id", "type", "attributes"],
 function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof (symbol_default()) !== "undefined" && get_iterator_method_default()(o) || o["@@iterator"]; if (!it) { if (is_array_default()(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
 function _unsupportedIterableToArray(o, minLen) { var _context25; if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = slice_default()(_context25 = Object.prototype.toString.call(o)).call(_context25, 8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return from_default()(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function bulk_ownKeys(e, r) { var t = keys_default()(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function bulk_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context23, _context24; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context23 = bulk_ownKeys(Object(t), !0)).call(_context23, function (r) { (0,defineProperty/* default */.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context24 = bulk_ownKeys(Object(t))).call(_context24, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
+function bulk_ownKeys(e, r) { var t = Object.keys(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function bulk_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context23, _context24; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context23 = bulk_ownKeys(Object(t), !0)).call(_context23, function (r) { (0,defineProperty.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context24 = bulk_ownKeys(Object(t))).call(_context24, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
 
 
 
@@ -93411,7 +93411,7 @@ function bulk_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var
 
 
 
-function _callSuper(t, o, e) { return o = (0,getPrototypeOf/* default */.A)(o), (0,possibleConstructorReturn/* default */.A)(t, _isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf/* default */.A)(t).constructor) : o.apply(t, e)); }
+function _callSuper(t, o, e) { return o = (0,getPrototypeOf.A)(o), (0,possibleConstructorReturn.A)(t, _isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf.A)(t).constructor) : o.apply(t, e)); }
 function _isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(construct_default()(Boolean, [], function () {})); } catch (t) {} return (_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
 /**
  * @file Manages Salesforce Bulk API related operations
@@ -93431,13 +93431,13 @@ function _isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.
 /**
  * Class for Bulk API Job
  */
-var Job = /*#__PURE__*/function (_EventEmitter) {
+var Job = function (_EventEmitter) {
   /**
    *
    */
   function Job(bulk, type, operation, options, jobId) {
     var _this;
-    (0,classCallCheck/* default */.A)(this, Job);
+    (0,classCallCheck.A)(this, Job);
     _this = _callSuper(this, Job);
     _this._bulk = bulk;
     _this.type = type;
@@ -93456,8 +93456,8 @@ var Job = /*#__PURE__*/function (_EventEmitter) {
   /**
    * Return latest jobInfo from cache
    */
-  (0,inherits/* default */.A)(Job, _EventEmitter);
-  return (0,createClass/* default */.A)(Job, [{
+  (0,inherits.A)(Job, _EventEmitter);
+  return (0,createClass.A)(Job, [{
     key: "info",
     value: function info() {
       // if cache is not available, check the latest
@@ -93493,7 +93493,7 @@ var Job = /*#__PURE__*/function (_EventEmitter) {
           _operation = 'queryAll';
         }
         var body = trim_default()(_context = concat_default()(_context2 = concat_default()(_context3 = concat_default()(_context4 = concat_default()(_context5 = "\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<jobInfo  xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">\n  <operation>".concat(_operation, "</operation>\n  <object>")).call(_context5, this.type, "</object>\n  ")).call(_context4, options.extIdField ? "<externalIdFieldName>".concat(options.extIdField, "</externalIdFieldName>") : '', "\n  ")).call(_context3, options.concurrencyMode ? "<concurrencyMode>".concat(options.concurrencyMode, "</concurrencyMode>") : '', "\n  ")).call(_context2, options.assignmentRuleId ? "<assignmentRuleId>".concat(options.assignmentRuleId, "</assignmentRuleId>") : '', "\n  <contentType>CSV</contentType>\n</jobInfo>\n      ")).call(_context);
-        this._jobInfo = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee() {
+        this._jobInfo = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee() {
           var res;
           return regenerator_default().wrap(function _callee$(_context6) {
             while (1) switch (_context6.prev = _context6.next) {
@@ -93567,7 +93567,7 @@ var Job = /*#__PURE__*/function (_EventEmitter) {
       var _this4 = this;
       var bulk = this._bulk;
       var logger = bulk._logger;
-      this._jobInfo = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee2() {
+      this._jobInfo = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee2() {
         var jobId, res;
         return regenerator_default().wrap(function _callee2$(_context7) {
           while (1) switch (_context7.prev = _context7.next) {
@@ -93617,7 +93617,7 @@ var Job = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "list",
     value: (function () {
-      var _list = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee3() {
+      var _list = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee3() {
         var bulk, logger, jobId, res, batchInfoList;
         return regenerator_default().wrap(function _callee3$(_context8) {
           while (1) switch (_context8.prev = _context8.next) {
@@ -93657,7 +93657,7 @@ var Job = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "close",
     value: (function () {
-      var _close = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee4() {
+      var _close = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee4() {
         var jobInfo;
         return regenerator_default().wrap(function _callee4$(_context9) {
           while (1) switch (_context9.prev = _context9.next) {
@@ -93699,7 +93699,7 @@ var Job = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "abort",
     value: (function () {
-      var _abort = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee5() {
+      var _abort = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee5() {
         var jobInfo;
         return regenerator_default().wrap(function _callee5$(_context10) {
           while (1) switch (_context10.prev = _context10.next) {
@@ -93741,7 +93741,7 @@ var Job = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "_changeState",
     value: (function () {
-      var _changeState2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee7(state) {
+      var _changeState2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee7(state) {
         var _this5 = this;
         var bulk, logger;
         return regenerator_default().wrap(function _callee7$(_context13) {
@@ -93749,7 +93749,7 @@ var Job = /*#__PURE__*/function (_EventEmitter) {
             case 0:
               bulk = this._bulk;
               logger = bulk._logger;
-              this._jobInfo = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee6() {
+              this._jobInfo = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee6() {
                 var _context11;
                 var jobId, body, res;
                 return regenerator_default().wrap(function _callee6$(_context12) {
@@ -93797,38 +93797,38 @@ var Job = /*#__PURE__*/function (_EventEmitter) {
 }(events.EventEmitter);
 
 /*--------------------------------------------*/
-var PollingTimeoutError = /*#__PURE__*/function (_Error) {
+var PollingTimeoutError = function (_Error) {
   /**
    *
    */
   function PollingTimeoutError(message, jobId, batchId) {
     var _this6;
-    (0,classCallCheck/* default */.A)(this, PollingTimeoutError);
+    (0,classCallCheck.A)(this, PollingTimeoutError);
     _this6 = _callSuper(this, PollingTimeoutError, [message]);
     _this6.name = 'PollingTimeout';
     _this6.jobId = jobId;
     _this6.batchId = batchId;
     return _this6;
   }
-  (0,inherits/* default */.A)(PollingTimeoutError, _Error);
-  return (0,createClass/* default */.A)(PollingTimeoutError);
-}( /*#__PURE__*/(0,wrapNativeSuper/* default */.A)(Error));
+  (0,inherits.A)(PollingTimeoutError, _Error);
+  return (0,createClass.A)(PollingTimeoutError);
+}( (0,wrapNativeSuper.A)(Error));
 /*--------------------------------------------*/
 /**
  * Batch (extends Writable)
  */
-var Batch = /*#__PURE__*/function (_Writable) {
+var Batch = function (_Writable) {
   /**
    *
    */
   function Batch(job, id) {
     var _this7;
-    (0,classCallCheck/* default */.A)(this, Batch);
+    (0,classCallCheck.A)(this, Batch);
     _this7 = _callSuper(this, Batch, [{
       objectMode: true
     }]);
-    (0,defineProperty/* default */.A)(_this7, "run", _this7.execute);
-    (0,defineProperty/* default */.A)(_this7, "exec", _this7.execute);
+    (0,defineProperty.A)(_this7, "run", _this7.execute);
+    (0,defineProperty.A)(_this7, "exec", _this7.execute);
     _this7.job = job;
     _this7.id = id;
     _this7._bulk = job._bulk;
@@ -93851,7 +93851,7 @@ var Batch = /*#__PURE__*/function (_Writable) {
     _this7.on('finish', function () {
       return uploadStream.end();
     });
-    uploadDataStream.once('readable', /*#__PURE__*/(0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee8() {
+    uploadDataStream.once('readable', (0,asyncToGenerator.A)( regenerator_default().mark(function _callee8() {
       return regenerator_default().wrap(function _callee8$(_context14) {
         while (1) switch (_context14.prev = _context14.next) {
           case 0:
@@ -93884,8 +93884,8 @@ var Batch = /*#__PURE__*/function (_Writable) {
    *
    * @private
    */
-  (0,inherits/* default */.A)(Batch, _Writable);
-  return (0,createClass/* default */.A)(Batch, [{
+  (0,inherits.A)(Batch, _Writable);
+  return (0,createClass.A)(Batch, [{
     key: "_createRequestStream",
     value: function _createRequestStream() {
       var _this8 = this;
@@ -93899,7 +93899,7 @@ var Batch = /*#__PURE__*/function (_Writable) {
         },
         responseType: 'application/xml'
       });
-      (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee9() {
+      (0,asyncToGenerator.A)( regenerator_default().mark(function _callee9() {
         var res;
         return regenerator_default().wrap(function _callee9$(_context15) {
           while (1) switch (_context15.prev = _context15.next) {
@@ -93936,7 +93936,7 @@ var Batch = /*#__PURE__*/function (_Writable) {
       var Id = record_.Id,
         type = record_.type,
         attributes = record_.attributes,
-        rrec = (0,objectWithoutProperties/* default */.A)(record_, _excluded);
+        rrec = (0,objectWithoutProperties.A)(record_, _excluded);
       var record;
       switch (this.job.operation) {
         case 'insert':
@@ -93991,7 +93991,7 @@ var Batch = /*#__PURE__*/function (_Writable) {
           try {
             for (_iterator.s(); !(_step = _iterator.n()).done;) {
               var record = _step.value;
-              for (var _i = 0, _Object$keys = keys_default()(record); _i < _Object$keys.length; _i++) {
+              for (var _i = 0, _Object$keys = Object.keys(record); _i < _Object$keys.length; _i++) {
                 var key = _Object$keys[_i];
                 if (typeof record[key] === 'boolean') {
                   record[key] = String(record[key]);
@@ -94034,7 +94034,7 @@ var Batch = /*#__PURE__*/function (_Writable) {
   }, {
     key: "check",
     value: (function () {
-      var _check = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee10() {
+      var _check = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee10() {
         var bulk, logger, jobId, batchId, res;
         return regenerator_default().wrap(function _callee10$(_context16) {
           while (1) switch (_context16.prev = _context16.next) {
@@ -94089,8 +94089,8 @@ var Batch = /*#__PURE__*/function (_Writable) {
         var _context17;
         throw new PollingTimeoutError(concat_default()(_context17 = "Skipping polling because of timeout = 0ms. Job Id = ".concat(jobId, " | Batch Id = ")).call(_context17, batchId), jobId, batchId);
       }
-      var poll = /*#__PURE__*/function () {
-        var _ref7 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee11() {
+      var poll = function () {
+        var _ref7 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee11() {
           var now, err, res;
           return regenerator_default().wrap(function _callee11$(_context18) {
             while (1) switch (_context18.prev = _context18.next) {
@@ -94150,7 +94150,7 @@ var Batch = /*#__PURE__*/function (_Writable) {
   }, {
     key: "retrieve",
     value: (function () {
-      var _retrieve = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee12() {
+      var _retrieve = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee12() {
         var bulk, jobId, job, batchId, resp, results, _context19, res, resultId, _res;
         return regenerator_default().wrap(function _callee12$(_context20) {
           while (1) switch (_context20.prev = _context20.next) {
@@ -94243,13 +94243,13 @@ var Batch = /*#__PURE__*/function (_Writable) {
 /**
  *
  */
-var BulkApi = /*#__PURE__*/function (_HttpApi) {
+var BulkApi = function (_HttpApi) {
   function BulkApi() {
-    (0,classCallCheck/* default */.A)(this, BulkApi);
+    (0,classCallCheck.A)(this, BulkApi);
     return _callSuper(this, BulkApi, arguments);
   }
-  (0,inherits/* default */.A)(BulkApi, _HttpApi);
-  return (0,createClass/* default */.A)(BulkApi, [{
+  (0,inherits.A)(BulkApi, _HttpApi);
+  return (0,createClass.A)(BulkApi, [{
     key: "beforeSend",
     value: function beforeSend(request) {
       var _this$_conn$accessTok;
@@ -94277,31 +94277,31 @@ var BulkApi = /*#__PURE__*/function (_HttpApi) {
       };
     }
   }]);
-}(http_api/* default */.A);
+}(http_api.A);
 /*--------------------------------------------*/
 /**
  * Class for Bulk API
  *
  * @class
  */
-var Bulk = /*#__PURE__*/function () {
+var Bulk = function () {
   /**
    *
    */
   function Bulk(conn) {
-    (0,classCallCheck/* default */.A)(this, Bulk);
+    (0,classCallCheck.A)(this, Bulk);
     /**
      * Polling interval in milliseconds
      *
      * Default: 1000 (1 second)
      */
-    (0,defineProperty/* default */.A)(this, "pollInterval", 1000);
+    (0,defineProperty.A)(this, "pollInterval", 1000);
     /**
      * Polling timeout in milliseconds
      *
      * Default: 30000 (30 seconds)
      */
-    (0,defineProperty/* default */.A)(this, "pollTimeout", 30000);
+    (0,defineProperty.A)(this, "pollTimeout", 30000);
     this._conn = conn;
     this._logger = conn._logger;
   }
@@ -94309,13 +94309,13 @@ var Bulk = /*#__PURE__*/function () {
   /**
    *
    */
-  return (0,createClass/* default */.A)(Bulk, [{
+  return (0,createClass.A)(Bulk, [{
     key: "_request",
     value: function _request(request_) {
       var conn = this._conn;
       var path = request_.path,
         responseType = request_.responseType,
-        rreq = (0,objectWithoutProperties/* default */.A)(request_, _excluded2);
+        rreq = (0,objectWithoutProperties.A)(request_, _excluded2);
       var baseUrl = [conn.instanceUrl, 'services/async', conn.version].join('/');
       var request = bulk_objectSpread(bulk_objectSpread({}, rreq), {}, {
         url: baseUrl + path
@@ -94388,7 +94388,7 @@ var Bulk = /*#__PURE__*/function () {
   }, {
     key: "query",
     value: (function () {
-      var _query = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee13(soql) {
+      var _query = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee13(soql) {
         var _this12 = this;
         var m, type, recordStream, dataStream, results, streams;
         return regenerator_default().wrap(function _callee13$(_context22) {
@@ -94462,10 +94462,10 @@ var Bulk = /*#__PURE__*/function () {
 var slicedToArray = __webpack_require__(89213);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/date/now.js
 var now = __webpack_require__(75770);
-var now_default = /*#__PURE__*/__webpack_require__.n(now);
+var now_default = __webpack_require__.n(now);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/url.js
 var core_js_stable_url = __webpack_require__(2916);
-var url_default = /*#__PURE__*/__webpack_require__.n(core_js_stable_url);
+var url_default = __webpack_require__.n(core_js_stable_url);
 // EXTERNAL MODULE: ./browser/util/logger.js
 var logger = __webpack_require__(74833);
 ;// CONCATENATED MODULE: ./browser/api/bulk2.js
@@ -94497,8 +94497,8 @@ var bulk2_excluded = ["pollInterval", "pollTimeout", "input"],
 function bulk2_createForOfIteratorHelper(o, allowArrayLike) { var it = typeof (symbol_default()) !== "undefined" && get_iterator_method_default()(o) || o["@@iterator"]; if (!it) { if (is_array_default()(o) || (it = bulk2_unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
 function bulk2_unsupportedIterableToArray(o, minLen) { var _context29; if (!o) return; if (typeof o === "string") return bulk2_arrayLikeToArray(o, minLen); var n = slice_default()(_context29 = Object.prototype.toString.call(o)).call(_context29, 8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return from_default()(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return bulk2_arrayLikeToArray(o, minLen); }
 function bulk2_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function bulk2_ownKeys(e, r) { var t = keys_default()(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function bulk2_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context27, _context28; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context27 = bulk2_ownKeys(Object(t), !0)).call(_context27, function (r) { (0,defineProperty/* default */.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context28 = bulk2_ownKeys(Object(t))).call(_context28, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
+function bulk2_ownKeys(e, r) { var t = Object.keys(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function bulk2_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context27, _context28; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context27 = bulk2_ownKeys(Object(t), !0)).call(_context27, function (r) { (0,defineProperty.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context28 = bulk2_ownKeys(Object(t))).call(_context28, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
 
 
 
@@ -94524,7 +94524,7 @@ function bulk2_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { va
 
 
 
-function bulk2_callSuper(t, o, e) { return o = (0,getPrototypeOf/* default */.A)(o), (0,possibleConstructorReturn/* default */.A)(t, bulk2_isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf/* default */.A)(t).constructor) : o.apply(t, e)); }
+function bulk2_callSuper(t, o, e) { return o = (0,getPrototypeOf.A)(o), (0,possibleConstructorReturn.A)(t, bulk2_isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf.A)(t).constructor) : o.apply(t, e)); }
 function bulk2_isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(construct_default()(Boolean, [], function () {})); } catch (t) {} return (bulk2_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
 
 
@@ -94534,31 +94534,31 @@ function bulk2_isNativeReflectConstruct() { try { var t = !Boolean.prototype.val
 
 
 
-var JobPollingTimeoutError = /*#__PURE__*/function (_Error) {
+var JobPollingTimeoutError = function (_Error) {
   /**
    *
    */
   function JobPollingTimeoutError(message, jobId) {
     var _this;
-    (0,classCallCheck/* default */.A)(this, JobPollingTimeoutError);
+    (0,classCallCheck.A)(this, JobPollingTimeoutError);
     _this = bulk2_callSuper(this, JobPollingTimeoutError, [message]);
     _this.name = 'JobPollingTimeout';
     _this.jobId = jobId;
     return _this;
   }
-  (0,inherits/* default */.A)(JobPollingTimeoutError, _Error);
-  return (0,createClass/* default */.A)(JobPollingTimeoutError);
-}( /*#__PURE__*/(0,wrapNativeSuper/* default */.A)(Error));
-var BulkApiV2 = /*#__PURE__*/function (_HttpApi) {
+  (0,inherits.A)(JobPollingTimeoutError, _Error);
+  return (0,createClass.A)(JobPollingTimeoutError);
+}( (0,wrapNativeSuper.A)(Error));
+var BulkApiV2 = function (_HttpApi) {
   function BulkApiV2() {
-    (0,classCallCheck/* default */.A)(this, BulkApiV2);
+    (0,classCallCheck.A)(this, BulkApiV2);
     return bulk2_callSuper(this, BulkApiV2, arguments);
   }
-  (0,inherits/* default */.A)(BulkApiV2, _HttpApi);
-  return (0,createClass/* default */.A)(BulkApiV2, [{
+  (0,inherits.A)(BulkApiV2, _HttpApi);
+  return (0,createClass.A)(BulkApiV2, [{
     key: "hasErrorInResponseBody",
     value: function hasErrorInResponseBody(body) {
-      return is_array_default()(body) && (0,esm_typeof/* default */.A)(body[0]) === 'object' && 'errorCode' in body[0];
+      return is_array_default()(body) && (0,esm_typeof.A)(body[0]) === 'object' && 'errorCode' in body[0];
     }
   }, {
     key: "isSessionExpired",
@@ -94575,22 +94575,22 @@ var BulkApiV2 = /*#__PURE__*/function (_HttpApi) {
       };
     }
   }]);
-}(http_api/* default */.A);
-var BulkV2 = /*#__PURE__*/function () {
+}(http_api.A);
+var BulkV2 = function () {
   function BulkV2(connection) {
-    (0,classCallCheck/* default */.A)(this, BulkV2);
+    (0,classCallCheck.A)(this, BulkV2);
     /**
      * Polling interval in milliseconds
      *
      * Default: 1000 (1 second)
      */
-    (0,defineProperty/* default */.A)(this, "pollInterval", 1000);
+    (0,defineProperty.A)(this, "pollInterval", 1000);
     /**
      * Polling timeout in milliseconds
      *
      * Default: 30000 (30 seconds)
      */
-    (0,defineProperty/* default */.A)(this, "pollTimeout", 30000);
+    (0,defineProperty.A)(this, "pollTimeout", 30000);
     this.connection = connection;
     this.logger = this.connection._logLevel ? (0,logger/* getLogger */.tZ)('bulk2').createInstance(this.connection._logLevel) : (0,logger/* getLogger */.tZ)('bulk2');
   }
@@ -94617,7 +94617,7 @@ var BulkV2 = /*#__PURE__*/function () {
    * // finished uploading data, mark it as ready for processing
    * await job.close()
    */
-  return (0,createClass/* default */.A)(BulkV2, [{
+  return (0,createClass.A)(BulkV2, [{
     key: "createJob",
     value: function createJob(options) {
       return new IngestJobV2(this.connection, {
@@ -94656,14 +94656,14 @@ var BulkV2 = /*#__PURE__*/function () {
   }, {
     key: "loadAndWaitForResults",
     value: (function () {
-      var _loadAndWaitForResults = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee(options) {
+      var _loadAndWaitForResults = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee(options) {
         var pollInterval, pollTimeout, input, createJobOpts, job, err;
         return regenerator_default().wrap(function _callee$(_context2) {
           while (1) switch (_context2.prev = _context2.next) {
             case 0:
               if (!options.pollTimeout) options.pollTimeout = this.pollTimeout;
               if (!options.pollInterval) options.pollInterval = this.pollInterval;
-              pollInterval = options.pollInterval, pollTimeout = options.pollTimeout, input = options.input, createJobOpts = (0,objectWithoutProperties/* default */.A)(options, bulk2_excluded);
+              pollInterval = options.pollInterval, pollTimeout = options.pollTimeout, input = options.input, createJobOpts = (0,objectWithoutProperties.A)(options, bulk2_excluded);
               job = this.createJob(createJobOpts);
               _context2.prev = 4;
               _context2.next = 7;
@@ -94719,7 +94719,7 @@ var BulkV2 = /*#__PURE__*/function () {
   }, {
     key: "query",
     value: (function () {
-      var _query = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee2(soql, options) {
+      var _query = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee2(soql, options) {
         var queryJob, recordStream, dataStream, queryRecordsStream, err;
         return regenerator_default().wrap(function _callee2$(_context3) {
           while (1) switch (_context3.prev = _context3.next) {
@@ -94778,10 +94778,10 @@ var BulkV2 = /*#__PURE__*/function () {
     }())
   }]);
 }();
-var QueryJobV2 = /*#__PURE__*/function (_EventEmitter) {
+var QueryJobV2 = function (_EventEmitter) {
   function QueryJobV2(conn, options) {
     var _this2;
-    (0,classCallCheck/* default */.A)(this, QueryJobV2);
+    (0,classCallCheck.A)(this, QueryJobV2);
     _this2 = bulk2_callSuper(this, QueryJobV2);
     _this2.connection = conn;
     _this2.logger = _this2.connection._logLevel ? (0,logger/* getLogger */.tZ)('bulk2:QueryJobV2').createInstance(_this2.connection._logLevel) : (0,logger/* getLogger */.tZ)('bulk2:QueryJobV2');
@@ -94803,8 +94803,8 @@ var QueryJobV2 = /*#__PURE__*/function (_EventEmitter) {
    *
    * @returns {string} query job Id.
    */
-  (0,inherits/* default */.A)(QueryJobV2, _EventEmitter);
-  return (0,createClass/* default */.A)(QueryJobV2, [{
+  (0,inherits.A)(QueryJobV2, _EventEmitter);
+  return (0,createClass.A)(QueryJobV2, [{
     key: "id",
     get: function get() {
       return this.jobInfo ? this.jobInfo.id : this._id;
@@ -94832,7 +94832,7 @@ var QueryJobV2 = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "open",
     value: (function () {
-      var _open = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee3() {
+      var _open = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee3() {
         return regenerator_default().wrap(function _callee3$(_context4) {
           while (1) switch (_context4.prev = _context4.next) {
             case 0:
@@ -94886,7 +94886,7 @@ var QueryJobV2 = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "abort",
     value: (function () {
-      var _abort = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee4() {
+      var _abort = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee4() {
         var state;
         return regenerator_default().wrap(function _callee4$(_context5) {
           while (1) switch (_context5.prev = _context5.next) {
@@ -94936,7 +94936,7 @@ var QueryJobV2 = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "poll",
     value: (function () {
-      var _poll = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee5() {
+      var _poll = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee5() {
         var _context6, _context7;
         var interval,
           timeout,
@@ -95026,7 +95026,7 @@ var QueryJobV2 = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "check",
     value: (function () {
-      var _check = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee6() {
+      var _check = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee6() {
         var jobInfo;
         return regenerator_default().wrap(function _callee6$(_context9) {
           while (1) switch (_context9.prev = _context9.next) {
@@ -95068,7 +95068,7 @@ var QueryJobV2 = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "result",
     value: (function () {
-      var _result = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee7() {
+      var _result = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee7() {
         var resultStream, resultDataStream, resultsPath, _context10, resPromise;
         return regenerator_default().wrap(function _callee7$(_context11) {
           while (1) switch (_context11.prev = _context11.next) {
@@ -95114,7 +95114,7 @@ var QueryJobV2 = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "delete",
     value: (function () {
-      var _delete2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee8() {
+      var _delete2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee8() {
         return regenerator_default().wrap(function _callee8$(_context12) {
           while (1) switch (_context12.prev = _context12.next) {
             case 0:
@@ -95158,13 +95158,13 @@ var QueryJobV2 = /*#__PURE__*/function (_EventEmitter) {
 /**
  * Class for Bulk API V2 Ingest Job
  */
-var IngestJobV2 = /*#__PURE__*/function (_EventEmitter2) {
+var IngestJobV2 = function (_EventEmitter2) {
   /**
    *
    */
   function IngestJobV2(conn, options) {
     var _this4;
-    (0,classCallCheck/* default */.A)(this, IngestJobV2);
+    (0,classCallCheck.A)(this, IngestJobV2);
     _this4 = bulk2_callSuper(this, IngestJobV2);
     _this4.connection = conn;
     _this4.logger = _this4.connection._logLevel ? (0,logger/* getLogger */.tZ)('bulk2:IngestJobV2').createInstance(_this4.connection._logLevel) : (0,logger/* getLogger */.tZ)('bulk2:IngestJobV2');
@@ -95192,8 +95192,8 @@ var IngestJobV2 = /*#__PURE__*/function (_EventEmitter2) {
    *
    * @returns {string} query job Id.
    */
-  (0,inherits/* default */.A)(IngestJobV2, _EventEmitter2);
-  return (0,createClass/* default */.A)(IngestJobV2, [{
+  (0,inherits.A)(IngestJobV2, _EventEmitter2);
+  return (0,createClass.A)(IngestJobV2, [{
     key: "id",
     get: function get() {
       return this.jobInfo ? this.jobInfo.id : this._id;
@@ -95221,7 +95221,7 @@ var IngestJobV2 = /*#__PURE__*/function (_EventEmitter2) {
   }, {
     key: "open",
     value: (function () {
-      var _open2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee9() {
+      var _open2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee9() {
         return regenerator_default().wrap(function _callee9$(_context13) {
           while (1) switch (_context13.prev = _context13.next) {
             case 0:
@@ -95273,7 +95273,7 @@ var IngestJobV2 = /*#__PURE__*/function (_EventEmitter2) {
   }, {
     key: "uploadData",
     value: (function () {
-      var _uploadData = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee10(input) {
+      var _uploadData = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee10(input) {
         return regenerator_default().wrap(function _callee10$(_context14) {
           while (1) switch (_context14.prev = _context14.next) {
             case 0:
@@ -95301,7 +95301,7 @@ var IngestJobV2 = /*#__PURE__*/function (_EventEmitter2) {
   }, {
     key: "close",
     value: (function () {
-      var _close = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee11() {
+      var _close = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee11() {
         var state;
         return regenerator_default().wrap(function _callee11$(_context15) {
           while (1) switch (_context15.prev = _context15.next) {
@@ -95349,7 +95349,7 @@ var IngestJobV2 = /*#__PURE__*/function (_EventEmitter2) {
   }, {
     key: "abort",
     value: (function () {
-      var _abort2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee12() {
+      var _abort2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee12() {
         var state;
         return regenerator_default().wrap(function _callee12$(_context16) {
           while (1) switch (_context16.prev = _context16.next) {
@@ -95408,7 +95408,7 @@ var IngestJobV2 = /*#__PURE__*/function (_EventEmitter2) {
   }, {
     key: "poll",
     value: (function () {
-      var _poll2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee13() {
+      var _poll2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee13() {
         var _context17, _context18;
         var interval,
           timeout,
@@ -95497,7 +95497,7 @@ var IngestJobV2 = /*#__PURE__*/function (_EventEmitter2) {
   }, {
     key: "check",
     value: (function () {
-      var _check2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee14() {
+      var _check2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee14() {
         var jobInfo;
         return regenerator_default().wrap(function _callee14$(_context20) {
           while (1) switch (_context20.prev = _context20.next) {
@@ -95539,7 +95539,7 @@ var IngestJobV2 = /*#__PURE__*/function (_EventEmitter2) {
   }, {
     key: "getAllResults",
     value: (function () {
-      var _getAllResults = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee15() {
+      var _getAllResults = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee15() {
         var _yield$Promise$all, _yield$Promise$all2, successfulResults, failedResults, unprocessedRecords;
         return regenerator_default().wrap(function _callee15$(_context21) {
           while (1) switch (_context21.prev = _context21.next) {
@@ -95548,7 +95548,7 @@ var IngestJobV2 = /*#__PURE__*/function (_EventEmitter2) {
               return promise_default().all([this.getSuccessfulResults(), this.getFailedResults(), this.getUnprocessedRecords()]);
             case 2:
               _yield$Promise$all = _context21.sent;
-              _yield$Promise$all2 = (0,slicedToArray/* default */.A)(_yield$Promise$all, 3);
+              _yield$Promise$all2 = (0,slicedToArray.A)(_yield$Promise$all, 3);
               successfulResults = _yield$Promise$all2[0];
               failedResults = _yield$Promise$all2[1];
               unprocessedRecords = _yield$Promise$all2[2];
@@ -95578,7 +95578,7 @@ var IngestJobV2 = /*#__PURE__*/function (_EventEmitter2) {
   }, {
     key: "getSuccessfulResults",
     value: (function () {
-      var _getSuccessfulResults = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee16() {
+      var _getSuccessfulResults = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee16() {
         var results;
         return regenerator_default().wrap(function _callee16$(_context22) {
           while (1) switch (_context22.prev = _context22.next) {
@@ -95620,7 +95620,7 @@ var IngestJobV2 = /*#__PURE__*/function (_EventEmitter2) {
   }, {
     key: "getFailedResults",
     value: (function () {
-      var _getFailedResults = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee17() {
+      var _getFailedResults = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee17() {
         var results;
         return regenerator_default().wrap(function _callee17$(_context23) {
           while (1) switch (_context23.prev = _context23.next) {
@@ -95667,7 +95667,7 @@ var IngestJobV2 = /*#__PURE__*/function (_EventEmitter2) {
   }, {
     key: "getUnprocessedRecords",
     value: (function () {
-      var _getUnprocessedRecords = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee18() {
+      var _getUnprocessedRecords = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee18() {
         var results;
         return regenerator_default().wrap(function _callee18$(_context24) {
           while (1) switch (_context24.prev = _context24.next) {
@@ -95706,7 +95706,7 @@ var IngestJobV2 = /*#__PURE__*/function (_EventEmitter2) {
   }, {
     key: "delete",
     value: (function () {
-      var _delete3 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee19() {
+      var _delete3 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee19() {
         return regenerator_default().wrap(function _callee19$(_context25) {
           while (1) switch (_context25.prev = _context25.next) {
             case 0:
@@ -95740,13 +95740,13 @@ var IngestJobV2 = /*#__PURE__*/function (_EventEmitter2) {
     }
   }]);
 }(events.EventEmitter);
-var JobDataV2 = /*#__PURE__*/function (_Writable) {
+var JobDataV2 = function (_Writable) {
   /**
    *
    */
   function JobDataV2(options) {
     var _this5;
-    (0,classCallCheck/* default */.A)(this, JobDataV2);
+    (0,classCallCheck.A)(this, JobDataV2);
     _this5 = bulk2_callSuper(this, JobDataV2, [{
       objectMode: true
     }]);
@@ -95774,7 +95774,7 @@ var JobDataV2 = /*#__PURE__*/function (_Writable) {
           },
           responseType: 'application/json'
         });
-        (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee20() {
+        (0,asyncToGenerator.A)( regenerator_default().mark(function _callee20() {
           var res;
           return regenerator_default().wrap(function _callee20$(_context26) {
             while (1) switch (_context26.prev = _context26.next) {
@@ -95804,14 +95804,14 @@ var JobDataV2 = /*#__PURE__*/function (_Writable) {
     });
     return _this5;
   }
-  (0,inherits/* default */.A)(JobDataV2, _Writable);
-  return (0,createClass/* default */.A)(JobDataV2, [{
+  (0,inherits.A)(JobDataV2, _Writable);
+  return (0,createClass.A)(JobDataV2, [{
     key: "_write",
     value: function _write(record_, enc, cb) {
       var Id = record_.Id,
         type = record_.type,
         attributes = record_.attributes,
-        rrec = (0,objectWithoutProperties/* default */.A)(record_, bulk2_excluded2);
+        rrec = (0,objectWithoutProperties.A)(record_, bulk2_excluded2);
       var record;
       switch (this.job.getInfo().operation) {
         case 'insert':
@@ -95867,7 +95867,7 @@ var JobDataV2 = /*#__PURE__*/function (_Writable) {
           try {
             for (_iterator.s(); !(_step = _iterator.n()).done;) {
               var record = _step.value;
-              for (var _i = 0, _Object$keys = keys_default()(record); _i < _Object$keys.length; _i++) {
+              for (var _i = 0, _Object$keys = Object.keys(record); _i < _Object$keys.length; _i++) {
                 var key = _Object$keys[_i];
                 if (typeof record[key] === 'boolean') {
                   record[key] = String(record[key]);
@@ -95907,17 +95907,17 @@ function delay(ms) {
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/index-of.js
 var index_of = __webpack_require__(19019);
-var index_of_default = /*#__PURE__*/__webpack_require__.n(index_of);
+var index_of_default = __webpack_require__.n(index_of);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/starts-with.js
 var starts_with = __webpack_require__(67977);
-var starts_with_default = /*#__PURE__*/__webpack_require__.n(starts_with);
+var starts_with_default = __webpack_require__.n(starts_with);
 ;// CONCATENATED MODULE: ./browser/util/function.js
 
 /**
  *
  */
 function isObject(v) {
-  var t = (0,esm_typeof/* default */.A)(v);
+  var t = (0,esm_typeof.A)(v);
   return v != null && (t == 'object' || t == 'function');
 }
 
@@ -95925,7 +95925,7 @@ function isObject(v) {
  *
  */
 function isMapObject(v) {
-  var t = (0,esm_typeof/* default */.A)(v);
+  var t = (0,esm_typeof.A)(v);
   return v != null && t == 'object';
 }
 
@@ -95979,7 +95979,7 @@ function emptyFunc() {}
 
 
 
-function chatter_callSuper(t, o, e) { return o = (0,getPrototypeOf/* default */.A)(o), (0,possibleConstructorReturn/* default */.A)(t, chatter_isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf/* default */.A)(t).constructor) : o.apply(t, e)); }
+function chatter_callSuper(t, o, e) { return o = (0,getPrototypeOf.A)(o), (0,possibleConstructorReturn.A)(t, chatter_isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf.A)(t).constructor) : o.apply(t, e)); }
 function chatter_isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(construct_default()(Boolean, [], function () {})); } catch (t) {} return (chatter_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
 
 
@@ -95992,8 +95992,8 @@ function chatter_isNativeReflectConstruct() { try { var t = !Boolean.prototype.v
 
 
 
-function chatter_ownKeys(e, r) { var t = keys_default()(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function chatter_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context5, _context6; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context5 = chatter_ownKeys(Object(t), !0)).call(_context5, function (r) { (0,defineProperty/* default */.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context6 = chatter_ownKeys(Object(t))).call(_context6, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
+function chatter_ownKeys(e, r) { var t = Object.keys(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function chatter_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context5, _context6; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context5 = chatter_ownKeys(Object(t), !0)).call(_context5, function (r) { (0,defineProperty.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context6 = chatter_ownKeys(Object(t))).call(_context6, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
 /**
  * @file Manages Salesforce Chatter REST API calls
  * @author Shinichi Tomita <shinichi.tomita@gmail.com>
@@ -96008,9 +96008,9 @@ function chatter_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { 
 /**
  * A class representing chatter API request
  */
-var Request = /*#__PURE__*/function () {
+var Request = function () {
   function Request(chatter, request) {
-    (0,classCallCheck/* default */.A)(this, Request);
+    (0,classCallCheck.A)(this, Request);
     this._chatter = chatter;
     this._request = request;
   }
@@ -96018,7 +96018,7 @@ var Request = /*#__PURE__*/function () {
   /**
    * Retrieve parameters in batch request form
    */
-  return (0,createClass/* default */.A)(Request, [{
+  return (0,createClass.A)(Request, [{
     key: "batchParams",
     value: function batchParams() {
       var _this$_request = this._request,
@@ -96073,7 +96073,7 @@ var Request = /*#__PURE__*/function () {
 function apppendQueryParamsToUrl(url, queryParams) {
   if (queryParams) {
     var _context;
-    var qstring = map_default()(_context = keys_default()(queryParams)).call(_context, function (name) {
+    var qstring = map_default()(_context = Object.keys(queryParams)).call(_context, function (name) {
       var _context2, _queryParams$name;
       return concat_default()(_context2 = "".concat(name, "=")).call(_context2, encodeURIComponent(String((_queryParams$name = queryParams[name]) !== null && _queryParams$name !== void 0 ? _queryParams$name : '')));
     }).join('&');
@@ -96083,13 +96083,13 @@ function apppendQueryParamsToUrl(url, queryParams) {
 }
 
 /*------------------------------*/
-var Resource = /*#__PURE__*/function (_Request) {
+var Resource = function (_Request) {
   /**
    *
    */
   function Resource(chatter, url, queryParams) {
     var _this;
-    (0,classCallCheck/* default */.A)(this, Resource);
+    (0,classCallCheck.A)(this, Resource);
     _this = chatter_callSuper(this, Resource, [chatter, {
       method: 'GET',
       url: apppendQueryParamsToUrl(url, queryParams)
@@ -96097,11 +96097,11 @@ var Resource = /*#__PURE__*/function (_Request) {
     /**
      * Synonym of Resource#destroy()
      */
-    (0,defineProperty/* default */.A)(_this, "delete", _this.destroy);
+    (0,defineProperty.A)(_this, "delete", _this.destroy);
     /**
      * Synonym of Resource#destroy()
      */
-    (0,defineProperty/* default */.A)(_this, "del", _this.destroy);
+    (0,defineProperty.A)(_this, "del", _this.destroy);
     _this._url = _this._request.url;
     return _this;
   }
@@ -96109,8 +96109,8 @@ var Resource = /*#__PURE__*/function (_Request) {
   /**
    * Create a new resource
    */
-  (0,inherits/* default */.A)(Resource, _Request);
-  return (0,createClass/* default */.A)(Resource, [{
+  (0,inherits.A)(Resource, _Request);
+  return (0,createClass.A)(Resource, [{
     key: "create",
     value: function create(data) {
       return this._chatter.request({
@@ -96163,12 +96163,12 @@ var Resource = /*#__PURE__*/function (_Request) {
 /**
  * API class for Chatter REST API call
  */
-var Chatter = /*#__PURE__*/function () {
+var Chatter = function () {
   /**
    *
    */
   function Chatter(conn) {
-    (0,classCallCheck/* default */.A)(this, Chatter);
+    (0,classCallCheck.A)(this, Chatter);
     this._conn = conn;
   }
 
@@ -96176,7 +96176,7 @@ var Chatter = /*#__PURE__*/function () {
    * Sending request to API endpoint
    * @private
    */
-  return (0,createClass/* default */.A)(Chatter, [{
+  return (0,createClass.A)(Chatter, [{
     key: "_request",
     value: function _request(req_) {
       var method = req_.method,
@@ -96246,7 +96246,7 @@ var Chatter = /*#__PURE__*/function () {
   }, {
     key: "batch",
     value: (function () {
-      var _batch = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee(requests) {
+      var _batch = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee(requests) {
         var _context3;
         var deferreds, res;
         return regenerator_default().wrap(function _callee$(_context4) {
@@ -96318,12 +96318,12 @@ function defer() {
 var get = __webpack_require__(18808);
 // EXTERNAL MODULE: ./node_modules/form-data/lib/browser.js
 var browser = __webpack_require__(72964);
-var browser_default = /*#__PURE__*/__webpack_require__.n(browser);
+var browser_default = __webpack_require__.n(browser);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.number.constructor.js
 var es_number_constructor = __webpack_require__(12888);
 // EXTERNAL MODULE: ./node_modules/@babel/runtime-corejs3/core-js-stable/instance/reduce.js
 var reduce = __webpack_require__(45031);
-var reduce_default = /*#__PURE__*/__webpack_require__.n(reduce);
+var reduce_default = __webpack_require__.n(reduce);
 // EXTERNAL MODULE: ./browser/util/get-body-size.js
 var get_body_size = __webpack_require__(20542);
 ;// CONCATENATED MODULE: ./browser/soap.js
@@ -96344,7 +96344,7 @@ var get_body_size = __webpack_require__(20542);
 
 
 
-function soap_callSuper(t, o, e) { return o = (0,getPrototypeOf/* default */.A)(o), (0,possibleConstructorReturn/* default */.A)(t, soap_isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf/* default */.A)(t).constructor) : o.apply(t, e)); }
+function soap_callSuper(t, o, e) { return o = (0,getPrototypeOf.A)(o), (0,possibleConstructorReturn.A)(t, soap_isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf.A)(t).constructor) : o.apply(t, e)); }
 function soap_isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(construct_default()(Boolean, [], function () {})); } catch (t) {} return (soap_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
 
 
@@ -96358,8 +96358,8 @@ function soap_isNativeReflectConstruct() { try { var t = !Boolean.prototype.valu
 
 
 
-function soap_ownKeys(e, r) { var t = keys_default()(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function soap_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context6, _context7; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context6 = soap_ownKeys(Object(t), !0)).call(_context6, function (r) { (0,defineProperty/* default */.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context7 = soap_ownKeys(Object(t))).call(_context7, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
+function soap_ownKeys(e, r) { var t = Object.keys(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function soap_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context6, _context7; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context6 = soap_ownKeys(Object(t), !0)).call(_context6, function (r) { (0,defineProperty.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context7 = soap_ownKeys(Object(t))).call(_context7, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
 /**
  * @file Manages method call to SOAP endpoint
  * @author Shinichi Tomita <shinichi.tomita@gmail.com>
@@ -96385,62 +96385,112 @@ function isNillValue(value) {
 /**
  *
  */
-function castTypeUsingSchema(value, schema) {
-  var schemaDict = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+function castTypeUsingSchema(value, schema, schemaDict = {}) {
+  // Handle array schemas
   if (is_array_default()(schema)) {
-    var _context;
-    var nillable = schema.length === 2 && schema[0] === '?';
-    var schema_ = nillable ? schema[1] : schema[0];
-    if (value == null) {
-      return nillable ? null : [];
+    return handleArraySchema(value, schema, schemaDict);
+  } 
+  
+  // Handle object/map schemas
+  if (isMapObject(schema)) {
+    return handleMapSchema(value, schema, schemaDict);
+  }
+  
+  // Handle primitive type schemas
+  return handlePrimitiveSchema(value, schema, schemaDict);
+}
+
+function handleArraySchema(value, schema, schemaDict) {
+  
+  const nillable = schema.length === 2 && schema[0] === '?';
+  const actualSchema = nillable ? schema[1] : schema[0];
+  
+  if (value == null) {
+    return nillable ? null : [];
+  }
+  const arrayValue = is_array_default()(value) ? value : [value];
+  return map_default()(arrayValue).call(arrayValue, v => 
+    castTypeUsingSchema(v, actualSchema, schemaDict)
+  );
+}
+
+function handleMapSchema(value, schema, schemaDict) {
+  // Handle schema definition case
+  if ('type' in schema && 'props' in schema && isMapObject(schema.props)) {
+    const props = getPropsSchema(schema, schemaDict);
+    return castTypeUsingSchema(value, props, schemaDict);
+  }
+
+  const nillable = '?' in schema;
+  const actualSchema = nillable ? schema['?'] : schema;
+  
+  if (nillable && isNillValue(value)) {
+    return null;
+  }
+
+  const obj = isMapObject(value) ? value : {};
+  return Object.keys(actualSchema).reduce((result, key) => {
+    const fieldSchema = actualSchema[key];
+    const fieldValue = obj[key];
+    const isNillable = isFieldNillable(fieldSchema);
+    if (typeof fieldValue === 'undefined' && isNillable) {
+      return result;
     }
-    return map_default()(_context = is_array_default()(value) ? value : [value]).call(_context, function (v) {
-      return castTypeUsingSchema(v, schema_, schemaDict);
-    });
-  } else if (isMapObject(schema)) {
-    var _context2;
-    // if schema is Schema Definition, not schema element
-    if ('type' in schema && 'props' in schema && isMapObject(schema.props)) {
-      var props = getPropsSchema(schema, schemaDict);
-      return castTypeUsingSchema(value, props, schemaDict);
-    }
-    var _nillable = ('?' in schema);
-    var _schema_ = '?' in schema ? schema['?'] : schema;
-    if (_nillable && isNillValue(value)) {
-      return null;
-    }
-    var obj = isMapObject(value) ? value : {};
-    return reduce_default()(_context2 = keys_default()(_schema_)).call(_context2, function (o, k) {
-      var s = _schema_[k];
-      var v = obj[k];
-      var nillable = is_array_default()(s) && s.length === 2 && s[0] === '?' || isMapObject(s) && '?' in s || typeof s === 'string' && starts_with_default()(s).call(s, '?');
-      if (typeof v === 'undefined' && nillable) {
-        return o;
-      }
-      return soap_objectSpread(soap_objectSpread({}, o), {}, (0,defineProperty/* default */.A)({}, k, castTypeUsingSchema(v, s, schemaDict)));
-    }, obj);
-  } else {
-    var _nillable2 = typeof schema === 'string' && starts_with_default()(schema).call(schema, '?');
-    var type = typeof schema === 'string' ? _nillable2 ? schema.substring(1) : schema : 'any';
-    switch (type) {
-      case 'string':
-        return isNillValue(value) ? _nillable2 ? null : '' : String(value);
-      case 'number':
-        return isNillValue(value) ? _nillable2 ? null : 0 : Number(value);
-      case 'boolean':
-        return isNillValue(value) ? _nillable2 ? null : false : value === 'true';
-      case 'null':
-        return null;
-      default:
-        {
-          if (schemaDict[type]) {
-            var cvalue = castTypeUsingSchema(value, schemaDict[type], schemaDict);
-            var isEmpty = isMapObject(cvalue) && keys_default()(cvalue).length === 0;
-            return isEmpty && _nillable2 ? null : cvalue;
-          }
-          return value;
-        }
-    }
+    
+    return {
+      ...result,
+      [key]: castTypeUsingSchema(fieldValue, fieldSchema, schemaDict)
+    };
+  }, obj);
+}
+
+function handlePrimitiveSchema(value, schema, schemaDict) {
+  const nillable = typeof schema === 'string' && starts_with_default()(schema).call(schema, '?');
+  const type = typeof schema === 'string' 
+    ? nillable ? schema.substring(1) : schema 
+    : 'any';
+
+  if (isNillValue(value)) {
+    return getNillValueForType(type, nillable);
+  }
+
+  // Handle custom type from schema dictionary
+  if (schemaDict[type]) {
+    const castValue = castTypeUsingSchema(value, schemaDict[type], schemaDict);
+    const isEmpty = isMapObject(castValue) && Object.keys(castValue).length === 0;
+    return isEmpty && nillable ? null : castValue;
+  }
+
+  return convertValueToType(value, type);
+}
+
+function isFieldNillable(schema) {
+  return (
+    (is_array_default()(schema) && schema.length === 2 && schema[0] === '?') ||
+    (isMapObject(schema) && '?' in schema) ||
+    (typeof schema === 'string' && starts_with_default()(schema).call(schema, '?'))
+  );
+}
+
+function getNillValueForType(type, nillable) {
+  if (nillable) return null;
+  
+  switch (type) {
+    case 'string': return '';
+    case 'number': return 0;
+    case 'boolean': return false;
+    case 'null': return null;
+    default: return null;
+  }
+}
+
+function convertValueToType(value, type) {
+  switch (type) {
+    case 'string': return String(value);
+    case 'number': return Number(value);
+    case 'boolean': return value === 'true';
+    case 'null': return null;
+    default: return value;
   }
 }
 
@@ -96453,7 +96503,7 @@ function lookupValue(obj, propRegExps) {
     return obj;
   }
   if (isMapObject(obj)) {
-    for (var _i = 0, _Object$keys2 = keys_default()(obj); _i < _Object$keys2.length; _i++) {
+    for (var _i = 0, _Object$keys2 = Object.keys(obj); _i < _Object$keys2.length; _i++) {
       var prop = _Object$keys2[_i];
       if (regexp.test(prop)) {
         return lookupValue(obj[prop], propRegExps);
@@ -96479,7 +96529,7 @@ function toXML(name, value) {
     var attrs = [];
     var elems = [];
     if (isMapObject(value)) {
-      for (var _i2 = 0, _Object$keys3 = keys_default()(value); _i2 < _Object$keys3.length; _i2++) {
+      for (var _i2 = 0, _Object$keys3 = Object.keys(value); _i2 < _Object$keys3.length; _i2++) {
         var k = _Object$keys3[_i2];
         var v = value[k];
         if (starts_with_default()(k).call(k, '@')) {
@@ -96515,10 +96565,10 @@ function toXML(name, value) {
  * @param {String} options.endpointUrl - SOAP endpoint URL
  * @param {String} [options.xmlns] - XML namespace for method call (default is "urn:partner.soap.sforce.com")
  */
-var SOAP = /*#__PURE__*/function (_HttpApi) {
+var SOAP = function (_HttpApi) {
   function SOAP(conn, options) {
     var _this;
-    (0,classCallCheck/* default */.A)(this, SOAP);
+    (0,classCallCheck.A)(this, SOAP);
     _this = soap_callSuper(this, SOAP, [conn, options]);
     _this._endpointUrl = options.endpointUrl;
     _this._xmlns = options.xmlns || 'urn:partner.soap.sforce.com';
@@ -96529,16 +96579,16 @@ var SOAP = /*#__PURE__*/function (_HttpApi) {
   /**
    * Invoke SOAP call using method and arguments
    */
-  (0,inherits/* default */.A)(SOAP, _HttpApi);
-  return (0,createClass/* default */.A)(SOAP, [{
+  (0,inherits.A)(SOAP, _HttpApi);
+  return (0,createClass.A)(SOAP, [{
     key: "invoke",
     value: (function () {
-      var _invoke = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee(method, args, schema, schemaDict) {
+      var _invoke = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee(method, args, schema, schemaDict) {
         var res;
         return regenerator_default().wrap(function _callee$(_context4) {
           while (1) switch (_context4.prev = _context4.next) {
             case 0:
-              const t= (0,defineProperty/* default */.A)({}, method, args);
+              const t= (0,defineProperty.A)({}, method, args);
               _context4.next = 2;
               return this.request({
                 method: 'POST',
@@ -96547,7 +96597,7 @@ var SOAP = /*#__PURE__*/function (_HttpApi) {
                   'Content-Type': 'text/xml',
                   SOAPAction: '""'
                 },
-                _message: (0,defineProperty/* default */.A)({}, method, args)
+                _message: (0,defineProperty.A)({}, method, args)
               });
             case 2:
               res = _context4.sent;
@@ -96598,20 +96648,24 @@ var SOAP = /*#__PURE__*/function (_HttpApi) {
   }, {
     key: "getResponseBody",
     value: (function () {
-      var _getResponseBody = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee2(response) {
+      var _getResponseBody = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee2(response) {
         var body;
         return regenerator_default().wrap(function _callee2$(_context5) {
           while (1) switch (_context5.prev = _context5.next) {
             case 0:
               _context5.next = 2;
-              return (0,get/* default */.A)((0,getPrototypeOf/* default */.A)(SOAP.prototype), "getResponseBody", this).call(this, response);
+              return (0,get.A)((0,getPrototypeOf.A)(SOAP.prototype), "getResponseBody", this).call(this, response);
             case 2:
               body = _context5.sent;
               const res = lookupValue(body, [ /:Envelope$/, /:Body$/, /.+/ ]);
               if(res.result){
-                res.result = {
-                  ...res.result,
-                  ...lookupValue(body, [ /:Envelope$/,/:Header$/, /.+/ ])
+                // sf-toolkit modification
+                const header = lookupValue(body, [ /:Envelope$/,/:Header$/, /.+/ ]);
+                if(header){
+                  res.result = {
+                    ...res.result,
+                    ...header
+                  }
                 }
               }
               return _context5.abrupt("return", res);
@@ -96646,7 +96700,7 @@ var SOAP = /*#__PURE__*/function (_HttpApi) {
       return ['<?xml version="1.0" encoding="UTF-8"?>', '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"', ' xmlns:xsd="http://www.w3.org/2001/XMLSchema"', ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">', '<soapenv:Header xmlns="' + this._xmlns + '">', toXML(header),this._headers?toXML(this._headers):'', '</soapenv:Header>', '<soapenv:Body xmlns="' + this._xmlns + '">', toXML(message), '</soapenv:Body>', '</soapenv:Envelope>'].join('');
     }
   }]);
-}(http_api/* default */.A);
+}(http_api.A);
 /* harmony default export */ const soap = (SOAP);
 
 ;// CONCATENATED MODULE: ./browser/api/metadata/schema.js
@@ -105762,7 +105816,7 @@ var ApiSchemas = {
 
 
 var metadata_excluded = ["$"];
-function metadata_callSuper(t, o, e) { return o = (0,getPrototypeOf/* default */.A)(o), (0,possibleConstructorReturn/* default */.A)(t, metadata_isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf/* default */.A)(t).constructor) : o.apply(t, e)); }
+function metadata_callSuper(t, o, e) { return o = (0,getPrototypeOf.A)(o), (0,possibleConstructorReturn.A)(t, metadata_isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf.A)(t).constructor) : o.apply(t, e)); }
 function metadata_isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(construct_default()(Boolean, [], function () {})); } catch (t) {} return (metadata_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
 
 
@@ -105775,8 +105829,8 @@ function metadata_isNativeReflectConstruct() { try { var t = !Boolean.prototype.
 
 
 
-function metadata_ownKeys(e, r) { var t = keys_default()(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function metadata_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context12, _context13; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context12 = metadata_ownKeys(Object(t), !0)).call(_context12, function (r) { (0,defineProperty/* default */.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context13 = metadata_ownKeys(Object(t))).call(_context13, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
+function metadata_ownKeys(e, r) { var t = Object.keys(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function metadata_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context12, _context13; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context12 = metadata_ownKeys(Object(t), !0)).call(_context12, function (r) { (0,defineProperty.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context13 = metadata_ownKeys(Object(t))).call(_context13, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
 /**
  * @file Manages Salesforce Metadata API
  * @author Shinichi Tomita <shinichi.tomita@gmail.com>
@@ -105800,12 +105854,12 @@ function metadata_objectSpread(e) { for (var r = 1; r < arguments.length; r++) {
 function deallocateTypeWithMetadata(metadata) {
   var _ref = metadata,
     $ = _ref.$,
-    md = (0,objectWithoutProperties/* default */.A)(_ref, metadata_excluded);
+    md = (0,objectWithoutProperties.A)(_ref, metadata_excluded);
   return md;
 }
 function assignTypeWithMetadata(metadata, type) {
   var convert = function convert(md) {
-    return metadata_objectSpread((0,defineProperty/* default */.A)({}, '@xsi:type', type), md);
+    return metadata_objectSpread((0,defineProperty.A)({}, '@xsi:type', type), md);
   };
   return is_array_default()(metadata) ? map_default()(metadata).call(metadata, convert) : convert(metadata);
 }
@@ -105813,20 +105867,20 @@ function assignTypeWithMetadata(metadata, type) {
 /**
  * Class for Salesforce Metadata API
  */
-var MetadataApi = /*#__PURE__*/function () {
+var MetadataApi = function () {
   /**
    *
    */
   function MetadataApi(conn) {
-    (0,classCallCheck/* default */.A)(this, MetadataApi);
+    (0,classCallCheck.A)(this, MetadataApi);
     /**
      * Polling interval in milliseconds
      */
-    (0,defineProperty/* default */.A)(this, "pollInterval", 1000);
+    (0,defineProperty.A)(this, "pollInterval", 1000);
     /**
      * Polling timeout in milliseconds
      */
-    (0,defineProperty/* default */.A)(this, "pollTimeout", 10000);
+    (0,defineProperty.A)(this, "pollTimeout", 10000);
     this._conn = conn;
   }
 
@@ -105835,10 +105889,10 @@ var MetadataApi = /*#__PURE__*/function () {
    *
    * @private
    */
-  return (0,createClass/* default */.A)(MetadataApi, [{
+  return (0,createClass.A)(MetadataApi, [{
     key: "_invoke",
     value: (function () {
-      var _invoke2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee(method, message, schema) {
+      var _invoke2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee(method, message, schema) {
         var _context;
         var soapEndpoint, res;
         return regenerator_default().wrap(function _callee$(_context2) {
@@ -105887,7 +105941,7 @@ var MetadataApi = /*#__PURE__*/function () {
   }, {
     key: "read",
     value: function () {
-      var _read = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee2(type, fullNames) {
+      var _read = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee2(type, fullNames) {
         var _context3;
         var ReadResultSchema, res;
         return regenerator_default().wrap(function _callee2$(_context4) {
@@ -106048,7 +106102,7 @@ var MetadataApi = /*#__PURE__*/function () {
   }, {
     key: "deployRecentValidation",
     value: (function () {
-      var _deployRecentValidation = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee3(options) {
+      var _deployRecentValidation = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee3(options) {
         var id, rest, response, messageBody, requestInfo, requestOptions;
         return regenerator_default().wrap(function _callee3$(_context5) {
           while (1) switch (_context5.prev = _context5.next) {
@@ -106139,7 +106193,7 @@ var MetadataApi = /*#__PURE__*/function () {
     value: function deploy(zipInput) {
       var _this = this;
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var res = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee4() {
+      var res = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee4() {
         var zipContentB64;
         return regenerator_default().wrap(function _callee4$(_context6) {
           while (1) switch (_context6.prev = _context6.next) {
@@ -106199,13 +106253,13 @@ var MetadataApi = /*#__PURE__*/function () {
 /**
  * The locator class for Metadata API asynchronous call result
  */
-var AsyncResultLocator = /*#__PURE__*/function (_EventEmitter) {
+var AsyncResultLocator = function (_EventEmitter) {
   /**
    *
    */
   function AsyncResultLocator(meta, promise) {
     var _this2;
-    (0,classCallCheck/* default */.A)(this, AsyncResultLocator);
+    (0,classCallCheck.A)(this, AsyncResultLocator);
     _this2 = metadata_callSuper(this, AsyncResultLocator);
     _this2._meta = meta;
     _this2._promise = promise;
@@ -106218,8 +106272,8 @@ var AsyncResultLocator = /*#__PURE__*/function (_EventEmitter) {
    *
    * @method Metadata~AsyncResultLocator#then
    */
-  (0,inherits/* default */.A)(AsyncResultLocator, _EventEmitter);
-  return (0,createClass/* default */.A)(AsyncResultLocator, [{
+  (0,inherits.A)(AsyncResultLocator, _EventEmitter);
+  return (0,createClass.A)(AsyncResultLocator, [{
     key: "then",
     value: function then(onResolve, onReject) {
       return this._promise.then(onResolve, onReject);
@@ -106231,7 +106285,7 @@ var AsyncResultLocator = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "check",
     value: (function () {
-      var _check = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee5() {
+      var _check = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee5() {
         var result;
         return regenerator_default().wrap(function _callee5$(_context7) {
           while (1) switch (_context7.prev = _context7.next) {
@@ -106262,8 +106316,8 @@ var AsyncResultLocator = /*#__PURE__*/function (_EventEmitter) {
     value: function poll(interval, timeout) {
       var _this3 = this;
       var startTime = new Date().getTime();
-      var poll = /*#__PURE__*/function () {
-        var _ref3 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee6() {
+      var poll = function () {
+        var _ref3 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee6() {
           var now, errMsg, result;
           return regenerator_default().wrap(function _callee6$(_context8) {
             while (1) switch (_context8.prev = _context8.next) {
@@ -106330,13 +106384,13 @@ var AsyncResultLocator = /*#__PURE__*/function (_EventEmitter) {
 /**
  * The locator class to track retreive() Metadata API call result
  */
-var RetrieveResultLocator = /*#__PURE__*/function (_AsyncResultLocator) {
+var RetrieveResultLocator = function (_AsyncResultLocator) {
   function RetrieveResultLocator() {
-    (0,classCallCheck/* default */.A)(this, RetrieveResultLocator);
+    (0,classCallCheck.A)(this, RetrieveResultLocator);
     return metadata_callSuper(this, RetrieveResultLocator, arguments);
   }
-  (0,inherits/* default */.A)(RetrieveResultLocator, _AsyncResultLocator);
-  return (0,createClass/* default */.A)(RetrieveResultLocator, [{
+  (0,inherits.A)(RetrieveResultLocator, _AsyncResultLocator);
+  return (0,createClass.A)(RetrieveResultLocator, [{
     key: "complete",
     value: (
     /**
@@ -106344,13 +106398,13 @@ var RetrieveResultLocator = /*#__PURE__*/function (_AsyncResultLocator) {
      * and retrieve the result data.
      */
     function () {
-      var _complete = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee7() {
+      var _complete = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee7() {
         var result;
         return regenerator_default().wrap(function _callee7$(_context9) {
           while (1) switch (_context9.prev = _context9.next) {
             case 0:
               _context9.next = 2;
-              return (0,get/* default */.A)((0,getPrototypeOf/* default */.A)(RetrieveResultLocator.prototype), "complete", this).call(this);
+              return (0,get.A)((0,getPrototypeOf.A)(RetrieveResultLocator.prototype), "complete", this).call(this);
             case 2:
               result = _context9.sent;
               return _context9.abrupt("return", this._meta.checkRetrieveStatus(result.id));
@@ -106375,7 +106429,7 @@ var RetrieveResultLocator = /*#__PURE__*/function (_AsyncResultLocator) {
       var _this5 = this;
       var resultStream = new stream_browserify.Readable();
       var reading = false;
-      resultStream._read = /*#__PURE__*/(0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee8() {
+      resultStream._read = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee8() {
         var result;
         return regenerator_default().wrap(function _callee8$(_context10) {
           while (1) switch (_context10.prev = _context10.next) {
@@ -106421,13 +106475,13 @@ var RetrieveResultLocator = /*#__PURE__*/function (_AsyncResultLocator) {
  * @param {Metadata} meta - Metadata API object
  * @param {Promise.<Metadata~AsyncResult>} result - Promise object for async result of deploy() call
  */
-var DeployResultLocator = /*#__PURE__*/function (_AsyncResultLocator2) {
+var DeployResultLocator = function (_AsyncResultLocator2) {
   function DeployResultLocator() {
-    (0,classCallCheck/* default */.A)(this, DeployResultLocator);
+    (0,classCallCheck.A)(this, DeployResultLocator);
     return metadata_callSuper(this, DeployResultLocator, arguments);
   }
-  (0,inherits/* default */.A)(DeployResultLocator, _AsyncResultLocator2);
-  return (0,createClass/* default */.A)(DeployResultLocator, [{
+  (0,inherits.A)(DeployResultLocator, _AsyncResultLocator2);
+  return (0,createClass.A)(DeployResultLocator, [{
     key: "complete",
     value: (
     /**
@@ -106435,13 +106489,13 @@ var DeployResultLocator = /*#__PURE__*/function (_AsyncResultLocator2) {
      * and retrieve the result data.
      */
     function () {
-      var _complete2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee9(includeDetails) {
+      var _complete2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee9(includeDetails) {
         var result;
         return regenerator_default().wrap(function _callee9$(_context11) {
           while (1) switch (_context11.prev = _context11.next) {
             case 0:
               _context11.next = 2;
-              return (0,get/* default */.A)((0,getPrototypeOf/* default */.A)(DeployResultLocator.prototype), "complete", this).call(this);
+              return (0,get.A)((0,getPrototypeOf.A)(DeployResultLocator.prototype), "complete", this).call(this);
             case 2:
               result = _context11.sent;
               return _context11.abrupt("return", this._meta.checkDeployStatus(result.id, includeDetails));
@@ -108263,8 +108317,8 @@ var schema_ApiSchemas = {
 
 var soap_excluded = ["type", "attributes"];
 
-function api_soap_ownKeys(e, r) { var t = keys_default()(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function api_soap_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context12, _context13; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context12 = api_soap_ownKeys(Object(t), !0)).call(_context12, function (r) { (0,defineProperty/* default */.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context13 = api_soap_ownKeys(Object(t))).call(_context13, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
+function api_soap_ownKeys(e, r) { var t = Object.keys(e); if ((get_own_property_symbols_default())) { var o = get_own_property_symbols_default()(e); r && (o = filter_default()(o).call(o, function (r) { return get_own_property_descriptor_default()(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function api_soap_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var _context12, _context13; var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? for_each_default()(_context12 = api_soap_ownKeys(Object(t), !0)).call(_context12, function (r) { (0,defineProperty.A)(e, r, t[r]); }) : (get_own_property_descriptors_default()) ? define_properties_default()(e, get_own_property_descriptors_default()(t)) : for_each_default()(_context13 = api_soap_ownKeys(Object(t))).call(_context13, function (r) { define_property_default()(e, r, get_own_property_descriptor_default()(t, r)); }); } return e; }
 function soap_createForOfIteratorHelper(o, allowArrayLike) { var it = typeof (symbol_default()) !== "undefined" && get_iterator_method_default()(o) || o["@@iterator"]; if (!it) { if (is_array_default()(o) || (it = soap_unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
 function soap_unsupportedIterableToArray(o, minLen) { var _context11; if (!o) return; if (typeof o === "string") return soap_arrayLikeToArray(o, minLen); var n = slice_default()(_context11 = Object.prototype.toString.call(o)).call(_context11, 8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return from_default()(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return soap_arrayLikeToArray(o, minLen); }
 function soap_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
@@ -108307,12 +108361,12 @@ function toSoapRecord(records) {
     var _context2;
     var type = record.type,
       attributes = record.attributes,
-      rec = (0,objectWithoutProperties/* default */.A)(record, soap_excluded);
+      rec = (0,objectWithoutProperties.A)(record, soap_excluded);
     var t = type || (attributes === null || attributes === void 0 ? void 0 : attributes.type);
     if (!t) {
       throw new Error('Given record is not including sObject type information');
     }
-    var fieldsToNull = filter_default()(_context2 = keys_default()(rec)).call(_context2, function (field) {
+    var fieldsToNull = filter_default()(_context2 = Object.keys(rec)).call(_context2, function (field) {
       return record[field] === null;
     });
     var _iterator = soap_createForOfIteratorHelper(fieldsToNull),
@@ -108339,9 +108393,9 @@ function toSoapRecord(records) {
 /**
  * API class for Partner SOAP call
  */
-var SoapApi = /*#__PURE__*/function () {
+var SoapApi = function () {
   function SoapApi(conn) {
-    (0,classCallCheck/* default */.A)(this, SoapApi);
+    (0,classCallCheck.A)(this, SoapApi);
     this._conn = conn;
   }
 
@@ -108349,10 +108403,10 @@ var SoapApi = /*#__PURE__*/function () {
    * Call SOAP Api (Partner) endpoint
    * @private
    */
-  return (0,createClass/* default */.A)(SoapApi, [{
+  return (0,createClass.A)(SoapApi, [{
     key: "_invoke",
     value: (function () {
-      var _invoke2 = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee(method, message, schema, options) {
+      var _invoke2 = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee(method, message, schema, options) {
         var _context3;
         var soapEndpoint, res;
         return regenerator_default().wrap(function _callee$(_context4) {
@@ -108389,7 +108443,7 @@ var SoapApi = /*#__PURE__*/function () {
   }, {
     key: "convertLead",
     value: function () {
-      var _convertLead = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee2(leadConverts) {
+      var _convertLead = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee2(leadConverts) {
         var schema;
         return regenerator_default().wrap(function _callee2$(_context5) {
           while (1) switch (_context5.prev = _context5.next) {
@@ -108415,7 +108469,7 @@ var SoapApi = /*#__PURE__*/function () {
   }, {
     key: "merge",
     value: function () {
-      var _merge = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee3(mergeRequests) {
+      var _merge = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee3(mergeRequests) {
         var schema;
         return regenerator_default().wrap(function _callee3$(_context6) {
           while (1) switch (_context6.prev = _context6.next) {
@@ -108441,7 +108495,7 @@ var SoapApi = /*#__PURE__*/function () {
   }, {
     key: "emptyRecycleBin",
     value: (function () {
-      var _emptyRecycleBin = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee4(ids) {
+      var _emptyRecycleBin = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee4(ids) {
         return regenerator_default().wrap(function _callee4$(_context7) {
           while (1) switch (_context7.prev = _context7.next) {
             case 0:
@@ -108466,7 +108520,7 @@ var SoapApi = /*#__PURE__*/function () {
   }, {
     key: "describeTabs",
     value: (function () {
-      var _describeTabs = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee5() {
+      var _describeTabs = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee5() {
         return regenerator_default().wrap(function _callee5$(_context8) {
           while (1) switch (_context8.prev = _context8.next) {
             case 0:
@@ -108489,7 +108543,7 @@ var SoapApi = /*#__PURE__*/function () {
   }, {
     key: "getServerTimestamp",
     value: (function () {
-      var _getServerTimestamp = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee6() {
+      var _getServerTimestamp = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee6() {
         return regenerator_default().wrap(function _callee6$(_context9) {
           while (1) switch (_context9.prev = _context9.next) {
             case 0:
@@ -108512,7 +108566,7 @@ var SoapApi = /*#__PURE__*/function () {
   }, {
     key: "getUserInfo",
     value: (function () {
-      var _getUserInfo = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee7() {
+      var _getUserInfo = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee7() {
         return regenerator_default().wrap(function _callee7$(_context10) {
           while (1) switch (_context10.prev = _context10.next) {
             case 0:
@@ -108683,7 +108737,7 @@ var faye_browser = __webpack_require__(74089);
  *
  * @param {Function} failureCallback - Invoked when authentication becomes invalid
  */
-var AuthFailure = /*#__PURE__*/(/* unused pure expression or super */ null && (function () {
+var AuthFailure = (/* unused pure expression or super */ null && (function () {
   function AuthFailure(failureCallback) {
     _classCallCheck(this, AuthFailure);
     this._failureCallback = failureCallback;
@@ -108731,7 +108785,7 @@ var REPLAY_FROM_KEY = 'replay';
  * subscription.cancel();
  * ```
  */
-var Replay = /*#__PURE__*/(/* unused pure expression or super */ null && (function () {
+var Replay = (/* unused pure expression or super */ null && (function () {
   function Replay(channel, replayId) {
     _classCallCheck(this, Replay);
     this._extensionEnabled = replayId != null;
@@ -108800,7 +108854,7 @@ var Replay = /*#__PURE__*/(/* unused pure expression or super */ null && (functi
 function streaming_createForOfIteratorHelper(o, allowArrayLike) { var it = typeof (symbol_default()) !== "undefined" && get_iterator_method_default()(o) || o["@@iterator"]; if (!it) { if (is_array_default()(o) || (it = streaming_unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
 function streaming_unsupportedIterableToArray(o, minLen) { var _context3; if (!o) return; if (typeof o === "string") return streaming_arrayLikeToArray(o, minLen); var n = slice_default()(_context3 = Object.prototype.toString.call(o)).call(_context3, 8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return from_default()(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return streaming_arrayLikeToArray(o, minLen); }
 function streaming_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-function streaming_callSuper(t, o, e) { return o = (0,getPrototypeOf/* default */.A)(o), (0,possibleConstructorReturn/* default */.A)(t, streaming_isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf/* default */.A)(t).constructor) : o.apply(t, e)); }
+function streaming_callSuper(t, o, e) { return o = (0,getPrototypeOf.A)(o), (0,possibleConstructorReturn.A)(t, streaming_isNativeReflectConstruct() ? construct_default()(o, e || [], (0,getPrototypeOf.A)(t).constructor) : o.apply(t, e)); }
 function streaming_isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(construct_default()(Boolean, [], function () {})); } catch (t) {} return (streaming_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
 
 
@@ -108832,9 +108886,9 @@ function streaming_isNativeReflectConstruct() { try { var t = !Boolean.prototype
 /**
  * Streaming API topic class
  */
-var Topic = /*#__PURE__*/function () {
+var Topic = function () {
   function Topic(streaming, name) {
-    (0,classCallCheck/* default */.A)(this, Topic);
+    (0,classCallCheck.A)(this, Topic);
     this._streaming = streaming;
     this.name = name;
   }
@@ -108842,7 +108896,7 @@ var Topic = /*#__PURE__*/function () {
   /**
    * Subscribe listener to topic
    */
-  return (0,createClass/* default */.A)(Topic, [{
+  return (0,createClass.A)(Topic, [{
     key: "subscribe",
     value: function subscribe(listener) {
       return this._streaming.subscribe(this.name, listener);
@@ -108863,9 +108917,9 @@ var Topic = /*#__PURE__*/function () {
 /**
  * Streaming API Generic Streaming Channel
  */
-var Channel = /*#__PURE__*/function () {
+var Channel = function () {
   function Channel(streaming, name) {
-    (0,classCallCheck/* default */.A)(this, Channel);
+    (0,classCallCheck.A)(this, Channel);
     this._streaming = streaming;
     this.name = name;
   }
@@ -108873,7 +108927,7 @@ var Channel = /*#__PURE__*/function () {
   /**
    * Subscribe to channel
    */
-  return (0,createClass/* default */.A)(Channel, [{
+  return (0,createClass.A)(Channel, [{
     key: "subscribe",
     value: function subscribe(listener) {
       return this._streaming.subscribe(this.name, listener);
@@ -108887,7 +108941,7 @@ var Channel = /*#__PURE__*/function () {
   }, {
     key: "push",
     value: function () {
-      var _push = (0,asyncToGenerator/* default */.A)( /*#__PURE__*/regenerator_default().mark(function _callee(events) {
+      var _push = (0,asyncToGenerator.A)( regenerator_default().mark(function _callee(events) {
         var isArray, pushEvents, conn, id, channelUrl, rets;
         return regenerator_default().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
@@ -108937,23 +108991,23 @@ var Channel = /*#__PURE__*/function () {
 /**
  * Streaming API class
  */
-var Streaming = /*#__PURE__*/function (_EventEmitter) {
+var Streaming = function (_EventEmitter) {
   /**
    *
    */
   function Streaming(conn) {
     var _this;
-    (0,classCallCheck/* default */.A)(this, Streaming);
+    (0,classCallCheck.A)(this, Streaming);
     _this = streaming_callSuper(this, Streaming);
-    (0,defineProperty/* default */.A)(_this, "_topics", {});
-    (0,defineProperty/* default */.A)(_this, "_fayeClients", {});
+    (0,defineProperty.A)(_this, "_topics", {});
+    (0,defineProperty.A)(_this, "_fayeClients", {});
     _this._conn = conn;
     return _this;
   }
 
   /* @private */
-  (0,inherits/* default */.A)(Streaming, _EventEmitter);
-  return (0,createClass/* default */.A)(Streaming, [{
+  (0,inherits.A)(Streaming, _EventEmitter);
+  return (0,createClass.A)(Streaming, [{
     key: "_createClient",
     value: function _createClient(forChannelName, extensions) {
       var _context2;
@@ -109149,7 +109203,7 @@ function tooling_arrayLikeToArray(arr, len) { if (len == null || len > arr.lengt
 /**
  *
  */
-var _Connection$prototype = connection/* default */.A.prototype,
+var _Connection$prototype = connection.A.prototype,
   query = _Connection$prototype.query,
   queryMore = _Connection$prototype.queryMore,
   _ensureVersion = _Connection$prototype._ensureVersion,
@@ -109180,114 +109234,114 @@ var describeCacheKey = function describeCacheKey(type) {
 /**
  * API class for Tooling API call
  */
-var Tooling = /*#__PURE__*/function () {
+var Tooling = function () {
   /**
    *
    */
   function Tooling(conn) {
-    (0,classCallCheck/* default */.A)(this, Tooling);
+    (0,classCallCheck.A)(this, Tooling);
     /**
      * Execute query by using SOQL
      */
-    (0,defineProperty/* default */.A)(this, "query", query);
+    (0,defineProperty.A)(this, "query", query);
     /**
      * Query next record set by using query locator
      */
-    (0,defineProperty/* default */.A)(this, "queryMore", queryMore);
-    (0,defineProperty/* default */.A)(this, "_ensureVersion", _ensureVersion);
+    (0,defineProperty.A)(this, "queryMore", queryMore);
+    (0,defineProperty.A)(this, "_ensureVersion", _ensureVersion);
     /**
      * Create records
      */
-    (0,defineProperty/* default */.A)(this, "create", create);
-    (0,defineProperty/* default */.A)(this, "_createSingle", _createSingle);
-    (0,defineProperty/* default */.A)(this, "_createParallel", _createParallel);
-    (0,defineProperty/* default */.A)(this, "_createMany", _createMany);
+    (0,defineProperty.A)(this, "create", create);
+    (0,defineProperty.A)(this, "_createSingle", _createSingle);
+    (0,defineProperty.A)(this, "_createParallel", _createParallel);
+    (0,defineProperty.A)(this, "_createMany", _createMany);
     /**
      * Synonym of Tooling#create()
      */
-    (0,defineProperty/* default */.A)(this, "insert", create);
+    (0,defineProperty.A)(this, "insert", create);
     /**
      * Retrieve specified records
      */
-    (0,defineProperty/* default */.A)(this, "retrieve", retrieve);
-    (0,defineProperty/* default */.A)(this, "_retrieveSingle", _retrieveSingle);
-    (0,defineProperty/* default */.A)(this, "_retrieveParallel", _retrieveParallel);
-    (0,defineProperty/* default */.A)(this, "_retrieveMany", _retrieveMany);
+    (0,defineProperty.A)(this, "retrieve", retrieve);
+    (0,defineProperty.A)(this, "_retrieveSingle", _retrieveSingle);
+    (0,defineProperty.A)(this, "_retrieveParallel", _retrieveParallel);
+    (0,defineProperty.A)(this, "_retrieveMany", _retrieveMany);
     /**
      * Update records
      */
-    (0,defineProperty/* default */.A)(this, "update", update);
-    (0,defineProperty/* default */.A)(this, "_updateSingle", _updateSingle);
-    (0,defineProperty/* default */.A)(this, "_updateParallel", _updateParallel);
-    (0,defineProperty/* default */.A)(this, "_updateMany", _updateMany);
+    (0,defineProperty.A)(this, "update", update);
+    (0,defineProperty.A)(this, "_updateSingle", _updateSingle);
+    (0,defineProperty.A)(this, "_updateParallel", _updateParallel);
+    (0,defineProperty.A)(this, "_updateMany", _updateMany);
     /**
      * Upsert records
      */
-    (0,defineProperty/* default */.A)(this, "upsert", upsert);
+    (0,defineProperty.A)(this, "upsert", upsert);
     /**
      * Delete records
      */
-    (0,defineProperty/* default */.A)(this, "destroy", destroy);
-    (0,defineProperty/* default */.A)(this, "_destroySingle", _destroySingle);
-    (0,defineProperty/* default */.A)(this, "_destroyParallel", _destroyParallel);
-    (0,defineProperty/* default */.A)(this, "_destroyMany", _destroyMany);
+    (0,defineProperty.A)(this, "destroy", destroy);
+    (0,defineProperty.A)(this, "_destroySingle", _destroySingle);
+    (0,defineProperty.A)(this, "_destroyParallel", _destroyParallel);
+    (0,defineProperty.A)(this, "_destroyMany", _destroyMany);
     /**
      * Synonym of Tooling#destroy()
      */
-    (0,defineProperty/* default */.A)(this, "delete", destroy);
+    (0,defineProperty.A)(this, "delete", destroy);
     /**
      * Synonym of Tooling#destroy()
      */
-    (0,defineProperty/* default */.A)(this, "del", destroy);
-    (0,defineProperty/* default */.A)(this, "cache", new cache/* default */.A());
+    (0,defineProperty.A)(this, "del", destroy);
+    (0,defineProperty.A)(this, "cache", new cache.A());
     /**
      * Describe SObject metadata
      */
-    (0,defineProperty/* default */.A)(this, "describe", this.cache.createCachedFunction(describe, this, {
+    (0,defineProperty.A)(this, "describe", this.cache.createCachedFunction(describe, this, {
       key: describeCacheKey,
       strategy: 'NOCACHE'
     }));
-    (0,defineProperty/* default */.A)(this, "describe$", this.cache.createCachedFunction(describe, this, {
+    (0,defineProperty.A)(this, "describe$", this.cache.createCachedFunction(describe, this, {
       key: describeCacheKey,
       strategy: 'HIT'
     }));
-    (0,defineProperty/* default */.A)(this, "describe$$", this.cache.createCachedFunction(describe, this, {
+    (0,defineProperty.A)(this, "describe$$", this.cache.createCachedFunction(describe, this, {
       key: describeCacheKey,
       strategy: 'IMMEDIATE'
     }));
     /**
      * Synonym of Tooling#describe()
      */
-    (0,defineProperty/* default */.A)(this, "describeSObject", this.describe);
-    (0,defineProperty/* default */.A)(this, "describeSObject$", this.describe$);
-    (0,defineProperty/* default */.A)(this, "describeSObject$$", this.describe$$);
+    (0,defineProperty.A)(this, "describeSObject", this.describe);
+    (0,defineProperty.A)(this, "describeSObject$", this.describe$);
+    (0,defineProperty.A)(this, "describeSObject$$", this.describe$$);
     /**
      * Describe global SObjects
      */
-    (0,defineProperty/* default */.A)(this, "describeGlobal", this.cache.createCachedFunction(describeGlobal, this, {
+    (0,defineProperty.A)(this, "describeGlobal", this.cache.createCachedFunction(describeGlobal, this, {
       key: 'describeGlobal',
       strategy: 'NOCACHE'
     }));
-    (0,defineProperty/* default */.A)(this, "describeGlobal$", this.cache.createCachedFunction(describeGlobal, this, {
+    (0,defineProperty.A)(this, "describeGlobal$", this.cache.createCachedFunction(describeGlobal, this, {
       key: 'describeGlobal',
       strategy: 'HIT'
     }));
-    (0,defineProperty/* default */.A)(this, "describeGlobal$$", this.cache.createCachedFunction(describeGlobal, this, {
+    (0,defineProperty.A)(this, "describeGlobal$$", this.cache.createCachedFunction(describeGlobal, this, {
       key: 'describeGlobal',
       strategy: 'IMMEDIATE'
     }));
     /**
      * Get SObject instance
      */
-    (0,defineProperty/* default */.A)(this, "sobject", sobject);
-    (0,defineProperty/* default */.A)(this, "sobjects", {});
+    (0,defineProperty.A)(this, "sobject", sobject);
+    (0,defineProperty.A)(this, "sobjects", {});
     this._conn = conn;
   }
 
   /**
    * @private
    */
-  return (0,createClass/* default */.A)(Tooling, [{
+  return (0,createClass.A)(Tooling, [{
     key: "version",
     get: function get() {
       return this._conn.version;
@@ -109421,7 +109475,7 @@ var core = __webpack_require__(46113);
 
 
 
-/* harmony default export */ const browser_0 = (jsforce/* default */.A);
+/* harmony default export */ const browser_0 = (jsforce.A);
 
 })();
 

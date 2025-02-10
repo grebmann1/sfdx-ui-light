@@ -69,13 +69,19 @@ export const registerCopilot = (monaco, editor,language,handleOpenContextCopilot
 
     // Check if OpenAI is available
     if(store.getState().application.openaiKey){
-        editor.addCommand(
-            monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK,
-            () => {
-                LOGGER.info('openEditor');
-                handleOpenContextCopilot();
-            },
-        );
+        
+
+        editor.addAction(
+          {
+            id: 'openEditor',
+            label: 'openEditor',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK],
+            run() {
+              LOGGER.info('openEditor');
+              handleOpenContextCopilot();
+            }
+        }
+      );
     }
 }
 

@@ -1,10 +1,10 @@
-import { api,wire } from "lwc";
+import { api, wire } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
 import Toast from 'lightning/toast';
-import { classSet,isNotUndefinedOrNull,runActionAfterTimeOut,guid,isChromeExtension,autoDetectAndFormat } from 'shared/utils';
-import { store,connectStore } from 'core/store';
-import { SOQL,APEX,VF,LOG } from 'editor/languages';
-import { WIDGETS,registerCopilot,setupMonaco } from 'editor/utils';
+import { classSet, isNotUndefinedOrNull, runActionAfterTimeOut, guid, isChromeExtension, autoDetectAndFormat } from 'shared/utils';
+import { store, connectStore } from 'core/store';
+import { SOQL, APEX, VF, LOG } from 'editor/languages';
+import { WIDGETS, registerCopilot, setupMonaco } from 'editor/utils';
 
 export default class Default extends ToolkitElement {
 
@@ -24,7 +24,7 @@ export default class Default extends ToolkitElement {
     @api isToolkitHidden = false;
     @api isEinsteinHidden = false;
     @api isCopyHidden = false;
-    
+
 
     currentPromptWidget;
 
@@ -44,16 +44,16 @@ export default class Default extends ToolkitElement {
     storeChange({ ui,sobject }) {}
     */
 
-    connectedCallback(){}
+    connectedCallback() { }
 
-    renderedCallback(){
-        if(!this._hasRendered){
+    renderedCallback() {
+        if (!this._hasRendered) {
             this._hasRendered = true;
             setupMonaco()
-            .then(monaco => {
-                this.monaco = monaco;
-                this.loadMonacoEditor();
-            });
+                .then(monaco => {
+                    this.monaco = monaco;
+                    this.loadMonacoEditor();
+                });
         }
     }
 
@@ -63,13 +63,13 @@ export default class Default extends ToolkitElement {
         navigator.clipboard.writeText(this.currentModel.getValue());
         Toast.show({
             label: `Exported to your clipboard`,
-            variant:'success',
+            variant: 'success',
         });
     }
 
     handleOpenContextCopilot = () => {
         // Add the widget to Monaco editor
-        if(!this.currentPromptWidget.isVisible){
+        if (!this.currentPromptWidget.isVisible) {
             this.currentPromptWidget.show();
         }
     }
@@ -79,17 +79,17 @@ export default class Default extends ToolkitElement {
 
     createEditor = (model) => {
 
-       /* const innerContainer2 = document.createElement('div');
-            innerContainer2.setAttribute("slot", "editor");
-            innerContainer2.style.width = '100%';
-            innerContainer2.style.height = '100%';
-        this.refs.editor.appendChild(innerContainer2);*/
+        /* const innerContainer2 = document.createElement('div');
+             innerContainer2.setAttribute("slot", "editor");
+             innerContainer2.style.width = '100%';
+             innerContainer2.style.height = '100%';
+         this.refs.editor.appendChild(innerContainer2);*/
 
         this.currentFile = model;
         this.editor = this.monaco.editor.create(this.refs.editor, {
             model: model,
-            theme:this.theme || 'vs',
-            readOnly:this.isReadOnly,
+            theme: this.theme || 'vs',
+            readOnly: this.isReadOnly,
             wordWrap: "on",
             autoIndent: true,
             formatOnType: true,
@@ -97,14 +97,19 @@ export default class Default extends ToolkitElement {
             minimap: {
                 enabled: false
             },
-            automaticLayout:true,
+            automaticLayout: true,
             scrollBeyondLastLine: false,
-            fixedOverflowWidgets: true
+            fixedOverflowWidgets: true,
         });
-        // Add Copilot
-        registerCopilot(this.monaco, this.editor, model.getLanguageId(),this.handleOpenContextCopilot);
-        // Add Prompt Widget
-        this.currentPromptWidget = new WIDGETS.MonacoLwcWidget(this.monaco,this.editor,model.getLanguageId());
+
+
+        
+        if(!this.isReadOnly) {
+            // Add Copilot
+            registerCopilot(this.monaco, this.editor, model.getLanguageId(), this.handleOpenContextCopilot);
+            // Add Prompt Widget
+            this.currentPromptWidget = new WIDGETS.MonacoLwcWidget(this.monaco, this.editor, model.getLanguageId());
+        }
 
         this.editor.onDidChangeModelContent(this.handleModelContentChange);
         this.editor.onKeyDown((e) => {
@@ -115,25 +120,25 @@ export default class Default extends ToolkitElement {
             if ((e.ctrlKey || e.metaKey) && e.keyCode === this.monaco.KeyCode.Enter) {
                 e.preventDefault();
                 e.stopPropagation();
-                this.dispatchEvent(new CustomEvent("executeaction", {bubbles: true,composed:true }));
+                this.dispatchEvent(new CustomEvent("executeaction", { bubbles: true, composed: true }));
             }
-            if(e.key === 'Escape'){
+            if (e.key === 'Escape') {
                 e.preventDefault();
                 e.stopPropagation();
             }
         });
         this.editor.onDidPaste((e) => {
             const pastedText = this.editor.getModel()?.getValueInRange(e.range);
-    
+
             // Auto-detect format and apply formatting
             const _format = autoDetectAndFormat(this.editor.getValue());
-    
+
             // Replace the editor content with the formatted text if found !
-            if(_format){
-                this.monaco.editor.setModelLanguage(this.editor.getModel(), _format); 
+            if (_format) {
+                this.monaco.editor.setModelLanguage(this.editor.getModel(), _format);
             }
-            
-            
+
+
         });
     }
 
@@ -146,25 +151,27 @@ export default class Default extends ToolkitElement {
         LOG.configureApexLogLanguage(this.monaco);
         // Completion
         APEX.configureApexCompletions(this.monaco);
-        this.dispatchEvent(new CustomEvent("monacoloaded", {bubbles: true }));
+        this.dispatchEvent(new CustomEvent("monacoloaded", { bubbles: true }));
         this.hasLoaded = true;
     }
 
     handleModelContentChange = (event) => {
-        runActionAfterTimeOut(this.editor.getValue(),(value) => {
+        
+        this.currentPromptWidget?.processModelChange(event);
+        runActionAfterTimeOut(this.editor.getValue(), (value) => {
             //
             this.dispatchEvent(
                 new CustomEvent("change", {
-                    detail:{
-                        value:this.editor.getValue(),
-                        type:autoDetectAndFormat(this.editor.getValue()),
+                    detail: {
+                        value: this.editor.getValue(),
+                        type: autoDetectAndFormat(this.editor.getValue()),
                     },
-                    bubbles: true 
+                    bubbles: true
                 })
             );
-        },{timeout:200});
+        }, { timeout: 200 });
     }
-    
+
     @api
     addMarkers = (markers) => {
         this.monaco.editor.setModelMarkers(this.currentModel, "owner", markers);
@@ -172,50 +179,56 @@ export default class Default extends ToolkitElement {
 
     @api
     resetMarkers = () => {
-        this.monaco.editor.setModelMarkers(this.currentModel, "owner",[]);
+        this.monaco.editor.setModelMarkers(this.currentModel, "owner", []);
     }
 
 
     @api
     displayModel = (model) => {
-        if(this.editor){
+        if (this.editor) {
             this.editor.setModel(model); // set last model
-        }else{
+        } else {
             this.createEditor(model);
         }
     }
 
     @api
-    createModel = ({body,language}) => {
-        return this.monaco.editor.createModel(body,language);
+    createModel = ({ body, language }) => {
+        return this.monaco.editor.createModel(body, language);
+    }
+
+    @api 
+    resetPromptWidget = () => {
+        console.log('resetPromptWidget');
+        this.currentPromptWidget?.hide();
     }
 
     /** Getters */
 
     @api
-    get currentModel(){
+    get currentModel() {
         return this.editor?.getModel() || null;
     }
 
     @api
-    get currentEditor(){
+    get currentEditor() {
         return this.editor;
     }
 
     @api
-    get currentMonaco(){
+    get currentMonaco() {
         return this.monaco;
     }
 
-    get isToolkitDisplayed(){
+    get isToolkitDisplayed() {
         return !this.isToolkitHidden;
     }
 
-    get isCopyDisplayed(){
+    get isCopyDisplayed() {
         return !this.isCopyHidden;
     }
 
-    get isEinsteinDisplayed(){
+    get isEinsteinDisplayed() {
         return !this.isEinsteinHidden;
     }
 

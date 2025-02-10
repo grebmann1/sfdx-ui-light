@@ -1,7 +1,17 @@
-.highlighted-cover{
+.highlighted-cover {
     background-color: #2e844a3b;
 }
 
-.highlighted-uncover{
+.highlighted-uncover {
     background-color: #ea001e45;
+}
+
+/* Decoration for inserted (new) lines: light green background */
+.insertedCodeDecoration {
+    background-color: rgba(9, 122, 9, 0.5);
+}
+/* Decoration for the gap where text was deleted (optional) */
+/* Style for the view zone that displays deleted text */
+.deletedViewZone {
+    background-color: rgba(255, 0, 0, 0.3);
 }

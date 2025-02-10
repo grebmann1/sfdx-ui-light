@@ -115,7 +115,7 @@ export default class Retrieve extends ToolkitElement {
         if (sobject && _developerName) {
             membersToAdd[sobject] = [_developerName];
         }
-
+        console.log('toggleMetadata',param);
         const manifestXml = this.refs.manifest.currentModel.getValue();
 
         this.updateManifest(manifestXml, membersToAdd, selectAll || [], unselectAll || [])

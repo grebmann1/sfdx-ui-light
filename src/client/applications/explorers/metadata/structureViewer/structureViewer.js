@@ -15,6 +15,7 @@ export default class StructureViewer extends ToolkitElement {
     set record(value){
         this._record = value;
         this.formatTree(value);
+        console.log('---> record',value);
     }
 
     /** Events **/
@@ -36,11 +37,18 @@ export default class StructureViewer extends ToolkitElement {
     /** Methods **/
 
     formatTree = (record) => {
-        const name = record.Name || record.DeveloperName || record.MasterLabel;
-        this.items = [{
-            key:name,
-            value:record
-        }]
+        if (Array.isArray(record)) {
+            this.items = record.map(x => ({
+                key: x.Name || x.DeveloperName || x.MasterLabel || x.fullName,
+                value: x
+            }));
+        } else {
+            const name = record.Name || record.DeveloperName || record.MasterLabel || record.fullName;
+            this.items = [{
+                key: name,
+                value: record
+            }];
+        }
     }
 
 

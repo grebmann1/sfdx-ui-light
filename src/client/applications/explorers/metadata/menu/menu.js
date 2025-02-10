@@ -117,14 +117,15 @@ export default class Menu extends ToolkitElement {
     /** Events */
 
     handleMenuSelection = async (e) => {
-        const { name, label } = e.detail;
+        console.log('e.detail',e.detail);
+        const { name, label,_developerName } = e.detail;
         if (this.currentLevel === 0) {
             //this.currentMetadata = name;
             store.dispatch(METADATA.fetchSpecificMetadata({ sobject:name }));
         } else if (this.currentLevel === 1) {
             //this.param1 = name;
             //this.label1 = label;
-            const params = { sobject: this.currentMetadata, param1: name, label1: label };
+            const params = { sobject: this.currentMetadata, param1: name, label1: label,_developerName };
             await store.dispatch(METADATA.reduxSlice.actions.setAttributes(params));
             this.dispatchSelectionEvent(params);
             /*store.dispatch(METADATA.reduxSlice.actions.setAttributes({

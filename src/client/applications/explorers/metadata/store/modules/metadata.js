@@ -40,19 +40,43 @@ function saveCacheSettings(alias, state) {
 
 // Helper function to load specific metadata
 async function loadSpecificMetadata(connector, sobject,bypass) {
+    
+    const isSobject = store.getState().metadata.metadata_global.records.find(x => x.name == sobject)?.isSobject || false;
+
+    if(!isSobject){
+        // Metadata API
+        const result = await connector.conn.metadata.list([{type: sobject, folder: null}],connector.conn.version);
+        return {
+            records: result.map(record => ({
+                ...record,
+                label: record.fullName,
+                name: record.fullName || record.id,
+                key: record.fullName || record.id,
+                isSobject: false,
+                _developerName: record.fullName
+            })).sort((a, b) => (a.label || '').localeCompare(b.label)),
+            label: sobject,
+        };
+
+    }
+    
+    // Tooling API
+
     const metadataConfig = await connector.conn.tooling.describeSObject$(sobject);
     const fields = metadataConfig.fields
-        .map(field => field.name)
-        .filter(field => ['Id', 'Name', 'DeveloperName', 'MasterLabel', 'NamespacePrefix'].includes(field));
-    
+    .map(field => field.name)
+    .filter(field => ['Id', 'Name', 'DeveloperName', 'MasterLabel', 'NamespacePrefix'].includes(field));
+
     const query = `SELECT ${fields.join(',')} FROM ${sobject}`;
     const result = (await runAndCacheQuery(connector,query,bypass)) || [];
     return {
-        records: result.map(record => ({
+        records: (result || []).map(record => ({
             ...record,
             name: record.Id,
             label: record.Name || record.MasterLabel || record.DeveloperName,
             key: record.Id,
+            isSobject: true,
+            _developerName:  record.DeveloperName || record.Name  ||record.MasterLabel
         })).sort((a, b) => (a.label || '').localeCompare(b.label)),
         label: sobject,
     };
@@ -203,35 +227,42 @@ const runAndCacheQuery = async (connector,query,_byPassCaching) => {
     }
 }
 
-const load_recordFromRestAPI = async (connector,sobject,recordId) => {
+const load_recordFromToolingAPI = async (connector,sobject,recordId) => {
     const urlQuery = `/services/data/v${connector.conn.version}/tooling/sobjects/${sobject}/${recordId}`;
     console.log('urlQuery',urlQuery);
     return await connector.conn.request(urlQuery);
 }
 
+const load_recordFromMetadataAPI = async (connector,sobject,fullName) => {
+    return await connector.conn.metadata.read(sobject, fullName);
+}
+
 // Helper function to load a specific metadata record
-const loadSpecificMetadataRecord = async (connector,sobject,recordId) => {
+const loadSpecificMetadataRecord = async (connector,{sobject,recordId,fullName}) => {
     let selectedRecord = null;
     let files = null;
 
-    try {
-        const recordLoaders = {
-            LightningComponentBundle: async () => handle_LWC(connector, sobject, recordId),
-            ApexClass: async () => handle_APEX(connector, sobject, await load_recordFromRestAPI(connector, sobject, recordId)),
-            AuraDefinitionBundle: async () => handle_AURA(connector, sobject, await load_recordFromRestAPI(connector, sobject, recordId)),
-            ApexTrigger: async () => handle_APEX(connector, sobject, await load_recordFromRestAPI(connector, sobject, recordId), 'trigger'),
-            ApexPage: async () => handle_APEX(connector, sobject, await load_recordFromRestAPI(connector, sobject, recordId), 'page', 'Markup'),
-            ApexComponent: async () => handle_APEX(connector, sobject, await load_recordFromRestAPI(connector, sobject, recordId), 'page', 'Markup'),
-        };
+    const recordLoaders = {
+        LightningComponentBundle: async () => handle_LWC(connector, sobject, recordId),
+        ApexClass: async () => handle_APEX(connector, sobject, await load_recordFromToolingAPI(connector, sobject, recordId)),
+        AuraDefinitionBundle: async () => handle_AURA(connector, sobject, await load_recordFromToolingAPI(connector, sobject, recordId)),
+        ApexTrigger: async () => handle_APEX(connector, sobject, await load_recordFromToolingAPI(connector, sobject, recordId), 'trigger'),
+        ApexPage: async () => handle_APEX(connector, sobject, await load_recordFromToolingAPI(connector, sobject, recordId), 'page', 'Markup'),
+        ApexComponent: async () => handle_APEX(connector, sobject, await load_recordFromToolingAPI(connector, sobject, recordId), 'page', 'Markup'),
+    };
 
-        if (recordLoaders[sobject]) {
-            files = await recordLoaders[sobject]();
-        } else {
-            selectedRecord = await load_recordFromRestAPI(connector, sobject, recordId);
+    if (recordLoaders[sobject]) {
+        files = await recordLoaders[sobject]();
+    } else {
+        const isSobject = store.getState().metadata.metadata_global.records.find(x => x.name == sobject)?.isSobject || false;
+        if(isSobject){
+            selectedRecord = await load_recordFromToolingAPI(connector, sobject, recordId);
+        }else{
+            const test = await load_recordFromMetadataAPI(connector, sobject, fullName);
+            selectedRecord = test;
         }
-    } catch (error) {
-        console.error('Error loading specific metadata record:', error);
     }
+
     return { selectedRecord, files };
 }
 
@@ -246,10 +277,16 @@ const fetchGlobalMetadata = createAsyncThunk(
             // Fetch available metadata objects
             const sobjects = (await application.connector.conn.tooling.describeGlobal$()).sobjects.map(obj => obj.name);
             let result = await application.connector.conn.metadata.describe(application.connector.conn.version);
-
+            // TODO : Seperate the metadata from the objects. Some metadata are not sobjects
             result = result.metadataObjects
-                .filter(obj => sobjects.includes(obj.xmlName) && !METADATA_EXCLUDE_LIST.includes(obj.xmlName))
-                .map(obj => ({ ...obj, name: obj.xmlName, label: obj.xmlName, key: obj.xmlName }));
+                .filter(obj => !METADATA_EXCLUDE_LIST.includes(obj.xmlName))
+                .map(obj => ({ 
+                    ...obj, 
+                    name: obj.xmlName, 
+                    label: obj.xmlName, 
+                    key: obj.xmlName,
+                    isSobject: sobjects.includes(obj.xmlName)
+                }));
 
             result = [...result, ...METADATA_EXCEPTION_LIST.filter(x => x.isSearchable)];
             return { records: result, label: 'Metadata' };
@@ -273,7 +310,7 @@ const fetchSpecificMetadata = createAsyncThunk(
                 const _metadata = exceptionMetadata
                     ? await loadSpecificMetadataException(application.connector, exceptionMetadata, null, 1,bypass)
                     : await loadSpecificMetadata(application.connector, sobject,bypass);
-
+                console.log('---> _metadata',_metadata);
                 return {
                     currentMetadata: sobject,
                     metadata:_metadata,
@@ -294,9 +331,10 @@ const fetchSpecificMetadata = createAsyncThunk(
 // Async Thunk for fetching Metadata
 const fetchMetadataRecord = createAsyncThunk(
     'metadata/fetchMetadataRecord',
-    async ({ sobject, param1,param2 }, { getState,dispatch,rejectWithValue }) => {
+    async ({ sobject, param1,param2,label1 }, { getState,dispatch,rejectWithValue }) => {
+        const tabkey = `${sobject}-${param1}`;
+
         try {
-            const tabkey = `${sobject}-${param1}`;
             const { application } = getState();
             const exceptionMetadata = METADATA_EXCEPTION_LIST.find(x => x.name === sobject) || null;
 
@@ -327,7 +365,11 @@ const fetchMetadataRecord = createAsyncThunk(
             }
 
             
-            const {selectedRecord,files} = await loadSpecificMetadataRecord(application.connector,sobject,param1);
+            const {selectedRecord,files} = await loadSpecificMetadataRecord(application.connector,{
+                sobject,
+                recordId:param1,
+                fullName:label1
+            });
             return {
                 tabkey,
                 selectedRecord,
@@ -336,7 +378,10 @@ const fetchMetadataRecord = createAsyncThunk(
             };
         } catch (error) {
             console.error('Error fetching exception metadata:', error);
-            return rejectWithValue(error.message);
+            return rejectWithValue({
+                error:error.message,
+                tabkey
+            });
         }
     }
 );
@@ -539,7 +584,8 @@ const metadataSlice = createSlice({
                     },
                     data:{
                         files,
-                        selectedRecord
+                        selectedRecord,
+                        error:null
                     },
                     flowVersions:{
                         flowVersionOptions,
@@ -554,9 +600,34 @@ const metadataSlice = createSlice({
                 //state.currentLevel = action.payload.currentLevel;
             })
             .addCase(fetchMetadataRecord.rejected, (state, action) => {
+                const { error,tabkey } = action.payload;
+                // Not Used for now ()
                 state.isLoading = false;
                 state.isLoadingRecord = false;
-                state.error = action.payload;
+                state.currentTabId = tabkey;
+
+                const tab = {
+                    id:tabkey,
+                    name:state.label1, // for now it's enough but might need to change
+                    attributes:{
+                        param1:state.param1,
+                        label1:state.label1,
+                        param2:null,
+                        label2:null,
+                        sobject:state.sobject,
+                        developerName:state.developerName
+                    },
+                    data:{
+                        files:null,
+                        selectedRecord:null,
+                        error
+                    }
+                };
+                if(!state.tabs.find(x => x.id === tabkey)){
+                    _addTab(state,{tab})
+                }else{
+                    _updateTab(state,{tab})
+                }
             });
     },
 });

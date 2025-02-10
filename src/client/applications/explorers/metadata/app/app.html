@@ -99,7 +99,11 @@
                                     </div>
                                 </template>
                                 <!-- JSON Viewer view -->
-                                <template lwc:if={isMetadataViewerDisplayed}>
+
+                                <template lwc:if={hasError}>
+                                    <illustration-empty title="An Error has occured" sub-title={errorMessage}></illustration-empty>
+                                </template>
+                                <template lwc:elseif={isMetadataViewerDisplayed}>
                                     <metadata-viewer class="slds-full-height slds-m-top_x-small" lwc:ref="viewer" record={selectedRecord} ></metadata-viewer>
                                 </template>
                                 <template lwc:elseif={isLoadingRecord}>
@@ -108,6 +112,7 @@
                                 <template lwc:elseif={isNoRecord}>
                                     <illustration-empty title="No record" sub-title={noRecordMessage}></illustration-empty>
                                 </template>
+
                                 
                             </div>
                                 

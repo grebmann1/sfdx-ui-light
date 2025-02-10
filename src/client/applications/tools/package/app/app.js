@@ -108,6 +108,7 @@ export default class App extends ToolkitElement {
     /** Events **/
 
     handleItemSelection = (e) => {
+        console.log('handleItemSelection',e.detail);
         if(this.refs.retrieve){
             this.refs.retrieve.toggleMetadata(e.detail);
         }
@@ -233,89 +234,6 @@ export default class App extends ToolkitElement {
 
     get isBackDisplayed() {
         return this.currentLevel > 0;
-    }
-
-    get exceptionMetadataList() {
-        return [
-            {
-                isSearchable: true,
-                name: 'Flow',
-                label: 'Flow',
-                key: 'Flow',
-                isException: true,
-                hasLvl2: true,
-                lvl2Type: 'FlowVersion',
-                queryObject: 'FlowDefinition',
-                queryFields: ['ActiveVersion.ProcessType', 'ActiveVersion.Status', 'ActiveVersionId'],
-                labelFunc: this.formatName,
-                filterFunc: (x) => " WHERE ActiveVersion.ProcessType <> 'Workflow'",
-                field_id: 'Id',
-                selectDefaultFunc: (x) => x.ActiveVersionId,
-                selectDefaultLabelFunc: (x) => 'Active',
-                badgeFunc: (x) => {
-                    return x.ActiveVersion?.Status ? {
-                        label: 'Active',
-                        class: 'slds-theme_success'
-                    } : {
-                        label: 'Inactive',
-                        class: ''
-                    }
-                },
-                manualFilter: (x) => { return x.ActiveVersion?.ProcessType !== 'Workflow' }
-
-
-            },
-            {
-                isSearchable: true,
-                name: 'WorkFlow',
-                label: 'WorkFlow',
-                key: 'WorkFlow',
-                isException: true,
-                hasLvl2: true,
-                lvl2Type: 'FlowVersion',
-                queryObject: 'FlowDefinition',
-                queryFields: ['ActiveVersion.ProcessType', 'ActiveVersion.Status', 'ActiveVersionId'],
-                labelFunc: this.formatName,
-                filterFunc: (x) => " WHERE ActiveVersion.ProcessType = 'Workflow'",
-                field_id: 'Id',
-                selectDefaultFunc: (x) => x.ActiveVersionId,
-                selectDefaultLabelFunc: (x) => 'Active',
-                badgeFunc: (x) => {
-                    return x.ActiveVersion?.Status ? {
-                        label: 'Active',
-                        class: 'slds-theme_success'
-                    } : {
-                        label: 'Inactive',
-                        class: ''
-                    }
-                },
-                manualFilter: (x) => { return x.ActiveVersion?.ProcessType === 'Workflow' }
-            },
-            {
-                isSearchable: false,
-                name: 'FlowVersion',
-                label: 'FlowVersion',
-                key: 'FlowVersion',
-                isException: true,
-                hasLvl2: false,
-                queryObject: 'Flow',
-                queryFields: ['ProcessType', 'Status', 'VersionNumber'],
-                labelFunc: (x) => `Version ${x.VersionNumber}`,
-                filterFunc: (x) => ` WHERE Definition.Id = '${x}'`,
-                field_id: 'Id',
-                badgeFunc: (x) => {
-                    return x.Status === 'Active' ? {
-                        label: 'Active',
-                        class: 'slds-theme_success'
-                    } : {
-                        label: x.Status,
-                        class: ''
-                    }
-                },
-                manualFilter: (x) => { return true; },
-                compareFunc: (a, b) => (a.Status || '').localeCompare(b.Status)
-            }
-        ]
     }
 
 }

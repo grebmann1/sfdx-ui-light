@@ -69,6 +69,8 @@ export default class App extends ToolkitElement {
         this.isLoadingRecord = metadata.isLoadingRecord;
         this.sobject = metadata.sobject;
         //this.currentTab = metadata.currentTab;
+
+        
         
         // Standard Record Viewer
         if(isNotUndefinedOrNull(metadata.selectedRecord)){
@@ -77,7 +79,6 @@ export default class App extends ToolkitElement {
         }else{
             this.selectedRecord = null;
         }
-        
         this.files = metadata.files;
         if(this.currentTabId != metadata.currentTabId){
             if(isNotUndefinedOrNull(this.files) && this.files.length > 0){
@@ -92,6 +93,7 @@ export default class App extends ToolkitElement {
         // Flow Versions
         this.flowVersion_options = metadata.flowVersionOptions || [];
         this.flowVersion_value = metadata.flowVersionValue;
+
         // update navigation url
         // Disabled for now, creating too many issues !!!
         if(isNotUndefinedOrNull(this.currentTabId) && this.tabs.find(x => x.id === this.currentTabId)){
@@ -121,7 +123,6 @@ export default class App extends ToolkitElement {
         
         // Construct the new URL
         const newUrl = `${window.location.origin}${window.location.pathname}?${urlParams.toString()}`;
-        //console.log('newUrl',newUrl);
         // Update the URL without navigating
         window.history.pushState(null, '', newUrl);
     }
@@ -147,6 +148,7 @@ export default class App extends ToolkitElement {
             dispatch(METADATA.reduxSlice.actions.initTabs());
         })
     }
+
 
     renderedCallback(){
         if(!this._hasRendered){
@@ -208,29 +210,6 @@ export default class App extends ToolkitElement {
 
     handleItemSelection = async (e) => {
         store.dispatch(METADATA.fetchMetadataRecord(e.detail))
-        
-    }
-
-    handleMenuSelection = (e) => {
-        const { name,label } = e.detail;
-        const existingState = this.navContext?.state || {};
-        const newState = {
-            applicationName: 'metadata',
-            sobject: name,
-        };
-
-        // Filter out redundant state properties
-        const filteredState = Object.fromEntries(
-            Object.entries(existingState).filter(([key]) => !(key in newState))
-        );
-
-        // Merge filtered existing state with the new state
-        const finalState = { ...filteredState, ...newState };
-
-        navigate(this.navContext, {
-            type: 'application',
-            state: finalState,
-        });
     }
 
     goToMetadata = (e) => {
@@ -278,6 +257,10 @@ export default class App extends ToolkitElement {
 
     /** Getters */
 
+    get currentTab(){
+        return this.tabs.find(x => x.id === this.currentTabId);
+    }
+
     get isFlowPicklistDisplayed(){
         return isNotUndefinedOrNull(this.selectedRecord) && this.selectedRecord.attributes?.type == 'Flow';
     }
@@ -298,6 +281,14 @@ export default class App extends ToolkitElement {
 
     get noRecordMessage() {
         return `This record wasn't found in your metadata.`;
+    }
+
+    get errorMessage() {
+        return this.currentTab?.data?.error || `An Error has occured.`;
+    }
+
+    get hasError(){
+        return isNotUndefinedOrNull(this.currentTab?.data?.error)
     }
 
     get pageClass() {

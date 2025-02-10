@@ -4,6 +4,8 @@ import { runActionAfterTimeOut,guid,isEmpty } from 'shared/utils';
 import LOGGER from 'shared/logger';
 import { ROLES } from 'ai/utils';
 import ASSISTANTS from 'ai/assistants';
+
+
 export default class PromptWidget extends LightningElement {
     
     
@@ -11,15 +13,25 @@ export default class PromptWidget extends LightningElement {
     @api context = '';
     @api selectedText = '';
     @api extraInstructions = '';
-
+    @track height = 0;
 
     @track isLoading = false;
-
+    @track isApprovalDisplayed = false;
     connectedCallback(){
         this.setFocus();
+        requestAnimationFrame(() => {
+            this.updateHeight();
+        });
     }
+
+
+    renderedCallback() {
+        this.updateHeight();
+    }
+
     
     /** Methods */
+    
 
     setFocus = () => {
         setTimeout(() => {
@@ -73,6 +85,7 @@ export default class PromptWidget extends LightningElement {
             const message = messages[messages.length - 1];
             const output = message.content;
             if(output){
+                this.isApprovalDisplayed = true;
                 this.template.querySelector('textarea').value = null; // Clear the input field
                 this.value = null;
                 this.dispatchEvent(new CustomEvent('generate', { 
@@ -96,7 +109,27 @@ export default class PromptWidget extends LightningElement {
         this.dispatchEvent(new CustomEvent('close'));
     }
 
+    handleApprove() {
+        this.template.querySelector('textarea').value = null;
+        this.dispatchEvent(new CustomEvent('approve'));
+    }
+
+    updateHeight() {
+        const element = this.template.querySelector('.prompt-widget-container');
+        if (element) {
+            this.height = element.clientHeight;
+            //console.log('Component Height:', this.height);
+            this.dispatchEvent(new CustomEvent('heightchange', { detail: { height: this.height } }));
+        }
+    }
+
     /** getters */
+
+    @api
+    get internalHeight() {
+        return this.height;
+    }
+
     get hasText() {
         return !isEmpty(this.value);
     }

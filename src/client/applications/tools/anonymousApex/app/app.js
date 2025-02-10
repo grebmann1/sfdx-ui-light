@@ -124,7 +124,12 @@ export default class App extends ToolkitElement {
         this.isFilterUserDebugEnabled = apex.isFilterDebugEnabled;
         this.isRecentToggled = apex.recentPanelToggled;
         this.tabs = apex.tabs;
-        this.currentTab = apex.currentTab;
+        if(this.currentTab?.id != apex.currentTab?.id){
+            this.currentTab = apex.currentTab;
+            if(this._hasRendered){
+                this.refs?.editor?.resetPromptWidget();
+            }
+        }
 
         if(apex.currentTab && this._hasRendered){
             //this.currentTab = apex.currentTab;

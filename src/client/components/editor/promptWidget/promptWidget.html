@@ -1,6 +1,6 @@
 <!-- textInputWidget.html -->
 <template>
-    <div class={containerClass}>
+    <div class="prompt-widget-container">
         <section class="slds-popover slds-popover_prompt slds-popover_brand" role="dialog" aria-describedby="dialog-body" aria-labelledby="dialog-heading">
             <div class="slds-p-horizontal_xx-small slds-flex-row slds-m-top_xx-small">
                 <textarea 
@@ -31,8 +31,18 @@
                         ></lightning-button>
                     </template>
                     <template lwc:else>
-                        <button class="slds-button slds-button_text slds-col_bump-right" 
-                            onclick={handleClose}>Esc to close</button>
+                        <template lwc:if={isApprovalDisplayed}>
+                            <lightning-button class="slds-p-right_small"
+                                label="Approve" 
+                                variant="brand" 
+                                disabled={isLoading}
+                                onclick={handleApprove}
+                            ></lightning-button>
+                            <button class="slds-button slds-button_text slds-col_bump-right" onclick={handleClose}>Esc to close</button>
+                        </template>
+                        <template lwc:else>
+                            <button class="slds-button slds-button_text slds-col_bump-right" onclick={handleClose}>Esc to close</button>
+                        </template>
                     </template>
                 </div>
             </footer>

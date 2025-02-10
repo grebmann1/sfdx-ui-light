@@ -1,6 +1,6 @@
 # SF Toolkit - Release Notes
 
-## Version 1.3.26 - January 28th, 2025
+## Version 1.3.26 - February 9th, 2025
 ### Enhancements  
 - **Copilot**:  
   - All editors now have a copilot button to help you write your queries, code, etc. To activate it, you need to have an OpenAI key configured in the settings.
@@ -12,6 +12,15 @@
   - Fixed an issue where the shortcut was not being saved in the settings and preventing the extension from injecting the shortcuts in the Salesforce Page.
 - **Picklist suggestion in SOQL Editor**:  
   - It's now possible to use the picklist suggestion in the SOQL Editor.
+- **Metadata Explorer**:  
+  - Fixed an issue where the Metadata Explorer was not displaying the correct data.
+  - Fixed an issue that prevented to display Metadata originated from the Metadata API (Such as CanvasMetadata, etc...)
+- **Package Manager**:  
+  - Fixed an issue where the Package Manager was not displaying the metadata selector.
+
+### Known Issues
+- **Package Manager**:  
+  - Selecting a metadata type in the menu shares the view with the Metadata Explorer, resulting in the last selection being reflected in both the Metadata Explorer and the Package Manager due to their shared Redux state.
 
 
 ## Version 1.3.25 - January 20th, 2025
