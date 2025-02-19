@@ -1,5 +1,10 @@
 # SF Toolkit - Release Notes
 
+## Version 1.3.28 - February 12th, 2025
+### Buf Fixes  
+- **Overlay**:  
+  - Missing icons in the injected overlay.
+
 ## Version 1.3.26 - February 9th, 2025
 ### Enhancements  
 - **Copilot**:  
