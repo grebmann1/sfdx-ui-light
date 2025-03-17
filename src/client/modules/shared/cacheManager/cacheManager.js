@@ -17,6 +17,7 @@ class CacheManager {
         return window.defaultStore;
     }
 
+
     /**
      * Get the mapping of configuration keys to their CONFIG_OBJECT instances
      * @returns {Object} Map of configuration keys to CONFIG_OBJECT instances
@@ -171,14 +172,18 @@ export const CACHE_CONFIG = {
     CONFIG_POPUP: new CONFIG_OBJECT('openAsPopup', false),
     OPENAI_ASSISTANT_ID: new CONFIG_OBJECT('openai_assistant_id', null),
     OPENAI_KEY: new CONFIG_OBJECT('openai_key', null),
-    SHORTCUT_RECORDID: new CONFIG_OBJECT('shortcut_recordid', null),
     SHORTCUT_INJECTION_ENABLED: new CONFIG_OBJECT('shortcut_injection_enabled', false),
+    SHORTCUT_RECORDID: new CONFIG_OBJECT('shortcut_recordid', null),
+    SHORTCUT_OPEN_PANEL: new CONFIG_OBJECT('shortcut_open_panel', null),
+    SHORTCUT_OVERVIEW: new CONFIG_OBJECT('shortcut_overview', null),
+    SHORTCUT_SOQL: new CONFIG_OBJECT('shortcut_soql', null),
+    SHORTCUT_APEX: new CONFIG_OBJECT('shortcut_apex', null),
     EXPERIENCE_CLOUD_LOGINAS_INCOGNITO: new CONFIG_OBJECT('experienceCloudLoginAsIncognito', false),
     CACHE_ISCACHED_PROFILES: new CONFIG_OBJECT('cache_isProfilesCache', false),
     CACHE_ISCACHED_SOBJECTS: new CONFIG_OBJECT('cache_isSObjectsCache', false),
     CACHE_REFRESH_RATE: new CONFIG_OBJECT('cache_refreshRate', 24),
     CACHE_EXCLUSION_LIST: new CONFIG_OBJECT('cache_exclusionList', ''),
-    UI_IS_APPLICATION_TAB_VISIBLE: new CONFIG_OBJECT('ui_isApplicationTabVisible', false)
+    UI_IS_APPLICATION_TAB_VISIBLE: new CONFIG_OBJECT('ui_isApplicationTabVisible', false),
 };
 
 // Backward compatibility functions

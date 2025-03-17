@@ -10,7 +10,7 @@ export default class ShortcutSelector extends LightningElement {
     _value = null;
     @api 
     get value(){
-        return this._value.join('+');
+        return this._value == 'backspace' ? null : this._value.join('+');
     }
     set value(val){
         this._value = isUndefinedOrNull(val) || typeof val !== 'string' ? [] : val.split('+');
@@ -44,6 +44,7 @@ export default class ShortcutSelector extends LightningElement {
     shortcutHandler = (e,handler) => {
         e.preventDefault();
         this._value = hotkeys.getPressedKeyString();
+        
         this.dispatchEvent(new CustomEvent("change", {detail:{
             value:this.value,
         },bubbles: true,composed: true  }));

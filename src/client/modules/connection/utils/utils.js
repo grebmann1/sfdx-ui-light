@@ -36,19 +36,19 @@ export function extractConfig(config){
 }
 
 export async function connect({alias,settings,disableEvent = false, directStorage = false}){
-    //console.log('--> connect',alias,settings);
+    //LOGGER.log('--> connect',alias,settings);
     if(isUndefinedOrNull(settings) && isUndefinedOrNull(alias)){
         throw new Error('You need to provide the alias or the connection');
     }
     
 
     if(alias){
-        //console.log('before - getConfiguration')
+        //LOGGER.log('before - getConfiguration')
         let _settings = await getConfiguration(alias);
         if(_settings){
             settings = _settings;
         }
-        //console.log('loaded settings',settings);
+        //LOGGER.log('loaded settings',settings);
     }else{
         alias = settings?.alias; 
     }
@@ -76,13 +76,13 @@ export async function connect({alias,settings,disableEvent = false, directStorag
             loginUrl:settings.instanceUrl
         }
     }
-    //console.log('params',params);
+    //LOGGER.log('params',params);
     const connection = await new window.jsforce.Connection(params);
         connection.alias = alias || settings.alias;
     /** Assign Latest Version **/
     //await assignLatestVersion(connection);
    
-    //console.log('{alias,connection}',{alias,connection});
+    //LOGGER.log('{alias,connection}',{alias,connection});
     const configuration = await generateConfiguration({alias,connection});
     /** Handler Connection Error and save it */
     if(configuration._hasError){
@@ -108,7 +108,7 @@ export async function connect({alias,settings,disableEvent = false, directStorag
 
 
 export async function getConfiguration(alias){
-    //console.log('getConfiguration (isElectronApp)',isElectronApp());
+    //LOGGER.log('getConfiguration (isElectronApp)',isElectronApp());
     let connection = isElectronApp()?await electronInterface.getConfiguration(alias):await webInterface.getConfiguration(alias);
     if(connection){
         const {name,company} = extractName(alias);
@@ -137,10 +137,10 @@ export async function removeConfiguration(alias){
 
 export async function getConfigurations(){
     let connections =  isElectronApp()?await electronInterface.getConfigurations():await webInterface.getConfigurations();
-    //console.log('connections',connections);
+    //LOGGER.log('connections',connections);
     // To be removed, only for testing
     /*if(connections == null || connections.length == 0){
-        //console.log('FAKE Connections')
+        //LOGGER.log('FAKE Connections')
         return [1,2,3,4,5,7,8,9,10].map(x => ({
             alias:`Test-${x}-Prod`,
             company:`Test-${x}`,
@@ -165,18 +165,18 @@ export async function getConfigurations(){
 
 
 export async function getExistingSession(){
-    //console.log('getExistingSession');
+    //LOGGER.log('getExistingSession');
     if(sessionStorage.getItem("currentConnection")){
         try{
             // Don't use settings for now, to avoid issues with electron js (see-details need to be called)
-            //console.log('sessionStorage.getItem("currentConnection")',JSON.parse(sessionStorage.getItem("currentConnection")));
+            //LOGGER.log('sessionStorage.getItem("currentConnection")',JSON.parse(sessionStorage.getItem("currentConnection")));
             const settings = JSON.parse(sessionStorage.getItem("currentConnection"));
                 settings.logLevel = null;
-                //console.log('settings',settings);
+                //LOGGER.log('settings',settings);
             // Using {alias,...settings} before, see if it's better now
             return isElectronApp()?await connect({alias:settings.alias}):await connect({settings});
         }catch(e){
-            console.error(e);
+            LOGGER.error(e);
             return null;
         }
     }
@@ -209,15 +209,15 @@ export async function oauth_chrome({alias,loginUrl},callback,callbackErrorHandle
         action: "launchWebAuthFlow",
         url:finalUrl
     });
-    //console.log('response',response);
+    //LOGGER.log('response',response);
     const { code } = response;
-    //console.log('code',code);
+    //LOGGER.log('code',code);
     if(isUndefinedOrNull(code)) return;
     
     const connection = new window.jsforce.Connection({ oauth2 });
     try{
         await connection.authorize(code);
-        //console.log('userInfo',userInfo);
+        //LOGGER.log('userInfo',userInfo);
         oauth_extend({alias,connection},callback);
     }catch(e){
         callbackErrorHandler(e);
@@ -225,23 +225,23 @@ export async function oauth_chrome({alias,loginUrl},callback,callbackErrorHandle
 }
 
 export async function oauth({alias,loginUrl},callback,callbackErrorHandler){
-    //console.log('oauth');
+    //LOGGER.log('oauth');
     window.jsforce.browserClient = new window.jsforce.BrowserClient(Date.now()); // Reset
-    //console.log('window.jsforceSettings',window.jsforceSettings);
+    //LOGGER.log('window.jsforceSettings',window.jsforceSettings);
     window.jsforce.browserClient.init({
         ...window.jsforceSettings,
         loginUrl,
         version:constant.apiVersion
     });
     window.jsforce.browserClient.on('connect', async (connection) =>{
-        //console.log('new connection',connection)
+        //LOGGER.log('new connection',connection)
         oauth_extend({alias,connection},callback);
     });
 
     window.jsforce.browserClient.login({
         scope:FULL_SCOPE
     }).then(res => {
-        //console.log('res',res);
+        //LOGGER.log('res',res);
         if(res.status === 'cancel'){
             //this.close(null)
             callback(null);
@@ -282,7 +282,7 @@ async function generateConfiguration({alias,connection,redirectUrl}){
             /** Get Username & Version **/
             await enrichConnector({connection,configuration},false);
         }catch(e){
-            console.error(e);
+            LOGGER.error(e);
             Object.assign(configuration,{
                 _hasError :true,
                 _errorMessage:  e.message
@@ -296,7 +296,7 @@ async function generateConfiguration({alias,connection,redirectUrl}){
 }
 
 export async function setRedirectCredential({alias,redirectUrl},callback){
-    //console.log('redirect_credential');
+    //LOGGER.log('redirect_credential');
     const configuration = await generateConfiguration({alias,redirectUrl});
     await webInterface.saveConfiguration(alias,configuration);
 
@@ -304,7 +304,7 @@ export async function setRedirectCredential({alias,redirectUrl},callback){
 }
 
 async function oauth_extend({alias,connection},callback){
-    //console.log('oauth_extend');
+    //LOGGER.log('oauth_extend');
     const configuration = await generateConfiguration({alias,connection});
     await webInterface.saveConfiguration(alias,configuration);
     const connector = new Connector(configuration,connection);
@@ -326,10 +326,10 @@ export async function directConnect(sessionId,serverUrl,extra){
     }
 
     const standardDirectConnect = async () => {
-        console.log('--> Direct connect (Standard)')
+        LOGGER.log('--> Direct connect (Standard)')
         // no existing org, so use sessionId
         connection.on("sessionExpired", async function(accessToken, res) {
-            console.log('--> sessionExpired <--');
+            LOGGER.log('--> sessionExpired <--');
             store.dispatch(APPLICATION.reduxSlice.actions.sessionExpired({sessionHasExpired:true}));
         });
         /** Get Username & Version **/
@@ -343,7 +343,7 @@ export async function directConnect(sessionId,serverUrl,extra){
     }
 
     const aliasDirectConnect = async (alias) => {
-        console.log('--> Direct connect (Alias)')
+        LOGGER.log('--> Direct connect (Alias)')
         // Link connection to existing org
         return await connect({alias});
     }
@@ -367,7 +367,7 @@ export async function directConnect(sessionId,serverUrl,extra){
 async function enrichConnector({connection,configuration},dispathUpdate){
     const [identity,versions] = await Promise.all([
         connection.identity(),
-        //connection.request('/services/services/oauth2/userinfo'),
+        //connection.request('/services/oauth2/userinfo'),
         connection.request('/services/data/')
     ]);
     

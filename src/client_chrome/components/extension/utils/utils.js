@@ -9,16 +9,6 @@ export function isEmpty(str) {
     return (!str || str.length === 0);
 }
 
-export function getSobject(href) {
-    let url = new URL(href);
-    if (url.pathname && url.pathname.endsWith("/list")) {
-        let sobject = url.pathname.substring(0, url.pathname.lastIndexOf("/list"));
-        sobject = sobject.substring(sobject.lastIndexOf("/") + 1);
-        return sobject;
-    }
-    return null;
-}
-
 export function getSfPathFromUrl(href) {
     let url = new URL(href);
     if (url.protocol.endsWith("-extension:")) {

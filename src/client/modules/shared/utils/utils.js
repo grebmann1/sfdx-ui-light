@@ -631,6 +631,17 @@ export function getObjectDocLink(sobjectName, isUsingToolingApi) {
     return `https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_${sobjectName.toLowerCase()}.htm`;
 }
 
+export function getSobject(href) {
+    let url = new URL(href);
+    if (url.pathname) {
+        let match = url.pathname.match(/\/lightning\/[r|o]\/([a-zA-Z0-9_]+)\/[a-zA-Z0-9]+/);
+        if (match) {
+            return match[1];
+        }
+    }
+    return null;
+}
+
 const extractRecordId = (href) => {
     if (!href) return null;
     try {

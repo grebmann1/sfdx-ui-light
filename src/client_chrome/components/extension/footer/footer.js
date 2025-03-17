@@ -3,13 +3,14 @@ import Toast from 'lightning/toast';
 import {isNotUndefinedOrNull, isUndefinedOrNull} from "shared/utils";
 import {chromeOpenInWindow} from 'extension/utils';
 import LOGGER from "shared/logger";
+import { CACHE_CONFIG,loadExtensionConfigFromCache } from 'shared/cacheManager';
 /** Store **/
 import {connectStore, store} from 'core/store';
 
 export default class Footer extends LightningElement {
 
     connector;
-
+    shortcutOpenPanel;
 
     @wire(connectStore, {store})
     applicationChange({application}) {
@@ -19,6 +20,17 @@ export default class Footer extends LightningElement {
             this.connector = application.connector;
             LOGGER.log('connector', this.connector);
         }
+    }
+
+    connectedCallback() {
+        this.getShortcutOpenPanel();
+    }
+
+    /** Methods **/
+
+    getShortcutOpenPanel = async () => {
+        this.shortcutOpenPanel = (await loadExtensionConfigFromCache([CACHE_CONFIG.SHORTCUT_OPEN_PANEL.key]))[CACHE_CONFIG.SHORTCUT_OPEN_PANEL.key] || '';
+        LOGGER.log('shortcutOpenPanel',this.shortcutOpenPanel);
     }
 
     /** Events **/
@@ -57,6 +69,10 @@ export default class Footer extends LightningElement {
 
     get isUsernameDisplayed() {
         return isNotUndefinedOrNull(this.connector.configuration.username);
+    }
+
+    get isShortcutOpenPanelDisplayed() {
+        return !this.isUsernameDisplayed && isNotUndefinedOrNull(this.shortcutOpenPanel);
     }
 
     get usernameFormatted() {

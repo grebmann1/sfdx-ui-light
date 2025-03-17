@@ -33,7 +33,7 @@ export default class SldsTabset extends LightningElement {
     set variant(value) {
         this._variant = normalizeString(value, {
             fallbackValue: 'standard',
-            validValues: ['scoped', 'vertical']
+            validValues: ['scoped', 'vertical', 'standard']
         });
     }
 

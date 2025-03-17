@@ -3,9 +3,55 @@ import '@lwc/synthetic-shadow';
 import {createElement} from 'lwc';
 import ViewsOverlay from 'views/overlay';
 import test from 'feature/test';
-import {isEmpty, runActionAfterTimeOut,redirectToUrlViaChrome,getRecordId} from 'shared/utils';
+import {isEmpty, runActionAfterTimeOut,redirectToUrlViaChrome,getRecordId,getSobject} from 'shared/utils';
+import { CACHE_CONFIG,loadExtensionConfigFromCache } from 'shared/cacheManager';
 import hotkeys from 'hotkeys-js';
 
+const setChromeStorageAsStore = async () => {
+    return {
+        getItem: function(key, callback) {
+            // Custom implementation here...
+            return new Promise((resolve, reject) => {
+                chrome.storage.local.get([key], function(result) {
+                    const value = result[key];
+                    if (callback) {
+                        callback(value);
+                    }
+                    resolve(value);
+                });
+            });
+        },
+        removeItem: function(key, callback) {
+            // Custom implementation here...
+            return new Promise((resolve, reject) => {
+                chrome.storage.local.remove(key, function() {
+                    if (callback) {
+                        callback();
+                    }
+                    resolve();
+                });
+            });
+        },
+        setItem: function(key, value, callback) {
+            // Custom implementation here...
+            return new Promise((resolve, reject) => {
+                chrome.storage.local.set({ [key]: value }, function() {
+                    if (callback) {
+                        callback();
+                    }
+                    resolve();
+                });
+            });
+        }
+    }
+};
+
+const getCookieInfo = async () => {
+    if(chrome.runtime){
+        return await chrome.runtime.sendMessage({ action: 'fetchCookie', content:null});
+    }
+    return null;
+}
 
 const _showCopiedNotification = (copiedValue) => {
     // Create the notification element
@@ -69,26 +115,168 @@ const _showCopiedNotification = (copiedValue) => {
 };
 
 const injectShortCuts = async () => {
-    const configuration = chrome.storage?await chrome.storage.local.get(['shortcut_injection_enabled', 'shortcut_recordid']):{};
+    // Use the new cacheManager instead of directly accessing chrome.storage
+    const configuration = await loadExtensionConfigFromCache([
+        CACHE_CONFIG.SHORTCUT_INJECTION_ENABLED.key,
+        CACHE_CONFIG.SHORTCUT_RECORDID.key,
+        CACHE_CONFIG.SHORTCUT_OVERVIEW.key,
+        CACHE_CONFIG.SHORTCUT_SOQL.key,
+        CACHE_CONFIG.SHORTCUT_APEX.key,
+        CACHE_CONFIG.SHORTCUT_OPEN_PANEL.key
+    ]);
 
-    if (!configuration.shortcut_injection_enabled) return;
+    const shortcutEnabled = configuration[CACHE_CONFIG.SHORTCUT_INJECTION_ENABLED.key];
+    const shortcutRecordId = configuration[CACHE_CONFIG.SHORTCUT_RECORDID.key];
+    const shortcutOverview = configuration[CACHE_CONFIG.SHORTCUT_OVERVIEW.key];
+    const shortcutSoql = configuration[CACHE_CONFIG.SHORTCUT_SOQL.key];
+    const shortcutApex = configuration[CACHE_CONFIG.SHORTCUT_APEX.key];
+    const shortcutOpenPanel = configuration[CACHE_CONFIG.SHORTCUT_OPEN_PANEL.key];
 
+    if (!shortcutEnabled) return;
 
-    console.log('### SF Toolkit - Shortcut Injection ###',);
-    /** Record Id Shortcut - Alpha - To modify to a generic version */
-    if (configuration.hasOwnProperty('shortcut_recordid')) {
-        const combo = configuration['shortcut_recordid'];
-        hotkeys(combo, function (event, handler) {
-            // Prevent the default refresh event under WINDOWS system
-            event.preventDefault();
-            const recordId = getRecordId(window.location.href);
-            if (!isEmpty(recordId)) {
-                navigator.clipboard.writeText(recordId);
-                _showCopiedNotification(recordId);
+    console.log('### SF Toolkit - Shortcut Injection ###');
+    
+    // Create a container for our shortcuts if it doesn't exist
+    let shortcutContainer = document.getElementById('sf-toolkit-shortcut-container');
+    if (!shortcutContainer) {
+        shortcutContainer = document.createElement('div');
+        shortcutContainer.id = 'sf-toolkit-shortcut-container';
+        shortcutContainer.className = 'sf-toolkit-shortcut-container';
+        document.body.appendChild(shortcutContainer);
+        
+        // Add styles for the shortcut container and buttons
+        const style = document.createElement('style');
+        style.id = 'sf-toolkit-shortcut-styles';
+        style.textContent = `
+            .sf-toolkit-shortcut-container {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                z-index: 9999;
             }
-        });
+            
+            .sf-toolkit-shortcut-button {
+                width: 45px;
+                height: 45px;
+                border-radius: 50%;
+                background-color: #0070d2;
+                border: none;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: transform 0.2s, background-color 0.2s;
+            }
+            
+            .sf-toolkit-shortcut-button:hover {
+                transform: scale(1.1);
+                background-color: #005fb2;
+            }
+            
+            .sf-toolkit-shortcut-button svg {
+                width: 20px;
+                height: 20px;
+                fill: white;
+            }
+        `;
+        document.head.appendChild(style);
     }
+    
+    // Clear any existing shortcuts
+    shortcutContainer.innerHTML = '';
+    
+    // Define all shortcuts
+    const shortcuts = [
+        {
+            id: 'record-view',
+            shortcut: shortcutRecordId,
+            action: (event, handler) => {
+                event.preventDefault();
+                const recordId = getRecordId(window.location.href);
+                if (!isEmpty(recordId)) {
+                    navigator.clipboard.writeText(recordId);
+                    _showCopiedNotification(recordId);
+                }
+            }
+        },
+        {
+            id: 'open-panel',
+            shortcut: shortcutOpenPanel,
+            action: async (event, handler) => {
+                event.preventDefault();
+                await chrome.runtime.sendMessage({ action: 'open_side_panel', content:null});
+            }
+        },
+        {
+            id: 'org-overview',
+            shortcut: shortcutOverview,
+            action: async (event, handler) => {
+                event.preventDefault();
 
+                const cookieInfo = await getCookieInfo();
+                const params = new URLSearchParams({
+                    applicationName: 'home'
+                });
+                redirectToUrlViaChrome({
+                    sessionId: cookieInfo.session,
+                    serverUrl: `https://${cookieInfo.domain}`,
+                    baseUrl: chrome.runtime.getURL('/views/app.html'),
+                    redirectUrl:encodeURIComponent(params.toString())
+                })
+            }
+        },
+        {
+            id: 'soql-explorer',
+            shortcut: shortcutSoql,
+            action: async (event, handler) => {
+                event.preventDefault();
+                const cookieInfo = await getCookieInfo();
+                const sobject = getSobject(window.location.href);
+                
+                const params = new URLSearchParams({
+                    applicationName: 'soql',
+                });
+                if(sobject){
+                    console.log('sobject',sobject);
+                    params.set('query',`SELECT Id FROM ${sobject}`);
+                }
+
+                
+
+                redirectToUrlViaChrome({
+                    sessionId: cookieInfo.session,
+                    serverUrl: `https://${cookieInfo.domain}`,
+                    baseUrl: chrome.runtime.getURL('/views/app.html'),
+                    redirectUrl:encodeURIComponent(params.toString())
+                })
+            }
+        },
+        {
+            id: 'apex-explorer',
+            shortcut: shortcutApex,
+            action: async (event, handler) => {
+                event.preventDefault();
+                const cookieInfo = await getCookieInfo();
+                const params = new URLSearchParams({
+                    applicationName: 'anonymousapex'
+                });
+                redirectToUrlViaChrome({
+                    sessionId: cookieInfo.session,
+                    serverUrl: `https://${cookieInfo.domain}`,
+                    baseUrl: chrome.runtime.getURL('/views/app.html'),
+                    redirectUrl:encodeURIComponent(params.toString())
+                })
+            }
+        }
+    ];
+
+    shortcuts.forEach(shortcut => {
+        hotkeys(shortcut.shortcut, shortcut.action);
+    });
 };
 
 
@@ -346,6 +534,7 @@ class INJECTOR {
 
 
 (async () => {
+    window.defaultStore = await setChromeStorageAsStore(); // only for chrome extension
     const injectorInstance = new INJECTOR();
     injectorInstance.init();
 
