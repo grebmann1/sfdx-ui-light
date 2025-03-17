@@ -2,7 +2,7 @@ import {LightningElement, wire} from "lwc";
 import Toast from 'lightning/toast';
 import {isNotUndefinedOrNull, isUndefinedOrNull} from "shared/utils";
 import {chromeOpenInWindow} from 'extension/utils';
-
+import LOGGER from "shared/logger";
 /** Store **/
 import {connectStore, store} from 'core/store';
 
@@ -10,23 +10,6 @@ export default class Footer extends LightningElement {
 
     connector;
 
-    /** Getters **/
-
-    get isConnectorDisplayed() {
-        return isNotUndefinedOrNull(this.connector);
-    }
-
-    get usernameFormatted() {
-        return isUndefinedOrNull(this.connector.configuration.username) ? '' : `${this.connector.configuration.username}`;
-    }
-
-    get accessTokenFormatted() {
-        return isUndefinedOrNull(this.connector.conn.accessToken) ? '' : `${this.connector.conn.accessToken}`;
-    }
-
-    get versionFormatted() {
-        return isUndefinedOrNull(this.connector.configuration.versionDetails) ? '' : `${this.connector.configuration.versionDetails.label} (${this.connector.configuration.versionDetails.version})`;
-    }
 
     @wire(connectStore, {store})
     applicationChange({application}) {
@@ -34,6 +17,7 @@ export default class Footer extends LightningElement {
         if (application.connector) {
             this.connector = null;
             this.connector = application.connector;
+            LOGGER.log('connector', this.connector);
         }
     }
 
@@ -63,5 +47,27 @@ export default class Footer extends LightningElement {
             this.usernameFormatted,
             false
         )
+    }
+
+    /** Getters **/
+
+    get isConnectorDisplayed() {
+        return isNotUndefinedOrNull(this.connector);
+    }
+
+    get isUsernameDisplayed() {
+        return isNotUndefinedOrNull(this.connector.configuration.username);
+    }
+
+    get usernameFormatted() {
+        return isUndefinedOrNull(this.connector.configuration.username) ? '' : `${this.connector.configuration.username}`;
+    }
+
+    get accessTokenFormatted() {
+        return isUndefinedOrNull(this.connector.conn.accessToken) ? '' : `${this.connector.conn.accessToken}`;
+    }
+
+    get versionFormatted() {
+        return isUndefinedOrNull(this.connector.configuration.versionDetails) ? '' : `${this.connector.configuration.versionDetails.label} (${this.connector.configuration.versionDetails.version})`;
     }
 }

@@ -367,10 +367,16 @@ export async function directConnect(sessionId,serverUrl,extra){
 async function enrichConnector({connection,configuration},dispathUpdate){
     const [identity,versions] = await Promise.all([
         connection.identity(),
+        //connection.request('/services/services/oauth2/userinfo'),
         connection.request('/services/data/')
     ]);
     
     if(isNotUndefinedOrNull(identity)){
+        // Using preferred_username as username
+        /*Object.assign(identity,{
+            username:identity.preferred_username,
+        });*/
+
         Object.assign(configuration,{
             username:identity.username,
             orgId:identity.organization_id,

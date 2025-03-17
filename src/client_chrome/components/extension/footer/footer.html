@@ -3,16 +3,18 @@
         <ul class="slds-utility-bar custom-utility-bar slds-p-horizontal_x-small">
             <li class="slds-utility-bar__item custom-utility-text custom-utility-left slds-truncate">
                 <template lwc:if={isConnectorDisplayed}>
-                    <lightning-button-icon
-                            alternative-text="copy"
-                            class="custom-utility-text-copy"
-                            icon-name="utility:copy"
-                            onclick={handleCopyUsername}
-                            title="Copy Username"
-                            variant="bare"
-                    ></lightning-button-icon>
-                    <a class="slds-truncate" href="#" onclick={handleUsernameClick}>{usernameFormatted}</a>
-                    <div class="slds-vertical-separator"></div>
+                    <template lwc:if={isUsernameDisplayed}>
+                        <lightning-button-icon
+                                alternative-text="copy"
+                                class="custom-utility-text-copy"
+                                icon-name="utility:copy"
+                                onclick={handleCopyUsername}
+                                title="Copy Username"
+                                variant="bare"
+                        ></lightning-button-icon>
+                        <a class="slds-truncate" href="#" onclick={handleUsernameClick}>{usernameFormatted}</a>
+                        <div class="slds-vertical-separator"></div>
+                    </template>
                     <lightning-button
                             class="footer-utility-truncate custom-utility-text-copy"
                             icon-name="utility:copy"
