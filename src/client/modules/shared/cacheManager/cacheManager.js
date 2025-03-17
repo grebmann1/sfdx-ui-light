@@ -8,9 +8,13 @@ class CacheManager {
             return CacheManager.instance;
         }
         
-        this.store = window.defaultStore;
         this.configKeyMap = null;
         CacheManager.instance = this;
+    }
+
+    get store(){
+        // Might fail in some cases
+        return window.defaultStore;
     }
 
     /**

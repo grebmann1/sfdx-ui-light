@@ -10,6 +10,7 @@ const loadLocalForage = async () => {
             .then(() => localforage.setDriver('customChromeStorageDriver'))
             .then(() => {
                 window.defaultStore = localforage;//localforage.createInstance({name: "defaultStore"});
+                console.log('defaultStore', window.defaultStore);
                 resolve();
             });
     })

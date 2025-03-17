@@ -1,7 +1,19 @@
 # SF Toolkit - Release Notes
 
+## Version 1.3.29 - March 17th, 2025
+### Bug Fixes
+- **Overlay**:  
+  - Removed unused fields.
+### Enhancements:
+- **Caching**:
+  - Add Caching manager to improve caching mechanism in the long run.
+- **Header UI Tab** :
+  - Add back the Header UI tab (settings -> Show Header Application Tabs).
+- **Settings**:
+  - Hide sensitives settings in case user is sharing his screen.
+
 ## Version 1.3.28 - February 12th, 2025
-### Buf Fixes  
+### Bug Fixes  
 - **Overlay**:  
   - Missing icons in the injected overlay.
 
