@@ -59,29 +59,29 @@ function buildWorkerDefinition(workerPath, basePath, useModuleWorker) {
 export const setupMonaco = async () => {
     //console.log('######## setupMonaco ########');
     // import.meta.url is replaced when building it for the chrome app
-    const _modulePath = isChromeExtension()?chrome.runtime.getURL('/libs/monaco/workers'):import.meta.url;
+    const _modulePath = isChromeExtension() ? chrome.runtime.getURL('/libs/monaco/workers') : import.meta.url;
     buildWorkerDefinition('/libs/monaco/workers', _modulePath, false);
     return window.monaco;
 }
 
-export const registerCopilot = (monaco, editor,language,handleOpenContextCopilot) => {
+export const registerCopilot = (monaco, editor, language, handleOpenContextCopilot) => {
     LOGGER.info('registerCopilot', language);
 
     // Check if OpenAI is available
-    if(store.getState().application.openaiKey){
-        
+    if (store.getState().application.openaiKey) {
+
 
         editor.addAction(
-          {
-            id: 'openEditor',
-            label: 'openEditor',
-            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK],
-            run() {
-              LOGGER.info('openEditor');
-              handleOpenContextCopilot();
+            {
+                id: 'openEditor',
+                label: 'openEditor',
+                keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK],
+                run() {
+                    LOGGER.info('openEditor');
+                    handleOpenContextCopilot();
+                }
             }
-        }
-      );
+        );
     }
 }
 
@@ -92,74 +92,74 @@ export class CompletionFormatter {
     formattedCompletion = '';
     currentColumn = 0;
     constructor(completion, currentColumn) {
-      this.formattedCompletion = completion;
-      this.currentColumn = currentColumn;
+        this.formattedCompletion = completion;
+        this.currentColumn = currentColumn;
     }
-  
+
     setCompletion(completion) {
-      this.formattedCompletion = completion;
-      return this;
-    }
-  
-    removeInvalidLineBreaks() {
-      this.formattedCompletion = this.formattedCompletion.trimEnd();
-      return this;
-    }
-  
-    removeMarkdownCodeSyntax() {
-      this.formattedCompletion = this.removeMarkdownCodeBlocks(
-        this.formattedCompletion,
-      );
-      return this;
-    }
-  
-    indentByColumn() {
-      // Split completion into lines
-      const lines = this.formattedCompletion.split('\n');
-  
-      // Skip indentation if there's only one line or if there's text before cursor in the line
-      if (lines.length <= 1) {
+        this.formattedCompletion = completion;
         return this;
-      }
-  
-      // Create indentation string based on current column position
-      const indentation = ' '.repeat(this.currentColumn - 1);
-  
-      // Keep first line as is, indent all subsequent lines
-      this.formattedCompletion =
-        lines[0] +
-        '\n' +
-        lines
-          .slice(1)
-          .map(line => indentation + line)
-          .join('\n');
-  
-      return this;
     }
-  
+
+    removeInvalidLineBreaks() {
+        this.formattedCompletion = this.formattedCompletion.trimEnd();
+        return this;
+    }
+
+    removeMarkdownCodeSyntax() {
+        this.formattedCompletion = this.removeMarkdownCodeBlocks(
+            this.formattedCompletion,
+        );
+        return this;
+    }
+
+    indentByColumn() {
+        // Split completion into lines
+        const lines = this.formattedCompletion.split('\n');
+
+        // Skip indentation if there's only one line or if there's text before cursor in the line
+        if (lines.length <= 1) {
+            return this;
+        }
+
+        // Create indentation string based on current column position
+        const indentation = ' '.repeat(this.currentColumn - 1);
+
+        // Keep first line as is, indent all subsequent lines
+        this.formattedCompletion =
+            lines[0] +
+            '\n' +
+            lines
+                .slice(1)
+                .map(line => indentation + line)
+                .join('\n');
+
+        return this;
+    }
+
     removeMarkdownCodeBlocks(text) {
-      const codeBlockRegex = /```[\s\S]*?```/g;
-      let result = text;
-      let match;
-  
-      while ((match = codeBlockRegex.exec(text)) !== null) {
-        const codeBlock = match[0];
-        const codeContent = codeBlock.split('\n').slice(1, -1).join('\n');
-        result = result.replace(codeBlock, codeContent);
-      }
-  
-      return result.trim();
+        const codeBlockRegex = /```[\s\S]*?```/g;
+        let result = text;
+        let match;
+
+        while ((match = codeBlockRegex.exec(text)) !== null) {
+            const codeBlock = match[0];
+            const codeContent = codeBlock.split('\n').slice(1, -1).join('\n');
+            result = result.replace(codeBlock, codeContent);
+        }
+
+        return result.trim();
     }
-  
+
     removeExcessiveNewlines() {
-      this.formattedCompletion = this.formattedCompletion.replace(
-        /\n{3,}/g,
-        '\n\n',
-      );
-      return this;
+        this.formattedCompletion = this.formattedCompletion.replace(
+            /\n{3,}/g,
+            '\n\n',
+        );
+        return this;
     }
-  
+
     build() {
-      return this.formattedCompletion;
+        return this.formattedCompletion;
     }
 }

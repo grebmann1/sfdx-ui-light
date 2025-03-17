@@ -11,11 +11,41 @@
                 </div>
 
                 <p slot="meta" class="slds-page-header__meta-text">
-                    All these settings are stored in Cache.
+                    All these settings are stored in Cache. You might need to refresh the page to see the changes.
                </p>
             </builder-header>
             <article class="full-page-body">
                 <div class="slds-is-relative slds-full-width slds-full-height slds-flex-column slds-p-around_medium" style="min-height:200px;">
+
+					<!-- UI -->
+					<div class="slds-section slds-reverse slds-is-open">
+						<h3 class="slds-section__title">
+							<div class="slds-section__title-action slds-p-vertical_x-small">
+								<span class="slds-truncate" title="UI settings">UI Settings</span>
+							</div>
+						</h3>
+					</div>
+					<div class="slds-grid slds-gutters_direct slds-wrap slds-grid_vertical-stretch">
+						<settings-card class="slds-col slds-size_1-of-2 slds-large-size_1-of-2 slds-p-horizontal_small" is-first>
+							<div slot="title">
+								<h1>Header Application Tabs</h1>
+								<p class="description slds-truncate" title="Display/Hide the application tab in the UI to have more space for the main content."> 
+									Toggle the visibility of header application tabs in the UI to optimize space for the main content.
+								</p>
+							</div>
+							<div slot="actions"></div>
+							<lightning-input data-key="ui_isApplicationTabVisible"
+								label="Display Application Tab"
+								message-toggle-active="Displayed"
+								message-toggle-inactive="Hidden"
+								type="toggle"
+								variant="label-hidden"
+								checked={config.ui_isApplicationTabVisible}
+								onchange={inputfield_change}
+							></lightning-input>
+						</settings-card>
+					</div>
+
 
 					<!-- Chrome Extension -->
 					<template lwc:if={isChrome}>

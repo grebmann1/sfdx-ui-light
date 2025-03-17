@@ -26,20 +26,21 @@
                 </template>
                 <!-- Container & Header -->
                 <div class="home l-container-vertical">
-                    <!-- Header is replaced by a smaller header in the ui-menu to have more HEIGHT 
-                    <div class="l-cell-content-size">
-                        <ui-header 
-                            current-application-name="Org"
-                            current-tab-name="Home"
-                            applications={applications}
-                            onnewapp={handleNewApp}
-                            ontabchange={handleTabChange}
-                            ontabdelete={handleTabDelete}
-                            is-user-logged-in={isUserLoggedIn}
-                            version={version}
-                        ></ui-header>
-                    </div>
-                    -->
+                    <!-- Header is replaced by a smaller header in the ui-menu to have more HEIGHT -->
+                     <template lwc:if={isApplicationTabVisible}>
+                        <div class="l-cell-content-size">
+                            <ui-header 
+                                current-application-name="Org"
+                                current-tab-name="Home"
+                                applications={applications}
+                                onnewapp={handleNewApp}
+                                ontabchange={handleTabChange}
+                                ontabdelete={handleTabDelete}
+                                is-user-logged-in={isUserLoggedIn}
+                                version={version}
+                            ></ui-header>
+                        </div>
+                    </template>
                     <div class="slds-show_medium l-cell-auto-size l-container-horizontal">
                         <!-- Menu -->
                         <div class={menuClass}>

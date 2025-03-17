@@ -1,8 +1,19 @@
 export async function loadExtensionConfigFromCache(keys) {
     const configuration = {};
+    
     for await (const key of keys) {
-        configuration[key] = await window.defaultStore.getItem(key);
+        const cachedValue = await window.defaultStore.getItem(key);
+        
+        // If we have a value in cache, use it
+        if (cachedValue !== null && cachedValue !== undefined) {
+            configuration[key] = cachedValue;
+        } else {
+            // Otherwise, look for a default value in CACHE_CONFIG using our map
+            const configObj = getConfigKeyMap()[key];
+            configuration[key] = configObj ? configObj.defaultValue : null;
+        }
     }
+    
     return configuration;
 }
 
@@ -28,8 +39,8 @@ export class CONFIG_OBJECT {
     get value(){
         return this._value || this.defaultValue;
     }
-
 }
+
 
 export const CACHE_CONFIG = {
     CONFIG_POPUP: new CONFIG_OBJECT('openAsPopup',false),
@@ -41,9 +52,21 @@ export const CACHE_CONFIG = {
     CACHE_ISCACHED_PROFILES: new CONFIG_OBJECT('cache_isProfilesCache',false),
     CACHE_ISCACHED_SOBJECTS: new CONFIG_OBJECT('cache_isSObjectsCache',false),
     CACHE_REFRESH_RATE: new CONFIG_OBJECT('cache_refreshRate',24),
-    CACHE_EXCLUSION_LIST: new CONFIG_OBJECT('cache_exclusionList','')
+    CACHE_EXCLUSION_LIST: new CONFIG_OBJECT('cache_exclusionList',''),
+    UI_IS_APPLICATION_TAB_VISIBLE: new CONFIG_OBJECT('ui_isApplicationTabVisible',false)
 };
 
+// Helper function to get the config key map (created only once when needed)
+function getConfigKeyMap() {
+    if (!getConfigKeyMap.map) {
+        getConfigKeyMap.map = {};
+        for (const configKey in CACHE_CONFIG) {
+            const configObj = CACHE_CONFIG[configKey];
+            getConfigKeyMap.map[configObj.key] = configObj;
+        }
+    }
+    return getConfigKeyMap.map;
+}
 
 export const getOpenAIKeyFromCache = async () => {
     // Logic to fetch the OpenAI key, e.g., from a config or environment variable

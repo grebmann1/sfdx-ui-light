@@ -1,6 +1,6 @@
 import { api,wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { isElectronApp, isEmpty, classSet,isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
+import { isElectronApp, isEmpty, classSet,isNotUndefinedOrNull,isUndefinedOrNull,loadExtensionConfigFromCache, CACHE_CONFIG } from 'shared/utils';
 import { CONFIG } from 'ui/app';
 import { connectStore,store,store_application } from 'shared/store';
 import { NavigationContext, CurrentPageReference,generateUrl, navigate } from 'lwr/navigation';
@@ -13,6 +13,7 @@ export default class Menu extends ToolkitElement {
     isMenuSmall = false;
     selectedItem = 'home';
 
+    isApplicationTabVisible = false;
 
     @wire(NavigationContext)
     navContext;
@@ -50,7 +51,10 @@ export default class Menu extends ToolkitElement {
             this.isMenuSmall = true; // by default it small for electron apps
             store.dispatch(store_application.collapseMenu());
         }
+        this.loadFromCache();
     }
+
+
 
     
     /** Events **/
@@ -85,6 +89,13 @@ export default class Menu extends ToolkitElement {
 
 
     /** Methods **/
+
+    loadFromCache = async () => {
+        const configuration = await loadExtensionConfigFromCache([CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key]);
+        this.isApplicationTabVisible = configuration[CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key];
+        console.log('isApplicationTabVisible',this.isApplicationTabVisible);
+    }
+
 
     updateSelectedItem = () => {
         let currentActiveItem   = this.template.querySelector('.slds-nav-vertical__item.slds-is-active');
@@ -215,5 +226,9 @@ export default class Menu extends ToolkitElement {
 
     get formattedVersion(){
         return `${this.version}`;
+    }
+
+    get isHeaderLightDisplayed(){
+        return !this.isApplicationTabVisible;
     }
 }

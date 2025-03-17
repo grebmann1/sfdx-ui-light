@@ -1,6 +1,10 @@
 import { LightningElement,track,api,wire } from "lwc";
 import LightningAlert from 'lightning/alert';
-import { guid,isNotUndefinedOrNull,isElectronApp,classSet,isUndefinedOrNull,forceVariableSave,isChromeExtension,isEmpty,getOpenAIKeyFromCache } from "shared/utils";
+import { 
+    guid,isNotUndefinedOrNull,classSet,isUndefinedOrNull,isEmpty,
+    isElectronApp,isChromeExtension,
+    getOpenAIKeyFromCache,loadExtensionConfigFromCache,CACHE_CONFIG
+} from "shared/utils";
 import { getExistingSession,directConnect,connect } from "connection/utils";
 import { NavigationContext,CurrentPageReference,navigate } from 'lwr/navigation';
 import { handleRedirect } from './utils';
@@ -29,6 +33,7 @@ export default class App extends LightningElement {
 
 
     version;
+    isApplicationTabVisible = false;
     isSalesforceCliInstalled = false;
     isJavaCliInstalled = false;
     isCommandCheckFinished = false;
@@ -120,6 +125,7 @@ export default class App extends LightningElement {
         this.init();
         //this.checkForInjected();
         this.checkForOpenAIKey();
+        this.loadFromCache();
         //this.test();
     }
 
@@ -221,6 +227,12 @@ export default class App extends LightningElement {
 
 
     /** Methods  */
+
+    loadFromCache = async () => {
+        const configuration = await loadExtensionConfigFromCache([CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key]);
+        this.isApplicationTabVisible = configuration[CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key];
+        console.log('isApplicationTabVisible',this.isApplicationTabVisible);
+    }
 
     checkForInjected = async () => {
         let el = document.getElementsByClassName('injected-openai-key');
