@@ -2,9 +2,10 @@ import { LightningElement,track,api,wire } from "lwc";
 import LightningAlert from 'lightning/alert';
 import { 
     guid,isNotUndefinedOrNull,classSet,isUndefinedOrNull,isEmpty,
-    isElectronApp,isChromeExtension,
-    getOpenAIKeyFromCache,loadExtensionConfigFromCache,CACHE_CONFIG
+    isElectronApp,isChromeExtension
 } from "shared/utils";
+import { cacheManager,getOpenAIKeyFromCache,CACHE_CONFIG,loadExtensionConfigFromCache } from "shared/cacheManager";
+
 import { getExistingSession,directConnect,connect } from "connection/utils";
 import { NavigationContext,CurrentPageReference,navigate } from 'lwr/navigation';
 import { handleRedirect } from './utils';

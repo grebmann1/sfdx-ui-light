@@ -1,6 +1,8 @@
 import LightningModal from 'lightning/modal';
 import {api} from "lwc";
-import {isNotUndefinedOrNull,loadExtensionConfigFromCache,CACHE_CONFIG} from "shared/utils";
+import {isNotUndefinedOrNull} from "shared/utils";
+import { CACHE_CONFIG,loadExtensionConfigFromCache } from "shared/cacheManager";
+
 import { chromeOpenInWindow} from 'extension/utils';
 
 export default class UserExplorerNetworkModal extends LightningModal {

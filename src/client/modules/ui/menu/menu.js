@@ -1,6 +1,8 @@
 import { api,wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { isElectronApp, isEmpty, classSet,isNotUndefinedOrNull,isUndefinedOrNull,loadExtensionConfigFromCache, CACHE_CONFIG } from 'shared/utils';
+import { isElectronApp, isEmpty, classSet,isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
+import { CACHE_CONFIG,loadExtensionConfigFromCache } from "shared/cacheManager";
+
 import { CONFIG } from 'ui/app';
 import { connectStore,store,store_application } from 'shared/store';
 import { NavigationContext, CurrentPageReference,generateUrl, navigate } from 'lwr/navigation';

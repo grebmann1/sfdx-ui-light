@@ -1,6 +1,7 @@
 import { api,track,wire } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
-import { isChromeExtension,isUndefinedOrNull, CACHE_CONFIG, loadExtensionConfigFromCache, saveExtensionConfigToCache} from "shared/utils";
+import { isChromeExtension, isUndefinedOrNull } from "shared/utils";
+import { cacheManager,CACHE_CONFIG } from "shared/cacheManager";
 import Toast from 'lightning/toast';
 
 
@@ -24,12 +25,8 @@ export default class App extends ToolkitElement {
     @track config = {};
     @track originalConfig = {};
 
-    /** Getters **/
+    isOpenAIKeyVisible = false;
 
-
-    get isFullIncognitoAccess() {
-        return this.hasIncognitoAccess;
-    }
 
     connectedCallback() {
         this.loadConfigFromCache();
@@ -70,6 +67,15 @@ export default class App extends ToolkitElement {
         await this.saveToCache();
     }
 
+    handleToggleVisibility = (e) => {
+        e.preventDefault();
+        let isVisible = e.currentTarget.dataset.isVisible !== 'true'; // toggle the visibility
+        this.template.querySelector('lightning-input[data-key="openai_key"]').type = isVisible ? 'text' : 'password';
+        // update the button
+        e.currentTarget.dataset.isVisible = isVisible;
+        e.currentTarget.iconName = isVisible ? 'utility:hide' : 'utility:preview';
+    }
+
     /** Methods **/
 
 
@@ -79,11 +85,11 @@ export default class App extends ToolkitElement {
         Object.values(configurationList).forEach(item => {
             config[item.key] = this.config[item.key];
         });
-        console.log('config to save',config);
+        console.log('config to save', config);
 
-
-        // To Bulkify
-        await saveExtensionConfigToCache(config);
+        // Use the new CacheManager to save config
+        await cacheManager.saveConfig(config);
+        
         Toast.show({
             label: 'Configuration Saved',
             variant: 'success',
@@ -93,13 +99,16 @@ export default class App extends ToolkitElement {
     };
 
     loadConfigFromCache = async () => {
-        const cachedConfiguration = await loadExtensionConfigFromCache(Object.values(CACHE_CONFIG).map(x => x.key));
+        // Use the new CacheManager to load config
+        const cachedConfiguration = await cacheManager.loadConfig(
+            Object.values(CACHE_CONFIG).map(x => x.key)
+        );
+        
         const configurationList = Object.values(CACHE_CONFIG);
         const config = {};
         Object.values(configurationList).forEach(item => {
             config[item.key] = cachedConfiguration[item.key] || item.value;
         });
-
 
         this.config = config;
         this.originalConfig = {...config};
@@ -111,6 +120,10 @@ export default class App extends ToolkitElement {
     }
 
     /** Getters */
+
+    get openaiKeyInputType(){
+        return this.isOpenAIKeyVisible ? 'text' : 'password';
+    }
 
     get hasChanged(){
         return JSON.stringify(this.config) != JSON.stringify(this.originalConfig);
@@ -134,6 +147,10 @@ export default class App extends ToolkitElement {
 
     get isShortcutDisabled(){
         return isUndefinedOrNull(this.config) || !this.config?.shortcut_injection_enabled
+    }
+
+    get isFullIncognitoAccess() {
+        return this.hasIncognitoAccess;
     }
 
 }

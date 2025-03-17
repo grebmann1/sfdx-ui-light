@@ -279,13 +279,21 @@
 										<p class="description slds-truncate"> Key to be used to integrate with OpenAI Platform</p>
 									</div>
 									<div slot="actions"></div>
-									<lightning-input data-key="openai_key"
+									<div class="slds-flex-row">
+										<lightning-input data-key="openai_key"
 											label="openai_key" 
 											onchange={inputfield_change} 
-											type="text"
+											type="password"
 											value={config.openai_key}
 											variant="label-hidden"
+											class="slds-full-width"
 										></lightning-input>
+										<lightning-button-icon data-key="openai_key"
+												alternative-text="copy"
+												icon-name="utility:preview"
+												onclick={handleToggleVisibility}
+										></lightning-button-icon>
+									</div>
 								</settings-card>
 								<!--
 								<lightning-input 
