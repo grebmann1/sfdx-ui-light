@@ -3,7 +3,7 @@ import ToolkitElement from 'core/toolkitElement';
 
 import { isEmpty,isElectronApp } from 'shared/utils';
 import { CONFIG } from 'ui/app';
-import { store_application,store } from 'shared/store';
+import { store_application,store as legacyStore } from 'shared/store';
 import { NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 
     
@@ -31,7 +31,7 @@ export default class QuickLauncher extends ToolkitElement {
     handleRedirection = (e) => {
         const url = e.currentTarget.dataset.url;
         //console.log('url',url);
-        store.dispatch(store_application.navigate(url));
+        legacyStore.dispatch(store_application.navigate(url));
     }
 
     /** Methods */

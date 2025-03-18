@@ -4,9 +4,12 @@ import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'l
 import { isEmpty,runActionAfterTimeOut,isNotUndefinedOrNull,classSet } from 'shared/utils';
 import {TabulatorFull as Tabulator} from "tabulator-tables";
 import SObjectCell from 'object/sobjectCell';
-
+import LOGGER from 'shared/logger';
 /** Store */
-import { store,store_application } from 'shared/store';
+import { store,SOBJECT } from 'core/store';
+import { store as legacyStore,store_application } from 'shared/store';
+
+const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
 
 export default class Sobject extends ToolkitElement {
 
@@ -51,7 +54,7 @@ export default class Sobject extends ToolkitElement {
     
     goToUrl = (e) => {
         const redirectUrl = e.currentTarget.dataset.url;
-        store.dispatch(store_application.navigate(redirectUrl));
+        legacyStore.dispatch(store_application.navigate(redirectUrl));
     }
     
 
@@ -100,20 +103,25 @@ export default class Sobject extends ToolkitElement {
         this.isTableLoading = false;
     }
 
-    checkRecords = async () => {
+    checkTotalRecords = async () => {
         this.extraSelectedDetails = {totalRecords:0};
         try{
             this.extraSelectedDetails.totalRecords = (await this.connector.conn.query(`SELECT Count(Id) total FROM ${this.selectedDetails.name}`)).records[0].total;
         }catch(e){
-            console.error('checkRecords',e);
+            console.error('checkTotalRecords',e);
         }
     }
 
     describeSpecific = async (name) => {
         try{
-            let result = await this.connector.conn.sobject(name).describe();
-            this.selectedDetails = result;
-            await this.checkRecords();
+            const sobjectConfig = (await store.dispatch(SOBJECT.describeSObject({
+                connector:this.connector.conn,
+                sObjectName:name,
+                useToolingApi:false
+            }))).payload;
+            LOGGER.debug('sobjectConfig',sobjectConfig);
+            this.selectedDetails = deepClone(sobjectConfig.data);
+            this.checkTotalRecords();
             setTimeout(() => {
                 this.buildUML();
             },100)
@@ -171,7 +179,7 @@ export default class Sobject extends ToolkitElement {
             console.log('this.tableFieldInstance',this.tableFieldInstance);
 			this.tableFieldInstance.destroy();
 		}
-
+        //LOGGER.debug('this.field_filteredList',this.field_filteredList);
 		this.tableFieldInstance = new Tabulator(this.template.querySelector(".custom-table-fields"), {
 			height: 424,
 			data: this.field_filteredList,
@@ -193,10 +201,10 @@ export default class Sobject extends ToolkitElement {
         if (this.tableChildInstance) {
 			this.tableChildInstance.destroy();
 		}
-
+        //LOGGER.debug('this.child_filteredList',this.child_filteredList);
 		this.tableChildInstance = new Tabulator(this.template.querySelector(".custom-table-child"), {
 			height: 424,
-			data: this.child_filteredList,
+			data:this.child_filteredList,
 			layout:"fitColumns",
 			columns: colModel,
 			columnHeaderVertAlign: "middle",
@@ -266,6 +274,8 @@ export default class Sobject extends ToolkitElement {
         });
         return element;
     }
+
+
 
     /** Getters **/ 
 

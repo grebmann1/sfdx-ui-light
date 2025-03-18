@@ -1,6 +1,6 @@
 import {api, LightningElement, wire} from 'lwc';
 import {classSet, isNotUndefinedOrNull, runActionAfterTimeOut} from 'shared/utils';
-import {connectStore, store, store_application} from 'shared/store';
+import {connectStore, store as legacyStore, store_application} from 'shared/store';
 import { TYPE } from 'overlay/utils';
 import constant from "core/constant";
 
@@ -60,9 +60,9 @@ export default class Header extends LightningElement {
     handleToggle = () => {
         this.isMenuSmall = !this.isMenuSmall;
         if (this.isMenuSmall) {
-            store.dispatch(store_application.collapseMenu());
+            legacyStore.dispatch(store_application.collapseMenu());
         } else {
-            store.dispatch(store_application.expandMenu());
+            legacyStore.dispatch(store_application.expandMenu());
         }
     };
 

@@ -44,7 +44,18 @@ const store = configureStore({
                     'einstein/executeModel/fulfilled',
                     'einstein/executeModel/pending',
                     'application/updateCurrentApplication',
-                    'platformEvent/updateReadStatusOnSpecificMessage'
+                    'platformEvent/updateReadStatusOnSpecificMessage',
+                    'describe/describeVersion',
+                    'describe/describeSObjects/fulfilled',
+                    'describe/describeSObjects/pending',
+                    'describe/describeSObjects/rejected',
+                    'metadata/fetchSpecificMetadata/fulfilled',
+                    'metadata/fetchSpecificMetadata/pending',
+                    'metadata/fetchSpecificMetadata/rejected',
+                    'metadata/fetchGlobalMetadata/fulfilled',
+                    'metadata/fetchGlobalMetadata/pending',
+                    'metadata/fetchGlobalMetadata/rejected',
+                    'metadata/setAttributes'
                 ],
                 // Ignore these field paths in all actions
                 ignoredActionPaths: [
@@ -56,7 +67,8 @@ const store = configureStore({
                 ignoredPaths: [
                     'application.connector',
                     'currentRetrieveJob.createdDate',
-                    'payload.connector'
+                    'payload.connector',
+                    'metadata.metadata_global'
                 ],
               },
         });

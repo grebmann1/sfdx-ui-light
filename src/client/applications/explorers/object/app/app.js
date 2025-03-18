@@ -2,8 +2,8 @@ import {LightningElement,wire,api,track} from "lwc";
 import ToolkitElement from 'core/toolkitElement';
 import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 import { groupBy,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull,getFromStorage,classSet } from 'shared/utils';
-import { store,store_application } from 'shared/store';
-
+import { store_application,store as legacyStore } from 'shared/store';
+import { store,DESCRIBE } from 'core/store';
 
 const TYPEFILTER_OPTIONS = [
     { label: 'Object', value: 'object' },
@@ -65,7 +65,7 @@ export default class App extends ToolkitElement {
 
     goToUrl = (e) => {
         const redirectUrl = e.currentTarget.dataset.url;
-        store.dispatch(store_application.navigate(redirectUrl));
+        legacyStore.dispatch(store_application.navigate(redirectUrl));
     }
 
     handleCloseVerticalPanel = (e) => {
@@ -149,15 +149,17 @@ export default class App extends ToolkitElement {
         this.setFormattedMenuItems();
     }
 
-    load_toolingGlobal = async () => {
-        let result = await this.connector.conn.describeGlobal();
-        return result?.sobjects || [];
+    load_describeGlobal = async () => {
+        const {standard,tooling} = (await store.dispatch(DESCRIBE.describeSObjects({
+            connector:this.connector.conn
+        }))).payload;
+        return standard?.sobjects || [];
     }
 
     describeAll = async () => {
         this.isLoading = true;
         try{
-            const records = (await this.load_toolingGlobal()) || [];
+            const records = (await this.load_describeGlobal()) || [];
             this.records = records.map(x => ({...x,category:this.extractCategory(x.name)}));
             this.filteredRecords = this.filterRecords();
         }catch(e){

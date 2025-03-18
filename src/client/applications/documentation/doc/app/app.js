@@ -2,7 +2,7 @@ import ToolkitElement from 'core/toolkitElement';
 import { wire,api,createElement } from "lwc";
 import { isEmpty,getFromStorage,runActionAfterTimeOut,isUndefinedOrNull,isNotUndefinedOrNull,removeDuplicates,classSet } from 'shared/utils';
 import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'lwr/navigation';
-import { connectStore,store,store_application } from 'shared/store';
+import { connectStore,store as legacyStore,store_application } from 'shared/store';
 import sldsCodeBlock from 'slds/codeBlock';
 
 const PREFIX = {
@@ -264,7 +264,7 @@ export default class App extends ToolkitElement {
         if(this.isNavigationAvailable){
             navigate(this.navContext,params);
         }else{
-            store.dispatch(store_application.fakeNavigate(params));
+            legacyStore.dispatch(store_application.fakeNavigate(params));
         }
     }
     

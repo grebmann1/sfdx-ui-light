@@ -1,6 +1,6 @@
 import { api } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
-import { store,store_application } from 'shared/store';
+import { store as legacyStore,store_application } from 'shared/store';
 import { isEmpty,isElectronApp,runSilent,isNotUndefinedOrNull,isUndefinedOrNull,refreshCurrentTab,classSet } from 'shared/utils';
 
 
@@ -23,7 +23,7 @@ export default class Users extends ToolkitElement {
 
     goToUrl = (e) => {
         const redirectUrl = e.currentTarget.dataset.url;
-        store.dispatch(store_application.navigate(redirectUrl));
+        legacyStore.dispatch(store_application.navigate(redirectUrl));
     }
 
 

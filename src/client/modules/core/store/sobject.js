@@ -1,7 +1,7 @@
 import { createSlice,createAsyncThunk,createEntityAdapter } from '@reduxjs/toolkit';
-import { lowerCaseKey } from 'shared/utils';
-
-
+import { lowerCaseKey,isUndefinedOrNull } from 'shared/utils';
+import { cacheManager,CACHE_ORG_DATA_TYPES} from 'shared/cacheManager';
+import LOGGER from 'shared/logger';
 // Create an entity adapter for sObjects
 export const sObjectsAdapter = createEntityAdapter({
     selectId: (sobject) => lowerCaseKey(sobject?.id),
@@ -12,13 +12,33 @@ const initialState = sObjectsAdapter.getInitialState();
 // Thunks using createAsyncThunk
 export const describeSObject = createAsyncThunk(
     'sObjects/describeSObject',
-    async ({ connector, sObjectName,useToolingApi },thunkAPI) => {
-        const conn = useToolingApi ? connector.tooling : connector;
+    async ({ connector, sObjectName, useToolingApi },thunkAPI) => {
+        console.log('describeSObject',sObjectName,useToolingApi);
+        const fetchDescribeAndSave = async (sObjectName) => {
+            const conn = useToolingApi ? connector.tooling : connector;
+            const result = { 
+                sObjectName, 
+                data: await conn.describe(sObjectName) 
+            };
+            LOGGER.debug('sObjects/describeSObject',result);
+            if(isUndefinedOrNull(connector.alias)){
+                throw "No alias found";
+            }
+            cacheManager.saveOrgData(connector.alias,CACHE_ORG_DATA_TYPES.DESCRIBE,sObjectName, result);
+            return result;
+        }
+
+        
 
         try {
-            const res = await conn.describe(sObjectName);
-            //dispatch(updateApiLimit({ connector }));
-            return { sObjectName, data: res };
+            const cachedDescribe = await cacheManager.loadOrgData(connector.alias,CACHE_ORG_DATA_TYPES.DESCRIBE,sObjectName);
+            if(cachedDescribe){
+                LOGGER.debug('cachedDescribe',cachedDescribe);
+                fetchDescribeAndSave(sObjectName);
+                return cachedDescribe;
+            }else{
+                return await fetchDescribeAndSave(sObjectName);
+            }
         } catch (err) {
             throw { sObjectName, error: err };
         }
@@ -26,7 +46,8 @@ export const describeSObject = createAsyncThunk(
     {
         condition: (payload, { getState, extra }) => {
             const { sobject } = getState();
-            return !sobject.ids.includes(lowerCaseKey(payload.sObjectName)); // missing force refresh
+            LOGGER.log('condition',!sobject.ids.includes(lowerCaseKey(payload.sObjectName)));
+            return true;//!sobject.ids.includes(lowerCaseKey(payload.sObjectName)); // missing force refresh and disabled for now as we are using caching
         },
     },
 );

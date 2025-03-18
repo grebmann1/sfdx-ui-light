@@ -1,7 +1,7 @@
 import {wire,api, track} from "lwc";
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
-import {store, store_application} from 'shared/store';
+import {store as legacyStore, store_application} from 'shared/store';
 import {
     isEmpty, isNotUndefinedOrNull, isUndefinedOrNull, refreshCurrentTab, runSilent,
     getCurrentObjectType,getCurrentTab,getObjectDocLink,getObjectFieldsSetupLink,getObjectListLink,getObjectSetupLink,getRecordTypesLink,
@@ -432,7 +432,7 @@ export default class RecordExplorer extends ToolkitElement {
             }
         };
 
-        store.dispatch(store_application.fakeNavigate(params));
+        legacyStore.dispatch(store_application.fakeNavigate(params));
     };
 
     handleRefreshClick = () => {

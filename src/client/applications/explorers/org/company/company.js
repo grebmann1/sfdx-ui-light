@@ -2,7 +2,7 @@ import ToolkitElement from 'core/toolkitElement';
 import { api } from "lwc";
 import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull } from 'shared/utils';
 import Toast from 'lightning/toast';
-import { store,store_application } from 'shared/store';
+import { store as legacyStore,store_application } from 'shared/store';
 
 
 export default class Company extends ToolkitElement {
@@ -28,7 +28,7 @@ export default class Company extends ToolkitElement {
 
     goToUrl = (e) => {
         const redirectUrl = e.currentTarget.dataset.url;
-        store.dispatch(store_application.navigate(redirectUrl));
+        legacyStore.dispatch(store_application.navigate(redirectUrl));
     }
 
 

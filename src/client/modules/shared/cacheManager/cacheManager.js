@@ -1,3 +1,4 @@
+import LOGGER from 'shared/logger';
 /**
  * CacheManager - Singleton class for managing cached data across the application
  * Handles both application settings and organization-specific data
@@ -77,6 +78,7 @@ class CacheManager {
      * @returns {Promise<any>} The cached data
      */
     async loadOrgData(orgAlias, dataType, key = null) {
+        LOGGER.debug('loadOrgData - orgAlias',orgAlias,dataType,key);
         const cacheKey = this._getOrgCacheKey(orgAlias, dataType, key);
         const cachedValue = await this.store.getItem(cacheKey);
         return cachedValue !== null && cachedValue !== undefined ? cachedValue : null;
@@ -91,6 +93,7 @@ class CacheManager {
      * @returns {Promise<void>}
      */
     async saveOrgData(orgAlias, dataType, data, key = null) {
+        LOGGER.debug('saveOrgData - orgAlias',orgAlias,dataType,key);
         const cacheKey = this._getOrgCacheKey(orgAlias, dataType, key);
         await this.store.setItem(cacheKey, data);
     }
@@ -184,6 +187,13 @@ export const CACHE_CONFIG = {
     CACHE_REFRESH_RATE: new CONFIG_OBJECT('cache_refreshRate', 24),
     CACHE_EXCLUSION_LIST: new CONFIG_OBJECT('cache_exclusionList', ''),
     UI_IS_APPLICATION_TAB_VISIBLE: new CONFIG_OBJECT('ui_isApplicationTabVisible', false),
+};
+
+export const CACHE_ORG_DATA_TYPES = {
+    DESCRIBE_GLOBAL: 'DescribeGlobal',
+    DESCRIBE: 'Describe',
+    DESCRIBE_VERSION: 'DescribeVersion',
+    METADATA_QUERY: 'MetadataQuery',
 };
 
 // Backward compatibility functions

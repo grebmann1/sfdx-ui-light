@@ -4,9 +4,9 @@ import { isElectronApp, isEmpty, classSet,isNotUndefinedOrNull,isUndefinedOrNull
 import { CACHE_CONFIG,loadExtensionConfigFromCache } from "shared/cacheManager";
 
 import { CONFIG } from 'ui/app';
-import { connectStore,store,store_application } from 'shared/store';
+import { connectStore,store as legacyStore,store_application } from 'shared/store';
 import { NavigationContext, CurrentPageReference,generateUrl, navigate } from 'lwr/navigation';
-
+import LOGGER from 'shared/logger';
         
 export default class Menu extends ToolkitElement {
     
@@ -21,8 +21,9 @@ export default class Menu extends ToolkitElement {
     navContext;
 
 
-    @wire(connectStore, { store })
+    @wire(connectStore, { store:legacyStore })
     applicationChange({application}) {
+        LOGGER.debug('applicationChange',application);
         // Toggle Menu
         if(isNotUndefinedOrNull(application.isMenuExpanded)){
             this.isMenuSmall = !application.isMenuExpanded;
@@ -51,7 +52,7 @@ export default class Menu extends ToolkitElement {
     connectedCallback(){
         if(isElectronApp()){
             this.isMenuSmall = true; // by default it small for electron apps
-            store.dispatch(store_application.collapseMenu());
+            legacyStore.dispatch(store_application.collapseMenu());
         }
         this.loadFromCache();
     }
@@ -77,15 +78,15 @@ export default class Menu extends ToolkitElement {
         e.preventDefault();
         e.stopPropagation();
         const url = e.currentTarget.dataset.url
-        store.dispatch(store_application.navigate(url));
+        legacyStore.dispatch(store_application.navigate(url));
     }
 
     handleToggle = () => {
         this.isMenuSmall = !this.isMenuSmall;
         if(this.isMenuSmall){
-            store.dispatch(store_application.collapseMenu());
+            legacyStore.dispatch(store_application.collapseMenu());
         }else{
-            store.dispatch(store_application.expandMenu());
+            legacyStore.dispatch(store_application.expandMenu());
         }
     }
 

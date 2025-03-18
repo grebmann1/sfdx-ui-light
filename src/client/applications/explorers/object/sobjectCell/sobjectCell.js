@@ -1,6 +1,6 @@
 import {LightningElement,api} from "lwc";
 import { isEmpty,isNotUndefinedOrNull } from 'shared/utils';
-import { store,store_application } from 'shared/store';
+import { store as legacyStore,store_application } from 'shared/store';
 
 export default class SobjectCell extends LightningElement {
 
@@ -15,7 +15,7 @@ export default class SobjectCell extends LightningElement {
     goToUrl = (e) => {
         const redirectUrl = e.currentTarget.dataset.url;
         //console.log('redirectUrl',redirectUrl);
-        store.dispatch(store_application.navigate(redirectUrl));
+        legacyStore.dispatch(store_application.navigate(redirectUrl));
     }
 
     /* Getters */

@@ -2,7 +2,7 @@
 import { LightningElement,api,wire } from 'lwc';
 import Toast from 'lightning/toast';
 import { isUndefinedOrNull,isObject } from 'shared/utils';
-import { store as appStore,store_application  }  from 'shared/store';
+import { store as legacyStore,store_application  }  from 'shared/store';
 import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,UI } from 'core/store';
 import { navigate,NavigationContext } from 'lwr/navigation';
 
@@ -53,7 +53,7 @@ export default class OutputCell extends LightningElement {
     handleRedirection = (e) =>{
         e.preventDefault();
         e.stopPropagation();
-        appStore.dispatch(store_application.navigate(this.value))
+        legacyStore.dispatch(store_application.navigate(this.value))
     }
 
     /** Getters */

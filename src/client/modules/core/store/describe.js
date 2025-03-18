@@ -1,6 +1,7 @@
 import { createSlice,createAsyncThunk,createEntityAdapter } from '@reduxjs/toolkit';
-import { lowerCaseKey,arrayToMap } from 'shared/utils';
-
+import { lowerCaseKey,arrayToMap,isUndefinedOrNull } from 'shared/utils';
+import { cacheManager,CACHE_ORG_DATA_TYPES} from 'shared/cacheManager';
+import LOGGER from 'shared/logger';
 
 const DESCRIBE_ID = {
     TOOLING:'TOOLING',
@@ -13,12 +14,57 @@ const DESCRIBE_ID = {
 export const describeSObjects = createAsyncThunk(
     'describe/describeSObjects',
     async ({ connector }, { dispatch, getState }) => {
+        // TODO: connector should be replaced by conn or use the original connector 
         //const conn = useToolingApi ? connector.tooling : connector;
-        try {
-            return { 
+        const fetchDescribeAndSave = async () => {
+            const result = {
                 standard: await connector.describeGlobal(),
                 tooling: await connector.tooling.describeGlobal(),
             };
+            if(isUndefinedOrNull(connector.alias)){
+                throw "No alias found";
+            }
+            cacheManager.saveOrgData(connector.alias, CACHE_ORG_DATA_TYPES.DESCRIBE_GLOBAL, result);
+            return result;
+        }
+
+        try {
+            const cachedDescribe = await cacheManager.loadOrgData(connector.alias, CACHE_ORG_DATA_TYPES.DESCRIBE_GLOBAL);
+            LOGGER.debug('cachedDescribe',cachedDescribe);
+            if(cachedDescribe){
+                fetchDescribeAndSave();
+                return cachedDescribe;
+            }else{
+                return await fetchDescribeAndSave();
+            }
+        } catch (err) {
+            throw { error: err };
+        }
+    }
+);
+
+export const describeVersion = createAsyncThunk(
+    'describe/describeVersion',
+    async ({ connector }, { dispatch, getState }) => {
+        // TODO: connector should be replaced by conn or use the original connector 
+        const fetchDescribeAndSave = async () => {
+            const result = await connector.metadata.describe(connector.version);
+            if(isUndefinedOrNull(connector.alias)){
+                throw "No alias found";
+            }
+            cacheManager.saveOrgData(connector.alias, CACHE_ORG_DATA_TYPES.DESCRIBE_VERSION, result);
+            return result;
+        }
+
+        try {
+            const cachedDescribe = await cacheManager.loadOrgData(connector.alias, CACHE_ORG_DATA_TYPES.DESCRIBE_VERSION);
+            LOGGER.debug('cachedDescribe',cachedDescribe);
+            if(cachedDescribe){
+                fetchDescribeAndSave();
+                return cachedDescribe;
+            }else{
+                return await fetchDescribeAndSave();
+            }
         } catch (err) {
             throw { error: err };
         }

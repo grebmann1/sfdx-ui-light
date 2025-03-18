@@ -1,5 +1,6 @@
 # SF Toolkit - Release Notes
 
+
 ## Version 1.3.30 - March 18th, 2025
 ### Enhancements:
 - **Shortcut injection**:
@@ -8,6 +9,9 @@
     - APEX Explorer
     - Org Overview (Home)
     - Toolkit Panel (right side of chrome)
+- **Enhanced Caching System**:
+  - Implemented sophisticated caching architecture to optimize data storage and retrieval
+  - Improved performance in SOQL, Metadata and SObject explorers through background metadata caching and asynchronous updates
 
 ## Version 1.3.29 - March 17th, 2025
 ### Bug Fixes

@@ -1,7 +1,7 @@
 import { api,wire } from "lwc";
 import { isEmpty,isElectronApp } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
-import { store,store_application } from 'shared/store';
+import { store as legacyStore,store_application } from 'shared/store';
 import { NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 import { CONFIG } from 'ui/app';
 
@@ -62,7 +62,7 @@ export default class App extends ToolkitElement {
 
     goToUrl = (e) => {
         const redirectUrl = e.currentTarget.dataset.url;
-        store.dispatch(store_application.navigate(redirectUrl));
+        legacyStore.dispatch(store_application.navigate(redirectUrl));
     }
 
     generateLabel = (key) => {

@@ -55,6 +55,7 @@ export default class App extends ToolkitElement {
     
 
     connectedCallback() {
+        console.log('this.connector',this.connector);
         store.dispatch(DESCRIBE.describeSObjects({
             connector:this.connector.conn
         }))

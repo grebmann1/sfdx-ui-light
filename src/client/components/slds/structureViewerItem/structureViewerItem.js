@@ -1,7 +1,7 @@
 import { api,track} from "lwc";
 import ToolkitElement from 'core/toolkitElement';
 import { isEmpty,isSalesforceId,classSet,isUndefinedOrNull,isNotUndefinedOrNull} from 'shared/utils';
-import { store,store_application } from 'shared/store';
+import { store as legacyStore,store_application } from 'shared/store';
 
 const PAGE_LIST_SIZE = 100;
 export default class StructureViewerItem extends ToolkitElement {
@@ -28,7 +28,7 @@ export default class StructureViewerItem extends ToolkitElement {
         e.preventDefault();
         const redirectUrl = e.currentTarget.dataset.url;
         //console.log('redirectUrl',redirectUrl);
-        store.dispatch(store_application.navigate(redirectUrl));
+        legacyStore.dispatch(store_application.navigate(redirectUrl));
     }
 
     onClickItem = (e) => {

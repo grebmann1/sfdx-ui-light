@@ -6,7 +6,7 @@ import { getFlattenedFields } from '@jetstreamapp/soql-parser-js';
 import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,UI } from 'core/store';
 import { isEmpty,fullApiName,isSame,escapeRegExp,isNotUndefinedOrNull,lowerCaseKey } from 'shared/utils';
 
-const PAGE_LIST_SIZE    = 70;
+const PAGE_LIST_SIZE = 70;
 
 export default class FieldsTree extends ToolkitElement {
     // relationship Path e.g. "Contact.Owner"

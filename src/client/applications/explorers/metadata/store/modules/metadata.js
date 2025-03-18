@@ -1,7 +1,9 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
-import { store,METADATA } from 'core/store';
+import { store,METADATA,SOBJECT,DESCRIBE } from 'core/store';
 import { lowerCaseKey, guid, isNotUndefinedOrNull,formatFiles,isSalesforceId,sortObjectsByField } from 'shared/utils';
 import { METADATA_EXCLUDE_LIST, METADATA_EXCEPTION_LIST } from 'metadata/utils';
+import { cacheManager,CACHE_ORG_DATA_TYPES } from 'shared/cacheManager';
+import LOGGER from 'shared/logger';
 
 const METADATA_SETTINGS_KEY = 'METADATA_SETTINGS_KEY';
 
@@ -38,6 +40,26 @@ function saveCacheSettings(alias, state) {
     }
 }
 
+const getMetadataConfig = async (connector, sobject) => {
+    LOGGER.debug('getMetadataConfig',sobject,connector);
+    const sobjectConfig = (await store.dispatch(SOBJECT.describeSObject({
+        connector:connector.conn,
+        sObjectName:sobject,
+        useToolingApi:true
+    }))).payload;
+
+    LOGGER.debug('sobjectConfig',sobjectConfig);
+
+    const fields = sobjectConfig.data.fields
+    .map(field => field.name)
+    .filter(field => ['Id', 'Name', 'DeveloperName', 'MasterLabel', 'NamespacePrefix'].includes(field));
+
+    return {
+        fields,
+        sobject
+    }
+}
+
 // Helper function to load specific metadata
 async function loadSpecificMetadata(connector, sobject,bypass) {
     
@@ -62,10 +84,8 @@ async function loadSpecificMetadata(connector, sobject,bypass) {
     
     // Tooling API
 
-    const metadataConfig = await connector.conn.tooling.describeSObject$(sobject);
-    const fields = metadataConfig.fields
-    .map(field => field.name)
-    .filter(field => ['Id', 'Name', 'DeveloperName', 'MasterLabel', 'NamespacePrefix'].includes(field));
+    //const metadataConfig = await connector.conn.tooling.describeSObject$(sobject);
+    const {fields} = await getMetadataConfig(connector,sobject);
 
     const query = `SELECT ${fields.join(',')} FROM ${sobject}`;
     const result = (await runAndCacheQuery(connector,query,bypass)) || [];
@@ -102,16 +122,10 @@ async function loadSpecificMetadataException(connector, exceptionMetadata, recor
 
     try {
         // Describe the object to get metadata configuration
-        const metadataConfig = await connector.conn.tooling.describeSObject$(queryObject);
-        const fields = [
-            ...metadataConfig.fields
-                .map((field) => field.name)
-                .filter((name) => ['Id', 'Name', 'DeveloperName', 'MasterLabel', 'NamespacePrefix'].includes(name)),
-            ...queryFields,
-        ];
+        const {fields} = await getMetadataConfig(connector,queryObject);
 
         // Build and execute the query
-        const query = `SELECT ${fields.join(',')} FROM ${queryObject} ${filterFunc(recordId)}`;
+        const query = `SELECT ${[...fields, ...queryFields].join(',')} FROM ${queryObject} ${filterFunc(recordId)}`;
         const result = (await runAndCacheQuery(connector,query,false,bypass)) || [];
 
         // Filter and map the results
@@ -214,18 +228,24 @@ const _auraNameMapping = (name, type) => {
 }
 
 const runAndCacheQuery = async (connector,query,_byPassCaching) => {
-    if (_caching[query] && new Date() - _caching[query].date < 1000 * 60 * 5 && !_byPassCaching) {
-        return _caching[query].data;
-    } else {
+
+    const fetchAndSave = async (query) => {
         let queryExec = connector.conn.tooling.query(query);
         let result = (await queryExec.run({ responseTarget: 'Records', autoFetch: true, maxFetch: 10000 })) || [];
-        _caching[query] = {
-            data: result,
-            date: new Date()
-        }
+        cacheManager.saveOrgData(connector.conn.alias,CACHE_ORG_DATA_TYPES.METADATA_QUERY,query,result);
         return result;
     }
+
+    const cachedQuery = await cacheManager.loadOrgData(connector.conn.alias,CACHE_ORG_DATA_TYPES.METADATA_QUERY,query);
+    if(cachedQuery && !_byPassCaching){
+        LOGGER.debug('cachedQuery',cachedQuery);
+        fetchAndSave(query);
+        return cachedQuery;
+    }else{
+        return await fetchAndSave(query);
+    }
 }
+
 
 const load_recordFromToolingAPI = async (connector,sobject,recordId) => {
     const urlQuery = `/services/data/v${connector.conn.version}/tooling/sobjects/${sobject}/${recordId}`;
@@ -275,10 +295,16 @@ const fetchGlobalMetadata = createAsyncThunk(
         try {
             const { application } = getState();
             // Fetch available metadata objects
-            const sobjects = (await application.connector.conn.tooling.describeGlobal$()).sobjects.map(obj => obj.name);
-            let result = await application.connector.conn.metadata.describe(application.connector.conn.version);
+            LOGGER.debug('application.connector',application.connector);
+            const {tooling} = (await dispatch(DESCRIBE.describeSObjects({
+                connector:application.connector.conn
+            }))).payload;
+            const sobjects = tooling.sobjects.map(obj => obj.name);
+            const {metadataObjects} = (await dispatch(DESCRIBE.describeVersion({
+                connector:application.connector.conn
+            }))).payload;
             // TODO : Seperate the metadata from the objects. Some metadata are not sobjects
-            result = result.metadataObjects
+            let result = metadataObjects
                 .filter(obj => !METADATA_EXCLUDE_LIST.includes(obj.xmlName))
                 .map(obj => ({ 
                     ...obj, 
@@ -304,6 +330,7 @@ const fetchSpecificMetadata = createAsyncThunk(
             await dispatch(METADATA.reduxSlice.actions.setAttributes({sobject}))
 
             const { application,metadata } = getState();
+            LOGGER.debug('application.connector',application.connector);
             const exceptionMetadata = METADATA_EXCEPTION_LIST.find(x => x.name === sobject) || null;
             // Check if the requested sobject differs from the current state
             if (metadata.currentMetadata !== sobject || force) {

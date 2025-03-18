@@ -1,6 +1,6 @@
 import { LightningElement,api,wire } from 'lwc';
 import { isElectronApp, isEmpty, classSet,isNotUndefinedOrNull } from 'shared/utils';
-import { connectStore,store,store_application } from 'shared/store';
+import { connectStore,store as legacyStore,store_application } from 'shared/store';
 import { NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 
 import ModalLauncher from "ui/modalLauncher";
@@ -21,7 +21,7 @@ export default class Header extends LightningElement {
     @wire(NavigationContext)
     navContext;
 
-    @wire(connectStore, { store })
+    @wire(connectStore, { store:legacyStore })
     applicationChange({application}) {
         // Toggle Menu
         if(isNotUndefinedOrNull(application.isMenuExpanded)){
@@ -39,9 +39,9 @@ export default class Header extends LightningElement {
     handleToggle = () => {
         this.isMenuSmall = !this.isMenuSmall;
         if(this.isMenuSmall){
-            store.dispatch(store_application.collapseMenu());
+            legacyStore.dispatch(store_application.collapseMenu());
         }else{
-            store.dispatch(store_application.expandMenu());
+            legacyStore.dispatch(store_application.expandMenu());
         }
 
         window.defaultStore.setItem('header-isMenuSmall',JSON.stringify(this.isMenuSmall));
@@ -79,9 +79,9 @@ export default class Header extends LightningElement {
             if(!isEmpty(_isMenuSmall)){
                 this.isMenuSmall = _isMenuSmall === 'true';
                 if(this.isMenuSmall){
-                    store.dispatch(store_application.collapseMenu());
+                    legacyStore.dispatch(store_application.collapseMenu());
                 }else{
-                    store.dispatch(store_application.expandMenu());
+                    legacyStore.dispatch(store_application.expandMenu());
                 }
             }
         }catch(e){
