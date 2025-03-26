@@ -28,13 +28,12 @@ class CacheManager {
     // Stores
 
     get store(){
-        // Might fail in some cases
         return this.isChrome ? chromeStore('local') : basicStore('local');
     }
 
     get settingsStore(){
-        // Might fail in some cases
-        return this.isChrome ? this.isChromeSyncSettingsEnabled ? chromeStore('sync') : chromeStore('local') : basicStore('local');
+        // For now we use the same store for settings and orgs
+        return this.store; //return this.isChrome ? this.isChromeSyncSettingsEnabled ? chromeStore('sync') : chromeStore('local') : basicStore('local');
     }
 
 
