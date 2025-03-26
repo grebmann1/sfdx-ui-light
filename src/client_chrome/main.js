@@ -3,22 +3,13 @@ import {createElement} from 'lwc';
 import extensionRoot from 'extension/root';
 import uiFullView from 'ui/fullView';
 import jsforce from 'imported/jsforce';
-
-const loadLocalForage = async () => {
-    return new Promise((resolve, reject) => {
-        localforage.defineDriver(customChromeStorageDriver)
-            .then(() => localforage.setDriver('customChromeStorageDriver'))
-            .then(() => {
-                window.defaultStore = localforage;//localforage.createInstance({name: "defaultStore"});
-                console.log('defaultStore', window.defaultStore);
-                resolve();
-            });
-    })
-};
+import { chromeStore } from 'shared/cacheManager';
 
 const init = async () => {
     /** Load Local Forage  **/
-    await loadLocalForage();
+    //await loadLocalForage();
+    window.defaultStore = await chromeStore('local');
+    window.settingsStore = await chromeStore('sync');
     /** Define Settings **/
     window.Prism = Prism;
     //window.connections = {}; // use for faster connection, during live processing

@@ -4,47 +4,8 @@ import {createElement} from 'lwc';
 import ViewsOverlay from 'views/overlay';
 import test from 'feature/test';
 import {isEmpty, runActionAfterTimeOut,redirectToUrlViaChrome,getRecordId,getSobject} from 'shared/utils';
-import { CACHE_CONFIG,loadExtensionConfigFromCache } from 'shared/cacheManager';
+import { CACHE_CONFIG,loadExtensionConfigFromCache, chromeStore } from 'shared/cacheManager';
 import hotkeys from 'hotkeys-js';
-
-const setChromeStorageAsStore = async () => {
-    return {
-        getItem: function(key, callback) {
-            // Custom implementation here...
-            return new Promise((resolve, reject) => {
-                chrome.storage.local.get([key], function(result) {
-                    const value = result[key];
-                    if (callback) {
-                        callback(value);
-                    }
-                    resolve(value);
-                });
-            });
-        },
-        removeItem: function(key, callback) {
-            // Custom implementation here...
-            return new Promise((resolve, reject) => {
-                chrome.storage.local.remove(key, function() {
-                    if (callback) {
-                        callback();
-                    }
-                    resolve();
-                });
-            });
-        },
-        setItem: function(key, value, callback) {
-            // Custom implementation here...
-            return new Promise((resolve, reject) => {
-                chrome.storage.local.set({ [key]: value }, function() {
-                    if (callback) {
-                        callback();
-                    }
-                    resolve();
-                });
-            });
-        }
-    }
-};
 
 const getCookieInfo = async () => {
     if(chrome.runtime){
@@ -534,7 +495,8 @@ class INJECTOR {
 
 
 (async () => {
-    window.defaultStore = await setChromeStorageAsStore(); // only for chrome extension
+    window.defaultStore = await chromeStore('local'); // only for chrome extension
+    window.settingsStore = await chromeStore('sync'); // only for chrome extension
     const injectorInstance = new INJECTOR();
     injectorInstance.init();
 

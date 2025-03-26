@@ -7,8 +7,7 @@
                     <lightning-button class="slds-button" label="Cancel" onclick={handleCancelClick} variant="neutral" disabled={isCancelDisabled}></lightning-button>
                     <lightning-button class="slds-button" label="Save" onclick={handleSaveClick} variant="brand" disabled={isSaveDisabled}></lightning-button>
                 </div>
-                <div slot="subactions" class="slds-builder-toolbar__actions">
-                </div>
+                <div slot="subactions" class="slds-builder-toolbar__actions"></div>
 
                 <p slot="meta" class="slds-page-header__meta-text">
                     All these settings are stored in Cache. You might need to refresh the page to see the changes.
@@ -342,13 +341,13 @@
 								<div class="slds-grid slds-gutters_direct slds-wrap slds-grid_vertical-stretch">
 									<lightning-card class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
 										<div slot="title">
-											<h1>Standard Extension</h1>
-											<p class="description slds-truncate">General settings specific to the Chrome Extension.</p>
+											<h1>General Settings</h1>
+											<p class="description slds-truncate">General settings specific to the Extension.</p>
 										</div>
 										<div slot="actions"></div>
 										<div class="slds-grid slds-wrap">
 											<!-- Login As -->
-											<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small" is-first>
+											<settings-card is-first class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
 												<div slot="title">
 													<h1>Login As</h1>
 													<p class="description slds-truncate">LoginAs in <span class="slds-text-title_bold">Experience Cloud</span> in an Incognito Window.</p>
@@ -367,6 +366,63 @@
 			
 												<slds-information-block class="slds-p-horizontal_small slds-flex-column">
 													<p>To have full access to incognito, you need to set "Allow in Incognito" in your chrome extension settings.</p>
+												</slds-information-block>
+											</settings-card>
+
+											
+										</div>
+									</lightning-card>
+
+									<lightning-card class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
+										<div slot="title">
+											<h1>Sync Settings</h1>
+											<p class="description slds-truncate">Synchronize settings and Orgs with Chrome Storage.</p>
+										</div>
+										<div slot="actions"></div>
+										<div class="slds-grid slds-wrap">
+											<!-- Sync Storage -->
+											<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small" is-first>
+												<div slot="title">
+													<h1>Sync Storage</h1>
+													<p class="description slds-truncate">Settings are synced with Chrome Storage.</p>
+												</div>
+												<div slot="actions">
+													<lightning-input
+														label="Sync Storage"
+														message-toggle-active=""
+														message-toggle-inactive=""
+														type="toggle"
+														variant="label-hidden"
+														checked={isChromeSyncSettingsEnabled}
+														onchange={chromeSyncSettings_change}
+													></lightning-input>
+												</div>
+			
+												<slds-information-block class="slds-p-horizontal_small slds-flex-column">
+													<p>You don't need to save. This setting is stored differently and only affect the extension.</p>
+												</slds-information-block>
+											</settings-card>
+
+											<!-- Sync Orgs-->
+											<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+												<div slot="title">
+													<h1>Sync Orgs</h1>
+													<p class="description slds-truncate">Orgs are synced with Chrome Storage.</p>
+												</div>
+												<div slot="actions">
+													<lightning-input
+														label="Sync Storage"
+														message-toggle-active=""
+														message-toggle-inactive=""
+														type="toggle"
+														variant="label-hidden"
+														checked={isChromeSyncOrgEnabled}
+														onchange={chromeSyncOrg_change}
+													></lightning-input>
+												</div>
+			
+												<slds-information-block class="slds-p-horizontal_small slds-flex-column">
+													<p>You don't need to save. This setting is stored differently and only affect the extension.</p>
 												</slds-information-block>
 											</settings-card>
 										</div>

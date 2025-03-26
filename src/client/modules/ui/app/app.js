@@ -8,6 +8,7 @@ import { cacheManager,getOpenAIKeyFromCache,CACHE_CONFIG,loadExtensionConfigFrom
 
 import { getExistingSession,directConnect,connect } from "connection/utils";
 import { NavigationContext,CurrentPageReference,navigate } from 'lwr/navigation';
+import { basicStore } from 'shared/cacheManager';
 import { handleRedirect } from './utils';
 import LOGGER from 'shared/logger';
 /** Apps  **/
@@ -135,11 +136,18 @@ export default class App extends LightningElement {
             await this.initElectron();
             this.isCommandCheckFinished = true;
         }
+        this.initCacheStorage();
         this.loadVersion();
         this.initMode();
         this.initDragDrop();
     }
 
+    initCacheStorage = async () => {
+        if(isChromeExtension()) return;
+        LOGGER.debug('initCacheStorage');
+        window.defaultStore = await basicStore('local');
+        window.settingsStore = await basicStore('session');
+    }
 
     /** Events */
 

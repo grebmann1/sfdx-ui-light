@@ -1,9 +1,18 @@
 import { api,track,wire } from "lwc";
 import ToolkitElement from 'core/toolkitElement';
 import { isChromeExtension, isUndefinedOrNull } from "shared/utils";
-import { cacheManager,CACHE_CONFIG } from "shared/cacheManager";
+import { 
+    cacheManager,
+    CACHE_CONFIG,
+    getSyncedSettingsInitializedFromCache,
+    saveSyncedSettingsInitializedToCache,
+    saveConnectionsToCache,
+    getConnectionsFromCache,
+    getSyncedOrgInitializedFromCache,
+    saveSyncedOrgInitializedToCache
+} from "shared/cacheManager";
 import Toast from 'lightning/toast';
-
+import LOGGER from "shared/logger";
 
 export default class App extends ToolkitElement {
 
@@ -20,19 +29,64 @@ export default class App extends ToolkitElement {
 
     // Extension Permissions
     hasIncognitoAccess = false;
+    // Chrome Sync
+    isChromeSyncSettingsEnabled = false;
+    isChromeSyncOrgEnabled = false;
+
+
 
     // Config
     @track config = {};
     @track originalConfig = {};
 
     isOpenAIKeyVisible = false;
-
-
+    
     connectedCallback() {
         this.loadConfigFromCache();
     }
 
     /** Events **/
+
+    chromeSyncSettings_change = async (e) => {
+        this.isChromeSyncSettingsEnabled = e.currentTarget.checked;
+        cacheManager.isChromeSyncSettingsEnabled = e.currentTarget.checked;
+        if(cacheManager.isChromeSyncSettingsEnabled){
+            // reload the cache
+            const cachedConfiguration = await cacheManager.loadConfig(
+                Object.values(CACHE_CONFIG).map(x => x.key)
+            );
+            LOGGER.log('Syncing cache',cachedConfiguration);
+            LOGGER.log('Syncing cache',await getSyncedSettingsInitializedFromCache());
+            if(!await getSyncedSettingsInitializedFromCache()){
+                // If not initialized, we need to initialize the settings in the extension sync
+                await cacheManager.saveConfig(this.originalConfig);
+                //cacheManager.isChromeSyncSettingsInitialized = true;
+            }
+            this.loadConfigFromCache();
+        }
+    }
+
+    chromeSyncOrg_change = async (e) => {
+        this.isChromeSyncOrgEnabled = e.currentTarget.checked;
+        cacheManager.isChromeSyncOrgEnabled = e.currentTarget.checked;
+        if(cacheManager.isChromeSyncOrgEnabled){
+            const cachedConfiguration = await cacheManager.loadConfig(
+                Object.values(CACHE_CONFIG).map(x => x.key)
+            );
+            LOGGER.log('Syncing cache',cachedConfiguration);
+            LOGGER.log('Syncing cache',await getSyncedOrgInitializedFromCache());
+            if(!await getSyncedOrgInitializedFromCache()){
+                // If not initialized, we need to initialize the settings in the extension sync
+                //await cacheManager.saveConfig(this.originalConfig);
+                // We use the default store to take the LOCAL connections to be sure that we are not using the sync store
+                const connections = await getConnectionsFromCache(cacheManager.defaultStore); 
+                LOGGER.log('Syncing existing orgs',connections);
+                await saveConnectionsToCache(connections);
+                //await saveSyncedOrgInitializedToCache(true);
+                //cacheManager.isChromeSyncSettingsInitialized = true;
+            }
+        }
+    }
 
     inputfield_change = (e) => {
         const inputField = e.currentTarget;
@@ -109,13 +163,15 @@ export default class App extends ToolkitElement {
         Object.values(configurationList).forEach(item => {
             config[item.key] = cachedConfiguration[item.key] || item.value;
         });
-
+        
         this.config = config;
         this.originalConfig = {...config};
 
         // Chrome Only
         if(this.isChrome){
             this.hasIncognitoAccess = await chrome.extension.isAllowedIncognitoAccess();
+            this.isChromeSyncSettingsEnabled = cacheManager.isChromeSyncSettingsEnabled; // Manually added to the cacheManager
+            this.isChromeSyncOrgEnabled = cacheManager.isChromeSyncOrgEnabled; // Manually added to the cacheManager
         }
     }
 

@@ -1,5 +1,5 @@
 import {api, LightningElement, wire} from "lwc";
-import {store as deprecatedStore} from 'shared/store';
+import {store as legacyStore} from 'shared/store';
 import {connectStore} from 'core/store';
 
 import {normalizeString as normalize} from "shared/utils";
@@ -39,7 +39,7 @@ export default class Default extends LightningElement {
         return this.isSalesforcePanel ? 'slds-hide' : '';
     }
 
-    @wire(connectStore, {store: deprecatedStore})
+    @wire(connectStore, {store: legacyStore})
     applicationChange({application}) {
         if (application?.type === 'FAKE_NAVIGATE') {
             const pageRef = application.target;

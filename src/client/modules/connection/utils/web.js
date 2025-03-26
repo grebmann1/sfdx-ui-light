@@ -1,5 +1,5 @@
 import {isUndefinedOrNull,isNotUndefinedOrNull,isEmpty} from 'shared/utils';
-
+import { getConnectionsFromCache,saveConnectionsToCache } from 'shared/cacheManager';
 
 
 const formatConfigurationItem = (item) => {
@@ -20,12 +20,12 @@ const formatConfigurations = (configurations) => {
 
 
 export async function getConfiguration(alias){
-    let configurations = await window.defaultStore.getItem('connections') || [];
+    let configurations = await getConnectionsFromCache();
     return configurations.find(x => x.alias === alias);
 }
 
 export async function saveConfiguration(alias,connection){
-    let configurations = await window.defaultStore.getItem('connections') || [];
+    let configurations = await getConnectionsFromCache();
     let index = configurations.findIndex(x => x.alias === alias);
     if(index >= 0){
         configurations[index] = connection;
@@ -35,15 +35,15 @@ export async function saveConfiguration(alias,connection){
     // Order Connections
     configurations = configurations.sort((a, b) => a.alias.localeCompare(b.alias));
 
-    await window.defaultStore.setItem('connections',formatConfigurations(configurations));
+    await saveConnectionsToCache(formatConfigurations(configurations));
 }
 
 export async function setConfigurations(configurations){
-    await window.defaultStore.setItem('connections',formatConfigurations(configurations));
+    await saveConnectionsToCache(formatConfigurations(configurations));
 }
 
 export async function renameConfiguration({oldAlias,newAlias,username,redirectUrl}){
-    let configurations = await window.defaultStore.getItem('connections') || [];
+    let configurations = await getConnectionsFromCache();
 
     // Switch Name
     configurations.forEach(conn => {
@@ -55,19 +55,19 @@ export async function renameConfiguration({oldAlias,newAlias,username,redirectUr
     // Order configurations
     configurations = configurations.sort((a, b) => a.alias.localeCompare(b.alias));
 
-    await window.defaultStore.setItem('connections',formatConfigurations(configurations));
+    await saveConnectionsToCache(formatConfigurations(configurations));
 }
 
 export async function removeConfiguration(alias){
-    let configurations = await window.defaultStore.getItem('connections') || [];
+    let configurations = await getConnectionsFromCache();
     // Remove the alias
     configurations = configurations.filter(x => x.alias !== alias);
 
-    await window.defaultStore.setItem('connections',formatConfigurations(configurations));
+    await saveConnectionsToCache(formatConfigurations(configurations));
 }
 
 export async function getConfigurations(){
-    let configurations = await window.defaultStore.getItem('connections') || [];
+    let configurations = await getConnectionsFromCache();
     // Mapping
     configurations = configurations.filter(x => isNotUndefinedOrNull(x)).map(x => {
         let instanceUrl = x.instanceUrl && !x.instanceUrl.startsWith('http')? `https://${x.instanceUrl}`:x.instanceUrl;

@@ -27,7 +27,7 @@ export default class Header extends LightningElement {
 
 
 
-    @wire(connectStore, {store})
+    @wire(connectStore, {store: legacyStore})
     applicationChange({application}) {
         // Toggle Menu
         if (isNotUndefinedOrNull(application.isMenuExpanded)) {

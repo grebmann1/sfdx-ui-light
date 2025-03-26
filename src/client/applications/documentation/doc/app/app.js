@@ -109,7 +109,7 @@ export default class App extends ToolkitElement {
         }
     }
 
-    @wire(connectStore, { store })
+    @wire(connectStore, { store:legacyStore })
     applicationChange({application}) {
         if(application?.type === 'FAKE_NAVIGATE'){
             const pageRef = application.target;
