@@ -1,5 +1,11 @@
 # SF Toolkit - Release Notes
 
+## Version 1.3.31 - March 26th, 2025
+### Enhancements:
+- **Bug Fix**:
+  - UI wasn't rendering properly
+  - Store were broken in few places
+
 
 ## Version 1.3.30 - March 18th, 2025
 ### Enhancements:
