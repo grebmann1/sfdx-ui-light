@@ -236,7 +236,7 @@
 								</h3>
 							</div>
 							<div class="slds-grid slds-gutters_direct slds-wrap slds-grid_vertical-stretch">
-								<lightning-card class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
+								<lightning-card class="settings slds-auto-height slds-col slds-size_1-of-1 slds-p-around_medium">
 									<div slot="title">
 										<h1>Chrome Extension Shortcuts</h1>
 										<p class="description">Inject shortcuts in the Web Browser.</p>
@@ -253,12 +253,12 @@
 										></lightning-input>
 									</div>
 									<div class="slds-grid slds-wrap">
-										<lightning-card class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
+										<settings-card is-first class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
 											<div slot="title">
 												<h1>Org Overview</h1>
 												<p class="description">&rarr; Open Org Overview with a shortcut.</p>
 											</div>
-											<div slot="actions">
+											<div class="slds-grid slds-wrap">
 												<slds-shortcut-selector lwc:ref="shortcut_overview" data-key="shortcut_overview"
 													disabled={isShortcutDisabled}
 													label="Shortcut to open Org Overview"
@@ -266,13 +266,13 @@
 													onchange={inputfield_change}
 												></slds-shortcut-selector>
 											</div>
-										</lightning-card>	
-										<lightning-card class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
+										</settings-card>	
+										<settings-card is-first class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
 											<div slot="title">
 												<h1>Record Id</h1>
 												<p class="description">&rarr; Fetch Record Id</p>
 											</div>
-											<div slot="actions">
+											<div class="slds-grid slds-wrap">
 												<slds-shortcut-selector lwc:ref="recordidshortcut" data-key="shortcut_recordid"
 													disabled={isShortcutDisabled}
 													label="Shortcut to fetch &rarr;	 Record Id"
@@ -280,14 +280,14 @@
 													onchange={inputfield_change}
 												></slds-shortcut-selector>
 											</div>
-										</lightning-card>	
+										</settings-card>	
 										
-										<lightning-card class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
+										<settings-card is-first class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
 											<div slot="title">
 												<h1>SOQL Explorer</h1>
 												<p class="description">&rarr; Open SOQL Explorer with a shortcut.</p>
 											</div>
-											<div slot="actions">
+											<div class="slds-grid slds-wrap">
 												<slds-shortcut-selector lwc:ref="shortcut_soql" data-key="shortcut_soql"
 													disabled={isShortcutDisabled}
 													label="Shortcut to open SOQL Explorer"
@@ -295,13 +295,13 @@
 													onchange={inputfield_change}
 												></slds-shortcut-selector>
 											</div>
-										</lightning-card>
-										<lightning-card class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
+										</settings-card>
+										<settings-card is-first class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
 											<div slot="title">
 												<h1>Open Panel</h1>
 												<p class="description">&rarr; Open Panel</p>
 											</div>
-											<div slot="actions">
+											<div class="slds-grid slds-wrap">
 												<slds-shortcut-selector lwc:ref="shortcut_open_panel" data-key="shortcut_open_panel"
 													disabled={isShortcutDisabled}
 													label="Shortcut to open Panel"
@@ -309,13 +309,13 @@
 													onchange={inputfield_change}
 												></slds-shortcut-selector>
 											</div>
-										</lightning-card>
-										<lightning-card class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
+										</settings-card>
+										<settings-card is-first class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
 											<div slot="title">
 												<h1>APEX Explorer</h1>
 												<p class="description">&rarr; Open APEX Explorer with a shortcut.</p>
 											</div>
-											<div slot="actions">
+											<div class="slds-grid slds-wrap">
 												<slds-shortcut-selector lwc:ref="shortcut_apex" data-key="shortcut_apex"
 													disabled={isShortcutDisabled}
 													label="Shortcut to open APEX Explorer"
@@ -323,7 +323,7 @@
 													onchange={inputfield_change}
 												></slds-shortcut-selector>
 											</div>
-										</lightning-card>	
+										</settings-card>	
 									</div>
 								</lightning-card>
 								
