@@ -8,8 +8,6 @@ import {
     saveSyncedSettingsInitializedToCache,
     saveConnectionsToCache,
     getConnectionsFromCache,
-    getSyncedOrgInitializedFromCache,
-    saveSyncedOrgInitializedToCache
 } from "shared/cacheManager";
 import Toast from 'lightning/toast';
 import LOGGER from "shared/logger";
@@ -31,8 +29,6 @@ export default class App extends ToolkitElement {
     hasIncognitoAccess = false;
     // Chrome Sync
     isChromeSyncSettingsEnabled = false;
-    isChromeSyncOrgEnabled = false;
-
 
 
     // Config
@@ -52,41 +48,16 @@ export default class App extends ToolkitElement {
         cacheManager.isChromeSyncSettingsEnabled = e.currentTarget.checked;
         if(cacheManager.isChromeSyncSettingsEnabled){
             // reload the cache
-            const cachedConfiguration = await cacheManager.loadConfig(
-                Object.values(CACHE_CONFIG).map(x => x.key)
-            );
-            LOGGER.log('Syncing cache',cachedConfiguration);
-            LOGGER.log('Syncing cache',await getSyncedSettingsInitializedFromCache());
             if(!await getSyncedSettingsInitializedFromCache()){
+                LOGGER.log('Syncing settings',this.originalConfig);
                 // If not initialized, we need to initialize the settings in the extension sync
                 await cacheManager.saveConfig(this.originalConfig);
-                //cacheManager.isChromeSyncSettingsInitialized = true;
+                cacheManager.isChromeSyncSettingsInitialized = true;
             }
             this.loadConfigFromCache();
         }
     }
 
-    chromeSyncOrg_change = async (e) => {
-        this.isChromeSyncOrgEnabled = e.currentTarget.checked;
-        cacheManager.isChromeSyncOrgEnabled = e.currentTarget.checked;
-        if(cacheManager.isChromeSyncOrgEnabled){
-            const cachedConfiguration = await cacheManager.loadConfig(
-                Object.values(CACHE_CONFIG).map(x => x.key)
-            );
-            LOGGER.log('Syncing cache',cachedConfiguration);
-            LOGGER.log('Syncing cache',await getSyncedOrgInitializedFromCache());
-            if(!await getSyncedOrgInitializedFromCache()){
-                // If not initialized, we need to initialize the settings in the extension sync
-                //await cacheManager.saveConfig(this.originalConfig);
-                // We use the default store to take the LOCAL connections to be sure that we are not using the sync store
-                const connections = await getConnectionsFromCache(cacheManager.defaultStore); 
-                LOGGER.log('Syncing existing orgs',connections);
-                await saveConnectionsToCache(connections);
-                //await saveSyncedOrgInitializedToCache(true);
-                //cacheManager.isChromeSyncSettingsInitialized = true;
-            }
-        }
-    }
 
     inputfield_change = (e) => {
         const inputField = e.currentTarget;
@@ -171,7 +142,6 @@ export default class App extends ToolkitElement {
         if(this.isChrome){
             this.hasIncognitoAccess = await chrome.extension.isAllowedIncognitoAccess();
             this.isChromeSyncSettingsEnabled = cacheManager.isChromeSyncSettingsEnabled; // Manually added to the cacheManager
-            this.isChromeSyncOrgEnabled = cacheManager.isChromeSyncOrgEnabled; // Manually added to the cacheManager
         }
     }
 

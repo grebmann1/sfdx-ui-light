@@ -395,3 +395,17 @@ async function enrichConnector({connection,configuration},dispathUpdate){
     }
     return connector; 
 }
+
+/* 
+export function formatForLimitedCacheStorage(configuration){
+    return {
+        id:configuration.id,
+        name:configuration.name,
+        company:configuration.company,
+        alias:configuration.alias,
+        username:configuration.username,
+        orgId:configuration.orgId,
+        refreshToken:configuration.refreshToken,
+        redirectUrl:configuration.redirectUrl,
+    };
+} */

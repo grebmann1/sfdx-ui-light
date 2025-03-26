@@ -402,29 +402,6 @@
 													<p>You don't need to save. This setting is stored differently and only affect the extension.</p>
 												</slds-information-block>
 											</settings-card>
-
-											<!-- Sync Orgs-->
-											<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
-												<div slot="title">
-													<h1>Sync Orgs</h1>
-													<p class="description slds-truncate">Orgs are synced with Chrome Storage.</p>
-												</div>
-												<div slot="actions">
-													<lightning-input
-														label="Sync Storage"
-														message-toggle-active=""
-														message-toggle-inactive=""
-														type="toggle"
-														variant="label-hidden"
-														checked={isChromeSyncOrgEnabled}
-														onchange={chromeSyncOrg_change}
-													></lightning-input>
-												</div>
-			
-												<slds-information-block class="slds-p-horizontal_small slds-flex-column">
-													<p>You don't need to save. This setting is stored differently and only affect the extension.</p>
-												</slds-information-block>
-											</settings-card>
 										</div>
 									</lightning-card>
 								</div>

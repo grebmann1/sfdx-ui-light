@@ -1,13 +1,13 @@
 import LOGGER from 'shared/logger';
 import { isChromeExtension } from 'shared/utils';
 import { chromeStore, basicStore } from './interfaces';
+
 export {
     chromeStore,
     basicStore
 };
 
 const CHROME_SYNC_SETTINGS_STORAGE_KEY = 'chrome_syncSettingsEnabled';
-const CHROME_SYNC_ORG_STORAGE_KEY = 'chrome_syncOrgEnabled';
 
 /**
  * CacheManager - Singleton class for managing cached data across the application
@@ -37,10 +37,6 @@ class CacheManager {
         return this.isChrome ? this.isChromeSyncSettingsEnabled ? chromeStore('sync') : chromeStore('local') : basicStore('local');
     }
 
-    get orgStore(){
-        // Might fail in some cases
-        return this.isChrome ? this.isChromeSyncOrgEnabled ? chromeStore('sync') : chromeStore('local') : basicStore('local');
-    }
 
     // Chrome Sync Settings Storage
 
@@ -53,14 +49,6 @@ class CacheManager {
         localStorage.setItem(CHROME_SYNC_SETTINGS_STORAGE_KEY, JSON.stringify(value));
     }
 
-    get isChromeSyncOrgEnabled(){
-        // we need to sync the storage
-        return localStorage.getItem(CHROME_SYNC_ORG_STORAGE_KEY) === 'true';
-    }
-
-    set isChromeSyncOrgEnabled(value){
-        localStorage.setItem(CHROME_SYNC_ORG_STORAGE_KEY, JSON.stringify(value));
-    }
 
 
     // OrgAlias Specific Storage
@@ -101,6 +89,7 @@ class CacheManager {
 
     async loadGeneralData(key,defaultValue = null,store = this.store) {
         const value = await store.getItem(key);
+        LOGGER.debug('loadGeneralData - key',key,value);
         return value !== null && value !== undefined ? value : defaultValue;
     }
 
@@ -235,27 +224,15 @@ export const saveSyncedSettingsInitializedToCache = async (value = true) => {
         cacheManager.settingsStore
     );
 }
-// Synced Org
-export const getSyncedOrgInitializedFromCache = async () => {
-    return cacheManager.loadGeneralData(CACHE_CONFIG.CHROME_SYNC_ORG_INITIALIZED_STORAGE_KEY.key,false,cacheManager.orgStore);
-}
-
-export const saveSyncedOrgInitializedToCache = async (value = true) => {
-    return await cacheManager.saveGeneralData(
-        CACHE_CONFIG.CHROME_SYNC_ORG_INITIALIZED_STORAGE_KEY.key,
-        value,
-        cacheManager.orgStore
-    );
-}   
 // Org Save Connections
 export const saveConnectionsToCache = async (connections) => {
+
     return await cacheManager.saveGeneralData(
         CACHE_ORG_DATA_TYPES.CONNECTIONS,
-        connections,
-        cacheManager.orgStore
+        connections
     );
 }
 
-export const getConnectionsFromCache = async (store = cacheManager.orgStore) => {
-    return await cacheManager.loadGeneralData(CACHE_ORG_DATA_TYPES.CONNECTIONS,[],store);
+export const getConnectionsFromCache = async () => {
+    return await cacheManager.loadGeneralData(CACHE_ORG_DATA_TYPES.CONNECTIONS,[]);
 }
