@@ -1,5 +1,5 @@
 import LOGGER from 'shared/logger';
-import { isChromeExtension } from 'shared/utils';
+import { isChromeExtension,isNotUndefinedOrNull,safeParseJson } from 'shared/utils';
 import { chromeStore, basicStore } from './interfaces';
 
 export {
@@ -88,8 +88,7 @@ class CacheManager {
 
     async loadGeneralData(key,defaultValue = null,store = this.store) {
         const value = await store.getItem(key);
-        LOGGER.debug('loadGeneralData - key',key,value);
-        return value !== null && value !== undefined ? value : defaultValue;
+        return isNotUndefinedOrNull(value) ? value : defaultValue;
     }
 
     async saveGeneralData(key, value,store = this.store) {

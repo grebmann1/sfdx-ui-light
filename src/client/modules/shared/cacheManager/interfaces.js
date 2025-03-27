@@ -1,4 +1,4 @@
-import { isUndefinedOrNull } from 'shared/utils';
+import { isUndefinedOrNull,safeParseJson,isNotUndefinedOrNull } from 'shared/utils';
 
 const chromeStore = (variant = 'local') => {
     if(variant !== 'local' && variant !== 'sync'){
@@ -55,14 +55,15 @@ const basicStore = (variant = 'local') => {
     return {
         getItem: function(key, callback) {
             const value = storage.getItem(key);
+            const parsedValue = safeParseJson(value);
             if (callback) {
-                callback(value);
+                callback(isNotUndefinedOrNull(parsedValue)?parsedValue:value);
             }
-            return Promise.resolve(value);
+            return Promise.resolve(isNotUndefinedOrNull(parsedValue)?parsedValue:value);
         },
         setItem: function(key, value, callback) {
             try {
-                storage.setItem(key, value);
+                storage.setItem(key, JSON.stringify(value));
                 if (callback) {
                     callback();
                 }

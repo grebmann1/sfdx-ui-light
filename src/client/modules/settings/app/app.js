@@ -5,9 +5,6 @@ import {
     cacheManager,
     CACHE_CONFIG,
     getSyncedSettingsInitializedFromCache,
-    saveSyncedSettingsInitializedToCache,
-    saveConnectionsToCache,
-    getConnectionsFromCache,
 } from "shared/cacheManager";
 import Toast from 'lightning/toast';
 import LOGGER from "shared/logger";
