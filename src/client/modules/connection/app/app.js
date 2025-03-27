@@ -184,7 +184,6 @@ export default class App extends ToolkitElement {
                 _isInjected:true,
             }
         });
-        console.log('newConnections',newConnections);
         await setConfigurations(JSON.parse(JSON.stringify(newConnections)));
 
         /** Fetch Again **/
