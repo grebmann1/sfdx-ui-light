@@ -1,8 +1,13 @@
 # SF Toolkit - Release Notes
 
+## Version 1.3.32 - March 27th, 2025
+### Bug Fix:
+- **Connector initialization**:
+  - Fix Alias name not being setup when open the chrome extension in a new org.
+
 ## Version 1.3.31 - March 26th, 2025
-### Enhancements:
-- **Bug Fix**:
+### Bug Fix:
+- **Miscellaneous**:
   - UI wasn't rendering properly
   - Store were broken in few places
 

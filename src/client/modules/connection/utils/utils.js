@@ -365,6 +365,8 @@ export async function directConnect(sessionId,serverUrl,extra){
 }
 
 async function enrichConnector({connection,configuration},dispathUpdate){
+
+    // Todo: the entire enrichConnector, Connector, etc need to be refactored to have something easier to maintain !!!!
     const [identity,versions] = await Promise.all([
         connection.identity(),
         //connection.request('/services/oauth2/userinfo'),
@@ -383,6 +385,11 @@ async function enrichConnector({connection,configuration},dispathUpdate){
             userInfo:identity,
             alias:configuration.alias || identity.username, // Replacing the alias to take advantage of the cache
             id:configuration.id || identity.username
+        });
+
+         // Add alias to the connection to be able to use it with a direct connect !!!
+         Object.assign(connection,{
+            alias:configuration.alias
         });
     }
     const versionRecord = versions.sort((a, b) => b.version.localeCompare(a.version))[0];

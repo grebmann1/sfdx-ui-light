@@ -66,7 +66,7 @@ const store = configureStore({
                 // Ignore these paths in the state
                 ignoredPaths: [
                     'application.connector',
-                    'currentRetrieveJob.createdDate',
+                    'package2.currentRetrieveJob.createdDate',
                     'payload.connector',
                     'metadata.metadata_global'
                 ],

@@ -14,6 +14,7 @@ const DESCRIBE_ID = {
 export const describeSObjects = createAsyncThunk(
     'describe/describeSObjects',
     async ({ connector }, { dispatch, getState }) => {
+        LOGGER.debug('describeSObjects/connector',connector);
         // TODO: connector should be replaced by conn or use the original connector 
         //const conn = useToolingApi ? connector.tooling : connector;
         const fetchDescribeAndSave = async () => {
@@ -22,7 +23,7 @@ export const describeSObjects = createAsyncThunk(
                 tooling: await connector.tooling.describeGlobal(),
             };
             if(isUndefinedOrNull(connector.alias)){
-                throw "No alias found";
+                throw new Error('No alias found');
             }
             cacheManager.saveOrgData(connector.alias, CACHE_ORG_DATA_TYPES.DESCRIBE_GLOBAL, result);
             return result;
