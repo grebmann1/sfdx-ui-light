@@ -1,5 +1,5 @@
 import LOGGER from 'shared/logger';
-import { isChromeExtension,isNotUndefinedOrNull,safeParseJson } from 'shared/utils';
+import { isChromeExtension,isEmpty } from 'shared/utils';
 import { chromeStore, basicStore } from './interfaces';
 
 export {
@@ -88,7 +88,7 @@ class CacheManager {
 
     async loadGeneralData(key,defaultValue = null,store = this.store) {
         const value = await store.getItem(key);
-        return isNotUndefinedOrNull(value) ? value : defaultValue;
+        return isEmpty(value) ? defaultValue : value;
     }
 
     async saveGeneralData(key, value,store = this.store) {
@@ -224,7 +224,6 @@ export const saveSyncedSettingsInitializedToCache = async (value = true) => {
 }
 // Org Save Connections
 export const saveConnectionsToCache = async (connections) => {
-
     return await cacheManager.saveGeneralData(
         CACHE_ORG_DATA_TYPES.CONNECTIONS,
         connections
@@ -232,5 +231,6 @@ export const saveConnectionsToCache = async (connections) => {
 }
 
 export const getConnectionsFromCache = async () => {
-    return await cacheManager.loadGeneralData(CACHE_ORG_DATA_TYPES.CONNECTIONS,[]);
+    const connections = await cacheManager.loadGeneralData(CACHE_ORG_DATA_TYPES.CONNECTIONS,[]);
+    return Array.isArray(connections) ? connections : [];
 }
