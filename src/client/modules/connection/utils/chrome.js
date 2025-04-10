@@ -1,4 +1,4 @@
-import { getCurrentTab } from 'shared/utils';
+import { getCurrentTab,isEmpty } from 'shared/utils';
 /*const getCurrentTab = async () => {
     let queryOptions = { active: true, lastFocusedWindow: true };
     // `tab` will either be a `tabs.Tab` instance or `undefined`.
@@ -37,16 +37,15 @@ const getHostAndSession = async () => {
         };
         //console.log('secureCookieDetails',secureCookieDetails);
         const cookies = await chrome.cookies.getAll(secureCookieDetails);
-        //console.log('cookies',cookies);
+        // Might hold an expired cookie, so we need to filter it out (TODO)
         let sessionCookie = cookies.find((c) => c.value.startsWith(orgId + "!"));
-
 
         if (!sessionCookie) {
             return;
         }
 
         return {
-            domain: sessionCookie.domain,
+            domain: `${sessionCookie.domain}${isEmpty(url.port)?'':`:${url.port}`}`,
             session: sessionCookie.value,
         };
     }catch(e){

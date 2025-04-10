@@ -9,6 +9,10 @@ const OVERLAY_TOGGLE  = 'overlay_toggle';
 const OPEN_OVERLAY_SEARCH = 'open_overlay_search';
 const OPEN_SIDE_PANEL = 'open_side_panel';
 
+const isEmpty = (str) => {
+    return (!str || str.length === 0 );
+}
+
 /** Variables */
 
 const getCurrentTabCookieStoreId = async (tabId) => {
@@ -53,7 +57,7 @@ const getHostAndSession = async (tab) => {
             return;
         }
         return {
-            domain: sessionCookie.domain,
+            domain: `${sessionCookie.domain}${isEmpty(url.port)?'':`:${url.port}`}`,
             session: sessionCookie.value,
         };
     }catch(e){

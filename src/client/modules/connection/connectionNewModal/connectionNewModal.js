@@ -4,6 +4,7 @@ import LightningAlert from 'lightning/alert';
 import LightningModal from 'lightning/modal';
 import { oauth,oauth_chrome,setRedirectCredential } from 'connection/utils';
 import { isEmpty,isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,decodeError,checkIfPresent } from "shared/utils";
+import LOGGER from "shared/logger";
 
 const domainOptions = [
     { id: 'prod',   label: 'login.salesforce.com', value: 'login.salesforce.com' },
@@ -111,7 +112,7 @@ export default class ConnectionNewModal extends LightningModal {
                 try{
                     const _url = new URL(domainToValidate.value);
                     this.customDomain = this.processHost(_url.host);
-                    
+                    LOGGER.log('customDomain',this.customDomain);
 
                 }catch(e){
                     domainToValidate.setCustomValidity('Don\'t include the protocol');
@@ -128,8 +129,14 @@ export default class ConnectionNewModal extends LightningModal {
 
     processHost = (host) => {
         const SALESFORCE_HOST = 'my.salesforce.com';
-        if(!host.endsWith(SALESFORCE_HOST)){
-            const baseHost = host.split('.')[0];
+        const SALESFORCE_INTERNAL_HOST = 'internal.salesforce.com';
+
+        // Remove port if present
+        const [hostWithoutPort] = host.split(':');
+        if(hostWithoutPort.endsWith(SALESFORCE_INTERNAL_HOST)){
+            // Internal host, don't change anything
+        }else if(!hostWithoutPort.endsWith(SALESFORCE_HOST)){
+            const baseHost = hostWithoutPort.split('.')[0];
             if(baseHost.includes('--')){
                 // Sandbox
                 host = `${baseHost}.sandbox.my.salesforce.com`
