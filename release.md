@@ -1,5 +1,10 @@
 # SF Toolkit - Release Notes
 
+## Version 1.3.33 - April 10th, 2025
+### Enhancement:
+- **Salesforce Engineer**:
+  - Add localhost Support for Salesforce Engineers
+
 ## Version 1.3.32 - March 27th, 2025
 ### Bug Fix:
 - **Connector initialization**:
