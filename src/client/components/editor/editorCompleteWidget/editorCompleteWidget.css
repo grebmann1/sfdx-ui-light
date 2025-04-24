@@ -1,0 +1,80 @@
+:host {
+    display: block;
+    width: fit-content;
+}
+
+.light-color {
+    color: rgb(100, 105, 112);
+}
+
+.sparkles {
+    --slds-c-icon-color-foreground: #3651c0;
+}
+
+.button-accept {
+    --slds-c-button-text-color:black
+}
+
+.button-reject {
+    --slds-c-button-text-color:black;
+}
+
+/* textInputWidget.css */
+.text-input-widget {
+    padding: 10px;
+    background: #f3f3f3;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.text-input-widget textarea {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.text-input-widget button {
+    display: block;
+    cursor: pointer;
+}
+
+.slds-button_text {
+    border: 0;
+    padding-left: 0;
+    padding-right: 0;
+    text-decoration: none;
+    color: var(--slds-g-color-neutral-base-30, #706e6b);
+}
+
+.slds-button_text:hover {
+    background: none;
+    text-decoration: underline;
+}
+
+.slds-textarea {
+    border: unset;
+    box-shadow: unset;
+}
+
+.slds-publisher__input {
+    min-height: calc(1.875rem + 2px);
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    width: 100%;
+    border: 1px solid var(--slds-g-color-border-base-4, #c9c9c9);
+    border-radius: 0.25rem;
+    background-color: var(--slds-g-color-neutral-base-100, #fff);
+    color: var(--slds-g-color-neutral-base-10, #181818);
+    line-height: 1.5;
+    min-height: 6rem;
+    resize: vertical;
+}
+
+.slds-publisher__input:focus {
+    outline: 0;
+    border-color: var(--slds-g-color-brand-base-60, #1b96ff);
+    background-color: var(--slds-g-color-neutral-base-100, #fff);
+    box-shadow: var(--slds-g-shadow-focus, 0 0 3px #0176d3);
+}

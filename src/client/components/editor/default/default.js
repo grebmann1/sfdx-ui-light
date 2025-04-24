@@ -4,7 +4,8 @@ import Toast from 'lightning/toast';
 import { classSet, isNotUndefinedOrNull, runActionAfterTimeOut, guid, isChromeExtension, autoDetectAndFormat } from 'shared/utils';
 import { store, connectStore } from 'core/store';
 import { SOQL, APEX, VF, LOG } from 'editor/languages';
-import { WIDGETS, registerCopilot, setupMonaco } from 'editor/utils';
+import { registerCopilot, setupMonaco } from 'editor/utils';
+import { MonacoLwcWidget } from 'editor/editorCompleteWidget';
 
 export default class Default extends ToolkitElement {
 
@@ -108,7 +109,14 @@ export default class Default extends ToolkitElement {
             // Add Copilot
             registerCopilot(this.monaco, this.editor, model.getLanguageId(), this.handleOpenContextCopilot);
             // Add Prompt Widget
-            this.currentPromptWidget = new WIDGETS.MonacoLwcWidget(this.monaco, this.editor, model.getLanguageId());
+            this.currentPromptWidget = new MonacoLwcWidget({
+                monaco: this.monaco,
+                editor: this.editor,
+                language: model.getLanguageId(),
+                onClose: () => {
+                    this.sendChangeEvent();
+                },
+            });
         }
 
         this.editor.onDidChangeModelContent(this.handleModelContentChange);
@@ -202,6 +210,24 @@ export default class Default extends ToolkitElement {
         console.log('resetPromptWidget');
         this.currentPromptWidget?.hide();
     }
+
+    sendChangeEvent = () => {
+        runActionAfterTimeOut(
+            this.editor.getValue(),
+            (value) => {
+                this.dispatchEvent(
+                    new CustomEvent('change', {
+                        detail: {
+                            value: value,
+                            type: autoDetectAndFormat(value),
+                        },
+                        bubbles: true,
+                    })
+                );
+            },
+            { timeout: 200 }
+        );
+    };
 
     /** Getters */
 

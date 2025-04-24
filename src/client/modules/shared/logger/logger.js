@@ -33,6 +33,13 @@ class Logger {
         }
     }
 
+    agent(...args) {
+        if (!this.isProduction) {
+            //const [firstMessage, ...rest] = args;
+            console.log(`${this.colors.cyan}[AGENT]:`, ...args);
+        }
+    }
+
     warn(...args) {
         if (!this.isProduction) {
             //const [firstMessage, ...rest] = args;

@@ -2,9 +2,10 @@ import { api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import LightningAlert from 'lightning/alert';
 import Toast from 'lightning/toast';
-import { classSet, isNotUndefinedOrNull, runActionAfterTimeOut, guid, normalizeString as normalize } from 'shared/utils';
+import { classSet, isNotUndefinedOrNull, runActionAfterTimeOut, guid, normalizeString as normalize,autoDetectAndFormat } from 'shared/utils';
 import { SOQL, APEX, VF } from 'editor/languages';
-import { WIDGETS,registerCopilot,setupMonaco } from 'editor/utils';
+import { registerCopilot,setupMonaco } from 'editor/utils';
+import { MonacoLwcWidget } from 'editor/editorCompleteWidget';
 
 /** REQUIRED FIELDS: _source & _bodyField */
 
@@ -259,33 +260,60 @@ export default class App extends ToolkitElement {
         });
 
         // Add Prompt Widget
-        this.currentPromptWidget = new WIDGETS.MonacoLwcWidget(this.monaco,this.editor,null);
+        this.currentPromptWidget = this.currentPromptWidget = new MonacoLwcWidget({
+            monaco: this.monaco,
+            editor: this.editor,
+            language: this.currentModel.getLanguageId(),
+            onClose: () => {
+                this.sendChangeEvent();
+            },
+        });
         // Add Copilot
         registerCopilot(this.monaco, this.editor, null,this.handleOpenContextCopilot);
 
-        this.editor.onDidChangeModelContent(() => {
-            //console.log('this.models',this.models);
-            this.isEditMode = this.models.some(
-                (x) => x.versionId !== x.model.getAlternativeVersionId()
-            );
+        this.editor.onDidChangeModelContent(this.handleModelContentChange);
+    };
 
-            runActionAfterTimeOut(
-                this.editor.getValue(),
-                (value) => {
-                    this.dispatchEvent(
-                        new CustomEvent('change', {
-                            detail: {
-                                value,
-                                isEditMode:this.isEditMode,
-                                type: 'body'
-                            },
-                            bubbles: true
-                        })
-                    );
-                },
-                { timeout: 300 }
-            );
-        });
+    handleModelContentChange = () => {
+        //console.log('this.models',this.models);
+        this.isEditMode = this.models.some(
+            (x) => x.versionId !== x.model.getAlternativeVersionId()
+        );
+
+        runActionAfterTimeOut(
+            this.editor.getValue(),
+            (value) => {
+                this.dispatchEvent(
+                    new CustomEvent('change', {
+                        detail: {
+                            value,
+                            isEditMode:this.isEditMode,
+                            type: 'body'
+                        },
+                        bubbles: true
+                    })
+                );
+            },
+            { timeout: 300 }
+        );
+    };
+
+    sendChangeEvent = () => {
+        /*runActionAfterTimeOut(
+            this.editor.getValue(),
+            (value) => {
+                this.dispatchEvent(
+                    new CustomEvent('change', {
+                        detail: {
+                            value: value,
+                            type: autoDetectAndFormat(value),
+                        },
+                        bubbles: true,
+                    })
+                );
+            },
+            { timeout: 200 }
+        );*/
     };
 
     loadMonacoEditor = async () => {

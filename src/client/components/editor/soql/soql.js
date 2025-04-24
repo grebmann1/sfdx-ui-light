@@ -6,6 +6,7 @@ import { formatQuery,parseQuery } from '@jetstreamapp/soql-parser-js';
 import { SOQL } from 'editor/languages';
 import { store,connectStore } from 'core/store';
 import { setupMonaco,WIDGETS,registerCopilot } from 'editor/utils';
+import { MonacoLwcWidget } from 'editor/editorCompleteWidget';
 import instructions from './instructions/instructions';
 import LOGGER from 'shared/logger';
 
@@ -109,9 +110,16 @@ export default class Soql extends ToolkitElement {
         });
 
         // Add Prompt Widget
-        this.currentPromptWidget = new WIDGETS.MonacoLwcWidget(this.monaco,this.editor,model.getLanguageId(),instructions);
+        this.currentPromptWidget = new MonacoLwcWidget({
+            monaco: this.monaco,
+            editor: this.editor,
+            language: model.getLanguageId(),
+            onClose: () => {
+                this.sendChangeEvent();
+            },
+        });
         // Add Copilot
-        registerCopilot(this.monaco, this.editor, model.getLanguageId(),this.handleOpenContextCopilot);
+        registerCopilot(this.monaco, this.editor, model.getLanguageId(), this.handleOpenContextCopilot);
 
         this.editor.onDidChangeModelContent(this.handleModelContentChange);
         /*this.editor.addCommand(this.monaco.KeyMod.CtrlCmd | this.monaco.KeyCode.KEY_S, () => {
@@ -327,5 +335,23 @@ export default class Soql extends ToolkitElement {
             }
         })
     }
+
+    sendChangeEvent = () => {
+        runActionAfterTimeOut(
+            this.editor.getValue(),
+            (value) => {
+                this.dispatchEvent(
+                    new CustomEvent('change', {
+                        detail: {
+                            value: value,
+                            type: 'body',
+                        },
+                        bubbles: true,
+                    })
+                );
+            },
+            { timeout: 200 }
+        );
+    };
 
 }

@@ -7,8 +7,7 @@ import { getConfigurations } from 'connection/utils';
 import { isEmpty,isChromeExtension,classSet,isUndefinedOrNull,isNotUndefinedOrNull } from 'shared/utils';
 
 const SALESFORCE_SANDBOX_HOST   = 'sandbox.my.salesforce.com';
-const SALESFORCE_HOST           = 'my.salesforce.com';
-
+const SALESFORCE_HOST           = ['my.salesforce.com','my.stm.salesforce.com'];
 export default class QuickAuthorize extends ToolkitElement {
 
     @api instanceUrl;
@@ -108,19 +107,38 @@ export default class QuickAuthorize extends ToolkitElement {
     }
 
     isStandardOrg = (host) => {
-        return host.endsWith(SALESFORCE_HOST);
-        const pattern = /^.*\.my(.*)\.salesforce\.com$/;
-        // Test the URL against the pattern
-        return pattern.test(host);
+        return SALESFORCE_HOST.some(pattern => host.endsWith(pattern));
     }
 
     /** getters */
 
-    get isDisplayed(){
-        if(isEmpty(this.instanceUrl) || isUndefinedOrNull(this.connections)) return false;
-        const urls = this.connections.map(x => isNotUndefinedOrNull(x.instanceUrl)?(new URL(x.instanceUrl)).host:(isNotUndefinedOrNull(x.redirectUrl)?(new URL(x.redirectUrl)).host:null))
-        const instanceUrl = new URL(this.instanceUrl).host;
-        return !urls.includes(instanceUrl) && this.isStandardOrg(instanceUrl) && !this.exclusionList.includes(instanceUrl);
+    get isDisplayed() {
+        // Return false if required data is missing
+        if (isEmpty(this.instanceUrl) || isUndefinedOrNull(this.connections)) {
+            return false;
+        }
+
+        // Extract host from instance URL
+        const currentHost = new URL(this.instanceUrl).host;
+
+        // Get list of existing connection hosts
+        const existingHosts = this.connections.map(connection => {
+            if (isNotUndefinedOrNull(connection.instanceUrl)) {
+                return new URL(connection.instanceUrl).host;
+            }
+            if (isNotUndefinedOrNull(connection.redirectUrl)) {
+                return new URL(connection.redirectUrl).host;
+            }
+            return null;
+        });
+
+        // Show quick authorize if:
+        // 1. Host not already connected
+        // 2. Is a standard Salesforce org
+        // 3. Not in exclusion list
+        return !existingHosts.includes(currentHost) 
+            && this.isStandardOrg(currentHost)
+            && !this.exclusionList.includes(currentHost);
     }
     
 
