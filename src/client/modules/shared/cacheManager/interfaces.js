@@ -1,17 +1,17 @@
-import { isUndefinedOrNull,safeParseJson,isNotUndefinedOrNull } from 'shared/utils';
+import { isUndefinedOrNull, safeParseJson, isNotUndefinedOrNull } from 'shared/utils';
 
 const chromeStore = (variant = 'local') => {
-    if(variant !== 'local' && variant !== 'sync'){
+    if (variant !== 'local' && variant !== 'sync') {
         throw new Error('Invalid variant');
     }
-    if(isUndefinedOrNull(chrome)){
+    if (isUndefinedOrNull(chrome)) {
         throw new Error('Chrome is not available');
     }
     return {
-        getItem: function(key, callback) {
+        getItem: function (key, callback) {
             // Custom implementation here...
             return new Promise((resolve, reject) => {
-                chrome.storage[variant].get([key], function(result) {
+                chrome.storage[variant].get([key], function (result) {
                     const value = result[key];
                     if (callback) {
                         callback(value);
@@ -20,10 +20,10 @@ const chromeStore = (variant = 'local') => {
                 });
             });
         },
-        removeItem: function(key, callback) {
+        removeItem: function (key, callback) {
             // Custom implementation here...
             return new Promise((resolve, reject) => {
-                chrome.storage[variant].remove(key, function() {
+                chrome.storage[variant].remove(key, function () {
                     if (callback) {
                         callback();
                     }
@@ -31,18 +31,18 @@ const chromeStore = (variant = 'local') => {
                 });
             });
         },
-        setItem: function(key, value, callback) {
+        setItem: function (key, value, callback) {
             // Custom implementation here...
             return new Promise((resolve, reject) => {
-                chrome.storage[variant].set({ [key]: value }, function() {
+                chrome.storage[variant].set({ [key]: value }, function () {
                     if (callback) {
                         callback();
                     }
                     resolve();
                 });
             });
-        }
-    }
+        },
+    };
 };
 
 const basicStore = (variant = 'local') => {
@@ -51,17 +51,17 @@ const basicStore = (variant = 'local') => {
     }
 
     const storage = variant === 'local' ? window.localStorage : window.sessionStorage;
-    
+
     return {
-        getItem: function(key, callback) {
+        getItem: function (key, callback) {
             const value = storage.getItem(key);
             const parsedValue = safeParseJson(value);
             if (callback) {
-                callback(isNotUndefinedOrNull(parsedValue)?parsedValue:value);
+                callback(isNotUndefinedOrNull(parsedValue) ? parsedValue : value);
             }
-            return Promise.resolve(isNotUndefinedOrNull(parsedValue)?parsedValue:value);
+            return Promise.resolve(isNotUndefinedOrNull(parsedValue) ? parsedValue : value);
         },
-        setItem: function(key, value, callback) {
+        setItem: function (key, value, callback) {
             try {
                 storage.setItem(key, JSON.stringify(value));
                 if (callback) {
@@ -72,13 +72,13 @@ const basicStore = (variant = 'local') => {
                 return Promise.reject(error);
             }
         },
-        removeItem: function(key, callback) {
+        removeItem: function (key, callback) {
             storage.removeItem(key);
             if (callback) {
                 callback();
             }
             return Promise.resolve();
-        }
+        },
     };
 };
 

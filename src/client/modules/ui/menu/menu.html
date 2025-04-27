@@ -4,16 +4,22 @@
             <!-- Navigation -->
             <div class="slds-context-bar slds-inner-menu-header">
                 <div class="slds-context-bar__primary">
-                    <div class="slds-context-bar__item slds-context-bar__dropdown-trigger slds-dropdown-trigger slds-dropdown-trigger_click slds-no-hover" style="display: flex;align-items: center;">
+                    <div
+                        class="slds-context-bar__item slds-context-bar__dropdown-trigger slds-dropdown-trigger slds-dropdown-trigger_click slds-no-hover"
+                        style="display: flex; align-items: center">
                         <div class={collapseClass}>
-                            <lightning-button-icon icon-name={iconName} variant="bare" size="large" onclick={handleToggle}></lightning-button-icon>
+                            <lightning-button-icon
+                                icon-name={iconName}
+                                variant="bare"
+                                size="large"
+                                onclick={handleToggle}></lightning-button-icon>
                         </div>
                         <template lwc:if={isTitleDisplayed}>
-                            <span class="slds-p-left_x-small slds-context-bar__label-action slds-context-bar__app-name">
+                            <span
+                                class="slds-p-left_x-small slds-context-bar__label-action slds-context-bar__app-name">
                                 <span class="slds-truncate" title="SF Toolkit">SF Toolkit</span>
                             </span>
                         </template>
-                        
                     </div>
                 </div>
             </div>
@@ -29,63 +35,73 @@
                         key={item.name}
                         label={item.menuLabel}
                         name={item.path}
-                        icon-name={item.menuIcon}
-                    ></lightning-vertical-navigation-item-icon>
+                        icon-name={item.menuIcon}></lightning-vertical-navigation-item-icon>
                 </template>
                 <template lwc:else>
-                    <lightning-vertical-navigation-item 
+                    <lightning-vertical-navigation-item
                         data-key={item.path}
-                        key={item.name} 
-                        label={item.menuLabel} 
-                        name={item.path}
-                    ></lightning-vertical-navigation-item>
+                        key={item.name}
+                        label={item.menuLabel}
+                        name={item.path}></lightning-vertical-navigation-item>
                 </template>
             </template>
         </lightning-vertical-navigation-section>
-        
+
         <template lwc:if={isMenuSmall}>
             <!-- SMALL MENU - START -->
             <!-- Applications -->
             <template lwc:if={hasApplications}>
-                <lightning-button-menu variant="container" tooltip="Applications" icon-name="utility:builder" onselect={handleApplicationSelection}>
+                <lightning-button-menu
+                    variant="container"
+                    tooltip="Applications"
+                    icon-name="utility:builder"
+                    onselect={handleApplicationSelection}>
                     <template for:each={applications} for:item="item">
-                        <lightning-menu-item tooltip={item.menuLabel}
+                        <lightning-menu-item
+                            tooltip={item.menuLabel}
                             data-key={item.path}
-                            key={item.name} 
-                            value={item.path} 
+                            key={item.name}
+                            value={item.path}
                             label={item.menuLabel}
-                            icon-name={item.menuIcon}
-                        ></lightning-menu-item>
+                            icon-name={item.menuIcon}></lightning-menu-item>
                     </template>
                 </lightning-button-menu>
             </template>
             <!-- Tools -->
             <template lwc:if={hasTools}>
-                <lightning-button-menu variant="container" tooltip="Tools" icon-name="utility:apex" onselect={handleApplicationSelection}>
+                <lightning-button-menu
+                    variant="container"
+                    tooltip="Tools"
+                    icon-name="utility:apex"
+                    onselect={handleApplicationSelection}>
                     <template for:each={tools} for:item="item">
-                        <lightning-menu-item tooltip={item.menuLabel}
+                        <lightning-menu-item
+                            tooltip={item.menuLabel}
                             data-key={item.path}
-                            key={item.name} 
-                            value={item.path} 
+                            key={item.name}
+                            value={item.path}
                             label={item.menuLabel}
-                            icon-name={item.menuIcon}
-                        ></lightning-menu-item>
+                            icon-name={item.menuIcon}></lightning-menu-item>
                     </template>
                 </lightning-button-menu>
                 <div class="slds-has-divider_top-space"></div>
             </template>
-            
+
             <!-- Connections -->
-            <template lwc:if={isUnlimitedMode}> <!-- Only display in standard mode (not in electron instance) -->
-                <lightning-button-menu variant="container" tooltip="Connections" icon-name="utility:connected_apps" onselect={handleApplicationSelection}>
+            <template lwc:if={isUnlimitedMode}>
+                <!-- Only display in standard mode (not in electron instance) -->
+                <lightning-button-menu
+                    variant="container"
+                    tooltip="Connections"
+                    icon-name="utility:connected_apps"
+                    onselect={handleApplicationSelection}>
                     <template for:each={connections} for:item="item">
-                        <lightning-menu-item 
+                        <lightning-menu-item
                             data-key={item.path}
-                            key={item.name} 
-                            value={item.path} 
+                            key={item.name}
+                            value={item.path}
                             label={item.menuLabel}
-                            icon-name={item.menuIcon}
-                        ></lightning-menu-item>
+                            icon-name={item.menuIcon}></lightning-menu-item>
                     </template>
                 </lightning-button-menu>
             </template>
@@ -98,8 +114,7 @@
                         key={item.name}
                         name={item.path}
                         title={item.menuLabel}
-                        icon-name={item.menuIcon}
-                    ></lightning-vertical-navigation-item-icon>
+                        icon-name={item.menuIcon}></lightning-vertical-navigation-item-icon>
                 </template>
             </lightning-vertical-navigation-section>
             <!-- SMALL MENU - END -->
@@ -117,16 +132,14 @@
                         key={item.name}
                         label={item.menuLabel}
                         name={item.path}
-                        icon-name={item.menuIcon}
-                        ></lightning-vertical-navigation-item-icon>
+                        icon-name={item.menuIcon}></lightning-vertical-navigation-item-icon>
                 </template>
                 <template lwc:else>
-                    <lightning-vertical-navigation-item 
+                    <lightning-vertical-navigation-item
                         data-key={item.path}
-                        key={item.name} 
-                        label={item.menuLabel} 
-                        name={item.path}
-                    ></lightning-vertical-navigation-item>
+                        key={item.name}
+                        label={item.menuLabel}
+                        name={item.path}></lightning-vertical-navigation-item>
                 </template>
             </template>
             <!-- Tools -->
@@ -134,7 +147,7 @@
                 <div class="slds-has-divider_top-space"></div>
                 <h2 class="slds-nav-vertical__title">Tools</h2>
             </template>
-            
+
             <template for:each={tools} for:item="item">
                 <template lwc:if={item.menuIcon}>
                     <lightning-vertical-navigation-item-icon
@@ -142,20 +155,19 @@
                         key={item.name}
                         label={item.menuLabel}
                         name={item.path}
-                        icon-name={item.menuIcon}
-                    ></lightning-vertical-navigation-item-icon>
+                        icon-name={item.menuIcon}></lightning-vertical-navigation-item-icon>
                 </template>
                 <template lwc:else>
-                    <lightning-vertical-navigation-item 
+                    <lightning-vertical-navigation-item
                         data-key={item.path}
-                        key={item.name} 
-                        label={item.menuLabel} 
-                        name={item.path}
-                    ></lightning-vertical-navigation-item>
+                        key={item.name}
+                        label={item.menuLabel}
+                        name={item.path}></lightning-vertical-navigation-item>
                 </template>
             </template>
             <!-- Connections -->
-            <template lwc:if={isUnlimitedMode}> <!-- Only display in standard mode (not in electron instance) -->
+            <template lwc:if={isUnlimitedMode}>
+                <!-- Only display in standard mode (not in electron instance) -->
                 <div class="slds-has-divider_top-space"></div>
                 <template for:each={connections} for:item="item">
                     <template lwc:if={item.menuIcon}>
@@ -164,16 +176,14 @@
                             key={item.name}
                             label={item.menuLabel}
                             name={item.path}
-                            icon-name={item.menuIcon}
-                        ></lightning-vertical-navigation-item-icon>
+                            icon-name={item.menuIcon}></lightning-vertical-navigation-item-icon>
                     </template>
                     <template lwc:else>
                         <lightning-vertical-navigation-item
-                            data-key={item.path} 
-                            key={item.name} 
-                            label={item.menuLabel} 
-                            name={item.path}
-                        ></lightning-vertical-navigation-item>
+                            data-key={item.path}
+                            key={item.name}
+                            label={item.menuLabel}
+                            name={item.path}></lightning-vertical-navigation-item>
                     </template>
                 </template>
             </template>
@@ -186,16 +196,14 @@
                         key={item.name}
                         label={item.menuLabel}
                         name={item.path}
-                        icon-name={item.menuIcon}
-                    ></lightning-vertical-navigation-item-icon>
+                        icon-name={item.menuIcon}></lightning-vertical-navigation-item-icon>
                 </template>
                 <template lwc:else>
-                    <lightning-vertical-navigation-item 
+                    <lightning-vertical-navigation-item
                         data-key={item.path}
-                        key={item.name} 
-                        label={item.menuLabel} 
-                        name={item.path}
-                    ></lightning-vertical-navigation-item>
+                        key={item.name}
+                        label={item.menuLabel}
+                        name={item.path}></lightning-vertical-navigation-item>
                 </template>
             </template>
             <!-- LARGE MENU - END -->
@@ -212,8 +220,7 @@
                         data-key={item.path}
                         key={item.name}
                         name={item.path}
-                        icon-name={item.menuIcon}
-                    ></lightning-vertical-navigation-item-icon>
+                        icon-name={item.menuIcon}></lightning-vertical-navigation-item-icon>
                 </template>
                 <template lwc:else>
                     <lightning-vertical-navigation-item-icon
@@ -221,20 +228,19 @@
                         label={item.menuLabel}
                         key={item.name}
                         name={item.path}
-                        icon-name={item.menuIcon}
-                    ></lightning-vertical-navigation-item-icon>
+                        icon-name={item.menuIcon}></lightning-vertical-navigation-item-icon>
                 </template>
-                
             </template>
             <template for:each={others} for:item="item">
-                <lightning-vertical-navigation-item-icon key={item.name} onclick={handleRedirection} data-url={item.url}
+                <lightning-vertical-navigation-item-icon
+                    key={item.name}
+                    onclick={handleRedirection}
+                    data-url={item.url}
                     data-key={item.path}
                     label={item.menuLabel}
                     name={item.name}
-                    icon-name={item.menuIcon}>
-                </lightning-vertical-navigation-item-icon>
+                    icon-name={item.menuIcon}></lightning-vertical-navigation-item-icon>
             </template>
         </lightning-vertical-navigation-section>
     </lightning-vertical-navigation>
-
 </template>

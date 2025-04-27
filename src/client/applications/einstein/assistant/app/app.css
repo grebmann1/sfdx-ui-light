@@ -1,13 +1,12 @@
-:host{
+:host {
     display: block;
     height: 100%;
 }
 
-
-.slds-tabs_scoped{
-    height:unset;
+.slds-tabs_scoped {
+    height: unset;
 }
 
-.full-page-body{
-    overflow:  hidden !important;
+.full-page-body {
+    overflow: hidden !important;
 }

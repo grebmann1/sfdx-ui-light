@@ -68,7 +68,7 @@ export default class EditorCompleteWidget extends LightningElement {
      * Handles input changes in the textarea
      * @param {Event} e - The input event
      */
-    handleInput = (e) => {
+    handleInput = e => {
         this.value = e.target.value;
     };
 
@@ -76,7 +76,7 @@ export default class EditorCompleteWidget extends LightningElement {
      * Handles keyboard events
      * @param {KeyboardEvent} e - The keyboard event
      */
-    handleKeyDown = (e) => {
+    handleKeyDown = e => {
         if (e.key === 'Enter' && !e.shiftKey && !this.isLoading) {
             e.preventDefault();
             e.stopPropagation();
@@ -113,12 +113,18 @@ export default class EditorCompleteWidget extends LightningElement {
      * @returns {Promise<string>} The generated code
      */
     async generateCode() {
-        const { startLine, endLine, prefix, suffix, originalCode, language } = this.prepareGenerationContext();
-        const { userContent, systemContent } = this.prepareAssistantMessages(prefix, suffix, originalCode, language);
+        const { startLine, endLine, prefix, suffix, originalCode, language } =
+            this.prepareGenerationContext();
+        const { userContent, systemContent } = this.prepareAssistantMessages(
+            prefix,
+            suffix,
+            originalCode,
+            language
+        );
 
         let fullTextSoFar = '';
         this.currentAssistant = new ASSISTANTS.Assistant({ name: 'editor-complete' });
-        
+
         const responses = await this.currentAssistant
             .init()
             .setInstructions(systemContent)
@@ -167,7 +173,9 @@ export default class EditorCompleteWidget extends LightningElement {
             fimTags: defaultQuickEditFimTags,
             language,
         });
-        const systemContent = ctrlKStream_systemMessage({ quickEditFIMTags: defaultQuickEditFimTags });
+        const systemContent = ctrlKStream_systemMessage({
+            quickEditFIMTags: defaultQuickEditFimTags,
+        });
 
         return { userContent, systemContent };
     }
@@ -178,11 +186,14 @@ export default class EditorCompleteWidget extends LightningElement {
      * @returns {Function} Text handler function
      */
     handleTextStream(fullTextSoFar) {
-        return (content) => {
-            const parser = new StreamParser(`<${defaultQuickEditFimTags.midTag}>`, `</${defaultQuickEditFimTags.midTag}>`);
+        return content => {
+            const parser = new StreamParser(
+                `<${defaultQuickEditFimTags.midTag}>`,
+                `</${defaultQuickEditFimTags.midTag}>`
+            );
             parser.is(content);
             const parsedText = parser.getResult();
-            
+
             if (fullTextSoFar !== parsedText) {
                 this.dispatchEvent(
                     new CustomEvent('text', {
@@ -202,11 +213,14 @@ export default class EditorCompleteWidget extends LightningElement {
      * Handles the end of text streaming
      * @param {string} content - Final content
      */
-    handleTextEnd = (content) => {
-        const parser = new StreamParser(`<${defaultQuickEditFimTags.midTag}>`, `</${defaultQuickEditFimTags.midTag}>`);
+    handleTextEnd = content => {
+        const parser = new StreamParser(
+            `<${defaultQuickEditFimTags.midTag}>`,
+            `</${defaultQuickEditFimTags.midTag}>`
+        );
         parser.is(content);
         const parsedText = parser.getResult();
-        
+
         this.dispatchEvent(
             new CustomEvent('textend', {
                 detail: { fullText: parsedText },
@@ -221,7 +235,10 @@ export default class EditorCompleteWidget extends LightningElement {
      */
     parseFinalResponse(responses) {
         const message = responses[responses.length - 1];
-        const parser = new StreamParser(`<${defaultQuickEditFimTags.midTag}>`, `</${defaultQuickEditFimTags.midTag}>`);
+        const parser = new StreamParser(
+            `<${defaultQuickEditFimTags.midTag}>`,
+            `</${defaultQuickEditFimTags.midTag}>`
+        );
         parser.is(message.content);
         return parser.getResult();
     }
@@ -235,7 +252,9 @@ export default class EditorCompleteWidget extends LightningElement {
     getSelectionLines(isFullFile) {
         return {
             startLine: isFullFile ? 1 : this.selection.range.startLineNumber,
-            endLine: isFullFile ? this.file.range.endLineNumber : this.selection.range.endLineNumber,
+            endLine: isFullFile
+                ? this.file.range.endLineNumber
+                : this.selection.range.endLineNumber,
         };
     }
 
@@ -247,9 +266,12 @@ export default class EditorCompleteWidget extends LightningElement {
      * @returns {string} The selected code
      */
     getOriginalCode(isFullFile, startLine, endLine) {
-        return isFullFile 
-            ? this.file.content 
-            : this.file.content.split('\n').slice(startLine - 1, endLine).join('\n');
+        return isFullFile
+            ? this.file.content
+            : this.file.content
+                  .split('\n')
+                  .slice(startLine - 1, endLine)
+                  .join('\n');
     }
 
     // ===== Event Handlers =====
@@ -259,7 +281,7 @@ export default class EditorCompleteWidget extends LightningElement {
      */
     handleGenerationSuccess(output) {
         if (!output) return;
-        
+
         this.isApprovalDisplayed = true;
         hotkeysManager.subscribe('ctrl+enter,command+enter', this.handleAccept);
         hotkeysManager.subscribe('ctrl+backspace,command+backspace', this.handleClose);
@@ -276,7 +298,7 @@ export default class EditorCompleteWidget extends LightningElement {
      */
     handleGenerationError(error) {
         LOGGER.error('Code generation failed', error);
-        
+
         // If the error is an AbortError, don't show the error toast
         if (error.name !== 'AbortError') {
             Toast.show({
@@ -285,7 +307,7 @@ export default class EditorCompleteWidget extends LightningElement {
                 label: 'Error',
             });
         }
-        
+
         // Clear any partial generation
         //
         /* this.dispatchEvent(
@@ -308,12 +330,12 @@ export default class EditorCompleteWidget extends LightningElement {
      * Handles closing the widget
      */
     handleClose = () => {
-        if(this.isLoading) {
+        if (this.isLoading) {
             this.handleStop();
         }
         this.clearInput();
         this.dispatchEvent(new CustomEvent('close'));
-    }
+    };
 
     /**
      * Handles approving the generated code
@@ -321,7 +343,7 @@ export default class EditorCompleteWidget extends LightningElement {
     handleAccept = () => {
         this.clearInput();
         this.dispatchEvent(new CustomEvent('approve'));
-    }
+    };
 
     // ===== UI Update Methods =====
     /**
@@ -339,7 +361,6 @@ export default class EditorCompleteWidget extends LightningElement {
         }
     }
 
-
     /**
      * Handles stopping the current generation
      */
@@ -356,7 +377,6 @@ export default class EditorCompleteWidget extends LightningElement {
             );
         }
     };
-
 
     // ===== Getters =====
     @api

@@ -1,73 +1,72 @@
-import { api } from "lwc";
-import { decodeError,isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
+import { api } from 'lwc';
+import { decodeError, isNotUndefinedOrNull, isUndefinedOrNull } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
 
 export default class Pmd extends ToolkitElement {
-
     @api pmdPath;
 
     _projectPath;
     @api
-    get projectPath(){
+    get projectPath() {
         return this._projectPath;
     }
-    set projectPath(value){
+    set projectPath(value) {
         this._projectPath = value;
-        if(isNotUndefinedOrNull(value)){
+        if (isNotUndefinedOrNull(value)) {
             this.checkIfPmdInstalled();
         }
     }
 
-    connectedCallback(){
-        
-    }
+    connectedCallback() {}
 
     /** Methods  **/
 
     handleCopy = () => {
         navigator.clipboard.writeText(this.pmdPath);
-    }
+    };
 
     checkIfPmdInstalled = async () => {
-        const {error, result} = await window.electron.ipcRenderer.invoke('code-isPmdInstalled',{projectPath:this.projectPath});
+        const { error, result } = await window.electron.ipcRenderer.invoke('code-isPmdInstalled', {
+            projectPath: this.projectPath,
+        });
         if (error) {
             throw decodeError(error);
         }
-        console.info('checkIfPmdInstalled',{error, result});
-        this.pmdPath = isNotUndefinedOrNull(result)?`${result}/bin/pmd`:null;
-    }
+        console.info('checkIfPmdInstalled', { error, result });
+        this.pmdPath = isNotUndefinedOrNull(result) ? `${result}/bin/pmd` : null;
+    };
 
-    installLatestPMD = async() => {
-        const {error, result} = await window.electron.ipcRenderer.invoke('code-installLatestPmd',{projectPath:this.projectPath});
+    installLatestPMD = async () => {
+        const { error, result } = await window.electron.ipcRenderer.invoke(
+            'code-installLatestPmd',
+            { projectPath: this.projectPath }
+        );
         if (error) {
             throw decodeError(error);
         }
-        console.info('installLatestPMD',result);
+        console.info('installLatestPMD', result);
         this.checkIfPmdInstalled();
-    }
-
-
+    };
 
     /** Getters **/
-    
-    get pmdCommand(){
+
+    get pmdCommand() {
         return `${this.pmdPathFormatted} check -f summaryhtml -R ".sf-toolkit/pmd/rulesets/apex/quickstart.xml" -d "force-app/main/default/classes" -r ".sf-toolkit/pmd/reports/report.html"`;
     }
 
-    get installPMDLabel(){
-        return this.isPmdInstalled?'PMD Already Installed':'Install PMD in your project';
+    get installPMDLabel() {
+        return this.isPmdInstalled ? 'PMD Already Installed' : 'Install PMD in your project';
     }
 
-    get isPmdInstalled(){
+    get isPmdInstalled() {
         return isNotUndefinedOrNull(this.pmdPath);
     }
 
-
-    get isButtonDisabled(){
+    get isButtonDisabled() {
         return isUndefinedOrNull(this.projectPath) || this.isPmdInstalled;
     }
 
-    get pmdPathFormatted(){
-        return isUndefinedOrNull(this.pmdPath)?'pmd':this.pmdPath;
+    get pmdPathFormatted() {
+        return isUndefinedOrNull(this.pmdPath) ? 'pmd' : this.pmdPath;
     }
 }

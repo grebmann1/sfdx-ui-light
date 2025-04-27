@@ -1,4 +1,4 @@
-:host{
+:host {
     width: 300px;
 }
 
@@ -15,16 +15,16 @@
     box-shadow: inset 4px 0 0 #1b96ff;
 }
 
-.item.slds-is-active{
+.item.slds-is-active {
     -webkit-box-shadow: inset 4px 0 0 #1b96ff;
     box-shadow: inset 4px 0 0 #1b96ff;
 }
 
-.item.slds-is-new{
-    background: #1b96ff2b;/* #f3f2f2;*/
+.item.slds-is-new {
+    background: #1b96ff2b; /* #f3f2f2;*/
 }
 
-.slds-split-view__list-item-action:focus{
-    box-shadow:unset;
-    -webkit-box-shadow:unset;
+.slds-split-view__list-item-action:focus {
+    box-shadow: unset;
+    -webkit-box-shadow: unset;
 }

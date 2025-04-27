@@ -5,11 +5,7 @@ function preventDefaultAndStopPropagation(event) {
     event.stopPropagation();
 }
 
-export function handleKeyDownOnTabList(
-    event,
-    currentFocusedIndex,
-    tabsetInterface
-) {
+export function handleKeyDownOnTabList(event, currentFocusedIndex, tabsetInterface) {
     switch (event.keyCode) {
         case keyCodes.left:
         case keyCodes.right:
@@ -20,11 +16,9 @@ export function handleKeyDownOnTabList(
             const isArrowLeft = event.keyCode === keyCodes.left;
             const isArrowRight = event.keyCode === keyCodes.right;
             const verticalNavigation =
-                tabsetInterface.isVerticalOrientation() &&
-                (isArrowUp || isArrowDown);
+                tabsetInterface.isVerticalOrientation() && (isArrowUp || isArrowDown);
             const horizontalNavigation =
-                !tabsetInterface.isVerticalOrientation() &&
-                (isArrowLeft || isArrowRight);
+                !tabsetInterface.isVerticalOrientation() && (isArrowLeft || isArrowRight);
             if (verticalNavigation || horizontalNavigation) {
                 preventDefaultAndStopPropagation(event);
                 const increment = isArrowLeft || isArrowUp ? -1 : 1;

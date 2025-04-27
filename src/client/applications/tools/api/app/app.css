@@ -1,6 +1,6 @@
-:host{
+:host {
     height: 100%;
-    --_slds-g-shadow-inset-focus : 0 0 0 0px #fff inset, 0 0 0 0px #0b5cab inset
+    --_slds-g-shadow-inset-focus: 0 0 0 0px #fff inset, 0 0 0 0px #0b5cab inset;
 }
 
 .slds-horizontal-input {
@@ -9,11 +9,11 @@
     justify-content: flex-start;
 }
 .slds-horizontal-input-combobox {
-    width:150px;
+    width: 150px;
 }
 
 .slds-horizontal-input-url {
-    width:100%;
+    width: 100%;
 }
 
 .slds-api-container {

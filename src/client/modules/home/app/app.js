@@ -1,22 +1,17 @@
-import { api } from "lwc";
-import { isEmpty,isElectronApp } from 'shared/utils';
+import { api } from 'lwc';
+import { isEmpty, isElectronApp } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
 
-
 export default class App extends ToolkitElement {
+    connectedCallback() {}
 
-    
-    connectedCallback(){}
-
-    
     /** Events */
- 
-    /** Methods */
-    
-    /** Getters */
-    
-    get pageClass(){
-        return super.pageClass+' slds-overflow-hidden';
-    }
 
+    /** Methods */
+
+    /** Getters */
+
+    get pageClass() {
+        return super.pageClass + ' slds-overflow-hidden';
+    }
 }

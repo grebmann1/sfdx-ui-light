@@ -2,7 +2,11 @@
     <div class={pageClass}>
         <builder-editor>
             <!-- Header -->
-            <builder-header slot="header" title="GPT-4o, You need to have Einstein GPT Enabled" sub-title="Einstein Assistant" icon-name="standard:story">
+            <builder-header
+                slot="header"
+                title="GPT-4o, You need to have Einstein GPT Enabled"
+                sub-title="Einstein Assistant"
+                icon-name="standard:story">
                 <div slot="actions" class="slds-builder-toolbar__actions">
                     <lightning-picklist
                         label="Salesforce Instance"
@@ -11,8 +15,7 @@
                         options={salesforceInstance_options}
                         field-level-help="Select Instance with Einstein GPT Enabled"
                         onchange={salesforceInstance_handleChange}
-                        class={picklistClass}
-                    ></lightning-picklist>
+                        class={picklistClass}></lightning-picklist>
                 </div>
                 <!--
                 <p slot="meta" class="slds-page-header__meta-text">
@@ -23,28 +26,39 @@
             </builder-header>
             <!-- Body -->
             <article class="full-page-body slds-card">
-                <div class="slds-is-relative slds-full-width slds-full-height slds-flex-column" style="min-height:200px;">
-                    
+                <div
+                    class="slds-is-relative slds-full-width slds-full-height slds-flex-column"
+                    style="min-height: 200px">
                     <!-- Tabs -->
-                    <slds-tabset variant="scoped" class="slds-without-tab slds-tabs-no-padding-extension" active-tab-value={currentDialogId} onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled is-remove-tab-event-disabled>
+                    <slds-tabset
+                        variant="scoped"
+                        class="slds-without-tab slds-tabs-no-padding-extension"
+                        active-tab-value={currentDialogId}
+                        onaddtab={handleAddTab}
+                        onclosetab={handleCloseTab}
+                        is-add-tab-enabled
+                        is-remove-tab-event-disabled>
                         <template for:each={formattedTabs} for:item="item">
-                            <slds-tab key={item.id} label={item.name} value={item.id} onactive={handleSelectTab} is-closeable={item.isCloseable} is-draft={item.isDraft}></slds-tab>
+                            <slds-tab
+                                key={item.id}
+                                label={item.name}
+                                value={item.id}
+                                onactive={handleSelectTab}
+                                is-closeable={item.isCloseable}
+                                is-draft={item.isDraft}></slds-tab>
                         </template>
                     </slds-tabset>
                     <!-- Dialogs -->
-                    <assistant-dialog 
+                    <assistant-dialog
                         class="slds-fill-height slds-flex-column"
                         application-name={applicationName}
-                        connector={salesforceInstance_connector}
-                    ></assistant-dialog>
-            
+                        connector={salesforceInstance_connector}></assistant-dialog>
+
                     <template lwc:if={isLoading}>
                         <slds-spinner alternative-text="Loading" size="small"></slds-spinner>
                     </template>
-
                 </div>
             </article>
-            
         </builder-editor>
     </div>
 </template>

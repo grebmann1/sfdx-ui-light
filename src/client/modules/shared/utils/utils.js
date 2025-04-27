@@ -1,4 +1,3 @@
-
 export { classSet } from './classSet';
 export * from './salesforce';
 export * from './normalize';
@@ -10,15 +9,15 @@ export {
     keyCodes,
     runActionOnBufferedTypedCharacters,
     normalizeKeyValue,
-    isShiftMetaOrControlKey
+    isShiftMetaOrControlKey,
 } from './keyboard';
 
-export function enableBodyScroll(){
-    document.querySelector("body").style.overflow = '';
+export function enableBodyScroll() {
+    document.querySelector('body').style.overflow = '';
 }
 
-export function disableBodyScroll(){
-    document.querySelector("body").style.overflow = 'hidden';
+export function disableBodyScroll() {
+    document.querySelector('body').style.overflow = 'hidden';
 }
 
 export function isUndefinedOrNull(value) {
@@ -30,13 +29,13 @@ export function isNotUndefinedOrNull(value) {
 }
 
 export function isEmpty(str) {
-    return (!str || str.length === 0 );
+    return !str || str.length === 0;
 }
 
-export function decodeError({name, message}){
-    const e = new Error(message)
-        e.name = name
-    return e
+export function decodeError({ name, message }) {
+    const e = new Error(message);
+    e.name = name;
+    return e;
 }
 
 export function guid() {
@@ -46,20 +45,7 @@ export function guid() {
             .substring(1);
     }
 
-    return (
-        s4() +
-        s4() +
-        '-' +
-        s4() +
-        '-' +
-        s4() +
-        '-' +
-        s4() +
-        '-' +
-        s4() +
-        s4() +
-        s4()
-    );
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 }
 
 export function guidFromHash(input) {
@@ -98,14 +84,14 @@ export function guidFromHash(input) {
     );
 }
 
-export function groupBy(items,key){
+export function groupBy(items, key) {
     return items.reduce((x, y) => {
         (x[y[key]] = x[y[key]] || []).push(y);
         return x;
     }, {});
 }
 
-export function chunkArray(arr,chunkSize = 5){
+export function chunkArray(arr, chunkSize = 5) {
     const chunks = [];
     for (let i = 0; i < arr.length; i += chunkSize) {
         const chunk = arr.slice(i, i + chunkSize);
@@ -114,31 +100,33 @@ export function chunkArray(arr,chunkSize = 5){
     return chunks;
 }
 
-export async function getAllOrgs(debugMode = false){
-    if(debugMode){
+export async function getAllOrgs(debugMode = false) {
+    if (debugMode) {
         return [
             {
-                id:'DEMO-B2C',
-                username:'DEMO-B2C@test.com',
-                company:'DEMO',
-                name:'B2C',
-                alias:'DEMO-B2C'
-            }
-        ] 
+                id: 'DEMO-B2C',
+                username: 'DEMO-B2C@test.com',
+                company: 'DEMO',
+                name: 'B2C',
+                alias: 'DEMO-B2C',
+            },
+        ];
     }
     let res = await window.electron.ipcRenderer.invoke('org-getAllOrgs');
-        res = res.sort((a, b) => a.alias.localeCompare(b.alias));
-        res = res.map((item,index) => {
-            return {
-                ...item,
-                ...{
-                    id:item.alias,
-                    username:item.value,
-                    company:`${item.alias.split('-').length > 1?item.alias.split('-').shift():''}`.toUpperCase(),
-                    name:item.alias.split('-').pop()
-                }
-            }
-        })
+    res = res.sort((a, b) => a.alias.localeCompare(b.alias));
+    res = res.map((item, index) => {
+        return {
+            ...item,
+            ...{
+                id: item.alias,
+                username: item.value,
+                company: `${
+                    item.alias.split('-').length > 1 ? item.alias.split('-').shift() : ''
+                }`.toUpperCase(),
+                name: item.alias.split('-').pop(),
+            },
+        };
+    });
     return res;
 }
 
@@ -146,27 +134,27 @@ export function chunkPromises(arr, size, method) {
     if (!Array.isArray(arr) || !arr.length) {
         return Promise.resolve([]);
     }
-  
+
     size = size ? size : 10;
-  
+
     const chunks = [];
     for (let i = 0, j = arr.length; i < j; i += size) {
         chunks.push(arr.slice(i, i + size));
     }
-  
+
     let collector = Promise.resolve([]);
     for (const chunk of chunks) {
-        collector = collector.then((results) =>
-            Promise.all(chunk.map((params) => method(params))).then(
-                (subResults) =>results.concat(subResults)
+        collector = collector.then(results =>
+            Promise.all(chunk.map(params => method(params))).then(subResults =>
+                results.concat(subResults)
             )
         );
     }
     return collector;
-};
+}
 
-const buffer = {}
-export function runActionAfterTimeOut(value, action,{timeout = 300} = {}) {
+const buffer = {};
+export function runActionAfterTimeOut(value, action, { timeout = 300 } = {}) {
     if (buffer._clearBufferId) {
         clearTimeout(buffer._clearBufferId);
     }
@@ -192,7 +180,7 @@ export function animationFrame() {
 
 export const isElectronApp = () => {
     return isNotUndefinedOrNull(window.electron);
-}
+};
 
 export const isChromeExtension = () => {
     try {
@@ -208,23 +196,23 @@ export const isChromeExtension = () => {
         console.error('Error detecting browser extension environment:', error);
     }
     return false; // Not a recognized browser extension
-}
+};
 
 export function formatBytes(bytes, decimals = 2) {
-    if (!+bytes) return '0 Bytes'
+    if (!+bytes) return '0 Bytes';
 
-    const k = 1024
-    const dm = decimals < 0 ? 0 : decimals
-    const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
 
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 }
 
-export function getCurrentRank(mapping,check){
+export function getCurrentRank(mapping, check) {
     for (let i = 0; i < mapping.length; i++) {
-        if(check(mapping[i])){
+        if (check(mapping[i])) {
             return i;
         }
     }
@@ -236,11 +224,12 @@ export function escapeRegExp(str) {
     return str.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
 }
 
-
-export function basicTextFormatter(text,filter){
-    var regex = new RegExp('('+filter+')','gim');
-    if(regex.test(text)){
-        text = text.toString().replace(regex,`<span style="font-weight:Bold; color:blue;">$1</span>`);
+export function basicTextFormatter(text, filter) {
+    var regex = new RegExp('(' + filter + ')', 'gim');
+    if (regex.test(text)) {
+        text = text
+            .toString()
+            .replace(regex, `<span style="font-weight:Bold; color:blue;">$1</span>`);
     }
     return text;
 }
@@ -257,30 +246,30 @@ const languageMapping = {
     cls: 'apex', // We map cls to JAVA
     xml: 'xml',
     design: 'xml', // We map cls to xml
-    trigger:'apex',
-    html:'html',
-    page:'html',
-    auradoc:'html',
-    cmp:'html',
-    png:'png',
-    svg:'xml'
+    trigger: 'apex',
+    html: 'html',
+    page: 'html',
+    auradoc: 'html',
+    cmp: 'html',
+    png: 'png',
+    svg: 'xml',
+};
+
+export function getLanguage(extension) {
+    return languageMapping.hasOwnProperty(extension) ? languageMapping[extension] : null;
 }
 
-export function getLanguage(extension){
-    return languageMapping.hasOwnProperty(extension)?languageMapping[extension]:null;
-}
-
-export function formatFiles(files,defaultLanguage){
-    return [...files].map(file =>{
-      const extension = file?.name.includes('.')?file?.name.split('.').pop():null;
-      return { 
-        ...file,
-        ...{
-          extension:extension, // we remove the '.' for the editor
-          language:getLanguage(extension) || defaultLanguage
-        }
-      }
-    })
+export function formatFiles(files, defaultLanguage) {
+    return [...files].map(file => {
+        const extension = file?.name.includes('.') ? file?.name.split('.').pop() : null;
+        return {
+            ...file,
+            ...{
+                extension: extension, // we remove the '.' for the editor
+                language: getLanguage(extension) || defaultLanguage,
+            },
+        };
+    });
 }
 
 export function sortObjectsByField(objects, field, order) {
@@ -303,29 +292,29 @@ export function sortObjectsByField(objects, field, order) {
 
 export function removeDuplicates(arr, prop) {
     const unique = new Set();
-    const result = arr.filter((item) => {
+    const result = arr.filter(item => {
         const val = item[prop];
         const isPresent = unique.has(val);
-        unique.add(val);//always add
+        unique.add(val); //always add
         return !isPresent;
     });
     return result;
 }
 
-export function getFromStorage(item,byDefault){
-    try{
+export function getFromStorage(item, byDefault) {
+    try {
         const parsedItem = JSON.parse(item);
-        return isUndefinedOrNull(parsedItem)?byDefault:parsedItem;
-    }catch(e){
+        return isUndefinedOrNull(parsedItem) ? byDefault : parsedItem;
+    } catch (e) {
         return byDefault;
     }
 }
 
-export function safeParseJson(item){
-    try{
+export function safeParseJson(item) {
+    try {
         const parsedItem = JSON.parse(item);
         return parsedItem;
-    }catch(e){
+    } catch (e) {
         return null;
     }
 }
@@ -338,8 +327,8 @@ export function goToUrl(conn,redirectUrl){
     window.open(url,'_blank');
 }
 */
-export function checkIfPresent(a,b){
-    return (a || '').toLowerCase().includes((b||'').toLowerCase());
+export function checkIfPresent(a, b) {
+    return (a || '').toLowerCase().includes((b || '').toLowerCase());
 }
 
 export function isSalesforceId(str) {
@@ -350,57 +339,56 @@ export function isSalesforceId(str) {
     return idPattern.test(str);
 }
 
-export function download(data,type,filename){
+export function download(data, type, filename) {
     //console.log('download');
     const blob = new Blob([data], { type });
     const url = URL.createObjectURL(blob);
     const download = document.createElement('a');
-        download.href = window.URL.createObjectURL(blob);
-        download.download = filename;
-        download.click();
+    download.href = window.URL.createObjectURL(blob);
+    download.download = filename;
+    download.click();
     URL.revokeObjectURL(url);
 }
 
 export const ROLES = {
-    USER:'user',
-    SYSTEM:'system',
-    TOOL:'tool'
-}
+    USER: 'user',
+    SYSTEM: 'system',
+    TOOL: 'tool',
+};
 
-export const runSilent = async (func,placeholder) => {
-    try{
+export const runSilent = async (func, placeholder) => {
+    try {
         return await func();
-    }catch(e){
-        console.error('Run Silent',e);
+    } catch (e) {
+        console.error('Run Silent', e);
     }
     return placeholder;
-}
-
+};
 
 export const refreshCurrentTab = () => {
-    if(!isChromeExtension())return;
+    if (!isChromeExtension()) return;
 
-	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-		chrome.tabs.reload(tabs[0].id);
-	});
-}
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        chrome.tabs.reload(tabs[0].id);
+    });
+};
 
-export const forceVariableSave = (variable,value) => {
+export const forceVariableSave = (variable, value) => {
     variable = null;
     variable = value;
-}
+};
 
-export const generateExternalId = (connector,key) => `${connector.alias}_${key}`
+export const generateExternalId = (connector, key) => `${connector.alias}_${key}`;
 
-export const lowerCaseKey = key => isNotUndefinedOrNull(key)?key.toLowerCase():null;
+export const lowerCaseKey = key => (isNotUndefinedOrNull(key) ? key.toLowerCase() : null);
 
 export const isObject = obj => typeof obj === 'object' && obj !== null;
 
-export const capitalizeFirstLetter = (string) => {
+export const capitalizeFirstLetter = string => {
     return string.charAt(0).toUpperCase() + string.slice(1);
-}
+};
 
-export const compareString = (a,b) => lowerCaseKey(a) === lowerCaseKey(b);
+export const compareString = (a, b) => lowerCaseKey(a) === lowerCaseKey(b);
 
 export const getFieldValue = (field, record) => {
     let value = record;
@@ -408,19 +396,21 @@ export const getFieldValue = (field, record) => {
         if (value) value = value[name];
     });
     return value;
-}
+};
 
-export const arrayToMap = (array, idField,attributes,format) => {
-    const _format = format ? format : (x) => x;
+export const arrayToMap = (array, idField, attributes, format) => {
+    const _format = format ? format : x => x;
     return array.reduce((map, item) => {
         if (item.hasOwnProperty(idField)) {
-            map[_format(item[idField])] = attributes?Object.assign({...item},attributes):item;
+            map[_format(item[idField])] = attributes
+                ? Object.assign({ ...item }, attributes)
+                : item;
         }
         return map;
     }, {});
-}
+};
 
-export const extractErrorDetailsFromQuery = (errorMessage) => {
+export const extractErrorDetailsFromQuery = errorMessage => {
     const rowRegex = /Row:(\d+)/;
     const columnRegex = /Column:(\d+)/;
     const rowMatch = errorMessage.match(rowRegex);
@@ -434,9 +424,9 @@ export const extractErrorDetailsFromQuery = (errorMessage) => {
     return {
         row: row,
         column: column,
-        message: message
+        message: message,
     };
-}
+};
 
 export const shortFormatter = new Intl.NumberFormat('en-US', {
     notation: 'compact',
@@ -444,7 +434,7 @@ export const shortFormatter = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 1,
 });
 
-export const splitTextByTimestamp = (text) =>  {
+export const splitTextByTimestamp = text => {
     // Regular expression to match the timestamp structure
     const timestampRegex = /\d{2}:\d{2}:\d{2}\.\d{1,3} \(\d{8,}\)\|/;
 
@@ -477,41 +467,44 @@ export const splitTextByTimestamp = (text) =>  {
     }
 
     return result;
-}
+};
 
-export const isMonacoLanguageSetup = (language) => {
+export const isMonacoLanguageSetup = language => {
     if (!window._monacoCompletionProviders) {
         window._monacoCompletionProviders = {};
     }
     const _isSetup = window._monacoCompletionProviders[language] === true;
-    window._monacoCompletionProviders[language] = true
+    window._monacoCompletionProviders[language] = true;
     return _isSetup;
-}
+};
 
-export const prettifyXml = (sourceXml) => {
+export const prettifyXml = sourceXml => {
     var xmlDoc = new DOMParser().parseFromString(sourceXml, 'application/xml');
-    var xsltDoc = new DOMParser().parseFromString([
-        // describes how we want to modify the XML - indent everything
-        '<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">',
-        '  <xsl:strip-space elements="*"/>',
-        '  <xsl:template match="para[content-style][not(text())]">', // change to just text() to strip space in text nodes
-        '    <xsl:value-of select="normalize-space(.)"/>',
-        '  </xsl:template>',
-        '  <xsl:template match="node()|@*">',
-        '    <xsl:copy><xsl:apply-templates select="node()|@*"/></xsl:copy>',
-        '  </xsl:template>',
-        '  <xsl:output indent="yes"/>',
-        '</xsl:stylesheet>',
-    ].join('\n'), 'application/xml');
+    var xsltDoc = new DOMParser().parseFromString(
+        [
+            // describes how we want to modify the XML - indent everything
+            '<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">',
+            '  <xsl:strip-space elements="*"/>',
+            '  <xsl:template match="para[content-style][not(text())]">', // change to just text() to strip space in text nodes
+            '    <xsl:value-of select="normalize-space(.)"/>',
+            '  </xsl:template>',
+            '  <xsl:template match="node()|@*">',
+            '    <xsl:copy><xsl:apply-templates select="node()|@*"/></xsl:copy>',
+            '  </xsl:template>',
+            '  <xsl:output indent="yes"/>',
+            '</xsl:stylesheet>',
+        ].join('\n'),
+        'application/xml'
+    );
 
-    var xsltProcessor = new XSLTProcessor();    
-        xsltProcessor.importStylesheet(xsltDoc);
+    var xsltProcessor = new XSLTProcessor();
+    xsltProcessor.importStylesheet(xsltDoc);
     var resultDoc = xsltProcessor.transformToDocument(xmlDoc);
     var resultXml = new XMLSerializer().serializeToString(resultDoc);
     return resultXml;
 };
 
-export const autoDetectAndFormat = (text) => {
+export const autoDetectAndFormat = text => {
     const trimmedText = text.trim();
 
     // Detect if the content is JSON
@@ -524,33 +517,41 @@ export const autoDetectAndFormat = (text) => {
         return 'xml';
     }
     return null;
-}
+};
 
 /** Migrated from Extension/utils **/
 
-export const redirectToUrlViaChrome = ({baseUrl,redirectUrl,sessionId,serverUrl,isNewTab}) => {
+export const redirectToUrlViaChrome = ({
+    baseUrl,
+    redirectUrl,
+    sessionId,
+    serverUrl,
+    isNewTab,
+}) => {
     let params = new URLSearchParams();
-    if(sessionId){
+    if (sessionId) {
         params.append('sessionId', sessionId);
         params.append('serverUrl', serverUrl);
     }
-        
+
     if (redirectUrl) {
         params.append('redirectUrl', redirectUrl);
     }
     let url = new URL(baseUrl);
-        url.search = params.toString();
-    if(isNewTab){
-        window.open(url.href,'_blank');
-    }else{
+    url.search = params.toString();
+    if (isNewTab) {
+        window.open(url.href, '_blank');
+    } else {
         window.open(url.href);
     }
-    
 };
 
 export function getCurrentObjectType(conn, recordId) {
     return new Promise((resolve, reject) => {
-        conn.tooling.executeAnonymous("ID a='" + recordId + "';Integer.valueOf(String.valueOf(a.getSObjectType()));")
+        conn.tooling
+            .executeAnonymous(
+                "ID a='" + recordId + "';Integer.valueOf(String.valueOf(a.getSObjectType()));"
+            )
             .then(res => {
                 let _sobjectString = res.exceptionMessage.replace(/^.* (.*)$/, '$1');
                 resolve(_sobjectString == 'null' ? null : _sobjectString);
@@ -558,25 +559,24 @@ export function getCurrentObjectType(conn, recordId) {
             .catch(e => {
                 console.err(err);
                 reject(err);
-            })
-    })
+            });
+    });
 }
 
 export async function getCurrentTab() {
-    if(!isChromeExtension()) return null;
-    let queryOptions = {active: true, lastFocusedWindow: true};
+    if (!isChromeExtension()) return null;
+    let queryOptions = { active: true, lastFocusedWindow: true };
     // `tab` will either be a `tabs.Tab` instance or `undefined`.
     let [tab] = await chrome.tabs.query(queryOptions);
     return tab;
 }
 
-
-export function getObjectSetupLink({host, sobjectName, durableId, isCustomSetting}) {
-    if (sobjectName.endsWith("__mdt")) {
+export function getObjectSetupLink({ host, sobjectName, durableId, isCustomSetting }) {
+    if (sobjectName.endsWith('__mdt')) {
         return getCustomMetadataLink(durableId);
     } else if (isCustomSetting) {
         return `${host}/lightning/setup/CustomSettings/page?address=%2F${durableId}?setupid=CustomSettings`;
-    } else if (!isEmpty(durableId) && sobjectName.endsWith("__c")) {
+    } else if (!isEmpty(durableId) && sobjectName.endsWith('__c')) {
         return `${host}/lightning/setup/ObjectManager/${durableId}/Details/view`;
     } else {
         return `${host}/lightning/setup/ObjectManager/${sobjectName}/Details/view`;
@@ -587,27 +587,40 @@ export function getCustomMetadataLink(durableId) {
     return `${host}/lightning/setup/CustomMetadata/page?address=%2F${durableId}%3Fsetupid%3DCustomMetadata`;
 }
 
-export function getObjectFieldsSetupLink({host, sobjectName, durableId, isCustomSetting}) {
-    if (sobjectName.endsWith("__mdt")) {
+export function getObjectFieldsSetupLink({ host, sobjectName, durableId, isCustomSetting }) {
+    if (sobjectName.endsWith('__mdt')) {
         return getCustomMetadataLink(durableId);
     } else if (isCustomSetting) {
         return `${host}/lightning/setup/CustomSettings/page?address=%2F${durableId}?setupid=CustomSettings`;
-    } else if (!isEmpty(durableId) && (sobjectName.endsWith("__c") || sobjectName.endsWith("__kav"))) {
+    } else if (
+        !isEmpty(durableId) &&
+        (sobjectName.endsWith('__c') || sobjectName.endsWith('__kav'))
+    ) {
         return `${host}/lightning/setup/ObjectManager/${durableId}/FieldsAndRelationships/view`;
     } else {
         return `${host}/lightning/setup/ObjectManager/${sobjectName}/FieldsAndRelationships/view`;
     }
 }
 
-export function getObjectFieldDetailSetupLink({host, sobjectName, durableId, fieldName, fieldNameDurableId}) {
-    const _sobjectParam = (sobjectName.endsWith("__c") || sobjectName.endsWith("__kav")) ? durableId : sobjectName;
-    const _fieldParam = (sobjectName.endsWith("__c") || sobjectName.endsWith("__kav")) ? fieldNameDurableId : fieldName;
+export function getObjectFieldDetailSetupLink({
+    host,
+    sobjectName,
+    durableId,
+    fieldName,
+    fieldNameDurableId,
+}) {
+    const _sobjectParam =
+        sobjectName.endsWith('__c') || sobjectName.endsWith('__kav') ? durableId : sobjectName;
+    const _fieldParam =
+        sobjectName.endsWith('__c') || sobjectName.endsWith('__kav')
+            ? fieldNameDurableId
+            : fieldName;
 
     return `${host}/lightning/setup/ObjectManager/${_sobjectParam}/FieldsAndRelationships/${_fieldParam}/view`;
 }
 
-export function getObjectListLink({host, sobjectName, keyPrefix, isCustomSetting}) {
-    if (sobjectName.endsWith("__mdt")) {
+export function getObjectListLink({ host, sobjectName, keyPrefix, isCustomSetting }) {
+    if (sobjectName.endsWith('__mdt')) {
         return `${host}/lightning/setup/CustomMetadata/page?address=%2F${keyPrefix}`;
     } else if (isCustomSetting) {
         return `${host}/lightning/setup/CustomSettings/page?address=%2Fsetup%2Fui%2FlistCustomSettingsData.apexp?id=${keyPrefix}`;
@@ -616,8 +629,8 @@ export function getObjectListLink({host, sobjectName, keyPrefix, isCustomSetting
     }
 }
 
-export function getRecordTypesLink({host, sobjectName, durableId}) {
-    if (sobjectName.endsWith("__c") || sobjectName.endsWith("__kav")) {
+export function getRecordTypesLink({ host, sobjectName, durableId }) {
+    if (sobjectName.endsWith('__c') || sobjectName.endsWith('__kav')) {
         return `${host}/lightning/setup/ObjectManager/${durableId}/RecordTypes/view`;
     } else {
         return `${host}/lightning/setup/ObjectManager/${sobjectName}/RecordTypes/view`;
@@ -642,28 +655,34 @@ export function getSobject(href) {
     return null;
 }
 
-const extractRecordId = (href) => {
+const extractRecordId = href => {
     if (!href) return null;
     try {
         let url = new URL(href);
         // Find record ID from URL
         let searchParams = new URLSearchParams(url.search.substring(1));
         // Salesforce Classic and Console
-        if (url.hostname.endsWith(".salesforce.com") || url.hostname.endsWith(".salesforce.mil")) {
-            let match = url.pathname.match(/\/([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})(?:\/|$)/);
+        if (url.hostname.endsWith('.salesforce.com') || url.hostname.endsWith('.salesforce.mil')) {
+            let match = url.pathname.match(
+                /\/([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})(?:\/|$)/
+            );
             if (match) {
                 let res = match[1];
-                if (res.includes("0000") || res.length == 3) {
+                if (res.includes('0000') || res.length == 3) {
                     return match[1];
                 }
             }
         }
 
         // Lightning Experience and Salesforce1
-        if (url.hostname.endsWith(".lightning.force.com") || url.hostname.endsWith(".lightning.force.mil") || url.hostname.endsWith(".lightning.crmforce.mil")) {
+        if (
+            url.hostname.endsWith('.lightning.force.com') ||
+            url.hostname.endsWith('.lightning.force.mil') ||
+            url.hostname.endsWith('.lightning.crmforce.mil')
+        ) {
             let match;
 
-            if (url.pathname == "/one/one.app") {
+            if (url.pathname == '/one/one.app') {
                 // Pre URL change: https://docs.releasenotes.salesforce.com/en-us/spring18/release-notes/rn_general_enhanced_urls_cruc.htm
                 match = url.hash.match(/\/sObject\/([a-zA-Z0-9]+)(?:\/|$)/);
             } else {
@@ -675,25 +694,29 @@ const extractRecordId = (href) => {
         }
         // Visualforce
         {
-            let idParam = searchParams.get("id");
+            let idParam = searchParams.get('id');
             if (idParam) {
                 return idParam;
             }
         }
         // Visualforce page that does not follow standard Visualforce naming
         for (let [, p] of searchParams) {
-            if (p.match(/^([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/) && p.includes("0000")) {
+            if (
+                p.match(/^([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/) &&
+                p.includes('0000')
+            ) {
                 return p;
             }
         }
-
     } catch (e) {
-        console.error('Error while extracting the recordId')
+        console.error('Error while extracting the recordId');
     }
     return null;
-}
+};
 
 export function getRecordId(href) {
     const recordId = extractRecordId(href);
-    return recordId && recordId.match(/^([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/) ? recordId : null;
+    return recordId && recordId.match(/^([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/)
+        ? recordId
+        : null;
 }

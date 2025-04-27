@@ -1,4 +1,3 @@
-
 .slds-breadcrumb .slds-breadcrumb__item:first-child > span {
     --slds-c-breadcrumbs-spacing-inline-start: 0;
 }
@@ -6,9 +5,15 @@
 .slds-breadcrumb .slds-breadcrumb__item > span {
     display: block;
     padding-top: 0;
-    padding-right: var(--slds-c-breadcrumbs-spacing-inline-end, var(--sds-c-breadcrumbs-spacing-inline-end, 0.5rem));
+    padding-right: var(
+        --slds-c-breadcrumbs-spacing-inline-end,
+        var(--sds-c-breadcrumbs-spacing-inline-end, 0.5rem)
+    );
     padding-bottom: 0;
-    padding-left: var(--slds-c-breadcrumbs-spacing-inline-start, var(--sds-c-breadcrumbs-spacing-inline-start, 0.5rem));
+    padding-left: var(
+        --slds-c-breadcrumbs-spacing-inline-start,
+        var(--sds-c-breadcrumbs-spacing-inline-start, 0.5rem)
+    );
 }
 
 .tableFixHead table {

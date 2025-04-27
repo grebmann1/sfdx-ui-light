@@ -14,7 +14,10 @@
         "start:heroku": "NODE_ENV=production REDIRECT_URI=https://sf-toolkit.com/oauth2/callback node -r dotenv/config src/server/server-prod.js",
         "heroku-postbuild": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --clean",
         "start:prod:build": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --minify --clean;",
-        "start:prod:run": "NODE_ENV=production node -r dotenv/config src/server/server-prod.js"
+        "start:prod:run": "NODE_ENV=production node -r dotenv/config src/server/server-prod.js",
+        "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,html}\"",
+        "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,scss,html}\"",
+        "lint": "npm run format:check"
     },
     "nx": {
         "targets": {
@@ -111,6 +114,7 @@
         "rollup-plugin-postcss": "^4.0.2",
         "rollup-plugin-serve": "^3.0.0",
         "serve-handler": "^6.1.5",
-        "sfdx-node": "^3.8.0"
+        "sfdx-node": "^3.8.0",
+        "prettier": "^3.2.5"
     }
 }

@@ -1,101 +1,115 @@
 <template>
     <div class={pageClass}>
         <builder-editor>
-            <builder-header slot="header" title="Explorer" sub-title="Record Viewer" icon-name="standard:record">
+            <builder-header
+                slot="header"
+                title="Explorer"
+                sub-title="Record Viewer"
+                icon-name="standard:record">
                 <div slot="actions" class="slds-builder-toolbar__actions">
-                    <lightning-button-icon-stateful 
-                        class="slds-p-left_xx-small" 
-                        selected={isRecentToggled} 
-                        variant="border-filled" 
-                        icon-name="utility:budget_period" 
-                        size="large" 
-                        onclick={handleRecentToggle}
-                    ></lightning-button-icon-stateful>
+                    <lightning-button-icon-stateful
+                        class="slds-p-left_xx-small"
+                        selected={isRecentToggled}
+                        variant="border-filled"
+                        icon-name="utility:budget_period"
+                        size="large"
+                        onclick={handleRecentToggle}></lightning-button-icon-stateful>
                 </div>
                 <div slot="meta" class="slds-flex-row slds-align-flex-end">
-                    <lightning-input lwc:ref="url" 
+                    <lightning-input
+                        lwc:ref="url"
                         class="slds-horizontal-input-url slds-p-left_x-small"
-                        label="Search records" 
+                        label="Search records"
                         type="text"
-                        placeholder="RecordId : 001Hr000023GsE9IAK or url : https://demo.lightning.force.com/lightning/r/Account/001Hr000023GsE9IAK/view" 
+                        placeholder="RecordId : 001Hr000023GsE9IAK or url : https://demo.lightning.force.com/lightning/r/Account/001Hr000023GsE9IAK/view"
                         value={searchInputValue}
-                        onchange={searchInput_handleChange}
-                    ></lightning-input>
-                    <lightning-button 
-                        class="slds-p-left_xx-small" 
+                        onchange={searchInput_handleChange}></lightning-input>
+                    <lightning-button
+                        class="slds-p-left_xx-small"
                         label={i18n.RECORDVIEWER_PANEL_SAVE}
                         variant="brand"
-                        onclick={executeSearchClick} 
-                        disabled={isSearchButtonDisabled}
-                    ></lightning-button>
+                        onclick={executeSearchClick}
+                        disabled={isSearchButtonDisabled}></lightning-button>
                 </div>
                 <template lwc:if={isMetaDisplayed}>
-                    <div slot="meta" class="slds-page-header__meta-text slds-flex-row slds-grid_align-spread slds-grid_vertical-align-end slds-p-top_x-small">
+                    <div
+                        slot="meta"
+                        class="slds-page-header__meta-text slds-flex-row slds-grid_align-spread slds-grid_vertical-align-end slds-p-top_x-small">
                         <p class="slds-p-left_x-small">Refreshed {refreshedDateFormatted}</p>
                         <div class="slds-flex-row slds-grid_vertical-align-end">
-                            <lightning-input lwc:ref="filter" 
-                                    class=""
-                                    placeholder="Enter your filter"
-                                    label="Filter"
-                                    onchange={filterInput_handleChange}
-                                    type="search"
-                                    variant="label-hidden"
-                                    value={filterInputValue}
-                            ></lightning-input>
+                            <lightning-input
+                                lwc:ref="filter"
+                                class=""
+                                placeholder="Enter your filter"
+                                label="Filter"
+                                onchange={filterInput_handleChange}
+                                type="search"
+                                variant="label-hidden"
+                                value={filterInputValue}></lightning-input>
                         </div>
                     </div>
                 </template>
             </builder-header>
             <article class="full-page-body slds-card">
-                <div class="slds-is-relative slds-full-width slds-full-height slds-flex-column" style="min-height:200px;">
+                <div
+                    class="slds-is-relative slds-full-width slds-full-height slds-flex-column"
+                    style="min-height: 200px">
                     <template lwc:if={isLoading}>
                         <slds-spinner alternative-text="Loading" size="small"></slds-spinner>
                     </template>
                     <!-- Tabs -->
-                    <slds-tabset lwc:ref="recordViewerTab" variant="scoped" class="slds-without-tab slds-tabs_max-300" active-tab-value={currentTab} onaddtab={handleAddTab} onclosetab={handleCloseTab} is-remove-tab-event-disabled>
+                    <slds-tabset
+                        lwc:ref="recordViewerTab"
+                        variant="scoped"
+                        class="slds-without-tab slds-tabs_max-300"
+                        active-tab-value={currentTab}
+                        onaddtab={handleAddTab}
+                        onclosetab={handleCloseTab}
+                        is-remove-tab-event-disabled>
                         <template for:each={formattedTabs} for:item="item">
-                            <slds-tab key={item.id} 
-                                label={item.name} 
-                                value={item.id} 
+                            <slds-tab
+                                key={item.id}
+                                label={item.name}
+                                value={item.id}
                                 onactive={handleSelectTab}
-                                is-closeable
-                            ></slds-tab>
+                                is-closeable></slds-tab>
                         </template>
                     </slds-tabset>
                     <!-- Content -->
 
                     <template lwc:if={isNoRecord}>
-                        <illustration-empty size="large" title="No record" sub-title="This record wasn't found in your org."></illustration-empty>
+                        <illustration-empty
+                            size="large"
+                            title="No record"
+                            sub-title="This record wasn't found in your org."></illustration-empty>
                     </template>
 
                     <template lwc:if={isEmptyTab}>
-                        <illustration-empty size="large" title="Click on Search to retrieve a record" sub-title="You can use the recordId or a valid salesforce url"></illustration-empty>
-                    </template>
-                    
-                    <template lwc:if={isViewerDisplayed}>
-                        <recordviewer-record-explorer 
-                            lwc:ref="recordViewerExplorer"
-                            class="slds-fill-height slds-flex-column" 
-                            record-id={recordId}
-                            ondataload={handleRecordExplorerDataLoad}
-                        ></recordviewer-record-explorer>
+                        <illustration-empty
+                            size="large"
+                            title="Click on Search to retrieve a record"
+                            sub-title="You can use the recordId or a valid salesforce url"></illustration-empty>
                     </template>
 
-                    
-                    
+                    <template lwc:if={isViewerDisplayed}>
+                        <recordviewer-record-explorer
+                            lwc:ref="recordViewerExplorer"
+                            class="slds-fill-height slds-flex-column"
+                            record-id={recordId}
+                            ondataload={handleRecordExplorerDataLoad}></recordviewer-record-explorer>
+                    </template>
                 </div>
             </article>
             <!-- RECENT Record Viewer -->
-            <builder-storage-panel 
-                title="Record List" 
-                is-open={isRecentToggled} 
+            <builder-storage-panel
+                title="Record List"
+                is-open={isRecentToggled}
                 recent-title={i18n.RECORDVIEWER_PANEL_RECENT}
-                recent-items={recentRecordItems} 
+                recent-items={recentRecordItems}
                 onclose={handleRecentToggle}
                 onremoveitem={handleRemoveItem}
                 onselectitem={handleSelectItem}
-                is-saved-item-disabled
-            ></builder-storage-panel>
+                is-saved-item-disabled></builder-storage-panel>
         </builder-editor>
     </div>
 </template>

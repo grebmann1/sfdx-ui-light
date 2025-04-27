@@ -5,10 +5,12 @@
             <span class="slds-icon_container slds-current-color">
                 <svg class="slds-icon slds-icon_small" aria-hidden="true">
                     <template lwc:if={isLeftToggled}>
-                        <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#toggle_panel_left"></use>
+                        <use
+                            xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#toggle_panel_left"></use>
                     </template>
                     <template lwc:else>
-                        <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#toggle_panel_right"></use>
+                        <use
+                            xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#toggle_panel_right"></use>
                     </template>
                 </svg>
                 <span class="slds-assistive-text">Toggle</span>
@@ -22,9 +24,7 @@
                 <h1 class="slds-builder-header__item-label">{i18n.HEADER_API_USAGE}: {apiUsage}</h1>
             </div>
         </template>
-        <div class="slds-builder-header__utilities-item">
-            
-        </div>
+        <div class="slds-builder-header__utilities-item"></div>
     </div>
     <!-- Recent Queries -->
     <div class="slds-builder-header__item slds-builder-header__utilities">
@@ -33,8 +33,6 @@
                 <h1 class="slds-builder-header__item-label">{i18n.HEADER_API_USAGE}: {apiUsage}</h1>
             </div>
         </template>
-        <div class="slds-builder-header__utilities-item">
-            
-        </div>
+        <div class="slds-builder-header__utilities-item"></div>
     </div>
 </template>

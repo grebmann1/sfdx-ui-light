@@ -1,19 +1,28 @@
-import { api,track } from "lwc";
+import { api, track } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { isEmpty,isElectronApp,classSet,isUndefinedOrNull,isNotUndefinedOrNull,runActionAfterTimeOut,formatFiles,sortObjectsByField,removeDuplicates } from 'shared/utils';
+import {
+    isEmpty,
+    isElectronApp,
+    classSet,
+    isUndefinedOrNull,
+    isNotUndefinedOrNull,
+    runActionAfterTimeOut,
+    formatFiles,
+    sortObjectsByField,
+    removeDuplicates,
+} from 'shared/utils';
 
 const defaultConfig = {
-    isOpen:false
-}
+    isOpen: false,
+};
 
 export default class Card extends ToolkitElement {
-
     @api item;
     @api isOpen = false;
 
     @track config;
 
-    connectedCallback(){
+    connectedCallback() {
         this.initSettings();
     }
 
@@ -21,74 +30,70 @@ export default class Card extends ToolkitElement {
     initSettings = () => {
         const _configText = localStorage.getItem(this.configName);
         this.config = defaultConfig;
-        try{
-            if(isNotUndefinedOrNull(_configText)){
+        try {
+            if (isNotUndefinedOrNull(_configText)) {
                 this.config = JSON.parse(_configText);
             }
-        }catch(e){
+        } catch (e) {
             console.error('Issue in card config !');
         }
         // Process
-        if(this.config.isOpen){
+        if (this.config.isOpen) {
             this.isOpen = true;
         }
-    }
+    };
 
     saveConfig = () => {
-        localStorage.setItem(this.configName,JSON.stringify(this.config));
-    }
+        localStorage.setItem(this.configName, JSON.stringify(this.config));
+    };
 
-    
     /** events **/
 
-    handleCardHeaderClick = (e) => {
+    handleCardHeaderClick = e => {
         e.stopPropagation();
         e.preventDefault();
         this.isOpen = !this.isOpen;
         this.config.isOpen = this.isOpen; // copy to config;
         this.saveConfig();
+    };
 
-    } 
-
-    dummyCardMenuClick = (e) => {
+    dummyCardMenuClick = e => {
         e.stopPropagation();
         e.preventDefault();
-    }
-
+    };
 
     /** getters */
 
-    get isOpenFormatted(){
+    get isOpenFormatted() {
         return this.isOpen && this.items.length > 0;
     }
 
-    get cardItemsClass(){
+    get cardItemsClass() {
         return classSet('card-items')
             .add({
-                'slds-is-open':this.isOpenFormatted,
-                'slds-hide':!this.isOpenFormatted
+                'slds-is-open': this.isOpenFormatted,
+                'slds-hide': !this.isOpenFormatted,
             })
             .toString();
     }
 
-    get buttonIcon(){
-        return this.isOpenFormatted?'utility:chevrondown':'utility:chevronright';
+    get buttonIcon() {
+        return this.isOpenFormatted ? 'utility:chevrondown' : 'utility:chevronright';
     }
 
-    get configName(){
+    get configName() {
         return `card-${this.title}`;
     }
 
-    get title(){
+    get title() {
         return this.item?.title || 'Default';
     }
 
-    get items(){
+    get items() {
         return this.item?.items || [];
     }
 
-    get itemMessage(){
+    get itemMessage() {
         return `${this.items.length} orgs`;
     }
-
 }

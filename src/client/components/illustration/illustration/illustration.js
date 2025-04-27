@@ -1,8 +1,7 @@
-import { LightningElement,api } from 'lwc';
-import { classSet,normalizeString as normalize  } from 'shared/utils';
+import { LightningElement, api } from 'lwc';
+import { classSet, normalizeString as normalize } from 'shared/utils';
 
 export default class Illustration extends LightningElement {
-
     @api title;
     @api subTitle;
 
@@ -16,19 +15,19 @@ export default class Illustration extends LightningElement {
     set size(val) {
         this._size = val;
     }
-    
 
     /** Getter */
 
-
-    get normalizedSize(){
+    get normalizedSize() {
         return normalize(this.size, {
             fallbackValue: 'small',
-            validValues: ['small','large'],
+            validValues: ['small', 'large'],
         });
     }
 
-    get illustrationClass(){
-        return classSet('slds-illustration').add(`slds-illustration_${this.normalizedSize}`).toString();
+    get illustrationClass() {
+        return classSet('slds-illustration')
+            .add(`slds-illustration_${this.normalizedSize}`)
+            .toString();
     }
 }

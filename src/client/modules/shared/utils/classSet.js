@@ -24,7 +24,7 @@ const proto = {
         return Object.keys(this)
             .filter(key => this[key])
             .join(' ');
-    }
+    },
 };
 
 export function classSet(config) {

@@ -1,18 +1,23 @@
 <!-- textInputWidget.html -->
 <template>
     <div class="prompt-widget-container">
-        <section class="slds-popover slds-popover_prompt slds-popover_brand" role="dialog" aria-describedby="dialog-body" aria-labelledby="dialog-heading">
+        <section
+            class="slds-popover slds-popover_prompt slds-popover_brand"
+            role="dialog"
+            aria-describedby="dialog-body"
+            aria-labelledby="dialog-heading">
             <div class="slds-p-horizontal_xx-small slds-flex-row slds-m-top_xx-small">
-                <textarea 
-                    class="slds-textarea" 
-                    part="textarea" 
+                <textarea
+                    class="slds-textarea"
+                    part="textarea"
                     placeholder="Enter your instructions"
                     disabled={isLoading}
                     onkeydown={handleKeyDown}
-                    oninput={handleInput}
-                ></textarea>
-                <button class="slds-button slds-button_icon slds-button_icon-small" 
-                    title="Close dialog" onclick={handleClose}>
+                    oninput={handleInput}></textarea>
+                <button
+                    class="slds-button slds-button_icon slds-button_icon-small"
+                    title="Close dialog"
+                    onclick={handleClose}>
                     <svg class="slds-button__icon" aria-hidden="true">
                         <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
                     </svg>
@@ -21,27 +26,36 @@
             </div>
 
             <footer>
-                <div class="slds-grid slds-grid_vertical-align-center slds-p-horizontal_small slds-p-vertical_xx-small">
+                <div
+                    class="slds-grid slds-grid_vertical-align-center slds-p-horizontal_small slds-p-vertical_xx-small">
                     <template lwc:if={hasText}>
-                        <lightning-button class="slds-col_bump-right"
-                            label={label} 
-                            variant="brand" 
+                        <lightning-button
+                            class="slds-col_bump-right"
+                            label={label}
+                            variant="brand"
                             disabled={isLoading}
-                            onclick={handleGenerate}
-                        ></lightning-button>
+                            onclick={handleGenerate}></lightning-button>
                     </template>
                     <template lwc:else>
                         <template lwc:if={isApprovalDisplayed}>
-                            <lightning-button class="slds-p-right_small"
-                                label="Approve" 
-                                variant="brand" 
+                            <lightning-button
+                                class="slds-p-right_small"
+                                label="Approve"
+                                variant="brand"
                                 disabled={isLoading}
-                                onclick={handleApprove}
-                            ></lightning-button>
-                            <button class="slds-button slds-button_text slds-col_bump-right" onclick={handleClose}>Esc to close</button>
+                                onclick={handleApprove}></lightning-button>
+                            <button
+                                class="slds-button slds-button_text slds-col_bump-right"
+                                onclick={handleClose}>
+                                Esc to close
+                            </button>
                         </template>
                         <template lwc:else>
-                            <button class="slds-button slds-button_text slds-col_bump-right" onclick={handleClose}>Esc to close</button>
+                            <button
+                                class="slds-button slds-button_text slds-col_bump-right"
+                                onclick={handleClose}>
+                                Esc to close
+                            </button>
                         </template>
                     </template>
                 </div>

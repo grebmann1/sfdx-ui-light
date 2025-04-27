@@ -1,11 +1,11 @@
 <template>
     <lightning-modal-header label="Profile/Permission selector"></lightning-modal-header>
-    <lightning-modal-body> 
+    <lightning-modal-body>
         <!-- Table - START -->
         <div>
             <div lwc:dom="manual" class="custom-table"></div>
         </div>
-        
+
         <!-- Table - END-->
     </lightning-modal-body>
     <lightning-modal-footer>
@@ -14,14 +14,12 @@
             disabled={saveInProcess}
             variant="neutral"
             label="Cancel"
-            onclick={handleCloseClick}
-        ></lightning-button>
+            onclick={handleCloseClick}></lightning-button>
         <lightning-button
             class="slds-button"
             disabled={saveInProcess}
             variant="brand"
             label="Select"
-            onclick={handleApplyClick}
-        ></lightning-button>
-      </lightning-modal-footer>
+            onclick={handleApplyClick}></lightning-button>
+    </lightning-modal-footer>
 </template>

@@ -1,28 +1,17 @@
-import { api, LightningElement,createElement } from 'lwc';
+import { api, LightningElement, createElement } from 'lwc';
 import { marked } from 'shared/markdown';
-import { isEmpty,classSet,normalizeString as normalize } from 'shared/utils';
+import { isEmpty, classSet, normalizeString as normalize } from 'shared/utils';
 import sldsCodeBlock from 'slds/codeBlock';
-import MarkdownViewerEditorModal from "slds/MarkdownViewerEditorModal";
+import MarkdownViewerEditorModal from 'slds/MarkdownViewerEditorModal';
 
 export default class MarkdownViewer extends LightningElement {
-    
     @api value;
 
-
-
-
-    connectedCallback(){
-        
+    connectedCallback() {
         window.setTimeout(() => {
             this.getDown(this.value);
-        },1);
-        
+        }, 1);
     }
-
-
-    
-    
-    
 
     /** Methods */
 
@@ -30,78 +19,76 @@ export default class MarkdownViewer extends LightningElement {
     showEditor = () => {
         //this.variant = VARIANTS.EDITOR;
         MarkdownViewerEditorModal.open({
-            title:'Edit Markdown',
-            value:this.value,
-            size:'full'
+            title: 'Edit Markdown',
+            value: this.value,
+            size: 'full',
         }).then(async data => {
-            if(data){
-                const {value} = data;
-                // update the value 
+            if (data) {
+                const { value } = data;
+                // update the value
                 this.value = value;
                 this.getDown(this.value);
-                this.dispatchEvent(new CustomEvent("change", { detail:{value},bubbles: true,composed: true }));
+                this.dispatchEvent(
+                    new CustomEvent('change', { detail: { value }, bubbles: true, composed: true })
+                );
             }
-        })
-    }
+        });
+    };
 
-    getDown = (content) =>{
+    getDown = content => {
         this.setMarkdown(content);
-    }
+    };
 
-    setMarkdown = (markdown) =>{
+    setMarkdown = markdown => {
         var html = marked()(markdown);
         this.refs.container.innerHTML = html;
         this.enable_codeViewer();
         //this.enable_mermaid();
-    }
+    };
 
     enable_codeViewer = () => {
         //console.log('transformCodeBlockToComponents');
-        const mapping = {js: "javascript",apex:"apex"};
+        const mapping = { js: 'javascript', apex: 'apex' };
         // pre .language-java,pre .language-apex,pre .language-javascript,pre .language-soql
-        this.refs.container.querySelectorAll('pre [class^="language-"]')
-        .forEach( el => {
+        this.refs.container.querySelectorAll('pre [class^="language-"]').forEach(el => {
             //const newTarget = el.parentNode;
-            
-            el.setAttribute("lwc:dom", "manual");
+
+            el.setAttribute('lwc:dom', 'manual');
             const list = el.classList;
-            let c = "";
+            let c = '';
             for (const d in list)
-                if (typeof list[d] == "string") {
+                if (typeof list[d] == 'string') {
                     const p = list[d];
-                    p.startsWith("language-") && (c = p.split("-")[1])
+                    p.startsWith('language-') && (c = p.split('-')[1]);
                 }
-            const newElement = createElement("slds-code-block", {
-                is: sldsCodeBlock
+            const newElement = createElement('slds-code-block', {
+                is: sldsCodeBlock,
             });
             //console.log('createElement',mapping[c] || c);
             Object.assign(newElement, {
                 codeBlock: el.innerHTML,
                 language: mapping[c] || c,
-                title: "",
+                title: '',
             }),
-            el.innerHTML = "",
-            el.appendChild(newElement)
+                (el.innerHTML = ''),
+                el.appendChild(newElement);
             //newTarget.replaceWith(newElement)
-        })
-    }
+        });
+    };
 
     enable_mermaid = () => {
-        this.refs.container.querySelectorAll("pre .language-mermaid")
-        .forEach( async el => {
+        this.refs.container.querySelectorAll('pre .language-mermaid').forEach(async el => {
             this.renderMermaid(el);
         });
-    }
+    };
 
-
-    fixDiagram = (input) => {
-        
-        function fixClassName(line){
-            if(isEmpty(line) || line.includes('classDiagram')) return line;
+    fixDiagram = input => {
+        function fixClassName(line) {
+            if (isEmpty(line) || line.includes('classDiagram')) return line;
 
             const match = line.match(/(class|Class)([a-zA-Z0-9]*)\s*\{/);
             if (match) {
-                const oldClassName = match[1]+match[2];
+                const oldClassName = match[1] + match[2];
                 const newClassName = match[2];
                 //const newClassName = camelCaseToLowercaseWords(className); // we dont use, it's more complicate
                 return line.replace(oldClassName, `class ${newClassName}`);
@@ -109,12 +96,12 @@ export default class MarkdownViewer extends LightningElement {
             return line;
         }
 
-        function fixClassNameInLinks(line){
-            if(isEmpty(line) || line.includes('classDiagram')) return line;
+        function fixClassNameInLinks(line) {
+            if (isEmpty(line) || line.includes('classDiagram')) return line;
             const match = line.match(/(class|Class)([a-zA-Z0-9]+)/);
             if (match) {
                 return line.replace(/(class|Class)([a-zA-Z0-9]+)/g, '$2');
-            }else{
+            } else {
                 return line;
             }
         }
@@ -122,59 +109,52 @@ export default class MarkdownViewer extends LightningElement {
         // Split the input into lines for easier manipulation.
         const lines = input.split('\n');
         let fixedDiagram = [];
-    
+
         lines.forEach(line => {
             //line = line.trim();
-    
+
             /*if (line.startsWith('classDiagram')) {
                 isValidDiagram = true;
             }*/
-    
+
             // Fix class names
             line = fixClassName(line);
             //console.log('line1',line);
             line = fixClassNameInLinks(line);
             //console.log('line2',line);
             fixedDiagram.push(line);
-
         });
-    
+
         // Join the fixed lines back into a single string.
         //console.log('test',fixedDiagram.join('\n'));
         return fixedDiagram.join('\n');
-    }
-    
+    };
 
-    renderMermaid = async (el) => {
-
-        
-
-        try{
+    renderMermaid = async el => {
+        try {
             const diagramText = this.fixDiagram(el.innerText);
             //console.log('diagramText');
             //console.log(diagramText);
-            if(await mermaid.parse(diagramText)){
-                const { svg,bindFunctions } = await window.mermaid.render('graphDiv',diagramText);
+            if (await mermaid.parse(diagramText)) {
+                const { svg, bindFunctions } = await window.mermaid.render('graphDiv', diagramText);
                 el.innerHTML = svg;
-            }else{
+            } else {
                 //console.log('Invalid format')
             }
-            
-        }catch(e){
+        } catch (e) {
             //console.log('Unknown diagram & error',e);
         }
-    }
+    };
 
     /** Getters **/
 
     @api
-    get internalHtml(){
+    get internalHtml() {
         return this.refs.container.innerHTML;
     }
 
     @api
-    get internalElement(){
+    get internalElement() {
         return this.refs.container;
     }
-    
 }

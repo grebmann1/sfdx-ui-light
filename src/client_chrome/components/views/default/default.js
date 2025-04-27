@@ -1,12 +1,11 @@
-import {api, LightningElement, wire} from "lwc";
-import {store as legacyStore} from 'shared/store';
-import {connectStore} from 'core/store';
+import { api, LightningElement, wire } from 'lwc';
+import { store as legacyStore } from 'shared/store';
+import { connectStore } from 'core/store';
 
-import {normalizeString as normalize} from "shared/utils";
-import {PANELS} from 'extension/utils';
+import { normalizeString as normalize } from 'shared/utils';
+import { PANELS } from 'extension/utils';
 
 export default class Default extends LightningElement {
-
     @api currentApplication;
     @api recordId;
     @api panel = PANELS.DEFAULT;
@@ -23,7 +22,7 @@ export default class Default extends LightningElement {
     get normalizedPanel() {
         return normalize(this.panel, {
             fallbackValue: PANELS.SALESFORCE,
-            validValues: Object.values(PANELS)
+            validValues: Object.values(PANELS),
         });
     }
 
@@ -39,8 +38,8 @@ export default class Default extends LightningElement {
         return this.isSalesforcePanel ? 'slds-hide' : '';
     }
 
-    @wire(connectStore, {store: legacyStore})
-    applicationChange({application}) {
+    @wire(connectStore, { store: legacyStore })
+    applicationChange({ application }) {
         if (application?.type === 'FAKE_NAVIGATE') {
             const pageRef = application.target;
             this.loadFromNavigation(pageRef);
@@ -54,7 +53,7 @@ export default class Default extends LightningElement {
 
     /** Events **/
 
-    handlePanelChange = (e) => {
+    handlePanelChange = e => {
         //console.log('handlePanelChange',e.detail);
         //this.previousPanel = this.panel;
         if (this.panel !== e.detail.panel) {
@@ -84,19 +83,17 @@ export default class Default extends LightningElement {
         this.panel = PANELS.DEFAULT;
     };
 
-    loadFromNavigation = async ({state}) => {
+    loadFromNavigation = async ({ state }) => {
         //('documentation - loadFromNavigation');
-        const {applicationName, attribute1} = state;
+        const { applicationName, attribute1 } = state;
         //console.log('applicationName',applicationName);
         if (applicationName === 'documentation' || applicationName === 'home') {
             this.handlePanelChange({
                 detail: {
                     panel: PANELS.DEFAULT,
-                    isBackButtonDisplayed: true
-                }
-            })
+                    isBackButtonDisplayed: true,
+                },
+            });
         }
-    }
-
-
+    };
 }

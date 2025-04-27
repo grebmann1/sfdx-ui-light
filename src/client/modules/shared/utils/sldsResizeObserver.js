@@ -5,7 +5,7 @@ export class LightningResizeObserver {
     constructor(resizeCallback) {
         this._resizeObserverAvailable = typeof ResizeObserver === 'function';
 
-        const delayedCallback = (callback) => {
+        const delayedCallback = callback => {
             if (this._running) {
                 return;
             }
@@ -18,15 +18,10 @@ export class LightningResizeObserver {
                     this._running = false;
                 });
         };
-        this._delayedResizeCallback = delayedCallback.bind(
-            this,
-            resizeCallback
-        );
+        this._delayedResizeCallback = delayedCallback.bind(this, resizeCallback);
 
         if (this._resizeObserverAvailable) {
-            this._resizeObserver = new ResizeObserver(
-                this._delayedResizeCallback
-            );
+            this._resizeObserver = new ResizeObserver(this._delayedResizeCallback);
         }
     }
 

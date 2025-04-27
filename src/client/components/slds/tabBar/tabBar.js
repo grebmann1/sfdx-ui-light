@@ -1,13 +1,12 @@
-
 import { api, LightningElement, track } from 'lwc';
-import { classSet,calculateOverflow,LightningResizeObserver } from 'shared/utils';
+import { classSet, calculateOverflow, LightningResizeObserver } from 'shared/utils';
 import { handleKeyDownOnTabList } from './keyboard';
 
 const i18n = {
     more: 'More',
     moreAlternativeText: 'More',
     moreTitle: 'More',
-    errorStateAlternativeText: 'Error'
+    errorStateAlternativeText: 'Error',
 };
 
 const RECOMPUTE_OVERFLOW_THRESHOLD_PX = 30;
@@ -56,7 +55,7 @@ export default class SldsTabBar extends LightningElement {
             if (this._resizeObserver) {
                 this._resizeObserver.disconnect();
 
-                this._allTabs.forEach((tab) => {
+                this._allTabs.forEach(tab => {
                     tab.visible = true;
                 });
             }
@@ -71,16 +70,20 @@ export default class SldsTabBar extends LightningElement {
     set tabHeaders(tabHeaders) {
         tabHeaders = tabHeaders || [];
         this._tabHeaders = tabHeaders;
-        const allTabs = tabHeaders.map((tab) => {
-            const classNames = this._tabClass({isAdd:tab.isAddTabEnabled});
+        const allTabs = tabHeaders.map(tab => {
+            const classNames = this._tabClass({ isAdd: tab.isAddTabEnabled });
             //console.log('classNames',classNames);
             const linkClassNames = this.computedLinkClass;
-            const tabActionClass = classSet('slds-col_bump-left slds-p-left_none slds-p-right_xx-small').add({'slds-is-draft-close':tab.isDraft && tab.isCloseable}).toString();
+            const tabActionClass = classSet(
+                'slds-col_bump-left slds-p-left_none slds-p-right_xx-small'
+            )
+                .add({ 'slds-is-draft-close': tab.isDraft && tab.isCloseable })
+                .toString();
             return {
                 label: tab.label,
                 title: tab.title || tab.label,
                 isCloseable: tab.isCloseable,
-                isDraft : tab.isDraft,
+                isDraft: tab.isDraft,
                 linkId: tab.value + '__item',
                 domId: tab.domId,
                 value: String(tab.value),
@@ -99,15 +102,13 @@ export default class SldsTabBar extends LightningElement {
                 counter: tab.counter,
                 badgeColor: tab.badgeColor,
                 badgePositionClass: tab.badgePositionClass,
-                isAddTabEnabled: tab.isAddTabEnabled
+                isAddTabEnabled: tab.isAddTabEnabled,
             };
         });
 
         let selectedTab = allTabs[0];
         if (this._selectedTab) {
-            selectedTab = allTabs.find(
-                (tab) => tab.value === this._selectedTab.value
-            );
+            selectedTab = allTabs.find(tab => tab.value === this._selectedTab.value);
 
             if (!selectedTab) {
                 selectedTab = allTabs[0];
@@ -139,9 +140,7 @@ export default class SldsTabBar extends LightningElement {
         if (!this._selectedTab) {
             return;
         }
-        const tab = this.template.querySelector(
-            `a[data-tab-value="${this._selectedTab.value}"]`
-        );
+        const tab = this.template.querySelector(`a[data-tab-value="${this._selectedTab.value}"]`);
 
         if (tab) {
             tab.focus();
@@ -162,10 +161,9 @@ export default class SldsTabBar extends LightningElement {
 
         return classSet('slds-truncate')
             .add({
-                'slds-tabs_default__link':
-                    !isScopedVariant && !isVerticalVariant,
+                'slds-tabs_default__link': !isScopedVariant && !isVerticalVariant,
                 'slds-tabs_scoped__link': isScopedVariant,
-                'slds-vertical-tabs__link': isVerticalVariant
+                'slds-vertical-tabs__link': isVerticalVariant,
             })
             .toString();
     }
@@ -179,11 +177,11 @@ export default class SldsTabBar extends LightningElement {
     }
 
     get _visibleTabs() {
-        return this._allTabs.filter((tab) => tab.visible);
+        return this._allTabs.filter(tab => tab.visible);
     }
 
-    get _hiddenTabs(){
-        return this._allTabs.filter((tab) => !tab.visible && !tab.isAddTabEnabled);
+    get _hiddenTabs() {
+        return this._allTabs.filter(tab => !tab.visible && !tab.isAddTabEnabled);
     }
 
     get computedAriaOrientation() {
@@ -197,21 +195,17 @@ export default class SldsTabBar extends LightningElement {
             .add({
                 'slds-tabs_scoped__nav': isScoped,
                 'slds-vertical-tabs__nav': isVertical,
-                'slds-tabs_default__nav': !isScoped && !isVertical
+                'slds-tabs_default__nav': !isScoped && !isVertical,
             })
             .toString();
     }
 
     get computedLeftIconClass() {
-        return this.isVerticalVariant
-            ? 'slds-vertical-tabs__left-icon'
-            : 'slds-tabs__left-icon';
+        return this.isVerticalVariant ? 'slds-vertical-tabs__left-icon' : 'slds-tabs__left-icon';
     }
 
     get computedRightIconClass() {
-        return this.isVerticalVariant
-            ? 'slds-vertical-tabs__right-icon'
-            : 'slds-tabs__right-icon';
+        return this.isVerticalVariant ? 'slds-vertical-tabs__right-icon' : 'slds-tabs__right-icon';
     }
 
     get computedOverflowClass() {
@@ -232,23 +226,23 @@ export default class SldsTabBar extends LightningElement {
         event.preventDefault();
 
         const clickedTabValue = event.target.getAttribute('data-tab-value');
-        
+
         this._selectTabAndFireSelectEvent(clickedTabValue, { hasFocus: true });
     }
 
-    
-    handleAddTabClick(event){
+    handleAddTabClick(event) {
         event.stopPropagation();
         this.dispatchEvent(
             new CustomEvent('addtab', {
                 detail: {},
-                bubbles: true,composed: true 
+                bubbles: true,
+                composed: true,
             })
         );
     }
 
     _findTabByValue(tabValue) {
-        return this._allTabs.find((tab) => tab.value === tabValue);
+        return this._allTabs.find(tab => tab.value === tabValue);
     }
 
     _selectTabAndFireSelectEvent(tabValue, options) {
@@ -260,8 +254,8 @@ export default class SldsTabBar extends LightningElement {
             new CustomEvent('select', {
                 detail: {
                     value: tab.value,
-                    label: tab.label
-                }
+                    label: tab.label,
+                },
             })
         );
     }
@@ -287,7 +281,7 @@ export default class SldsTabBar extends LightningElement {
         tab.ariaSelected = 'true';
         tab.class = this._tabClass({
             selected: true,
-            hasFocus: options.hasFocus
+            hasFocus: options.hasFocus,
         });
 
         tab.tabIndex = 0;
@@ -295,17 +289,17 @@ export default class SldsTabBar extends LightningElement {
         this._selectedTab = tab;
     }
 
-    handleCloseTab(event){
+    handleCloseTab(event) {
         event.stopPropagation();
         const tabValue = event.target.getAttribute('data-tab-value');
         this.dispatchEvent(
             new CustomEvent('closetab', {
-                detail: {value:tabValue},
-                bubbles: true,composed: true 
+                detail: { value: tabValue },
+                bubbles: true,
+                composed: true,
             })
         );
     }
-
 
     handleBlur(event) {
         const tabValue = event.target.getAttribute('data-tab-value');
@@ -313,7 +307,7 @@ export default class SldsTabBar extends LightningElement {
         if (tab) {
             tab.class = this._tabClass({
                 selected: this._selectedTab.value === tab.value,
-                hasFocus: false
+                hasFocus: false,
             });
         }
     }
@@ -324,7 +318,7 @@ export default class SldsTabBar extends LightningElement {
 
         tab.class = this._tabClass({
             selected: this._selectedTab.value === tab.value,
-            hasFocus: true
+            hasFocus: true,
         });
     }
 
@@ -333,36 +327,36 @@ export default class SldsTabBar extends LightningElement {
 
         if (this._selectedTab) {
             currentFocusedIndex = this._visibleTabs.findIndex(
-                (tab) => tab.value === this._selectedTab.value
+                tab => tab.value === this._selectedTab.value
             );
         }
         handleKeyDownOnTabList(event, currentFocusedIndex, {
             isVerticalOrientation: () => this.isVerticalVariant,
             totalTabs: () => this._visibleTabs.length,
-            selectTabIndex: (index) => {
+            selectTabIndex: index => {
                 const tab = this._visibleTabs[index];
                 this._selectTabAndFireSelectEvent(tab.value, {
-                    hasFocus: true
+                    hasFocus: true,
                 });
 
-                this.template
-                    .querySelector(`a[data-tab-value="${tab.value}"]`)
-                    .focus();
-            }
+                this.template.querySelector(`a[data-tab-value="${tab.value}"]`).focus();
+            },
         });
     }
 
-    _tabClass({ selected = false, hasFocus = false,isAdd = false }) {
+    _tabClass({ selected = false, hasFocus = false, isAdd = false }) {
         const isScopedVariant = this._variant === 'scoped';
         const isVertical = this.isVerticalVariant;
-        return classSet('slds-grid slds-grid_vertical-align-center slds-sub-tabs__item slds-m-horizontal_xx-small')
+        return classSet(
+            'slds-grid slds-grid_vertical-align-center slds-sub-tabs__item slds-m-horizontal_xx-small'
+        )
             .add({
                 'slds-tabs_default__item': !isScopedVariant && !isVertical,
                 'slds-tabs_scoped__item': isScopedVariant,
                 'slds-vertical-tabs__nav-item': isVertical,
                 'slds-is-active': selected,
                 'slds-has-focus': hasFocus,
-                'slds-tab-add':isAdd
+                'slds-tab-add': isAdd,
             })
             .toString();
     }
@@ -370,9 +364,9 @@ export default class SldsTabBar extends LightningElement {
     _synchronizeA11y() {
         const tabLinks = this.template.querySelectorAll('a[role="tab"]');
 
-        tabLinks.forEach((tabLink) => {
+        tabLinks.forEach(tabLink => {
             const tabData = this._allTabs.find(
-                (tab) => tabLink.getAttribute('data-tab-value') === tab.value
+                tab => tabLink.getAttribute('data-tab-value') === tab.value
             );
             tabLink.setAttribute('id', tabData.linkId);
             //tabLink.setAttribute('aria-controls', tabData.domId);
@@ -386,7 +380,8 @@ export default class SldsTabBar extends LightningElement {
 
                 if (
                     this._containerWidthWhenLastResized &&
-                    newWidth < this._containerWidthWhenLastResized + RECOMPUTE_OVERFLOW_THRESHOLD_PX &&
+                    newWidth <
+                        this._containerWidthWhenLastResized + RECOMPUTE_OVERFLOW_THRESHOLD_PX &&
                     newWidth > this._containerWidthWhenLastResized - RECOMPUTE_OVERFLOW_THRESHOLD_PX
                 ) {
                     return;
@@ -401,7 +396,7 @@ export default class SldsTabBar extends LightningElement {
     }
 
     _queueOverflow() {
-        this._allTabs.forEach((tab) => {
+        this._allTabs.forEach(tab => {
             tab.visible = true;
         });
         // eslint-disable-next-line @lwc/lwc/no-async-operation
@@ -413,9 +408,7 @@ export default class SldsTabBar extends LightningElement {
             return;
         }
 
-        const containerWidth =
-            this.getBoundingClientRect().width -
-            RECOMPUTE_OVERFLOW_THRESHOLD_PX;
+        const containerWidth = this.getBoundingClientRect().width - RECOMPUTE_OVERFLOW_THRESHOLD_PX;
 
         const tabHeaderElements = this.template.querySelectorAll('[data-tab],[data-add]');
         for (let i = 0; i < tabHeaderElements.length; i++) {
@@ -427,7 +420,8 @@ export default class SldsTabBar extends LightningElement {
             // eslint-disable-next-line lightning-global/check-return-value-for-nullable-call
             const computedStyle = getComputedStyle(tabHeaderElement);
             if (computedStyle) {
-                tabWidth += parseFloat(computedStyle.marginLeft) + parseFloat(computedStyle.marginRight);
+                tabWidth +=
+                    parseFloat(computedStyle.marginLeft) + parseFloat(computedStyle.marginRight);
             }
             tab.width = tabWidth;
         }
@@ -437,18 +431,17 @@ export default class SldsTabBar extends LightningElement {
             items: this._allTabs,
             activeItem: this._selectedTab,
             containerWidth,
-            overflowWidth: overflowElement.getBoundingClientRect().width
+            overflowWidth: overflowElement.getBoundingClientRect().width,
         });
 
-        overflowData.overflowItems.forEach((overflowItem) => {
+        overflowData.overflowItems.forEach(overflowItem => {
             if (overflowItem.visible) {
                 overflowItem.visible = false;
             }
         });
-        this._hasOverflow =
-            overflowData.overflowItems && overflowData.overflowItems.length > 0;
+        this._hasOverflow = overflowData.overflowItems && overflowData.overflowItems.length > 0;
 
-        overflowData.visibleItems.forEach((overflowItem) => {
+        overflowData.visibleItems.forEach(overflowItem => {
             if (!overflowItem.visible) {
                 overflowItem.visible = true;
             }

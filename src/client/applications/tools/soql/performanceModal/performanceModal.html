@@ -1,35 +1,47 @@
 <template>
     <lightning-modal-header label="Query Performances"></lightning-modal-header>
     <lightning-modal-body class="slds-is-relative">
-
         <slds-information-block title="Query Performances">
-            <p>How to handle LDV queries : <a href="https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/langCon_apex_SOQL_VLSQ.htm" target="_blank"> Salesforce Documentation</a></p>
+            <p>
+                How to handle LDV queries :
+                <a
+                    href="https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/langCon_apex_SOQL_VLSQ.htm"
+                    target="_blank">
+                    Salesforce Documentation
+                </a>
+            </p>
         </slds-information-block>
 
-        <table role="grid" class="slds-table slds-table_cell slds-table_fixed-layout slds-table_bordered slds-table_resizable-cols slds-no-row-hover slds-m-top_x-small">
+        <table
+            role="grid"
+            class="slds-table slds-table_cell slds-table_fixed-layout slds-table_bordered slds-table_resizable-cols slds-no-row-hover slds-m-top_x-small">
             <thead>
                 <tr class="slds-line-height_reset head">
-                    <th class="" style="width:100px">
+                    <th class="" style="width: 100px">
                         <div class="slds-th__action slds-text-link_reset">
                             <span class="slds-truncate" title="cardinality">Cardinality</span>
                         </div>
                     </th>
-                    <th class="" style="width:100px">
-                        <div class="slds-th__action slds-text-link_reset" >
+                    <th class="" style="width: 100px">
+                        <div class="slds-th__action slds-text-link_reset">
                             <span class="slds-truncate" title="relativeCost">Cost</span>
                         </div>
                     </th>
-                    <th class="" style="width:150px">
+                    <th class="" style="width: 150px">
                         <div class="slds-th__action slds-text-link_reset">
-                            <span class="slds-truncate" title="leadingOperationType">Operation Type</span>
+                            <span class="slds-truncate" title="leadingOperationType">
+                                Operation Type
+                            </span>
                         </div>
                     </th>
-                    <th class="" style="width:120px">
+                    <th class="" style="width: 120px">
                         <div class="slds-th__action slds-text-link_reset">
-                            <span class="slds-truncate" title="sobjectCardinality">SObject Card.</span>
+                            <span class="slds-truncate" title="sobjectCardinality">
+                                SObject Card.
+                            </span>
                         </div>
                     </th>
-                    <th class="" style="width:180px">
+                    <th class="" style="width: 180px">
                         <div class="slds-th__action slds-text-link_reset">
                             <span class="slds-truncate" title="sobjectType">SObject</span>
                         </div>
@@ -39,11 +51,11 @@
                             <span class="slds-truncate" title="fields">Fields</span>
                         </div>
                     </th>
-                </tr> 
+                </tr>
             </thead>
-            <tbody class="slds-scrollable_y" >
+            <tbody class="slds-scrollable_y">
                 <template for:each={formattedPlans} for:item="item">
-                    <tr style="height: 0;" key={item._index}>
+                    <tr style="height: 0" key={item._index}>
                         <td class="cell-field slds-cell-wrap">{item._cardinality}</td>
                         <td class="cell-value slds-cell-wrap">{item._relativeCost}</td>
                         <td class="cell-value slds-cell-wrap">{item.leadingOperationType}</td>
@@ -54,7 +66,9 @@
                     <template for:each={item.notes} for:item="note">
                         <tr key={note._index} class="notes">
                             <td></td>
-                            <td colspan="5">Notes: {note.description} | {note._fields} | {note.tableEnumOrId}</td>
+                            <td colspan="5">
+                                Notes: {note.description} | {note._fields} | {note.tableEnumOrId}
+                            </td>
                         </tr>
                     </template>
                 </template>

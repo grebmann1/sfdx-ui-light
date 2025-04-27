@@ -1,4 +1,4 @@
-import { LightningElement, api,track } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
 
 const SEARCH_DELAY = 300; // Wait 300 ms after user stops typing then, perform search
 
@@ -47,7 +47,9 @@ export default class Lookup extends LightningElement {
     @api
     set selection(initialSelection) {
         if (initialSelection) {
-            this._curSelection = Array.isArray(initialSelection) ? initialSelection : [initialSelection];
+            this._curSelection = Array.isArray(initialSelection)
+                ? initialSelection
+                : [initialSelection];
             this.processSelectionUpdate(false);
         }
     }
@@ -58,7 +60,7 @@ export default class Lookup extends LightningElement {
 
     @api
     set errors(errors) {
-        this._errors = errors.map((x,i) => ({...x,id:i}));
+        this._errors = errors.map((x, i) => ({ ...x, id: i }));
         // Blur component if errors are passed
         if (this._errors?.length > 0) {
             this.blur();
@@ -86,12 +88,14 @@ export default class Lookup extends LightningElement {
         // Clone results before modifying them to avoid Locker restriction
         let resultsLocal = JSON.parse(JSON.stringify(results));
         // Remove selected items from search results
-        const selectedIds = this._curSelection.map((sel) => sel.id);
-        resultsLocal = resultsLocal.filter((result) => selectedIds.indexOf(result.id) === -1);
+        const selectedIds = this._curSelection.map(sel => sel.id);
+        resultsLocal = resultsLocal.filter(result => selectedIds.indexOf(result.id) === -1);
         // Format results
-        const cleanSearchTerm = this._searchTerm.replace(REGEX_SOSL_RESERVED, '.?').replace(REGEX_EXTRA_TRAP, '\\$1');
+        const cleanSearchTerm = this._searchTerm
+            .replace(REGEX_SOSL_RESERVED, '.?')
+            .replace(REGEX_EXTRA_TRAP, '\\$1');
         const regex = new RegExp(`(${cleanSearchTerm})`, 'gi');
-        this._searchResults = resultsLocal.map((result) => {
+        this._searchResults = resultsLocal.map(result => {
             // Format title and subtitle
             if (this._searchTerm.length > 0) {
                 result.titleFormatted = result.title
@@ -114,7 +118,8 @@ export default class Lookup extends LightningElement {
                 result,
                 state: {},
                 get classes() {
-                    let cls = 'slds-media slds-media_center slds-listbox__option slds-listbox__option_entity';
+                    let cls =
+                        'slds-media slds-media_center slds-listbox__option slds-listbox__option_entity';
                     if (result.subtitleFormatted) {
                         cls += ' slds-listbox__option_has-meta';
                     }
@@ -122,13 +127,13 @@ export default class Lookup extends LightningElement {
                         cls += ' slds-has-focus';
                     }
                     return cls;
-                }
+                },
             };
         });
     }
 
     @api
-    get searchTerm(){
+    get searchTerm() {
         return this._searchTerm;
     }
 
@@ -161,7 +166,10 @@ export default class Lookup extends LightningElement {
         this._searchTerm = newSearchTerm;
 
         // Compare clean new search term with current one and abort if identical
-        const newCleanSearchTerm = newSearchTerm.trim().replace(REGEX_SOSL_RESERVED, '?').toLowerCase();
+        const newCleanSearchTerm = newSearchTerm
+            .trim()
+            .replace(REGEX_SOSL_RESERVED, '?')
+            .toLowerCase();
         if (this._cleanSearchTerm === newCleanSearchTerm) {
             return;
         }
@@ -190,8 +198,8 @@ export default class Lookup extends LightningElement {
                     detail: {
                         searchTerm: this._cleanSearchTerm,
                         rawSearchTerm: newSearchTerm,
-                        selectedIds: this._curSelection.map((element) => element.id)
-                    }
+                        selectedIds: this._curSelection.map(element => element.id),
+                    },
                 });
                 this.dispatchEvent(searchEvent);
             }
@@ -223,7 +231,7 @@ export default class Lookup extends LightningElement {
         }
         // If selection was changed by user, notify parent components
         if (isUserInteraction) {
-            const selectedIds = this._curSelection.map((sel) => sel.id);
+            const selectedIds = this._curSelection.map(sel => sel.id);
             this.dispatchEvent(new CustomEvent('selectionchange', { detail: selectedIds }));
         }
     }
@@ -269,7 +277,7 @@ export default class Lookup extends LightningElement {
         const recordId = event.currentTarget.dataset.recordid;
 
         // Save selection
-        const selectedItem = this._searchResults.find((result) => result.id === recordId);
+        const selectedItem = this._searchResults.find(result => result.id === recordId);
         if (!selectedItem) {
             return;
         }
@@ -316,7 +324,7 @@ export default class Lookup extends LightningElement {
             return;
         }
         const recordId = event.currentTarget.name;
-        this._curSelection = this._curSelection.filter((item) => item.id !== recordId);
+        this._curSelection = this._curSelection.filter(item => item.id !== recordId);
         // Process selection update
         this.processSelectionUpdate(true);
     }
@@ -330,7 +338,7 @@ export default class Lookup extends LightningElement {
 
     handleNewRecordClick(event) {
         const objectApiName = event.currentTarget.dataset.sobject;
-        const selection = this.newRecordOptions.find((option) => option.value === objectApiName);
+        const selection = this.newRecordOptions.find(option => option.value === objectApiName);
 
         const preNavigateCallback = selection.preNavigateCallback
             ? selection.preNavigateCallback
@@ -338,12 +346,14 @@ export default class Lookup extends LightningElement {
 
         preNavigateCallback(selection).then(() => {
             //console.log('Supposed to navigate');
-            this.dispatchEvent(new CustomEvent('newrecord', {
-                detail: {
-                    objectApiName,
-                    actionName: 'new'
-                }
-            }))
+            this.dispatchEvent(
+                new CustomEvent('newrecord', {
+                    detail: {
+                        objectApiName,
+                        actionName: 'new',
+                    },
+                })
+            );
         });
     }
 
@@ -354,7 +364,8 @@ export default class Lookup extends LightningElement {
     }
 
     get isListboxOpen() {
-        const isSearchTermValid = this._cleanSearchTerm && this._cleanSearchTerm.length >= this.minSearchTermLength;
+        const isSearchTermValid =
+            this._cleanSearchTerm && this._cleanSearchTerm.length >= this.minSearchTermLength;
         return (
             this._hasFocus &&
             this.isSelectionAllowed() &&
@@ -461,7 +472,9 @@ export default class Lookup extends LightningElement {
     get getListboxClass() {
         return (
             'slds-dropdown ' +
-            (this.scrollAfterNItems ? `slds-dropdown_length-with-icon-${this.scrollAfterNItems} ` : '') +
+            (this.scrollAfterNItems
+                ? `slds-dropdown_length-with-icon-${this.scrollAfterNItems} `
+                : '') +
             'slds-dropdown_fluid'
         );
     }

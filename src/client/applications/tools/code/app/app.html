@@ -1,7 +1,10 @@
 <template>
     <template lwc:if={isLoading}>
         <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
-            <slds-spinner alternative-text="Loading" size="small" message={loadingMessage}></slds-spinner>
+            <slds-spinner
+                alternative-text="Loading"
+                size="small"
+                message={loadingMessage}></slds-spinner>
         </div>
     </template>
     <div class="grid-container">
@@ -18,7 +21,11 @@
                                 <div class="slds-page-header__name-title">
                                     <h1>
                                         <span>Code Toolkit</span>
-                                        <span class="slds-page-header__title slds-truncate" title="Code Toolkit">Code Toolkit</span>
+                                        <span
+                                            class="slds-page-header__title slds-truncate"
+                                            title="Code Toolkit">
+                                            Code Toolkit
+                                        </span>
                                     </h1>
                                 </div>
                             </div>
@@ -29,14 +36,28 @@
                     <div class="slds-page-header__controls">
                         <div class="slds-page-header__control">
                             <lightning-button-group>
-                                <lightning-button icon-name="utility:apex" onclick={openVSCode} label="Open with VS Code" disabled={isVSCodeDisabled}></lightning-button>
+                                <lightning-button
+                                    icon-name="utility:apex"
+                                    onclick={openVSCode}
+                                    label="Open with VS Code"
+                                    disabled={isVSCodeDisabled}></lightning-button>
                                 <template lwc:if={isRetrieveDisplayed}>
-                                    <lightning-button icon-name="utility:sync" onclick={retrieveCode} label="Retrieve Code"></lightning-button>
+                                    <lightning-button
+                                        icon-name="utility:sync"
+                                        onclick={retrieveCode}
+                                        label="Retrieve Code"></lightning-button>
                                 </template>
                                 <template lwc:else>
-                                    <lightning-button icon-name="utility:sync" onclick={refreshCode} label="Refresh Code"></lightning-button>
+                                    <lightning-button
+                                        icon-name="utility:sync"
+                                        onclick={refreshCode}
+                                        label="Refresh Code"></lightning-button>
                                 </template>
-                                <lightning-button-icon variant="border-filled" icon-name="utility:download" onclick={downloadCode} disabled={isDownloadDisabled}></lightning-button-icon>
+                                <lightning-button-icon
+                                    variant="border-filled"
+                                    icon-name="utility:download"
+                                    onclick={downloadCode}
+                                    disabled={isDownloadDisabled}></lightning-button-icon>
                                 <!--
                                     <lightning-button icon-name="utility:relate" disabled={isLoading} onclick={selectProject} label="Select/Create SFDX Project" ></lightning-button>
                                 -->
@@ -47,11 +68,20 @@
             </div>
             <div class="slds-page-header__row slds-page-header__row_gutters">
                 <div class="slds-page-header__col-details">
-                    <div class="slds-page-header__detail-row slds-is-relative" style="display:block; ">
+                    <div
+                        class="slds-page-header__detail-row slds-is-relative"
+                        style="display: block">
                         <!-- Display Info -->
                         <h2>
-                            The code toolkit is currently in development. Everything available here is in Beta mode. 
-                            It's only possible to <strong>"Retrieve"</strong>, <strong>"Download"</strong> and <strong>"Open"</strong> metadata for now.</h2>
+                            The code toolkit is currently in development. Everything available here
+                            is in Beta mode. It's only possible to
+                            <strong>"Retrieve"</strong>
+                            ,
+                            <strong>"Download"</strong>
+                            and
+                            <strong>"Open"</strong>
+                            metadata for now.
+                        </h2>
                     </div>
                 </div>
             </div>
@@ -60,16 +90,13 @@
 
     <!-- Container -->
     <div class="slds-m-top_x-small">
-        <lightning-tabset variant="scoped" >
+        <lightning-tabset variant="scoped">
             <lightning-tab label="Code Analyzers">
                 <!-- isPathDisplayed -->
                 <code-analyzer project-path={projectPath}></code-analyzer>
             </lightning-tab>
         </lightning-tabset>
     </div>
-    
-    
-
 
     <!-- Footer Path -->
     <template lwc:if={isPathDisplayed}>
@@ -83,8 +110,7 @@
                         onclick={handleCopy}
                         icon-name="utility:copy"
                         variant="bare"
-                        alternative-text="copy"
-                    ></lightning-button-icon>
+                        alternative-text="copy"></lightning-button-icon>
                 </li>
             </ul>
         </div>

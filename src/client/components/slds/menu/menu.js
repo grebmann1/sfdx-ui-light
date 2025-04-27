@@ -1,10 +1,18 @@
-import { api,track} from "lwc";
+import { api, track } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeOut,formatFiles,sortObjectsByField } from 'shared/utils';
+import {
+    isEmpty,
+    isElectronApp,
+    classSet,
+    isNotUndefinedOrNull,
+    runActionAfterTimeOut,
+    formatFiles,
+    sortObjectsByField,
+} from 'shared/utils';
 
 const DEFAULT_NAMESPACE = 'Default';
-const ALL_NAMESPACE     = 'All';
-const PAGE_LIST_SIZE    = 70;
+const ALL_NAMESPACE = 'All';
+const PAGE_LIST_SIZE = 70;
 export default class Menu extends ToolkitElement {
     _isRendered = true;
     @api title;
@@ -22,31 +30,28 @@ export default class Menu extends ToolkitElement {
     // Scrolling
     pageNumber = 1;
 
-    
-    observer
+    observer;
     namespacePrefixes = [];
     @api namespaceFilteringValue = DEFAULT_NAMESPACE;
 
-    
     @track _items = [];
     @api
-    get items(){
+    get items() {
         return this._items;
     }
-    set items(value){
-        this._items = (JSON.parse(JSON.stringify(value)));
+    set items(value) {
+        this._items = JSON.parse(JSON.stringify(value));
         this.namespacePrefixes = this.extractNamespaces(this._items);
-        if(!this.namespacePrefixes.includes(this.namespaceFilteringValue)){
+        if (!this.namespacePrefixes.includes(this.namespaceFilteringValue)) {
             // Reset just in case it doesn't match the previous value
             this.namespaceFilteringValue = DEFAULT_NAMESPACE;
         }
         this.pageNumber = 1; // reset
-        if(!this.keepFilter){
+        if (!this.keepFilter) {
             this.filter = null; // reset;
         }
     }
     @api selectedItem;
-
 
     /** Events **/
 
@@ -60,97 +65,116 @@ export default class Menu extends ToolkitElement {
             this.pageNumber++;
         }
     }
-    
-    
-    namespaceFiltering_handleChange = (e) => {
+
+    namespaceFiltering_handleChange = e => {
         this.namespaceFilteringValue = e.detail.value;
-    }
+    };
 
-    handleSearch = (e) => {
-        runActionAfterTimeOut(e.detail.value,(newValue) => {
-            this.filter = newValue;
-        },1000);
-    }
+    handleSearch = e => {
+        runActionAfterTimeOut(
+            e.detail.value,
+            newValue => {
+                this.filter = newValue;
+            },
+            1000
+        );
+    };
 
-    handleSelection = (e) => {
-        console.log('---> ',e.detail);
+    handleSelection = e => {
+        console.log('---> ', e.detail);
         this.selectedItem = e.detail.name;
-        const index     = this.items.findIndex(x => x.name === e.detail.name);
-        const oldIndex  = this.items.findIndex(x => x.isSelected);
-        if(oldIndex > -1){
+        const index = this.items.findIndex(x => x.name === e.detail.name);
+        const oldIndex = this.items.findIndex(x => x.isSelected);
+        if (oldIndex > -1) {
             this._items[oldIndex].isSelected = false;
         }
-        if(index > -1){
+        if (index > -1) {
             this._items[index].isSelected = true;
         }
 
-        if(this.resetOnSelection){
-            
+        if (this.resetOnSelection) {
         }
-        
-        this.dispatchEvent(new CustomEvent("menuselection", { detail:{
-            ...this.items[index]
-        },bubbles: true }));
-    }
 
-    back_handleClick = (e) => {
-        this.dispatchEvent(new CustomEvent("back", {bubbles: true }));
-    }
+        this.dispatchEvent(
+            new CustomEvent('menuselection', {
+                detail: {
+                    ...this.items[index],
+                },
+                bubbles: true,
+            })
+        );
+    };
 
-    refresh_handleClick = (e) => {
-        this.dispatchEvent(new CustomEvent("refresh", {bubbles: true }));
-    }
+    back_handleClick = e => {
+        this.dispatchEvent(new CustomEvent('back', { bubbles: true }));
+    };
+
+    refresh_handleClick = e => {
+        this.dispatchEvent(new CustomEvent('refresh', { bubbles: true }));
+    };
 
     /** Methods **/
 
-
-    extractNamespaces = (value) => {
+    extractNamespaces = value => {
         const result = new Set(['All']);
         (value || []).forEach(x => {
             result.add(x.NamespacePrefix || DEFAULT_NAMESPACE);
-        })
+        });
         return [...result];
-    }
-    
-    checkIfPresent = (a,b) => {
-        return (a || '').toLowerCase().includes((b||'').toLowerCase());
-    }
+    };
+
+    checkIfPresent = (a, b) => {
+        return (a || '').toLowerCase().includes((b || '').toLowerCase());
+    };
 
     /* Getters */
 
-    get itemHighlight(){
+    get itemHighlight() {
         return this.filter || this.highlight;
     }
-    
-    get isSearchDisplayed(){
+
+    get isSearchDisplayed() {
         return !this.hideSearch;
     }
-    
-    get namespaceFiltering_isDisplayed(){
+
+    get namespaceFiltering_isDisplayed() {
         return this.namespaceFiltering_options.length > 2; // Default & All are there by default
     }
-    
-    get namespaceFiltering_options(){
-        return this.namespacePrefixes.map(x => ({label:x,value:x}));
+
+    get namespaceFiltering_options() {
+        return this.namespacePrefixes.map(x => ({ label: x, value: x }));
     }
 
-    get namespaceFiltered(){
-        if(this.namespaceFilteringValue == ALL_NAMESPACE || isEmpty(this.namespaceFilteringValue) || !this.namespaceFiltering_isDisplayed) return this.items;
-        return this.items.filter(x => isEmpty(x.NamespacePrefix) && this.namespaceFilteringValue === DEFAULT_NAMESPACE || this.namespaceFilteringValue === x.NamespacePrefix);
+    get namespaceFiltered() {
+        if (
+            this.namespaceFilteringValue == ALL_NAMESPACE ||
+            isEmpty(this.namespaceFilteringValue) ||
+            !this.namespaceFiltering_isDisplayed
+        )
+            return this.items;
+        return this.items.filter(
+            x =>
+                (isEmpty(x.NamespacePrefix) &&
+                    this.namespaceFilteringValue === DEFAULT_NAMESPACE) ||
+                this.namespaceFilteringValue === x.NamespacePrefix
+        );
     }
 
-    get virtualList(){
+    get virtualList() {
         // Best UX Improvement !!!!
-        return this.filteredList.slice(0,this.pageNumber * PAGE_LIST_SIZE);
-    }
-    
-    get filteredList(){
-        if(isEmpty(this.filter)) return this.namespaceFiltered;
-        return this.namespaceFiltered.filter(x => this.checkIfPresent(x.name,this.filter) || this.checkIfPresent(x.label,this.filter));
+        return this.filteredList.slice(0, this.pageNumber * PAGE_LIST_SIZE);
     }
 
-    get displayIfEmpty(){
+    get filteredList() {
+        if (isEmpty(this.filter)) return this.namespaceFiltered;
+        return this.namespaceFiltered.filter(
+            x =>
+                this.checkIfPresent(x.name, this.filter) ||
+                this.checkIfPresent(x.label, this.filter)
+        );
+    }
+
+    get displayIfEmpty() {
         return !this.isLoading && this.items.length == 0;
     }
-    
 }

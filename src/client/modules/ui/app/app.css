@@ -1,4 +1,3 @@
-
 :host {
     display: block;
     overflow: hidden;
@@ -8,20 +7,19 @@
     /*height: calc(100vh - 24px);*/
 }
 
-.slds-menu-collapsed{
+.slds-menu-collapsed {
     width: 50px !important;
 }
 
-.main-app-container{
+.main-app-container {
     z-index: 50;
 }
 
-.custom-utility-bar-alert{
-    background-color: var(--slds-g-color-error-base-40,#ea001e);
+.custom-utility-bar-alert {
+    background-color: var(--slds-g-color-error-base-40, #ea001e);
     height: 1.5rem !important;
     color: white;
 }
-
 
 /** Structure **/
 
@@ -30,7 +28,7 @@
 }
 
 .l-container-vertical {
-    position: absolute!important;
+    position: absolute !important;
     top: 0;
     right: 0;
     bottom: 0;
@@ -39,15 +37,15 @@
     display: flex;
 }
 
-.l-container-whole-parent{
-    position: absolute!important;
+.l-container-whole-parent {
+    position: absolute !important;
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
 }
 
-.l-container-whole-parent{
+.l-container-whole-parent {
     -webkit-overflow-scrolling: touch;
     max-height: 100%;
     overflow: hidden;
@@ -58,8 +56,8 @@
     position: relative;
 }
 
-.l-cell-content-size{
-    flex:none;
+.l-cell-content-size {
+    flex: none;
 }
 
 .l-cell-auto-size {
@@ -67,11 +65,11 @@
     min-width: 0;
 }
 
-.l-cell-auto-size{
+.l-cell-auto-size {
     flex: 1 1 auto;
 }
 
-.l-cell-auto-size{
+.l-cell-auto-size {
     display: flex;
 }
 

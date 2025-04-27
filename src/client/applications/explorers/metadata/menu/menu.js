@@ -1,9 +1,14 @@
-import { api, wire, track } from "lwc";
+import { api, wire, track } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { isUndefinedOrNull,isNotUndefinedOrNull, sortObjectsByField, removeDuplicates } from 'shared/utils';
+import {
+    isUndefinedOrNull,
+    isNotUndefinedOrNull,
+    sortObjectsByField,
+    removeDuplicates,
+} from 'shared/utils';
 import { CurrentPageReference, NavigationContext, navigate } from 'lwr/navigation';
-import { store, connectStore,METADATA } from 'core/store';
-import { METADATA_EXCLUDE_LIST } from 'metadata/utils'
+import { store, connectStore, METADATA } from 'core/store';
+import { METADATA_EXCLUDE_LIST } from 'metadata/utils';
 // Constants
 const METADATA_FIELDS = ['Id', 'Name', 'DeveloperName', 'MasterLabel', 'NamespacePrefix'];
 const CACHE_EXPIRY_MS = 5 * 60 * 1000;
@@ -38,7 +43,8 @@ export default class Menu extends ToolkitElement {
     handlePageReference(pageRef) {
         if (!isUndefinedOrNull(pageRef) && pageRef?.state?.applicationName === 'metadata') {
             // Check if the new pageRef is different
-            if (this._hasRendered) { // JSON.stringify(this._pageRef) !== JSON.stringify(pageRef) 
+            if (this._hasRendered) {
+                // JSON.stringify(this._pageRef) !== JSON.stringify(pageRef)
                 this._pageRef = pageRef;
                 this.loadFromNavigation(pageRef);
             }
@@ -58,16 +64,18 @@ export default class Menu extends ToolkitElement {
         this.loadingMessage = metadata.loadingMessage;
         this.currentMetadata = metadata.currentMetadata;
 
-        if(JSON.stringify(this.metadata_global) !== JSON.stringify(metadata.metadata_global)){
+        if (JSON.stringify(this.metadata_global) !== JSON.stringify(metadata.metadata_global)) {
             this.metadata_global = metadata.metadata_global;
             this.setMenuItems();
         }
-        if(JSON.stringify(this.metadata_records) !== JSON.stringify(metadata.metadata_records) || _hasParam1Changed){
+        if (
+            JSON.stringify(this.metadata_records) !== JSON.stringify(metadata.metadata_records) ||
+            _hasParam1Changed
+        ) {
             this.metadata_records = metadata.metadata_records;
             this.forceRefresh = false;
             this.setMenuItems();
         }
-        
     }
 
     connectedCallback() {
@@ -75,8 +83,8 @@ export default class Menu extends ToolkitElement {
         store.dispatch(METADATA.fetchGlobalMetadata());
     }
 
-    renderedCallback(){
-        if(!this._hasRendered){
+    renderedCallback() {
+        if (!this._hasRendered) {
             this._hasRendered = true;
             //this.loadFromNavigation(this._pageRef);
         }
@@ -85,47 +93,53 @@ export default class Menu extends ToolkitElement {
     // Methods
 
     loadFromNavigation = async ({ state }) => {
-        let { applicationName,sobject,param1,label1 } = state;
+        let { applicationName, sobject, param1, label1 } = state;
         if (applicationName != 'metadata') return; // Only for metadata
         store.dispatch(async (dispatch, getState) => {
-            await dispatch(METADATA.fetchSpecificMetadata({ sobject,force:true }));
-            const params = { sobject,param1,label1 };
-            if(isNotUndefinedOrNull(param1) && isNotUndefinedOrNull(label1)){
+            await dispatch(METADATA.fetchSpecificMetadata({ sobject, force: true }));
+            const params = { sobject, param1, label1 };
+            if (isNotUndefinedOrNull(param1) && isNotUndefinedOrNull(label1)) {
                 dispatch(METADATA.reduxSlice.actions.setAttributes(params));
                 this.dispatchSelectionEvent(params);
             }
-            
-        })
+        });
         //store.dispatch(METADATA.reduxSlice.actions.setAttributes(state));
-    }
+    };
 
     setMenuItems = () => {
-        const records = this.metadata_records?this.metadata_records.records:this.metadata_global?.records || [];
-        this.menuItems = records.map(record => ({
-            ...record,
-            isSelected: this.selectedItem === record.key,
-        }))
-        .sort((a, b) => (a.label || '')
-        .localeCompare(b.label)) || [];
-    }
+        const records = this.metadata_records
+            ? this.metadata_records.records
+            : this.metadata_global?.records || [];
+        this.menuItems =
+            records
+                .map(record => ({
+                    ...record,
+                    isSelected: this.selectedItem === record.key,
+                }))
+                .sort((a, b) => (a.label || '').localeCompare(b.label)) || [];
+    };
 
-
-    dispatchSelectionEvent = (detail) => {
+    dispatchSelectionEvent = detail => {
         this.dispatchEvent(new CustomEvent('select', { detail, bubbles: true, composed: true }));
-    }
+    };
 
     /** Events */
 
-    handleMenuSelection = async (e) => {
-        console.log('e.detail',e.detail);
-        const { name, label,_developerName } = e.detail;
+    handleMenuSelection = async e => {
+        console.log('e.detail', e.detail);
+        const { name, label, _developerName } = e.detail;
         if (this.currentLevel === 0) {
             //this.currentMetadata = name;
-            store.dispatch(METADATA.fetchSpecificMetadata({ sobject:name }));
+            store.dispatch(METADATA.fetchSpecificMetadata({ sobject: name }));
         } else if (this.currentLevel === 1) {
             //this.param1 = name;
             //this.label1 = label;
-            const params = { sobject: this.currentMetadata, param1: name, label1: label,_developerName };
+            const params = {
+                sobject: this.currentMetadata,
+                param1: name,
+                label1: label,
+                _developerName,
+            };
             await store.dispatch(METADATA.reduxSlice.actions.setAttributes(params));
             this.dispatchSelectionEvent(params);
             /*store.dispatch(METADATA.reduxSlice.actions.setAttributes({
@@ -134,22 +148,20 @@ export default class Menu extends ToolkitElement {
                 label1: label
             }));*/
         }
-    }
+    };
 
     handleMenuBack = () => {
         this.keepFilter = false;
         store.dispatch(METADATA.reduxSlice.actions.goBack());
-    }
-
+    };
 
     // Getters
 
-    get currentLevel(){
-        return isNotUndefinedOrNull(this.metadata_records)?1:0;
+    get currentLevel() {
+        return isNotUndefinedOrNull(this.metadata_records) ? 1 : 0;
     }
 
     get menuBackTitle() {
-
         if (this.currentLevel == 2) {
             return this.label1;
         } else if (this.currentLevel == 1) {
@@ -159,12 +171,12 @@ export default class Menu extends ToolkitElement {
         }
     }
 
-    get attributes(){
+    get attributes() {
         return {
-            sobject:this.sobject,
-            param1:this.param1,
-            label1:this.label1
-        }
+            sobject: this.sobject,
+            param1: this.param1,
+            label1: this.label1,
+        };
     }
 
     get isBackDisplayed() {
@@ -172,6 +184,10 @@ export default class Menu extends ToolkitElement {
     }
 
     get selectedItem() {
-        return this.currentLevel === 2 ? this.param2 : this.currentLevel === 1 ? this.param1 : this.currentMetadata;
+        return this.currentLevel === 2
+            ? this.param2
+            : this.currentLevel === 1
+            ? this.param1
+            : this.currentMetadata;
     }
 }

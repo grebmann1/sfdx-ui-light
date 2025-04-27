@@ -1,10 +1,21 @@
-import { api } from "lwc";
+import { api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 
-import { 
-    isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeOut,guid,
-    getCurrentObjectType,getCurrentTab,getObjectDocLink,getObjectFieldsSetupLink,getObjectListLink,getObjectSetupLink,getRecordTypesLink,
-    redirectToUrlViaChrome
+import {
+    isEmpty,
+    isElectronApp,
+    classSet,
+    isNotUndefinedOrNull,
+    runActionAfterTimeOut,
+    guid,
+    getCurrentObjectType,
+    getCurrentTab,
+    getObjectDocLink,
+    getObjectFieldsSetupLink,
+    getObjectListLink,
+    getObjectSetupLink,
+    getRecordTypesLink,
+    redirectToUrlViaChrome,
 } from 'shared/utils';
 import { TYPE } from 'overlay/utils';
 
@@ -15,13 +26,13 @@ export default class Item extends ToolkitElement {
 
     isDisplayed = false;
 
-    connectedCallback(){
-        window.setTimeout(() => this.isDisplayed = true,0);
+    connectedCallback() {
+        window.setTimeout(() => (this.isDisplayed = true), 0);
     }
 
     /** Events **/
 
-    get currentMeddataFormat(){
+    get currentMeddataFormat() {
         switch (this.type) {
             case TYPE.APEX_CLASS:
                 return 'ApexClass';
@@ -36,8 +47,7 @@ export default class Item extends ToolkitElement {
         }
     }
 
-    handleItemClick = (e) => {
-
+    handleItemClick = e => {
         const isNewTab = e.metaKey || e.ctrlKey;
 
         switch (this.type) {
@@ -49,36 +59,36 @@ export default class Item extends ToolkitElement {
                     sobject: this.currentMeddataFormat,
                     param1: this.item?.id,
                     label1: this.name,
-                    applicationName: 'metadata'
+                    applicationName: 'metadata',
                 });
                 redirectToUrlViaChrome({
                     sessionId: this.connector.conn.accessToken,
                     serverUrl: this.connector.conn.instanceUrl,
                     baseUrl: chrome.runtime.getURL('/views/app.html'),
-                    redirectUrl:encodeURIComponent(params.toString()),
-                    isNewTab
-                })
-            break;
+                    redirectUrl: encodeURIComponent(params.toString()),
+                    isNewTab,
+                });
+                break;
             default:
                 // todo: Include option to open as new tab
                 const link = this.generateLink();
-                if(isNewTab){
-                    window.open(link,'_blank');
-                }else{
+                if (isNewTab) {
+                    window.open(link, '_blank');
+                } else {
                     window.location = link;
                 }
         }
-    }
+    };
 
     generateLink = () => {
-        switch (this.type){
+        switch (this.type) {
             case TYPE.OBJECT:
                 return getObjectSetupLink({
                     host: '',
                     sobjectName: this.name,
                     durableId: this.item?.durableId,
                     isCustomSetting: this.item?.isCustomSetting,
-                    keyPrefix: this.metadata?.keyPrefix
+                    keyPrefix: this.metadata?.keyPrefix,
                 });
             case TYPE.LINK:
                 return this.item?.link || '#';
@@ -89,25 +99,27 @@ export default class Item extends ToolkitElement {
             case TYPE.PERMISSION_SET_GROUP:
                 return `/lightning/setup/PermSetGroups/page?address=%2F${this.item?.id}`;
             case TYPE.USER:
-                const targetUrl = encodeURIComponent(`/${this.item?.id}?noredirect=1&isUserEntityOverride=1`);
+                const targetUrl = encodeURIComponent(
+                    `/${this.item?.id}?noredirect=1&isUserEntityOverride=1`
+                );
                 return `/lightning/setup/ManageUsers/page?address=${targetUrl}`;
             case TYPE.APEX_TRIGGER:
                 return `/lightning/setup/ApexTriggers/page?address=%2F${this.item?.id}`;
             case TYPE.APEX_CLASS:
                 return `/lightning/setup/ApexClasses/page?address=%2F${this.item?.id}`;
             case TYPE.FLOW:
-                return `/builder_platform_interaction/flowBuilder.app?isFromAloha=true&flowDefId=${this.item?.id}&flowId=${this.item?.activeVersionId || this.item?.latestVersionId}`;
+                return `/builder_platform_interaction/flowBuilder.app?isFromAloha=true&flowDefId=${
+                    this.item?.id
+                }&flowId=${this.item?.activeVersionId || this.item?.latestVersionId}`;
             default:
                 return '#';
         }
-    }
-
+    };
 
     /** Getters */
 
-
-    get icon(){
-        switch (this.type){
+    get icon() {
+        switch (this.type) {
             case TYPE.OBJECT:
                 return 'utility:standard_objects';
             case TYPE.PROFILE:
@@ -132,8 +144,8 @@ export default class Item extends ToolkitElement {
         }
     }
 
-    get iconExtraClass(){
-        switch (this.type){
+    get iconExtraClass() {
+        switch (this.type) {
             case TYPE.OBJECT:
                 return 'icon-extra-object';
             default:
@@ -141,78 +153,83 @@ export default class Item extends ToolkitElement {
         }
     }
 
-    get type(){
+    get type() {
         return this.item?.type;
     }
 
-    get apiVersion(){
+    get apiVersion() {
         return this.item?.apiVersion;
     }
 
-    get durableId(){
-        return this.item?.durableId
+    get durableId() {
+        return this.item?.durableId;
     }
 
-    get label(){
+    get label() {
         return this.item?.label;
     }
 
-    get keyPrefix(){
+    get keyPrefix() {
         return this.item?.keyPrefix;
     }
 
-    get isCustomSetting(){
+    get isCustomSetting() {
         return this.item?.isCustomSetting;
     }
 
-    get email(){
+    get email() {
         return this.item?.email;
     }
 
-    get profile(){
+    get profile() {
         return this.item?.profile;
     }
 
-    get username(){
+    get username() {
         return this.item?.username;
     }
 
-    get isActive(){
-        return this.item?.isActive ? '<span class="slds-text-color_success">Active</span>':'<span class="slds-text-color_error">Inactive</span>';
+    get isActive() {
+        return this.item?.isActive
+            ? '<span class="slds-text-color_success">Active</span>'
+            : '<span class="slds-text-color_error">Inactive</span>';
     }
 
-    get descriptionArray(){
-        switch (this.type){
+    get descriptionArray() {
+        switch (this.type) {
             case TYPE.USER:
-                return [this.type,this.email,this.profile,this.isActive].filter(x => x != null);
+                return [this.type, this.email, this.profile, this.isActive].filter(x => x != null);
             case TYPE.FLOW:
-                return [this.type,this.apiVersion].filter(x => x != null);
+                return [this.type, this.apiVersion].filter(x => x != null);
             case TYPE.LINK:
                 return [this.item?.section].filter(x => x != null);
             default:
-                return [this.type,this.label,this.keyPrefix].filter(x => x != null);
+                return [this.type, this.label, this.keyPrefix].filter(x => x != null);
         }
     }
 
-    get description(){
+    get description() {
         return this.descriptionArray.join(' • ');
     }
 
-    get formattedTitle(){
+    get formattedTitle() {
         //Username
-        switch (this.type){
+        switch (this.type) {
             case TYPE.USER:
-                return this.name+' • '+this.username;
+                return this.name + ' • ' + this.username;
             default:
                 return this.name;
         }
     }
 
-    get formattedRichTextTitle(){
-        if(!isEmpty(this.filter)){ // new RegExp('(?<!`)\b'+this.filter+'\b(?!`)','gim');
-            const regex = new RegExp('('+this.filter+')','gi')
-            if(regex.test(this.formattedTitle)){
-                return this.formattedTitle.replace(/<?>?/,'').replace(regex,'<span style="font-weight:Bold; color:blue;">$1</span>');
+    get formattedRichTextTitle() {
+        if (!isEmpty(this.filter)) {
+            // new RegExp('(?<!`)\b'+this.filter+'\b(?!`)','gim');
+            const regex = new RegExp('(' + this.filter + ')', 'gi');
+            if (regex.test(this.formattedTitle)) {
+                return this.formattedTitle
+                    .replace(/<?>?/, '')
+                    .replace(regex, '<span style="font-weight:Bold; color:blue;">$1</span>');
             }
         }
         return this.name;

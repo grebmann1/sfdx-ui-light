@@ -3,8 +3,8 @@ import MonacoLwcWidget from './widgets/monacoLwcWidget.js';
 import LOGGER from 'shared/logger';
 import { store } from 'core/store';
 export const WIDGETS = {
-    MonacoLwcWidget
-}
+    MonacoLwcWidget,
+};
 
 function buildWorkerDefinition(workerPath, basePath, useModuleWorker) {
     const monWin = self;
@@ -12,15 +12,15 @@ function buildWorkerDefinition(workerPath, basePath, useModuleWorker) {
         basePath: basePath,
         workerPath: workerPath,
         workerOptions: {
-            type: useModuleWorker ? 'module' : 'classic'
-        }
+            type: useModuleWorker ? 'module' : 'classic',
+        },
     };
     if (!monWin.MonacoEnvironment) {
         monWin.MonacoEnvironment = {
             workerOverrideGlobals: workerOverrideGlobals,
-            createTrustedTypesPolicy: (_policyName) => {
+            createTrustedTypesPolicy: _policyName => {
                 return undefined;
-            }
+            },
         };
     }
     const monEnv = monWin.MonacoEnvironment;
@@ -28,7 +28,10 @@ function buildWorkerDefinition(workerPath, basePath, useModuleWorker) {
     const getWorker = (_, label) => {
         const buildWorker = (globals, label, workerName, editorType) => {
             globals.workerOptions.name = label;
-            const workerFilename = globals.workerOptions.type === 'module' ? `${workerName}-es.js` : `${workerName}-iife.js`;
+            const workerFilename =
+                globals.workerOptions.type === 'module'
+                    ? `${workerName}-es.js`
+                    : `${workerName}-iife.js`;
             const workerPathLocal = `${globals.workerPath}/${workerFilename}`;
             const workerUrl = new URL(workerPathLocal, globals.basePath);
             console.log('--> Monaco Worker created');
@@ -59,32 +62,29 @@ function buildWorkerDefinition(workerPath, basePath, useModuleWorker) {
 export const setupMonaco = async () => {
     //console.log('######## setupMonaco ########');
     // import.meta.url is replaced when building it for the chrome app
-    const _modulePath = isChromeExtension() ? chrome.runtime.getURL('/libs/monaco/workers') : import.meta.url;
+    const _modulePath = isChromeExtension()
+        ? chrome.runtime.getURL('/libs/monaco/workers')
+        : import.meta.url;
     buildWorkerDefinition('/libs/monaco/workers', _modulePath, false);
     return window.monaco;
-}
+};
 
 export const registerCopilot = (monaco, editor, language, handleOpenContextCopilot) => {
     LOGGER.info('registerCopilot', language);
 
     // Check if OpenAI is available
     if (store.getState().application.openaiKey) {
-
-
-        editor.addAction(
-            {
-                id: 'openEditor',
-                label: 'openEditor',
-                keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK],
-                run() {
-                    LOGGER.info('openEditor');
-                    handleOpenContextCopilot();
-                }
-            }
-        );
+        editor.addAction({
+            id: 'openEditor',
+            label: 'openEditor',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK],
+            run() {
+                LOGGER.info('openEditor');
+                handleOpenContextCopilot();
+            },
+        });
     }
-}
-
+};
 
 // Completion Formatter
 
@@ -107,9 +107,7 @@ export class CompletionFormatter {
     }
 
     removeMarkdownCodeSyntax() {
-        this.formattedCompletion = this.removeMarkdownCodeBlocks(
-            this.formattedCompletion,
-        );
+        this.formattedCompletion = this.removeMarkdownCodeBlocks(this.formattedCompletion);
         return this;
     }
 
@@ -152,10 +150,7 @@ export class CompletionFormatter {
     }
 
     removeExcessiveNewlines() {
-        this.formattedCompletion = this.formattedCompletion.replace(
-            /\n{3,}/g,
-            '\n\n',
-        );
+        this.formattedCompletion = this.formattedCompletion.replace(/\n{3,}/g, '\n\n');
         return this;
     }
 

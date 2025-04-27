@@ -1,19 +1,24 @@
 <template>
-
     <div class="slds-full-height slds-flex-column">
         <!-- Header -->
 
         <div class="slds-full-height slds-overflow-hidden slds-flex-row">
             <div class={articleContainerClass}>
-                <div class="slds-grid slds-p-vertical_x-small slds-p-horizontal_small slds-shrink-none">
-                    <div class="slds-col slds-size_5-of-6">
-                    </div>
+                <div
+                    class="slds-grid slds-p-vertical_x-small slds-p-horizontal_small slds-shrink-none">
+                    <div class="slds-col slds-size_5-of-6"></div>
                     <div class="slds-col slds-size_1-of-6">
                         <lightning-button-group class="slds-float_right">
-                            <lightning-button-icon disabled={isLoading} icon-name="utility:adduser" onclick={adduser_handleClick}
-                                                   title="Add User"></lightning-button-icon>
-                            <lightning-button-icon disabled={isLoading} icon-name="utility:refresh" onclick={refresh_handleClick}
-                                                   title="Refresh"></lightning-button-icon>
+                            <lightning-button-icon
+                                disabled={isLoading}
+                                icon-name="utility:adduser"
+                                onclick={adduser_handleClick}
+                                title="Add User"></lightning-button-icon>
+                            <lightning-button-icon
+                                disabled={isLoading}
+                                icon-name="utility:refresh"
+                                onclick={refresh_handleClick}
+                                title="Refresh"></lightning-button-icon>
                             <!-- <lightning-button-icon icon-name="utility:link" disabled={isLoading} onclick={quickLinkPanel_handleClick}></lightning-button-icon> -->
                             <!-- <lightning-button-icon icon-name="utility:filter" disabled={isLoading} onclick={filterPanel_handleClick}></lightning-button-icon> -->
                             <!-- Todo in the futur -->
@@ -23,112 +28,155 @@
                 <!-- Table -->
                 <div class="full-page-body tableFixHead" onscroll={handleScroll}>
                     <template lwc:if={isLoading}>
-                        <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
-                            <slds-spinner alternative-text="Loading" message="Fetching data from Salesforce"
-                                          size="small"></slds-spinner>
+                        <div
+                            class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
+                            <slds-spinner
+                                alternative-text="Loading"
+                                message="Fetching data from Salesforce"
+                                size="small"></slds-spinner>
                         </div>
                     </template>
                     <!--<div lwc:dom="manual" class="custom-table"></div>-->
-                    <table class="slds-table slds-table_cell slds-table_fixed-layout slds-table_bordered slds-table_resizable-cols slds-no-row-hover"
-                           id="data-table"
-                           role="grid">
+                    <table
+                        class="slds-table slds-table_cell slds-table_fixed-layout slds-table_bordered slds-table_resizable-cols slds-no-row-hover"
+                        id="data-table"
+                        role="grid">
                         <thead>
-                        <tr class="slds-line-height_reset head">
-                            <th aria-label="" aria-sort="none" class="" scope="col" style="width:40px;">
-                                <div class="slds-th__action slds-text-link_reset">
-                                    <span class="slds-truncate" title="ID">ID</span>
-                                </div>
-                            </th>
-                            <th aria-label="Username" aria-sort="none"
-                                class="slds-is-sortable slds-is-resizable slds-text-title_caps" draggable="false"
-                                id='leftColumn' scope="col">
-                                <div class="slds-th__action slds-text-link_reset">
-                                    <span class="slds-truncate" title="Username">Username</span>
-                                </div>
-                            </th>
-                            <th aria-label="Name" aria-sort="none"
-                                class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
-                                <div class="slds-th__action slds-text-link_reset">
-                                    <span class="slds-truncate" title="Name">Name</span>
-                                </div>
-                            </th>
-                            <th aria-label="Profile" aria-sort="none"
-                                class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
-                                <div class="slds-th__action slds-text-link_reset">
-                                    <span class="slds-truncate" title="Profile">Profile</span>
-                                </div>
-                            </th>
-                            <th aria-label="Active" aria-sort="none"
-                                class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col"
-                                style="width:50px;">
-                                <div class="slds-th__action slds-text-link_reset">
-                                    <span class="slds-truncate" title="Active">Active</span>
-                                </div>
-                            </th>
-                            <th aria-label="" aria-sort="none" class="" scope="col" style="width:80px;"></th>
-                        </tr>
+                            <tr class="slds-line-height_reset head">
+                                <th
+                                    aria-label=""
+                                    aria-sort="none"
+                                    class=""
+                                    scope="col"
+                                    style="width: 40px">
+                                    <div class="slds-th__action slds-text-link_reset">
+                                        <span class="slds-truncate" title="ID">ID</span>
+                                    </div>
+                                </th>
+                                <th
+                                    aria-label="Username"
+                                    aria-sort="none"
+                                    class="slds-is-sortable slds-is-resizable slds-text-title_caps"
+                                    draggable="false"
+                                    id="leftColumn"
+                                    scope="col">
+                                    <div class="slds-th__action slds-text-link_reset">
+                                        <span class="slds-truncate" title="Username">Username</span>
+                                    </div>
+                                </th>
+                                <th
+                                    aria-label="Name"
+                                    aria-sort="none"
+                                    class="slds-is-sortable slds-is-resizable slds-text-title_caps"
+                                    scope="col">
+                                    <div class="slds-th__action slds-text-link_reset">
+                                        <span class="slds-truncate" title="Name">Name</span>
+                                    </div>
+                                </th>
+                                <th
+                                    aria-label="Profile"
+                                    aria-sort="none"
+                                    class="slds-is-sortable slds-is-resizable slds-text-title_caps"
+                                    scope="col">
+                                    <div class="slds-th__action slds-text-link_reset">
+                                        <span class="slds-truncate" title="Profile">Profile</span>
+                                    </div>
+                                </th>
+                                <th
+                                    aria-label="Active"
+                                    aria-sort="none"
+                                    class="slds-is-sortable slds-is-resizable slds-text-title_caps"
+                                    scope="col"
+                                    style="width: 50px">
+                                    <div class="slds-th__action slds-text-link_reset">
+                                        <span class="slds-truncate" title="Active">Active</span>
+                                    </div>
+                                </th>
+                                <th
+                                    aria-label=""
+                                    aria-sort="none"
+                                    class=""
+                                    scope="col"
+                                    style="width: 80px"></th>
+                            </tr>
                         </thead>
                         <tbody class="slds-scrollable_y" id="data-toDisplay">
-                        <!-- DATA are going here -->
-                        <template for:each={virtualList} for:item="item">
-                            <feature-user-explorer-row current-origin={currentOrigin} filter={filter} item={item}
-                                                       key={item.Username}></feature-user-explorer-row>
-                        </template>
+                            <!-- DATA are going here -->
+                            <template for:each={virtualList} for:item="item">
+                                <feature-user-explorer-row
+                                    current-origin={currentOrigin}
+                                    filter={filter}
+                                    item={item}
+                                    key={item.Username}></feature-user-explorer-row>
+                            </template>
                         </tbody>
                     </table>
                 </div>
             </div>
             <!-- Panel for quick links -->
-            <slds-vertical-panel is-open={displayQuickLinkPanel} onclose={handleCloseVerticalPanel} size={filterPanelSize}
-                                 title="Quick Links">
+            <slds-vertical-panel
+                is-open={displayQuickLinkPanel}
+                onclose={handleCloseVerticalPanel}
+                size={filterPanelSize}
+                title="Quick Links">
                 <!-- FILTER -->
                 <li class="slds-item">
                     <dl class="slds-wrap">
-                        <dt class="slds-item_label slds-text-color_weak slds-truncate" title="users">
+                        <dt
+                            class="slds-item_label slds-text-color_weak slds-truncate"
+                            title="users">
                             All Users
                         </dt>
                         <dd class="slds-item_detail slds-truncate">
-                            <a href={userLinkList}>List View</a> &nbsp; | &nbsp;
+                            <a href={userLinkList}>List View</a>
+                            &nbsp; | &nbsp;
                             <a href={userLinkList}>SOQL</a>
                         </dd>
                     </dl>
                 </li>
                 <li class="slds-item">
                     <dl class="slds-wrap">
-                        <dt class="slds-item_label slds-text-color_weak slds-truncate" title="users">
+                        <dt
+                            class="slds-item_label slds-text-color_weak slds-truncate"
+                            title="users">
                             Only Administrator
                         </dt>
                         <dd class="slds-item_detail slds-truncate">
-                            <a disabled href={userLinkList}>List View</a> &nbsp; | &nbsp;
+                            <a disabled href={userLinkList}>List View</a>
+                            &nbsp; | &nbsp;
                             <a href={userLinkList}>SOQL</a>
                         </dd>
                     </dl>
                 </li>
                 <li class="slds-item">
                     <dl class="slds-wrap">
-                        <dt class="slds-item_label slds-text-color_weak slds-truncate" title="users">
+                        <dt
+                            class="slds-item_label slds-text-color_weak slds-truncate"
+                            title="users">
                             Only Internal Users
                         </dt>
                         <dd class="slds-item_detail slds-truncate">
-                            <a disabled href={userLinkList}>List View</a> &nbsp; | &nbsp;
+                            <a disabled href={userLinkList}>List View</a>
+                            &nbsp; | &nbsp;
                             <a href={userLinkList}>SOQL</a>
                         </dd>
                     </dl>
                 </li>
                 <li class="slds-item">
                     <dl class="slds-wrap">
-                        <dt class="slds-item_label slds-text-color_weak slds-truncate" title="users">
+                        <dt
+                            class="slds-item_label slds-text-color_weak slds-truncate"
+                            title="users">
                             Only External Users
                         </dt>
                         <dd class="slds-item_detail slds-truncate">
-                            <a disabled href={userLinkList}>List View</a> &nbsp; | &nbsp;
+                            <a disabled href={userLinkList}>List View</a>
+                            &nbsp; | &nbsp;
                             <a href={userLinkList}>SOQL</a>
                         </dd>
                     </dl>
                 </li>
             </slds-vertical-panel>
         </div>
-
     </div>
-
 </template>

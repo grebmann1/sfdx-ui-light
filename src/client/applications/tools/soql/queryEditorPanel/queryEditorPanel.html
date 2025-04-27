@@ -1,20 +1,32 @@
 <template>
-     
     <!-- Tabs -->
-    <slds-tabset variant="scoped" class="slds-without-tab" active-tab-value={currentTab} onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled is-remove-tab-event-disabled>
+    <slds-tabset
+        variant="scoped"
+        class="slds-without-tab"
+        active-tab-value={currentTab}
+        onaddtab={handleAddTab}
+        onclosetab={handleCloseTab}
+        is-add-tab-enabled
+        is-remove-tab-event-disabled>
         <template for:each={formattedTabs} for:item="item">
-            <slds-tab key={item.id} label={item.name} value={item.id} onactive={handleSelectTab} is-closeable={item.isCloseable} is-draft={item.isDraft}></slds-tab>
+            <slds-tab
+                key={item.id}
+                label={item.name}
+                value={item.id}
+                onactive={handleSelectTab}
+                is-closeable={item.isCloseable}
+                is-draft={item.isDraft}></slds-tab>
         </template>
     </slds-tabset>
 
     <!-- Query Editor Text Area -->
     <div class="soql-editor slds-fill-height">
-         <editor-soql lwc:ref="editor" 
-            model={currentModel} 
-            onmonacoloaded={handleMonacoLoaded} 
+        <editor-soql
+            lwc:ref="editor"
+            model={currentModel}
+            onmonacoloaded={handleMonacoLoaded}
             onchange={handleSoqlChange}
-            onformatbody={handleFormatBody}
-        ></editor-soql>
+            onformatbody={handleFormatBody}></editor-soql>
     </div>
     <!-- Tooling API -->
     <div class="slds-grid slds-p-vertical_xx-small">
@@ -24,21 +36,18 @@
             </div>
         </template>
         <div class="slds-col_bump-left">
-            
-                <lightning-input 
-                    class="slds-p-right_small toolkit-small"
-                    type="toggle" 
-                    label="Include Deleted Records" 
-                    name="deletedRecords" 
-                    message-toggle-active=""
-                    message-toggle-inactive=""
-                    onchange={handleIncludeDeletedRecordChange}
-                    checked={includeDeletedRecords}
-                ></lightning-input>
-        
+            <lightning-input
+                class="slds-p-right_small toolkit-small"
+                type="toggle"
+                label="Include Deleted Records"
+                name="deletedRecords"
+                message-toggle-active=""
+                message-toggle-inactive=""
+                onchange={handleIncludeDeletedRecordChange}
+                checked={includeDeletedRecords}></lightning-input>
         </div>
     </div>
-   
+
     <!--
     <div class="slds-grid slds-p-around_xx-small">
         <div class="slds-m-horizontal_small">
@@ -59,5 +68,4 @@
         </div>
     </div>
     -->
-    
 </template>

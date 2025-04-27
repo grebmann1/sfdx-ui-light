@@ -8,7 +8,7 @@ class HotkeysManager {
     subscribe(keyCombo, callback) {
         if (!this.subscribers.has(keyCombo)) {
             this.subscribers.set(keyCombo, new Set());
-            
+
             // Bind the hotkey using hotkeys-js
             hotkeys(keyCombo, event => {
                 // Notify all subscribers

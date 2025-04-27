@@ -1,6 +1,6 @@
-import { ROLES,functionOutput,fetchCompletion,fetchCompletionStream } from 'ai/utils';
-import { guid,isUndefinedOrNull,safeParseJson } from 'shared/utils';
-import { store} from 'core/store';
+import { ROLES, functionOutput, fetchCompletion, fetchCompletionStream } from 'ai/utils';
+import { guid, isUndefinedOrNull, safeParseJson } from 'shared/utils';
+import { store } from 'core/store';
 import { globalActions } from 'ai/functions';
 import LOGGER from 'shared/logger';
 
@@ -36,7 +36,6 @@ const processStream = async (stream, callback) => {
     });
 };
 
-
 class Assistant {
     name;
     model;
@@ -52,8 +51,16 @@ class Assistant {
     onTextCallback = null;
     onTextEndCallback = null;
 
-
-    constructor({name,model,instructions,tools,outputSchema,messages,toolLogic = {},handoffs = []  }) {
+    constructor({
+        name,
+        model,
+        instructions,
+        tools,
+        outputSchema,
+        messages,
+        toolLogic = {},
+        handoffs = [],
+    }) {
         this.name = name;
         this.model = model || 'gpt-4o-mini';
         this.messages = messages || [];
@@ -76,7 +83,7 @@ class Assistant {
         // Create a proxy for each function in toolLogic
         const proxiedToolLogic = {};
 
-        Object.keys(originalToolLogic).forEach((key) => {
+        Object.keys(originalToolLogic).forEach(key => {
             const originalFunction = originalToolLogic[key];
             if (typeof originalFunction === 'function') {
                 proxiedToolLogic[key] = async function (args, context) {
@@ -129,21 +136,21 @@ class Assistant {
         return this;
     }
 
-    addMessages = (messages) => {
+    addMessages = messages => {
         if (!messages || !messages.length) return this;
 
         LOGGER.agent('addMessages', this.messages, messages);
         // Create a Set of existing message IDs for faster lookup
-        const existingIds = new Set(this.messages.map((msg) => msg.id));
+        const existingIds = new Set(this.messages.map(msg => msg.id));
 
         // Filter and add only new messages
-        const newMessages = messages.filter((msg) => !existingIds.has(msg.id));
+        const newMessages = messages.filter(msg => !existingIds.has(msg.id));
         if (newMessages.length > 0) {
             this.messages = [...this.messages, ...newMessages];
         }
 
         return this;
-    }
+    };
 
     onText(callback) {
         this.onTextCallback = callback;
@@ -165,8 +172,8 @@ class Assistant {
         // Filter out all but the last context message
         const messages = [...this.messages];
         LOGGER.agent('execute ->', messages);
-        const contextMessages = messages.filter((msg) => msg.isContext);
-        const nonContextMessages = messages.filter((msg) => !msg.isContext);
+        const contextMessages = messages.filter(msg => msg.isContext);
+        const nonContextMessages = messages.filter(msg => !msg.isContext);
 
         if (contextMessages.length > 0) {
             // Keep only the last context message
@@ -176,18 +183,18 @@ class Assistant {
         let result;
         try {
             result = await this._executePromptStream(nonContextMessages);
-            dispatchEvent(new CustomEvent('textend', {
-                detail: {
-                    content: result[result.length - 1].content,
-                },
-            }));
+            dispatchEvent(
+                new CustomEvent('textend', {
+                    detail: {
+                        content: result[result.length - 1].content,
+                    },
+                })
+            );
         } finally {
             this.isExecuting = false;
         }
         return result;
-    }
-
-    
+    };
 
     async _executePromptStream(_messages) {
         if (!_messages?.length) {
@@ -230,7 +237,7 @@ class Assistant {
                 body,
                 { ...message },
                 toolCallsAccumulator,
-                messages,
+                messages
             );
 
             // Clear the abort function after processing
@@ -246,7 +253,7 @@ class Assistant {
         }
 
         throw new Error(
-            'Maximum iterations reached without a suitable answer. Please try again with a more specific input.',
+            'Maximum iterations reached without a suitable answer. Please try again with a more specific input.'
         );
     }
 
@@ -287,9 +294,10 @@ class Assistant {
         if (delta.role) message.role = delta.role;
         if (delta.refusal) message.refusal = delta.refusal;
         if (delta.content) {
-            
             // Update the message content
-            message.content = isUndefinedOrNull(message.content) ? delta.content : message.content + delta.content;
+            message.content = isUndefinedOrNull(message.content)
+                ? delta.content
+                : message.content + delta.content;
             // Send the message to the callback
             if (this.onTextCallback) {
                 this.onTextCallback(message.content);
@@ -331,7 +339,7 @@ class Assistant {
                 assistant: this
             })
         );*/
-    }
+    };
 
     _createInitialMessage() {
         return {
@@ -353,40 +361,46 @@ class Assistant {
         }
 
         return params;
-    }
+    };
 
-    _executePrompt = async (_messages) => {
-        LOGGER.debug('messages',_messages);
+    _executePrompt = async _messages => {
+        LOGGER.debug('messages', _messages);
         let messages = [..._messages];
         for (let i = 0; i < 5; i++) {
             const params = {
                 model: this.model,
                 messages,
-                ...this._addAdditionalParams()
+                ...this._addAdditionalParams(),
             };
-            LOGGER.debug('params',params);
+            LOGGER.debug('params', params);
             const response = await (await fetchCompletion(params)).json();
-            LOGGER.debug('response',response);
+            LOGGER.debug('response', response);
             if (isUndefinedOrNull(response)) throw new Error('No data returned from the assistant');
 
             const { finish_reason, message } = response.choices[0];
             message.id = message.id || guid();
 
-            if (finish_reason === "tool_calls" && message.tool_calls) {
+            if (finish_reason === 'tool_calls' && message.tool_calls) {
                 messages.push(message);
                 for (const toolCall of message.tool_calls) {
                     const functionToCall = this.toolLogic[toolCall.function.name];
                     const functionArgs = JSON.parse(toolCall.function.arguments);
-                    const functionResponse = await functionToCall(functionArgs, { messages, tool_call_id: toolCall.id, dispatch: store.dispatch });
+                    const functionResponse = await functionToCall(functionArgs, {
+                        messages,
+                        tool_call_id: toolCall.id,
+                        dispatch: store.dispatch,
+                    });
                     messages.push(...functionResponse);
                 }
-            } else if (finish_reason === "stop") {
+            } else if (finish_reason === 'stop') {
                 messages.push(message);
                 return messages;
             }
         }
-        throw new Error('Maximum iterations reached without a suitable answer. Please try again with a more specific input.');
-    }
+        throw new Error(
+            'Maximum iterations reached without a suitable answer. Please try again with a more specific input.'
+        );
+    };
 
     stopExecution() {
         this.isExecuting = false;
@@ -403,11 +417,11 @@ class Assistant {
 
     _upsertMessage(message) {
         LOGGER.debug('upsertMessage --> ', message);
-        const messageExists = this.messages.some((item) => item.id === message.id);
+        const messageExists = this.messages.some(item => item.id === message.id);
         if (!messageExists) {
             this.messages = [...this.messages, message];
         } else {
-            this.messages = this.messages.map((item) => {
+            this.messages = this.messages.map(item => {
                 if (item.id === message.id) {
                     return {
                         ...item,
@@ -418,11 +432,9 @@ class Assistant {
             });
         }
     }
-
 }
 
 export default Assistant;
-
 
 /** For Redux */
 

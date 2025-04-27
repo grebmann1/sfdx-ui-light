@@ -5,21 +5,21 @@
     z-index: 10;
 }
 
-.slds-tabs_scoped__item{
+.slds-tabs_scoped__item {
     background-color: var(--slds-g-color-neutral-base-100, #fff);
     border-color: var(--slds-g-color-border-base-4, #e5e5e5);
     font-weight: 700;
     color: var(--slds-g-color-neutral-base-10, #181818);
-    padding-top:0px;
+    padding-top: 0px;
 }
 
-.slds-is-active.slds-tabs_scoped__item{
+.slds-is-active.slds-tabs_scoped__item {
     font-weight: 700;
     border-top: 3px solid var(--slds-tab-custom-color, #1b96ff);
-    margin-top:-3px;
+    margin-top: -3px;
 }
 
-.slds-tabs_scoped__item{
+.slds-tabs_scoped__item {
     border-left: 1px solid var(--slds-g-color-border-base-4, #c9c9c9);
     border-right: 1px solid var(--slds-g-color-border-base-4, #c9c9c9);
     border-top: 1px solid var(--slds-g-color-border-base-4, #c9c9c9);
@@ -38,47 +38,46 @@
     border-color: unset;
 }
 
-.slds-tabs_scoped__link{
+.slds-tabs_scoped__link {
     border-right: unset;
     border-left: unset;
     max-width: 150px;
 }
 
-
-.slds-tab-add{
+.slds-tab-add {
     /*background: #e5e5e5 !important;*/
     background: #f3f3f3 !important;
 }
 
-.slds-tab-add:hover{
+.slds-tab-add:hover {
     background: #fff !important;
 }
 
 /** scoped **/
 
-.slds-tabs_scoped__nav{
-    padding-left:0px;
-    padding-right:10px;
-    padding-top:5px;
-    border-top-right-radius:0;
-    border-top-left-radius:0;
-    border:unset;
-    border-bottom:1px solid var(--slds-g-color-border-base-4,#c9c9c9);
+.slds-tabs_scoped__nav {
+    padding-left: 0px;
+    padding-right: 10px;
+    padding-top: 5px;
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+    border: unset;
+    border-bottom: 1px solid var(--slds-g-color-border-base-4, #c9c9c9);
 }
 
 /** Draft **/
 
 .slds-is-draft {
-    --slds-g-color-neutral-base-50:#1b96ff;
-    display:block;
+    --slds-g-color-neutral-base-50: #1b96ff;
+    display: block;
 }
-.slds-is-draft-close .slds-is-close{
-    display:none;
+.slds-is-draft-close .slds-is-close {
+    display: none;
 }
 
 .slds-is-draft-close:hover .slds-is-draft {
-    display:none;
+    display: none;
 }
-.slds-is-draft-close:hover .slds-is-close{
-    display:block;
+.slds-is-draft-close:hover .slds-is-close {
+    display: block;
 }

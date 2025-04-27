@@ -1,12 +1,11 @@
 import LightningModal from 'lightning/modal';
-import {api} from "lwc";
-import {isNotUndefinedOrNull} from "shared/utils";
-import { CACHE_CONFIG,loadExtensionConfigFromCache } from "shared/cacheManager";
+import { api } from 'lwc';
+import { isNotUndefinedOrNull } from 'shared/utils';
+import { CACHE_CONFIG, loadExtensionConfigFromCache } from 'shared/cacheManager';
 
-import { chromeOpenInWindow} from 'extension/utils';
+import { chromeOpenInWindow } from 'extension/utils';
 
 export default class UserExplorerNetworkModal extends LightningModal {
-
     @api networkMembers;
     @api standard;
     @api frontDoorUrl;
@@ -30,10 +29,9 @@ export default class UserExplorerNetworkModal extends LightningModal {
 
     /* Getters */
 
-    
     /** events **/
 
-    handleStandardLogin = (e) => {
+    handleStandardLogin = e => {
         e.preventDefault();
         chromeOpenInWindow(
             `${this.frontDoorUrl}&retURL=${encodeURIComponent(this.standard)}`,
@@ -42,10 +40,12 @@ export default class UserExplorerNetworkModal extends LightningModal {
         );
     };
 
-    handleExperienceLogin = async (e) => {
+    handleExperienceLogin = async e => {
         e.preventDefault();
         const targetUrl = e.currentTarget?.href;
-        const configuration = await loadExtensionConfigFromCache([CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO.key]);
+        const configuration = await loadExtensionConfigFromCache([
+            CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO.key,
+        ]);
         //console.log('configuration.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO',configuration[CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO]);
         chromeOpenInWindow(
             `${this.frontDoorUrl}&retURL=${encodeURIComponent(targetUrl)}`,
@@ -53,7 +53,5 @@ export default class UserExplorerNetworkModal extends LightningModal {
             configuration[CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO.key],
             configuration[CACHE_CONFIG.EXPERIENCE_CLOUD_LOGINAS_INCOGNITO.key]
         );
-    }
-
-
+    };
 }

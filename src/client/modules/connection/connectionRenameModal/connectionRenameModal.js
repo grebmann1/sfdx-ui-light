@@ -1,19 +1,24 @@
-import { api,track } from "lwc";
+import { api, track } from 'lwc';
 import Toast from 'lightning/toast';
 import LightningAlert from 'lightning/alert';
 import LightningModal from 'lightning/modal';
-import {renameConfiguration} from 'connection/utils';
-import { isEmpty,isNotUndefinedOrNull,isElectronApp,isChromeExtension,decodeError,checkIfPresent } from "shared/utils";
-
+import { renameConfiguration } from 'connection/utils';
+import {
+    isEmpty,
+    isNotUndefinedOrNull,
+    isElectronApp,
+    isChromeExtension,
+    decodeError,
+    checkIfPresent,
+} from 'shared/utils';
 
 const DEFAULT_CATEGORY = {
     id: 'default',
     icon: 'standard:category',
-    title: 'Default'
-}
+    title: 'Default',
+};
 
 export default class OrgRenameModal extends LightningModal {
-
     @api orgName;
     @api username;
     @api redirectUrl;
@@ -22,39 +27,32 @@ export default class OrgRenameModal extends LightningModal {
     @api connections = [];
 
     @api
-    get category(){
+    get category() {
         return this._category;
     }
-    set category(value){
+    set category(value) {
         this._category = value;
-        if(this._category){
-            this.selectedCategory = [
-                this.formatForLookup(this._category)
-            ];
-        }else{
+        if (this._category) {
+            this.selectedCategory = [this.formatForLookup(this._category)];
+        } else {
             this.selectedCategory = [];
         }
-        
     }
     newCategory;
     isNewCategoryDisplayed = false;
 
     /* Group variables */
     maxSelectionSize = 2;
-    @track selectedCategory = [];//[DEFAULT_CATEGORY];
+    @track selectedCategory = []; //[DEFAULT_CATEGORY];
     errors = [];
-    
-    newRecordOptions = [
-        { value: 'Category', label: 'New Category' }
-    ];
+
+    newRecordOptions = [{ value: 'Category', label: 'New Category' }];
 
     connectedCallback() {
-        window.setTimeout(()=>{
+        window.setTimeout(() => {
             this.initLookupDefaultResults();
-        },1)
+        }, 1);
     }
-    
-
 
     /** Methods **/
 
@@ -65,7 +63,6 @@ export default class OrgRenameModal extends LightningModal {
             lookup.setDefaultResults(this.categories.map(x => this.formatForLookup(x)));
         }
     }
-   
 
     closeModal() {
         this.close();
@@ -75,30 +72,30 @@ export default class OrgRenameModal extends LightningModal {
         let isValid = true;
         let inputFields = this.template.querySelectorAll('.input-to-validate');
         inputFields.forEach(inputField => {
-            if(!inputField.checkValidity()) {
+            if (!inputField.checkValidity()) {
                 inputField.reportValidity();
                 isValid = false;
             }
         });
 
         // Categories
-        if(this.isNewCategoryDisplayed && this.refs.newCategory){
+        if (this.isNewCategoryDisplayed && this.refs.newCategory) {
             this.refs.newCategory.setCustomValidity('Confirm the new Category');
             this.refs.newCategory.reportValidity();
             isValid = false;
         }
 
         return isValid;
-    }
+    };
 
     renameAlias = async () => {
         await renameConfiguration({
-            newAlias:this.generatedAlias,
-            oldAlias:this.oldAlias,
-            username:this.username,
-            redirectUrl:this.redirectUrl
+            newAlias: this.generatedAlias,
+            oldAlias: this.oldAlias,
+            username: this.username,
+            redirectUrl: this.redirectUrl,
         });
-    }
+    };
 
     checkForErrors() {
         //console.log('checkForErrors',this.template.querySelector('slds-lookup').getSelection());
@@ -112,19 +109,19 @@ export default class OrgRenameModal extends LightningModal {
         }
     }
 
-    formatForLookup = (item) => {
+    formatForLookup = item => {
         return {
             id: item,
             icon: 'standard:category',
-            title: item
+            title: item,
         };
-    }
+    };
 
     notifyUser(title, message, variant) {
         Toast.show({
-            label:title,
+            label: title,
             message,
-            variant
+            variant,
         });
     }
 
@@ -132,17 +129,15 @@ export default class OrgRenameModal extends LightningModal {
         let isValid = true;
         // Default
         let inputFields = this.template.querySelectorAll('.new-category-to-validate');
-            inputFields.forEach(inputField => {
-                if(!inputField.checkValidity()) {
-                    inputField.reportValidity();
-                    isValid = false;
-                }
-            });
-        
-        return isValid;
-    }
+        inputFields.forEach(inputField => {
+            if (!inputField.checkValidity()) {
+                inputField.reportValidity();
+                isValid = false;
+            }
+        });
 
-    
+        return isValid;
+    };
 
     /** events **/
 
@@ -150,64 +145,68 @@ export default class OrgRenameModal extends LightningModal {
         this.close();
     }
 
-    alias_onChange = (e) => {
+    alias_onChange = e => {
         this.newAlias = e.target.value;
-    }
+    };
 
-    name_onChange = (e) => {
+    name_onChange = e => {
         this.orgName = e.target.value;
-    }
+    };
 
-    newCategory_onChange = (e) => {
+    newCategory_onChange = e => {
         this.newCategory = e.target.value;
-    }
+    };
 
-    redirectUrl_onChange = (e) => {
+    redirectUrl_onChange = e => {
         this.redirectUrl = e.target.value;
-    }
+    };
 
-    handleLookupSearch = async (event) =>{
+    handleLookupSearch = async event => {
         const lookupElement = event.target;
         // Call Apex endpoint to search for records and pass results to the lookup
         try {
             const keywords = event.detail.rawSearchTerm;
-            const results = this.categories.filter(x => checkIfPresent(x,keywords)).map(x => this.formatForLookup(x));
+            const results = this.categories
+                .filter(x => checkIfPresent(x, keywords))
+                .map(x => this.formatForLookup(x));
             lookupElement.setSearchResults(results);
         } catch (error) {
-            this.notifyUser('Lookup Error', 'An error occurred while searching with the lookup field.', 'error');
+            this.notifyUser(
+                'Lookup Error',
+                'An error occurred while searching with the lookup field.',
+                'error'
+            );
             // eslint-disable-next-line no-console
             console.error('Lookup error', JSON.stringify(error));
             this.errors = [error];
         }
-    }
+    };
 
-    handleLookupSelectionChange = (event) => {
+    handleLookupSelectionChange = event => {
         this.checkForErrors();
-    }
+    };
 
-    handleLookupNewRecordSelection = (event) => {
+    handleLookupNewRecordSelection = event => {
         this.isNewCategoryDisplayed = true;
         this.newCategory = this.refs.category.searchTerm;
         window.setTimeout(() => {
             this.template.querySelector('.new-category-to-validate')?.focus();
-        })
-    }
-    
-    handleCancelNewCategoryClick = (e) => {
+        });
+    };
+
+    handleCancelNewCategoryClick = e => {
         this.isNewCategoryDisplayed = false;
         this.newCategory = null;
-    }
+    };
 
-    handleCreateNewCategoryClick = (e) => {
-        if(this.validateNewCategory()){
+    handleCreateNewCategoryClick = e => {
+        if (this.validateNewCategory()) {
             this.errors = []; // reset
-            this.selectedCategory = [
-                this.formatForLookup(this.newCategory)
-            ];
+            this.selectedCategory = [this.formatForLookup(this.newCategory)];
             this.isNewCategoryDisplayed = false;
             this.newCategory = null;
         }
-    }
+    };
 
     async handleSaveClick() {
         if (this.validateForm()) {
@@ -216,14 +215,15 @@ export default class OrgRenameModal extends LightningModal {
         }
     }
 
-     /** getters */
+    /** getters */
 
-     get categories(){
+    get categories() {
         return [...new Set(this.connections.map(x => x.company).filter(x => !isEmpty(x)))];
     }
 
-    get generatedAlias(){
-        const category = this.selectedCategory?.length >= 1 ? this.selectedCategory[0].id : 'category';
+    get generatedAlias() {
+        const category =
+            this.selectedCategory?.length >= 1 ? this.selectedCategory[0].id : 'category';
         const name = isNotUndefinedOrNull(this.orgName) ? this.orgName : 'name';
         return `${category}-${name}`;
     }

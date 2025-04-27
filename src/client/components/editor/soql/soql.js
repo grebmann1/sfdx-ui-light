@@ -1,17 +1,23 @@
-import { api,wire } from "lwc";
+import { api, wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import Toast from 'lightning/toast';
-import { isEmpty,isElectronApp,classSet,isNotUndefinedOrNull,runActionAfterTimeOut,guid } from 'shared/utils';
-import { formatQuery,parseQuery } from '@jetstreamapp/soql-parser-js';
+import {
+    isEmpty,
+    isElectronApp,
+    classSet,
+    isNotUndefinedOrNull,
+    runActionAfterTimeOut,
+    guid,
+} from 'shared/utils';
+import { formatQuery, parseQuery } from '@jetstreamapp/soql-parser-js';
 import { SOQL } from 'editor/languages';
-import { store,connectStore } from 'core/store';
-import { setupMonaco,WIDGETS,registerCopilot } from 'editor/utils';
+import { store, connectStore } from 'core/store';
+import { setupMonaco, WIDGETS, registerCopilot } from 'editor/utils';
 import { MonacoLwcWidget } from 'editor/editorCompleteWidget';
 import instructions from './instructions/instructions';
 import LOGGER from 'shared/logger';
 
 export default class Soql extends ToolkitElement {
-
     @api maxHeight;
     @api files = [];
     @api currentFile;
@@ -20,8 +26,6 @@ export default class Soql extends ToolkitElement {
     @api isAddTabEnabled = false;
 
     @api isTabEnabled = false; // by default, we display tabs
-    
-
 
     models = [];
     editor;
@@ -35,61 +39,53 @@ export default class Soql extends ToolkitElement {
 
     currentPromptWidget;
 
-
     _useToolingApi = false;
 
     @wire(connectStore, { store })
-    storeChange({ ui,sobject }) {
-        if(ui && ui.hasOwnProperty('useToolingApi')){
+    storeChange({ ui, sobject }) {
+        if (ui && ui.hasOwnProperty('useToolingApi')) {
             this._useToolingApi = ui.useToolingApi;
         }
     }
 
+    connectedCallback() {}
 
-    connectedCallback(){}
-
-    renderedCallback(){
-        if(!this._hasRendered){
+    renderedCallback() {
+        if (!this._hasRendered) {
             this._hasRendered = true;
-            setupMonaco()
-            .then(monaco => {
+            setupMonaco().then(monaco => {
                 this.monaco = monaco;
                 this.loadMonacoEditor();
-            })
-            
+            });
         }
-        
     }
 
     /** Events */
 
     handleCopyClick = () => {
-        const formattedValue = (
-            this.currentModel.getValue() || ''
-        ).replaceAll('\n',' ');
+        const formattedValue = (this.currentModel.getValue() || '').replaceAll('\n', ' ');
         navigator.clipboard.writeText(formattedValue);
         Toast.show({
             label: `Exported to your clipboard`,
-            variant:'success',
+            variant: 'success',
         });
-    }
+    };
 
     handleFormatBodyClick = () => {
-        this.dispatchEvent(new CustomEvent("formatbody", {bubbles: true,composed:true }));
-    }
+        this.dispatchEvent(new CustomEvent('formatbody', { bubbles: true, composed: true }));
+    };
 
     handleOpenContextCopilot = () => {
         // Add the widget to Monaco editor
-        if(!this.currentPromptWidget.isVisible){
+        if (!this.currentPromptWidget.isVisible) {
             this.currentPromptWidget.show();
         }
-    }
+    };
 
     /** Methods **/
 
-    createEditor = (model) => {
-
-       /* const innerContainer2 = document.createElement('div');
+    createEditor = model => {
+        /* const innerContainer2 = document.createElement('div');
             innerContainer2.setAttribute("slot", "editor");
             innerContainer2.style.width = '100%';
             innerContainer2.style.height = '100%';
@@ -99,14 +95,14 @@ export default class Soql extends ToolkitElement {
         this.editor = this.monaco.editor.create(this.refs.editor, {
             model: model,
             //theme:'vs-dark',
-            wordWrap: "on",
+            wordWrap: 'on',
             minimap: {
-                enabled: false
+                enabled: false,
             },
-            automaticLayout:true,
+            automaticLayout: true,
             readOnly: false,
             scrollBeyondLastLine: false,
-            fixedOverflowWidgets: true
+            fixedOverflowWidgets: true,
         });
 
         // Add Prompt Widget
@@ -119,13 +115,18 @@ export default class Soql extends ToolkitElement {
             },
         });
         // Add Copilot
-        registerCopilot(this.monaco, this.editor, model.getLanguageId(), this.handleOpenContextCopilot);
+        registerCopilot(
+            this.monaco,
+            this.editor,
+            model.getLanguageId(),
+            this.handleOpenContextCopilot
+        );
 
         this.editor.onDidChangeModelContent(this.handleModelContentChange);
         /*this.editor.addCommand(this.monaco.KeyMod.CtrlCmd | this.monaco.KeyCode.KEY_S, () => {
             console.log('SAVE pressed!');
-        });*///
-        this.editor.onKeyDown((e) => {
+        });*/ //
+        this.editor.onKeyDown(e => {
             if ((e.ctrlKey || e.metaKey) && e.keyCode === this.monaco.KeyCode.KeyS) {
                 e.preventDefault();
                 //this.dispatchEvent(new CustomEvent("executesave", {bubbles: true,composed:true }));
@@ -133,19 +134,21 @@ export default class Soql extends ToolkitElement {
             if ((e.ctrlKey || e.metaKey) && e.keyCode === this.monaco.KeyCode.Enter) {
                 e.preventDefault();
                 e.stopPropagation();
-                this.dispatchEvent(new CustomEvent("executeaction", {bubbles: true,composed:true }));
+                this.dispatchEvent(
+                    new CustomEvent('executeaction', { bubbles: true, composed: true })
+                );
             }
         });
         this.editor.focus();
-    }
+    };
 
     loadMonacoEditor = async () => {
         // Setup
         SOQL.configureSoqlLanguage(this.monaco);
-        
-        this.dispatchEvent(new CustomEvent("monacoloaded", {bubbles: true }));
+
+        this.dispatchEvent(new CustomEvent('monacoloaded', { bubbles: true }));
         this.hasLoaded = true;
-    }
+    };
 
     /*configureTheme = (monaco) => {
         monaco.editor.defineTheme("sftoolkitTheme", {
@@ -158,188 +161,233 @@ export default class Soql extends ToolkitElement {
         })
     }*/
 
-
-    handleModelContentChange = (event) => {
+    handleModelContentChange = event => {
         //console.log('onDidChangeModelContent');
         //this.dispatchEvent(new CustomEvent("change", {detail:{value:this.editor.getValue(),type:'body'},bubbles: true }));
-        const objectRegex = /.*\s(from(?![^\(]*\)))\s+($|\w+).*$/gim
+        const objectRegex = /.*\s(from(?![^\(]*\)))\s+($|\w+).*$/gim;
         const query = this.editor.getValue().toLowerCase();
-        const position = this.editor.getPosition()
-        const beforeText = this.editor.getModel().getValueInRange({
-            startLineNumber: 1,
-            startColumn: 1,
-            endLineNumber: position.lineNumber,
-            endColumn: position.column
-        }).toUpperCase();
+        const position = this.editor.getPosition();
+        const beforeText = this.editor
+            .getModel()
+            .getValueInRange({
+                startLineNumber: 1,
+                startColumn: 1,
+                endLineNumber: position.lineNumber,
+                endColumn: position.column,
+            })
+            .toUpperCase();
 
         let objectRegexResult = objectRegex.exec(query);
-        if(isNotUndefinedOrNull(objectRegexResult)){
+        if (isNotUndefinedOrNull(objectRegexResult)) {
             let referenceTo = objectRegexResult[2];
-            if(isNotUndefinedOrNull(referenceTo) && (beforeText.endsWith("AND ") || beforeText.endsWith("OR ") || beforeText.endsWith(", ") || beforeText.endsWith("= "))){
-                this.editor.trigger("", "editor.action.triggerSuggest");
+            if (
+                isNotUndefinedOrNull(referenceTo) &&
+                (beforeText.endsWith('AND ') ||
+                    beforeText.endsWith('OR ') ||
+                    beforeText.endsWith(', ') ||
+                    beforeText.endsWith('= '))
+            ) {
+                this.editor.trigger('', 'editor.action.triggerSuggest');
             }
         }
-        runActionAfterTimeOut(this.editor.getValue(),(value) => {
-            this.dispatchEvent(new CustomEvent("change", {detail:{value:this.editor.getValue(),type:'body'},bubbles: true }));
-        },{timeout:200});
-    }
+        runActionAfterTimeOut(
+            this.editor.getValue(),
+            value => {
+                this.dispatchEvent(
+                    new CustomEvent('change', {
+                        detail: { value: this.editor.getValue(), type: 'body' },
+                        bubbles: true,
+                    })
+                );
+            },
+            { timeout: 200 }
+        );
+    };
 
     getCompletionItems = (parserInstance, suggestionInstance) => {
         //console.log('parserInstance',parserInstance);
         const isSelectPosition = (parser, sub = false) => {
-            return sub ? parser.subquery.position === "select" : parser.position === "select";
+            return sub ? parser.subquery.position === 'select' : parser.position === 'select';
         };
-    
+
         const hasFromObject = (parser, sub = false) => {
             return sub ? parser.subquery.fromObject !== null : parser.fromObject !== null;
         };
-    
+
         const isWherePosition = (parser, sub = false) => {
-            return sub ? parser.subquery.position === "where" : parser.position === "where";
+            return sub ? parser.subquery.position === 'where' : parser.position === 'where';
         };
-    
+
         const getFilterCompletionItems = (parser, sub = false) => {
             const query = sub ? parser.subquery : parser;
             if (query.filter.field && query.filter.operator) {
-                if (query.filter.value.startsWith("(")) {
+                if (query.filter.value.startsWith('(')) {
                     return Promise.all([
                         suggestionInstance.getTypeFieldSuggestions(query.fromObject, query.filter),
-                        suggestionInstance.getSObjectSuggestions(true)
+                        suggestionInstance.getSObjectSuggestions(true),
                     ]).then(results => [...results[0], ...results[1]]);
                 } else {
-                    return suggestionInstance.getTypeFieldSuggestions(query.fromObject, query.filter);
+                    return suggestionInstance.getTypeFieldSuggestions(
+                        query.fromObject,
+                        query.filter
+                    );
                 }
             } else {
                 return suggestionInstance.getFieldSuggestions(false);
             }
         };
-    
+
         const getSubqueryItems = () => {
-            if (parserInstance.subquery.type === "select" && !parserInstance.subquery.hasSelect) {
+            if (parserInstance.subquery.type === 'select' && !parserInstance.subquery.hasSelect) {
                 return suggestionInstance.getChildRelationshipSuggestions(true);
             }
             if (isWherePosition(parserInstance, true) && hasFromObject(parserInstance, true)) {
                 return getFilterCompletionItems(parserInstance, true);
             }
-            if (isSelectPosition(parserInstance, true) && !parserInstance.subquery.fromRelation.length) {
+            if (
+                isSelectPosition(parserInstance, true) &&
+                !parserInstance.subquery.fromRelation.length
+            ) {
                 return suggestionInstance.getFieldSuggestions(parserInstance.isSubQuery);
             }
             return null;
         };
         //console.log('parserInstance',parserInstance)
         if (parserInstance.isSubQuery || parserInstance.hasSelect) {
-            if (parserInstance.isSubQuery || parserInstance.position !== "select" || parserInstance.fromObject !== null) {
+            if (
+                parserInstance.isSubQuery ||
+                parserInstance.position !== 'select' ||
+                parserInstance.fromObject !== null
+            ) {
                 const subqueryItems = parserInstance.isSubQuery ? getSubqueryItems() : null;
                 //console.log('--> suggestion 0 - subqueryItems',subqueryItems);
                 if (subqueryItems) return subqueryItems;
-    
-                if (parserInstance.fromRelation.length && (isSelectPosition(parserInstance) || isWherePosition(parserInstance)) && hasFromObject(parserInstance)) {
+
+                if (
+                    parserInstance.fromRelation.length &&
+                    (isSelectPosition(parserInstance) || isWherePosition(parserInstance)) &&
+                    hasFromObject(parserInstance)
+                ) {
                     //console.log('--> suggestion 1');
                     return suggestionInstance.getLookupFieldSuggestions();
                 }
-    
-                if (isSelectPosition(parserInstance) && hasFromObject(parserInstance) && !parserInstance.fromRelation.length) {
+
+                if (
+                    isSelectPosition(parserInstance) &&
+                    hasFromObject(parserInstance) &&
+                    !parserInstance.fromRelation.length
+                ) {
                     //console.log('--> suggestion 2');
                     return suggestionInstance.getFieldSuggestions(parserInstance.isSubQuery);
                 }
-    
-                if (parserInstance.position === "from" && parserInstance.lastWord === parserInstance.fromObject /*!hasFromObject(parserInstance, true)*/ || (parserInstance.isSubQuery && (parserInstance.subquery.position === "from" || !parserInstance.subquery.hasSelect))) {
+
+                if (
+                    (parserInstance.position === 'from' &&
+                        parserInstance.lastWord ===
+                            parserInstance.fromObject) /*!hasFromObject(parserInstance, true)*/ ||
+                    (parserInstance.isSubQuery &&
+                        (parserInstance.subquery.position === 'from' ||
+                            !parserInstance.subquery.hasSelect))
+                ) {
                     //console.log('--> suggestion 3');
                     return suggestionInstance.getSObjectSuggestions(false);
                 }
 
-                if(parserInstance.position === "from" && hasFromObject(parserInstance)){
+                if (parserInstance.position === 'from' && hasFromObject(parserInstance)) {
                     //console.log('--> suggestion 3.1');
                     return suggestionInstance.getAfterFromSuggestions(parserInstance);
                 }
-    
-                if (isWherePosition(parserInstance) && hasFromObject(parserInstance) && !parserInstance.isSubQuery) {
+
+                if (
+                    isWherePosition(parserInstance) &&
+                    hasFromObject(parserInstance) &&
+                    !parserInstance.isSubQuery
+                ) {
                     //console.log('--> suggestion 4');
                     return getFilterCompletionItems(parserInstance);
                 }
-    
-                if (parserInstance.position === "order by") {
+
+                if (parserInstance.position === 'order by') {
                     //console.log('--> suggestion 5');
                     return suggestionInstance.getFieldSuggestions(false);
                 }
-    
-                if (parserInstance.position === "group by" || parserInstance.position === "having") {
+
+                if (
+                    parserInstance.position === 'group by' ||
+                    parserInstance.position === 'having'
+                ) {
                     //console.log('--> suggestion 6');
                     return suggestionInstance.getSelectedFields();
                 }
-            } else if(parserInstance.fromObject !== null) {
+            } else if (parserInstance.fromObject !== null) {
                 //console.log('--> suggestion 7');
                 return suggestionInstance.getSObjectSuggestions(true);
-            } else if(parserInstance.fromObject === null && parserInstance.position === 'select'){
+            } else if (parserInstance.fromObject === null && parserInstance.position === 'select') {
                 return suggestionInstance.getFromSuggestions();
             }
         } else {
             //console.log('--> suggestion 8');
-            return suggestionInstance.getSObjectSuggestions(true,true);
+            return suggestionInstance.getSObjectSuggestions(true, true);
         }
-    }
-    
-    
+    };
+
     @api
-    addMarkers = (markers) => {
-        this.monaco.editor.setModelMarkers(this.currentModel, "owner", markers);
-    }
+    addMarkers = markers => {
+        this.monaco.editor.setModelMarkers(this.currentModel, 'owner', markers);
+    };
 
     @api
     resetMarkers = () => {
-        this.monaco.editor.setModelMarkers(this.currentModel, "owner",[]);
-    }
-
+        this.monaco.editor.setModelMarkers(this.currentModel, 'owner', []);
+    };
 
     @api
-    displayModel = (model) => {
-        if(this.editor){
+    displayModel = model => {
+        if (this.editor) {
             this.editor.setModel(model); // set last model
-        }else{
+        } else {
             this.createEditor(model);
         }
-    }
+    };
 
     @api
-    createModel = ({body,language}) => {
-        return this.monaco.editor.createModel(body,language);
-    }
-
+    createModel = ({ body, language }) => {
+        return this.monaco.editor.createModel(body, language);
+    };
 
     /** Deployment Methods */
-
 
     /** Getters */
 
     @api
-    get currentModel(){
+    get currentModel() {
         return this.editor?.getModel() || null;
     }
 
     @api
-    get currentEditor(){
+    get currentEditor() {
         return this.editor;
     }
 
     @api
-    get currentMonaco(){
+    get currentMonaco() {
         return this.monaco;
     }
 
-    @api 
-    get editorUpdatedFiles(){
+    @api
+    get editorUpdatedFiles() {
         return this.models.map(x => {
             return {
                 ...x._file,
-                body:x.model.getValue()
-            }
-        })
+                body: x.model.getValue(),
+            };
+        });
     }
 
     sendChangeEvent = () => {
         runActionAfterTimeOut(
             this.editor.getValue(),
-            (value) => {
+            value => {
                 this.dispatchEvent(
                     new CustomEvent('change', {
                         detail: {
@@ -353,5 +401,4 @@ export default class Soql extends ToolkitElement {
             { timeout: 200 }
         );
     };
-
 }

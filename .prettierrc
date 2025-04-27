@@ -1,0 +1,30 @@
+{
+    "semi": true,
+    "singleQuote": true,
+    "tabWidth": 4,
+    "printWidth": 100,
+    "trailingComma": "es5",
+    "bracketSpacing": true,
+    "arrowParens": "avoid",
+    "endOfLine": "auto",
+    "overrides": [
+        {
+            "files": "*.html",
+            "options": { 
+                "parser": "lwc",
+                "htmlWhitespaceSensitivity": "ignore",
+                "singleAttributePerLine": false,
+                "bracketSameLine": true
+            }
+        },
+        {
+            "files": "*.{cmp,page,component}",
+            "options": { 
+                "parser": "html",
+                "htmlWhitespaceSensitivity": "ignore",
+                "singleAttributePerLine": false,
+                "bracketSameLine": true
+            }
+        }
+    ]
+} 

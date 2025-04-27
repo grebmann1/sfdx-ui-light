@@ -3,18 +3,12 @@
         <slot></slot>
     </template>
     <template lwc:else>
-        <illustration-default 
-            class="slds-full-width" 
-            title={title} 
-            sub-title={subTitle}
-            padding
-        >
-            <div >
-                <lightning-button 
-                    label="Go to connection" 
-                    icon-name="utility:salesforce1" 
-                    onclick={goToConnection}
-                ></lightning-button>
+        <illustration-default class="slds-full-width" title={title} sub-title={subTitle} padding>
+            <div>
+                <lightning-button
+                    label="Go to connection"
+                    icon-name="utility:salesforce1"
+                    onclick={goToConnection}></lightning-button>
                 <!--
                 <lightning-button class="slds-p-left_x-small" 
                     label="Quick Connect" 

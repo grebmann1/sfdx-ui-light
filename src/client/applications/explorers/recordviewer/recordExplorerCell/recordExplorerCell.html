@@ -1,10 +1,10 @@
 <template>
     <template lwc:if={isBoolean}>
         <template lwc:if={isTrue}>
-            <img src="/images/checkbox_checked.gif"/>
+            <img src="/images/checkbox_checked.gif" />
         </template>
         <template lwc:else>
-            <img src="/images/checkbox_unchecked.gif"/>
+            <img src="/images/checkbox_unchecked.gif" />
         </template>
     </template>
     <template lwc:else>
@@ -12,11 +12,10 @@
             <div class="injector" lwc:dom="manual"></div>
             <template lwc:if={isCopyDisplayed}>
                 <lightning-button-icon
-                        alternative-text="copy"
-                        icon-name="utility:copy"
-                        onclick={handleCopy}
-                        variant="bare"
-                ></lightning-button-icon>
+                    alternative-text="copy"
+                    icon-name="utility:copy"
+                    onclick={handleCopy}
+                    variant="bare"></lightning-button-icon>
             </template>
         </div>
     </template>

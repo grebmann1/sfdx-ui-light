@@ -1,11 +1,10 @@
 <!-- splitView.html -->
 <template>
     <div style={containerStyle} class={splitViewClass}>
-
-        <div  class={splitViewColumnClass} style={leftColumnStyle}>
+        <div class={splitViewColumnClass} style={leftColumnStyle}>
             <slot name="left"></slot>
         </div>
-        
+
         <div class={splitterClass} style={splitterStyle} onmousedown={handleMouseDown}>
             <div if:true={isHorizontal} class="left-colapsed"></div>
             <div if:true={isHorizontal} class="separator-icon-horizontal"></div>
@@ -15,9 +14,8 @@
             <div if:false={isHorizontal} class="bottom-colapsed"></div>
         </div>
 
-        <div  class={splitViewColumnClass} style={rightColumnStyle}>
+        <div class={splitViewColumnClass} style={rightColumnStyle}>
             <slot name="right"></slot>
         </div>
-
     </div>
 </template>

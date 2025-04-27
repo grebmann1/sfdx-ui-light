@@ -10,9 +10,9 @@ class HotkeysManager {
             this.subscribers.set(keyCombo, new Set());
 
             // Bind the hotkey using hotkeys-js
-            hotkeys(keyCombo, (event) => {
+            hotkeys(keyCombo, event => {
                 // Notify all subscribers
-                this.subscribers.get(keyCombo)?.forEach((cb) => cb(event));
+                this.subscribers.get(keyCombo)?.forEach(cb => cb(event));
             });
         }
 

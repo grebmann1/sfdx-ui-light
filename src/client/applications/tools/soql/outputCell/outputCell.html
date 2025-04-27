@@ -1,32 +1,38 @@
 <template>
     <template lwc:if={isChildRelationship}>
-        <lightning-button variant="base" label={formattedTotalSize} title="Show Child Table" icon-name="utility:record_lookup" icon-position="right" onclick={handleClick}></lightning-button>
+        <lightning-button
+            variant="base"
+            label={formattedTotalSize}
+            title="Show Child Table"
+            icon-name="utility:record_lookup"
+            icon-position="right"
+            onclick={handleClick}></lightning-button>
     </template>
     <template lwc:else>
         <template lwc:if={url}>
-            <a href="#" target="_blank" tabindex="-1" if:true={url} onclick={handleRedirection}>{formattedValue}</a>
+            <a href="#" target="_blank" tabindex="-1" if:true={url} onclick={handleRedirection}>
+                {formattedValue}
+            </a>
         </template>
         <template lwc:elseif={isDataDisplayed}>
-            <div class="slds-truncate" title={formattedValue}>
-                {formattedValue} 
-            </div>
+            <div class="slds-truncate" title={formattedValue}>{formattedValue}</div>
         </template>
 
         <template lwc:if={isRecordIdField}>
-            <lightning-button-icon class="slds-cell-button"
+            <lightning-button-icon
+                class="slds-cell-button"
                 onclick={handle_editClick}
                 icon-name="utility:edit"
                 variant="bare"
-                alternative-text="edit"
-            ></lightning-button-icon>
+                alternative-text="edit"></lightning-button-icon>
         </template>
         <template lwc:if={isNotEmpty}>
-            <lightning-button-icon class="slds-cell-button"
+            <lightning-button-icon
+                class="slds-cell-button"
                 onclick={handle_copyClick}
                 icon-name="utility:copy"
                 variant="bare"
-                alternative-text="copy"
-            ></lightning-button-icon>
+                alternative-text="copy"></lightning-button-icon>
         </template>
     </template>
 </template>

@@ -1,7 +1,7 @@
-.slds-card{
+.slds-card {
     border-radius: unset !important;
 }
 
-.slds-card-no-top{
-    border-top:0px !important;
+.slds-card-no-top {
+    border-top: 0px !important;
 }

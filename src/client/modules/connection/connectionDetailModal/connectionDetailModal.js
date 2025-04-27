@@ -1,9 +1,15 @@
 import LightningModal from 'lightning/modal';
-import { api } from "lwc";
-import { isUndefinedOrNull,isNotUndefinedOrNull,isElectronApp,isChromeExtension,decodeError,checkIfPresent } from "shared/utils";
+import { api } from 'lwc';
+import {
+    isUndefinedOrNull,
+    isNotUndefinedOrNull,
+    isElectronApp,
+    isChromeExtension,
+    decodeError,
+    checkIfPresent,
+} from 'shared/utils';
 
 export default class ConnectionDetailModal extends LightningModal {
-
     @api company;
     @api orgId;
     @api name;
@@ -17,7 +23,6 @@ export default class ConnectionDetailModal extends LightningModal {
     // redirectUrl
     @api redirectUrl;
 
-
     handleCloseClick() {
         this.close('canceled');
     }
@@ -28,7 +33,7 @@ export default class ConnectionDetailModal extends LightningModal {
 
     /* Getters */
 
-    get isRedirect(){
+    get isRedirect() {
         return isNotUndefinedOrNull(this.redirectUrl);
     }
 
@@ -36,21 +41,19 @@ export default class ConnectionDetailModal extends LightningModal {
 
     handleCopySFDXAuthUrl = () => {
         navigator.clipboard.writeText(this.sfdxAuthUrl);
-    }
+    };
 
     handleCopySFDXAccessToken = () => {
         navigator.clipboard.writeText(this.accessToken);
-    }
+    };
 
     handleCopyFrontDoorUrl = () => {
         navigator.clipboard.writeText(this.frontDoorUrl);
-    }
+    };
 
     handleCopyRedirectUrl = () => {
         navigator.clipboard.writeText(this.redirectUrl);
-    }
+    };
 
     /** getters */
-
-
 }

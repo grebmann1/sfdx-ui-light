@@ -5,32 +5,36 @@
         </slds-information-block>
     </template>
     <div class="assistant-container slds-fill-height slds-is-relative">
-        
         <!-- Prompt Result -->
         <section role="log" class="slds-chat slds-fill-height">
             <div class="slds-grid slds-wrap slds-grid_align-center">
-                <div class="slds-col slds-size_1-of-1 slds-medium-size_10-of-12 slds-large-size_10-of-12">
+                <div
+                    class="slds-col slds-size_1-of-1 slds-medium-size_10-of-12 slds-large-size_10-of-12">
                     <ul class="slds-chat-list">
                         <template for:each={formattedMessages} for:item="item">
-                            <assistant-message 
-                                key={item.id} 
-                                item={item} 
+                            <assistant-message
+                                key={item.id}
+                                item={item}
                                 dialog-id={dialogId}
-                                onretry={handleRetryMessage}
-                            ></assistant-message>
+                                onretry={handleRetryMessage}></assistant-message>
                         </template>
                         <template lwc:if={isLoading}>
                             <li class="slds-chat-listitem slds-chat-listitem_inbound">
                                 <div class="slds-chat-message">
                                     <div class="slds-chat-message__body">
-                                        <div class="slds-chat-message__text slds-chat-message__text_inbound slds-chat-loading">
-                                            <span class="slds-icon-typing slds-is-animated" title="Analyzing your request">
+                                        <div
+                                            class="slds-chat-message__text slds-chat-message__text_inbound slds-chat-loading">
+                                            <span
+                                                class="slds-icon-typing slds-is-animated"
+                                                title="Analyzing your request">
                                                 <span class="slds-icon-typing__dot"></span>
                                                 <span class="slds-icon-typing__dot"></span>
                                                 <span class="slds-icon-typing__dot"></span>
-                                                <span class="slds-assistive-text">Analyzing your request</span>
+                                                <span class="slds-assistive-text">
+                                                    Analyzing your request
+                                                </span>
                                             </span>
-                                            <span aria-hidden="true"> Analyzing your request</span>
+                                            <span aria-hidden="true">Analyzing your request</span>
                                         </div>
                                     </div>
                                 </div>
@@ -39,20 +43,22 @@
                     </ul>
                 </div>
             </div>
-            
         </section>
         <!-- Prompt Entry -->
-        <div class="slds-publisher slds-is-active slds-p-left_small slds-p-right_small slds-p-bottom_x-small">
+        <div
+            class="slds-publisher slds-is-active slds-p-left_small slds-p-right_small slds-p-bottom_x-small">
             <div class="slds-grid slds-wrap slds-grid_align-center">
-                <div class="slds-col slds-size_1-of-1 slds-medium-size_8-of-12 slds-large-size_6-of-12">
+                <div
+                    class="slds-col slds-size_1-of-1 slds-medium-size_8-of-12 slds-large-size_6-of-12">
                     <!--<label for="comment-text-input2" class="slds-publisher__toggle-visibility slds-m-bottom_small">To: Assistant </label>-->
-                    <textarea id="comment-text-input2" class="slds-publisher__input slds-textarea slds-text-longform" 
-                        placeholder="Write a prompt…" 
+                    <textarea
+                        id="comment-text-input2"
+                        class="slds-publisher__input slds-textarea slds-text-longform"
+                        placeholder="Write a prompt…"
                         onkeydown={handleKeyDown}
-                        onkeyup={handleInputChange} 
+                        onkeyup={handleInputChange}
                         onpaste={handleInputChange}
-                        disabled={isLoading}
-                    ></textarea>
+                        disabled={isLoading}></textarea>
                     <div class="slds-publisher__actions slds-grid slds-grid_align-spread">
                         <ul class="slds-grid slds-publisher__toggle-visibility">
                             <!--
@@ -67,20 +73,25 @@
                                 <li>
                                     <assistant-audio-recorder
                                         openai-key={openaiKey}
-                                        onchange={handleSpeechChange}
-                                    ></assistant-audio-recorder>
+                                        onchange={handleSpeechChange}></assistant-audio-recorder>
                                 </li>
                             </template>
-                            
                         </ul>
                         <div>
-                            <lightning-button label="Clear Dialog" onclick={handleClearClick} disabled={isClearButtonDisabled}></lightning-button>
-                            <lightning-button label="Send" onclick={handleSendClick} disabled={isSendButtonDisabled} class="slds-p-left_x-small" variant="brand" ></lightning-button>
+                            <lightning-button
+                                label="Clear Dialog"
+                                onclick={handleClearClick}
+                                disabled={isClearButtonDisabled}></lightning-button>
+                            <lightning-button
+                                label="Send"
+                                onclick={handleSendClick}
+                                disabled={isSendButtonDisabled}
+                                class="slds-p-left_x-small"
+                                variant="brand"></lightning-button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
 </template>

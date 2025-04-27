@@ -1,10 +1,10 @@
 import { wire, api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,QUERY,UI } from 'core/store';
+import { store, connectStore, SELECTORS, DESCRIBE, SOBJECT, QUERY, UI } from 'core/store';
 export const CATEGORY_STORAGE = {
-    RECENT:'recent',
-    SAVED:'saved'
-}
+    RECENT: 'recent',
+    SAVED: 'saved',
+};
 export default class StoragePanel extends ToolkitElement {
     @api recentItems = [];
     @api savedItems;
@@ -12,12 +12,12 @@ export default class StoragePanel extends ToolkitElement {
     @api title;
     @api isOpen;
 
-    @api savedTitle
+    @api savedTitle;
     @api recentTitle;
 
     // Disable Save Section
     @api isSavedItemDisabled = false;
-    
+
     @wire(connectStore, { store })
     storeChange({ ui }) {
         /*if (ui.recentQueries) {
@@ -33,50 +33,58 @@ export default class StoragePanel extends ToolkitElement {
     }
 
     selectItem(event) {
-        const { id,category } = event.currentTarget.dataset;
-        const items = category == CATEGORY_STORAGE.RECENT?this.recentItems:this.savedItems;
-        const selectedItem = items.find(
-            item => item.id === id
-        );
+        const { id, category } = event.currentTarget.dataset;
+        const items = category == CATEGORY_STORAGE.RECENT ? this.recentItems : this.savedItems;
+        const selectedItem = items.find(item => item.id === id);
         if (selectedItem) {
-            this.dispatchEvent(new CustomEvent("selectitem", { detail:{
-                category,
-                ...selectedItem
-            },bubbles: true,composed:true }));
+            this.dispatchEvent(
+                new CustomEvent('selectitem', {
+                    detail: {
+                        category,
+                        ...selectedItem,
+                    },
+                    bubbles: true,
+                    composed: true,
+                })
+            );
         }
     }
 
-    removeItem(event){
-        const { id,category } = event.currentTarget.dataset;
-        const items = category == CATEGORY_STORAGE.RECENT?this.recentItems:this.savedItems;
-        const selectedItem = items.find(
-            item => item.id === id
-        );
+    removeItem(event) {
+        const { id, category } = event.currentTarget.dataset;
+        const items = category == CATEGORY_STORAGE.RECENT ? this.recentItems : this.savedItems;
+        const selectedItem = items.find(item => item.id === id);
         if (selectedItem) {
             console.log('removeItem');
-            this.dispatchEvent(new CustomEvent("removeitem", { detail:{
-                category,
-                ...selectedItem
-            },bubbles: true,composed:true }));
+            this.dispatchEvent(
+                new CustomEvent('removeitem', {
+                    detail: {
+                        category,
+                        ...selectedItem,
+                    },
+                    bubbles: true,
+                    composed: true,
+                })
+            );
         }
     }
 
-    get hasSavedItems(){
+    get hasSavedItems() {
         return this?.savedItems.length > 0;
     }
 
-    get hasRecentItems(){
+    get hasRecentItems() {
         return this?.recentItems.length > 0;
     }
 
-    get isSavedItemsDisplayed(){
+    get isSavedItemsDisplayed() {
         return !this.isSavedItemDisabled;
     }
 
-    get formattedSavedItems(){
+    get formattedSavedItems() {
         return this.savedItems.map(item => ({
             ...item,
-            iconName:item.isGlobal?'utility:world':'utility:privately_shared'
-        }))
+            iconName: item.isGlobal ? 'utility:world' : 'utility:privately_shared',
+        }));
     }
 }

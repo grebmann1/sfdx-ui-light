@@ -1,9 +1,14 @@
-import { LightningElement, track,api } from 'lwc';
+import { LightningElement, track, api } from 'lwc';
 import LightningAlert from 'lightning/alert';
-import { isEmpty,classSet,isUndefinedOrNull,isNotUndefinedOrNull,runActionAfterTimeOut } from 'shared/utils';
+import {
+    isEmpty,
+    classSet,
+    isUndefinedOrNull,
+    isNotUndefinedOrNull,
+    runActionAfterTimeOut,
+} from 'shared/utils';
 
 export default class FileUploader extends LightningElement {
-
     @api title = 'Drop file here';
 
     @api isModal = false;
@@ -13,30 +18,29 @@ export default class FileUploader extends LightningElement {
     // To refactor later to replace the import/export mode
     @api isBasic = false;
 
-
     drag = false;
     dragOver = false; // New property to track drag over state
     dragEnterCounter = 0;
 
     parentElement;
 
-    connectedCallback(){
+    connectedCallback() {
         //console.log('connectedCallback');
-        if(this.isModal){
+        if (this.isModal) {
             this.parentElement = document.getElementsByTagName('lightning-overlay-container')[0];
-        }else{
+        } else {
             this.parentElement = document.body;
         }
-        this.parentElement.addEventListener("dragenter",this.handleDragEnter);
-        this.parentElement.addEventListener("dragleave",this.handleLeaveGlobal);
-        this.parentElement.addEventListener("drop",this.handleDropGlobal);
+        this.parentElement.addEventListener('dragenter', this.handleDragEnter);
+        this.parentElement.addEventListener('dragleave', this.handleLeaveGlobal);
+        this.parentElement.addEventListener('drop', this.handleDropGlobal);
     }
 
-    disconnectedCallback(){
+    disconnectedCallback() {
         //console.log('disconnectedCallback');
-        this.parentElement.removeEventListener("dragenter",this.handleDragEnter);
-        this.parentElement.removeEventListener("dragleave",this.handleLeaveGlobal);
-        this.parentElement.removeEventListener("drop",this.handleDropGlobal);
+        this.parentElement.removeEventListener('dragenter', this.handleDragEnter);
+        this.parentElement.removeEventListener('dragleave', this.handleLeaveGlobal);
+        this.parentElement.removeEventListener('drop', this.handleDropGlobal);
     }
 
     /** Methods **/
@@ -45,42 +49,39 @@ export default class FileUploader extends LightningElement {
         this.drag = false;
         this.dragOver = false;
         this.dragEnterCounter = 0;
-    }
-
+    };
 
     /** Global Events **/
 
-    handleDropGlobal = (event) =>  {
+    handleDropGlobal = event => {
         event.preventDefault();
         this.reset();
-    }
+    };
 
-    handleLeaveGlobal = (event) =>  {
+    handleLeaveGlobal = event => {
         event.preventDefault();
         if (!this.parentElement.contains(event.relatedTarget)) {
             // Here it is only dragleave on the parent
             this.reset();
         }
-    }
+    };
 
-    handleDragEnter = (event) => {
+    handleDragEnter = event => {
         event.stopPropagation();
         // When a drag enters, change dragOver to true
         this.drag = true;
-    }
+    };
 
-    handleDragEnd = (event) => {
+    handleDragEnd = event => {
         this.reset();
-    }
+    };
 
     /** Events **/
-
 
     handleDragOver(event) {
         event.preventDefault();
         this.dragOver = true;
     }
-    
 
     handleDragLeave(event) {
         // When a drag leaves, reset dragOver to false
@@ -93,21 +94,25 @@ export default class FileUploader extends LightningElement {
         event.preventDefault();
         const files = event.dataTransfer?.files || event.target?.files;
         if (files.length > 0 && this.typeList.includes(files[0].type)) {
-            if(this.isBasic){
-                this.dispatchEvent(new CustomEvent("filechange", { 
-                    detail:{
-                        files,
-                        value:`C:\\fakepath\\${files[0].name}` // Take the first file name
-                    },composed: true,bubbles: true 
-                }));
-            }else{
+            if (this.isBasic) {
+                this.dispatchEvent(
+                    new CustomEvent('filechange', {
+                        detail: {
+                            files,
+                            value: `C:\\fakepath\\${files[0].name}`, // Take the first file name
+                        },
+                        composed: true,
+                        bubbles: true,
+                    })
+                );
+            } else {
                 this.readFile(files[0]);
             }
         } else {
             LightningAlert.open({
                 message: `The format ${files[0].type} isn\'t supported !`,
-                theme: 'error', 
-                label: 'Error!', 
+                theme: 'error',
+                label: 'Error!',
             });
         }
     }
@@ -116,12 +121,18 @@ export default class FileUploader extends LightningElement {
         const reader = new FileReader();
         reader.onload = () => {
             try {
-                this.dispatchEvent(new CustomEvent("filechange", { detail:{value:reader.result},composed: true,bubbles: true }));
+                this.dispatchEvent(
+                    new CustomEvent('filechange', {
+                        detail: { value: reader.result },
+                        composed: true,
+                        bubbles: true,
+                    })
+                );
             } catch (e) {
                 LightningAlert.open({
                     message: e.message,
-                    theme: 'error', 
-                    label: 'Error!', 
+                    theme: 'error',
+                    label: 'Error!',
                 });
             }
         };
@@ -130,22 +141,22 @@ export default class FileUploader extends LightningElement {
 
     /** Getters **/
 
-    get fileUploaderClass(){
-        return classSet("slds-file-selector slds-file-selector_integrated")
-        .add({
-            //'slds-drop-zone':this.dragOver,
-            //'slds-file-selector__dropzone slds-file-selector__dropzone_integrated slds-has-drag slds-has-drag-over':this.dragOver
-        })
-        .toString();
+    get fileUploaderClass() {
+        return classSet('slds-file-selector slds-file-selector_integrated')
+            .add({
+                //'slds-drop-zone':this.dragOver,
+                //'slds-file-selector__dropzone slds-file-selector__dropzone_integrated slds-has-drag slds-has-drag-over':this.dragOver
+            })
+            .toString();
     }
 
-    get fileUploaderContainerClass(){
-        return classSet("slds-file-selector__dropzone slds-file-selector__dropzone_integrated")
-        .add({
-            'slds-has-drag':this.drag,
-            'slds-has-drag-over':this.dragOver,
-            //'slds-hide':!this.drag
-        })
-        .toString();
+    get fileUploaderContainerClass() {
+        return classSet('slds-file-selector__dropzone slds-file-selector__dropzone_integrated')
+            .add({
+                'slds-has-drag': this.drag,
+                'slds-has-drag-over': this.dragOver,
+                //'slds-hide':!this.drag
+            })
+            .toString();
     }
 }

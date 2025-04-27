@@ -1,22 +1,41 @@
 <template>
     <div class={editorClass}>
-        <div class="slds-flex-column"> <!-- style="height:50px;" -->
+        <div class="slds-flex-column">
+            <!-- style="height:50px;" -->
             <template lwc:if={isActionsDisplayed}>
-                <div class="slds-grid slds-grid_align-end" > <!-- style="min-height:48px;" -->
+                <div class="slds-grid slds-grid_align-end">
+                    <!-- style="min-height:48px;" -->
                     <lightning-button-group class="slds-p-horizontal_medium slds-p-vertical_small">
                         <!--<lightning-button icon-name="utility:adduser" disabled={isLoading} onclick={adduser_handleClick} label="Select Users"></lightning-button>-->
                         <template lwc:if={isEditMode}>
-                            <lightning-button icon-name="utility:save" variant="brand"  disabled={isLoading} onclick={onSaveClick} label="Save"></lightning-button>
-                            <lightning-button  disabled={isLoading} onclick={onCancelClick} label="Cancel"></lightning-button>
+                            <lightning-button
+                                icon-name="utility:save"
+                                variant="brand"
+                                disabled={isLoading}
+                                onclick={onSaveClick}
+                                label="Save"></lightning-button>
+                            <lightning-button
+                                disabled={isLoading}
+                                onclick={onCancelClick}
+                                label="Cancel"></lightning-button>
                         </template>
-                        
                     </lightning-button-group>
                 </div>
             </template>
             <template lwc:if={isTabDisplayed}>
-                <slds-tabset variant="scoped" class="slds-without-tab slds-tabs_no-max slds-tab-grey" onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled={isAddTabEnabledFormatted}>
+                <slds-tabset
+                    variant="scoped"
+                    class="slds-without-tab slds-tabs_no-max slds-tab-grey"
+                    onaddtab={handleAddTab}
+                    onclosetab={handleCloseTab}
+                    is-add-tab-enabled={isAddTabEnabledFormatted}>
                     <template for:each={formattedModels} for:item="item">
-                        <slds-tab key={item.path} label={item.name} value={item.path} onactive={handleSelectTab} is-closeable={item.isCloseable}></slds-tab>
+                        <slds-tab
+                            key={item.path}
+                            label={item.name}
+                            value={item.path}
+                            onactive={handleSelectTab}
+                            is-closeable={item.isCloseable}></slds-tab>
                     </template>
                 </slds-tabset>
             </template>
@@ -24,7 +43,10 @@
 
         <template lwc:true={isToolDisplayed}>
             <div class="slds-clearfix">
-                <lightning-button-icon class="slds-float_right" variant="bare" icon-name="utility:copy"></lightning-button-icon>
+                <lightning-button-icon
+                    class="slds-float_right"
+                    variant="bare"
+                    icon-name="utility:copy"></lightning-button-icon>
             </div>
         </template>
 
@@ -32,33 +54,29 @@
             <!-- Editor Button -->
             <div class="editor-toolkit">
                 <div class="slds-flex-column slds-vertical-button-group">
-
                     <template lwc:if={isCodeCoverageDisplayed}>
-                        <lightning-button-icon 
-                            icon-name="utility:copy" 
-                            tooltip="Copy to clipboard" 
-                            class="slds-button-first" 
-                            onclick={handleCopyClick}
-                        ></lightning-button-icon>
-                        <lightning-button-icon-stateful 
-                            icon-name="utility:asset_audit" 
-                            variant="border-filled"  
-                            tooltip="Highlight Coverage" 
-                            selected={isCoverageHighlighted} 
-                            onclick={handleCoverageHighlightToggle}
-                        ></lightning-button-icon-stateful>
+                        <lightning-button-icon
+                            icon-name="utility:copy"
+                            tooltip="Copy to clipboard"
+                            class="slds-button-first"
+                            onclick={handleCopyClick}></lightning-button-icon>
+                        <lightning-button-icon-stateful
+                            icon-name="utility:asset_audit"
+                            variant="border-filled"
+                            tooltip="Highlight Coverage"
+                            selected={isCoverageHighlighted}
+                            onclick={handleCoverageHighlightToggle}></lightning-button-icon-stateful>
                     </template>
                     <template lwc:else>
-                        <lightning-button-icon 
-                            icon-name="utility:copy" 
-                            tooltip="Copy to clipboard"  
-                            onclick={handleCopyClick}
-                        ></lightning-button-icon>
+                        <lightning-button-icon
+                            icon-name="utility:copy"
+                            tooltip="Copy to clipboard"
+                            onclick={handleCopyClick}></lightning-button-icon>
                     </template>
                 </div>
             </div>
             <!-- Editor -->
-            <div lwc:ref="editor"  style={dynamicStyle}></div>
+            <div lwc:ref="editor" style={dynamicStyle}></div>
         </div>
 
         <template lwc:if={isLoading}>

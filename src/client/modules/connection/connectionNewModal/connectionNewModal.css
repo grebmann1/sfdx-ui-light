@@ -1,12 +1,10 @@
-.dummy-label{
+.dummy-label {
     height: 19px;
 }
 
-.slds-button_destructive{
-    --slds-g-color-border-base-4:#ba0517;
-    --slds-c-icon-color-foreground:white;
-    --slds-c-button-text-color:white;
-    --slds-c-button-color-border:#ba0517;
+.slds-button_destructive {
+    --slds-g-color-border-base-4: #ba0517;
+    --slds-c-icon-color-foreground: white;
+    --slds-c-button-text-color: white;
+    --slds-c-button-color-border: #ba0517;
 }
-
-    

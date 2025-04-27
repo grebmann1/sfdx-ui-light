@@ -1,10 +1,10 @@
-.slds-form-element__label{
+.slds-form-element__label {
     font-size: larger;
-    color:#107cad;
+    color: #107cad;
 }
 
 .l-container-vertical {
-    position: absolute!important;
+    position: absolute !important;
     top: 0;
     right: 0;
     bottom: 0;
@@ -13,28 +13,29 @@
     display: flex;
 }
 .l-cell-content-size {
-    flex:none;
-    width:250px;
+    flex: none;
+    width: 250px;
     position: relative;
 }
 
-.l-cell-auto-size{
+.l-cell-auto-size {
     position: relative;
     min-width: 0;
     flex: 1 1 auto;
     display: flex;
 }
 
-.slds-tabs_scoped{
-    height:unset;
+.slds-tabs_scoped {
+    height: unset;
 }
 
-.slds-section__title-action,.slds-section__title-action:hover {
-    background:#747474;
-    color:white;
+.slds-section__title-action,
+.slds-section__title-action:hover {
+    background: #747474;
+    color: white;
 }
 
-.max-height-400{
+.max-height-400 {
     max-height: 400px !important;
     display: flex;
 }

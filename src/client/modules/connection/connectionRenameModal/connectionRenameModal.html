@@ -7,30 +7,38 @@
             </template>
             <!-- Group -->
             <div class="slds-grid slds-wrap">
-                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                <div
+                    class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
                     <template lwc:if={isNewCategoryDisplayed}>
                         <!-- New Record Form -->
                         <div class="slds-grid">
                             <div class="slds-col slds-p-horizontal_xx-small">
-                                <lightning-input lwc:ref="newCategory"
-                                        class="new-category-to-validate"
-                                        name="newCategory"
-                                        type="text"
-                                        label="New Category"
-                                        value={newCategory}
-                                        onchange={newCategory_onChange}
-                                        message-when-pattern-mismatch="Hyphen '-' is not allowed"
-                                        pattern="[^\-]*"
-                                        required
-                                ></lightning-input>
+                                <lightning-input
+                                    lwc:ref="newCategory"
+                                    class="new-category-to-validate"
+                                    name="newCategory"
+                                    type="text"
+                                    label="New Category"
+                                    value={newCategory}
+                                    onchange={newCategory_onChange}
+                                    message-when-pattern-mismatch="Hyphen '-' is not allowed"
+                                    pattern="[^\-]*"
+                                    required></lightning-input>
                             </div>
                             <div class="slds-col slds-p-horizontal_xx-small">
                                 <div class="slds-form-element">
-                                    <label class="slds-form-element__label slds-no-flex dummy-label"> </label>
+                                    <label
+                                        class="slds-form-element__label slds-no-flex dummy-label"></label>
                                     <div class="slds-form-element__control">
                                         <lightning-button-group>
-                                            <lightning-button-icon icon-name="utility:close" class="slds-button_destructive" onclick={handleCancelNewCategoryClick}></lightning-button-icon>
-                                            <lightning-button-icon icon-name="utility:check" variant='brand' onclick={handleCreateNewCategoryClick}></lightning-button-icon>
+                                            <lightning-button-icon
+                                                icon-name="utility:close"
+                                                class="slds-button_destructive"
+                                                onclick={handleCancelNewCategoryClick}></lightning-button-icon>
+                                            <lightning-button-icon
+                                                icon-name="utility:check"
+                                                variant="brand"
+                                                onclick={handleCreateNewCategoryClick}></lightning-button-icon>
                                         </lightning-button-group>
                                     </div>
                                 </div>
@@ -38,7 +46,8 @@
                         </div>
                     </template>
                     <template lwc:else>
-                        <slds-lookup lwc:ref="category"
+                        <slds-lookup
+                            lwc:ref="category"
                             label="Category"
                             placeholder="Select Category"
                             tooltip="Select the category to group your credentials"
@@ -48,52 +57,53 @@
                             onselectionchange={handleLookupSelectionChange}
                             onnewrecord={handleLookupNewRecordSelection}
                             new-record-options={newRecordOptions}
-                            required
-                        ></slds-lookup>
+                            required></slds-lookup>
                     </template>
                 </div>
-                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                <div
+                    class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input
-                            class="input-to-validate"
-                            name="name"
-                            type="text"
-                            label="Name"
-                            field-level-help="Name of your Org"
-                            value={orgName}
-                            onchange={name_onChange}
-                            required
-                    ></lightning-input>
+                        class="input-to-validate"
+                        name="name"
+                        type="text"
+                        label="Name"
+                        field-level-help="Name of your Org"
+                        value={orgName}
+                        onchange={name_onChange}
+                        required></lightning-input>
                 </div>
             </div>
             <!-- Name -->
             <div class="slds-grid slds-wrap">
-                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small"></div>
-                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                <div
+                    class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small"></div>
+                <div
+                    class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
                     <lightning-input
-                            name="alias"
-                            type="text"
-                            label="Alias"
-                            value={generatedAlias}
-                            disabled
-                    ></lightning-input>
+                        name="alias"
+                        type="text"
+                        label="Alias"
+                        value={generatedAlias}
+                        disabled></lightning-input>
                 </div>
             </div>
 
             <!-- Redirect Mode-->
             <template lwc:if={isRedirect}>
                 <div class="slds-grid slds-wrap">
-                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small"></div>
-                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                    <div
+                        class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small"></div>
+                    <div
+                        class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
                         <lightning-input
-                                class="input-to-validate"
-                                name="redirectUrl"
-                                type="url"
-                                value={redirectUrl}
-                                label="Redirect Url"
-                                placeholder="Ex: https://sso.coca-cola.com"
-                                onchange={redirectUrl_onChange}
-                                required
-                        ></lightning-input>
+                            class="input-to-validate"
+                            name="redirectUrl"
+                            type="url"
+                            value={redirectUrl}
+                            label="Redirect Url"
+                            placeholder="Ex: https://sso.coca-cola.com"
+                            onchange={redirectUrl_onChange}
+                            required></lightning-input>
                     </div>
                 </div>
             </template>
@@ -101,18 +111,16 @@
     </lightning-modal-body>
     <lightning-modal-footer>
         <lightning-button
-                class="slds-float_left slds-button"
-                disabled={saveInProcess}
-                variant="neutral"
-                label="Cancel"
-                onclick={handleCloseClick}
-        ></lightning-button>
+            class="slds-float_left slds-button"
+            disabled={saveInProcess}
+            variant="neutral"
+            label="Cancel"
+            onclick={handleCloseClick}></lightning-button>
         <lightning-button
-                class="slds-button"
-                disabled={saveInProcess}
-                variant="brand"
-                label="Save"
-                onclick={handleSaveClick}
-        ></lightning-button>
+            class="slds-button"
+            disabled={saveInProcess}
+            variant="brand"
+            label="Save"
+            onclick={handleSaveClick}></lightning-button>
     </lightning-modal-footer>
 </template>

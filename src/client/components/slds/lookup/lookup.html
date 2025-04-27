@@ -14,8 +14,7 @@
                     aria-expanded={isListboxOpen}
                     aria-haspopup="listbox"
                     aria-owns="listbox"
-                    role="combobox"
-                >
+                    role="combobox">
                     <!-- Search input start -->
                     <div class={getComboboxClass} role="none">
                         <template lwc:if={isSingleEntry}>
@@ -24,9 +23,7 @@
                                 icon-name={getSelectIconName}
                                 size="small"
                                 alternative-text="Selected item icon"
-                                class={getSelectIconClass}
-                            >
-                            </lightning-icon>
+                                class={getSelectIconClass}></lightning-icon>
                         </template>
 
                         <!-- Text input -->
@@ -47,16 +44,14 @@
                             onfocus={handleFocus}
                             onblur={handleBlur}
                             oninput={handleInput}
-                            onkeydown={handleKeyDown}
-                        />
+                            onkeydown={handleKeyDown} />
 
                         <!-- Search icon -->
                         <lightning-icon
                             icon-name="utility:search"
                             size="x-small"
                             alternative-text="Search icon"
-                            class={getSearchIconClass}
-                        ></lightning-icon>
+                            class={getSearchIconClass}></lightning-icon>
 
                         <!-- Clear selection button icon for single entry lookups -->
                         <template lwc:if={isSingleEntry}>
@@ -65,14 +60,12 @@
                                 type="button"
                                 onclick={handleClearSelection}
                                 class={getClearSelectionButtonClass}
-                                disabled={disabled}
-                            >
+                                disabled={disabled}>
                                 <lightning-icon
                                     icon-name="utility:close"
                                     size="x-small"
                                     alternative-text="Remove selected option"
-                                    class="slds-button__icon"
-                                ></lightning-icon>
+                                    class="slds-button__icon"></lightning-icon>
                             </button>
                         </template>
                     </div>
@@ -85,12 +78,13 @@
                         aria-label={label}
                         onmousedown={handleComboboxMouseDown}
                         onmouseup={handleComboboxMouseUp}
-                        class={getListboxClass}
-                    >
+                        class={getListboxClass}>
                         <ul class="slds-listbox slds-listbox_vertical" role="presentation">
                             <!-- Spinner to display when waiting for results of search -->
                             <div lwc:if={loading}>
-                                <slds-spinner alternative-text="Loading" size="small"></slds-spinner>
+                                <slds-spinner
+                                    alternative-text="Loading"
+                                    size="small"></slds-spinner>
                             </div>
 
                             <!-- Result list start -->
@@ -98,9 +92,11 @@
                                 for:each={searchResultsLocalState}
                                 for:item="item"
                                 for:index="index"
-                                lwc:if={hasResults}
-                            >
-                                <li key={item.result.id} role="presentation" class="slds-listbox__item">
+                                lwc:if={hasResults}>
+                                <li
+                                    key={item.result.id}
+                                    role="presentation"
+                                    class="slds-listbox__item">
                                     <div
                                         class={item.classes}
                                         role="option"
@@ -108,35 +104,28 @@
                                         aria-label={item.result.title}
                                         title={item.result.title}
                                         onclick={handleResultClick}
-                                        data-recordid={item.result.id}
-                                    >
+                                        data-recordid={item.result.id}>
                                         <span
                                             class="slds-media__figure slds-listbox__option-icon"
-                                            lwc:if={item.result.icon}
-                                        >
+                                            lwc:if={item.result.icon}>
                                             <lightning-icon
                                                 icon-name={item.result.icon}
                                                 size="small"
-                                                alternative-text="Result item icon"
-                                            ></lightning-icon>
+                                                alternative-text="Result item icon"></lightning-icon>
                                         </span>
                                         <span class="slds-media__body">
-                                            <span class="slds-listbox__option-text slds-listbox__option-text_entity">
+                                            <span
+                                                class="slds-listbox__option-text slds-listbox__option-text_entity">
                                                 <lightning-formatted-rich-text
                                                     value={item.result.titleFormatted}
-                                                    disable-linkify
-                                                >
-                                                </lightning-formatted-rich-text>
+                                                    disable-linkify></lightning-formatted-rich-text>
                                             </span>
                                             <span
                                                 lwc:if={item.result.subtitleFormatted}
-                                                class="slds-listbox__option-meta slds-listbox__option-meta_entity"
-                                            >
+                                                class="slds-listbox__option-meta slds-listbox__option-meta_entity">
                                                 <lightning-formatted-rich-text
                                                     value={item.result.subtitleFormatted}
-                                                    disable-linkify
-                                                >
-                                                </lightning-formatted-rich-text>
+                                                    disable-linkify></lightning-formatted-rich-text>
                                             </span>
                                         </span>
                                     </div>
@@ -147,8 +136,12 @@
                             <!-- No results start -->
                             <template lwc:else>
                                 <li role="presentation">
-                                    <span class="slds-media slds-listbox__option_entity" role="option">
-                                        <span lwc:if={loading} class="slds-media__body">Loading...</span>
+                                    <span
+                                        class="slds-media slds-listbox__option_entity"
+                                        role="option">
+                                        <span lwc:if={loading} class="slds-media__body">
+                                            Loading...
+                                        </span>
                                         <span lwc:else class="slds-media__body">No results.</span>
                                     </span>
                                 </li>
@@ -157,22 +150,25 @@
 
                             <!-- Create new records -->
                             <template for:each={newRecordOptions} for:item="newRecord">
-                                <li key={newRecord.value} role="presentation" class="slds-listbox__item">
+                                <li
+                                    key={newRecord.value}
+                                    role="presentation"
+                                    class="slds-listbox__item">
                                     <div
                                         class="slds-media slds-media_center slds-listbox__option slds-listbox__option_entity"
                                         onclick={handleNewRecordClick}
                                         data-sobject={newRecord.value}
-                                        role="option"
-                                    >
+                                        role="option">
                                         <span class="slds-media__figure slds-listbox__option-icon">
                                             <lightning-icon
                                                 icon-name="utility:add"
                                                 size="x-small"
-                                                alternative-text={newRecord.label}
-                                            ></lightning-icon>
+                                                alternative-text={newRecord.label}></lightning-icon>
                                         </span>
                                         <span class="slds-media__body">
-                                            <span class="slds-listbox__option-text">{newRecord.label}</span>
+                                            <span class="slds-listbox__option-text">
+                                                {newRecord.label}
+                                            </span>
                                         </span>
                                     </div>
                                 </li>
@@ -190,17 +186,17 @@
                     <ul
                         class="slds-listbox slds-listbox_inline slds-var-p-top_xxx-small"
                         role="group"
-                        aria-label="Selected options"
-                    >
+                        aria-label="Selected options">
                         <template for:each={selection} for:item="item">
                             <li key={item.id} role="presentation">
                                 <lightning-pill
                                     label={item.title}
                                     title={item.title}
                                     onremove={handleRemoveSelectedItem}
-                                    name={item.id}
-                                >
-                                    <lightning-icon icon-name={item.icon} lwc:if={item.icon}></lightning-icon>
+                                    name={item.id}>
+                                    <lightning-icon
+                                        icon-name={item.icon}
+                                        lwc:if={item.icon}></lightning-icon>
                                 </lightning-pill>
                             </li>
                         </template>
@@ -211,7 +207,10 @@
 
             <!-- Errors start -->
             <template for:each={_errors} for:item="error">
-                <div key={error.id} role="alert" class="slds-form-element__label slds-var-m-top_xx-small form-error">
+                <div
+                    key={error.id}
+                    role="alert"
+                    class="slds-form-element__label slds-var-m-top_xx-small form-error">
                     {error.message}
                 </div>
             </template>

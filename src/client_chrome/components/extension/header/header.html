@@ -3,7 +3,8 @@
         <div class="slds-global-header slds-grid slds-grid_align-spread">
             <template lwc:if={isIconDisplayed}>
                 <div class="slds-global-header__item slds-show_small">
-                    <div class="slds-context-bar__item slds-context-bar__dropdown-trigger slds-dropdown-trigger slds-dropdown-trigger_click slds-no-hover">
+                    <div
+                        class="slds-context-bar__item slds-context-bar__dropdown-trigger slds-dropdown-trigger slds-dropdown-trigger_click slds-no-hover">
                         <!--<div class={collapseClass}>
                             <lightning-button-icon icon-name={iconName} variant="bare" size="large" onclick={handleToggle}></lightning-button-icon>
                         </div>-->
@@ -17,22 +18,26 @@
                 <!-- Combobox -->
                 <template lwc:if={isComboboxDisplayed}>
                     <div class="slds-form-element">
-                        <label class="slds-form-element__label slds-assistive-text" for="combobox-id-1">Search Salesforce</label>
+                        <label
+                            class="slds-form-element__label slds-assistive-text"
+                            for="combobox-id-1">
+                            Search Salesforce
+                        </label>
                         <div class="slds-form-element__control">
                             <div class="slds-combobox-group">
-                                <div class="slds-combobox_object-switcher slds-combobox-addon_start">
+                                <div
+                                    class="slds-combobox_object-switcher slds-combobox-addon_start">
                                     <slot name="presearch"></slot>
                                 </div>
                                 <div class="slds-combobox_container slds-combobox-addon_end">
                                     <lightning-input
-                                            class=""
-                                            placeholder={placeholder}
-                                            label="Search"
-                                            onchange={search_handleChange}
-                                            type="search"
-                                            variant="label-hidden"
-                                            value={searchValue}
-                                    ></lightning-input>
+                                        class=""
+                                        placeholder={placeholder}
+                                        label="Search"
+                                        onchange={search_handleChange}
+                                        type="search"
+                                        variant="label-hidden"
+                                        value={searchValue}></lightning-input>
                                 </div>
                             </div>
                         </div>
@@ -40,21 +45,17 @@
                 </template>
                 <template lwc:else>
                     <lightning-input
-                            class=""
-                            placeholder={placeholder}
-                            label="Search"
-                            onchange={search_handleChange}
-                            type="search"
-                            variant="label-hidden"
-                    ></lightning-input>
+                        class=""
+                        placeholder={placeholder}
+                        label="Search"
+                        onchange={search_handleChange}
+                        type="search"
+                        variant="label-hidden"></lightning-input>
                 </template>
-                
             </div>
             <div class="slds-global-header__item">
                 <slot name="action"></slot>
             </div>
         </div>
-
     </header>
 </template>
-

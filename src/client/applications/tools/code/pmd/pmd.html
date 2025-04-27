@@ -6,16 +6,15 @@
                 <div class="landing__banner-content slds-col">
                     <h2 class="landing__heading_medium">
                         <span class="path-container">
-                            <strong>Current PMD Path : </strong>
+                            <strong>Current PMD Path :</strong>
                             <div class="path-container-right">
-                                <pre style="margin: 0.2rem;">{pmdPath}</pre>
+                                <pre style="margin: 0.2rem">{pmdPath}</pre>
                                 <lightning-button-icon
                                     class="custom-utility-text-copy"
                                     onclick={handleCopy}
                                     icon-name="utility:copy"
                                     variant="bare"
-                                    alternative-text="copy"
-                                ></lightning-button-icon>
+                                    alternative-text="copy"></lightning-button-icon>
                             </div>
                         </span>
                     </h2>
@@ -24,25 +23,22 @@
         </template>
         <div class="title_2_parts">
             <h2 class="site-text-heading--large site-jump-anchor__container">
-                Step 1: Install PMD 
+                Step 1: Install PMD
             </h2>
-            <lightning-button disabled={isButtonDisabled} onclick={installLatestPMD} label={installPMDLabel}></lightning-button>
+            <lightning-button
+                disabled={isButtonDisabled}
+                onclick={installLatestPMD}
+                label={installPMDLabel}></lightning-button>
         </div>
-        
-        <p class="vertical-container">
-            Import PMD and the rule sets in the .sf-toolkit folder
-        </p>
+
+        <p class="vertical-container">Import PMD and the rule sets in the .sf-toolkit folder</p>
 
         <h2 class="site-text-heading--large site-jump-anchor__container">
             Step 2: Configure Rule Sets
         </h2>
         <p>You can use the Rule Sets by default or modify them to match your needs</p>
 
-    
-
-        <h2 class="site-text-heading--large site-jump-anchor__container">
-            Step 3: Run PMD
-        </h2>
+        <h2 class="site-text-heading--large site-jump-anchor__container">Step 3: Run PMD</h2>
         <!-- code -->
         <pre>
             <div class="bg-black rounded-md">

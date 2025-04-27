@@ -10,17 +10,31 @@
                             <b>{file.fileName}</b>
                             <span class="grayout">{file.description}</span>
                         </label>
-                        <input type="checkbox" id={file.key} data-file={file.key} onclick={handleFileDisplay}/>
+                        <input
+                            type="checkbox"
+                            id={file.key}
+                            data-file={file.key}
+                            onclick={handleFileDisplay} />
                         <div></div>
                         <ol class="tree">
                             <!-- Items -->
-                            <template lwc:if={file.isExpanded} for:each={file.items} for:item="item">
+                            <template
+                                lwc:if={file.isExpanded}
+                                for:each={file.items}
+                                for:item="item">
                                 <li key={item.key}>
                                     <label for={item.key}>
-                                        <lightning-formatted-rich-text value={item.label}></lightning-formatted-rich-text>
+                                        <lightning-formatted-rich-text
+                                            value={item.label}></lightning-formatted-rich-text>
                                         <span class="grayout">{item.description}</span>
                                     </label>
-                                    <input type="checkbox" id={item.key} data-file={file.key} data-item={item.key} checked="checked" onclick={handleItemDisplay}/>
+                                    <input
+                                        type="checkbox"
+                                        id={item.key}
+                                        data-file={file.key}
+                                        data-item={item.key}
+                                        checked="checked"
+                                        onclick={handleItemDisplay} />
                                 </li>
                             </template>
                         </ol>

@@ -1,9 +1,8 @@
 import { wire, api } from 'lwc';
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
-import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,UI } from 'core/store';
-import { fullApiName,lowerCaseKey } from 'shared/utils';
-
+import { store, connectStore, SELECTORS, DESCRIBE, SOBJECT, UI } from 'core/store';
+import { fullApiName, lowerCaseKey } from 'shared/utils';
 
 export default class FieldsPanel extends ToolkitElement {
     @api namespace;
@@ -12,13 +11,13 @@ export default class FieldsPanel extends ToolkitElement {
         {
             id: 'tab-fields',
             label: this.i18n.FIELDS_PANEL_FIELDS,
-            isActive: true
+            isActive: true,
         },
         {
             id: 'tab-relationships',
             label: this.i18n.FIELDS_PANEL_CHILD_REL,
-            isActive: false
-        }
+            isActive: false,
+        },
     ];
     sobjectMeta;
     keyword = '';
@@ -26,33 +25,37 @@ export default class FieldsPanel extends ToolkitElement {
 
     _selectedSObject;
 
-    connectedCallback(){}
-
-    
+    connectedCallback() {}
 
     @wire(connectStore, { store })
-    storeChange({ describe, sobject, ui,application }) {
+    storeChange({ describe, sobject, ui, application }) {
         const isCurrentApp = this.verifyIsActive(application.currentApplication);
-        if(!isCurrentApp) return;
+        if (!isCurrentApp) return;
 
-        if(!ui.leftPanelToggled) return;
+        if (!ui.leftPanelToggled) return;
         const { selectedSObject } = ui;
         if (!selectedSObject) return;
 
-        const fullSObjectName = lowerCaseKey(fullApiName(selectedSObject,this.namespace));
-        if ( describe.nameMap && !describe.nameMap[fullSObjectName]) {
+        const fullSObjectName = lowerCaseKey(fullApiName(selectedSObject, this.namespace));
+        if (describe.nameMap && !describe.nameMap[fullSObjectName]) {
             return;
         }
-        if (fullSObjectName !== this._selectedSObject) { // useToolingApi
+        if (fullSObjectName !== this._selectedSObject) {
+            // useToolingApi
             //console.log('fullSObjectName',fullSObjectName,describe.nameMap[fullSObjectName])
             this._selectedSObject = fullSObjectName;
-            store.dispatch(SOBJECT.describeSObject({
-                connector:this.connector.conn,
-                sObjectName:this._selectedSObject,
-                useToolingApi:describe.nameMap[fullSObjectName].useToolingApi
-            }));
+            store.dispatch(
+                SOBJECT.describeSObject({
+                    connector: this.connector.conn,
+                    sObjectName: this._selectedSObject,
+                    useToolingApi: describe.nameMap[fullSObjectName].useToolingApi,
+                })
+            );
         }
-        const sobjectState = SELECTORS.sobject.selectById({sobject},lowerCaseKey(this._selectedSObject));
+        const sobjectState = SELECTORS.sobject.selectById(
+            { sobject },
+            lowerCaseKey(this._selectedSObject)
+        );
         if (!sobjectState) return;
         this.isLoading = sobjectState.isFetching;
         // Assign Metadata
@@ -62,7 +65,7 @@ export default class FieldsPanel extends ToolkitElement {
             console.error(sobjectState);
             Toast.show({
                 message: this.i18n.FIELDS_PANEL_FAILED_DESCRIBE_OBJ,
-                errors: sobjectState.error
+                errors: sobjectState.error,
             });
         }
     }
@@ -71,9 +74,7 @@ export default class FieldsPanel extends ToolkitElement {
         store.dispatch(UI.reduxSlice.actions.deselectSObject());
     }
 
-
     /** Events */
-
 
     selectTab(event) {
         const tabId = event.target.dataset.id;
@@ -89,16 +90,18 @@ export default class FieldsPanel extends ToolkitElement {
     handleMenuSelect(event) {
         switch (event.detail.value) {
             case 'select_all':
-                store.dispatch(UI.reduxSlice.actions.selectAllFields({sObjectMeta:this.sobjectMeta}));
+                store.dispatch(
+                    UI.reduxSlice.actions.selectAllFields({ sObjectMeta: this.sobjectMeta })
+                );
                 break;
             case 'clear_all':
                 store.dispatch(UI.reduxSlice.actions.clearAllFields());
                 break;
             case 'sort_asc':
-                store.dispatch(UI.reduxSlice.actions.sortFields({sort:UI.SORT.ORDER.ASC}));
+                store.dispatch(UI.reduxSlice.actions.sortFields({ sort: UI.SORT.ORDER.ASC }));
                 break;
             case 'sort_desc':
-                store.dispatch(UI.reduxSlice.actions.sortFields({sort:UI.SORT.ORDER.DESC}));
+                store.dispatch(UI.reduxSlice.actions.sortFields({ sort: UI.SORT.ORDER.DESC }));
                 break;
             default:
                 break;
@@ -108,7 +111,6 @@ export default class FieldsPanel extends ToolkitElement {
     handleClear() {
         this.keyword = '';
     }
-    
 
     /** Getters */
 
@@ -121,8 +123,6 @@ export default class FieldsPanel extends ToolkitElement {
     }
 
     get isRelationshipsActive() {
-        return !!this.tabs.find(
-            tab => tab.id === 'tab-relationships' && tab.isActive
-        );
+        return !!this.tabs.find(tab => tab.id === 'tab-relationships' && tab.isActive);
     }
 }

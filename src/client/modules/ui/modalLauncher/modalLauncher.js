@@ -1,10 +1,8 @@
 import LightningModal from 'lightning/modal';
-import { api } from "lwc";
-
+import { api } from 'lwc';
 
 export default class ModalLauncher extends LightningModal {
     @api isUserLoggedIn;
-
 
     handleCloseClick() {
         this.close();
@@ -14,12 +12,11 @@ export default class ModalLauncher extends LightningModal {
         this.close();
     }
 
-    
     /** events **/
-    handleSelectApplication = (e) => {
+    handleSelectApplication = e => {
         let application = e.detail;
-        if(application){
+        if (application) {
             this.close(application);
         }
-    }
+    };
 }

@@ -5,12 +5,11 @@ import { classSet } from 'lightning/utils';
 export default class ConnectionIllustration extends Illustration {
     @api padding = false;
 
-    get connectionClass(){
+    get connectionClass() {
         return classSet(this.illustrationClass)
-             .add({
-                'slds-padding-top-200':this.padding
-             })
-             .toString();
+            .add({
+                'slds-padding-top-200': this.padding,
+            })
+            .toString();
     }
-
 }

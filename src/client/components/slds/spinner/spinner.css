@@ -1,4 +1,4 @@
-.spinner-text{
+.spinner-text {
     position: absolute;
     left: 50%;
     top: 52%;
@@ -8,39 +8,39 @@
     z-index: 99999;
 }
 
-.spinner-text.top.small{
-    margin-top: -35px
+.spinner-text.top.small {
+    margin-top: -35px;
 }
 
-.spinner-text.top.medium{
+.spinner-text.top.medium {
     margin-top: -43px;
 }
 
-.spinner-text.top.large{
+.spinner-text.top.large {
     margin-top: -51px;
 }
 
-.spinner-text.bottom.small{
-    margin-top: 25px
+.spinner-text.bottom.small {
+    margin-top: 25px;
 }
 
-.spinner-text.bottom.medium{
+.spinner-text.bottom.medium {
     margin-top: 33px;
 }
 
-.spinner-text.bottom.large{
+.spinner-text.bottom.large {
     margin-top: 41px;
 }
 
-.spinner-text.small{
+.spinner-text.small {
     font-size: 11px;
 }
 
-.spinner-text.medium{
+.spinner-text.medium {
     font-size: 13px;
 }
 
-.spinner-text.large{
+.spinner-text.large {
     font-size: 15px;
 }
 
@@ -50,10 +50,10 @@
     height: 100%;
 }
 
-.inverse .spinner-text{
+.inverse .spinner-text {
     color: #ffffff;
 }
 
-.brand .spinner-text{
+.brand .spinner-text {
     color: rgb(21, 137, 238);
 }

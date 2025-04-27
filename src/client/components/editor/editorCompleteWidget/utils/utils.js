@@ -103,7 +103,6 @@ export const ctrlKStream_systemMessage = ({ quickEditFIMTags: { preTag, midTag, 
 `;
 };
 
-
 export class CompletionFormatter {
     formattedCompletion = '';
     currentColumn = 0;
@@ -145,7 +144,7 @@ export class CompletionFormatter {
             '\n' +
             lines
                 .slice(1)
-                .map((line) => indentation + line)
+                .map(line => indentation + line)
                 .join('\n');
 
         return this;

@@ -1,6 +1,17 @@
-import { api, track, wire } from "lwc";
+import { api, track, wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { lowerCaseKey, isUndefinedOrNull, isNotUndefinedOrNull, isEmpty, guid, classSet, runActionAfterTimeOut, compareString, splitTextByTimestamp, prettifyXml } from 'shared/utils';
+import {
+    lowerCaseKey,
+    isUndefinedOrNull,
+    isNotUndefinedOrNull,
+    isEmpty,
+    guid,
+    classSet,
+    runActionAfterTimeOut,
+    compareString,
+    splitTextByTimestamp,
+    prettifyXml,
+} from 'shared/utils';
 import { store, connectStore, PACKAGE, SELECTORS } from 'core/store';
 import { VIEWERS } from 'api/utils';
 import Toast from 'lightning/toast';
@@ -8,16 +19,14 @@ import moment from 'moment';
 import { TEMPLATE } from 'package/utils';
 import xml2js from 'xml2js';
 
-
 const TESTLEVEL = {
     NoTestRun: 'NoTestRun',
     RunLocalTests: 'RunLocalTests',
     RunAllTestsInOrg: 'RunAllTestsInOrg',
     RunSpecifiedTests: 'RunSpecifiedTests',
-}
+};
 
 export default class Retrieve extends ToolkitElement {
-
     isRunning = false;
     file;
 
@@ -31,7 +40,7 @@ export default class Retrieve extends ToolkitElement {
     _headerInterval;
     _loadingInterval;
 
-    // loading 
+    // loading
     _loadingMessage;
 
     // Models
@@ -42,7 +51,7 @@ export default class Retrieve extends ToolkitElement {
     viewer_value = VIEWERS.PRETTY;
 
     // Retrieve Promise
-    retrievePromise
+    retrievePromise;
 
     isDownloading = false;
 
@@ -68,14 +77,12 @@ export default class Retrieve extends ToolkitElement {
         this._hasRendered = true;
     }
 
-
-
     @wire(connectStore, { store })
     storeChange({ package2, application }) {
         const isCurrentApp = this.verifyIsActive(application.currentApplication);
         if (!isCurrentApp) return;
 
-        // Retrieve 
+        // Retrieve
         const retrieveState = package2.currentRetrieveJob;
         if (retrieveState) {
             this.isRunning = retrieveState.isFetching;
@@ -93,7 +100,6 @@ export default class Retrieve extends ToolkitElement {
                 this.resetError();
                 // Assign Data
                 this._response = retrieveState.data;
-
             } else if (retrieveState.isFetching) {
                 this.resetError();
                 this.resetResponse();
@@ -103,28 +109,28 @@ export default class Retrieve extends ToolkitElement {
             this.resetResponse();
             if (this._loadingInterval) clearInterval(this._loadingInterval);
         }
-
     }
 
     /** Methods  **/
 
     @api
-    toggleMetadata = async (param) => {
-        const { sobject, label,_developerName, selectAll, unselectAll } = param;
+    toggleMetadata = async param => {
+        const { sobject, label, _developerName, selectAll, unselectAll } = param;
         const membersToAdd = {};
         if (sobject && _developerName) {
             membersToAdd[sobject] = [_developerName];
         }
-        console.log('toggleMetadata',param);
+        console.log('toggleMetadata', param);
         const manifestXml = this.refs.manifest.currentModel.getValue();
 
         this.updateManifest(manifestXml, membersToAdd, selectAll || [], unselectAll || [])
             .then(newManifest => {
                 this.refs.manifest.currentModel.setValue(newManifest);
-            }).catch(e => {
-                console.error(e);
             })
-    }
+            .catch(e => {
+                console.error(e);
+            });
+    };
 
     updateManifest = async (xml, membersToToggle, selectAll, unselectAll) => {
         const parser = new xml2js.Parser();
@@ -183,18 +189,21 @@ export default class Retrieve extends ToolkitElement {
                 type.members = ['*'];
             });
             // Process unselect all
-            parsedData.Package.types = parsedData.Package.types.filter(type => !unselectAll.includes(type.name[0]));
+            parsedData.Package.types = parsedData.Package.types.filter(
+                type => !unselectAll.includes(type.name[0])
+            );
 
             // Filter and sort
-            parsedData.Package.types = parsedData.Package.types.filter(type => type.members.length > 0).sort((a, b) => a.name[0].localeCompare(b.name[0]));
+            parsedData.Package.types = parsedData.Package.types
+                .filter(type => type.members.length > 0)
+                .sort((a, b) => a.name[0].localeCompare(b.name[0]));
             // Build the modified XML back into a string
             const updatedXml = builder.buildObject(parsedData);
             return updatedXml;
         } catch (err) {
-            console.error("Error processing XML:", err);
+            console.error('Error processing XML:', err);
         }
-    }
-
+    };
 
     @api
     run = async () => {
@@ -202,19 +211,30 @@ export default class Retrieve extends ToolkitElement {
         const manifestXml = this.refs.manifest.currentModel.getValue();
 
         try {
-            const jsonFormatted = await xml2js.parseStringPromise(manifestXml, { explicitArray: false });
+            const jsonFormatted = await xml2js.parseStringPromise(manifestXml, {
+                explicitArray: false,
+            });
             const _request = {
-                unpackaged: { types: jsonFormatted.hasOwnProperty('Package') ? jsonFormatted.Package.types : jsonFormatted.types },
-                apiVersion: (jsonFormatted.hasOwnProperty('Package') ? jsonFormatted.Package.version : jsonFormatted.version) || this.currentApiVersion,
-                singlePackage: request.options.singlePackage || false
+                unpackaged: {
+                    types: jsonFormatted.hasOwnProperty('Package')
+                        ? jsonFormatted.Package.types
+                        : jsonFormatted.types,
+                },
+                apiVersion:
+                    (jsonFormatted.hasOwnProperty('Package')
+                        ? jsonFormatted.Package.version
+                        : jsonFormatted.version) || this.currentApiVersion,
+                singlePackage: request.options.singlePackage || false,
             };
 
-            this.retrievePromise = store.dispatch(PACKAGE.executePackageRetrieve({
-                connector: this.connector,
-                request: _request,
-                createdDate: new Date(),
-                proxyUrl: window.jsforceSettings.proxyUrl
-            }));
+            this.retrievePromise = store.dispatch(
+                PACKAGE.executePackageRetrieve({
+                    connector: this.connector,
+                    request: _request,
+                    createdDate: new Date(),
+                    proxyUrl: window.jsforceSettings.proxyUrl,
+                })
+            );
         } catch (e) {
             Toast.show({
                 label: `Error while retrieving`,
@@ -223,7 +243,7 @@ export default class Retrieve extends ToolkitElement {
                 mode: 'dismissible',
             });
         }
-    }
+    };
 
     @api
     abort = async () => {
@@ -234,18 +254,15 @@ export default class Retrieve extends ToolkitElement {
             }
         } catch (e) {
             // handle error here
-            console.error(e)
+            console.error(e);
         }
-    }
+    };
 
     @api
-    reset = () => {
-
-    }
-
+    reset = () => {};
 
     fetchTaskForWorker = () => {
-        const options = {}
+        const options = {};
         let inputFields = this.template.querySelectorAll('.deployment-option');
         inputFields.forEach(inputField => {
             if (inputField.type === 'checkbox') {
@@ -258,11 +275,10 @@ export default class Retrieve extends ToolkitElement {
             }
         });
 
-
         return {
-            options
+            options,
         };
-    }
+    };
 
     base64ToBlob = (base64, mime) => {
         const byteCharacters = atob(base64);
@@ -272,32 +288,29 @@ export default class Retrieve extends ToolkitElement {
         }
         const byteArray = new Uint8Array(byteNumbers);
         return new Blob([byteArray], { type: mime });
-    }
+    };
 
     downloadBlob = (blob, filename) => {
         const link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
         link.download = filename;
         link.click();
-    }
+    };
 
+    loading_formatDate = createdDate => {
+        this._loadingMessage = `Running for ${moment().diff(
+            moment(createdDate),
+            'seconds'
+        )} seconds`;
+    };
 
-
-
-
-    loading_formatDate = (createdDate) => {
-        this._loadingMessage = `Running for ${moment().diff(moment(createdDate), 'seconds')} seconds`;
-    }
-
-    loading_enableAutoDate = (createdDate) => {
+    loading_enableAutoDate = createdDate => {
         if (this._loadingInterval) clearInterval(this._loadingInterval);
         this.loading_formatDate(createdDate);
         this._loadingInterval = setInterval(() => {
             this.loading_formatDate(createdDate);
         }, 1000);
-    }
-
-
+    };
 
     processFile() {
         if (this.file && this.file.type === 'text/xml') {
@@ -305,7 +318,6 @@ export default class Retrieve extends ToolkitElement {
             reader.onload = () => {
                 const textXml = reader.result;
                 this.body = prettifyXml(textXml);
-
             };
             reader.readAsText(this.file);
         } else {
@@ -320,7 +332,7 @@ export default class Retrieve extends ToolkitElement {
     resetResponse = () => {
         this._response = null;
         this.isDownloading = false;
-    }
+    };
 
     // Errors
 
@@ -332,18 +344,17 @@ export default class Retrieve extends ToolkitElement {
             this.error_title = 'Error';
         }
         this.error_message = errors.join(':');
-    }
+    };
 
     resetError = () => {
         this.error_title = null;
         this.error_message = null;
         this.isDownloading = false;
-    }
-
+    };
 
     /** Events **/
 
-    handle_downloadClick = (e) => {
+    handle_downloadClick = e => {
         this.isDownloading = true;
         setTimeout(() => {
             if (this._response?.zipFile) {
@@ -353,42 +364,42 @@ export default class Retrieve extends ToolkitElement {
                 this.isDownloading = false;
             }
         }, 1);
-    }
+    };
 
-    handleFileChange = (e) => {
+    handleFileChange = e => {
         this.file = e.detail.files[0];
         this.processFile();
         this.fetchTaskForWorker();
-    }
+    };
 
-    handleRemoveFile = (e) => {
+    handleRemoveFile = e => {
         this.file = null;
         this.body = prettifyXml(TEMPLATE.BASIC.replace('{0}', this.currentApiVersion));
-    }
+    };
 
-    handleResponseLoad = (e) => {
+    handleResponseLoad = e => {
         this.responseModel = this.refs.response.createModel({
             body: this.formattedResponse,
-            language: 'json'
+            language: 'json',
         });
         this.refs.response.displayModel(this.responseModel);
-    }
+    };
 
     handleManifestLoad = () => {
         this.manifestModel = this.refs.manifest.createModel({
             body: this.body,
-            language: 'xml'
+            language: 'xml',
         });
         this.refs.manifest.displayModel(this.manifestModel);
-    }
+    };
 
-    viewer_handleChange = (e) => {
+    viewer_handleChange = e => {
         this.viewer_value = e.detail.value;
-    }
+    };
 
-    testLevel_change = (e) => {
+    testLevel_change = e => {
         this.testLevel_value = e.detail.value;
-    }
+    };
 
     /** Getters **/
 
@@ -407,8 +418,9 @@ export default class Retrieve extends ToolkitElement {
     get rightSlotClass() {
         return classSet('slds-full-height slds-full-width slds-flex-column')
             .add({
-                'apex-illustration': !this.isRunning
-            }).toString();
+                'apex-illustration': !this.isRunning,
+            })
+            .toString();
     }
 
     get hasError() {
@@ -441,17 +453,19 @@ export default class Retrieve extends ToolkitElement {
     }
 
     get prettyContainerClass() {
-        return classSet("slds-full-height slds-scrollable_y").add({ 'slds-hide': !(this.viewer_value === VIEWERS.PRETTY) }).toString();
+        return classSet('slds-full-height slds-scrollable_y')
+            .add({ 'slds-hide': !(this.viewer_value === VIEWERS.PRETTY) })
+            .toString();
     }
-
 
     get rawContainerClass() {
-        return classSet("slds-full-height slds-scrollable_y").add({ 'slds-hide': !(this.viewer_value === VIEWERS.RAW) }).toString();
+        return classSet('slds-full-height slds-scrollable_y')
+            .add({ 'slds-hide': !(this.viewer_value === VIEWERS.RAW) })
+            .toString();
     }
 
-
     get viewer_options() {
-        return [VIEWERS.PRETTY, VIEWERS.RAW].map(x => ({ value: x, label: x }))
+        return [VIEWERS.PRETTY, VIEWERS.RAW].map(x => ({ value: x, label: x }));
     }
 
     get formattedResponse() {
@@ -461,7 +475,7 @@ export default class Retrieve extends ToolkitElement {
     get contentLength() {
         if (isUndefinedOrNull(this._response)) return 0;
         //5726285
-        return (new TextEncoder()).encode(this._response.zipFile).length;
+        return new TextEncoder().encode(this._response.zipFile).length;
     }
 
     get isFormattedContentDisplayed() {
@@ -470,7 +484,6 @@ export default class Retrieve extends ToolkitElement {
 
     get formattedContentLength() {
         const bytes = (this.contentLength * 3) / 4;
-
 
         const mb = bytes / (1024 * 1024); // Convert to MB
         if (mb >= 1) {
@@ -482,7 +495,8 @@ export default class Retrieve extends ToolkitElement {
     }
 
     get formattedZipDownloadLabel() {
-        return this.isDownloading ? 'Downloading' : `Download file (${this.formattedContentLength})`;
+        return this.isDownloading
+            ? 'Downloading'
+            : `Download file (${this.formattedContentLength})`;
     }
-
 }

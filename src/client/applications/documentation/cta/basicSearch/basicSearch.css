@@ -26,7 +26,6 @@
     width: 100%;
 }
 
-
 /** SLDS **/
 
 .slds-grid_vertical-align-center {
@@ -51,32 +50,45 @@
 
 .slds-input {
     padding-top: 0;
-    padding-right: var(--slds-c-input-spacing-horizontal-end,var(--sds-c-input-spacing-horizontal-end,1rem));
+    padding-right: var(
+        --slds-c-input-spacing-horizontal-end,
+        var(--sds-c-input-spacing-horizontal-end, 1rem)
+    );
     padding-bottom: 0;
-    padding-left: var(--slds-c-input-spacing-horizontal-start,var(--sds-c-input-spacing-horizontal-start,.75rem));
+    padding-left: var(
+        --slds-c-input-spacing-horizontal-start,
+        var(--sds-c-input-spacing-horizontal-start, 0.75rem)
+    );
     width: 100%;
     min-height: calc(1.875rem + 2px);
     line-height: 1.875rem;
-    border: 1px solid var(--slds-c-input-color-border,var(--sds-c-input-color-border,var(--slds-g-color-border-base-4,#c9c9c9)));
-    border-radius: var(--slds-c-input-radius-border,var(--sds-c-input-radius-border,.25rem));
-    background-color: var(--slds-c-input-color-background,var(--sds-c-input-color-background,var(--slds-g-color-neutral-base-100,#fff)));
-    color: var(--slds-c-input-text-color,var(--sds-c-input-text-color));
-    -webkit-box-shadow: var(--slds-c-input-shadow,var(--sds-c-input-shadow));
-    box-shadow: var(--slds-c-input-shadow,var(--sds-c-input-shadow));
-    -webkit-transition: border .1s linear,background-color .1s linear;
-    transition: border .1s linear,background-color .1s linear;
+    border: 1px solid
+        var(
+            --slds-c-input-color-border,
+            var(--sds-c-input-color-border, var(--slds-g-color-border-base-4, #c9c9c9))
+        );
+    border-radius: var(--slds-c-input-radius-border, var(--sds-c-input-radius-border, 0.25rem));
+    background-color: var(
+        --slds-c-input-color-background,
+        var(--sds-c-input-color-background, var(--slds-g-color-neutral-base-100, #fff))
+    );
+    color: var(--slds-c-input-text-color, var(--sds-c-input-text-color));
+    -webkit-box-shadow: var(--slds-c-input-shadow, var(--sds-c-input-shadow));
+    box-shadow: var(--slds-c-input-shadow, var(--sds-c-input-shadow));
+    -webkit-transition: border 0.1s linear, background-color 0.1s linear;
+    transition: border 0.1s linear, background-color 0.1s linear;
     display: inline-block;
 }
 
 .slds-assistive-text {
-    position: absolute!important;
-    margin: -1px!important;
-    border: 0!important;
-    padding: 0!important;
-    width: 1px!important;
-    height: 1px!important;
-    overflow: hidden!important;
-    clip: rect(0 0 0 0)!important;
-    text-transform: none!important;
-    white-space: nowrap!important;
+    position: absolute !important;
+    margin: -1px !important;
+    border: 0 !important;
+    padding: 0 !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    text-transform: none !important;
+    white-space: nowrap !important;
 }

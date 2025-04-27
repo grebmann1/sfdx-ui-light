@@ -13,14 +13,13 @@ li {
     margin-left: 5px;
 }
 
-
 label:hover {
-    color: #0C479D;
+    color: #0c479d;
     text-decoration: underline;
 }
 
 li::before {
-    content: "\2192";
+    content: '\2192';
     margin: 0;
     font-family: auto;
 }

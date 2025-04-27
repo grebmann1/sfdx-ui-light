@@ -1,7 +1,7 @@
-import { createSlice, createAsyncThunk,createEntityAdapter } from '@reduxjs/toolkit';
-import { SELECTORS,DOCUMENT } from 'core/store';
-import { lowerCaseKey,guid,isNotUndefinedOrNull,splitTextByTimestamp } from 'shared/utils';
-import { separator_token,GLOBAL_EINSTEIN } from 'assistant/utils';
+import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
+import { SELECTORS, DOCUMENT } from 'core/store';
+import { lowerCaseKey, guid, isNotUndefinedOrNull, splitTextByTimestamp } from 'shared/utils';
+import { separator_token, GLOBAL_EINSTEIN } from 'assistant/utils';
 
 const test = `59.0 APEX_CODE,DEBUG
 Execute Anonymous: aiplatform.ModelsAPI.createChatGenerations_Request request = new aiplatform.ModelsAPI.createChatGenerations_Request();
@@ -36,7 +36,7 @@ Please try creating a new dialog, or log the issue on GitHub if the problem pers
 END_EINSTEIN_TOOLKIT
 17:52:18.96 (15101249217)|CODE_UNIT_FINISHED|execute_anonymous_apex
 17:52:18.96 (15101271193)|EXECUTION_FINISHED`;
-const Schemas = {}
+const Schemas = {};
 Schemas.ExecuteAnonymousResult = {
     column: 'number',
     compileProblem: 'string',
@@ -44,30 +44,29 @@ Schemas.ExecuteAnonymousResult = {
     exceptionMessage: 'boolean',
     exceptionStackTrace: 'boolean',
     line: 'number',
-    success:'boolean',
-    debugLog:'string'
-}
+    success: 'boolean',
+    debugLog: 'string',
+};
 const DEBUG = 'DEBUG';
 const EINSTEIN_SETTINGS_KEY = 'EINSTEIN_SETTINGS_KEY';
 
-const INITIAL_TABS = [
-    enrichTab({id:guid(),body:""},null)
-];
+const INITIAL_TABS = [enrichTab({ id: guid(), body: '' }, null)];
 
 /** Methods */
 
-function enrichTabs(tabs,state,selector){
-    return tabs.map(tab => enrichTab(tab,state,selector))
+function enrichTabs(tabs, state, selector) {
+    return tabs.map(tab => enrichTab(tab, state, selector));
 }
 
-function enrichTab(tab,state,selector){
-    const file = tab.fileId && selector?selector.selectById(state,lowerCaseKey(tab.fileId)):null;
+function enrichTab(tab, state, selector) {
+    const file =
+        tab.fileId && selector ? selector.selectById(state, lowerCaseKey(tab.fileId)) : null;
     const fileBody = file?.content || tab.fileBody;
     return {
         ...tab,
-        fileBody:fileBody,
-        isDraft:fileBody != tab.body && isNotUndefinedOrNull(tab.fileId)
-    }
+        fileBody: fileBody,
+        isDraft: fileBody != tab.body && isNotUndefinedOrNull(tab.fileId),
+    };
 }
 
 function extractEinsteinToolkitContent(log) {
@@ -86,14 +85,13 @@ function loadCacheSettings(alias) {
     return null;
 }
 
-function saveCacheSettings(alias,state) {
-    
+function saveCacheSettings(alias, state) {
     try {
-        const { tabs,dialog,connectionAlias } = state
+        const { tabs, dialog, connectionAlias } = state;
         //console.log(`${alias}-${EINSTEIN_SETTINGS_KEY}`,{ tabs,dialog,connectionAlias });
         localStorage.setItem(
             `${alias}-${EINSTEIN_SETTINGS_KEY}`,
-            JSON.stringify({ tabs,dialog,connectionAlias })
+            JSON.stringify({ tabs, dialog, connectionAlias })
         );
     } catch (e) {
         console.error('Failed to save CONFIG to localstorage', e);
@@ -103,62 +101,73 @@ function saveCacheSettings(alias,state) {
 /** Redux */
 
 export const einsteinModelAdapter = createEntityAdapter();
-const _executeApexAnonymous = (connector,body,headers) => {
-    return connector.conn.soap._invoke("executeAnonymous", { apexcode: body }, Schemas.ExecuteAnonymousResult,{
-        xmlns: "http://soap.sforce.com/2006/08/apex",
-        endpointUrl:connector.conn.instanceUrl + "/services/Soap/s/" + connector.conn.version,
-        headers
-    });
-}
-const formatHeaders = (state) => ({
-    DebuggingHeader:{
-        categories:[
+const _executeApexAnonymous = (connector, body, headers) => {
+    return connector.conn.soap._invoke(
+        'executeAnonymous',
+        { apexcode: body },
+        Schemas.ExecuteAnonymousResult,
+        {
+            xmlns: 'http://soap.sforce.com/2006/08/apex',
+            endpointUrl: connector.conn.instanceUrl + '/services/Soap/s/' + connector.conn.version,
+            headers,
+        }
+    );
+};
+const formatHeaders = state => ({
+    DebuggingHeader: {
+        categories: [
             {
-                category:'Apex_code',
-                level:state.debug_apexCode
-            }
-        ]
-    }
+                category: 'Apex_code',
+                level: state.debug_apexCode,
+            },
+        ],
+    },
 });
 
 const testTimer = () => {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
         setTimeout(() => {
             resolve();
-        },4000);
-    })
-}
+        }, 4000);
+    });
+};
 export const einsteinExecuteModel = createAsyncThunk(
     'einstein/executeModel',
-    async ({ connector, body,alias,tabId,messages}, { dispatch,getState }) => {
+    async ({ connector, body, alias, tabId, messages }, { dispatch, getState }) => {
         //console.log('connector, body,tabId',connector, body,tabId);
         //const apiPath = isAllRows ? '/queryAll' : '/query';
         //await testTimer();
         //throw new Error('ERROR_HTTP_503:test by gui');
         try {
-            const res = await _executeApexAnonymous(connector,body,formatHeaders(getState().einstein));
-            if(!res.success){
+            const res = await _executeApexAnonymous(
+                connector,
+                body,
+                formatHeaders(getState().einstein)
+            );
+            if (!res.success) {
                 console.group('Einstein Error');
                 console.error(res.exceptionMessage || res.compileProblem);
                 console.groupEnd();
-                throw new Error("Einstein Access: You org doesn't provide Einstein access to your user.");
+                throw new Error(
+                    "Einstein Access: You org doesn't provide Einstein access to your user."
+                );
             }
-            const text = splitTextByTimestamp((res?.debugLog || test)).filter(x => x.includes('|USER_DEBUG|')).join('');
-          
-            const [id,role,content] = extractEinsteinToolkitContent(text).split(separator_token);
-            return { 
-                data: [].concat(messages,{id,role,content}),
-                body, 
+            const text = splitTextByTimestamp(res?.debugLog || test)
+                .filter(x => x.includes('|USER_DEBUG|'))
+                .join('');
+
+            const [id, role, content] = extractEinsteinToolkitContent(text).split(separator_token);
+            return {
+                data: [].concat(messages, { id, role, content }),
+                body,
                 alias,
-                tabId
+                tabId,
             };
         } catch (err) {
             console.error(err);
-            if(
-                err.toString().startsWith('ERROR_HTTP_503')
-            ){
+            if (err.toString().startsWith('ERROR_HTTP_503')) {
                 throw new Error('Server Error: Please try again later');
-            }else{
+            } else {
                 throw err;
             }
         }
@@ -168,44 +177,44 @@ export const einsteinExecuteModel = createAsyncThunk(
 // Create a slice with reducers and extraReducers
 const einsteinSlice = createSlice({
     name: 'einstein',
-    initialState:{
-        debug_apexCode : DEBUG,
-        dialog:einsteinModelAdapter.getInitialState(),
-        body:null,
-        currentDialogId:null,
-        connectionAlias:null,
-        errorIds:[] // No need to have it on dialog lvl
+    initialState: {
+        debug_apexCode: DEBUG,
+        dialog: einsteinModelAdapter.getInitialState(),
+        body: null,
+        currentDialogId: null,
+        connectionAlias: null,
+        errorIds: [], // No need to have it on dialog lvl
     },
     reducers: {
-        loadCacheSettings : (state,action) => {
+        loadCacheSettings: (state, action) => {
             const { alias } = action.payload;
             const cachedConfig = loadCacheSettings(alias);
-            if(cachedConfig){
-                const { dialog,connectionAlias } = cachedConfig; 
-                Object.assign(state,{
+            if (cachedConfig) {
+                const { dialog, connectionAlias } = cachedConfig;
+                Object.assign(state, {
                     dialog,
-                    connectionAlias
+                    connectionAlias,
                 });
             }
         },
-        saveCacheSettings : (state,action) => {
+        saveCacheSettings: (state, action) => {
             const { alias } = action.payload;
-            if(isNotUndefinedOrNull(alias)){
-                saveCacheSettings(alias,state);
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
             }
         },
-        updateConnectionAlias:(state,action) => {
-            const {connectionAlias,alias} = action.payload;
+        updateConnectionAlias: (state, action) => {
+            const { connectionAlias, alias } = action.payload;
             state.connectionAlias = connectionAlias;
-            if(isNotUndefinedOrNull(alias)){
-                saveCacheSettings(alias,state);
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
             }
         },
-        clearDialog:(state,action) => {
-            const {id,alias} = action.payload;
-            einsteinModelAdapter.removeOne(state.dialog,id);
-            if(isNotUndefinedOrNull(alias)){
-                saveCacheSettings(alias,state);
+        clearDialog: (state, action) => {
+            const { id, alias } = action.payload;
+            einsteinModelAdapter.removeOne(state.dialog, id);
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
             }
         },
         /*initTabs:(state,action) => {
@@ -215,62 +224,62 @@ const einsteinSlice = createSlice({
                 state.currentDialog = state.tabs[0];
             }
         },*/
-        updateMessage:(state,action) => {
-            const { dialogId,data,alias } = action.payload;
+        updateMessage: (state, action) => {
+            const { dialogId, data, alias } = action.payload;
             einsteinModelAdapter.upsertOne(state.dialog, {
                 id: lowerCaseKey(dialogId),
-                data:data,
+                data: data,
             });
-            if(isNotUndefinedOrNull(alias)){
-                saveCacheSettings(alias,state);
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
             }
         },
-        addTab:(state,action) => {
+        addTab: (state, action) => {
             const { tab } = action.payload;
             const tabId = tab.id;
             einsteinModelAdapter.upsertOne(state.dialog, {
                 id: lowerCaseKey(tabId),
-                data:null,
+                data: null,
                 isFetching: false,
             });
             // Assign new tab
             state.currentDialogId = tabId;
             //state.body = tab.body;
         },
-        removeTab:(state,action) => {
-            const { id,alias } = action.payload;
+        removeTab: (state, action) => {
+            const { id, alias } = action.payload;
             //state.tabs = state.tabs.filter(x => x.id != id);
-            einsteinModelAdapter.removeOne(state.dialog,id);
+            einsteinModelAdapter.removeOne(state.dialog, id);
             // Assign last tab
-            if(state.dialog.ids.length > 0 && state.currentDialogId == id){
+            if (state.dialog.ids.length > 0 && state.currentDialogId == id) {
                 const lastTabId = state.dialog.ids.slice(-1)[0];
                 state.currentDialogId = lastTabId;
                 //state.body = lastTab.body;
             }
-            if(isNotUndefinedOrNull(alias)){
-                saveCacheSettings(alias,state);
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
             }
         },
-        selectionTab:(state,action) => {
-            const {id} = action.payload;
+        selectionTab: (state, action) => {
+            const { id } = action.payload;
             state.currentDialogId = id;
         },
     },
-    extraReducers: (builder) => {
+    extraReducers: builder => {
         builder
             .addCase(einsteinExecuteModel.pending, (state, action) => {
-                const { tabId,createdDate } = action.meta.arg;
+                const { tabId, createdDate } = action.meta.arg;
                 einsteinModelAdapter.upsertOne(state.dialog, {
                     id: lowerCaseKey(tabId),
-                    data:null,
+                    data: null,
                     createdDate,
                     isFetching: true,
-                    error: null 
+                    error: null,
                 });
             })
             .addCase(einsteinExecuteModel.fulfilled, (state, action) => {
-                const { data,body,alias } = action.payload;
-                const { tabId,createdDate,messages } = action.meta.arg;
+                const { data, body, alias } = action.payload;
+                const { tabId, createdDate, messages } = action.meta.arg;
                 const lastMessage = messages[messages.length - 1];
                 einsteinModelAdapter.upsertOne(state.dialog, {
                     id: lowerCaseKey(tabId),
@@ -278,7 +287,7 @@ const einsteinSlice = createSlice({
                     body,
                     isFetching: false,
                     createdDate,
-                    error: null
+                    error: null,
                 });
 
                 // Clean error messages
@@ -286,32 +295,35 @@ const einsteinSlice = createSlice({
 
                 // Overwrite the alias (Not removing the alias in case we want to store it o)
                 //alias = GLOBAL_EINSTEIN;
-                if(isNotUndefinedOrNull(alias)){
+                if (isNotUndefinedOrNull(alias)) {
                     //console.log('--> save',alias);
-                    saveCacheSettings(alias,state);
+                    saveCacheSettings(alias, state);
                 }
 
-                if(chrome?.runtime){
-                    chrome.runtime.sendMessage({ action: 'broadcastMessage', content: {action:'refresh'} });
+                if (chrome?.runtime) {
+                    chrome.runtime.sendMessage({
+                        action: 'broadcastMessage',
+                        content: { action: 'refresh' },
+                    });
                 }
             })
             .addCase(einsteinExecuteModel.rejected, (state, action) => {
                 const { error } = action;
-                const { tabId,messages } = action.meta.arg;
+                const { tabId, messages } = action.meta.arg;
                 const lastMessage = messages[messages.length - 1];
                 einsteinModelAdapter.upsertOne(state.dialog, {
                     id: lowerCaseKey(tabId),
-                    isFetching:false,
-                    error
+                    isFetching: false,
+                    error,
                 });
 
                 // Monitor messages errors
                 state.errorIds = [].concat(
                     state.errorIds.filter(x => x != lastMessage.id), // to be sure it's unique
                     lastMessage.id
-                )
-            })
-    }
+                );
+            });
+    },
 });
 
 export const reduxSlice = einsteinSlice;

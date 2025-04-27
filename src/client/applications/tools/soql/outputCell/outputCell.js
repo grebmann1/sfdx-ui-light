@@ -1,10 +1,9 @@
-
-import { LightningElement,api,wire } from 'lwc';
+import { LightningElement, api, wire } from 'lwc';
 import Toast from 'lightning/toast';
-import { isUndefinedOrNull,isObject } from 'shared/utils';
-import { store as legacyStore,store_application  }  from 'shared/store';
-import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,UI } from 'core/store';
-import { navigate,NavigationContext } from 'lwr/navigation';
+import { isUndefinedOrNull, isObject } from 'shared/utils';
+import { store as legacyStore, store_application } from 'shared/store';
+import { store, connectStore, SELECTORS, DESCRIBE, SOBJECT, UI } from 'core/store';
+import { navigate, NavigationContext } from 'lwr/navigation';
 
 export default class OutputCell extends LightningElement {
     @wire(NavigationContext)
@@ -18,64 +17,72 @@ export default class OutputCell extends LightningElement {
 
     handleClick() {
         //console.log('handleClick');
-        //const records = 
+        //const records =
         const _cloned = {
-            recordId:this.recordId,
-            column:this.column,
-            ...JSON.parse(JSON.stringify(this.value))
+            recordId: this.recordId,
+            column: this.column,
+            ...JSON.parse(JSON.stringify(this.value)),
         };
 
-        store.dispatch(UI.reduxSlice.actions.selectChildRelationship({childRelationship:_cloned}));
+        store.dispatch(
+            UI.reduxSlice.actions.selectChildRelationship({ childRelationship: _cloned })
+        );
     }
 
-    handle_copyClick = (e) => {
-        console.log('handle_copyClick',this.recordId,this.column,this.value);
+    handle_copyClick = e => {
+        console.log('handle_copyClick', this.recordId, this.column, this.value);
         e.preventDefault();
         e.stopPropagation();
         navigator.clipboard.writeText(this.value);
         Toast.show({
             label: `${this.column} exported to your clipboard`,
-            variant:'success',
+            variant: 'success',
         });
-    }
+    };
 
-    handle_editClick = (e) => {
+    handle_editClick = e => {
         const params = {
-            type:'application',
-            state:{
-                applicationName:'recordviewer',
-                recordId:this.recordId
-            }
+            type: 'application',
+            state: {
+                applicationName: 'recordviewer',
+                recordId: this.recordId,
+            },
         };
-        navigate(this.navContext,params);
-    }
+        navigate(this.navContext, params);
+    };
 
-    handleRedirection = (e) =>{
+    handleRedirection = e => {
         e.preventDefault();
         e.stopPropagation();
-        legacyStore.dispatch(store_application.navigate(this.value))
-    }
+        legacyStore.dispatch(store_application.navigate(this.value));
+    };
 
     /** Getters */
 
-    get isRecordIdField(){
+    get isRecordIdField() {
         return this.column === 'Id';
     }
 
-    get formattedValue(){
-        return isObject(this.value)?null:this.value;
+    get formattedValue() {
+        return isObject(this.value) ? null : this.value;
     }
 
-    get isNotEmpty(){
+    get isNotEmpty() {
         return !isUndefinedOrNull(this.value);
     }
 
-    get formattedTotalSize(){
-        return `${Array.isArray(this.value)?this.value.length : (isObject(this.value)?this.value.totalSize:0)} records`;
+    get formattedTotalSize() {
+        return `${
+            Array.isArray(this.value)
+                ? this.value.length
+                : isObject(this.value)
+                ? this.value.totalSize
+                : 0
+        } records`;
     }
 
     get isChildRelationship() {
-        return this.value && isObject(this.value)//this.value.rawData && this.value.rawData.totalSize;
+        return this.value && isObject(this.value); //this.value.rawData && this.value.rawData.totalSize;
     }
 
     get url() {
@@ -83,7 +90,7 @@ export default class OutputCell extends LightningElement {
         return this.formattedValue;
     }
 
-    get isDataDisplayed(){
+    get isDataDisplayed() {
         return isUndefinedOrNull(this.url);
     }
 }

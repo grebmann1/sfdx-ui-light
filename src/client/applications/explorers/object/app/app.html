@@ -12,7 +12,11 @@
                                 <div class="slds-page-header__name-title">
                                     <h1>
                                         <span>SObject Explorer</span>
-                                        <span class="slds-page-header__title slds-truncate" title="Metadata Explorer">SObject Explorer</span>
+                                        <span
+                                            class="slds-page-header__title slds-truncate"
+                                            title="Metadata Explorer">
+                                            SObject Explorer
+                                        </span>
                                     </h1>
                                 </div>
                             </div>
@@ -24,8 +28,16 @@
                         <div class="slds-page-header__control">
                             <!-- actions -->
                             <lightning-button-group>
-                                <lightning-button icon-name="utility:link" label="Object Manager" onclick={goToUrl} data-url="/lightning/setup/ObjectManager/home"></lightning-button>
-                                <lightning-button-icon icon-name="utility:filterList" disabled={isLoading} onclick={filtering_handleClick} variant={filtering_variant}></lightning-button-icon>
+                                <lightning-button
+                                    icon-name="utility:link"
+                                    label="Object Manager"
+                                    onclick={goToUrl}
+                                    data-url="/lightning/setup/ObjectManager/home"></lightning-button>
+                                <lightning-button-icon
+                                    icon-name="utility:filterList"
+                                    disabled={isLoading}
+                                    onclick={filtering_handleClick}
+                                    variant={filtering_variant}></lightning-button-icon>
                             </lightning-button-group>
                         </div>
                     </div>
@@ -33,9 +45,14 @@
             </div>
             <div class="slds-page-header__row slds-page-header__row_gutters">
                 <div class="slds-page-header__col-details">
-                    <div class="slds-page-header__detail-row slds-is-relative" style="display:block; ">
+                    <div
+                        class="slds-page-header__detail-row slds-is-relative"
+                        style="display: block">
                         <!-- Display Info -->
-                        <h2>SObject Explorer is currently in Alpha phase (Only basic functionalities are supported)</h2>
+                        <h2>
+                            SObject Explorer is currently in Alpha phase (Only basic functionalities
+                            are supported)
+                        </h2>
                     </div>
                 </div>
             </div>
@@ -43,21 +60,27 @@
         <div class="slds-full-height slds-overflow-hidden slds-flex-row">
             <article class="full-page-body slds-card slds-m-top_small slds-col">
                 <div class="slds-card__body slds-card__body_inner">
-                    <div class="slds-full-height slds-grid slds-gutters_direct slds-wrap slds-is-relative" style="min-height:200px;">
+                    <div
+                        class="slds-full-height slds-grid slds-gutters_direct slds-wrap slds-is-relative"
+                        style="min-height: 200px">
                         <!-- Container -->
-                        <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-4 slds-border-right">
+                        <div
+                            class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-4 slds-border-right">
                             <!-- SObject List -->
-                            <slds-menu class="slds-flex-column slds-full-height min-height-200"
-                                    items={formattedMenuItems}
-                                    title="SObjects"
-                                    onmenuselection={handleItemSelection}
-                                    is-loading={isLoading}
-                                    keep-filter={keepFilter}
-                            ></slds-menu>
+                            <slds-menu
+                                class="slds-flex-column slds-full-height min-height-200"
+                                items={formattedMenuItems}
+                                title="SObjects"
+                                onmenuselection={handleItemSelection}
+                                is-loading={isLoading}
+                                keep-filter={keepFilter}></slds-menu>
                         </div>
-                         <!-- Object Viewer -->
-                        <div class="slds-flex-column slds-full-height slds-col slds-col slds-size_3-of-4 slds-is-relative">
-                            <object-sobject object-records={records} record-name={selectedItem}></object-sobject>
+                        <!-- Object Viewer -->
+                        <div
+                            class="slds-flex-column slds-full-height slds-col slds-col slds-size_3-of-4 slds-is-relative">
+                            <object-sobject
+                                object-records={records}
+                                record-name={selectedItem}></object-sobject>
                         </div>
                     </div>
                 </div>
@@ -68,29 +91,25 @@
                     <ol class="slds-list_vertical slds-list_vertical-space">
                         <!-- FILTER -->
                         <li class="slds-item">
-                            <lightning-checkbox-group 
+                            <lightning-checkbox-group
                                 name="sobjectBasicFilter"
                                 label="Metadata Filters"
                                 options={metadataFilter_options}
                                 value={metadataFilter_value}
-                                onchange={metadataFilter_onChange}
-                            ></lightning-checkbox-group>
+                                onchange={metadataFilter_onChange}></lightning-checkbox-group>
                         </li>
                         <!-- FILTER -->
                         <li class="slds-item">
-                            <lightning-checkbox-group 
+                            <lightning-checkbox-group
                                 name="sobjectExtraFilter"
                                 label="Advanced Filters"
                                 options={typeFilter_options}
                                 value={typeFilter_value}
-                                onchange={typeFilter_onChange}
-                            ></lightning-checkbox-group>
+                                onchange={typeFilter_onChange}></lightning-checkbox-group>
                         </li>
                     </ol>
                 </div>
-                
             </slds-vertical-panel>
         </div>
-        
     </div>
 </template>

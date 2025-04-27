@@ -1,12 +1,11 @@
 <template>
-    <tr style="height: 0;">
+    <tr style="height: 0">
         <td class="cell-value slds-cell-wrap">
             <lightning-button-icon
-                    alternative-text={recordId}
-                    icon-name="utility:copy"
-                    onclick={handleCopyRecordId}
-                    variant="bare"
-            ></lightning-button-icon>
+                alternative-text={recordId}
+                icon-name="utility:copy"
+                onclick={handleCopyRecordId}
+                variant="bare"></lightning-button-icon>
         </td>
         <td class="cell-field slds-cell-wrap" lwc:dom="manual" lwc:ref="username"></td>
         <td class="cell-value slds-cell-wrap">
@@ -20,19 +19,27 @@
         <td class="cell-value slds-cell-wrap">
             <!-- Value -->
             <template lwc:if={isActive}>
-                <img src="/images/checkbox_checked.gif"/>
+                <img src="/images/checkbox_checked.gif" />
             </template>
             <template lwc:else>
-                <img src="/images/checkbox_unchecked.gif"/>
+                <img src="/images/checkbox_unchecked.gif" />
             </template>
         </td>
         <td class="cell-action slds-cell-wrap">
             <lightning-button-group>
-                <lightning-button-icon alternative-text="Login As" disabled={isDisabled} icon-name="utility:change_owner"
-                                       onclick={loginAsClick} title="Login As"
-                                       variant="border-filled"></lightning-button-icon>
-                <lightning-button-icon alternative-text="View" icon-name="utility:preview" onclick={viewClick}
-                                       title="View" variant="border-filled"></lightning-button-icon>
+                <lightning-button-icon
+                    alternative-text="Login As"
+                    disabled={isDisabled}
+                    icon-name="utility:change_owner"
+                    onclick={loginAsClick}
+                    title="Login As"
+                    variant="border-filled"></lightning-button-icon>
+                <lightning-button-icon
+                    alternative-text="View"
+                    icon-name="utility:preview"
+                    onclick={viewClick}
+                    title="View"
+                    variant="border-filled"></lightning-button-icon>
                 <!--
                     <lightning-button-menu alternative-text="Show menu" menu-alignment="auto">
                         <lightning-menu-item value="MenuItemOne" label="Menu Item One"></lightning-menu-item>

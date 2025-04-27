@@ -1,5 +1,4 @@
 <template>
-
     <div class="slds-full-height slds-flex-column">
         <!-- Header -->
         <div class="slds-p-vertical_x-small slds-p-horizontal_small slds-shrink-none">
@@ -12,37 +11,33 @@
                         </div>
                         <div class="slds-col slds-size_1-of-6">
                             <lightning-button-group class="slds-float_right">
-                                <lightning-button-icon 
-										disabled={isLoading} 
-										icon-name="utility:database"
-										onclick={handleRedirectDataExplorer}
-										title="Redirect to SOQL Explorer"
-                                        size={buttonSize}
-									></lightning-button-icon>
-								<template lwc:if={isPanel}>
-									<lightning-button-icon 
-										disabled={isLoading} 
-										icon-name="utility:new_window"
-										onclick={handleRedirectToApp}
-										title="Redirect to app"
-                                        size={buttonSize}
-									></lightning-button-icon>
-								</template>
-                                <lightning-button-icon-stateful 
-									disabled={isLoading} 
-									icon-name="utility:info_alt"
-                                    onclick={handleInfoToggle} 
-									selected={isInfoDisplayed}
+                                <lightning-button-icon
+                                    disabled={isLoading}
+                                    icon-name="utility:database"
+                                    onclick={handleRedirectDataExplorer}
+                                    title="Redirect to SOQL Explorer"
+                                    size={buttonSize}></lightning-button-icon>
+                                <template lwc:if={isPanel}>
+                                    <lightning-button-icon
+                                        disabled={isLoading}
+                                        icon-name="utility:new_window"
+                                        onclick={handleRedirectToApp}
+                                        title="Redirect to app"
+                                        size={buttonSize}></lightning-button-icon>
+                                </template>
+                                <lightning-button-icon-stateful
+                                    disabled={isLoading}
+                                    icon-name="utility:info_alt"
+                                    onclick={handleInfoToggle}
+                                    selected={isInfoDisplayed}
                                     title="Info"
-                                    size={buttonSize}
-                                ></lightning-button-icon-stateful>
-                                <lightning-button-icon 
-									disabled={isLoading} 
-									icon-name="utility:refresh"
-									onclick={handleRefreshClick}
+                                    size={buttonSize}></lightning-button-icon-stateful>
+                                <lightning-button-icon
+                                    disabled={isLoading}
+                                    icon-name="utility:refresh"
+                                    onclick={handleRefreshClick}
                                     title="Refresh"
-                                    size={buttonSize}
-								></lightning-button-icon>
+                                    size={buttonSize}></lightning-button-icon>
                             </lightning-button-group>
                         </div>
                     </div>
@@ -61,154 +56,186 @@
                     -->
                     <!-- Quick Links & Info -->
                     <dl class="slds-list_horizontal slds-wrap">
-                        <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Record Id">
+                        <dt
+                            class="slds-item_label slds-text-color_weak slds-truncate"
+                            title="Record Id">
                             SObject
                         </dt>
                         <dd class="slds-item_detail slds-truncate">
-                            <a href={objectListLink}>{label} </a>/ {developerName}
+                            <a href={objectListLink}>{label}</a>
+                            / {developerName}
                             <lightning-button-icon
-                                    alternative-text="copy"
-                                    icon-name="utility:copy"
-                                    onclick={handleCopy}
-                                    data-value={developerName}
-                                    data-label="DeveloperName exported to your clipboard"
-                                    variant="bare"
-                            ></lightning-button-icon>
+                                alternative-text="copy"
+                                icon-name="utility:copy"
+                                onclick={handleCopy}
+                                data-value={developerName}
+                                data-label="DeveloperName exported to your clipboard"
+                                variant="bare"></lightning-button-icon>
                         </dd>
-                        <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Record Id">
+                        <dt
+                            class="slds-item_label slds-text-color_weak slds-truncate"
+                            title="Record Id">
                             Record Id
                         </dt>
                         <dd class="slds-item_detail slds-truncate slds-flex-row">
                             {keyPrefix} / {recordId}
                             <lightning-button-icon
-                                    alternative-text="copy"
-                                    icon-name="utility:copy"
-                                    onclick={handleCopy}
-                                    data-value={recordId}
-                                    data-label="RecordId exported to your clipboard"
-                                    variant="bare"
-                            ></lightning-button-icon>
+                                alternative-text="copy"
+                                icon-name="utility:copy"
+                                onclick={handleCopy}
+                                data-value={recordId}
+                                data-label="RecordId exported to your clipboard"
+                                variant="bare"></lightning-button-icon>
                         </dd>
-                        <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Record Type">
+                        <dt
+                            class="slds-item_label slds-text-color_weak slds-truncate"
+                            title="Record Type">
                             Record Type
                         </dt>
-                        <dd class="slds-item_detail slds-truncate">
-                            {recordTypeName}
-                        </dd>               
-                        <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Links">
+                        <dd class="slds-item_detail slds-truncate">{recordTypeName}</dd>
+                        <dt
+                            class="slds-item_label slds-text-color_weak slds-truncate"
+                            title="Links">
                             Links
                         </dt>
                         <dd class="slds-item_detail slds-truncate">
-                            <a href={objectSetupLink} target="_blank">Setup</a> / 
-                            <a href={objectFieldsSetupLink} target="_blank"> Fields</a> / 
-                            <a href={recordTypesLink} target="_blank"> Records Types</a> / 
-                            <a href={objectListLink} target="_blank"> List</a>
+                            <a href={objectSetupLink} target="_blank">Setup</a>
+                            /
+                            <a href={objectFieldsSetupLink} target="_blank">Fields</a>
+                            /
+                            <a href={recordTypesLink} target="_blank">Records Types</a>
+                            /
+                            <a href={objectListLink} target="_blank">List</a>
                         </dd>
-                        <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Documentation">
+                        <dt
+                            class="slds-item_label slds-text-color_weak slds-truncate"
+                            title="Documentation">
                             Documentation
                         </dt>
                         <dd class="slds-item_detail slds-truncate">
-                            <a href={objectDocLink} onclick={redirectDoc} target="_blank">{docLinkTitle}</a>
+                            <a href={objectDocLink} onclick={redirectDoc} target="_blank">
+                                {docLinkTitle}
+                            </a>
                         </dd>
 
                         <!-- Specific to Contacts -->
                         <template lwc:if={isNetworkMemberListDisplayed}>
-                            <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Login as">
+                            <dt
+                                class="slds-item_label slds-text-color_weak slds-truncate"
+                                title="Login as">
                                 Login as
                             </dt>
                             <dd class="slds-item_detail">
                                 <template iterator:item={networkMembers}>
                                     <div class="slds-inline-flex" key={item.value.Id}>
-                                        <a href={item.value._redirectLink} target="_blank">{item.value.Network.Name}</a>
-                                        <template lwc:if={item.last}>
-                                        </template>
+                                        <a href={item.value._redirectLink} target="_blank">
+                                            {item.value.Network.Name}
+                                        </a>
+                                        <template lwc:if={item.last}></template>
                                         <template lwc:else>
                                             <p class="slds-m-horizontal_x-small">|</p>
                                         </template>
                                     </div>
                                 </template>
-
                             </dd>
                         </template>
-
-
                     </dl>
                 </template>
             </template>
             <template lwc:elseif={isPanel}>
                 <!-- Place Holder -->
-                <illustration-empty 
-                    title="No record" 
-                    sub-title="The extension only support standard record pages."
-                ></illustration-empty>
+                <illustration-empty
+                    title="No record"
+                    sub-title="The extension only support standard record pages."></illustration-empty>
             </template>
         </div>
 
         <!-- Loading -->
         <template lwc:if={isLoading}>
             <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
-                <slds-spinner alternative-text="Loading" message="Fetching data from Salesforce"
-                              size="small"></slds-spinner>
+                <slds-spinner
+                    alternative-text="Loading"
+                    message="Fetching data from Salesforce"
+                    size="small"></slds-spinner>
             </div>
         </template>
         <template lwc:elseif={isSaving}>
             <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
-                <slds-spinner alternative-text="Saving" message="Updating data to Salesforce"
-                              size="small"></slds-spinner>
+                <slds-spinner
+                    alternative-text="Saving"
+                    message="Updating data to Salesforce"
+                    size="small"></slds-spinner>
             </div>
         </template>
         <!-- Table -->
         <template lwc:if={isRecordIdAvailable}>
             <div class="full-page-body tableFixHead" onscroll={handleScroll}>
                 <!--<div lwc:dom="manual" class="custom-table"></div>-->
-                <table class="slds-table slds-table_cell slds-table_fixed-layout slds-table_bordered slds-table_resizable-cols slds-no-row-hover"
-                       id="data-table"
-                       role="grid">
+                <table
+                    class="slds-table slds-table_cell slds-table_fixed-layout slds-table_bordered slds-table_resizable-cols slds-no-row-hover"
+                    id="data-table"
+                    role="grid">
                     <thead>
                         <tr class="slds-line-height_reset head">
-                            <th aria-label={fieldLabel} aria-sort="none"
-                                class="slds-is-sortable slds-is-resizable slds-text-title_caps" draggable="false" id='leftColumn'
+                            <th
+                                aria-label={fieldLabel}
+                                aria-sort="none"
+                                class="slds-is-sortable slds-is-resizable slds-text-title_caps"
+                                draggable="false"
+                                id="leftColumn"
                                 scope="col">
                                 <div class="slds-th__action slds-text-link_reset">
                                     <lightning-button-icon
-                                            alternative-text="Switch Field &amp; Label"
-                                            icon-name="utility:change_record_type"
-                                            onclick={handleToggleFieldName}
-                                            variant="bare"
-                                    ></lightning-button-icon>
-                                    <span class="slds-truncate slds-m-left_x-small" title={fieldLabel}>{fieldLabel}</span>
+                                        alternative-text="Switch Field &amp; Label"
+                                        icon-name="utility:change_record_type"
+                                        onclick={handleToggleFieldName}
+                                        variant="bare"></lightning-button-icon>
+                                    <span
+                                        class="slds-truncate slds-m-left_x-small"
+                                        title={fieldLabel}>
+                                        {fieldLabel}
+                                    </span>
                                 </div>
                             </th>
-                            <th aria-label="Product Code" aria-sort="none"
-                                class="slds-is-sortable slds-is-resizable slds-text-title_caps" scope="col">
+                            <th
+                                aria-label="Product Code"
+                                aria-sort="none"
+                                class="slds-is-sortable slds-is-resizable slds-text-title_caps"
+                                scope="col">
                                 <div class="slds-th__action slds-text-link_reset">
                                     <span class="slds-truncate" title="Product Code">Value</span>
                                 </div>
                             </th>
-                            <th aria-label="" aria-sort="none" class="" scope="col" style="width:30px;"></th>
+                            <th
+                                aria-label=""
+                                aria-sort="none"
+                                class=""
+                                scope="col"
+                                style="width: 30px"></th>
                         </tr>
                     </thead>
-                    <tbody class="record-explorer-table slds-scrollable_y" id="data-toDisplay"
-                           onenableeditmode={handleEnabledEditMode}
-                           onfieldchange={handleRowInputChange}
-                    >
+                    <tbody
+                        class="record-explorer-table slds-scrollable_y"
+                        id="data-toDisplay"
+                        onenableeditmode={handleEnabledEditMode}
+                        onfieldchange={handleRowInputChange}>
                         <!--
                             onregisterfielddependency={registerDependentField}
                             onupdatedependentfields={updateDependentFields}
                         -->
                         <!-- DATA are going here -->
                         <template for:each={virtualList} for:item="item">
-                            <recordviewer-record-explorer-row current-origin={currentOrigin}
-                                                        field-errors={fieldErrors}
-                                                        filter={filter}
-                                                        is-info-displayed={isInfoDisplayed}
-                                                        is-label-displayed={isLabelDisplayed}
-                                                        is-visible={item.isVisible}
-                                                        item={item}
-                                                        key={item.name}
-                                                        metadata={metadata}
-                                                        record={record}
-                            ></recordviewer-record-explorer-row>
+                            <recordviewer-record-explorer-row
+                                current-origin={currentOrigin}
+                                field-errors={fieldErrors}
+                                filter={filter}
+                                is-info-displayed={isInfoDisplayed}
+                                is-label-displayed={isLabelDisplayed}
+                                is-visible={item.isVisible}
+                                item={item}
+                                key={item.name}
+                                metadata={metadata}
+                                record={record}></recordviewer-record-explorer-row>
                             <!-- is-edit-mode={isEditMode} -->
                         </template>
                     </tbody>
@@ -223,39 +250,34 @@
                         <p>
                             {modifiedRowsTotal} pending change(s)
                             <lightning-button
-                                    class="slds-m-left_x-small"
-                                    disabled={isSaving}
-                                    label={viewChangeLabel}
-                                    onclick={handleViewChanges_filter}
-                                    title={viewChangeLabel}
-                                    variant="base"
-                            ></lightning-button>
+                                class="slds-m-left_x-small"
+                                disabled={isSaving}
+                                label={viewChangeLabel}
+                                onclick={handleViewChanges_filter}
+                                title={viewChangeLabel}
+                                variant="base"></lightning-button>
                         </p>
                     </div>
                 </template>
 
                 <div class="slds-grid slds-grid_align-center slds-p-vertical_x-small">
                     <lightning-button
-                            class="slds-float_left slds-button"
-                            disabled={isCancelButtonDisabled}
-                            label="Cancel"
-                            onclick={handleCancelClick}
-                            variant="neutral"
-                    ></lightning-button>
+                        class="slds-float_left slds-button"
+                        disabled={isCancelButtonDisabled}
+                        label="Cancel"
+                        onclick={handleCancelClick}
+                        variant="neutral"></lightning-button>
                     <lightning-button
-                            class="slds-button"
-                            disabled={isSaveButtonDisabled}
-                            label="Save"
-                            onclick={handleSaveClick}
-                            variant="brand"
-                    ></lightning-button>
+                        class="slds-button"
+                        disabled={isSaveButtonDisabled}
+                        label="Save"
+                        onclick={handleSaveClick}
+                        variant="brand"></lightning-button>
                 </div>
                 <div class="slds-grid slds-grid_align-center slds-p-bottom_x-small">
                     <p>(Record Editing is currently in beta phase)</p>
                 </div>
             </div>
         </template>
-
     </div>
-
 </template>

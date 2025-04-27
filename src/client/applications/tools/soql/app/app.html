@@ -1,90 +1,171 @@
 <template>
     <div class={pageClass}>
-        <builder-editor is-left-panel-toggled={isLeftToggled} onexecuteaction={executeAction} onexecutesave={executeSave}>
+        <builder-editor
+            is-left-panel-toggled={isLeftToggled}
+            onexecuteaction={executeAction}
+            onexecutesave={executeSave}>
             <!-- Header -->
-            <builder-header slot="header" title="Tools" sub-title="SOQL Explorer" icon-name="standard:dataset">
+            <builder-header
+                slot="header"
+                title="Tools"
+                sub-title="SOQL Explorer"
+                icon-name="standard:dataset">
                 <div slot="actions" class="slds-builder-toolbar__actions">
-                    <lightning-button class="slds-p-left_xx-small" label="Clear Tabs" onclick={handleClearTabs}></lightning-button>
-                    <lightning-button class="slds-p-left_xx-small" label={i18n.EDITOR_PANEL_SAVE} onclick={handleSaveClick} disabled={isSaveButtonDisabled}></lightning-button>
+                    <lightning-button
+                        class="slds-p-left_xx-small"
+                        label="Clear Tabs"
+                        onclick={handleClearTabs}></lightning-button>
+                    <lightning-button
+                        class="slds-p-left_xx-small"
+                        label={i18n.EDITOR_PANEL_SAVE}
+                        onclick={handleSaveClick}
+                        disabled={isSaveButtonDisabled}></lightning-button>
                     <template lwc:if={isRunButtonDisplayed}>
-                        <lightning-button class="slds-p-left_xx-small" variant="brand" label={i18n.EDITOR_PANEL_RUN} icon-name="utility:right" onclick={executeAction} disabled={isRunButtonDisabled}></lightning-button>
+                        <lightning-button
+                            class="slds-p-left_xx-small"
+                            variant="brand"
+                            label={i18n.EDITOR_PANEL_RUN}
+                            icon-name="utility:right"
+                            onclick={executeAction}
+                            disabled={isRunButtonDisabled}></lightning-button>
                     </template>
                     <template lwc:else>
-                        <lightning-button class="slds-p-left_xx-small" variant="destructive" label={i18n.EDITOR_PANEL_ABORT} icon-name="utility:clear" onclick={handleAbortClick} disabled={isLoading}></lightning-button>
+                        <lightning-button
+                            class="slds-p-left_xx-small"
+                            variant="destructive"
+                            label={i18n.EDITOR_PANEL_ABORT}
+                            icon-name="utility:clear"
+                            onclick={handleAbortClick}
+                            disabled={isLoading}></lightning-button>
                     </template>
-                    </div>
+                </div>
 
                 <div slot="subactions" class="slds-builder-toolbar__actions">
-                    <lightning-button-icon icon-name="utility:delete" variant="border-filled" onclick={deleteSelectedRecords} disabled={isDeleteDisabled}></lightning-button-icon>
-                    
-                    <lightning-button-menu class="slds-p-left_xx-small" variant="border-filled" icon-name="utility:download" disabled={isDownloadDisabled} tooltip="Download">
-                        <lightning-menu-item value="csv" label="CSV" onclick={downloadCSV}></lightning-menu-item>
-                        <lightning-menu-item value="json" label="JSON" onclick={downloadJSON}></lightning-menu-item>
+                    <lightning-button-icon
+                        icon-name="utility:delete"
+                        variant="border-filled"
+                        onclick={deleteSelectedRecords}
+                        disabled={isDeleteDisabled}></lightning-button-icon>
+
+                    <lightning-button-menu
+                        class="slds-p-left_xx-small"
+                        variant="border-filled"
+                        icon-name="utility:download"
+                        disabled={isDownloadDisabled}
+                        tooltip="Download">
+                        <lightning-menu-item
+                            value="csv"
+                            label="CSV"
+                            onclick={downloadCSV}></lightning-menu-item>
+                        <lightning-menu-item
+                            value="json"
+                            label="JSON"
+                            onclick={downloadJSON}></lightning-menu-item>
                     </lightning-button-menu>
-                    <lightning-button-menu class="slds-p-left_xx-small" variant="border-filled" icon-name="utility:copy" disabled={isDownloadDisabled} tooltip="Copy to clipboard">
-                        <lightning-menu-item value="csv" label="CSV" onclick={copyCSV}></lightning-menu-item>
-                        <lightning-menu-item value="json" label="JSON" onclick={copyJSON}></lightning-menu-item>
-                        <lightning-menu-item value="excel" label="Excel" onclick={copyExcel}></lightning-menu-item>
+                    <lightning-button-menu
+                        class="slds-p-left_xx-small"
+                        variant="border-filled"
+                        icon-name="utility:copy"
+                        disabled={isDownloadDisabled}
+                        tooltip="Copy to clipboard">
+                        <lightning-menu-item
+                            value="csv"
+                            label="CSV"
+                            onclick={copyCSV}></lightning-menu-item>
+                        <lightning-menu-item
+                            value="json"
+                            label="JSON"
+                            onclick={copyJSON}></lightning-menu-item>
+                        <lightning-menu-item
+                            value="excel"
+                            label="Excel"
+                            onclick={copyExcel}></lightning-menu-item>
                     </lightning-button-menu>
-                    <lightning-button-icon class="slds-p-left_xx-small" variant="border-filled" icon-name="utility:indicator_performance_period" size="large" onclick={handlePerformanceCheckClick} disabled={isLoading} tooltip="Analyze the performance of your query."></lightning-button-icon>
-                    <lightning-button-icon-stateful class="slds-p-left_xx-small" selected={isLeftToggled}   variant="border-filled" icon-name="utility:knowledge_base" size="large" onclick={handleLeftToggle} tooltip="Display the Object/Field Catalog."></lightning-button-icon-stateful>
-                    <lightning-button-icon-stateful class="slds-p-left_xx-small" selected={isRecentToggled} variant="border-filled" icon-name="utility:budget_period"  size="large" onclick={handleRecentToggle} tooltip="Display your Recents/Saved queries."></lightning-button-icon-stateful>
-                
+                    <lightning-button-icon
+                        class="slds-p-left_xx-small"
+                        variant="border-filled"
+                        icon-name="utility:indicator_performance_period"
+                        size="large"
+                        onclick={handlePerformanceCheckClick}
+                        disabled={isLoading}
+                        tooltip="Analyze the performance of your query."></lightning-button-icon>
+                    <lightning-button-icon-stateful
+                        class="slds-p-left_xx-small"
+                        selected={isLeftToggled}
+                        variant="border-filled"
+                        icon-name="utility:knowledge_base"
+                        size="large"
+                        onclick={handleLeftToggle}
+                        tooltip="Display the Object/Field Catalog."></lightning-button-icon-stateful>
+                    <lightning-button-icon-stateful
+                        class="slds-p-left_xx-small"
+                        selected={isRecentToggled}
+                        variant="border-filled"
+                        icon-name="utility:budget_period"
+                        size="large"
+                        onclick={handleRecentToggle}
+                        tooltip="Display your Recents/Saved queries."></lightning-button-icon-stateful>
+
                     <!-- TODO: Add Download and Clipboard copy
                         <lightning-button-menu alternative-text="Download" variant="border-filled" icon-name="utility:download" class="slds-p-right_xx-small">
                             <lightning-menu-item value="csv" label="csv"></lightning-menu-item>
                         </lightning-button-menu>
                     -->
                     <!--<button class="slds-button slds-button_brand" onclick={runQueryAll} title={i18n.EDITOR_PANEL_RUN_ALL_TITLE}> {i18n.EDITOR_PANEL_RUN_ALL} </button>-->
-                    
                 </div>
 
                 <template lwc:if={isMetaDisplayed}>
                     <p slot="meta" class="slds-page-header__meta-text">
-                        {totalRecordsFormatted} {sobjectPlurialLabel}  • Queried {_responseCreatedDateFormatted}
+                        {totalRecordsFormatted} {sobjectPlurialLabel} • Queried
+                        {_responseCreatedDateFormatted}
                     </p>
                 </template>
-
             </builder-header>
             <!-- Left Panel -->
             <div slot="left" class="slds-full-height">
                 <!-- OBJECT PANEL -->
-                <soql-sobject-panel  class={sobjectsPanelClass} application-name={applicationName}></soql-sobject-panel>
+                <soql-sobject-panel
+                    class={sobjectsPanelClass}
+                    application-name={applicationName}></soql-sobject-panel>
                 <template lwc:if={isFieldsPanelDisplayed}>
                     <!-- FIELDS PANELS -->
                     <soql-fields-panel application-name={applicationName}></soql-fields-panel>
                 </template>
             </div>
-            
+
             <!-- Body -->
             <article class="full-page-body slds-card">
-                <div class="slds-full-height slds-is-relative" style="min-height:200px;">
+                <div class="slds-full-height slds-is-relative" style="min-height: 200px">
                     <template lwc:if={isLoadingAdvanced}>
                         <slds-spinner message={loadingMessage} alternative-text="Loading">
                             <template lwc:if={isDownloading}>
-                                <lightning-button 
+                                <lightning-button
                                     label="Cancel"
                                     onclick={handleCancelDownloadClick}
                                     variant="destructive"
-                                    disabled={isDownloadCanceled}
-                                ></lightning-button>
+                                    disabled={isDownloadCanceled}></lightning-button>
                             </template>
                         </slds-spinner>
                     </template>
                     <div class="body slds-full-height">
                         <div class="right-panel slds-full-height">
-                            <slds-split-view top-min-height="250" bottom-min-height="100" splitter-position="30">
+                            <slds-split-view
+                                top-min-height="250"
+                                bottom-min-height="100"
+                                splitter-position="30">
                                 <!-- EDITOR -->
-                                <soql-query-editor-panel lwc:ref="editor" slot="left" 
-                                    class="slds-full-height" 
-                                    application-name={applicationName}
-                                ></soql-query-editor-panel>
+                                <soql-query-editor-panel
+                                    lwc:ref="editor"
+                                    slot="left"
+                                    class="slds-full-height"
+                                    application-name={applicationName}></soql-query-editor-panel>
                                 <!-- OUTPUT QUERIES -->
-                                <soql-output-panel lwc:ref="output" slot="right" 
-                                    class="slds-full-height" 
-                                    application-name={applicationName} 
-                                    onrowselection={handleRowSelection}
-                                ></soql-output-panel>
+                                <soql-output-panel
+                                    lwc:ref="output"
+                                    slot="right"
+                                    class="slds-full-height"
+                                    application-name={applicationName}
+                                    onrowselection={handleRowSelection}></soql-output-panel>
                             </slds-split-view>
                         </div>
                     </div>
@@ -92,17 +173,16 @@
             </article>
             <!-- Panel -->
             <!-- RECENT QUERIES -->
-            <builder-storage-panel 
-                title="Query List" 
-                is-open={isRecentToggled} 
+            <builder-storage-panel
+                title="Query List"
+                is-open={isRecentToggled}
                 recent-title={i18n.QUERY_LIST_PANEL_RECENT_QUERIES}
-                recent-items={recentQueries} 
+                recent-items={recentQueries}
                 saved-items={savedQueries}
                 saved-title={i18n.QUERY_LIST_PANEL_SAVED_QUERIES}
                 onclose={handleRecentToggle}
                 onremoveitem={handleRemoveItem}
-                onselectitem={handleSelectItem}
-            ></builder-storage-panel>
-        </builder-editor>    
+                onselectitem={handleSelectItem}></builder-storage-panel>
+        </builder-editor>
     </div>
 </template>

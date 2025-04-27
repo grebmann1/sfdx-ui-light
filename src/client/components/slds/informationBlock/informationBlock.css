@@ -24,46 +24,45 @@ blockquote .subtitle {
     color: rgb(84, 79, 79);
 }
 
-
 blockquote h4.title {
     /*font-size: 1rem;*/
     margin-top: 0;
 }
 
-blockquote strong{
+blockquote strong {
     color: rgb(27 150 255);
 }
 
 /** Error **/
 
 blockquote.error {
-    border-left-color: var(--slds-g-color-error-base-40,#ea001e);
-    color: var(--slds-g-color-error-base-40,#ea001e);
+    border-left-color: var(--slds-g-color-error-base-40, #ea001e);
+    color: var(--slds-g-color-error-base-40, #ea001e);
     font-size: 1rem;
 }
 
 blockquote.error .title {
-    color: var(--slds-g-color-error-base-40,#ea001e);
+    color: var(--slds-g-color-error-base-40, #ea001e);
 }
 
-blockquote.error strong{
-    color: var(--slds-g-color-error-base-40,#ea001e);
+blockquote.error strong {
+    color: var(--slds-g-color-error-base-40, #ea001e);
 }
 
 /** Success **/
 
 blockquote.success {
-    border-left-color: var(--slds-g-color-success-base-60,#3ba755);
-    color: var(--slds-g-color-success-base-60,#3ba755);
+    border-left-color: var(--slds-g-color-success-base-60, #3ba755);
+    color: var(--slds-g-color-success-base-60, #3ba755);
     font-size: 1rem;
 }
 
 blockquote.success .title {
-    color: var(--slds-g-color-success-base-60,#3ba755);
+    color: var(--slds-g-color-success-base-60, #3ba755);
 }
 
-blockquote.success strong{
-    color: var(--slds-g-color-success-base-60,#3ba755);
+blockquote.success strong {
+    color: var(--slds-g-color-success-base-60, #3ba755);
 }
 
 /** Reverse: **/
@@ -80,7 +79,7 @@ blockquote.reverse .title {
     font-weight: bold;
 }
 
-blockquote.reverse strong{
+blockquote.reverse strong {
     color: white;
 }
 blockquote.reverse .subtitle {

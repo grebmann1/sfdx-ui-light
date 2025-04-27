@@ -1,6 +1,6 @@
-.slds-center-container{
+.slds-center-container {
     position: absolute;
-    width:-webkit-fill-available;
+    width: -webkit-fill-available;
     left: 50%;
     top: 50%;
     -webkit-transform: translate(-50%, -50%);

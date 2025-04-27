@@ -1,5 +1,5 @@
 <template>
-    <tr class={rowClass} onfieldchange={handleInputChange} style="height: 0;">
+    <tr class={rowClass} onfieldchange={handleInputChange} style="height: 0">
         <td class="cell-field slds-cell-wrap" lwc:dom="manual" lwc:ref="field"></td>
         <td class="cell-value slds-cell-wrap">
             <!-- Value -->
@@ -21,13 +21,12 @@
                 <div class="right-actions">
                     <template lwc:if={isDependentPicklistDisplayed}>
                         <lightning-button-icon
-                                alternative-text="Dependent Picklist"
-                                disabled={isLoading}
-                                icon-name="utility:crossfilter"
-                                onclick={handleDependentPicklistClick}
-                                tooltip={tooltip_dependentPicklist}
-                                variant="bare"
-                        ></lightning-button-icon>
+                            alternative-text="Dependent Picklist"
+                            disabled={isLoading}
+                            icon-name="utility:crossfilter"
+                            onclick={handleDependentPicklistClick}
+                            tooltip={tooltip_dependentPicklist}
+                            variant="bare"></lightning-button-icon>
                     </template>
                     <template lwc:if={isInfoDisplayed}>
                         <!-- Only for info displayed-->
@@ -36,50 +35,44 @@
                         <!-- Default -->
                         <template lwc:if={isUndoDisplayed}>
                             <lightning-button-icon
-                                    alternative-text="undo"
-                                    icon-name="utility:undo"
-                                    onclick={handleUndoClick}
-                                    variant="bare"
-                            ></lightning-button-icon>
+                                alternative-text="undo"
+                                icon-name="utility:undo"
+                                onclick={handleUndoClick}
+                                variant="bare"></lightning-button-icon>
                         </template>
                         <template lwc:elseif={isEditButtonDisplayed}>
                             <lightning-button-icon
-                                    alternative-text="edit"
-                                    icon-name="utility:edit"
-                                    onclick={handleEditClick}
-                                    variant="bare"
-                            ></lightning-button-icon>
+                                alternative-text="edit"
+                                icon-name="utility:edit"
+                                onclick={handleEditClick}
+                                variant="bare"></lightning-button-icon>
                         </template>
                         <template lwc:elseif={isFormula}>
                             <lightning-button-icon
-                                    alternative-text="formula"
-                                    icon-name="utility:formula"
-                                    onclick={handleFormulaClick}
-                                    tooltip={tooltip_formula}
-                                    variant="bare"
-                            ></lightning-button-icon>
+                                alternative-text="formula"
+                                icon-name="utility:formula"
+                                onclick={handleFormulaClick}
+                                tooltip={tooltip_formula}
+                                variant="bare"></lightning-button-icon>
                         </template>
                         <template lwc:elseif={isNotEditable}>
                             <lightning-button-icon
-                                    alternative-text="lock"
-                                    disabled
-                                    icon-name="utility:lock"
-                                    variant="bare"
-                            ></lightning-button-icon>
+                                alternative-text="lock"
+                                disabled
+                                icon-name="utility:lock"
+                                variant="bare"></lightning-button-icon>
                         </template>
                     </template>
-
                 </div>
             </div>
         </td>
         <td class="cell-action slds-cell-wrap">
             <template lwc:if={isCopyDisplayed}>
                 <lightning-button-icon
-                        alternative-text="copy"
-                        icon-name="utility:copy"
-                        onclick={handleCopyClick}
-                        variant="bare"
-                ></lightning-button-icon>
+                    alternative-text="copy"
+                    icon-name="utility:copy"
+                    onclick={handleCopyClick}
+                    variant="bare"></lightning-button-icon>
             </template>
         </td>
     </tr>

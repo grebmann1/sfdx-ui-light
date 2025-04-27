@@ -1,7 +1,6 @@
 import { api, LightningElement } from 'lwc';
 
 export default class Paginator extends LightningElement {
-    
     init = false;
 
     @api previousClass;
@@ -11,5 +10,4 @@ export default class Paginator extends LightningElement {
     @api nextClass;
     @api goNext;
     @api nextTitle;
-
 }

@@ -4,22 +4,28 @@
             <header class="slds-media slds-media_center slds-has-flexi-truncate">
                 <div class="slds-media__body">
                     <h2 class="slds-card__header-title">
-                        <a href="#" class="slds-card__header-link slds-truncate" title="Sytem Limits">
+                        <a
+                            href="#"
+                            class="slds-card__header-link slds-truncate"
+                            title="Sytem Limits">
                             <span>Licenses Utilization</span>
                         </a>
                     </h2>
                 </div>
-                <div class="slds-no-flex">
-                   
-                </div>                    
+                <div class="slds-no-flex"></div>
             </header>
         </div>
         <div class="slds-card__body slds-card__body_inner">
-            <div class="slds-scrollable_y" style="height:400px;">
+            <div class="slds-scrollable_y" style="height: 400px">
                 <div class="slds-grid slds-wrap">
                     <template for:each={userLicenses} for:item="item">
                         <div class="slds-col slds-size_1-of-2" key={item.Id}>
-                            <dashboard-horizontal-rank mark={item.value} title={item.label} sub-title="" description={item.description} current-step={item.currentRank}></dashboard-horizontal-rank>
+                            <dashboard-horizontal-rank
+                                mark={item.value}
+                                title={item.label}
+                                sub-title=""
+                                description={item.description}
+                                current-step={item.currentRank}></dashboard-horizontal-rank>
                         </div>
                     </template>
                 </div>

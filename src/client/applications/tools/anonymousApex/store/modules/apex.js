@@ -1,8 +1,8 @@
-import { createSlice, createAsyncThunk,createEntityAdapter } from '@reduxjs/toolkit';
-import { SELECTORS,DOCUMENT } from 'core/store';
-import { lowerCaseKey,guid,isNotUndefinedOrNull } from 'shared/utils';
+import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
+import { SELECTORS, DOCUMENT } from 'core/store';
+import { lowerCaseKey, guid, isNotUndefinedOrNull } from 'shared/utils';
 
-const Schemas = {}
+const Schemas = {};
 Schemas.ExecuteAnonymousResult = {
     compileProblem: 'string',
     compiled: 'boolean',
@@ -10,50 +10,46 @@ Schemas.ExecuteAnonymousResult = {
     column: 'number',
     exceptionMessage: 'string',
     exceptionStackTrace: 'string',
-    success:'boolean',
+    success: 'boolean',
     // From Header
-    debugLog:'string'
-}
+    debugLog: 'string',
+};
 const INFO = 'INFO';
 const DEBUG = 'DEBUG';
 const ANONYNMOUS_APEX_SETTINGS_KEY = 'ANONYNMOUS_APEX_SETTINGS_KEY';
 
-const INITIAL_TABS = [
-    enrichTab(
-        {id:guid(),body:"System.debug('Hello the world');"},
-        null
-    )
-];
+const INITIAL_TABS = [enrichTab({ id: guid(), body: "System.debug('Hello the world');" }, null)];
 
 /** Methods */
 
-function updateCurrentTab(state,attributes){
+function updateCurrentTab(state, attributes) {
     const tabIndex = state.tabs.findIndex(x => x.id === state.currentTab.id);
-    if(tabIndex > -1 ){
+    if (tabIndex > -1) {
         state.tabs[tabIndex].body = state.body;
-        if(attributes){
+        if (attributes) {
             // Extra Attributes
-            Object.assign(state.tabs[tabIndex],attributes);
+            Object.assign(state.tabs[tabIndex], attributes);
         }
     }
 }
 
-function formatTab({id,name,body,isDraft,fileId,fileBody}){
-    return {id,name,body,isDraft,fileId,fileBody};
+function formatTab({ id, name, body, isDraft, fileId, fileBody }) {
+    return { id, name, body, isDraft, fileId, fileBody };
 }
 
-function enrichTabs(tabs,state,selector){
-    return tabs.map(tab => enrichTab(tab,state,selector))
+function enrichTabs(tabs, state, selector) {
+    return tabs.map(tab => enrichTab(tab, state, selector));
 }
 
-function enrichTab(tab,state,selector){
-    const file = tab.fileId && selector?selector.selectById(state,lowerCaseKey(tab.fileId)):null;
+function enrichTab(tab, state, selector) {
+    const file =
+        tab.fileId && selector ? selector.selectById(state, lowerCaseKey(tab.fileId)) : null;
     const fileBody = file?.content || tab.fileBody;
     return {
         ...tab,
-        fileBody:fileBody,
-        isDraft:fileBody != tab.body && isNotUndefinedOrNull(tab.fileId)
-    }
+        fileBody: fileBody,
+        isDraft: fileBody != tab.body && isNotUndefinedOrNull(tab.fileId),
+    };
 }
 
 function loadCacheSettings(alias) {
@@ -66,20 +62,33 @@ function loadCacheSettings(alias) {
     return null;
 }
 
-function saveCacheSettings(alias,state) {
-    
+function saveCacheSettings(alias, state) {
     console.log('saveCacheSettings');
     try {
-        const { 
-            isFilterDebugEnabled,recentPanelToggled,tabs,
-            debug_db, debug_callout, debug_apexCode, debug_validation, debug_profiling, debug_system
-        } = state
+        const {
+            isFilterDebugEnabled,
+            recentPanelToggled,
+            tabs,
+            debug_db,
+            debug_callout,
+            debug_apexCode,
+            debug_validation,
+            debug_profiling,
+            debug_system,
+        } = state;
 
         localStorage.setItem(
             `${alias}-${ANONYNMOUS_APEX_SETTINGS_KEY}`,
-            JSON.stringify({ 
-                isFilterDebugEnabled,recentPanelToggled,tabs,
-                debug_db, debug_callout, debug_apexCode, debug_validation, debug_profiling, debug_system
+            JSON.stringify({
+                isFilterDebugEnabled,
+                recentPanelToggled,
+                tabs,
+                debug_db,
+                debug_callout,
+                debug_apexCode,
+                debug_validation,
+                debug_profiling,
+                debug_system,
             })
         );
     } catch (e) {
@@ -90,56 +99,67 @@ function saveCacheSettings(alias,state) {
 /** Redux */
 
 export const apexAdapter = createEntityAdapter();
-const _executeApexAnonymous = (connector,body,headers) => {
+const _executeApexAnonymous = (connector, body, headers) => {
     //console.log('connector,body,headers',connector,body,headers);
-    return connector.conn.soap._invoke("executeAnonymous", { apexcode: body }, Schemas.ExecuteAnonymousResult,{
-        xmlns: "http://soap.sforce.com/2006/08/apex",
-        endpointUrl:connector.conn.instanceUrl + "/services/Soap/s/" + connector.conn.version,
-        headers
-    })
-}
-const formatHeaders = (state) => ({
-    DebuggingHeader:{
-        categories:[
+    return connector.conn.soap._invoke(
+        'executeAnonymous',
+        { apexcode: body },
+        Schemas.ExecuteAnonymousResult,
+        {
+            xmlns: 'http://soap.sforce.com/2006/08/apex',
+            endpointUrl: connector.conn.instanceUrl + '/services/Soap/s/' + connector.conn.version,
+            headers,
+        }
+    );
+};
+const formatHeaders = state => ({
+    DebuggingHeader: {
+        categories: [
             {
-                category:'Apex_code',
-                level:state.debug_apexCode
+                category: 'Apex_code',
+                level: state.debug_apexCode,
             },
             {
-                category:'Callout',
-                level:state.debug_callout
+                category: 'Callout',
+                level: state.debug_callout,
             },
             {
-                category:'Validation',
-                level:state.debug_validation
+                category: 'Validation',
+                level: state.debug_validation,
             },
             {
-                category:'Db',
-                level:state.debug_db
+                category: 'Db',
+                level: state.debug_db,
             },
             {
-                category:'Apex_profiling',
-                level:state.debug_profiling
+                category: 'Apex_profiling',
+                level: state.debug_profiling,
             },
             {
-                category:'System',
-                level:state.debug_system
-            }
-        ]
-    }
+                category: 'System',
+                level: state.debug_system,
+            },
+        ],
+    },
 });
 export const executeApexAnonymous = createAsyncThunk(
     'apex/executeAnonymous',
-    async ({ connector, body,tabId,createdDate}, { dispatch,getState }) => {
+    async ({ connector, body, tabId, createdDate }, { dispatch, getState }) => {
         //console.log('connector, body,tabId',connector, body,tabId);
         //const apiPath = isAllRows ? '/queryAll' : '/query';
         try {
-            const res = await _executeApexAnonymous(connector,body,formatHeaders(getState().apex))
-            dispatch(DOCUMENT.reduxSlices.RECENT.actions.saveApex({
-                body, 
-                alias: connector.conn.alias,
-            }));
-            return { data: res, body, alias: connector.conn.alias,tabId};
+            const res = await _executeApexAnonymous(
+                connector,
+                body,
+                formatHeaders(getState().apex)
+            );
+            dispatch(
+                DOCUMENT.reduxSlices.RECENT.actions.saveApex({
+                    body,
+                    alias: connector.conn.alias,
+                })
+            );
+            return { data: res, body, alias: connector.conn.alias, tabId };
         } catch (err) {
             console.error(err);
             throw err;
@@ -151,152 +171,154 @@ export const executeApexAnonymous = createAsyncThunk(
 // Create a slice with reducers and extraReducers
 const apexSlice = createSlice({
     name: 'apex',
-    initialState:{
-        debug_db : INFO,
-        debug_callout : INFO,
-        debug_apexCode : DEBUG,
-        debug_validation : INFO,
-        debug_profiling : INFO,
-        debug_system : INFO,
-        isFilterDebugEnabled:false,
-        recentPanelToggled:false,
-        apex:apexAdapter.getInitialState(),
-        tabs:INITIAL_TABS,
-        currentTab:INITIAL_TABS[0],
-        body:null
+    initialState: {
+        debug_db: INFO,
+        debug_callout: INFO,
+        debug_apexCode: DEBUG,
+        debug_validation: INFO,
+        debug_profiling: INFO,
+        debug_system: INFO,
+        isFilterDebugEnabled: false,
+        recentPanelToggled: false,
+        apex: apexAdapter.getInitialState(),
+        tabs: INITIAL_TABS,
+        currentTab: INITIAL_TABS[0],
+        body: null,
     },
     reducers: {
-        loadCacheSettings : (state,action) => {
-            const { alias,apexFiles } = action.payload;
+        loadCacheSettings: (state, action) => {
+            const { alias, apexFiles } = action.payload;
             const cachedConfig = loadCacheSettings(alias);
-            if(cachedConfig){
-                const { recentPanelToggled,tabs } = cachedConfig; 
-                Object.assign(state,{
+            if (cachedConfig) {
+                const { recentPanelToggled, tabs } = cachedConfig;
+                Object.assign(state, {
                     //body:body || '',
                     recentPanelToggled,
-                    tabs:enrichTabs(tabs || INITIAL_TABS,{apexFiles})
+                    tabs: enrichTabs(tabs || INITIAL_TABS, { apexFiles }),
                 });
             }
-            console.log('#cachedConfig#',cachedConfig);
+            console.log('#cachedConfig#', cachedConfig);
         },
-        saveCacheSettings : (state,action) => {
+        saveCacheSettings: (state, action) => {
             const { alias } = action.payload;
-            if(isNotUndefinedOrNull(alias)){
-                saveCacheSettings(alias,state);
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
             }
         },
-        updateBody : (state, action) => {
-            const { body,isDraft } = action.payload;
+        updateBody: (state, action) => {
+            const { body, isDraft } = action.payload;
             state.body = body;
-            updateCurrentTab(state,{isDraft});
+            updateCurrentTab(state, { isDraft });
         },
-        updateRecentPanel :(state, action) => {
-            const { value,alias } = action.payload;
+        updateRecentPanel: (state, action) => {
+            const { value, alias } = action.payload;
             state.recentPanelToggled = value === true;
-            if(isNotUndefinedOrNull(alias)){
-                saveCacheSettings(alias,state);
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
             }
         },
-        updateFilterDebug :(state, action) => {
-            const { value,alias } = action.payload;
+        updateFilterDebug: (state, action) => {
+            const { value, alias } = action.payload;
             state.isFilterDebugEnabled = value === true;
-            if(isNotUndefinedOrNull(alias)){
-                saveCacheSettings(alias,state);
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
             }
         },
-        updateDebug : (state, action) => {
-            const {key,value,alias} = action.payload;
+        updateDebug: (state, action) => {
+            const { key, value, alias } = action.payload;
             state[key] = value;
-            if(isNotUndefinedOrNull(alias)){
-                saveCacheSettings(alias,state);
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
             }
         },
         clearApexError: (state, action) => {
             const { tabId } = action.payload;
             apexAdapter.upsertOne(state, {
                 id: lowerCaseKey(tabId),
-                error: null
+                error: null,
             });
         },
-        initTabs:(state,action) => {
+        initTabs: (state, action) => {
             const { apexFiles } = action.payload;
-            state.tabs = enrichTabs(state.tabs.map(formatTab),{apexFiles},SELECTORS.apexFiles);
+            state.tabs = enrichTabs(state.tabs.map(formatTab), { apexFiles }, SELECTORS.apexFiles);
             // Set first tab
-            if(state.tabs.length > 0){
+            if (state.tabs.length > 0) {
                 state.currentTab = state.tabs[0];
                 state.currentFileId = state.tabs[0].fileId;
                 state.body = state.tabs[0].body;
             }
         },
-        addTab:(state,action) => {
-            const { apexFiles,tab } = action.payload;
-            const enrichedTab = enrichTab(formatTab(tab),{apexFiles},SELECTORS.apexFiles);
+        addTab: (state, action) => {
+            const { apexFiles, tab } = action.payload;
+            const enrichedTab = enrichTab(formatTab(tab), { apexFiles }, SELECTORS.apexFiles);
             state.tabs.push(enrichedTab);
             // Assign new tab
             state.currentTab = enrichedTab;
             state.currentFileId = enrichedTab.fileId;
             state.body = enrichedTab.body;
         },
-        removeTab:(state,action) => {
-            const { id,alias } = action.payload;
+        removeTab: (state, action) => {
+            const { id, alias } = action.payload;
             state.tabs = state.tabs.filter(x => x.id != id);
             // Assign last tab
-            if(state.tabs.length > 0 && state.currentTab.id == id){
+            if (state.tabs.length > 0 && state.currentTab.id == id) {
                 const lastTab = state.tabs[state.tabs.length - 1];
                 state.currentTab = lastTab;
                 state.body = lastTab.body;
             }
-            if(isNotUndefinedOrNull(alias)){
-                saveCacheSettings(alias,state);
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
             }
             // can't remove the last one !!!
         },
-        selectionTab:(state,action) => {
+        selectionTab: (state, action) => {
             const { id } = action.payload;
             const tab = state.tabs.find(x => x.id == id);
             // Assign new tab
-            if(tab){
+            if (tab) {
                 state.currentTab = tab;
                 state.body = tab.body;
             }
         },
-        linkFileToTab:(state,action) => {
-            const { fileId,alias,apexFiles } = action.payload;
+        linkFileToTab: (state, action) => {
+            const { fileId, alias, apexFiles } = action.payload;
             const currentTabIndex = state.tabs.findIndex(x => x.id == state.currentTab.id);
-            if(currentTabIndex > -1){
+            if (currentTabIndex > -1) {
                 const enrichedTab = enrichTab(
-                    formatTab({...state.tabs[currentTabIndex],fileId}),{apexFiles},SELECTORS.apexFiles
+                    formatTab({ ...state.tabs[currentTabIndex], fileId }),
+                    { apexFiles },
+                    SELECTORS.apexFiles
                 );
-                state.tabs[currentTabIndex] = enrichedTab
+                state.tabs[currentTabIndex] = enrichedTab;
                 state.currentTab = enrichedTab;
-                if(isNotUndefinedOrNull(alias)){
-                    saveCacheSettings(alias,state);
+                if (isNotUndefinedOrNull(alias)) {
+                    saveCacheSettings(alias, state);
                 }
             }
-        }
+        },
     },
-    extraReducers: (builder) => {
+    extraReducers: builder => {
         builder
             .addCase(executeApexAnonymous.pending, (state, action) => {
-                const { tabId,createdDate } = action.meta.arg;
+                const { tabId, createdDate } = action.meta.arg;
                 apexAdapter.upsertOne(state.apex, {
                     id: lowerCaseKey(tabId),
-                    data:null,
+                    data: null,
                     createdDate,
                     isFetching: true,
-                    error: null 
+                    error: null,
                 });
             })
             .addCase(executeApexAnonymous.fulfilled, (state, action) => {
-                const { data,body } = action.payload;
-                const { tabId,createdDate } = action.meta.arg;
+                const { data, body } = action.payload;
+                const { tabId, createdDate } = action.meta.arg;
                 apexAdapter.upsertOne(state.apex, {
                     id: lowerCaseKey(tabId),
                     data,
                     body,
                     isFetching: false,
                     createdDate,
-                    error: null
+                    error: null,
                 });
             })
             .addCase(executeApexAnonymous.rejected, (state, action) => {
@@ -304,11 +326,11 @@ const apexSlice = createSlice({
                 const { tabId } = action.meta.arg;
                 apexAdapter.upsertOne(state.apex, {
                     id: lowerCaseKey(tabId),
-                    isFetching:false,
-                    error
+                    isFetching: false,
+                    error,
                 });
-            })
-    }
+            });
+    },
 });
 
 export const reduxSlice = apexSlice;

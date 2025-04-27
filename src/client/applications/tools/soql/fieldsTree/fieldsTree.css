@@ -2,7 +2,7 @@
     padding-top: 0.2rem;
     padding-bottom: 0.2rem;
 }
-.slds-tree__item button[aria-hidden="true"] {
+.slds-tree__item button[aria-hidden='true'] {
     visibility: hidden;
 }
 .slds-tree__item .slds-text-color_error {

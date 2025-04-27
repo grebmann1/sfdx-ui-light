@@ -1,11 +1,10 @@
-:host{
+:host {
     display: block;
-    --slds-tab-custom-color:#939393;
+    --slds-tab-custom-color: #939393;
 }
 
-
-.slds-tabs_scoped{
-    height:unset;
+.slds-tabs_scoped {
+    height: unset;
 }
 
 .editor-toolkit {
@@ -13,9 +12,9 @@
     z-index: 2;
     right: 10px;
     top: 20px;
-    background:white;
+    background: white;
 }
 
-.highlighted-line{
+.highlighted-line {
     background-color: red;
 }

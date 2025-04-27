@@ -20,13 +20,13 @@
     flex-direction: column;
     height: 100%;
 }
-.slds-tabs_default__item[aria-selected="true"] {
+.slds-tabs_default__item[aria-selected='true'] {
     color: #080707;
 }
-.slds-tabs_default__item[aria-selected="true"] .slds-tabs_default__link {
+.slds-tabs_default__item[aria-selected='true'] .slds-tabs_default__link {
     font-weight: 700;
 }
-.slds-tabs_default__item[aria-selected="true"]:after {
+.slds-tabs_default__item[aria-selected='true']:after {
     background-color: #1589ee;
     height: 0.1875rem;
 }

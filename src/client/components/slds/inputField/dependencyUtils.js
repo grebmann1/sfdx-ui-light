@@ -1,6 +1,4 @@
-import { 
-    FieldTypes as Fields
-} from './fieldUtils';
+import { FieldTypes as Fields } from './fieldUtils';
 
 export function isInDependencyChain(uiField, fields, picklistValues) {
     return (
@@ -52,7 +50,5 @@ function picklistFieldInForm(fieldName, picklistValues) {
 }
 
 function checkboxFieldInForm(fieldName, fields) {
-    return (
-        fields[fieldName] !== undefined && Fields.BOOLEAN === fields[fieldName].dataType
-    );
+    return fields[fieldName] !== undefined && Fields.BOOLEAN === fields[fieldName].dataType;
 }

@@ -2,24 +2,34 @@
     <div class="slds-flex-column slds-full-height slds-light-bg">
         <div>
             <div class="slds-grid"></div>
-            <lightning-tabset variant="scoped" class="slds-without-tab" active-tab-value={viewerTab}>
-                <lightning-tab label="Salesforce" value="Default" onactive={handleSelectTab}></lightning-tab>
+            <lightning-tabset
+                variant="scoped"
+                class="slds-without-tab"
+                active-tab-value={viewerTab}>
+                <lightning-tab
+                    label="Salesforce"
+                    value="Default"
+                    onactive={handleSelectTab}></lightning-tab>
                 <!--<lightning-tab label="Default" value="Custom"  onactive={handleSelectTab}></lightning-tab>-->
                 <lightning-tab label="JSON" value="JSON" onactive={handleSelectTab}></lightning-tab>
             </lightning-tabset>
         </div>
-    
+
         <div class={defaultContainerClass}>
-            <slds-code-block class="slds-full-height" code-block={content} language="json" title="Event Content"></slds-code-block>
+            <slds-code-block
+                class="slds-full-height"
+                code-block={content}
+                language="json"
+                title="Event Content"></slds-code-block>
         </div>
-    
+
         <div class={jsonContainerClass}>
-            <editor-default lwc:ref="editor" 
+            <editor-default
+                lwc:ref="editor"
                 class="slds-full-height"
                 model={currentModel}
                 onmonacoloaded={handleMonacoLoaded}
-                is-read-only
-            ></editor-default>
+                is-read-only></editor-default>
             <!--
             <slds-code-block 
                 code-block={content} 
@@ -27,6 +37,6 @@
                 title="Event Content"
             ></slds-code-block>
             -->
-        </div> 
+        </div>
     </div>
 </template>

@@ -38,7 +38,7 @@ td,
     position: relative;
 }
 .slds-cell-fixed::before {
-    content: "";
+    content: '';
     border-left: unset;
     position: absolute;
     height: 2rem;
@@ -76,10 +76,10 @@ td,
     white-space: normal;
 }
 
-.slds-is-sortable__icon{
+.slds-is-sortable__icon {
     display: inline-block;
 }
 
-.tabulator-col-sorter-element:hover .slds-is-sortable__icon{
+.tabulator-col-sorter-element:hover .slds-is-sortable__icon {
     fill: #0176d3;
 }

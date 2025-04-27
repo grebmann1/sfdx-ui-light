@@ -1,13 +1,15 @@
 <template>
     <lightning-modal-header label={title}></lightning-modal-header>
-    <lightning-modal-body lwc:ref="body" class="body-full-height"> 
+    <lightning-modal-body lwc:ref="body" class="body-full-height">
         <!-- Body - START -->
-        <div class="slds-grid slds-wrap slds-is-relative" style="height: 100%;display: flex;flex-direction: column;">
-            <editor-default lwc:ref="editor" 
+        <div
+            class="slds-grid slds-wrap slds-is-relative"
+            style="height: 100%; display: flex; flex-direction: column">
+            <editor-default
+                lwc:ref="editor"
                 class="slds-full-height"
                 model={currentModel}
-                onmonacoloaded={handleMonacoLoaded}
-            ></editor-default>
+                onmonacoloaded={handleMonacoLoaded}></editor-default>
         </div>
         <!-- Body - END-->
     </lightning-modal-body>
@@ -17,14 +19,12 @@
             disabled={saveInProcess}
             variant="neutral"
             label="Cancel"
-            onclick={handleCloseClick}
-        ></lightning-button>
+            onclick={handleCloseClick}></lightning-button>
         <lightning-button
             class="slds-button"
             disabled={saveInProcess}
             variant="brand"
             label="Save"
-            onclick={handleSaveClick}
-        ></lightning-button>
-      </lightning-modal-footer>
+            onclick={handleSaveClick}></lightning-button>
+    </lightning-modal-footer>
 </template>

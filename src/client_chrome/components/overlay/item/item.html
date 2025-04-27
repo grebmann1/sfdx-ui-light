@@ -1,27 +1,31 @@
 <template>
     <template lwc:if={isDisplayed}>
         <li class="slds-custom-search-item slds-listbox__item" onclick={handleItemClick}>
-            <div class="list-item slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta">
-            <span class="slds-media__figure slds-listbox__option-icon">
-                <!---->
-                <!---->
-                <!---->
-                <lightning-icon icon-name={icon} class={iconExtraClass}></lightning-icon>
-                <!---->
-                <!---->
-            </span>
+            <div
+                class="list-item slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta">
+                <span class="slds-media__figure slds-listbox__option-icon">
+                    <!---->
+                    <!---->
+                    <!---->
+                    <lightning-icon icon-name={icon} class={iconExtraClass}></lightning-icon>
+                    <!---->
+                    <!---->
+                </span>
                 <span class="slds-media__body">
-                <span class="slds-listbox__option-text slds-listbox__option-text_entity">
-                    <lightning-formatted-rich-text value={formattedRichTextTitle} disable-linkify></lightning-formatted-rich-text>
+                    <span class="slds-listbox__option-text slds-listbox__option-text_entity">
+                        <lightning-formatted-rich-text
+                            value={formattedRichTextTitle}
+                            disable-linkify></lightning-formatted-rich-text>
+                    </span>
+                    <span
+                        class="slds-listbox__option-meta slds-listbox__option-meta_entity slds-truncate">
+                        <lightning-formatted-rich-text
+                            value={description}
+                            disable-linkify></lightning-formatted-rich-text>
+                    </span>
                 </span>
-                <span class="slds-listbox__option-meta slds-listbox__option-meta_entity slds-truncate">
-                    <lightning-formatted-rich-text value={description} disable-linkify></lightning-formatted-rich-text>
-                </span>
-            </span>
             </div>
         </li>
     </template>
-    <template lwc:else>
-
-    </template>
+    <template lwc:else></template>
 </template>

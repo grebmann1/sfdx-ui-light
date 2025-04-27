@@ -1,4 +1,4 @@
-function _stripNamespace(apiName,namespace) {
+function _stripNamespace(apiName, namespace) {
     if (!apiName) return null;
     if (!namespace) return apiName;
     const escapedNamespace = escapeRegExp(namespace);
@@ -10,11 +10,11 @@ function _stripNamespace(apiName,namespace) {
     return apiName;
 }
 
-export function stripNamespace(apiName,namespace) {
+export function stripNamespace(apiName, namespace) {
     if (!apiName) return null;
     if (!namespace) return apiName;
     if (Array.isArray(apiName)) {
-        return apiName.map(n => _stripNamespace(n,namespace));
+        return apiName.map(n => _stripNamespace(n, namespace));
     }
     return apiName
         .split('.')
@@ -22,8 +22,7 @@ export function stripNamespace(apiName,namespace) {
         .join('.');
 }
 
-
-function _fullApiName(apiName,namespace) {
+function _fullApiName(apiName, namespace) {
     if (!apiName) return null;
     if (!namespace) return apiName;
     if (MANAGED_NAME_PATTERN.test(apiName)) {
@@ -32,11 +31,11 @@ function _fullApiName(apiName,namespace) {
     return apiName;
 }
 
-export function fullApiName(apiName,namespace) {
+export function fullApiName(apiName, namespace) {
     if (!apiName) return null;
     if (!namespace) return apiName;
     if (Array.isArray(apiName)) {
-        return apiName.map(n => _fullApiName(n,namespace));
+        return apiName.map(n => _fullApiName(n, namespace));
     }
     return apiName
         .split('.')
@@ -45,5 +44,5 @@ export function fullApiName(apiName,namespace) {
 }
 
 export function isSame(apiName1, apiName2) {
-    return fullApiName(apiName1,null) === fullApiName(apiName2,null);
+    return fullApiName(apiName1, null) === fullApiName(apiName2, null);
 }

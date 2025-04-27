@@ -8,7 +8,6 @@ import { normalizeBoolean } from 'shared/utils';
 export default class sldsTab extends LightningElement {
     @track _loadContent = false;
 
-    
     @api isAddTabEnabled = false;
 
     connectedCallback() {
@@ -20,20 +19,18 @@ export default class sldsTab extends LightningElement {
                 bubbles: true,
                 composed: true,
                 detail: {
-                    setDeRegistrationCallback: (deRegistrationCallback) => {
+                    setDeRegistrationCallback: deRegistrationCallback => {
                         this._deRegistrationCallback = deRegistrationCallback;
-                    }
-                }
+                    },
+                },
             })
         );
     }
 
-    
-
     @api
     loadContent() {
         this._loadContent = true;
-        
+
         this.dispatchEvent(new CustomEvent('active'));
     }
 
@@ -100,7 +97,9 @@ export default class sldsTab extends LightningElement {
     }
 
     @api get badgeColor() {
-        return 'background-color:' + this._badgeBackgroundColor + ';color:' + this._badgeTextColor + '';
+        return (
+            'background-color:' + this._badgeBackgroundColor + ';color:' + this._badgeTextColor + ''
+        );
     }
 
     set badgeTextColor(value) {
@@ -185,7 +184,7 @@ export default class sldsTab extends LightningElement {
                 new CustomEvent('privatetabdatachange', {
                     cancelable: true,
                     bubbles: true,
-                    composed: true
+                    composed: true,
                 })
             );
         }

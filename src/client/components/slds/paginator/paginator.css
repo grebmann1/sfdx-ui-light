@@ -5,7 +5,7 @@
     height: 1.4rem;
 }
 .customSelect label {
-    margin-top: .1rem;
+    margin-top: 0.1rem;
 }
 .customSelect .slds-select_container::before {
     border-bottom: 0;
@@ -16,5 +16,5 @@
     text-align: center;
     border: 1px solid #dddbda;
     border-radius: 3px;
-    background-color:#fff;
+    background-color: #fff;
 }

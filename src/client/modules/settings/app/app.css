@@ -1,6 +1,5 @@
-
 .slds-background-white {
-    background-color: white;;
+    background-color: white;
 }
 
 .slds-popup-container {
@@ -15,7 +14,7 @@
     height: 100%;
 }
 
-.description{
+.description {
     font-weight: 300;
-    font-size: .8125rem;
+    font-size: 0.8125rem;
 }

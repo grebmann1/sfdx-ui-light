@@ -1,17 +1,13 @@
-
 import { LightningElement, api } from 'lwc';
 
 export default class SldsStencil extends LightningElement {
-
     @api height = 10;
     @api width;
     @api circle = false;
     @api count = 1;
     @api weightVariant = 'medium';
 
-
     /** Methods **/
-
 
     /** Getters **/
 

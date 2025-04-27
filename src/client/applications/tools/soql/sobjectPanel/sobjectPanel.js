@@ -1,14 +1,13 @@
 import { wire, api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 
-import { store,connectStore,SELECTORS,DESCRIBE,UI } from 'core/store';
+import { store, connectStore, SELECTORS, DESCRIBE, UI } from 'core/store';
 
 import Toast from 'lightning/toast';
 
-const PAGE_LIST_SIZE    = 70;
+const PAGE_LIST_SIZE = 70;
 
 export default class SobjectsPanel extends ToolkitElement {
-    
     keyword = '';
     sobjects;
     isLoading = false;
@@ -18,17 +17,17 @@ export default class SobjectsPanel extends ToolkitElement {
     pageNumber = 1;
 
     @wire(connectStore, { store })
-    storeChange({ describe,application }) {
+    storeChange({ describe, application }) {
         const isCurrentApp = this.verifyIsActive(application.currentApplication);
-        if(!isCurrentApp) return;
+        if (!isCurrentApp) return;
 
-        if(describe){
+        if (describe) {
             this.isLoading = describe.isFetching;
             if (describe.isFetching == false && describe.error == null) {
                 this._rawSObjects = Object.values(describe.nameMap).map(sobject => {
                     return {
                         ...sobject,
-                        itemLabel: `${sobject.name} / ${sobject.label}`
+                        itemLabel: `${sobject.name} / ${sobject.label}`,
                     };
                 });
                 //this.sobjects = this._rawSObjects;
@@ -38,18 +37,15 @@ export default class SobjectsPanel extends ToolkitElement {
                 console.error(describe.error);
                 Toast.show({
                     message: this.i18n.SOBJECTS_PANEL_FAILED_FETCH_SOBJECTS,
-                    errors: describe.error
+                    errors: describe.error,
                 });
             }
         }
-        
     }
-
-    
 
     filterSObjects(keyword) {
         if (keyword) {
-            const escapedKeyword = keyword;//escapeRegExp(keyword);
+            const escapedKeyword = keyword; //escapeRegExp(keyword);
             const keywordPattern = new RegExp(escapedKeyword, 'i');
             this.sobjects = this._rawSObjects.filter(sobject => {
                 return keywordPattern.test(`${sobject.name} ${sobject.label}`);
@@ -60,14 +56,11 @@ export default class SobjectsPanel extends ToolkitElement {
         this.pageNumber = 1; // reset
     }
 
-    
-
-
     /** Events **/
 
     selectSObject(event) {
         const sObjectName = event.target.dataset.name;
-        store.dispatch(UI.reduxSlice.actions.selectSObject({sObjectName}));
+        store.dispatch(UI.reduxSlice.actions.selectSObject({ sObjectName }));
     }
 
     setKeyword(event) {
@@ -101,8 +94,8 @@ export default class SobjectsPanel extends ToolkitElement {
         return this.keyword !== '';
     }
 
-    get virtualList(){
+    get virtualList() {
         // Best UX Improvement !!!!
-        return this.sobjects.slice(0,this.pageNumber * PAGE_LIST_SIZE);
+        return this.sobjects.slice(0, this.pageNumber * PAGE_LIST_SIZE);
     }
 }

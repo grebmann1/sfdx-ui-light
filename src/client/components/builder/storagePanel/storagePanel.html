@@ -5,17 +5,21 @@
                 <div class="slds-scrollable slds-p-top_small">
                     <template lwc:if={hasRecentItems}>
                         <template for:each={recentItems} for:item="item">
-                            <div key={item.id} class="slds-p-around_x-small slds-border_bottom recent-item truncate-item" data-id={item.id} data-category="recent"
-                                title={item.content} onclick={selectItem}
-                            > 
-                                {item.content} 
+                            <div
+                                key={item.id}
+                                class="slds-p-around_x-small slds-border_bottom recent-item truncate-item"
+                                data-id={item.id}
+                                data-category="recent"
+                                title={item.content}
+                                onclick={selectItem}>
+                                {item.content}
                             </div>
                         </template>
                     </template>
                     <template lwc:else>
                         <illustration-research sub-title="No Recent Item"></illustration-research>
                     </template>
-                </div>        
+                </div>
             </lightning-tab>
             <template lwc:if={isSavedItemsDisplayed}>
                 <lightning-tab label={savedTitle}>
@@ -24,30 +28,50 @@
                             <ol class="slds-list_vertical slds-list_vertical-space">
                                 <template for:each={formattedSavedItems} for:item="item">
                                     <li class="slds-item slds-hint-parent saved-item" key={item.id}>
-                                        <div class="slds-filters__item slds-grid slds-grid_vertical-align-center">
-                                            <button class="slds-button_reset slds-grow slds-has-blur-focus slds-has-flexi-truncate" data-id={item.id} data-category="saved" onclick={selectItem}>
+                                        <div
+                                            class="slds-filters__item slds-grid slds-grid_vertical-align-center">
+                                            <button
+                                                class="slds-button_reset slds-grow slds-has-blur-focus slds-has-flexi-truncate"
+                                                data-id={item.id}
+                                                data-category="saved"
+                                                onclick={selectItem}>
                                                 <span class="slds-show slds-text-heading_small">
-                                                    <lightning-icon icon-name={item.iconName} size="x-small" class="slds-p-right_x-small"></lightning-icon>
+                                                    <lightning-icon
+                                                        icon-name={item.iconName}
+                                                        size="x-small"
+                                                        class="slds-p-right_x-small"></lightning-icon>
                                                     {item.name}
                                                 </span>
-                                                <span class="slds-show slds-truncate"> {item.content}</span>
+                                                <span class="slds-show slds-truncate">
+                                                    {item.content}
+                                                </span>
                                             </button>
-                                            <button class="slds-button slds-button_icon slds-button_icon slds-button_icon-small" data-id={item.id} data-category="saved" onclick={removeItem}>
-                                                <svg class="slds-button__icon slds-button__icon_hint" aria-hidden="true">
-                                                  <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#delete"></use>
+                                            <button
+                                                class="slds-button slds-button_icon slds-button_icon slds-button_icon-small"
+                                                data-id={item.id}
+                                                data-category="saved"
+                                                onclick={removeItem}>
+                                                <svg
+                                                    class="slds-button__icon slds-button__icon_hint"
+                                                    aria-hidden="true">
+                                                    <use
+                                                        xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#delete"></use>
                                                 </svg>
-                                                <span class="slds-assistive-text">Remove filter: Created Date equals THIS WEEK</span>
+                                                <span class="slds-assistive-text">
+                                                    Remove filter: Created Date equals THIS WEEK
+                                                </span>
                                             </button>
                                         </div>
-                                    </li>             
+                                    </li>
                                 </template>
                             </ol>
                         </template>
                         <template lwc:else>
-                            <illustration-research title="" sub-title="No Saved Item"></illustration-research>
+                            <illustration-research
+                                title=""
+                                sub-title="No Saved Item"></illustration-research>
                         </template>
-                        
-                    </div>        
+                    </div>
                 </lightning-tab>
             </template>
         </lightning-tabset>

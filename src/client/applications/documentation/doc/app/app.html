@@ -13,7 +13,11 @@
                                 <div class="slds-page-header__name-title">
                                     <h1>
                                         <span>Documentation Explorer</span>
-                                        <span class="slds-page-header__title slds-truncate" title={documentationTitle}>{documentationTitle}</span>
+                                        <span
+                                            class="slds-page-header__title slds-truncate"
+                                            title={documentationTitle}>
+                                            {documentationTitle}
+                                        </span>
                                     </h1>
                                 </div>
                             </div>
@@ -25,9 +29,17 @@
                         <div class="slds-page-header__control">
                             <!-- actions -->
                             <lightning-button-group>
-                                <lightning-button-icon icon-name="utility:filterList" disabled={isLoading} onclick={filtering_handleClick} variant={filtering_variant}></lightning-button-icon>
+                                <lightning-button-icon
+                                    icon-name="utility:filterList"
+                                    disabled={isLoading}
+                                    onclick={filtering_handleClick}
+                                    variant={filtering_variant}></lightning-button-icon>
                                 <template lwc:if={isResponsive}>
-                                    <lightning-button-icon icon-name="utility:rows" disabled={isLoading} onclick={menu_handleClick} variant={menu_variant}></lightning-button-icon>
+                                    <lightning-button-icon
+                                        icon-name="utility:rows"
+                                        disabled={isLoading}
+                                        onclick={menu_handleClick}
+                                        variant={menu_variant}></lightning-button-icon>
                                 </template>
                             </lightning-button-group>
                         </div>
@@ -36,23 +48,30 @@
             </div>
             <div class={filterContainerClass}>
                 <div class="slds-page-header__col-details">
-                    <div class="slds-page-header__detail-row slds-is-relative" style="display:block; ">
+                    <div
+                        class="slds-page-header__detail-row slds-is-relative"
+                        style="display: block">
                         <!-- Display Info -->
-                        <h2>Multiple <span class="slds-text-title_bold">Clouds</span> are available in the "Filters" <a href="#" onclick={openFilter}>See all clouds available</a></h2>
-                        <lightning-pill-container 
+                        <h2>
+                            Multiple
+                            <span class="slds-text-title_bold">Clouds</span>
+                            are available in the "Filters"
+                            <a href="#" onclick={openFilter}>See all clouds available</a>
+                        </h2>
+                        <lightning-pill-container
                             items={pillItems}
-                            onitemremove={handleItemRemove}
-                        ></lightning-pill-container>
+                            onitemremove={handleItemRemove}></lightning-pill-container>
                     </div>
                 </div>
             </div>
         </div>
         <div class="slds-full-height slds-overflow-hidden slds-flex-row">
             <article class={articleContainerClass}>
-                <div class="full-page "> <!-- slds-card__body slds-card__body_inner -->
+                <div class="full-page">
+                    <!-- slds-card__body slds-card__body_inner -->
                     <div class="slds-full-height slds-grid slds-wrap">
-                        <div class={menuContainerClass}> 
-                            <slds-menu 
+                        <div class={menuContainerClass}>
+                            <slds-menu
                                 class="slds-flex-column full-page-body min-height-200"
                                 items={filteredList}
                                 title="SObjects"
@@ -61,15 +80,13 @@
                                 onmenuselection={handleItemSelection}
                                 onback={handleMenuBack}
                                 is-loading={isMenuLoading}
-                                hide-search
-                            >
+                                hide-search>
                                 <template lwc:if={isNotResponsive}>
-                                    <lightning-input 
-                                            class="slds-m-bottom_large slds-m-right_small" 
-                                            type="search"
-                                            label="Search" 
-                                            onchange={handleFilter}
-                                    ></lightning-input>
+                                    <lightning-input
+                                        class="slds-m-bottom_large slds-m-right_small"
+                                        type="search"
+                                        label="Search"
+                                        onchange={handleFilter}></lightning-input>
                                 </template>
                             </slds-menu>
                         </div>
@@ -78,30 +95,33 @@
                         </template>
                         <!-- Container -->
                         <div class={documentationContainerClass}>
-                            <div class="min-height-200"> <!-- slds-scrollable_y -->
-                                
+                            <div class="min-height-200">
+                                <!-- slds-scrollable_y -->
 
-                                
                                 <template lwc:if={isNoRecord}>
-                                    <illustration-empty title="No record" sub-title="There is no data with these parameters"></illustration-empty>
+                                    <illustration-empty
+                                        title="No record"
+                                        sub-title="There is no data with these parameters"></illustration-empty>
                                 </template>
                                 <template lwc:else>
                                     <div class="slds-grid slds-m-vertical_small">
                                         <div class="slds-col_bump-right"></div>
                                         <div>
-                                            <lightning-input 
-                                                type="toggle" 
-                                                label="Display Diagram" 
-                                                name="displayDiagram" 
+                                            <lightning-input
+                                                type="toggle"
+                                                label="Display Diagram"
+                                                name="displayDiagram"
                                                 message-toggle-active=""
                                                 message-toggle-inactive=""
                                                 checked={isDiagramDisplayed}
-                                                onchange={handleDisplayDiagram}
-                                            ></lightning-input>
+                                                onchange={handleDisplayDiagram}></lightning-input>
                                         </div>
                                     </div>
-                                    <div class={mermaidClass} lwc:ref="mermaid"  lwc:dom="manual"></div>
-                                    <div class="doc"     lwc:ref="container" lwc:dom="manual"></div>
+                                    <div
+                                        class={mermaidClass}
+                                        lwc:ref="mermaid"
+                                        lwc:dom="manual"></div>
+                                    <div class="doc" lwc:ref="container" lwc:dom="manual"></div>
                                 </template>
                             </div>
                         </div>
@@ -109,37 +129,36 @@
                 </div>
             </article>
             <!-- Panel -->
-            <slds-vertical-panel size={filterPanelSize} is-open={displayFilter} onclose={handleCloseVerticalPanel}>
+            <slds-vertical-panel
+                size={filterPanelSize}
+                is-open={displayFilter}
+                onclose={handleCloseVerticalPanel}>
                 <div class="slds-filters">
                     <ol class="slds-list_vertical slds-list_vertical-space">
                         <!-- FILTER -->
                         <li class="slds-item">
-                            <lightning-input 
-                                type="toggle" 
-                                label="Filter Fields" 
-                                name="filterFields" 
+                            <lightning-input
+                                type="toggle"
+                                label="Filter Fields"
+                                name="filterFields"
                                 message-toggle-active=""
                                 message-toggle-inactive=""
-                                onchange={handleToggleChange}
-                            ></lightning-input>
+                                onchange={handleToggleChange}></lightning-input>
                         </li>
                         <li class="slds-item">
-                            <lightning-checkbox-group name="clouds"
-                                    label="Filters"
-                                    options={cloud_options}
-                                    value={cloud_value}
-                                    onchange={cloud_handleChange}
-                            ></lightning-checkbox-group>
+                            <lightning-checkbox-group
+                                name="clouds"
+                                label="Filters"
+                                options={cloud_options}
+                                value={cloud_value}
+                                onchange={cloud_handleChange}></lightning-checkbox-group>
                         </li>
                     </ol>
                 </div>
-                
             </slds-vertical-panel>
         </div>
-        
     </div>
-    
-    
+
     <!-- Footer Information -->
     <template lwc:if={isFooterDisplayed}>
         <div class="slds-utility-bar_container">

@@ -3,12 +3,11 @@ import hotkeysManager from './hotkeysmanager';
 import { LABELS } from './editorLabels';
 
 const BUILDER_MODE = {
-    EDIT_MODE:'EDIT_MODE',
-    READ_MODE:'READ_MODE'
-}
+    EDIT_MODE: 'EDIT_MODE',
+    READ_MODE: 'READ_MODE',
+};
 
 export default class Editor extends LightningElement {
-
     @api isLoading = false;
     @api isLeftPanelToggled = false;
     @api isRightPanelToggled = false;
@@ -19,7 +18,6 @@ export default class Editor extends LightningElement {
     @api title;
     @api subtitle;
 
-
     labels = LABELS;
     editorId;
 
@@ -27,38 +25,37 @@ export default class Editor extends LightningElement {
         this.enableShortcuts();
     }
 
-    disconnectedCallback(){
+    disconnectedCallback() {
         this.disableShortcuts();
     }
 
     /** Methods */
 
     enableShortcuts = () => {
-        hotkeysManager.subscribe('ctrl+s,command+s',this.executeActionSave);
-        hotkeysManager.subscribe('ctrl+enter,command+enter',this.executeActionMethod);
-    }
+        hotkeysManager.subscribe('ctrl+s,command+s', this.executeActionSave);
+        hotkeysManager.subscribe('ctrl+enter,command+enter', this.executeActionMethod);
+    };
 
     disableShortcuts = () => {
-        hotkeysManager.unsubscribe('ctrl+s,command+s',this.executeActionSave);
-        hotkeysManager.unsubscribe('ctrl+enter,command+enter',this.executeActionMethod);
-    }
+        hotkeysManager.unsubscribe('ctrl+s,command+s', this.executeActionSave);
+        hotkeysManager.unsubscribe('ctrl+enter,command+enter', this.executeActionMethod);
+    };
 
-    executeActionSave = (e) => {
+    executeActionSave = e => {
         e.preventDefault();
         e.stopPropagation();
-        if(this.isEditorVisible){
-            this.dispatchEvent(new CustomEvent("executesave", {bubbles: true,composed:true }))
+        if (this.isEditorVisible) {
+            this.dispatchEvent(new CustomEvent('executesave', { bubbles: true, composed: true }));
         }
-    }
+    };
 
-    executeActionMethod = (e) => {
+    executeActionMethod = e => {
         e.preventDefault();
         e.stopPropagation();
-        if(this.isEditorVisible){
-            this.dispatchEvent(new CustomEvent("executeaction", {bubbles: true,composed:true }))
+        if (this.isEditorVisible) {
+            this.dispatchEvent(new CustomEvent('executeaction', { bubbles: true, composed: true }));
         }
-    }
-
+    };
 
     /** Getters */
 
@@ -68,9 +65,7 @@ export default class Editor extends LightningElement {
     }
 
     get showSpinner() {
-        return (
-            this.isLoading
-        );
+        return this.isLoading;
     }
 
     get spinnerAlternativeText() {
@@ -82,20 +77,18 @@ export default class Editor extends LightningElement {
     }
 
     get showLeftPanelClass() {
-        return this.isLeftPanelToggled?'slds-show':'slds-hide'
+        return this.isLeftPanelToggled ? 'slds-show' : 'slds-hide';
     }
 
     get showRightPanel() {
         return this.isRightPanelToggled;
     }
 
-    get isHeaderDisplayed(){
+    get isHeaderDisplayed() {
         return !this.isHeaderHidden;
     }
 
-    get isToolbarDisplayed(){
+    get isToolbarDisplayed() {
         return !this.isToolbarHidden;
     }
-
 }
-

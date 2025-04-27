@@ -4,22 +4,24 @@
             <header class="slds-media slds-media_center slds-has-flexi-truncate">
                 <div class="slds-media__body">
                     <h2 class="slds-card__header-title">
-                        <a href="#" class="slds-card__header-link slds-truncate" title="Code &amp; Configuration Overview">
+                        <a
+                            href="#"
+                            class="slds-card__header-link slds-truncate"
+                            title="Code &amp; Configuration Overview">
                             <span>Code &amp; Configuration Overview</span>
                         </a>
                     </h2>
                 </div>
                 <div class="slds-no-flex">
                     <lightning-combobox
-                            label="Namespaces"
-                            dropdown-alignment="right"
-                            value={namespaceFiltering_value}
-                            placeholder="Select Namespace filter"
-                            disabled={isLoading}
-                            options={namespaceFiltering_options}
-                            onchange={namespaceFiltering_handleChange}
-                    ></lightning-combobox>
-                </div>                    
+                        label="Namespaces"
+                        dropdown-alignment="right"
+                        value={namespaceFiltering_value}
+                        placeholder="Select Namespace filter"
+                        disabled={isLoading}
+                        options={namespaceFiltering_options}
+                        onchange={namespaceFiltering_handleChange}></lightning-combobox>
+                </div>
             </header>
         </div>
         <template lwc:if={isDataAvailable}>
@@ -27,61 +29,53 @@
                 <!-- Overview -->
                 <div class="slds-grid slds-wrap slds-gutters">
                     <div class="slds-col slds-grow-none slds-m-top_x-small min-width-150">
-                        <dashboard-basic-stats 
-                            title="Namespaces" 
+                        <dashboard-basic-stats
+                            title="Namespaces"
                             value={total_namespace}
-                            description="Including all packages"
-                        ></dashboard-basic-stats>
+                            description="Including all packages"></dashboard-basic-stats>
                     </div>
                     <div class="slds-col slds-grow-none slds-m-top_x-small min-width-150">
-                        <dashboard-basic-stats 
-                            title="Apex Classes" 
-                            value={data.apex.records.length} 
+                        <dashboard-basic-stats
+                            title="Apex Classes"
+                            value={data.apex.records.length}
                             sub-value={apex_totalApexClassesInMB}
-                            description="All apex classes"
-                        ></dashboard-basic-stats>
+                            description="All apex classes"></dashboard-basic-stats>
                     </div>
                     <div class="slds-col slds-grow-none slds-m-top_x-small min-width-150">
-                        <dashboard-basic-stats 
-                            title="Triggers" 
+                        <dashboard-basic-stats
+                            title="Triggers"
                             value={data.trigger.records.length}
-                            description="All Triggers"
-                        ></dashboard-basic-stats>
+                            description="All Triggers"></dashboard-basic-stats>
                     </div>
                     <div class="slds-col slds-grow-none slds-m-top_x-small min-width-150">
-                        <dashboard-basic-stats 
-                            title="Visualforce Pages" 
+                        <dashboard-basic-stats
+                            title="Visualforce Pages"
                             value={data.visualforcePage.records.length}
-                            description="All Visualforce Pages"
-                        ></dashboard-basic-stats>
+                            description="All Visualforce Pages"></dashboard-basic-stats>
                     </div>
                     <div class="slds-col slds-grow-none slds-m-top_x-small min-width-150">
-                        <dashboard-basic-stats 
-                            title="Visualforce Components" 
+                        <dashboard-basic-stats
+                            title="Visualforce Components"
                             value={data.visualforceComponent.records.length}
-                            description="All Visualforce Comp."
-                        ></dashboard-basic-stats>
+                            description="All Visualforce Comp."></dashboard-basic-stats>
                     </div>
                     <div class="slds-col slds-grow-none slds-m-top_x-small min-width-150">
-                        <dashboard-basic-stats 
-                            title="LWC" 
+                        <dashboard-basic-stats
+                            title="LWC"
                             value={data.lwc.records.length}
-                            description="All LWC"
-                        ></dashboard-basic-stats>
+                            description="All LWC"></dashboard-basic-stats>
                     </div>
                     <div class="slds-col slds-grow-none slds-m-top_x-small min-width-150">
-                        <dashboard-basic-stats 
-                            title="Aura" 
+                        <dashboard-basic-stats
+                            title="Aura"
                             value={data.aura.records.length}
-                            description="All Aura comp."
-                        ></dashboard-basic-stats>
+                            description="All Aura comp."></dashboard-basic-stats>
                     </div>
                     <div class="slds-col slds-grow-none slds-m-top_x-small min-width-150">
-                        <dashboard-basic-stats 
-                            title="Flow" 
+                        <dashboard-basic-stats
+                            title="Flow"
                             value={data.flow.records.length}
-                            description="All Flow"
-                        ></dashboard-basic-stats>
+                            description="All Flow"></dashboard-basic-stats>
                     </div>
                 </div>
                 <lightning-tabset>
@@ -89,128 +83,121 @@
                         <div class="slds-grid slds-wrap slds-gutters">
                             <!-- API Versions -->
                             <div class="slds-col slds-m-top_x-small slds-grow-none min-width-300">
-                                <!--<dashboard-basic-stats title="API Versions" value={apex_totalApiVersions}></dashboard-basic-stats>--> 
-                                <dashboard-horizontal-rank 
-                                    mark={data.apex.totalApiVersions} 
-                                    title="API Versions" 
-                                    sub-title="Total versions" 
-                                    description={data.apex.totalApiVersionsMarkDescription} 
-                                    current-step={data.apex.totalApiVersionsStepFormatted} 
+                                <!--<dashboard-basic-stats title="API Versions" value={apex_totalApiVersions}></dashboard-basic-stats>-->
+                                <dashboard-horizontal-rank
+                                    mark={data.apex.totalApiVersions}
+                                    title="API Versions"
+                                    sub-title="Total versions"
+                                    description={data.apex.totalApiVersionsMarkDescription}
+                                    current-step={data.apex.totalApiVersionsStepFormatted}
                                     is-light
-                                    is-dark-theme
-                                ></dashboard-horizontal-rank>
+                                    is-dark-theme></dashboard-horizontal-rank>
                             </div>
                             <!-- Code Coverage -->
                             <div class="slds-col slds-m-top_x-small slds-grow-none min-width-300">
-                                <dashboard-horizontal-rank 
-                                    mark={data.apexCodeCoverage.coveragePercentageFormatted} 
-                                    title="Code Coverage" 
-                                    sub-title="All Namespaces" 
-                                    description={data.apexCodeCoverage.coverageMarkDescription} 
-                                    current-step={data.apexCodeCoverage.coverageStepFormatted} 
+                                <dashboard-horizontal-rank
+                                    mark={data.apexCodeCoverage.coveragePercentageFormatted}
+                                    title="Code Coverage"
+                                    sub-title="All Namespaces"
+                                    description={data.apexCodeCoverage.coverageMarkDescription}
+                                    current-step={data.apexCodeCoverage.coverageStepFormatted}
                                     is-light
-                                    is-dark-theme
-                                ></dashboard-horizontal-rank>
+                                    is-dark-theme></dashboard-horizontal-rank>
                             </div>
                         </div>
                     </lightning-tab>
                     <lightning-tab label="Trigger">
                         <div class="slds-grid slds-wrap slds-gutters">
                             <div class="slds-col slds-grow-none min-width-300 slds-m-top_x-small">
-                                <dashboard-horizontal-rank 
-                                    mark={data.trigger.totalApiVersions} 
-                                    title="API Versions" 
-                                    sub-title="Total versions" 
-                                    description={data.trigger.totalApiVersionsMarkDescription} 
-                                    current-step={data.trigger.totalApiVersionsStepFormatted} 
+                                <dashboard-horizontal-rank
+                                    mark={data.trigger.totalApiVersions}
+                                    title="API Versions"
+                                    sub-title="Total versions"
+                                    description={data.trigger.totalApiVersionsMarkDescription}
+                                    current-step={data.trigger.totalApiVersionsStepFormatted}
                                     is-light
-                                    is-dark-theme
-                                ></dashboard-horizontal-rank>
+                                    is-dark-theme></dashboard-horizontal-rank>
                             </div>
                         </div>
                     </lightning-tab>
                     <lightning-tab label="VF Page">
                         <div class="slds-grid slds-wrap slds-gutters">
                             <div class="slds-col slds-grow-none min-width-300 slds-m-top_x-small">
-                                <dashboard-horizontal-rank 
-                                    mark={data.visualforcePage.totalApiVersions} 
-                                    title="API Versions" 
-                                    sub-title="Total versions" 
-                                    description={data.visualforcePage.totalApiVersionsMarkDescription} 
-                                    current-step={data.visualforcePage.totalApiVersionsStepFormatted} 
+                                <dashboard-horizontal-rank
+                                    mark={data.visualforcePage.totalApiVersions}
+                                    title="API Versions"
+                                    sub-title="Total versions"
+                                    description={data.visualforcePage.totalApiVersionsMarkDescription}
+                                    current-step={data.visualforcePage.totalApiVersionsStepFormatted}
                                     is-light
-                                    is-dark-theme
-                                ></dashboard-horizontal-rank>
+                                    is-dark-theme></dashboard-horizontal-rank>
                             </div>
                         </div>
                     </lightning-tab>
                     <lightning-tab label="VF Components">
                         <div class="slds-grid slds-wrap slds-gutters">
                             <div class="slds-col slds-grow-none min-width-300 slds-m-top_x-small">
-                                <dashboard-horizontal-rank 
-                                    mark={data.visualforceComponent.totalApiVersions} 
-                                    title="API Versions" 
-                                    sub-title="Total versions" 
-                                    description={data.visualforceComponent.totalApiVersionsMarkDescription} 
-                                    current-step={data.visualforceComponent.totalApiVersionsStepFormatted} 
+                                <dashboard-horizontal-rank
+                                    mark={data.visualforceComponent.totalApiVersions}
+                                    title="API Versions"
+                                    sub-title="Total versions"
+                                    description={data.visualforceComponent.totalApiVersionsMarkDescription}
+                                    current-step={data.visualforceComponent.totalApiVersionsStepFormatted}
                                     is-light
-                                    is-dark-theme
-                                ></dashboard-horizontal-rank>
+                                    is-dark-theme></dashboard-horizontal-rank>
                             </div>
                         </div>
                     </lightning-tab>
                     <lightning-tab label="LWC">
                         <div class="slds-grid slds-wrap slds-gutters">
                             <div class="slds-col slds-grow-none min-width-300 slds-m-top_x-small">
-                                <dashboard-horizontal-rank 
-                                    mark={data.lwc.totalApiVersions} 
-                                    title="API Versions" 
-                                    sub-title="Total versions" 
-                                    description={data.lwc.totalApiVersionsMarkDescription} 
-                                    current-step={data.lwc.totalApiVersionsStepFormatted} 
+                                <dashboard-horizontal-rank
+                                    mark={data.lwc.totalApiVersions}
+                                    title="API Versions"
+                                    sub-title="Total versions"
+                                    description={data.lwc.totalApiVersionsMarkDescription}
+                                    current-step={data.lwc.totalApiVersionsStepFormatted}
                                     is-light
-                                    is-dark-theme
-                                ></dashboard-horizontal-rank>
+                                    is-dark-theme></dashboard-horizontal-rank>
                             </div>
                         </div>
                     </lightning-tab>
                     <lightning-tab label="Aura">
                         <div class="slds-grid slds-wrap slds-gutters">
                             <div class="slds-col slds-grow-none min-width-300 slds-m-top_x-small">
-                                <dashboard-horizontal-rank 
-                                    mark={data.aura.totalApiVersions} 
-                                    title="API Versions" 
-                                    sub-title="Total versions" 
-                                    description={data.aura.totalApiVersionsMarkDescription} 
-                                    current-step={data.aura.totalApiVersionsStepFormatted} 
+                                <dashboard-horizontal-rank
+                                    mark={data.aura.totalApiVersions}
+                                    title="API Versions"
+                                    sub-title="Total versions"
+                                    description={data.aura.totalApiVersionsMarkDescription}
+                                    current-step={data.aura.totalApiVersionsStepFormatted}
                                     is-light
-                                    is-dark-theme
-                                ></dashboard-horizontal-rank>
+                                    is-dark-theme></dashboard-horizontal-rank>
                             </div>
                         </div>
                     </lightning-tab>
                     <lightning-tab label="Flow">
                         <div class="slds-grid slds-wrap slds-gutters">
                             <template for:each={flow_allProcessType} for:item="item">
-                                <div key={item.key} class="slds-col slds-grow-none min-width-150 slds-m-top_x-small">
-                                    <dashboard-basic-stats 
+                                <div
+                                    key={item.key}
+                                    class="slds-col slds-grow-none min-width-150 slds-m-top_x-small">
+                                    <dashboard-basic-stats
                                         title={item.label}
-                                        value={item.value}
-                                    ></dashboard-basic-stats>
+                                        value={item.value}></dashboard-basic-stats>
                                 </div>
                             </template>
                         </div>
                         <div class="slds-grid slds-wrap slds-gutters">
                             <div class="slds-col slds-grow-none min-width-300 slds-m-top_x-small">
-                                <dashboard-horizontal-rank 
-                                    mark={data.flow.totalApiVersions} 
-                                    title="API Versions" 
-                                    sub-title="Total versions" 
-                                    description={data.flow.totalApiVersionsMarkDescription} 
-                                    current-step={data.flow.totalApiVersionsStepFormatted} 
+                                <dashboard-horizontal-rank
+                                    mark={data.flow.totalApiVersions}
+                                    title="API Versions"
+                                    sub-title="Total versions"
+                                    description={data.flow.totalApiVersionsMarkDescription}
+                                    current-step={data.flow.totalApiVersionsStepFormatted}
                                     is-light
-                                    is-dark-theme
-                                ></dashboard-horizontal-rank>
+                                    is-dark-theme></dashboard-horizontal-rank>
                             </div>
                         </div>
                     </lightning-tab>
@@ -218,5 +205,4 @@
             </div>
         </template>
     </article>
-    
 </template>

@@ -1,5 +1,4 @@
 <template>
-
     <div class="slds-full-height slds-flex-column">
         <!-- Header -->
 
@@ -17,7 +16,8 @@
                     </div>
                 </div>
                 -->
-                <div class="slds-grid slds-p-vertical_x-small slds-p-horizontal_small slds-shrink-none">
+                <div
+                    class="slds-grid slds-p-vertical_x-small slds-p-horizontal_small slds-shrink-none">
                     <div class="slds-col slds-size_1-of-1">
                         <div class="slds-section slds-is-open">
                             <h3 class="slds-section__title">
@@ -30,23 +30,20 @@
                                     <!-- Total Records -->
                                     <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3">
                                         <lightning-input
-                                                checked={isLWCHighlighted}
-                                                label="Highlight LWC"
-                                                message-toggle-active=""
-                                                message-toggle-inactive=""
-                                                name="highlightLWC"
-                                                onchange={highlightLWC_change}
-                                                type="toggle"
-                                        ></lightning-input>
+                                            checked={isLWCHighlighted}
+                                            label="Highlight LWC"
+                                            message-toggle-active=""
+                                            message-toggle-inactive=""
+                                            name="highlightLWC"
+                                            onchange={highlightLWC_change}
+                                            type="toggle"></lightning-input>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
-
 </template>

@@ -2,7 +2,9 @@
     <template lwc:if={hasLoaded}>
         <li class={currentClass} onclick={handleClick}>
             <a href="#" class="slds-nav-vertical__action" title={formattedLabel}>
-                <lightning-formatted-rich-text class="slds-truncate" value={formattedLabel}></lightning-formatted-rich-text>
+                <lightning-formatted-rich-text
+                    class="slds-truncate"
+                    value={formattedLabel}></lightning-formatted-rich-text>
                 <template lwc:if={hasBadge}>
                     <lightning-badge class={badgeClass} label={badgeLabel}></lightning-badge>
                 </template>

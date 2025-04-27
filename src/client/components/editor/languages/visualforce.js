@@ -16,35 +16,35 @@ const EMPTY_ELEMENTS = [
     'param',
     'source',
     'track',
-    'wbr'
+    'wbr',
 ];
 
 export function configureVisualforceLanguage(monaco) {
-    if(isMonacoLanguageSetup('visualforce')) return;
+    if (isMonacoLanguageSetup('visualforce')) return;
     monaco.languages.register({ id: 'visualforce' });
-	monaco.languages.setLanguageConfiguration('visualforce', {
+    monaco.languages.setLanguageConfiguration('visualforce', {
         indentationRules: {
-            increaseIndentPattern: /<(?!\?|(?:area|base|br|col|frame|hr|html|img|input|link|meta|param)\b|[^>]*\/>)([-_.A-Za-z0-9]+)(?=\s|>)\b[^>]*>(?!.*<\/\1>)|<!--(?!.*-->)|\{[^}"']*$/,
-            decreaseIndentPattern: /^\s*(<\/(?!html)[-_.A-Za-z0-9]+\b[^>]*>|-->|\})/
+            increaseIndentPattern:
+                /<(?!\?|(?:area|base|br|col|frame|hr|html|img|input|link|meta|param)\b|[^>]*\/>)([-_.A-Za-z0-9]+)(?=\s|>)\b[^>]*>(?!.*<\/\1>)|<!--(?!.*-->)|\{[^}"']*$/,
+            decreaseIndentPattern: /^\s*(<\/(?!html)[-_.A-Za-z0-9]+\b[^>]*>|-->|\})/,
         },
         wordPattern: /(-?\d*\.\d\w*)|([^`~!@$^&*()=+[{\]}\\|;:'",.<>/\s]+)/g,
-        onEnterRules: [{
+        onEnterRules: [
+            {
                 beforeText: new RegExp(
                     `<(?!(?:${EMPTY_ELEMENTS.join(
-                '|'
-              )}))([_:\\w][_:\\w-.\\d]*)([^/>]*(?!/)>)[^<]*$`,
+                        '|'
+                    )}))([_:\\w][_:\\w-.\\d]*)([^/>]*(?!/)>)[^<]*$`,
                     'i'
                 ),
                 afterText: /^<\/([_:\w][_:\w-.\d]*)\s*>$/i,
             },
             {
                 beforeText: new RegExp(
-                    `<(?!(?:${EMPTY_ELEMENTS.join(
-                '|'
-              )}))(\\w[\\w\\d]*)([^/>]*(?!/)>)[^<]*$`,
+                    `<(?!(?:${EMPTY_ELEMENTS.join('|')}))(\\w[\\w\\d]*)([^/>]*(?!/)>)[^<]*$`,
                     'i'
                 ),
-            }
-        ]
+            },
+        ],
     });
 }

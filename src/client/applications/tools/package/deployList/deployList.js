@@ -1,9 +1,8 @@
-import { api,track } from "lwc";
-import { isEmpty,runActionAfterTimeOut,checkIfPresent } from 'shared/utils';
+import { api, track } from 'lwc';
+import { isEmpty, runActionAfterTimeOut, checkIfPresent } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
-const PAGE_LIST_SIZE    = 70;
+const PAGE_LIST_SIZE = 70;
 export default class DeployList extends ToolkitElement {
-
     isLoading = false;
     isSortedDesc = false;
 
@@ -12,7 +11,7 @@ export default class DeployList extends ToolkitElement {
     @api selectedItem;
 
     filter;
-    
+
     // Scrolling
     pageNumber = 1;
 
@@ -22,43 +21,40 @@ export default class DeployList extends ToolkitElement {
     intervalId;
     isAutoRefreshDisabled = false;
 
-
-    connectedCallback(){
+    connectedCallback() {
         this.startCountdown();
     }
 
-    disconnectedCallback(){
+    disconnectedCallback() {
         if (this.intervalId) {
             clearInterval(this.intervalId);
         }
     }
 
-
     /** Events **/
 
-    handleSearch = (e) => {
-        runActionAfterTimeOut(e.detail.value,(newValue) => {
+    handleSearch = e => {
+        runActionAfterTimeOut(e.detail.value, newValue => {
             this.filter = newValue;
         });
-    }
-
+    };
 
     handleRefreshClick = () => {
         this.timeLeft = this.refreshInterval;
         this.refreshData();
-    }
+    };
 
     handleStopAutoRefreshClick = () => {
         this.isAutoRefreshDisabled = true;
         if (this.intervalId) {
             clearInterval(this.intervalId);
         }
-    }
+    };
 
     handleStartAutoRefreshClick = () => {
         this.isAutoRefreshDisabled = false;
         this.startCountdown();
-    }
+    };
 
     handleScroll(event) {
         //console.log('handleScroll');
@@ -74,7 +70,6 @@ export default class DeployList extends ToolkitElement {
     /** Methods  **/
 
     startCountdown = () => {
-
         this.timeLeft = this.refreshInterval;
         this.intervalId = setInterval(() => {
             this.timeLeft--;
@@ -84,43 +79,39 @@ export default class DeployList extends ToolkitElement {
                 this.timeLeft = this.refreshInterval; // Reset the countdown
             }
         }, 1000); // Update every second
-    }
+    };
 
     refreshData = () => {
-        this.dispatchEvent(new CustomEvent("refresh", {
-            detail:{includeSpinner:false},
-            bubbles: true,composed: true
-        }));
-    }
-    
-    
-
+        this.dispatchEvent(
+            new CustomEvent('refresh', {
+                detail: { includeSpinner: false },
+                bubbles: true,
+                composed: true,
+            })
+        );
+    };
 
     /** Getters */
 
-    get selectedItemId(){
+    get selectedItemId() {
         return this.selectedItem?.Id;
     }
 
-
-    get filteredRequests(){
-        if(isEmpty(this.filter)) return this.requests;
-        return this.requests.filter(x => checkIfPresent(`${x.Id}`,this.filter));
+    get filteredRequests() {
+        if (isEmpty(this.filter)) return this.requests;
+        return this.requests.filter(x => checkIfPresent(`${x.Id}`, this.filter));
     }
 
-    get virtualList(){
+    get virtualList() {
         // Best UX Improvement !!!!
-        return this.filteredRequests.slice(0,this.pageNumber * PAGE_LIST_SIZE);
+        return this.filteredRequests.slice(0, this.pageNumber * PAGE_LIST_SIZE);
     }
 
-    get isEmpty(){
-        return this.filteredRequests.length == 0
+    get isEmpty() {
+        return this.filteredRequests.length == 0;
     }
 
-    get isAutoRefreshMessageDisplayed(){
-        return !this.isAutoRefreshDisabled
+    get isAutoRefreshMessageDisplayed() {
+        return !this.isAutoRefreshDisabled;
     }
-    
-
-  
 }

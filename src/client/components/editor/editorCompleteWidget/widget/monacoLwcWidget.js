@@ -10,7 +10,7 @@ import * as Diff from 'diff';
  * @param {Object} editor - Monaco editor instance
  * @returns {Object} File selection object containing file metadata
  */
-const createFileSelection = (editor) => {
+const createFileSelection = editor => {
     LOGGER.debug('createFileSelection');
     return {
         type: 'File',
@@ -96,13 +96,13 @@ class MonacoLwcWidget {
         this.onClose = onClose || (() => {});
 
         // Track cursor position changes when widget is not visible
-        this.disposable = editor.onDidChangeCursorSelection((e) => {
+        this.disposable = editor.onDidChangeCursorSelection(e => {
             if (!this.isVisible) {
                 this.col = e.selection.endColumn;
                 this.line = e.selection.endLineNumber;
             }
         });
-        
+
         this.init();
     }
 
@@ -130,20 +130,20 @@ class MonacoLwcWidget {
      * Sets up event listeners for the LWC component
      */
     setupEventListeners() {
-        this.lwcElement.addEventListener('text', (event) => {
+        this.lwcElement.addEventListener('text', event => {
             this.applyTextToEditor({ text: event.detail.fullText, isEnd: false });
         });
 
-        this.lwcElement.addEventListener('refresh', (event) => {
+        this.lwcElement.addEventListener('refresh', event => {
             this.applyTextToEditor({ text: this.originalText, isEnd: true });
         });
 
-        this.lwcElement.addEventListener('textend', (event) => {
+        this.lwcElement.addEventListener('textend', event => {
             this.applyTextToEditor({ text: event.detail.fullText, isEnd: true });
         });
 
-        this.lwcElement.addEventListener('close', (event) => {
-                /* if (!this.editor.getRawOptions().readOnly && isNotUndefinedOrNull(this.originalText)) {
+        this.lwcElement.addEventListener('close', event => {
+            /* if (!this.editor.getRawOptions().readOnly && isNotUndefinedOrNull(this.originalText)) {
                     this.editor.getModel().setValue(this.originalText);
                 } */
 
@@ -153,14 +153,14 @@ class MonacoLwcWidget {
             this.onClose();
         });
 
-        this.lwcElement.addEventListener('approve', (event) => {
+        this.lwcElement.addEventListener('approve', event => {
             this.editor.setModel(this.originalModel);
-            const edit = { 
-                range: this.originalModel.getFullModelRange(), 
-                text: this.temporaryModel.getValue() 
+            const edit = {
+                range: this.originalModel.getFullModelRange(),
+                text: this.temporaryModel.getValue(),
             };
             this.originalModel.pushEditOperations([], [edit], () => null);
-            
+
             this.hide();
             this.onClose();
         });
@@ -181,12 +181,10 @@ class MonacoLwcWidget {
      * @param {string} output - Text to format
      * @returns {string} Formatted text
      */
-    formatOutput = (output) => {
+    formatOutput = output => {
         const selection = this.editor.getSelection();
         const startColumn = selection.isEmpty() ? 1 : selection.startColumn;
-        return new CompletionFormatter(output, startColumn)
-            .removeMarkdownCodeSyntax()
-            .build();
+        return new CompletionFormatter(output, startColumn).removeMarkdownCodeSyntax().build();
     };
 
     /**
@@ -197,14 +195,14 @@ class MonacoLwcWidget {
      */
     applyTextToEditor = async ({ text, isEnd }) => {
         const model = this.editor.getModel();
-        const range = this.currentSelection?.range?.isEmpty() 
-            ? model.getFullModelRange() 
+        const range = this.currentSelection?.range?.isEmpty()
+            ? model.getFullModelRange()
             : this.currentSelection.range;
-        
+
         const formattedText = this.formatOutput(text);
         const tempModel = this.monaco.editor.createModel(this.originalText, this.language);
         tempModel.applyEdits([{ range, text: formattedText }], false);
-        
+
         this.applyDiff({
             newValue: tempModel.getValue(),
             newRange: range,
@@ -246,23 +244,25 @@ class MonacoLwcWidget {
 
         this.isVisible = true;
 
-        
-        
-        
-
         // Set up text selection decoration
         if (this.currentSelection && !this.currentSelection.range.isEmpty()) {
             this.deltaDecoration = this.editor.deltaDecorations(
                 [],
-                [{
-                    range: this.currentSelection.range,
-                    options: {
-                        className: 'selectedText',
-                        stickiness: this.monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+                [
+                    {
+                        range: this.currentSelection.range,
+                        options: {
+                            className: 'selectedText',
+                            stickiness:
+                                this.monaco.editor.TrackedRangeStickiness
+                                    .NeverGrowsWhenTypingAtEdges,
+                        },
                     },
-                }]
+                ]
             );
-            this.currentSelectionValue = this.originalModel.getValueInRange(this.currentSelection.range);
+            this.currentSelectionValue = this.originalModel.getValueInRange(
+                this.currentSelection.range
+            );
         }
 
         this.editor.setSelection(this.currentSelection.range);
@@ -278,7 +278,7 @@ class MonacoLwcWidget {
      * @param {number} insertAfterColumn - Column number to insert after
      */
     addWidgetToViewZone = (insertAfterLine, insertAfterColumn) => {
-        this.editor.changeViewZones((accessor) => {
+        this.editor.changeViewZones(accessor => {
             // Clean up existing view zone
             if (this.currentViewZoneId !== null) {
                 accessor.removeZone(this.currentViewZoneId);
@@ -292,7 +292,10 @@ class MonacoLwcWidget {
             this.currentViewZoneId = accessor.addZone({
                 afterLineNumber: insertAfterLine,
                 get heightInPx() {
-                    return this.domNode.querySelector('slds-editor-complete-widget').offsetHeight || 150;
+                    return (
+                        this.domNode.querySelector('slds-editor-complete-widget').offsetHeight ||
+                        150
+                    );
                 },
                 domNode: this.domNode,
             });
@@ -310,7 +313,7 @@ class MonacoLwcWidget {
         if (!this.domNode || this.currentViewZoneId === null) return;
 
         requestAnimationFrame(() => {
-            this.editor.changeViewZones((accessor) => {
+            this.editor.changeViewZones(accessor => {
                 accessor.layoutZone(this.currentViewZoneId);
             });
         });
@@ -320,7 +323,7 @@ class MonacoLwcWidget {
      * Removes the widget from the view zone
      */
     removeWidgetFromViewZone = () => {
-        this.editor.changeViewZones((accessor) => {
+        this.editor.changeViewZones(accessor => {
             accessor.removeZone(this.currentViewZoneId);
             this.currentViewZoneId = null;
             if (this.resizeObserver) {
@@ -338,7 +341,7 @@ class MonacoLwcWidget {
      * @param {boolean} options.isEnd - Whether this is the final update
      * @param {number} options.currentLineNumber - Current line number
      */
-    applyDiff = ({ newValue, newRange, isEnd, currentLineNumber}) => {
+    applyDiff = ({ newValue, newRange, isEnd, currentLineNumber }) => {
         const model = this.editor.getModel();
         const diff = Diff.diffLines(this.originalText, newValue, {
             ignoreCase: true,
@@ -351,12 +354,15 @@ class MonacoLwcWidget {
         const currentLinePointer = currentLineNumber + newRange.startLineNumber;
 
         // Process diff chunks
-        diff.forEach((part) => {
+        diff.forEach(part => {
             const count = part.count;
 
             if (part.added) {
                 if (count > 0) {
-                    const maxLineNumber = Math.min(newRange.endLineNumber, newLineNumber + count - 1);
+                    const maxLineNumber = Math.min(
+                        newRange.endLineNumber,
+                        newLineNumber + count - 1
+                    );
                     if (maxLineNumber >= newLineNumber && maxLineNumber <= currentLinePointer) {
                         decorations.push({
                             lineNumber: newLineNumber,
@@ -367,7 +373,7 @@ class MonacoLwcWidget {
                                     isWholeLine: true,
                                     className: 'insertedCodeDecoration',
                                 },
-                            }
+                            },
                         });
                     }
                 }
@@ -380,14 +386,14 @@ class MonacoLwcWidget {
                         const domNode = document.createElement('div');
                         domNode.className = 'deletedViewZone';
                         domNode.innerHTML = `<pre style="margin:0; line-height: 18px;">${part.value}</pre>`;
-                        
+
                         newViewZones.push({
                             lineNumber: anchorLine + heightInLines,
                             data: {
                                 afterLineNumber: anchorLine,
                                 heightInLines,
                                 domNode,
-                            }
+                            },
                         });
                     }
                 }
@@ -403,15 +409,15 @@ class MonacoLwcWidget {
         this.decorationIds = this.editor.deltaDecorations(this.decorationIds, visibleDecorations);
 
         // Update view zones
-        this.editor.changeViewZones((changeAccessor) => {
-            this.viewZoneIds.forEach((zoneId) => changeAccessor.removeZone(zoneId));
+        this.editor.changeViewZones(changeAccessor => {
+            this.viewZoneIds.forEach(zoneId => changeAccessor.removeZone(zoneId));
             this.viewZoneIds = [];
 
             const visibleViewZones = newViewZones
                 .filter(d => d.lineNumber < currentLinePointer || isEnd)
                 .map(d => d.data);
-                
-            visibleViewZones.forEach((zoneSpec) => {
+
+            visibleViewZones.forEach(zoneSpec => {
                 this.viewZoneIds.push(changeAccessor.addZone(zoneSpec));
             });
         });
@@ -419,10 +425,12 @@ class MonacoLwcWidget {
         // Update editor content if changed
         if (this.lastDiffValue !== newValue) {
             this.lastDiffValue = newValue;
-            model.applyEdits([{ 
-                range: model.getFullModelRange(), 
-                text: newValue 
-            }]);
+            model.applyEdits([
+                {
+                    range: model.getFullModelRange(),
+                    text: newValue,
+                },
+            ]);
         }
     };
 
@@ -431,8 +439,8 @@ class MonacoLwcWidget {
      */
     clearAllDecorations = () => {
         this.decorationIds = this.editor.deltaDecorations(this.decorationIds, []);
-        this.editor.changeViewZones((changeAccessor) => {
-            this.viewZoneIds.forEach((zoneId) => changeAccessor.removeZone(zoneId));
+        this.editor.changeViewZones(changeAccessor => {
+            this.viewZoneIds.forEach(zoneId => changeAccessor.removeZone(zoneId));
             this.viewZoneIds = [];
         });
     };
@@ -441,7 +449,7 @@ class MonacoLwcWidget {
      * Processes model changes and updates decorations accordingly
      * @param {Object} event - Model change event
      */
-    processModelChange = (event) => {
+    processModelChange = event => {
         if (!this.isVisible) return;
 
         const currentVersion = this.editor.getModel().getAlternativeVersionId();

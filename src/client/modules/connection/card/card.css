@@ -1,4 +1,4 @@
-.card-container{
+.card-container {
     background-color: white;
     font-weight: 300;
     padding: 0.3rem 1rem;
@@ -13,7 +13,7 @@
     align-items: stretch;
 }
 
-.card-header{
+.card-header {
     display: flex;
     flex-direction: row;
     align-content: center;
@@ -22,8 +22,8 @@
     width: 100%;
 }
 
-.card-header-left{
-    cursor:pointer;
+.card-header-left {
+    cursor: pointer;
     display: flex;
     align-items: center;
 }

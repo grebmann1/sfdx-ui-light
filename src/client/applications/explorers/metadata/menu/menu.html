@@ -1,5 +1,6 @@
 <template>
-    <slds-menu class="slds-flex-column slds-full-height"
+    <slds-menu
+        class="slds-flex-column slds-full-height"
         items={menuItems}
         title={menuBackTitle}
         is-back-displayed={isBackDisplayed}
@@ -11,12 +12,20 @@
         is-refresh-available={isRefreshButtonDisplayed}
         onmenuselection={handleMenuSelection}
         onback={handleMenuBack}
-        onrefresh={handleRefresh}
-    >
+        onrefresh={handleRefresh}>
         <template lwc:if={isSelectAllDisplayedAdvanced}>
             <div slot="listmenu" class="slds-float_right">
-                <lightning-button variant="base" label="Select All" onclick={selectAll_handleClick} tab-index="-1"></lightning-button>/
-                <lightning-button variant="base" label="Unselect All" onclick={unselectAll_handleClick} tab-index="-1"></lightning-button>
+                <lightning-button
+                    variant="base"
+                    label="Select All"
+                    onclick={selectAll_handleClick}
+                    tab-index="-1"></lightning-button>
+                /
+                <lightning-button
+                    variant="base"
+                    label="Unselect All"
+                    onclick={unselectAll_handleClick}
+                    tab-index="-1"></lightning-button>
             </div>
         </template>
     </slds-menu>

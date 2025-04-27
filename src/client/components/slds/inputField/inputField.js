@@ -1,19 +1,13 @@
 import { LightningElement, api, track } from 'lwc';
 import * as depUtils from './dependencyUtils';
-import { 
+import {
     isCompoundField,
     isPersonAccount,
     getCompoundFields,
-    FieldTypes as Fields
+    FieldTypes as Fields,
 } from './fieldUtils';
 
-const NUMBER_TYPES = [
-    Fields.DECIMAL,
-    Fields.INT,
-    Fields.PERCENT,
-    Fields.CURRENCY,
-    Fields.DOUBLE,
-];
+const NUMBER_TYPES = [Fields.DECIMAL, Fields.INT, Fields.PERCENT, Fields.CURRENCY, Fields.DOUBLE];
 
 const UNSUPPORTED_REF_FIELDS = [/*'OwnerId', */ 'CreatedById', 'LastModifiedById'];
 
@@ -60,11 +54,7 @@ function scaleToDecimalPlaces(scale) {
  *
  * @returns {Object} Map of changed values
  */
-function normalizeCompoundFieldValues(
-    originalValue,
-    changedValues,
-    fieldPrefix
-) {
+function normalizeCompoundFieldValues(originalValue, changedValues, fieldPrefix) {
     return Object.keys(originalValue).reduce((ret, rawKey) => {
         const key = removePrefix(rawKey, fieldPrefix);
         // map state and country values to code if code is present,
@@ -77,9 +67,7 @@ function normalizeCompoundFieldValues(
         } else {
             normalizedKey = uncapitalize(key);
         }
-        const normalizedValue = changedValues[normalizedKey]
-            ? changedValues[normalizedKey]
-            : null;
+        const normalizedValue = changedValues[normalizedKey] ? changedValues[normalizedKey] : null;
         if (normalizedValue !== originalValue[key]) {
             ret[addPrefix(key, fieldPrefix)] = normalizedValue;
         }
@@ -124,9 +112,7 @@ export default class InputField extends LightningElement {
     @track record;
     @track _fieldName;
 
-
     _rawFieldName;
-
 
     originalValue;
 
@@ -138,25 +124,21 @@ export default class InputField extends LightningElement {
         this.classList.add('slds-form-element');
     }
 
-
     @api
-    reset(){
+    reset() {
         this.isDirty = false;
         const _originalValue = this.originalValue;
         this.originalValue = null;
         this.originalValue = _originalValue;
         // Propagate event
-        this.dispatchFieldValueChangeEvent(
-            this.fieldName,
-            this.originalValue
-        );
+        this.dispatchFieldValueChangeEvent(this.fieldName, this.originalValue);
     }
 
     @api
-    wireRecordAndMetadata({record,objectInfo,uiField}) {
+    wireRecordAndMetadata({ record, objectInfo, uiField }) {
         //console.log('wireRecordAndMetadata',{record,objectInfo,uiField});
         this.record = record; // full record !!!
-        this.objectInfo =objectInfo;
+        this.objectInfo = objectInfo;
         this.uiField = uiField;
         this.label = `${uiField.label} (${uiField.type})`;
         this.required = uiField.required;
@@ -172,13 +154,7 @@ export default class InputField extends LightningElement {
             this._rawFieldName.objectApiName !== record.attributes.type
         ) {
             throw new Error(
-                `objectApiName (${
-                    this._rawFieldName.objectApiName
-                }) for field ${
-                    this.fieldName
-                } does not match the objectApiName provided for the form (${
-                    record.attributes.type
-                }).`
+                `objectApiName (${this._rawFieldName.objectApiName}) for field ${this.fieldName} does not match the objectApiName provided for the form (${record.attributes.type}).`
             );
         }
 
@@ -229,7 +205,7 @@ export default class InputField extends LightningElement {
 
         this.ready = true;
     }
-/*
+    /*
     initializeCompoundField(uiField, record) {
         const compoundFields = getCompoundFields(
             this.fieldName,
@@ -283,16 +259,13 @@ export default class InputField extends LightningElement {
     @api
     setErrors(fieldError) {
         if (fieldError && fieldError.hasOwnProperty(this.fieldName)) {
-            this.setCustomValidity(
-                fieldError[this.fieldName].message
-            );
+            this.setCustomValidity(fieldError[this.fieldName].message);
             this.serverError = fieldError[this.fieldName];
             this.serverErrorValue = this.value;
         } else {
             this.serverError = undefined;
         }
     }
-
 
     @api
     get value() {
@@ -319,7 +292,6 @@ export default class InputField extends LightningElement {
             this._fieldName = name;
         }
     }
-
 
     @api
     get fieldName() {
@@ -505,7 +477,7 @@ export default class InputField extends LightningElement {
      * Lookup needs an array,
      * so this casts the value to an array
      */
-    
+
     get lookupValues() {
         if (this.value === undefined) {
             return [];
@@ -515,17 +487,17 @@ export default class InputField extends LightningElement {
         return [this.formatForLookup(this.value)];
     }
 
-    get label_lookup(){
+    get label_lookup() {
         return `${this.uiField.label} [${this.uiField.referenceTo.join(',')}]`;
     }
 
-    formatForLookup = (item) => {
+    formatForLookup = item => {
         return {
             id: item.Id,
             //icon: 'standard:category', // to do in the future
-            title: item.Name
+            title: item.Name,
         };
-    }
+    };
 
     renderedCallback() {
         if (!this.ready) {
@@ -570,7 +542,7 @@ export default class InputField extends LightningElement {
         } else if (this.isTypeReference) {
             // multiselect doesn't actually work yet,
             // normalize falsey values
-            this.liveValue = e.detail.value;//e.detail.value[0] ? e.detail.value[0] : '';
+            this.liveValue = e.detail.value; //e.detail.value[0] ? e.detail.value[0] : '';
         } else {
             this.liveValue = e.detail.value;
         }
@@ -586,17 +558,11 @@ export default class InputField extends LightningElement {
         }
 
         if (this.canBeControllingField) {
-            this.dispatchControllerFieldChangeEvent(
-                this.fieldName,
-                this.liveValue
-            );
+            this.dispatchControllerFieldChangeEvent(this.fieldName, this.liveValue);
         }
 
         /* Update the parent that it has changed **/
-        this.dispatchFieldValueChangeEvent(
-            this.fieldName,
-            this.liveValue
-        );
+        this.dispatchFieldValueChangeEvent(this.fieldName, this.liveValue);
     }
 
     handleCompoundFieldChange(e) {
@@ -618,9 +584,7 @@ export default class InputField extends LightningElement {
         if (!isEmptyObject(newValue)) {
             this.isDirty = true;
             // CountryCode is a controlling picklist, so we need to update the options for StateCode
-            if (
-                newValue[countryCodeField] !== this.liveValue[countryCodeField]
-            ) {
+            if (newValue[countryCodeField] !== this.liveValue[countryCodeField]) {
                 this.dispatchControllerFieldChangeEvent(
                     countryCodeField,
                     newValue[countryCodeField]
@@ -639,7 +603,7 @@ export default class InputField extends LightningElement {
 
         const hasDependents = depUtils.hasDependents(
             this.uiField,
-            this.objectInfo.fields.reduce((a, v) => ({ ...a, [v.name]: v}), {}) ,
+            this.objectInfo.fields.reduce((a, v) => ({ ...a, [v.name]: v }), {}),
             this._picklistValues
         );
 
@@ -674,9 +638,7 @@ export default class InputField extends LightningElement {
     initializePicklist(fieldName) {
         //console.log('this._picklistValues',this._picklistValues);
         if (!this._picklistValues || !this._picklistValues[fieldName]) {
-            throw new Error(
-                `Could not find picklist values for field [${fieldName}]`
-            );
+            throw new Error(`Could not find picklist values for field [${fieldName}]`);
         }
 
         // should disable the picklist if the controlling field is missing
@@ -737,7 +699,7 @@ export default class InputField extends LightningElement {
         }
         return null;
     }
-    
+
     dispatchRegisterDependencyEvent(fieldName) {
         this.dispatchEvent(
             // eslint-disable-next-line lightning-global/no-custom-event-bubbling

@@ -1,5 +1,5 @@
 import { LightningElement, api } from 'lwc';
-import {isNotUndefinedOrNull,normalizeString as normalize} from "shared/utils";
+import { isNotUndefinedOrNull, normalizeString as normalize } from 'shared/utils';
 
 export default class Spinner extends LightningElement {
     @api alternativeText;
@@ -12,19 +12,16 @@ export default class Spinner extends LightningElement {
     @api position;
     messageCSS;
 
-    _interval
-
-
+    _interval;
 
     connectedCallback() {
         this.classList.add('slds-spinner_container');
         this.template.addEventListener('mousewheel', this.stopScrolling);
         this.template.addEventListener('touchmove', this.stopScrolling);
 
-        if(isNotUndefinedOrNull(this.messages) && this.messages.length > 0){
+        if (isNotUndefinedOrNull(this.messages) && this.messages.length > 0) {
             this.displayNextMessage(0);
         }
-
     }
 
     renderedCallback() {
@@ -36,38 +33,37 @@ export default class Spinner extends LightningElement {
     }
 
     displayNextMessage = () => {
-
         let position = 0;
         this.message = this.messages[position];
-        this._interval = setInterval(() =>{
+        this._interval = setInterval(() => {
             let el = this.template.querySelector('.spinner-text');
-            if(el.offsetWidth > 0 && el.offsetHeight > 0){
-                position = position >= this.messages.length - 1? 0 : position+1;
-            }else{
+            if (el.offsetWidth > 0 && el.offsetHeight > 0) {
+                position = position >= this.messages.length - 1 ? 0 : position + 1;
+            } else {
                 position = 0;
             }
             this.message = this.messages[position];
-        },5000);
-    }
+        }, 5000);
+    };
 
     get normalizedVariant() {
         return normalize(this.variant, {
             fallbackValue: 'base',
-            validValues: ['base', 'brand', 'inverse']
+            validValues: ['base', 'brand', 'inverse'],
         });
     }
 
     get normalizedPosition() {
         return normalize(this.position, {
             fallbackValue: 'bottom',
-            validValues: ['bottom', 'left', 'top','right']
+            validValues: ['bottom', 'left', 'top', 'right'],
         });
     }
 
     get normalizedSize() {
         return normalize(this.size, {
             fallbackValue: 'medium',
-            validValues: ['small', 'medium', 'large']
+            validValues: ['small', 'medium', 'large'],
         });
     }
 

@@ -1,12 +1,22 @@
-import { api,wire,track} from "lwc";
+import { api, wire, track } from 'lwc';
 import LightningModal from 'lightning/modal';
-import { isEmpty,isElectronApp,isSalesforceId,classSet,isUndefinedOrNull,isNotUndefinedOrNull,runActionAfterTimeOut,formatFiles,sortObjectsByField,removeDuplicates } from 'shared/utils';
+import {
+    isEmpty,
+    isElectronApp,
+    isSalesforceId,
+    classSet,
+    isUndefinedOrNull,
+    isNotUndefinedOrNull,
+    runActionAfterTimeOut,
+    formatFiles,
+    sortObjectsByField,
+    removeDuplicates,
+} from 'shared/utils';
 import Toast from 'lightning/toast';
-import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'lwr/navigation';
+import { CurrentPageReference, NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 import { store } from 'core/store';
 
 export default class Modal extends LightningModal {
-
     isLoading = false;
     hasEditorLoaded = false;
 
@@ -25,143 +35,153 @@ export default class Modal extends LightningModal {
     // files
     files;
 
-    connectedCallback(){
+    connectedCallback() {
         this.init();
     }
     /** Events **/
 
-    handleEditorChange = (e) => {
+    handleEditorChange = e => {
         //console.log('new value',e.detail);
         this.isEditMode = e.detail.isEditMode;
-    }
+    };
 
     handleMonacoLoaded = () => {
         this.hasEditorLoaded = true;
         //console.log('this.files',this.files);
-        if(isNotUndefinedOrNull(this.files)){
+        if (isNotUndefinedOrNull(this.files)) {
             this.displayEditor(this.files);
         }
-    }
+    };
 
     handleCloseClick() {
         this.close();
     }
 
-    handleSaveClick = () => {
-
-    }
+    handleSaveClick = () => {};
 
     /** Methods */
 
     init = () => {
         //console.log('Initialize Editor');
         this.load_specificMetadataRecord(this.recordId);
-    }
+    };
 
-    displayEditor = (files) => {
-        this.refs.editor.displayFiles(this.currentMetadata,files);
+    displayEditor = files => {
+        this.refs.editor.displayFiles(this.currentMetadata, files);
         this.isEditorDisplayed = true;
-    }
-
-
+    };
 
     /** Getters **/
 
     // Couldn't use the toolkitElement
-    get connector(){
+    get connector() {
         return store.getState()?.application?.connector;
     }
 
-    get isSaveDisplayed(){
+    get isSaveDisplayed() {
         return this.isEditMode;
     }
 
-    get isSaveDisabled(){
+    get isSaveDisabled() {
         return !this.isSaveDisplayed;
     }
 
-
     /** Editor based on record Ids **/
 
-    load_recordFromRestAPI = async (recordId) => {
+    load_recordFromRestAPI = async recordId => {
         const urlQuery = `/services/data/v${this.connector.conn.version}/tooling/sobjects/${this.currentMetadata}/${recordId}`;
         return await this.connector.conn.request(urlQuery);
-    }
+    };
 
-    load_specificMetadataRecord = async (key) => {
+    load_specificMetadataRecord = async key => {
         //console.log('load_specificMetadataRecord');
         this.isLoading = true;
-        try{
-            switch(this.currentMetadata){
-                case "LightningComponentBundle":
+        try {
+            switch (this.currentMetadata) {
+                case 'LightningComponentBundle':
                     this.files = await this.handle_LWC(key); // Only LWC supporting extra
                     break;
-                case "ApexClass":
+                case 'ApexClass':
                     this.files = await this.handle_APEX(await this.load_recordFromRestAPI(key));
                     break;
-                case "AuraDefinitionBundle":
+                case 'AuraDefinitionBundle':
                     this.files = await this.handle_AURA(await this.load_recordFromRestAPI(key));
                     break;
-                case "ApexTrigger":
-                    this.files = await this.handle_APEX(await this.load_recordFromRestAPI(key),'trigger'); // Similar to APEX
+                case 'ApexTrigger':
+                    this.files = await this.handle_APEX(
+                        await this.load_recordFromRestAPI(key),
+                        'trigger'
+                    ); // Similar to APEX
                     break;
-                case "ApexPage":
-                    this.files = await this.handle_APEX(await this.load_recordFromRestAPI(key),'page','Markup'); // Similar to APEX
+                case 'ApexPage':
+                    this.files = await this.handle_APEX(
+                        await this.load_recordFromRestAPI(key),
+                        'page',
+                        'Markup'
+                    ); // Similar to APEX
                     break;
-                case "ApexComponent":
-                    this.files = await this.handle_APEX(await this.load_recordFromRestAPI(key),'page','Markup'); // Similar to APEX
+                case 'ApexComponent':
+                    this.files = await this.handle_APEX(
+                        await this.load_recordFromRestAPI(key),
+                        'page',
+                        'Markup'
+                    ); // Similar to APEX
                     break;
             }
             //console.log('load specific',this.files);
             this.isLoading = false;
-            if(this.hasEditorLoaded){
+            if (this.hasEditorLoaded) {
                 this.displayEditor(this.files);
             }
-        }catch(e){
+        } catch (e) {
             console.error(e);
             Toast.show({
                 message: e.message,
                 label: 'API Error',
-                variant:'error',
-                mode:'dismissible'
+                variant: 'error',
+                mode: 'dismissible',
             });
         }
-    }
+    };
 
-
-    handle_LWC = async (key) => {
+    handle_LWC = async key => {
         var queryString = `SELECT LightningComponentBundleId,LightningComponentBundle.MasterLabel,Format,FilePath,Source FROM LightningComponentResource WHERE `;
-        if(isSalesforceId(key)){
+        if (isSalesforceId(key)) {
             queryString += `LightningComponentBundleId = '${key}'`;
-        }else{
+        } else {
             queryString += `LightningComponentBundle.DeveloperName = '${key}'`;
         }
         let resources = (await this.connector.conn.tooling.query(queryString)).records || [];
-        let files = formatFiles(resources.map(x => ({
-            path:x.FilePath,
-            name:x.FilePath.split('/').pop(),
-            body:x.Source,
-            apiVersion:x.ApiVersion,
-            metadata:this.currentMetadata,
-            id:x.LightningComponentBundleId,
-            _source:x
-        })),'js');
-        return sortObjectsByField(files,'extension',['html','js','css','xml'])
-    }
+        let files = formatFiles(
+            resources.map(x => ({
+                path: x.FilePath,
+                name: x.FilePath.split('/').pop(),
+                body: x.Source,
+                apiVersion: x.ApiVersion,
+                metadata: this.currentMetadata,
+                id: x.LightningComponentBundleId,
+                _source: x,
+            })),
+            'js'
+        );
+        return sortObjectsByField(files, 'extension', ['html', 'js', 'css', 'xml']);
+    };
 
-    handle_APEX = async (data,extension = 'cls',bodyField = 'Body') => {
-        return formatFiles([{
-            path:`${data.FullName || data.Name}.${extension}`,
-            name:`${data.FullName || data.Name}.${extension}`,
-            body:data[bodyField],
-            apiVersion:data.ApiVersion,
-            metadata:this.currentMetadata,
-            id:data.Id,
-        }]);
-    }
+    handle_APEX = async (data, extension = 'cls', bodyField = 'Body') => {
+        return formatFiles([
+            {
+                path: `${data.FullName || data.Name}.${extension}`,
+                name: `${data.FullName || data.Name}.${extension}`,
+                body: data[bodyField],
+                apiVersion: data.ApiVersion,
+                metadata: this.currentMetadata,
+                id: data.Id,
+            },
+        ]);
+    };
 
-    _auraNameMapping = (name,type) => {
-        switch(type){
+    _auraNameMapping = (name, type) => {
+        switch (type) {
             case 'COMPONENT':
                 return `${name}.cmp`;
             case 'CONTROLLER':
@@ -179,23 +199,30 @@ export default class Modal extends LightningModal {
             default:
                 return name;
         }
-    }
+    };
 
-    handle_AURA = async (data) => {
-        let resources = (await this.connector.conn.tooling.query(`SELECT AuraDefinitionBundleId,Format,DefType,Source FROM AuraDefinition WHERE AuraDefinitionBundleId = '${data.Id}'`)).records || [];
-        let files = formatFiles(resources.map(x => {
-            let _name = this._auraNameMapping(data.FullName,x.DefType);
-            return {
-                path:_name,
-                name:_name,
-                body:x.Source,
-                apiVersion:data.ApiVersion,
-                metadata:this.currentMetadata,
-                id:data.Id,
-                _source:x
-            }
-        }),'css');
-        return sortObjectsByField(files,'extension',['cmp','html','js','css','xml'])
-    }
-
+    handle_AURA = async data => {
+        let resources =
+            (
+                await this.connector.conn.tooling.query(
+                    `SELECT AuraDefinitionBundleId,Format,DefType,Source FROM AuraDefinition WHERE AuraDefinitionBundleId = '${data.Id}'`
+                )
+            ).records || [];
+        let files = formatFiles(
+            resources.map(x => {
+                let _name = this._auraNameMapping(data.FullName, x.DefType);
+                return {
+                    path: _name,
+                    name: _name,
+                    body: x.Source,
+                    apiVersion: data.ApiVersion,
+                    metadata: this.currentMetadata,
+                    id: data.Id,
+                    _source: x,
+                };
+            }),
+            'css'
+        );
+        return sortObjectsByField(files, 'extension', ['cmp', 'html', 'js', 'css', 'xml']);
+    };
 }

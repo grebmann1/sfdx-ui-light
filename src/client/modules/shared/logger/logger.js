@@ -1,4 +1,3 @@
-
 class Logger {
     constructor() {
         this.isProduction = process.env.NODE_ENV === 'production';
@@ -22,14 +21,14 @@ class Logger {
     info(...args) {
         if (!this.isProduction) {
             //const [firstMessage, ...rest] = args;
-            console.log(`${this.colors.blue}INFO:`,...args);
+            console.log(`${this.colors.blue}INFO:`, ...args);
         }
     }
 
     success(...args) {
         if (!this.isProduction) {
             //const [firstMessage, ...rest] = args;
-            console.log(`${this.colors.green}SUCCESS:`,...args);
+            console.log(`${this.colors.green}SUCCESS:`, ...args);
         }
     }
 
@@ -43,21 +42,21 @@ class Logger {
     warn(...args) {
         if (!this.isProduction) {
             //const [firstMessage, ...rest] = args;
-            console.log(`${this.colors.yellow}WARNING:`,...args);
+            console.log(`${this.colors.yellow}WARNING:`, ...args);
         }
     }
 
     error(...args) {
         if (!this.isProduction) {
             //const [firstMessage, ...rest] = args;
-            console.log(`${this.colors.red}ERROR:`,...args);
+            console.log(`${this.colors.red}ERROR:`, ...args);
         }
     }
 
     debug(...args) {
         if (!this.isProduction) {
             //const [firstMessage, ...rest] = args;
-            console.log(`${this.colors.magenta}DEBUG:`,...args);
+            console.log(`${this.colors.magenta}DEBUG:`, ...args);
         }
     }
 }

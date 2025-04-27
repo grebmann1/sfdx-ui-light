@@ -1,4 +1,4 @@
-import { LightningElement,api} from "lwc";
+import { LightningElement, api } from 'lwc';
 import { createRouter } from 'lwr/router';
 import { isChromeExtension } from 'shared/utils';
 
@@ -31,7 +31,7 @@ const routes = [
             type: 'application',
             state: {
                 applicationName: ':applicationName',
-                attribute1:':attribute1',
+                attribute1: ':attribute1',
             },
         },
     },
@@ -41,54 +41,49 @@ const routes = [
         handler: () => import('router/applicationHandler'),
         page: {
             type: 'application',
-            state:{
+            state: {
                 applicationName: ':applicationName',
-                attribute1:':attribute1',
-                param1:':param1'
-            }
+                attribute1: ':attribute1',
+                param1: ':param1',
+            },
         },
     },
 ];
 
 const initRouter = () => {
     const isChrome = isChromeExtension();
-    if(isChrome){
+    if (isChrome) {
         // Chrome
         const _routes = routes.map(x => ({
             ...x,
-            uri:x.uri.replace('{app}','app.html')
+            uri: x.uri.replace('{app}', 'app.html'),
         }));
 
-        return createRouter({ 
-            routes:_routes,
+        return createRouter({
+            routes: _routes,
             basePath: '/views',
         });
-    }else{
+    } else {
         // Default
         const _routes = routes.map(x => ({
             ...x,
-            uri:x.uri.replace('{app}','app')
+            uri: x.uri.replace('{app}', 'app'),
         }));
 
-        return createRouter({ 
-            routes:_routes,
+        return createRouter({
+            routes: _routes,
         });
     }
-}
+};
 
 export default class Root extends LightningElement {
-
-    
     router = initRouter();
 
     /** Events */
-    
-    handleNavigation = (e) => {
+
+    handleNavigation = e => {
         // Dev Extension ->  chrome-extension://dmlgjapbfifmeopbfikbdmlgdcgcdmfb/views/app.html
-    }
+    };
 
     /** Method **/
-
-    
-
 }

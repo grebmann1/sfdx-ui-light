@@ -3,20 +3,20 @@
 <html>
     <head>
         <title>SF Toolkit</title>
-        <link rel="icon" type="image/x-icon" href="/favicon.ico">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="$stylesDir/tabulator.min.css">
-        <link rel="stylesheet" href="$stylesDir/dashboard.css">
-        <link rel="stylesheet" href="$stylesDir/highlight.css">
-        <link rel="stylesheet" href="$stylesDir/prism.css">
-        <link rel="stylesheet" href="$stylesDir/monaco.css">
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="$stylesDir/tabulator.min.css" />
+        <link rel="stylesheet" href="$stylesDir/dashboard.css" />
+        <link rel="stylesheet" href="$stylesDir/highlight.css" />
+        <link rel="stylesheet" href="$stylesDir/prism.css" />
+        <link rel="stylesheet" href="$stylesDir/monaco.css" />
         <link rel="stylesheet" href="$stylesDir/slds-sf-toolkit.css" />
-        <link rel="stylesheet" href="/xterm.css"/>
-        <link rel="stylesheet" href="$stylesDir/web.css">
+        <link rel="stylesheet" href="/xterm.css" />
+        <link rel="stylesheet" href="$stylesDir/web.css" />
         <script src="$libsDir/prism/prism.js"></script>
         <script src="$libsDir/localforage/localforage.min.js"></script>
         <script type="module">
-            import {monaco} from '/libs/monaco/monaco.bundle.js';
+            import { monaco } from '/libs/monaco/monaco.bundle.js';
             window.monaco = monaco;
             import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
             window.mermaid = mermaid;
@@ -26,16 +26,16 @@
         <script>
             let host = window.location.origin;
             fetch(`${host}/config`)
-            .then(response => response.json())
-            .then(config => {
-                window.jsforceSettings = {
-                    clientId:  config.clientId,
-                    chromeId: config.chromeId,
-                    redirectUri: `${host}/oauth2/callback`,
-                    proxyUrl:  config.proxyUrl ? config.proxyUrl: `${host}/proxy/`,
-                };
-                //jsforce.browser.init(window.jsforceSettings); // Reset
-            });
+                .then(response => response.json())
+                .then(config => {
+                    window.jsforceSettings = {
+                        clientId: config.clientId,
+                        chromeId: config.chromeId,
+                        redirectUri: `${host}/oauth2/callback`,
+                        proxyUrl: config.proxyUrl ? config.proxyUrl : `${host}/proxy/`,
+                    };
+                    //jsforce.browser.init(window.jsforceSettings); // Reset
+                });
             window.Prism = Prism;
         </script>
     </head>
@@ -43,13 +43,15 @@
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-J8XPLSRY91"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
+        function gtag() {
+            dataLayer.push(arguments);
+        }
         gtag('js', new Date());
 
         gtag('config', 'G-J8XPLSRY91');
     </script>
-    <body class="sf-toolkit" style="margin:0px;">
+    <body class="sf-toolkit" style="margin: 0px">
         <!-- triple braces prevents HTML escaping -->
         {{{body}}} {{{lwr_resources}}}
     </body>
-</html> 
+</html>

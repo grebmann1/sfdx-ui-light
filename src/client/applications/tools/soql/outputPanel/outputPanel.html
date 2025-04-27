@@ -1,16 +1,13 @@
 <template>
     <template lwc:if={isLoading}>
-        <slds-spinner 
-            size="small" 
-            message={_loadingMessage}
-        ></slds-spinner>
+        <slds-spinner size="small" message={_loadingMessage}></slds-spinner>
     </template>
     <template lwc:if={hasError}>
         <slds-information-block class="slds-p-around_x-small" title={error_title} variant="error">
             <p>{error_message}</p>
         </slds-information-block>
     </template>
-    
+
     <template lwc:if={isResponseTableDisplayed}>
         <!--
         <div class="slds-p-around_xx-small slds-grid">
@@ -19,16 +16,29 @@
         </div>
         -->
         <div class="table-splitter slds-fill-height">
-            <soql-output-table lwc:ref="maintable" class={mainOutputClass} response={response} sobject-name={sobjectName} ontablebuilt={handleTableBuilt}></soql-output-table>
+            <soql-output-table
+                lwc:ref="maintable"
+                class={mainOutputClass}
+                response={response}
+                sobject-name={sobjectName}
+                ontablebuilt={handleTableBuilt}></soql-output-table>
             <template lwc:if={childResponse}>
                 <div class={childRelationshipPanelClass}>
-                    <button class="slds-button slds-button_icon slds-button_icon" title={i18n.OUTPUT_PANEL_CLOSE_CHILD_REL} onclick={closeChildRelationship}>
+                    <button
+                        class="slds-button slds-button_icon slds-button_icon"
+                        title={i18n.OUTPUT_PANEL_CLOSE_CHILD_REL}
+                        onclick={closeChildRelationship}>
                         <svg class="slds-button__icon" aria-hidden="true">
-                            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
+                            <use
+                                xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
                         </svg>
                         <span class="slds-assistive-text">{i18n.OUTPUT_PANEL_CLOSE_CHILD_REL}</span>
                     </button>
-                    <soql-output-table class="slds-full-height" child-title={childResponse.column} response={childResponse} is-child-table></soql-output-table>
+                    <soql-output-table
+                        class="slds-full-height"
+                        child-title={childResponse.column}
+                        response={childResponse}
+                        is-child-table></soql-output-table>
                 </div>
             </template>
         </div>
@@ -36,9 +46,14 @@
     <template lwc:else>
         <illustration-empty size="small" use-slot-format>
             <div slot="title">
-                <p>Click <span class="slds-text-heading_small">Run</span> or use <span class="slds-text-heading_small">CMD/CTRL + Enter</span> to execute a query</p>
+                <p>
+                    Click
+                    <span class="slds-text-heading_small">Run</span>
+                    or use
+                    <span class="slds-text-heading_small">CMD/CTRL + Enter</span>
+                    to execute a query
+                </p>
             </div>
         </illustration-empty>
     </template>
-
 </template>

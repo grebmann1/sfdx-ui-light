@@ -1,13 +1,16 @@
-import { api,createElement } from 'lwc';
+import { api, createElement } from 'lwc';
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
-import { isObject,isNotUndefinedOrNull,isUndefinedOrNull,runActionAfterTimeOut } from 'shared/utils';
+import {
+    isObject,
+    isNotUndefinedOrNull,
+    isUndefinedOrNull,
+    runActionAfterTimeOut,
+} from 'shared/utils';
 import outputCell from 'soql/outputCell';
 
-
 class ColumnCollector {
-
     columnMap = new Map();
     columns = [];
     records;
@@ -55,8 +58,6 @@ class ColumnCollector {
     }
 }
 
-
-
 export default class OutputTable extends ToolkitElement {
     isLoading = false;
     _columns;
@@ -82,18 +83,17 @@ export default class OutputTable extends ToolkitElement {
         return this._response;
     }
 
-    renderedCallback(){
-        if(!this._hasRendered){
+    renderedCallback() {
+        if (!this._hasRendered) {
             this.displayTable();
-            window.addEventListener('resize',this.tableResizeEvent);
+            window.addEventListener('resize', this.tableResizeEvent);
         }
         this._hasRendered = true;
     }
 
-    disconnectedCallback(){
-        window.removeEventListener('resize',this.tableResizeEvent);
+    disconnectedCallback() {
+        window.removeEventListener('resize', this.tableResizeEvent);
     }
-
 
     /** Methods */
 
@@ -101,123 +101,133 @@ export default class OutputTable extends ToolkitElement {
         return this._response.records.map(x => {
             delete x.attributes;
             return x;
-        })
-    }
+        });
+    };
 
     formatColumns = () => {
         const columns = this._columns.map(key => {
             return {
-                title: key, 
+                title: key,
                 field: key,
-                maxWidth:500,
-                formatter:this.formatterField_value // Bad performances !!
-            }
+                maxWidth: 500,
+                formatter: this.formatterField_value, // Bad performances !!
+            };
         });
 
-        if(isNotUndefinedOrNull(this.childTitle)){
-            return [{title:this.childTitle,columns:columns}]
-        }else{
+        if (isNotUndefinedOrNull(this.childTitle)) {
+            return [{ title: this.childTitle, columns: columns }];
+        } else {
             return columns;
         }
-    }
-    
+    };
+
     elementPool = [];
     formatterField_value = (cell, formatterParams, onRendered) => {
         //return `<div class="slds-truncate" title="Acme Partners">Acme Partners</div><lightning-button-icon class="slds-copy-clipboards" variant="bare"><button class="slds-button slds-button_icon slds-button_icon-bare" title="copy" type="button" part="button button-icon"><lightning-primitive-icon variant="bare" ><svg class="slds-button__icon" focusable="false" data-key="copy" aria-hidden="true" part="icon"><use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#copy"></use></svg></lightning-primitive-icon><span class="slds-assistive-text">copy</span></button></lightning-button-icon>`;
         const outputCellElement = createElement('soql-output-cell', {
-            is: outputCell
+            is: outputCell,
         });
         let value = cell._cell.value;
         Object.assign(outputCellElement, {
             value,
-            column:cell._cell.column.field,
-            recordId:cell._cell.row.data.Id
-
+            column: cell._cell.column.field,
+            recordId: cell._cell.row.data.Id,
         });
         return outputCellElement;
-    }
+    };
 
-    tableResizeEvent = (e) => {
+    tableResizeEvent = e => {
         //console.log('tableResizeEvent');
         this.tableResize(1);
-    }
+    };
 
     @api
-    tableResize = (timeout) => {
-        runActionAfterTimeOut(null,(param) => {
-            if(isUndefinedOrNull(this.tableInstance)) return;
-            const height = this.template.querySelector(".output-panel").clientHeight;
-            if(height > 0){
-                this.tableInstance.setHeight(height);
-            }
-        },timeout);
-    }
-    
+    tableResize = timeout => {
+        runActionAfterTimeOut(
+            null,
+            param => {
+                if (isUndefinedOrNull(this.tableInstance)) return;
+                const height = this.template.querySelector('.output-panel').clientHeight;
+                if (height > 0) {
+                    this.tableInstance.setHeight(height);
+                }
+            },
+            timeout
+        );
+    };
 
     displayTable = () => {
-        if(this.tableInstance){
-            console.log('Need to destroy table !!!')
+        if (this.tableInstance) {
+            console.log('Need to destroy table !!!');
             this.tableInstance.destroy();
         }
-        const element = this.template.querySelector(".custom-table");
+        const element = this.template.querySelector('.custom-table');
         const rowSelector = {
-            headerSort:false, resizable: false, frozen:true, 
-            headerHozAlign:"center", hozAlign:"center", 
-            formatter:"rowSelection", 
-            titleFormatter:"rowSelection", 
-            cellClick:function(e, cell){
+            headerSort: false,
+            resizable: false,
+            frozen: true,
+            headerHozAlign: 'center',
+            hozAlign: 'center',
+            formatter: 'rowSelection',
+            titleFormatter: 'rowSelection',
+            cellClick: function (e, cell) {
                 cell.getRow().toggleSelect();
-            }
-        }
-        if(!element) return;
+            },
+        };
+        if (!element) return;
         this.isLoading = true;
         this.tableInstance = new Tabulator(element, {
-            height: "100%",
+            height: '100%',
             data: this.formatDataForTable(),
-            autoResize:false,
-            layout:"fitDataFill",
+            autoResize: false,
+            layout: 'fitDataFill',
             columns: this.formatColumns(),
             //autoColumns:true,
-            columnHeaderVertAlign: "middle",
-            minHeight:100,
-            rowHeight:28,
+            columnHeaderVertAlign: 'middle',
+            minHeight: 100,
+            rowHeight: 28,
             //maxHeight:"100%"
-            rowHeader:this.isChildTable || this._response.records.length == 0?null:rowSelector,
-            headerSortElement: function(column, dir){
+            rowHeader: this.isChildTable || this._response.records.length == 0 ? null : rowSelector,
+            headerSortElement: function (column, dir) {
                 //column - column component for current column
                 //dir - current sort direction ("asc", "desc", "none")
-                const _arrowIcon = (iconName) => `<svg class="slds-icon slds-icon-text-default slds-is-sortable__icon " aria-hidden="true"><use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#${iconName}"></use></svg>`;
-                switch(dir){
-                    case "asc":
+                const _arrowIcon = iconName =>
+                    `<svg class="slds-icon slds-icon-text-default slds-is-sortable__icon " aria-hidden="true"><use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#${iconName}"></use></svg>`;
+                switch (dir) {
+                    case 'asc':
                         return _arrowIcon('arrowup');
-                    case "desc":
+                    case 'desc':
                         return _arrowIcon('arrowdown');
                     default:
                         return _arrowIcon('arrowdown');
                 }
             },
         });
-        this.tableInstance.on("tableBuilding", () => {
+        this.tableInstance.on('tableBuilding', () => {
             //console.log('tableBuilding')
             this.isLoading = true;
         });
-        this.tableInstance.on("tableBuilt", () => {
+        this.tableInstance.on('tableBuilt', () => {
             this.isLoading = false;
-            if(!this.isChildTable){
-                this.dispatchEvent(new CustomEvent("tablebuilt", { bubbles: true,composed: true }));
+            if (!this.isChildTable) {
+                this.dispatchEvent(
+                    new CustomEvent('tablebuilt', { bubbles: true, composed: true })
+                );
             }
         });
-        this.tableInstance.on("rowSelectionChanged", (data, rows, selected, deselected) => {
-            this.dispatchEvent(new CustomEvent("rowselection", { 
-                detail:{
-                    rows:data,
-                    isChildTable:this.isChildTable
-                },
-                bubbles: true,composed: true 
-            }));
+        this.tableInstance.on('rowSelectionChanged', (data, rows, selected, deselected) => {
+            this.dispatchEvent(
+                new CustomEvent('rowselection', {
+                    detail: {
+                        rows: data,
+                        isChildTable: this.isChildTable,
+                    },
+                    bubbles: true,
+                    composed: true,
+                })
+            );
         });
-
-    }
+    };
 
     _convertQueryResponse(res) {
         if (!res) return [];
@@ -226,7 +236,7 @@ export default class OutputTable extends ToolkitElement {
             const acutualRowIdx = startIdx + rowIdx;
             let row = {
                 key: acutualRowIdx,
-                values: []
+                values: [],
             };
             this.columns.forEach((column, valueIdx) => {
                 const rawData = this._getFieldValue(column, record);
@@ -238,7 +248,7 @@ export default class OutputTable extends ToolkitElement {
                     key: `${acutualRowIdx}-${valueIdx}`,
                     data,
                     rawData,
-                    column
+                    column,
                 });
             });
             return row;
@@ -256,10 +266,7 @@ export default class OutputTable extends ToolkitElement {
     /** Getters **/
 
     @api
-    get columns(){
+    get columns() {
         return this._columns;
     }
-    
-
-    
 }

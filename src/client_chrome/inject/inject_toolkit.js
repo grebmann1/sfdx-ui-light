@@ -11,14 +11,11 @@ const _injectHtml = (myJsonObject, className) => {
     document.body.appendChild(divElement);
 };
 
-
 /** Methods **/
-
 
 (async () => {
     //console.log('### SF Toolkit Injection ###');
 
-    _injectHtml(await chrome.storage.local.get("connections"), 'injected-connections');
-    _injectHtml(await chrome.storage.local.get("openai_key"), 'injected-openai-key')
+    _injectHtml(await chrome.storage.local.get('connections'), 'injected-connections');
+    _injectHtml(await chrome.storage.local.get('openai_key'), 'injected-openai-key');
 })();
-

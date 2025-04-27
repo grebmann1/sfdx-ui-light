@@ -1,11 +1,10 @@
 import { LightningElement, api } from 'lwc';
-import {isNotUndefinedOrNull,normalizeString as normalize} from "shared/utils";
+import { isNotUndefinedOrNull, normalizeString as normalize } from 'shared/utils';
 
 const SPLITTER_ORIENTATIONS = {
     valid: ['horizontal', 'vertical'],
-    default: 'horizontal'
+    default: 'horizontal',
 };
-
 
 export default class Splitter extends LightningElement {
     _orientation = SPLITTER_ORIENTATIONS.default;
@@ -15,12 +14,8 @@ export default class Splitter extends LightningElement {
     selectedSeparator;
 
     renderedCallback() {
-        let splitter = this.template.querySelector(
-            '.' + this.computedOrientationClass
-        );
-        let slot = this.template.querySelector(
-            '[data-element-id="slot-default"]'
-        );
+        let splitter = this.template.querySelector('.' + this.computedOrientationClass);
+        let slot = this.template.querySelector('[data-element-id="slot-default"]');
         let slotElements = slot.assignedElements();
 
         if (slotElements.length > 0) {
@@ -30,13 +25,13 @@ export default class Splitter extends LightningElement {
             let isStatic = false;
             let separatorName = '';
 
-            slotElements.forEach((element) => {
+            slotElements.forEach(element => {
                 if (element.localName.indexOf('-splitter-pane') > -1) {
                     containerComponents++;
                 }
             });
 
-            slotElements.forEach((element) => {
+            slotElements.forEach(element => {
                 const nextElement = element.nextSibling;
 
                 if (element.localName.indexOf('-splitter-pane') > -1) {
@@ -45,88 +40,56 @@ export default class Splitter extends LightningElement {
                     element.setAttribute('slot-id', amount);
                     splitter.appendChild(element);
 
-                    let resizable =
-                        element.getAttribute('resizable') === 'true';
-                    let collapsible =
-                        element.getAttribute('collapsible') === 'true';
-                    let collapsed =
-                        element.getAttribute('collapsed') === 'true';
+                    let resizable = element.getAttribute('resizable') === 'true';
+                    let collapsible = element.getAttribute('collapsible') === 'true';
+                    let collapsed = element.getAttribute('collapsed') === 'true';
 
                     if (isSeparator) {
-                        let previousSeparator =
-                            this.template.querySelector(separatorName);
+                        let previousSeparator = this.template.querySelector(separatorName);
                         if (
-                            previousSeparator.lastChild.className ===
-                                'separator-icon-horizontal' ||
-                            previousSeparator.lastChild.className ===
-                                'separator-icon-vertical'
+                            previousSeparator.lastChild.className === 'separator-icon-horizontal' ||
+                            previousSeparator.lastChild.className === 'separator-icon-vertical'
                         ) {
                             isStatic = true;
                         }
                     }
 
                     if (collapsible && isSeparator) {
-                        let previousSeparator =
-                            this.template.querySelector(separatorName);
+                        let previousSeparator = this.template.querySelector(separatorName);
 
-                        if (
-                            previousSeparator.getAttribute('is-colapsed') ===
-                            'true'
-                        ) {
-                            let previousIndex =
-                                previousSeparator.getAttribute('separator-id') -
-                                1;
+                        if (previousSeparator.getAttribute('is-colapsed') === 'true') {
+                            let previousIndex = previousSeparator.getAttribute('separator-id') - 1;
                             let leftSeparator = this.template.querySelector(
                                 '.separator-' + previousIndex
                             );
                             if (leftSeparator) {
                                 while (leftSeparator.firstChild) {
-                                    leftSeparator.removeChild(
-                                        leftSeparator.lastChild
-                                    );
+                                    leftSeparator.removeChild(leftSeparator.lastChild);
                                 }
 
                                 let leftIcon = document.createElement('div');
-                                leftIcon.setAttribute(
-                                    'c-splitter_splitter',
-                                    ''
-                                );
+                                leftIcon.setAttribute('c-splitter_splitter', '');
                                 leftIcon.classList.add('left-colapsed');
 
-                                leftIcon.addEventListener(
-                                    'click',
-                                    this.colapsedLeft.bind(this)
-                                );
+                                leftIcon.addEventListener('click', this.colapsedLeft.bind(this));
 
                                 leftSeparator.appendChild(leftIcon);
-                                leftSeparator.setAttribute(
-                                    'is-left-colapsed',
-                                    'true'
-                                );
+                                leftSeparator.setAttribute('is-left-colapsed', 'true');
                             }
                         } else if (amount < containerComponents || !collapsed) {
                             let rightIcon = document.createElement('div');
                             rightIcon.setAttribute('c-splitter_splitter', '');
                             rightIcon.classList.add('right-colapsed');
 
-                            rightIcon.addEventListener(
-                                'click',
-                                this.colapsedRight.bind(this)
-                            );
+                            rightIcon.addEventListener('click', this.colapsedRight.bind(this));
 
                             previousSeparator.appendChild(rightIcon);
                         }
 
-                        previousSeparator.setAttribute(
-                            'is-right-colapsed',
-                            'true'
-                        );
+                        previousSeparator.setAttribute('is-right-colapsed', 'true');
                     }
 
-                    if (
-                        amount < containerComponents &&
-                        (resizable || collapsible)
-                    ) {
+                    if (amount < containerComponents && (resizable || collapsible)) {
                         let separator = document.createElement('div');
                         separator.setAttribute('c-splitter_splitter', '');
                         separator.setAttribute('separator-id', amount);
@@ -139,10 +102,7 @@ export default class Splitter extends LightningElement {
                             rightIcon.setAttribute('c-splitter_splitter', '');
                             rightIcon.classList.add('right-colapsed');
 
-                            rightIcon.addEventListener(
-                                'click',
-                                this.openLeft.bind(this)
-                            );
+                            rightIcon.addEventListener('click', this.openLeft.bind(this));
 
                             separator.appendChild(rightIcon);
                             separator.style.cursor = 'auto';
@@ -155,21 +115,14 @@ export default class Splitter extends LightningElement {
                         } else {
                             if (collapsible) {
                                 let leftIcon = document.createElement('div');
-                                leftIcon.setAttribute(
-                                    'c-splitter_splitter',
-                                    ''
-                                );
+                                leftIcon.setAttribute('c-splitter_splitter', '');
                                 leftIcon.classList.add('left-colapsed');
 
                                 if (
                                     nextElement &&
-                                    nextElement.getAttribute('collapsed') ===
-                                        'true'
+                                    nextElement.getAttribute('collapsed') === 'true'
                                 ) {
-                                    leftIcon.addEventListener(
-                                        'click',
-                                        this.openRight.bind(this)
-                                    );
+                                    leftIcon.addEventListener('click', this.openRight.bind(this));
                                     separator.style.cursor = 'auto';
                                 } else {
                                     leftIcon.addEventListener(
@@ -179,24 +132,16 @@ export default class Splitter extends LightningElement {
                                 }
 
                                 separator.appendChild(leftIcon);
-                                separator.setAttribute(
-                                    'is-left-colapsed',
-                                    'true'
-                                );
+                                separator.setAttribute('is-left-colapsed', 'true');
                             }
 
                             if (resizable) {
                                 if (
                                     nextElement &&
-                                    nextElement.getAttribute('collapsed') !==
-                                        'true'
+                                    nextElement.getAttribute('collapsed') !== 'true'
                                 ) {
-                                    let separatorIcon =
-                                        document.createElement('div');
-                                    separatorIcon.setAttribute(
-                                        'c-splitter_splitter',
-                                        ''
-                                    );
+                                    let separatorIcon = document.createElement('div');
+                                    separatorIcon.setAttribute('c-splitter_splitter', '');
                                     separatorIcon.classList.add(
                                         'separator-icon-' + this._orientation
                                     );
@@ -210,10 +155,7 @@ export default class Splitter extends LightningElement {
                             separator.setAttribute('is-colapsed', 'false');
                         }
 
-                        separator.addEventListener(
-                            'mousedown',
-                            this.onMouseDown.bind(this)
-                        );
+                        separator.addEventListener('mousedown', this.onMouseDown.bind(this));
                         splitter.appendChild(separator);
                         isSeparator = true;
                     } else if (amount < containerComponents) {
@@ -247,11 +189,9 @@ export default class Splitter extends LightningElement {
 
                         if (element.getAttribute('collapsedSize')) {
                             if (this.orientation === 'vertical') {
-                                element.style.maxHeight =
-                                    element.getAttribute('collapsedSize');
+                                element.style.maxHeight = element.getAttribute('collapsedSize');
                             } else {
-                                element.style.maxWidth =
-                                    element.getAttribute('collapsedSize');
+                                element.style.maxWidth = element.getAttribute('collapsedSize');
                             }
                         }
                     }
@@ -266,11 +206,9 @@ export default class Splitter extends LightningElement {
         }
         // slot.remove();
 
-        this.template
-            .querySelectorAll('.splitter-orientation-horizontal')
-            .forEach((element) => {
-                element.style.height = '100%';
-            });
+        this.template.querySelectorAll('.splitter-orientation-horizontal').forEach(element => {
+            element.style.height = '100%';
+        });
 
         this.listenerOnMouseUp = this.onMouseUp.bind(this);
         this.listenerOnMouseMove = this.onMouseMove.bind(this);
@@ -305,7 +243,7 @@ export default class Splitter extends LightningElement {
     set orientation(orientation) {
         this._orientation = normalize(orientation, {
             fallbackValue: SPLITTER_ORIENTATIONS.default,
-            validValues: SPLITTER_ORIENTATIONS.valid
+            validValues: SPLITTER_ORIENTATIONS.valid,
         });
     }
 
@@ -332,9 +270,7 @@ export default class Splitter extends LightningElement {
      * @type {string}
      */
     get computedSeparatorClass() {
-        return this._orientation === 'vertical'
-            ? 'separator-vertical'
-            : 'separator-horizontal';
+        return this._orientation === 'vertical' ? 'separator-vertical' : 'separator-horizontal';
     }
 
     /*
@@ -371,7 +307,7 @@ export default class Splitter extends LightningElement {
                 firstWidth: first.offsetWidth,
                 firstHeight: first.offsetHeight,
                 secondWidth: second.offsetWidth,
-                secondHeight: second.offsetHeight
+                secondHeight: second.offsetHeight,
             };
         }
 
@@ -393,14 +329,11 @@ export default class Splitter extends LightningElement {
 
             let delta = {
                 x: event.clientX - this.data.event.x,
-                y: event.clientY - this.data.event.y
+                y: event.clientY - this.data.event.y,
             };
 
             if (this.orientation === 'horizontal') {
-                delta.x = Math.min(
-                    Math.max(delta.x, -this.data.firstWidth),
-                    this.data.secondWidth
-                );
+                delta.x = Math.min(Math.max(delta.x, -this.data.firstWidth), this.data.secondWidth);
 
                 let firstDelta = Number(this.data.firstWidth + delta.x);
                 let secondDelta = Number(this.data.secondWidth - delta.x);
@@ -410,8 +343,7 @@ export default class Splitter extends LightningElement {
                 let maxWidthValidation = firstDelta >= 0 && secondDelta >= 0;
 
                 if (firstAvailable && secondAvailable && maxWidthValidation) {
-                    separator.style.left =
-                        this.data.offsetLeft + delta.x + 'px';
+                    separator.style.left = this.data.offsetLeft + delta.x + 'px';
 
                     first.style.flexBasis = firstDelta + 'px';
                     first.classList.add('state-static');
@@ -445,17 +377,13 @@ export default class Splitter extends LightningElement {
                     second.setAttribute('is-static', 'true');
 
                     this.querySelectorAll(
-                        '.slot-' +
-                            first.getAttribute('slot-id') +
-                            ' .horizontal'
-                    ).forEach((element) => {
+                        '.slot-' + first.getAttribute('slot-id') + ' .horizontal'
+                    ).forEach(element => {
                         element.changeHeight(firstDelta);
                     });
                     this.querySelectorAll(
-                        '.slot-' +
-                            second.getAttribute('slot-id') +
-                            ' .horizontal'
-                    ).forEach((element) => {
+                        '.slot-' + second.getAttribute('slot-id') + ' .horizontal'
+                    ).forEach(element => {
                         element.changeHeight(secondDelta);
                     });
                 }
@@ -536,11 +464,9 @@ export default class Splitter extends LightningElement {
 
         if (leftElement.getAttribute('collapsedSize')) {
             if (this.orientation === 'vertical') {
-                leftElement.style.maxHeight =
-                    leftElement.getAttribute('collapsedSize');
+                leftElement.style.maxHeight = leftElement.getAttribute('collapsedSize');
             } else {
-                leftElement.style.maxWidth =
-                    leftElement.getAttribute('collapsedSize');
+                leftElement.style.maxWidth = leftElement.getAttribute('collapsedSize');
             }
         }
 
@@ -559,10 +485,7 @@ export default class Splitter extends LightningElement {
         parent.appendChild(rightIcon);
         parent.style.cursor = 'auto';
 
-        if (
-            leftSeparator &&
-            leftSeparator.getAttribute('is-colapsed') === 'false'
-        ) {
+        if (leftSeparator && leftSeparator.getAttribute('is-colapsed') === 'false') {
             let needLeftColapsed = false;
 
             while (leftSeparator.firstChild) {
@@ -577,10 +500,7 @@ export default class Splitter extends LightningElement {
                 leftIcon.setAttribute('c-splitter_splitter', '');
                 leftIcon.classList.add('left-colapsed');
 
-                leftIcon.addEventListener(
-                    'click',
-                    this.colapsedLeft.bind(this)
-                );
+                leftIcon.addEventListener('click', this.colapsedLeft.bind(this));
 
                 leftSeparator.appendChild(leftIcon);
                 leftSeparator.style.cursor = 'auto';
@@ -609,11 +529,9 @@ export default class Splitter extends LightningElement {
 
         if (rightElement.getAttribute('collapsedSize')) {
             if (this.orientation === 'vertical') {
-                rightElement.style.maxHeight =
-                    rightElement.getAttribute('collapsedSize');
+                rightElement.style.maxHeight = rightElement.getAttribute('collapsedSize');
             } else {
-                rightElement.style.maxWidth =
-                    rightElement.getAttribute('collapsedSize');
+                rightElement.style.maxWidth = rightElement.getAttribute('collapsedSize');
             }
         }
 
@@ -632,16 +550,11 @@ export default class Splitter extends LightningElement {
         parent.appendChild(leftIcon);
         parent.style.cursor = 'auto';
 
-        if (
-            rightSeparator &&
-            rightSeparator.getAttribute('is-colapsed') === 'false'
-        ) {
+        if (rightSeparator && rightSeparator.getAttribute('is-colapsed') === 'false') {
             let needRightColapsed = false;
 
             while (rightSeparator.firstChild) {
-                if (
-                    rightSeparator.lastChild.classList[0] === 'right-colapsed'
-                ) {
+                if (rightSeparator.lastChild.classList[0] === 'right-colapsed') {
                     needRightColapsed = true;
                 }
                 rightSeparator.removeChild(rightSeparator.lastChild);
@@ -652,10 +565,7 @@ export default class Splitter extends LightningElement {
                 rightIcon.setAttribute('c-splitter_splitter', '');
                 rightIcon.classList.add('right-colapsed');
 
-                rightIcon.addEventListener(
-                    'click',
-                    this.colapsedRight.bind(this)
-                );
+                rightIcon.addEventListener('click', this.colapsedRight.bind(this));
 
                 rightSeparator.appendChild(rightIcon);
                 rightSeparator.style.cursor = 'auto';
@@ -674,8 +584,7 @@ export default class Splitter extends LightningElement {
         let rightSeparator = rightElement.nextSibling;
 
         if (
-            (rightElement.getAttribute('is-static') === 'true' &&
-                !rightSeparator) ||
+            (rightElement.getAttribute('is-static') === 'true' && !rightSeparator) ||
             (rightElement.getAttribute('is-static') === 'true' &&
                 rightSeparator &&
                 rightSeparator.getAttribute('is-colapsed') === 'false')
@@ -729,15 +638,11 @@ export default class Splitter extends LightningElement {
         if (renderButtons) {
             if (parent.getAttribute('is-resizable') === 'true') {
                 parent.style.cursor =
-                    this.orientation === 'horizontal'
-                        ? 'col-resize'
-                        : 'row-resize';
+                    this.orientation === 'horizontal' ? 'col-resize' : 'row-resize';
 
                 let separatorIcon = document.createElement('div');
                 separatorIcon.setAttribute('c-splitter_splitter', '');
-                separatorIcon.classList.add(
-                    'separator-icon-' + this._orientation
-                );
+                separatorIcon.classList.add('separator-icon-' + this._orientation);
                 parent.appendChild(separatorIcon);
             }
 
@@ -746,19 +651,13 @@ export default class Splitter extends LightningElement {
                 rightIcon.setAttribute('c-splitter_splitter', '');
                 rightIcon.classList.add('right-colapsed');
 
-                rightIcon.addEventListener(
-                    'click',
-                    this.colapsedRight.bind(this)
-                );
+                rightIcon.addEventListener('click', this.colapsedRight.bind(this));
 
                 parent.appendChild(rightIcon);
             }
         }
 
-        if (
-            leftSeparator &&
-            leftSeparator.getAttribute('is-colapsed') === 'false'
-        ) {
+        if (leftSeparator && leftSeparator.getAttribute('is-colapsed') === 'false') {
             while (leftSeparator.firstChild) {
                 leftSeparator.removeChild(leftSeparator.lastChild);
             }
@@ -768,25 +667,18 @@ export default class Splitter extends LightningElement {
                 leftIcon.setAttribute('c-splitter_splitter', '');
                 leftIcon.classList.add('left-colapsed');
 
-                leftIcon.addEventListener(
-                    'click',
-                    this.colapsedLeft.bind(this)
-                );
+                leftIcon.addEventListener('click', this.colapsedLeft.bind(this));
 
                 leftSeparator.appendChild(leftIcon);
             }
 
             if (leftSeparator.getAttribute('is-resizable') === 'true') {
                 leftSeparator.style.cursor =
-                    this.orientation === 'horizontal'
-                        ? 'col-resize'
-                        : 'row-resize';
+                    this.orientation === 'horizontal' ? 'col-resize' : 'row-resize';
 
                 let separatorIcon = document.createElement('div');
                 separatorIcon.setAttribute('c-splitter_splitter', '');
-                separatorIcon.classList.add(
-                    'separator-icon-' + this._orientation
-                );
+                separatorIcon.classList.add('separator-icon-' + this._orientation);
                 leftSeparator.appendChild(separatorIcon);
             }
 
@@ -795,10 +687,7 @@ export default class Splitter extends LightningElement {
                 rightIcon.setAttribute('c-splitter_splitter', '');
                 rightIcon.classList.add('right-colapsed');
 
-                rightIcon.addEventListener(
-                    'click',
-                    this.colapsedRight.bind(this)
-                );
+                rightIcon.addEventListener('click', this.colapsedRight.bind(this));
 
                 leftSeparator.appendChild(rightIcon);
             }
@@ -816,8 +705,7 @@ export default class Splitter extends LightningElement {
         let leftSeparator = leftElement.previousSibling;
 
         if (
-            (leftElement.getAttribute('is-static') === 'true' &&
-                !leftSeparator) ||
+            (leftElement.getAttribute('is-static') === 'true' && !leftSeparator) ||
             (leftElement.getAttribute('is-static') === 'true' &&
                 leftSeparator &&
                 leftSeparator.getAttribute('is-colapsed') === 'false')
@@ -864,25 +752,18 @@ export default class Splitter extends LightningElement {
                 leftIcon.setAttribute('c-splitter_splitter', '');
                 leftIcon.classList.add('left-colapsed');
 
-                leftIcon.addEventListener(
-                    'click',
-                    this.colapsedLeft.bind(this)
-                );
+                leftIcon.addEventListener('click', this.colapsedLeft.bind(this));
 
                 parent.appendChild(leftIcon);
             }
 
             if (parent.getAttribute('is-resizable') === 'true') {
                 parent.style.cursor =
-                    this.orientation === 'horizontal'
-                        ? 'col-resize'
-                        : 'row-resize';
+                    this.orientation === 'horizontal' ? 'col-resize' : 'row-resize';
 
                 let separatorIcon = document.createElement('div');
                 separatorIcon.setAttribute('c-splitter_splitter', '');
-                separatorIcon.classList.add(
-                    'separator-icon-' + this._orientation
-                );
+                separatorIcon.classList.add('separator-icon-' + this._orientation);
                 parent.appendChild(separatorIcon);
             }
         }
@@ -897,10 +778,7 @@ export default class Splitter extends LightningElement {
             parent.appendChild(rightIcon);
         }
 
-        if (
-            rightSeparator &&
-            rightSeparator.getAttribute('is-colapsed') === 'false'
-        ) {
+        if (rightSeparator && rightSeparator.getAttribute('is-colapsed') === 'false') {
             while (rightSeparator.firstChild) {
                 rightSeparator.removeChild(rightSeparator.lastChild);
             }
@@ -910,25 +788,18 @@ export default class Splitter extends LightningElement {
                 leftIcon.setAttribute('c-splitter_splitter', '');
                 leftIcon.classList.add('left-colapsed');
 
-                leftIcon.addEventListener(
-                    'click',
-                    this.colapsedLeft.bind(this)
-                );
+                leftIcon.addEventListener('click', this.colapsedLeft.bind(this));
 
                 rightSeparator.appendChild(leftIcon);
             }
 
             if (rightSeparator.getAttribute('is-resizable') === 'true') {
                 rightSeparator.style.cursor =
-                    this.orientation === 'horizontal'
-                        ? 'col-resize'
-                        : 'row-resize';
+                    this.orientation === 'horizontal' ? 'col-resize' : 'row-resize';
 
                 let separatorIcon = document.createElement('div');
                 separatorIcon.setAttribute('c-splitter_splitter', '');
-                separatorIcon.classList.add(
-                    'separator-icon-' + this._orientation
-                );
+                separatorIcon.classList.add('separator-icon-' + this._orientation);
                 rightSeparator.appendChild(separatorIcon);
             }
 
@@ -937,10 +808,7 @@ export default class Splitter extends LightningElement {
                 rightIcon.setAttribute('c-splitter_splitter', '');
                 rightIcon.classList.add('right-colapsed');
 
-                rightIcon.addEventListener(
-                    'click',
-                    this.colapsedRight.bind(this)
-                );
+                rightIcon.addEventListener('click', this.colapsedRight.bind(this));
 
                 rightSeparator.appendChild(rightIcon);
             }
@@ -955,9 +823,7 @@ export default class Splitter extends LightningElement {
      */
     @api
     changeHeight(height) {
-        const horizontalContainer = this.template.querySelector(
-            '.splitter-orientation-horizontal'
-        );
+        const horizontalContainer = this.template.querySelector('.splitter-orientation-horizontal');
 
         if (horizontalContainer) {
             horizontalContainer.style.height = height + 'px';

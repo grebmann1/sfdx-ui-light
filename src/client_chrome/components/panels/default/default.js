@@ -1,25 +1,22 @@
-import {api, LightningElement, wire} from "lwc";
-import {store as deprecatedStore} from 'shared/store';
-import {isNotUndefinedOrNull} from "shared/utils";
-import { CACHE_CONFIG,loadExtensionConfigFromCache } from "shared/cacheManager";
+import { api, LightningElement, wire } from 'lwc';
+import { store as deprecatedStore } from 'shared/store';
+import { isNotUndefinedOrNull } from 'shared/utils';
+import { CACHE_CONFIG, loadExtensionConfigFromCache } from 'shared/cacheManager';
 
-import {APPLICATION, connectStore, store} from 'core/store';
-
+import { APPLICATION, connectStore, store } from 'core/store';
 
 const APPLICATIONS = {
     CONNECTION: 'connection',
     DOCUMENTATION: 'documentation',
-    ASSISTANT: 'assistant'
+    ASSISTANT: 'assistant',
 };
 
-
 export default class Default extends LightningElement {
-
     @api isBackButtonDisplayed = false;
     openaiKey;
     openaiAssistantId;
 
-    _currentApplication = APPLICATIONS.CONNECTION;//APPLICATIONS.ASSISTANT;//
+    _currentApplication = APPLICATIONS.CONNECTION; //APPLICATIONS.ASSISTANT;//
 
     @api
     get currentApplication() {
@@ -28,9 +25,11 @@ export default class Default extends LightningElement {
 
     set currentApplication(value) {
         this._currentApplication = value;
-        store.dispatch(APPLICATION.reduxSlice.actions.updateCurrentApplication({
-            application: value
-        }));
+        store.dispatch(
+            APPLICATION.reduxSlice.actions.updateCurrentApplication({
+                application: value,
+            })
+        );
     }
 
     /** Getters **/
@@ -60,11 +59,11 @@ export default class Default extends LightningElement {
     }
 
     get isAssistantDisplayed() {
-        return true;//isNotUndefinedOrNull(this.openaiAssistantId) && isNotUndefinedOrNull(this.openaiKey);
+        return true; //isNotUndefinedOrNull(this.openaiAssistantId) && isNotUndefinedOrNull(this.openaiKey);
     }
 
-    @wire(connectStore, {store: deprecatedStore})
-    applicationChange({application}) {
+    @wire(connectStore, { store: deprecatedStore })
+    applicationChange({ application }) {
         //console.log('application',application)
         if (application?.type === 'FAKE_NAVIGATE') {
             const pageRef = application.target;
@@ -87,16 +86,16 @@ export default class Default extends LightningElement {
         this.currentApplication = APPLICATIONS.CONNECTION;
     };
 
-    documentationClick = (e) => {
+    documentationClick = e => {
         this.currentApplication = APPLICATIONS.DOCUMENTATION;
     };
 
     handleBackClick = () => {
-        this.dispatchEvent(new CustomEvent("back", {bubbles: true, composed: true}));
+        this.dispatchEvent(new CustomEvent('back', { bubbles: true, composed: true }));
     };
 
-    handleSearch = (e) => {
-        const {value} = e.detail;
+    handleSearch = e => {
+        const { value } = e.detail;
         if (this.isConnection && isNotUndefinedOrNull(value)) {
             this.handleSearchConnection(value);
         } else if (this.isDocumentation && isNotUndefinedOrNull(value)) {
@@ -104,13 +103,13 @@ export default class Default extends LightningElement {
         }
     };
 
-    exportClick = (e) => {
+    exportClick = e => {
         if (this.refs.connection) {
             this.refs.connection.exportClick();
         }
     };
 
-    importClick = (e) => {
+    importClick = e => {
         if (this.refs.connection) {
             this.refs.connection.importClick();
         }
@@ -121,31 +120,30 @@ export default class Default extends LightningElement {
     loadAssistantConfig = async () => {
         const configuration = await loadExtensionConfigFromCache([
             CACHE_CONFIG.OPENAI_KEY.key,
-            CACHE_CONFIG.OPENAI_ASSISTANT_ID.key
+            CACHE_CONFIG.OPENAI_ASSISTANT_ID.key,
         ]);
         this.openaiKey = configuration[CACHE_CONFIG.OPENAI_KEY.key];
         this.openaiAssistantId = configuration[CACHE_CONFIG.OPENAI_ASSISTANT_ID.key];
     };
 
-    loadFromNavigation = async ({state}) => {
+    loadFromNavigation = async ({ state }) => {
         //('documentation - loadFromNavigation');
-        const {applicationName, attribute1} = state;
+        const { applicationName, attribute1 } = state;
         //console.log('applicationName',applicationName);
         if (applicationName == 'documentation') {
             this.currentApplication = APPLICATIONS.DOCUMENTATION;
         } else if (applicationName == 'home') {
             this.currentApplication = APPLICATIONS.CONNECTION;
         }
-
     };
 
-    handleSearchConnection = (value) => {
+    handleSearchConnection = value => {
         if (this.refs.connection) {
             this.refs.connection.applyFilter(value);
         }
     };
 
-    handleSearchDocumentation = (value) => {
+    handleSearchDocumentation = value => {
         if (this.refs.documentation) {
             this.refs.documentation.externalSearch(value);
         }
@@ -156,6 +154,5 @@ export default class Default extends LightningElement {
         if (this.refs.connection) {
             this.refs.connection.fetchAllConnections();
         }
-    }
-
+    };
 }

@@ -15,14 +15,16 @@ export function isCompoundField(field, objectInfo, personAccount = false) {
             // special case for when person accounts are enabled, but this is not a personAccount. In this case
             // the Name field of an account looks like a compound field but is not.
             if (
-                objectInfo.name === 'Account' && item.compoundFieldName === 'Name' && !personAccount
+                objectInfo.name === 'Account' &&
+                item.compoundFieldName === 'Name' &&
+                !personAccount
             ) {
                 return false;
             }
 
             return true;
         }
-    })
+    });
 
     return false;
 }

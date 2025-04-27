@@ -1,19 +1,22 @@
 <template>
     <lightning-modal-header label="User selector"></lightning-modal-header>
-    <lightning-modal-body class="body-full-height"> 
-        
+    <lightning-modal-body class="body-full-height">
         <!-- Table - START -->
         <div class="container slds-full-height">
-            <div class="slds-flex-column slds-full-height slds-is-relative"> 
+            <div class="slds-flex-column slds-full-height slds-is-relative">
                 <template lwc:if={isLoading}>
-                    <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium slds-p-vertical_medium">
-                        <slds-spinner alternative-text="Loading" size="small" message={loadingMessage}></slds-spinner>
+                    <div
+                        class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium slds-p-vertical_medium">
+                        <slds-spinner
+                            alternative-text="Loading"
+                            size="small"
+                            message={loadingMessage}></slds-spinner>
                     </div>
                 </template>
                 <div lwc:dom="manual" class="custom-table"></div>
             </div>
         </div>
-        
+
         <!-- Table - END-->
     </lightning-modal-body>
     <lightning-modal-footer>
@@ -22,14 +25,12 @@
             disabled={isLoading}
             variant="neutral"
             label="Cancel"
-            onclick={handleCloseClick}
-        ></lightning-button>
+            onclick={handleCloseClick}></lightning-button>
         <lightning-button
             class="slds-button"
             disabled={isLoading}
             variant="brand"
             label="Apply"
-            onclick={handleApplyClick}
-        ></lightning-button>
-      </lightning-modal-footer>
+            onclick={handleApplyClick}></lightning-button>
+    </lightning-modal-footer>
 </template>

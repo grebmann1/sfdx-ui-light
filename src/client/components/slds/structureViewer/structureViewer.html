@@ -1,11 +1,17 @@
 <template>
     <p class="slds-m-top_small slds-m-bottom_small">
-        <a class="pseudoLink" onclick={expandAll}>Expand All</a> | 
+        <a class="pseudoLink" onclick={expandAll}>Expand All</a>
+        |
         <a class="pseudoLink" onclick={collapseAll}>Collapse All</a>
     </p>
     <ul class="treeview slds-scrollable_y">
         <template for:each={items} for:item="item">
-            <slds-structure-viewer-item key={item.key} title={item.key} value={item.value} items={item.items} is-open></slds-structure-viewer-item>
+            <slds-structure-viewer-item
+                key={item.key}
+                title={item.key}
+                value={item.value}
+                items={item.items}
+                is-open></slds-structure-viewer-item>
         </template>
     </ul>
 </template>

@@ -1,37 +1,34 @@
-import { LightningElement,api} from "lwc";
+import { LightningElement, api } from 'lwc';
 import { isEmpty } from 'shared/utils';
 
-
 export default class App extends LightningElement {
-
     isMenuOpen = false;
     isSearchOpen = false;
     currentPosition = 0;
     links = [];
     filter;
 
-    connectedCallback(){
+    connectedCallback() {
         this.initHashHandler();
         //this.isSearchOpen = true;
     }
 
     scrollToTop = () => {
         window.scrollTo({
-          top: 0,
-          behavior: 'smooth' // Optional: smooth scrolling behavior
+            top: 0,
+            behavior: 'smooth', // Optional: smooth scrolling behavior
         });
-    }
+    };
 
-
-    handleMenu = (e) => {
+    handleMenu = e => {
         this.currentPosition = e.detail.current;
         this.links = e.detail.links;
-    }
+    };
 
-    handleFilterChange = (e) => {
+    handleFilterChange = e => {
         this.filter = e.detail.keywords || null;
         this.refs.viewer.updateComponent(); // force refresh
-    }
+    };
 
     handleNavbarMenu() {
         // Get the elements by their IDs or any other suitable method
@@ -45,59 +42,67 @@ export default class App extends LightningElement {
     }
 
     initHashHandler = () => {
-        window.addEventListener('hashchange', (e)=> {
-            this.refs.viewer.updateComponent();
-            this.refs.menu.updateComponent();
-            if(this.isMenuOpen)this.handleNavbarMenu();
-            this.scrollToTop();
-        }, false);
-    }
+        window.addEventListener(
+            'hashchange',
+            e => {
+                this.refs.viewer.updateComponent();
+                this.refs.menu.updateComponent();
+                if (this.isMenuOpen) this.handleNavbarMenu();
+                this.scrollToTop();
+            },
+            false
+        );
+    };
 
-    goPrevious = (e) => {
+    goPrevious = e => {
         e.preventDefault();
-        if(this.currentPosition <= 0){
+        if (this.currentPosition <= 0) {
             this.currentPosition = 0;
-        }else{
+        } else {
             this.currentPosition--;
         }
         window.location = this.links[this.currentPosition].href;
-    }
+    };
 
-    goNext = (e) => {
+    goNext = e => {
         e.preventDefault();
-        if(this.currentPosition >= this.links.length - 1){
+        if (this.currentPosition >= this.links.length - 1) {
             this.currentPosition = this.links.length - 1;
-        }else{
+        } else {
             this.currentPosition++;
         }
         window.location = this.links[this.currentPosition].href;
-    }
+    };
 
-    displaySearch = (e) => {
+    displaySearch = e => {
         this.isSearchOpen = true;
-    }
+    };
 
     /** Getters **/
 
-    get isDocumentationDisplayed(){
+    get isDocumentationDisplayed() {
         return !this.isSearchOpen;
     }
 
-    get previousClass(){
-        return ` ${this.currentPosition <= 0?'slds-hide':''}`;
+    get previousClass() {
+        return ` ${this.currentPosition <= 0 ? 'slds-hide' : ''}`;
     }
 
-    get nextClass(){
-        return ` ${this.currentPosition >= this.links.length - 1?'slds-hide':''}`;
+    get nextClass() {
+        return ` ${this.currentPosition >= this.links.length - 1 ? 'slds-hide' : ''}`;
     }
 
-    get previousTitle(){
+    get previousTitle() {
         let previousPosition = this.currentPosition - 1;
-        return this.links.length > previousPosition ? (this.links[previousPosition]?.title || 'Previous') : 'Previous';
+        return this.links.length > previousPosition
+            ? this.links[previousPosition]?.title || 'Previous'
+            : 'Previous';
     }
 
-    get nextTitle(){
+    get nextTitle() {
         let nextPosition = this.currentPosition + 1;
-        return this.links.length > nextPosition ? (this.links[nextPosition]?.title || 'Next') : 'Next';
+        return this.links.length > nextPosition
+            ? this.links[nextPosition]?.title || 'Next'
+            : 'Next';
     }
 }

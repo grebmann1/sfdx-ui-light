@@ -5,15 +5,23 @@
             <template lwc:if={isDefaultMenu}>
                 <!-- Actions for record Explorer -->
                 <lightning-button-group slot="action">
-                    <lightning-button-icon icon-name="utility:new_window" onclick={redirectToWebsite}
-                                           title="Open SF Toolkit"></lightning-button-icon>
+                    <lightning-button-icon
+                        icon-name="utility:new_window"
+                        onclick={redirectToWebsite}
+                        title="Open SF Toolkit"></lightning-button-icon>
                     <!--<lightning-button-icon icon-name="utility:einstein" title="Open Einstein" onclick={einsteinClick}></lightning-button-icon>-->
-                    <lightning-button-icon icon-name="utility:apex" onclick={redirectToAnonymousApex}
-                                           title="Open Anonymous Apex"></lightning-button-icon>
-                    <lightning-button-icon icon-name="utility:database" onclick={redirectToSoqlBuilder}
-                                           title="Open SOQL Explorer"></lightning-button-icon>
-                    <lightning-button-icon icon-name="utility:threedots_vertical" onclick={openDefaultPanel}
-                                           title="See more Apps"></lightning-button-icon>
+                    <lightning-button-icon
+                        icon-name="utility:apex"
+                        onclick={redirectToAnonymousApex}
+                        title="Open Anonymous Apex"></lightning-button-icon>
+                    <lightning-button-icon
+                        icon-name="utility:database"
+                        onclick={redirectToSoqlBuilder}
+                        title="Open SOQL Explorer"></lightning-button-icon>
+                    <lightning-button-icon
+                        icon-name="utility:threedots_vertical"
+                        onclick={openDefaultPanel}
+                        title="See more Apps"></lightning-button-icon>
                 </lightning-button-group>
             </template>
         </extension-header>
@@ -48,67 +56,73 @@
                     <!-- Quick Authorize -->
                     <div class="slds-grid slds-grid_align-center">
                         <div class="slds-col">
-                            <connection-quick-authorize instance-url={instanceUrl}></connection-quick-authorize>
+                            <connection-quick-authorize
+                                instance-url={instanceUrl}></connection-quick-authorize>
                         </div>
                     </div>
                     <!-- Salesforce Informations -->
                     <slds-tabset class="slds-without-tab slds-fill-height" variant="scoped">
                         <!-- Default Welcome Section -->
-                        <slds-tab class="full-page-body" label="Org Info" value={APPLICATIONS.ORG_INFO}>
+                        <slds-tab
+                            class="full-page-body"
+                            label="Org Info"
+                            value={APPLICATIONS.ORG_INFO}>
                             <slds-information-block title="Info">
                                 <p>The content will automatically change based on your URL.</p>
-                                <p>Navigate to your salesforce records to display the Record Explorer.</p>
+                                <p>
+                                    Navigate to your salesforce records to display the Record
+                                    Explorer.
+                                </p>
                             </slds-information-block>
-                            <org-me 
-                                class="slds-p-vertical_x-small slds-show" 
-                                title="Current User"
-                            ></org-me>
-                            <org-company 
-                                class="slds-p-vertical_x-small slds-show" 
-                                link-label="Company"
-                                title="Current Org"
-                            ></org-company>
-                            <org-users 
+                            <org-me
                                 class="slds-p-vertical_x-small slds-show"
-                            ></org-users>
+                                title="Current User"></org-me>
+                            <org-company
+                                class="slds-p-vertical_x-small slds-show"
+                                link-label="Company"
+                                title="Current Org"></org-company>
+                            <org-users class="slds-p-vertical_x-small slds-show"></org-users>
                         </slds-tab>
                         <!-- Record Explorer Section -->
                         <template lwc:if={isRecordExplorerAvailable}>
-                            <slds-tab class="full-page-body slds-tabs-no-padding" label="Record Explorer"
-                                      value={APPLICATIONS.RECORD_EXPLORER}>
-                                <recordViewer-record-explorer 
+                            <slds-tab
+                                class="full-page-body slds-tabs-no-padding"
+                                label="Record Explorer"
+                                value={APPLICATIONS.RECORD_EXPLORER}>
+                                <recordViewer-record-explorer
                                     current-origin={currentOrigin}
                                     lwc:ref="recordexplorer"
                                     record-id={recordId}
                                     versions={versions}
-                                    is-panel
-                                ></recordViewer-record-explorer>
+                                    is-panel></recordViewer-record-explorer>
                             </slds-tab>
                         </template>
                         <!-- Record Explorer Section -->
                         <template lwc:if={isUserExplorerAvailable}>
-                            <slds-tab 
-                                class="full-page-body slds-tabs-no-padding" 
+                            <slds-tab
+                                class="full-page-body slds-tabs-no-padding"
                                 label="Users"
-                                value={APPLICATIONS.USER_EXPLORER}
-                            >
-                                <feature-user-explorer lwc:ref="userexplorer"></feature-user-explorer>
+                                value={APPLICATIONS.USER_EXPLORER}>
+                                <feature-user-explorer
+                                    lwc:ref="userexplorer"></feature-user-explorer>
                             </slds-tab>
                         </template>
                         <!-- Tools -->
-                        <slds-tab class="full-page-body slds-tabs-no-padding" label="Tools" value={APPLICATIONS.TOOLS}>
+                        <slds-tab
+                            class="full-page-body slds-tabs-no-padding"
+                            label="Tools"
+                            value={APPLICATIONS.TOOLS}>
                             <feature-tools lwc:ref="tools"></feature-tools>
                         </slds-tab>
-
                     </slds-tabset>
                 </template>
                 <template lwc:else>
-                    <div class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
+                    <div
+                        class="slds-text-align_center slds-text-color_weak slds-p-horizontal_medium">
                         <slds-spinner
-                                alternative-text="Loading"
-                                message="Connecting to Salesforce."
-                                size="small"
-                        ></slds-spinner>
+                            alternative-text="Loading"
+                            message="Connecting to Salesforce."
+                            size="small"></slds-spinner>
                     </div>
                 </template>
 

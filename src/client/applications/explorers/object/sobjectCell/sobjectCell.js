@@ -1,9 +1,8 @@
-import {LightningElement,api} from "lwc";
-import { isEmpty,isNotUndefinedOrNull } from 'shared/utils';
-import { store as legacyStore,store_application } from 'shared/store';
+import { LightningElement, api } from 'lwc';
+import { isEmpty, isNotUndefinedOrNull } from 'shared/utils';
+import { store as legacyStore, store_application } from 'shared/store';
 
 export default class SobjectCell extends LightningElement {
-
     @api value;
     @api isBoolean;
 
@@ -12,17 +11,15 @@ export default class SobjectCell extends LightningElement {
 
     /* Events */
 
-    goToUrl = (e) => {
+    goToUrl = e => {
         const redirectUrl = e.currentTarget.dataset.url;
         //console.log('redirectUrl',redirectUrl);
         legacyStore.dispatch(store_application.navigate(redirectUrl));
-    }
+    };
 
     /* Getters */
 
-    get isLink(){
+    get isLink() {
         return isNotUndefinedOrNull(this.urlLink);
     }
-
-    
 }

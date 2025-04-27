@@ -1,15 +1,21 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
-import { store,METADATA,SOBJECT,DESCRIBE } from 'core/store';
-import { lowerCaseKey, guid, isNotUndefinedOrNull,formatFiles,isSalesforceId,sortObjectsByField } from 'shared/utils';
+import { store, METADATA, SOBJECT, DESCRIBE } from 'core/store';
+import {
+    lowerCaseKey,
+    guid,
+    isNotUndefinedOrNull,
+    formatFiles,
+    isSalesforceId,
+    sortObjectsByField,
+} from 'shared/utils';
 import { METADATA_EXCLUDE_LIST, METADATA_EXCEPTION_LIST } from 'metadata/utils';
-import { cacheManager,CACHE_ORG_DATA_TYPES } from 'shared/cacheManager';
+import { cacheManager, CACHE_ORG_DATA_TYPES } from 'shared/cacheManager';
 import LOGGER from 'shared/logger';
 
 const METADATA_SETTINGS_KEY = 'METADATA_SETTINGS_KEY';
 
 const _caching = {};
 /** Methods */
-
 
 function loadCacheSettings(alias) {
     try {
@@ -22,17 +28,14 @@ function loadCacheSettings(alias) {
 }
 
 function saveCacheSettings(alias, state) {
-
     console.log('saveCacheSettings');
     try {
-        const {
-            tabs
-        } = state
+        const { tabs } = state;
 
         localStorage.setItem(
             `${alias}-${METADATA_SETTINGS_KEY}`,
             JSON.stringify({
-                tabs
+                tabs,
             })
         );
     } catch (e) {
@@ -41,69 +44,88 @@ function saveCacheSettings(alias, state) {
 }
 
 const getMetadataConfig = async (connector, sobject) => {
-    LOGGER.debug('getMetadataConfig',sobject,connector);
-    const sobjectConfig = (await store.dispatch(SOBJECT.describeSObject({
-        connector:connector.conn,
-        sObjectName:sobject,
-        useToolingApi:true
-    }))).payload;
+    LOGGER.debug('getMetadataConfig', sobject, connector);
+    const sobjectConfig = (
+        await store.dispatch(
+            SOBJECT.describeSObject({
+                connector: connector.conn,
+                sObjectName: sobject,
+                useToolingApi: true,
+            })
+        )
+    ).payload;
 
-    LOGGER.debug('sobjectConfig',sobjectConfig);
+    LOGGER.debug('sobjectConfig', sobjectConfig);
 
     const fields = sobjectConfig.data.fields
-    .map(field => field.name)
-    .filter(field => ['Id', 'Name', 'DeveloperName', 'MasterLabel', 'NamespacePrefix'].includes(field));
+        .map(field => field.name)
+        .filter(field =>
+            ['Id', 'Name', 'DeveloperName', 'MasterLabel', 'NamespacePrefix'].includes(field)
+        );
 
     return {
         fields,
-        sobject
-    }
-}
+        sobject,
+    };
+};
 
 // Helper function to load specific metadata
-async function loadSpecificMetadata(connector, sobject,bypass) {
-    
-    const isSobject = store.getState().metadata.metadata_global.records.find(x => x.name == sobject)?.isSobject || false;
+async function loadSpecificMetadata(connector, sobject, bypass) {
+    const isSobject =
+        store.getState().metadata.metadata_global.records.find(x => x.name == sobject)?.isSobject ||
+        false;
 
-    if(!isSobject){
+    if (!isSobject) {
         // Metadata API
-        const result = await connector.conn.metadata.list([{type: sobject, folder: null}],connector.conn.version);
+        const result = await connector.conn.metadata.list(
+            [{ type: sobject, folder: null }],
+            connector.conn.version
+        );
         return {
-            records: result.map(record => ({
-                ...record,
-                label: record.fullName,
-                name: record.fullName || record.id,
-                key: record.fullName || record.id,
-                isSobject: false,
-                _developerName: record.fullName
-            })).sort((a, b) => (a.label || '').localeCompare(b.label)),
+            records: result
+                .map(record => ({
+                    ...record,
+                    label: record.fullName,
+                    name: record.fullName || record.id,
+                    key: record.fullName || record.id,
+                    isSobject: false,
+                    _developerName: record.fullName,
+                }))
+                .sort((a, b) => (a.label || '').localeCompare(b.label)),
             label: sobject,
         };
-
     }
-    
+
     // Tooling API
 
     //const metadataConfig = await connector.conn.tooling.describeSObject$(sobject);
-    const {fields} = await getMetadataConfig(connector,sobject);
+    const { fields } = await getMetadataConfig(connector, sobject);
 
     const query = `SELECT ${fields.join(',')} FROM ${sobject}`;
-    const result = (await runAndCacheQuery(connector,query,bypass)) || [];
+    const result = (await runAndCacheQuery(connector, query, bypass)) || [];
     return {
-        records: (result || []).map(record => ({
-            ...record,
-            name: record.Id,
-            label: record.Name || record.MasterLabel || record.DeveloperName,
-            key: record.Id,
-            isSobject: true,
-            _developerName:  record.DeveloperName || record.Name  ||record.MasterLabel
-        })).sort((a, b) => (a.label || '').localeCompare(b.label)),
+        records: (result || [])
+            .map(record => ({
+                ...record,
+                name: record.Id,
+                label: record.Name || record.MasterLabel || record.DeveloperName,
+                key: record.Id,
+                isSobject: true,
+                _developerName: record.DeveloperName || record.Name || record.MasterLabel,
+            }))
+            .sort((a, b) => (a.label || '').localeCompare(b.label)),
         label: sobject,
     };
 }
 
 // Helper function to load exception metadata
-async function loadSpecificMetadataException(connector, exceptionMetadata, recordId, level,bypass) {
+async function loadSpecificMetadataException(
+    connector,
+    exceptionMetadata,
+    recordId,
+    level,
+    bypass
+) {
     const {
         name,
         label,
@@ -122,16 +144,18 @@ async function loadSpecificMetadataException(connector, exceptionMetadata, recor
 
     try {
         // Describe the object to get metadata configuration
-        const {fields} = await getMetadataConfig(connector,queryObject);
+        const { fields } = await getMetadataConfig(connector, queryObject);
 
         // Build and execute the query
-        const query = `SELECT ${[...fields, ...queryFields].join(',')} FROM ${queryObject} ${filterFunc(recordId)}`;
-        const result = (await runAndCacheQuery(connector,query,false,bypass)) || [];
+        const query = `SELECT ${[...fields, ...queryFields].join(
+            ','
+        )} FROM ${queryObject} ${filterFunc(recordId)}`;
+        const result = (await runAndCacheQuery(connector, query, false, bypass)) || [];
 
         // Filter and map the results
         const records = result
             .filter(manualFilter)
-            .map((record) => {
+            .map(record => {
                 const badge = badgeFunc ? badgeFunc(record) : null;
                 const recordLabel = labelFunc(record);
                 return {
@@ -153,58 +177,69 @@ async function loadSpecificMetadataException(connector, exceptionMetadata, recor
     }
 }
 
-const handle_LWC = async (connector,sobject,key) => {
+const handle_LWC = async (connector, sobject, key) => {
     var queryString = `SELECT LightningComponentBundleId,LightningComponentBundle.MasterLabel,Format,FilePath,Source FROM LightningComponentResource WHERE `;
     if (isSalesforceId(key)) {
-        queryString += `LightningComponentBundleId = '${key}' OR LightningComponentBundle.DeveloperName = '${key}'`; // in case developername match record Id length 
+        queryString += `LightningComponentBundleId = '${key}' OR LightningComponentBundle.DeveloperName = '${key}'`; // in case developername match record Id length
     } else {
         queryString += `LightningComponentBundle.DeveloperName = '${key}'`;
     }
     let resources = (await connector.conn.tooling.query(queryString)).records || [];
-    let files = formatFiles(resources.map(x => ({
-        path: x.FilePath,
-        name: x.FilePath.split('/').pop(),
-        body: x.Source,
-        apiVersion: x.ApiVersion,
-        metadata: sobject,
-        id: x.LightningComponentBundleId,
-        _source: x
-    })));
+    let files = formatFiles(
+        resources.map(x => ({
+            path: x.FilePath,
+            name: x.FilePath.split('/').pop(),
+            body: x.Source,
+            apiVersion: x.ApiVersion,
+            metadata: sobject,
+            id: x.LightningComponentBundleId,
+            _source: x,
+        }))
+    );
 
     // Added from Extension redirection
     /*if (resources.length > 0) {
         this.label1 = resources[0].LightningComponentBundle.MasterLabel;
     }*/
-    return sortObjectsByField(files, 'extension', ['html', 'js', 'css', 'xml'])
-}
+    return sortObjectsByField(files, 'extension', ['html', 'js', 'css', 'xml']);
+};
 
-const handle_APEX = async (connector,sobject,data, extension = 'cls', bodyField = 'Body') => {
-    return formatFiles([{
-        path: `${data.FullName || data.Name}.${extension}`,
-        name: `${data.FullName || data.Name}.${extension}`,
-        body: data[bodyField],
-        apiVersion: data.ApiVersion,
-        metadata: sobject,
-        id: data.Id,
-    }]);
-}
-
-const handle_AURA = async (connector,sobject,data) => {
-    let resources = (await connector.conn.tooling.query(`SELECT AuraDefinitionBundleId,Format,DefType,Source FROM AuraDefinition WHERE AuraDefinitionBundleId = '${data.Id}'`)).records || [];
-    let files = formatFiles(resources.map(x => {
-        let _name = _auraNameMapping(data.FullName, x.DefType);
-        return {
-            path: _name,
-            name: _name,
-            body: x.Source,
+const handle_APEX = async (connector, sobject, data, extension = 'cls', bodyField = 'Body') => {
+    return formatFiles([
+        {
+            path: `${data.FullName || data.Name}.${extension}`,
+            name: `${data.FullName || data.Name}.${extension}`,
+            body: data[bodyField],
             apiVersion: data.ApiVersion,
             metadata: sobject,
             id: data.Id,
-            _source: x
-        }
-    }));
-    return sortObjectsByField(files, 'extension', ['cmp', 'html', 'js', 'css', 'xml'])
-}
+        },
+    ]);
+};
+
+const handle_AURA = async (connector, sobject, data) => {
+    let resources =
+        (
+            await connector.conn.tooling.query(
+                `SELECT AuraDefinitionBundleId,Format,DefType,Source FROM AuraDefinition WHERE AuraDefinitionBundleId = '${data.Id}'`
+            )
+        ).records || [];
+    let files = formatFiles(
+        resources.map(x => {
+            let _name = _auraNameMapping(data.FullName, x.DefType);
+            return {
+                path: _name,
+                name: _name,
+                body: x.Source,
+                apiVersion: data.ApiVersion,
+                metadata: sobject,
+                id: data.Id,
+                _source: x,
+            };
+        })
+    );
+    return sortObjectsByField(files, 'extension', ['cmp', 'html', 'js', 'css', 'xml']);
+};
 
 const _auraNameMapping = (name, type) => {
     switch (type) {
@@ -225,93 +260,144 @@ const _auraNameMapping = (name, type) => {
         default:
             return name;
     }
-}
+};
 
-const runAndCacheQuery = async (connector,query,_byPassCaching) => {
-
-    const fetchAndSave = async (query) => {
+const runAndCacheQuery = async (connector, query, _byPassCaching) => {
+    const fetchAndSave = async query => {
         let queryExec = connector.conn.tooling.query(query);
-        let result = (await queryExec.run({ responseTarget: 'Records', autoFetch: true, maxFetch: 10000 })) || [];
-        cacheManager.saveOrgData(connector.conn.alias,CACHE_ORG_DATA_TYPES.METADATA_QUERY,query,result);
+        let result =
+            (await queryExec.run({
+                responseTarget: 'Records',
+                autoFetch: true,
+                maxFetch: 10000,
+            })) || [];
+        cacheManager.saveOrgData(
+            connector.conn.alias,
+            CACHE_ORG_DATA_TYPES.METADATA_QUERY,
+            query,
+            result
+        );
         return result;
-    }
+    };
 
-    const cachedQuery = await cacheManager.loadOrgData(connector.conn.alias,CACHE_ORG_DATA_TYPES.METADATA_QUERY,query);
-    if(cachedQuery && !_byPassCaching){
-        LOGGER.debug('cachedQuery',cachedQuery);
+    const cachedQuery = await cacheManager.loadOrgData(
+        connector.conn.alias,
+        CACHE_ORG_DATA_TYPES.METADATA_QUERY,
+        query
+    );
+    if (cachedQuery && !_byPassCaching) {
+        LOGGER.debug('cachedQuery', cachedQuery);
         fetchAndSave(query);
         return cachedQuery;
-    }else{
+    } else {
         return await fetchAndSave(query);
     }
-}
+};
 
-
-const load_recordFromToolingAPI = async (connector,sobject,recordId) => {
+const load_recordFromToolingAPI = async (connector, sobject, recordId) => {
     const urlQuery = `/services/data/v${connector.conn.version}/tooling/sobjects/${sobject}/${recordId}`;
-    console.log('urlQuery',urlQuery);
+    console.log('urlQuery', urlQuery);
     return await connector.conn.request(urlQuery);
-}
+};
 
-const load_recordFromMetadataAPI = async (connector,sobject,fullName) => {
+const load_recordFromMetadataAPI = async (connector, sobject, fullName) => {
     return await connector.conn.metadata.read(sobject, fullName);
-}
+};
 
 // Helper function to load a specific metadata record
-const loadSpecificMetadataRecord = async (connector,{sobject,recordId,fullName}) => {
+const loadSpecificMetadataRecord = async (connector, { sobject, recordId, fullName }) => {
     let selectedRecord = null;
     let files = null;
 
     const recordLoaders = {
         LightningComponentBundle: async () => handle_LWC(connector, sobject, recordId),
-        ApexClass: async () => handle_APEX(connector, sobject, await load_recordFromToolingAPI(connector, sobject, recordId)),
-        AuraDefinitionBundle: async () => handle_AURA(connector, sobject, await load_recordFromToolingAPI(connector, sobject, recordId)),
-        ApexTrigger: async () => handle_APEX(connector, sobject, await load_recordFromToolingAPI(connector, sobject, recordId), 'trigger'),
-        ApexPage: async () => handle_APEX(connector, sobject, await load_recordFromToolingAPI(connector, sobject, recordId), 'page', 'Markup'),
-        ApexComponent: async () => handle_APEX(connector, sobject, await load_recordFromToolingAPI(connector, sobject, recordId), 'page', 'Markup'),
+        ApexClass: async () =>
+            handle_APEX(
+                connector,
+                sobject,
+                await load_recordFromToolingAPI(connector, sobject, recordId)
+            ),
+        AuraDefinitionBundle: async () =>
+            handle_AURA(
+                connector,
+                sobject,
+                await load_recordFromToolingAPI(connector, sobject, recordId)
+            ),
+        ApexTrigger: async () =>
+            handle_APEX(
+                connector,
+                sobject,
+                await load_recordFromToolingAPI(connector, sobject, recordId),
+                'trigger'
+            ),
+        ApexPage: async () =>
+            handle_APEX(
+                connector,
+                sobject,
+                await load_recordFromToolingAPI(connector, sobject, recordId),
+                'page',
+                'Markup'
+            ),
+        ApexComponent: async () =>
+            handle_APEX(
+                connector,
+                sobject,
+                await load_recordFromToolingAPI(connector, sobject, recordId),
+                'page',
+                'Markup'
+            ),
     };
 
     if (recordLoaders[sobject]) {
         files = await recordLoaders[sobject]();
     } else {
-        const isSobject = store.getState().metadata.metadata_global.records.find(x => x.name == sobject)?.isSobject || false;
-        if(isSobject){
+        const isSobject =
+            store.getState().metadata.metadata_global.records.find(x => x.name == sobject)
+                ?.isSobject || false;
+        if (isSobject) {
             selectedRecord = await load_recordFromToolingAPI(connector, sobject, recordId);
-        }else{
+        } else {
             const test = await load_recordFromMetadataAPI(connector, sobject, fullName);
             selectedRecord = test;
         }
     }
 
     return { selectedRecord, files };
-}
+};
 
 /** Redux */
 
-
 const fetchGlobalMetadata = createAsyncThunk(
     'metadata/fetchGlobalMetadata',
-    async (_, { dispatch,getState,rejectWithValue }) => {
+    async (_, { dispatch, getState, rejectWithValue }) => {
         try {
             const { application } = getState();
             // Fetch available metadata objects
-            LOGGER.debug('application.connector',application.connector);
-            const {tooling} = (await dispatch(DESCRIBE.describeSObjects({
-                connector:application.connector.conn
-            }))).payload;
+            LOGGER.debug('application.connector', application.connector);
+            const { tooling } = (
+                await dispatch(
+                    DESCRIBE.describeSObjects({
+                        connector: application.connector.conn,
+                    })
+                )
+            ).payload;
             const sobjects = tooling.sobjects.map(obj => obj.name);
-            const {metadataObjects} = (await dispatch(DESCRIBE.describeVersion({
-                connector:application.connector.conn
-            }))).payload;
+            const { metadataObjects } = (
+                await dispatch(
+                    DESCRIBE.describeVersion({
+                        connector: application.connector.conn,
+                    })
+                )
+            ).payload;
             // TODO : Seperate the metadata from the objects. Some metadata are not sobjects
             let result = metadataObjects
                 .filter(obj => !METADATA_EXCLUDE_LIST.includes(obj.xmlName))
-                .map(obj => ({ 
-                    ...obj, 
-                    name: obj.xmlName, 
-                    label: obj.xmlName, 
+                .map(obj => ({
+                    ...obj,
+                    name: obj.xmlName,
+                    label: obj.xmlName,
                     key: obj.xmlName,
-                    isSobject: sobjects.includes(obj.xmlName)
+                    isSobject: sobjects.includes(obj.xmlName),
                 }));
 
             result = [...result, ...METADATA_EXCEPTION_LIST.filter(x => x.isSearchable)];
@@ -324,28 +410,34 @@ const fetchGlobalMetadata = createAsyncThunk(
 
 const fetchSpecificMetadata = createAsyncThunk(
     'metadata/fetchSpecificMetadata',
-    async ({ sobject,bypass = false, force = false }, { dispatch,getState, rejectWithValue }) => {
+    async ({ sobject, bypass = false, force = false }, { dispatch, getState, rejectWithValue }) => {
         try {
             //bypass = bypass || false; // Default is false;
-            await dispatch(METADATA.reduxSlice.actions.setAttributes({sobject}))
+            await dispatch(METADATA.reduxSlice.actions.setAttributes({ sobject }));
 
-            const { application,metadata } = getState();
-            LOGGER.debug('application.connector',application.connector);
+            const { application, metadata } = getState();
+            LOGGER.debug('application.connector', application.connector);
             const exceptionMetadata = METADATA_EXCEPTION_LIST.find(x => x.name === sobject) || null;
             // Check if the requested sobject differs from the current state
             if (metadata.currentMetadata !== sobject || force) {
                 const _metadata = exceptionMetadata
-                    ? await loadSpecificMetadataException(application.connector, exceptionMetadata, null, 1,bypass)
-                    : await loadSpecificMetadata(application.connector, sobject,bypass);
-                console.log('---> _metadata',_metadata);
+                    ? await loadSpecificMetadataException(
+                          application.connector,
+                          exceptionMetadata,
+                          null,
+                          1,
+                          bypass
+                      )
+                    : await loadSpecificMetadata(application.connector, sobject, bypass);
+                console.log('---> _metadata', _metadata);
                 return {
                     currentMetadata: sobject,
-                    metadata:_metadata,
+                    metadata: _metadata,
                 };
             }
-            return { 
+            return {
                 currentMetadata: metadata.currentMetadata,
-                metadata:metadata.metadata_records
+                metadata: metadata.metadata_records,
                 //currentLevel: metadata.currentLevel
             };
         } catch (error) {
@@ -358,89 +450,106 @@ const fetchSpecificMetadata = createAsyncThunk(
 // Async Thunk for fetching Metadata
 const fetchMetadataRecord = createAsyncThunk(
     'metadata/fetchMetadataRecord',
-    async ({ sobject, param1,param2,label1 }, { getState,dispatch,rejectWithValue }) => {
+    async ({ sobject, param1, param2, label1 }, { getState, dispatch, rejectWithValue }) => {
         const tabkey = `${sobject}-${param1}`;
 
         try {
             const { application } = getState();
             const exceptionMetadata = METADATA_EXCEPTION_LIST.find(x => x.name === sobject) || null;
 
-            const flowVersions = {flowVersionOptions:[],flowVersionValue:null};
+            const flowVersions = { flowVersionOptions: [], flowVersionValue: null };
             if (exceptionMetadata) {
-                const lvl2ExceptionMetadata = METADATA_EXCEPTION_LIST.find(x => x.name === exceptionMetadata.lvl2Type);
-                const result = await loadSpecificMetadataException(application.connector, lvl2ExceptionMetadata, param1, 2,false);
+                const lvl2ExceptionMetadata = METADATA_EXCEPTION_LIST.find(
+                    x => x.name === exceptionMetadata.lvl2Type
+                );
+                const result = await loadSpecificMetadataException(
+                    application.connector,
+                    lvl2ExceptionMetadata,
+                    param1,
+                    2,
+                    false
+                );
                 const flowVersionOptions = result.records.map(record => ({
                     value: record.key,
                     label: record.label,
                 }));
                 let flowVersionValue = flowVersionOptions[0]?.value || null;
-                if(flowVersionOptions.find(x => x.value == param2)){
-                    flowVersionValue = flowVersionOptions.find(x => x.value == param2).value
+                if (flowVersionOptions.find(x => x.value == param2)) {
+                    flowVersionValue = flowVersionOptions.find(x => x.value == param2).value;
                 }
 
-                Object.assign(flowVersions,{
+                Object.assign(flowVersions, {
                     flowVersionOptions,
                     flowVersionValue,
                 });
                 //await dispatch(METADATA.reduxSlice.actions.setAttributes(flowVersions));
                 // We overwrite the value with the FlowVersion
                 param1 = flowVersions.flowVersionValue;
-                if(exceptionMetadata.soapObject){
+                if (exceptionMetadata.soapObject) {
                     // Reassign the sobject for soap call
                     sobject = exceptionMetadata.soapObject;
                 }
             }
 
-            
-            const {selectedRecord,files} = await loadSpecificMetadataRecord(application.connector,{
-                sobject,
-                recordId:param1,
-                fullName:label1
-            });
+            const { selectedRecord, files } = await loadSpecificMetadataRecord(
+                application.connector,
+                {
+                    sobject,
+                    recordId: param1,
+                    fullName: label1,
+                }
+            );
             return {
                 tabkey,
                 selectedRecord,
                 files,
-                ...flowVersions
+                ...flowVersions,
             };
         } catch (error) {
             console.error('Error fetching exception metadata:', error);
             return rejectWithValue({
-                error:error.message,
-                tabkey
+                error: error.message,
+                tabkey,
             });
         }
     }
 );
 
-const _addTab = (state,{tab}) => {
+const _addTab = (state, { tab }) => {
     state.tabs.push(tab);
     // Assign new tab
     state.currentTabId = tab.id;
-}
+};
 
-const _updateTab = (state,{tab}) => {
+const _updateTab = (state, { tab }) => {
     const tabIndex = state.tabs.findIndex(x => x.id == tab.id);
     // Assign new tab
     if (tabIndex > -1) {
         state.tabs[tabIndex] = tab;
         state.currentTabId = tab.id;
     }
-}
+};
 
-const _setAttributes = (state,payload) => {
+const _setAttributes = (state, payload) => {
     const validParams = [
-        'param1', 'param2', 'label1', 'label2',
-        'sobject', 'developerName','flowVersionOptions','flowVersionValue',
-        'selectedRecord','files','currentTabId'
+        'param1',
+        'param2',
+        'label1',
+        'label2',
+        'sobject',
+        'developerName',
+        'flowVersionOptions',
+        'flowVersionValue',
+        'selectedRecord',
+        'files',
+        'currentTabId',
     ];
-    validParams.forEach((key) => {
+    validParams.forEach(key => {
         if (key in payload && payload[key] !== undefined) {
             state[key] = payload[key];
         }
     });
-}
-
+};
 
 // Create a slice with reducers and extraReducers
 const metadataSlice = createSlice({
@@ -454,20 +563,20 @@ const metadataSlice = createSlice({
         label2: null,
         sobject: null,
         developerName: null,
-        flowVersionOptions:[],
-        flowVersionValue:null,
+        flowVersionOptions: [],
+        flowVersionValue: null,
         //currentLevel: 0,
         metadata: [], // { records: [], label: 'Metadata' }
         isLoading: false,
-        isLoadingRecord:false,
-        loadingMessage:'',
+        isLoadingRecord: false,
+        loadingMessage: '',
         error: null,
         // Displayed Data
-        currentTabId:null,
-        files:null,
-        selectedRecord:null,
-        metadata_global:null,
-        metadata_records:null
+        currentTabId: null,
+        files: null,
+        selectedRecord: null,
+        metadata_global: null,
+        metadata_records: null,
     },
     reducers: {
         loadCacheSettings: (state, action) => {
@@ -476,7 +585,7 @@ const metadataSlice = createSlice({
             if (cachedConfig) {
                 const { tabs } = cachedConfig;
                 Object.assign(state, {
-                    tabs
+                    tabs,
                 });
             }
             console.log('#cachedConfig#', cachedConfig);
@@ -489,7 +598,7 @@ const metadataSlice = createSlice({
         },
         setAttributes: (state, action) => {
             const { payload } = action;
-            _setAttributes(state,payload);
+            _setAttributes(state, payload);
         },
         initTabs: (state, action) => {
             // Set first tab
@@ -498,10 +607,10 @@ const metadataSlice = createSlice({
             }
         },
         addTab: (state, action) => {
-            _addTab(state,action.payload);
+            _addTab(state, action.payload);
         },
         updateTab: (state, action) => {
-            _updateTab(state,action.payload)
+            _updateTab(state, action.payload);
         },
         removeTab: (state, action) => {
             const { id, alias } = action.payload;
@@ -510,13 +619,13 @@ const metadataSlice = createSlice({
             if (state.tabs.length > 0 && state.currentTabId == id) {
                 const lastTab = state.tabs[state.tabs.length - 1];
                 state.currentTabId = lastTab.id;
-                _setAttributes(state,{
+                _setAttributes(state, {
                     ...lastTab.attributes,
                     ...lastTab.data,
-                    ...lastTab.flowVersions
-                })
+                    ...lastTab.flowVersions,
+                });
             }
-            if(state.tabs.length == 0){
+            if (state.tabs.length == 0) {
                 state.currentTabId = null;
                 state.selectedRecord = null;
                 state.files = null;
@@ -532,26 +641,26 @@ const metadataSlice = createSlice({
             // Assign new tab
             if (tab) {
                 state.currentTabId = id;
-                _setAttributes(state,{
+                _setAttributes(state, {
                     ...tab.attributes,
                     ...tab.data,
-                    ...tab.flowVersions
-                })
+                    ...tab.flowVersions,
+                });
             }
         },
-        goBack:(state, action) => {
+        goBack: (state, action) => {
             // Back is only from records to global
             state.metadata_records = null;
         },
         updateMetadata: (state, action) => {
             const { metadata } = action.payload;
             state.metadata = metadata;
-        }
+        },
     },
-    extraReducers: (builder) => {
+    extraReducers: builder => {
         builder
             // fetchGlobalMetadata
-            .addCase(fetchGlobalMetadata.pending, (state) => {
+            .addCase(fetchGlobalMetadata.pending, state => {
                 state.isLoading = true;
                 state.loadingMessage = 'Loading All Metadata';
                 state.error = null;
@@ -566,7 +675,7 @@ const metadataSlice = createSlice({
                 state.error = action.payload || 'Failed to fetch metadata';
             })
             // fetchSpecificMetadata
-            .addCase(fetchSpecificMetadata.pending, (state) => {
+            .addCase(fetchSpecificMetadata.pending, state => {
                 state.isLoading = true;
                 state.loadingMessage = 'Loading Records';
                 state.error = null;
@@ -582,7 +691,7 @@ const metadataSlice = createSlice({
                 state.error = action.payload;
             })
             // fetchMetadataRecord
-            .addCase(fetchMetadataRecord.pending, (state,action) => {
+            .addCase(fetchMetadataRecord.pending, (state, action) => {
                 state.isLoading = true;
                 state.isLoadingRecord = true;
                 state.loadingMessage = 'Loading Specific Record';
@@ -591,7 +700,8 @@ const metadataSlice = createSlice({
             .addCase(fetchMetadataRecord.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isLoadingRecord = false;
-                const { files,selectedRecord,tabkey,flowVersionOptions,flowVersionValue } = action.payload;
+                const { files, selectedRecord, tabkey, flowVersionOptions, flowVersionValue } =
+                    action.payload;
                 state.files = files;
                 state.selectedRecord = selectedRecord;
                 state.currentTabId = tabkey;
@@ -599,65 +709,65 @@ const metadataSlice = createSlice({
                 state.flowVersionValue = flowVersionValue;
 
                 const tab = {
-                    id:tabkey,
-                    name:state.label1, // for now it's enough but might need to change
-                    attributes:{
-                        param1:state.param1,
-                        label1:state.label1,
-                        param2:flowVersionOptions.length > 0?state.param2:null,
-                        label2:flowVersionOptions.length > 0?state.label2:null,
-                        sobject:state.sobject,
-                        developerName:state.developerName
+                    id: tabkey,
+                    name: state.label1, // for now it's enough but might need to change
+                    attributes: {
+                        param1: state.param1,
+                        label1: state.label1,
+                        param2: flowVersionOptions.length > 0 ? state.param2 : null,
+                        label2: flowVersionOptions.length > 0 ? state.label2 : null,
+                        sobject: state.sobject,
+                        developerName: state.developerName,
                     },
-                    data:{
+                    data: {
                         files,
                         selectedRecord,
-                        error:null
+                        error: null,
                     },
-                    flowVersions:{
+                    flowVersions: {
                         flowVersionOptions,
-                        flowVersionValue
-                    }
+                        flowVersionValue,
+                    },
                 };
-                if(!state.tabs.find(x => x.id === tabkey)){
-                    _addTab(state,{tab})
-                }else{
-                    _updateTab(state,{tab})
+                if (!state.tabs.find(x => x.id === tabkey)) {
+                    _addTab(state, { tab });
+                } else {
+                    _updateTab(state, { tab });
                 }
                 //state.currentLevel = action.payload.currentLevel;
             })
             .addCase(fetchMetadataRecord.rejected, (state, action) => {
-                const { error,tabkey } = action.payload;
+                const { error, tabkey } = action.payload;
                 // Not Used for now ()
                 state.isLoading = false;
                 state.isLoadingRecord = false;
                 state.currentTabId = tabkey;
 
                 const tab = {
-                    id:tabkey,
-                    name:state.label1, // for now it's enough but might need to change
-                    attributes:{
-                        param1:state.param1,
-                        label1:state.label1,
-                        param2:null,
-                        label2:null,
-                        sobject:state.sobject,
-                        developerName:state.developerName
+                    id: tabkey,
+                    name: state.label1, // for now it's enough but might need to change
+                    attributes: {
+                        param1: state.param1,
+                        label1: state.label1,
+                        param2: null,
+                        label2: null,
+                        sobject: state.sobject,
+                        developerName: state.developerName,
                     },
-                    data:{
-                        files:null,
-                        selectedRecord:null,
-                        error
-                    }
+                    data: {
+                        files: null,
+                        selectedRecord: null,
+                        error,
+                    },
                 };
-                if(!state.tabs.find(x => x.id === tabkey)){
-                    _addTab(state,{tab})
-                }else{
-                    _updateTab(state,{tab})
+                if (!state.tabs.find(x => x.id === tabkey)) {
+                    _addTab(state, { tab });
+                } else {
+                    _updateTab(state, { tab });
                 }
             });
     },
 });
 
 export const reduxSlice = metadataSlice;
-export { fetchGlobalMetadata,fetchSpecificMetadata,fetchMetadataRecord };
+export { fetchGlobalMetadata, fetchSpecificMetadata, fetchMetadataRecord };

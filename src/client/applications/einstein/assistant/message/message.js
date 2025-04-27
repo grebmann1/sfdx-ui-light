@@ -1,109 +1,111 @@
-import { LightningElement,api,track} from "lwc";
+import { LightningElement, api, track } from 'lwc';
 import Toast from 'lightning/toast';
-import { isUndefinedOrNull,timeout,classSet,lowerCaseKey,ROLES } from "shared/utils";
+import { isUndefinedOrNull, timeout, classSet, lowerCaseKey, ROLES } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
-import { store,APPLICATION,SELECTORS,EINSTEIN} from 'core/store';
-import { GLOBAL_EINSTEIN} from 'assistant/utils';
+import { store, APPLICATION, SELECTORS, EINSTEIN } from 'core/store';
+import { GLOBAL_EINSTEIN } from 'assistant/utils';
 
 export default class Message extends ToolkitElement {
-
     @api item;
     @api dialogId;
 
-    connectedCallback(){
-
-    }
-
+    connectedCallback() {}
 
     /** Methods **/
 
-    formatTextFromEinstein = (text) => {
+    formatTextFromEinstein = text => {
         // Mainly related to data issues coming from Apex
-        return  text.replaceAll('&#124;','|');
-    }
-    
+        return text.replaceAll('&#124;', '|');
+    };
+
     /** Events **/
 
-    handleChange = (e) => {
+    handleChange = e => {
         e.stopPropagation();
         const value = e.detail.value;
         const { einstein } = store.getState();
-        const einsteinState = SELECTORS.einstein.selectById({einstein},lowerCaseKey(this.dialogId));
+        const einsteinState = SELECTORS.einstein.selectById(
+            { einstein },
+            lowerCaseKey(this.dialogId)
+        );
         let data = [...einsteinState.data];
         const index = data.findIndex(x => x.id === this.item.id);
-        if(index > -1){
+        if (index > -1) {
             data[index] = {
                 ...data[index],
-                content:value
+                content: value,
             };
-            store.dispatch(EINSTEIN.reduxSlice.actions.updateMessage({
-                dialogId:this.dialogId,
-                alias:GLOBAL_EINSTEIN,
-                data
-            }));
+            store.dispatch(
+                EINSTEIN.reduxSlice.actions.updateMessage({
+                    dialogId: this.dialogId,
+                    alias: GLOBAL_EINSTEIN,
+                    data,
+                })
+            );
         }
-        
-    }
+    };
 
     handleEdit = () => {
         //this.dispatchEvent(new CustomEvent("edit", { detail:this.item,bubbles: true,composed: true }));
         const container = this.refs.container;
-        if(container){
+        if (container) {
             container.showEditor();
         }
-
-    }
+    };
 
     handleRetry = () => {
-        this.dispatchEvent(new CustomEvent("retry", { detail:this.item,bubbles: true,composed: true }));
-    }
+        this.dispatchEvent(
+            new CustomEvent('retry', { detail: this.item, bubbles: true, composed: true })
+        );
+    };
 
     handleDownload = async () => {
         navigator.clipboard.writeText(this.item.content);
         Toast.show({
             label: `Message exported to your clipboard`,
-            variant:'success',
+            variant: 'success',
         });
-    }
+    };
 
     /** Getters **/
-    
+
     @api
-    get isUser(){
+    get isUser() {
         return this.item?.role === ROLES.USER;
     }
 
-    get hasError(){
+    get hasError() {
         return this.item?.hasError;
     }
 
-    get isRetryDisplayed(){
+    get isRetryDisplayed() {
         return this.item?.isLastMessage && this.isUser && this.hasError;
     }
 
-    get originMessage(){
-        return this.isUser?'You':'Assistant';
+    get originMessage() {
+        return this.isUser ? 'You' : 'Assistant';
     }
 
-    get body(){
+    get body() {
         return this.formatTextFromEinstein(this.item?.content || '');
     }
-    
 
-    get itemClass(){
+    get itemClass() {
         return classSet('slds-chat-listitem ')
-        .add({
-            'slds-chat-listitem_outbound':this.isUser,
-            'slds-chat-listitem_inbound':!this.isUser
-        }).toString();
+            .add({
+                'slds-chat-listitem_outbound': this.isUser,
+                'slds-chat-listitem_inbound': !this.isUser,
+            })
+            .toString();
     }
 
-    get itemMessageClass(){
+    get itemMessageClass() {
         return classSet('slds-chat-message__text slds-flex-column')
-        .add({
-            'slds-chat-message-error':this.hasError,
-            'slds-chat-message__text_outbound':this.isUser,
-            'slds-chat-message__text_inbound':!this.isUser
-        }).toString();
+            .add({
+                'slds-chat-message-error': this.hasError,
+                'slds-chat-message__text_outbound': this.isUser,
+                'slds-chat-message__text_inbound': !this.isUser,
+            })
+            .toString();
     }
 }

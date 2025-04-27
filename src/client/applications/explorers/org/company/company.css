@@ -1,12 +1,14 @@
-.slds-card{
+.slds-card {
     /*height:-webkit-fill-available;*/
-    height:inherit;
+    height: inherit;
 }
 
-.slds-dl--horizontal__label,.slds-dl_horizontal__label{
-    width:40% !important;
+.slds-dl--horizontal__label,
+.slds-dl_horizontal__label {
+    width: 40% !important;
 }
 
-.slds-dl--horizontal__detail, .slds-dl_horizontal__detail {
+.slds-dl--horizontal__detail,
+.slds-dl_horizontal__detail {
     width: 60%;
 }

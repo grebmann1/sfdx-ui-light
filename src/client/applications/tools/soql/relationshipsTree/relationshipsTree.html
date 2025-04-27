@@ -5,25 +5,52 @@
     <template lwc:else>
         <ul class="slds-tree slds-full-height slds-scrollable_y" onscroll={handleScroll}>
             <template for:each={virtualList} for:item="relation">
-                <li aria-level="1" aria-selected={relation.isActive} aria-expanded={relation.isExpanded} role="treeitem" key={relation.relationshipName}>
+                <li
+                    aria-level="1"
+                    aria-selected={relation.isActive}
+                    aria-expanded={relation.isExpanded}
+                    role="treeitem"
+                    key={relation.relationshipName}>
                     <div class="slds-tree__item">
-                        <button class="slds-button slds-button_icon slds-m-right_x-small" aria-hidden="false" tabindex="-1" title={i18n.RELATIONSHIPS_TREE_EXPAND_CHILD_REL} data-name={relation.relationshipName} onclick={toggleChildRelationship}>
-                            <svg class="slds-button__icon slds-button__icon_small" aria-hidden="true">
-                                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#chevronright"></use>
+                        <button
+                            class="slds-button slds-button_icon slds-m-right_x-small"
+                            aria-hidden="false"
+                            tabindex="-1"
+                            title={i18n.RELATIONSHIPS_TREE_EXPAND_CHILD_REL}
+                            data-name={relation.relationshipName}
+                            onclick={toggleChildRelationship}>
+                            <svg
+                                class="slds-button__icon slds-button__icon_small"
+                                aria-hidden="true">
+                                <use
+                                    xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#chevronright"></use>
                             </svg>
-                            <span class="slds-assistive-text">{i18n.RELATIONSHIPS_TREE_EXPAND_CHILD_REL}</span>
+                            <span class="slds-assistive-text">
+                                {i18n.RELATIONSHIPS_TREE_EXPAND_CHILD_REL}
+                            </span>
                         </button>
-                        <span class="slds-has-flexi-truncate" onclick={selectRelationship} data-name={relation.relationshipName}>
-                            <a class="slds-tree__item-label slds-truncate" title={relation.relationshipName}> {relation.relationshipName} </a>
-                            <div class="relationship-details" title={relation.details}>{relation.details}</div>
+                        <span
+                            class="slds-has-flexi-truncate"
+                            onclick={selectRelationship}
+                            data-name={relation.relationshipName}>
+                            <a
+                                class="slds-tree__item-label slds-truncate"
+                                title={relation.relationshipName}>
+                                {relation.relationshipName}
+                            </a>
+                            <div class="relationship-details" title={relation.details}>
+                                {relation.details}
+                            </div>
                         </span>
                     </div>
                     <template lwc:if={relation.isExpanded}>
-                        <soql-fields-tree sobject={relation.childSObject} childrelation={relation.relationshipName} rootlevel="2"></soql-fields-tree>
+                        <soql-fields-tree
+                            sobject={relation.childSObject}
+                            childrelation={relation.relationshipName}
+                            rootlevel="2"></soql-fields-tree>
                     </template>
                 </li>
             </template>
         </ul>
     </template>
-    
 </template>

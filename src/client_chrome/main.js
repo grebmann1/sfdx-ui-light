@@ -1,5 +1,5 @@
 import '@lwc/synthetic-shadow';
-import {createElement} from 'lwc';
+import { createElement } from 'lwc';
 import extensionRoot from 'extension/root';
 import uiFullView from 'ui/fullView';
 import jsforce from 'imported/jsforce';
@@ -14,7 +14,8 @@ const init = async () => {
     window.Prism = Prism;
     //window.connections = {}; // use for faster connection, during live processing
     window.jsforceSettings = {
-        clientId: '3MVG9_kZcLde7U5oNdaqndT3T9qa54eaA.ycC6APuOkYzRP286pPeOvwOqAQ2ue7l5ejNAxPYj4xTbWn3zS6Y',
+        clientId:
+            '3MVG9_kZcLde7U5oNdaqndT3T9qa54eaA.ycC6APuOkYzRP286pPeOvwOqAQ2ue7l5ejNAxPYj4xTbWn3zS6Y',
         chromeId: 'dmlgjapbfifmeopbfikbdmlgdcgcdmfb',
         redirectUri: 'https://sf-toolkit.com/chrome/callback',
         //proxyUrl:   'https://sf-toolkit.com/proxy/',
@@ -25,20 +26,20 @@ const init = async () => {
 };
 
 /** Init **/
-window.extension_initLwc = async (variant) => {
+window.extension_initLwc = async variant => {
     await init();
-    const elm = createElement('extension-root', {is: extensionRoot});
+    const elm = createElement('extension-root', { is: extensionRoot });
     Object.assign(elm, {
-        variant
+        variant,
     });
     document.body.appendChild(elm);
 };
 
-window.extension_initApp = async (variant) => {
+window.extension_initApp = async variant => {
     await init();
-    const elm = createElement('ui-full-View', {is: uiFullView});
+    const elm = createElement('ui-full-View', { is: uiFullView });
     Object.assign(elm, {
-        variant
+        variant,
     });
     document.body.appendChild(elm);
 };

@@ -1,18 +1,28 @@
-import {wire,api, track} from "lwc";
+import { wire, api, track } from 'lwc';
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
-import {store as legacyStore, store_application} from 'shared/store';
+import { store as legacyStore, store_application } from 'shared/store';
 import {
-    isEmpty, isNotUndefinedOrNull, isUndefinedOrNull, refreshCurrentTab, runSilent,
-    getCurrentObjectType,getCurrentTab,getObjectDocLink,getObjectFieldsSetupLink,getObjectListLink,getObjectSetupLink,getRecordTypesLink,
-    redirectToUrlViaChrome
+    isEmpty,
+    isNotUndefinedOrNull,
+    isUndefinedOrNull,
+    refreshCurrentTab,
+    runSilent,
+    getCurrentObjectType,
+    getCurrentTab,
+    getObjectDocLink,
+    getObjectFieldsSetupLink,
+    getObjectListLink,
+    getObjectSetupLink,
+    getRecordTypesLink,
+    redirectToUrlViaChrome,
 } from 'shared/utils';
-import { CurrentPageReference,NavigationContext, generateUrl, navigate } from 'lwr/navigation';
+import { CurrentPageReference, NavigationContext, generateUrl, navigate } from 'lwr/navigation';
 
 const PAGE_LIST_SIZE = 70;
 const TOOLING = 'tooling';
 const SOBJECT = {
-    contact: 'Contact'
+    contact: 'Contact',
 };
 
 export default class RecordExplorer extends ToolkitElement {
@@ -21,7 +31,6 @@ export default class RecordExplorer extends ToolkitElement {
 
     @api versions = [];
     @api isPanel = false;
-
 
     tableInstance;
     isLoading = false;
@@ -59,7 +68,6 @@ export default class RecordExplorer extends ToolkitElement {
     // Info & Details
     isInfoDisplayed = false;
 
-
     @api
     get recordId() {
         return this._recordId;
@@ -71,10 +79,7 @@ export default class RecordExplorer extends ToolkitElement {
         if (toRun) {
             this.initRecordExplorer();
         }
-
     }
-
-    
 
     connectedCallback() {
         // Load metadata
@@ -91,19 +96,21 @@ export default class RecordExplorer extends ToolkitElement {
             this.isLoading = true;
 
             this.currentTab = await getCurrentTab();
-            this.currentOrigin = isNotUndefinedOrNull(this.currentTab)?(new URL(this.currentTab.url)).origin:this.connector.conn.instanceUrl;
+            this.currentOrigin = isNotUndefinedOrNull(this.currentTab)
+                ? new URL(this.currentTab.url).origin
+                : this.connector.conn.instanceUrl;
             // Get sobjectName (Step 2) // Should be optimized to save 1 API Call [Caching]
             this.sobjectName = await getCurrentObjectType(this.connector.conn, this.recordId); // to replace with describeGlobal using lastModified to fetch only the changes !
 
             // Get Metadata (Step 3) // Should be optimized to save 1 API Call [Caching]
             var [metadata, record] = await Promise.all([
                 this.connector.conn.sobject(this.sobjectName).describe$(),
-                this.connector.conn.sobject(this.sobjectName).retrieve(this.recordId)
+                this.connector.conn.sobject(this.sobjectName).retrieve(this.recordId),
             ]);
             if (isUndefinedOrNull(metadata)) {
                 var [metadata, record] = await Promise.all([
                     this.connector.conn.tooling.sobject(this.sobjectName).describe$(),
-                    this.connector.conn.tooling.sobject(this.sobjectName).retrieve(this.recordId)
+                    this.connector.conn.tooling.sobject(this.sobjectName).retrieve(this.recordId),
                 ]);
                 this.metadata = metadata;
                 this.record = record;
@@ -119,38 +126,47 @@ export default class RecordExplorer extends ToolkitElement {
             if (this.sobjectName === SOBJECT.contact) {
                 const query = `SELECT Id, MemberId, NetworkId,Network.Name,Network.Status FROM NetworkMember Where Member.ContactId = '${this.recordId}' AND Network.Status = 'Live'`;
                 const networkMembers = await runSilent(async () => {
-                    return (await this.connector.conn.query(query)).records
+                    return (await this.connector.conn.query(query)).records;
                 }, []);
                 //console.log('networkMembers',networkMembers);
                 const retUrl = '/';
                 this.networkMembers = networkMembers.map(x => ({
                     ...x,
-                    _redirectLink: `${this.connector.conn.instanceUrl}/servlet/servlet.su?oid=${encodeURIComponent(this.connector.configuration.orgId)}&retURL=${encodeURIComponent(retUrl)}&sunetworkid=${encodeURIComponent(x.NetworkId)}&sunetworkuserid=${encodeURIComponent(x.MemberId)}`
-                }))
+                    _redirectLink: `${
+                        this.connector.conn.instanceUrl
+                    }/servlet/servlet.su?oid=${encodeURIComponent(
+                        this.connector.configuration.orgId
+                    )}&retURL=${encodeURIComponent(retUrl)}&sunetworkid=${encodeURIComponent(
+                        x.NetworkId
+                    )}&sunetworkuserid=${encodeURIComponent(x.MemberId)}`,
+                }));
             }
             // Get RecordType
             if (this.record.RecordTypeId) {
-                this.recordType = await this.connector.conn.sobject('RecordType').retrieve(this.record.RecordTypeId);
+                this.recordType = await this.connector.conn
+                    .sobject('RecordType')
+                    .retrieve(this.record.RecordTypeId);
             }
-
 
             // Initiliaze Picklist Dependencies
             /*this.initDependencyManager({
                 dependentFields: this.recordUi.objectInfo.dependentFields,
                 picklistValues: filteredPicklistValues
             });*/
-            
-            this.dispatchEvent(new CustomEvent("dataload", { 
-                detail:{
-                    recordId:this.recordId,
-                    record:this.record,
-                    recordType:this.recordType,
-                    refreshedDate:new Date(),
-                    success:true
-                },
-                bubbles: true,
-                composed: true 
-            }));
+
+            this.dispatchEvent(
+                new CustomEvent('dataload', {
+                    detail: {
+                        recordId: this.recordId,
+                        record: this.record,
+                        recordType: this.recordType,
+                        refreshedDate: new Date(),
+                        success: true,
+                    },
+                    bubbles: true,
+                    composed: true,
+                })
+            );
 
             this.isLoading = false;
         } catch (e) {
@@ -158,16 +174,17 @@ export default class RecordExplorer extends ToolkitElement {
             this.isError = true;
             this.isLoading = false;
 
-            this.dispatchEvent(new CustomEvent("dataload", { 
-                detail:{
-                    recordId:this.recordId,
-                    success:false,
-                    error:e.message
-                },
-                bubbles: true,
-                composed: true 
-            }));
-            
+            this.dispatchEvent(
+                new CustomEvent('dataload', {
+                    detail: {
+                        recordId: this.recordId,
+                        success: false,
+                        error: e.message,
+                    },
+                    bubbles: true,
+                    composed: true,
+                })
+            );
         }
     };
 
@@ -179,26 +196,30 @@ export default class RecordExplorer extends ToolkitElement {
 
             // Get data
             if (isNotUndefinedOrNull(this.metadata)) {
-                const _connector = this.metadata?._useToolingApi ? this.connector.conn.tooling : this.connector.conn;
+                const _connector = this.metadata?._useToolingApi
+                    ? this.connector.conn.tooling
+                    : this.connector.conn;
                 var [metadata, record] = await Promise.all([
                     _connector.sobject(this.sobjectName).describe$(), // Refresh Metadata
-                    _connector.sobject(this.sobjectName).retrieve(this.recordId)
+                    _connector.sobject(this.sobjectName).retrieve(this.recordId),
                 ]);
                 this.metadata = metadata;
                 this.record = record;
                 this.updateData(this.formatData());
 
-                this.dispatchEvent(new CustomEvent("dataload", { 
-                    detail:{
-                        recordId:this.recordId,
-                        record:this.record,
-                        recordType:this.recordType,
-                        refreshedDate:new Date(),
-                        success:true
-                    },
-                    bubbles: true,
-                    composed: true 
-                }));
+                this.dispatchEvent(
+                    new CustomEvent('dataload', {
+                        detail: {
+                            recordId: this.recordId,
+                            record: this.record,
+                            recordType: this.recordType,
+                            refreshedDate: new Date(),
+                            success: true,
+                        },
+                        bubbles: true,
+                        composed: true,
+                    })
+                );
             }
 
             this.isLoading = false;
@@ -209,27 +230,31 @@ export default class RecordExplorer extends ToolkitElement {
         }
     };
 
-    updateData = (newData) => {
+    updateData = newData => {
         // to force refresh
         this.data = null;
         this.data = newData;
     };
 
     formatData = () => {
-        const formattedData = this.metadata.fields.map(x => {
-            let {label, name, type} = x;
-            return {
-                name, label, type,
-                fieldInfo: x,
-                isVisible: true,
-                value: this.record.hasOwnProperty(name) ? this.record[name] : null
-            }
-        }).sort((a, b) => a.name.localeCompare(b.name));
+        const formattedData = this.metadata.fields
+            .map(x => {
+                let { label, name, type } = x;
+                return {
+                    name,
+                    label,
+                    type,
+                    fieldInfo: x,
+                    isVisible: true,
+                    value: this.record.hasOwnProperty(name) ? this.record[name] : null,
+                };
+            })
+            .sort((a, b) => a.name.localeCompare(b.name));
         return formattedData;
     };
 
     @api
-    updateFilter = (value) => {
+    updateFilter = value => {
         this.filter = value;
         this.scrollToTop();
         //this.pageNumber = 1; // reset not working with edit mode for now !
@@ -237,11 +262,11 @@ export default class RecordExplorer extends ToolkitElement {
 
     scrollToTop = () => {
         window.setTimeout(() => {
-            this.template.querySelector('.tableFixHead').scrollTo({top: 0, behavior: 'auto'});
+            this.template.querySelector('.tableFixHead').scrollTo({ top: 0, behavior: 'auto' });
         }, 100);
     };
 
-    filtering = (arr) => {
+    filtering = arr => {
         //console.log('arr',arr);
         var regex = new RegExp('(' + this.filter + ')', 'i');
         var items = arr.map(item => {
@@ -250,8 +275,16 @@ export default class RecordExplorer extends ToolkitElement {
             }
             const _value = this.isInfoDisplayed ? item.type : item.value;
 
-            item.isVisible = isEmpty(this.filter) || (this.filter === 'false' && _value === false || this.filter === 'true' && _value === true || this.filter === 'null' && _value === null);
-            item.isVisible = item.isVisible || (_value != false && _value != true && regex.test(_value) || regex.test(item.name) || regex.test(item.label));
+            item.isVisible =
+                isEmpty(this.filter) ||
+                (this.filter === 'false' && _value === false) ||
+                (this.filter === 'true' && _value === true) ||
+                (this.filter === 'null' && _value === null);
+            item.isVisible =
+                item.isVisible ||
+                (_value != false && _value != true && regex.test(_value)) ||
+                regex.test(item.name) ||
+                regex.test(item.label);
             return item;
         });
         /** Extra filter */
@@ -261,10 +294,9 @@ export default class RecordExplorer extends ToolkitElement {
             const errorFields = Object.keys(this.fieldErrors);
             items = items.map(item => ({
                 ...item,
-                isVisible: allModifiedFields.includes(item.name) || errorFields.includes(item.name)
+                isVisible: allModifiedFields.includes(item.name) || errorFields.includes(item.name),
             }));
         }
-
 
         return items;
     };
@@ -272,23 +304,25 @@ export default class RecordExplorer extends ToolkitElement {
     saveRecord = async () => {
         this.isSaving = true;
 
-        const _connector = this.metadata?._useToolingApi ? this.connector.conn.tooling : this.connector.conn;
+        const _connector = this.metadata?._useToolingApi
+            ? this.connector.conn.tooling
+            : this.connector.conn;
 
-        const allModifiedRows = [...this.template.querySelectorAll('recordviewer-record-explorer-row')].filter(item => item.isDirty);
+        const allModifiedRows = [
+            ...this.template.querySelectorAll('recordviewer-record-explorer-row'),
+        ].filter(item => item.isDirty);
         const toUpdate = {
-            Id: this.record.Id
+            Id: this.record.Id,
         };
 
         allModifiedRows.forEach(x => {
-            toUpdate[x.name] = x.newValue
+            toUpdate[x.name] = x.newValue;
         });
 
-
         try {
-
             const res = await _connector.sobject(this.sobjectName).update([toUpdate]);
             const response = res[0];
-            console.log('###### response ######',response);
+            console.log('###### response ######', response);
             if (response.success) {
                 Toast.show({
                     label: 'Record saved successfully',
@@ -304,7 +338,7 @@ export default class RecordExplorer extends ToolkitElement {
                 // Need to improve in the futur
                 response.errors.forEach(error => {
                     const errorFields = error.fields || [];
-                    
+
                     errorFields.forEach(field => {
                         fieldErrorSet[field] = error;
                     });
@@ -315,12 +349,15 @@ export default class RecordExplorer extends ToolkitElement {
                 this.fieldErrors = fieldErrorSet;
 
                 if (fieldErrorGlobal.length > 0) {
-                    let label = fieldErrorGlobal[0].statusCode || fieldErrorGlobal[0].errorCode || 'Update Error';
+                    let label =
+                        fieldErrorGlobal[0].statusCode ||
+                        fieldErrorGlobal[0].errorCode ||
+                        'Update Error';
                     Toast.show({
                         message: fieldErrorGlobal[0].message,
                         label: label,
                         variant: 'error',
-                        mode: 'sticky'
+                        mode: 'sticky',
                     });
                 }
             }
@@ -333,13 +370,11 @@ export default class RecordExplorer extends ToolkitElement {
                 message: e.message,
                 label: label,
                 variant: 'error',
-                mode: 'dismissible'
+                mode: 'dismissible',
             });
         }
 
-
         this.isSaving = false;
-
     };
 
     resetEditing = () => {
@@ -348,57 +383,54 @@ export default class RecordExplorer extends ToolkitElement {
         this.modifiedRows = [];
         this.isViewChangeFilterEnabled = false;
         let rows = this.template.querySelectorAll('recordviewer-record-explorer-row');
-            rows.forEach(row => {
-                row.disableInputField();
-            });
+        rows.forEach(row => {
+            row.disableInputField();
+        });
         this.refreshData();
     };
 
     generateDefaultQuery = () => {
         return `SELECT Id FROM ${this.metadata.name}`;
-    }
+    };
 
     /** Events **/
 
     handleRedirectDataExplorer = () => {
         const applicationName = 'soql';
         const query = this.generateDefaultQuery();
-        const params = new URLSearchParams({applicationName,query});
-        if(this.isPanel){
+        const params = new URLSearchParams({ applicationName, query });
+        if (this.isPanel) {
             const settings = {
                 sessionId: this.connector.conn.accessToken,
                 serverUrl: this.connector.conn.instanceUrl,
                 baseUrl: chrome.runtime.getURL('/views/app.html'),
-                redirectUrl:encodeURIComponent(params.toString())
+                redirectUrl: encodeURIComponent(params.toString()),
             };
             redirectToUrlViaChrome(settings);
-        }else{
-            navigate(this.navContext,
-                {
-                    type:'application',
-                    state:{
-                        applicationName,
-                        query
-                    }
-                }
-            );
+        } else {
+            navigate(this.navContext, {
+                type: 'application',
+                state: {
+                    applicationName,
+                    query,
+                },
+            });
         }
-    }
+    };
 
     handleRedirectToApp = () => {
         const params = new URLSearchParams({
             applicationName: 'recordviewer',
-            recordId:this.recordId
+            recordId: this.recordId,
         });
         const settings = {
             sessionId: this.connector.conn.accessToken,
             serverUrl: this.connector.conn.instanceUrl,
             baseUrl: chrome.runtime.getURL('/views/app.html'),
-            redirectUrl:encodeURIComponent(params.toString())
+            redirectUrl: encodeURIComponent(params.toString()),
         };
         redirectToUrlViaChrome(settings);
-    }
-
+    };
 
     handleScroll(event) {
         //console.log('handleScroll');
@@ -411,8 +443,8 @@ export default class RecordExplorer extends ToolkitElement {
         }
     }
 
-    handleCopy = (e) => {
-        const {value,label} = e.currentTarget.dataset;
+    handleCopy = e => {
+        const { value, label } = e.currentTarget.dataset;
         navigator.clipboard.writeText(value);
         Toast.show({
             label,
@@ -420,16 +452,20 @@ export default class RecordExplorer extends ToolkitElement {
         });
     };
 
-    redirectDoc = (e) => {
+    redirectDoc = e => {
         e.preventDefault();
         e.stopPropagation();
         const params = {
             type: 'application',
             state: {
                 applicationName: 'documentation',
-                attribute1: this.isUsingToolingApi ? 'atlas.en-us.api_tooling.meta' : 'atlas.en-us.object_reference.meta',
-                name: this.isUsingToolingApi ? `tooling_api_objects_${this.sobjectName.toLowerCase()}` : `sforce_api_objects_${this.sobjectName.toLowerCase()}`
-            }
+                attribute1: this.isUsingToolingApi
+                    ? 'atlas.en-us.api_tooling.meta'
+                    : 'atlas.en-us.object_reference.meta',
+                name: this.isUsingToolingApi
+                    ? `tooling_api_objects_${this.sobjectName.toLowerCase()}`
+                    : `sforce_api_objects_${this.sobjectName.toLowerCase()}`,
+            },
         };
 
         legacyStore.dispatch(store_application.fakeNavigate(params));
@@ -444,7 +480,7 @@ export default class RecordExplorer extends ToolkitElement {
         window.setTimeout(() => {
             this.isInfoDisplayed = !this.isInfoDisplayed;
             this.isloading = false;
-        }, 1)
+        }, 1);
     };
 
     handleCancelClick = () => {
@@ -456,8 +492,8 @@ export default class RecordExplorer extends ToolkitElement {
         this.saveRecord();
     };
 
-    handleEnabledEditMode = (e) => {
-        const {fieldName} = e.detail;
+    handleEnabledEditMode = e => {
+        const { fieldName } = e.detail;
         this.editingFieldSet.add(fieldName);
         this.isEditMode = true;
         /*let rows = this.template.querySelectorAll('recordviewer-record-explorer-row');
@@ -470,17 +506,19 @@ export default class RecordExplorer extends ToolkitElement {
         this.isLabelDisplayed = !this.isLabelDisplayed;
     };
 
-    handleRowInputChange = (e) => {
+    handleRowInputChange = e => {
         e.stopPropagation();
         //console.log('handleRowInputChange',e);
-        const allModifiedRows = [...this.template.querySelectorAll('recordviewer-record-explorer-row')].filter(item => item.isDirty);
-        this.modifiedRows = allModifiedRows.map(x => ({fieldName: x.name}));
+        const allModifiedRows = [
+            ...this.template.querySelectorAll('recordviewer-record-explorer-row'),
+        ].filter(item => item.isDirty);
+        this.modifiedRows = allModifiedRows.map(x => ({ fieldName: x.name }));
         //console.log('modifiedRows',this.modifiedRows);
     };
 
-    handleViewChanges_filter = (e) => {
+    handleViewChanges_filter = e => {
         this.isViewChangeFilterEnabled = !this.isViewChangeFilterEnabled;
-    }
+    };
 
     /** Getters */
 
@@ -531,11 +569,11 @@ export default class RecordExplorer extends ToolkitElement {
     }
 
     get label() {
-        console.log('this.metadata',this.metadata);
+        console.log('this.metadata', this.metadata);
         return this.metadata?.label;
     }
 
-    get developerName(){
+    get developerName() {
         return this.metadata?.name;
     }
 
@@ -553,15 +591,15 @@ export default class RecordExplorer extends ToolkitElement {
             sobjectName: this.sobjectName,
             durableId: this.metadata?.durableId,
             isCustomSetting: this.metadata?.IsCustomSetting,
-            keyPrefix: this.metadata?.keyPrefix
-        }
+            keyPrefix: this.metadata?.keyPrefix,
+        };
     }
 
-    get recordTypeName(){
-        if(isNotUndefinedOrNull(this.recordType)){
+    get recordTypeName() {
+        if (isNotUndefinedOrNull(this.recordType)) {
             return `${this.recordType.Name} / ${this.recordType.DeveloperName}`;
         }
-        return ''
+        return '';
     }
 
     /*
@@ -604,15 +642,14 @@ export default class RecordExplorer extends ToolkitElement {
             } else if (allModifiedFields.includes(x.name)) {
                 virtualList.push({
                     ...x,
-                    isVisible: false
-                })
+                    isVisible: false,
+                });
             }
         });
         return virtualList;
     }
 
     get formattedData() {
-
         return this.filtering(this.data);
     }
 
@@ -627,7 +664,7 @@ export default class RecordExplorer extends ToolkitElement {
     get versions_options() {
         return this.versions.map(x => ({
             label: x.label,
-            value: x.version
+            value: x.version,
         }));
     }
 
@@ -671,8 +708,7 @@ export default class RecordExplorer extends ToolkitElement {
         return this.metadata?._useToolingApi ? 'Tooling' : 'Standard';
     }
 
-    get buttonSize(){
-        return this.isPanel?'small':'medium';
+    get buttonSize() {
+        return this.isPanel ? 'small' : 'medium';
     }
-
 }

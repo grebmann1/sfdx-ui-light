@@ -8,13 +8,13 @@ let activeRequests = 0; // Count of currently active requests
 let requestQueue = []; // Queue to hold pending requests
 
 // Establish a jsforce connection
-const initializeConnection = (params) => {
+const initializeConnection = params => {
     console.log('Worker - initializeConnection');
     conn = new jsforce.Connection(params);
 };
 
 // Function to fetch metadata for a specific SObject
-const fetchSObjectMetadata = async (sobject) => {
+const fetchSObjectMetadata = async sobject => {
     try {
         const metadata = await conn.sobject(sobject.name).describe();
         cache[sobject.name] = {
@@ -25,7 +25,7 @@ const fetchSObjectMetadata = async (sobject) => {
             recordTypeInfos: metadata.recordTypeInfos,
             childRelationships: metadata.childRelationships,
         };
-        console.log(sobject.name,cache[sobject.name]);
+        console.log(sobject.name, cache[sobject.name]);
     } catch (error) {
         console.error(`Failed to fetch metadata for ${sobject.name}:`, error);
     }
@@ -40,16 +40,16 @@ const processQueue = () => {
     // Dequeue the next request and execute it
     const sobject = requestQueue.shift();
     activeRequests++;
-    
+
     fetchSObjectMetadata(sobject)
-    .then(() => {
-        activeRequests--;
-        processQueue(); // Process the next request in the queue when done
-    })
-    .catch(() => {
-        activeRequests--;
-        processQueue(); // Continue processing even if an error occurs
-    });
+        .then(() => {
+            activeRequests--;
+            processQueue(); // Process the next request in the queue when done
+        })
+        .catch(() => {
+            activeRequests--;
+            processQueue(); // Continue processing even if an error occurs
+        });
 };
 
 // Load a full set of metadata for all specified types and store it in the cache
@@ -59,7 +59,7 @@ const loadFullMetadataSet = async () => {
         const sobjectMetadata = await conn.describeGlobal();
         const sobjectToFetch = sobjectMetadata.sobjects
             .filter(sobj => sobj.associateEntityType === null)
-            .map((sobj) => ({
+            .map(sobj => ({
                 name: sobj.name,
                 label: sobj.label,
                 keyPrefix: sobj.keyPrefix,
@@ -70,21 +70,26 @@ const loadFullMetadataSet = async () => {
 
         // Enqueue all SObject fetch requests
         requestQueue = [...sobjectToFetch];
-        
+
         // Start processing the queue with max concurrent requests
         for (let i = 0; i < MAX_CONCURRENT_REQUESTS; i++) {
             processQueue();
         }
 
         // Wait for all requests to complete before sending the result
-        await Promise.all(requestQueue.map(() => new Promise((resolve) => {
-            const interval = setInterval(() => {
-                if (activeRequests === 0 && requestQueue.length === 0) {
-                    clearInterval(interval);
-                    resolve();
-                }
-            }, 100);
-        })));
+        await Promise.all(
+            requestQueue.map(
+                () =>
+                    new Promise(resolve => {
+                        const interval = setInterval(() => {
+                            if (activeRequests === 0 && requestQueue.length === 0) {
+                                clearInterval(interval);
+                                resolve();
+                            }
+                        }, 100);
+                    })
+            )
+        );
 
         // Send cached metadata back to main thread
         postMessage({ type: 'result', action: 'loadFullMetadataSet', result: cache });
@@ -94,7 +99,7 @@ const loadFullMetadataSet = async () => {
 };
 
 // Handle incoming messages
-onmessage = async (event) => {
+onmessage = async event => {
     console.log('Worker received message');
     const { action, connectionParams } = event.data;
 

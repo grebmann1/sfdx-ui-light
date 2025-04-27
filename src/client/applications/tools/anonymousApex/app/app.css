@@ -1,13 +1,13 @@
-:host{
+:host {
     height: 100%;
     --slds-c-textarea-sizing-min-height: 100px;
 }
 
-.language-log{
+.language-log {
     white-space: break-spaces;
 }
 
-.apex-illustration{
+.apex-illustration {
     width: -webkit-fill-available;
 }
 

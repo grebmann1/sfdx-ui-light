@@ -1,14 +1,20 @@
-import { api, wire } from "lwc";
+import { api, wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import Toast from 'lightning/toast';
-import { classSet, isNotUndefinedOrNull, runActionAfterTimeOut, guid, isChromeExtension, autoDetectAndFormat } from 'shared/utils';
+import {
+    classSet,
+    isNotUndefinedOrNull,
+    runActionAfterTimeOut,
+    guid,
+    isChromeExtension,
+    autoDetectAndFormat,
+} from 'shared/utils';
 import { store, connectStore } from 'core/store';
 import { SOQL, APEX, VF, LOG } from 'editor/languages';
 import { registerCopilot, setupMonaco } from 'editor/utils';
 import { MonacoLwcWidget } from 'editor/editorCompleteWidget';
 
 export default class Default extends ToolkitElement {
-
     @api maxHeight;
     @api isReadOnly = false;
     @api files = [];
@@ -26,7 +32,6 @@ export default class Default extends ToolkitElement {
     @api isEinsteinHidden = false;
     @api isCopyHidden = false;
 
-
     currentPromptWidget;
 
     models = [];
@@ -38,23 +43,21 @@ export default class Default extends ToolkitElement {
 
     counter = 0;
 
-
     _useToolingApi = false;
 
     /*@wire(connectStore, { store })
     storeChange({ ui,sobject }) {}
     */
 
-    connectedCallback() { }
+    connectedCallback() {}
 
     renderedCallback() {
         if (!this._hasRendered) {
             this._hasRendered = true;
-            setupMonaco()
-                .then(monaco => {
-                    this.monaco = monaco;
-                    this.loadMonacoEditor();
-                });
+            setupMonaco().then(monaco => {
+                this.monaco = monaco;
+                this.loadMonacoEditor();
+            });
         }
     }
 
@@ -66,20 +69,18 @@ export default class Default extends ToolkitElement {
             label: `Exported to your clipboard`,
             variant: 'success',
         });
-    }
+    };
 
     handleOpenContextCopilot = () => {
         // Add the widget to Monaco editor
         if (!this.currentPromptWidget.isVisible) {
             this.currentPromptWidget.show();
         }
-    }
-
+    };
 
     /** Methods **/
 
-    createEditor = (model) => {
-
+    createEditor = model => {
         /* const innerContainer2 = document.createElement('div');
              innerContainer2.setAttribute("slot", "editor");
              innerContainer2.style.width = '100%';
@@ -91,23 +92,26 @@ export default class Default extends ToolkitElement {
             model: model,
             theme: this.theme || 'vs',
             readOnly: this.isReadOnly,
-            wordWrap: "on",
+            wordWrap: 'on',
             autoIndent: true,
             formatOnType: true,
             formatOnPaste: true,
             minimap: {
-                enabled: false
+                enabled: false,
             },
             automaticLayout: true,
             scrollBeyondLastLine: false,
             fixedOverflowWidgets: true,
         });
 
-
-        
-        if(!this.isReadOnly) {
+        if (!this.isReadOnly) {
             // Add Copilot
-            registerCopilot(this.monaco, this.editor, model.getLanguageId(), this.handleOpenContextCopilot);
+            registerCopilot(
+                this.monaco,
+                this.editor,
+                model.getLanguageId(),
+                this.handleOpenContextCopilot
+            );
             // Add Prompt Widget
             this.currentPromptWidget = new MonacoLwcWidget({
                 monaco: this.monaco,
@@ -120,7 +124,7 @@ export default class Default extends ToolkitElement {
         }
 
         this.editor.onDidChangeModelContent(this.handleModelContentChange);
-        this.editor.onKeyDown((e) => {
+        this.editor.onKeyDown(e => {
             if ((e.ctrlKey || e.metaKey) && e.keyCode === this.monaco.KeyCode.KeyS) {
                 e.preventDefault();
                 //this.dispatchEvent(new CustomEvent("executesave", {bubbles: true,composed:true }));
@@ -128,14 +132,16 @@ export default class Default extends ToolkitElement {
             if ((e.ctrlKey || e.metaKey) && e.keyCode === this.monaco.KeyCode.Enter) {
                 e.preventDefault();
                 e.stopPropagation();
-                this.dispatchEvent(new CustomEvent("executeaction", { bubbles: true, composed: true }));
+                this.dispatchEvent(
+                    new CustomEvent('executeaction', { bubbles: true, composed: true })
+                );
             }
             if (e.key === 'Escape') {
                 e.preventDefault();
                 e.stopPropagation();
             }
         });
-        this.editor.onDidPaste((e) => {
+        this.editor.onDidPaste(e => {
             const pastedText = this.editor.getModel()?.getValueInRange(e.range);
 
             // Auto-detect format and apply formatting
@@ -145,10 +151,8 @@ export default class Default extends ToolkitElement {
             if (_format) {
                 this.monaco.editor.setModelLanguage(this.editor.getModel(), _format);
             }
-
-
         });
-    }
+    };
 
     loadMonacoEditor = async () => {
         //console.log('loadMonacoEditor');
@@ -159,62 +163,64 @@ export default class Default extends ToolkitElement {
         LOG.configureApexLogLanguage(this.monaco);
         // Completion
         APEX.configureApexCompletions(this.monaco);
-        this.dispatchEvent(new CustomEvent("monacoloaded", { bubbles: true }));
+        this.dispatchEvent(new CustomEvent('monacoloaded', { bubbles: true }));
         this.hasLoaded = true;
-    }
+    };
 
-    handleModelContentChange = (event) => {
-        
+    handleModelContentChange = event => {
         this.currentPromptWidget?.processModelChange(event);
-        runActionAfterTimeOut(this.editor.getValue(), (value) => {
-            //
-            this.dispatchEvent(
-                new CustomEvent("change", {
-                    detail: {
-                        value: this.editor.getValue(),
-                        type: autoDetectAndFormat(this.editor.getValue()),
-                    },
-                    bubbles: true
-                })
-            );
-        }, { timeout: 200 });
-    }
+        runActionAfterTimeOut(
+            this.editor.getValue(),
+            value => {
+                //
+                this.dispatchEvent(
+                    new CustomEvent('change', {
+                        detail: {
+                            value: this.editor.getValue(),
+                            type: autoDetectAndFormat(this.editor.getValue()),
+                        },
+                        bubbles: true,
+                    })
+                );
+            },
+            { timeout: 200 }
+        );
+    };
 
     @api
-    addMarkers = (markers) => {
-        this.monaco.editor.setModelMarkers(this.currentModel, "owner", markers);
-    }
+    addMarkers = markers => {
+        this.monaco.editor.setModelMarkers(this.currentModel, 'owner', markers);
+    };
 
     @api
     resetMarkers = () => {
-        this.monaco.editor.setModelMarkers(this.currentModel, "owner", []);
-    }
-
+        this.monaco.editor.setModelMarkers(this.currentModel, 'owner', []);
+    };
 
     @api
-    displayModel = (model) => {
+    displayModel = model => {
         if (this.editor) {
             this.editor.setModel(model); // set last model
         } else {
             this.createEditor(model);
         }
-    }
+    };
 
     @api
     createModel = ({ body, language }) => {
         return this.monaco.editor.createModel(body, language);
-    }
+    };
 
-    @api 
+    @api
     resetPromptWidget = () => {
         console.log('resetPromptWidget');
         this.currentPromptWidget?.hide();
-    }
+    };
 
     sendChangeEvent = () => {
         runActionAfterTimeOut(
             this.editor.getValue(),
-            (value) => {
+            value => {
                 this.dispatchEvent(
                     new CustomEvent('change', {
                         detail: {
@@ -257,5 +263,4 @@ export default class Default extends ToolkitElement {
     get isEinsteinDisplayed() {
         return !this.isEinsteinHidden;
     }
-
 }

@@ -1,11 +1,8 @@
 import ToolkitElement from 'core/toolkitElement';
 
-import {classSet} from 'shared/utils';
-
+import { classSet } from 'shared/utils';
 
 export default class Tools extends ToolkitElement {
-
-
     isLoading = false;
     isLWCHighlighted = false;
 
@@ -23,7 +20,7 @@ export default class Tools extends ToolkitElement {
     /** Methods **/
 
     forwardMessageToContent = async message => {
-        const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
+        const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
         console.log('tab', tab);
         const response = await chrome.tabs.sendMessage(tab.id, message);
         // do something with response here, not outside the function
@@ -32,17 +29,15 @@ export default class Tools extends ToolkitElement {
 
     /** Events **/
 
-    highlightLWC_change = (e) => {
+    highlightLWC_change = e => {
         this.isLWCHighlighted = e.detail.checked;
         this.forwardMessageToContent({
             action: 'lwc_highlight',
             value: e.detail.checked,
-            config : {
-                sessionId:this.connector.conn.accessToken,
-                serverUrl:this.connector.conn.instanceUrl,
-            }
+            config: {
+                sessionId: this.connector.conn.accessToken,
+                serverUrl: this.connector.conn.instanceUrl,
+            },
         });
-    }
-
-
+    };
 }

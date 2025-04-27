@@ -1,8 +1,8 @@
-:host{
+:host {
     height: 100%;
     --slds-c-textarea-sizing-min-height: 100px;
-    --slds-g-spacing-4:4px;
-    --slds-g-spacing-6:6px;
+    --slds-g-spacing-4: 4px;
+    --slds-g-spacing-6: 6px;
 }
 
 .body {
@@ -37,19 +37,19 @@
     height: 100%;
 }
 
-.bottom-left-panel{
+.bottom-left-panel {
     /*flex: 1;*/
-    /*border-right: 1px solid #dddbda;*/    
+    /*border-right: 1px solid #dddbda;*/
     /*display: flex;
     flex-direction: column;*/
     /*min-width: 300px;*/
 }
 
-.bottom-right-panel{
+.bottom-right-panel {
     /*width: 100%;*/
 }
 
-.class-or{
+.class-or {
     text-align: center;
     height: auto;
     align-self: stretch;
@@ -58,6 +58,6 @@
     justify-content: center;
 }
 
-.slds-page-header__title{
+.slds-page-header__title {
     font-weight: 500;
 }

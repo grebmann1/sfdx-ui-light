@@ -1,27 +1,25 @@
-import {api, LightningElement, wire} from "lwc";
+import { api, LightningElement, wire } from 'lwc';
 import Toast from 'lightning/toast';
 import {
     isNotUndefinedOrNull,
     isUndefinedOrNull,
     normalizeString as normalize,
     runActionAfterTimeOut,
-    getRecordId
-} from "shared/utils";
-import {directConnect, getHostAndSession} from 'connection/utils';
-import {getCurrentTab, PANELS} from 'extension/utils';
+    getRecordId,
+} from 'shared/utils';
+import { directConnect, getHostAndSession } from 'connection/utils';
+import { getCurrentTab, PANELS } from 'extension/utils';
 
 /** Store **/
-import {store as legacyStore} from 'shared/store';
-import {connectStore, store} from 'core/store';
+import { store as legacyStore } from 'shared/store';
+import { connectStore, store } from 'core/store';
 
 const VARIANT = {
     DEFAULT: 'default',
-    OVERLAY: 'overlay'
+    OVERLAY: 'overlay',
 };
 
 export default class Root extends LightningElement {
-
-
     @api variant;
     sessionId;
     serverUrl;
@@ -45,13 +43,13 @@ export default class Root extends LightningElement {
     /** Getters **/
 
     get hasSession() {
-        return isNotUndefinedOrNull(this.sessionId) && isNotUndefinedOrNull(this.serverUrl)
+        return isNotUndefinedOrNull(this.sessionId) && isNotUndefinedOrNull(this.serverUrl);
     }
 
     get normalizedVariant() {
         return normalize(this.variant, {
             fallbackValue: VARIANT.DEFAULT,
-            validValues: Object.values(VARIANT)
+            validValues: Object.values(VARIANT),
         });
     }
 
@@ -59,7 +57,7 @@ export default class Root extends LightningElement {
         return this.normalizedVariant === VARIANT.DEFAULT;
     }
 
-    get isOverlay(){
+    get isOverlay() {
         return this.normalizedVariant === VARIANT.OVERLAY;
     }
 
@@ -76,16 +74,16 @@ export default class Root extends LightningElement {
         }
     }*/
 
-    @wire(connectStore, {store: legacyStore})
-    applicationChange({application}) {
+    @wire(connectStore, { store: legacyStore })
+    applicationChange({ application }) {
         // Redirect
         if (application.redirectTo) {
             this.handleRedirection(application);
         }
     }
 
-    @wire(connectStore, {store})
-    storeChange({application}) {
+    @wire(connectStore, { store })
+    storeChange({ application }) {
         // connector
         if (application.connector) {
             this.connector = null;
@@ -113,7 +111,7 @@ export default class Root extends LightningElement {
     }
     */
 
-    loadComponent = async (withMonitorChange) => {
+    loadComponent = async withMonitorChange => {
         let cookie = await getHostAndSession();
         //console.log('cookie',cookie);
         if (cookie) {
@@ -124,14 +122,14 @@ export default class Root extends LightningElement {
         }
 
         // Handle Tabs
-        try{
+        try {
             this.currentTab = await getCurrentTab();
             this.currentUrl = this.currentTab.url;
             //this.currentOrigin = (new URL(this.currentTab.url)).origin;
             if (withMonitorChange) {
                 chrome.tabs.onUpdated.addListener(this.monitorUrlListener);
             }
-        }catch(e){
+        } catch (e) {
             console.error(e);
         }
         this.hasLoaded = true;
@@ -141,19 +139,23 @@ export default class Root extends LightningElement {
         //console.log('onUpdated',tabId, info, tab)
         if (!tab.url || info.status !== 'complete' || tabId != this.currentTab.id) return;
 
-        runActionAfterTimeOut(tab.url, async (newUrl) => {
-            this.currentUrl = newUrl;
-            if (!this.hasSession) {
-                // Reload in case there is existing session found!
-                this.loadComponent(false);
-            } else {
-                // verify cookie
-                let cookie = await getHostAndSession();
-                if (isUndefinedOrNull(cookie)) {
-                    this.redirectToDefaultView();
+        runActionAfterTimeOut(
+            tab.url,
+            async newUrl => {
+                this.currentUrl = newUrl;
+                if (!this.hasSession) {
+                    // Reload in case there is existing session found!
+                    this.loadComponent(false);
+                } else {
+                    // verify cookie
+                    let cookie = await getHostAndSession();
+                    if (isUndefinedOrNull(cookie)) {
+                        this.redirectToDefaultView();
+                    }
                 }
-            }
-        }, {timeout: 300});
+            },
+            { timeout: 300 }
+        );
     };
 
     redirectToDefaultView = () => {
@@ -162,7 +164,7 @@ export default class Root extends LightningElement {
         this.panel = PANELS.DEFAULT;
     };
 
-    init_existingSession = async (cookie) => {
+    init_existingSession = async cookie => {
         this.sessionId = cookie.session;
         this.serverUrl = cookie.domain;
         /** Set as global **/
@@ -179,10 +181,9 @@ export default class Root extends LightningElement {
             this.sendError(e.message); // Shouldn't be used all the time
             this.redirectToDefaultView();
         }
-
     };
 
-    sendError = (message) => {
+    sendError = message => {
         /*LightningAlert.open({
             message: 'Invalid Session',
             theme: 'error', // a red theme intended for error states
@@ -191,11 +192,11 @@ export default class Root extends LightningElement {
         Toast.show({
             label: message || 'Error during connection',
             variant: 'error',
-            mode: 'dismissible'
+            mode: 'dismissible',
         });
     };
 
-    handleRedirection = async (application) => {
+    handleRedirection = async application => {
         let url = application.redirectTo || '';
 
         /*if(url.startsWith('sftoolkit:')){

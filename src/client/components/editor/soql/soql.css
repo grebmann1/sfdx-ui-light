@@ -1,4 +1,4 @@
-:host{
+:host {
     display: block;
     width: 100%;
 }
@@ -8,5 +8,5 @@
     z-index: 2;
     right: 10px;
     top: 50px;
-    background:white;
+    background: white;
 }

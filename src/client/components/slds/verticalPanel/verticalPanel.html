@@ -2,9 +2,17 @@
     <div class="slds-filter-panel-container">
         <div class={filterPanelClass}>
             <div class="slds-panel__header">
-                <h2 class="slds-panel__header-title slds-text-heading_small slds-truncate" title={title}>{title}</h2>
+                <h2
+                    class="slds-panel__header-title slds-text-heading_small slds-truncate"
+                    title={title}>
+                    {title}
+                </h2>
                 <div class="slds-panel__header-actions">
-                    <lightning-button-icon class="slds-panel__close" icon-name="utility:close" onclick={handleClose} tab-index="-1"></lightning-button-icon>
+                    <lightning-button-icon
+                        class="slds-panel__close"
+                        icon-name="utility:close"
+                        onclick={handleClose}
+                        tab-index="-1"></lightning-button-icon>
                 </div>
             </div>
             <div class="slds-panel__body slds-fill-height">

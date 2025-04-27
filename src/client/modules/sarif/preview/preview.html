@@ -4,11 +4,14 @@
             <header class="slds-media slds-media_center slds-has-flexi-truncate">
                 <div class="slds-media__body">
                     <h2 class="slds-card__header-title">
-                        <a href="#" class="slds-card__header-link slds-truncate" title="Problem description:">
+                        <a
+                            href="#"
+                            class="slds-card__header-link slds-truncate"
+                            title="Problem description:">
                             <span>Problem description:</span>
                         </a>
                     </h2>
-                </div>              
+                </div>
             </header>
         </div>
         <div class="slds-card__body slds-card__body_inner">
@@ -16,21 +19,23 @@
             <div class="location">
                 <b>{file.fileName}</b>
             </div>
-            <br>
-            <br>
+            <br />
+            <br />
             <!--<p class="problem-description-group">Problem synopsis</p>-->
             <div class="slds-grid slds-wrap slds-gutters">
                 <template for:each={sortedItems} for:item="item">
                     <div key={item.key} class="slds-col slds-size_1-of-1">
                         <template lwc:if={item.isSnippetDisplayed}>
-                            <span style="white-space: pre-line;">{item.message}</span>
-                            <pre class="swcSnippet" style="max-height: 108px;">
+                            <span style="white-space: pre-line">{item.message}</span>
+                            <pre class="swcSnippet" style="max-height: 108px">
                                 <code class="lineNumber">{item.lineNumbers}</code>
                                 <code class="hljs flex-grow page-code">{item.snippet}</code>
                             </pre>
                         </template>
                         <template lwc:else>
-                            <span style="white-space: pre-line;">Line: {item.location.region.startLine} | {item.message}</span>
+                            <span style="white-space: pre-line">
+                                Line: {item.location.region.startLine} | {item.message}
+                            </span>
                         </template>
                     </div>
                 </template>

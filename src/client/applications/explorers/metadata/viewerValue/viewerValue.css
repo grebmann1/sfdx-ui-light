@@ -4,4 +4,4 @@
     text-overflow: ellipsis; /* Adds an ellipsis to indicate text overflow */
     width: 100%; /* Set a specific width or max-width as needed */
     display: block; /* Ensures the element is block-level for width to take effect */
-  }
+}

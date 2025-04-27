@@ -1,14 +1,14 @@
-:host{
-    --slds-g-color-brand-base-30 : #0d6efd;
+:host {
+    --slds-g-color-brand-base-30: #0d6efd;
 }
 
-.page-item a{
+.page-item a {
     border-bottom: dotted 1px;
     color: var(--slds-g-color-brand-base-30);
     text-decoration: none;
 }
 
-.page-item{
+.page-item {
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;

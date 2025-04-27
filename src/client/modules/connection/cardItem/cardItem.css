@@ -1,4 +1,4 @@
-.card-item{
+.card-item {
     display: flex;
     flex-direction: row;
     align-content: center;
@@ -15,27 +15,27 @@
     flex: 1;
 }
 
-.card-left{
+.card-left {
     display: flex;
 }
 
-.action-items{
+.action-items {
     align-items: flex-end;
     float: right;
     display: flex;
 }
 
-.icon-org-prod{
+.icon-org-prod {
     --slds-c-icon-color-foreground-default: rgb(0 162 225);
     --slds-c-icon-color-background: transparent;
 }
 
-.icon-apex .slds-button__icon{
+.icon-apex .slds-button__icon {
     --slds-c-icon-color-foreground-default: rgb(0 162 225);
     --slds-c-icon-color-background: transparent;
 }
 
-.icon-org-sandbox{
+.icon-org-sandbox {
     --slds-c-icon-color-foreground-default: gray;
     --slds-c-icon-color-background: transparent;
 }

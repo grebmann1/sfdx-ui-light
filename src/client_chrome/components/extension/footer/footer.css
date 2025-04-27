@@ -7,9 +7,9 @@
     color: white;
     justify-content: space-between; /*flex-end;*/
     align-items: center;
-    display:flex !important;
+    display: flex !important;
     height: 1.5rem !important;
-    position:relative !important;
+    position: relative !important;
     font-size: xx-small;
 }
 

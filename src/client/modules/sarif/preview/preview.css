@@ -1,4 +1,4 @@
-.preview-container{
+.preview-container {
     padding: 1rem;
 }
 
@@ -28,7 +28,7 @@
 }
 
 pre {
-    background-color: rgba(0,0,0,0.06);;
+    background-color: rgba(0, 0, 0, 0.06);
     border-radius: 2px;
     padding: 4px 8px 6px 8px;
 }

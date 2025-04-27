@@ -1,4 +1,4 @@
 export const LABELS = {
-    spinnerAlternativeText:'loading',
-    readOnlyModeAlertMessage:'Read Only Mode'
-}
+    spinnerAlternativeText: 'loading',
+    readOnlyModeAlertMessage: 'Read Only Mode',
+};

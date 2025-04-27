@@ -3,27 +3,35 @@
         <div class="slds-full-height l-cell-auto-size l-container-horizontal">
             <div class="l-cell-auto-size">
                 <div class="l-container-vertical">
-                    <!-- Editor--> 
+                    <!-- Editor-->
                     <div class="slds-flex-column slds-full-height slds-light-bg">
                         <div>
                             <div class="slds-grid"></div>
                             <lightning-tabset variant="scoped" class="slds-without-tab">
-                                <lightning-tab label="Workbench" value="Default"  onactive={handleSelectTab}></lightning-tab>
+                                <lightning-tab
+                                    label="Workbench"
+                                    value="Default"
+                                    onactive={handleSelectTab}></lightning-tab>
                                 <!--<lightning-tab label="Default" value="Custom"  onactive={handleSelectTab}></lightning-tab>-->
-                                <lightning-tab label="JSON"    value="JSON"     onactive={handleSelectTab}></lightning-tab>
+                                <lightning-tab
+                                    label="JSON"
+                                    value="JSON"
+                                    onactive={handleSelectTab}></lightning-tab>
                             </lightning-tabset>
                         </div>
 
                         <div class={defaultContainerClass}>
-                            <metadata-structure-viewer class="slds-full-height slds-flex-column slds-m-horizontal_x-small" record={record}></metadata-structure-viewer>
+                            <metadata-structure-viewer
+                                class="slds-full-height slds-flex-column slds-m-horizontal_x-small"
+                                record={record}></metadata-structure-viewer>
                         </div>
 
                         <div class={jsonContainerClass}>
-                            <editor-default lwc:ref="editor" 
+                            <editor-default
+                                lwc:ref="editor"
                                 class="slds-full-height"
                                 model={currentModel}
-                                onmonacoloaded={handleMonacoLoaded}
-                            ></editor-default>
+                                onmonacoloaded={handleMonacoLoaded}></editor-default>
                             <!--
                             <slds-code-block 
                                 code-block={content} 
@@ -31,8 +39,7 @@
                                 title="Event Content"
                             ></slds-code-block>
                             -->
-                        </div> 
-
+                        </div>
                     </div>
                 </div>
             </div>

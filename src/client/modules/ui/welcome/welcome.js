@@ -1,7 +1,3 @@
-import {LightningElement,api} from 'lwc';
+import { LightningElement, api } from 'lwc';
 
-export default class Welcome extends LightningElement {
-   
-
-    
-}
+export default class Welcome extends LightningElement {}

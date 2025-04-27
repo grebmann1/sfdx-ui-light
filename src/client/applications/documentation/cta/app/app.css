@@ -1,18 +1,17 @@
-:host{
-    --slds-g-color-brand-base-30 : #014486;
+:host {
+    --slds-g-color-brand-base-30: #014486;
     height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-.page-item a{
+.page-item a {
     border-bottom: dotted 1px;
     color: var(--slds-g-color-brand-base-30);
     text-decoration: none;
 }
 
-
 /** SF style **/
-.slds-input{
+.slds-input {
     width: 100%;
 }

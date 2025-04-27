@@ -1,22 +1,22 @@
-:host{
+:host {
     font-size: smaller;
     height: 24px;
 }
 
-.custom-utility-bar{
+.custom-utility-bar {
     background-color: #032d60;
     height: 1.5rem !important;
     color: white;
-    justify-content: space-between;/*flex-end;*/
+    justify-content: space-between; /*flex-end;*/
     align-items: center;
 }
 
-.custom-utility-bar a{
+.custom-utility-bar a {
     color: white;
     margin-left: 5px;
 }
 
-.custom-utility-bar .custom-utility-text{
+.custom-utility-bar .custom-utility-text {
     margin-left: 8px;
     font-weight: 400;
     align-items: center;
@@ -33,10 +33,10 @@
     width: 70%;
 }
 
-.custom-utility-text-copy{
-    --slds-c-icon-color-foreground:rgba(255, 255, 255, 1);
-    --slds-c-button-text-color:rgba(255, 255, 255, 1);
-    --slds-c-button-text-color-hover:rgba(255, 255, 255, 1);
-    --slds-c-button-line-height:normal;
+.custom-utility-text-copy {
+    --slds-c-icon-color-foreground: rgba(255, 255, 255, 1);
+    --slds-c-button-text-color: rgba(255, 255, 255, 1);
+    --slds-c-button-text-color-hover: rgba(255, 255, 255, 1);
+    --slds-c-button-line-height: normal;
     cursor: pointer;
 }

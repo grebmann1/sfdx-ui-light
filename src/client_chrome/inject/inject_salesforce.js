@@ -1,20 +1,26 @@
 import '@webcomponents/custom-elements';
 import '@lwc/synthetic-shadow';
-import {createElement} from 'lwc';
+import { createElement } from 'lwc';
 import ViewsOverlay from 'views/overlay';
 import test from 'feature/test';
-import {isEmpty, runActionAfterTimeOut,redirectToUrlViaChrome,getRecordId,getSobject} from 'shared/utils';
-import { CACHE_CONFIG,loadExtensionConfigFromCache, chromeStore } from 'shared/cacheManager';
+import {
+    isEmpty,
+    runActionAfterTimeOut,
+    redirectToUrlViaChrome,
+    getRecordId,
+    getSobject,
+} from 'shared/utils';
+import { CACHE_CONFIG, loadExtensionConfigFromCache, chromeStore } from 'shared/cacheManager';
 import hotkeys from 'hotkeys-js';
 
 const getCookieInfo = async () => {
-    if(chrome.runtime){
-        return await chrome.runtime.sendMessage({ action: 'fetchCookie', content:null});
+    if (chrome.runtime) {
+        return await chrome.runtime.sendMessage({ action: 'fetchCookie', content: null });
     }
     return null;
-}
+};
 
-const _showCopiedNotification = (copiedValue) => {
+const _showCopiedNotification = copiedValue => {
     // Create the notification element
     const notification = document.createElement('div');
     notification.className = 'sf-toolkit-notification-container';
@@ -29,7 +35,6 @@ const _showCopiedNotification = (copiedValue) => {
     // Append the logo and message to the notification
     notification.appendChild(sfToolkit);
     notification.appendChild(message);
-
 
     // Style the notification element
     const style = document.createElement('style');
@@ -83,7 +88,7 @@ const injectShortCuts = async () => {
         CACHE_CONFIG.SHORTCUT_OVERVIEW.key,
         CACHE_CONFIG.SHORTCUT_SOQL.key,
         CACHE_CONFIG.SHORTCUT_APEX.key,
-        CACHE_CONFIG.SHORTCUT_OPEN_PANEL.key
+        CACHE_CONFIG.SHORTCUT_OPEN_PANEL.key,
     ]);
 
     const shortcutEnabled = configuration[CACHE_CONFIG.SHORTCUT_INJECTION_ENABLED.key];
@@ -96,7 +101,7 @@ const injectShortCuts = async () => {
     if (!shortcutEnabled) return;
 
     console.log('### SF Toolkit - Shortcut Injection ###');
-    
+
     // Create a container for our shortcuts if it doesn't exist
     let shortcutContainer = document.getElementById('sf-toolkit-shortcut-container');
     if (!shortcutContainer) {
@@ -104,7 +109,7 @@ const injectShortCuts = async () => {
         shortcutContainer.id = 'sf-toolkit-shortcut-container';
         shortcutContainer.className = 'sf-toolkit-shortcut-container';
         document.body.appendChild(shortcutContainer);
-        
+
         // Add styles for the shortcut container and buttons
         const style = document.createElement('style');
         style.id = 'sf-toolkit-shortcut-styles';
@@ -146,10 +151,10 @@ const injectShortCuts = async () => {
         `;
         document.head.appendChild(style);
     }
-    
+
     // Clear any existing shortcuts
     shortcutContainer.innerHTML = '';
-    
+
     // Define all shortcuts
     const shortcuts = [
         {
@@ -162,15 +167,15 @@ const injectShortCuts = async () => {
                     navigator.clipboard.writeText(recordId);
                     _showCopiedNotification(recordId);
                 }
-            }
+            },
         },
         {
             id: 'open-panel',
             shortcut: shortcutOpenPanel,
             action: async (event, handler) => {
                 event.preventDefault();
-                await chrome.runtime.sendMessage({ action: 'open_side_panel', content:null});
-            }
+                await chrome.runtime.sendMessage({ action: 'open_side_panel', content: null });
+            },
         },
         {
             id: 'org-overview',
@@ -180,15 +185,15 @@ const injectShortCuts = async () => {
 
                 const cookieInfo = await getCookieInfo();
                 const params = new URLSearchParams({
-                    applicationName: 'home'
+                    applicationName: 'home',
                 });
                 redirectToUrlViaChrome({
                     sessionId: cookieInfo.session,
                     serverUrl: `https://${cookieInfo.domain}`,
                     baseUrl: chrome.runtime.getURL('/views/app.html'),
-                    redirectUrl:encodeURIComponent(params.toString())
-                })
-            }
+                    redirectUrl: encodeURIComponent(params.toString()),
+                });
+            },
         },
         {
             id: 'soql-explorer',
@@ -197,24 +202,22 @@ const injectShortCuts = async () => {
                 event.preventDefault();
                 const cookieInfo = await getCookieInfo();
                 const sobject = getSobject(window.location.href);
-                
+
                 const params = new URLSearchParams({
                     applicationName: 'soql',
                 });
-                if(sobject){
-                    console.log('sobject',sobject);
-                    params.set('query',`SELECT Id FROM ${sobject}`);
+                if (sobject) {
+                    console.log('sobject', sobject);
+                    params.set('query', `SELECT Id FROM ${sobject}`);
                 }
-
-                
 
                 redirectToUrlViaChrome({
                     sessionId: cookieInfo.session,
                     serverUrl: `https://${cookieInfo.domain}`,
                     baseUrl: chrome.runtime.getURL('/views/app.html'),
-                    redirectUrl:encodeURIComponent(params.toString())
-                })
-            }
+                    redirectUrl: encodeURIComponent(params.toString()),
+                });
+            },
         },
         {
             id: 'apex-explorer',
@@ -223,16 +226,16 @@ const injectShortCuts = async () => {
                 event.preventDefault();
                 const cookieInfo = await getCookieInfo();
                 const params = new URLSearchParams({
-                    applicationName: 'anonymousapex'
+                    applicationName: 'anonymousapex',
                 });
                 redirectToUrlViaChrome({
                     sessionId: cookieInfo.session,
                     serverUrl: `https://${cookieInfo.domain}`,
                     baseUrl: chrome.runtime.getURL('/views/app.html'),
-                    redirectUrl:encodeURIComponent(params.toString())
-                })
-            }
-        }
+                    redirectUrl: encodeURIComponent(params.toString()),
+                });
+            },
+        },
     ];
 
     shortcuts.forEach(shortcut => {
@@ -240,15 +243,14 @@ const injectShortCuts = async () => {
     });
 };
 
-
 const injectOverlay = async () => {
     const isEnabled = (await chrome.storage.sync.get('overlayEnabled')).overlayEnabled;
     //console.log('injectOverlay',isEnabled);
-    if(!isEnabled) return;
+    if (!isEnabled) return;
 
     // LWC
-    const elm = createElement('views-overlay', {is: ViewsOverlay});
-    Object.assign(elm, {variant:'overlay'});
+    const elm = createElement('views-overlay', { is: ViewsOverlay });
+    Object.assign(elm, { variant: 'overlay' });
     document.body.appendChild(elm);
 };
 /* TODO : Add prompt widget in the web page with vanila JS/HTML/CSS
@@ -286,7 +288,6 @@ class LWC_CUSTOM {
         this.observeDomChange(this.handleDomChange);
     };
 
-
     disable = () => {
         //console.log('disable');
         if (this.domObserver) {
@@ -294,10 +295,9 @@ class LWC_CUSTOM {
         }
         this.removeStyle();
         this.disableHighlightElements();
-
     };
 
-    toggleFeature = (value) => {
+    toggleFeature = value => {
         if (value === true) {
             this.enable();
         } else {
@@ -305,20 +305,24 @@ class LWC_CUSTOM {
         }
     };
 
-    observeDomChange = (callback) => {
+    observeDomChange = callback => {
         if (this.domObserver) return;
         //console.log('observeDomChange');
         const targetNode = document;
         this.domObserver = new MutationObserver(callback);
         // Start observing the target node for configured mutations
-        this.domObserver.observe(targetNode, {attributes: true, childList: true, subtree: true});
+        this.domObserver.observe(targetNode, { attributes: true, childList: true, subtree: true });
     };
 
     handleDomChange = (mutationList, observer) => {
-        runActionAfterTimeOut(mutationList, async (newValue) => {
-            //console.log('handleDomChange - process');
-            this.enableHighlightElements();
-        }, {timeout: 500});
+        runActionAfterTimeOut(
+            mutationList,
+            async newValue => {
+                //console.log('handleDomChange - process');
+                this.enableHighlightElements();
+            },
+            { timeout: 500 }
+        );
     };
 
     createStyleElement = () => {
@@ -366,31 +370,29 @@ class LWC_CUSTOM {
         // Initial Loop to tag all custom elements :
         [...allElements].forEach(element => {
             if (
-                element.tagName.startsWith('C-') && !element.classList.contains('sf-toolkit-custom-element')
+                element.tagName.startsWith('C-') &&
+                !element.classList.contains('sf-toolkit-custom-element')
             ) {
                 element.classList.add('sf-toolkit-custom-element');
             }
-
         });
 
         // Loop through all elements and check if the tag name starts with "c-"
         document.querySelectorAll('.sf-toolkit-custom-element').forEach(element => {
             // For now, we only include the 1st lvl
             if (
-                element.tagName.startsWith('C-')
-                && !element.classList.contains('sf-toolkit-custom-component-header')
-                && !element.closest('.sf-toolkit-custom-component')
+                element.tagName.startsWith('C-') &&
+                !element.classList.contains('sf-toolkit-custom-component-header') &&
+                !element.closest('.sf-toolkit-custom-component')
             ) {
-
                 _lwcElements.push(element);
-
 
                 // Modify element
                 element.classList.add('sf-toolkit-custom-component-header');
 
                 // Inject component
                 const sfToolkit_link = document.createElement('a');
-                sfToolkit_link.href = "#";
+                sfToolkit_link.href = '#';
                 sfToolkit_link.onclick = this.handleLinkClick;
                 sfToolkit_link.dataset.name = element.tagName;
                 sfToolkit_link.textContent = 'View/Edit';
@@ -410,18 +412,16 @@ class LWC_CUSTOM {
     disableHighlightElements = () => {
         //console.log('disableHighlightElements');
         // disable this way in case the chrome extension was closed !
-        document.querySelectorAll('.sf-toolkit-custom-component-header')
-            .forEach(item => {
-                //console.log('item',item);
-                item.classList.remove('sf-toolkit-custom-component-header');
-                item.classList.remove('sf-toolkit-custom-element');
-            });
+        document.querySelectorAll('.sf-toolkit-custom-component-header').forEach(item => {
+            //console.log('item',item);
+            item.classList.remove('sf-toolkit-custom-component-header');
+            item.classList.remove('sf-toolkit-custom-element');
+        });
 
-        document.querySelectorAll('.sf-toolkit-custom-component')
-            .forEach(item2 => {
-                //console.log('item2',item2);
-                item2.remove();
-            })
+        document.querySelectorAll('.sf-toolkit-custom-component').forEach(item2 => {
+            //console.log('item2',item2);
+            item2.remove();
+        });
         /*
         // Modified custom elements
         this.lwcElements.forEach(item => {
@@ -436,46 +436,47 @@ class LWC_CUSTOM {
     };
 
     removeStyle = () => {
-        document.querySelectorAll('.sf-toolkit-style')
-            .forEach(item => {
-                item.remove();
-            })
+        document.querySelectorAll('.sf-toolkit-style').forEach(item => {
+            item.remove();
+        });
     };
 
     /** Events */
 
-    handleLinkClick = async (e) => {
+    handleLinkClick = async e => {
         e.preventDefault();
         const developerName = (e.target.dataset.name.substring(2) || '').split('-').join('');
         const params = new URLSearchParams({
             applicationName: 'metadata',
-            sobject:'LightningComponentBundle',
-            param1:developerName
+            sobject: 'LightningComponentBundle',
+            param1: developerName,
         });
         redirectToUrlViaChrome({
             sessionId: this.config.sessionId,
             serverUrl: this.config.serverUrl,
             baseUrl: chrome.runtime.getURL('/views/app.html'),
-            redirectUrl:encodeURIComponent(params.toString())
-        })
-    }
+            redirectUrl: encodeURIComponent(params.toString()),
+        });
+    };
 }
 
 class INJECTOR {
     lwc_custom_instance = new LWC_CUSTOM();
 
     isValidPage = () => {
-        return document.querySelector("body.sfdcBody, body.ApexCSIPage, #auraLoadingBox") || location.host.endsWith("visualforce.com");
-    }
+        return (
+            document.querySelector('body.sfdcBody, body.ApexCSIPage, #auraLoadingBox') ||
+            location.host.endsWith('visualforce.com')
+        );
+    };
 
     init = () => {
-        if(chrome.runtime)chrome.runtime.onMessage.addListener(this.handleMessage);
-        if(this.isValidPage()){
+        if (chrome.runtime) chrome.runtime.onMessage.addListener(this.handleMessage);
+        if (this.isValidPage()) {
             this.injectCode();
         }
         //this.lwc_custom_instance.toggleFeature(true);
     };
-
 
     injectCode = () => {
         injectShortCuts();
@@ -483,22 +484,18 @@ class INJECTOR {
         //injectPromptWidget();
     };
 
-
     handleMessage = (request, sender, sendResponse) => {
-        if (request.action === "lwc_highlight") {
+        if (request.action === 'lwc_highlight') {
             //console.log('handleMessage',request);
             this.lwc_custom_instance.config = request.config;
             this.lwc_custom_instance.toggleFeature(request.value);
         }
-    }
+    };
 }
-
 
 (async () => {
     window.defaultStore = await chromeStore('local'); // only for chrome extension
     window.settingsStore = await chromeStore('sync'); // only for chrome extension
     const injectorInstance = new INJECTOR();
     injectorInstance.init();
-
 })();
-

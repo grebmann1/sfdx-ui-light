@@ -9,29 +9,35 @@
     color: #375480;
 }
 
-.site [class*=site-text-heading] {
+.site [class*='site-text-heading'] {
     margin-top: 3rem;
     font-weight: 400;
     line-height: 1.25;
     color: #16325c;
 }
 
-.site [class*=site-text-heading], .site blockquote, .site dl, .site figure, .site p, .site table {
+.site [class*='site-text-heading'],
+.site blockquote,
+.site dl,
+.site figure,
+.site p,
+.site table {
     margin-bottom: 1.5rem;
 }
 
 .bg-black {
     --tw-bg-opacity: 1;
-    background-color: rgba(0,0,0,var(--tw-bg-opacity));
+    background-color: rgba(0, 0, 0, var(--tw-bg-opacity));
 }
 
-:not(pre)>code.hljs, :not(pre)>code[class*=language-] {
+:not(pre) > code.hljs,
+:not(pre) > code[class*='language-'] {
     border-radius: 0.3em;
     padding: 0.1em;
     white-space: normal;
 }
 
-.prose :where(pre code):not(:where([class~=not-prose] *)) {
+.prose :where(pre code):not(:where([class~='not-prose'] *)) {
     background-color: transparent;
     border-radius: 0;
     border-width: 0;
@@ -43,7 +49,9 @@
     padding: 0;
 }
 
-code.hljs, code[class*=language-], pre[class*=language-] {
+code.hljs,
+code[class*='language-'],
+pre[class*='language-'] {
     word-wrap: normal;
     background: none;
     color: #fff;
@@ -59,47 +67,45 @@ code.hljs, code[class*=language-], pre[class*=language-] {
 
 .\!whitespace-pre {
     background-color: transparent;
-    white-space: pre!important;
+    white-space: pre !important;
 }
 
-.text-gray-200{
+.text-gray-200 {
     --tw-text-opacity: 1;
-    color: rgba(217,217,227,var(--tw-text-opacity));
+    color: rgba(217, 217, 227, var(--tw-text-opacity));
 }
 
 .bg-gray-800 {
     --tw-bg-opacity: 1;
-    background-color: rgba(52,53,65,var(--tw-bg-opacity));
+    background-color: rgba(52, 53, 65, var(--tw-bg-opacity));
 }
 
-
-
-.title_2_parts{
+.title_2_parts {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
 }
 
-.vertical-container{
-    display:flex;
+.vertical-container {
+    display: flex;
     flex-direction: column;
 }
 
-.path-container{
+.path-container {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
 }
 
-.path-container-right{
+.path-container-right {
     display: flex;
     flex-direction: row;
     align-items: center;
 }
 
-.overflow-y-auto{
+.overflow-y-auto {
     overflow-y: auto;
 }
 
@@ -113,8 +119,8 @@ code.hljs, code[class*=language-], pre[class*=language-] {
     padding-right: 1rem;
 }
 
-.custom-text-copy{
-    --slds-c-icon-color-foreground	:rgba(255, 255, 255, 1);
+.custom-text-copy {
+    --slds-c-icon-color-foreground: rgba(255, 255, 255, 1);
     margin-left: 8px;
     cursor: pointer;
 }

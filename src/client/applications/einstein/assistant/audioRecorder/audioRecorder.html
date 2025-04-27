@@ -1,35 +1,45 @@
 <template>
     <template lwc:if={isRecording}>
         <div class="timer">
-                <lightning-icon icon-name="utility:unmuted"  variant="error" size="xx-small"></lightning-icon>
-                <span>
-                    <lightning-button 
-                        variant="base" 
-                        label={secondsElapsedFormatted}
-                        icon-name="utility:close" 
-                        icon-position="right" 
-                        class="slds-m-left_x-small slds-cancel-recording"
-                        onclick={stopRecording}
-                    ></lightning-button>
-                </span>
+            <lightning-icon
+                icon-name="utility:unmuted"
+                variant="error"
+                size="xx-small"></lightning-icon>
+            <span>
+                <lightning-button
+                    variant="base"
+                    label={secondsElapsedFormatted}
+                    icon-name="utility:close"
+                    icon-position="right"
+                    class="slds-m-left_x-small slds-cancel-recording"
+                    onclick={stopRecording}></lightning-button>
+            </span>
         </div>
     </template>
     <template lwc:elseif={isLoading}>
         <div class="timer">
-                <lightning-icon icon-name="utility:unmuted"  variant="error" size="xx-small"></lightning-icon>
-                <span>
-                    <div class="slds-chat-loading">
-                        <span class="slds-icon-typing slds-is-animated">
-                            <span class="slds-icon-typing__dot"></span>
-                            <span class="slds-icon-typing__dot"></span>
-                            <span class="slds-icon-typing__dot"></span>
-                        </span>
-                        <span aria-hidden="true"> Loading</span>
-                    </div>
-                </span>
+            <lightning-icon
+                icon-name="utility:unmuted"
+                variant="error"
+                size="xx-small"></lightning-icon>
+            <span>
+                <div class="slds-chat-loading">
+                    <span class="slds-icon-typing slds-is-animated">
+                        <span class="slds-icon-typing__dot"></span>
+                        <span class="slds-icon-typing__dot"></span>
+                        <span class="slds-icon-typing__dot"></span>
+                    </span>
+                    <span aria-hidden="true">Loading</span>
+                </div>
+            </span>
         </div>
     </template>
     <template lwc:else>
-        <lightning-button-icon icon-name="utility:unmuted"  variant="bare" alternative-text="Record Voice" title="Record Voice" onclick={startRecording}></lightning-button-icon>
+        <lightning-button-icon
+            icon-name="utility:unmuted"
+            variant="bare"
+            alternative-text="Record Voice"
+            title="Record Voice"
+            onclick={startRecording}></lightning-button-icon>
     </template>
 </template>

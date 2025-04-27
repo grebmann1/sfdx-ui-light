@@ -1,25 +1,28 @@
 <template>
     <div class={pageClass}>
         <builder-editor onexecuteaction={executeAction} onexecutesave={executeSave}>
-            <builder-header slot="header" title="Light API Explorer" sub-title="API Explorer" icon-name="standard:user">
+            <builder-header
+                slot="header"
+                title="Light API Explorer"
+                sub-title="API Explorer"
+                icon-name="standard:user">
                 <div slot="actions" class="slds-builder-toolbar__actions">
-                    <lightning-button 
-                        class="slds-p-left_xx-small" 
-                        label={i18n.EDITOR_PANEL_SAVE} 
-                        onclick={executeSave} 
-                        disabled={isSaveButtonDisabled}
-                    ></lightning-button>
+                    <lightning-button
+                        class="slds-p-left_xx-small"
+                        label={i18n.EDITOR_PANEL_SAVE}
+                        onclick={executeSave}
+                        disabled={isSaveButtonDisabled}></lightning-button>
                     <lightning-button
                         class="slds-m-left_small"
-                        icon-name="utility:apex" 
-                        onclick={executeAction} 
-                        label={i18n.EDITOR_PANEL_RUN} 
+                        icon-name="utility:apex"
+                        onclick={executeAction}
+                        label={i18n.EDITOR_PANEL_RUN}
                         variant="brand"
-                        disabled={isExecuteApiDisabled}
-                    ></lightning-button>
+                        disabled={isExecuteApiDisabled}></lightning-button>
                 </div>
                 <div slot="meta" class="slds-flex-row slds-align-flex-end">
-                    <lightning-combobox lwc:ref="method" 
+                    <lightning-combobox
+                        lwc:ref="method"
                         class="slds-horizontal-input-combobox"
                         label="Method"
                         dropdown-alignment="left"
@@ -27,50 +30,45 @@
                         placeholder="Method"
                         disabled={isApiRunning}
                         options={method_options}
-                        onchange={method_change}
-                    ></lightning-combobox>
-                    <lightning-input lwc:ref="url" 
+                        onchange={method_change}></lightning-combobox>
+                    <lightning-input
+                        lwc:ref="url"
                         class="slds-horizontal-input-url slds-p-left_x-small"
-                        label="Endpoint" 
-                        type="text" 
+                        label="Endpoint"
+                        type="text"
                         value={endpoint}
                         onchange={endpoint_change}
-                        disabled={isApiRunning}
-                    ></lightning-input>
+                        disabled={isApiRunning}></lightning-input>
                 </div>
 
                 <div slot="subactions" class="slds-builder-toolbar__actions">
-                    <lightning-button-icon 
-                        icon-name="utility:undo" 
-                        onclick={undo_click} 
+                    <lightning-button-icon
+                        icon-name="utility:undo"
+                        onclick={undo_click}
                         label="Undo"
                         variant="border-filled"
-                        disabled={isUndoDisabled}
-                    ></lightning-button-icon>
+                        disabled={isUndoDisabled}></lightning-button-icon>
 
-                    <lightning-button-icon 
+                    <lightning-button-icon
                         class="slds-m-left_small"
-                        icon-name="utility:redo" 
-                        onclick={redo_click} 
+                        icon-name="utility:redo"
+                        onclick={redo_click}
                         label="Redo"
                         variant="border-filled"
-                        disabled={isRedoDisabled}
-                    ></lightning-button-icon>
-                    <lightning-button 
+                        disabled={isRedoDisabled}></lightning-button-icon>
+                    <lightning-button
                         class="slds-m-left_small"
-                        icon-name="utility:refresh" 
-                        onclick={reset_click} 
-                        label={i18n.EDITOR_PANEL_RESET} 
-                        disabled={isApiRunning}
-                    ></lightning-button>
-                    <lightning-button-icon-stateful 
-                        class="slds-p-left_xx-small" 
-                        selected={isRecentToggled} 
-                        variant="border-filled" 
-                        icon-name="utility:budget_period" 
-                        size="large" 
-                        onclick={handleRecentToggle}
-                    ></lightning-button-icon-stateful>
+                        icon-name="utility:refresh"
+                        onclick={reset_click}
+                        label={i18n.EDITOR_PANEL_RESET}
+                        disabled={isApiRunning}></lightning-button>
+                    <lightning-button-icon-stateful
+                        class="slds-p-left_xx-small"
+                        selected={isRecentToggled}
+                        variant="border-filled"
+                        icon-name="utility:budget_period"
+                        size="large"
+                        onclick={handleRecentToggle}></lightning-button-icon-stateful>
                 </div>
 
                 <template lwc:if={isMetaDisplayed}>
@@ -83,74 +81,121 @@
             <article class="full-page-body slds-card">
                 <div class="slds-flex-column slds-full-height slds-api-container full-page-body">
                     <!-- Tabs -->
-                    <slds-tabset lwc:ref="requestTab" variant="scoped" class="slds-without-tab" active-tab-value={currentTab} onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled is-remove-tab-event-disabled>
+                    <slds-tabset
+                        lwc:ref="requestTab"
+                        variant="scoped"
+                        class="slds-without-tab"
+                        active-tab-value={currentTab}
+                        onaddtab={handleAddTab}
+                        onclosetab={handleCloseTab}
+                        is-add-tab-enabled
+                        is-remove-tab-event-disabled>
                         <template for:each={formattedTabs} for:item="item">
-                            <slds-tab key={item.id} label={item.name} value={item.id} onactive={handleSelectTab} is-closeable={item.isCloseable} is-draft={item.isDraft}></slds-tab>
+                            <slds-tab
+                                key={item.id}
+                                label={item.name}
+                                value={item.id}
+                                onactive={handleSelectTab}
+                                is-closeable={item.isCloseable}
+                                is-draft={item.isDraft}></slds-tab>
                         </template>
                     </slds-tabset>
                     <!-- Content -->
-                    <slds-split-view class="slds-fill-height" left-min-width="200" right-min-width="200" is-horizontal>
-                        <div class="bottom-left-panel slds-p-around_small slds-full-height slds-full-width" slot="left">
+                    <slds-split-view
+                        class="slds-fill-height"
+                        left-min-width="200"
+                        right-min-width="200"
+                        is-horizontal>
+                        <div
+                            class="bottom-left-panel slds-p-around_small slds-full-height slds-full-width"
+                            slot="left">
                             <div class="slds-full-height slds-flex-column slds-full-width">
                                 <slds-information-block title="Information">
-                                    <p>Only enter 1 header setting per line following this format :</p>
-                                    <p>header_name : header_value </p>
-                                    <p>The <span class="slds-text-title_bold">&#123;sessionId&#125;</span> variable can be passed in the body (Helpfull for SOAP)</p>
+                                    <p>
+                                        Only enter 1 header setting per line following this format :
+                                    </p>
+                                    <p>header_name : header_value</p>
+                                    <p>
+                                        The
+                                        <span class="slds-text-title_bold">
+                                            &#123;sessionId&#125;
+                                        </span>
+                                        variable can be passed in the body (Helpfull for SOAP)
+                                    </p>
                                 </slds-information-block>
                                 <div class="slds-form-element">
-                                    <label class="slds-text-title_bold slds-form-element__label">Header</label>
+                                    <label class="slds-text-title_bold slds-form-element__label">
+                                        Header
+                                    </label>
                                     <div class="slds-form-element__control">
-                                        <textarea class="slds-textarea slds-text-longform slds-textarea-header" placeholder="Write Header here" disabled={isHeaderDisabled} oninput={header_change}>
+                                        <textarea
+                                            class="slds-textarea slds-text-longform slds-textarea-header"
+                                            placeholder="Write Header here"
+                                            disabled={isHeaderDisabled}
+                                            oninput={header_change}>
                                             {header}
                                         </textarea>
                                     </div>
                                 </div>
                                 <div class="slds-form-element slds-fill-height slds-flex-column">
-                                    <label class="slds-text-title_bold slds-form-element__label">Body</label>
+                                    <label class="slds-text-title_bold slds-form-element__label">
+                                        Body
+                                    </label>
                                     <div class="slds-form-element__control slds-fill-height">
                                         <!--
                                         <textarea class="slds-textarea slds-text-longform slds-textarea-body" placeholder="Write body here" disabled={isBodyDisabled} oninput={body_change}>
                                             {body}
                                         </textarea>
                                         -->
-                                        <editor-default lwc:ref="bodyEditor" 
+                                        <editor-default
+                                            lwc:ref="bodyEditor"
                                             class="slds-full-height slds-is-relative"
                                             model={currentModel}
                                             onmonacoloaded={initBodyEditor}
-                                            onchange={body_change}
-                                        ></editor-default>
+                                            onchange={body_change}></editor-default>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="bottom-right-panel slds-full-height slds-full-width" slot="right">
-                            
-                            
-                            
+                        <div
+                            class="bottom-right-panel slds-full-height slds-full-width"
+                            slot="right">
                             <div class="slds-grid slds-wrap slds-full-height slds-is-relative">
                                 <div class="slds-col slds-size_1-of-1">
                                     <template lwc:if={isApiRunning}>
                                         <slds-spinner message={_loadingMessage}></slds-spinner>
                                     </template>
                                     <template lwc:elseif={isContentDisplayed}>
-
                                         <div class="slds-p-around_x-small">
                                             <div class="slds-float_right">
-                                                <lightning-badge class={badgeClass} label={statusCode}></lightning-badge>
-                                                <span> • {duration} ms</span>
+                                                <lightning-badge
+                                                    class={badgeClass}
+                                                    label={statusCode}></lightning-badge>
+                                                <span>• {duration} ms</span>
                                             </div>
                                         </div>
                                         <!-- Viewers (Body, Headers , etc) -->
                                         <div>
-                                            <lightning-tabset lwc:ref="resultTab" variant="scoped" class="slds-without-tab" active-tab-value={tab_normalizedCurrent}>
-                                                <lightning-tab label={PAGE_CONFIG.TABS.BODY} value={PAGE_CONFIG.TABS.BODY}  onactive={viewer_handleSelectTab}></lightning-tab>
-                                                <lightning-tab label={PAGE_CONFIG.TABS.HEADERS} value={PAGE_CONFIG.TABS.HEADERS}     onactive={viewer_handleSelectTab}></lightning-tab>
+                                            <lightning-tabset
+                                                lwc:ref="resultTab"
+                                                variant="scoped"
+                                                class="slds-without-tab"
+                                                active-tab-value={tab_normalizedCurrent}>
+                                                <lightning-tab
+                                                    label={PAGE_CONFIG.TABS.BODY}
+                                                    value={PAGE_CONFIG.TABS.BODY}
+                                                    onactive={viewer_handleSelectTab}></lightning-tab>
+                                                <lightning-tab
+                                                    label={PAGE_CONFIG.TABS.HEADERS}
+                                                    value={PAGE_CONFIG.TABS.HEADERS}
+                                                    onactive={viewer_handleSelectTab}></lightning-tab>
                                             </lightning-tabset>
                                         </div>
                                         <!-- BODY Section-->
                                         <template lwc:if={isBodyDisplayed}>
                                             <div>
-                                                <lightning-radio-group name="radioGroup"
+                                                <lightning-radio-group
+                                                    name="radioGroup"
                                                     label="Radio Group"
                                                     options={viewer_options}
                                                     value={viewer_value}
@@ -158,76 +203,106 @@
                                                     type="button"
                                                     variant="label-hidden"
                                                     class="slds-p-around_x-small"
-                                                    onchange={viewer_handleChange}
-                                                ></lightning-radio-group>
+                                                    onchange={viewer_handleChange}></lightning-radio-group>
                                             </div>
-                                        
+
                                             <div class={prettyContainerClass}>
                                                 <template lwc:if={isFormattedContentDisplayed}>
-                                                    <slds-code-block 
-                                                        class="slds-full-height" 
-                                                        code-block={formattedContent} 
-                                                        language={formattedContentType} 
+                                                    <slds-code-block
+                                                        class="slds-full-height"
+                                                        code-block={formattedContent}
+                                                        language={formattedContentType}
                                                         title="Formatted Response"
-                                                        oncustomlink={handle_customLinkClick}
-                                                    ></slds-code-block>
+                                                        oncustomlink={handle_customLinkClick}></slds-code-block>
                                                 </template>
                                                 <template lwc:else>
-                                                    <illustration-default class="slds-p-top_large" title="File to large for preview">
-                                                        <lightning-button title={formattedZipDownloadLabel} label={formattedZipDownloadLabel} onclick={handle_downloadClick}></lightning-button>
-                                                    </illustration-default> 
+                                                    <illustration-default
+                                                        class="slds-p-top_large"
+                                                        title="File to large for preview">
+                                                        <lightning-button
+                                                            title={formattedZipDownloadLabel}
+                                                            label={formattedZipDownloadLabel}
+                                                            onclick={handle_downloadClick}></lightning-button>
+                                                    </illustration-default>
                                                 </template>
                                             </div>
 
                                             <div class={workbenchContainerClass}>
-                                                <slds-structure-viewer class="slds-flex-column slds-fill-height slds-m-horizontal_x-small" record={content}></slds-structure-viewer>
+                                                <slds-structure-viewer
+                                                    class="slds-flex-column slds-fill-height slds-m-horizontal_x-small"
+                                                    record={content}></slds-structure-viewer>
                                             </div>
-                                        
+
                                             <div class={rawContainerClass}>
-                                                <editor-default lwc:ref="contentEditor" 
+                                                <editor-default
+                                                    lwc:ref="contentEditor"
                                                     class="slds-full-height slds-is-relative"
                                                     model={currentModel}
                                                     onmonacoloaded={initContentEditor}
-                                                    is-read-only
-                                                ></editor-default>
-                                            </div> 
+                                                    is-read-only></editor-default>
+                                            </div>
 
                                             <!-- Preview hidden for large files -->
                                             <div class={previewContainerClass}>
                                                 <template lwc:if={isFormattedContentDisplayed}>
-                                                    <iframe onload={injectHTML} ref="iframe" width="100%" height="100%" style="border: unset;"></iframe>
+                                                    <iframe
+                                                        onload={injectHTML}
+                                                        ref="iframe"
+                                                        width="100%"
+                                                        height="100%"
+                                                        style="border: unset"></iframe>
                                                 </template>
                                                 <template lwc:else>
-                                                    <illustration-default class="slds-p-top_large" title="File to large for preview">
-                                                        <lightning-button title={formattedZipDownloadLabel} label={formattedZipDownloadLabel} onclick={handle_downloadClick}></lightning-button>
-                                                    </illustration-default> 
+                                                    <illustration-default
+                                                        class="slds-p-top_large"
+                                                        title="File to large for preview">
+                                                        <lightning-button
+                                                            title={formattedZipDownloadLabel}
+                                                            label={formattedZipDownloadLabel}
+                                                            onclick={handle_downloadClick}></lightning-button>
+                                                    </illustration-default>
                                                 </template>
                                             </div>
-                                            
-
                                         </template>
                                         <!-- HEADERS Section-->
                                         <template lwc:if={isHeadersDisplayed}>
                                             <div class="slds-p-top_x-small">
-                                                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_fixed-layout slds-table_striped">
+                                                <table
+                                                    class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_fixed-layout slds-table_striped">
                                                     <thead>
                                                         <tr class="slds-text-title_bold">
                                                             <th scope="col">
-                                                                <div class="slds-truncate" title="Key">Key</div>
+                                                                <div
+                                                                    class="slds-truncate"
+                                                                    title="Key">
+                                                                    Key
+                                                                </div>
                                                             </th>
                                                             <th scope="col">
-                                                                <div class="slds-truncate" title="Value">Value</div>
+                                                                <div
+                                                                    class="slds-truncate"
+                                                                    title="Value">
+                                                                    Value
+                                                                </div>
                                                             </th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <template for:each={contentHeaders} for:item="item">
+                                                        <template
+                                                            for:each={contentHeaders}
+                                                            for:item="item">
                                                             <tr key={item.key}>
                                                                 <td>
-                                                                    <div class="slds-truncate" title={item.key}>{item.key}</div>
+                                                                    <div
+                                                                        class="slds-truncate"
+                                                                        title={item.key}>
+                                                                        {item.key}
+                                                                    </div>
                                                                 </td>
                                                                 <td class="slds-cell-wrap">
-                                                                    <div  title={item.value}>{item.value}</div>
+                                                                    <div title={item.value}>
+                                                                        {item.value}
+                                                                    </div>
                                                                 </td>
                                                             </tr>
                                                         </template>
@@ -239,7 +314,15 @@
                                     <template lwc:else>
                                         <illustration-empty size="large" use-slot-format>
                                             <div slot="title">
-                                                <p>Click <span class="slds-text-heading_small">Run</span> or use <span class="slds-text-heading_small">CMD/CTRL + Enter</span> to execute an API Call</p>
+                                                <p>
+                                                    Click
+                                                    <span class="slds-text-heading_small">Run</span>
+                                                    or use
+                                                    <span class="slds-text-heading_small">
+                                                        CMD/CTRL + Enter
+                                                    </span>
+                                                    to execute an API Call
+                                                </p>
                                             </div>
                                         </illustration-empty>
                                     </template>
@@ -250,23 +333,16 @@
                 </div>
             </article>
             <!-- RECENT Anonymous Apex -->
-            <builder-storage-panel 
-                title="API List" 
-                is-open={isRecentToggled} 
+            <builder-storage-panel
+                title="API List"
+                is-open={isRecentToggled}
                 recent-title={i18n.API_LIST_PANEL_RECENT}
-                recent-items={recentApiItems} 
+                recent-items={recentApiItems}
                 saved-items={savedApiItems}
                 saved-title={i18n.API_LIST_PANEL_SAVED}
                 onclose={handleRecentToggle}
                 onremoveitem={handleRemoveItem}
-                onselectitem={handleSelectItem}
-            ></builder-storage-panel>
-
+                onselectitem={handleSelectItem}></builder-storage-panel>
         </builder-editor>
     </div>
-
-
-    
-    
-
 </template>

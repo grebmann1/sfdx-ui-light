@@ -1,99 +1,100 @@
 <!-- textInputWidget.html -->
 <template>
-    <section lwc:ref="editorCompleteWidget"
-            class="slds-popover slds-popover_prompt slds-popover_brand"
-            role="dialog"
-            aria-describedby="dialog-body"
-            aria-labelledby="dialog-heading"
-        >   
-            <div class="slds-p-horizontal_xx-small slds-p-top_xx-small slds-flex-row slds-grid_vertical-align-center"> 
-                <lightning-icon
-                    class="sparkles slds-m-right_x-small"
-                    icon-name="utility:sparkles"
-                    variant="bare"
-                    size="x-small"
-                    title="Generate"
-                ></lightning-icon>
-                <span>Assistant</span>
-                <button
-                    class="slds-button slds-button_icon slds-button_icon-small slds-col_bump-left"
-                    title="Close dialog"
-                    onclick={handleClose}
-                >
-                    <svg class="slds-button__icon" aria-hidden="true">
-                        <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
-                    </svg>
-                    <span class="slds-assistive-text">Close dialog</span>
-                </button>
-            </div>
-            <div class="slds-p-horizontal_xx-small slds-flex-row slds-m-top_xx-small">
-                <textarea
-                    class="slds-textarea"
-                    part="textarea"
-                    placeholder="Enter your instructions"
-                    disabled={isTextareaDisabled}
-                    onkeydown={handleKeyDown}
-                    oninput={handleInput}
-                ></textarea>
-            </div>
+    <section
+        lwc:ref="editorCompleteWidget"
+        class="slds-popover slds-popover_prompt slds-popover_brand"
+        role="dialog"
+        aria-describedby="dialog-body"
+        aria-labelledby="dialog-heading">
+        <div
+            class="slds-p-horizontal_xx-small slds-p-top_xx-small slds-flex-row slds-grid_vertical-align-center">
+            <lightning-icon
+                class="sparkles slds-m-right_x-small"
+                icon-name="utility:sparkles"
+                variant="bare"
+                size="x-small"
+                title="Generate"></lightning-icon>
+            <span>Assistant</span>
+            <button
+                class="slds-button slds-button_icon slds-button_icon-small slds-col_bump-left"
+                title="Close dialog"
+                onclick={handleClose}>
+                <svg class="slds-button__icon" aria-hidden="true">
+                    <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
+                </svg>
+                <span class="slds-assistive-text">Close dialog</span>
+            </button>
+        </div>
+        <div class="slds-p-horizontal_xx-small slds-flex-row slds-m-top_xx-small">
+            <textarea
+                class="slds-textarea"
+                part="textarea"
+                placeholder="Enter your instructions"
+                disabled={isTextareaDisabled}
+                onkeydown={handleKeyDown}
+                oninput={handleInput}></textarea>
+        </div>
 
-            <footer>
-                <div class="slds-grid slds-grid_vertical-align-center slds-p-horizontal_small slds-p-vertical_xx-small">
-                    <template lwc:if={isApprovalDisplayed}>
-                        <button 
-                            class="slds-button button-accept slds-button_neutral slds-p-right_small"
-                            disabled={isLoading}
-                            onclick={handleAccept}
-                        >
-                            <lightning-icon
-                                class="slds-button__icon slds-button__icon_left"
-                                icon-name="utility:check"
-                                size="xx-small"
-                                variant="success"
-                            ></lightning-icon>
-                            Accept
-                            <span class="slds-p-left_x-small slds-flex-row slds-grid_vertical-align-center light-color">
-                                ⌘ 
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="14" height="14">
-                                    <path d="M832 192v384H318.08l146.56-146.56-45.248-45.248L192 640l227.392 227.392 45.248-45.248L318.08 672H896V192h-64z" fill="rgb(100, 105, 112)"/>
-                                </svg>
-                            </span>
-                        </button>
-                        <button 
-                            class="slds-button button-reject slds-button_neutral slds-p-right_small"
-                            disabled={isLoading}
-                            onclick={handleClose}
-                        >
-                            <lightning-icon
-                                class=" slds-button__icon slds-button__icon_left"
-                                icon-name="utility:close"
-                                size="xx-small"
-                                variant="error"
-                            ></lightning-icon>
-                            Reject
-                            <span class="slds-p-left_x-small slds-flex-row slds-grid_vertical-align-center light-color">
-                                ⌘ ⌫
-                            </span>
-                        </button>
-                    </template>
-                    <template lwc:elseif={hasText}>
+        <footer>
+            <div
+                class="slds-grid slds-grid_vertical-align-center slds-p-horizontal_small slds-p-vertical_xx-small">
+                <template lwc:if={isApprovalDisplayed}>
+                    <button
+                        class="slds-button button-accept slds-button_neutral slds-p-right_small"
+                        disabled={isLoading}
+                        onclick={handleAccept}>
+                        <lightning-icon
+                            class="slds-button__icon slds-button__icon_left"
+                            icon-name="utility:check"
+                            size="xx-small"
+                            variant="success"></lightning-icon>
+                        Accept
+                        <span
+                            class="slds-p-left_x-small slds-flex-row slds-grid_vertical-align-center light-color">
+                            ⌘
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 1024 1024"
+                                width="14"
+                                height="14">
+                                <path
+                                    d="M832 192v384H318.08l146.56-146.56-45.248-45.248L192 640l227.392 227.392 45.248-45.248L318.08 672H896V192h-64z"
+                                    fill="rgb(100, 105, 112)" />
+                            </svg>
+                        </span>
+                    </button>
+                    <button
+                        class="slds-button button-reject slds-button_neutral slds-p-right_small"
+                        disabled={isLoading}
+                        onclick={handleClose}>
+                        <lightning-icon
+                            class="slds-button__icon slds-button__icon_left"
+                            icon-name="utility:close"
+                            size="xx-small"
+                            variant="error"></lightning-icon>
+                        Reject
+                        <span
+                            class="slds-p-left_x-small slds-flex-row slds-grid_vertical-align-center light-color">
+                            ⌘ ⌫
+                        </span>
+                    </button>
+                </template>
+                <template lwc:elseif={hasText}>
+                    <lightning-button
+                        class="slds-col_bump-right"
+                        label={label}
+                        variant="brand"
+                        disabled={isLoading}
+                        onclick={handleGenerate}></lightning-button>
+                    <template lwc:if={isLoading}>
                         <lightning-button
                             class="slds-col_bump-right"
-                            label={label}
-                            variant="brand"
-                            disabled={isLoading}
-                            onclick={handleGenerate}
-                        ></lightning-button>
-                        <template lwc:if={isLoading}>
-                            <lightning-button
-                                class="slds-col_bump-right"
-                                label="Stop"
-                                variant="destructive"
-                                onclick={handleStop}
-                            ></lightning-button>
-                        </template>
+                            label="Stop"
+                            variant="destructive"
+                            onclick={handleStop}></lightning-button>
                     </template>
-                </div>
-            </footer>
-        </section>
+                </template>
+            </div>
+        </footer>
+    </section>
 </template>

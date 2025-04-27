@@ -1,75 +1,89 @@
-import { api } from "lwc";
+import { api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { isEmpty,isElectronApp,classSet,isUndefinedOrNull,isNotUndefinedOrNull,runActionAfterTimeOut,formatFiles,sortObjectsByField,removeDuplicates } from 'shared/utils';
-
-
+import {
+    isEmpty,
+    isElectronApp,
+    classSet,
+    isUndefinedOrNull,
+    isNotUndefinedOrNull,
+    runActionAfterTimeOut,
+    formatFiles,
+    sortObjectsByField,
+    removeDuplicates,
+} from 'shared/utils';
 
 export default class CardItem extends ToolkitElement {
-
     @api item;
 
     /** events **/
 
-    handleEventClick = (e) => {
+    handleEventClick = e => {
         const eventName = e.currentTarget.dataset.event;
         const redirect = e.currentTarget.dataset.redirect;
 
-        runActionAfterTimeOut(null,async () => {
-            //console.log('eventName',eventName);
-            this.dispatchEvent(new CustomEvent("rowaction", { 
-                detail:{
-                    action:{name:eventName},
-                    redirect:redirect,
-                    row:this.item
-                }
-                ,bubbles: true,composed: true 
-            }));
-        },{timeout:200});
-        
-    }
-
+        runActionAfterTimeOut(
+            null,
+            async () => {
+                //console.log('eventName',eventName);
+                this.dispatchEvent(
+                    new CustomEvent('rowaction', {
+                        detail: {
+                            action: { name: eventName },
+                            redirect: redirect,
+                            row: this.item,
+                        },
+                        bubbles: true,
+                        composed: true,
+                    })
+                );
+            },
+            { timeout: 200 }
+        );
+    };
 
     /** getters */
 
-    get iconClass(){
+    get iconClass() {
         return classSet('slds-button__icon_left')
-             .add({
-                'icon-org-prod':!this.isSandbox,
-                'icon-org-sandbox':this.isSandbox
-             })
-             .toString();
+            .add({
+                'icon-org-prod': !this.isSandbox,
+                'icon-org-sandbox': this.isSandbox,
+            })
+            .toString();
     }
 
-    get id(){
+    get id() {
         return this.item?.id || '';
     }
 
-    get name(){
+    get name() {
         return this.item?._name || '';
     }
 
-    get username(){
+    get username() {
         return this.item?._username || '';
     }
 
-    get isSandbox(){
-        return this.item?.isSandbox || (this.item?.instanceUrl || '').endsWith('sandbox.my.salesforce.com');
+    get isSandbox() {
+        return (
+            this.item?.isSandbox ||
+            (this.item?.instanceUrl || '').endsWith('sandbox.my.salesforce.com')
+        );
     }
 
-    get isRedirectCredential(){
-        return isNotUndefinedOrNull(this.item?.redirectUrl);//isEmpty(this.item?.refreshToken);
+    get isRedirectCredential() {
+        return isNotUndefinedOrNull(this.item?.redirectUrl); //isEmpty(this.item?.refreshToken);
     }
 
-    get isAppButtonDisabled(){
+    get isAppButtonDisabled() {
         return this.isRedirectCredential || this.isErrorDisplayed;
     }
 
-    get isErrorDisplayed(){
+    get isErrorDisplayed() {
         return this.item?._hasError;
     }
 
-    get errorMessage(){
+    get errorMessage() {
         return this.item?._errorMessage || '';
     }
-
 }

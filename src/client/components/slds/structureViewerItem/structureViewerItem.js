@@ -1,7 +1,13 @@
-import { api,track} from "lwc";
+import { api, track } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { isEmpty,isSalesforceId,classSet,isUndefinedOrNull,isNotUndefinedOrNull} from 'shared/utils';
-import { store as legacyStore,store_application } from 'shared/store';
+import {
+    isEmpty,
+    isSalesforceId,
+    classSet,
+    isUndefinedOrNull,
+    isNotUndefinedOrNull,
+} from 'shared/utils';
+import { store as legacyStore, store_application } from 'shared/store';
 
 const PAGE_LIST_SIZE = 100;
 export default class StructureViewerItem extends ToolkitElement {
@@ -13,28 +19,27 @@ export default class StructureViewerItem extends ToolkitElement {
 
     hasLoaded = false;
 
-    pageNumber = 1
+    pageNumber = 1;
 
-    connectedCallback(){
+    connectedCallback() {
         window.setTimeout(() => {
             this.hasLoaded = true;
-        },1)
+        }, 1);
     }
-    
 
     /** Events **/
 
-    goToUrl = (e) => {
+    goToUrl = e => {
         e.preventDefault();
         const redirectUrl = e.currentTarget.dataset.url;
         //console.log('redirectUrl',redirectUrl);
         legacyStore.dispatch(store_application.navigate(redirectUrl));
-    }
+    };
 
-    onClickItem = (e) => {
+    onClickItem = e => {
         e.stopPropagation();
         this.isOpen = !this.isOpen;
-    }
+    };
 
     /* Methods **/
 
@@ -42,83 +47,88 @@ export default class StructureViewerItem extends ToolkitElement {
     expandAll = () => {
         this.isOpen = true;
         window.setTimeout(() => {
-            var items = this.template.querySelectorAll("slds-structure-viewer-item");
+            var items = this.template.querySelectorAll('slds-structure-viewer-item');
             for (var i = 0; i < items.length; i++) {
                 items[i].expandAll();
             }
-        },1)
-        
-    }
+        }, 1);
+    };
 
-    @api 
+    @api
     collapseAll = () => {
         this.isOpen = false;
         window.setTimeout(() => {
-            var items = this.template.querySelectorAll("slds-structure-viewer-item");
+            var items = this.template.querySelectorAll('slds-structure-viewer-item');
             for (var i = 0; i < items.length; i++) {
                 items[i].collapseAll();
             }
-        },1)
-        
-    }
+        }, 1);
+    };
 
-    handleLoadMore = (e) =>{
+    handleLoadMore = e => {
         e.preventDefault();
         e.stopPropagation();
         this.pageNumber++;
-    } 
-
+    };
 
     /** Getters **/
 
-    get hasItems(){
+    get hasItems() {
         return this.formattedItems.length > 0;
     }
 
-    get hasDefaultItems(){
+    get hasDefaultItems() {
         return isNotUndefinedOrNull(this.items) && this.items.length > 0;
     }
 
-    get displayCounter(){
-        return this.hasDefaultItems || isNotUndefinedOrNull(this.value) && Array.isArray(this.value);
+    get displayCounter() {
+        return (
+            this.hasDefaultItems || (isNotUndefinedOrNull(this.value) && Array.isArray(this.value))
+        );
     }
 
-    get counter(){
+    get counter() {
         return this.formattedItems.length;
     }
 
-    get itemClass(){
-        return classSet("submenu").add({
-            'icon-open':this.isOpen && this.hasItems,
-            'icon-closed':!this.isOpen && this.hasItems,
-        }).toString(); 
+    get itemClass() {
+        return classSet('submenu')
+            .add({
+                'icon-open': this.isOpen && this.hasItems,
+                'icon-closed': !this.isOpen && this.hasItems,
+            })
+            .toString();
     }
 
-    get isChildrenDisplayed(){
+    get isChildrenDisplayed() {
         return this.isOpen && isNotUndefinedOrNull(this.formattedItems);
     }
-    
-    get isSalesforceId(){
+
+    get isSalesforceId() {
         return isNotUndefinedOrNull(this.value) && isSalesforceId(this.value);
     }
 
-    get isJsonValue(){
-        return isNotUndefinedOrNull(this.value) && typeof this.value === 'object' && !Array.isArray(this.value);
+    get isJsonValue() {
+        return (
+            isNotUndefinedOrNull(this.value) &&
+            typeof this.value === 'object' &&
+            !Array.isArray(this.value)
+        );
     }
 
-    get isValueAvailable(){
+    get isValueAvailable() {
         return isNotUndefinedOrNull(this.value) && !this.isJsonValue && !Array.isArray(this.value);
     }
 
-    get isValueTrue(){
+    get isValueTrue() {
         return isNotUndefinedOrNull(this.value) && typeof this.value === 'boolean' && this.value;
     }
 
-    get isValueFalse(){
+    get isValueFalse() {
         return isNotUndefinedOrNull(this.value) && typeof this.value === 'boolean' && !this.value;
     }
 
-    get href(){
+    get href() {
         return `/${this.value}`;
     }
 
@@ -127,47 +137,47 @@ export default class StructureViewerItem extends ToolkitElement {
         if (isNotUndefinedOrNull(this.items) && Array.isArray(this.items)) {
             return this.items;
         }
-    
+
         // Check if `this.isJsonValue` is true
         if (this.isJsonValue) {
             return Object.keys(this.value).map(key => ({
                 key,
-                value: this.value[key]
+                value: this.value[key],
             }));
         }
-    
+
         // Check if `this.value` is defined and is an array
         if (isNotUndefinedOrNull(this.value) && Array.isArray(this.value)) {
             return this.value.map((item, index) => {
-                const {
-                    name,
-                    Name,
-                    developerName,
-                    DeveloperName,
-                    masterLabel,
-                    MasterLabel
-                } = item;
-    
+                const { name, Name, developerName, DeveloperName, masterLabel, MasterLabel } = item;
+
                 // Determine the key name
-                const keyName = name || Name || developerName || DeveloperName || masterLabel || MasterLabel || `${this.title}[${index}]`;
-    
+                const keyName =
+                    name ||
+                    Name ||
+                    developerName ||
+                    DeveloperName ||
+                    masterLabel ||
+                    MasterLabel ||
+                    `${this.title}[${index}]`;
+
                 return {
                     key: keyName,
-                    value: item
+                    value: item,
                 };
             });
         }
-    
+
         // Default return value if none of the conditions are met
         return [];
     }
 
-    get virtualList(){
+    get virtualList() {
         // Best UX Improvement !!!!
-        return this.formattedItems.slice(0,this.pageNumber * PAGE_LIST_SIZE);
+        return this.formattedItems.slice(0, this.pageNumber * PAGE_LIST_SIZE);
     }
 
-    get hasMoreRecords(){
+    get hasMoreRecords() {
         return this.virtualList.length < this.formattedItems.length;
     }
 }

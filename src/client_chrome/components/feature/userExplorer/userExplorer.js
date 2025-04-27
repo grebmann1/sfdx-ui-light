@@ -1,14 +1,13 @@
-import {api} from "lwc";
+import { api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import {classSet, isEmpty} from 'shared/utils';
-import {getCurrentTab} from "extension/utils";
+import { classSet, isEmpty } from 'shared/utils';
+import { getCurrentTab } from 'extension/utils';
 
 const PAGE_LIST_SIZE = 70;
-const BASE_QUERY = 'SELECT Id, Username, Name,Email,IsActive,ProfileId,Profile.Name,Profile.UserType FROM User ';
+const BASE_QUERY =
+    'SELECT Id, Username, Name,Email,IsActive,ProfileId,Profile.Name,Profile.UserType FROM User ';
 
 export default class UserExplorer extends ToolkitElement {
-
-
     isLoading = false;
     currentTab;
     currentOrigin;
@@ -47,10 +46,11 @@ export default class UserExplorer extends ToolkitElement {
             .add({
                 //'slds-m-top_small':!this.isResponsive,
                 'slds-25-width': this.displayQuickLinkPanel,
-                'slds-100-width': !this.displayFilter
+                'slds-100-width': !this.displayFilter,
                 //'slds-scrollable_y':this.isResponsive
                 //'slds-show_large':this.displayFilter || this.displayMenu
-            }).toString();
+            })
+            .toString();
     }
 
     connectedCallback() {
@@ -64,9 +64,16 @@ export default class UserExplorer extends ToolkitElement {
 
     searchUsers = async () => {
         this.isLoading = true;
-        let query = this.connector.conn.query(`${BASE_QUERY} WHERE Username  LIKE '%${this.filter}%' OR Name LIKE '%${this.filter}%' OR Email LIKE '%${this.filter}%' OR Profile.Name LIKE '%${this.filter}%' OR Contact.Name LIKE '%${this.filter}%' ORDER BY Name limit 500`);
+        let query = this.connector.conn.query(
+            `${BASE_QUERY} WHERE Username  LIKE '%${this.filter}%' OR Name LIKE '%${this.filter}%' OR Email LIKE '%${this.filter}%' OR Profile.Name LIKE '%${this.filter}%' OR Contact.Name LIKE '%${this.filter}%' ORDER BY Name limit 500`
+        );
         try {
-            let records = await query.run({responseTarget: 'Records', autoFetch: true, maxFetch: 100000}) || [];
+            let records =
+                (await query.run({
+                    responseTarget: 'Records',
+                    autoFetch: true,
+                    maxFetch: 100000,
+                })) || [];
             this.data = records;
         } catch (e) {
             console.error(e);
@@ -76,13 +83,18 @@ export default class UserExplorer extends ToolkitElement {
 
     initDefault = async () => {
         this.currentTab = await getCurrentTab();
-        this.currentOrigin = (new URL(this.currentTab.url)).origin;
+        this.currentOrigin = new URL(this.currentTab.url).origin;
         // Default when loading
         this.isLoading = true;
         let query = this.connector.conn.query(`${BASE_QUERY} ORDER BY Name limit 500`);
 
         try {
-            let records = await query.run({responseTarget: 'Records', autoFetch: true, maxFetch: 100000}) || [];
+            let records =
+                (await query.run({
+                    responseTarget: 'Records',
+                    autoFetch: true,
+                    maxFetch: 100000,
+                })) || [];
             this.data = records;
         } catch (e) {
             console.error(e);
@@ -91,23 +103,26 @@ export default class UserExplorer extends ToolkitElement {
     };
 
     @api
-    updateFilter = (value) => {
+    updateFilter = value => {
         this.filter = value;
         this.searchUsers();
         this.pageNumber = 1; // reset
     };
 
-    filtering = (arr) => {
-
+    filtering = arr => {
         var items = [];
         var regex = new RegExp('(' + this.filter + ')', 'i');
         for (var key in arr) {
             const item = arr[key];
-            const {Name, Username, Email, Profile} = item;
+            const { Name, Username, Email, Profile } = item;
 
-            if (regex.test(Name) || regex.test(Username) || regex.test(Email) || regex.test(Profile?.Name)) {
+            if (
+                regex.test(Name) ||
+                regex.test(Username) ||
+                regex.test(Email) ||
+                regex.test(Profile?.Name)
+            ) {
                 items.push(item);
-
             }
         }
 
@@ -130,7 +145,12 @@ export default class UserExplorer extends ToolkitElement {
 
     adduser_handleClick = () => {
         const addressUrl = `/005/e`;
-        window.open(`${this.currentOrigin}/lightning/setup/ManageUsers/page?address=${encodeURIComponent(addressUrl)}`, '_blank');
+        window.open(
+            `${this.currentOrigin}/lightning/setup/ManageUsers/page?address=${encodeURIComponent(
+                addressUrl
+            )}`,
+            '_blank'
+        );
     };
 
     refresh_handleClick = () => {
@@ -151,6 +171,4 @@ export default class UserExplorer extends ToolkitElement {
             this.pageNumber++;
         }
     }
-
-
 }

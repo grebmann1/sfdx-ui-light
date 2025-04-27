@@ -1,10 +1,15 @@
-
-
 import { wire, api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import { getFlattenedFields } from '@jetstreamapp/soql-parser-js';
-import { store,connectStore,SELECTORS,DESCRIBE,SOBJECT,UI } from 'core/store';
-import { isEmpty,fullApiName,isSame,escapeRegExp,isNotUndefinedOrNull,lowerCaseKey } from 'shared/utils';
+import { store, connectStore, SELECTORS, DESCRIBE, SOBJECT, UI } from 'core/store';
+import {
+    isEmpty,
+    fullApiName,
+    isSame,
+    escapeRegExp,
+    isNotUndefinedOrNull,
+    lowerCaseKey,
+} from 'shared/utils';
 
 const PAGE_LIST_SIZE = 70;
 
@@ -47,37 +52,37 @@ export default class FieldsTree extends ToolkitElement {
         }
     }
 
-    
-
     @wire(connectStore, { store })
-    storeChange({ ui,application }) {
+    storeChange({ ui, application }) {
         const isCurrentApp = this.verifyIsActive(application.currentApplication);
-        if(!isCurrentApp) return;
-        
+        if (!isCurrentApp) return;
+
         this.updateFieldTree();
     }
 
     updateFieldTree = () => {
         const { sobject, ui } = store.getState();
 
-        const sobjectState = SELECTORS.sobject.selectById({sobject},lowerCaseKey(this.sobject));
+        const sobjectState = SELECTORS.sobject.selectById({ sobject }, lowerCaseKey(this.sobject));
         if (!sobjectState) return;
-        
+
         this.isLoading = sobjectState.isFetching;
         if (sobjectState.data) {
             this.sobjectMeta = sobjectState.data;
         }
         this._updateFields(ui.query, ui.sort);
-    }
+    };
 
     connectedCallback() {
         //console.log('connectedCallback - describeSObjectIfNeeded',this.sobject)
         const { describe } = store.getState();
-        store.dispatch(SOBJECT.describeSObject({    
-            connector:this.connector.conn,
-            sObjectName:this.sobject,
-            useToolingApi:describe.nameMap[lowerCaseKey(this.sobject)]?.useToolingApi
-        }));
+        store.dispatch(
+            SOBJECT.describeSObject({
+                connector: this.connector.conn,
+                sObjectName: this.sobject,
+                useToolingApi: describe.nameMap[lowerCaseKey(this.sobject)]?.useToolingApi,
+            })
+        );
     }
 
     selectField(event) {
@@ -85,31 +90,33 @@ export default class FieldsTree extends ToolkitElement {
         store.dispatch(
             UI.reduxSlice.actions.toggleField({
                 fieldName,
-                relationships:this.relationship,
-                childRelationship:this.childrelation
+                relationships: this.relationship,
+                childRelationship: this.childrelation,
             })
         );
     }
 
     toggleReferenceField(event) {
         const fieldName = event.target.dataset.field;
-        this._expandedFieldNames[fieldName] = !this._expandedFieldNames[
-            fieldName
-        ];
+        this._expandedFieldNames[fieldName] = !this._expandedFieldNames[fieldName];
         this._filterFields();
     }
 
     _updateFields(query, sort) {
         if (!this.sobjectMeta) return;
-        const selectedFields = this._getSelectedFieldSuggestion(query).map(x => (x || '').toLowerCase());
+        const selectedFields = this._getSelectedFieldSuggestion(query).map(x =>
+            (x || '').toLowerCase()
+        );
         this._rawFields = this.sobjectMeta.fields.map(field => {
             return {
                 ...field,
                 details: `${field.type.toUpperCase()} / ${field.label}`,
                 isNotReference: field.type !== 'reference',
-                isActive: selectedFields.includes((this._getRawFieldName(field) || '').toLowerCase()),
+                isActive: selectedFields.includes(
+                    (this._getRawFieldName(field) || '').toLowerCase()
+                ),
                 isExpanded: false,
-                ...this._generateRelationshipProperties(field)
+                ...this._generateRelationshipProperties(field),
             };
         });
         this._sortFields(sort);
@@ -153,41 +160,46 @@ export default class FieldsTree extends ToolkitElement {
                 field.referenceTo && field.referenceTo.length > 0
                     ? field.referenceTo[0]
                     : undefined,
-            relationshipPath: this._getRelationshipPath(field)
+            relationshipPath: this._getRelationshipPath(field),
         };
     }
 
-    _formatField = (field) => {
-        var regex = new RegExp('('+this.keyword+')','gi');
-        if(regex.test(field)){
-            return field.toString().replace(/<?>?/,'').replace(regex,'<span style="font-weight:Bold; color:blue;">$1</span>');
-        }else{
+    _formatField = field => {
+        var regex = new RegExp('(' + this.keyword + ')', 'gi');
+        if (regex.test(field)) {
+            return field
+                .toString()
+                .replace(/<?>?/, '')
+                .replace(regex, '<span style="font-weight:Bold; color:blue;">$1</span>');
+        } else {
             return field;
         }
-    }
+    };
 
     _filterFields = () => {
         let fields;
         if (this.level === 1 && this.keyword) {
             const escapedKeyword = escapeRegExp(this.keyword);
             const keywordPattern = new RegExp(escapedKeyword, 'i');
-            fields = this._rawFields.filter(field => {
-                return keywordPattern.test(`${field.name} ${field.label}`);
-            }).map(field => ({
-                ...field,
-                formattedName:this._formatField(field.name || '')
-            }))
+            fields = this._rawFields
+                .filter(field => {
+                    return keywordPattern.test(`${field.name} ${field.label}`);
+                })
+                .map(field => ({
+                    ...field,
+                    formattedName: this._formatField(field.name || ''),
+                }));
         } else {
             fields = this._rawFields;
         }
         this.fields = fields.map(field => {
             return {
                 ...field,
-                isExpanded: !!this._expandedFieldNames[field.name]
+                isExpanded: !!this._expandedFieldNames[field.name],
             };
         });
         this.pageNumber = 1; // reset
-    }
+    };
 
     _getFlattenedFields(query) {
         return getFlattenedFields(query).map(field => fullApiName(field));
@@ -197,21 +209,19 @@ export default class FieldsTree extends ToolkitElement {
         if (sort) {
             const SORT_ORDER_PRE_NUMBER = {
                 ASC: 1,
-                DESC: -1
+                DESC: -1,
             };
             const sortOrderPreNumber = SORT_ORDER_PRE_NUMBER[sort];
             this._rawFields.sort((prev, next) => {
                 return (
-                    (prev.name.toLowerCase() > next.name.toLowerCase()
-                        ? 1
-                        : -1) * sortOrderPreNumber
+                    (prev.name.toLowerCase() > next.name.toLowerCase() ? 1 : -1) *
+                    sortOrderPreNumber
                 );
             });
         }
     }
 
     /** Events */
-
 
     handleScroll(event) {
         //console.log('handleScroll');
@@ -243,8 +253,8 @@ export default class FieldsTree extends ToolkitElement {
         return !this.fields || !this.fields.length;
     }
 
-    get virtualList(){
+    get virtualList() {
         // Best UX Improvement !!!!
-        return this.fields.slice(0,this.pageNumber * PAGE_LIST_SIZE);
+        return this.fields.slice(0, this.pageNumber * PAGE_LIST_SIZE);
     }
 }

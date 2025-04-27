@@ -12,11 +12,11 @@
 }
 
 .button-accept {
-    --slds-c-button-text-color:black
+    --slds-c-button-text-color: black;
 }
 
 .button-reject {
-    --slds-c-button-text-color:black;
+    --slds-c-button-text-color: black;
 }
 
 /* textInputWidget.css */

@@ -1,15 +1,15 @@
-:host{
-    --background-color:#1c1917;
-    --rev-semantic-colors-bg-darkest:#1c1917;
-    --color-bg-highlight:#44403c;
-    --color-lightest:#fff;
+:host {
+    --background-color: #1c1917;
+    --rev-semantic-colors-bg-darkest: #1c1917;
+    --color-bg-highlight: #44403c;
+    --color-lightest: #fff;
     color: #fff;
 }
 
-.container{
+.container {
     background-color: var(--background-color);
     --background-color: var(--rev-semantic-colors-bg-darkest);
-    --space-unit: .5rem;
+    --space-unit: 0.5rem;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -19,7 +19,7 @@
     overflow-y: auto;
 }
 
-.container header.row>:first-child {
+.container header.row > :first-child {
     flex-grow: 1;
 }
 
@@ -31,7 +31,7 @@
 }
 
 .container .sticky {
-    --space-unit : 0;
+    --space-unit: 0;
     background-color: var(--background-color);
     padding: 0.25rem var(--space-unit);
     position: sticky;
@@ -45,15 +45,15 @@ ul {
     padding: 0;
 }
 
-ul li{
+ul li {
     display: block;
 }
 
-[role=treeitem][aria-selected]{
+[role='treeitem'][aria-selected] {
     background: var(--color-bg-highlight);
 }
 
-[role=treeitem] {
+[role='treeitem'] {
     align-items: center;
     display: flex;
     font-size: 13px;
@@ -62,7 +62,7 @@ ul li{
     padding-left: 0.5rem;
 }
 
-[role=treeitem]>:first-child {
+[role='treeitem'] > :first-child {
     align-items: center;
     cursor: pointer;
     display: flex;
@@ -70,22 +70,11 @@ ul li{
     overflow: hidden;
 }
 
-
-
-
-
-
-
-
-
-
-
-
 .codicon-chevron-down:before {
     content: '\eab4';
 }
 
-.codicon[class*=codicon-] {
+.codicon[class*='codicon-'] {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     display: inline-block;
@@ -99,7 +88,7 @@ ul li{
     -ms-user-select: none;
 }
 
-.content{
+.content {
     cursor: pointer;
     overflow: hidden;
 }
@@ -108,15 +97,16 @@ ul li{
     display: inline-flex;
 }
 
-.inline-row, .row {
+.inline-row,
+.row {
     align-items: center;
 }
 
 .wrapper {
-    display: contents; 
+    display: contents;
 }
 
-.field{
+.field {
     align-self: center;
     flex-grow: 1;
     overflow: hidden;
@@ -154,10 +144,9 @@ button {
     white-space: nowrap;
 }
 
-
 /** Text **/
 .text-sm {
-    font-size: .875rem;
+    font-size: 0.875rem;
 }
 
 .pl-2 {
@@ -167,845 +156,845 @@ button {
 /** Files **/
 
 .file-icon {
-    white-space: nowrap
+    white-space: nowrap;
 }
 
 .file-icon:before {
     font-family: seti;
-    font-size: 16px
+    font-size: 16px;
 }
 
 .file-icon._R-file-icon:before {
     color: #519aba;
-    content: "\e001"
+    content: '\e001';
 }
 
 .file-icon._argdown-file-icon:before {
     color: #519aba;
-    content: "\e003"
+    content: '\e003';
 }
 
 .file-icon._asm-file-icon:before {
     color: #cc3e44;
-    content: "\e004"
+    content: '\e004';
 }
 
 .file-icon._audio-file-icon:before {
     color: #a074c4;
-    content: "\e005"
+    content: '\e005';
 }
 
 .file-icon._babel-file-icon:before {
     color: #cbcb41;
-    content: "\e006"
+    content: '\e006';
 }
 
 .file-icon._bower-file-icon:before {
     color: #e37933;
-    content: "\e007"
+    content: '\e007';
 }
 
 .file-icon._bsl-file-icon:before {
     color: #cc3e44;
-    content: "\e008"
+    content: '\e008';
 }
 
 .file-icon._c-file-icon:before {
     color: #519aba;
-    content: "\e00a"
+    content: '\e00a';
 }
 
 .file-icon._c-sharp-file-icon:before {
     color: #519aba;
-    content: "\e009"
+    content: '\e009';
 }
 
 .file-icon._c_1-file-icon:before {
     color: #a074c4;
-    content: "\e00a"
+    content: '\e00a';
 }
 
 .file-icon._c_2-file-icon:before {
     color: #cbcb41;
-    content: "\e00a"
+    content: '\e00a';
 }
 
 .file-icon._cake-file-icon:before {
     color: #cc3e44;
-    content: "\e00b"
+    content: '\e00b';
 }
 
 .file-icon._cake_php-file-icon:before {
     color: #cc3e44;
-    content: "\e00c"
+    content: '\e00c';
 }
 
 .file-icon._clock-file-icon:before {
     color: #519aba;
-    content: "\e010"
+    content: '\e010';
 }
 
 .file-icon._clock_1-file-icon:before {
     color: #6d8086;
-    content: "\e010"
+    content: '\e010';
 }
 
 .file-icon._clojure-file-icon:before {
     color: #8dc149;
-    content: "\e011"
+    content: '\e011';
 }
 
 .file-icon._clojure_1-file-icon:before {
     color: #519aba;
-    content: "\e011"
+    content: '\e011';
 }
 
 .file-icon._code-climate-file-icon:before {
     color: #8dc149;
-    content: "\e012"
+    content: '\e012';
 }
 
 .file-icon._coffee-file-icon:before {
     color: #cbcb41;
-    content: "\e013"
+    content: '\e013';
 }
 
 .file-icon._coldfusion-file-icon:before {
     color: #519aba;
-    content: "\e015"
+    content: '\e015';
 }
 
 .file-icon._config-file-icon:before {
     color: #6d8086;
-    content: "\e016"
+    content: '\e016';
 }
 
 .file-icon._cpp-file-icon:before {
     color: #519aba;
-    content: "\e017"
+    content: '\e017';
 }
 
 .file-icon._cpp_1-file-icon:before {
     color: #a074c4;
-    content: "\e017"
+    content: '\e017';
 }
 
 .file-icon._cpp_2-file-icon:before {
     color: #cbcb41;
-    content: "\e017"
+    content: '\e017';
 }
 
 .file-icon._crystal-file-icon:before {
     color: #d4d7d6;
-    content: "\e018"
+    content: '\e018';
 }
 
 .file-icon._crystal_embedded-file-icon:before {
     color: #d4d7d6;
-    content: "\e019"
+    content: '\e019';
 }
 
 .file-icon._css-file-icon:before {
     color: #519aba;
-    content: "\e01a"
+    content: '\e01a';
 }
 
 .file-icon._csv-file-icon:before {
     color: #8dc149;
-    content: "\e01b"
+    content: '\e01b';
 }
 
 .file-icon._d-file-icon:before {
     color: #cc3e44;
-    content: "\e01c"
+    content: '\e01c';
 }
 
 .file-icon._dart-file-icon:before {
     color: #519aba;
-    content: "\e01d"
+    content: '\e01d';
 }
 
 .file-icon._db-file-icon:before {
     color: #f55385;
-    content: "\e01e"
+    content: '\e01e';
 }
 
 .file-icon._default-file-icon:before {
     color: #d4d7d6;
-    content: "\e01f"
+    content: '\e01f';
 }
 
 .file-icon._docker-file-icon:before {
     color: #519aba;
-    content: "\e021"
+    content: '\e021';
 }
 
 .file-icon._docker_1-file-icon:before {
     color: #4d5a5e;
-    content: "\e021"
+    content: '\e021';
 }
 
 .file-icon._docker_2-file-icon:before {
     color: #8dc149;
-    content: "\e021"
+    content: '\e021';
 }
 
 .file-icon._docker_3-file-icon:before {
     color: #f55385;
-    content: "\e021"
+    content: '\e021';
 }
 
 .file-icon._ejs-file-icon:before {
     color: #cbcb41;
-    content: "\e023"
+    content: '\e023';
 }
 
 .file-icon._elixir-file-icon:before {
     color: #a074c4;
-    content: "\e024"
+    content: '\e024';
 }
 
 .file-icon._elixir_script-file-icon:before {
     color: #a074c4;
-    content: "\e025"
+    content: '\e025';
 }
 
 .file-icon._elm-file-icon:before {
     color: #519aba;
-    content: "\e026"
+    content: '\e026';
 }
 
 .file-icon._eslint-file-icon:before {
     color: #a074c4;
-    content: "\e028"
+    content: '\e028';
 }
 
 .file-icon._eslint_1-file-icon:before {
     color: #4d5a5e;
-    content: "\e028"
+    content: '\e028';
 }
 
 .file-icon._ethereum-file-icon:before {
     color: #519aba;
-    content: "\e029"
+    content: '\e029';
 }
 
 .file-icon._f-sharp-file-icon:before {
     color: #519aba;
-    content: "\e02a"
+    content: '\e02a';
 }
 
 .file-icon._favicon-file-icon:before {
     color: #cbcb41;
-    content: "\e02b"
+    content: '\e02b';
 }
 
 .file-icon._firebase-file-icon:before {
     color: #e37933;
-    content: "\e02c"
+    content: '\e02c';
 }
 
 .file-icon._firefox-file-icon:before {
     color: #e37933;
-    content: "\e02d"
+    content: '\e02d';
 }
 
 .file-icon._font-file-icon:before {
     color: #cc3e44;
-    content: "\e02f"
+    content: '\e02f';
 }
 
 .file-icon._git-file-icon:before {
     color: #41535b;
-    content: "\e030"
+    content: '\e030';
 }
 
 .file-icon._go-file-icon:before {
     color: #519aba;
-    content: "\e034"
+    content: '\e034';
 }
 
 .file-icon._go2-file-icon:before {
     color: #519aba;
-    content: "\e035"
+    content: '\e035';
 }
 
 .file-icon._gradle-file-icon:before {
     color: #8dc149;
-    content: "\e036"
+    content: '\e036';
 }
 
 .file-icon._grails-file-icon:before {
     color: #8dc149;
-    content: "\e037"
+    content: '\e037';
 }
 
 .file-icon._graphql-file-icon:before {
     color: #f55385;
-    content: "\e038"
+    content: '\e038';
 }
 
 .file-icon._grunt-file-icon:before {
     color: #e37933;
-    content: "\e039"
+    content: '\e039';
 }
 
 .file-icon._gulp-file-icon:before {
     color: #cc3e44;
-    content: "\e03a"
+    content: '\e03a';
 }
 
 .file-icon._haml-file-icon:before {
     color: #cc3e44;
-    content: "\e03c"
+    content: '\e03c';
 }
 
 .file-icon._happenings-file-icon:before {
     color: #519aba;
-    content: "\e03d"
+    content: '\e03d';
 }
 
 .file-icon._haskell-file-icon:before {
     color: #a074c4;
-    content: "\e03e"
+    content: '\e03e';
 }
 
 .file-icon._haxe-file-icon:before {
     color: #e37933;
-    content: "\e03f"
+    content: '\e03f';
 }
 
 .file-icon._haxe_1-file-icon:before {
     color: #cbcb41;
-    content: "\e03f"
+    content: '\e03f';
 }
 
 .file-icon._haxe_2-file-icon:before {
     color: #519aba;
-    content: "\e03f"
+    content: '\e03f';
 }
 
 .file-icon._haxe_3-file-icon:before {
     color: #a074c4;
-    content: "\e03f"
+    content: '\e03f';
 }
 
 .file-icon._heroku-file-icon:before {
     color: #a074c4;
-    content: "\e040"
+    content: '\e040';
 }
 
 .file-icon._hex-file-icon:before {
     color: #cc3e44;
-    content: "\e041"
+    content: '\e041';
 }
 
 .file-icon._html-file-icon:before {
     color: #519aba;
-    content: "\e042"
+    content: '\e042';
 }
 
 .file-icon._html_1-file-icon:before {
     color: #8dc149;
-    content: "\e042"
+    content: '\e042';
 }
 
 .file-icon._html_2-file-icon:before {
     color: #cbcb41;
-    content: "\e042"
+    content: '\e042';
 }
 
 .file-icon._html_3-file-icon:before {
     color: #e37933;
-    content: "\e042"
+    content: '\e042';
 }
 
 .file-icon._html_erb-file-icon:before {
     color: #cc3e44;
-    content: "\e043"
+    content: '\e043';
 }
 
 .file-icon._ignored-file-icon:before {
     color: #41535b;
-    content: "\e044"
+    content: '\e044';
 }
 
 .file-icon._illustrator-file-icon:before {
     color: #cbcb41;
-    content: "\e045"
+    content: '\e045';
 }
 
 .file-icon._image-file-icon:before {
     color: #a074c4;
-    content: "\e046"
+    content: '\e046';
 }
 
 .file-icon._info-file-icon:before {
     color: #519aba;
-    content: "\e047"
+    content: '\e047';
 }
 
 .file-icon._ionic-file-icon:before {
     color: #519aba;
-    content: "\e048"
+    content: '\e048';
 }
 
 .file-icon._jade-file-icon:before {
     color: #cc3e44;
-    content: "\e049"
+    content: '\e049';
 }
 
 .file-icon._java-file-icon:before {
     color: #cc3e44;
-    content: "\e04a"
+    content: '\e04a';
 }
 
 .file-icon._javascript-file-icon:before {
     color: #cbcb41;
-    content: "\e04b"
+    content: '\e04b';
 }
 
 .file-icon._javascript_1-file-icon:before {
     color: #e37933;
-    content: "\e04b"
+    content: '\e04b';
 }
 
 .file-icon._javascript_2-file-icon:before {
     color: #519aba;
-    content: "\e04b"
+    content: '\e04b';
 }
 
 .file-icon._jenkins-file-icon:before {
     color: #cc3e44;
-    content: "\e04c"
+    content: '\e04c';
 }
 
 .file-icon._jinja-file-icon:before {
     color: #cc3e44;
-    content: "\e04d"
+    content: '\e04d';
 }
 
 .file-icon._json-file-icon:before {
     color: #cbcb41;
-    content: "\e04f"
+    content: '\e04f';
 }
 
 .file-icon._json_1-file-icon:before {
     color: #8dc149;
-    content: "\e04f"
+    content: '\e04f';
 }
 
 .file-icon._julia-file-icon:before {
     color: #a074c4;
-    content: "\e050"
+    content: '\e050';
 }
 
 .file-icon._karma-file-icon:before {
     color: #8dc149;
-    content: "\e051"
+    content: '\e051';
 }
 
 .file-icon._kotlin-file-icon:before {
     color: #e37933;
-    content: "\e052"
+    content: '\e052';
 }
 
 .file-icon._less-file-icon:before {
     color: #519aba;
-    content: "\e053"
+    content: '\e053';
 }
 
 .file-icon._license-file-icon:before {
     color: #cbcb41;
-    content: "\e054"
+    content: '\e054';
 }
 
 .file-icon._license_1-file-icon:before {
     color: #e37933;
-    content: "\e054"
+    content: '\e054';
 }
 
 .file-icon._license_2-file-icon:before {
     color: #cc3e44;
-    content: "\e054"
+    content: '\e054';
 }
 
 .file-icon._liquid-file-icon:before {
     color: #8dc149;
-    content: "\e055"
+    content: '\e055';
 }
 
 .file-icon._livescript-file-icon:before {
     color: #519aba;
-    content: "\e056"
+    content: '\e056';
 }
 
 .file-icon._lock-file-icon:before {
     color: #8dc149;
-    content: "\e057"
+    content: '\e057';
 }
 
 .file-icon._lua-file-icon:before {
     color: #519aba;
-    content: "\e058"
+    content: '\e058';
 }
 
 .file-icon._makefile-file-icon:before {
     color: #e37933;
-    content: "\e059"
+    content: '\e059';
 }
 
 .file-icon._makefile_1-file-icon:before {
     color: #a074c4;
-    content: "\e059"
+    content: '\e059';
 }
 
 .file-icon._makefile_2-file-icon:before {
     color: #6d8086;
-    content: "\e059"
+    content: '\e059';
 }
 
 .file-icon._makefile_3-file-icon:before {
     color: #519aba;
-    content: "\e059"
+    content: '\e059';
 }
 
 .file-icon._markdown-file-icon:before {
     color: #519aba;
-    content: "\e05a"
+    content: '\e05a';
 }
 
 .file-icon._maven-file-icon:before {
     color: #cc3e44;
-    content: "\e05b"
+    content: '\e05b';
 }
 
 .file-icon._mdo-file-icon:before {
     color: #cc3e44;
-    content: "\e05c"
+    content: '\e05c';
 }
 
 .file-icon._mustache-file-icon:before {
     color: #e37933;
-    content: "\e05d"
+    content: '\e05d';
 }
 
 .file-icon._npm-file-icon:before {
     color: #41535b;
-    content: "\e05f"
+    content: '\e05f';
 }
 
 .file-icon._npm_1-file-icon:before {
     color: #cc3e44;
-    content: "\e05f"
+    content: '\e05f';
 }
 
 .file-icon._npm_ignored-file-icon:before {
     color: #41535b;
-    content: "\e060"
+    content: '\e060';
 }
 
 .file-icon._nunjucks-file-icon:before {
     color: #8dc149;
-    content: "\e061"
+    content: '\e061';
 }
 
 .file-icon._ocaml-file-icon:before {
     color: #e37933;
-    content: "\e062"
+    content: '\e062';
 }
 
 .file-icon._odata-file-icon:before {
     color: #e37933;
-    content: "\e063"
+    content: '\e063';
 }
 
 .file-icon._pddl-file-icon:before {
     color: #a074c4;
-    content: "\e064"
+    content: '\e064';
 }
 
 .file-icon._pdf-file-icon:before {
     color: #cc3e44;
-    content: "\e065"
+    content: '\e065';
 }
 
 .file-icon._perl-file-icon:before {
     color: #519aba;
-    content: "\e066"
+    content: '\e066';
 }
 
 .file-icon._photoshop-file-icon:before {
     color: #519aba;
-    content: "\e067"
+    content: '\e067';
 }
 
 .file-icon._php-file-icon:before {
     color: #a074c4;
-    content: "\e068"
+    content: '\e068';
 }
 
 .file-icon._plan-file-icon:before {
     color: #8dc149;
-    content: "\e069"
+    content: '\e069';
 }
 
 .file-icon._platformio-file-icon:before {
     color: #e37933;
-    content: "\e06a"
+    content: '\e06a';
 }
 
 .file-icon._powershell-file-icon:before {
     color: #519aba;
-    content: "\e06b"
+    content: '\e06b';
 }
 
 .file-icon._pug-file-icon:before {
     color: #cc3e44;
-    content: "\e06d"
+    content: '\e06d';
 }
 
 .file-icon._puppet-file-icon:before {
     color: #cbcb41;
-    content: "\e06e"
+    content: '\e06e';
 }
 
 .file-icon._python-file-icon:before {
     color: #519aba;
-    content: "\e06f"
+    content: '\e06f';
 }
 
 .file-icon._react-file-icon:before {
     color: #519aba;
-    content: "\e071"
+    content: '\e071';
 }
 
 .file-icon._react_1-file-icon:before {
     color: #e37933;
-    content: "\e071"
+    content: '\e071';
 }
 
 .file-icon._react_2-file-icon:before {
     color: #cbcb41;
-    content: "\e071"
+    content: '\e071';
 }
 
 .file-icon._reasonml-file-icon:before {
     color: #cc3e44;
-    content: "\e072"
+    content: '\e072';
 }
 
 .file-icon._rollup-file-icon:before {
     color: #cc3e44;
-    content: "\e073"
+    content: '\e073';
 }
 
 .file-icon._ruby-file-icon:before {
     color: #cc3e44;
-    content: "\e074"
+    content: '\e074';
 }
 
 .file-icon._rust-file-icon:before {
     color: #6d8086;
-    content: "\e075"
+    content: '\e075';
 }
 
 .file-icon._salesforce-file-icon:before {
     color: #519aba;
-    content: "\e076"
+    content: '\e076';
 }
 
 .file-icon._sass-file-icon:before {
     color: #f55385;
-    content: "\e077"
+    content: '\e077';
 }
 
 .file-icon._sbt-file-icon:before {
     color: #519aba;
-    content: "\e078"
+    content: '\e078';
 }
 
 .file-icon._scala-file-icon:before {
     color: #cc3e44;
-    content: "\e079"
+    content: '\e079';
 }
 
 .file-icon._shell-file-icon:before {
     color: #4d5a5e;
-    content: "\e07c"
+    content: '\e07c';
 }
 
 .file-icon._slim-file-icon:before {
     color: #e37933;
-    content: "\e07d"
+    content: '\e07d';
 }
 
 .file-icon._smarty-file-icon:before {
     color: #cbcb41;
-    content: "\e07e"
+    content: '\e07e';
 }
 
 .file-icon._spring-file-icon:before {
     color: #8dc149;
-    content: "\e07f"
+    content: '\e07f';
 }
 
 .file-icon._stylelint-file-icon:before {
     color: #d4d7d6;
-    content: "\e080"
+    content: '\e080';
 }
 
 .file-icon._stylelint_1-file-icon:before {
     color: #4d5a5e;
-    content: "\e080"
+    content: '\e080';
 }
 
 .file-icon._stylus-file-icon:before {
     color: #8dc149;
-    content: "\e081"
+    content: '\e081';
 }
 
 .file-icon._sublime-file-icon:before {
     color: #e37933;
-    content: "\e082"
+    content: '\e082';
 }
 
 .file-icon._svg-file-icon:before {
     color: #a074c4;
-    content: "\e083"
+    content: '\e083';
 }
 
 .file-icon._svg_1-file-icon:before {
     color: #519aba;
-    content: "\e083"
+    content: '\e083';
 }
 
 .file-icon._swift-file-icon:before {
     color: #e37933;
-    content: "\e084"
+    content: '\e084';
 }
 
 .file-icon._terraform-file-icon:before {
     color: #a074c4;
-    content: "\e085"
+    content: '\e085';
 }
 
 .file-icon._tex-file-icon:before {
     color: #519aba;
-    content: "\e086"
+    content: '\e086';
 }
 
 .file-icon._tex_1-file-icon:before {
     color: #cbcb41;
-    content: "\e086"
+    content: '\e086';
 }
 
 .file-icon._tex_2-file-icon:before {
     color: #e37933;
-    content: "\e086"
+    content: '\e086';
 }
 
 .file-icon._tex_3-file-icon:before {
     color: #d4d7d6;
-    content: "\e086"
+    content: '\e086';
 }
 
 .file-icon._todo-file-icon:before {
     color: undefined;
-    content: "\e088"
+    content: '\e088';
 }
 
 .file-icon._tsconfig-file-icon:before {
     color: #519aba;
-    content: "\e089"
+    content: '\e089';
 }
 
 .file-icon._twig-file-icon:before {
     color: #8dc149;
-    content: "\e08a"
+    content: '\e08a';
 }
 
 .file-icon._typescript-file-icon:before {
     color: #519aba;
-    content: "\e08b"
+    content: '\e08b';
 }
 
 .file-icon._typescript_1-file-icon:before {
     color: #cbcb41;
-    content: "\e08b"
+    content: '\e08b';
 }
 
 .file-icon._vala-file-icon:before {
     color: #6d8086;
-    content: "\e08c"
+    content: '\e08c';
 }
 
 .file-icon._video-file-icon:before {
     color: #f55385;
-    content: "\e08d"
+    content: '\e08d';
 }
 
 .file-icon._vue-file-icon:before {
     color: #8dc149;
-    content: "\e08e"
+    content: '\e08e';
 }
 
 .file-icon._wasm-file-icon:before {
     color: #a074c4;
-    content: "\e08f"
+    content: '\e08f';
 }
 
 .file-icon._wat-file-icon:before {
     color: #a074c4;
-    content: "\e090"
+    content: '\e090';
 }
 
 .file-icon._webpack-file-icon:before {
     color: #519aba;
-    content: "\e091"
+    content: '\e091';
 }
 
 .file-icon._wgt-file-icon:before {
     color: #519aba;
-    content: "\e092"
+    content: '\e092';
 }
 
 .file-icon._windows-file-icon:before {
     color: #519aba;
-    content: "\e093"
+    content: '\e093';
 }
 
 .file-icon._word-file-icon:before {
     color: #519aba;
-    content: "\e094"
+    content: '\e094';
 }
 
 .file-icon._xls-file-icon:before {
     color: #8dc149;
-    content: "\e095"
+    content: '\e095';
 }
 
 .file-icon._xml-file-icon:before {
     color: #e37933;
-    content: "\e096"
+    content: '\e096';
 }
 
 .file-icon._yarn-file-icon:before {
     color: #519aba;
-    content: "\e097"
+    content: '\e097';
 }
 
 .file-icon._yml-file-icon:before {
     color: #a074c4;
-    content: "\e098"
+    content: '\e098';
 }
 
 .file-icon._zip-file-icon:before {
     color: #cc3e44;
-    content: "\e099"
+    content: '\e099';
 }
 
 .file-icon._zip_1-file-icon:before {
     color: #6d8086;
-    content: "\e099"
+    content: '\e099';
 }

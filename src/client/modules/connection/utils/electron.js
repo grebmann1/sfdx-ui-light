@@ -1,102 +1,108 @@
-import {isNotUndefinedOrNull,isEmpty,decodeError,classSet} from 'shared/utils';
+import { isNotUndefinedOrNull, isEmpty, decodeError, classSet } from 'shared/utils';
 
-const CONNECTION_ERRORS = ['JwtAuthError','RefreshTokenAuthError'];
+const CONNECTION_ERRORS = ['JwtAuthError', 'RefreshTokenAuthError'];
 const CONNECTION_WARNING = ['DomainNotFoundError'];
 
-
-export async function getConfiguration(alias){
+export async function getConfiguration(alias) {
     //console.log('getConfiguration - electron');
-    var {res, error} = await window.electron.ipcRenderer.invoke('org-seeDetails',{alias});
+    var { res, error } = await window.electron.ipcRenderer.invoke('org-seeDetails', { alias });
     if (error) {
-        throw decodeError(error)
+        throw decodeError(error);
     }
     res = {
         ...res,
         ...{
-            id:res.alias,
-            company:`${res.alias.split('-').length > 1?res.alias.split('-').shift():''}`.toUpperCase(),
-            name:res.alias.split('-').pop()
-        }
-    }
+            id: res.alias,
+            company: `${
+                res.alias.split('-').length > 1 ? res.alias.split('-').shift() : ''
+            }`.toUpperCase(),
+            name: res.alias.split('-').pop(),
+        },
+    };
     return res;
 }
 
-
-export async function renameConfiguration({oldAlias,newAlias,username}){
-    let {error} = await window.electron.ipcRenderer.invoke('org-setAlias',{
+export async function renameConfiguration({ oldAlias, newAlias, username }) {
+    let { error } = await window.electron.ipcRenderer.invoke('org-setAlias', {
         alias: newAlias,
-        username: username
+        username: username,
     });
     if (error) {
         throw decodeError(error);
     }
 
-    if(oldAlias !== 'Empty' || isNotUndefinedOrNull(oldAlias)){
-        let {error} = await window.electron.ipcRenderer.invoke('org-unsetAlias',{alias:oldAlias});
+    if (oldAlias !== 'Empty' || isNotUndefinedOrNull(oldAlias)) {
+        let { error } = await window.electron.ipcRenderer.invoke('org-unsetAlias', {
+            alias: oldAlias,
+        });
         if (error) {
-            throw decodeError(error)
+            throw decodeError(error);
         }
     }
 }
 
-export async function removeConfiguration(alias){
+export async function removeConfiguration(alias) {
     // todo: need to be refactured
-    var {error} = await window.electron.ipcRenderer.invoke('org-logout',{alias});
+    var { error } = await window.electron.ipcRenderer.invoke('org-logout', { alias });
     if (error) {
-        throw decodeError(error)
+        throw decodeError(error);
     }
-} 
+}
 
-const getStatusClass = (status) => {
-    if(CONNECTION_ERRORS.includes(status)){
+const getStatusClass = status => {
+    if (CONNECTION_ERRORS.includes(status)) {
         return 'slds-text-color_error';
-    }else if(CONNECTION_WARNING.includes(status)){
+    } else if (CONNECTION_WARNING.includes(status)) {
         return 'slds-color-brand';
     }
 
     return 'slds-text-color_success slds-text-title_caps';
-}
+};
 
-export async function getConfigurations(){
+export async function getConfigurations() {
     //console.log('getConfigurations - electron');
-    const {result,error} = await window.electron.ipcRenderer.invoke('org-getAllOrgs');
+    const { result, error } = await window.electron.ipcRenderer.invoke('org-getAllOrgs');
     let orgs = [].concat(
         result.nonScratchOrgs.map(x => ({
             ...x,
-            _status:x.connectedStatus,
-            _type:x.isDevHub?'DevHub':x.isSandbox?'Sandbox':''
+            _status: x.connectedStatus,
+            _type: x.isDevHub ? 'DevHub' : x.isSandbox ? 'Sandbox' : '',
         })),
         result.scratchOrgs.map(x => ({
             ...x,
-            _status:x.status,
-            _type:"Scratch"
+            _status: x.status,
+            _type: 'Scratch',
         }))
     );
     //console.log('orgs',orgs);
     orgs = orgs.filter(x => isNotUndefinedOrNull(x.alias)); // Remove empty alias
-    orgs = orgs.map((item,index) => {
-            let alias = item.alias || 'Empty'
-            let _typeClass = classSet('').add({
-                'slds-color-brand':item._type === 'DevHub',
-                'slds-color-orange-light':item._type === 'Sandbox',
-                'slds-color-orange-dark':item._type === 'Scratch'
-            }).toString();
+    orgs = orgs.map((item, index) => {
+        let alias = item.alias || 'Empty';
+        let _typeClass = classSet('')
+            .add({
+                'slds-color-brand': item._type === 'DevHub',
+                'slds-color-orange-light': item._type === 'Sandbox',
+                'slds-color-orange-dark': item._type === 'Scratch',
+            })
+            .toString();
 
-            return {
-                ...item,
-                ...{
-                    alias,
-                    id:`index-${index}`,
-                    company:`${alias.split('-').length > 1?alias.split('-').shift():''}`.toUpperCase(),
-                    name:alias.split('-').pop(),
-                    _typeClass,
-                    _statusClass:getStatusClass(item._status),
-                    _hasError:item._status == 'JwtAuthError',
-                    _isRedirect:!isEmpty(item.redirectUrl)
-                    //sfdxAuthUrl is not needed as it's generated by the SFDX CLI
-                }
-            }
-        });
-        orgs = orgs.sort((a, b) => a.alias.localeCompare(b.alias));
+        return {
+            ...item,
+            ...{
+                alias,
+                id: `index-${index}`,
+                company: `${
+                    alias.split('-').length > 1 ? alias.split('-').shift() : ''
+                }`.toUpperCase(),
+                name: alias.split('-').pop(),
+                _typeClass,
+                _statusClass: getStatusClass(item._status),
+                _hasError: item._status == 'JwtAuthError',
+                _isRedirect: !isEmpty(item.redirectUrl),
+                //sfdxAuthUrl is not needed as it's generated by the SFDX CLI
+            },
+        };
+    });
+    orgs = orgs.sort((a, b) => a.alias.localeCompare(b.alias));
     return orgs;
 }

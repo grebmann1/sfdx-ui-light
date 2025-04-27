@@ -1,12 +1,11 @@
-import {api} from "lwc";
+import { api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import Toast from 'lightning/toast';
-import UserExplorerNetworkModal from 'feature/UserExplorerNetworkModal'
-import {chromeOpenInWindow} from 'extension/utils';
-import {isEmpty, isNotUndefinedOrNull, runSilent} from "shared/utils";
+import UserExplorerNetworkModal from 'feature/UserExplorerNetworkModal';
+import { chromeOpenInWindow } from 'extension/utils';
+import { isEmpty, isNotUndefinedOrNull, runSilent } from 'shared/utils';
 
 export default class UserExplorerRow extends ToolkitElement {
-
     @api item;
     @api currentOrigin;
     hasRendered = false;
@@ -63,7 +62,10 @@ export default class UserExplorerRow extends ToolkitElement {
 
         const regex = new RegExp('(' + this.filter + ')', 'gmi');
         if (regex.test(this.username)) {
-            return this.username.toString().replace(/<?>?/, '').replace(regex, '<span style="font-weight:Bold; color:blue;">$1</span>');
+            return this.username
+                .toString()
+                .replace(/<?>?/, '')
+                .replace(regex, '<span style="font-weight:Bold; color:blue;">$1</span>');
         } else {
             return this.username;
         }
@@ -76,7 +78,10 @@ export default class UserExplorerRow extends ToolkitElement {
 
         const regex = new RegExp('(' + this.filter + ')', 'gmi');
         if (regex.test(this.name)) {
-            return this.name.toString().replace(/<?>?/, '').replace(regex, '<span style="font-weight:Bold; color:blue;">$1</span>');
+            return this.name
+                .toString()
+                .replace(/<?>?/, '')
+                .replace(regex, '<span style="font-weight:Bold; color:blue;">$1</span>');
         } else {
             return this.name;
         }
@@ -89,7 +94,10 @@ export default class UserExplorerRow extends ToolkitElement {
 
         const regex = new RegExp('(' + this.filter + ')', 'gmi');
         if (regex.test(this.profile)) {
-            return this.profile.toString().replace(/<?>?/, '').replace(regex, '<span style="font-weight:Bold; color:blue;">$1</span>');
+            return this.profile
+                .toString()
+                .replace(/<?>?/, '')
+                .replace(regex, '<span style="font-weight:Bold; color:blue;">$1</span>');
         } else {
             return this.profile;
         }
@@ -116,11 +124,17 @@ export default class UserExplorerRow extends ToolkitElement {
         const query = `SELECT Id, MemberId, NetworkId,Network.Name,Network.Status FROM NetworkMember Where MemberId = '${this.recordId}' AND Network.Status = 'Live'`;
         const retUrl = '/';
         var networkMembers = await runSilent(async () => {
-            return (await this.connector.conn.query(query)).records
+            return (await this.connector.conn.query(query)).records;
         }, []);
         networkMembers = networkMembers.map(x => ({
             ...x,
-            _redirectLink: `${this.connector.conn.instanceUrl}/servlet/servlet.su?oid=${encodeURIComponent(this.connector.configuration.orgId)}&retURL=${encodeURIComponent(retUrl)}&sunetworkid=${encodeURIComponent(x.NetworkId)}&sunetworkuserid=${encodeURIComponent(x.MemberId)}`
+            _redirectLink: `${
+                this.connector.conn.instanceUrl
+            }/servlet/servlet.su?oid=${encodeURIComponent(
+                this.connector.configuration.orgId
+            )}&retURL=${encodeURIComponent(retUrl)}&sunetworkid=${encodeURIComponent(
+                x.NetworkId
+            )}&sunetworkuserid=${encodeURIComponent(x.MemberId)}`,
         }));
 
         const targetUrl = `${this.connector.conn.instanceUrl}/servlet/servlet.su?oid=${this.connector.configuration.orgId}&suorgadminid=${this.item.Id}&retURL=%2Fhome%2Fhome.jsp&targetURL=%2Fhome%2Fhome.jsp`;
@@ -129,19 +143,24 @@ export default class UserExplorerRow extends ToolkitElement {
         UserExplorerNetworkModal.open({
             username: this.username,
             frontDoorUrl: this.connector.frontDoorUrl,
-            standard: this.item.Profile.UserType == 'Standard' ? `${this.connector.frontDoorUrl}&retURL=${encodeURIComponent(targetUrl)}` : '',
-            networkMembers
-        })
+            standard:
+                this.item.Profile.UserType == 'Standard'
+                    ? `${this.connector.frontDoorUrl}&retURL=${encodeURIComponent(targetUrl)}`
+                    : '',
+            networkMembers,
+        });
     };
 
     viewClick = () => {
         //console.log('this.connector.configuration',this.connector.configuration);
-        const targetUrl = encodeURIComponent(`/${this.item.Id}?noredirect=1&isUserEntityOverride=1`);
+        const targetUrl = encodeURIComponent(
+            `/${this.item.Id}?noredirect=1&isUserEntityOverride=1`
+        );
         chromeOpenInWindow(
             `${this.currentOrigin}/lightning/setup/ManageUsers/page?address=${targetUrl}`,
             this.username,
             false
-        )
+        );
     };
 
     handleCopyRecordId = () => {
@@ -150,6 +169,5 @@ export default class UserExplorerRow extends ToolkitElement {
             label: 'RecordId exported to your clipboard',
             variant: 'success',
         });
-    }
-
+    };
 }

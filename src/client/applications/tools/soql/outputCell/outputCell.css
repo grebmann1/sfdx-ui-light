@@ -1,19 +1,19 @@
 :host {
-  display: flex;
-  justify-content: space-between;
-  /*line-height: 32px;*/
-  height: 100%;
-  align-items: center;
-  margin-left: 4px;
-  margin-right: 4px;
+    display: flex;
+    justify-content: space-between;
+    /*line-height: 32px;*/
+    height: 100%;
+    align-items: center;
+    margin-left: 4px;
+    margin-right: 4px;
 }
 
 .slds-cell-button {
-  visibility: hidden;
-  display: flex;
-  align-items: center;
+    visibility: hidden;
+    display: flex;
+    align-items: center;
 }
 
-:host:hover .slds-cell-button{
-  visibility: visible;
+:host:hover .slds-cell-button {
+    visibility: visible;
 }

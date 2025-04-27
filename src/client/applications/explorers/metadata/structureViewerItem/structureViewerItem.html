@@ -2,31 +2,32 @@
     <template lwc:if={hasLoaded}>
         <li class={itemClass} onclick={onClickItem}>
             <div class="value-container">
-                {title} 
-                <template lwc:if={displayCounter}>
-                    ({counter})
-                </template>
+                {title}
+                <template lwc:if={displayCounter}>({counter})</template>
                 <template lwc:if={isValueAvailable}>
-                        <span style="font-weight:bold;">
-                            <template lwc:if={isValueTrue}>
-                            <span class="trueColor">{value}</span> 
-                            </template>
-                            <template lwc:elseif={isValueFalse}>
-                                <span class="falseColor">{value}</span> 
-                            </template>
-                            <template lwc:else>
-                                {value}
-                            </template>
-                        </span>
-                        <template lwc:if={isSalesforceId}>
-                            <a class="slds-m-left_medium" data-url={href} onclick={goToUrl}>See in Salesforce</a>
+                    <span style="font-weight: bold">
+                        <template lwc:if={isValueTrue}>
+                            <span class="trueColor">{value}</span>
                         </template>
+                        <template lwc:elseif={isValueFalse}>
+                            <span class="falseColor">{value}</span>
+                        </template>
+                        <template lwc:else>{value}</template>
+                    </span>
+                    <template lwc:if={isSalesforceId}>
+                        <a class="slds-m-left_medium" data-url={href} onclick={goToUrl}>
+                            See in Salesforce
+                        </a>
+                    </template>
                 </template>
             </div>
             <template lwc:if={isChildrenDisplayed}>
                 <ul>
                     <template for:each={formattedItems} for:item="item">
-                        <metadata-structure-viewer-item key={item.key} title={item.key} value={item.value}></metadata-structure-viewer-item>
+                        <metadata-structure-viewer-item
+                            key={item.key}
+                            title={item.key}
+                            value={item.value}></metadata-structure-viewer-item>
                     </template>
                 </ul>
             </template>

@@ -1,47 +1,99 @@
 <template>
     <div class={pageClass}>
         <builder-editor onexecuteaction={executeAction} onexecutesave={executeSave}>
-            <builder-header slot="header" title="Tools" sub-title="Anonymous Apex" icon-name="standard:apex">
+            <builder-header
+                slot="header"
+                title="Tools"
+                sub-title="Anonymous Apex"
+                icon-name="standard:apex">
                 <div slot="actions" class="slds-builder-toolbar__actions">
-                    <lightning-button class="slds-p-left_xx-small" label={i18n.EDITOR_PANEL_SAVE} onclick={executeSave} disabled={isSaveButtonDisabled}></lightning-button>
+                    <lightning-button
+                        class="slds-p-left_xx-small"
+                        label={i18n.EDITOR_PANEL_SAVE}
+                        onclick={executeSave}
+                        disabled={isSaveButtonDisabled}></lightning-button>
                     <template lwc:if={isExecuteButtonDisplayed}>
-                        <lightning-button class="slds-p-left_xx-small" variant="brand" label={i18n.EDITOR_PANEL_RUN} icon-name="utility:right" onclick={executeAction} disabled={isExecuteButtonDisabled}></lightning-button>
+                        <lightning-button
+                            class="slds-p-left_xx-small"
+                            variant="brand"
+                            label={i18n.EDITOR_PANEL_RUN}
+                            icon-name="utility:right"
+                            onclick={executeAction}
+                            disabled={isExecuteButtonDisabled}></lightning-button>
                     </template>
                     <template lwc:else>
-                        <lightning-button class="slds-p-left_xx-small" variant="destructive" label={i18n.EDITOR_PANEL_ABORT} icon-name="utility:clear" onclick={handleAbort} disabled={isLoading}></lightning-button>
+                        <lightning-button
+                            class="slds-p-left_xx-small"
+                            variant="destructive"
+                            label={i18n.EDITOR_PANEL_ABORT}
+                            icon-name="utility:clear"
+                            onclick={handleAbort}
+                            disabled={isLoading}></lightning-button>
                     </template>
                 </div>
                 <div slot="subactions" class="slds-builder-toolbar__actions">
-                    <lightning-button-icon-stateful class="slds-p-left_xx-small" selected={isDebugLogToggle} variant="border-filled" icon-name="utility:bug" size="large" onclick={toggle_debugLog}></lightning-button-icon-stateful>    
-                    <lightning-button-icon-stateful class="slds-p-left_xx-small" selected={isRecentToggled}  variant="border-filled" icon-name="utility:budget_period"  size="large" onclick={handleRecentToggle}></lightning-button-icon-stateful>
+                    <lightning-button-icon-stateful
+                        class="slds-p-left_xx-small"
+                        selected={isDebugLogToggle}
+                        variant="border-filled"
+                        icon-name="utility:bug"
+                        size="large"
+                        onclick={toggle_debugLog}></lightning-button-icon-stateful>
+                    <lightning-button-icon-stateful
+                        class="slds-p-left_xx-small"
+                        selected={isRecentToggled}
+                        variant="border-filled"
+                        icon-name="utility:budget_period"
+                        size="large"
+                        onclick={handleRecentToggle}></lightning-button-icon-stateful>
                 </div>
 
                 <template lwc:if={isMetaDisplayed}>
                     <p slot="meta" class="slds-page-header__meta-text">
-                         Executed {_responseCreatedDateFormatted}
+                        Executed {_responseCreatedDateFormatted}
                     </p>
                 </template>
             </builder-header>
             <article class="full-page-body slds-card">
-                <div class="slds-is-relative slds-full-width slds-full-height slds-flex-column" style="min-height:200px;">
+                <div
+                    class="slds-is-relative slds-full-width slds-full-height slds-flex-column"
+                    style="min-height: 200px">
                     <template lwc:if={isLoading}>
                         <slds-spinner alternative-text="Loading" size="small"></slds-spinner>
                     </template>
                     <!-- Tabs -->
-                    <slds-tabset lwc:ref="apexTab" variant="scoped" class="slds-without-tab" active-tab-value={currentTab} onaddtab={handleAddTab} onclosetab={handleCloseTab} is-add-tab-enabled is-remove-tab-event-disabled>
+                    <slds-tabset
+                        lwc:ref="apexTab"
+                        variant="scoped"
+                        class="slds-without-tab"
+                        active-tab-value={currentTab}
+                        onaddtab={handleAddTab}
+                        onclosetab={handleCloseTab}
+                        is-add-tab-enabled
+                        is-remove-tab-event-disabled>
                         <template for:each={formattedTabs} for:item="item">
-                            <slds-tab key={item.id} label={item.name} value={item.id} onactive={handleSelectTab} is-closeable={item.isCloseable} is-draft={item.isDraft}></slds-tab>
+                            <slds-tab
+                                key={item.id}
+                                label={item.name}
+                                value={item.id}
+                                onactive={handleSelectTab}
+                                is-closeable={item.isCloseable}
+                                is-draft={item.isDraft}></slds-tab>
                         </template>
                     </slds-tabset>
                     <!-- Content -->
-                    <slds-split-view class="slds-fill-height" left-min-width="200" right-min-width="200" is-horizontal>
+                    <slds-split-view
+                        class="slds-fill-height"
+                        left-min-width="200"
+                        right-min-width="200"
+                        is-horizontal>
                         <div class="slds-flex-column slds-full-height slds-full-width" slot="left">
                             <div class="apex-editor slds-fill-height">
-                                <editor-default lwc:ref="editor" 
-                                    model={currentModel} 
-                                    onmonacoloaded={handleMonacoLoaded} 
-                                    onchange={handleBodyChange}
-                                ></editor-default>
+                                <editor-default
+                                    lwc:ref="editor"
+                                    model={currentModel}
+                                    onmonacoloaded={handleMonacoLoaded}
+                                    onchange={handleBodyChange}></editor-default>
                             </div>
                             <!--
                             <editor-app lwc:ref="editor" class="slds-flex-column slds-fill-height slds-full-width"
@@ -54,10 +106,13 @@
                             ></editor-app>
                             -->
                         </div>
-                        
+
                         <div class={rightSlotClass} slot="right">
                             <template lwc:if={hasError}>
-                                <slds-information-block class="slds-p-around_x-small" title={error_title} variant="error">
+                                <slds-information-block
+                                    class="slds-p-around_x-small"
+                                    title={error_title}
+                                    variant="error">
                                     <p>{error_message}</p>
                                 </slds-information-block>
                             </template>
@@ -71,23 +126,22 @@
                                         <div class="slds-col_bump-left">
                                             <lightning-input
                                                 class="toolkit-small slds-p-right_x-small"
-                                                type="toggle" 
-                                                label="Filter User Debug" 
+                                                type="toggle"
+                                                label="Filter User Debug"
                                                 name="filterUserDebug"
                                                 message-toggle-active=""
                                                 message-toggle-inactive=""
                                                 onchange={toggle_filterUserDebug}
-                                                checked={isFilterUserDebugEnabled}
-                                            ></lightning-input>
+                                                checked={isFilterUserDebugEnabled}></lightning-input>
                                         </div>
                                     </div>
                                     <div class="apex-editor slds-fill-height">
-                                        <editor-default lwc:ref="apexLog" 
+                                        <editor-default
+                                            lwc:ref="apexLog"
                                             model={currentLogModel}
                                             onmonacoloaded={handleLogLoaded}
                                             theme="apexLog"
-                                            is-read-only
-                                        ></editor-default>
+                                            is-read-only></editor-default>
                                     </div>
                                     <!--
                                     <slds-code-block 
@@ -102,99 +156,108 @@
                             <template lwc:else>
                                 <illustration-empty size="large" use-slot-format>
                                     <div slot="title">
-                                        <p>Click <span class="slds-text-heading_small">Run</span> or use <span class="slds-text-heading_small">CMD/CTRL + Enter</span> to execute</p>
+                                        <p>
+                                            Click
+                                            <span class="slds-text-heading_small">Run</span>
+                                            or use
+                                            <span class="slds-text-heading_small">
+                                                CMD/CTRL + Enter
+                                            </span>
+                                            to execute
+                                        </p>
                                     </div>
                                 </illustration-empty>
                             </template>
                         </div>
                     </slds-split-view>
-                    
                 </div>
             </article>
             <!-- Panel -->
 
             <!-- RECENT Anonymous Apex -->
-            <builder-storage-panel 
-                title="Apex List" 
-                is-open={isRecentToggled} 
+            <builder-storage-panel
+                title="Apex List"
+                is-open={isRecentToggled}
                 recent-title={i18n.APEX_LIST_PANEL_RECENT_APEX}
-                recent-items={recentApexItems} 
+                recent-items={recentApexItems}
                 saved-items={savedApexItems}
                 saved-title={i18n.APEX_LIST_PANEL_SAVED_APEX}
                 onclose={handleRecentToggle}
                 onremoveitem={handleRemoveItem}
-                onselectitem={handleSelectItem}
-            ></builder-storage-panel>
+                onselectitem={handleSelectItem}></builder-storage-panel>
             <!-- DEBUG LOGS -->
-            <slds-vertical-panel size="slds-size_medium" title="Debug Logs" is-open={isDebugLogToggle} onclose={toggle_debugLog}>
+            <slds-vertical-panel
+                size="slds-size_medium"
+                title="Debug Logs"
+                is-open={isDebugLogToggle}
+                onclose={toggle_debugLog}>
                 <div class="slds-grid slds-wrap">
                     <div class="slds-col slds-size_1-of-1">
-                        <lightning-combobox class="slds-p-horizontal_small"
+                        <lightning-combobox
+                            class="slds-p-horizontal_small"
                             label="DB"
                             dropdown-alignment="left"
                             data-key="debug_db"
                             value={debug_db}
                             disabled={isLoading}
                             options={debug_db_options}
-                            onchange={debug_handleChange}
-                        ></lightning-combobox>
+                            onchange={debug_handleChange}></lightning-combobox>
                     </div>
                     <div class="slds-col slds-size_1-of-1">
-                        <lightning-combobox class="slds-p-horizontal_small"
+                        <lightning-combobox
+                            class="slds-p-horizontal_small"
                             label="Callout"
                             dropdown-alignment="left"
                             data-key="debug_callout"
                             value={debug_callout}
                             disabled={isLoading}
                             options={debug_callout_options}
-                            onchange={debug_handleChange}
-                        ></lightning-combobox>
+                            onchange={debug_handleChange}></lightning-combobox>
                     </div>
                     <div class="slds-col slds-size_1-of-1">
-                        <lightning-combobox class="slds-p-horizontal_small"
+                        <lightning-combobox
+                            class="slds-p-horizontal_small"
                             label="ApexCode"
                             dropdown-alignment="left"
                             data-key="debug_apexCode"
                             value={debug_apexCode}
                             disabled={isLoading}
                             options={debug_apexCode_options}
-                            onchange={debug_handleChange}
-                        ></lightning-combobox>
+                            onchange={debug_handleChange}></lightning-combobox>
                     </div>
                     <div class="slds-col slds-size_1-of-1">
-                        <lightning-combobox class="slds-p-horizontal_small"
+                        <lightning-combobox
+                            class="slds-p-horizontal_small"
                             label="Validation"
                             dropdown-alignment="left"
                             data-key="debug_validation"
                             value={debug_validation}
                             disabled={isLoading}
                             options={debug_validation_options}
-                            onchange={debug_handleChange}
-                        ></lightning-combobox>
+                            onchange={debug_handleChange}></lightning-combobox>
                     </div>
                     <div class="slds-col slds-size_1-of-1">
-                        <lightning-combobox class="slds-p-horizontal_small"
+                        <lightning-combobox
+                            class="slds-p-horizontal_small"
                             label="Profiling"
                             dropdown-alignment="left"
                             data-key="debug_profiling"
                             value={debug_profiling}
                             disabled={isLoading}
                             options={debug_profiling_options}
-                            onchange={debug_handleChange}
-                        ></lightning-combobox>
+                            onchange={debug_handleChange}></lightning-combobox>
                     </div>
                     <div class="slds-col slds-size_1-of-1">
-                        <lightning-combobox class="slds-p-horizontal_small"
+                        <lightning-combobox
+                            class="slds-p-horizontal_small"
                             label="System"
                             dropdown-alignment="left"
                             data-key="debug_system"
                             value={debug_system}
                             disabled={isLoading}
                             options={debug_system_options}
-                            onchange={debug_handleChange}
-                        ></lightning-combobox>
+                            onchange={debug_handleChange}></lightning-combobox>
                     </div>
-                    
                 </div>
             </slds-vertical-panel>
         </builder-editor>

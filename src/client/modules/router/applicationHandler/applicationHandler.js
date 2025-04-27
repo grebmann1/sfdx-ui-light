@@ -1,8 +1,6 @@
 import { CONFIG } from 'ui/app';
 
-
 export default class ApplicationHandler {
-    
     callback;
 
     constructor(callback) {

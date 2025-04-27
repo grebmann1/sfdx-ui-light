@@ -1,26 +1,31 @@
-import { api, track, wire } from "lwc";
+import { api, track, wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { lowerCaseKey, isUndefinedOrNull, isNotUndefinedOrNull, isEmpty, guid, classSet, runActionAfterTimeOut, compareString, splitTextByTimestamp } from 'shared/utils';
+import {
+    lowerCaseKey,
+    isUndefinedOrNull,
+    isNotUndefinedOrNull,
+    isEmpty,
+    guid,
+    classSet,
+    runActionAfterTimeOut,
+    compareString,
+    splitTextByTimestamp,
+} from 'shared/utils';
 import { store, connectStore, PACKAGE, SELECTORS } from 'core/store';
 import { store_application, store as legacyStore } from 'shared/store';
 import Toast from 'lightning/toast';
 
-
 export default class App extends ToolkitElement {
-
-
     isLoading = false;
     isDeploymentRunning = false;
     isRetrieveRunning = false;
     currentMethod;
-
 
     _deploymentResponse;
     _retrieveResponse;
     //_deploymentRequestId;
 
     isLeftToggled = false;
-
 
     // Metadata Menu
     sobject;
@@ -32,15 +37,15 @@ export default class App extends ToolkitElement {
     connectedCallback() {
         //this.isLoading = true;
 
-
         store.dispatch((dispatch, getState) => {
-            dispatch(PACKAGE.reduxSlice.actions.loadCacheSettings({
-                alias: this.alias,
-                apexFiles: getState().apexFiles
-            }));
-        })
+            dispatch(
+                PACKAGE.reduxSlice.actions.loadCacheSettings({
+                    alias: this.alias,
+                    apexFiles: getState().apexFiles,
+                })
+            );
+        });
     }
-    
 
     @wire(connectStore, { store })
     storeChange({ package2, application }) {
@@ -48,9 +53,10 @@ export default class App extends ToolkitElement {
         if (!isCurrentApp) return;
 
         this.currentMethod = package2.currentMethod || super.i18n.TAB_DEPLOY; // Default to TAB_DEPLOY
-        this.isLeftToggled = package2.leftPanelToggled && this.currentMethod === super.i18n.TAB_RETRIEVE;
+        this.isLeftToggled =
+            package2.leftPanelToggled && this.currentMethod === super.i18n.TAB_RETRIEVE;
 
-        // Deployment 
+        // Deployment
         const deployState = package2.currentDeploymentJob;
         if (deployState) {
             this.isDeploymentRunning = deployState.isFetching;
@@ -67,7 +73,7 @@ export default class App extends ToolkitElement {
             this._deploymentResponse = null;
         }
 
-        // Retrieve 
+        // Retrieve
         const retrieveState = package2.currentRetrieveJob;
         if (retrieveState) {
             this.isRetrieveRunning = retrieveState.isFetching;
@@ -94,86 +100,88 @@ export default class App extends ToolkitElement {
         } else {
             this.menuItems = this.metadata[this.metadata.length - 1].records.map(x => ({
                 ...x,
-                isSelected: this.selectedItem == x.key
+                isSelected: this.selectedItem == x.key,
             }));
         }
-    }
+    };
 
-    formatName = (x) => {
+    formatName = x => {
         const name = x.MasterLabel || x.Name || x.DeveloperName || x.Id;
         return x.NamespacePrefix ? `${x.NamespacePrefix}__${name}` : name;
-    }
-
+    };
 
     /** Events **/
 
-    handleItemSelection = (e) => {
-        console.log('handleItemSelection',e.detail);
-        if(this.refs.retrieve){
+    handleItemSelection = e => {
+        console.log('handleItemSelection', e.detail);
+        if (this.refs.retrieve) {
             this.refs.retrieve.toggleMetadata(e.detail);
         }
         //this.load_specificMetadataRecord(e.detail);
-    }
-    
+    };
 
-    handleSelectAll = (e) => {
+    handleSelectAll = e => {
         const { sobject } = e.detail;
-        if(this.refs.retrieve){
-            this.refs.retrieve.toggleMetadata({selectAll:[sobject]});
+        if (this.refs.retrieve) {
+            this.refs.retrieve.toggleMetadata({ selectAll: [sobject] });
         }
-    }
+    };
 
-    handleUnselectAll = (e) => {
+    handleUnselectAll = e => {
         const { sobject } = e.detail;
-        if(this.refs.retrieve){
-            this.refs.retrieve.toggleMetadata({unselectAll:[sobject]});
+        if (this.refs.retrieve) {
+            this.refs.retrieve.toggleMetadata({ unselectAll: [sobject] });
         }
-    }
+    };
 
-    handleLeftToggle = (e) => {
-        store.dispatch(PACKAGE.reduxSlice.actions.updateLeftPanel({
-            value: !this.isLeftToggled,
-            alias: this.alias,
-        }));
-    }
+    handleLeftToggle = e => {
+        store.dispatch(
+            PACKAGE.reduxSlice.actions.updateLeftPanel({
+                value: !this.isLeftToggled,
+                alias: this.alias,
+            })
+        );
+    };
 
-    handleSelectMethod = (e) => {
-        store.dispatch(PACKAGE.reduxSlice.actions.updateCurrentMethodPanel({
-            alias: this.alias,
-            value: e.target.value
-        }));
-    }
+    handleSelectMethod = e => {
+        store.dispatch(
+            PACKAGE.reduxSlice.actions.updateCurrentMethodPanel({
+                alias: this.alias,
+                value: e.target.value,
+            })
+        );
+    };
 
-    handleDeploy = (e) => {
+    handleDeploy = e => {
         this.refs.deploy.run();
-    }
+    };
 
-    handleNewDeployment = (e) => {
+    handleNewDeployment = e => {
         if (this.currentMethod === super.i18n.TAB_DEPLOY) {
             this.refs.deploy.reset();
         }
-    }
+    };
 
-    handleRetrieve = (e) => {
+    handleRetrieve = e => {
         this.refs.retrieve.run();
-    }
+    };
 
-    goToUrl = (e) => {
+    goToUrl = e => {
         e.preventDefault();
         const redirectUrl = e.currentTarget.dataset.url;
         legacyStore.dispatch(store_application.navigate(redirectUrl));
-    }
+    };
 
-    handleAbort = (e) => {
+    handleAbort = e => {
         if (this.currentMethod === super.i18n.TAB_RETRIEVE) {
             this.refs.retrieve.abort();
         }
-    }
-
+    };
 
     /** Getters */
 
-    get pageClass() {//Overwrite
+    get pageClass() {
+        //Overwrite
         return super.pageClass + ' slds-p-around_small';
     }
 
@@ -201,7 +209,7 @@ export default class App extends ToolkitElement {
         return `This record wasn't found in your metadata.`;
     }
 
-    get isCatalogDisabled(){
+    get isCatalogDisabled() {
         return !this.isRetrieveVisible;
     }
 
@@ -222,7 +230,6 @@ export default class App extends ToolkitElement {
     }
 
     get menuBackTitle() {
-
         if (this.currentLevel == 2) {
             return this.label1;
         } else if (this.currentLevel == 1) {
@@ -235,5 +242,4 @@ export default class App extends ToolkitElement {
     get isBackDisplayed() {
         return this.currentLevel > 0;
     }
-
 }

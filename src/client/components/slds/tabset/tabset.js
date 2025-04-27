@@ -1,10 +1,10 @@
 import { LightningElement, api, track } from 'lwc';
-import { normalizeString,generateUniqueId, } from 'shared/utils';
+import { normalizeString, generateUniqueId } from 'shared/utils';
 
 const tabClassPrefixByVariant = {
     scoped: 'slds-tabs_scoped',
     vertical: 'slds-vertical-tabs',
-    standard: 'slds-tabs_default'
+    standard: 'slds-tabs_default',
 };
 
 export default class SldsTabset extends LightningElement {
@@ -33,7 +33,7 @@ export default class SldsTabset extends LightningElement {
     set variant(value) {
         this._variant = normalizeString(value, {
             fallbackValue: 'standard',
-            validValues: ['scoped', 'vertical', 'standard']
+            validValues: ['scoped', 'vertical', 'standard'],
         });
     }
 
@@ -94,9 +94,7 @@ export default class SldsTabset extends LightningElement {
                 return;
             }
             //console.log('Deregistration callback');
-            const index = this._tabHeaders.findIndex(
-                (existingTab) => existingTab.value === tabValue
-            );
+            const index = this._tabHeaders.findIndex(existingTab => existingTab.value === tabValue);
 
             if (index >= 0) {
                 this._tabHeaders.splice(index, 1);
@@ -106,7 +104,7 @@ export default class SldsTabset extends LightningElement {
                 this._tabByValue[tabValue] = undefined;
                 if (
                     this._activeTabValue === tab.value &&
-                    this._tabHeaders.length > 0 && 
+                    this._tabHeaders.length > 0 &&
                     !this.isRemoveTabEventDisabled // To avoid selection controlled by the tab
                 ) {
                     this._showTabContentForTabValue(this._tabHeaders[0].value);
@@ -129,9 +127,8 @@ export default class SldsTabset extends LightningElement {
             endIconName: tab.endIconName,
             endIconAlternativeText: tab.endIconAlternativeText,
             showErrorIndicator: tab.showErrorIndicator,
-            isAddTabEnabled: tab.isAddTabEnabled
+            isAddTabEnabled: tab.isAddTabEnabled,
         });
-
 
         this._updateTabBarHeaders(this._tabHeaders);
 
@@ -192,7 +189,7 @@ export default class SldsTabset extends LightningElement {
         const newTabValue = changedTab.value;
         const currentTabValue = changedTab.dataTabValue;
         const matchingTabHeader = this._tabHeaders.find(
-            (tabHeader) => tabHeader.value === currentTabValue
+            tabHeader => tabHeader.value === currentTabValue
         );
 
         if (matchingTabHeader) {
@@ -218,9 +215,7 @@ export default class SldsTabset extends LightningElement {
             const tab = this._tabByValue[currentTabValue];
             if (tab) {
                 tab.dataTabValue = newTabValue;
-                this._tabByValue[newTabValue] = this._tabByValue[
-                    currentTabValue
-                ];
+                this._tabByValue[newTabValue] = this._tabByValue[currentTabValue];
 
                 this._tabByValue[currentTabValue] = undefined;
             }
@@ -243,7 +238,7 @@ export default class SldsTabset extends LightningElement {
         this.template.querySelector('slds-tab-bar').focus();
     }
 
-    get isAddTabDisplayed(){
+    get isAddTabDisplayed() {
         return this.isAddTabEnabled;
     }
 }

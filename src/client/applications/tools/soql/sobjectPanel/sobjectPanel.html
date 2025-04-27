@@ -7,18 +7,32 @@
             <h2 class="slds-tree__group-header slds-truncate">{i18n.SOBJECTS_PANEL_SOBJECTS}</h2>
         </div>
         <div class="slds-form-element slds-p-horizontal_large">
-            <label class="slds-form-element__label slds-assistive-text">{i18n.SOBJECTS_PANEL_FILTER_SOBJECTS}</label>
-            <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_left-right">
+            <label class="slds-form-element__label slds-assistive-text">
+                {i18n.SOBJECTS_PANEL_FILTER_SOBJECTS}
+            </label>
+            <div
+                class="slds-form-element__control slds-input-has-icon slds-input-has-icon_left-right">
                 <span class="slds-icon_container slds-icon-utility-search">
-                    <svg class="slds-icon slds-input__icon slds-input__icon_left slds-icon-text-default" aria-hidden="true">
+                    <svg
+                        class="slds-icon slds-input__icon slds-input__icon_left slds-icon-text-default"
+                        aria-hidden="true">
                         <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#search"></use>
                     </svg>
                 </span>
-                <input type="search" placeholder={i18n.SOBJECTS_PANEL_QUICK_FIND} class="slds-input" value={keyword} onkeyup={setKeyword} />
+                <input
+                    type="search"
+                    placeholder={i18n.SOBJECTS_PANEL_QUICK_FIND}
+                    class="slds-input"
+                    value={keyword}
+                    onkeyup={setKeyword} />
                 <template lwc:if={isDisplayClearButton}>
-                    <button class="slds-button slds-button_icon slds-input__icon slds-input__icon_right" title={i18n.SOBJECTS_PANEL_KEYWORD_CLEAR} onclick={handleClear}>
+                    <button
+                        class="slds-button slds-button_icon slds-input__icon slds-input__icon_right"
+                        title={i18n.SOBJECTS_PANEL_KEYWORD_CLEAR}
+                        onclick={handleClear}>
                         <svg class="slds-button__icon slds-icon-text-light" aria-hidden="true">
-                            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#clear"></use>
+                            <use
+                                xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#clear"></use>
                         </svg>
                         <span class="slds-assistive-text">{i18n.SOBJECTS_PANEL_KEYWORD_CLEAR}</span>
                     </button>
@@ -26,13 +40,25 @@
             </div>
         </div>
         <div class="sobjects-list slds-border_top">
-            <div class="slds-p-around_small" if:true={isNoSObjects}>{i18n.SOBJECTS_PANEL_NO_MATCHING}</div>
+            <div class="slds-p-around_small" if:true={isNoSObjects}>
+                {i18n.SOBJECTS_PANEL_NO_MATCHING}
+            </div>
             <ul class="slds-tree left-panel-scrollable" if:true={sobjects} onscroll={handleScroll}>
                 <template for:each={virtualList} for:item="sobject">
-                    <li aria-level="1" role="treeitem" key={sobject.name} if:true={sobject.queryable}>
+                    <li
+                        aria-level="1"
+                        role="treeitem"
+                        key={sobject.name}
+                        if:true={sobject.queryable}>
                         <div class="slds-tree__item">
                             <span class="slds-has-flexi-truncate">
-                                <a class="slds-tree__item-label slds-truncate" title={sobject.itemLabel} onclick={selectSObject} data-name={sobject.name}> {sobject.itemLabel} </a>
+                                <a
+                                    class="slds-tree__item-label slds-truncate"
+                                    title={sobject.itemLabel}
+                                    onclick={selectSObject}
+                                    data-name={sobject.name}>
+                                    {sobject.itemLabel}
+                                </a>
                             </span>
                         </div>
                     </li>

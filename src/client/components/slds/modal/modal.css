@@ -1,12 +1,11 @@
-
-.overflow-hidden{
+.overflow-hidden {
     overflow: unset;
 }
 
-.inline-table{
+.inline-table {
     display: inline-table;
 }
 
-.slds-modal__content slot{
+.slds-modal__content slot {
     height: 100%;
 }

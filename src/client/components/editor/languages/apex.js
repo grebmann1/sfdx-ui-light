@@ -2,29 +2,29 @@
 
 import { isMonacoLanguageSetup } from 'shared/utils';
 
-
 //const completionsImport = import('./monaco-apex-completions-data');
 const triggerChars = 'adefhijlmnsu';
 
-
-
-export function configureApexLanguage(monaco){
+export function configureApexLanguage(monaco) {
     monaco.languages.register({ id: 'apex' });
 }
 
 export async function configureApexCompletions(monaco) {
-    if(isMonacoLanguageSetup('apex')) return;
+    if (isMonacoLanguageSetup('apex')) return;
     //const completionsData = await completionsImport;
     //console.log('monaco.languages.registerCompletionItemProvider',monaco.languages.registerCompletionItemProvider);
     monaco.languages.registerCompletionItemProvider('apex', {
-        triggerCharacters: ['.', ...triggerChars.split(''), ...triggerChars.toUpperCase().split('')],
+        triggerCharacters: [
+            '.',
+            ...triggerChars.split(''),
+            ...triggerChars.toUpperCase().split(''),
+        ],
         provideCompletionItems: (model, position, context, token) => {
             return {
                 suggestions: getSuggestions(monaco, model, position),
             };
         },
     });
-    
 }
 
 function getSuggestions(monaco, model, position) {
@@ -69,19 +69,24 @@ function getSuggestions(monaco, model, position) {
         const key = getProperCasedCompletionKey(priorWord);
         if (key && APEX_COMPLETIONS[key]) {
             completions = completions.concat(
-                APEX_COMPLETIONS[key].methods.map(
-                    (method) => ({
-                        label: `${key}.${method.name}(${method.parameters.map((param) => `${param.type} ${param.name}`).join(', ')})`,
-                        kind: monaco.languages.CompletionItemKind.Class,
-                        filterText: method.name,
-                        insertText: `${method.name}(${method.parameters.map((param, i) => `\${${i + 1}:${param.name}}`).join(', ')});`,
-                        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-                        range: range,
-                    })
-                )
+                APEX_COMPLETIONS[key].methods.map(method => ({
+                    label: `${key}.${method.name}(${method.parameters
+                        .map(param => `${param.type} ${param.name}`)
+                        .join(', ')})`,
+                    kind: monaco.languages.CompletionItemKind.Class,
+                    filterText: method.name,
+                    insertText: `${method.name}(${method.parameters
+                        .map((param, i) => `\${${i + 1}:${param.name}}`)
+                        .join(', ')});`,
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    range: range,
+                }))
             );
         }
-    } else if (textUntilPositionRaw.toLowerCase() === 'new' || textUntilPositionRaw.toLowerCase() === 'new ') {
+    } else if (
+        textUntilPositionRaw.toLowerCase() === 'new' ||
+        textUntilPositionRaw.toLowerCase() === 'new '
+    ) {
         completions = completions.concat([
             {
                 label: 'new List()',
@@ -113,20 +118,22 @@ function getSuggestions(monaco, model, position) {
         const key = getProperCasedCompletionKey(root);
         if (!other && key && APEX_COMPLETIONS[key]) {
             completions = completions.concat(
-                APEX_COMPLETIONS[key].methods.map(
-                    (method) => ({
-                        label: `${key}.${method.name}(${method.parameters.map((param) => `${param.type} ${param.name}`).join(', ')})`,
-                        kind: monaco.languages.CompletionItemKind.Class,
-                        filterText: method.name,
-                        insertText: `${method.name}(${method.parameters.map((param, i) => `\${${i + 1}:${param.name}}`).join(', ')});`,
-                        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-                        range: range,
-                    })
-                )
+                APEX_COMPLETIONS[key].methods.map(method => ({
+                    label: `${key}.${method.name}(${method.parameters
+                        .map(param => `${param.type} ${param.name}`)
+                        .join(', ')})`,
+                    kind: monaco.languages.CompletionItemKind.Class,
+                    filterText: method.name,
+                    insertText: `${method.name}(${method.parameters
+                        .map((param, i) => `\${${i + 1}:${param.name}}`)
+                        .join(', ')});`,
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    range: range,
+                }))
             );
         } else {
             completions = completions.concat(
-                ROOT_COMPLETION_TYPES.map((completion) => ({
+                ROOT_COMPLETION_TYPES.map(completion => ({
                     label: completion,
                     kind: monaco.languages.CompletionItemKind.Class,
                     insertText: completion,
@@ -136,7 +143,7 @@ function getSuggestions(monaco, model, position) {
         }
     } else {
         completions = completions.concat(
-            ROOT_COMPLETION_TYPES.map((completion) => ({
+            ROOT_COMPLETION_TYPES.map(completion => ({
                 label: completion,
                 kind: monaco.languages.CompletionItemKind.Class,
                 insertText: completion,
@@ -167,14 +174,16 @@ function getSnippets(monaco, range) {
         {
             label: 'Map<Id, SObject> recordMap = new Map<Id, SObject>();',
             kind: monaco.languages.CompletionItemKind.Snippet,
-            insertText: 'Map<${1:Id}, ${2:SObject}> ${3:recordMap} = new Map<${1:Id}, ${2:SObject}>(${4});',
+            insertText:
+                'Map<${1:Id}, ${2:SObject}> ${3:recordMap} = new Map<${1:Id}, ${2:SObject}>(${4});',
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
             range,
         },
         {
             label: 'List<SObject> = new [SELECT Id FROM SObject]',
             kind: monaco.languages.CompletionItemKind.Snippet,
-            insertText: 'List<${1:SObject}> ${2:records} = [SELECT ${3:Id} FROM ${1:SObject}${4: WHERE Id IN :records}];',
+            insertText:
+                'List<${1:SObject}> ${2:records} = [SELECT ${3:Id} FROM ${1:SObject}${4: WHERE Id IN :records}];',
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
             range,
         },
@@ -196,7 +205,8 @@ function getSnippets(monaco, range) {
         {
             label: 'for(SObject record : [SELECT Id FROM SObject])',
             kind: monaco.languages.CompletionItemKind.Snippet,
-            insertText: 'for(${1:SObject} ${2:record} : [SELECT ${3:Id} FROM ${1:SObject}${4: WHERE Id IN :records}]) {\n\t${5}\n}',
+            insertText:
+                'for(${1:SObject} ${2:record} : [SELECT ${3:Id} FROM ${1:SObject}${4: WHERE Id IN :records}]) {\n\t${5}\n}',
             insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
             range,
         },

@@ -1,18 +1,22 @@
-
-import { LightningElement,api,track,wire } from "lwc";
+import { LightningElement, api, track, wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import Toast from 'lightning/toast';
-import { isEmpty,isElectronApp,runSilent,isNotUndefinedOrNull,isUndefinedOrNull,refreshCurrentTab,classSet } from 'shared/utils';
-import { store as legacyStore,store_application } from 'shared/store';
-import { connectStore,store } from 'core/store';
-
+import {
+    isEmpty,
+    isElectronApp,
+    runSilent,
+    isNotUndefinedOrNull,
+    isUndefinedOrNull,
+    refreshCurrentTab,
+    classSet,
+} from 'shared/utils';
+import { store as legacyStore, store_application } from 'shared/store';
+import { connectStore, store } from 'core/store';
 
 export default class Me extends ToolkitElement {
-
     @api title = 'Current User';
     @api isInjected = false;
     @track user = {};
-
 
     _username = null; // Used to control reloading
 
@@ -22,30 +26,32 @@ export default class Me extends ToolkitElement {
     isSaving = false;
     fieldErrors;
 
-    _connector; 
-    set connector(value){
+    _connector;
+    set connector(value) {
         this._connector = value;
-        if(this._connector?.configuration?.username && this._connector?.configuration?.username != this._username){
+        if (
+            this._connector?.configuration?.username &&
+            this._connector?.configuration?.username != this._username
+        ) {
             this.load_metadata();
             this.load_myUserInformation();
             this._username = this._connector.configuration.username;
         }
     }
     @api
-    get connector(){
+    get connector() {
         return this._connector;
     }
 
-    connectedCallback(){
+    connectedCallback() {
         //this.isFilterting_limits = true;
         //console.log('store.getState()',store.getState());
         this.connector = store.getState().application?.connector;
-       
     }
 
     @wire(connectStore, { store })
-    applicationChange({application}) {
-        if(application.connector){
+    applicationChange({ application }) {
+        if (application.connector) {
             this.connector = null;
             this.connector = application.connector;
         }
@@ -53,92 +59,109 @@ export default class Me extends ToolkitElement {
 
     /** Methods */
 
-
-    goToUrl = (e) => {
+    goToUrl = e => {
         const redirectUrl = e.currentTarget.dataset.url;
         legacyStore.dispatch(store_application.navigate(redirectUrl));
-    }
+    };
 
     load_metadata = async () => {
-        this.metadata = await runSilent(async () => { return await this.connector.conn.sobject('user').describe();},null);
-    }
+        this.metadata = await runSilent(async () => {
+            return await this.connector.conn.sobject('user').describe();
+        }, null);
+    };
 
     load_myUserInformation = async () => {
-        if(isUndefinedOrNull(this.connector?.conn?.userInfo)) return;
-        const fields = ['Id','LastName','FirstName','Username','Email','FederationIdentifier','CompanyName','Name','IsActive','LanguageLocaleKey'];
+        if (isUndefinedOrNull(this.connector?.conn?.userInfo)) return;
+        const fields = [
+            'Id',
+            'LastName',
+            'FirstName',
+            'Username',
+            'Email',
+            'FederationIdentifier',
+            'CompanyName',
+            'Name',
+            'IsActive',
+            'LanguageLocaleKey',
+        ];
         const exceptionFields = ['CurrencyIsoCode'];
-        const query = (fields) => `SELECT ${fields.join(',')} FROM User WHERE id = '${this.connector.conn.userInfo.id}'`;
-        var _user = await runSilent(async ()=>{return (await this.connector.conn.query(query([].concat(fields,exceptionFields)))).records[0]},null);
-        if(_user === null){
+        const query = fields =>
+            `SELECT ${fields.join(',')} FROM User WHERE id = '${this.connector.conn.userInfo.id}'`;
+        var _user = await runSilent(async () => {
+            return (await this.connector.conn.query(query([].concat(fields, exceptionFields))))
+                .records[0];
+        }, null);
+        if (_user === null) {
             // Temporary solution, in case we don't have CurrencyIsoCode
-            _user = await runSilent(async ()=>{return (await this.connector.conn.query(query(fields))).records[0]},null);
+            _user = await runSilent(async () => {
+                return (await this.connector.conn.query(query(fields))).records[0];
+            }, null);
         }
         this.user = null;
         this.user = _user;
-    }
+    };
 
     renderFieldErrors = () => {
-        if(isUndefinedOrNull(this.fieldErrors)) return;
+        if (isUndefinedOrNull(this.fieldErrors)) return;
 
-        this.template.querySelectorAll('slds-input-field')
-        .forEach(element => {
-            if(!this.fieldErrors.hasOwnProperty(element.fieldName))return;
-            
+        this.template.querySelectorAll('slds-input-field').forEach(element => {
+            if (!this.fieldErrors.hasOwnProperty(element.fieldName)) return;
+
             element.setErrors(this.fieldErrors);
         });
-    }
+    };
 
     reset = () => {
         this.fieldErrors = null;
         this.isEdit = false;
         this.load_myUserInformation();
-    }
+    };
 
     /** Events */
 
-    handle_copyClick = (e) => {
+    handle_copyClick = e => {
         const value = e.target.dataset.value;
         const field = e.target.dataset.field;
         navigator.clipboard.writeText(value);
         Toast.show({
             label: `${field} exported to your clipboard`,
-            variant:'success',
+            variant: 'success',
         });
-    }
+    };
 
     handle_editClick = () => {
         this.isEdit = true;
         setTimeout(async () => {
-            this.template.querySelectorAll('slds-input-field')
-            .forEach(element => {
+            this.template.querySelectorAll('slds-input-field').forEach(element => {
                 const uiField = this.metadata.fields.find(x => x.name === element.fieldName);
                 element.wireRecordAndMetadata({
-                    record:this.user,
-                    objectInfo:this.metadata,
-                    uiField
+                    record: this.user,
+                    objectInfo: this.metadata,
+                    uiField,
                 });
                 // only picklist
-                if(uiField.type == 'picklist' || uiField.type == 'multipicklist'){
+                if (uiField.type == 'picklist' || uiField.type == 'multipicklist') {
                     //const picklistValues = this.metadata.fields.filter(x => x.type == 'picklist' || x.type == 'multipicklist').reduce((a, v) => ({ ...a, [v.name]: v.picklistValues}), {})
-                    const picklistValues = [uiField].reduce((a, v) => ({ ...a, [v.name]: v.picklistValues}), {})
+                    const picklistValues = [uiField].reduce(
+                        (a, v) => ({ ...a, [v.name]: v.picklistValues }),
+                        {}
+                    );
                     element.wirePicklistValues(picklistValues);
                 }
             });
-        },1);
-    }
+        }, 1);
+    };
 
     handle_save = async () => {
         this.isSaving = true;
-        const userUpdate = { Id:this.user.Id };//
-        this.template.querySelectorAll('slds-input-field')
-        .forEach(element => {
+        const userUpdate = { Id: this.user.Id }; //
+        this.template.querySelectorAll('slds-input-field').forEach(element => {
             // Only add changed fields !
-            if(this.user[element.fieldName] !== element.value){
+            if (this.user[element.fieldName] !== element.value) {
                 userUpdate[element.fieldName] = element.value;
             }
-            
         });
-        const response = (await this.connector.conn.sobject("User").update([userUpdate]))[0];
+        const response = (await this.connector.conn.sobject('User').update([userUpdate]))[0];
         //console.log('###### userUpdate/response ######',userUpdate,response);
         this.isSaving = false;
         if (response.success) {
@@ -146,9 +169,9 @@ export default class Me extends ToolkitElement {
             refreshCurrentTab();
             Toast.show({
                 label: 'User saved successfully',
-                variant:'success',
+                variant: 'success',
             });
-        }else{
+        } else {
             const fieldErrorSet = {};
             const fieldErrorGlobal = [];
             // Need to improve in the futur
@@ -156,57 +179,55 @@ export default class Me extends ToolkitElement {
                 error.fields.forEach(field => {
                     fieldErrorSet[field] = error;
                 });
-                if(error.fields.length == 0){
+                if (error.fields.length == 0) {
                     fieldErrorGlobal.push(error);
                 }
             });
             this.fieldErrors = fieldErrorSet;
             this.renderFieldErrors();
-            var error_label,error_message;
-            if(fieldErrorGlobal.length > 0){
-                error_label     = fieldErrorGlobal[0].statusCode;
-                error_message   = fieldErrorGlobal[0].message;
-            }else{
-                error_label     = response.errors[0].statusCode;
-                error_message   = response.errors[0].message;
+            var error_label, error_message;
+            if (fieldErrorGlobal.length > 0) {
+                error_label = fieldErrorGlobal[0].statusCode;
+                error_message = fieldErrorGlobal[0].message;
+            } else {
+                error_label = response.errors[0].statusCode;
+                error_message = response.errors[0].message;
             }
             Toast.show({
                 message: error_message || 'Unknown Error',
                 label: error_label || 'Error',
                 variant: 'error',
-                mode: 'sticky'
+                mode: 'sticky',
             });
-            
         }
-    }
+    };
 
     handle_cancel = () => {
         this.reset();
-    }
-
+    };
 
     /** Getters */
 
-    get isEditButtonDisabled(){
+    get isEditButtonDisabled() {
         return isUndefinedOrNull(this.metadata);
     }
 
-    get isReadOnly(){
+    get isReadOnly() {
         return !this.isEdit;
     }
 
-    get goToMyUserUrl(){
+    get goToMyUserUrl() {
         const userId = this.connector?.conn?.userInfo?.id;
-        return `/lightning/setup/ManageUsers/page?address=${encodeURIComponent(`/${userId}?noredirect=1&isUserEntityOverride=1`)}`;
+        return `/lightning/setup/ManageUsers/page?address=${encodeURIComponent(
+            `/${userId}?noredirect=1&isUserEntityOverride=1`
+        )}`;
     }
 
-    get containerClass(){
+    get containerClass() {
         return classSet('slds-col slds-size_1-of-1 slds-p-top_x-small slds-p-left_x-small')
             .add({
-                'slds-large-size_1-of-2':!this.isInjected,
-            }).toString();
+                'slds-large-size_1-of-2': !this.isInjected,
+            })
+            .toString();
     }
-
-    
-
 }

@@ -34,8 +34,8 @@ export class UserPermission {
     }
 }
 
-export class PermissionGroups{
-    constructor(record){
+export class PermissionGroups {
+    constructor(record) {
         this.id = record.Id;
         this.name = record.DeveloperName;
         this.label = record.MasterLabel;
@@ -80,7 +80,6 @@ export class PermissionSet {
         this.users = [];
 
         this.loginIpRanges = [];
-
     }
 }
 
@@ -94,7 +93,15 @@ export class User {
 }
 
 export class ObjectPermission {
-    constructor(sobjectType, allowCreate, allowRead, allowEdit, allowDelete, viewAllRecords, modifyAllRecords) {
+    constructor(
+        sobjectType,
+        allowCreate,
+        allowRead,
+        allowEdit,
+        allowDelete,
+        viewAllRecords,
+        modifyAllRecords
+    ) {
         this.sobjectType = sobjectType;
         this.allowCreate = allowCreate;
         this.allowRead = allowRead;
@@ -119,7 +126,7 @@ export class LayoutAssignment {
         this.id = id;
         this.objectName = objectName;
         this.recordTypeId = recordTypeId;
-        this.key = recordTypeId?`${objectName}-${recordTypeId}`:objectName;
+        this.key = recordTypeId ? `${objectName}-${recordTypeId}` : objectName;
     }
 }
 

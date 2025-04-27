@@ -1,5 +1,3 @@
 import Illustration from 'illustration/illustration';
 
-export default class DefaultIllustration extends Illustration {
-    
-}
+export default class DefaultIllustration extends Illustration {}

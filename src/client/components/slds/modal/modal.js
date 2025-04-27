@@ -68,7 +68,7 @@ export default class Modal extends LightningOverlay {
     close(result) {
         // Prevent close() private event until disableClose removed
         if (!this.disableClose) {
-            const promise = new Promise((resolve) => {
+            const promise = new Promise(resolve => {
                 this.dispatchEvent(
                     new CustomEvent('privateclose', {
                         detail: {

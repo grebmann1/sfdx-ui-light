@@ -26,9 +26,9 @@ export default {
     OUTPUT_PANEL_TOTAL: 'Total',
     OUTPUT_PANEL_CLOSE_CHILD_REL: 'Close Child Relationship',
     OUTPUT_TABLE_FAILED_FETCH_NEXT: 'Failed to fetch next records',
-    RECORDVIEWER_PANEL_SAVE:'Search',
+    RECORDVIEWER_PANEL_SAVE: 'Search',
     RECORDVIEWER_PANEL_RECENT: 'Recent Records',
-    EDITOR_PANEL_SAVE:'Save',
+    EDITOR_PANEL_SAVE: 'Save',
     EDITOR_PANEL_RUN: 'Run',
     EDITOR_PANEL_RESET: 'Reset',
     EDITOR_PANEL_ABORT: 'Abort',
@@ -36,8 +36,7 @@ export default {
     EDITOR_PANEL_EXECUTE: 'Execute',
     EDITOR_PANEL_EXECUTE_API: 'Execute API',
     EDITOR_PANEL_RUN_ALL: 'Query All',
-    EDITOR_PANEL_RUN_ALL_TITLE:
-        'Query All will return records that have been deleted',
+    EDITOR_PANEL_RUN_ALL_TITLE: 'Query All will return records that have been deleted',
     QUERY_EDITOR_PANEL_FORMAT_SOQL: 'Format SOQL',
     QUERY_EDITOR_PANEL_INPUT_SOQL: 'Input SOQL',
     QUERY_LIST_PANEL_RECENT_QUERIES: 'Recent Queries',
@@ -66,6 +65,5 @@ export default {
     RETRIEVE_RUN: 'Run',
     PACKAGE_NEW_DEPLOYMENT: 'New Deployment',
     PACKAGE_DEPLOY: 'Deploy',
-    PACKAGE_RETRIEVE: 'Retrieve'
-
+    PACKAGE_RETRIEVE: 'Retrieve',
 };

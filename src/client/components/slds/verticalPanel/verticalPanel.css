@@ -1,12 +1,12 @@
 /** Filter Panel **/
 
-.slds-filter-panel-container{
-    height:100%;
+.slds-filter-panel-container {
+    height: 100%;
     /*overflow:hidden;*/
-    display:flex;
-    flex-direction:row-reverse
+    display: flex;
+    flex-direction: row-reverse;
 }
-.slds-panel_docked{
+.slds-panel_docked {
     background-color: #fafaf9;
 }
 
@@ -14,6 +14,6 @@
     display: flex !important;
 }
 
-.slds-panel__body{
+.slds-panel__body {
     /*background-color: #fafaf9;*/
 }

@@ -5,55 +5,62 @@ export function structurizedMarkdown(markdownContent) {
     var currentCategory;
     var currentSubCategory;
 
-    markdownContent.split('\n')
-    .forEach(line => {
-        if (line.startsWith('### ')){ // Detect category
-            if(currentSubCategory){
+    markdownContent.split('\n').forEach(line => {
+        if (line.startsWith('### ')) {
+            // Detect category
+            if (currentSubCategory) {
                 currentCategory.children.push(currentSubCategory);
             }
-            if(currentCategory){
+            if (currentCategory) {
                 content.push(currentCategory);
             }
-            currentCategory = {content:`\r${line}`,children:[],links:[],before:[],after:[]};
+            currentCategory = {
+                content: `\r${line}`,
+                children: [],
+                links: [],
+                before: [],
+                after: [],
+            };
             currentSubCategory = null; // reset;
-        }else if(line.startsWith('#### ')){// Detect subCategories
-            if(currentSubCategory){
+        } else if (line.startsWith('#### ')) {
+            // Detect subCategories
+            if (currentSubCategory) {
                 currentCategory.children.push(currentSubCategory);
             }
-            currentSubCategory = {content:`\r${line}`,links:[],before:[],after:[]}
-        }else if(line.startsWith('- ')){// Detect link
-            if(currentSubCategory){
+            currentSubCategory = { content: `\r${line}`, links: [], before: [], after: [] };
+        } else if (line.startsWith('- ')) {
+            // Detect link
+            if (currentSubCategory) {
                 currentSubCategory.links.push(line);
-            }else{
+            } else {
                 currentCategory.links.push(line);
             }
-        }else {
-            if(!isEmpty(line)){
-                if(currentSubCategory){
-                    if(currentSubCategory.links > 0){
+        } else {
+            if (!isEmpty(line)) {
+                if (currentSubCategory) {
+                    if (currentSubCategory.links > 0) {
                         currentSubCategory.after.push(line);
-                    }else{
+                    } else {
                         currentSubCategory.before.push(line);
                     }
-                }else if(currentCategory){
-                    if(currentCategory.links > 0){
+                } else if (currentCategory) {
+                    if (currentCategory.links > 0) {
                         currentCategory.after.push(line);
-                    }else{
+                    } else {
                         currentCategory.before.push(line);
                     }
-                }else{
+                } else {
                     content.push(line);
                 }
             }
-            
         }
     });
-    
+
     // Add left over
-    if(currentSubCategory && currentCategory){
+    if (currentSubCategory && currentCategory) {
         currentCategory.children.push(currentSubCategory);
     }
-    if(currentCategory){
+    if (currentCategory) {
         content.push(currentCategory);
     }
 

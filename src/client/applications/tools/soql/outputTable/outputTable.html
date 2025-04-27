@@ -1,15 +1,15 @@
 <template>
-    <div class="output-panel slds-full-height"> <!-- slds-scrollable_x-->
+    <div class="output-panel slds-full-height">
+        <!-- slds-scrollable_x-->
         <template lwc:if={isLoading}>
-            <slds-spinner 
-                alternative-text="Loading" 
-                size="small" 
-                message="Generating the table"
-            ></slds-spinner>
+            <slds-spinner
+                alternative-text="Loading"
+                size="small"
+                message="Generating the table"></slds-spinner>
         </template>
-        
+
         <div lwc:dom="manual" class="custom-table"></div>
-        
+
         <!--
         <div class="slds-table--header-fixed_container">
             <div class="slds-scrollable_y" onscroll={handleScroll}>

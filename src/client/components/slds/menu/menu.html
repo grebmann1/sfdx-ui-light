@@ -1,34 +1,38 @@
 <template>
     <!-- Record List ( slds-p-left_small )-->
     <div class="slds-p-top_small">
-        <div class="slds-grid slds-align-items_center"> <!-- slds-grid_align-spread slds-grid_vertical-align-center -->
+        <div class="slds-grid slds-align-items_center">
+            <!-- slds-grid_align-spread slds-grid_vertical-align-center -->
             <template lwc:if={isBackDisplayed}>
-                <button class="slds-button slds-button_icon" title="Back" onclick={back_handleClick} disabled={isLoading}>
+                <button
+                    class="slds-button slds-button_icon"
+                    title="Back"
+                    onclick={back_handleClick}
+                    disabled={isLoading}>
                     <svg class="slds-button__icon" aria-hidden="true">
                         <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#back"></use>
                     </svg>
                     <span class="slds-assistive-text">{i18n.FIELDS_PANEL_BACK}</span>
                 </button>
             </template>
-            
+
             <h2 class="slds-m-left_x-small slds-tree__group-header slds-truncate">{title}</h2>
             <div class="slds-col_bump-left">
                 <template lwc:if={isRefreshAvailable}>
-                    <lightning-button-icon 
+                    <lightning-button-icon
                         variant="bare"
-                        icon-name="utility:refresh" 
-                        title="Refresh" 
-                        disabled={isLoading} 
-                        onclick={refresh_handleClick}
-                    ></lightning-button-icon>
+                        icon-name="utility:refresh"
+                        title="Refresh"
+                        disabled={isLoading}
+                        onclick={refresh_handleClick}></lightning-button-icon>
                 </template>
             </div>
         </div>
     </div>
     <div class="slds-flex-column min-height-200">
-        
         <div class="slds-flex-column slds-full-height min-height-200">
-            <slot></slot> <!-- Slot -->
+            <slot></slot>
+            <!-- Slot -->
             <template lwc:if={namespaceFiltering_isDisplayed}>
                 <div class="slds-grid slds-grid_align-end">
                     <lightning-combobox
@@ -39,45 +43,48 @@
                         placeholder="Select Namespace filter"
                         disabled={isLoading}
                         options={namespaceFiltering_options}
-                        onchange={namespaceFiltering_handleChange}
-                    ></lightning-combobox>
+                        onchange={namespaceFiltering_handleChange}></lightning-combobox>
                 </div>
             </template>
             <template lwc:if={isSearchDisplayed}>
-                <lightning-input 
-                    class="slds-m-vertical_medium" 
+                <lightning-input
+                    class="slds-m-vertical_medium"
                     type="search"
-                    label="Search" 
+                    label="Search"
                     variant="label-hidden"
                     value={filter}
-                    onchange={handleSearch}
-                ></lightning-input>
+                    onchange={handleSearch}></lightning-input>
             </template>
             <div class="slds-flex-column slds-fill-height slds-is-relative">
                 <template lwc:if={isLoading}>
-                    <slds-spinner alternative-text="Loading" size="small" message={loadingMessage}></slds-spinner>
+                    <slds-spinner
+                        alternative-text="Loading"
+                        size="small"
+                        message={loadingMessage}></slds-spinner>
                 </template>
                 <slot name="listmenu"></slot>
                 <template lwc:if={displayIfEmpty}>
                     <div class="slds-p-around_small">No items found</div>
                 </template>
-                <lightning-vertical-navigation onselect={handleSelection} compact class="slds-scrollable_y" onscroll={handleScroll}>
+                <lightning-vertical-navigation
+                    onselect={handleSelection}
+                    compact
+                    class="slds-scrollable_y"
+                    onscroll={handleScroll}>
                     <lightning-vertical-navigation-section>
                         <template for:each={virtualList} for:item="item">
-                            <slds-menu-item 
-                                key={item.key} 
-                                name={item.name} 
-                                label={item.label} 
-                                highlight={itemHighlight} 
+                            <slds-menu-item
+                                key={item.key}
+                                name={item.name}
+                                label={item.label}
+                                highlight={itemHighlight}
                                 badge-label={item.badgeLabel}
                                 badge-class={item.badgeClass}
-                                is-selected={item.isSelected}
-                            ></slds-menu-item>
+                                is-selected={item.isSelected}></slds-menu-item>
                         </template>
                     </lightning-vertical-navigation-section>
                 </lightning-vertical-navigation>
             </div>
-            
         </div>
     </div>
 </template>

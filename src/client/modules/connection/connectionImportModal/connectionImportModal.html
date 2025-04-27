@@ -1,52 +1,56 @@
 <template>
     <lightning-modal-header label="Import Org Credentials"></lightning-modal-header>
-    <lightning-modal-body >
-        <slds-file-uploader lwc:ref="uploader" onfilechange={handleFileChange} type-list="['application/json']" is-modal>
+    <lightning-modal-body>
+        <slds-file-uploader
+            lwc:ref="uploader"
+            onfilechange={handleFileChange}
+            type-list="['application/json']"
+            is-modal>
             <section class="min-height-400 slds-is-relative">
-
-                <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-center slds-grid_align-center">
+                <div
+                    class="slds-grid slds-grid_vertical-align-center slds-grid_align-center slds-grid_align-center">
                     <div class="sld-col slds-size_1-of-1 slds-large-size_3-of-4">
                         <template lwc:if={isLoading}>
                             <slds-spinner alternative-text="Loading" size="small"></slds-spinner>
                         </template>
-                        
+
                         <template lwc:if={isResultDisplayed}>
-                            <lightning-dual-listbox name="newconnection"
+                            <lightning-dual-listbox
+                                name="newconnection"
                                 label="Credentials"
                                 source-label="Excluded"
                                 selected-label="To Import"
                                 field-level-help="Select credential to import/update"
                                 options={options}
                                 value={list_new}
-                                onchange={handleDualListChange}
-                            ></lightning-dual-listbox>
+                                onchange={handleDualListChange}></lightning-dual-listbox>
                         </template>
                         <template lwc:else>
-                            <div style="text-align: center;">
-                                <lightning-input type="file" label="Upload Org Credentials" accept=".json" onchange={inputChange}></lightning-input>
+                            <div style="text-align: center">
+                                <lightning-input
+                                    type="file"
+                                    label="Upload Org Credentials"
+                                    accept=".json"
+                                    onchange={inputChange}></lightning-input>
                             </div>
                         </template>
                     </div>
                 </div>
-
-                
             </section>
         </slds-file-uploader>
     </lightning-modal-body>
     <lightning-modal-footer>
         <lightning-button
-                class="slds-float_left slds-button"
-                disabled={saveInProcess}
-                variant="neutral"
-                label="Cancel"
-                onclick={handleCloseClick}
-        ></lightning-button>
+            class="slds-float_left slds-button"
+            disabled={saveInProcess}
+            variant="neutral"
+            label="Cancel"
+            onclick={handleCloseClick}></lightning-button>
         <lightning-button
-                class="slds-button"
-                disabled={saveInProcess}
-                variant="brand"
-                label="Import"
-                onclick={handleSaveClick}
-        ></lightning-button>
+            class="slds-button"
+            disabled={saveInProcess}
+            variant="brand"
+            label="Import"
+            onclick={handleSaveClick}></lightning-button>
     </lightning-modal-footer>
 </template>

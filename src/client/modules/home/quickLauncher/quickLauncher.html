@@ -16,12 +16,19 @@
                     <div class="slds-col slds-size_1-of-2 slds-large-size_1-of-3">
                         <!-- Explorers -->
                         <div class="slds-item-title">
-                            <div class="slds-p-left_medium slds-text-heading_small slds-truncate">Explorers</div>
+                            <div class="slds-p-left_medium slds-text-heading_small slds-truncate">
+                                Explorers
+                            </div>
                         </div>
                         <template for:each={explorers} for:item="item">
-                            <div key={item.name} class="slds-item-list" onclick={handleQuickAction} data-path={item.path}>
+                            <div
+                                key={item.name}
+                                class="slds-item-list"
+                                onclick={handleQuickAction}
+                                data-path={item.path}>
                                 <div class="slds-p-horizontal_medium">
-                                    <lightning-icon icon-name={item.quickActionIcon}></lightning-icon>
+                                    <lightning-icon
+                                        icon-name={item.quickActionIcon}></lightning-icon>
                                 </div>
                                 <div class="slds-item-list-text slds-has-flexi-truncate">
                                     <b>{item.label}</b>
@@ -33,12 +40,19 @@
                     <div class="slds-col slds-size_1-of-2 slds-large-size_1-of-3">
                         <!-- Tools -->
                         <div class="slds-item-title">
-                            <div class="slds-p-left_medium slds-text-heading_small slds-truncate">Tools</div>
+                            <div class="slds-p-left_medium slds-text-heading_small slds-truncate">
+                                Tools
+                            </div>
                         </div>
                         <template for:each={tools} for:item="item">
-                            <div key={item.name} class="slds-item-list" onclick={handleQuickAction} data-path={item.path}>
+                            <div
+                                key={item.name}
+                                class="slds-item-list"
+                                onclick={handleQuickAction}
+                                data-path={item.path}>
                                 <div class="slds-p-horizontal_medium">
-                                    <lightning-icon icon-name={item.quickActionIcon}></lightning-icon>
+                                    <lightning-icon
+                                        icon-name={item.quickActionIcon}></lightning-icon>
                                 </div>
                                 <div class="slds-item-list-text slds-has-flexi-truncate">
                                     <b>{item.label}</b>
@@ -50,24 +64,39 @@
                     <div class="slds-col slds-size_1-of-2 slds-large-size_1-of-3">
                         <!-- Plugins -->
                         <div class="slds-item-title">
-                            <div class="slds-p-left_medium slds-text-heading_small slds-truncate">Plugins</div>
+                            <div class="slds-p-left_medium slds-text-heading_small slds-truncate">
+                                Plugins
+                            </div>
                         </div>
-                        <div class="slds-item-list" onclick={handleRedirection} data-url="https://chromewebstore.google.com/detail/sf-toolkit-light/konbmllgicfccombdckckakhnmejjoei">
+                        <div
+                            class="slds-item-list"
+                            onclick={handleRedirection}
+                            data-url="https://chromewebstore.google.com/detail/sf-toolkit-light/konbmllgicfccombdckckakhnmejjoei">
                             <div class="slds-p-horizontal_medium">
                                 <lightning-icon icon-name="standard:apex_plugin"></lightning-icon>
                             </div>
                             <div class="slds-item-list-text">
                                 <b>Chrome Extension</b>
-                                <div class="slds-text-title">Extension improving the UX of admins/devs in Salesforce and Authenticated redirection to SF Toolkit.</div>
+                                <div class="slds-text-title">
+                                    Extension improving the UX of admins/devs in Salesforce and
+                                    Authenticated redirection to SF Toolkit.
+                                </div>
                             </div>
                         </div>
-                        <div class="slds-item-list" onclick={handleRedirection} data-url="https://github.com/grebmann1/sf-toolkit-desktop/releases">
+                        <div
+                            class="slds-item-list"
+                            onclick={handleRedirection}
+                            data-url="https://github.com/grebmann1/sf-toolkit-desktop/releases">
                             <div class="slds-p-horizontal_medium">
-                                <lightning-icon icon-name="standard:scheduling_workspace"></lightning-icon>
+                                <lightning-icon
+                                    icon-name="standard:scheduling_workspace"></lightning-icon>
                             </div>
                             <div class="slds-item-list-text">
                                 <b>Electron</b>
-                                <div class="slds-text-title">Desktop version of the SF Toolkit that interact with your SFDX CLI and provide extra feature such as PMD, etc.</div>
+                                <div class="slds-text-title">
+                                    Desktop version of the SF Toolkit that interact with your SFDX
+                                    CLI and provide extra feature such as PMD, etc.
+                                </div>
                             </div>
                         </div>
                     </div>

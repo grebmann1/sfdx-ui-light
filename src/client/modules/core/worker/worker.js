@@ -7,12 +7,11 @@ export function getWorkerStatuses(workerId) {
     return workerInstances[workerId];
 }
 
-export function getAllWorkers(){
+export function getAllWorkers() {
     return workerInstances;
 }
 
-
-export function getWorker(conn,workerName) {
+export function getWorker(conn, workerName) {
     const proxyUrl = window.jsforceSettings.proxyUrl;
     const { instanceUrl, accessToken, refreshToken, version, loginUrl, oauth2 } = conn;
     let connectionParams = {
@@ -22,33 +21,31 @@ export function getWorker(conn,workerName) {
         proxyUrl,
         version,
         loginUrl,
-        oauth2
+        oauth2,
     };
 
     const workerId = guid();
     const instance = new Worker(`/libs/workers/${workerName}`);
-    console.log('instance',instance);
+    console.log('instance', instance);
 
     workerInstances[workerId] = {
-        instance:instance,
-        status:'idle',
-        id:workerId,
-        type:workerName
-    }
-
-    
+        instance: instance,
+        status: 'idle',
+        id: workerId,
+        type: workerName,
+    };
 
     // Listen for messages from the worker
-    workerInstances[workerId].instance.onmessage = (event) => {
-        console.log('workerInstance.onmessage',event);
+    workerInstances[workerId].instance.onmessage = event => {
+        console.log('workerInstance.onmessage', event);
         if (event?.data?.status) {
-            console.log('Status update',event.data.status)
+            console.log('Status update', event.data.status);
             workerInstances[workerId].status = event.data.status; // Worker status update
         }
     };
 
     // Handle worker errors
-    workerInstances[workerId].instance.onerror = (error) => {
+    workerInstances[workerId].instance.onerror = error => {
         console.error('Access Analyzer Worker Error:', error);
         workerInstances[workerId].status = 'error'; // Worker encountered an error
     };

@@ -4,28 +4,23 @@ import {
     getFlattenedFields,
     composeQuery,
     parseQuery,
-    isQueryValid
+    isQueryValid,
 } from '@jetstreamapp/soql-parser-js';
-import { stripNamespace,isNotUndefinedOrNull,guid,lowerCaseKey } from 'shared/utils';
-import { SELECTORS,DOCUMENT } from 'core/store';
-
+import { stripNamespace, isNotUndefinedOrNull, guid, lowerCaseKey } from 'shared/utils';
+import { SELECTORS, DOCUMENT } from 'core/store';
 
 const SETTINGS_KEY = 'SETTINGS_KEY';
 
 const INITIAL_QUERY = {
     fields: [getField('Id')],
-    sObject: undefined
+    sObject: undefined,
 };
-const INITIAL_TABS = [
-    enrichTab({id:guid(),body:'SELECT Id'},true)
-];
+const INITIAL_TABS = [enrichTab({ id: guid(), body: 'SELECT Id' }, true)];
 
 const QUERY_CONFIG = {
     fieldMaxLineLength: 100,
     fieldSubqueryParensOnOwnLine: false,
-}
-
-
+};
 
 // Utility functions
 function _getRawFieldName(fieldName, relationships) {
@@ -39,21 +34,16 @@ function _toggleField(query, fieldName, relationships) {
     fieldName = stripNamespace(fieldName);
     relationships = stripNamespace(relationships);
     const fieldNames = stripNamespace(getFlattenedFields(query));
-    const rawFieldName = stripNamespace(
-        _getRawFieldName(fieldName, relationships)
-    );
+    const rawFieldName = stripNamespace(_getRawFieldName(fieldName, relationships));
     if (fieldNames.includes(rawFieldName)) {
         return {
             ...query,
             fields: query.fields.filter(field => {
-                const relationshipPath =
-                    field.relationships && field.relationships.join('.');
+                const relationshipPath = field.relationships && field.relationships.join('.');
                 return (
-                    stripNamespace(
-                        _getRawFieldName(field.field, relationshipPath)
-                    ) !== rawFieldName
+                    stripNamespace(_getRawFieldName(field.field, relationshipPath)) !== rawFieldName
                 );
-            })
+            }),
         };
     }
     if (relationships) {
@@ -63,29 +53,23 @@ function _toggleField(query, fieldName, relationships) {
                 ...query.fields,
                 getField({
                     field: fieldName,
-                    relationships: relationships.split('.')
-                })
-            ]
+                    relationships: relationships.split('.'),
+                }),
+            ],
         };
     }
     return {
         ...query,
-        fields: [...query.fields, getField(fieldName)]
+        fields: [...query.fields, getField(fieldName)],
     };
 }
 
-function _toggleChildRelationshipField(
-    state,
-    fieldName,
-    relationships,
-    childRelationship
-) {
+function _toggleChildRelationshipField(state, fieldName, relationships, childRelationship) {
     fieldName = stripNamespace(fieldName);
     childRelationship = stripNamespace(childRelationship);
     const childField = state.fields.find(
         field =>
-            field.subquery &&
-            stripNamespace(field.subquery.relationshipName) === childRelationship
+            field.subquery && stripNamespace(field.subquery.relationshipName) === childRelationship
     );
     if (!childField) {
         return {
@@ -95,18 +79,14 @@ function _toggleChildRelationshipField(
                 getField({
                     subquery: {
                         fields: [getField(fieldName)],
-                        relationshipName: childRelationship
-                    }
-                })
-            ]
+                        relationshipName: childRelationship,
+                    },
+                }),
+            ],
         };
     }
     relationships = stripNamespace(relationships);
-    const newSubquery = _toggleField(
-        childField.subquery,
-        fieldName,
-        relationships
-    );
+    const newSubquery = _toggleField(childField.subquery, fieldName, relationships);
     const newFields = state.fields.map(field => {
         if (
             field.subquery &&
@@ -114,30 +94,30 @@ function _toggleChildRelationshipField(
         ) {
             return {
                 ...field,
-                subquery: newSubquery
+                subquery: newSubquery,
             };
         }
         return field;
     });
     return {
         ...state,
-        fields: newFields
+        fields: newFields,
     };
 }
 
-
-
-function saveCacheSettings(alias,state) {
-    
+function saveCacheSettings(alias, state) {
     try {
-        const { soql, leftPanelToggled, recentPanelToggled,tabs,includeDeletedRecords } = state;
-        localStorage.setItem(`${alias}-${SETTINGS_KEY}`,JSON.stringify({
-            soql,
-            leftPanelToggled,
-            recentPanelToggled,
-            tabs,
-            includeDeletedRecords
-        }));
+        const { soql, leftPanelToggled, recentPanelToggled, tabs, includeDeletedRecords } = state;
+        localStorage.setItem(
+            `${alias}-${SETTINGS_KEY}`,
+            JSON.stringify({
+                soql,
+                leftPanelToggled,
+                recentPanelToggled,
+                tabs,
+                includeDeletedRecords,
+            })
+        );
     } catch (e) {
         console.error('Failed to save CONFIG to localstorage', e);
     }
@@ -156,12 +136,7 @@ function loadCacheSettings(alias) {
 function toggleField(state = INITIAL_QUERY, action) {
     const { fieldName, relationships, childRelationship } = action.payload;
     if (childRelationship) {
-        return _toggleChildRelationshipField(
-            state,
-            fieldName,
-            relationships,
-            childRelationship
-        );
+        return _toggleChildRelationshipField(state, fieldName, relationships, childRelationship);
     }
     return _toggleField(state, fieldName, relationships);
 }
@@ -176,71 +151,69 @@ function toggleRelationship(state = [], action) {
             fields: state.fields.filter(
                 field =>
                     !field.subquery ||
-                    stripNamespace(field.subquery.relationshipName) !==
-                        relationship
-            )
+                    stripNamespace(field.subquery.relationshipName) !== relationship
+            ),
         };
     }
     const subquery = {
         fields: [getField('Id')],
-        relationshipName: relationship
+        relationshipName: relationship,
     };
     return {
         ...state,
-        fields: [...state.fields, getField({ subquery })]
+        fields: [...state.fields, getField({ subquery })],
     };
 }
 
 function selectAllFields(query = INITIAL_QUERY, action) {
-    const {sObjectMeta} = action.payload;
+    const { sObjectMeta } = action.payload;
     return {
         ...query,
-        fields: sObjectMeta.fields.map(field =>
-            getField(stripNamespace(field.name))
-        )
+        fields: sObjectMeta.fields.map(field => getField(stripNamespace(field.name))),
     };
 }
 
 function clearAllFields(query = INITIAL_QUERY) {
     return {
         ...query,
-        fields: [getField('Id')]
+        fields: [getField('Id')],
     };
 }
 
-function updateCurrentTab(state,attributes){
+function updateCurrentTab(state, attributes) {
     const tabIndex = state.tabs.findIndex(x => x.id === state.currentTab.id);
-    if(tabIndex > -1 ){
+    if (tabIndex > -1) {
         state.tabs[tabIndex].body = state.soql;
-        if(attributes){
+        if (attributes) {
             // Extra Attributes
-            Object.assign(state.tabs[tabIndex],attributes);
+            Object.assign(state.tabs[tabIndex], attributes);
         }
         state.currentTab = state.tabs[tabIndex];
     }
 }
 
-function formatTab(tab){
-    const {id,name,body,isDraft,fileId,fileBody} = tab;
-    return {id,name,body,isDraft,fileId,fileBody};
+function formatTab(tab) {
+    const { id, name, body, isDraft, fileId, fileBody } = tab;
+    return { id, name, body, isDraft, fileId, fileBody };
 }
 
-function enrichTabs(tabs,queryFiles){
-    return tabs.map(tab => enrichTab(tab,queryFiles))
+function enrichTabs(tabs, queryFiles) {
+    return tabs.map(tab => enrichTab(tab, queryFiles));
 }
 
-function enrichTab(tab,queryFiles){
-    const file = tab.fileId?SELECTORS.queryFiles.selectById({queryFiles},lowerCaseKey(tab.fileId)):null;
+function enrichTab(tab, queryFiles) {
+    const file = tab.fileId
+        ? SELECTORS.queryFiles.selectById({ queryFiles }, lowerCaseKey(tab.fileId))
+        : null;
     const fileBody = file?.content || tab.fileBody;
     return {
         ...tab,
-        fileBody:fileBody,
-        isDraft:fileBody != tab.body && isNotUndefinedOrNull(tab.fileId)
-    }
+        fileBody: fileBody,
+        isDraft: fileBody != tab.body && isNotUndefinedOrNull(tab.fileId),
+    };
 }
 
-
-function updateSOQL(state,soql){
+function updateSOQL(state, soql) {
     if (!soql.trim()) {
         state.selectedSObject = undefined;
         state.query = undefined;
@@ -253,121 +226,122 @@ function updateSOQL(state,soql){
     }
 }
 
-
 // Create a slice with reducers and extraReducers
 const uiSlice = createSlice({
     name: 'ui',
     initialState: {
         apiUsage: undefined,
         recentQueries: [],
-        tabs:INITIAL_TABS,
-        currentTab:INITIAL_TABS[0],
+        tabs: INITIAL_TABS,
+        currentTab: INITIAL_TABS[0],
         selectedSObject: undefined,
         query: INITIAL_QUERY,
         soql: '',
         childRelationship: undefined,
         sort: undefined,
-        leftPanelToggled:false,
-        recentPanelToggled:false,
-        includeDeletedRecords:false
+        leftPanelToggled: false,
+        recentPanelToggled: false,
+        includeDeletedRecords: false,
     },
     reducers: {
-        loadCacheSettings : (state,action) => {
-            const { alias,queryFiles } = action.payload;
+        loadCacheSettings: (state, action) => {
+            const { alias, queryFiles } = action.payload;
             const cachedConfig = loadCacheSettings(alias);
-            if(cachedConfig){
-                const { soql, leftPanelToggled,recentPanelToggled,tabs,includeDeletedRecords } = cachedConfig; 
-                Object.assign(state,{
-                    soql:soql || '',
+            if (cachedConfig) {
+                const { soql, leftPanelToggled, recentPanelToggled, tabs, includeDeletedRecords } =
+                    cachedConfig;
+                Object.assign(state, {
+                    soql: soql || '',
                     leftPanelToggled,
                     recentPanelToggled,
-                    tabs:enrichTabs(tabs || INITIAL_TABS,queryFiles),
-                    includeDeletedRecords
+                    tabs: enrichTabs(tabs || INITIAL_TABS, queryFiles),
+                    includeDeletedRecords,
                 });
             }
         },
-        saveCacheSettings : (state,action) => {
+        saveCacheSettings: (state, action) => {
             const { alias } = action.payload;
-            if(isNotUndefinedOrNull(alias)){
-                saveCacheSettings(alias,state);
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
             }
         },
-        clearTabs:(state,action) => {
+        clearTabs: (state, action) => {
             const { alias } = action.payload;
             state.tabs = enrichTabs(INITIAL_TABS);
-            if(isNotUndefinedOrNull(alias)){
-                saveCacheSettings(alias,state);
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
             }
         },
-        initTabs:(state,action) => {
+        initTabs: (state, action) => {
             const { queryFiles } = action.payload;
-            state.tabs = enrichTabs(state.tabs.map(formatTab),queryFiles)
+            state.tabs = enrichTabs(state.tabs.map(formatTab), queryFiles);
         },
-        addTab:(state,action) => {
-            const { queryFiles,tab } = action.payload;
-            const enrichedTab = enrichTab(formatTab(tab),queryFiles);
+        addTab: (state, action) => {
+            const { queryFiles, tab } = action.payload;
+            const enrichedTab = enrichTab(formatTab(tab), queryFiles);
             state.tabs.push(enrichedTab);
             // Assign new tab
             state.currentTab = enrichedTab;
             state.currentFileId = enrichedTab.fileId;
-            updateSOQL(state,enrichedTab.body);
+            updateSOQL(state, enrichedTab.body);
         },
-        removeTab:(state,action) => {
-            const { id,alias } = action.payload;
+        removeTab: (state, action) => {
+            const { id, alias } = action.payload;
             state.tabs = state.tabs.filter(x => x.id != id);
             // Assign last tab
-            if(state.tabs.length > 0 && state.currentTab.id == id){
+            if (state.tabs.length > 0 && state.currentTab.id == id) {
                 const lastTab = state.tabs[state.tabs.length - 1];
                 state.currentTab = lastTab;
-                updateSOQL(state,lastTab.body);
+                updateSOQL(state, lastTab.body);
             }
-            if(isNotUndefinedOrNull(alias)){
-                saveCacheSettings(alias,state);
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
             }
             // can't remove the last one !!!
         },
-        selectionTab:(state,action) => {
+        selectionTab: (state, action) => {
             const { id } = action.payload;
             const tab = state.tabs.find(x => x.id == id);
             // Assign new tab
-            if(tab){
+            if (tab) {
                 state.currentTab = tab;
-                updateSOQL(state,tab.body);
+                updateSOQL(state, tab.body);
             }
         },
-        linkFileToTab:(state,action) => {
-            const { fileId,alias,queryFiles } = action.payload;
+        linkFileToTab: (state, action) => {
+            const { fileId, alias, queryFiles } = action.payload;
             const currentTabIndex = state.tabs.findIndex(x => x.id == state.currentTab.id);
-            if(currentTabIndex > -1){
+            if (currentTabIndex > -1) {
                 const enrichedTab = enrichTab(
-                    formatTab({...state.tabs[currentTabIndex],fileId}),queryFiles
+                    formatTab({ ...state.tabs[currentTabIndex], fileId }),
+                    queryFiles
                 );
-                state.tabs[currentTabIndex] = enrichedTab
+                state.tabs[currentTabIndex] = enrichedTab;
                 state.currentTab = enrichedTab;
-                if(isNotUndefinedOrNull(alias)){
-                    saveCacheSettings(alias,state);
+                if (isNotUndefinedOrNull(alias)) {
+                    saveCacheSettings(alias, state);
                 }
             }
         },
-        updateLeftPanel:(state, action) => {
-            const { value,alias } = action.payload;
+        updateLeftPanel: (state, action) => {
+            const { value, alias } = action.payload;
             state.leftPanelToggled = value === true;
-            if(isNotUndefinedOrNull(alias)){
-                saveCacheSettings(alias,state);
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
             }
         },
-        updateRecentPanel:(state, action) => {
-            const { value,alias } = action.payload;
+        updateRecentPanel: (state, action) => {
+            const { value, alias } = action.payload;
             state.recentPanelToggled = value === true;
-            if(isNotUndefinedOrNull(alias)){
-                saveCacheSettings(alias,state);
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
             }
         },
-        updateIncludeDeletedRecords:(state, action) => {
-            const { value,alias } = action.payload;
+        updateIncludeDeletedRecords: (state, action) => {
+            const { value, alias } = action.payload;
             state.includeDeletedRecords = value === true;
-            if(isNotUndefinedOrNull(alias)){
-                saveCacheSettings(alias,state);
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
             }
         },
         updateApiLimit: (state, action) => {
@@ -375,17 +349,17 @@ const uiSlice = createSlice({
             state.apiUsage = limitInfo ? limitInfo.apiUsage : undefined;
         },
         selectSObject: (state, action) => {
-            const {sObjectName} = action.payload;
+            const { sObjectName } = action.payload;
             const query = {
                 ...INITIAL_QUERY,
-                sObject: stripNamespace(sObjectName)
+                sObject: stripNamespace(sObjectName),
             };
             state.selectedSObject = sObjectName;
             state.query = query;
-            state.soql = composeQuery(query, { format: true,formatOptions:QUERY_CONFIG });
+            state.soql = composeQuery(query, { format: true, formatOptions: QUERY_CONFIG });
             updateCurrentTab(state);
         },
-        deselectSObject: (state) => {
+        deselectSObject: state => {
             state.selectedSObject = undefined;
             state.sort = undefined;
             updateCurrentTab(state);
@@ -393,49 +367,48 @@ const uiSlice = createSlice({
         toggleField: (state, action) => {
             const query = toggleField(state.query, action);
             state.query = query;
-            state.soql = composeQuery(query, { format: true,formatOptions:QUERY_CONFIG });
+            state.soql = composeQuery(query, { format: true, formatOptions: QUERY_CONFIG });
             updateCurrentTab(state);
         },
         toggleRelationship: (state, action) => {
             const query = toggleRelationship(state.query, action);
             state.query = query;
-            state.soql = composeQuery(query, { format: true,formatOptions:QUERY_CONFIG });
+            state.soql = composeQuery(query, { format: true, formatOptions: QUERY_CONFIG });
             updateCurrentTab(state);
         },
         updateSoql: (state, action) => {
-            const { soql,isDraft } = action.payload;
-            updateSOQL(state,soql);
-            updateCurrentTab(state,{isDraft});
+            const { soql, isDraft } = action.payload;
+            updateSOQL(state, soql);
+            updateCurrentTab(state, { isDraft });
         },
-        formatSoql: (state) => {
-            state.soql = composeQuery(state.query, { format: true,formatOptions:QUERY_CONFIG });
+        formatSoql: state => {
+            state.soql = composeQuery(state.query, { format: true, formatOptions: QUERY_CONFIG });
             updateCurrentTab(state);
         },
         selectChildRelationship: (state, action) => {
             const childRelationship = action.payload.childRelationship;
-            updateCurrentTab(state,{childRelationship});
+            updateCurrentTab(state, { childRelationship });
         },
-        deselectChildRelationship: (state) => {
+        deselectChildRelationship: state => {
             const childRelationship = undefined;
-            updateCurrentTab(state,{childRelationship});
+            updateCurrentTab(state, { childRelationship });
         },
         selectAllFields: (state, action) => {
             const query = selectAllFields(state.query, action);
             state.query = query;
-            state.soql = composeQuery(query, { format: true,formatOptions:QUERY_CONFIG });
+            state.soql = composeQuery(query, { format: true, formatOptions: QUERY_CONFIG });
         },
-        clearAllFields: (state) => {
+        clearAllFields: state => {
             const query = clearAllFields(state.query);
             state.query = query;
-            state.soql = composeQuery(query, { format: true,formatOptions:QUERY_CONFIG });
+            state.soql = composeQuery(query, { format: true, formatOptions: QUERY_CONFIG });
             updateCurrentTab(state);
         },
         sortFields: (state, action) => {
             state.sort = action.payload.sort;
-        }
-    }
+        },
+    },
 });
-
 
 /* Test */
 

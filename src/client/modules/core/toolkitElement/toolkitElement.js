@@ -1,14 +1,13 @@
-import { LightningElement,api } from 'lwc';
-import { isEmpty,isElectronApp,isNotUndefinedOrNull } from 'shared/utils';
+import { LightningElement, api } from 'lwc';
+import { isEmpty, isElectronApp, isNotUndefinedOrNull } from 'shared/utils';
 import { classSet } from 'shared/utils';
 import { I18nMixin } from 'core/i18n';
 import { store } from 'core/store';
 
 export default class ToolkitElement extends I18nMixin(LightningElement) {
-
     @api applicationName;
     isLoggedIn = false;
-    
+
     /*@wire(connectStore, { store })
     applicationChange({application}) {
         //console.log('ToolkitElement - application',application);
@@ -18,41 +17,39 @@ export default class ToolkitElement extends I18nMixin(LightningElement) {
             this.isLoggedIn = false;
         }
     }*/
-   
-    
+
     /** Methods */
-    verifyIsActive = (applicationName) => {
+    verifyIsActive = applicationName => {
         return this.applicationName === applicationName;
-    }
-  
+    };
+
     /** Getters */
-    
-    
-    get connector(){
+
+    get connector() {
         return store.getState()?.application?.connector;
     }
 
-    get alias(){
+    get alias() {
         return this.connector?.configuration?.alias;
     }
-    
-    get isUserLoggedIn(){
+
+    get isUserLoggedIn() {
         return isNotUndefinedOrNull(this.connector) || this.isLoggedIn;
     }
 
-    get isLimitedMode(){
+    get isLimitedMode() {
         return window.isLimitedMode;
     }
 
-    get isUnlimitedMode(){
+    get isUnlimitedMode() {
         return !this.isLimitedMode;
     }
 
-    get pageClass(){
+    get pageClass() {
         return classSet('full-page')
             .add({
-                'full-page-connected':this.isUserLoggedIn
+                'full-page-connected': this.isUserLoggedIn,
             })
-            .toString()
+            .toString();
     }
 }

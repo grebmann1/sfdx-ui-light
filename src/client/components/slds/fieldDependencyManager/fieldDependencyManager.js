@@ -59,7 +59,7 @@ function registerField({ fieldName, fieldElement }) {
     if (!(fieldName in this._fieldValues)) {
         this._fieldValues[fieldName] = {
             controllerName: getControllerName.call(this, fieldName),
-            fieldElement
+            fieldElement,
         };
     }
 
@@ -79,11 +79,7 @@ function initializeField(fieldName) {
     if (this._picklistMap[fieldName] !== undefined) {
         const controllerValue = getControllerValue.call(this, fieldName);
 
-        const picklistOptions = getPicklistOptions.call(
-            this,
-            fieldName,
-            controllerValue
-        );
+        const picklistOptions = getPicklistOptions.call(this, fieldName, controllerValue);
 
         updateFieldOptions(fieldName, field.fieldElement, picklistOptions);
     }
@@ -111,23 +107,15 @@ function updateDependentFields(fieldName, fieldValue, clearDependentValue) {
                 field.fieldElement.setFieldValue('');
             }
 
-            const newOptions = getPicklistOptions.call(
-                this,
-                dependentFieldName,
-                fieldValue
-            );
+            const newOptions = getPicklistOptions.call(this, dependentFieldName, fieldValue);
 
-            updateFieldOptions(
-                dependentFieldName,
-                field.fieldElement,
-                newOptions
-            );
+            updateFieldOptions(dependentFieldName, field.fieldElement, newOptions);
         }
     }
 }
 
 function getControllerName(fieldName) {
-    return Object.keys(this._dependencyMap).find((key) =>
+    return Object.keys(this._dependencyMap).find(key =>
         this._dependencyMap[key].includes(fieldName)
     );
 }
@@ -138,10 +126,7 @@ function getControllerValue(fieldName) {
 
     let controllerValue;
     if (controllerField) {
-        controllerValue = getFieldValue(
-            field.controllerName,
-            controllerField.fieldElement
-        );
+        controllerValue = getFieldValue(field.controllerName, controllerField.fieldElement);
     }
 
     return controllerValue;
@@ -159,7 +144,7 @@ function getFieldValue(fieldName, fieldElement) {
 function getPicklistOptions(fieldName, controllerValue) {
     const cacheKey = getOptionsUniqueKey({
         fieldName,
-        controllerValue
+        controllerValue,
     });
 
     if (cacheKey in this._optionsCache) {
@@ -174,10 +159,7 @@ function getPicklistOptions(fieldName, controllerValue) {
 
     if (hasController) {
         if (controllerValue !== undefined && controllerValue !== null) {
-            picklistValues = getDependentPicklistOptions(
-                picklistInfo,
-                controllerValue
-            );
+            picklistValues = getDependentPicklistOptions(picklistInfo, controllerValue);
         } else {
             picklistValues = [];
         }

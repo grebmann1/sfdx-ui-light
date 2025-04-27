@@ -1,9 +1,12 @@
 <template>
     <div>
-        <lightning-spinner alternative-text={validAlternativeText} size={normalizedSize} variant={normalizedVariant}></lightning-spinner>
+        <lightning-spinner
+            alternative-text={validAlternativeText}
+            size={normalizedSize}
+            variant={normalizedVariant}></lightning-spinner>
         <span class={messageCSS}>
             {message}
-            <br>
+            <br />
             {additionalMessage}
             <slot></slot>
         </span>

@@ -2,22 +2,25 @@
     <div class={pageClass}>
         <builder-editor>
             <!-- Header -->
-            <builder-header slot="header" title="Tools" sub-title="Platform Events" icon-name="standard:events">
+            <builder-header
+                slot="header"
+                title="Tools"
+                sub-title="Platform Events"
+                icon-name="standard:events">
                 <div slot="actions" class="slds-builder-toolbar__actions">
-                    <lightning-button 
-                        class="slds-p-left_xx-small" 
-                        label="Apex Script" 
-                        onclick={toggle_apexEditor} 
-                        variant="border-filled" 
+                    <lightning-button
+                        class="slds-p-left_xx-small"
+                        label="Apex Script"
+                        onclick={toggle_apexEditor}
+                        variant="border-filled"
                         icon-name="utility:apex"
                         icon-position="right"
-                        size="large"
-                    ></lightning-button>
+                        size="large"></lightning-button>
                 </div>
                 <div slot="meta" class="slds-flex-row slds-align-flex-end">
-                    
-                    <slds-lookup style="width:300px;"
-                        class="slds-p-left_x-small" 
+                    <slds-lookup
+                        style="width: 300px"
+                        class="slds-p-left_x-small"
                         label="Platform &amp; Change Event"
                         placeholder="Select Event"
                         tooltip="Select an event from your metadata"
@@ -26,46 +29,68 @@
                         errors={lookup_errors}
                         onselectionchange={lookup_handleSelectionChange}
                         required
-                        lwc:ref="lookup"
-                    ></slds-lookup>
-                    <lightning-input style="width:100px"
-                        class="slds-p-left_x-small" 
+                        lwc:ref="lookup"></slds-lookup>
+                    <lightning-input
+                        style="width: 100px"
+                        class="slds-p-left_x-small"
                         label="Replay Id"
                         placeholder="Replay Id"
                         field-level-help="Use this option sparingly. Subscribing with the -2 option when a large number of event messages are stored can slow performance"
                         value="-1"
                         type="number"
-                        lwc:ref="replay"
-                    ></lightning-input>
-                    <lightning-button 
-                        class="slds-p-left_x-small" 
-                        label="Subscribe" 
-                        variant="brand" 
-                        title="Subscribe to channel" 
-                        onclick={manual_subscribeChannel} 
-                        disabled={isSubscribeDisabled}
-                    ></lightning-button>
+                        lwc:ref="replay"></lightning-input>
+                    <lightning-button
+                        class="slds-p-left_x-small"
+                        label="Subscribe"
+                        variant="brand"
+                        title="Subscribe to channel"
+                        onclick={manual_subscribeChannel}
+                        disabled={isSubscribeDisabled}></lightning-button>
                 </div>
                 <div slot="subactions" class="slds-builder-toolbar__actions">
-                    <lightning-button-icon-stateful class="slds-p-left_xx-small" selected={isRecentToggled}  variant="border-filled" icon-name="utility:budget_period"  size="large" onclick={toggle_recent}></lightning-button-icon-stateful>
+                    <lightning-button-icon-stateful
+                        class="slds-p-left_xx-small"
+                        selected={isRecentToggled}
+                        variant="border-filled"
+                        icon-name="utility:budget_period"
+                        size="large"
+                        onclick={toggle_recent}></lightning-button-icon-stateful>
                 </div>
             </builder-header>
             <!-- Body -->
             <article class="full-page-body slds-card">
-                <div class="slds-is-relative slds-full-width slds-full-height slds-flex-column" style="min-height:200px;">
+                <div
+                    class="slds-is-relative slds-full-width slds-full-height slds-flex-column"
+                    style="min-height: 200px">
                     <template lwc:if={isLoading}>
                         <slds-spinner alternative-text="Loading" size="small"></slds-spinner>
                     </template>
                     <!-- Tabs -->
-                    <slds-tabset variant="scoped" class="slds-without-tab slds-tabs_no-max" active-tab-value={currentChannelName} onclosetab={handleCloseTab}>
+                    <slds-tabset
+                        variant="scoped"
+                        class="slds-without-tab slds-tabs_no-max"
+                        active-tab-value={currentChannelName}
+                        onclosetab={handleCloseTab}>
                         <template for:each={subscribedChannels} for:item="item">
-                            <slds-tab key={item.id} label={item.name} value={item.id} onactive={handleSelectTab} counter={item.counterDraft} is-closeable></slds-tab>
+                            <slds-tab
+                                key={item.id}
+                                label={item.name}
+                                value={item.id}
+                                onactive={handleSelectTab}
+                                counter={item.counterDraft}
+                                is-closeable></slds-tab>
                         </template>
                     </slds-tabset>
                     <!-- Content -->
                     <template lwc:if={isCurrentChannelDisplayed}>
-                        <slds-split-view class="slds-fill-height" left-min-width="200" right-min-width="200" is-horizontal>
-                            <div class="slds-flex-column slds-full-height slds-full-width" slot="left">
+                        <slds-split-view
+                            class="slds-fill-height"
+                            left-min-width="200"
+                            right-min-width="200"
+                            is-horizontal>
+                            <div
+                                class="slds-flex-column slds-full-height slds-full-width"
+                                slot="left">
                                 <div class="apex-editor slds-flex-column slds-full-height">
                                     <div class="slds-p-around_x-small">
                                         <div class="slds-page-header slds-page-header_related-list">
@@ -74,10 +99,17 @@
                                                     <div class="slds-media">
                                                         <div class="slds-media__body">
                                                             <div class="slds-page-header__name">
-                                                                <div class="slds-page-header__name-title">
+                                                                <div
+                                                                    class="slds-page-header__name-title">
                                                                     <h1>
-                                                                        <span>{currentChannel.formattedType}</span>
-                                                                        <span class="slds-page-header__title slds-truncate" title={currentChannel.name}>{currentChannel.name}</span> 
+                                                                        <span>
+                                                                            {currentChannel.formattedType}
+                                                                        </span>
+                                                                        <span
+                                                                            class="slds-page-header__title slds-truncate"
+                                                                            title={currentChannel.name}>
+                                                                            {currentChannel.name}
+                                                                        </span>
                                                                     </h1>
                                                                 </div>
                                                             </div>
@@ -89,7 +121,9 @@
                                                         <div class="slds-page-header__control">
                                                             <ul class="slds-button-group-list">
                                                                 <li>
-                                                                    <lightning-badge label={currentChannel.status} class={currentChannel.badgeClass}></lightning-badge>
+                                                                    <lightning-badge
+                                                                        label={currentChannel.status}
+                                                                        class={currentChannel.badgeClass}></lightning-badge>
                                                                 </li>
                                                             </ul>
                                                         </div>
@@ -98,63 +132,69 @@
                                             </div>
                                             <div class="slds-page-header__row">
                                                 <div class="slds-page-header__col-meta">
-                                                    <p class="slds-page-header__meta-text"> {currentChannel.counter} messages • Replay Id: {currentChannel.replayId} • {lastMessageFormatted} </p>
+                                                    <p class="slds-page-header__meta-text">
+                                                        {currentChannel.counter} messages • Replay
+                                                        Id: {currentChannel.replayId} •
+                                                        {lastMessageFormatted}
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="slds-flex-column slds-fill-height">
-                                        <platformevent-message-list class="slds-flex-column slds-full-height"
-                                            title={currentChannelName} 
+                                        <platformevent-message-list
+                                            class="slds-flex-column slds-full-height"
+                                            title={currentChannelName}
                                             selected-event-item={selectedEventItem}
                                             messages={messagesDisplayed}
                                             onselect={handleEventSelection}
-                                            onempty={handleEmptyMessages}
-                                        ></platformevent-message-list>
+                                            onempty={handleEmptyMessages}></platformevent-message-list>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class={rightSlotClass} slot="right">
                                 <template lwc:if={hasError}>
-                                    <slds-information-block class="slds-p-around_x-small" title={error_title} variant="error">
+                                    <slds-information-block
+                                        class="slds-p-around_x-small"
+                                        title={error_title}
+                                        variant="error">
                                         <p>{error_message}</p>
                                     </slds-information-block>
                                 </template>
-    
+
                                 <template lwc:if={isEventViewerDisplayed}>
-                                    <platformevent-event-viewer item={selectedEventItem}></platformevent-event-viewer>
+                                    <platformevent-event-viewer
+                                        item={selectedEventItem}></platformevent-event-viewer>
                                 </template>
                                 <template lwc:else>
-                                    <illustration-empty title="No data to visualize" sub-title="You can execute an Apex Script to send an event manually." size="large"></illustration-empty>
+                                    <illustration-empty
+                                        title="No data to visualize"
+                                        sub-title="You can execute an Apex Script to send an event manually."
+                                        size="large"></illustration-empty>
                                 </template>
                             </div>
                         </slds-split-view>
                     </template>
                     <template lwc:else>
-                        <illustration-default 
-                            title="No Subscription" 
-                            sub-title="Subscribe to an Event by selecting a Platform Event from the list." 
-                            size="large"
-                        ></illustration-default>
+                        <illustration-default
+                            title="No Subscription"
+                            sub-title="Subscribe to an Event by selecting a Platform Event from the list."
+                            size="large"></illustration-default>
                     </template>
                 </div>
             </article>
-            
 
             <!-- RECENT Anonymous Apex -->
-            
-            <builder-storage-panel 
-                title="Recent List" 
-                is-open={isRecentToggled} 
+
+            <builder-storage-panel
+                title="Recent List"
+                is-open={isRecentToggled}
                 recent-title={i18n.EVENT_LIST_PANEL_RECENT}
-                recent-items={recentChannels} 
+                recent-items={recentChannels}
                 onclose={toggle_recent}
                 onselectitem={recent_subscribeChannel}
-                is-saved-item-disabled
-            ></builder-storage-panel>
-            
-            
+                is-saved-item-disabled></builder-storage-panel>
         </builder-editor>
     </div>
 </template>

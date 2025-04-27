@@ -5,20 +5,12 @@
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
 
-export function calculateOverflow({
-    items,
-    activeItem,
-    containerWidth,
-    overflowWidth
-}) {
+export function calculateOverflow({ items, activeItem, containerWidth, overflowWidth }) {
     const visibleItems = [];
     const overflowItems = [];
     const itemsLength = items.length;
 
-    const allItemsWidth = items.reduce(
-        (totalWidth, item) => totalWidth + item.width,
-        0
-    );
+    const allItemsWidth = items.reduce((totalWidth, item) => totalWidth + item.width, 0);
 
     if (allItemsWidth <= containerWidth || containerWidth <= 0) {
         return { visibleItems: items, overflowItems };
@@ -56,6 +48,6 @@ export function calculateOverflow({
 
     return {
         visibleItems,
-        overflowItems
+        overflowItems,
     };
 }

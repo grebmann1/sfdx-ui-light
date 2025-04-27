@@ -1,9 +1,9 @@
 import { isMonacoLanguageSetup } from 'shared/utils';
 
-export function configureApexLogLanguage(monaco){
-    if(isMonacoLanguageSetup('apexLog')) return;
+export function configureApexLogLanguage(monaco) {
+    if (isMonacoLanguageSetup('apexLog')) return;
     monaco.languages.register({ id: 'apexLog' });
-    monaco.languages.setMonarchTokensProvider("apexLog",{
+    monaco.languages.setMonarchTokensProvider('apexLog', {
         defaultToken: '',
         tokenPostfix: '.log',
         ignoreCase: true,
@@ -188,9 +188,8 @@ export function configureApexLogLanguage(monaco){
 
         tokenizer: {
             root: [
-
-                [/\|USER_DEBUG.*/,"user-debug"],
-                [/\|USER_INFO.*/,"user-info"],
+                [/\|USER_DEBUG.*/, 'user-debug'],
+                [/\|USER_INFO.*/, 'user-info'],
                 [/[a-z0-9]\w{4}0\w{12}|[a-z0-9]\w{4}0\w{9}/, 'string'],
                 { include: '@numbers' },
                 [/^Execute Anonymous:.*/, 'comment'],
@@ -209,10 +208,10 @@ export function configureApexLogLanguage(monaco){
                 [
                     /[A-Z_]+/,
                     {
-                    cases: {
-                        '@keywords': 'keyword',
-                        '@default': 'identifier',
-                    },
+                        cases: {
+                            '@keywords': 'keyword',
+                            '@default': 'identifier',
+                        },
                     },
                 ],
             ],
@@ -221,81 +220,81 @@ export function configureApexLogLanguage(monaco){
                 [/[$][+-]*\d*(\.\d*)?/, 'number'],
                 [/((\d+(\.\d*)?)|(\.\d+))([eE][-+]?\d+)?/, 'number'],
             ],
-        }
-    })
+        },
+    });
 
-    monaco.languages.setLanguageConfiguration('apexLog',{
+    monaco.languages.setLanguageConfiguration('apexLog', {
         brackets: [
-          ['[', ']'],
-          ['(', ')'],
+            ['[', ']'],
+            ['(', ')'],
         ],
         autoClosingPairs: [
-          { open: '[', close: ']' },
-          { open: '(', close: ')' },
-          { open: "'", close: "'" },
+            { open: '[', close: ']' },
+            { open: '(', close: ')' },
+            { open: "'", close: "'" },
         ],
         surroundingPairs: [
-          { open: '[', close: ']' },
-          { open: '(', close: ')' },
-          { open: "'", close: "'" },
+            { open: '[', close: ']' },
+            { open: '(', close: ')' },
+            { open: "'", close: "'" },
         ],
     });
-    monaco.editor.defineTheme("apexLog", {
-        base: "vs",
+    monaco.editor.defineTheme('apexLog', {
+        base: 'vs',
         inherit: true,
         rules: [
             {
-                token: "custom-info",
-                foreground: "#667083"
+                token: 'custom-info',
+                foreground: '#667083',
             },
             {
-                token: "custom-error",
-                foreground: "#ff0000",
-                fontStyle: "bold"
-            }, 
-            {
-                token: "custom-notice",
-                foreground: "#333D50"
-            }, 
-            {
-                token: "custom-date",
-                foreground: "#008800"
+                token: 'custom-error',
+                foreground: '#ff0000',
+                fontStyle: 'bold',
             },
             {
-                token: "info-line",
-                foreground: "#ff0000",
-                fontStyle: "bold"
+                token: 'custom-notice',
+                foreground: '#333D50',
             },
             {
-                token: "info-version",
-                foreground: "#008800",
-                fontStyle: "bold"
+                token: 'custom-date',
+                foreground: '#008800',
             },
             {
-                token: "info-debug",
-                foreground: "#333D50",
+                token: 'info-line',
+                foreground: '#ff0000',
+                fontStyle: 'bold',
             },
             {
-                token: "user-debug",
-                foreground: "#0000ff"
+                token: 'info-version',
+                foreground: '#008800',
+                fontStyle: 'bold',
             },
             {
-                token: "user-info",
-                foreground: "#0000ff"
+                token: 'info-debug',
+                foreground: '#333D50',
             },
             {
-                token: "performance",
-                foreground: "#333D50",
-                fontStyle: "bold"
-            }, 
+                token: 'user-debug',
+                foreground: '#0000ff',
+            },
             {
-                token: "maximum",
-                foreground: "#333D50",
-                fontStyle: "bold"
-            }, 
+                token: 'user-info',
+                foreground: '#0000ff',
+            },
             {
-                token: "anonymous",
-                foreground: "#333D50"
+                token: 'performance',
+                foreground: '#333D50',
+                fontStyle: 'bold',
+            },
+            {
+                token: 'maximum',
+                foreground: '#333D50',
+                fontStyle: 'bold',
+            },
+            {
+                token: 'anonymous',
+                foreground: '#333D50',
             },
             { token: 'custom-apex-code', foreground: '808080' },
             { token: 'runtime-error', foreground: 'ff0000', fontStyle: 'bold' },
@@ -305,17 +304,16 @@ export function configureApexLogLanguage(monaco){
             { token: 'custom-id', foreground: '569cd6' },
             { token: 'custom-limits', foreground: 'b5cea8' },
             //{ token: 'string', foreground: 'ce9178' },
-            
         ],
         colors: {
             //'editor.foreground': '#ff0000',
-            "editor.selectionBackground": "#fdefec",
-            "editor.selectionHighlightBackground": "#fdefec",
-            "editor.findMatchBackground": "#fdefec",
-            "editor.findMatchHighlightBackground": "#fdefec",
-            "editor.findRangeHighlightBackground": "#f3f2f2",
-            "editor.hoverHighlightBackground": "#f3f2f2",
-            "editor.inactiveSelectionBackground": "#f3f2f2"
-        }
-    })
+            'editor.selectionBackground': '#fdefec',
+            'editor.selectionHighlightBackground': '#fdefec',
+            'editor.findMatchBackground': '#fdefec',
+            'editor.findMatchHighlightBackground': '#fdefec',
+            'editor.findRangeHighlightBackground': '#f3f2f2',
+            'editor.hoverHighlightBackground': '#f3f2f2',
+            'editor.inactiveSelectionBackground': '#f3f2f2',
+        },
+    });
 }

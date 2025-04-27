@@ -2,9 +2,16 @@ import { api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import LightningAlert from 'lightning/alert';
 import Toast from 'lightning/toast';
-import { classSet, isNotUndefinedOrNull, runActionAfterTimeOut, guid, normalizeString as normalize,autoDetectAndFormat } from 'shared/utils';
+import {
+    classSet,
+    isNotUndefinedOrNull,
+    runActionAfterTimeOut,
+    guid,
+    normalizeString as normalize,
+    autoDetectAndFormat,
+} from 'shared/utils';
 import { SOQL, APEX, VF } from 'editor/languages';
-import { registerCopilot,setupMonaco } from 'editor/utils';
+import { registerCopilot, setupMonaco } from 'editor/utils';
 import { MonacoLwcWidget } from 'editor/editorCompleteWidget';
 
 /** REQUIRED FIELDS: _source & _bodyField */
@@ -51,14 +58,12 @@ export default class App extends ToolkitElement {
 
     currentPromptWidget;
 
+    connectedCallback() {}
 
-    connectedCallback(){}
-
-    renderedCallback(){
-        if(!this._hasRendered){
+    renderedCallback() {
+        if (!this._hasRendered) {
             this._hasRendered = true;
-            setupMonaco()
-            .then(monaco => {
+            setupMonaco().then(monaco => {
                 this.monaco = monaco;
                 this.loadMonacoEditor();
             });
@@ -67,16 +72,16 @@ export default class App extends ToolkitElement {
 
     /** Events */
 
-    handleAddTab = (e) => {
+    handleAddTab = e => {
         // Process this in the parent component
     };
 
-    handleCloseTab = (e) => {
+    handleCloseTab = e => {
         const tabId = e.detail.value;
         // Process this in the parent component
 
         const currentTabId = this.template.querySelector('slds-tabset').activeTabValue;
-        this.models = this.models.filter((x) => x.path !== tabId);
+        this.models = this.models.filter(x => x.path !== tabId);
         if (this.models.length > 0) {
             const latestModel = this.models[this.models.length - 1];
             if (currentTabId === tabId) {
@@ -84,18 +89,20 @@ export default class App extends ToolkitElement {
                 this.template.querySelector('slds-tabset').activeTabValue = latestModel.path;
             }
         }
-        this.dispatchEvent(new CustomEvent('change', { detail: { value: 'delete', type: 'tab' }, bubbles: true }));
+        this.dispatchEvent(
+            new CustomEvent('change', { detail: { value: 'delete', type: 'tab' }, bubbles: true })
+        );
     };
 
     handleSelectTab(event) {
-        const oldModelIndex = this.models.findIndex((x) => x.path === this.currentFile);
+        const oldModelIndex = this.models.findIndex(x => x.path === this.currentFile);
         if (oldModelIndex >= 0) {
             // Save previous state
             this.models[oldModelIndex].state = this.editor.saveViewState();
         }
 
         this.currentFile = event.target.value;
-        const element = this.models.find((x) => x.path === this.currentFile);
+        const element = this.models.find(x => x.path === this.currentFile);
 
         // Switch model
         this.editor.setModel(element.model);
@@ -136,13 +143,12 @@ export default class App extends ToolkitElement {
 
     handleOpenContextCopilot = () => {
         // Add the widget to Monaco editor
-        if(!this.currentPromptWidget.isVisible){
+        if (!this.currentPromptWidget.isVisible) {
             this.currentPromptWidget.show();
         }
-    }
+    };
 
     /** Methods **/
-
 
     resetCoverage = () => {
         this.isCoverageHighlighted = false;
@@ -166,14 +172,14 @@ export default class App extends ToolkitElement {
 
     highlightLines = (covered, uncovered) => {
         const decorations = [
-            ...covered.map((x) => ({
+            ...covered.map(x => ({
                 range: new this.monaco.Range(x, 1, x, Infinity),
                 options: {
                     isWholeLine: true,
                     className: 'highlighted-cover',
                 },
             })),
-            ...uncovered.map((x) => ({
+            ...uncovered.map(x => ({
                 range: new this.monaco.Range(x, 1, x, Infinity),
                 options: {
                     isWholeLine: true,
@@ -184,12 +190,16 @@ export default class App extends ToolkitElement {
         this.decorations = this.editor.deltaDecorations([], decorations);
     };
 
-    fetchCodeCoverage = async (recordId) => {
+    fetchCodeCoverage = async recordId => {
         try {
             const query = `SELECT Id, CreatedDate, NumLinesCovered, NumLinesUncovered, CoverageLastModifiedDate, ApexClassOrTriggerId, Coverage FROM ApexCodeCoverageAggregate WHERE ApexClassOrTriggerId = '${recordId}'`;
             const queryExec = this.connector.conn.tooling.query(query);
             const result =
-                (await queryExec.run({ responseTarget: 'Records', autoFetch: true, maxFetch: 1 })) || [];
+                (await queryExec.run({
+                    responseTarget: 'Records',
+                    autoFetch: true,
+                    maxFetch: 1,
+                })) || [];
             return result[0];
         } catch (e) {
             console.error(e);
@@ -197,10 +207,8 @@ export default class App extends ToolkitElement {
         }
     };
 
-
-
-    createModels = (files) => {
-        this.models = files.map((x) => ({
+    createModels = files => {
+        this.models = files.map(x => ({
             name: x.name,
             path: x.path,
             model: this.monaco.editor.createModel(x.body, x.language),
@@ -213,8 +221,8 @@ export default class App extends ToolkitElement {
         }));
     };
 
-    addModels = (files) => {
-        return files.map((x) => ({
+    addModels = files => {
+        return files.map(x => ({
             name: x.name,
             path: x.path,
             model: this.monaco.editor.createModel(x.body, x.language),
@@ -227,7 +235,7 @@ export default class App extends ToolkitElement {
     };
 
     updateFilesFromModels = () => {
-        this.files = this.models.map((x) => ({
+        this.files = this.models.map(x => ({
             ...x._file,
             body: x.model.getValue(),
         }));
@@ -245,18 +253,18 @@ export default class App extends ToolkitElement {
         this.currentFile = this.models[0].path;
         this.editor = this.monaco.editor.create(innerContainer, {
             model: this.models[0].model,
-            theme:this.theme || 'vs',
-            readOnly:this.isReadOnly,
-            wordWrap: "on",
+            theme: this.theme || 'vs',
+            readOnly: this.isReadOnly,
+            wordWrap: 'on',
             autoIndent: true,
             formatOnType: true,
             formatOnPaste: true,
             minimap: {
-                enabled: false
+                enabled: false,
             },
-            automaticLayout:true,
+            automaticLayout: true,
             scrollBeyondLastLine: false,
-            fixedOverflowWidgets: true
+            fixedOverflowWidgets: true,
         });
 
         // Add Prompt Widget
@@ -269,28 +277,26 @@ export default class App extends ToolkitElement {
             },
         });
         // Add Copilot
-        registerCopilot(this.monaco, this.editor, null,this.handleOpenContextCopilot);
+        registerCopilot(this.monaco, this.editor, null, this.handleOpenContextCopilot);
 
         this.editor.onDidChangeModelContent(this.handleModelContentChange);
     };
 
     handleModelContentChange = () => {
         //console.log('this.models',this.models);
-        this.isEditMode = this.models.some(
-            (x) => x.versionId !== x.model.getAlternativeVersionId()
-        );
+        this.isEditMode = this.models.some(x => x.versionId !== x.model.getAlternativeVersionId());
 
         runActionAfterTimeOut(
             this.editor.getValue(),
-            (value) => {
+            value => {
                 this.dispatchEvent(
                     new CustomEvent('change', {
                         detail: {
                             value,
-                            isEditMode:this.isEditMode,
-                            type: 'body'
+                            isEditMode: this.isEditMode,
+                            type: 'body',
                         },
-                        bubbles: true
+                        bubbles: true,
                     })
                 );
             },
@@ -336,7 +342,9 @@ export default class App extends ToolkitElement {
             {
                 xmlns: 'http://soap.sforce.com/2006/08/apex',
                 endpointUrl:
-                    this.connector.conn.instanceUrl + '/services/Soap/s/' + this.connector.conn.version,
+                    this.connector.conn.instanceUrl +
+                    '/services/Soap/s/' +
+                    this.connector.conn.version,
                 headers,
             }
         );
@@ -383,12 +391,12 @@ export default class App extends ToolkitElement {
     };
 
     @api
-    resetMarkers = (model) => {
+    resetMarkers = model => {
         this.monaco.editor.setModelMarkers(model, 'owner', []);
     };
 
     @api
-    addFiles = (files) => {
+    addFiles = files => {
         const newModels = this.addModels(files);
         this.models = [...this.models, ...newModels];
 
@@ -398,18 +406,20 @@ export default class App extends ToolkitElement {
             if (!this.template.querySelector('slds-tabset')) return;
             this.template.querySelector('slds-tabset').activeTabValue = latestModel.path;
         }, 1);
-        this.dispatchEvent(new CustomEvent('change', { detail: { value: 'add', type: 'tab' }, bubbles: true }));
+        this.dispatchEvent(
+            new CustomEvent('change', { detail: { value: 'add', type: 'tab' }, bubbles: true })
+        );
     };
 
     @api
-    displayFiles = (metadataType, files,attributes) => {
+    displayFiles = (metadataType, files, attributes) => {
         this.files = files;
         this.metadataType = metadataType;
         this.isEditMode = false;
 
         // Handle Attributes exception from displayFiles
-        if(isNotUndefinedOrNull(attributes)){
-            this.isTabEnabled = attributes.isTabEnabled;// || this.isTabEnabled;
+        if (isNotUndefinedOrNull(attributes)) {
+            this.isTabEnabled = attributes.isTabEnabled; // || this.isTabEnabled;
         }
 
         this.createModels(files);
@@ -458,9 +468,9 @@ export default class App extends ToolkitElement {
                     this.dispatchEvent(new CustomEvent('saved', { bubbles: true }));
                 } else {
                     const componentFailures = res.DeployDetails.componentFailures
-                        .map((x) => x.problem)
+                        .map(x => x.problem)
                         .join(' | ');
-                    const markers = res.DeployDetails.componentFailures.map((x) => ({
+                    const markers = res.DeployDetails.componentFailures.map(x => ({
                         startLineNumber: x.lineNumber,
                         endLineNumber: x.lineNumber,
                         startColumn: 1,
@@ -491,7 +501,9 @@ export default class App extends ToolkitElement {
         this.resetMarkers(this.currentModel);
 
         // Container
-        const container = await tooling.sobject('MetadataContainer').create({ Name: containerName });
+        const container = await tooling
+            .sobject('MetadataContainer')
+            .create({ Name: containerName });
 
         const apexClassMemberRecord = {
             ContentEntityId: this.currentModelAdvanced._id,
@@ -513,8 +525,8 @@ export default class App extends ToolkitElement {
     deployOthers = async () => {
         const tooling = this.connector.conn.tooling;
         const records = this.models
-            .filter((x) => x.versionId !== x.model.getAlternativeVersionId())
-            .map((x) => ({
+            .filter(x => x.versionId !== x.model.getAlternativeVersionId())
+            .map(x => ({
                 Source: x.model.getValue(),
                 Id: x._file._source.attributes.url.split('/').slice(-1),
                 attributes: x._file._source.attributes,
@@ -522,10 +534,10 @@ export default class App extends ToolkitElement {
         if (records.length <= 0) return;
 
         const result = await tooling.sobject(records[0].attributes.type).update(records);
-        if (result.find((x) => !x.success)) {
+        if (result.find(x => !x.success)) {
             const message = result
-                .find((x) => !x.success)
-                .errors.map((x) => x.message)
+                .find(x => !x.success)
+                .errors.map(x => x.message)
                 .join(' | ');
             this.isLoading = false;
             await LightningAlert.open({
@@ -552,7 +564,7 @@ export default class App extends ToolkitElement {
     }
 
     get currentModelAdvanced() {
-        return this.models.find((x) => x.path === this.currentFile);
+        return this.models.find(x => x.path === this.currentFile);
     }
 
     @api
@@ -565,21 +577,21 @@ export default class App extends ToolkitElement {
         return this.editor;
     }
 
-    @api 
+    @api
     get currentMonaco() {
         return this.monaco;
     }
 
     @api
     get editorUpdatedFiles() {
-        return this.models.map((x) => ({
+        return this.models.map(x => ({
             ...x._file,
             body: x.model.getValue(),
         }));
     }
 
     get formattedModels() {
-        return this.models.map((x) => ({
+        return this.models.map(x => ({
             ...x,
             isCloseable: this.models.length > 1 && !this.isTabCloseableDisabled,
             class: classSet('slds-tabs_scoped__item')
@@ -611,15 +623,14 @@ export default class App extends ToolkitElement {
         return this.isAddTabEnabled && this.models.length < 5;
     }
 
-    get normalizedBackgroundColor(){
+    get normalizedBackgroundColor() {
         return normalize(this.backgroundColor, {
             fallbackValue: 'slds-light-bg',
             validValues: ['slds-light-bg', 'slds-grey-bg'],
         });
     }
 
-    get editorClass(){
+    get editorClass() {
         return `slds-flex-column slds-full-height ${this.normalizedBackgroundColor}`;
     }
-
 }

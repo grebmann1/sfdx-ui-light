@@ -1,6 +1,4 @@
-
-
-.slds-file-uploader.slds-is-drag{
+.slds-file-uploader.slds-is-drag {
     border: 2px dashed #0070d2;
     cursor: pointer;
     transition: background-color 0.3s ease;
@@ -9,23 +7,23 @@
     background-color: #f4f6f9; 
 }*/
 
-.slds-file-uploader-container.slds-is-drag{
+.slds-file-uploader-container.slds-is-drag {
     position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
     z-index: 9050;
-    background-color: var(--slds-g-color-neutral-100-opacity-75, rgba(255, 255, 255, .75));
+    background-color: var(--slds-g-color-neutral-100-opacity-75, rgba(255, 255, 255, 0.75));
     visibility: visible;
     opacity: 1;
-    -webkit-transition: opacity .2s ease, visibility 0s;
-    transition: opacity .2s ease, visibility 0s;
-    -webkit-transition-delay: 0s, .3s;
-    transition-delay: 0s, .3s;
+    -webkit-transition: opacity 0.2s ease, visibility 0s;
+    transition: opacity 0.2s ease, visibility 0s;
+    -webkit-transition-delay: 0s, 0.3s;
+    transition-delay: 0s, 0.3s;
 }
 
-.slds-file-uploader-text{
+.slds-file-uploader-text {
     position: absolute;
     left: 50%;
     top: 50%;
