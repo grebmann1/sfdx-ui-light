@@ -1,8 +1,8 @@
-import { ROLES, functionOutput, fetchCompletion, fetchCompletionStream } from 'ai/utils';
-import { guid, isUndefinedOrNull, safeParseJson } from 'shared/utils';
-import { store } from 'core/store';
 import { globalActions } from 'ai/functions';
+import { ROLES, functionOutput, fetchCompletion, fetchCompletionStream } from 'ai/utils';
+import { store } from 'core/store';
 import LOGGER from 'shared/logger';
+import { guid, isUndefinedOrNull, safeParseJson } from 'shared/utils';
 
 // Process the stream
 const processStream = async (stream, callback) => {

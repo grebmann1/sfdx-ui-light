@@ -1,21 +1,21 @@
-import home_app from 'home/app';
-import connection_app from 'connection/app';
 import accessAnalyzer_app from 'accessAnalyzer/app';
-import code_app from 'code/app';
-import metadata_app from 'metadata/app';
-import sobjectExplorer_app from 'object/app';
-import recordViewer_app from 'recordviewer/app';
-import org_app from 'org/app';
-import sarif_app from 'sarif/app';
-import doc_app from 'doc/app';
-import soql_app from 'soql/app';
 import platformEvent_app from 'platformevent/app';
 import anonymousApex_app from 'anonymousApex/app';
 import api_app from 'api/app';
 import assistant_app from 'assistant/app';
+import code_app from 'code/app';
+import connection_app from 'connection/app';
+import doc_app from 'doc/app';
+import home_app from 'home/app';
+import metadata_app from 'metadata/app';
+import sobjectExplorer_app from 'object/app';
+import org_app from 'org/app';
 import package_app from 'package/app';
+import recordViewer_app from 'recordviewer/app';
 import release_app from 'release/app';
+import sarif_app from 'sarif/app';
 import settings_app from 'settings/app';
+import soql_app from 'soql/app';
 /*
 const KNOWN_TYPE = new Set([
     "home/app",

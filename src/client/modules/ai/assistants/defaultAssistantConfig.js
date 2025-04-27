@@ -1,6 +1,6 @@
-import { lowerCaseKey, guid, isNotUndefinedOrNull, safeParseJson } from 'shared/utils';
 import { functionOutput } from 'ai/utils';
 import LOGGER from 'shared/logger';
+import { lowerCaseKey, guid, isNotUndefinedOrNull, safeParseJson } from 'shared/utils';
 
 const assistantConfig = {
     name: 'DefaultAssistant',

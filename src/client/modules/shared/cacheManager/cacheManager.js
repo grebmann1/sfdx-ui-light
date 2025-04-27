@@ -1,5 +1,6 @@
 import LOGGER from 'shared/logger';
 import { isChromeExtension, isEmpty } from 'shared/utils';
+
 import { chromeStore, basicStore } from './interfaces';
 
 export { chromeStore, basicStore };

@@ -1,6 +1,7 @@
 import { navigate } from 'lwr/navigation';
-import { APP_LIST } from './modules';
 import { isNotUndefinedOrNull } from 'shared/utils';
+
+import { APP_LIST } from './modules';
 
 export const handleRedirect = (navContext, redirectUrl) => {
     console.log('handleRedirect');

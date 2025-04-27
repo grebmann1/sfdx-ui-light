@@ -1,5 +1,5 @@
-import { api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
+import { api } from 'lwc';
 
 export default class Utilization extends ToolkitElement {
     userLicenses = [];

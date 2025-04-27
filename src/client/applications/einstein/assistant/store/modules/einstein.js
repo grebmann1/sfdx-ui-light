@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
+import { separator_token, GLOBAL_EINSTEIN } from 'assistant/utils';
 import { SELECTORS, DOCUMENT } from 'core/store';
 import { lowerCaseKey, guid, isNotUndefinedOrNull, splitTextByTimestamp } from 'shared/utils';
-import { separator_token, GLOBAL_EINSTEIN } from 'assistant/utils';
 
 const test = `59.0 APEX_CODE,DEBUG
 Execute Anonymous: aiplatform.ModelsAPI.createChatGenerations_Request request = new aiplatform.ModelsAPI.createChatGenerations_Request();

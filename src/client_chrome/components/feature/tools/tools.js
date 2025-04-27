@@ -1,5 +1,4 @@
 import ToolkitElement from 'core/toolkitElement';
-
 import { classSet } from 'shared/utils';
 
 export default class Tools extends ToolkitElement {

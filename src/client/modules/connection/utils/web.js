@@ -1,5 +1,5 @@
-import { isUndefinedOrNull, isNotUndefinedOrNull, isEmpty } from 'shared/utils';
 import { getConnectionsFromCache, saveConnectionsToCache } from 'shared/cacheManager';
+import { isUndefinedOrNull, isNotUndefinedOrNull, isEmpty } from 'shared/utils';
 
 const formatConfigurationItem = item => {
     return item; // Keep for now

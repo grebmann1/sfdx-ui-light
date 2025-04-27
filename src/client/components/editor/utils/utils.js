@@ -1,7 +1,8 @@
-import { isChromeExtension } from 'shared/utils';
-import MonacoLwcWidget from './widgets/monacoLwcWidget.js';
-import LOGGER from 'shared/logger';
 import { store } from 'core/store';
+import LOGGER from 'shared/logger';
+import { isChromeExtension } from 'shared/utils';
+
+import MonacoLwcWidget from './widgets/monacoLwcWidget.js';
 export const WIDGETS = {
     MonacoLwcWidget,
 };

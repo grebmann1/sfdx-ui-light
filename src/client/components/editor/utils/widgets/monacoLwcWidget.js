@@ -1,9 +1,9 @@
-import { createElement } from 'lwc';
+import * as Diff from 'diff';
 import PromptWidget from 'editor/promptWidget';
 import { CompletionFormatter } from 'editor/utils';
-import { isUndefinedOrNull, isNotUndefinedOrNull } from 'shared/utils';
+import { createElement } from 'lwc';
 import LOGGER from 'shared/logger';
-import * as Diff from 'diff';
+import { isUndefinedOrNull, isNotUndefinedOrNull } from 'shared/utils';
 
 // TODO: Add undo/redo tracking for fast undo/redo of the widget. We can't reuse the undo/redo of the editor because it will keep the decorations.
 

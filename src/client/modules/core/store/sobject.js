@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
-import { lowerCaseKey, isUndefinedOrNull } from 'shared/utils';
 import { cacheManager, CACHE_ORG_DATA_TYPES } from 'shared/cacheManager';
 import LOGGER from 'shared/logger';
+import { lowerCaseKey, isUndefinedOrNull } from 'shared/utils';
 // Create an entity adapter for sObjects
 export const sObjectsAdapter = createEntityAdapter({
     selectId: sobject => lowerCaseKey(sobject?.id),

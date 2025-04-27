@@ -1,4 +1,3 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import {
     getField,
     getFlattenedFields,
@@ -6,8 +5,9 @@ import {
     parseQuery,
     isQueryValid,
 } from '@jetstreamapp/soql-parser-js';
-import { stripNamespace, isNotUndefinedOrNull, guid, lowerCaseKey } from 'shared/utils';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { SELECTORS, DOCUMENT } from 'core/store';
+import { stripNamespace, isNotUndefinedOrNull, guid, lowerCaseKey } from 'shared/utils';
 
 const SETTINGS_KEY = 'SETTINGS_KEY';
 

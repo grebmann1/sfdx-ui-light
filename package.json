@@ -17,7 +17,9 @@
         "start:prod:run": "NODE_ENV=production node -r dotenv/config src/server/server-prod.js",
         "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,html}\"",
         "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,scss,html}\"",
-        "lint": "npm run format:check"
+        "lint:eslint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
+        "lint:eslint:fix": "eslint \"src/**/*.{js,jsx,ts,tsx}\" --fix",
+        "lint": "npm run lint:eslint && npm run format:check"
     },
     "nx": {
         "targets": {

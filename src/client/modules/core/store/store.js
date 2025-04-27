@@ -1,17 +1,18 @@
 import { configureStore } from '@reduxjs/toolkit';
+import { APEX } from 'anonymousApex/store';
+import { API } from 'api/store';
+import { EINSTEIN } from 'assistant/store';
+import { METADATA } from 'metadata/store';
+import { PACKAGE } from 'package/store';
+import { EVENT } from 'platformevent/store';
+import { RECORDVIEWER } from 'recordviewer/store';
 import logger from 'shared/middleware';
-import * as SOBJECT from './sobject';
+import { UI, QUERY } from 'soql/store';
+
+import * as APPLICATION from './application';
 import * as DESCRIBE from './describe';
 import * as DOCUMENT from './document';
-import * as APPLICATION from './application';
-import { UI, QUERY } from 'soql/store';
-import { APEX } from 'anonymousApex/store';
-import { METADATA } from 'metadata/store';
-import { RECORDVIEWER } from 'recordviewer/store';
-import { PACKAGE } from 'package/store';
-import { API } from 'api/store';
-import { EVENT } from 'platformevent/store';
-import { EINSTEIN } from 'assistant/store';
+import * as SOBJECT from './sobject';
 
 const store = configureStore({
     reducer: {

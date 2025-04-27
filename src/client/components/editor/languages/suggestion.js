@@ -1,6 +1,6 @@
 import { store, connectStore, SELECTORS, SOBJECT, DESCRIBE, QUERY, UI } from 'core/store';
-import { capitalizeFirstLetter, lowerCaseKey } from 'shared/utils';
 import LOGGER from 'shared/logger';
+import { capitalizeFirstLetter, lowerCaseKey } from 'shared/utils';
 const DATETIME_EXPRESSION = [
     // Date Formats
     'YYYY-MM-DD',

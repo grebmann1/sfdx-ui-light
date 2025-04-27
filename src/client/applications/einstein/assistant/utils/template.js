@@ -1,10 +1,10 @@
 const generateItems = (variableName, content, role) => {
     return `aiplatform.ModelsAPI_ChatMessageRequest ${variableName} = new aiplatform.ModelsAPI_ChatMessageRequest();
         ${variableName}.content = '${
-        role === 'user'
-            ? instructionFormatted() + '\\n """' + escapeApexString(content) + '"""'
-            : escapeApexString(content)
-    }';
+            role === 'user'
+                ? instructionFormatted() + '\\n """' + escapeApexString(content) + '"""'
+                : escapeApexString(content)
+        }';
         ${variableName}.role = '${role}';
         messagesList.add(${variableName});
     `;

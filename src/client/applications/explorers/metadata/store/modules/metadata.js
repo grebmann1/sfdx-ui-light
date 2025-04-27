@@ -1,5 +1,8 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
 import { store, METADATA, SOBJECT, DESCRIBE } from 'core/store';
+import { METADATA_EXCLUDE_LIST, METADATA_EXCEPTION_LIST } from 'metadata/utils';
+import { cacheManager, CACHE_ORG_DATA_TYPES } from 'shared/cacheManager';
+import LOGGER from 'shared/logger';
 import {
     lowerCaseKey,
     guid,
@@ -8,9 +11,6 @@ import {
     isSalesforceId,
     sortObjectsByField,
 } from 'shared/utils';
-import { METADATA_EXCLUDE_LIST, METADATA_EXCEPTION_LIST } from 'metadata/utils';
-import { cacheManager, CACHE_ORG_DATA_TYPES } from 'shared/cacheManager';
-import LOGGER from 'shared/logger';
 
 const METADATA_SETTINGS_KEY = 'METADATA_SETTINGS_KEY';
 

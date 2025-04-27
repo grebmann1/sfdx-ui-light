@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { lowerCaseKey, guid, isUndefinedOrNull } from 'shared/utils';
 import { saveSession, removeSession } from 'connection/utils';
 import { getOpenAIKeyFromCache } from 'shared/cacheManager';
+import { lowerCaseKey, guid, isUndefinedOrNull } from 'shared/utils';
 
 // QUERIES
 const applicationSlice = createSlice({

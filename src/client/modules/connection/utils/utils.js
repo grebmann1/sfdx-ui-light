@@ -1,9 +1,16 @@
-import { isNotUndefinedOrNull, isUndefinedOrNull } from 'shared/utils';
-import { isElectronApp, isObject, isChromeExtension } from 'shared/utils';
 import constant from 'core/constant';
+import {
+    isNotUndefinedOrNull,
+    isUndefinedOrNull,
+    isElectronApp,
+    isObject,
+    isChromeExtension,
+} from 'shared/utils';
+
+import * as electronInterface from './electron';
 import { Connector } from './mapping';
 import * as webInterface from './web';
-import * as electronInterface from './electron';
+
 export * as BASIC from './basic';
 import { store, APPLICATION } from 'core/store';
 import LOGGER from 'shared/logger';

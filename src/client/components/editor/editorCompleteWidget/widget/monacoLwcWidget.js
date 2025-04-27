@@ -1,9 +1,10 @@
-import { createElement } from 'lwc';
-import EditorCompleteWidget from 'editor/editorCompleteWidget';
-import { CompletionFormatter } from '../utils/utils.js';
-import { isNotUndefinedOrNull } from 'shared/utils';
-import LOGGER from 'shared/logger';
 import * as Diff from 'diff';
+import EditorCompleteWidget from 'editor/editorCompleteWidget';
+import { createElement } from 'lwc';
+import LOGGER from 'shared/logger';
+import { isNotUndefinedOrNull } from 'shared/utils';
+
+import { CompletionFormatter } from '../utils/utils.js';
 
 /**
  * Creates a file selection object from the editor's current state

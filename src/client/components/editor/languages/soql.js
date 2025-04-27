@@ -1,7 +1,7 @@
-import LOGGER from 'shared/logger';
 import { formatQuery } from '@jetstreamapp/soql-parser-js';
-import { isMonacoLanguageSetup } from 'shared/utils';
 import { store } from 'core/store';
+import LOGGER from 'shared/logger';
+import { isMonacoLanguageSetup } from 'shared/utils';
 
 import SOQLParser from './soqlParser';
 import SuggestionHandler from './suggestion';

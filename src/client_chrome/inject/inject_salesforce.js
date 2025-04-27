@@ -1,8 +1,9 @@
 import '@webcomponents/custom-elements';
 import '@lwc/synthetic-shadow';
-import { createElement } from 'lwc';
-import ViewsOverlay from 'views/overlay';
 import test from 'feature/test';
+import hotkeys from 'hotkeys-js';
+import { createElement } from 'lwc';
+import { CACHE_CONFIG, loadExtensionConfigFromCache, chromeStore } from 'shared/cacheManager';
 import {
     isEmpty,
     runActionAfterTimeOut,
@@ -10,8 +11,7 @@ import {
     getRecordId,
     getSobject,
 } from 'shared/utils';
-import { CACHE_CONFIG, loadExtensionConfigFromCache, chromeStore } from 'shared/cacheManager';
-import hotkeys from 'hotkeys-js';
+import ViewsOverlay from 'views/overlay';
 
 const getCookieInfo = async () => {
     if (chrome.runtime) {

@@ -1,5 +1,5 @@
-const schedule = require('node-schedule');
 const fetch = require('node-fetch');
+const schedule = require('node-schedule');
 const baseUrl = 'https://raw.githubusercontent.com/grebmann1/cta-cheat-sheet/main';
 
 const fetchContent = async callback => {

@@ -1,9 +1,9 @@
 import '@lwc/synthetic-shadow';
-import { createElement } from 'lwc';
 import extensionRoot from 'extension/root';
-import uiFullView from 'ui/fullView';
 import jsforce from 'imported/jsforce';
+import { createElement } from 'lwc';
 import { chromeStore } from 'shared/cacheManager';
+import uiFullView from 'ui/fullView';
 
 const init = async () => {
     /** Load Local Forage  **/

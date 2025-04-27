@@ -1,5 +1,5 @@
-import { LightningElement } from 'lwc';
 import LightningAlert from 'lightning/alert';
+import { LightningElement } from 'lwc';
 import { isUndefinedOrNull, isElectronApp } from 'shared/utils';
 
 export default class fullView extends LightningElement {

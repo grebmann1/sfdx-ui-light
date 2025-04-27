@@ -1,7 +1,7 @@
 import { createStore, applyMiddleware, combineReducers } from 'redux';
 import thunk from 'redux-thunk';
-
 import logger from 'shared/middleware';
+
 import application from './modules/application/reducers';
 
 let middlewares = [thunk];

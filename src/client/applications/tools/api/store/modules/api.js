@@ -1,4 +1,6 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
+import { DEFAULT, generateDefaultTab, formattedContentType } from 'api/utils';
+import { SELECTORS, DOCUMENT } from 'core/store';
 import {
     lowerCaseKey,
     guid,
@@ -6,8 +8,6 @@ import {
     isUndefinedOrNull,
     isChromeExtension,
 } from 'shared/utils';
-import { DEFAULT, generateDefaultTab, formattedContentType } from 'api/utils';
-import { SELECTORS, DOCUMENT } from 'core/store';
 
 const API_SETTINGS_KEY = 'API_SETTINGS_KEY';
 const DEFAULT_API_VERSION = '60.0';
