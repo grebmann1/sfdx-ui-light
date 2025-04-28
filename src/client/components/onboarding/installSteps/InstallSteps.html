@@ -1,0 +1,50 @@
+<template>
+    <!-- InstallSteps Component -->
+    <div class="slds-grid slds-grid_vertical slds-align_absolute-center">
+        <!-- Step Indicator -->
+        <div class="slds-grid slds-grid_align-center slds-m-bottom_large">
+            <template for:each={steps} for:item="step" for:index="index">
+                <div key={step.id} class="slds-m-horizontal_x-small">
+                    <div class={step.class}></div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Step Content -->
+        <div class="slds-box slds-box_small slds-m-bottom_large">
+            <template if:true={currentStep}>
+                <h2 class="slds-text-heading_large slds-m-bottom_medium">{currentStep.title}</h2>
+                <p class="slds-m-bottom_medium">
+                    <lightning-formatted-rich-text value={currentStep.description}></lightning-formatted-rich-text>
+                </p>
+                <template if:true={currentStep.image}>
+                    <img src={currentStep.image} alt={currentStep.title} class="slds-m-top_medium" style="max-width: 100%;" />
+                </template>
+                <template if:true={currentStep.list}>
+                    <ul class="slds-list_dotted slds-m-top_medium">
+                        <template for:each={currentStep.list} for:item="item">
+                            <li key={item}>{item}</li>
+                        </template>
+                    </ul>
+                </template>
+            </template>
+        </div>
+
+        <!-- Navigation -->
+        <div class="slds-grid slds-grid_align-spread slds-m-top_medium">
+            <button class="slds-button slds-button_neutral" onclick={handlePrevious} disabled={isFirstStep}>
+                Previous
+            </button>
+            <button class="slds-button slds-button_brand" onclick={handleNext}>
+                {nextButtonText}
+            </button>
+        </div>
+
+        <!-- Skip Button -->
+        <div class="slds-m-top_medium">
+            <button class="slds-button slds-button_link" onclick={handleSkip}>
+                Skip Tutorial
+            </button>
+        </div>
+    </div> 
+</template>

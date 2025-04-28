@@ -122,7 +122,15 @@ const openSideBar = async tab => {
 };
 
 /** On Install Event */
-chrome.runtime.onInstalled.addListener(async () => {
+chrome.runtime.onInstalled.addListener(async (details) => {
+    // Handle first-time installation
+    if (details.reason === 'install') {
+        // Open the installation page in a new tab
+        chrome.tabs.create({
+            url: 'https://sf-toolkit.com/install'
+        });
+    }
+
     // Create Menu based on configuration & if variable already exist
     const data = chrome.storage.sync.get(OVERLAY_ENABLED_VAR);
     if (!data.hasOwnProperty(OVERLAY_ENABLED_VAR)) {
@@ -142,6 +150,9 @@ chrome.runtime.onInstalled.addListener(async () => {
         });
     }
 });
+
+// Handle uninstallation
+chrome.runtime.setUninstallURL('https://forms.gle/cd8SkEPe5RGTVijJA');
 
 /** Commands **/
 
@@ -248,32 +259,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
 });
 
 // Message Listener
-/*chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === "launchWebAuthFlow") {
-        chrome.identity.launchWebAuthFlow({
-            'url': message.url,
-            'interactive': true
-        }, (responseUrl) => {
-            if (chrome.runtime.lastError) {
-                sendResponse({error: chrome.runtime.lastError.message});
-                return;
-            }
-            const url = new URL(responseUrl);
-            const code = (new URLSearchParams(url.search)).get('code'); // Simplified for example
-            sendResponse({code});
-        });
-        return true;
-    } else if (message.action === 'broadcastMessage') {
-        // Broadcast the message to all other components
-        message.senderId = sender.id;
-        chrome.runtime.sendMessage(message);
-    }else if(message.action === OPEN_SIDE_PANEL){
-        openSideBar(sender);
-    }else if(message.action === 'fetchCookie'){
-        const tab = await chrome.tabs.get(tabId);
-        sendResponse(getHostAndSession(sender.id));
-    }
-});*/
 const wrapAsyncFunction = listener => (request, sender, sendResponse) => {
     Promise.resolve(listener(request, sender)).then(sendResponse);
     return true;

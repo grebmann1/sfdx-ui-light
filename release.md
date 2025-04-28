@@ -1,5 +1,12 @@
 # SF Toolkit - Release Notes
 
+## Version 1.3.34 - April 28th, 2025
+### Enhancement:
+- **General**:
+  - Add prettier
+  - Add Install page (with quick tips)
+  - Add Uninstall page (With Google Form)
+
 ## Version 1.3.33 - April 10th, 2025
 ### Enhancement:
 - **Salesforce Engineer**:

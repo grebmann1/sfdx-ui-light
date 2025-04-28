@@ -124,5 +124,8 @@
         "contextMenus",
         "unlimitedStorage"
     ],
-    "incognito": "spanning"
-  }
+    "incognito": "spanning",
+    "externally_connectable": {
+        "matches": ["*://*.sf-toolkit.com/*"]
+    }
+}

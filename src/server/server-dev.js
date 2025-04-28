@@ -24,7 +24,7 @@ CTA_MODULE.launchScheduleFileDownloaded(files => {
     DATA_CTA = files;
 });
 //console.log('DATA_CTA.contents',DATA_CTA);
-
+console.log('process.env.PORT', process.env.PORT);
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const SERVER_MODE = 'development' === process.env.NODE_ENV ? 'dev' : 'prod';
 const CHROME_ID = process.env.CHROME_ID || 'dmlgjapbfifmeopbfikbdmlgdcgcdmfb';

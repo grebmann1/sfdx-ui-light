@@ -43,6 +43,11 @@
             "urlPath": "/images"
         },
         {
+            "alias":"gifsDir",
+            "dir": "$rootDir/src/client/assets/gifs",
+            "urlPath": "/gifs"
+        },
+        {
             "alias":"stylesDir",
             "dir": "$rootDir/src/client/assets/styles",
             "urlPath": "/styles"
@@ -69,6 +74,15 @@
             "path": "/",
             "contentTemplate": "$contentDir/home.html",
             "layoutTemplate": "$layoutsDir/home.html",
+            "bootstrap": {
+                "syntheticShadow": true
+            }
+        },
+        {
+            "id": "install",
+            "path": "/install",
+            "rootComponent": "onboarding/installPage",
+            "layoutTemplate": "$layoutsDir/install.html",
             "bootstrap": {
                 "syntheticShadow": true
             }
