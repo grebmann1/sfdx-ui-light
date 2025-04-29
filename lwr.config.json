@@ -79,15 +79,6 @@
             }
         },
         {
-            "id": "install",
-            "path": "/install",
-            "rootComponent": "onboarding/installPage",
-            "layoutTemplate": "$layoutsDir/install.html",
-            "bootstrap": {
-                "syntheticShadow": true
-            }
-        },
-        {
             "id": "app",
             "path": "/app",
             "rootComponent": "ui/fullView",
@@ -129,7 +120,16 @@
             "bootstrap": {
                 "syntheticShadow": true
             }
-        }
+        },
+        {
+            "id": "install",
+            "path": "/install",
+            "rootComponent": "onboarding/installPage",
+            "layoutTemplate": "$layoutsDir/install.html",
+            "bootstrap": {
+                "syntheticShadow": true
+            }
+        },
     ],
     "moduleProviders": [
         "@lwrjs/router/module-provider",
