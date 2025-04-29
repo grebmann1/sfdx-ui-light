@@ -1,6 +1,6 @@
 import { LightningElement, track } from 'lwc';
 
-export default class InstallSteps extends LightningElement {
+export default class installSteps extends LightningElement {
     @track currentStepIndex = 0;
     @track steps = [
         {
