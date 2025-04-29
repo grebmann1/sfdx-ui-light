@@ -4,7 +4,7 @@
     border-radius: 50%;
     background: #d8dde6;
     transition: background-color 0.2s ease-in-out;
-}
+} 
 
 .slds-dot_active {
     background: #0070d2;
