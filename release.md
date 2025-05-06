@@ -1,4 +1,10 @@
 # SF Toolkit - Release Notes
+## Version 1.3.35 - May 6th, 2025
+### Enhancement:
+- **General**:
+  - Enhance Documentation
+  - Add more Support for Salesforce Software Engineers
+  - Enhance install/uninstall experience
 
 ## Version 1.3.34 - April 28th, 2025
 ### Enhancement:

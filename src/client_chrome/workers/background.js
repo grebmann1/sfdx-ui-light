@@ -123,16 +123,22 @@ const openSideBar = async tab => {
 
 /** On Install Event */
 chrome.runtime.onInstalled.addListener(async (details) => {
-    console.log('onInstalled',details);
-    // Handle first-time installation
-    if (details.reason === 'install' || true) {
+    const currentVersion = chrome.runtime.getManifest().version;
+    const previousVersion = details.previousVersion;
+    const reason = details.reason;
+    // Get the previously stored version
+
+    if (reason === 'install') {
+        // Store the current version
+        await chrome.storage.sync.set({ installedVersion: currentVersion });
         // Open the installation page in a new tab
         chrome.tabs.create({
-            url:`https://sf-toolkit.com/install?redirect_url=${encodeURIComponent(chrome.runtime.getURL('views/default.html'))}`
+            url: `https://sf-toolkit.com/install?redirect_url=${encodeURIComponent(chrome.runtime.getURL('views/default.html'))}`
         });
-    }/* else if(details.reason === 'update'){
-        console.log('onUpdated',details);
-    } */
+    } else if (reason === 'update' && previousVersion !== currentVersion ) {
+        // Open the release notes page
+        chrome.tabs.create({ url: 'https://sf-toolkit.com/app?applicationName=release' });
+    }
 
     // Create Menu based on configuration & if variable already exist
     const data = chrome.storage.sync.get(OVERLAY_ENABLED_VAR);

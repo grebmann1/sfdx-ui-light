@@ -5,8 +5,15 @@ export default class installSteps extends LightningElement {
     @track currentStepIndex = 0;
     @track steps = [
         {
-            id: 1,
+            id: 0,
             class: 'slds-dot slds-dot_active',
+            title: 'Pin the Extension for Quick Access',
+            description: 'For the best experience, pin the Salesforce Toolkit extension to your browser toolbar. Click the puzzle icon (Extensions), then click the pin next to Salesforce Toolkit. Once pinned, click the extension icon to open it and view your credentials instantly.',
+            image: '/gifs/extension_pin.gif'
+        },
+        {
+            id: 1,
+            class: 'slds-dot',
             title: 'How to Open the Toolkit',
             description: 'To get started, open the Salesforce Toolkit by clicking the extension icon in your browser toolbar. You can also use the keyboard shortcut shown below. Watch the animation for a quick demonstration.',
             image: '/gifs/extension_open.gif'
