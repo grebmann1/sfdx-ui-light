@@ -123,13 +123,16 @@ const openSideBar = async tab => {
 
 /** On Install Event */
 chrome.runtime.onInstalled.addListener(async (details) => {
+    console.log('onInstalled',details);
     // Handle first-time installation
-    if (details.reason === 'install') {
+    if (details.reason === 'install' || true) {
         // Open the installation page in a new tab
         chrome.tabs.create({
-            url: 'https://sf-toolkit.com/install'
+            url:`https://sf-toolkit.com/install?redirect_url=${encodeURIComponent(chrome.runtime.getURL('views/default.html'))}`
         });
-    }
+    }/* else if(details.reason === 'update'){
+        console.log('onUpdated',details);
+    } */
 
     // Create Menu based on configuration & if variable already exist
     const data = chrome.storage.sync.get(OVERLAY_ENABLED_VAR);

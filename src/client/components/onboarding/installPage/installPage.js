@@ -1,8 +1,17 @@
 import { LightningElement } from 'lwc';
 
 export default class installPage extends LightningElement {
+    redirect_url = '/app';
+
+    connectedCallback() {
+        const params = new URLSearchParams(window.location.search);
+        const redirect = params.get('redirect_url');
+        if (redirect) {
+            this.redirect_url = redirect;
+        }
+    }
+
     handleTutorialComplete() {
-        // Redirect to the main app or perform any other action after tutorial completion
-        window.location.href = '/app';
+        window.location.href = this.redirect_url || 'https://sf-toolkit.com/'; 
     }
 } 

@@ -1,7 +1,7 @@
-import { LightningElement, track } from 'lwc';
+import { LightningElement, track, api } from 'lwc';
 
 export default class installSteps extends LightningElement {
-    
+    @api redirect_url;
     @track currentStepIndex = 0;
     @track steps = [
         {
