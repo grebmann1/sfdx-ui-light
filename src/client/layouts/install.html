@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
     <head>
         <title>Welcome to SF Toolkit</title>
@@ -32,6 +32,19 @@
             body {
                 margin: 0px;
             }
+
+            .sf-toolkit:not(html),
+            .sf-toolkit body {
+                font-size: 1rem !important;
+            }
+
+            .slds-text-body_regular {
+                font-size: 1rem !important;
+            }
+
+            .slds-rich-text-editor__output {
+                font-size: 1rem !important;
+            }
         </style>
     </head>
     <!-- Google tag (gtag.js) -->
@@ -49,4 +62,4 @@
         <!-- triple braces prevents HTML escaping -->
         {{{body}}} {{{lwr_resources}}}
     </body>
-</html> 
+</html>

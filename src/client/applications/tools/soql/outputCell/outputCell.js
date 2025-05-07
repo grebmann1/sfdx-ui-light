@@ -76,8 +76,8 @@ export default class OutputCell extends LightningElement {
             Array.isArray(this.value)
                 ? this.value.length
                 : isObject(this.value)
-                ? this.value.totalSize
-                : 0
+                  ? this.value.totalSize
+                  : 0
         } records`;
     }
 

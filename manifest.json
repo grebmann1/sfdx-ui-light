@@ -46,42 +46,6 @@
             ],
             "run_at":"document_end",
             "js": ["scripts/inject_toolkit.js"]
-        },
-        {
-            "matches": [
-                "https://*.salesforce.com/*",
-                "https://*.salesforce-setup.com/*",
-                "https://*.lightning.force.com/*",
-                "https://*.force.com/*",
-                "https://*.salesforce.mil/*",
-                "https://*.crmforce.mil/*",
-                "https://*.lightning.force.mil/*",
-                "https://*.cloudforce.mil/*",
-                "https://*.sfcrmapps.cn/*",
-                "https://*.sfcrmproducts.cn/*",
-                "https://*.lightning.force.com.mcas.ms/*",
-                "https://*.builder.salesforce-experience.com/*",
-                "https://*/lightning/*"
-            ],
-            "exclude_globs": [ "*salesforce.com/#/*" ],
-            "exclude_matches": [
-                "https://*/setup/secur/RemoteAccessAuthorizationPage.apexp*",
-                "https://*/_ui/common/apex/debug/*",
-                "https://*/_ui/*",
-                "https://test.salesforce.com/",
-                "https://login.salesforce.com/",
-                "https://*/loginflow/*"
-            ],
-            "run_at":"document_end",
-            "js": [
-                "scripts/inject_salesforce.js"
-            ],
-            "css" : [
-                "styles/slds-sf-toolkit.css",
-                "styles/inject.css",
-                "styles/extension.css",
-                "styles/web.css"
-            ]
         }
     ],
     "content_security_policy": {
@@ -123,7 +87,9 @@
         "tabGroups",
         "sidePanel",
         "contextMenus",
-        "unlimitedStorage"
+        "unlimitedStorage",
+        "activeTab",
+        "scripting"
     ],
     "incognito": "spanning",
     "externally_connectable": {

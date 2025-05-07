@@ -6,54 +6,88 @@ import { getCurrentTab, isEmpty } from 'shared/utils';
     return tab;
 }*/
 
-const getHostAndSession = async (paramTab) => {
+// --- Salesforce Domain Regex Utilities ---
+const STANDARD_LIGHTNING_DOMAIN_REGEX = {
+    regex: /lightning(.*).force([.-])com/,
+    replace: 'my$1.salesforce$2com',
+};
+
+const SOMA_LOCAL_DOMAIN_REGEX = {
+    regex: /lightning.localhost.soma.force/,
+    replace: 'my.localhost.sfdcdev.salesforce',
+};
+
+const SALESFORCE_SETUP_DOMAIN_REGEX = {
+    regex: /salesforce-setup([.-])com/,
+    replace: 'salesforce$1com',
+};
+
+const WORKSPACE_NO_MY_DOMAIN_REGEX = {
+    regex: /dev.lightning.force-com.(\w+)/,
+    replace: '$1',
+};
+
+function getSalesforceURL(tabUrl) {
+    let url = new URL(tabUrl).origin;
+    if (tabUrl.match(SOMA_LOCAL_DOMAIN_REGEX.regex)) {
+        url = new URL(
+            tabUrl.replace(SOMA_LOCAL_DOMAIN_REGEX.regex, SOMA_LOCAL_DOMAIN_REGEX.replace)
+        ).origin;
+    } else if (tabUrl.match(WORKSPACE_NO_MY_DOMAIN_REGEX.regex)) {
+        url = new URL(
+            tabUrl.replace(WORKSPACE_NO_MY_DOMAIN_REGEX.regex, WORKSPACE_NO_MY_DOMAIN_REGEX.replace)
+        ).origin;
+    } else if (tabUrl.match(STANDARD_LIGHTNING_DOMAIN_REGEX.regex)) {
+        url = new URL(
+            tabUrl.replace(
+                STANDARD_LIGHTNING_DOMAIN_REGEX.regex,
+                STANDARD_LIGHTNING_DOMAIN_REGEX.replace
+            )
+        ).origin;
+    } else if (tabUrl.match(SALESFORCE_SETUP_DOMAIN_REGEX.regex)) {
+        url = new URL(
+            tabUrl.replace(
+                SALESFORCE_SETUP_DOMAIN_REGEX.regex,
+                SALESFORCE_SETUP_DOMAIN_REGEX.replace
+            )
+        ).origin;
+    }
+    return url;
+}
+
+const getHostAndSession = async paramTab => {
     try {
-        let tab = paramTab || await getCurrentTab();
+        let tab = paramTab || (await getCurrentTab());
+        if (!tab.url) return;
+        // 1. Get the canonical Salesforce URL for the tab
+        let url = getSalesforceURL(tab.url);
         let cookieStoreId = await getCurrentTabCookieStoreId(tab.id);
-        let url = new URL(tab.url);
-        let cookieDetails = {
+        // 2. Try to get the SID cookie for this URL
+        let cookie = await chrome.cookies.get({
             name: 'sid',
-            url: url.origin,
+            url: url,
             storeId: cookieStoreId,
-        };
-        //console.log('tab',tab);
-        const cookie = await chrome.cookies.get(cookieDetails);
-        if (!cookie) {
+        });
+        // 3. If not found, try substituting soma with sfdcdev (for local dev)
+        if (!cookie || !cookie.value) {
+            const newUrl = url.replace('soma', 'sfdcdev');
+            cookie = await chrome.cookies.get({
+                name: 'sid',
+                url: newUrl,
+                storeId: cookieStoreId,
+            });
+            url = newUrl; // update url if we found the cookie here
+        }
+        if (cookie && cookie.value) {
+            // 4. Return the session and domain
+            return {
+                domain: url,
+                session: cookie.value,
+            };
+        } else {
+            // 5. No session found
             return;
         }
-
-        // try getting all secure cookies from salesforce.com and find the one matching our org id
-        // (we may have more than one org open in different tabs or cookies from past orgs/sessions)
-        let hostDevs = [
-            '.crm.dev',
-        ];
-
-        let domain = 'salesforce.com';
-
-        if(hostDevs.reduce((previous, host) => url.host.includes(cookie.domain) || previous, false)){
-            const splitHost = cookie.domain.split('-com.');
-            domain = 'salesforce-com.'+splitHost[1];
-        }
-        let [orgId] = cookie.value.split('!');
-        let secureCookieDetails = {
-            name: 'sid',
-            secure: true,
-            storeId: cookieStoreId,
-            domain: domain,
-            //url:`https:${url.host}` // Investigate if it's better
-        };
-
-        const cookies = await chrome.cookies.getAll(secureCookieDetails);
-        let sessionCookie = cookies.find(c => c.value.startsWith(orgId + '!'));
-        if (!sessionCookie) {
-            return;
-        }
-        // orgfarm-b26f4ed387.lightning.force-com.1ll73hr4591505n5neehfq8.ab.crm.dev
-        // orgfarm-b26f4ed387.my.salesforce-com.1ll73hr4591505n5neehfq8.ab.crm.dev
-        return {
-            domain: `${sessionCookie.domain}${isEmpty(url.port) ? '' : `:${url.port}`}`,
-            session: sessionCookie.value,
-        };
     } catch (e) {
         console.log('getHostAndSession issue: ', e);
         /** To be removed, only for development **/

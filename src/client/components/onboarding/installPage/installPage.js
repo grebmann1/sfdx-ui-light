@@ -12,6 +12,6 @@ export default class installPage extends LightningElement {
     }
 
     handleTutorialComplete() {
-        window.location.href = this.redirect_url || 'https://sf-toolkit.com/'; 
+        window.location.href = this.redirect_url || 'https://sf-toolkit.com/';
     }
-} 
+}

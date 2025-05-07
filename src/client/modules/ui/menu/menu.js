@@ -208,6 +208,12 @@ export default class Menu extends ToolkitElement {
     get others() {
         return [
             {
+                name: 'extra_howTo',
+                url: 'https://sf-toolkit.com/install',
+                menuIcon: 'utility:knowledge_base',
+                menuLabel: this.isMenuSmall ? '' : 'How to',
+            },
+            {
                 name: 'extra_reportIssue',
                 url: 'https://github.com/grebmann1/sfdx-ui-light/issues',
                 menuIcon: 'utility:bug',

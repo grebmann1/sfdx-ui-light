@@ -395,6 +395,23 @@
                                                     onchange={inputfield_change}></slds-shortcut-selector>
                                             </div>
                                         </settings-card>
+                                        <settings-card
+                                            is-first
+                                            class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
+                                            <div slot="title">
+                                                <h1>Open Overlay</h1>
+                                                <p class="description">&rarr; Open Overlay</p>
+                                            </div>
+                                            <div class="slds-grid slds-wrap">
+                                                <slds-shortcut-selector
+                                                    lwc:ref="shortcut_open_overlay"
+                                                    data-key="shortcut_open_overlay"
+                                                    disabled={isShortcutDisabled}
+                                                    label="Shortcut to open Overlay"
+                                                    value={config.shortcut_open_overlay}
+                                                    onchange={inputfield_change}></slds-shortcut-selector>
+                                            </div>
+                                        </settings-card>
                                     </div>
                                 </lightning-card>
                             </div>
@@ -417,7 +434,7 @@
                                 <div
                                     class="slds-grid slds-gutters_direct slds-wrap slds-grid_vertical-stretch">
                                     <lightning-card
-                                        class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
+                                        class="settings slds-auto-height slds-col slds-size_1-of-1 slds-p-around_medium">
                                         <div slot="title">
                                             <h1>General Settings</h1>
                                             <p class="description slds-truncate">
@@ -429,7 +446,7 @@
                                             <!-- Login As -->
                                             <settings-card
                                                 is-first
-                                                class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                                class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
                                                 <div slot="title">
                                                     <h1>Login As</h1>
                                                     <p class="description slds-truncate">
@@ -460,6 +477,39 @@
                                                         extension settings.
                                                     </p>
                                                 </slds-information-block>
+                                            </settings-card>
+                                            <!-- Content Script Patterns -->
+                                            <settings-card
+                                                is-first
+                                                class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
+                                                <div slot="title">
+                                                    <h1>Content Script URL Patterns</h1>
+                                                    <p class="description slds-truncate">
+                                                        Manage the URL patterns for content script
+                                                        injection. One regex per line.
+                                                    </p>
+                                                </div>
+                                                <div slot="actions">
+                                                    <lightning-button
+                                                        label="Reset to Default"
+                                                        onclick={handleResetPatternsClick}
+                                                        variant="neutral"></lightning-button>
+                                                </div>
+                                                <div class="slds-m-bottom_small">
+                                                    <lightning-textarea
+                                                        data-key="content_script_include_patterns"
+                                                        label="Include Patterns (one regex per line)"
+                                                        value={config.content_script_include_patterns}
+                                                        onchange={inputfield_change}
+                                                        class="slds-m-bottom_x-small"
+                                                        variant="label-stacked"></lightning-textarea>
+                                                    <lightning-textarea
+                                                        data-key="content_script_exclude_patterns"
+                                                        label="Exclude Patterns (one regex per line)"
+                                                        value={config.content_script_exclude_patterns}
+                                                        onchange={inputfield_change}
+                                                        variant="label-stacked"></lightning-textarea>
+                                                </div>
                                             </settings-card>
                                         </div>
                                     </lightning-card>

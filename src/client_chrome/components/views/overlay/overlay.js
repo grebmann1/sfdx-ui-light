@@ -179,6 +179,7 @@ export default class Overlay extends ToolkitElement {
         await chrome.runtime.sendMessage({ action: 'open_side_panel', content: null });
     };
 
+    @api
     toggleOverlay = e => {
         e.preventDefault();
         this.isOverlayDisplayed = !this.isOverlayDisplayed;
@@ -293,7 +294,7 @@ export default class Overlay extends ToolkitElement {
         // Use as key for storage
         this.currentDomain = cookieInfo.domain;
         // Direct Connection
-        directConnect(cookieInfo.session, `https://${cookieInfo.domain}`, {
+        directConnect(cookieInfo.session, cookieInfo.domain, {
             isProxyDisabled: false,
             isAliasMatchingDisabled: true,
             isEnrichDisabled: true,

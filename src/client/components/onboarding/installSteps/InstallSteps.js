@@ -8,53 +8,73 @@ export default class installSteps extends LightningElement {
             id: 0,
             class: 'slds-dot slds-dot_active',
             title: 'Pin the Extension for Quick Access',
-            description: 'For the best experience, pin the Salesforce Toolkit extension to your browser toolbar. Click the puzzle icon (Extensions), then click the pin next to Salesforce Toolkit. Once pinned, click the extension icon to open it and view your credentials instantly.',
-            image: '/gifs/extension_pin.gif'
+            description:
+                'For the best experience, pin the Salesforce Toolkit extension to your browser toolbar. </br> Click the puzzle icon (Extensions), then click the pin next to Salesforce Toolkit. Once pinned, click the extension icon to open it and view your credentials instantly.',
+            image: '/gifs/extension_pin.gif',
         },
         {
             id: 1,
             class: 'slds-dot',
             title: 'How to Open the Toolkit',
-            description: 'To get started, open the Salesforce Toolkit by clicking the extension icon in your browser toolbar. You can also use the keyboard shortcut shown below. Watch the animation for a quick demonstration.',
-            image: '/gifs/extension_open.gif'
+            description:
+                'To get started, open the Salesforce Toolkit by clicking the extension icon in your browser toolbar. You can also use the keyboard shortcut shown below. Watch the animation for a quick demonstration.',
+            image: '/gifs/extension_open.gif',
         },
         {
             id: 2,
             class: 'slds-dot',
-            title: 'Edit Records Instantly',
-            description: 'Easily and quickly edit any Salesforce record directly from the page you are viewing. No need to navigate away—just open the toolkit, make your changes, and save instantly.',
-            image: '/gifs/extension_quickEdit.gif'
+            title: 'Register & Login to a Salesforce Org Instantly',
+            description: `Add a new Salesforce org and log in with just a few clicks! Click the "+" button in the extension, follow the prompts, and you'll be connected in seconds.</br> For some orgs with strong security settings, you may be redirected to the Salesforce login page to complete authentication.</br> This is normal and ensures your org's security policies are respected.`,
+            image: '/gifs/extension_addNewOrg.gif',
         },
         {
             id: 3,
             class: 'slds-dot',
-            title: 'Query & Export Data Effortlessly',
-            description: 'With Salesforce Toolkit, you can easily query and export your Salesforce data in just a few clicks. Use the built-in SOQL editor to run queries and export results to CSV. You can even set up a custom shortcut for quick access to the query tool directly from the settings!',
-            image: '/gifs/extension_openDB.gif'
+            title: 'Edit Records Instantly',
+            description:
+                'Easily and quickly edit any Salesforce record directly from the page you are viewing.</br> No need to navigate away, just open the toolkit, make your changes, and save instantly.',
+            image: '/gifs/extension_quickEdit.gif',
         },
         {
             id: 4,
             class: 'slds-dot',
-            title: 'Explore APIs Instantly',
-            description: 'The API Explorer lets you discover and interact with Salesforce APIs directly from your browser—no authentication required! Instantly see available endpoints, try out requests, and understand your org\'s API capabilities with ease.',
-            image: '/gifs/extension_apiExplorer.gif'
+            title: 'Query & Export Data Effortlessly',
+            description:
+                'With Salesforce Toolkit, you can easily query and export your Salesforce data in just a few clicks. Use the built-in SOQL editor to run queries and export results to CSV. </br> You can even set up a custom shortcut for quick access to the query tool directly from the settings!',
+            image: '/gifs/extension_openDB.gif',
         },
         {
             id: 5,
             class: 'slds-dot',
-            title: 'Run Anonymous Apex Code',
-            description: 'Use the Anonymous Apex Module to quickly test and execute Apex code snippets in your org. Perfect for developers and admins who want to experiment or troubleshoot without deploying code.',
-            image: '/gifs/extension_apexScript.gif'
+            title: 'Explore APIs Instantly',
+            description:
+                "The API Explorer lets you discover and interact with Salesforce APIs directly from your browser.</br>No authentication required!</br> Instantly see available endpoints, try out requests, and understand your org's API capabilities with ease.",
+            image: '/gifs/extension_apiExplorer.gif',
         },
         {
             id: 6,
             class: 'slds-dot',
+            title: 'Run Anonymous Apex Code',
+            description:
+                'Use the Anonymous Apex Module to quickly test and execute Apex code snippets in your org. Perfect for developers and admins who want to experiment or troubleshoot without deploying code.',
+            image: '/gifs/extension_apexScript.gif',
+        },
+        {
+            id: 7,
+            class: 'slds-dot',
+            title: 'Customize Content Script Injection (Advanced)',
+            description: `You can control exactly where the Salesforce Toolkit injects its features by editing the include/exclude URL patterns in the extension settings. Use regular expressions to match or exclude specific Salesforce pages or environments. This is useful for advanced users who want fine-grained control over the extension's behavior.`,
+            image: '/gifs/extension_customContentScriptRegex.gif',
+        },
+        {
+            id: 8,
+            class: 'slds-dot',
             title: 'Ready to Go!',
-            description: `You\'re all set to start using Salesforce Toolkit. The extension will automatically activate when you visit Salesforce pages.\n\nIf you have more questions or want to contribute, visit our GitHub page: <a href="https://github.com/grebmann1/sfdx-ui-light" target="_blank">https://github.com/grebmann1/sfdx-ui-light</a>`,
+            description: `You\'re all set to start using Salesforce Toolkit. </br> The extension will automatically activate when you visit Salesforce pages.</br> </br>If you have more questions or want to contribute, visit our GitHub page: <a href="https://github.com/grebmann1/sfdx-ui-light" target="_blank">https://github.com/grebmann1/sfdx-ui-light</a>`,
             list: [
-                'Need help? Visit our documentation or contact support through the extension settings.'
-            ]
-        }
+                'Need help? Visit our documentation or contact support through the extension settings.',
+            ],
+        },
     ];
 
     get currentStep() {
@@ -96,14 +116,14 @@ export default class installSteps extends LightningElement {
     updateStepIndicator() {
         this.steps = this.steps.map((step, index) => ({
             ...step,
-            class: index === this.currentStepIndex ? 'slds-dot slds-dot_active' : 'slds-dot'
+            class: index === this.currentStepIndex ? 'slds-dot slds-dot_active' : 'slds-dot',
         }));
     }
 
     closeTutorial() {
         // Store that the user has seen the tutorial
         localStorage.setItem('hasSeenTutorial', 'true');
-        
+
         // Dispatch event to parent component
         this.dispatchEvent(new CustomEvent('tutorialcomplete'));
     }
@@ -127,4 +147,27 @@ export default class installSteps extends LightningElement {
             this.handleSkip();
         }
     }
-} 
+
+    handleStepMenuClick(event) {
+        const index = parseInt(event.currentTarget.dataset.stepIndex, 10);
+        if (!isNaN(index)) {
+            this.currentStepIndex = index;
+            this.updateStepIndicator();
+        }
+    }
+
+    get stepMenuClasses() {
+        return this.steps.map((step, index) => {
+            let base = 'onboarding-step-list-item';
+            let active = this.currentStepIndex === index ? 'onboarding-step-active' : '';
+            return `${base} ${active}`.trim();
+        });
+    }
+
+    get formattedSteps() {
+        return this.steps.map((step, index) => ({
+            ...step,
+            class: this.stepMenuClasses[index],
+        }));
+    }
+}

@@ -80,6 +80,21 @@ const _showCopiedNotification = copiedValue => {
     }, 3000);
 };
 
+// Overlay
+let overlayInstance = null;
+const injectOverlay = async () => {
+    const isEnabled = (await chrome.storage.sync.get('overlayEnabled')).overlayEnabled;
+    //console.log('injectOverlay',isEnabled);
+    if (!isEnabled) return;
+
+    // LWC
+    overlayInstance = createElement('views-overlay', { is: ViewsOverlay });
+    console.log('overlayInstance', overlayInstance);
+    Object.assign(overlayInstance, { variant: 'overlay' });
+    document.body.appendChild(overlayInstance);
+};
+
+// Shortcuts
 const injectShortCuts = async () => {
     // Use the new cacheManager instead of directly accessing chrome.storage
     const configuration = await loadExtensionConfigFromCache([
@@ -89,6 +104,7 @@ const injectShortCuts = async () => {
         CACHE_CONFIG.SHORTCUT_SOQL.key,
         CACHE_CONFIG.SHORTCUT_APEX.key,
         CACHE_CONFIG.SHORTCUT_OPEN_PANEL.key,
+        CACHE_CONFIG.SHORTCUT_OPEN_OVERLAY.key,
     ]);
 
     const shortcutEnabled = configuration[CACHE_CONFIG.SHORTCUT_INJECTION_ENABLED.key];
@@ -97,7 +113,7 @@ const injectShortCuts = async () => {
     const shortcutSoql = configuration[CACHE_CONFIG.SHORTCUT_SOQL.key];
     const shortcutApex = configuration[CACHE_CONFIG.SHORTCUT_APEX.key];
     const shortcutOpenPanel = configuration[CACHE_CONFIG.SHORTCUT_OPEN_PANEL.key];
-
+    const shortcutOpenOverlay = configuration[CACHE_CONFIG.SHORTCUT_OPEN_OVERLAY.key];
     if (!shortcutEnabled) return;
 
     console.log('### SF Toolkit - Shortcut Injection ###');
@@ -178,6 +194,15 @@ const injectShortCuts = async () => {
             },
         },
         {
+            id: 'open-overlay',
+            shortcut: shortcutOpenOverlay,
+            action: async (event, handler) => {
+                event.preventDefault();
+                console.log('open-overlay', overlayInstance);
+                overlayInstance.toggleOverlay(event);
+            },
+        },
+        {
             id: 'org-overview',
             shortcut: shortcutOverview,
             action: async (event, handler) => {
@@ -243,16 +268,6 @@ const injectShortCuts = async () => {
     });
 };
 
-const injectOverlay = async () => {
-    const isEnabled = (await chrome.storage.sync.get('overlayEnabled')).overlayEnabled;
-    //console.log('injectOverlay',isEnabled);
-    if (!isEnabled) return;
-
-    // LWC
-    const elm = createElement('views-overlay', { is: ViewsOverlay });
-    Object.assign(elm, { variant: 'overlay' });
-    document.body.appendChild(elm);
-};
 /* TODO : Add prompt widget in the web page with vanila JS/HTML/CSS
 const injectPromptWidget = async () => {
     const isEnabled = (await chrome.storage.sync.get('overlayEnabled')).overlayEnabled;
@@ -472,7 +487,9 @@ class INJECTOR {
 
     init = () => {
         if (chrome.runtime) chrome.runtime.onMessage.addListener(this.handleMessage);
-        if (this.isValidPage()) {
+        const isValid = this.isValidPage();
+        console.log(`--> SF Toolkit - ${isValid ? 'Inject Code' : 'Skip injection'}  <--`);
+        if (isValid) {
             this.injectCode();
         }
         //this.lwc_custom_instance.toggleFeature(true);
@@ -494,8 +511,10 @@ class INJECTOR {
 }
 
 (async () => {
+    console.log('inject_salesforce - before', window.defaultStore);
     window.defaultStore = await chromeStore('local'); // only for chrome extension
     window.settingsStore = await chromeStore('sync'); // only for chrome extension
+    console.log('inject_salesforce - after', window.defaultStore);
     const injectorInstance = new INJECTOR();
     injectorInstance.init();
 })();

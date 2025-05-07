@@ -305,7 +305,7 @@ const load_recordFromMetadataAPI = async (connector, sobject, fullName) => {
 };
 
 // Helper function to load a specific metadata record
-const loadSpecificMetadataRecord = async (connector, { sobject, recordId, fullName }) => {
+const loadSpecificMetadataRecord2 = async (connector, { sobject, recordId, fullName }) => {
     let selectedRecord = null;
     let files = null;
 
@@ -491,7 +491,7 @@ const fetchMetadataRecord = createAsyncThunk(
                 }
             }
 
-            const { selectedRecord, files } = await loadSpecificMetadataRecord(
+            const { selectedRecord, files } = await loadSpecificMetadataRecord2(
                 application.connector,
                 {
                     sobject,

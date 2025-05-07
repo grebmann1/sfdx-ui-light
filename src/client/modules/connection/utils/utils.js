@@ -331,11 +331,14 @@ export async function directConnect(sessionId, serverUrl, extra) {
     const isProxyDisabled = extra?.isProxyDisabled || false;
     const isAliasMatchingDisabled = extra?.isAliasMatchingDisabled || false;
     const isEnrichDisabled = extra?.isEnrichDisabled || false;
+    const formattedServerUrl = serverUrl.startsWith('https://')
+        ? serverUrl
+        : `https://${serverUrl}`;
     let params = {
         //oauth2      : {...window.jsforceSettings},
         sessionId: sessionId,
-        serverUrl: serverUrl,
-        instanceUrl: serverUrl,
+        serverUrl: formattedServerUrl,
+        instanceUrl: formattedServerUrl,
         proxyUrl:
             isProxyDisabled || isChromeExtension()
                 ? null

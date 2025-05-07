@@ -187,7 +187,7 @@ export default class Menu extends ToolkitElement {
         return this.currentLevel === 2
             ? this.param2
             : this.currentLevel === 1
-            ? this.param1
-            : this.currentMetadata;
+              ? this.param1
+              : this.currentMetadata;
     }
 }

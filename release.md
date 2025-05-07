@@ -1,4 +1,13 @@
 # SF Toolkit - Release Notes
+## Version 1.3.36 - May 8th, 2025
+
+### Enhancement:
+- **General**:
+  - Add more "How To" in the installation guide.
+- **Administration**:
+  - Provide granular control over the URL/Domains where the toolkit is injected, allowing users to directly add URLs.
+
+
 ## Version 1.3.35 - May 6th, 2025
 ### Enhancement:
 - **General**:

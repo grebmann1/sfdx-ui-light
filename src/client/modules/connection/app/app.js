@@ -158,8 +158,8 @@ export default class App extends ToolkitElement {
         const selectedDomain = row.loginUrl.startsWith(LOGIN_URL)
             ? LOGIN_URL
             : row.loginUrl.startsWith(TEST_URL)
-            ? TEST_URL
-            : CUSTOM_URL;
+              ? TEST_URL
+              : CUSTOM_URL;
         const authorizeParams = {
             selectedDomain,
             customDomain: selectedDomain === CUSTOM_URL ? row.loginUrl : null,

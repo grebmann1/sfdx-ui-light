@@ -75,8 +75,12 @@
     color: var(--slds-c-input-text-color, var(--sds-c-input-text-color));
     -webkit-box-shadow: var(--slds-c-input-shadow, var(--sds-c-input-shadow));
     box-shadow: var(--slds-c-input-shadow, var(--sds-c-input-shadow));
-    -webkit-transition: border 0.1s linear, background-color 0.1s linear;
-    transition: border 0.1s linear, background-color 0.1s linear;
+    -webkit-transition:
+        border 0.1s linear,
+        background-color 0.1s linear;
+    transition:
+        border 0.1s linear,
+        background-color 0.1s linear;
     display: inline-block;
 }
 

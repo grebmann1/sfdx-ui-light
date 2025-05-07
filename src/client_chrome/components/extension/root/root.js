@@ -176,7 +176,7 @@ export default class Root extends LightningElement {
         }
 
         try {
-            await directConnect(this.sessionId, 'https://' + this.serverUrl);
+            await directConnect(this.sessionId, this.serverUrl);
         } catch (e) {
             this.sendError(e.message); // Shouldn't be used all the time
             this.redirectToDefaultView();

@@ -29,6 +29,8 @@ export default class App extends ToolkitElement {
     // Config
     @track config = {};
     @track originalConfig = {};
+    @track contentScriptIncludePatterns = '';
+    @track contentScriptExcludePatterns = '';
 
     isOpenAIKeyVisible = false;
 
@@ -95,6 +97,21 @@ export default class App extends ToolkitElement {
         e.currentTarget.iconName = isVisible ? 'utility:hide' : 'utility:preview';
     };
 
+    handleResetPatternsClick = () => {
+        // Ask background for the default patterns
+        if (this.isChrome && chrome.runtime.sendMessage) {
+            chrome.runtime.sendMessage({ action: 'getDefaultContentScriptPatterns' }, response => {
+                if (response && response.includePatterns && response.excludePatterns) {
+                    this.config.content_script_include_patterns =
+                        response.includePatterns.join('\n');
+                    this.config.content_script_exclude_patterns =
+                        response.excludePatterns.join('\n');
+                    this.config = { ...this.config };
+                }
+            });
+        }
+    };
+
     /** Methods **/
 
     saveToCache = async () => {
@@ -103,11 +120,8 @@ export default class App extends ToolkitElement {
         Object.values(configurationList).forEach(item => {
             config[item.key] = this.config[item.key];
         });
-        console.log('config to save', config);
-
         // Use the new CacheManager to save config
         await cacheManager.saveConfig(config);
-
         Toast.show({
             label: 'Configuration Saved',
             variant: 'success',
@@ -130,6 +144,7 @@ export default class App extends ToolkitElement {
 
         this.config = config;
         this.originalConfig = { ...config };
+        console.log('config', config);
 
         // Chrome Only
         if (this.isChrome) {
