@@ -60,7 +60,8 @@
                 "https://*.sfcrmapps.cn/*",
                 "https://*.sfcrmproducts.cn/*",
                 "https://*.lightning.force.com.mcas.ms/*",
-                "https://*.builder.salesforce-experience.com/*"
+                "https://*.builder.salesforce-experience.com/*",
+                "https://*/lightning/*"
             ],
             "exclude_globs": [ "*salesforce.com/#/*" ],
             "exclude_matches": [

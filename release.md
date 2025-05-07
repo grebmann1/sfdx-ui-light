@@ -3,7 +3,7 @@
 ### Enhancement:
 - **General**:
   - Enhance Documentation
-  - Add more Support for Salesforce Software Engineers
+  - Add more Support for Salesforce Software Engineers (Add Core Support)
   - Enhance install/uninstall experience
 
 ## Version 1.3.34 - April 28th, 2025

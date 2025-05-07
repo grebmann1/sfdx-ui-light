@@ -6,12 +6,11 @@ import { getCurrentTab, isEmpty } from 'shared/utils';
     return tab;
 }*/
 
-const getHostAndSession = async () => {
+const getHostAndSession = async (paramTab) => {
     try {
-        let tab = await getCurrentTab();
-        let url = new URL(tab.url);
+        let tab = paramTab || await getCurrentTab();
         let cookieStoreId = await getCurrentTabCookieStoreId(tab.id);
-
+        let url = new URL(tab.url);
         let cookieDetails = {
             name: 'sid',
             url: url.origin,
@@ -25,24 +24,32 @@ const getHostAndSession = async () => {
 
         // try getting all secure cookies from salesforce.com and find the one matching our org id
         // (we may have more than one org open in different tabs or cookies from past orgs/sessions)
+        let hostDevs = [
+            '.crm.dev',
+        ];
 
+        let domain = 'salesforce.com';
+
+        if(hostDevs.reduce((previous, host) => url.host.includes(cookie.domain) || previous, false)){
+            const splitHost = cookie.domain.split('-com.');
+            domain = 'salesforce-com.'+splitHost[1];
+        }
         let [orgId] = cookie.value.split('!');
         let secureCookieDetails = {
             name: 'sid',
             secure: true,
             storeId: cookieStoreId,
-            domain: 'salesforce.com',
+            domain: domain,
             //url:`https:${url.host}` // Investigate if it's better
         };
-        //console.log('secureCookieDetails',secureCookieDetails);
-        const cookies = await chrome.cookies.getAll(secureCookieDetails);
-        // Might hold an expired cookie, so we need to filter it out (TODO)
-        let sessionCookie = cookies.find(c => c.value.startsWith(orgId + '!'));
 
+        const cookies = await chrome.cookies.getAll(secureCookieDetails);
+        let sessionCookie = cookies.find(c => c.value.startsWith(orgId + '!'));
         if (!sessionCookie) {
             return;
         }
-
+        // orgfarm-b26f4ed387.lightning.force-com.1ll73hr4591505n5neehfq8.ab.crm.dev
+        // orgfarm-b26f4ed387.my.salesforce-com.1ll73hr4591505n5neehfq8.ab.crm.dev
         return {
             domain: `${sessionCookie.domain}${isEmpty(url.port) ? '' : `:${url.port}`}`,
             session: sessionCookie.value,
@@ -59,12 +66,11 @@ const getHostAndSession = async () => {
 };
 
 const getCurrentTabCookieStoreId = async tabId => {
-    chrome.cookies.getAllCookieStores(stores => {
-        var currentStore = stores.find(obj => {
-            return obj.tabIds.includes(tabId);
-        });
-        return currentStore.tabIds[tabId];
+    const stores = await chrome.cookies.getAllCookieStores();
+    const currentStore = stores.find(obj => {
+        return obj.tabIds.includes(tabId);
     });
+    return currentStore.id;
 };
 
 export { getHostAndSession, getCurrentTab };

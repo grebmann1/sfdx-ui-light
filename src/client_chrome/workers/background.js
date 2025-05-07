@@ -15,12 +15,15 @@ const isEmpty = str => {
 
 /** Variables */
 
+// Code is duplicated in the shared module, but we need to keep it here for now !!!
+
 const getCurrentTabCookieStoreId = async tabId => {
     const stores = await chrome.cookies.getAllCookieStores();
+    
     const currentStore = stores.find(obj => {
         return obj.tabIds.includes(tabId);
     });
-    return currentStore.tabIds[tabId];
+    return currentStore.id;
 };
 
 const getHostAndSession = async tab => {
@@ -40,22 +43,32 @@ const getHostAndSession = async tab => {
 
         // try getting all secure cookies from salesforce.com and find the one matching our org id
         // (we may have more than one org open in different tabs or cookies from past orgs/sessions)
+        let hostDevs = [
+            '.crm.dev',
+        ];
 
+        let domain = 'salesforce.com';
+
+        if(hostDevs.reduce((previous, host) => url.host.includes(cookie.domain) || previous, false)){
+            const splitHost = cookie.domain.split('-com.');
+            domain = 'salesforce-com.'+splitHost[1];
+        }
         let [orgId] = cookie.value.split('!');
         let secureCookieDetails = {
             name: 'sid',
             secure: true,
             storeId: cookieStoreId,
-            domain: 'salesforce.com',
+            domain: domain,
             //url:`https:${url.host}` // Investigate if it's better
         };
 
         const cookies = await chrome.cookies.getAll(secureCookieDetails);
-        //console.log('cookies',cookies);
         let sessionCookie = cookies.find(c => c.value.startsWith(orgId + '!'));
         if (!sessionCookie) {
             return;
         }
+        // orgfarm-b26f4ed387.lightning.force-com.1ll73hr4591505n5neehfq8.ab.crm.dev
+        // orgfarm-b26f4ed387.my.salesforce-com.1ll73hr4591505n5neehfq8.ab.crm.dev
         return {
             domain: `${sessionCookie.domain}${isEmpty(url.port) ? '' : `:${url.port}`}`,
             session: sessionCookie.value,
@@ -74,9 +87,16 @@ const isHostMatching = url => {
         'cloudforce.com',
         'lightning.force.com.mcas.ms',
     ];
+
+    const devHosts = [
+        '.lightning.force-com',
+        '.lightning.force.com',
+        '.my.salesforce-com',
+    ];
     return (
         hosts.reduce((previous, host) => url.host.endsWith(host) || previous, false) ||
-        url.href.includes(`${url.host}/s/`)
+        url.href.includes(`${url.host}/s/`) ||
+        devHosts.reduce((previous, host) => url.host.includes(host) || previous, false)
     );
     //return url.host.endsWith('lightning.force.com') || url.host.endsWith('salesforce.com') || url.host.endsWith('cloudforce.com');
 };
@@ -90,7 +110,7 @@ const handleTabOpening = async tab => {
 
     try {
         const url = new URL(tab.url);
-
+        const path = `views/default.html?${isHostMatching(url) ? 'salesforce' : 'default'}`;
         const existingOptions = await chrome.sidePanel.getOptions({ tabId: tab.id });
         /** Remove by default **/
         if (!existingOptions.enabled) {
@@ -104,7 +124,7 @@ const handleTabOpening = async tab => {
         await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
         await chrome.sidePanel.setOptions({
             tabId: tab.id,
-            path: `views/default.html?${isHostMatching(url) ? 'salesforce' : 'default'}`,
+            path: path,
             enabled: true,
         });
     } catch (e) {
@@ -293,6 +313,7 @@ chrome.runtime.onMessage.addListener(
         } else if (message.action === OPEN_SIDE_PANEL) {
             openSideBar(sender.tab);
         } else if (message.action === 'fetchCookie') {
+            console.log('fetchCookie',sender);
             return await getHostAndSession(sender.tab);
         }
     })
