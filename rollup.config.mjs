@@ -83,6 +83,10 @@ const coreBuilder = (modules) => {
                     {
                         src: path.resolve(__dirname, 'node_modules/@salesforce-ux/design-system/assets'),
                         dest: path.resolve(__dirname, 'chrome_ext')
+                    },
+                    {
+                        src: path.resolve(__dirname, 'src/client/assets/releaseNotes.json'),
+                        dest: path.resolve(__dirname, 'chrome_ext')
                     }
                 ],
                 copyOnce: true,

@@ -1,7 +1,8 @@
 import { api, LightningElement } from 'lwc';
 import { isEmpty, isNotUndefinedOrNull } from 'shared/utils';
+import ToolkitElement from 'core/toolkitElement';
 
-export default class App extends LightningElement {
+export default class App extends ToolkitElement {
     @api url = 'https://raw.githubusercontent.com/grebmann1/sfdx-ui-light/master/release.md';
 
     content;
@@ -35,5 +36,9 @@ export default class App extends LightningElement {
 
     get isMarkdownViewerDisplayed() {
         return isNotUndefinedOrNull(this.content);
+    }
+
+    get pageClass() {
+        return super.pageClass + ' slds-p-around_small';
     }
 }

@@ -65,6 +65,11 @@
             "alias":"workersDir",
             "dir": "$rootDir/workers",
             "urlPath": "/workers"
+        },
+        {
+            "alias":"publicDir",
+            "dir": "$rootDir/src/client/assets",
+            "urlPath": "/public"
         }
     ],
     "hooks": ["$rootDir/src/client/hooks/application-hook.js"],

@@ -35,24 +35,6 @@ export default class App extends ToolkitElement {
 
             //dispatch(EINSTEIN.reduxSlice.actions.initTabs());
         });
-
-        if (chrome?.runtime) {
-            // Listening for broadcast messages from the background script
-            chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-                if (message.action === 'broadcastMessage') {
-                    //console.log('message.senderId',message.senderId,'sender.id',sender.id);
-                    if (message.senderId != sender.id) {
-                        // Force Refresh of cache setting to sync the messages !
-                        console.log('--> Force Refresh Local Settings <--');
-                        store.dispatch(
-                            EINSTEIN.reduxSlice.actions.loadCacheSettings({
-                                alias: GLOBAL_EINSTEIN,
-                            })
-                        );
-                    }
-                }
-            });
-        }
     }
 
     renderedCallback() {
@@ -207,7 +189,7 @@ export default class App extends ToolkitElement {
         return this.dialogs.map((x, index) => {
             return {
                 ...x,
-                key: x.id || index, // Facing some issues with Id being null. To investigate
+                key: x.id || String(index), // Facing some issues with Id being null. To investigate
                 name: `Dialog ${index + 1}`,
                 isCloseable: this.dialogs.length > 1,
                 class: classSet('slds-tabs_scoped__item').toString(),

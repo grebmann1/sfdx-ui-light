@@ -40,7 +40,7 @@
                         is-remove-tab-event-disabled>
                         <template for:each={formattedTabs} for:item="item">
                             <slds-tab
-                                key={item.id}
+                                key={item.key}
                                 label={item.name}
                                 value={item.id}
                                 onactive={handleSelectTab}

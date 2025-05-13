@@ -1,0 +1,520 @@
+[
+  {
+    "version": "1.3.36",
+    "date": "May 8th, 2025",
+    "sections": [
+      {
+        "title": "Enhancement",
+        "categories": [
+          {
+            "category": "General",
+            "items": [
+              "Add more \"How To\" in the installation guide."
+            ]
+          },
+          {
+            "category": "Administration",
+            "items": [
+              "Provide granular control over the URL/Domains where the toolkit is injected, allowing users to directly add URLs."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.3.35",
+    "date": "May 6th, 2025",
+    "sections": [
+      {
+        "title": "Enhancement",
+        "categories": [
+          {
+            "category": "General",
+            "items": [
+              "Enhance Documentation",
+              "Add more Support for Salesforce Software Engineers (Add Core Support)",
+              "Enhance install/uninstall experience"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.3.34",
+    "date": "April 28th, 2025",
+    "sections": [
+      {
+        "title": "Enhancement",
+        "categories": [
+          {
+            "category": "General",
+            "items": [
+              "Add prettier",
+              "Add Install page (with quick tips)",
+              "Add Uninstall page (With Google Form)"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.3.33",
+    "date": "April 10th, 2025",
+    "sections": [
+      {
+        "title": "Enhancement",
+        "categories": [
+          {
+            "category": "Salesforce Engineer",
+            "items": [
+              "Add localhost Support for Salesforce Engineers"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.3.32",
+    "date": "March 27th, 2025",
+    "sections": [
+      {
+        "title": "Bug Fix",
+        "categories": [
+          {
+            "category": "Connector initialization",
+            "items": [
+              "Fix Alias name not being setup when open the chrome extension in a new org."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.3.31",
+    "date": "March 26th, 2025",
+    "sections": [
+      {
+        "title": "Bug Fix",
+        "categories": [
+          {
+            "category": "Miscellaneous",
+            "items": [
+              "UI wasn't rendering properly",
+              "Store were broken in few places"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.3.30",
+    "date": "March 18th, 2025",
+    "sections": [
+      {
+        "title": "Enhancements",
+        "categories": [
+          {
+            "category": "Shortcut injection",
+            "items": [
+              "Open a few application using shortcuts :",
+              "SOQL Explorer",
+              "APEX Explorer",
+              "Org Overview (Home)",
+              "Toolkit Panel (right side of chrome)"
+            ]
+          },
+          {
+            "category": "Enhanced Caching System",
+            "items": [
+              "Implemented sophisticated caching architecture to optimize data storage and retrieval",
+              "Improved performance in SOQL, Metadata and SObject explorers through background metadata caching and asynchronous updates"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.3.29",
+    "date": "March 17th, 2025",
+    "sections": [
+      {
+        "title": "Bug Fixes",
+        "categories": [
+          {
+            "category": "Overlay",
+            "items": [
+              "Removed unused fields."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Enhancements",
+        "categories": [
+          {
+            "category": "Caching",
+            "items": [
+              "Add Caching manager to improve caching mechanism in the long run.",
+              "Add back the Header UI tab (settings -> Show Header Application Tabs)."
+            ]
+          },
+          {
+            "category": "Settings",
+            "items": [
+              "Hide sensitives settings in case user is sharing his screen."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.3.28",
+    "date": "February 12th, 2025",
+    "sections": [
+      {
+        "title": "Bug Fixes",
+        "categories": [
+          {
+            "category": "Overlay",
+            "items": [
+              "Missing icons in the injected overlay."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.3.26",
+    "date": "February 9th, 2025",
+    "sections": [
+      {
+        "title": "Enhancements",
+        "categories": [
+          {
+            "category": "Copilot",
+            "items": [
+              "All editors now have a copilot button to help you write your queries, code, etc. To activate it, you need to have an OpenAI key configured in the settings.",
+              "The shortcut to activate the copilot is `CTRL/CMD + K` while the editor is focused.",
+              "This feature is available in all editors in Beta phase"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Bug Fixes",
+        "categories": [
+          {
+            "category": "Shortcut Setting",
+            "items": [
+              "Resolved an issue preventing user from using Shortcuts and configuring them in the settings. (Another issue)",
+              "Fixed an issue where the shortcut was not being saved in the settings and preventing the extension from injecting the shortcuts in the Salesforce Page."
+            ]
+          },
+          {
+            "category": "Picklist suggestion in SOQL Editor",
+            "items": [
+              "It's now possible to use the picklist suggestion in the SOQL Editor."
+            ]
+          },
+          {
+            "category": "Metadata Explorer",
+            "items": [
+              "Fixed an issue where the Metadata Explorer was not displaying the correct data.",
+              "Fixed an issue that prevented to display Metadata originated from the Metadata API (Such as CanvasMetadata, etc...)"
+            ]
+          },
+          {
+            "category": "Package Manager",
+            "items": [
+              "Fixed an issue where the Package Manager was not displaying the metadata selector."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Known Issues",
+        "categories": [
+          {
+            "category": "Package Manager",
+            "items": [
+              "Selecting a metadata type in the menu shares the view with the Metadata Explorer, resulting in the last selection being reflected in both the Metadata Explorer and the Package Manager due to their shared Redux state."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.3.25",
+    "date": "January 20th, 2025",
+    "sections": [
+      {
+        "title": "Bug Fixes",
+        "categories": [
+          {
+            "category": "Shortcut Setting",
+            "items": [
+              "Resolved an issue preventing user from using Shortcuts and configuring them in the settings."
+            ]
+          },
+          {
+            "category": "Instance Url",
+            "items": [
+              "Instance Url was missing from the Org -> Company information component."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.3.24",
+    "date": "January 15th, 2025",
+    "sections": [
+      {
+        "title": "Enhancements",
+        "categories": [
+          {
+            "category": "SOQL (Data Explorer)",
+            "items": [
+              "Introduced the ability to open the Data Explorer directly from the Record Viewer (right panel) with a prepopulated query. This streamlines the workflow and saves time."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Bug Fixes",
+        "categories": [
+          {
+            "category": "Data Explorer",
+            "items": [
+              "Resolved an issue where the UI would break if the `Id` field was not selected."
+            ]
+          },
+          {
+            "category": "Redirection issue",
+            "items": [
+              "Fixed an issue where certain redirection links were not functioning as expected."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.3.23",
+    "date": "January 10th, 2025",
+    "sections": [
+      {
+        "title": "New Features",
+        "categories": [
+          {
+            "category": "Record Viewer",
+            "items": [
+              "Introduced a user-friendly interface for visualizing records, akin to the \"Chrome Panel\" experience.",
+              "Enabled direct editing of records within the Record Viewer app, streamlining workflows."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Enhancements",
+        "categories": [
+          {
+            "category": "SOQL (Data Explorer)",
+            "items": [
+              "Added support for record deletion directly from the SOQL interface.",
+              "Implemented query formatting to enhance readability and usability."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Bug Fixes",
+        "categories": [
+          {
+            "category": "OAuth Error",
+            "items": [
+              "Improved error handling for OAuth session management. If the registered org is not found or the session has expired, a popup message will now notify the user."
+            ]
+          },
+          {
+            "category": "Metadata Issues",
+            "items": [
+              "Resolved various metadata-related issues to improve reliability and performance."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Other Changes",
+        "categories": [
+          {
+            "category": "Removal of Application Tab",
+            "items": [
+              "The Application Tab has been removed to simplify navigation and improve user experience."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.3.22",
+    "date": "January 7th, 2025",
+    "sections": [
+      {
+        "title": "Enhancements",
+        "categories": [
+          {
+            "category": "Metadata Explorer",
+            "items": [
+              "Improved performance for faster data retrieval and processing.",
+              "Added multi-tab support to enhance user experience and facilitate simultaneous metadata exploration."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.3.21",
+    "date": "December 24th, 2025",
+    "sections": [
+      {
+        "title": "New Features",
+        "categories": [
+          {
+            "category": "All Editors",
+            "items": [
+              "Enabled shortcuts for Save & Run operations:",
+              "`CTRL/CMD + S` to Save",
+              "`CTRL/CMD + Enter` to Run"
+            ]
+          },
+          {
+            "category": "Data Explorer",
+            "items": [
+              "Introduced commenting functionality using `//` to exclude parts of a query for better query management."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.3.20",
+    "date": "November 20th, 2025",
+    "sections": [
+      {
+        "title": "Bug Fixes",
+        "categories": [
+          {
+            "category": "Connection Module",
+            "items": [
+              "Fixed the issue with the loading spinner during authorization and redirection to an organization."
+            ]
+          },
+          {
+            "category": "User Explorer",
+            "items": [
+              "Adjusted font size for improved readability."
+            ]
+          },
+          {
+            "category": "API Explorer",
+            "items": [
+              "Enhanced UI for handling large files by integrating Monaco and Workbench visualizers."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.3.19",
+    "date": "November 11th, 2025",
+    "sections": [
+      {
+        "title": "New Features",
+        "categories": [
+          {
+            "category": "UI Overhaul",
+            "items": [
+              "Completely redesigned user interface for a modern look and improved usability.",
+              "Introduced a \"Multi-Tab\" feature for streamlined navigation across applications."
+            ]
+          },
+          {
+            "category": "Deploy/Retrieve Module",
+            "items": [
+              "Added functionality to deploy packages to Salesforce or retrieve them from Salesforce efficiently."
+            ]
+          },
+          {
+            "category": "Injected Overlay Module",
+            "items": [
+              "Integrated an overlay into Salesforce pages to enable quick search and navigation.",
+              "Laid the groundwork for a future \"bridge\" between the app and the Chrome extension."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Enhancements",
+        "categories": [
+          {
+            "category": "Localhost Extension",
+            "items": [
+              "Transformed the cloud-based application into a fully functional browser-based app, eliminating the need for a proxy server."
+            ]
+          },
+          {
+            "category": "Performance Improvements",
+            "items": [
+              "Optimized load times and overall application responsiveness for a smoother user experience."
+            ]
+          },
+          {
+            "category": "Extended Salesforce API Support",
+            "items": [
+              "Expanded support for additional Salesforce APIs, enhancing the toolkit\u2019s capabilities."
+            ]
+          },
+          {
+            "category": "Access Analyzer with Web Worker",
+            "items": [
+              "Improved performance by executing Access Analyzer computations using web workers."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Bug Fixes",
+        "categories": [
+          {
+            "category": "Login Issue",
+            "items": [
+              "Fixed an intermittent bug preventing some users from logging in to their Salesforce accounts."
+            ]
+          },
+          {
+            "category": "Data Sync Error",
+            "items": [
+              "Resolved occasional data synchronization failures between the toolkit and Salesforce."
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,14 +1,16 @@
 import { api, LightningElement, wire } from 'lwc';
 import { store as legacyStore } from 'shared/store';
-import { connectStore } from 'core/store';
+import { connectStore, store, EINSTEIN } from 'core/store';
 
 import { normalizeString as normalize } from 'shared/utils';
 import { PANELS } from 'extension/utils';
-
+import LOGGER from 'shared/logger';
 export default class Default extends LightningElement {
     @api currentApplication;
     @api recordId;
     @api panel = PANELS.DEFAULT;
+
+    port;
 
     previousPanel;
     isBackButtonDisplayed = false;
@@ -49,7 +51,14 @@ export default class Default extends LightningElement {
 
     connectedCallback() {
         this.panel = this.urlOverwrittenPanel || this.panel;
+        this.connectToBackground();
     }
+
+    disconnectedCallback() {
+        this.disconnectFromBackground();
+    }
+
+    
 
     /** Events **/
 
@@ -76,6 +85,30 @@ export default class Default extends LightningElement {
     };
 
     /** Methods **/
+
+    connectToBackground = () => {
+        this.port = chrome.runtime.connect({ name: "sf-toolkit-sidepanel" });
+        this.port.onDisconnect.addListener(() => {
+                // Optionally handle disconnect in content script
+            // e.g., cleanup, logging, etc.
+        }); 
+        this.port.onMessage.addListener((message) => {
+            LOGGER.log('--> SidePanel - onMessage <--',message);
+            if (message.action === 'refresh') {
+                store.dispatch(
+                    EINSTEIN.reduxSlice.actions.loadCacheSettings({
+                        alias: 'global_einstein',
+                    })
+                );
+            }
+        });
+    }
+
+    disconnectFromBackground = () => {
+        if (this.port) {
+            this.port.disconnect();
+        }
+    }
 
     @api
     resetToDefaultView = () => {

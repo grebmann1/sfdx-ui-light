@@ -444,6 +444,28 @@
                                         <div slot="actions"></div>
                                         <div class="slds-grid slds-wrap">
                                             <!-- Login As -->
+
+                                            <settings-card
+                                                is-first
+                                                class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
+                                                <div slot="title">
+                                                    <h1>Overlay Visibility</h1>
+                                                    <p class="description slds-truncate">
+                                                        Show or hide the SF Toolkit overlay in Salesforce pages.
+                                                    </p>
+                                                </div>
+                                                <div slot="actions">
+                                                    <lightning-input
+                                                        data-key="overlayEnabled"
+                                                        label="Show Overlay"
+                                                        message-toggle-active="Overlay is visible"
+                                                        message-toggle-inactive="Overlay is hidden"
+                                                        type="toggle"
+                                                        variant="label-hidden"
+                                                        checked={config.overlayEnabled}
+                                                        onchange={inputfield_change}></lightning-input>
+                                                </div>
+                                            </settings-card>    
                                             <settings-card
                                                 is-first
                                                 class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">

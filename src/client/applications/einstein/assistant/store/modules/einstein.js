@@ -302,7 +302,7 @@ const einsteinSlice = createSlice({
 
                 if (chrome?.runtime) {
                     chrome.runtime.sendMessage({
-                        action: 'broadcastMessage',
+                        action: 'broadcastMessageToSidePanel',
                         content: { action: 'refresh' },
                     });
                 }

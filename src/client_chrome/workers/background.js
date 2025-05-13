@@ -56,6 +56,15 @@ const getCurrentTabCookieStoreId = async tabId => {
     return currentStore.id;
 };
 
+/*** Utility Functions ***/
+const compareMajorMinor = (versionA, versionB) => {
+    // Compare only major and minor, ignore patch
+    // version format: x.y.z
+    const [aMajor, aMinor] = versionA.split('.').map(Number);
+    const [bMajor, bMinor] = versionB.split('.').map(Number);
+    return aMajor !== bMajor || aMinor !== bMinor;
+};
+
 // --- Salesforce Domain Regex Utilities ---
 const STANDARD_LIGHTNING_DOMAIN_REGEX = {
     regex: /lightning(.*).force([.-])com/,
@@ -200,19 +209,15 @@ const wrapAsyncFunction = listener => (request, sender, sendResponse) => {
     return true;
 };
 
-/** Context Menus **/
+/*** Context Menu Methods ***/
 async function createContextMenu() {
     const data = await chrome.storage.sync.get(OVERLAY_ENABLED_VAR);
     const isEnabled = data.overlayEnabled;
-
-    // Create Launcher via right click
     chrome.contextMenus.create({
         id: OPEN_SIDE_PANEL,
         title: 'Open Salesforce Toolkit',
         contexts: ['page'],
     });
-
-    // Add Enable Feature menu item
     chrome.contextMenus.create({
         id: OVERLAY_ENABLE,
         title: OVERLAY_ENABLE_TITLE,
@@ -220,8 +225,6 @@ async function createContextMenu() {
         enabled: !isEnabled,
         visible: true,
     });
-
-    // Add Disable Feature menu item
     chrome.contextMenus.create({
         id: OVERLAY_DISABLE,
         title: OVERLAY_DISABLE_TITLE,
@@ -231,14 +234,33 @@ async function createContextMenu() {
     });
 }
 
+const injectedConnections = new Set();
+const sidePanelConnections = new Set();
+
+chrome.runtime.onConnect.addListener(function(port) {
+    console.log('--> onConnect <--',port);
+    if (port.name === "sf-toolkit-injected") {
+        injectedConnections.add(port);
+        port.onDisconnect.addListener(() => {
+            injectedConnections.delete(port);
+        });
+    } else if (port.name === "sf-toolkit-sidepanel") {
+        sidePanelConnections.add(port);
+        port.onDisconnect.addListener(() => {
+            sidePanelConnections.delete(port);
+        });
+    }
+});
+
+
 async function setOverlayState(isEnabled) {
     await chrome.storage.sync.set({ overlayEnabled: isEnabled });
     updateContextMenu();
+    broadcastMessageToAllInjectedInstances({ action: "toggleOverlay", enabled: isEnabled });
 }
 
 async function updateContextMenu() {
     const data = await chrome.storage.sync.get(OVERLAY_ENABLED_VAR);
-    // Update the visibility of context menu items
     chrome.contextMenus.update(OVERLAY_ENABLE, { enabled: !data.overlayEnabled });
     chrome.contextMenus.update(OVERLAY_DISABLE, { enabled: data.overlayEnabled });
 }
@@ -337,32 +359,14 @@ chrome.action.onClicked.addListener(async tab => {
     //handleTabOpening(tab);
 });
 
-/** Event Listener */
-
+/*** Event Listeners ***/
 chrome.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId === OPEN_SIDE_PANEL) {
-        // This will open the panel in all the pages on the current window.
         chrome.sidePanel.open({ tabId: tab.id });
     } else if (info.menuItemId === OVERLAY_ENABLE) {
         setOverlayState(true);
     } else if (info.menuItemId === OVERLAY_DISABLE) {
         setOverlayState(false);
-    }
-});
-
-chrome.runtime.onConnect.addListener(port => {
-    //console.log('port',port);
-    if (port.name === 'side-panel-connection') {
-        port.onDisconnect.addListener(async () => {
-            //console.log('disconnect listener')
-            /*const tab = await getCurrentTab();
-            if(isHostMatching(new URL(tab.url))){
-                await chrome.sidePanel.setOptions({
-                    tabId:tab.id,
-                    enabled: false
-                });
-            }*/
-        });
     }
 });
 
@@ -372,13 +376,10 @@ chrome.tabs.onActivated.addListener(async ({ tabId, windowId }) => {
     handleTabOpening(tab);
 });
 
-// Update injection logic to use async version
 chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
     if (!tab.url || info.status !== 'complete') return;
-
     if (info.status === 'complete' && tab.url) {
         if (await shouldInjectScriptAsync(tab.url)) {
-            // Prevent multiple injections: check if already injected
             chrome.scripting.executeScript(
                 {
                     target: { tabId: tabId },
@@ -386,18 +387,14 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
                 },
                 results => {
                     if (chrome.runtime.lastError) {
-                        // If error (e.g., no results), proceed with injection
                         injectToolkit(tabId);
                     } else if (!results || !results[0] || !results[0].result) {
                         injectToolkit(tabId);
-                    } else {
-                        // Already injected, do nothing
                     }
                 }
             );
         }
     }
-    // Handle tab opening
     handleTabOpening(tab);
 });
 
@@ -408,63 +405,62 @@ chrome.runtime.onMessage.addListener(
                 url: message.url,
                 interactive: true,
             });
-            //console.log('responseUrl',responseUrl);
             if (chrome.runtime.lastError) {
                 return { error: chrome.runtime.lastError.message };
             }
             const url = new URL(responseUrl);
-            const code = new URLSearchParams(url.search).get('code'); // Simplified for example
+            const code = new URLSearchParams(url.search).get('code');
             return { code };
-        } else if (message.action === 'broadcastMessage') {
-            // Broadcast the message to all other components
-            message.senderId = sender.id;
-            chrome.runtime.sendMessage(message);
+        } else if (['broadcastMessageToInjected', 'broadcastMessageToSidePanel'].includes(message.action)) {
+            console.log('--> Broadcast Message <--');
+            const _newMessage = { ...message.content, senderId: sender.id };
+            if (message.action === 'broadcastMessageToInjected') {
+                broadcastMessageToAllInjectedInstances(_newMessage);
+            } else if (message.action === 'broadcastMessageToSidePanel') {
+                broadcastMessageToAllSidePanelInstances(_newMessage);
+            }
         } else if (message.action === OPEN_SIDE_PANEL) {
             openSideBar(sender.tab);
         } else if (message.action === 'fetchCookie') {
             const cookieInfo = await getHostAndSession(sender.tab);
-            console.log('cookieInfo', cookieInfo);
+            console.log('cookieInfo');
             return cookieInfo;
         } else if (message.action === 'getDefaultContentScriptPatterns') {
-            // Return the default patterns as arrays of strings
             return {
                 includePatterns: DEFAULT_INCLUDE_PATTERNS,
                 excludePatterns: DEFAULT_EXCLUDE_PATTERNS,
             };
+        } else if (message.action === 'toggleOverlay') {
+            broadcastMessageToAllInjectedInstances({ action: 'toggleOverlay', enabled: message.enabled });
         }
     })
 );
 
-/** On Install Event */
+/*** On Install/Update Event ***/
 chrome.runtime.onInstalled.addListener(async details => {
     const currentVersion = chrome.runtime.getManifest().version;
     const previousVersion = details.previousVersion;
     const reason = details.reason;
-    // Get the previously stored version
-
     if (reason === 'install') {
-        // Store the current version
         await chrome.storage.local.set({ installedVersion: currentVersion });
-        // Open the installation page in a new tab
         chrome.tabs.create({
             url: `https://sf-toolkit.com/install?redirect_url=${encodeURIComponent(chrome.runtime.getURL('views/default.html'))}`,
         });
-    } else if (reason === 'update' && previousVersion !== currentVersion) {
-        // Open the release notes page
+    } else if (
+        reason === 'update' &&
+        previousVersion &&
+        currentVersion &&
+        compareMajorMinor(previousVersion, currentVersion)
+    ) {
         chrome.tabs.create({ url: 'https://sf-toolkit.com/app?applicationName=release' });
     }
-
-    // Create Menu based on configuration & if variable already exist
     const data = chrome.storage.sync.get(OVERLAY_ENABLED_VAR);
     if (!data.hasOwnProperty(OVERLAY_ENABLED_VAR)) {
         await chrome.storage.sync.set({ overlayEnabled: true });
     }
     createContextMenu();
-
-    // Update tabs
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tabs.length > 0) {
-        console.log('enable for current tab');
         const currentTab = tabs[0];
         chrome.sidePanel.setOptions({
             tabId: currentTab.id,
@@ -472,8 +468,6 @@ chrome.runtime.onInstalled.addListener(async details => {
             enabled: true,
         });
     }
-
-    // Initialize content script patterns if not set
     chrome.storage.local.get(
         ['content_script_include_patterns', 'content_script_exclude_patterns'],
         async data => {
@@ -491,12 +485,10 @@ chrome.runtime.onInstalled.addListener(async details => {
     );
 });
 
-/** Commands **/
-
+/*** Commands ***/
 chrome.commands.onCommand.addListener((command, tab) => {
     if (command === OVERLAY_TOGGLE) {
         chrome.storage.sync.get(OVERLAY_ENABLED_VAR, data => {
-            // toggle the value
             setOverlayState(!data.overlayEnabled);
         });
     } else if (command === OPEN_OVERLAY_SEARCH) {
@@ -507,24 +499,25 @@ chrome.commands.onCommand.addListener((command, tab) => {
     }
 });
 
-/***********************************************/
-/***********************************************/
-/***********************************************/
-/***********************************************/
-/***********************************************/
-
+/***** Initialization *****/
 const init = async () => {
     chrome.sidePanel
         .setPanelBehavior({ openPanelOnActionClick: true })
         .catch(error => console.error(error));
 };
 
-// Handle uninstallation
 chrome.runtime.setUninstallURL('https://forms.gle/cd8SkEPe5RGTVijJA');
 
-/***********************************************/
-/***********************************************/
-/***********************************************/
-/******************** Init *********************/
-
 init();
+
+function broadcastMessageToAllInjectedInstances(message) {
+    for (const [tabId, port] of injectedConnections.entries()) {
+        port.postMessage(message);
+    }
+}
+
+function broadcastMessageToAllSidePanelInstances(message) {
+    for (const [tabId, port] of sidePanelConnections.entries()) {
+        port.postMessage(message);
+    }
+}

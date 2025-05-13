@@ -1,0 +1,44 @@
+<template>
+    <div class="release-notes-split slds-grid slds-full-height">
+        <!-- Left: Release List -->
+        <div class="release-list slds-size_1-of-3 slds-box slds-scrollable_y slds-full-height slds-flex-column">
+            <ul>
+                <template for:each={formattedReleases} for:item="release">
+                    <li key={release.key}
+                        class={release.className}
+                        data-version={release.version}
+                        onclick={handleSelect}>
+                        <span class="slds-text-title_bold">v{release.version}</span>
+                        <span class="slds-text-body_small slds-m-left_x-small">({release.date})</span>
+                        <template if:true={release.isLatest}>
+                            <span class="slds-badge slds-theme_success slds-m-left_x-small">Latest</span>
+                        </template>
+                    </li>
+                </template>
+            </ul>
+        </div>
+        <!-- Right: Release Details -->
+        <div class="release-details-panel slds-size_2-of-3 slds-p-around_medium slds-theme_shade">
+            <template lwc:if={selectedRelease}>
+                <h2 class="slds-text-heading_medium slds-m-bottom_medium selected-version">
+                    v{selectedRelease.version} <span class="slds-text-body_small">({selectedRelease.date})</span>
+                </h2>
+                <template for:each={selectedRelease.sections} for:item="section">
+                    <div key={section.title} class="release-section slds-m-bottom_medium">
+                        <div class="section-title slds-text-title_caps slds-m-bottom_x-small">{section.title}</div>
+                        <template for:each={section.categories} for:item="category">
+                            <div key={category.category} class="release-category slds-m-left_large slds-m-bottom_small">
+                                <div class="category-title slds-text-title_bold slds-m-bottom_xx-small">{category.category}</div>
+                                <ul class="slds-list_dotted">
+                                    <template for:each={category.items} for:item="item">
+                                        <li key={item} class="slds-p-vertical_xx-small">{item}</li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </template>
+        </div>
+    </div>
+</template> 

@@ -185,6 +185,16 @@ export default class Overlay extends ToolkitElement {
         this.isOverlayDisplayed = !this.isOverlayDisplayed;
     };
 
+    @api
+    show = () => {
+        this.isOverlayDisplayed = true;
+    }
+
+    @api
+    hide = () => {
+        this.isOverlayDisplayed = false;
+    }
+
     handleRefresh = () => {
         this._forceRefresh = true;
         this.init();

@@ -89,7 +89,6 @@ const injectOverlay = async () => {
 
     // LWC
     overlayInstance = createElement('views-overlay', { is: ViewsOverlay });
-    console.log('overlayInstance', overlayInstance);
     Object.assign(overlayInstance, { variant: 'overlay' });
     document.body.appendChild(overlayInstance);
 };
@@ -116,7 +115,7 @@ const injectShortCuts = async () => {
     const shortcutOpenOverlay = configuration[CACHE_CONFIG.SHORTCUT_OPEN_OVERLAY.key];
     if (!shortcutEnabled) return;
 
-    console.log('### SF Toolkit - Shortcut Injection ###');
+    //console.log('### SF Toolkit - Shortcut Injection ###');
 
     // Create a container for our shortcuts if it doesn't exist
     let shortcutContainer = document.getElementById('sf-toolkit-shortcut-container');
@@ -475,6 +474,37 @@ class LWC_CUSTOM {
     };
 }
 
+function showOverlay() {
+    if (!overlayInstance) {
+        injectOverlay();
+    }
+}
+
+function hideOverlay() {
+    if (overlayInstance) {
+        overlayInstance.remove();
+        overlayInstance = null;
+    }
+}
+
+let injectorPort;
+function connectToBackground() {
+    injectorPort = chrome.runtime.connect({ name: "sf-toolkit-injected" });
+    injectorPort.onDisconnect.addListener(() => {
+        // Optionally handle disconnect in content script
+        // e.g., cleanup, logging, etc.
+    });
+    injectorPort.onMessage.addListener((msg) => {
+        if (msg.action === "toggleOverlay") {
+            if (msg.enabled) {
+                showOverlay();
+            } else {
+                hideOverlay();
+            }
+        }
+    });
+}
+
 class INJECTOR {
     lwc_custom_instance = new LWC_CUSTOM();
 
@@ -490,9 +520,9 @@ class INJECTOR {
         const isValid = this.isValidPage();
         console.log(`--> SF Toolkit - ${isValid ? 'Inject Code' : 'Skip injection'}  <--`);
         if (isValid) {
+            connectToBackground();
             this.injectCode();
         }
-        //this.lwc_custom_instance.toggleFeature(true);
     };
 
     injectCode = () => {
@@ -502,6 +532,7 @@ class INJECTOR {
     };
 
     handleMessage = (request, sender, sendResponse) => {
+        console.log('handleMessage',request);
         if (request.action === 'lwc_highlight') {
             //console.log('handleMessage',request);
             this.lwc_custom_instance.config = request.config;
@@ -511,10 +542,8 @@ class INJECTOR {
 }
 
 (async () => {
-    console.log('inject_salesforce - before', window.defaultStore);
     window.defaultStore = await chromeStore('local'); // only for chrome extension
     window.settingsStore = await chromeStore('sync'); // only for chrome extension
-    console.log('inject_salesforce - after', window.defaultStore);
     const injectorInstance = new INJECTOR();
     injectorInstance.init();
 })();
