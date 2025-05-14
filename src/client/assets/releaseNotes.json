@@ -1,5 +1,34 @@
 [
   {
+    "version": "1.3.37",
+    "date": "May 14th, 2025",
+    "sections": [
+      {
+        "title": "Enhancement",
+        "categories": [
+          {
+            "category": "General",
+            "items": [
+              "Improve release experience/guide",
+              "Add option to enable/disable the overlay from the extension menu and from the settings"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Bug Fix",
+        "categories": [
+          {
+            "category": "Toolkit Access",
+            "items": [
+              "Fix issues related to the previous version preventing user from opening the toolkit"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.3.36",
     "date": "May 8th, 2025",
     "sections": [
