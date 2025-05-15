@@ -365,9 +365,7 @@ export async function unsecureDirectConnect(username, password, serverUrl) {
     const connection = new window.jsforce.Connection({
         // you can change loginUrl to connect to sandbox or prerelease env.
         loginUrl: serverUrl,
-        proxyUrl: isChromeExtension()
-            ? null
-            : window.jsforceSettings?.proxyUrl || 'https://sf-toolkit.com/proxy/',
+        proxyUrl: isChromeExtension() || isElectronApp() ? null : window.jsforceSettings?.proxyUrl,
     });
     await connection.login(username, password);
     const connector = await enrichConnector({ configuration: {}, connection }, true);
@@ -392,7 +390,7 @@ export async function directConnect(sessionId, serverUrl, extra) {
         instanceUrl: formattedServerUrl,
         loginUrl: formattedServerUrl,
         proxyUrl:
-            isProxyDisabled || isChromeExtension()
+            isProxyDisabled || isChromeExtension() || isElectronApp()
                 ? null
                 : window.jsforceSettings?.proxyUrl || 'https://sf-toolkit.com/proxy/', // variable initialization might be too slow
         version: constant.apiVersion,
