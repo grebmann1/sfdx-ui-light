@@ -36,8 +36,10 @@ export default class SobjectsPanel extends ToolkitElement {
             } else if (describe.error) {
                 console.error(describe.error);
                 Toast.show({
-                    message: this.i18n.SOBJECTS_PANEL_FAILED_FETCH_SOBJECTS,
-                    errors: describe.error,
+                    label: 'Error',
+                    message: describe.error,
+                    variant: 'error',
+                    mode: 'sticky',
                 });
             }
         }

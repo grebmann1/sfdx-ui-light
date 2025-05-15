@@ -42,7 +42,7 @@ export const describeSObjects = createAsyncThunk(
                 return await fetchDescribeAndSave();
             }
         } catch (err) {
-            throw { error: err };
+            throw new Error(err);
         }
     }
 );
@@ -77,7 +77,7 @@ export const describeVersion = createAsyncThunk(
                 return await fetchDescribeAndSave();
             }
         } catch (err) {
-            throw { error: err };
+            throw new Error(err);
         }
     }
 );
@@ -130,9 +130,9 @@ const describeSlice = createSlice({
             })
             .addCase(describeSObjects.rejected, (state, action) => {
                 const { error } = action;
-                state.error = error;
+                state.error = error.message || 'Unknown error';
                 state.isFetching = false;
-                console.error(error);
+                console.error(state.error);
             });
     },
 });
