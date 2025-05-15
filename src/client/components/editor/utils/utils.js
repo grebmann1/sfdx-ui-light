@@ -35,7 +35,7 @@ function buildWorkerDefinition(workerPath, basePath, useModuleWorker) {
                     : `${workerName}-iife.js`;
             const workerPathLocal = `${globals.workerPath}/${workerFilename}`;
             const workerUrl = new URL(workerPathLocal, globals.basePath);
-            console.log('--> Monaco Worker created',workerUrl);
+            console.log('--> Monaco Worker created', workerUrl);
             //console.log(`${editorType}: url: ${workerUrl.href} created from basePath: ${globals.basePath} and file: ${workerPathLocal}`);
             return new Worker(workerUrl.href, globals.workerOptions);
         };

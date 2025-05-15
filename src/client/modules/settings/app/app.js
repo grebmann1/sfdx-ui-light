@@ -61,8 +61,15 @@ export default class App extends ToolkitElement {
         if (inputField.type === 'toggle') {
             config[inputField.dataset.key] = inputField.checked;
             // If the overlay toggle is changed, send a message to the background script
-            if (inputField.dataset.key === 'overlayEnabled' && this.isChrome && chrome.runtime.sendMessage) {
-                chrome.runtime.sendMessage({ action: 'toggleOverlay', enabled: inputField.checked });
+            if (
+                inputField.dataset.key === 'overlayEnabled' &&
+                this.isChrome &&
+                chrome.runtime.sendMessage
+            ) {
+                chrome.runtime.sendMessage({
+                    action: 'toggleOverlay',
+                    enabled: inputField.checked,
+                });
             }
         } else {
             config[inputField.dataset.key] = inputField.value;

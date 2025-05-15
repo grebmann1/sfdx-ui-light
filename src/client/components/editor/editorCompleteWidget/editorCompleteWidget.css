@@ -1,6 +1,6 @@
 :host {
     display: block;
-    width: fit-content;
+    width: auto;
 }
 
 .light-color {
@@ -77,4 +77,8 @@
     border-color: var(--slds-g-color-brand-base-60, #1b96ff);
     background-color: var(--slds-g-color-neutral-base-100, #fff);
     box-shadow: var(--slds-g-shadow-focus, 0 0 3px #0176d3);
+}
+
+.slds-popover {
+    width: 80%;
 }

@@ -105,7 +105,6 @@
                 </div>
             </div>
             <template lwc:if={isOauth}>
-                
                 <!-- Domain -->
                 <div class="slds-grid slds-wrap">
                     <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_xx-small">
@@ -136,7 +135,62 @@
                     </div>
                 </div>
             </template>
-            <template lwc:if={isRedirect}>
+            <template lwc:elseif={isUsernamePassword}>
+                <!-- Username/Password -->
+                <div class="slds-grid slds-wrap">
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_xx-small">
+                        <lightning-input
+                            class="input-to-validate"
+                            name="username"
+                            type="text"
+                            label="Username"
+                            value={username}
+                            onchange={username_onChange}
+                            required
+                        ></lightning-input>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_xx-small">
+                        <lightning-combobox
+                                class="input-to-validate"
+                                name="domain"
+                                label="Domain"
+                                value={selectedDomain}
+                                placeholder="Select Domain"
+                                options={domain_options}
+                                onchange={domainType_onChange}
+                                required
+                        ></lightning-combobox>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_xx-small">
+                        <lightning-input
+                            class="input-to-validate"
+                            name="password"
+                            type="password"
+                            label="Password"
+                            value={password}
+                            onchange={password_onChange}
+                            required
+                        ></lightning-input>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_xx-small">
+                        <template lwc:if={isCustomDomainDisplayed}>
+                            <lightning-input
+                                        class="domain-to-validate"
+                                        name="customDomain"
+                                        type="text"
+                                        value={customDomain}
+                                        label="Custom Domain (Only include the host without the protocol)"
+                                        placeholder="Ex: org62.my.salesforce.com"
+                                        onchange={customDomain_onChange}
+                                        required
+                                ></lightning-input>
+                        </template>
+                    </div>
+                    
+                </div>
+                
+            </template>
+            <template lwc:elseif={isRedirect}>
                 <div class="slds-grid slds-wrap">
                     <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_xx-small">
                         <lightning-input

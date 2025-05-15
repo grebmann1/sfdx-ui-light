@@ -489,13 +489,13 @@ function hideOverlay() {
 
 let injectorPort;
 function connectToBackground() {
-    injectorPort = chrome.runtime.connect({ name: "sf-toolkit-injected" });
+    injectorPort = chrome.runtime.connect({ name: 'sf-toolkit-injected' });
     injectorPort.onDisconnect.addListener(() => {
         // Optionally handle disconnect in content script
         // e.g., cleanup, logging, etc.
     });
-    injectorPort.onMessage.addListener((msg) => {
-        if (msg.action === "toggleOverlay") {
+    injectorPort.onMessage.addListener(msg => {
+        if (msg.action === 'toggleOverlay') {
             if (msg.enabled) {
                 showOverlay();
             } else {
@@ -532,7 +532,7 @@ class INJECTOR {
     };
 
     handleMessage = (request, sender, sendResponse) => {
-        console.log('handleMessage',request);
+        console.log('handleMessage', request);
         if (request.action === 'lwc_highlight') {
             //console.log('handleMessage',request);
             this.lwc_custom_instance.config = request.config;

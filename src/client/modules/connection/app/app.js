@@ -5,6 +5,7 @@ import ConnectionNewModal from 'connection/connectionNewModal';
 import ConnectionDetailModal from 'connection/connectionDetailModal';
 import ConnectionRenameModal from 'connection/connectionRenameModal';
 import ConnectionImportModal from 'connection/connectionImportModal';
+import ConnectionManualModal from 'connection/connectionManualModal';
 import {
     download,
     classSet,
@@ -102,6 +103,17 @@ export default class App extends ToolkitElement {
     @api
     directConnectClick = () => {
         console.log('directConnectClick');
+    };
+
+    @api
+    manualSessionClick = () => {
+        ConnectionManualModal.open({
+            size: 'medium',
+        }).then(res => {
+            console.log('manualSessionClick', res);
+
+            this.dispatchEvent(new CustomEvent('login', { detail: { value: res }, bubbles: true }));
+        });
     };
 
     handleRowAction = event => {
@@ -220,7 +232,8 @@ export default class App extends ToolkitElement {
     };
 
     login = async row => {
-        if (isElectronApp()) {
+        console.log('login', row);
+        if (isElectronApp() && !row._isUsernamePassword) {
             if (row._hasError) {
                 /** Investigate if it's working !!! */
                 this.forceAuthorization(row);

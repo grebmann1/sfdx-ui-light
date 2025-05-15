@@ -237,14 +237,14 @@ async function createContextMenu() {
 const injectedConnections = new Set();
 const sidePanelConnections = new Set();
 
-chrome.runtime.onConnect.addListener(function(port) {
-    console.log('--> onConnect <--',port);
-    if (port.name === "sf-toolkit-injected") {
+chrome.runtime.onConnect.addListener(function (port) {
+    console.log('--> onConnect <--', port);
+    if (port.name === 'sf-toolkit-injected') {
         injectedConnections.add(port);
         port.onDisconnect.addListener(() => {
             injectedConnections.delete(port);
         });
-    } else if (port.name === "sf-toolkit-sidepanel") {
+    } else if (port.name === 'sf-toolkit-sidepanel') {
         sidePanelConnections.add(port);
         port.onDisconnect.addListener(() => {
             sidePanelConnections.delete(port);
@@ -252,11 +252,10 @@ chrome.runtime.onConnect.addListener(function(port) {
     }
 });
 
-
 async function setOverlayState(isEnabled) {
     await chrome.storage.sync.set({ overlayEnabled: isEnabled });
     updateContextMenu();
-    broadcastMessageToAllInjectedInstances({ action: "toggleOverlay", enabled: isEnabled });
+    broadcastMessageToAllInjectedInstances({ action: 'toggleOverlay', enabled: isEnabled });
 }
 
 async function updateContextMenu() {
@@ -411,7 +410,9 @@ chrome.runtime.onMessage.addListener(
             const url = new URL(responseUrl);
             const code = new URLSearchParams(url.search).get('code');
             return { code };
-        } else if (['broadcastMessageToInjected', 'broadcastMessageToSidePanel'].includes(message.action)) {
+        } else if (
+            ['broadcastMessageToInjected', 'broadcastMessageToSidePanel'].includes(message.action)
+        ) {
             console.log('--> Broadcast Message <--');
             const _newMessage = { ...message.content, senderId: sender.id };
             if (message.action === 'broadcastMessageToInjected') {
@@ -431,7 +432,10 @@ chrome.runtime.onMessage.addListener(
                 excludePatterns: DEFAULT_EXCLUDE_PATTERNS,
             };
         } else if (message.action === 'toggleOverlay') {
-            broadcastMessageToAllInjectedInstances({ action: 'toggleOverlay', enabled: message.enabled });
+            broadcastMessageToAllInjectedInstances({
+                action: 'toggleOverlay',
+                enabled: message.enabled,
+            });
         }
     })
 );

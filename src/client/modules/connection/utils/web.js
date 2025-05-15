@@ -22,13 +22,13 @@ export async function getConfiguration(alias) {
     return configurations.find(x => x.alias === alias);
 }
 
-export async function saveConfiguration(alias, connection) {
+export async function saveConfiguration(alias, connection, username, password) {
     let configurations = await getConnectionsFromCache();
     let index = configurations.findIndex(x => x.alias === alias);
     if (index >= 0) {
-        configurations[index] = connection;
+        configurations[index] = { username, password, ...connection };
     } else {
-        configurations.push(connection);
+        configurations.push({ username, password, ...connection });
     }
     // Order Connections
     configurations = configurations.sort((a, b) => a.alias.localeCompare(b.alias));
@@ -88,6 +88,7 @@ export async function getConfigurations() {
                     instanceUrl,
                     sfdxAuthUrl,
                     _isRedirect,
+                    _isUsernamePassword: !isEmpty(x.username) && !isEmpty(x.password),
                     _status: x._hasError ? 'OAuth Error' : 'Connected',
                     _statusClass: x._hasError
                         ? 'slds-text-color_error'
@@ -95,8 +96,5 @@ export async function getConfigurations() {
                 },
             };
         });
-
-    //console.log('connections',connections);
-
     return configurations;
 }

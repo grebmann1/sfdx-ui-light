@@ -58,8 +58,6 @@ export default class Default extends LightningElement {
         this.disconnectFromBackground();
     }
 
-    
-
     /** Events **/
 
     handlePanelChange = e => {
@@ -87,13 +85,13 @@ export default class Default extends LightningElement {
     /** Methods **/
 
     connectToBackground = () => {
-        this.port = chrome.runtime.connect({ name: "sf-toolkit-sidepanel" });
+        this.port = chrome.runtime.connect({ name: 'sf-toolkit-sidepanel' });
         this.port.onDisconnect.addListener(() => {
-                // Optionally handle disconnect in content script
+            // Optionally handle disconnect in content script
             // e.g., cleanup, logging, etc.
-        }); 
-        this.port.onMessage.addListener((message) => {
-            LOGGER.log('--> SidePanel - onMessage <--',message);
+        });
+        this.port.onMessage.addListener(message => {
+            LOGGER.log('--> SidePanel - onMessage <--', message);
             if (message.action === 'refresh') {
                 store.dispatch(
                     EINSTEIN.reduxSlice.actions.loadCacheSettings({
@@ -102,13 +100,13 @@ export default class Default extends LightningElement {
                 );
             }
         });
-    }
+    };
 
     disconnectFromBackground = () => {
         if (this.port) {
             this.port.disconnect();
         }
-    }
+    };
 
     @api
     resetToDefaultView = () => {

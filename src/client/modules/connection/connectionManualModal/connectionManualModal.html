@@ -1,0 +1,89 @@
+<template>
+    <lightning-modal-header label="Manual Connection"></lightning-modal-header>
+    <lightning-modal-body>
+        <section class="min-height-400 slds-is-relative">
+            <slds-tabset class="slds-tabs-no-padding-extension" active-tab-value={activeTab}>
+                <slds-tab label="Session" value="session" onactive={handleTabActive}>
+                    <template lwc:if={isSessionTab}>
+                        <div class="slds-grid slds-wrap slds-m-bottom_medium">
+                            <div class="slds-col slds-size_1-of-1 slds-p-horizontal_xx-small">
+                                <lightning-input
+                                    class="manual-session-url input-to-validate"
+                                    name="manualSessionUrl"
+                                    type="text"
+                                    label="Session URL"
+                                    value={manualSessionUrl}
+                                    onchange={manualSessionUrl_onChange}
+                                    required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-p-horizontal_xx-small">
+                                <lightning-input
+                                    class="manual-session-id input-to-validate"
+                                    name="manualSessionId"
+                                    type="text"
+                                    label="Session ID"
+                                    value={manualSessionId}
+                                    onchange={manualSessionId_onChange}
+                                    required></lightning-input>
+                            </div>
+                        </div>
+                    </template>
+                </slds-tab>
+                <slds-tab label="Username/Password" value="username" onactive={handleTabActive}>
+                    <template lwc:if={isUsernameTab}>
+                        <div class="slds-grid slds-wrap slds-m-bottom_medium">
+                            <div class="slds-col slds-size_1-of-1 slds-p-horizontal_xx-small">
+                                <lightning-input
+                                    class="manual-url input-to-validate"
+                                    name="manualUrl"
+                                    type="text"
+                                    label="URL"
+                                    value={manualUrl}
+                                    onchange={manualUrl_onChange}
+                                    required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-p-horizontal_xx-small">
+                                <lightning-input
+                                    class="manual-username input-to-validate"
+                                    name="manualUsername"
+                                    type="text"
+                                    label="Username"
+                                    value={manualUsername}
+                                    onchange={manualUsername_onChange}
+                                    required></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-p-horizontal_xx-small">
+                                <lightning-input
+                                    class="manual-password input-to-validate"
+                                    name="manualPassword"
+                                    type="password"
+                                    label="Password"
+                                    value={manualPassword}
+                                    onchange={manualPassword_onChange}
+                                    required></lightning-input>
+                            </div>
+                        </div>
+                    </template>
+                </slds-tab>
+            </slds-tabset>
+        </section>
+    </lightning-modal-body>
+    <lightning-modal-footer>
+        <template lwc:if={isSessionTab}>
+            <lightning-button
+                class="slds-button"
+                disabled={isLoading}
+                variant="brand"
+                label="Connect"
+                onclick={handleManualSessionConnect}></lightning-button>
+        </template>
+        <template lwc:if={isUsernameTab}>
+            <lightning-button
+                class="slds-button"
+                disabled={isLoading}
+                variant="brand"
+                label="Connect"
+                onclick={handleManualUsernameConnect}></lightning-button>
+        </template>
+    </lightning-modal-footer>
+</template>

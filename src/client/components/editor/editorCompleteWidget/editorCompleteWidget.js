@@ -56,6 +56,7 @@ export default class EditorCompleteWidget extends LightningElement {
     /**
      * Sets focus on the textarea element
      */
+    @api
     setFocus = () => {
         this.isApprovalDisplayed = false; // If we set the focus on the textarea, we need to reset the approval display
         setTimeout(() => {
@@ -251,10 +252,10 @@ export default class EditorCompleteWidget extends LightningElement {
      */
     getSelectionLines(isFullFile) {
         return {
-            startLine: isFullFile ? 1 : this.selection.range.startLineNumber,
+            startLine: isFullFile ? 1 : this.selection?.range?.startLineNumber || 1,
             endLine: isFullFile
                 ? this.file.range.endLineNumber
-                : this.selection.range.endLineNumber,
+                : this.selection?.range?.endLineNumber,
         };
     }
 

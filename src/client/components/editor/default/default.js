@@ -31,7 +31,7 @@ export default class Default extends ToolkitElement {
     @api isToolkitHidden = false;
     @api isEinsteinHidden = false;
     @api isCopyHidden = false;
-
+    @api isFormatHidden = false;
     currentPromptWidget;
 
     models = [];
@@ -69,6 +69,18 @@ export default class Default extends ToolkitElement {
             label: `Exported to your clipboard`,
             variant: 'success',
         });
+    };
+
+    handleFormatClick = () => {
+        const format = autoDetectAndFormat(this.currentModel.getValue());
+        if (format === 'json') {
+            this.currentModel.setValue(
+                JSON.stringify(JSON.parse(this.currentModel.getValue()), null, 2)
+            );
+        } else {
+            console.log('Format not supported');
+        }
+        this.monaco.editor.setModelLanguage(this.editor.getModel(), format);
     };
 
     handleOpenContextCopilot = () => {
@@ -258,6 +270,10 @@ export default class Default extends ToolkitElement {
 
     get isCopyDisplayed() {
         return !this.isCopyHidden;
+    }
+
+    get isFormatDisplayed() {
+        return !this.isFormatHidden;
     }
 
     get isEinsteinDisplayed() {

@@ -161,7 +161,7 @@ export default class App extends ToolkitElement {
         if (this.endpoint != api.endpoint) {
             this.endpoint = api.endpoint;
             if (this._hasRendered) {
-                this.refs.method.endpoint = this.endpoint;
+                this.refs.url.value = this.endpoint;
             }
         }
 
@@ -429,7 +429,7 @@ export default class App extends ToolkitElement {
         this.refs.bodyEditor.currentModel.setValue(this.body);
         this.refs.bodyEditor.currentMonaco.editor.setModelLanguage(
             this.refs.bodyEditor.currentModel,
-            autoDetectAndFormat(this.body) || 'txt'
+            autoDetectAndFormat(this.body, this.header) || 'txt'
         );
     };
 
@@ -455,7 +455,7 @@ export default class App extends ToolkitElement {
     initBodyEditor = () => {
         const newModel = this.refs.bodyEditor.createModel({
             body: this.body,
-            language: autoDetectAndFormat(this.body) || 'txt', // Language should be improved in the editor
+            language: autoDetectAndFormat(this.body, this.header) || 'txt', // Language should be improved in the editor
         });
         this.refs.bodyEditor.displayModel(newModel);
     };

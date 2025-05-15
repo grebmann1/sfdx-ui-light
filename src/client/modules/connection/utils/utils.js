@@ -54,10 +54,12 @@ export async function connect({ alias, settings, disableEvent = false, directSto
         if (_settings) {
             settings = _settings;
         }
-        //LOGGER.log('loaded settings',settings);
+        LOGGER.log('loaded settings', settings);
     } else {
         alias = settings?.alias;
     }
+
+    const isUsernamePassword = settings.username && settings.password;
 
     // Prevent issue
     if (settings.version === '42.0') {
@@ -82,8 +84,15 @@ export async function connect({ alias, settings, disableEvent = false, directSto
             loginUrl: settings.instanceUrl,
         };
     }
+    if (isUsernamePassword) {
+        params.loginUrl = settings.instanceUrl;
+    }
     //LOGGER.log('params',params);
     const connection = await new window.jsforce.Connection(params);
+    if (isUsernamePassword) {
+        LOGGER.log('login the legacy way');
+        await connection.login(settings.username, settings.password);
+    }
     connection.alias = alias || settings.alias;
     /** Assign Latest Version **/
     //await assignLatestVersion(connection);
@@ -256,6 +265,9 @@ export async function oauth({ alias, loginUrl }, callback, callbackErrorHandler)
                 //this.close(null)
                 callback(null);
             }
+        })
+        .catch(e => {
+            callbackErrorHandler(e);
         });
 }
 
@@ -319,12 +331,51 @@ export async function setRedirectCredential({ alias, redirectUrl }, callback) {
     callback();
 }
 
-async function oauth_extend({ alias, connection }, callback) {
+export async function setUsernamePasswordCredential(
+    { alias, username, password, serverUrl },
+    callback,
+    callbackErrorHandler
+) {
+    const configuration = await generateConfiguration({ alias, username, password });
+    await webInterface.saveConfiguration(alias, configuration);
+
+    try {
+        const connection = new window.jsforce.Connection({
+            loginUrl: serverUrl,
+            proxyUrl: isChromeExtension()
+                ? null
+                : window.jsforceSettings?.proxyUrl || 'https://sf-toolkit.com/proxy/',
+        });
+        await connection.login(username, password);
+        oauth_extend({ alias, connection, username, password }, callback);
+    } catch (e) {
+        callbackErrorHandler(e);
+    }
+}
+
+async function oauth_extend({ alias, connection, username, password }, callback) {
     //LOGGER.log('oauth_extend');
     const configuration = await generateConfiguration({ alias, connection });
-    await webInterface.saveConfiguration(alias, configuration);
+    await webInterface.saveConfiguration(alias, configuration, username, password);
     const connector = new Connector(configuration, connection);
     callback({ alias, connector }); //this.close({alias:alias,connection});
+}
+
+export async function unsecureDirectConnect(username, password, serverUrl) {
+    const connection = new window.jsforce.Connection({
+        // you can change loginUrl to connect to sandbox or prerelease env.
+        loginUrl: serverUrl,
+        proxyUrl: isChromeExtension()
+            ? null
+            : window.jsforceSettings?.proxyUrl || 'https://sf-toolkit.com/proxy/',
+    });
+    await connection.login(username, password);
+    const connector = await enrichConnector({ configuration: {}, connection }, true);
+    // Dispatch Login Event
+    store.dispatch(async (dispatch, getState) => {
+        //await dispatch(APPLICATION.reduxSlice.actions.logout());
+        await dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
+    });
 }
 
 export async function directConnect(sessionId, serverUrl, extra) {
@@ -339,6 +390,7 @@ export async function directConnect(sessionId, serverUrl, extra) {
         sessionId: sessionId,
         serverUrl: formattedServerUrl,
         instanceUrl: formattedServerUrl,
+        loginUrl: formattedServerUrl,
         proxyUrl:
             isProxyDisabled || isChromeExtension()
                 ? null
@@ -442,3 +494,54 @@ export function formatForLimitedCacheStorage(configuration){
         redirectUrl:configuration.redirectUrl,
     };
 } */
+
+// --- Salesforce Domain Normalization Utility ---
+/**
+ * Normalizes Salesforce host/domain for various edge cases (local dev, workspace, setup, etc).
+ * Based on getSalesforceURL from background.js
+ */
+
+export const STANDARD_LIGHTNING_DOMAIN_REGEX = {
+    regex: /lightning(.*).force([.-])com/,
+    replace: 'my$1.salesforce$2com',
+};
+export const SOMA_LOCAL_DOMAIN_REGEX = {
+    regex: /lightning.localhost.soma.force/,
+    replace: 'my.localhost.sfdcdev.salesforce',
+};
+export const SALESFORCE_SETUP_DOMAIN_REGEX = {
+    regex: /salesforce-setup([.-])com/,
+    replace: 'salesforce$1com',
+};
+export const WORKSPACE_NO_MY_DOMAIN_REGEX = {
+    regex: /dev.lightning.force-com.(\w+)/,
+    replace: '$1',
+};
+
+export const processHost = origin => {
+    let result = origin;
+    if (origin.match(SOMA_LOCAL_DOMAIN_REGEX.regex)) {
+        result = new URL(
+            origin.replace(SOMA_LOCAL_DOMAIN_REGEX.regex, SOMA_LOCAL_DOMAIN_REGEX.replace)
+        ).origin;
+    } else if (origin.match(WORKSPACE_NO_MY_DOMAIN_REGEX.regex)) {
+        result = new URL(
+            origin.replace(WORKSPACE_NO_MY_DOMAIN_REGEX.regex, WORKSPACE_NO_MY_DOMAIN_REGEX.replace)
+        ).origin;
+    } else if (origin.match(STANDARD_LIGHTNING_DOMAIN_REGEX.regex)) {
+        result = new URL(
+            origin.replace(
+                STANDARD_LIGHTNING_DOMAIN_REGEX.regex,
+                STANDARD_LIGHTNING_DOMAIN_REGEX.replace
+            )
+        ).origin;
+    } else if (origin.match(SALESFORCE_SETUP_DOMAIN_REGEX.regex)) {
+        result = new URL(
+            origin.replace(
+                SALESFORCE_SETUP_DOMAIN_REGEX.regex,
+                SALESFORCE_SETUP_DOMAIN_REGEX.replace
+            )
+        ).origin;
+    }
+    return result;
+};

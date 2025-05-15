@@ -19,11 +19,13 @@ const ALLOWED_HEADERS = [
     'Cookie',
 ];
 
-/**
- * Endpoint URL validation
- */
-const SF_ENDPOINT_REGEXP =
+// Production Salesforce domains
+const SF_PROD_ENDPOINT_REGEXP =
     /^https:\/\/[a-zA-Z0-9.-]+\.(force|salesforce|cloudforce|database)\.com\//;
+// Dev/orgfarm/my.salesforce-com.crm.dev style domains (with optional port)
+// Also supports login.salesforce-com.<hash>.<region>.crm.dev(:<port>)/...
+const SF_DEV_ENDPOINT_REGEXP =
+    /^https:\/\/(?:[a-zA-Z0-9-]+\.)?(?:my|login)\.salesforce-com\.[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.crm\.dev(?::\d+)?/;
 
 /**
  * Create middleware to proxy request to Salesforce server
@@ -43,7 +45,7 @@ module.exports = function (options = {}) {
         }
 
         const sfEndpoint = req.headers['salesforceproxy-endpoint'];
-        if (!SF_ENDPOINT_REGEXP.test(sfEndpoint)) {
+        if (!SF_PROD_ENDPOINT_REGEXP.test(sfEndpoint) && !SF_DEV_ENDPOINT_REGEXP.test(sfEndpoint)) {
             return res
                 .status(400)
                 .send(

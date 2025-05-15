@@ -1,4 +1,10 @@
 import { getCurrentTab, isEmpty } from 'shared/utils';
+import {
+    SOMA_LOCAL_DOMAIN_REGEX,
+    WORKSPACE_NO_MY_DOMAIN_REGEX,
+    STANDARD_LIGHTNING_DOMAIN_REGEX,
+    SALESFORCE_SETUP_DOMAIN_REGEX,
+} from './utils';
 /*const getCurrentTab = async () => {
     let queryOptions = { active: true, lastFocusedWindow: true };
     // `tab` will either be a `tabs.Tab` instance or `undefined`.
@@ -7,25 +13,6 @@ import { getCurrentTab, isEmpty } from 'shared/utils';
 }*/
 
 // --- Salesforce Domain Regex Utilities ---
-const STANDARD_LIGHTNING_DOMAIN_REGEX = {
-    regex: /lightning(.*).force([.-])com/,
-    replace: 'my$1.salesforce$2com',
-};
-
-const SOMA_LOCAL_DOMAIN_REGEX = {
-    regex: /lightning.localhost.soma.force/,
-    replace: 'my.localhost.sfdcdev.salesforce',
-};
-
-const SALESFORCE_SETUP_DOMAIN_REGEX = {
-    regex: /salesforce-setup([.-])com/,
-    replace: 'salesforce$1com',
-};
-
-const WORKSPACE_NO_MY_DOMAIN_REGEX = {
-    regex: /dev.lightning.force-com.(\w+)/,
-    replace: '$1',
-};
 
 function getSalesforceURL(tabUrl) {
     let url = new URL(tabUrl).origin;
@@ -89,7 +76,7 @@ const getHostAndSession = async paramTab => {
             return;
         }
     } catch (e) {
-        console.log('getHostAndSession issue: ', e);
+        //console.log('getHostAndSession issue: ', e);
         /** To be removed, only for development **/
         /*return {
             session:'00DHr0000074EN7!ARYAQC.svEahDG8iLsqkAf5Aj2qlceiBVRiELevf5hTUTDKVCAzJBkCsHcRlVbJeihSQ9MHj7zHuXBhW47janaeP7IZZWLVv',

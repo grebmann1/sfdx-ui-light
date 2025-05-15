@@ -504,15 +504,32 @@ export const prettifyXml = sourceXml => {
     return resultXml;
 };
 
-export const autoDetectAndFormat = text => {
-    const trimmedText = text.trim();
+export function detectLanguageFromContentType(header) {
+    if (!header) return null;
+    const contentTypeLine = header
+        .split('\n')
+        .find(line => line.toLowerCase().startsWith('content-type:'));
+    if (!contentTypeLine) return null;
+    const value = contentTypeLine.split(':')[1]?.toLowerCase() || '';
+    if (value.includes('json')) return 'json';
+    if (value.includes('xml')) return 'xml';
+    if (value.includes('html')) return 'html';
+    if (value.includes('javascript')) return 'javascript';
+    if (value.includes('text/plain')) return 'text';
+    // Add more as needed
+    return null;
+}
 
-    // Detect if the content is JSON
+export const autoDetectAndFormat = (text, header) => {
+    // 1. Try header-based detection first
+    const langFromHeader = detectLanguageFromContentType(header);
+    if (langFromHeader) return langFromHeader;
+
+    // 2. Fallback to content-based detection
+    const trimmedText = text.trim();
     if (trimmedText.startsWith('{') || trimmedText.startsWith('[')) {
         return 'json';
     }
-
-    // Detect if the content is XML
     if (trimmedText.startsWith('<')) {
         return 'xml';
     }

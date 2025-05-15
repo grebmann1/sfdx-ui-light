@@ -1,0 +1,86 @@
+.slds-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #d8dde6;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.slds-dot_active {
+    background: #0070d2;
+}
+
+.slds-box {
+    max-width: 1200px;
+    margin: 0 auto;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slds-text-body_medium {
+    font-size: 1.2rem;
+}
+
+.onboarding-vertical-menu {
+    min-width: 220px;
+    max-width: 260px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 24px 0 24px 0;
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.04);
+    height: 100%;
+    align-self: flex-start;
+}
+.onboarding-step-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.onboarding-step-list-item {
+    padding: 12px 24px;
+    cursor: pointer;
+    color: #444;
+    font-size: 1rem;
+    border-left: 4px solid transparent;
+    transition:
+        background 0.2s,
+        border-color 0.2s;
+    margin-bottom: 2px;
+}
+.onboarding-step-list-item:hover {
+    background: #e3e6ea;
+}
+.onboarding-step-active {
+    background: #eaf6ff;
+    border-left: 4px solid #1589ee;
+    color: #1589ee;
+    font-weight: bold;
+}
+
+.onboarding-nav-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+}
+.onboarding-nav-btn-left,
+.onboarding-nav-btn-right {
+    flex: 0 0 auto;
+}
+.onboarding-dot-indicator {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

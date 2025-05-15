@@ -2,7 +2,13 @@ import { api, track } from 'lwc';
 import Toast from 'lightning/toast';
 import LightningAlert from 'lightning/alert';
 import LightningModal from 'lightning/modal';
-import { oauth, oauth_chrome, setRedirectCredential } from 'connection/utils';
+import {
+    oauth,
+    oauth_chrome,
+    setRedirectCredential,
+    setUsernamePasswordCredential,
+    processHost,
+} from 'connection/utils';
 import {
     isEmpty,
     isUndefinedOrNull,
@@ -29,6 +35,7 @@ const DEFAULT_CATEGORY = {
 const CREDENTIAL_TYPES = {
     oauth: 'OAUTH',
     redirect: 'REDIRECT',
+    username: 'USERNAME',
 };
 
 const ORG_TYPES = {
@@ -48,6 +55,8 @@ export default class ConnectionNewModal extends LightningModal {
     @api connections = [];
     @api selectedCategory = [DEFAULT_CATEGORY];
     @api name;
+    @api username;
+    @api password;
 
     newCategory;
     orgType = ORG_TYPES.PRODUCTION;
@@ -116,7 +125,7 @@ export default class ConnectionNewModal extends LightningModal {
             ) {
                 try {
                     const _url = new URL(domainToValidate.value);
-                    this.customDomain = this.processHost(_url.host);
+                    this.customDomain = processHost(_url.host);
                     LOGGER.log('customDomain', this.customDomain);
                 } catch (e) {
                     domainToValidate.setCustomValidity("Don't include the protocol");
@@ -129,26 +138,6 @@ export default class ConnectionNewModal extends LightningModal {
         }
 
         return isValid;
-    };
-
-    processHost = host => {
-        const SALESFORCE_HOST = 'my.salesforce.com';
-        const SALESFORCE_INTERNAL_HOST = 'internal.salesforce.com';
-
-        // Remove port if present
-        const [hostWithoutPort] = host.split(':');
-        if (hostWithoutPort.endsWith(SALESFORCE_INTERNAL_HOST)) {
-            // Internal host, don't change anything
-        } else if (!hostWithoutPort.endsWith(SALESFORCE_HOST)) {
-            const baseHost = hostWithoutPort.split('.')[0];
-            if (baseHost.includes('--')) {
-                // Sandbox
-                host = `${baseHost}.sandbox.my.salesforce.com`;
-            } else {
-                host = `${baseHost}.my.salesforce.com`;
-            }
-        }
-        return host;
     };
 
     validateNewCategory = () => {
@@ -180,7 +169,28 @@ export default class ConnectionNewModal extends LightningModal {
             }
         } else if (this.isRedirect) {
             this.default_redirect();
+        } else if (this.isUsernamePassword) {
+            this.standard_usernamePassword();
         }
+    };
+
+    standard_usernamePassword = async () => {
+        const normalizedUrl = processHost(this.loginUrl);
+        setUsernamePasswordCredential(
+            {
+                username: this.username,
+                password: this.password,
+                serverUrl: normalizedUrl,
+                alias: this.alias,
+            },
+            res => {
+                this.close(res);
+            },
+            e => {
+                this.notifyUser('Username/Password Error', e.message, 'error');
+                this.close(null);
+            }
+        );
     };
 
     default_redirect = () => {
@@ -198,9 +208,10 @@ export default class ConnectionNewModal extends LightningModal {
 
     electron_oauth = async () => {
         //console.log('electron_oauth');
+        const normalizedUrl = processHost(this.loginUrl);
         let params = {
             alias: this.alias,
-            instanceurl: this.loginUrl,
+            instanceurl: normalizedUrl,
         };
         try {
             const { error, res } = await window.electron.ipcRenderer.invoke(
@@ -237,10 +248,11 @@ export default class ConnectionNewModal extends LightningModal {
         //console.log('standard_oauth');
         const _oauthMethod = isChromeExtension() ? oauth_chrome : oauth;
 
+        const normalizedUrl = processHost(this.loginUrl);
         _oauthMethod(
             {
                 alias: this.alias,
-                loginUrl: this.loginUrl,
+                loginUrl: normalizedUrl,
             },
             res => {
                 this.close(res);
@@ -361,6 +373,14 @@ export default class ConnectionNewModal extends LightningModal {
         this.selectedDomain = e.target.value;
     };
 
+    username_onChange = e => {
+        this.username = e.target.value;
+    };
+
+    password_onChange = e => {
+        this.password = e.target.value;
+    };
+
     orgType_onChange = e => {
         this.orgType = e.target.value;
     };
@@ -377,11 +397,15 @@ export default class ConnectionNewModal extends LightningModal {
 
     get credentialOptions() {
         if (isElectronApp()) {
-            return [{ label: 'OAuth (Recommended)', value: CREDENTIAL_TYPES.oauth }];
+            return [
+                { label: 'OAuth (Recommended)', value: CREDENTIAL_TYPES.oauth },
+                { label: 'Username/Password', value: CREDENTIAL_TYPES.username },
+            ];
         }
         return [
             { label: 'OAuth (Recommended)', value: CREDENTIAL_TYPES.oauth },
             { label: 'Redirect Only', value: CREDENTIAL_TYPES.redirect },
+            { label: 'Username/Password', value: CREDENTIAL_TYPES.username },
         ];
     }
 
@@ -394,6 +418,10 @@ export default class ConnectionNewModal extends LightningModal {
 
     get isOauth() {
         return this.credentialType === CREDENTIAL_TYPES.oauth;
+    }
+
+    get isUsernamePassword() {
+        return this.credentialType === CREDENTIAL_TYPES.username;
     }
 
     get isRedirect() {

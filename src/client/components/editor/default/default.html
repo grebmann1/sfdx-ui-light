@@ -10,6 +10,12 @@
                             tooltip="Copy to clipboard"
                             onclick={handleCopyClick}></lightning-button-icon>
                     </template>
+                    <template lwc:if={isFormatDisplayed}>
+                        <lightning-button-icon
+                            icon-name="utility:justify_text"
+                            tooltip="Format"
+                            onclick={handleFormatClick}></lightning-button-icon>
+                    </template>
                 </div>
             </div>
         </template>

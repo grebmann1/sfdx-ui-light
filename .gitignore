@@ -3,6 +3,7 @@
 .env
 .sfdx
 .DS_Store
+.cursor/
 
 node_modules
 package-lock.json

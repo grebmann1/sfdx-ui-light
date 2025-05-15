@@ -2,7 +2,7 @@ import * as Diff from 'diff';
 import EditorCompleteWidget from 'editor/editorCompleteWidget';
 import { createElement } from 'lwc';
 import LOGGER from 'shared/logger';
-import { isNotUndefinedOrNull } from 'shared/utils';
+import { autoDetectAndFormat } from 'shared/utils';
 
 import { CompletionFormatter } from '../utils/utils.js';
 
@@ -161,6 +161,11 @@ class MonacoLwcWidget {
                 text: this.temporaryModel.getValue(),
             };
             this.originalModel.pushEditOperations([], [edit], () => null);
+            // Set the language of the original model
+            this.monaco.editor.setModelLanguage(
+                this.originalModel,
+                autoDetectAndFormat(this.originalModel.getValue())
+            );
 
             this.hide();
             this.onClose();
@@ -196,9 +201,7 @@ class MonacoLwcWidget {
      */
     applyTextToEditor = async ({ text, isEnd }) => {
         const model = this.editor.getModel();
-        const range = this.currentSelection?.range?.isEmpty()
-            ? model.getFullModelRange()
-            : this.currentSelection.range;
+        let range = this.currentSelection?.range || model.getFullModelRange();
 
         const formattedText = this.formatOutput(text);
         const tempModel = this.monaco.editor.createModel(this.originalText, this.language);
@@ -237,7 +240,8 @@ class MonacoLwcWidget {
         this.currentFile = createFileSelection(this.editor);
 
         // Set the temporary model as the editor's model
-        this.temporaryModel = this.monaco.editor.createModel(this.originalText, this.language);
+        const format = autoDetectAndFormat(this.originalText);
+        this.temporaryModel = this.monaco.editor.createModel(this.originalText, format);
         this.editor.setModel(this.temporaryModel);
 
         // Add the widget to the view zone
@@ -457,7 +461,7 @@ class MonacoLwcWidget {
         if (this.versionId === currentVersion) {
             this.clearAllDecorations();
         } else if (currentVersion < this.versionId) {
-            this.hide();
+            //this.hide();
             this.currentVersion = null;
         } else if (currentVersion > this.versionId) {
             if (this.previousValue === event.changes[0].text) {
