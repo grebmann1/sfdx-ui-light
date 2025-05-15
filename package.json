@@ -41,7 +41,7 @@
         }
     ],
     "dependencies": {
-        "@jetstreamapp/soql-parser-js": "^6.1.0",
+        "@jetstreamapp/soql-parser-js": "6.1.0",
         "@lwc/synthetic-shadow": "8.16.4",
         "@lwrjs/router": "0.16.13",
         "@monaco-editor/loader": "^1.4.0",
