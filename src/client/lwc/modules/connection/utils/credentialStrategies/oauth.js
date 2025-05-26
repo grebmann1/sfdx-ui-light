@@ -5,7 +5,7 @@ import { OAUTH_TYPES } from './index';
 import { saveConfiguration } from '../web';
 import { Connector } from '../connectorClass';
 import LOGGER from 'shared/logger';
-import { isUndefinedOrNull } from 'shared/utils';
+import { isUndefinedOrNull,isNotUndefinedOrNull } from 'shared/utils';
 
 const FULL_SCOPE = 'id api web openid sfap_api einstein_gpt_api refresh_token';
 
@@ -29,35 +29,42 @@ export async function directConnect(configuration) {
 
 export async function connect({ alias, loginUrl }, settings = {}) {
     const { bypass = false, saveFullConfiguration = false } = settings;
-    LOGGER.debug('connect', { alias, loginUrl, bypass, saveFullConfiguration });
+
     const platform = getCurrentPlatform();
-    const normalizedUrl = processHost(loginUrl);
-    LOGGER.log('normalizedUrl', normalizedUrl);
-    LOGGER.log('platform', platform);
+    LOGGER.debug('connect', { alias, loginUrl, bypass, saveFullConfiguration });
+    
 
     // Check for existing configuration first
     const configuration = await getConfiguration(alias);
+    LOGGER.log('configuration',configuration);
     if (configuration && configuration.refreshToken && !bypass) {
         // Try to connect using the existing configuration
         // (Assume refreshToken is sufficient for OAuth reconnect)
         const connectionParams = normalizeConnection(OAUTH_TYPES.OAUTH, configuration, platform);
+        LOGGER.log('connectionParams', connectionParams);
         const connection = await new window.jsforce.Connection(connectionParams);
-        if (isUndefinedOrNull(connection.accessToken)) {
-            console.log('connection error', connection);
-            throw new Error('No access token found');
-        }
+        LOGGER.log('connection', connection);
         const connector = await Connector.createConnector({
             alias,
             connection,
             configuration,
             credentialType: OAUTH_TYPES.OAUTH,
         });
-        await connector.generateAccessToken();
+
+        if (isNotUndefinedOrNull(connection.refreshToken) && isUndefinedOrNull(connection.accessToken)) {
+            await connector.generateAccessToken();
+        }
         if (connector.hasError) {
             throw new Error(connector.errorMessage);
         }
         return connector;
     }
+
+    
+    const normalizedUrl = processHost(loginUrl || 'https://login.salesforce.com');
+    LOGGER.log('loginUrl', loginUrl);
+    LOGGER.log('normalizedUrl', normalizedUrl);
+    LOGGER.log('platform', platform);
 
     if (platform === PLATFORM.CHROME) {
         LOGGER.log('Chrome OAuth');

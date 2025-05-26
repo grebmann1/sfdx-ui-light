@@ -213,7 +213,6 @@ export default class App extends LightningElement {
 
     handleRedirection = async application => {
         let url = application.redirectTo || '';
-        console.log('application', application, url);
         if (url.startsWith('sftoolkit:')) {
             /* Inner Navigation */
             const navigationConfig = url.replace('sftoolkit:', '');
@@ -376,19 +375,22 @@ export default class App extends LightningElement {
     /** Extension & Electron Org Window  **/
     load_limitedMode = async () => {
         try {
-            if (isElectronApp()) {
-                let connector = await credentialStrategies.SFDX.connect({ alias: this.alias });
-                store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
+            let connector
+            if (isNotUndefinedOrNull(this.alias)) {
+                LOGGER.debug('load_limitedMode - alias',this.alias);
+                connector = await credentialStrategies.OAUTH.connect({ alias: this.alias });
             } else {
-                let connector = await credentialStrategies.SESSION.connect({
+                LOGGER.debug('load_limitedMode - SESSION');
+                connector = await credentialStrategies.SESSION.connect({
                     sessionId: this.sessionId,
                     serverUrl: this.serverUrl,
                 });
+                LOGGER.debug('load_limitedMode - SESSION - connector', connector);
                 // Reset after to prevent looping
                 this.sessionId = null;
                 this.serverUrl = null;
-                store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
             }
+            store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
 
             if (this.redirectUrl) {
                 // This method use LWR redirection or window.location based on the url !
@@ -427,13 +429,14 @@ export default class App extends LightningElement {
     /** Website & Electron **/
     load_fullMode = async () => {
         if (isNotUndefinedOrNull(this.sessionId) && isNotUndefinedOrNull(this.serverUrl)) {
-            await credentialStrategies.SESSION.connect({
+            let connector = await credentialStrategies.SESSION.connect({
                 sessionId: this.sessionId,
                 serverUrl: this.serverUrl,
             });
             // Reset after to prevent looping
             this.sessionId = null;
             this.serverUrl = null;
+            store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
         } else {
             // New logic inspired by old getExistingSession
             const currentConnectionRaw = sessionStorage.getItem('currentConnection');
@@ -441,14 +444,8 @@ export default class App extends LightningElement {
                 try {
                     const settings = JSON.parse(currentConnectionRaw);
                     settings.logLevel = null;
-                    console.log('settings', settings);
                     let connector;
-                    if (isElectronApp()) {
-                        // For Electron, use SFDX strategy with alias
-                        connector = await credentialStrategies.SFDX.connect({
-                            alias: settings.alias,
-                        });
-                    } else if (settings.sessionId && settings.serverUrl) {
+                    if (settings.sessionId && settings.serverUrl) {
                         // For Web/Chrome, use SESSION strategy
                         connector = await credentialStrategies.SESSION.connect({
                             sessionId: settings.sessionId,
@@ -456,7 +453,7 @@ export default class App extends LightningElement {
                         });
                     } else if (
                         settings.credentialType &&
-                        credentialStrategies[settings.credentialType]
+                        credentialStrategies[settings.credentialType || 'OAUTH']
                     ) {
                         // Fallback: use credentialType if present
                         connector =

@@ -9,7 +9,7 @@ import {
     normalizeConfiguration,
     extractConfigurationValuesFromConnection,
 } from './utils';
-
+import { isElectronApp } from 'shared/utils';
 export class Connector {
     conn;
     configuration;
@@ -50,7 +50,12 @@ export class Connector {
             _hasError: true,
             _errorMessage: e.message,
         });
-        await saveConfiguration(this.configuration.alias, this.configuration);
+
+        if(!isElectronApp()){
+            await saveConfiguration(this.configuration.alias, this.configuration);
+        }
+
+        
         store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
     }
 

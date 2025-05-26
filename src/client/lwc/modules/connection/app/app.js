@@ -43,10 +43,6 @@ const ACTIONS = [
     { label: 'Remove', name: 'removeConfiguration' },
 ];
 
-const LOGIN_URL = 'https://login.salesforce.com';
-const TEST_URL = 'https://test.salesforce.com';
-const CUSTOM_URL = 'custom';
-
 export default class App extends ToolkitElement {
     @api variant = 'table';
     @api isHeaderLess = false;
@@ -113,10 +109,16 @@ export default class App extends ToolkitElement {
             size: 'medium',
         }).then(res => {
             if (res) {
-                store.dispatch(APPLICATION.reduxSlice.actions.login({ connector: res }));
-                this.dispatchEvent(
-                    new CustomEvent('login', { detail: { value: res }, bubbles: true })
-                );
+                console.log('res',res);
+                if(isElectronApp()){
+                    window.electron.ipcRenderer.invoke('OPEN_INSTANCE', {alias:res.conn.alias,username:res.configuration.username});
+                }else{
+                    store.dispatch(APPLICATION.reduxSlice.actions.login({ connector: res }));
+                    this.dispatchEvent(
+                        new CustomEvent('login', { detail: { value: res }, bubbles: true })
+                    );
+                }
+                
             }
         });
     };
@@ -252,12 +254,6 @@ export default class App extends ToolkitElement {
 
     login = async row => {
         if (isElectronApp() && !row._isUsernamePassword) {
-            /* if (row._hasError) {
-                // Investigate if it's working !!!
-                //this.forceAuthorization(row);
-            } else {
-                window.electron.ipcRenderer.invoke('OPEN_INSTANCE', row);
-            } */
             await window.electron.ipcRenderer.invoke('OPEN_INSTANCE', row);
         } else {
             let configuration = this.data.find(x => x.id == row.id);
@@ -298,6 +294,7 @@ export default class App extends ToolkitElement {
 
     authorizeExistingOrg = async row => {
         if (isElectronApp()) return;
+        
         this.isLoading = true;
         let { alias, loginUrl, ...settings } = this.data.find(x => x.id == row.id);
         const connector = await credentialStrategies[OAUTH_TYPES.OAUTH].connect(

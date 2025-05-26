@@ -19,10 +19,8 @@ export async function directConnect({ username, password, loginUrl, alias }) {
         platform
     );
     const connection = new window.jsforce.Connection(connectionParams);
-    console.log('connectionParams2222', connectionParams);
     await connection.login(username, password);
     if (isUndefinedOrNull(connection.accessToken)) {
-        console.log('connection error', connection);
         throw new Error('No access token found');
     }
     const connector = await Connector.createConnector({
@@ -58,7 +56,7 @@ export async function connect({ username, password, loginUrl, alias }, settings 
             credentialType: OAUTH_TYPES.USERNAME,
         });
         // Save configuration after successful connection
-        if (saveFullConfiguration) {
+        if (saveFullConfiguration && !isElectronApp()) {
             await saveConfiguration(alias, connector.configuration);
         }
         // Return a Connector instance

@@ -12,7 +12,6 @@ export * from './connectorClass';
 
 import * as Oauth2 from './credentialStrategies/oauth';
 import * as UsernamePassword from './credentialStrategies/usernamePassword';
-import * as Sfdx from './credentialStrategies/sfdx';
 import * as Session from './credentialStrategies/session';
 import * as NotificationService from './notificationService';
 import * as PlatformService from './platformService';
@@ -22,7 +21,6 @@ import { OAUTH_TYPES as internalOAUTH_TYPES } from './credentialStrategies/index
 export const credentialStrategies = {
     OAUTH: Oauth2,
     USERNAME: UsernamePassword,
-    SFDX: Sfdx,
     SESSION: Session,
 };
 export const OAUTH_TYPES = internalOAUTH_TYPES;
@@ -44,6 +42,7 @@ export const extractName = alias => {
 };
 
 export const extractConfig = config => {
+    if(!config) return null;
     // Regular expression pattern to match the required parts
     const regex = /force:\/\/([^:]+)::([^@]+)@(.+)/;
     // Extracting variables using regex
@@ -204,11 +203,7 @@ export const normalizeConfiguration = (rawData, byPassValidation = false) => {
     if (isUndefinedOrNull(rawData._formatVersion)) {
         // Initialize format version (version null to 1)
         if (rawData.refreshToken) {
-            if (isElectronApp()) {
-                rawData.credentialType = OAUTH_TYPES.SFDX;
-            } else {
-                rawData.credentialType = OAUTH_TYPES.OAUTH;
-            }
+            rawData.credentialType = OAUTH_TYPES.OAUTH;
         } else if (rawData.redirectUrl) {
             rawData.credentialType = OAUTH_TYPES.REDIRECT;
         }
@@ -231,9 +226,6 @@ export const normalizeConfiguration = (rawData, byPassValidation = false) => {
     } else if (type === OAUTH_TYPES.SESSION) {
         if (!rawData.sessionId) missing.push('sessionId');
         if (!rawData.instanceUrl) missing.push('instanceUrl');
-    } else if (type === OAUTH_TYPES.SFDX) {
-        if (!rawData.refreshToken) missing.push('refreshToken');
-        if (!rawData.instanceUrl) missing.push('instanceUrl');
     } else if (type === OAUTH_TYPES.REDIRECT) {
         if (!rawData.redirectUrl) missing.push('redirectUrl');
     }
@@ -244,8 +236,8 @@ export const normalizeConfiguration = (rawData, byPassValidation = false) => {
     }
     // Ensure all required fields are present and shaped consistently
     let sfdxAuthUrl = rawData.sfdxAuthUrl;
-    if (rawData.refreshToken && rawData.instanceUrl) {
-        // TODO : Might fail if the sfdxAuthUrl is already set !!!
+    if (rawData.refreshToken && rawData.instanceUrl && (isEmpty(rawData.sfdxAuthUrl) || !rawData.sfdxAuthUrl.includes(rawData.refreshToken))) {
+        // If the sfdxAuthUrl is already set, we don't need to generate a new one (only if the refreshToken is different)
         sfdxAuthUrl = `force://${window.jsforceSettings?.clientId}::${rawData.refreshToken}@${new URL(rawData.instanceUrl).host}`;
     }
     return {

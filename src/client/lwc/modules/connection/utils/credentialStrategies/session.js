@@ -12,9 +12,6 @@ export async function connect({ sessionId, serverUrl, extra = {}, alias }) {
         isAliasMatchingDisabled = false,
         isEnrichDisabled = false,
     } = extra;
-    if (platform !== PLATFORM.WEB && platform !== PLATFORM.CHROME) {
-        throw new Error('SessionId connect is only supported on Web and Chrome for now');
-    }
     const formattedServerUrl = serverUrl.startsWith('https://')
         ? serverUrl
         : `https://${serverUrl}`;

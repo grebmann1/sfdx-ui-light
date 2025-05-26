@@ -1,7 +1,15 @@
 import { isNotUndefinedOrNull, isEmpty, decodeError, classSet } from 'shared/utils';
+import { extractName, extractConfig,OAUTH_TYPES } from './utils';
 
-const CONNECTION_ERRORS = ['JwtAuthError', 'RefreshTokenAuthError'];
-const CONNECTION_WARNING = ['DomainNotFoundError'];
+const CONNECTION_ERRORS = [
+    'JwtAuthError',
+    'RefreshTokenAuthError'
+];
+const CONNECTION_WARNING = [
+    'DomainNotFoundError'
+];
+
+
 
 export async function getConfiguration(alias) {
     //console.log('getConfiguration - electron');
@@ -9,14 +17,18 @@ export async function getConfiguration(alias) {
     if (error) {
         throw decodeError(error);
     }
+    const {name,company} = extractName(res.alias);
+    const { refreshToken, instanceUrl } = extractConfig(res.sfdxAuthUrl);
     res = {
         ...res,
         ...{
             id: res.alias,
-            company: `${
-                res.alias.split('-').length > 1 ? res.alias.split('-').shift() : ''
-            }`.toUpperCase(),
-            name: res.alias.split('-').pop(),
+            company: company,
+            name: name,
+            credentialType: OAUTH_TYPES.OAUTH, // by default we use OAUTH for electron
+            instanceUrl: res.instanceUrl || instanceUrl,
+            loginUrl: res.instanceUrl || instanceUrl,
+            refreshToken: res.refreshToken || refreshToken,
         },
     };
     return res;
@@ -77,6 +89,7 @@ export async function getConfigurations() {
     orgs = orgs.filter(x => isNotUndefinedOrNull(x.alias)); // Remove empty alias
     orgs = orgs.map((item, index) => {
         let alias = item.alias || 'Empty';
+        const {name,company} = extractName(alias);
         let _typeClass = classSet('')
             .add({
                 'slds-color-brand': item._type === 'DevHub',
@@ -84,16 +97,21 @@ export async function getConfigurations() {
                 'slds-color-orange-dark': item._type === 'Scratch',
             })
             .toString();
-
+        const config = extractConfig(item.sfdxAuthUrl); // { clientId, refreshToken, instanceUrl }
+        if(config){
+            item.instanceUrl = config.instanceUrl;
+            item.loginUrl = config.instanceUrl;
+            item.refreshToken = config.refreshToken;
+        }
+            
         return {
             ...item,
             ...{
                 alias,
                 id: `index-${index}`,
-                company: `${
-                    alias.split('-').length > 1 ? alias.split('-').shift() : ''
-                }`.toUpperCase(),
-                name: alias.split('-').pop(),
+                company: company,
+                name: name,
+                credentialType: OAUTH_TYPES.OAUTH, // by default we use OAUTH for electron
                 _typeClass,
                 _statusClass: getStatusClass(item._status),
                 _hasError: item._status == 'JwtAuthError',
