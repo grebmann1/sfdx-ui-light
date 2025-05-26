@@ -60,9 +60,7 @@ const getStatusClass = status => {
 };
 
 export async function getConfigurations() {
-    console.log('getConfigurations - electron');
     const { result, error } = await window.electron.ipcRenderer.invoke('org-getAllOrgs');
-    console.log('rtesu,t',result,error)
     let orgs = [].concat(
         result.nonScratchOrgs.map(x => ({
             ...x,
@@ -105,6 +103,5 @@ export async function getConfigurations() {
         };
     });
     orgs = orgs.sort((a, b) => a.alias.localeCompare(b.alias));
-    console.log('orgs',orgs)
     return orgs;
 }

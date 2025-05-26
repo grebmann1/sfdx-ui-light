@@ -6,7 +6,7 @@ import {
     CACHE_CONFIG,
     CACHE_SESSION_CONFIG,
     getSyncedSettingsInitializedFromCache,
-    CACHE_ORG_DATA_TYPES
+    CACHE_ORG_DATA_TYPES,
 } from 'shared/cacheManager';
 import Toast from 'lightning/toast';
 import LOGGER from 'shared/logger';
@@ -63,14 +63,14 @@ export default class App extends ToolkitElement {
                 // If not initialized, we need to initialize the settings in the extension sync
                 await cacheManager.saveConfig(this.originalConfig);
                 // Save the session specific settings to the cache
-                if(this.connector?.conn?.alias) {
+                if (this.connector?.conn?.alias) {
                     await cacheManager.saveOrgData(
                         this.connector.conn.alias,
                         CACHE_ORG_DATA_TYPES.SESSION_SETTINGS,
                         this.sessionConfig
                     );
                 }
-                
+
                 cacheManager.isChromeSyncSettingsInitialized = true;
             }
             this.loadConfigFromCache();
@@ -159,12 +159,12 @@ export default class App extends ToolkitElement {
 
     /** Methods **/
 
-    sendToggleOverlayMessage = (checked) => {
+    sendToggleOverlayMessage = checked => {
         chrome.runtime.sendMessage({
             action: 'toggleOverlay',
             enabled: checked,
         });
-    }
+    };
 
     saveToCache = async () => {
         const configurationList = Object.values(CACHE_CONFIG);
@@ -173,8 +173,11 @@ export default class App extends ToolkitElement {
             config[item.key] = this.config[item.key];
         });
         // if the overlayEnabled is changed, send a message to the background script
-        if(this.config[CACHE_CONFIG.OVERLAY_ENABLED.key] !== this.originalConfig[CACHE_CONFIG.OVERLAY_ENABLED.key]) {
-            LOGGER.log('overlayEnabled changed',this.config[CACHE_CONFIG.OVERLAY_ENABLED.key]);
+        if (
+            this.config[CACHE_CONFIG.OVERLAY_ENABLED.key] !==
+            this.originalConfig[CACHE_CONFIG.OVERLAY_ENABLED.key]
+        ) {
+            LOGGER.log('overlayEnabled changed', this.config[CACHE_CONFIG.OVERLAY_ENABLED.key]);
             this.sendToggleOverlayMessage(this.config[CACHE_CONFIG.OVERLAY_ENABLED.key]);
         }
         // Use the new CacheManager to save config
@@ -183,27 +186,31 @@ export default class App extends ToolkitElement {
         this.originalConfig = { ...config };
 
         // Save the session specific settings to the cache
-        if(this.isUserLoggedIn) {
-            const _oldOriginalSessionConfig = Object.assign({},this.originalSessionConfig);
+        if (this.isUserLoggedIn) {
+            const _oldOriginalSessionConfig = Object.assign({}, this.originalSessionConfig);
             await this.saveSessionConfigToCache();
 
-            // force the connector to reload 
-            const apiVersionChanged = _oldOriginalSessionConfig.api_version !== this.originalSessionConfig.api_version;
-            const clientIdChanged = _oldOriginalSessionConfig.client_id !== this.originalSessionConfig.client_id;
+            // force the connector to reload
+            const apiVersionChanged =
+                _oldOriginalSessionConfig.api_version !== this.originalSessionConfig.api_version;
+            const clientIdChanged =
+                _oldOriginalSessionConfig.client_id !== this.originalSessionConfig.client_id;
             const hasChanged = apiVersionChanged || clientIdChanged;
-            if(apiVersionChanged) {
-                LOGGER.log('api_version changed',this.originalSessionConfig.api_version);
+            if (apiVersionChanged) {
+                LOGGER.log('api_version changed', this.originalSessionConfig.api_version);
                 this.connector.conn.version = this.originalSessionConfig.api_version;
             }
-            if(clientIdChanged) {
-                LOGGER.log('client_id changed',this.originalSessionConfig.client_id);
+            if (clientIdChanged) {
+                LOGGER.log('client_id changed', this.originalSessionConfig.client_id);
                 this.connector.conn._callOptions.clientId = this.originalSessionConfig.client_id;
             }
-            if(hasChanged) {
-                store.dispatch(APPLICATION.reduxSlice.actions.updateConnector({ connector:this.connector }));
+            if (hasChanged) {
+                store.dispatch(
+                    APPLICATION.reduxSlice.actions.updateConnector({ connector: this.connector })
+                );
             }
         }
-                
+
         Toast.show({
             label: 'Configuration Saved',
             variant: 'success',
@@ -221,16 +228,16 @@ export default class App extends ToolkitElement {
             CACHE_ORG_DATA_TYPES.SESSION_SETTINGS,
             sessionConfig
         );
-        // we update the originalSessionConfig 
+        // we update the originalSessionConfig
         this.originalSessionConfig = { ...sessionConfig };
-    }
+    };
 
     loadConfigFromCache = async () => {
         // Use the new CacheManager to load config
         const cachedConfiguration = await cacheManager.loadConfig(
             Object.values(CACHE_CONFIG).map(x => x.key)
         );
-        console.log('cachedConfiguration',cachedConfiguration);
+        console.log('cachedConfiguration', cachedConfiguration);
 
         const configurationList = Object.values(CACHE_CONFIG);
         const config = {};
@@ -242,19 +249,20 @@ export default class App extends ToolkitElement {
         this.originalConfig = { ...config };
 
         // Load the session specific settings from the cache
-        
-        if(this.isUserLoggedIn) {   
-            const sessionCachedConfiguration = await cacheManager.loadOrgData(
-                this.connector.conn.alias,
-                CACHE_ORG_DATA_TYPES.SESSION_SETTINGS
-            ) || {};
-            console.log('sessionCachedConfiguration',sessionCachedConfiguration);
+
+        if (this.isUserLoggedIn) {
+            const sessionCachedConfiguration =
+                (await cacheManager.loadOrgData(
+                    this.connector.conn.alias,
+                    CACHE_ORG_DATA_TYPES.SESSION_SETTINGS
+                )) || {};
+            console.log('sessionCachedConfiguration', sessionCachedConfiguration);
             const sessionConfigurationList = Object.values(CACHE_SESSION_CONFIG);
             const sessionConfig = {};
             Object.values(sessionConfigurationList).forEach(item => {
                 sessionConfig[item.key] = sessionCachedConfiguration[item.key] || item.value;
             });
-            
+
             this.sessionConfig = sessionConfig;
             this.originalSessionConfig = { ...sessionConfig };
         }
@@ -273,7 +281,10 @@ export default class App extends ToolkitElement {
     }
 
     get hasChanged() {
-        return JSON.stringify(this.config) != JSON.stringify(this.originalConfig) || JSON.stringify(this.sessionConfig) != JSON.stringify(this.originalSessionConfig);
+        return (
+            JSON.stringify(this.config) != JSON.stringify(this.originalConfig) ||
+            JSON.stringify(this.sessionConfig) != JSON.stringify(this.originalSessionConfig)
+        );
     }
 
     get pageClass() {

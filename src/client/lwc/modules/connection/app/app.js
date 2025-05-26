@@ -28,7 +28,7 @@ import {
     credentialStrategies,
     notificationService,
     OAUTH_TYPES,
-    Connector
+    Connector,
 } from 'connection/utils';
 import { store, APPLICATION } from 'core/store';
 import LOGGER from 'shared/logger';
@@ -112,9 +112,11 @@ export default class App extends ToolkitElement {
         ConnectionManualModal.open({
             size: 'medium',
         }).then(res => {
-            if(res){
-                store.dispatch(APPLICATION.reduxSlice.actions.login({ connector:res }));
-                this.dispatchEvent(new CustomEvent('login', { detail: { value: res }, bubbles: true }));
+            if (res) {
+                store.dispatch(APPLICATION.reduxSlice.actions.login({ connector: res }));
+                this.dispatchEvent(
+                    new CustomEvent('login', { detail: { value: res }, bubbles: true })
+                );
             }
         });
     };
@@ -190,9 +192,9 @@ export default class App extends ToolkitElement {
         this.isLoading = true;
         this.customLoadingMessage = 'Loading Credentials from Cache';
         const configurations = await getConfigurations();
-        console.log('configurations',configurations);
-        this.data = this.formatConfigurations(configurations);    
-        console.log('getConfigurations',this.data);
+        console.log('configurations', configurations);
+        this.data = this.formatConfigurations(configurations);
+        console.log('getConfigurations', this.data);
         this.formattedData = this.formatDataForCardView();
         this.isLoading = false;
         this.customLoadingMessage = null;
@@ -209,18 +211,14 @@ export default class App extends ToolkitElement {
                 _connectLabel: isMatch
                     ? 'Logout'
                     : x._hasError && !isUsernameType
-                        ? 'Authorize'
-                        : 'Connect',
-                _connectVariant: isMatch
-                    ? 'destructive'
-                    : x._hasError
-                        ? 'brand-outline'
-                        : 'brand',
+                      ? 'Authorize'
+                      : 'Connect',
+                _connectVariant: isMatch ? 'destructive' : x._hasError ? 'brand-outline' : 'brand',
                 _connectAction: isMatch
                     ? 'logout'
                     : x._hasError && !isUsernameType
-                        ? 'authorize'
-                        : 'login',
+                      ? 'authorize'
+                      : 'login',
                 _isRedirect: x.credentialType === OAUTH_TYPES.REDIRECT,
             };
         });
@@ -272,9 +270,9 @@ export default class App extends ToolkitElement {
                 if (!strategy)
                     throw new Error(`No strategy for credential type: ${credentialType}`);
 
-                console.log('Connecting with configuration',configuration);
+                console.log('Connecting with configuration', configuration);
                 const connector = await strategy.connect(configuration);
-                
+
                 if (!connector.hasError) {
                     store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
                     this.dispatchEvent(
@@ -290,7 +288,7 @@ export default class App extends ToolkitElement {
                     });
                 }
             } catch (e) {
-                console.error('login error',e);
+                console.error('login error', e);
                 handleError(e, 'Login Error');
                 store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
                 this.fetchAllConnections();
@@ -302,13 +300,18 @@ export default class App extends ToolkitElement {
         if (isElectronApp()) return;
         this.isLoading = true;
         let { alias, loginUrl, ...settings } = this.data.find(x => x.id == row.id);
-        const connector = await credentialStrategies[OAUTH_TYPES.OAUTH].connect({ alias, loginUrl },{saveFullConfiguration:true,bypass:true});
-        if(connector.hasError){
-            LOGGER.error('authorizeExistingOrg',connector.errorMessage);
+        const connector = await credentialStrategies[OAUTH_TYPES.OAUTH].connect(
+            { alias, loginUrl },
+            { saveFullConfiguration: true, bypass: true }
+        );
+        if (connector.hasError) {
+            LOGGER.error('authorizeExistingOrg', connector.errorMessage);
             throw new Error(connector.errorMessage);
         }
         store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
-        this.dispatchEvent(new CustomEvent('login', { detail: { value: connector }, bubbles: true }));
+        this.dispatchEvent(
+            new CustomEvent('login', { detail: { value: connector }, bubbles: true })
+        );
         this.fetchAllConnections();
     };
 
@@ -334,9 +337,9 @@ export default class App extends ToolkitElement {
                     if (!strategy)
                         throw new Error(`No strategy for credential type: ${credentialType}`);
 
-                    console.log('Connecting with configuration --> 1',configuration);
+                    console.log('Connecting with configuration --> 1', configuration);
                     const connector = await strategy.directConnect(configuration);
-                    console.log('connector --> 1',connector); 
+                    console.log('connector --> 1', connector);
                     url = connector.frontDoorUrl;
                 } else {
                     url = redirectUrl;
@@ -642,7 +645,9 @@ export default class App extends ToolkitElement {
         let filtered = this.data.filter(
             x =>
                 isUndefinedOrNull(this.filter) ||
-                (isNotUndefinedOrNull(this.filter) && (checkIfPresent(x.alias, this.filter) ||checkIfPresent(x.username, this.filter)))
+                (isNotUndefinedOrNull(this.filter) &&
+                    (checkIfPresent(x.alias, this.filter) ||
+                        checkIfPresent(x.username, this.filter)))
         );
         return filtered;
     }

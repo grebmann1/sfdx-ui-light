@@ -1,28 +1,33 @@
 // sfdx.js
-import { getCurrentPlatform, PLATFORM,getConfiguration } from '../platformService';
+import { getCurrentPlatform, PLATFORM, getConfiguration } from '../platformService';
 import { OAUTH_TYPES } from './index';
 import { normalizeConnection } from '../utils';
 import { Connector } from '../connectorClass';
 import { isUndefinedOrNull } from 'shared/utils';
 import LOGGER from 'shared/logger';
 
-export async function connect({ alias },settings = {}) {
+export async function connect({ alias }, settings = {}) {
     const platform = getCurrentPlatform();
     if (platform !== PLATFORM.ELECTRON) {
         throw new Error('SFDX connect is only supported on Electron for now');
     }
-    
+
     // Check for existing configuration first
     const configuration = await getConfiguration(alias);
-    const connectionParams = normalizeConnection(OAUTH_TYPES.OAUTH,configuration,platform);
+    const connectionParams = normalizeConnection(OAUTH_TYPES.OAUTH, configuration, platform);
     const connection = await new window.jsforce.Connection(connectionParams);
-    if(isUndefinedOrNull(connection.accessToken)){
-        console.log('connection error',connection);
+    if (isUndefinedOrNull(connection.accessToken)) {
+        console.log('connection error', connection);
         throw new Error('No access token found');
     }
-    const connector = await Connector.createConnector({ alias, connection,configuration,credentialType:OAUTH_TYPES.OAUTH });
+    const connector = await Connector.createConnector({
+        alias,
+        connection,
+        configuration,
+        credentialType: OAUTH_TYPES.OAUTH,
+    });
     await connector.generateAccessToken();
-    if(connector.hasError){
+    if (connector.hasError) {
         throw new Error(connector.errorMessage);
     }
     return connector;

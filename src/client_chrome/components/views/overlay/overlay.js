@@ -9,7 +9,7 @@ import {
     redirectToUrlViaChrome,
     getRecordId,
 } from 'shared/utils';
-import { connectStore, store,APPLICATION } from 'core/store';
+import { connectStore, store, APPLICATION } from 'core/store';
 import { TYPE } from 'overlay/utils';
 import { directConnect, credentialStrategies } from 'connection/utils';
 
@@ -90,7 +90,8 @@ export default class Overlay extends ToolkitElement {
 
     connectedCallback() {
         window.jsforce = jsforce;
-        window.defaultStore = window.defaultStore || localForage.createInstance({ name: 'defaultStore' });
+        window.defaultStore =
+            window.defaultStore || localForage.createInstance({ name: 'defaultStore' });
         this.getSessionId();
         //this.checkRecordId();
         this.header_enableAutoDate();
@@ -312,7 +313,7 @@ export default class Overlay extends ToolkitElement {
                 isEnrichDisabled: true,
             },
         };
-        try{
+        try {
             let connector = await credentialStrategies.SESSION.connect(params);
             store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
         } catch (e) {

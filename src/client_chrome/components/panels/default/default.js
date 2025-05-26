@@ -1,7 +1,7 @@
 import { api, LightningElement, wire } from 'lwc';
 import { store as legacyStore, store_application } from 'shared/store';
 
-import { isNotUndefinedOrNull,redirectToUrlViaChrome } from 'shared/utils';
+import { isNotUndefinedOrNull, redirectToUrlViaChrome } from 'shared/utils';
 import { CACHE_CONFIG, loadExtensionConfigFromCache } from 'shared/cacheManager';
 
 import { APPLICATION, connectStore, store } from 'core/store';

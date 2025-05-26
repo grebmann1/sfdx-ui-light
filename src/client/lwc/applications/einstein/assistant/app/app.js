@@ -3,7 +3,7 @@ import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
 import { isUndefinedOrNull, isNotUndefinedOrNull, isEmpty, guid, classSet } from 'shared/utils';
 import { GLOBAL_EINSTEIN } from 'assistant/utils';
-import { getConfigurations,credentialStrategies } from 'connection/utils';
+import { getConfigurations, credentialStrategies } from 'connection/utils';
 import { store, connectStore, EINSTEIN, APPLICATION, SELECTORS } from 'core/store';
 
 export default class App extends ToolkitElement {

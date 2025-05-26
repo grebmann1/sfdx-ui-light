@@ -8,7 +8,7 @@ import {
     credentialStrategies,
     notificationService,
     validateInputs,
-    OAUTH_TYPES
+    OAUTH_TYPES,
 } from 'connection/utils';
 const { showToast, handleError } = notificationService;
 import {
@@ -32,7 +32,6 @@ const DEFAULT_CATEGORY = {
     icon: 'standard:category',
     title: 'Default',
 };
-
 
 const ORG_TYPES = {
     PRODUCTION: 'Production',
@@ -169,13 +168,13 @@ export default class ConnectionNewModal extends LightningModal {
                     loginUrl: this.loginUrl,
                     alias: this.alias,
                 },
-                {saveFullConfiguration:true}
+                { saveFullConfiguration: true }
             );
-            LOGGER.log('standard_usernamePassword',result);
+            LOGGER.log('standard_usernamePassword', result);
             showToast({ label: 'Connected successfully!', variant: 'success' });
             this.close(result);
         } catch (e) {
-            LOGGER.error('standard_usernamePassword error',e);
+            LOGGER.error('standard_usernamePassword error', e);
             handleError(e, 'Username/Password Error');
             this.close(null);
         }
@@ -214,12 +213,12 @@ export default class ConnectionNewModal extends LightningModal {
             if (error) {
                 throw decodeError(error);
             }
-            console.log('electron_oauth',error, res);
+            console.log('electron_oauth', error, res);
 
             window.electron.listener_on('oauth', value => {
                 if (value.action === 'done' || value.action === 'exit') {
                     window.electron.listener_off('oauth');
-                    setTimeout(() => {  
+                    setTimeout(() => {
                         //console.log('close connection');
                         this.close(value.data);
                     }, 1000);
@@ -245,9 +244,9 @@ export default class ConnectionNewModal extends LightningModal {
                     alias: this.alias,
                     loginUrl: this.loginUrl,
                 },
-                {saveFullConfiguration:true}
+                { saveFullConfiguration: true }
             );
-            console.log('result',result);
+            console.log('result', result);
             this.close(result);
         } catch (e) {
             handleError(e, 'OAuth Error');

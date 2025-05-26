@@ -3,7 +3,7 @@ import * as web from './web';
 import * as chrome from './chrome';
 import * as electron from './electron';
 import { normalizeConfiguration } from './utils';
-import { isChromeExtension,isElectronApp } from 'shared/utils';
+import { isChromeExtension, isElectronApp } from 'shared/utils';
 
 export const PLATFORM = {
     WEB: 'web',
@@ -28,7 +28,7 @@ export async function getConfigurations() {
         default:
             configurations = await web.getConfigurations();
     }
-    return configurations.map(x => normalizeConfiguration(x,true));
+    return configurations.map(x => normalizeConfiguration(x, true));
 }
 
 export async function getConfiguration(alias) {
@@ -42,7 +42,7 @@ export async function getConfiguration(alias) {
         default:
             configuration = await web.getConfiguration(alias);
     }
-    return configuration ? normalizeConfiguration(configuration,true) : null;
+    return configuration ? normalizeConfiguration(configuration, true) : null;
 }
 
 export function saveConfiguration(alias, configuration) {

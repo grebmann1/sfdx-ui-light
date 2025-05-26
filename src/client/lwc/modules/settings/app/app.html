@@ -49,13 +49,16 @@
                                 </h3>
                                 <div class="slds-p-vertical_small">
                                     <slds-information-block>
-                                        This settings are specific to the user {userName}. It will be
-                                        stored in the browser cache.
+                                        This settings are specific to the user {userName}. It will
+                                        be stored in the browser cache.
                                     </slds-information-block>
                                 </div>
                             </div>
-                            <div class="slds-grid slds-gutters_direct slds-wrap slds-grid_vertical-stretch">
-                                <settings-card class="slds-col slds-size_1-of-2 slds-large-size_1-of-2 slds-p-horizontal_small" is-first>
+                            <div
+                                class="slds-grid slds-gutters_direct slds-wrap slds-grid_vertical-stretch">
+                                <settings-card
+                                    class="slds-col slds-size_1-of-2 slds-large-size_1-of-2 slds-p-horizontal_small"
+                                    is-first>
                                     <div slot="title">
                                         <h1>Client Id</h1>
                                         <p
@@ -68,8 +71,7 @@
                                         <lightning-button-icon
                                             alternative-text="Reset"
                                             icon-name="utility:refresh"
-                                            onclick={handleResetClientId}
-                                        ></lightning-button-icon>
+                                            onclick={handleResetClientId}></lightning-button-icon>
                                     </div>
                                     <lightning-input
                                         data-key="client_id"
@@ -82,7 +84,9 @@
                                         onchange={sessionInputfield_change}></lightning-input>
                                 </settings-card>
 
-                                <settings-card class="slds-col slds-size_1-of-2 slds-large-size_1-of-2 slds-p-horizontal_small" is-first>
+                                <settings-card
+                                    class="slds-col slds-size_1-of-2 slds-large-size_1-of-2 slds-p-horizontal_small"
+                                    is-first>
                                     <div slot="title">
                                         <h1>API Version</h1>
                                         <p
@@ -95,8 +99,7 @@
                                         <lightning-button-icon
                                             alternative-text="Reset"
                                             icon-name="utility:refresh"
-                                            onclick={handleResetApiVersion}
-                                        ></lightning-button-icon>
+                                            onclick={handleResetApiVersion}></lightning-button-icon>
                                     </div>
                                     <lightning-input
                                         data-key="api_version"
@@ -109,8 +112,7 @@
                                         onchange={sessionInputfield_change}
                                         placeholder="e.g. 63.0"
                                         pattern="[0-9]{2}\.[0-9]{1}"
-                                        message-when-pattern-mismatch="Invalid API Version, follow this format: 63.0"
-                                    ></lightning-input>
+                                        message-when-pattern-mismatch="Invalid API Version, follow this format: 63.0"></lightning-input>
                                 </settings-card>
                             </div>
                         </slds-tab>

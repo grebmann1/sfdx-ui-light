@@ -3,7 +3,12 @@ import LightningAlert from 'lightning/alert';
 import LightningModal from 'lightning/modal';
 import { api, track } from 'lwc';
 import { isNotUndefinedOrNull } from 'shared/utils';
-import { extractConfig,credentialStrategies, notificationService, validateInputs } from 'connection/utils';
+import {
+    extractConfig,
+    credentialStrategies,
+    notificationService,
+    validateInputs,
+} from 'connection/utils';
 const { showToast, handleError } = notificationService;
 
 export default class ConnectionImportModal extends LightningModal {
@@ -119,7 +124,10 @@ export default class ConnectionImportModal extends LightningModal {
         this.isLoading = true;
         try {
             const connectors = await this.getOauthForNewConnections();
-            showToast({ label: `${this.list_new.length} credential(s) added !`, variant: 'success' });
+            showToast({
+                label: `${this.list_new.length} credential(s) added !`,
+                variant: 'success',
+            });
             this.close('success');
         } catch (e) {
             handleError(e, 'Import Save Error');

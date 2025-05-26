@@ -12,7 +12,7 @@ import { getCurrentTab, PANELS } from 'extension/utils';
 
 /** Store **/
 import { store as legacyStore } from 'shared/store';
-import { connectStore, store,APPLICATION } from 'core/store';
+import { connectStore, store, APPLICATION } from 'core/store';
 
 const VARIANT = {
     DEFAULT: 'default',

@@ -1,9 +1,5 @@
 import constant from 'core/constant';
-import {
-    isUndefinedOrNull,
-    isElectronApp,
-    isEmpty,
-} from 'shared/utils';
+import { isUndefinedOrNull, isElectronApp, isEmpty } from 'shared/utils';
 
 import { Connector } from './connectorClass';
 import * as webInterface from './web';
@@ -11,8 +7,6 @@ import * as webInterface from './web';
 import LOGGER from 'shared/logger';
 export * from './chrome';
 export * from './connectorClass';
-
-
 
 /** Credential Strategies **/
 
@@ -39,22 +33,17 @@ export const platformService = PlatformService;
 
 export const integrationMatrix = IntegrationMatrix;
 
-
-
-
-
-
 /** Legacy Functions/Methods **/
 
-export const extractName = (alias) => {
+export const extractName = alias => {
     let nameArray = (alias || '').split('-');
     return {
         company: nameArray.length > 1 ? nameArray.shift() : '',
         name: nameArray.join('-'),
     };
-}
+};
 
-export const extractConfig = (config) => {
+export const extractConfig = config => {
     // Regular expression pattern to match the required parts
     const regex = /force:\/\/([^:]+)::([^@]+)@(.+)/;
     // Extracting variables using regex
@@ -66,7 +55,7 @@ export const extractConfig = (config) => {
         return { clientId, refreshToken, instanceUrl };
     }
     return null;
-}
+};
 
 // Legacy connect and getExistingSession functions removed. All connection logic now uses credential strategies.
 
@@ -98,28 +87,27 @@ export async function removeSession() {
     sessionStorage.removeItem('currentConnection');
 }
 
-
-
-
 /** Session Connection **/
 
-
-
-
-
-
-export async function setRedirectCredential({ alias, redirectUrl }, callback, callbackErrorHandler) {
+export async function setRedirectCredential(
+    { alias, redirectUrl },
+    callback,
+    callbackErrorHandler
+) {
     try {
         LOGGER.log('redirect_credential');
-        const connector = await Connector.createConnector({ alias, redirectUrl,credentialType:internalOAUTH_TYPES.REDIRECT });
-        LOGGER.log('connector',connector);
+        const connector = await Connector.createConnector({
+            alias,
+            redirectUrl,
+            credentialType: internalOAUTH_TYPES.REDIRECT,
+        });
+        LOGGER.log('connector', connector);
         await webInterface.saveConfiguration(alias, connector.configuration);
         callback();
     } catch (e) {
         callbackErrorHandler(e);
     }
 }
-
 
 // --- Salesforce Domain Normalization Utility ---
 /**
@@ -184,15 +172,15 @@ export function validateInputs(template, selector) {
     return isValid;
 }
 
-
-
-export const normalizeConnection = (credentialType,rawData,platform,extra = {}) => {
-
+export const normalizeConnection = (credentialType, rawData, platform, extra = {}) => {
     let params = {
         instanceUrl: rawData.instanceUrl,
         accessToken: rawData.accessToken,
         sessionId: rawData.sessionId,
-        proxyUrl: extra.isProxyDisabled || platform === PlatformService.PLATFORM.CHROME? null: window.jsforceSettings?.proxyUrl, // For chrome extension, we run without proxy
+        proxyUrl:
+            extra.isProxyDisabled || platform === PlatformService.PLATFORM.CHROME
+                ? null
+                : window.jsforceSettings?.proxyUrl, // For chrome extension, we run without proxy
         version: rawData.version || constant.apiVersion, // This might need to be refactored
         //logLevel:'DEBUG',
         logLevel: rawData.logLevel || null, //'DEBUG',
@@ -205,24 +193,23 @@ export const normalizeConnection = (credentialType,rawData,platform,extra = {}) 
             ...window.jsforceSettings,
             loginUrl: rawData.instanceUrl,
         };
-    }else if (credentialType === OAUTH_TYPES.USERNAME) {
+    } else if (credentialType === OAUTH_TYPES.USERNAME) {
         params.loginUrl = rawData.instanceUrl;
     }
     return params;
-}
+};
 
-
-export const normalizeConfiguration = (rawData,byPassValidation = false) => {
+export const normalizeConfiguration = (rawData, byPassValidation = false) => {
     // Validate required fields by credentialType
-    if(isUndefinedOrNull(rawData._formatVersion)){
+    if (isUndefinedOrNull(rawData._formatVersion)) {
         // Initialize format version (version null to 1)
-        if(rawData.refreshToken){
-            if(isElectronApp()){
+        if (rawData.refreshToken) {
+            if (isElectronApp()) {
                 rawData.credentialType = OAUTH_TYPES.SFDX;
-            }else{
+            } else {
                 rawData.credentialType = OAUTH_TYPES.OAUTH;
             }
-        }else if(rawData.redirectUrl){
+        } else if (rawData.redirectUrl) {
             rawData.credentialType = OAUTH_TYPES.REDIRECT;
         }
         rawData._formatVersion = 1;
@@ -251,11 +238,13 @@ export const normalizeConfiguration = (rawData,byPassValidation = false) => {
         if (!rawData.redirectUrl) missing.push('redirectUrl');
     }
     if (missing.length > 0 && !byPassValidation) {
-        throw new Error(`normalizeConfiguration: Missing required field(s) for ${type || 'unknown'}: ${missing.join(', ')}`);
+        throw new Error(
+            `normalizeConfiguration: Missing required field(s) for ${type || 'unknown'}: ${missing.join(', ')}`
+        );
     }
     // Ensure all required fields are present and shaped consistently
-    let sfdxAuthUrl = rawData.sfdxAuthUrl
-    if(rawData.refreshToken && rawData.instanceUrl){
+    let sfdxAuthUrl = rawData.sfdxAuthUrl;
+    if (rawData.refreshToken && rawData.instanceUrl) {
         // TODO : Might fail if the sfdxAuthUrl is already set !!!
         sfdxAuthUrl = `force://${window.jsforceSettings?.clientId}::${rawData.refreshToken}@${new URL(rawData.instanceUrl).host}`;
     }
@@ -279,7 +268,7 @@ export const normalizeConfiguration = (rawData,byPassValidation = false) => {
         versionDetails: rawData.versionDetails,
         orgType: rawData.orgType,
         _hasError: rawData._hasError,
-        _formatVersion:rawData._formatVersion || 1
+        _formatVersion: rawData._formatVersion || 1,
         //_typeClass: rawData._typeClass,
         //_statusClass: rawData._statusClass,
         //_connectVariant: rawData._hasError ? 'brand-outline' : 'brand',
@@ -288,10 +277,9 @@ export const normalizeConfiguration = (rawData,byPassValidation = false) => {
         //_isInjected: rawData._isInjected,
         // Add any other fields you want to preserve
     };
-}
+};
 
-
-export const extractConfigurationValuesFromConnection = (connection) => {
+export const extractConfigurationValuesFromConnection = connection => {
     return {
         instanceUrl: connection.instanceUrl,
         loginUrl: connection.loginUrl,
@@ -303,6 +291,4 @@ export const extractConfigurationValuesFromConnection = (connection) => {
         userInfo: connection.userInfo,
         orgId: connection.userInfo?.organization_id,
     };
-}
-
-
+};

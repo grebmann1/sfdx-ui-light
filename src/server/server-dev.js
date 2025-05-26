@@ -116,7 +116,7 @@ app.get('/oauth2/callback', async function (req, res) {
 
     try {
         const conn = new jsforce.Connection({ oauth2: getOAuth2Instance(params) });
-        
+
         const userInfo = await conn.authorize(code);
         res.redirect(
             `/callback#${qs.stringify({
@@ -192,8 +192,6 @@ app.post('/generatejwt', async (req, res) => {
                 algorithm: 'RS256',
             }
         );
-        console.log('jwtToken', jwtToken);
-
         res.json({ jwtToken: jwtToken });
     } catch (error) {
         console.log('error', error);

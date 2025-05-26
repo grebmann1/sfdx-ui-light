@@ -347,9 +347,7 @@ export default class SldsTabBar extends LightningElement {
     _tabClass({ selected = false, hasFocus = false, isAdd = false }) {
         const isScopedVariant = this._variant === 'scoped';
         const isVertical = this.isVerticalVariant;
-        return classSet(
-            'slds-grid slds-grid_vertical-align-center slds-sub-tabs__item'
-        )
+        return classSet('slds-grid slds-grid_vertical-align-center slds-sub-tabs__item')
             .add({
                 'slds-tabs_default__item': !isScopedVariant && !isVertical,
                 'slds-tabs_scoped__item': isScopedVariant,

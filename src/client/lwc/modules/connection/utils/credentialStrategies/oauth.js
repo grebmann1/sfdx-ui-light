@@ -1,6 +1,6 @@
 // oauth.js
 import { getCurrentPlatform, PLATFORM, getConfiguration } from '../platformService';
-import { processHost,normalizeConnection } from '../utils';
+import { processHost, normalizeConnection } from '../utils';
 import { OAUTH_TYPES } from './index';
 import { saveConfiguration } from '../web';
 import { Connector } from '../connectorClass';
@@ -11,39 +11,49 @@ const FULL_SCOPE = 'id api web openid sfap_api einstein_gpt_api refresh_token';
 
 export async function directConnect(configuration) {
     const platform = getCurrentPlatform();
-    const connectionParams = normalizeConnection(OAUTH_TYPES.OAUTH,configuration,platform);
-    LOGGER.log('connectionParams',connectionParams);
+    const connectionParams = normalizeConnection(OAUTH_TYPES.OAUTH, configuration, platform);
+    LOGGER.log('connectionParams', connectionParams);
     const connection = await new window.jsforce.Connection(connectionParams);
-    const connector = await Connector.createConnector({ alias:configuration.alias, connection,configuration,credentialType:OAUTH_TYPES.OAUTH });
+    const connector = await Connector.createConnector({
+        alias: configuration.alias,
+        connection,
+        configuration,
+        credentialType: OAUTH_TYPES.OAUTH,
+    });
     await connector.generateAccessToken();
-    if(connector.hasError){
+    if (connector.hasError) {
         throw new Error(connector.errorMessage);
     }
     return connector;
 }
 
-export async function connect({ alias, loginUrl },settings = {}) {
-    const {bypass = false,saveFullConfiguration = false} = settings;
-    LOGGER.debug('connect',{alias,loginUrl,bypass,saveFullConfiguration});
+export async function connect({ alias, loginUrl }, settings = {}) {
+    const { bypass = false, saveFullConfiguration = false } = settings;
+    LOGGER.debug('connect', { alias, loginUrl, bypass, saveFullConfiguration });
     const platform = getCurrentPlatform();
     const normalizedUrl = processHost(loginUrl);
-    LOGGER.log('normalizedUrl',normalizedUrl);
-    LOGGER.log('platform',platform);
-    
+    LOGGER.log('normalizedUrl', normalizedUrl);
+    LOGGER.log('platform', platform);
+
     // Check for existing configuration first
     const configuration = await getConfiguration(alias);
     if (configuration && configuration.refreshToken && !bypass) {
         // Try to connect using the existing configuration
         // (Assume refreshToken is sufficient for OAuth reconnect)
-        const connectionParams = normalizeConnection(OAUTH_TYPES.OAUTH,configuration,platform);
+        const connectionParams = normalizeConnection(OAUTH_TYPES.OAUTH, configuration, platform);
         const connection = await new window.jsforce.Connection(connectionParams);
-        if(isUndefinedOrNull(connection.accessToken)){
-            console.log('connection error',connection);
+        if (isUndefinedOrNull(connection.accessToken)) {
+            console.log('connection error', connection);
             throw new Error('No access token found');
         }
-        const connector = await Connector.createConnector({ alias, connection,configuration,credentialType:OAUTH_TYPES.OAUTH });
+        const connector = await Connector.createConnector({
+            alias,
+            connection,
+            configuration,
+            credentialType: OAUTH_TYPES.OAUTH,
+        });
         await connector.generateAccessToken();
-        if(connector.hasError){
+        if (connector.hasError) {
             throw new Error(connector.errorMessage);
         }
         return connector;
@@ -65,20 +75,24 @@ export async function connect({ alias, loginUrl },settings = {}) {
             chrome.runtime.sendMessage(
                 { action: 'launchWebAuthFlow', url: finalUrl },
                 async response => {
-                    LOGGER.log('res',response);
+                    LOGGER.log('res', response);
                     const { code } = response || {};
                     if (!code) return reject(new Error('OAuth flow canceled'));
                     const connection = new window.jsforce.Connection({ oauth2 });
                     try {
                         await connection.authorize(code);
-                        const connector = await Connector.createConnector({ alias, connection,credentialType:OAUTH_TYPES.OAUTH });
-                        if(saveFullConfiguration){
-                            LOGGER.debug('saving configuration -->',connector);
+                        const connector = await Connector.createConnector({
+                            alias,
+                            connection,
+                            credentialType: OAUTH_TYPES.OAUTH,
+                        });
+                        if (saveFullConfiguration) {
+                            LOGGER.debug('saving configuration -->', connector);
                             await saveConfiguration(alias, connector.configuration);
                         }
                         resolve(connector);
                     } catch (e) {
-                        LOGGER.error('Chrome OAuth Error',e);
+                        LOGGER.error('Chrome OAuth Error', e);
                         reject(e);
                     }
                 }
@@ -94,10 +108,14 @@ export async function connect({ alias, loginUrl },settings = {}) {
                 loginUrl: normalizedUrl,
                 version: window.jsforceSettings.apiVersion,
             });
-            
+
             window.jsforce.browserClient.on('connect', async connection => {
-                const connector = await Connector.createConnector({ alias, connection,credentialType:OAUTH_TYPES.OAUTH });
-                if(saveFullConfiguration){
+                const connector = await Connector.createConnector({
+                    alias,
+                    connection,
+                    credentialType: OAUTH_TYPES.OAUTH,
+                });
+                if (saveFullConfiguration) {
                     await saveConfiguration(alias, connector.configuration);
                 }
                 resolve(connector);
@@ -105,13 +123,13 @@ export async function connect({ alias, loginUrl },settings = {}) {
             window.jsforce.browserClient
                 .login({ scope: FULL_SCOPE })
                 .then(res => {
-                    LOGGER.log('res',res);
+                    LOGGER.log('res', res);
                     if (res.status === 'cancel') {
                         resolve(null);
                     }
                 })
                 .catch(e => {
-                    LOGGER.error('Web OAuth Error',e);
+                    LOGGER.error('Web OAuth Error', e);
                     reject(e);
                 });
         });

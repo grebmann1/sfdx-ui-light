@@ -228,9 +228,9 @@ export const executeApiRequest = createAsyncThunk(
     }
 );
 
-const createInitialTabs = (apiVersion) => {
+const createInitialTabs = apiVersion => {
     return [enrichTab(generateDefaultTab(apiVersion), null)];
-}
+};
 
 // Create a slice with reducers and extraReducers
 const apiSlice = createSlice({
@@ -253,14 +253,16 @@ const apiSlice = createSlice({
             if (cachedConfig) {
                 // Use cached config
                 const { viewerTab, recentPanelToggled, tabs } = cachedConfig;
-                const newTabs = enrichTabs(tabs || createInitialTabs(state.currentApiVersion), { apiFiles });
+                const newTabs = enrichTabs(tabs || createInitialTabs(state.currentApiVersion), {
+                    apiFiles,
+                });
                 Object.assign(state, {
                     viewerTab,
                     recentPanelToggled,
                     tabs: tabs,
                     currentTab: newTabs.length > 0 ? newTabs[0] : null,
                 });
-            }else{
+            } else {
                 // No cached config, create initial tabs
                 let newTabs = createInitialTabs(state.currentApiVersion);
                 Object.assign(state, {

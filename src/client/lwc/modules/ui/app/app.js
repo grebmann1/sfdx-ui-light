@@ -28,7 +28,6 @@ import { APP_LIST } from './modules';
 import { store as legacyStore } from 'shared/store';
 import { connectStore, store, DOCUMENT, APPLICATION } from 'core/store';
 
-
 const LIMITED = 'limited';
 
 export * as CONFIG from './modules';
@@ -379,7 +378,7 @@ export default class App extends LightningElement {
         try {
             if (isElectronApp()) {
                 let connector = await credentialStrategies.SFDX.connect({ alias: this.alias });
-                store.dispatch(APPLICATION.reduxSlice.actions.login({connector}));
+                store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
             } else {
                 let connector = await credentialStrategies.SESSION.connect({
                     sessionId: this.sessionId,
@@ -388,7 +387,7 @@ export default class App extends LightningElement {
                 // Reset after to prevent looping
                 this.sessionId = null;
                 this.serverUrl = null;
-                store.dispatch(APPLICATION.reduxSlice.actions.login({connector}));
+                store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
             }
 
             if (this.redirectUrl) {
@@ -442,23 +441,29 @@ export default class App extends LightningElement {
                 try {
                     const settings = JSON.parse(currentConnectionRaw);
                     settings.logLevel = null;
-                    console.log('settings',settings);
+                    console.log('settings', settings);
                     let connector;
                     if (isElectronApp()) {
                         // For Electron, use SFDX strategy with alias
-                        connector = await credentialStrategies.SFDX.connect({ alias: settings.alias });
+                        connector = await credentialStrategies.SFDX.connect({
+                            alias: settings.alias,
+                        });
                     } else if (settings.sessionId && settings.serverUrl) {
                         // For Web/Chrome, use SESSION strategy
                         connector = await credentialStrategies.SESSION.connect({
                             sessionId: settings.sessionId,
                             serverUrl: settings.serverUrl,
                         });
-                    } else if (settings.credentialType && credentialStrategies[settings.credentialType]) {
+                    } else if (
+                        settings.credentialType &&
+                        credentialStrategies[settings.credentialType]
+                    ) {
                         // Fallback: use credentialType if present
-                        connector = await credentialStrategies[settings.credentialType].connect(settings);
+                        connector =
+                            await credentialStrategies[settings.credentialType].connect(settings);
                     }
-                    if(connector) {
-                        store.dispatch(APPLICATION.reduxSlice.actions.login({connector}));
+                    if (connector) {
+                        store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
                     }
                     // Optionally: handle result (e.g., update store, etc.)
                 } catch (e) {

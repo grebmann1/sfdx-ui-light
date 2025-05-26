@@ -27,8 +27,8 @@ export async function saveConfiguration(alias, configuration) {
     let configurations = await getConnectionsFromCache();
     let index = configurations.findIndex(x => x.alias === alias);
     const normalized = normalizeConfiguration(configuration); // Just in case
-    console.log('configurations[index]',configurations[index]);
-    console.log('normalized',normalized);
+    console.log('configurations[index]', configurations[index]);
+    console.log('normalized', normalized);
     if (index >= 0) {
         configurations[index] = normalized;
     } else {

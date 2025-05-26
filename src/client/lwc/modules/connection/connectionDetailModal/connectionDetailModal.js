@@ -23,8 +23,6 @@ export default class ConnectionDetailModal extends LightningModal {
     // redirectUrl
     @api redirectUrl;
 
-    
-
     /* Getters */
 
     get isRedirect() {
@@ -44,5 +42,4 @@ export default class ConnectionDetailModal extends LightningModal {
     closeModal() {
         this.close('success');
     }
-
 }

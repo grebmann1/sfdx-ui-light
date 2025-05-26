@@ -207,10 +207,10 @@ const openSideBar = async tab => {
 // Message Listener
 const wrapAsyncFunction = listener => (request, sender, sendResponse) => {
     Promise.resolve(listener(request, sender))
-    .then(sendResponse)
-    .catch(error => {
-        sendResponse({ error: error.message });
-    });
+        .then(sendResponse)
+        .catch(error => {
+            sendResponse({ error: error.message });
+        });
     return true;
 };
 
@@ -421,7 +421,7 @@ chrome.runtime.onMessage.addListener(
                 interactive: true,
             });
             if (chrome.runtime.lastError) {
-                console.log('chrome.runtime.lastError',chrome.runtime.lastError);
+                console.log('chrome.runtime.lastError', chrome.runtime.lastError);
                 return { error: chrome.runtime.lastError.message };
             }
             const url = new URL(responseUrl);

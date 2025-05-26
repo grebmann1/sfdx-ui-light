@@ -3,7 +3,7 @@
 import LOGGER from 'shared/logger';
 import Toast from 'lightning/toast';
 
-export function showToast({ label,message, variant = 'info' }) {
+export function showToast({ label, message, variant = 'info' }) {
     // TODO: Implement toast logic
     Toast.show({
         label: label,
@@ -11,7 +11,7 @@ export function showToast({ label,message, variant = 'info' }) {
         variant: variant,
         mode: 'dismissible',
     });
-    switch(variant){
+    switch (variant) {
         case 'info':
             console.info(message);
             break;
@@ -34,5 +34,5 @@ export function showAlert({ message, theme = 'error', label = 'Error!' }) {
 
 export function handleError(error, context = '') {
     // TODO: Implement error handling logic
-    showToast({ label: context,message:error.message || error, variant: 'error' });
+    showToast({ label: context, message: error.message || error, variant: 'error' });
 }

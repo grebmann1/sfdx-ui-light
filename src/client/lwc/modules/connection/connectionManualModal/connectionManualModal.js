@@ -1,11 +1,13 @@
 import { api, track } from 'lwc';
 import Toast from 'lightning/toast';
 import LightningModal from 'lightning/modal';
-import { processHost,credentialStrategies,notificationService, validateInputs } from 'connection/utils';
 import {
-    isNotUndefinedOrNull,
-    isChromeExtension,
-} from 'shared/utils';
+    processHost,
+    credentialStrategies,
+    notificationService,
+    validateInputs,
+} from 'connection/utils';
+import { isNotUndefinedOrNull, isChromeExtension } from 'shared/utils';
 import LOGGER from 'shared/logger';
 const { showToast, handleError } = notificationService;
 
