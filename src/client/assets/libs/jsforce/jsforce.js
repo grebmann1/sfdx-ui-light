@@ -369,6 +369,7 @@ var BrowserClient = function (_EventEmitter) {
           return {
             accessToken: localStorage.getItem(this._prefix + '_access_token'),
             instanceUrl: localStorage.getItem(this._prefix + '_instance_url'),
+            refreshToken: localStorage.getItem(this._prefix + '_refresh_token'),
             userInfo: userInfo
           };
         }
@@ -386,6 +387,7 @@ var BrowserClient = function (_EventEmitter) {
       localStorage.setItem(this._prefix + '_instance_url', params.instance_url);
       localStorage.setItem(this._prefix + '_issued_at', params.issued_at);
       localStorage.setItem(this._prefix + '_id', params.id);
+      localStorage.setItem(this._prefix + '_refresh_token', params.refresh_token);
       document.cookie = this._prefix + '_loggedin=true;';
     }
 

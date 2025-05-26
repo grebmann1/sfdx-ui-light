@@ -32,7 +32,6 @@ export default class Footer extends LightningElement {
             (await loadExtensionConfigFromCache([CACHE_CONFIG.SHORTCUT_OPEN_PANEL.key]))[
                 CACHE_CONFIG.SHORTCUT_OPEN_PANEL.key
             ] || '';
-        LOGGER.log('shortcutOpenPanel', this.shortcutOpenPanel);
     };
 
     /** Events **/

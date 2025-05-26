@@ -1,0 +1,73 @@
+.release-notes {
+    margin: 2rem auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.07);
+}
+.release-header {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.release-header:hover,
+.release-header:focus {
+    background: #f3f6fb;
+    outline: none;
+}
+.release-details {
+    border-left: 3px solid #0176d3;
+    border-radius: 0 0 8px 8px;
+    background: #f8fafc;
+    margin-top: -1px;
+}
+.section-title {
+    font-weight: 700;
+    color: #0176d3;
+    letter-spacing: 0.04em;
+}
+.slds-list_dotted {
+    list-style-type: disc;
+    margin-left: 1.5rem;
+}
+.error {
+    color: #c00;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+.release-notes-split {
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.07);
+    min-height: 500px;
+}
+.release-list {
+    border-right: 1px solid #e0e5ee;
+    min-width: 200px;
+    overflow-y: auto;
+    background: #fafaf9;
+    border-radius: 0px;
+}
+.release-list-item {
+    cursor: pointer;
+    transition:
+        background 0.2s,
+        color 0.2s;
+    padding-left: 1rem;
+}
+.release-list-item.selected,
+.release-list-item:hover {
+    background: #e3f2fd;
+    color: #0176d3;
+}
+.release-details-panel {
+    min-height: 400px;
+    background: #fff;
+}
+.release-details-panel .selected-version {
+    background: #e3f2fd;
+    border-left: 4px solid #0176d3;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    color: #0176d3;
+    box-shadow: 0 1px 4px 0 rgba(1, 118, 211, 0.07);
+}

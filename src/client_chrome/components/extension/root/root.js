@@ -7,12 +7,12 @@ import {
     runActionAfterTimeOut,
     getRecordId,
 } from 'shared/utils';
-import { directConnect, getHostAndSession } from 'connection/utils';
+import { getHostAndSession, credentialStrategies } from 'connection/utils';
 import { getCurrentTab, PANELS } from 'extension/utils';
 
 /** Store **/
 import { store as legacyStore } from 'shared/store';
-import { connectStore, store } from 'core/store';
+import { connectStore, store,APPLICATION } from 'core/store';
 
 const VARIANT = {
     DEFAULT: 'default',
@@ -176,7 +176,11 @@ export default class Root extends LightningElement {
         }
 
         try {
-            await directConnect(this.sessionId, this.serverUrl);
+            let connector = await credentialStrategies.SESSION.connect({
+                sessionId: this.sessionId,
+                serverUrl: this.serverUrl,
+            });
+            store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
         } catch (e) {
             this.sendError(e.message); // Shouldn't be used all the time
             this.redirectToDefaultView();

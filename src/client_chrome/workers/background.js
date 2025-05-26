@@ -8,6 +8,7 @@ const OVERLAY_TOGGLE = 'overlay_toggle';
 // Opening Actions
 const OPEN_OVERLAY_SEARCH = 'open_overlay_search';
 const OPEN_SIDE_PANEL = 'open_side_panel';
+const OPEN_TOOLKIT = 'open_toolkit';
 
 // Default patterns
 
@@ -205,7 +206,11 @@ const openSideBar = async tab => {
 
 // Message Listener
 const wrapAsyncFunction = listener => (request, sender, sendResponse) => {
-    Promise.resolve(listener(request, sender)).then(sendResponse);
+    Promise.resolve(listener(request, sender))
+    .then(sendResponse)
+    .catch(error => {
+        sendResponse({ error: error.message });
+    });
     return true;
 };
 
@@ -213,11 +218,20 @@ const wrapAsyncFunction = listener => (request, sender, sendResponse) => {
 async function createContextMenu() {
     const data = await chrome.storage.sync.get(OVERLAY_ENABLED_VAR);
     const isEnabled = data.overlayEnabled;
-    chrome.contextMenus.create({
+    /* chrome.contextMenus.create({
         id: OPEN_SIDE_PANEL,
-        title: 'Open Salesforce Toolkit',
+        title: 'Open Salesforce Toolkit (side panel)',
         contexts: ['page'],
+    }); */
+
+    chrome.contextMenus.create({
+        id: OPEN_TOOLKIT,
+        title: 'Open Salesforce Toolkit (in new tab)',
+        contexts: ['action'],
+        enabled: true,
+        visible: true,
     });
+
     chrome.contextMenus.create({
         id: OVERLAY_ENABLE,
         title: OVERLAY_ENABLE_TITLE,
@@ -362,6 +376,8 @@ chrome.action.onClicked.addListener(async tab => {
 chrome.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId === OPEN_SIDE_PANEL) {
         chrome.sidePanel.open({ tabId: tab.id });
+    } else if (info.menuItemId === OPEN_TOOLKIT) {
+        chrome.tabs.create({ url: chrome.runtime.getURL('views/app.html') });
     } else if (info.menuItemId === OVERLAY_ENABLE) {
         setOverlayState(true);
     } else if (info.menuItemId === OVERLAY_DISABLE) {
@@ -405,6 +421,7 @@ chrome.runtime.onMessage.addListener(
                 interactive: true,
             });
             if (chrome.runtime.lastError) {
+                console.log('chrome.runtime.lastError',chrome.runtime.lastError);
                 return { error: chrome.runtime.lastError.message };
             }
             const url = new URL(responseUrl);

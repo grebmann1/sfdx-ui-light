@@ -1,0 +1,176 @@
+<template>
+    <template lwc:if={isHeaderLess}>
+        <!-- Card Variant -->
+        <div class="slds-connection-card-list slds-p-horizontal_x-small slds-is-relative">
+            <div class="slds-grid slds-wrap slds-grid_align-center slds-p-around_small">
+                <div class="slds-col slds-p-horizontal_x-small">
+                    <lightning-button
+                        icon-name="utility:add"
+                        variant="brand"
+                        label="Add new org"
+                        title="Add new org"
+                        onclick={addConnectionClick}></lightning-button>
+                </div>
+                <!-- 
+                This is not used anymore, but we keep it here for reference. It doesn't fit here anymore (chrome extension)
+                <div class="slds-col slds-p-horizontal_x-small">
+                    <lightning-button
+                        icon-name="utility:salesforce1"
+                        label="Manual Session"
+                        title="Manual Session"
+                        onclick={manualSessionClick}></lightning-button>
+                </div> 
+                -->
+            </div>
+            <template lwc:if={isCardVariant}>
+                <template for:each={filteredFormatted} for:item="item">
+                    <connection-card
+                        key={item.key}
+                        item={item}
+                        onrowaction={handleRowAction}></connection-card>
+                </template>
+                <template lwc:if={isNoRecord}>
+                    <illustration-empty title="No orgs"></illustration-empty>
+                </template>
+            </template>
+            <!-- Loading -->
+            <template lwc:if={isLoading}>
+                <slds-spinner
+                    message={loadingMessage}
+                    alternative-text="Loading"
+                    size="small"></slds-spinner>
+            </template>
+        </div>
+    </template>
+    <template lwc:else>
+        <div class="slds-page-header slds-page-header_joined slds-overflow-hidden">
+            <div class={headerRowClass}>
+                <div class="slds-page-header__col-title">
+                    <div class="slds-media">
+                        <div class="slds-media__figure">
+                            <lightning-icon icon-name="standard:default"></lightning-icon>
+                        </div>
+                        <div class="slds-media__body">
+                            <div class="slds-page-header__name">
+                                <div class="slds-page-header__name-title">
+                                    <h1>
+                                        <span>My Salesforce Connections</span>
+                                        <span
+                                            class="slds-page-header__title slds-truncate"
+                                            title="Authorized Orgs">
+                                            Authorized Orgs
+                                        </span>
+                                    </h1>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-page-header__col-actions slds-align-middle slds-p-bottom_none">
+                    <div class="slds-page-header__controls">
+                        <div class="slds-page-header__control">
+                            <!-- <lightning-button icon-name="utility:knowledge_base" label="Documentation Explorer"></lightning-button> -->
+                            <lightning-button-group>
+                                <lightning-button
+                                    icon-name="utility:salesforce1"
+                                    label="Manual Session"
+                                    title="Manual Session"
+                                    onclick={manualSessionClick}></lightning-button>
+                                <lightning-button
+                                    icon-name="utility:add"
+                                    label="Add Org"
+                                    title="org"
+                                    onclick={addConnectionClick}></lightning-button>
+                                <lightning-button-menu
+                                    variant="border-filled"
+                                    menu-alignment="auto"
+                                    alternative-text="Show menu"
+                                    class="connection-drop-button">
+                                    <lightning-menu-item
+                                        prefix-icon-name="utility:upload"
+                                        icon-size="small"
+                                        value="Import"
+                                        label="Import orgs"
+                                        onclick={importClick}></lightning-menu-item>
+                                    <lightning-menu-item
+                                        prefix-icon-name="utility:download"
+                                        icon-size="small"
+                                        value="Export"
+                                        label="Export orgs"
+                                        onclick={exportClick}></lightning-menu-item>
+                                </lightning-button-menu>
+                            </lightning-button-group>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-page-header__row_gutters">
+                <!-- slds-page-header__row-->
+                <div class="slds-page-header__col-details">
+                    <div class={detailRowClass}>
+                        <template lwc:if={isInjected}>
+                            <div class="slds-grid slds-grid_align-spread slds-m-bottom_medium">
+                                <div class="slds-col">
+                                    <lightning-button-group>
+                                        <lightning-button-icon-stateful
+                                            icon-name="utility:tile_card_list"
+                                            selected={isCardVariant}
+                                            onclick={displayCard}></lightning-button-icon-stateful>
+                                        <lightning-button-icon-stateful
+                                            icon-name="utility:list"
+                                            selected={isTableVariant}
+                                            onclick={displayTable}></lightning-button-icon-stateful>
+                                    </lightning-button-group>
+                                </div>
+                                <div class="slds-col">
+                                    <lightning-input
+                                        type="toggle"
+                                        label="Sync from Extension"
+                                        name="filterFields"
+                                        message-toggle-active=""
+                                        message-toggle-inactive=""
+                                        checked={loadFromExtension}
+                                        onchange={handleLoadFromExtensionChange}></lightning-input>
+                                </div>
+                            </div>
+                        </template>
+                        <template lwc:if={isLoading}>
+                            <slds-spinner alternative-text="Loading" size="small"></slds-spinner>
+                        </template>
+
+                        <!-- Search -->
+                        <lightning-input
+                            class="slds-m-bottom_medium"
+                            type="search"
+                            label="Search"
+                            variant="label-hidden"
+                            onchange={handleFieldsFilter}></lightning-input>
+
+                        <!-- Table Variant -->
+                        <template lwc:if={isTableVariant}>
+                            <lightning-datatable
+                                key-field="id"
+                                data={filteredOriginal}
+                                columns={columns}
+                                onrowaction={handleRowAction}
+                                hide-checkbox-column></lightning-datatable>
+                        </template>
+
+                        <!-- Card Variant -->
+                        <template lwc:if={isCardVariant}>
+                            <template for:each={filteredFormatted} for:item="item">
+                                <connection-card
+                                    key={item.key}
+                                    item={item}
+                                    onrowaction={handleRowAction}></connection-card>
+                            </template>
+                            <template lwc:if={isNoRecord}>
+                                <illustration-empty title="No orgs"></illustration-empty>
+                            </template>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

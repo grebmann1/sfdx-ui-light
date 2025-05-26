@@ -59,7 +59,7 @@ const CONFIGURATION = {
     }
 }
 
-const version = '252.0'
+const version = '255.0'
 const documentMapping = {};
 
 function removeDuplicates(arr, prop) {

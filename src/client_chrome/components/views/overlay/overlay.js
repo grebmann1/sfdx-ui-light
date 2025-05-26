@@ -9,9 +9,9 @@ import {
     redirectToUrlViaChrome,
     getRecordId,
 } from 'shared/utils';
-import { connectStore, store } from 'core/store';
+import { connectStore, store,APPLICATION } from 'core/store';
 import { TYPE } from 'overlay/utils';
-import { directConnect } from 'connection/utils';
+import { directConnect, credentialStrategies } from 'connection/utils';
 
 import moment from 'moment';
 import jsforce from 'imported/jsforce';
@@ -90,8 +90,7 @@ export default class Overlay extends ToolkitElement {
 
     connectedCallback() {
         window.jsforce = jsforce;
-        window.defaultStore =
-            window.defaultStore || localForage.createInstance({ name: 'defaultStore' });
+        window.defaultStore = window.defaultStore || localForage.createInstance({ name: 'defaultStore' });
         this.getSessionId();
         //this.checkRecordId();
         this.header_enableAutoDate();
@@ -303,12 +302,22 @@ export default class Overlay extends ToolkitElement {
 
         // Use as key for storage
         this.currentDomain = cookieInfo.domain;
-        // Direct Connection
-        directConnect(cookieInfo.session, cookieInfo.domain, {
-            isProxyDisabled: false,
-            isAliasMatchingDisabled: true,
-            isEnrichDisabled: true,
-        });
+        // Direct Connection (refactored)
+        const params = {
+            sessionId: cookieInfo.session,
+            serverUrl: cookieInfo.domain,
+            extra: {
+                isProxyDisabled: false,
+                isAliasMatchingDisabled: true,
+                isEnrichDisabled: true,
+            },
+        };
+        try{
+            let connector = await credentialStrategies.SESSION.connect(params);
+            store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
+        } catch (e) {
+            console.error(e);
+        }
     };
 
     manualSearch = async () => {

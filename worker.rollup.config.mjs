@@ -57,7 +57,7 @@ export default (args) => {
 				alias({
 					entries: [
 						{ find: 'imported/jsforce', replacement: path.resolve(__dirname, "src/client/assets/libs/jsforce/jsforce.js") },
-						{ find: 'imported/sf', replacement: path.resolve(__dirname, "src/client/modules/shared/sf/sf.js") }
+						{ find: 'imported/sf', replacement: path.resolve(__dirname, "src/client/lwc/modules/shared/sf/sf.js") }
 					]
 				}),
 				commonjs(), // converts CommonJS modules to ES6, so they can be included in a Rollup bundle

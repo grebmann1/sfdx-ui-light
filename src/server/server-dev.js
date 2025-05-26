@@ -13,7 +13,7 @@ const CTA_MODULE = require('./modules/cta.js');
 const proxy = require('./modules/proxy.js');
 
 /** Documentation Temporary Code until a DB is incorporated **/
-const VERSION = process.env.DOC_VERSION || '252.0';
+const VERSION = process.env.DOC_VERSION || '255.0';
 const DATA_DOCUMENTATION = JSON.parse(
     fs.readFileSync(`./src/documentation/${VERSION}.json`, 'utf-8')
 );
@@ -113,11 +113,10 @@ app.get('/oauth2/callback', async function (req, res) {
     var code = req.query.code;
     var states = req.query.state.split('#');
     var params = qs.parse(states[1]);
-    console.log('callback', code, states, params);
-    console.log('params', getOAuth2Instance(params));
 
     try {
         const conn = new jsforce.Connection({ oauth2: getOAuth2Instance(params) });
+        
         const userInfo = await conn.authorize(code);
         res.redirect(
             `/callback#${qs.stringify({
@@ -206,8 +205,8 @@ app.post('/generatejwt', async (req, res) => {
 
 lwrServer
     .listen(({ port, serverMode }) => {
-        //console.log(`✅ App listening on port ${port} in ${serverMode} mode!`);
-        //console.log(`Url http://localhost:${port}`);
+        console.log(`✅ App listening on port ${port} in ${serverMode} mode!`);
+        console.log(`Url http://localhost:${port}`);
     })
     .catch(err => {
         console.error(err);

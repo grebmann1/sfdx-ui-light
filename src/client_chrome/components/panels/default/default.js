@@ -1,6 +1,7 @@
 import { api, LightningElement, wire } from 'lwc';
-import { store as deprecatedStore } from 'shared/store';
-import { isNotUndefinedOrNull } from 'shared/utils';
+import { store as legacyStore, store_application } from 'shared/store';
+
+import { isNotUndefinedOrNull,redirectToUrlViaChrome } from 'shared/utils';
 import { CACHE_CONFIG, loadExtensionConfigFromCache } from 'shared/cacheManager';
 
 import { APPLICATION, connectStore, store } from 'core/store';
@@ -62,7 +63,7 @@ export default class Default extends LightningElement {
         return true; //isNotUndefinedOrNull(this.openaiAssistantId) && isNotUndefinedOrNull(this.openaiKey);
     }
 
-    @wire(connectStore, { store: deprecatedStore })
+    @wire(connectStore, { store: legacyStore })
     applicationChange({ application }) {
         //console.log('application',application)
         if (application?.type === 'FAKE_NAVIGATE') {
@@ -88,6 +89,16 @@ export default class Default extends LightningElement {
 
     documentationClick = e => {
         this.currentApplication = APPLICATIONS.DOCUMENTATION;
+    };
+
+    openToolkitClick = () => {
+        const params = new URLSearchParams({
+            applicationName: 'home',
+        });
+        redirectToUrlViaChrome({
+            baseUrl: chrome.runtime.getURL('/views/app.html'),
+            redirectUrl: encodeURIComponent(params.toString()),
+        });
     };
 
     handleBackClick = () => {

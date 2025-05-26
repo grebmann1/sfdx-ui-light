@@ -608,9 +608,9 @@
        */},{key:"logout",value:function logout(){this.connection.logout();this._removeTokens();this.emit('disconnect');}/**
        * @private
        */},{key:"_getTokens",value:function _getTokens(){var regexp=new RegExp('(^|;\\s*)'+this._prefix+'_loggedin=true(;|$)');if(document.cookie.match(regexp)){var issuedAt=Number(localStorage.getItem(this._prefix+'_issued_at'));// 2 hours
-  if(_babel_runtime_corejs3_core_js_stable_date_now__WEBPACK_IMPORTED_MODULE_31___default()()<issuedAt+2*60*60*1000){var userInfo;var idUrl=localStorage.getItem(this._prefix+'_id');if(idUrl){var _context4;var _idUrl$split$reverse=_babel_runtime_corejs3_core_js_stable_instance_reverse__WEBPACK_IMPORTED_MODULE_32___default()(_context4=idUrl.split('/')).call(_context4),_idUrl$split$reverse2=(0, _babel_runtime_corejs3_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_37__/* ["default"] */.A)(_idUrl$split$reverse,2),id=_idUrl$split$reverse2[0],organizationId=_idUrl$split$reverse2[1];userInfo={id:id,organizationId:organizationId,url:idUrl};}return {accessToken:localStorage.getItem(this._prefix+'_access_token'),instanceUrl:localStorage.getItem(this._prefix+'_instance_url'),userInfo:userInfo};}}return null;}/**
+  if(_babel_runtime_corejs3_core_js_stable_date_now__WEBPACK_IMPORTED_MODULE_31___default()()<issuedAt+2*60*60*1000){var userInfo;var idUrl=localStorage.getItem(this._prefix+'_id');if(idUrl){var _context4;var _idUrl$split$reverse=_babel_runtime_corejs3_core_js_stable_instance_reverse__WEBPACK_IMPORTED_MODULE_32___default()(_context4=idUrl.split('/')).call(_context4),_idUrl$split$reverse2=(0, _babel_runtime_corejs3_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_37__/* ["default"] */.A)(_idUrl$split$reverse,2),id=_idUrl$split$reverse2[0],organizationId=_idUrl$split$reverse2[1];userInfo={id:id,organizationId:organizationId,url:idUrl};}return {accessToken:localStorage.getItem(this._prefix+'_access_token'),instanceUrl:localStorage.getItem(this._prefix+'_instance_url'),refreshToken:localStorage.getItem(this._prefix+'_refresh_token'),userInfo:userInfo};}}return null;}/**
        * @private
-       */},{key:"_storeTokens",value:function _storeTokens(params){localStorage.setItem(this._prefix+'_access_token',params.access_token);localStorage.setItem(this._prefix+'_instance_url',params.instance_url);localStorage.setItem(this._prefix+'_issued_at',params.issued_at);localStorage.setItem(this._prefix+'_id',params.id);document.cookie=this._prefix+'_loggedin=true;';}/**
+       */},{key:"_storeTokens",value:function _storeTokens(params){localStorage.setItem(this._prefix+'_access_token',params.access_token);localStorage.setItem(this._prefix+'_instance_url',params.instance_url);localStorage.setItem(this._prefix+'_issued_at',params.issued_at);localStorage.setItem(this._prefix+'_id',params.id);localStorage.setItem(this._prefix+'_refresh_token',params.refresh_token);document.cookie=this._prefix+'_loggedin=true;';}/**
        * @private
        */},{key:"_removeTokens",value:function _removeTokens(){localStorage.removeItem(this._prefix+'_access_token');localStorage.removeItem(this._prefix+'_instance_url');localStorage.removeItem(this._prefix+'_issued_at');localStorage.removeItem(this._prefix+'_id');document.cookie=this._prefix+'_loggedin=';}/**
        * @private
@@ -8391,18 +8391,6 @@
             }();
             /** Execute Async call for background processing */
             asyncLoading();
-            console.log('return the results', {
-              permissionSets: permissionSets,
-              sobjects: sobjects,
-              apexClasses: apexClasses,
-              apexPages: apexPages,
-              appDefinitions: appDefinitions,
-              profileFields: profileFields,
-              layouts: layouts,
-              tabDefinitions: tabDefinitions,
-              entityAccess: entityAccess,
-              permissionGroups: permissionGroups
-            });
             return _context2.abrupt("return", {
               permissionSets: permissionSets,
               sobjects: sobjects,
@@ -8415,7 +8403,7 @@
               entityAccess: entityAccess,
               permissionGroups: permissionGroups
             });
-          case 27:
+          case 26:
           case "end":
             return _context2.stop();
         }

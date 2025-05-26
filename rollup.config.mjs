@@ -130,12 +130,12 @@ const coreBuilder = (modules) => {
 export default (args) => {
     const modules = [
         { dir: path.resolve(__dirname, 'src/client_chrome/components') },
-        { dir: path.resolve(__dirname, 'src/client/modules') },
-        { dir: path.resolve(__dirname, 'src/client/components') },
-        { dir: path.resolve(__dirname, 'src/client/applications/documentation') },
-        { dir: path.resolve(__dirname, 'src/client/applications/explorers') },
-        { dir: path.resolve(__dirname, 'src/client/applications/tools') },
-        { dir: path.resolve(__dirname, 'src/client/applications/einstein') },
+        { dir: path.resolve(__dirname, 'src/client/lwc/modules') },
+        { dir: path.resolve(__dirname, 'src/client/lwc/components') },
+        { dir: path.resolve(__dirname, 'src/client/lwc/applications/documentation') },
+        { dir: path.resolve(__dirname, 'src/client/lwc/applications/explorers') },
+        { dir: path.resolve(__dirname, 'src/client/lwc/applications/tools') },
+        { dir: path.resolve(__dirname, 'src/client/lwc/applications/einstein') },
         { npm: 'lightning-base-components' },
         { name: "lwr/profiler", path: path.resolve(__dirname, 'node_modules/@lwrjs/client-modules/build/modules/lwr/profiler/profiler.js') },
         { name: "lwr/metrics", path: path.resolve(__dirname, 'node_modules/@lwrjs/client-modules/build/modules/lwr/metrics/metrics.js') },
