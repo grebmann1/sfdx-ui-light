@@ -147,7 +147,7 @@ const getHostAndSession = async tab => {
             return;
         }
     } catch (e) {
-        console.log('getHostAndSession issue: ', e);
+        console.error('getHostAndSession issue: ', e);
         return;
     }
 };
@@ -252,7 +252,7 @@ const injectedConnections = new Set();
 const sidePanelConnections = new Set();
 
 chrome.runtime.onConnect.addListener(function (port) {
-    console.log('--> onConnect <--', port);
+    
     if (port.name === 'sf-toolkit-injected') {
         injectedConnections.add(port);
         port.onDisconnect.addListener(() => {
@@ -421,7 +421,7 @@ chrome.runtime.onMessage.addListener(
                 interactive: true,
             });
             if (chrome.runtime.lastError) {
-                console.log('chrome.runtime.lastError', chrome.runtime.lastError);
+                console.error('chrome.runtime.lastError', chrome.runtime.lastError);
                 return { error: chrome.runtime.lastError.message };
             }
             const url = new URL(responseUrl);
@@ -430,7 +430,6 @@ chrome.runtime.onMessage.addListener(
         } else if (
             ['broadcastMessageToInjected', 'broadcastMessageToSidePanel'].includes(message.action)
         ) {
-            console.log('--> Broadcast Message <--');
             const _newMessage = { ...message.content, senderId: sender.id };
             if (message.action === 'broadcastMessageToInjected') {
                 broadcastMessageToAllInjectedInstances(_newMessage);
@@ -440,9 +439,7 @@ chrome.runtime.onMessage.addListener(
         } else if (message.action === OPEN_SIDE_PANEL) {
             openSideBar(sender.tab);
         } else if (message.action === 'fetchCookie') {
-            const cookieInfo = await getHostAndSession(sender.tab);
-            console.log('cookieInfo');
-            return cookieInfo;
+            return await getHostAndSession(sender.tab);
         } else if (message.action === 'getDefaultContentScriptPatterns') {
             return {
                 includePatterns: DEFAULT_INCLUDE_PATTERNS,
@@ -513,9 +510,7 @@ chrome.commands.onCommand.addListener((command, tab) => {
             setOverlayState(!data.overlayEnabled);
         });
     } else if (command === OPEN_OVERLAY_SEARCH) {
-        console.log('-----> Open Search !!!');
     } else if (command === OPEN_SIDE_PANEL) {
-        console.log('-----> Open Panel !!!');
         chrome.sidePanel.open({ tabId: tab.id });
     }
 });

@@ -375,17 +375,12 @@ export default class App extends LightningElement {
     /** Extension & Electron Org Window  **/
     load_limitedMode = async () => {
         try {
-            let connector
+            let connector;
             if (isNotUndefinedOrNull(this.alias)) {
-                LOGGER.debug('load_limitedMode - alias',this.alias);
+                LOGGER.debug('load_limitedMode - OAUTH');
                 connector = await credentialStrategies.OAUTH.connect({ alias: this.alias });
             } else {
                 LOGGER.debug('load_limitedMode - SESSION');
-                connector = await credentialStrategies.SESSION.connect({
-                    sessionId: this.sessionId,
-                    serverUrl: this.serverUrl,
-                });
-                LOGGER.debug('load_limitedMode - SESSION - connector', connector);
                 // Reset after to prevent looping
                 this.sessionId = null;
                 this.serverUrl = null;

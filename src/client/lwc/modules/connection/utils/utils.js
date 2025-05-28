@@ -194,6 +194,7 @@ export const normalizeConnection = (credentialType, rawData, platform, extra = {
         };
     } else if (credentialType === OAUTH_TYPES.USERNAME) {
         params.loginUrl = rawData.instanceUrl;
+        params.username = rawData.username;
     }
     return params;
 };

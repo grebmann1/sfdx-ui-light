@@ -8,11 +8,11 @@
             <p>Add it to your connections list ?</p>
             <lightning-button-group>
                 <lightning-button
-                    label="Yes, Authorize"
-                    variant="brand"
-                    icon-name="utility:adduser"
-                    icon-position="right"
-                    onclick={addConnection_authorize}></lightning-button>
+                        label={labelAuthorizeOrg}
+                        variant="brand"
+                        icon-name="utility:adduser"
+                        icon-position="right"
+                        onclick={addConnection_authorize}></lightning-button>
                 <lightning-button
                     label="No, hide"
                     icon-name="utility:hide"

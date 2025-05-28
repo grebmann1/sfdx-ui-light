@@ -5,7 +5,7 @@ import { saveConfiguration } from '../web';
 import { OAUTH_TYPES } from './index';
 import { Connector } from '../connectorClass';
 import LOGGER from 'shared/logger';
-import { isUndefinedOrNull } from 'shared/utils';
+import { isUndefinedOrNull,isElectronApp } from 'shared/utils';
 
 export async function directConnect({ username, password, loginUrl, alias }) {
     const platform = getCurrentPlatform();
@@ -23,6 +23,7 @@ export async function directConnect({ username, password, loginUrl, alias }) {
     if (isUndefinedOrNull(connection.accessToken)) {
         throw new Error('No access token found');
     }
+    Object.assign(connection, { username, password });
     const connector = await Connector.createConnector({
         alias,
         connection,
@@ -37,16 +38,21 @@ export async function directConnect({ username, password, loginUrl, alias }) {
 export async function connect({ username, password, loginUrl, alias }, settings = {}) {
     const { saveFullConfiguration = false } = settings;
     const platform = getCurrentPlatform();
-    if (![PLATFORM.WEB, PLATFORM.CHROME].includes(platform)) {
+    /* if (![PLATFORM.WEB, PLATFORM.CHROME].includes(platform)) {
         throw new Error('Username/Password connect is only supported on Web for now');
-    }
+    } */
 
     const normalizedUrl = processHost(loginUrl);
+    
     try {
-        const connection = new window.jsforce.Connection({
-            loginUrl: normalizedUrl,
-            proxyUrl: window.jsforceSettings?.proxyUrl || 'https://sf-toolkit.com/proxy/',
-        });
+        const connectionParams = normalizeConnection(
+            OAUTH_TYPES.USERNAME,
+            {
+                instanceUrl: normalizedUrl,
+            },
+            platform
+        );
+        const connection = new window.jsforce.Connection(connectionParams);
         await connection.login(username, password);
         // Build configuration using normalizeConfiguration
         Object.assign(connection, { username, password });

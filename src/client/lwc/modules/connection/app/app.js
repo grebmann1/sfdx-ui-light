@@ -253,7 +253,7 @@ export default class App extends ToolkitElement {
     };
 
     login = async row => {
-        if (isElectronApp() && !row._isUsernamePassword) {
+        if (isElectronApp() && row.credentialType === OAUTH_TYPES.OAUTH) {
             await window.electron.ipcRenderer.invoke('OPEN_INSTANCE', row);
         } else {
             let configuration = this.data.find(x => x.id == row.id);
@@ -268,7 +268,18 @@ export default class App extends ToolkitElement {
 
                 console.log('Connecting with configuration', configuration);
                 const connector = await strategy.connect(configuration);
-
+                if(isElectronApp() && row.credentialType === OAUTH_TYPES.USERNAME){
+                    const params = {
+                        alias: row.alias,
+                        username: row.username,
+                        sessionId: connector.conn.accessToken,
+                        serverUrl: connector.conn.instanceUrl,
+                    };
+                    LOGGER.log('login - electron - params', params);
+                    store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
+                    await window.electron.ipcRenderer.invoke('OPEN_INSTANCE', params);
+                    return;
+                }
                 if (!connector.hasError) {
                     store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
                     this.dispatchEvent(
@@ -721,7 +732,7 @@ export default class App extends ToolkitElement {
                 cellAttributes: {
                     class: { fieldName: '_statusClass' },
                 },
-            },
+            },/* 
             {
                 label: 'Expire',
                 fieldName: 'expirationDate',
@@ -735,7 +746,7 @@ export default class App extends ToolkitElement {
                 type: 'text',
                 initialWidth: 70,
                 _filter: 'electron',
-            },
+            }, */
             {
                 label: 'User Name',
                 fieldName: 'username',

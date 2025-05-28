@@ -14,6 +14,9 @@ export default class directView extends LightningElement {
     connectedCallback() {
         if (isElectronApp()) {
             this.alias = this.getAlias();
+            this.sessionId = this.getSessionId();
+            this.serverUrl = this.getServerUrl();
+            this.redirectUrl = this.getRedirectUrl();
         } else {
             this.sessionId = this.getSessionId();
             this.serverUrl = this.getServerUrl();

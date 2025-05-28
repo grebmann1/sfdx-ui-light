@@ -25,7 +25,7 @@ export async function getConfiguration(alias) {
             id: res.alias,
             company: company,
             name: name,
-            credentialType: OAUTH_TYPES.OAUTH, // by default we use OAUTH for electron
+            credentialType: res.credentialType || OAUTH_TYPES.OAUTH, // by default we use OAUTH for electron
             instanceUrl: res.instanceUrl || instanceUrl,
             loginUrl: res.instanceUrl || instanceUrl,
             refreshToken: res.refreshToken || refreshToken,
@@ -55,9 +55,13 @@ export async function renameConfiguration({ oldAlias, newAlias, username }) {
 
 export async function removeConfiguration(alias) {
     // todo: need to be refactured
-    var { error } = await window.electron.ipcRenderer.invoke('org-logout', { alias });
-    if (error) {
-        throw decodeError(error);
+    let res1 = await window.electron.ipcRenderer.invoke('org-logout', { alias });
+    if (res1?.error) {
+        throw decodeError(res1.error);
+    }
+    let res2 = await window.electron.ipcRenderer.invoke('org-unsetAlias', { alias });
+    if (res2?.error) {
+        throw decodeError(res2.error);
     }
 }
 
@@ -72,17 +76,24 @@ const getStatusClass = status => {
 };
 
 export async function getConfigurations() {
-    const { result, error } = await window.electron.ipcRenderer.invoke('org-getAllOrgs');
+    const {sfdxOrgs,storedOrgs} = await window.electron.ipcRenderer.invoke('org-getAllOrgs');
+    console.log('getConfigurations - electron - result', sfdxOrgs,storedOrgs); 
     let orgs = [].concat(
-        result.nonScratchOrgs.map(x => ({
+        sfdxOrgs.result.nonScratchOrgs.map(x => ({
             ...x,
             _status: x.connectedStatus,
             _type: x.isDevHub ? 'DevHub' : x.isSandbox ? 'Sandbox' : '',
         })),
-        result.scratchOrgs.map(x => ({
+        sfdxOrgs.result.scratchOrgs.map(x => ({
             ...x,
             _status: x.status,
             _type: 'Scratch',
+        })),
+        // Later take care of the unique alias
+        storedOrgs.map(x => ({
+            ...x,
+            _status: x.status,
+            _type: 'Stored',
         }))
     );
     //console.log('orgs',orgs);
@@ -111,7 +122,7 @@ export async function getConfigurations() {
                 id: `index-${index}`,
                 company: company,
                 name: name,
-                credentialType: OAUTH_TYPES.OAUTH, // by default we use OAUTH for electron
+                credentialType: item.credentialType || OAUTH_TYPES.OAUTH, // by default we use OAUTH for electron
                 _typeClass,
                 _statusClass: getStatusClass(item._status),
                 _hasError: item._status == 'JwtAuthError',

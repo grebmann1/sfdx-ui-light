@@ -52,10 +52,10 @@ export default class ConnectionNewModal extends LightningModal {
     @api name;
     @api username = '';
     @api password = '';
+    @api credentialType = OAUTH_TYPES.OAUTH;
 
     newCategory;
     orgType = ORG_TYPES.PRODUCTION;
-    credentialType = OAUTH_TYPES.OAUTH;
 
     _isNewCategoryDisplayed;
     set isNewCategoryDisplayed(value) {
@@ -155,7 +155,11 @@ export default class ConnectionNewModal extends LightningModal {
         } else if (this.isRedirect) {
             this.default_redirect();
         } else if (this.isUsernamePassword) {
-            this.standard_usernamePassword();
+            if (isElectronApp()) {
+                this.electron_usernamePassword();
+            } else {
+                this.standard_usernamePassword();
+            }
         }
     };
 
@@ -179,6 +183,31 @@ export default class ConnectionNewModal extends LightningModal {
             this.close(null);
         }
     };
+
+    electron_usernamePassword = async () => {
+        try {
+            const connector = await credentialStrategies.USERNAME.directConnect(
+                {
+                    username: this.username,
+                    password: this.password,
+                    loginUrl: this.loginUrl,
+                    alias: this.alias,
+                },
+                { saveFullConfiguration: false }
+            );
+            const result = await window.electron.ipcRenderer.invoke('org-saveOrgInfo', {
+                alias: this.alias,
+                configuration: connector.configuration,
+            });
+            LOGGER.log('electron_usernamePassword', result);
+            showToast({ label: 'Connected successfully!', variant: 'success' });
+            this.close(result);
+        } catch (e) {
+            LOGGER.error('electron_usernamePassword error', e);
+            handleError(e, 'Username/Password Error');
+            this.close(null);
+        }
+    }
 
     default_redirect = () => {
         setRedirectCredential(

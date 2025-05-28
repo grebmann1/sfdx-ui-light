@@ -93,7 +93,6 @@ export async function getConfigurations() {
                     instanceUrl,
                     sfdxAuthUrl,
                     _isRedirect,
-                    _isUsernamePassword: !isEmpty(x.username) && !isEmpty(x.password),
                     _status: x._hasError ? 'OAuth Error' : 'Connected',
                     _statusClass: x._hasError
                         ? 'slds-text-color_error'
