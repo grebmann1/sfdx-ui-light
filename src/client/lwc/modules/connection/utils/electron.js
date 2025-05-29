@@ -12,26 +12,24 @@ const CONNECTION_WARNING = [
 
 
 export async function getConfiguration(alias) {
-    //console.log('getConfiguration - electron');
-    var { res, error } = await window.electron.ipcRenderer.invoke('org-seeDetails', { alias });
+    const { res, error } = await window.electron.ipcRenderer.invoke('org-seeDetails', { alias });
     if (error) {
         throw decodeError(error);
     }
-    const {name,company} = extractName(res.alias);
-    const { refreshToken, instanceUrl } = extractConfig(res.sfdxAuthUrl);
-    res = {
+
+    const { name, company } = extractName(res.alias);
+    const { refreshToken, instanceUrl } = res.sfdxAuthUrl ? extractConfig(res.sfdxAuthUrl) : {};
+
+    return {
         ...res,
-        ...{
-            id: res.alias,
-            company: company,
-            name: name,
-            credentialType: res.credentialType || OAUTH_TYPES.OAUTH, // by default we use OAUTH for electron
-            instanceUrl: res.instanceUrl || instanceUrl,
-            loginUrl: res.instanceUrl || instanceUrl,
-            refreshToken: res.refreshToken || refreshToken,
-        },
+        id: res.alias,
+        company,
+        name,
+        credentialType: res.credentialType || OAUTH_TYPES.OAUTH,
+        instanceUrl: res.instanceUrl || instanceUrl,
+        loginUrl: res.instanceUrl || instanceUrl,
+        refreshToken: res.refreshToken || refreshToken,
     };
-    return res;
 }
 
 export async function renameConfiguration({ oldAlias, newAlias, username }) {

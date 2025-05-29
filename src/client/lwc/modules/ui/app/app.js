@@ -16,7 +16,7 @@ import {
     loadExtensionConfigFromCache,
 } from 'shared/cacheManager';
 
-import { credentialStrategies } from 'connection/utils';
+import { credentialStrategies, OAUTH_TYPES, getConfiguration } from 'connection/utils';
 import { NavigationContext, CurrentPageReference, navigate } from 'lwr/navigation';
 import { basicStore } from 'shared/cacheManager';
 import { handleRedirect } from './utils';
@@ -27,6 +27,7 @@ import { APP_LIST } from './modules';
 /** Store **/
 import { store as legacyStore } from 'shared/store';
 import { connectStore, store, DOCUMENT, APPLICATION } from 'core/store';
+
 
 const LIMITED = 'limited';
 
@@ -376,15 +377,40 @@ export default class App extends LightningElement {
     load_limitedMode = async () => {
         try {
             let connector;
+            LOGGER.debug('load_limitedMode - alias', this.alias);
+            LOGGER.debug('load_limitedMode - sessionId', this.sessionId);
+            LOGGER.debug('load_limitedMode - serverUrl', this.serverUrl);
             if (isNotUndefinedOrNull(this.alias)) {
                 LOGGER.debug('load_limitedMode - OAUTH');
-                connector = await credentialStrategies.OAUTH.connect({ alias: this.alias });
-            } else {
+                let configuration = await getConfiguration(this.alias);
+                if (configuration && configuration.credentialType === OAUTH_TYPES.OAUTH) {
+                    connector = await credentialStrategies.OAUTH.connect({ alias: this.alias });
+                } else if (configuration && configuration.credentialType === OAUTH_TYPES.USERNAME) {
+                    connector = await credentialStrategies.USERNAME.connect({
+                        username: configuration.username,
+                        password: configuration.password,
+                        loginUrl: configuration.instanceUrl,
+                        alias: this.alias,
+                    });
+                } else {
+                    connector = null;
+                    throw new Error('No configuration found');
+                }
+            } else if (isNotUndefinedOrNull(this.sessionId) && isNotUndefinedOrNull(this.serverUrl)) {
                 LOGGER.debug('load_limitedMode - SESSION');
+                connector = await credentialStrategies.SESSION.connect({
+                    sessionId: this.sessionId,
+                    serverUrl: this.serverUrl,
+                });
                 // Reset after to prevent looping
                 this.sessionId = null;
                 this.serverUrl = null;
+            } else {
+                LOGGER.debug('load_limitedMode - NO CREDENTIALS');
+                connector = null;
+                throw new Error('No credentials found');
             }
+
             store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
 
             if (this.redirectUrl) {
