@@ -1,5 +1,7 @@
 import { isNotUndefinedOrNull, isEmpty, decodeError, classSet } from 'shared/utils';
 import { extractName, extractConfig,OAUTH_TYPES } from './utils';
+import LOGGER from 'shared/logger';
+
 
 const CONNECTION_ERRORS = [
     'JwtAuthError',
@@ -12,7 +14,7 @@ const CONNECTION_WARNING = [
 
 
 export async function getConfiguration(alias) {
-    const { res, error } = await window.electron.ipcRenderer.invoke('org-seeDetails', { alias });
+    const { res, error } = await window.electron.invoke('org-seeDetails', { alias });
     if (error) {
         throw decodeError(error);
     }
@@ -33,7 +35,7 @@ export async function getConfiguration(alias) {
 }
 
 export async function renameConfiguration({ oldAlias, newAlias, username }) {
-    let { error } = await window.electron.ipcRenderer.invoke('org-setAlias', {
+    let { error } = await window.electron.invoke('org-setAlias', {
         alias: newAlias,
         username: username,
     });
@@ -42,7 +44,7 @@ export async function renameConfiguration({ oldAlias, newAlias, username }) {
     }
 
     if (oldAlias !== 'Empty' || isNotUndefinedOrNull(oldAlias)) {
-        let { error } = await window.electron.ipcRenderer.invoke('org-unsetAlias', {
+        let { error } = await window.electron.invoke('org-unsetAlias', {
             alias: oldAlias,
         });
         if (error) {
@@ -53,11 +55,11 @@ export async function renameConfiguration({ oldAlias, newAlias, username }) {
 
 export async function removeConfiguration(alias) {
     // todo: need to be refactured
-    let res1 = await window.electron.ipcRenderer.invoke('org-logout', { alias });
+    let res1 = await window.electron.invoke('org-logout', { alias });
     if (res1?.error) {
         throw decodeError(res1.error);
     }
-    let res2 = await window.electron.ipcRenderer.invoke('org-unsetAlias', { alias });
+    let res2 = await window.electron.invoke('org-unsetAlias', { alias });
     if (res2?.error) {
         throw decodeError(res2.error);
     }
@@ -74,8 +76,8 @@ const getStatusClass = status => {
 };
 
 export async function getConfigurations() {
-    const {sfdxOrgs,storedOrgs} = await window.electron.ipcRenderer.invoke('org-getAllOrgs');
-    console.log('getConfigurations - electron - result', sfdxOrgs,storedOrgs); 
+    const {sfdxOrgs,storedOrgs} = await window.electron.invoke('org-getAllOrgs');
+    LOGGER.info('getConfigurations - electron - result', sfdxOrgs,storedOrgs); 
     let orgs = [].concat(
         sfdxOrgs.result.nonScratchOrgs.map(x => ({
             ...x,

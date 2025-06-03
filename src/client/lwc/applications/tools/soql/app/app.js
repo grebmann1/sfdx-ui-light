@@ -96,11 +96,6 @@ export default class App extends ToolkitElement {
                         queryFiles: getState().queryFiles,
                     })
                 );
-                dispatch(
-                    UI.reduxSlice.actions.initTabs({
-                        queryFiles: getState().queryFiles,
-                    })
-                );
             });
         }
         this.enableAutoDate();

@@ -140,7 +140,7 @@ export default class Pmd extends ToolkitElement {
 
     runTerminal = async (path, command) => {
         const listenerName = 'sfdx-run-shell';
-        await window.electron.ipcRenderer.invoke('code-runShell', {
+        await window.electron.invoke('code-runShell', {
             alias: this.connector.configuration.alias,
             targetPath: this.projectPath,
             listenerName,
@@ -174,7 +174,7 @@ export default class Pmd extends ToolkitElement {
 
     runSfdxAnalyzer = async () => {
         const listenerName = 'sfdx-code-analyzer';
-        const { error, result } = await window.electron.ipcRenderer.invoke('code-runSfdxAnalyzer', {
+        const { error, result } = await window.electron.invoke('code-runSfdxAnalyzer', {
             alias: this.connector.configuration.alias,
             listenerName,
             command: this.sfdxScannerCommand,

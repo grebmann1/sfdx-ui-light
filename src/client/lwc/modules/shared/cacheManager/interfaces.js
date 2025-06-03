@@ -55,15 +55,16 @@ const basicStore = (variant = 'local') => {
     return {
         getItem: function (key, callback) {
             const value = storage.getItem(key);
+            console.log('--> getItem <---',key,value);
             const parsedValue = safeParseJson(value);
             if (callback) {
-                callback(isNotUndefinedOrNull(parsedValue) ? parsedValue : value);
+                callback(isNotUndefinedOrNull(parsedValue) && parsedValue != 'null' ? parsedValue : null); // 'null' is related to legacy code
             }
-            return Promise.resolve(isNotUndefinedOrNull(parsedValue) ? parsedValue : value);
+            return Promise.resolve(isNotUndefinedOrNull(parsedValue) && parsedValue != 'null' ? parsedValue : null); // 'null' is related to legacy code
         },
         setItem: function (key, value, callback) {
             try {
-                storage.setItem(key, JSON.stringify(value));
+                storage.setItem(key, value != null ? JSON.stringify(value) : null);
                 if (callback) {
                     callback();
                 }

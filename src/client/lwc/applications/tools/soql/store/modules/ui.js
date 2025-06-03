@@ -242,22 +242,23 @@ const uiSlice = createSlice({
         leftPanelToggled: false,
         recentPanelToggled: false,
         includeDeletedRecords: false,
+        isInitialized: false,
     },
     reducers: {
         loadCacheSettings: (state, action) => {
             const { alias, queryFiles } = action.payload;
             const cachedConfig = loadCacheSettings(alias);
-            if (cachedConfig) {
-                const { soql, leftPanelToggled, recentPanelToggled, tabs, includeDeletedRecords } =
-                    cachedConfig;
+            if (cachedConfig && !state.isInitialized) {
+                const { soql, leftPanelToggled, recentPanelToggled, tabs, includeDeletedRecords } = cachedConfig;
                 Object.assign(state, {
-                    soql: soql || '',
+                    //soql: soql || '',
                     leftPanelToggled,
                     recentPanelToggled,
-                    tabs: enrichTabs(tabs || INITIAL_TABS, queryFiles),
+                    tabs: !state.tabs || state.tabs.length === 0 ? enrichTabs(tabs || INITIAL_TABS, queryFiles) : state.tabs,
                     includeDeletedRecords,
                 });
             }
+            state.isInitialized = true;
         },
         saveCacheSettings: (state, action) => {
             const { alias } = action.payload;
@@ -272,18 +273,15 @@ const uiSlice = createSlice({
                 saveCacheSettings(alias, state);
             }
         },
-        initTabs: (state, action) => {
-            const { queryFiles } = action.payload;
-            state.tabs = enrichTabs(state.tabs.map(formatTab), queryFiles);
-        },
         addTab: (state, action) => {
             const { queryFiles, tab } = action.payload;
             const enrichedTab = enrichTab(formatTab(tab), queryFiles);
             state.tabs.push(enrichedTab);
+            console.log('--> addTab <---',enrichedTab);
             // Assign new tab
             state.currentTab = enrichedTab;
             state.currentFileId = enrichedTab.fileId;
-            updateSOQL(state, enrichedTab.body);
+            updateSOQL(state, enrichedTab.body || '');
         },
         removeTab: (state, action) => {
             const { id, alias } = action.payload;

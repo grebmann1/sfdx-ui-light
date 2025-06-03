@@ -111,7 +111,7 @@ export default class App extends ToolkitElement {
             if (res) {
                 console.log('res',res);
                 if(isElectronApp()){
-                    window.electron.ipcRenderer.invoke('OPEN_INSTANCE', {alias:res.conn.alias,username:res.configuration.username});
+                    window.electron.invoke('OPEN_INSTANCE', {alias:res.conn.alias,username:res.configuration.username});
                 }else{
                     store.dispatch(APPLICATION.reduxSlice.actions.login({ connector: res }));
                     this.dispatchEvent(
@@ -210,6 +210,7 @@ export default class App extends ToolkitElement {
             return {
                 ...x,
                 id: x.id || x.alias,
+                
                 _connectLabel: isMatch
                     ? 'Logout'
                     : x._hasError && !isUsernameType
@@ -254,7 +255,7 @@ export default class App extends ToolkitElement {
 
     login = async row => {
         if (isElectronApp() && row.credentialType === OAUTH_TYPES.OAUTH) {
-            await window.electron.ipcRenderer.invoke('OPEN_INSTANCE', row);
+            await window.electron.invoke('OPEN_INSTANCE', row);
         } else {
             let configuration = this.data.find(x => x.id == row.id);
             let { alias, credentialType, ...settings } = configuration;
@@ -277,7 +278,7 @@ export default class App extends ToolkitElement {
                     };
                     LOGGER.log('login - electron - params', params);
                     store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
-                    await window.electron.ipcRenderer.invoke('OPEN_INSTANCE', params);
+                    await window.electron.invoke('OPEN_INSTANCE', params);
                     return;
                 }
                 if (!connector.hasError) {
@@ -331,9 +332,9 @@ export default class App extends ToolkitElement {
             /* if (row._hasError) {
                 this.forceAuthorization(row);
             } else {
-                window.electron.ipcRenderer.invoke('org-openOrgUrl', row);
+                window.electron.invoke('org-openOrgUrl', row);
             } */
-            window.electron.ipcRenderer.invoke('org-openOrgUrl', row);
+            window.electron.invoke('org-openOrgUrl', row);
         } else {
             this.isLoading = true;
             try {
@@ -464,7 +465,7 @@ export default class App extends ToolkitElement {
                 await this.fetchAllConnections();
             }
             if (isElectronApp()) {
-                await window.electron.ipcRenderer.invoke('org-killOauth');
+                await window.electron.invoke('org-killOauth');
             }
         });
     };

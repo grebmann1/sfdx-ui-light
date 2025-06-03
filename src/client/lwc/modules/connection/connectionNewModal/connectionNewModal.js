@@ -195,7 +195,7 @@ export default class ConnectionNewModal extends LightningModal {
                 },
                 { saveFullConfiguration: false }
             );
-            const result = await window.electron.ipcRenderer.invoke('org-saveOrgInfo', {
+            const result = await window.electron.invoke('org-saveOrgInfo', {
                 alias: this.alias,
                 configuration: connector.configuration,
             });
@@ -235,7 +235,7 @@ export default class ConnectionNewModal extends LightningModal {
             instanceurl: normalizedUrl,
         };
         try {
-            const { error, res } = await window.electron.ipcRenderer.invoke(
+            const { error, res } = await window.electron.invoke(
                 'org-createNewOrgAlias',
                 params
             );

@@ -1,8 +1,10 @@
-import { LightningElement, wire } from 'lwc';
+import { LightningElement, wire, api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { guid,isEmpty, fullApiName, isSame, escapeRegExp, isNotUndefinedOrNull } from 'shared/utils';
+import { guid } from 'shared/utils';
 import { store, API, APPLICATION, UI, QUERY } from 'core/store';
+import { store as legacyStore, store_application as legacyStore_application } from 'shared/store';
 import { NavigationContext, CurrentPageReference, navigate } from 'lwr/navigation';
+import LOGGER from 'shared/logger';
 
 export default class Electron extends ToolkitElement {
 
@@ -16,6 +18,7 @@ export default class Electron extends ToolkitElement {
         this.init();
     }
 
+
     init = () => {
         if (this.initialized) return;
         try {
@@ -23,18 +26,21 @@ export default class Electron extends ToolkitElement {
         } catch (e) {
             this.listener_on = undefined;
         }
-        if (this.listener_on) {
+        if (this.listener_on) 
+            LOGGER.info('[Electron] init');{
+
+            
             // Listen for @api calls from main process
             this.listener_on('electron-api-call', (event, payload) => {
                 // Dispatch an API action (customize as needed)
                 store.dispatch(API.reduxSlice.actions.someAction(payload));
-                console.log('[Electron] @api call received and dispatched:', payload);
+                LOGGER.info('[Electron] @api call received and dispatched:', payload);
             });
 
             // Listen for @soql calls from main process
-            this.listener_on('electron-soql-call', (event, payload) => {
-                console.log('[Electron] @soql call event:', event);
-                console.log('[Electron] @soql call payload:', payload);
+            this.listener_on('electron-soql-call', args => {
+                const [payload,callBackChannel] = args;
+                LOGGER.info('[Electron] @soql call args:', args);
                 // Dispatch a SOQL/QUERY action (customize as needed)
                 const _guid = guid();
 
@@ -62,25 +68,32 @@ export default class Electron extends ToolkitElement {
                             includeDeletedRecords: false, // TODO: add include deleted records support
                         })
                     );
-                    console.log('res', res);
 
                     await dispatch(UI.reduxSlice.actions.selectionTab({ id: res.payload?.tabId }));
+
+                    LOGGER.debug('MCP Response [payload]', res.payload);
+                    window.electron.send(callBackChannel, res.payload);
                  });
-                console.log('[Electron] @soql call received and dispatched:', payload);
             });
 
             // Listen for navigation requests
-            this.listener_on('electron-navigate-to', (event, route) => {
+            this.listener_on('electron-navigate-to', async args => {
+                const [payload,callBackChannel] = args;
+                LOGGER.info('[Electron] @navigate-to call args:', args);
                 // Dispatch a navigation action
-                store.dispatch(APPLICATION.reduxSlice.actions.updateCurrentApplication({ application: route }));
-                console.log('[Electron] NavigateTo received and dispatched:', route);
+                let formattedPayload = `sftoolkit:${JSON.stringify({
+                    type: 'application',
+                    state: { applicationName: payload.application },
+                })}`;
+                await legacyStore.dispatch(legacyStore_application.navigate(formattedPayload));
+                window.electron.send(callBackChannel, payload);
             });
 
             // Listen for getSettings requests and reply with settings
             this.listener_on('electron-get-settings', (event) => {
                 // Fetch settings from the store
                 const settings = store.getState().application; // Adjust as needed
-                console.log('[Electron] getSettings requested, sending:', settings);
+                LOGGER.info('[Electron] getSettings requested, sending:', settings);
                 //this.ipcRenderer.send('electron-get-settings-response', settings);
             });
         }

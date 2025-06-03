@@ -129,6 +129,8 @@
         </template>
 
         <!-- Electron -->
-        <ui-electron></ui-electron>
+        <template lwc:if={isElectronApp}>
+            <core-electron></core-electron>
+        </template>
     </div>
 </template>

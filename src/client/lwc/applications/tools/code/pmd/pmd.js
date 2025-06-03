@@ -26,7 +26,7 @@ export default class Pmd extends ToolkitElement {
     };
 
     checkIfPmdInstalled = async () => {
-        const { error, result } = await window.electron.ipcRenderer.invoke('code-isPmdInstalled', {
+        const { error, result } = await window.electron.invoke('code-isPmdInstalled', {
             projectPath: this.projectPath,
         });
         if (error) {
@@ -37,7 +37,7 @@ export default class Pmd extends ToolkitElement {
     };
 
     installLatestPMD = async () => {
-        const { error, result } = await window.electron.ipcRenderer.invoke(
+        const { error, result } = await window.electron.invoke(
             'code-installLatestPmd',
             { projectPath: this.projectPath }
         );

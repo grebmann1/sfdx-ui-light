@@ -37,6 +37,20 @@
                     //jsforce.browser.init(window.jsforceSettings); // Reset
                 });
             window.Prism = Prism;
+
+            window.addEventListener('DOMContentLoaded', () => {
+                if(window.electron){
+                    window.electron.listener_once('set-ready-channel', args => {
+                        console.log('--> set-ready-channel <---',args);
+                        const [payload,channel] = args;
+                        console.log('--> window.electron.channel <---',payload,channel);
+                        window.electron.channel = channel;
+                        window.electron.setChannel(channel);
+                    });
+                }
+            })
+
+            
         </script>
     </head>
     <!-- Google tag (gtag.js) -->

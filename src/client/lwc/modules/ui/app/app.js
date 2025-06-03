@@ -142,11 +142,11 @@ export default class App extends LightningElement {
     }
 
     init = async () => {
+        await this.initCacheStorage();
         if (isElectronApp()) {
             await this.initElectron();
             this.isCommandCheckFinished = true;
         }
-        this.initCacheStorage();
         this.loadVersion();
         this.initMode();
         this.initDragDrop();
@@ -313,7 +313,7 @@ export default class App extends LightningElement {
     };
 
     initElectron = async () => {
-        let { error, result } = await window.electron.ipcRenderer.invoke('util-checkCommands');
+        let { error, result } = await window.electron.invoke('util-checkCommands');
         if (error) {
             throw decodeError(error);
         }
@@ -412,6 +412,14 @@ export default class App extends LightningElement {
             }
 
             store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
+
+            if(isElectronApp()){
+                LOGGER.debug('load_limitedMode - ELECTRON - channel : ',window.electron.getChannel());
+                window.electron.send(window.electron.getChannel(),{
+                    isLoggedIn:true,
+                    username:connector.configuration.username,
+                });
+            }
 
             if (this.redirectUrl) {
                 // This method use LWR redirection or window.location based on the url !
@@ -578,6 +586,10 @@ export default class App extends LightningElement {
                 classVisibility: 'slds-hide slds-full-height',
             },
         }));
+    }
+
+    get isElectronApp() {
+        return isElectronApp();
     }
 
     /** Dynamic Loading */

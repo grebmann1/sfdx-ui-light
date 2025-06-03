@@ -262,6 +262,10 @@ export const normalizeConfiguration = (rawData, byPassValidation = false) => {
         orgType: rawData.orgType,
         _hasError: rawData._hasError,
         _formatVersion: rawData._formatVersion || 1,
+        _status: rawData._status || null,
+        _statusClass: rawData._statusClass || null,
+        _type: rawData._type || null,
+        _typeClass: rawData._typeClass || null
         //_typeClass: rawData._typeClass,
         //_statusClass: rawData._statusClass,
         //_connectVariant: rawData._hasError ? 'brand-outline' : 'brand',

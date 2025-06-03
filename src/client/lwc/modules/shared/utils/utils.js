@@ -112,7 +112,7 @@ export async function getAllOrgs(debugMode = false) {
             },
         ];
     }
-    let res = await window.electron.ipcRenderer.invoke('org-getAllOrgs');
+    let res = await window.electron.invoke('org-getAllOrgs');
     res = res.sort((a, b) => a.alias.localeCompare(b.alias));
     res = res.map((item, index) => {
         return {

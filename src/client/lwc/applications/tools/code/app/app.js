@@ -18,7 +18,7 @@ export default class App extends ToolkitElement {
     /** Methods  **/
 
     loadPathFromConfig = async () => {
-        const { error, result } = await window.electron.ipcRenderer.invoke(
+        const { error, result } = await window.electron.invoke(
             'code-getInitialConfig',
             { alias: this.connector.configuration.alias }
         );
@@ -30,7 +30,7 @@ export default class App extends ToolkitElement {
         this.initMetadataLoaded = result.metadataLoaded || true; // For DEMO - TODO: Fix issue related to Metadata download
 
         /*if(isNotUndefinedOrNull(this.connector.configuration.alias)){
-            const {error, result} = await window.electron.ipcRenderer.invoke('util-getConfig',{key:'projectPath',configName:this.connector.configuration.alias});
+            const {error, result} = await window.electron.invoke('util-getConfig',{key:'projectPath',configName:this.connector.configuration.alias});
             if (error) {
                 throw decodeError(error);
             }
@@ -39,7 +39,7 @@ export default class App extends ToolkitElement {
     };
 
     savePathToConfig = async () => {
-        /*let {error, result} = await window.electron.ipcRenderer.invoke('util-setConfig',{key:'projectPath',value:this.projectPath,configName:this.connector.configuration.alias});
+        /*let {error, result} = await window.electron.invoke('util-setConfig',{key:'projectPath',value:this.projectPath,configName:this.connector.configuration.alias});
         if (error) {
             throw decodeError(error);
         }*/
@@ -47,7 +47,7 @@ export default class App extends ToolkitElement {
 
     selectProject = async () => {
         /** Electron **/
-        let { error, result } = await window.electron.ipcRenderer.invoke(
+        let { error, result } = await window.electron.invoke(
             'code-createVSCodeProject',
             { defaultPath: this.projectPath }
         );
@@ -69,7 +69,7 @@ export default class App extends ToolkitElement {
         this.isLoading = true;
 
         /** Electron **/
-        let { error, result } = await window.electron.ipcRenderer.invoke('code-retrieveCode', {
+        let { error, result } = await window.electron.invoke('code-retrieveCode', {
             targetPath: this.projectPath,
             alias: this.connector.configuration.alias,
             refresh: isRefresh === true,
@@ -96,7 +96,7 @@ export default class App extends ToolkitElement {
     };
 
     openVSCode = async () => {
-        window.electron.ipcRenderer.invoke('code-openVSCodeProject', { path: this.projectPath });
+        window.electron.invoke('code-openVSCodeProject', { path: this.projectPath });
     };
 
     handleCopy = () => {
@@ -104,7 +104,7 @@ export default class App extends ToolkitElement {
     };
 
     downloadCode = () => {
-        window.electron.ipcRenderer.invoke('code-exportMetadata', {
+        window.electron.invoke('code-exportMetadata', {
             targetPath: this.projectPath,
             alias: this.connector.configuration.alias,
         });

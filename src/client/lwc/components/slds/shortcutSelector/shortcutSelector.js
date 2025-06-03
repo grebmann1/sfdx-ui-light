@@ -10,6 +10,7 @@ export default class ShortcutSelector extends LightningElement {
     _value = null;
     @api
     get value() {
+        console.log('--> value <---',this._value);
         return this._value == 'backspace' ? null : this._value.join('+');
     }
     set value(val) {

@@ -51,7 +51,7 @@ export default class App extends ToolkitElement {
     openInBrowser = () => {
         if (isElectronApp()) {
             // Electron version
-            window.electron.ipcRenderer.invoke('org-openOrgUrl', this.connector.configuration);
+            window.electron.invoke('org-openOrgUrl', this.connector.configuration);
         } else {
             // Browser version
             let url = this.connector.frontDoorUrl;
