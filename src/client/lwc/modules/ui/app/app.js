@@ -313,13 +313,18 @@ export default class App extends LightningElement {
     };
 
     initElectron = async () => {
-        let { error, result } = await window.electron.invoke('util-checkCommands');
-        if (error) {
-            throw decodeError(error);
-        }
+        try {
+            let { error, result } = await window.electron.invoke('util-checkCommands');
+            if (error) {
+                throw decodeError(error);
+            }
 
-        this.isSalesforceCliInstalled = result.sfdx;
-        this.isJavaCliInstalled = result.java;
+            this.isSalesforceCliInstalled = result.sfdx;
+            this.isJavaCliInstalled = result.java;
+        } catch (error) {
+            this.isSalesforceCliInstalled = false;
+            this.isJavaCliInstalled = false;
+        }
     };
 
     initDragDrop = () => {

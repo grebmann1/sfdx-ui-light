@@ -24,6 +24,15 @@
             window.jsforce = jsforce;
         </script>
         <script>
+
+            if(window?.electron?.ipcRenderer){
+                // Retro-compatibility with old electron version
+                try{
+                    window.electron.invoke = window.electron.ipcRenderer.invoke;
+                }catch(e){
+                    console.log('--> electron.invoke <---',e);
+                }
+            }
             let host = window.location.origin;
             fetch(`${host}/config`)
                 .then(response => response.json())
@@ -39,7 +48,7 @@
             window.Prism = Prism;
 
             window.addEventListener('DOMContentLoaded', () => {
-                if(window.electron){
+                if(window.electron && window.electron.listener_once){
                     window.electron.listener_once('set-ready-channel', args => {
                         console.log('--> set-ready-channel <---',args);
                         const [payload,channel] = args;
