@@ -246,6 +246,7 @@ const apiSlice = createSlice({
         endpoint: null,
         header: null,
         currentApiVersion: '59.0',
+        abortingMap: {},
     },
     reducers: {
         loadCacheSettings: (state, action) => {
@@ -431,6 +432,23 @@ const apiSlice = createSlice({
                 assignNewApiData(state, state.tabs[tabIndex]);
             }
         },
+        setAbortingPromise: (state, action) => {
+            const { tabId, promise } = action.payload;
+            state.abortingMap = {
+                ...state.abortingMap,
+                [tabId]: promise,
+            };
+        },
+        resetAbortingPromise: (state, action) => {
+            const { tabId } = action.payload;
+            state.abortingMap = {
+                ...state.abortingMap,
+                [tabId]: null,
+            };
+        },
+        clearAbortingMap: (state) => {
+            state.abortingMap = {};
+        },
     },
     extraReducers: builder => {
         builder
@@ -447,6 +465,10 @@ const apiSlice = createSlice({
             .addCase(executeApiRequest.fulfilled, (state, action) => {
                 const { response, request } = action.payload;
                 const { tabId, createdDate } = action.meta.arg;
+                state.abortingMap = {
+                    ...state.abortingMap,
+                    [tabId]: null,
+                };
                 apiAdapter.upsertOne(state.api, {
                     id: lowerCaseKey(tabId),
                     response,
@@ -460,6 +482,10 @@ const apiSlice = createSlice({
             .addCase(executeApiRequest.rejected, (state, action) => {
                 const { error } = action;
                 const { tabId } = action.meta.arg;
+                state.abortingMap = {
+                    ...state.abortingMap,
+                    [tabId]: null,
+                };
                 apiAdapter.upsertOne(state.api, {
                     id: lowerCaseKey(tabId),
                     isFetching: false,

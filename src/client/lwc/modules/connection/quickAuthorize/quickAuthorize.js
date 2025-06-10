@@ -160,18 +160,6 @@ export default class QuickAuthorize extends ToolkitElement {
         );
     }
 
-    get isInternalDevOrg() {
-        if (isEmpty(this.instanceUrl)) return false;
-        const _url = new URL(this.instanceUrl);
-        return this.isInternalDevOrg(_url.hostname,_url.port);
-    }
-
-    get isStandardOrg() {
-        if (isEmpty(this.instanceUrl)) return false;
-        const _url = new URL(this.instanceUrl);
-        return this.isStandardOrg(_url.hostname);
-    }
-
     get labelAuthorizeOrg() {
         return this.isInternalDevOrg ? 'Yes, Add Dev Org' : 'Yes, Authorize';
     }

@@ -28,6 +28,7 @@ import { APP_LIST } from './modules';
 import { store as legacyStore } from 'shared/store';
 import { connectStore, store, DOCUMENT, APPLICATION } from 'core/store';
 
+import hotkeys from 'hotkeys-js';
 
 const LIMITED = 'limited';
 
@@ -66,6 +67,9 @@ export default class App extends LightningElement {
 
     // To manage expired session
     sessionHasExpiredIsDisplayed = false;
+
+    // Port to communicate with background
+    _backgroundPort = null;
 
     /* @api 
     get connector(){
@@ -138,6 +142,7 @@ export default class App extends LightningElement {
         //this.checkForInjected();
         this.checkForOpenAIKey();
         this.loadFromCache();
+        this.initShortcuts();
         //this.test();
     }
 
@@ -182,12 +187,17 @@ export default class App extends LightningElement {
                 alias: this.connector.configuration.alias,
             })
         );
+
+        // Connect to background
+        this.connectToBackgroundWithIdentity();
     };
 
     handleLogout = () => {
         // Reset Applications
         this.applications = this.applications.filter(x => x.name == 'home/app');
         navigate(this.navContext, { type: 'application', state: { applicationName: 'home' } });
+        // Disconnect from background
+        this.disconnectFromBackground();
     };
 
     handleLogoutClick = async e => {
@@ -437,6 +447,13 @@ export default class App extends LightningElement {
             }
         } catch (e) {
             console.error(e);
+            if(isElectronApp()){
+                LOGGER.debug('load_limitedMode - ELECTRON - channel : ',window.electron.getChannel());
+                window.electron.send(window.electron.getChannel(),{
+                    isLoggedIn:false,
+                    message:e.message,
+                });
+            }
             await LightningAlert.open({
                 message: e.message, //+'\n You might need to remove and OAuth again.',
                 theme: 'error', // this is the header text
@@ -642,4 +659,139 @@ export default class App extends LightningElement {
             this.currentApplicationId = application.id;
         }
     };
+
+    /** Background  Communication **/
+
+    connectToBackgroundWithIdentity() {
+        if (isChromeExtension()) {
+            if (!this._backgroundPort) {
+                this._backgroundPort = chrome.runtime.connect({ name: 'sf-toolkit-instance' });
+                const connector = this.connector;
+                if (connector && connector.configuration) {
+                    this._backgroundPort.postMessage({
+                        action: 'registerInstance',
+                        serverUrl: connector.conn.instanceUrl,
+                        alias: connector.configuration.alias,
+                        username: connector.configuration.username,
+                    });
+                }
+                this._backgroundPort.onMessage.addListener((msg) => {
+                    // handle messages from background if needed
+                    LOGGER.log('[Instance] onMessage', msg);
+                    if(msg.action === 'redirectToUrl'){
+                        navigate(this.navContext, msg.navigation);
+                    }
+                });
+                this._backgroundPort.onDisconnect.addListener(() => {
+                    this._backgroundPort = null;
+                });
+            }
+        }
+    }
+
+    disconnectFromBackground() {
+        if (isChromeExtension()) {
+            if (this._backgroundPort) {
+                this._backgroundPort.postMessage({ action: 'closeConnection' });
+                this._backgroundPort = null;
+            }
+        }
+    }
+
+    /** Shortcuts **/
+
+    initShortcuts = async() => {
+        const configuration = await loadExtensionConfigFromCache([
+            CACHE_CONFIG.SHORTCUT_INJECTION_ENABLED.key,
+            CACHE_CONFIG.SHORTCUT_OVERVIEW.key,
+            CACHE_CONFIG.SHORTCUT_SOQL.key,
+            CACHE_CONFIG.SHORTCUT_APEX.key,
+            CACHE_CONFIG.SHORTCUT_API.key,
+            CACHE_CONFIG.SHORTCUT_DOCUMENTATION.key,
+        ]);
+    
+        const shortcutEnabled = configuration[CACHE_CONFIG.SHORTCUT_INJECTION_ENABLED.key];
+        const shortcutOverview = configuration[CACHE_CONFIG.SHORTCUT_OVERVIEW.key];
+        const shortcutSoql = configuration[CACHE_CONFIG.SHORTCUT_SOQL.key];
+        const shortcutApex = configuration[CACHE_CONFIG.SHORTCUT_APEX.key];
+        const shortcutApi = configuration[CACHE_CONFIG.SHORTCUT_API.key];
+        const shortcutDocumentation = configuration[CACHE_CONFIG.SHORTCUT_DOCUMENTATION.key];
+        if (!shortcutEnabled) return;
+    
+    
+        // Define all shortcuts
+        const shortcuts = [
+            {
+                id: 'org-overview',
+                shortcut: shortcutOverview,
+                action: async (event, handler) => {
+                    event.preventDefault();
+                    navigate(this.navContext, {
+                        type: 'application',
+                        state: {
+                            applicationName: 'home',
+                        },
+                    });
+                },
+            },
+            {
+                id: 'soql-explorer',
+                shortcut: shortcutSoql,
+                action: async (event, handler) => {
+                    event.preventDefault();
+                    
+                    navigate(this.navContext, {
+                        type: 'application',
+                        state: {
+                            applicationName: 'soql',
+                        },
+                    });
+                },
+            },
+            {
+                id: 'apex-explorer',
+                shortcut: shortcutApex,
+                action: async (event, handler) => {
+                    event.preventDefault();
+                    navigate(this.navContext, {
+                        type: 'application',
+                        state: {
+                            applicationName: 'anonymousapex',
+                        },
+                    });
+                },
+            },
+            {
+                id: 'api-explorer',
+                shortcut: shortcutApi,
+                action: async (event, handler) => {
+                    event.preventDefault();
+                    navigate(this.navContext, {
+                        type: 'application',
+                        state: {
+                            applicationName: 'api',
+                        },
+                    });
+                },
+            },
+            {
+                id: 'documentation',
+                shortcut: shortcutDocumentation,
+                action: async (event, handler) => {
+                    event.preventDefault();
+                    navigate(this.navContext, {
+                        type: 'application',
+                        state: {
+                            applicationName: 'documentation',
+                        },
+                    });
+                },
+            },
+        ];
+    
+        shortcuts.forEach(shortcut => {
+            hotkeys(shortcut.shortcut, shortcut.action);
+        });
+    }
+
 }

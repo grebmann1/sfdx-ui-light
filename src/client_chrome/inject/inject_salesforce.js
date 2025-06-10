@@ -102,6 +102,8 @@ const injectShortCuts = async () => {
         CACHE_CONFIG.SHORTCUT_OVERVIEW.key,
         CACHE_CONFIG.SHORTCUT_SOQL.key,
         CACHE_CONFIG.SHORTCUT_APEX.key,
+        CACHE_CONFIG.SHORTCUT_API.key,
+        CACHE_CONFIG.SHORTCUT_DOCUMENTATION.key,
         CACHE_CONFIG.SHORTCUT_OPEN_PANEL.key,
         CACHE_CONFIG.SHORTCUT_OPEN_OVERLAY.key,
     ]);
@@ -111,6 +113,8 @@ const injectShortCuts = async () => {
     const shortcutOverview = configuration[CACHE_CONFIG.SHORTCUT_OVERVIEW.key];
     const shortcutSoql = configuration[CACHE_CONFIG.SHORTCUT_SOQL.key];
     const shortcutApex = configuration[CACHE_CONFIG.SHORTCUT_APEX.key];
+    const shortcutApi = configuration[CACHE_CONFIG.SHORTCUT_API.key];
+    const shortcutDocumentation = configuration[CACHE_CONFIG.SHORTCUT_DOCUMENTATION.key];
     const shortcutOpenPanel = configuration[CACHE_CONFIG.SHORTCUT_OPEN_PANEL.key];
     const shortcutOpenOverlay = configuration[CACHE_CONFIG.SHORTCUT_OPEN_OVERLAY.key];
     if (!shortcutEnabled) return;
@@ -197,7 +201,6 @@ const injectShortCuts = async () => {
             shortcut: shortcutOpenOverlay,
             action: async (event, handler) => {
                 event.preventDefault();
-                console.log('open-overlay', overlayInstance);
                 overlayInstance.toggleOverlay(event);
             },
         },
@@ -206,17 +209,33 @@ const injectShortCuts = async () => {
             shortcut: shortcutOverview,
             action: async (event, handler) => {
                 event.preventDefault();
-
-                const cookieInfo = await getCookieInfo();
-                const params = new URLSearchParams({
-                    applicationName: 'home',
-                });
-                redirectToUrlViaChrome({
-                    sessionId: cookieInfo.session,
-                    serverUrl: `https://${cookieInfo.domain}`,
-                    baseUrl: chrome.runtime.getURL('/views/app.html'),
-                    redirectUrl: encodeURIComponent(params.toString()),
-                });
+                const sessionInfo = overlayInstance.currentOrg;
+                const params = {
+                    type: 'application',
+                    state: {
+                        applicationName: 'home',
+                    },
+                };
+                if (injectorPort) {
+                    injectorPort.postMessage(generateMessage({sessionInfo, params}));
+                }
+            },
+        },
+        {
+            id: 'api-explorer',
+            shortcut: shortcutApi,
+            action: async (event, handler) => {
+                event.preventDefault();
+                const sessionInfo = overlayInstance.currentOrg;
+                const params = {
+                    type: 'application',
+                    state: {
+                        applicationName: 'api',
+                    },
+                };
+                if (injectorPort) {
+                    injectorPort.postMessage(generateMessage({sessionInfo, params}));
+                }
             },
         },
         {
@@ -224,23 +243,22 @@ const injectShortCuts = async () => {
             shortcut: shortcutSoql,
             action: async (event, handler) => {
                 event.preventDefault();
-                const cookieInfo = await getCookieInfo();
+                const sessionInfo = overlayInstance.currentOrg;
                 const sobject = getSobject(window.location.href);
+                const params = {
+                    type: 'application',
+                    state: {
+                        applicationName: 'soql',
+                    },
+                };
 
-                const params = new URLSearchParams({
-                    applicationName: 'soql',
-                });
                 if (sobject) {
-                    console.log('sobject', sobject);
-                    params.set('query', `SELECT Id FROM ${sobject}`);
+                    params.state.query = `SELECT Id FROM ${sobject}`;
                 }
-
-                redirectToUrlViaChrome({
-                    sessionId: cookieInfo.session,
-                    serverUrl: `https://${cookieInfo.domain}`,
-                    baseUrl: chrome.runtime.getURL('/views/app.html'),
-                    redirectUrl: encodeURIComponent(params.toString()),
-                });
+                
+                if (injectorPort) {
+                    injectorPort.postMessage(generateMessage({sessionInfo, params}));
+                }
             },
         },
         {
@@ -248,16 +266,33 @@ const injectShortCuts = async () => {
             shortcut: shortcutApex,
             action: async (event, handler) => {
                 event.preventDefault();
-                const cookieInfo = await getCookieInfo();
-                const params = new URLSearchParams({
-                    applicationName: 'anonymousapex',
-                });
-                redirectToUrlViaChrome({
-                    sessionId: cookieInfo.session,
-                    serverUrl: `https://${cookieInfo.domain}`,
-                    baseUrl: chrome.runtime.getURL('/views/app.html'),
-                    redirectUrl: encodeURIComponent(params.toString()),
-                });
+                const sessionInfo = overlayInstance.currentOrg;
+                const params = {
+                    type: 'application',
+                    state: {
+                        applicationName: 'anonymousapex',
+                    },
+                };
+                if (injectorPort) {
+                    injectorPort.postMessage(generateMessage({sessionInfo, params}));
+                }
+            },
+        },
+        {
+            id: 'documentation',
+            shortcut: shortcutDocumentation,
+            action: async (event, handler) => {
+                event.preventDefault();
+                const sessionInfo = overlayInstance.currentOrg;
+                const params = {
+                    type: 'application',
+                    state: {
+                        applicationName: 'documentation',
+                    },
+                };
+                if (injectorPort) {
+                    injectorPort.postMessage(generateMessage({sessionInfo, params}));
+                }
             },
         },
     ];
@@ -265,6 +300,14 @@ const injectShortCuts = async () => {
     shortcuts.forEach(shortcut => {
         hotkeys(shortcut.shortcut, shortcut.action);
     });
+
+    generateMessage = ({sessionInfo, params})=> ({
+        action: 'redirectToUrl',
+        sessionId: sessionInfo.sessionId,
+        serverUrl: sessionInfo.serverUrl,
+        baseUrl: chrome.runtime.getURL('/views/app.html'),
+        navigation: params,
+    })
 };
 
 /* TODO : Add prompt widget in the web page with vanila JS/HTML/CSS
@@ -465,12 +508,15 @@ class LWC_CUSTOM {
             sobject: 'LightningComponentBundle',
             param1: developerName,
         });
-        redirectToUrlViaChrome({
-            sessionId: this.config.sessionId,
-            serverUrl: this.config.serverUrl,
-            baseUrl: chrome.runtime.getURL('/views/app.html'),
-            redirectUrl: encodeURIComponent(params.toString()),
-        });
+        if (injectorPort) {
+            injectorPort.postMessage({
+                action: 'redirectToUrl',
+                sessionId: this.config.sessionId,
+                serverUrl: this.config.serverUrl,
+                baseUrl: chrome.runtime.getURL('/views/app.html'),
+                redirectUrl: encodeURIComponent(params.toString()),
+            });
+        }
     };
 }
 
@@ -532,7 +578,6 @@ class INJECTOR {
     };
 
     handleMessage = (request, sender, sendResponse) => {
-        console.log('handleMessage', request);
         if (request.action === 'lwc_highlight') {
             //console.log('handleMessage',request);
             this.lwc_custom_instance.config = request.config;

@@ -1,5 +1,5 @@
 import LOGGER from 'shared/logger';
-import { isChromeExtension, isEmpty } from 'shared/utils';
+import { isChromeExtension, isEmpty,isUndefinedOrNull,isNotUndefinedOrNull } from 'shared/utils';
 
 import { chromeStore, basicStore } from './interfaces';
 
@@ -119,7 +119,7 @@ class CacheManager {
             const cachedValue = await this.settingsStore.getItem(key);
 
             // If we have a value in cache, use it
-            if (cachedValue !== null && cachedValue !== undefined) {
+            if (isNotUndefinedOrNull(cachedValue)) {
                 configuration[key] = cachedValue;
             } else {
                 // Otherwise, look for a default value in CACHE_CONFIG using our map
@@ -153,7 +153,7 @@ export class CONFIG_OBJECT {
     }
 
     get value() {
-        return this._value || this.defaultValue;
+        return isUndefinedOrNull(this._value) ? this.defaultValue : this._value;
     }
 }
 
@@ -171,12 +171,14 @@ export const CACHE_CONFIG = {
     SHORTCUT_OVERVIEW: new CONFIG_OBJECT('shortcut_overview', null),
     SHORTCUT_SOQL: new CONFIG_OBJECT('shortcut_soql', null),
     SHORTCUT_APEX: new CONFIG_OBJECT('shortcut_apex', null),
+    SHORTCUT_API: new CONFIG_OBJECT('shortcut_api', null),
+    SHORTCUT_DOCUMENTATION: new CONFIG_OBJECT('shortcut_documentation', null),
     EXPERIENCE_CLOUD_LOGINAS_INCOGNITO: new CONFIG_OBJECT('experienceCloudLoginAsIncognito', false),
     CACHE_ISCACHED_PROFILES: new CONFIG_OBJECT('cache_isProfilesCache', false),
     CACHE_ISCACHED_SOBJECTS: new CONFIG_OBJECT('cache_isSObjectsCache', false),
     CACHE_REFRESH_RATE: new CONFIG_OBJECT('cache_refreshRate', 24),
     CACHE_EXCLUSION_LIST: new CONFIG_OBJECT('cache_exclusionList', ''),
-    UI_IS_APPLICATION_TAB_VISIBLE: new CONFIG_OBJECT('ui_isApplicationTabVisible', false),
+    UI_IS_APPLICATION_TAB_VISIBLE: new CONFIG_OBJECT('ui_isApplicationTabVisible', true),
     CHROME_SYNC_SETTINGS_INITIALIZED_STORAGE_KEY: new CONFIG_OBJECT(
         'chrome_syncSettingsInitialized',
         false

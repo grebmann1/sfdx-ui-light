@@ -1,5 +1,43 @@
 [
   {
+    "version": "1.3.39",
+    "date": "June 10th, 2025",
+    "sections": [
+      {
+        "title": "Enhancement",
+        "categories": [
+          {
+            "category": "Installation Guide",
+            "items": [
+              "Add more 'How To' in the installation guide.",
+              "Enhance installation guide with additional 'How To' sections."
+            ]
+          },
+          {
+            "category": "Shortcuts & Navigation",
+            "items": [
+              "Implement new shortcut settings for various applications, improving user navigation experience."
+            ]
+          },
+          {
+            "category": "Electron Integration",
+            "items": [
+              "Refactor API request handling and error management in the Electron integration for better performance and reliability.",
+              "Handle MCP (Model Context Protocol) for the Desktop Version."
+            ]
+          },
+          {
+            "category": "General Refactoring",
+            "items": [
+              "Remove outdated release notes file.",
+              "Update version to 1.3.39."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.3.38",
     "date": "May 26th, 2025",
     "sections": [

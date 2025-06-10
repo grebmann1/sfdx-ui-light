@@ -11,7 +11,7 @@ import {
     classSet,
     normalizeString as normalize,
     prettifyXml,
-    autoDetectAndFormat,
+    autoDetectAndFormat
 } from 'shared/utils';
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
@@ -24,6 +24,7 @@ import {
     TABS,
     generateDefaultTab,
     formattedContentType,
+    formatApiRequest
 } from 'api/utils';
 import SaveModal from 'builder/saveModal';
 import moment from 'moment';
@@ -47,7 +48,7 @@ export default class App extends ToolkitElement {
     currentModel;
 
     // Aborting
-    _abortingMap = {};
+    // _abortingMap is now managed in the Redux store
     isApiRunning = false;
 
     // Changes
@@ -153,7 +154,7 @@ export default class App extends ToolkitElement {
             }
         }
         if (this.header != api.header) {
-            this.header = api.header;
+            this.header = api.header || null;
             if (this._hasRendered) {
                 this.template.querySelector('.slds-textarea-header').value = this.header;
             }
@@ -179,7 +180,6 @@ export default class App extends ToolkitElement {
                 if (this._loadingInterval) clearInterval(this._loadingInterval);
             }
             if (apiState.error) {
-                this._abortingMap[api.currentTab.id] = null; // Reset the abortingMap
                 this.resetResponse();
                 ////this.global_handleError(apiState.error)
             } else if (apiState.response) {
@@ -198,8 +198,6 @@ export default class App extends ToolkitElement {
                     this.content = apiState.response.content;
                     this.updateContentEditor();
                 }
-
-                this._abortingMap[api.currentTab.id] = null; // Reset the abortingMap`
                 ////this.header_formatDate();
                 // Handle Error from Salesforce
                 if (!apiState.response.statusCode <= 400 /**&& apexState.data.compiled**/) {
@@ -242,11 +240,29 @@ export default class App extends ToolkitElement {
 
     /** Methods  **/
 
+    formatRequest = () => {
+        const {request,error} = formatApiRequest({
+            endpoint: this.endpoint,
+            method: this.method,
+            body: this.body,
+            header: this.header,
+            connector: this.connector,
+            replaceVariableValues: this.replaceVariableValues,
+        });
+        if(error){
+            Toast.show({
+                message: error,
+                errors: error,
+            });
+        }
+        return request;
+    }
+
     // Execute Action - Execute API Call
     executeAction = () => {
         const _originalRequest = this.currentRequestToStore;
         const _formattedRequest = this.formatRequest();
-        if (isUndefinedOrNull(_formattedRequest)) return;
+        if(isUndefinedOrNull(_formattedRequest)) return;
 
         this.isApiRunning = true;
         // Execute
@@ -259,8 +275,13 @@ export default class App extends ToolkitElement {
                 createdDate: Date.now(),
             })
         );
-
-        this._abortingMap[this.currentTab.id] = apiPromise;
+        // TODO : Investigate if this shouldn't be done in the reducer
+        store.dispatch(
+            API.reduxSlice.actions.setAbortingPromise({
+                tabId: this.currentTab.id,
+                promise: apiPromise,
+            })
+        );
     };
 
     reassignAction = () => {
@@ -299,71 +320,6 @@ export default class App extends ToolkitElement {
         if (isEmpty(text)) return text;
         // Todo: Enhance this to provide more variables
         return text.replace(/{sessionId}/g, this.connector.conn.accessToken);
-    };
-
-    formatRequest = () => {
-        // Ensure the endpoint starts with a leading slash if not a full URL
-        const formattedEndpoint = this.endpoint.startsWith('/')
-            ? this.endpoint
-            : `/${this.endpoint}`;
-
-        // If the endpoint is a full URL, use it, otherwise, prepend the instance URL
-        const targetUrl = this.endpoint.startsWith('http')
-            ? this.endpoint
-            : `${this.connector.conn.instanceUrl}${formattedEndpoint}`;
-
-        // Create the base request object with method and URL
-        const request = {
-            method: this.method,
-            url: targetUrl,
-        };
-
-        // Include body for PATCH, POST, or PUT requests
-        if ([METHOD.PATCH, METHOD.POST, METHOD.PUT].includes(this.method)) {
-            request.body = this.replaceVariableValues(this.body);
-        }
-
-        // Process headers if they are defined
-        if (isNotUndefinedOrNull(this.header)) {
-            const headers = {};
-            let isValidHeader = true;
-
-            // Clean up the header string and process each line
-            this.header
-                .replace(/^\s*[\r\n]/gm, '') // Remove empty lines
-                .trim()
-                .split('\n')
-                .forEach(line => {
-                    const lineArr = line.split(':');
-                    if (lineArr.length >= 2) {
-                        const key = lineArr.shift().trim(); // Get the header name
-                        headers[key] = lineArr.join(':').trim(); // Combine the remaining parts of the header value
-                        headers[key] = this.replaceVariableValues(headers[key]);
-                    } else {
-                        isValidHeader = false; // Flag invalid header
-                    }
-                });
-
-            // If any headers are invalid, show a toast notification
-            if (!isValidHeader) {
-                Toast.show({
-                    label: `Invalid Header`,
-                    variant: 'error',
-                    mode: 'dismissible',
-                });
-                return null;
-            } else {
-                // Add headers to the request if valid and not empty
-                if (Object.keys(headers).length > 0) {
-                    request.headers = {
-                        ...request.headers,
-                        ...headers,
-                    };
-                }
-            }
-        }
-
-        return request; // Return the formatted request object
     };
 
     decreaseActionPointer = () => {
@@ -424,9 +380,8 @@ export default class App extends ToolkitElement {
     };
 
     updateBodyEditor = () => {
-        if (!this._hasRendered || !this.refs.bodyEditor || !this.refs.bodyEditor.currentModel)
-            return;
-        this.refs.bodyEditor.currentModel.setValue(this.body);
+        if (!this._hasRendered || !this.refs.bodyEditor || !this.refs.bodyEditor.currentModel) return;
+        this.refs.bodyEditor.currentModel.setValue(this.body || '');
         this.refs.bodyEditor.currentMonaco.editor.setModelLanguage(
             this.refs.bodyEditor.currentModel,
             autoDetectAndFormat(this.body, this.header) || 'txt'
@@ -570,6 +525,7 @@ export default class App extends ToolkitElement {
         this.method = METHOD.GET;
         this.body = DEFAULT.BODY; // Reset Body
         //this.header = DEFAULT.HEADER;
+
         //this.updateRequestStates(e);
         store.dispatch(
             API.reduxSlice.actions.updateRequest({
@@ -603,7 +559,6 @@ export default class App extends ToolkitElement {
     };
 
     executeSave = () => {
-        console.log('save click');
 
         const { api } = store.getState();
         const file = api.currentTab.fileId

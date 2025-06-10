@@ -1,9 +1,10 @@
 import { LightningElement, wire, api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { guid } from 'shared/utils';
-import { store, API, APPLICATION, UI, QUERY } from 'core/store';
+import { guid,isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
+import { store, API, APPLICATION, UI, QUERY, DOCUMENT,SELECTORS } from 'core/store';
 import { store as legacyStore, store_application as legacyStore_application } from 'shared/store';
 import { NavigationContext, CurrentPageReference, navigate } from 'lwr/navigation';
+import { formatApiRequest,DEFAULT as API_DEFAULT } from 'api/utils';
 import LOGGER from 'shared/logger';
 
 export default class Electron extends ToolkitElement {
@@ -18,6 +19,18 @@ export default class Electron extends ToolkitElement {
         this.init();
     }
 
+
+    formatTabId = (tabId) => {
+        const { ui } = store.getState();
+        if(isNotUndefinedOrNull(tabId)){
+            const tabExists = ui.tabs.some(tab => tab.id === tabId);
+            if(tabExists){
+                return {tabId,isNewTab:false};
+            }
+        }
+        return {tabId:guid(),isNewTab:true};
+    }
+    
 
     init = () => {
         if (this.initialized) return;
@@ -37,44 +50,8 @@ export default class Electron extends ToolkitElement {
                 LOGGER.info('[Electron] @api call received and dispatched:', payload);
             });
 
-            // Listen for @soql calls from main process
-            this.listener_on('electron-soql-call', args => {
-                const [payload,callBackChannel] = args;
-                LOGGER.info('[Electron] @soql call args:', args);
-                // Dispatch a SOQL/QUERY action (customize as needed)
-                const _guid = guid();
-
-                store.dispatch(async (dispatch, getState) => {
-                    const { ui,application } = getState();
-                    if(application.isLoading) await this.waitForLoaded();
-
-                    const existingTab = ui.tabs.find(x => x.id === _guid);
-                    // Navigate to the soql application
-                    navigate(this.navContext, { type: 'application', state: { applicationName: 'soql' } });
-                    // Update the tab
-                    if (existingTab) {
-                        await dispatch(UI.reduxSlice.actions.selectionTab(existingTab));
-                    } else {
-                        await dispatch(UI.reduxSlice.actions.addTab({ tab: { id: _guid, body: payload.query } }));
-                    }
-
-                    // Run the query
-                    const res = await dispatch(
-                        QUERY.executeQuery({
-                            connector: this.connector,
-                            soql: payload.query,
-                            tabId: getState().ui.currentTab.id,
-                            useToolingApi: false, // TODO: add tooling api support
-                            includeDeletedRecords: false, // TODO: add include deleted records support
-                        })
-                    );
-
-                    await dispatch(UI.reduxSlice.actions.selectionTab({ id: res.payload?.tabId }));
-
-                    LOGGER.debug('MCP Response [payload]', res.payload);
-                    window.electron.send(callBackChannel, res.payload);
-                 });
-            });
+            this.handleSOQL(this.listener_on);
+            this.handleRestAPI(this.listener_on);
 
             // Listen for navigation requests
             this.listener_on('electron-navigate-to', async args => {
@@ -98,6 +75,201 @@ export default class Electron extends ToolkitElement {
             });
         }
         this.initialized = true;
+    }
+
+    handleSOQL = (listener) => {
+        // Listen for @soql calls from main process
+        listener('/soql/query', args => {
+            const [payload,callBackChannel] = args;
+            LOGGER.info('[Electron] @soql call args:', args);
+            // Dispatch a SOQL/QUERY action (customize as needed)
+
+            const {tabId,isNewTab} = this.formatTabId(payload.tabId);
+
+            store.dispatch(async (dispatch, getState) => {
+                const { application } = getState();
+                if(application.isLoading) await this.waitForLoaded();
+
+                // Navigate to the soql application
+                navigate(this.navContext, { type: 'application', state: { applicationName: 'soql' } });
+                // Update the tab
+                if (isNewTab) {
+                    await dispatch(UI.reduxSlice.actions.addTab({ tab: { id: tabId, body: payload.query } }));
+                } else {
+                    await dispatch(UI.reduxSlice.actions.selectionTab({ id: tabId }));
+                }
+
+                // If the tabId is provided, use it, otherwise use the current tab
+                
+
+                // Run the query
+                const res = await dispatch(
+                    QUERY.executeQuery({
+                        connector: this.connector,
+                        soql: payload.query,
+                        tabId: tabId,
+                        useToolingApi: false, // TODO: add tooling api support
+                        includeDeletedRecords: false, // TODO: add include deleted records support
+                    })
+                );
+                LOGGER.debug('Execute Query [res]', res);
+                LOGGER.debug('Execute Query [payload]', res.payload);
+                await dispatch(UI.reduxSlice.actions.selectionTab({ id: tabId }));
+                let _output = res.payload;
+                if(res.error){
+                    _output = {
+                        error: res.error,
+                    };
+                }
+                Object.assign(_output, {
+                    tabId: tabId,
+                });
+                LOGGER.debug('MCP Response [output]', _output);
+                window.electron.send(callBackChannel, _output);
+             });
+        });
+
+        // Listen for navigate-tab requests
+        listener('/soql/navigate-tab', args => {
+            const [payload,callBackChannel] = args;
+            LOGGER.info('[Electron] @soql navigate-tab args:', args);
+            // Dispatch a SOQL/QUERY action (customize as needed)
+            navigate(this.navContext, { type: 'application', state: { applicationName: 'soql' } });
+            const {tabId,isNewTab} = this.formatTabId(payload.tabId);
+            let _output = {
+                tabId: tabId,
+            };
+            if(!isNewTab){
+                _output.status = 'success';
+                store.dispatch(UI.reduxSlice.actions.selectionTab({ id: tabId }));
+            }else{
+                _output.status = 'error';
+                _output.message = 'Tab not found';
+            }
+
+            window.electron.send(callBackChannel, _output);
+        });
+
+        // listen for fetch query from Saved List
+        listener('/soql/queries', async args => {
+            const [payload,callBackChannel] = args;
+            LOGGER.info('[Electron] @soql queries args:', args);
+            // Dispatch a SOQL/QUERY action (customize as needed)
+            LOGGER.info('[Electron] @soql current alias:', this.alias);
+            await store.dispatch(DOCUMENT.reduxSlices.QUERYFILE.actions.loadFromStorage({
+                alias: this.alias,
+            }));
+            const { queryFiles } = store.getState();
+            const entities = SELECTORS.queryFiles.selectAll({ queryFiles });
+            // Taken from soql/app.js
+            const queries = entities
+                .filter(item => item.isGlobal || item.alias == this.alias)
+                .map((item, index) => {
+                    return item; // no mutation for now
+                });
+            LOGGER.info('[Electron] @soql saved queries:', queries);
+            window.electron.send(callBackChannel, queries);
+        });
+    }
+
+    handleRestAPI = (listener) => {
+        listener('/api/execute', args => {
+            const [payload,callBackChannel] = args;
+            const { alias, method,headers,endpoint,body } = payload;
+            LOGGER.info('[Electron] @api/execute call args:', args);
+
+            const {tabId,isNewTab} = this.formatTabId(payload.tabId);
+
+            store.dispatch(async (dispatch, getState) => {
+                const { application } = getState();
+                if(application.isLoading) await this.waitForLoaded();
+
+                const headers = Object.keys((payload.headers || {})).map(key => `${key}: ${payload.headers[key]}`).join('\n') || API_DEFAULT.HEADER;
+
+                const {request,error} = formatApiRequest({
+                    endpoint: payload.endpoint,
+                    method: payload.method,
+                    body: payload.body,
+                    header: headers, // as a string
+                    connector: this.connector,
+                });
+                LOGGER.log('Execute API [payload]',payload);
+                LOGGER.log('Execute API [request]',request);
+                LOGGER.log('Execute API [error]',error);
+                LOGGER.log('Execute API [tabId]',tabId);
+                // Navigate to the soql application
+                navigate(this.navContext, { type: 'application', state: { applicationName: 'api' } });
+                // Update the tab
+                if (isNewTab) {
+                    await dispatch(API.reduxSlice.actions.addTab({ tab: { 
+                        id: tabId, 
+                        body: request.body,
+                        method: request.method,
+                        endpoint: request.endpoint,
+                        header: headers,
+                        isDraft: false,
+                        fileId: null,
+                        fileData: null,
+                        actions: [],
+                    } }));
+                } else {
+                    await dispatch(API.reduxSlice.actions.selectionTab({ id: tabId }));
+                }
+
+                await dispatch(API.reduxSlice.actions.updateRequest({
+                    header: headers,
+                    method: request.method,
+                    endpoint: request.endpoint,
+                    body: request.body,
+                    tabId: tabId,
+                }));
+
+                // Run the API request
+                const apiPromise = store.dispatch(
+                    API.executeApiRequest({
+                        connector: this.connector,
+                        request,
+                        formattedRequest: request,
+                        tabId: tabId,
+                        createdDate: Date.now(),
+                    })
+                );
+                // TODO : Investigate if this shouldn't be done in the reducer
+                store.dispatch(
+                    API.reduxSlice.actions.setAbortingPromise({
+                        tabId,
+                        promise: apiPromise,
+                    })
+                );
+                await dispatch(UI.reduxSlice.actions.selectionTab({ id: tabId }));
+                const res = await apiPromise;
+
+                LOGGER.debug('Execute Query [res]', res);
+                LOGGER.debug('Execute Query [payload]', res.payload);
+
+                let _output = {
+                    ...res.payload?.response || {},
+                    tabId: tabId,
+                };
+                console.log('Execute API [_output]', _output);
+                if(res.error){
+                    _output.error = res.error;
+                }
+                LOGGER.debug('MCP Response [output]', _output);
+                window.electron.send(callBackChannel, _output);
+             });
+        });
+
+        listener('/api/scripts', args => {
+            const [payload,callBackChannel] = args;
+            LOGGER.info('[Electron] @api/scripts call args:', args);
+            const {apiFiles} = store.getState();
+            const entities = SELECTORS.apiFiles.selectAll({ apiFiles });
+            LOGGER.info('[Electron] @api/scripts entities:', entities);
+            const apiFilesFiltered = entities.filter(item => item.isGlobal || item.alias == this.alias);
+            LOGGER.info('[Electron] @api/scripts apiFilesFiltered:', apiFilesFiltered);
+            window.electron.send(callBackChannel, apiFilesFiltered);
+        });
     }
 
     sendToMain(channel, payload) {

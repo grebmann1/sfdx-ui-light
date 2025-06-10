@@ -237,12 +237,12 @@ export default class App extends ToolkitElement {
         const cachedConfiguration = await cacheManager.loadConfig(
             Object.values(CACHE_CONFIG).map(x => x.key)
         );
-        console.log('cachedConfiguration', cachedConfiguration);
+        LOGGER.log('cachedConfiguration', cachedConfiguration);
 
         const configurationList = Object.values(CACHE_CONFIG);
         const config = {};
         Object.values(configurationList).forEach(item => {
-            config[item.key] = cachedConfiguration[item.key] || item.value;
+            config[item.key] = cachedConfiguration[item.key];// || item.value;
         });
 
         this.config = config;
@@ -256,11 +256,10 @@ export default class App extends ToolkitElement {
                     this.connector.conn.alias,
                     CACHE_ORG_DATA_TYPES.SESSION_SETTINGS
                 )) || {};
-            console.log('sessionCachedConfiguration', sessionCachedConfiguration);
             const sessionConfigurationList = Object.values(CACHE_SESSION_CONFIG);
             const sessionConfig = {};
             Object.values(sessionConfigurationList).forEach(item => {
-                sessionConfig[item.key] = sessionCachedConfiguration[item.key] || item.value;
+                sessionConfig[item.key] = sessionCachedConfiguration[item.key];// || item.value;
             });
 
             this.sessionConfig = sessionConfig;

@@ -76,7 +76,7 @@ export default class Footer extends LightningElement {
     }
 
     get salesforceVersionFormatted() {
-        const version = this.connector.conn._versions.find(
+        const version = this.connector?.conn?._versions?.find(
             x => x.version === this.connector.conn.version
         );
         return version ? `${version.label} (${version.version})` : 'Unknown';

@@ -94,8 +94,7 @@ export default class Menu extends ToolkitElement {
         const configuration = await loadExtensionConfigFromCache([
             CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key,
         ]);
-        this.isApplicationTabVisible =
-            configuration[CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key];
+        this.isApplicationTabVisible = configuration[CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key];
     };
 
     updateSelectedItem = () => {

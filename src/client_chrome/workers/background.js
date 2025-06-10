@@ -44,6 +44,35 @@ const isEmpty = str => {
     return !str || str.length === 0;
 };
 
+const redirectToUrlViaChrome = ({
+    baseUrl,
+    sessionId,
+    serverUrl,
+    navigation,
+}) => {
+    let params = new URLSearchParams();
+    if (sessionId) {
+        params.append('sessionId', sessionId);
+        params.append('serverUrl', serverUrl);
+    }
+
+    if (navigation) {
+        // Navigation state is a key-value pair of the state of the navigation
+        const redirectUrl = new URLSearchParams();
+        Object.entries(navigation.state).forEach(([key, value]) => {
+            redirectUrl.append(key, value);
+        });
+        params.append('redirectUrl', encodeURIComponent(redirectUrl.toString()));
+    }
+
+    let url = new URL(baseUrl);
+        url.search = params.toString();
+    // Open a new tab
+    chrome.tabs.create({
+        url: url.href,
+    });
+};
+
 /** Variables */
 
 // Code is duplicated in the shared module, but we need to keep it here for now !!!
@@ -250,13 +279,45 @@ async function createContextMenu() {
 
 const injectedConnections = new Set();
 const sidePanelConnections = new Set();
+const instanceConnections = new Map();
 
 chrome.runtime.onConnect.addListener(function (port) {
-    
-    if (port.name === 'sf-toolkit-injected') {
+    if (port.name === 'sf-toolkit-instance') {
+        const cleanup = (identityKey) => instanceConnections.delete(identityKey);
+        port.onMessage.addListener((msg) => {
+            let identityKey = msg.serverUrl;//msg.alias || msg.username;
+            if (msg.action === 'registerInstance') {
+                if (identityKey) {
+                    instanceConnections.set(identityKey, {
+                        port,
+                        serverUrl: msg.serverUrl,
+                        alias: msg.alias,
+                        username: msg.username,
+                    });
+                    port.onDisconnect.addListener(() => {
+                        if(instanceConnections.has(identityKey)) {
+                            cleanup(identityKey);
+                        }
+                    });
+                }
+            } else if (msg.action === 'closeConnection') {
+                cleanup(identityKey);
+                try { port.disconnect(); } catch (e) {}
+            }
+        });
+    } else if (port.name === 'sf-toolkit-injected') {
         injectedConnections.add(port);
         port.onDisconnect.addListener(() => {
             injectedConnections.delete(port);
+        });
+        port.onMessage.addListener((msg) => {
+            if (msg.action === 'redirectToUrl') {
+                handleRedirectToUrl(msg);
+                /* const url = buildRedirectUrl(msg);
+                if (url) {
+                    chrome.tabs.create({ url });
+                } */
+            }
         });
     } else if (port.name === 'sf-toolkit-sidepanel') {
         sidePanelConnections.add(port);
@@ -265,6 +326,34 @@ chrome.runtime.onConnect.addListener(function (port) {
         });
     }
 });
+
+function handleRedirectToUrl(msg) {
+    const { serverUrl } = msg;
+
+    if (serverUrl && instanceConnections.has(serverUrl)) {
+        // Send the message to the correct port/instance
+        const instance = instanceConnections.get(serverUrl);
+        if (instance && instance.port) {
+            instance.port.postMessage({
+                ...msg,
+                action: 'redirectToUrl',
+            });
+            const tab = instance.port?.sender?.tab;
+            if(tab && tab.windowId){
+                chrome.tabs.update(tab.id, { active: true }, function(tab) {
+                    // Optionally, focus the window containing the tab
+                    chrome.windows.update(tab.windowId, { focused: true });
+                });
+            }
+            //chrome.tabs.update(instance.tabId, { active: true });
+            return;
+        }
+    }else{
+        // If no port found, or no serverUrl, open a new tab
+        redirectToUrlViaChrome(msg);
+    }
+    
+}
 
 async function setOverlayState(isEnabled) {
     await chrome.storage.sync.set({ overlayEnabled: isEnabled });
@@ -388,7 +477,11 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 chrome.tabs.onActivated.addListener(async ({ tabId, windowId }) => {
     if (!tabId) return;
     const tab = await chrome.tabs.get(tabId);
-    handleTabOpening(tab);
+    try{
+        handleTabOpening(tab);
+    } catch (e) {
+        console.error('handleTabOpening issue: ', e);
+    }
 });
 
 chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
@@ -536,4 +629,27 @@ function broadcastMessageToAllSidePanelInstances(message) {
     for (const [tabId, port] of sidePanelConnections.entries()) {
         port.postMessage(message);
     }
+}
+
+function sendMessageToInstance(identityKey, message) {
+    const port = instanceConnections.get(identityKey);
+    if (port) {
+        port.postMessage(message);
+    }
+}
+
+function getPortByIdentityKey(identityKey) {
+    // Search for a port by alias or username
+    if (!identityKey) return null;
+    // Direct match (most common case)
+    if (instanceConnections.has(identityKey)) {
+        return instanceConnections.get(identityKey).port;
+    }
+    // Fallback: search by alias or username in the value
+    for (const [key, value] of instanceConnections.entries()) {
+        if (value.alias === identityKey || value.username === identityKey) {
+            return value.port;
+        }
+    }
+    return null;
 }

@@ -74,7 +74,6 @@ export default class App extends ToolkitElement {
     querySet = new Set();
 
     connectedCallback() {
-        console.log('this.connector', this.connector);
         store.dispatch(
             DESCRIBE.describeSObjects({
                 connector: this.connector.conn,
@@ -122,12 +121,14 @@ export default class App extends ToolkitElement {
         this._pageRef = pageRef;
         if (this._hasRendered) {
             this.loadFromNavigation(pageRef);
+            
         }
         //  this.loadFromNavigation(pageRef);
         //('this._hasRendered',this._hasRendered);
     }
 
-    loadFromNavigation = async ({ state }) => {
+    loadFromNavigation = async (pageRef) => {
+        const { state } = pageRef;
         // Use state.query to force a specific query to be loaded !
         if (isNotUndefinedOrNull(state.query)) {
             const _guid = guidFromHash(state.query);

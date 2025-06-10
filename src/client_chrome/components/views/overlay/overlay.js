@@ -195,6 +195,7 @@ export default class Overlay extends ToolkitElement {
         this.isOverlayDisplayed = false;
     };
 
+
     handleRefresh = () => {
         this._forceRefresh = true;
         this.init();
@@ -724,6 +725,14 @@ export default class Overlay extends ToolkitElement {
     }
 
     /** Getters **/
+
+    @api
+    get currentOrg() {
+        return {
+            sessionId: this.connector.conn.accessToken,
+            serverUrl: this.connector.conn.instanceUrl,
+        };
+    }
 
     get searchButtonClass() {
         return isUndefinedOrNull(this.recordId) ? 'slds-button-last' : '';
