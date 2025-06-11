@@ -14,7 +14,7 @@ export async function directConnect({ username, password, loginUrl, alias }) {
         OAUTH_TYPES.USERNAME,
         {
             instanceUrl: normalizedUrl,
-            proxyUrl: window.jsforceSettings?.proxyUrl || 'https://sf-toolkit.com/proxy/',
+            //proxyUrl: window.jsforceSettings?.proxyUrl || 'https://sf-toolkit.com/proxy/',
         },
         platform
     );

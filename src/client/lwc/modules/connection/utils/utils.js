@@ -177,7 +177,7 @@ export const normalizeConnection = (credentialType, rawData, platform, extra = {
         accessToken: rawData.accessToken,
         sessionId: rawData.sessionId,
         proxyUrl:
-            extra.isProxyDisabled || platform === PlatformService.PLATFORM.CHROME
+            extra.isProxyDisabled || platform === PlatformService.PLATFORM.CHROME || platform === PlatformService.PLATFORM.ELECTRON
                 ? null
                 : window.jsforceSettings?.proxyUrl, // For chrome extension, we run without proxy
         version: rawData.version || constant.apiVersion, // This might need to be refactored

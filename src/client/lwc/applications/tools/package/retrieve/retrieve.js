@@ -11,6 +11,8 @@ import {
     compareString,
     splitTextByTimestamp,
     prettifyXml,
+    isElectronApp,
+    isChromeExtension,
 } from 'shared/utils';
 import { store, connectStore, PACKAGE, SELECTORS } from 'core/store';
 import { VIEWERS } from 'api/utils';
@@ -232,7 +234,7 @@ export default class Retrieve extends ToolkitElement {
                     connector: this.connector,
                     request: _request,
                     createdDate: new Date(),
-                    proxyUrl: window.jsforceSettings.proxyUrl,
+                    proxyUrl: isElectronApp() || isChromeExtension() ? null : window.jsforceSettings.proxyUrl,
                 })
             );
         } catch (e) {

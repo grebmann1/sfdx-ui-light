@@ -41,7 +41,7 @@
                         clientId: config.clientId,
                         chromeId: config.chromeId,
                         redirectUri: `${host}/oauth2/callback`,
-                        proxyUrl: config.proxyUrl ? config.proxyUrl : `${host}/proxy/`,
+                        proxyUrl: window.electron ? null : config.proxyUrl//(config.proxyUrl ? config.proxyUrl : `${host}/proxy/`),
                     };
                     //jsforce.browser.init(window.jsforceSettings); // Reset
                 });
