@@ -55,7 +55,7 @@ const basicStore = (variant = 'local') => {
     return {
         getItem: function (key, callback) {
             const value = storage.getItem(key);
-            console.log('--> getItem <---',key,value);
+            //console.log('--> getItem <---',key,value);
             const parsedValue = safeParseJson(value);
             if (callback) {
                 callback(isNotUndefinedOrNull(parsedValue) && parsedValue != 'null' ? parsedValue : null); // 'null' is related to legacy code

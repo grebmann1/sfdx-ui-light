@@ -4,7 +4,7 @@ import { guid,isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
 import { store, API, APPLICATION, UI, QUERY, DOCUMENT,SELECTORS } from 'core/store';
 import { store as legacyStore, store_application as legacyStore_application } from 'shared/store';
 import { NavigationContext, CurrentPageReference, navigate } from 'lwr/navigation';
-import { formatApiRequest,DEFAULT as API_DEFAULT } from 'api/utils';
+import { formatApiRequest,generateDefaultTab,DEFAULT as API_DEFAULT } from 'api/utils';
 import LOGGER from 'shared/logger';
 
 export default class Electron extends ToolkitElement {
@@ -178,11 +178,16 @@ export default class Electron extends ToolkitElement {
             const { alias, method,headers,endpoint,body } = payload;
             LOGGER.info('[Electron] @api/execute call args:', args);
 
+            
+
             const {tabId,isNewTab} = this.formatTabId(payload.tabId);
 
             store.dispatch(async (dispatch, getState) => {
                 const { application } = getState();
                 if(application.isLoading) await this.waitForLoaded();
+
+                // Navigate to the api application
+                navigate(this.navContext, { type: 'application', state: { applicationName: 'api' } });
 
                 const headers = Object.keys((payload.headers || {})).map(key => `${key}: ${payload.headers[key]}`).join('\n') || API_DEFAULT.HEADER;
 
@@ -198,37 +203,39 @@ export default class Electron extends ToolkitElement {
                 LOGGER.log('Execute API [error]',error);
                 LOGGER.log('Execute API [tabId]',tabId);
                 // Navigate to the soql application
-                navigate(this.navContext, { type: 'application', state: { applicationName: 'api' } });
+                
                 // Update the tab
                 if (isNewTab) {
-                    await dispatch(API.reduxSlice.actions.addTab({ tab: { 
-                        id: tabId, 
-                        body: request.body,
-                        method: request.method,
-                        endpoint: request.endpoint,
-                        header: headers,
-                        isDraft: false,
-                        fileId: null,
-                        fileData: null,
-                        actions: [],
-                    } }));
+                    const tab = generateDefaultTab(this.currentApiVersion,tabId);
+                    tab.body = request.body;
+                    tab.header = headers;
+                    tab.method = request.method;
+                    tab.endpoint = request.endpoint;
+                    tab.fileId = null;
+                    await dispatch(API.reduxSlice.actions.addTab({ tab }));
                 } else {
                     await dispatch(API.reduxSlice.actions.selectionTab({ id: tabId }));
+                    await dispatch(API.reduxSlice.actions.updateRequest({
+                        header: headers,
+                        method: request.method,
+                        endpoint: request.endpoint,
+                        body: request.body,
+                        tabId: tabId,
+                    }));
                 }
 
-                await dispatch(API.reduxSlice.actions.updateRequest({
-                    header: headers,
-                    method: request.method,
-                    endpoint: request.endpoint,
-                    body: request.body,
-                    tabId: tabId,
-                }));
+                
 
                 // Run the API request
                 const apiPromise = store.dispatch(
                     API.executeApiRequest({
                         connector: this.connector,
-                        request,
+                        request:{
+                            endpoint: request.endpoint,
+                            method: request.method,
+                            body: request.body,
+                            header: request.header,
+                        },
                         formattedRequest: request,
                         tabId: tabId,
                         createdDate: Date.now(),
@@ -241,8 +248,9 @@ export default class Electron extends ToolkitElement {
                         promise: apiPromise,
                     })
                 );
-                await dispatch(UI.reduxSlice.actions.selectionTab({ id: tabId }));
                 const res = await apiPromise;
+
+                await dispatch(UI.reduxSlice.actions.selectionTab({ id: tabId }));
 
                 LOGGER.debug('Execute Query [res]', res);
                 LOGGER.debug('Execute Query [payload]', res.payload);

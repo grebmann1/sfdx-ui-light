@@ -29,6 +29,7 @@ import {
 import SaveModal from 'builder/saveModal';
 import moment from 'moment';
 import LightningConfirm from 'lightning/confirm';
+import LOGGER from 'shared/logger';
 
 export default class App extends ToolkitElement {
     isLoading = false;
@@ -83,6 +84,8 @@ export default class App extends ToolkitElement {
     _loadingInterval;
     _loadingMessage;
 
+    _hasRendered = false;
+
     connectedCallback() {
         this.isFieldRendered = true;
 
@@ -94,18 +97,18 @@ export default class App extends ToolkitElement {
                     version: this.currentApiVersion,
                 })
             );
-            dispatch(
+            await dispatch(
+                DOCUMENT.reduxSlices.APIFILE.actions.loadFromStorage({
+                    alias: this.alias,
+                })
+            );
+            await dispatch(
                 API.reduxSlice.actions.loadCacheSettings({
                     cachedConfig,
                     apiFiles: getState().apiFiles,
                 })
             );
-            dispatch(
-                DOCUMENT.reduxSlices.APIFILE.actions.loadFromStorage({
-                    alias: this.alias,
-                })
-            );
-            dispatch(
+            await dispatch(
                 API.reduxSlice.actions.initTabs({
                     apiFiles: getState().apiFiles,
                 })
@@ -156,7 +159,7 @@ export default class App extends ToolkitElement {
         if (this.header != api.header) {
             this.header = api.header || null;
             if (this._hasRendered) {
-                this.template.querySelector('.slds-textarea-header').value = this.header;
+                this.template.querySelector('.slds-textarea-header').value = this.header || '';
             }
         }
         if (this.endpoint != api.endpoint) {
@@ -173,6 +176,7 @@ export default class App extends ToolkitElement {
         // Api State
         const apiState = SELECTORS.api.selectById({ api }, lowerCaseKey(api.currentTab?.id));
         if (apiState) {
+            LOGGER.log('App [apiState]', apiState);
             this.isApiRunning = apiState.isFetching;
             if (this.isApiRunning) {
                 this.loading_enableAutoDate(apiState.createdDate);
@@ -285,6 +289,7 @@ export default class App extends ToolkitElement {
     };
 
     reassignAction = () => {
+        LOGGER.log('App [reassignAction]', this.actions);
         const action = this.actions[this.actionPointer];
         if (action) {
             this.body = action.request.body;
@@ -307,10 +312,16 @@ export default class App extends ToolkitElement {
     };
 
     forceDomUpdate = () => {
+        LOGGER.log('App [forceDomUpdate]', {
+            method: this.method,
+            endpoint: this.endpoint,
+            header: this.header,
+            body: this.body,
+        });
         this.refs.method.value = this.method;
-        this.refs.method.endpoint = this.endpoint;
-        this.template.querySelector('.slds-textarea-header').value = this.header;
-        this.refs.bodyEditor.currentModel.setValue(this.body);
+        this.refs.url.value = this.endpoint;
+        this.template.querySelector('.slds-textarea-header').value = this.header || '';
+        this.refs.bodyEditor.currentModel.setValue(this.body || '');
         if (this.refs.contentEditor) {
             //this.refs.contentEditor.currentModel.setValue(this.content);
         }
@@ -499,6 +510,7 @@ export default class App extends ToolkitElement {
     };
 
     endpoint_change = e => {
+        LOGGER.log('App [endpoint_change]', e.detail.value);
         this.endpoint = e.detail.value;
         this.updateRequestStates(e);
     };

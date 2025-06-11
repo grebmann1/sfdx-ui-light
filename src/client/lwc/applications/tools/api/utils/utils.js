@@ -27,9 +27,9 @@ export const DEFAULT = {
     METHOD: METHOD.GET,
 };
 
-export const generateDefaultTab = version => {
+export const generateDefaultTab = (version,id) => {
     return {
-        id: guid(),
+        id: id || guid(),
         header: DEFAULT.HEADER,
         endpoint: DEFAULT.ENDPOINT(version),
         body: DEFAULT.BODY,

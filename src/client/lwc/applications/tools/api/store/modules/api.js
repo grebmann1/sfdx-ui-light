@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
 import { DEFAULT, generateDefaultTab, formattedContentType } from 'api/utils';
 import { SELECTORS, DOCUMENT } from 'core/store';
+import { cacheManager,loadExtensionConfigFromCache,saveExtensionConfigToCache } from 'shared/cacheManager';
 import {
     lowerCaseKey,
     guid,
@@ -8,72 +9,32 @@ import {
     isUndefinedOrNull,
     isChromeExtension,
 } from 'shared/utils';
-
+import LOGGER from 'shared/logger';
 const API_SETTINGS_KEY = 'API_SETTINGS_KEY';
 
 /** Methods */
 
-export function loadCacheSettings(alias) {
+export async function loadCacheSettings(alias) {
     const key = `${alias}-${API_SETTINGS_KEY}`;
-
-    return new Promise(resolve => {
-        if (isChromeExtension()) {
-            // Use Chrome storage
-            chrome.storage.local.get(key, result => {
-                if (chrome.runtime.lastError) {
-                    console.error(
-                        'Failed to load CONFIG from chrome.storage',
-                        chrome.runtime.lastError
-                    );
-                    resolve(null);
-                } else {
-                    const configText = result[key];
-                    resolve(configText ? JSON.parse(configText) : null);
-                }
-            });
-        } else {
-            // Use localStorage
-            try {
-                const configText = localStorage.getItem(key);
-                resolve(configText ? JSON.parse(configText) : null);
-            } catch (e) {
-                console.error('Failed to load CONFIG from localStorage', e);
-                resolve(null);
-            }
-        }
-    });
+    const configMap = await loadExtensionConfigFromCache([key]);
+    const configText = configMap?configMap[key]:null;
+    const cachedConfig = configText?JSON.parse(configText):null;
+    return cachedConfig;
 }
 
-function saveCacheSettings(alias, state) {
+async function saveCacheSettings(alias, state) {
     const { viewerTab, recentPanelToggled, tabs } = state;
     const key = `${alias}-${API_SETTINGS_KEY}`;
-    const data = JSON.stringify({ viewerTab, recentPanelToggled, tabs });
+    const data = JSON.stringify({ viewerTab, recentPanelToggled, tabs:tabs.map(formatTabBeforeSave) });
+    await saveExtensionConfigToCache({ [key]: data });
+}
 
-    return new Promise((resolve, reject) => {
-        if (isChromeExtension()) {
-            // Use Chrome extension storage
-            chrome.storage.local.set({ [key]: data }, () => {
-                if (chrome.runtime.lastError) {
-                    console.error(
-                        'Failed to save CONFIG to chrome.storage',
-                        chrome.runtime.lastError
-                    );
-                    reject(chrome.runtime.lastError);
-                } else {
-                    resolve();
-                }
-            });
-        } else {
-            // Use localStorage
-            try {
-                localStorage.setItem(key, data);
-                resolve();
-            } catch (e) {
-                console.error('Failed to save CONFIG to localStorage', e);
-                reject(e);
-            }
-        }
-    });
+function formatTabBeforeSave(tab){
+    return {
+        ...tab,
+        actions: [], // to avoid too many actions in the cache
+        actionPointer: 0,
+    };
 }
 
 function formatTab({
@@ -109,8 +70,7 @@ function enrichTabs(tabs, state, selector) {
 }
 
 function enrichTab(tab, state, selector) {
-    const file =
-        tab.fileId && selector ? selector.selectById(state, lowerCaseKey(tab.fileId)) : null;
+    const file = tab.fileId && selector ? selector.selectById(state, lowerCaseKey(tab.fileId)) : null;
     //const { header,body,method,endpoint } = file;
     const fileData = file?.extra || {};
     return {
@@ -136,6 +96,7 @@ function assignNewApiData(item, value) {
 }
 
 function addAction({ state, tabId, request, response }) {
+    LOGGER.log('addAction',{ state, tabId, request, response });
     const tabIndex = state.tabs.findIndex(x => x.id === tabId);
     if (tabIndex > -1) {
         let actions = state.tabs[tabIndex].actions || [];
@@ -247,30 +208,24 @@ const apiSlice = createSlice({
         header: null,
         currentApiVersion: '59.0',
         abortingMap: {},
+        isInitialized: false,
     },
     reducers: {
         loadCacheSettings: (state, action) => {
             const { cachedConfig, apiFiles } = action.payload;
-            if (cachedConfig) {
+            if (cachedConfig && !state.isInitialized) {
                 // Use cached config
                 const { viewerTab, recentPanelToggled, tabs } = cachedConfig;
-                const newTabs = enrichTabs(tabs || createInitialTabs(state.currentApiVersion), {
-                    apiFiles,
-                });
+                const cachedTabs = tabs && tabs.length > 0 ? enrichTabs(tabs, { apiFiles },SELECTORS.apiFiles) : [];
+                const allTabs = [...cachedTabs, ...state.tabs];
                 Object.assign(state, {
                     viewerTab,
                     recentPanelToggled,
-                    tabs: tabs,
-                    currentTab: newTabs.length > 0 ? newTabs[0] : null,
-                });
-            } else {
-                // No cached config, create initial tabs
-                let newTabs = createInitialTabs(state.currentApiVersion);
-                Object.assign(state, {
-                    tabs: newTabs,
-                    currentTab: newTabs.length > 0 ? newTabs[0] : null,
+                    tabs: allTabs,
+                    currentTab: allTabs.length > 0 ? allTabs[allTabs.length-1] : null,
                 });
             }
+            state.isInitialized = true;
         },
         saveCacheSettings: (state, action) => {
             const { alias } = action.payload;
@@ -321,9 +276,10 @@ const apiSlice = createSlice({
             }
             // Set first tab
             if (state.tabs.length > 0) {
-                state.currentTab = state.tabs[0];
-                state.currentFileId = state.tabs[0].fileId;
-                assignNewApiData(state, state.tabs[0]);
+                const lastTabIndex = state.tabs.length - 1;
+                state.currentTab = state.tabs[lastTabIndex];
+                state.currentFileId = state.tabs[lastTabIndex].fileId;
+                assignNewApiData(state, state.tabs[lastTabIndex]);
             }
         },
         resetTab: (state, action) => {
