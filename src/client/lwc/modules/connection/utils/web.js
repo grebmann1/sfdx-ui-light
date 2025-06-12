@@ -61,7 +61,7 @@ export async function renameConfiguration({ oldAlias, newAlias, username, redire
     await saveConnectionsToCache(formatConfigurations(configurations));
 }
 
-export async function removeConfiguration(alias) {
+export async function removeConfiguration({alias}) {
     let configurations = await getConnectionsFromCache();
     // Remove the alias
     configurations = configurations.filter(x => x.alias !== alias);

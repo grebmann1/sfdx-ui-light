@@ -70,8 +70,8 @@ export async function renameConfiguration(params) {
     return platformService.renameConfiguration(params);
 }
 
-export async function removeConfiguration(alias) {
-    return platformService.removeConfiguration(alias);
+export async function removeConfiguration(params) {
+    return platformService.removeConfiguration(params);
 }
 
 export async function getConfigurations() {

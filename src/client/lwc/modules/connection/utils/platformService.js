@@ -79,13 +79,13 @@ export function renameConfiguration(params) {
     }
 }
 
-export function removeConfiguration(alias) {
+export function removeConfiguration(params) {
     switch (getCurrentPlatform()) {
         case PLATFORM.ELECTRON:
-            return electron.removeConfiguration(alias);
+            return electron.removeConfiguration(params);
         /* case PLATFORM.CHROME:
             return chrome.removeConfiguration(alias); */
         default:
-            return web.removeConfiguration(alias);
+            return web.removeConfiguration(params);
     }
 }

@@ -269,10 +269,10 @@ const apiSlice = createSlice({
         },
         initTabs: (state, action) => {
             const { apiFiles,reset } = action.payload;
-            if(reset){
+            if(reset || !state.tabs || state.tabs.length === 0){
                 state.tabs = enrichTabs(createInitialTabs(state.currentApiVersion), { apiFiles }, SELECTORS.apiFiles);
-            } else if (!state.tabs || state.tabs.length === 0) {
-                state.tabs = enrichTabs(createInitialTabs(state.currentApiVersion), { apiFiles }, SELECTORS.apiFiles);
+            }else{
+                state.tabs = enrichTabs(state.tabs.map(formatTab), { apiFiles }, SELECTORS.apiFiles);
             }
             // Set first tab
             if (state.tabs.length > 0) {

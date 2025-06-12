@@ -20,12 +20,13 @@ const DEFAULT_CATEGORY = {
 
 const { showToast, handleError } = notificationService;
 
-export default class OrgRenameModal extends LightningModal {
+export default class ConnectionRenameModal extends LightningModal {
     @api orgName;
     @api username;
     @api redirectUrl;
     @api isRedirect = false;
     @api oldAlias;
+    @api credentialType;
     @api connections = [];
 
     @api
@@ -87,6 +88,7 @@ export default class OrgRenameModal extends LightningModal {
             oldAlias: this.oldAlias,
             username: this.username,
             redirectUrl: this.redirectUrl,
+            credentialType: this.credentialType,
         });
     };
 

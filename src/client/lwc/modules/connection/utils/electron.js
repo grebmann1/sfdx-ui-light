@@ -34,35 +34,55 @@ export async function getConfiguration(alias) {
     };
 }
 
-export async function renameConfiguration({ oldAlias, newAlias, username }) {
-    let { error } = await window.electron.invoke('org-setAlias', {
-        alias: newAlias,
-        username: username,
-    });
-    if (error) {
-        throw decodeError(error);
-    }
-
-    if (oldAlias !== 'Empty' || isNotUndefinedOrNull(oldAlias)) {
-        let { error } = await window.electron.invoke('org-unsetAlias', {
+export async function renameConfiguration({ oldAlias, newAlias, username, credentialType }) {
+    if(credentialType === OAUTH_TYPES.USERNAME){
+        let res = await window.electron.invoke('org-renameStoredOrg', {
             alias: oldAlias,
+            newAlias: newAlias
         });
-        if (error) {
-            throw decodeError(error);
+        if (res?.error) {
+            throw decodeError(res.error);
+        }
+    }else{
+        let res = await window.electron.invoke('org-setAlias', {
+            alias: newAlias,
+            username: username,
+        });
+        if (res?.error) {
+            throw decodeError(res.error);
+        }
+    
+        if (oldAlias !== 'Empty' || isNotUndefinedOrNull(oldAlias)) {
+            let res2 = await window.electron.invoke('org-unsetAlias', {
+                alias: oldAlias,
+            });
+            if (res2?.error) {
+                throw decodeError(res2.error);
+            }
         }
     }
+    
 }
 
-export async function removeConfiguration(alias) {
+export async function removeConfiguration({alias,credentialType}) {
     // todo: need to be refactured
-    let res1 = await window.electron.invoke('org-logout', { alias });
-    if (res1?.error) {
-        throw decodeError(res1.error);
+    if(credentialType === OAUTH_TYPES.USERNAME){
+        let res = await window.electron.invoke('org-removeStoredOrg', { alias });
+        if (res?.error) {
+            throw decodeError(res.error);
+        }
+    }else{
+        let res = await window.electron.invoke('org-logout', { alias });
+        if (res?.error) {
+            throw decodeError(res.error);
+        }
+        let res1 = await window.electron.invoke('org-unsetAlias', { alias });
+        if (res1?.error) {
+            throw decodeError(res.error);
+        }
     }
-    let res2 = await window.electron.invoke('org-unsetAlias', { alias });
-    if (res2?.error) {
-        throw decodeError(res2.error);
-    }
+
+    
 }
 
 const getStatusClass = status => {

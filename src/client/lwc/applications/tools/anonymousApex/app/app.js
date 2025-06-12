@@ -65,8 +65,6 @@ export default class App extends ToolkitElement {
     _log;
     _cacheFiles = [];
 
-    // Aborting
-    _abortingMap = {};
     isApexRunning = false;
 
     // Interval
@@ -103,19 +101,19 @@ export default class App extends ToolkitElement {
 
     connectedCallback() {
         this.isLoading = true;
-        store.dispatch((dispatch, getState) => {
-            dispatch(
+        store.dispatch(async (dispatch, getState) => {
+            await dispatch(
                 APEX.reduxSlice.actions.loadCacheSettings({
                     alias: this.alias,
                     apexFiles: getState().apexFiles,
                 })
             );
-            dispatch(
+            await dispatch(
                 DOCUMENT.reduxSlices.APEXFILE.actions.loadFromStorage({
                     alias: this.alias,
                 })
             );
-            dispatch(
+            await dispatch(
                 APEX.reduxSlice.actions.initTabs({
                     apexFiles: getState().apexFiles,
                 })
@@ -176,7 +174,7 @@ export default class App extends ToolkitElement {
             }
 
             if (apexState.error) {
-                this._abortingMap[apex.currentTab.id] = null; // Reset the abortingMap
+                //this._abortingMap[apex.currentTab.id] = null; // Reset the abortingMap
                 this.resetResponse();
                 this.global_handleError(apexState.error);
             } else if (apexState.data) {
@@ -186,7 +184,7 @@ export default class App extends ToolkitElement {
                 // Assign Data
                 this._response = apexState.data;
                 this._responseCreatedDate = apexState.createdDate;
-                this._abortingMap[apex.currentTab.id] = null; // Reset the abortingMap`
+                //this._abortingMap[apex.currentTab.id] = null; // Reset the abortingMap`
                 // Update log
                 this.log = this.formatFilterLog(this._response?.debugLog || '');
                 this.header_formatDate();
@@ -341,7 +339,7 @@ export default class App extends ToolkitElement {
 
     handleAbort = () => {
         const { ui } = store.getState();
-        const apexPromise = this._abortingMap[ui.currentTab.id];
+        const apexPromise = store.getState().apex.abortingMap[ui.currentTab.id];
         if (apexPromise) {
             apexPromise.abort();
         }
@@ -419,7 +417,12 @@ export default class App extends ToolkitElement {
             })
         );
 
-        this._abortingMap[this.currentTab.id] = apexPromise;
+        store.dispatch(
+            APEX.reduxSlice.actions.setAbortingPromise({
+                tabId: this.currentTab.id,
+                promise: apexPromise,
+            })
+        );
     };
 
     /** Methods  **/

@@ -516,6 +516,7 @@ export default class App extends ToolkitElement {
             username: row.username,
             isRedirect: !isEmpty(row.redirectUrl),
             redirectUrl: row.redirectUrl,
+            credentialType: row.credentialType,
             connections: this.data,
             size: isChromeExtension() ? 'full' : 'medium',
         }).then(async result => {
@@ -528,7 +529,7 @@ export default class App extends ToolkitElement {
             `Are you sure you wish to remove this Connection : ${row.alias}:${row.username} ?`
         );
         if (confirmed) {
-            await removeConfiguration(row.alias);
+            await removeConfiguration({alias:row.alias,credentialType:row.credentialType});
             await this.fetchAllConnections();
         }
     };

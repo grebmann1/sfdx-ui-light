@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
 import { SELECTORS, DOCUMENT } from 'core/store';
 import { lowerCaseKey, guid, isNotUndefinedOrNull } from 'shared/utils';
+import { cacheManager,loadExtensionConfigFromCache,saveExtensionConfigToCache } from 'shared/cacheManager';
 
 const Schemas = {};
 Schemas.ExecuteAnonymousResult = {
@@ -18,8 +19,6 @@ const INFO = 'INFO';
 const DEBUG = 'DEBUG';
 const ANONYNMOUS_APEX_SETTINGS_KEY = 'ANONYNMOUS_APEX_SETTINGS_KEY';
 
-const INITIAL_TABS = [enrichTab({ id: guid(), body: "System.debug('Hello the world');" }, null)];
-
 /** Methods */
 
 function updateCurrentTab(state, attributes) {
@@ -32,6 +31,10 @@ function updateCurrentTab(state, attributes) {
         }
     }
 }
+
+const createInitialTabs = () => {
+    return [enrichTab({ id: guid(), body: "System.debug('Hello the world');" }, null)];
+};
 
 function formatTab({ id, name, body, isDraft, fileId, fileBody }) {
     return { id, name, body, isDraft, fileId, fileBody };
@@ -52,48 +55,39 @@ function enrichTab(tab, state, selector) {
     };
 }
 
-function loadCacheSettings(alias) {
-    try {
-        const configText = localStorage.getItem(`${alias}-${ANONYNMOUS_APEX_SETTINGS_KEY}`);
-        if (configText) return JSON.parse(configText);
-    } catch (e) {
-        console.error('Failed to load CONFIG from localStorage', e);
-    }
-    return null;
+export async function loadCacheSettings(alias) {
+    const key = `${alias}-${ANONYNMOUS_APEX_SETTINGS_KEY}`;
+    const configMap = await loadExtensionConfigFromCache([key]);
+    const configText = configMap?configMap[key]:null;
+    const cachedConfig = configText?JSON.parse(configText):null;
+    return cachedConfig;
 }
 
-function saveCacheSettings(alias, state) {
-    console.log('saveCacheSettings');
-    try {
-        const {
-            isFilterDebugEnabled,
-            recentPanelToggled,
-            tabs,
-            debug_db,
-            debug_callout,
-            debug_apexCode,
-            debug_validation,
-            debug_profiling,
-            debug_system,
-        } = state;
-
-        localStorage.setItem(
-            `${alias}-${ANONYNMOUS_APEX_SETTINGS_KEY}`,
-            JSON.stringify({
-                isFilterDebugEnabled,
-                recentPanelToggled,
-                tabs,
-                debug_db,
-                debug_callout,
-                debug_apexCode,
-                debug_validation,
-                debug_profiling,
-                debug_system,
-            })
-        );
-    } catch (e) {
-        console.error('Failed to save CONFIG to localstorage', e);
-    }
+async function saveCacheSettings(alias, state) {
+    const {
+        isFilterDebugEnabled,
+        recentPanelToggled,
+        tabs,
+        debug_db,
+        debug_callout,
+        debug_apexCode,
+        debug_validation,
+        debug_profiling,
+        debug_system,
+    } = state;
+    const key = `${alias}-${ANONYNMOUS_APEX_SETTINGS_KEY}`;
+    const data = JSON.stringify({
+        isFilterDebugEnabled,
+        recentPanelToggled,
+        tabs,
+        debug_db,
+        debug_callout,
+        debug_apexCode,
+        debug_validation,
+        debug_profiling,
+        debug_system,
+    });
+    await saveExtensionConfigToCache({ [key]: data });
 }
 
 /** Redux */
@@ -181,23 +175,27 @@ const apexSlice = createSlice({
         isFilterDebugEnabled: false,
         recentPanelToggled: false,
         apex: apexAdapter.getInitialState(),
-        tabs: INITIAL_TABS,
-        currentTab: INITIAL_TABS[0],
+        tabs: [],
+        currentTab: null,
         body: null,
+        abortingMap: {},
+        isInitialized: false,
     },
     reducers: {
         loadCacheSettings: (state, action) => {
             const { alias, apexFiles } = action.payload;
             const cachedConfig = loadCacheSettings(alias);
-            if (cachedConfig) {
+            if (cachedConfig && !state.isInitialized) {
                 const { recentPanelToggled, tabs } = cachedConfig;
+                const cachedTabs = tabs && tabs.length > 0 ? enrichTabs(tabs, { apexFiles },SELECTORS.apexFiles) : [];
+                const allTabs = [...cachedTabs, ...state.tabs];
                 Object.assign(state, {
                     //body:body || '',
                     recentPanelToggled,
-                    tabs: enrichTabs(tabs || INITIAL_TABS, { apexFiles }),
+                    tabs: allTabs,
                 });
             }
-            console.log('#cachedConfig#', cachedConfig);
+            state.isInitialized = true;
         },
         saveCacheSettings: (state, action) => {
             const { alias } = action.payload;
@@ -239,8 +237,12 @@ const apexSlice = createSlice({
             });
         },
         initTabs: (state, action) => {
-            const { apexFiles } = action.payload;
-            state.tabs = enrichTabs(state.tabs.map(formatTab), { apexFiles }, SELECTORS.apexFiles);
+            const { apexFiles,reset } = action.payload;
+            if(reset || !state.tabs || state.tabs.length === 0){
+                state.tabs = enrichTabs(createInitialTabs(), { apexFiles }, SELECTORS.apexFiles);
+            } else {
+                state.tabs = enrichTabs(state.tabs.map(formatTab), { apexFiles }, SELECTORS.apexFiles);
+            }
             // Set first tab
             if (state.tabs.length > 0) {
                 state.currentTab = state.tabs[0];
@@ -296,6 +298,23 @@ const apexSlice = createSlice({
                 }
             }
         },
+        setAbortingPromise: (state, action) => {
+            const { tabId, promise } = action.payload;
+            state.abortingMap = {
+                ...state.abortingMap,
+                [tabId]: promise,
+            };
+        },
+        resetAbortingPromise: (state, action) => {
+            const { tabId } = action.payload;
+            state.abortingMap = {
+                ...state.abortingMap,
+                [tabId]: null,
+            };
+        },
+        clearAbortingMap: (state) => {
+            state.abortingMap = {};
+        },
     },
     extraReducers: builder => {
         builder
@@ -312,6 +331,10 @@ const apexSlice = createSlice({
             .addCase(executeApexAnonymous.fulfilled, (state, action) => {
                 const { data, body } = action.payload;
                 const { tabId, createdDate } = action.meta.arg;
+                state.abortingMap = {
+                    ...state.abortingMap,
+                    [tabId]: null,
+                };
                 apexAdapter.upsertOne(state.apex, {
                     id: lowerCaseKey(tabId),
                     data,
@@ -324,6 +347,10 @@ const apexSlice = createSlice({
             .addCase(executeApexAnonymous.rejected, (state, action) => {
                 const { error } = action;
                 const { tabId } = action.meta.arg;
+                state.abortingMap = {
+                    ...state.abortingMap,
+                    [tabId]: null,
+                };
                 apexAdapter.upsertOne(state.apex, {
                     id: lowerCaseKey(tabId),
                     isFetching: false,

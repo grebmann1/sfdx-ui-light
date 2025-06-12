@@ -1,7 +1,7 @@
 import { LightningElement, wire, api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import { guid,isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
-import { store, API, APPLICATION, UI, QUERY, DOCUMENT,SELECTORS } from 'core/store';
+import { store, API, APPLICATION, UI, QUERY, DOCUMENT,SELECTORS, APEX } from 'core/store';
 import { store as legacyStore, store_application as legacyStore_application } from 'shared/store';
 import { NavigationContext, CurrentPageReference, navigate } from 'lwr/navigation';
 import { formatApiRequest,generateDefaultTab,DEFAULT as API_DEFAULT } from 'api/utils';
@@ -52,6 +52,7 @@ export default class Electron extends ToolkitElement {
 
             this.handleSOQL(this.listener_on);
             this.handleRestAPI(this.listener_on);
+            this.handleAnonymousApex(this.listener_on);
 
             // Listen for navigation requests
             this.listener_on('electron-navigate-to', async args => {
@@ -172,6 +173,89 @@ export default class Electron extends ToolkitElement {
         });
     }
 
+    handleAnonymousApex = (listener) => {
+        listener('/apex/execute', args => {
+            const [payload,callBackChannel] = args;
+            const {alias, body} = payload;
+            LOGGER.info('[Electron] @apex/executeAnonymous call args:', args);
+
+            const {tabId,isNewTab} = this.formatTabId(payload.tabId);
+
+            store.dispatch(async (dispatch, getState) => {
+                const { application } = getState();
+                if(application.isLoading) await this.waitForLoaded();
+
+                // Navigate to the anonymous apex application
+                navigate(this.navContext, { type: 'application', state: { applicationName: 'anonymousapex' } });
+
+                // Update the tab
+                if (isNewTab) {
+                    await dispatch(APEX.reduxSlice.actions.addTab({ tab: { id: tabId, body } }));
+                }else{
+                    await dispatch(APEX.reduxSlice.actions.selectionTab({ id: tabId }));
+                    await dispatch(APEX.reduxSlice.actions.updateBody({
+                        body
+                    }));
+                }
+                const apexPromise = store.dispatch(
+                    APEX.executeApexAnonymous({
+                        connector: this.connector,
+                        body,
+                        tabId,
+                        createdDate: Date.now(),
+                    })
+                );
+
+                store.dispatch(
+                    APEX.reduxSlice.actions.setAbortingPromise({
+                        tabId,
+                        promise: apexPromise,
+                    })
+                );
+
+                const res = await apexPromise;
+
+                await dispatch(APEX.reduxSlice.actions.selectionTab({ id: tabId }));
+
+                LOGGER.debug('Execute Apex [res]', res);
+                LOGGER.debug('Execute Apex [payload]', res.payload);
+
+                let _output = {
+                    ...res.payload?.response || {},
+                    tabId: tabId,
+                };
+                console.log('Execute Apex [_output]', _output);
+                if(res.error){
+                    _output.error = res.error;
+                }
+                LOGGER.debug('MCP Response [output]', _output);
+                window.electron.send(callBackChannel, _output);
+
+            });
+        });
+
+        // listen for fetch query from Saved List
+        listener('/apex/scripts', async args => {
+            const [payload,callBackChannel] = args;
+            LOGGER.info('[Electron] @apex/scripts queries args:', args);
+            // Dispatch a SOQL/QUERY action (customize as needed)
+            LOGGER.info('[Electron] @apex/scripts current alias:', this.alias);
+            await store.dispatch(DOCUMENT.reduxSlices.APEXFILE.actions.loadFromStorage({
+                alias: this.alias,
+            }));
+            const { apexFiles } = store.getState();
+            const entities = SELECTORS.apexFiles.selectAll({ apexFiles });
+            
+            const scripts = entities
+                .filter(item => item.isGlobal || item.alias == this.alias)
+                .map((item, index) => {
+                    return item; // no mutation for now
+                });
+            LOGGER.info('[Electron] @apex/scripts saved scripts:', scripts);
+            window.electron.send(callBackChannel, scripts);
+        });
+    }
+
     handleRestAPI = (listener) => {
         listener('/api/execute', args => {
             const [payload,callBackChannel] = args;
@@ -252,8 +336,8 @@ export default class Electron extends ToolkitElement {
 
                 await dispatch(UI.reduxSlice.actions.selectionTab({ id: tabId }));
 
-                LOGGER.debug('Execute Query [res]', res);
-                LOGGER.debug('Execute Query [payload]', res.payload);
+                LOGGER.debug('Execute API [res]', res);
+                LOGGER.debug('Execute API [payload]', res.payload);
 
                 let _output = {
                     ...res.payload?.response || {},

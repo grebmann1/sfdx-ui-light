@@ -195,7 +195,7 @@ export default class ConnectionNewModal extends LightningModal {
                 },
                 { saveFullConfiguration: false }
             );
-            const result = await window.electron.invoke('org-saveOrgInfo', {
+            const result = await window.electron.invoke('org-setStoredOrg', {
                 alias: this.alias,
                 configuration: connector.configuration,
             });
