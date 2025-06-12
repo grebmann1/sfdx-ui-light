@@ -56,6 +56,7 @@
         "diff": "^7.0.0",
         "dotenv": "^16.3.1",
         "express": "4.19.2",
+        "flexsearch": "^0.8.205",
         "highlight.js": "^11.9.0",
         "hotkeys-js": "3.13.7",
         "html2pdf": "^0.0.11",

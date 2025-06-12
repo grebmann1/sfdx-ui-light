@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 const { createServer } = require('lwr');
 //const jsforceAjaxProxy = require("jsforce-ajax-proxy");
 const qs = require('qs');
+const documentationSearch = require('./modules/documentationSearch');
 
 const CTA_MODULE = require('./modules/cta.js');
 const proxy = require('./modules/proxy.js');
@@ -28,6 +29,9 @@ console.log('process.env.PORT', process.env.PORT);
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const SERVER_MODE = 'development' === process.env.NODE_ENV ? 'dev' : 'prod';
 const CHROME_ID = process.env.CHROME_ID || 'dmlgjapbfifmeopbfikbdmlgdcgcdmfb';
+
+// Initialize documentation search index
+documentationSearch.initDocumentationIndex(DATA_DOCUMENTATION.contents);
 
 getOAuth2Instance = params => {
     return new jsforce.OAuth2({
@@ -72,31 +76,32 @@ app.get('/config', function (req, res) {
         proxyUrl: process.env.PROXY_URL, // 'https://gkheffb6gpvcv3heh7vl3ipby40cybbo.lambda-url.us-west-2.on.aws/proxy/'
     });
 });
-app.get('/documentation/search', function (req, res) {
+app.get('/documentation/search', async (req, res) => {
     const keywords = req.query.keywords || '';
-    const filters = req.query.filters;
-    const mappedResult = { first: [], middle: [], last: [] };
-    DATA_DOCUMENTATION.contents
-        .filter(x => filters.includes(x.documentationId))
-        .forEach(x => {
-            const _title = (x.title || '').toLowerCase();
-            if (_title.startsWith(keywords.toLowerCase())) {
-                mappedResult.first.push(x);
-            } else if (_title.includes(keywords.toLowerCase())) {
-                mappedResult.middle.push(x);
-            } else if (this.checkIfPresent(x.content, keywords)) {
-                mappedResult.last.push(x);
-            }
-        });
-    const result = Object.values(mappedResult)
-        .flat()
-        .map(x => ({
-            name: x.id,
-            text: x.title,
-            id: x.id,
-            documentationId: x.documentationId,
+    const isFullTextSearch = req.query.isFullTextSearch || false;
+    let filters = req.query.filters;
+
+    if (typeof filters === 'string') {
+        try {
+            filters = JSON.parse(filters);
+        } catch {
+            filters = [filters];
+        }
+    }
+
+    try {
+        const results = await documentationSearch.searchDocumentation({ keywords, filters });
+        const mappedResults = results.map(({ id, title, doc }) => ({
+            id,
+            name: isFullTextSearch ? doc.title : title,
+            text: isFullTextSearch ? doc.content : doc.title,
+            documentationId: doc.documentationId
         }));
-    res.json(result);
+        res.json(mappedResults);
+    } catch (error) {
+        console.error('Error searching documentation:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 app.get('/cta/search', function (req, res) {
     //console.log('DATA_CTA.contents',DATA_CTA);
