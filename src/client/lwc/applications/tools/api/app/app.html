@@ -82,7 +82,7 @@
                 <div class="slds-flex-column slds-full-height slds-api-container full-page-body">
                     <!-- Tabs -->
                     <slds-tabset
-                        lwc:ref="requestTab"
+                        lwc:ref="apiRequestTab"
                         variant="scoped"
                         class="slds-without-tab"
                         active-tab-value={currentTab}
@@ -106,62 +106,57 @@
                         left-min-width="200"
                         right-min-width="200"
                         is-horizontal>
-                        <div
-                            class="bottom-left-panel slds-p-around_small slds-full-height slds-full-width"
-                            slot="left">
-                            <div class="slds-full-height slds-flex-column slds-full-width">
-                                <slds-information-block title="Information">
-                                    <p>
-                                        Only enter 1 header setting per line following this format :
-                                    </p>
-                                    <p>header_name : header_value</p>
-                                    <p>
-                                        The
-                                        <span
-                                            class="slds-text-title_bold slds-p-horizontal_xx-small">
-                                            &#123;sessionId&#125;
-                                        </span>
-                                        variable can be passed in the body (Helpfull for SOAP)
-                                    </p>
-                                </slds-information-block>
-                                <div class="slds-form-element">
-                                    <label class="slds-text-title_bold slds-form-element__label">
-                                        Header
-                                    </label>
-                                    <div class="slds-form-element__control">
-                                        <textarea
-                                            class="slds-textarea slds-text-longform slds-textarea-header"
-                                            placeholder="Write Header here"
-                                            disabled={isHeaderDisabled}
-                                            oninput={header_change}>
-                                            {header}
-                                        </textarea>
+                        <div class="bottom-left-panel slds-p-around_small slds-full-height slds-full-width slds-light-bg" slot="left">
+                            <div class="slds-form-element slds-full-height slds-full-width slds-flex-column">
+                                <lightning-tabset
+                                    lwc:ref="requestTab"
+                                    variant="scoped"
+                                    class="slds-without-tab"
+                                    active-tab-value={request_normalizedCurrent}>
+                                    <lightning-tab class="slds-sub-tabs__item"
+                                        label={PAGE_CONFIG.TABS.HEADERS}
+                                        value={PAGE_CONFIG.TABS.HEADERS}
+                                        onactive={request_handleSelectTab}></lightning-tab>
+                                    <lightning-tab class="slds-sub-tabs__item"
+                                        label={PAGE_CONFIG.TABS.BODY}
+                                        value={PAGE_CONFIG.TABS.BODY}
+                                        onactive={request_handleSelectTab}></lightning-tab>
+                                </lightning-tabset>
+                                <!-- BODY Section-->
+                                <template lwc:if={isRequestHeadersDisplayed}>
+                                    <div>
+                                        <label class="slds-text-title_bold slds-form-element__label">
+                                            Header
+                                        </label>
+                                        <div class="slds-form-element__control">
+                                            <api-header headers={headerRows} onchange={header_change}></api-header>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="slds-form-element slds-fill-height slds-flex-column">
-                                    <label class="slds-text-title_bold slds-form-element__label">
-                                        Body
-                                    </label>
-                                    <div class="slds-form-element__control slds-fill-height">
-                                        <!--
-                                        <textarea class="slds-textarea slds-text-longform slds-textarea-body" placeholder="Write body here" disabled={isBodyDisabled} oninput={body_change}>
-                                            {body}
-                                        </textarea>
-                                        -->
-                                        <editor-default
-                                            lwc:ref="bodyEditor"
-                                            class="slds-full-height slds-is-relative"
-                                            model={currentModel}
-                                            onmonacoloaded={initBodyEditor}
-                                            onchange={body_change}></editor-default>
+                                </template>
+                                <template lwc:elseif={isRequestBodyDisplayed}>
+                                    <div class="slds-form-element slds-fill-height slds-flex-column">
+                                        <label class="slds-text-title_bold slds-form-element__label">
+                                            Body
+                                        </label>
+                                        <div class="slds-form-element__control slds-fill-height">
+                                            <!--
+                                            <textarea class="slds-textarea slds-text-longform slds-textarea-body" placeholder="Write body here" disabled={isBodyDisabled} oninput={body_change}>
+                                                {body}
+                                            </textarea>
+                                            -->
+                                            <editor-default
+                                                lwc:ref="bodyEditor"
+                                                class="slds-full-height slds-is-relative"
+                                                model={currentModel}
+                                                onmonacoloaded={initBodyEditor}
+                                                onchange={body_change}></editor-default>
+                                        </div>
                                     </div>
-                                </div>
+                                </template>
                             </div>
                         </div>
-                        <div
-                            class="bottom-right-panel slds-full-height slds-full-width"
-                            slot="right">
-                            <div class="slds-grid slds-wrap slds-full-height slds-is-relative">
+                        <div class="bottom-right-panel slds-full-height slds-full-width slds-p-around_small slds-light-bg" slot="right">
+                            <div class="slds-grid slds-wrap slds-full-height slds-is-relative ">
                                 <div class="slds-col slds-size_1-of-1">
                                     <template lwc:if={isApiRunning}>
                                         <slds-spinner message={_loadingMessage}></slds-spinner>
@@ -172,7 +167,7 @@
                                                 <lightning-badge
                                                     class={badgeClass}
                                                     label={statusCode}></lightning-badge>
-                                                <span>• {duration} ms</span>
+                                                <span>  {duration} ms</span>
                                             </div>
                                         </div>
                                         <!-- Viewers (Body, Headers , etc) -->
@@ -267,49 +262,46 @@
                                         </template>
                                         <!-- HEADERS Section-->
                                         <template lwc:if={isHeadersDisplayed}>
-                                            <div class="slds-p-top_x-small">
-                                                <table
-                                                    class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_fixed-layout slds-table_striped">
-                                                    <thead>
-                                                        <tr class="slds-text-title_bold">
-                                                            <th scope="col">
+                                            <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_fixed-layout slds-table_striped ">
+                                                <thead>
+                                                    <tr class="slds-text-title_bold">
+                                                        <th scope="col">
+                                                            <div
+                                                                class="slds-truncate"
+                                                                title="Key">
+                                                                Key
+                                                            </div>
+                                                        </th>
+                                                        <th scope="col">
+                                                            <div
+                                                                class="slds-truncate"
+                                                                title="Value">
+                                                                Value
+                                                            </div>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <template
+                                                        for:each={contentHeaders}
+                                                        for:item="item">
+                                                        <tr key={item.key}>
+                                                            <td>
                                                                 <div
                                                                     class="slds-truncate"
-                                                                    title="Key">
-                                                                    Key
+                                                                    title={item.key}>
+                                                                    {item.key}
                                                                 </div>
-                                                            </th>
-                                                            <th scope="col">
-                                                                <div
-                                                                    class="slds-truncate"
-                                                                    title="Value">
-                                                                    Value
+                                                            </td>
+                                                            <td class="slds-cell-wrap">
+                                                                <div title={item.value}>
+                                                                    {item.value}
                                                                 </div>
-                                                            </th>
+                                                            </td>
                                                         </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <template
-                                                            for:each={contentHeaders}
-                                                            for:item="item">
-                                                            <tr key={item.key}>
-                                                                <td>
-                                                                    <div
-                                                                        class="slds-truncate"
-                                                                        title={item.key}>
-                                                                        {item.key}
-                                                                    </div>
-                                                                </td>
-                                                                <td class="slds-cell-wrap">
-                                                                    <div title={item.value}>
-                                                                        {item.value}
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                        </template>
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                                    </template>
+                                                </tbody>
+                                            </table>
                                         </template>
                                     </template>
                                     <template lwc:else>

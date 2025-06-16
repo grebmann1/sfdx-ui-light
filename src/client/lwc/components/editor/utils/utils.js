@@ -7,54 +7,37 @@ export const WIDGETS = {
     MonacoLwcWidget,
 };
 
-function buildWorkerDefinition(workerPath, basePath, useModuleWorker) {
+function buildWorkerDefinition(workerPath, basePath) {
+    // eslint-disable-next-line no-restricted-globals
     const monWin = self;
     const workerOverrideGlobals = {
-        basePath: basePath,
-        workerPath: workerPath,
+        basePath,
+        workerPath,
         workerOptions: {
-            type: useModuleWorker ? 'module' : 'classic',
+            type: 'classic',
         },
     };
     if (!monWin.MonacoEnvironment) {
         monWin.MonacoEnvironment = {
-            workerOverrideGlobals: workerOverrideGlobals,
-            createTrustedTypesPolicy: _policyName => {
-                return undefined;
-            },
+            workerOverrideGlobals,
+            createTrustedTypesPolicy: _policyName => undefined,
         };
     }
     const monEnv = monWin.MonacoEnvironment;
     monEnv.workerOverrideGlobals = workerOverrideGlobals;
     const getWorker = (_, label) => {
-        const buildWorker = (globals, label, workerName, editorType) => {
-            globals.workerOptions.name = label;
-            const workerFilename =
-                globals.workerOptions.type === 'module'
-                    ? `${workerName}-es.js`
-                    : `${workerName}-iife.js`;
+        const buildWorker = (globals, label2, workerName) => {
+            globals.workerOptions.name = label2;
+            const workerFilename = `${workerName}.worker.js`;
             const workerPathLocal = `${globals.workerPath}/${workerFilename}`;
             const workerUrl = new URL(workerPathLocal, globals.basePath);
-            console.log('--> Monaco Worker created', workerUrl);
-            //console.log(`${editorType}: url: ${workerUrl.href} created from basePath: ${globals.basePath} and file: ${workerPathLocal}`);
             return new Worker(workerUrl.href, globals.workerOptions);
         };
         switch (label) {
-            case 'typescript':
-            case 'javascript':
-                return buildWorker(workerOverrideGlobals, label, 'tsWorker', 'TS Worker');
-            case 'html':
-            case 'handlebars':
-            case 'xml':
-                return buildWorker(workerOverrideGlobals, label, 'htmlWorker', 'HTML Worker');
-            case 'css':
-            case 'scss':
-            case 'less':
-                return buildWorker(workerOverrideGlobals, label, 'cssWorker', 'CSS Worker');
             case 'json':
-                return buildWorker(workerOverrideGlobals, label, 'jsonWorker', 'JSON Worker');
+                return buildWorker(workerOverrideGlobals, label, 'json');
             default:
-                return buildWorker(workerOverrideGlobals, label, 'editorWorker', 'Editor Worker');
+                return buildWorker(workerOverrideGlobals, label, 'editor');
         }
     };
     monEnv.getWorker = getWorker;
@@ -66,7 +49,6 @@ export const setupMonaco = async () => {
     const _modulePath = isChromeExtension()
         ? chrome.runtime.getURL('/libs/monaco/workers')
         : import.meta.url;
-    console.log('--> setupMonaco - _modulePath', _modulePath);
     buildWorkerDefinition('/libs/monaco/workers', _modulePath, false);
     return window.monaco;
 };

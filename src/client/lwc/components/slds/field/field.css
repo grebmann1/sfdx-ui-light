@@ -1,0 +1,7 @@
+:host {
+    --slds-g-color-neutral-base-50: #aeaeae;
+}
+
+.slds-form-element_readonly {
+    border-bottom-style: dotted;
+}

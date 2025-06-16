@@ -72,6 +72,7 @@ export default class App extends ToolkitElement {
 
     // Viewer
     viewer_value = VIEWERS.PRETTY;
+    
 
     // Tabs
     @track tabs = [];
@@ -79,12 +80,17 @@ export default class App extends ToolkitElement {
 
     // Viewer Tab
     tab_current = TABS.BODY;
+    // request tab
+    request_tab_current = TABS.BODY;
 
     // Interval
     _loadingInterval;
     _loadingMessage;
 
     _hasRendered = false;
+
+    // Add after class properties
+    @track headerRows = [{ id: guid(), key: '', value: '' }];
 
     connectedCallback() {
         this.isFieldRendered = true;
@@ -123,8 +129,12 @@ export default class App extends ToolkitElement {
             this.refs.resultTab.activeTabValue = this.tab_current;
         }
 
+        if (this.refs.apiRequestTab) {
+            this.refs.apiRequestTab.activeTabValue = this.currentTab?.id;
+        }
+
         if (this.refs.requestTab) {
-            this.refs.requestTab.activeTabValue = this.currentTab?.id;
+            this.refs.requestTab.activeTabValue = this.request_tab_current;
         }
     }
 
@@ -133,6 +143,7 @@ export default class App extends ToolkitElement {
         const isCurrentApp = this.verifyIsActive(application.currentApplication);
         if (!isCurrentApp) return;
         this.tab_current = api.viewerTab;
+        this.request_tab_current = api.requestTab;
         this.isRecentToggled = api.recentPanelToggled;
         this.tabs = api.tabs;
         this.currentTab = api.currentTab;
@@ -158,8 +169,9 @@ export default class App extends ToolkitElement {
         }
         if (this.header != api.header) {
             this.header = api.header || null;
+            this.headerRows = this.parseHeaderStringToRows(this.header);
             if (this._hasRendered) {
-                this.template.querySelector('.slds-textarea-header').value = this.header || '';
+                // No textarea to update
             }
         }
         if (this.endpoint != api.endpoint) {
@@ -320,7 +332,6 @@ export default class App extends ToolkitElement {
         });
         this.refs.method.value = this.method;
         this.refs.url.value = this.endpoint;
-        this.template.querySelector('.slds-textarea-header').value = this.header || '';
         this.refs.bodyEditor.currentModel.setValue(this.body || '');
         if (this.refs.contentEditor) {
             //this.refs.contentEditor.currentModel.setValue(this.content);
@@ -449,6 +460,16 @@ export default class App extends ToolkitElement {
         );
     };
 
+
+    request_handleSelectTab = event => {
+        store.dispatch(
+            API.reduxSlice.actions.updateRequestTab({
+                value: event.target.value,
+                alias: this.alias,
+            })
+        );
+    };
+
     undo_click = () => {
         if (this.actions.length > 0 && this.actions.length > this.actionPointer) {
             this.decreaseActionPointer();
@@ -509,6 +530,12 @@ export default class App extends ToolkitElement {
         );
     };
 
+    header_change = e => {
+        const headerRows = e.detail.value;
+        this.headerRows = [...headerRows];
+        this.syncHeaderRows();
+    };
+
     endpoint_change = e => {
         LOGGER.log('App [endpoint_change]', e.detail.value);
         this.endpoint = e.detail.value;
@@ -523,11 +550,6 @@ export default class App extends ToolkitElement {
     body_change = e => {
         if (this.body == e.detail.value) return;
         this.body = e.detail.value;
-        this.updateRequestStates(e);
-    };
-
-    header_change = e => {
-        this.header = e.target.value;
         this.updateRequestStates(e);
     };
 
@@ -606,6 +628,41 @@ export default class App extends ToolkitElement {
             // Reset draft
         });
     };
+
+    syncHeaderRows = () => {
+        // Remove empty rows except the last one
+        let rows = this.headerRows.filter((row, i, arr) => row.key || row.value || i === arr.length - 1);
+        // Always keep at least one empty row
+        if (rows.length === 0 || rows[rows.length - 1].key || rows[rows.length - 1].value) {
+            rows.push({ id: guid(), key: '', value: '' });
+        }
+        // Mark duplicates
+        const keyCounts = rows.reduce((acc, row) => {
+            if (row.key) acc[row.key.toLowerCase()] = (acc[row.key.toLowerCase()] || 0) + 1;
+            return acc;
+        }, {});
+        rows = rows.map(row => ({ ...row, hasDuplicate: row.key && keyCounts[row.key.toLowerCase()] > 1 }));
+        this.headerRows = rows;
+        this.header = this.headerRows
+            .filter(row => row.key)
+            .map(row => `${row.key} : ${row.value}`)
+            .join('\n');
+        this.updateRequestStates({});
+    };
+
+    parseHeaderStringToRows(headerStr) {
+        if (!headerStr) return [{ id: guid(), key: '', value: '' }];
+        const lines = headerStr.split(/\r?\n/).filter(Boolean);
+        const rows = lines.map(line => {
+            const [key, ...rest] = line.split(':');
+            return { id: guid(), key: key ? key.trim() : '', value: rest.join(':').trim() };
+        });
+        // Always at least one empty row
+        if (rows.length === 0 || rows[rows.length - 1].key || rows[rows.length - 1].value) {
+            rows.push({ id: guid(), key: '', value: '' });
+        }
+        return rows;
+    }
 
     /** Tabs */
 
@@ -765,6 +822,14 @@ export default class App extends ToolkitElement {
         return this.tab_normalizedCurrent === TABS.HEADERS;
     }
 
+    get isRequestBodyDisplayed() {
+        return this.request_normalizedCurrent === TABS.BODY;
+    }
+
+    get isRequestHeadersDisplayed() {
+        return this.request_normalizedCurrent === TABS.HEADERS;
+    }
+
     get method_options() {
         return Object.keys(METHOD).map(x => ({ label: x, value: x }));
     }
@@ -832,6 +897,14 @@ export default class App extends ToolkitElement {
 
     get tab_normalizedCurrent() {
         return normalize(this.tab_current, {
+            fallbackValue: TABS.BODY,
+            validValues: [TABS.BODY, TABS.HEADERS],
+            toLowerCase: false,
+        });
+    }
+
+    get request_normalizedCurrent() {
+        return normalize(this.request_tab_current, {
             fallbackValue: TABS.BODY,
             validValues: [TABS.BODY, TABS.HEADERS],
             toLowerCase: false,

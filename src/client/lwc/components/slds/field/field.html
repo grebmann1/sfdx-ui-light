@@ -1,0 +1,44 @@
+<template>
+    <!-- Loading -->
+    <template lwc:if={isLoading}>
+        <div class="slds-form-element">
+            <label class="slds-form-element__label">{label}</label>
+            <div class="slds-form-element__control">
+                <slds-stencil class="slds-contents" weight-variant="dark" height="20" count="1"></slds-stencil>
+            </div>
+        </div>
+    </template>
+    <!-- Edit -->
+    <div class={editClass}>
+        <label class="slds-form-element__label">{label}</label>
+        <div class="slds-form-element__control">
+            <slot name="input"></slot>
+        </div>
+    </div>
+    <!-- Readonly -->
+    <div class={readonlyClass}>
+        <label class="slds-form-element__label">{label}</label>
+        <div class="slds-form-element__control slds-form-element_readonly">
+            <div class="slds-form-element__static">
+                <slot name="output"></slot>
+            </div>
+            <template lwc:if={isReadOnly}>
+                <button class="slds-button slds-button_icon" title="Readonly" disabled>
+                    <svg class="slds-button__icon slds-button__icon_hint" aria-hidden="true">
+                        <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#lock"></use>
+                    </svg>
+                    <span class="slds-assistive-text">Readonly</span>
+                </button>
+            </template>
+            <template lwc:else>
+                <button class="slds-button slds-button_icon" title="Edit" onclick={handleEdit}>
+                    <svg class="slds-button__icon slds-button__icon_hint" aria-hidden="true">
+                        <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#edit"></use>
+                    </svg>
+                    <span class="slds-assistive-text">Edit</span>
+                </button>
+            </template>
+        </div>
+        <div class="slds-form-element__help">{errorMessage}</div>
+    </div>
+</template>

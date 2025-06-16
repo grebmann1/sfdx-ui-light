@@ -1,0 +1,65 @@
+<template>
+    <div class="slds-table_edit_container slds-is-relative">
+        <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_fixed-layout">
+            <thead>
+                <tr class="slds-line-height_reset">
+                    <!-- <th scope="col"></th> -->
+                    <th scope="col" style="width: 33%;">
+                        <div class="slds-truncate" title="Key">Key</div>
+                    </th>
+                    <th scope="col" style="width: 66%;">
+                        <div class="slds-truncate" title="Value">Value</div>
+                    </th>
+                    <!-- <th scope="col">
+                        <div class="slds-truncate" title="Description">Description</div>
+                    </th> -->
+                    <th scope="col" style="width: 2.5rem;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <template for:each={computedHeaders} for:item="header">
+                    <tr class="slds-hint-parent" key={header.index}>
+                        <!-- <td>
+                            <lightning-input data-index={header.index} data-field="checked"
+                                type="checkbox"
+                                label="_"
+                                name="checked"
+                                checked={header.checked}
+                                onchange={handleChange}
+                                variant="label-hidden"
+                            ></lightning-input>
+                        </td> -->
+                        <td>
+                            <slds-field-light tabindex="0" onchange={handleChange} data-index={header.index} data-field="key">
+                                <slds-searchable-combobox slot="input"
+                                    options={headerKeyOptions}
+                                    value={header.key}
+                                    onchange={disableEvent}
+                                ></slds-searchable-combobox>
+                                <div slot="output" class="slds-truncate" onclick={handleValueClick}>{header.key}</div>
+                            </slds-field-light>
+                            
+                        </td>
+                        <td >
+                            <slds-field-light tabindex="0" onchange={handleChange} data-index={header.index} data-field="value">
+                                <input slot="input" class="slds-input" type="text" value={header.value} onchange={disableEvent} />
+                                <div slot="output" class="slds-truncate" onclick={handleValueClick}>{header.value}</div>
+                            </slds-field-light>
+                        </td>
+                        <!-- <td class="slds-truncate">
+                            <slds-field-light tabindex="0" onchange={handleChange} >
+                                <input slot="input" class="slds-input" type="text" value={header.description} data-index={header.index} data-field="description" oninput={handleInputChange} onchange={disableEvent} />
+                                <div slot="output" onclick={handleValueClick}>{header.description}</div>
+                            </slds-field-light>
+                        </td> -->
+                        <td class="delete-column">
+                            <template lwc:if={header.isDeleteEnabled}>
+                                <lightning-button-icon variant="bare" icon-size="x-small" icon-name="utility:delete" data-index={header.index} onclick={handleDelete}></lightning-button-icon>
+                            </template>
+                        </td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
+</template>

@@ -1,0 +1,15 @@
+/* .slds-table_cell-buffer tr > th:first-child, 
+.slds-table_cell-buffer tr > td:first-child, 
+.slds-table--cell-buffer tr > th:first-child, 
+.slds-table--cell-buffer tr > td:first-child {
+    padding-left: 0.5rem;
+    width: 2.5rem;
+} */
+
+tr.slds-hint-parent:hover .delete-column lightning-button-icon {
+    visibility: visible;
+}
+
+td.delete-column lightning-button-icon {
+    visibility: hidden;
+}

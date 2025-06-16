@@ -31,7 +31,7 @@ const SERVER_MODE = 'development' === process.env.NODE_ENV ? 'dev' : 'prod';
 const CHROME_ID = process.env.CHROME_ID || 'dmlgjapbfifmeopbfikbdmlgdcgcdmfb';
 
 // Initialize documentation search index
-documentationSearch.initDocumentationIndex(DATA_DOCUMENTATION.contents);
+//documentationSearch.initDocumentationIndex(DATA_DOCUMENTATION.contents);
 
 getOAuth2Instance = params => {
     return new jsforce.OAuth2({
@@ -207,11 +207,11 @@ app.post('/generatejwt', async (req, res) => {
 /** LWR Server **/
 
 lwrServer
-    .listen(({ port, serverMode }) => {
-        console.log(`✅ App listening on port ${port} in ${serverMode} mode!`);
-        console.log(`Url http://localhost:${port}`);
-    })
-    .catch(err => {
-        console.error(err);
-        //process.exit(1);
-    });
+.listen(({ port, serverMode }) => {
+    console.log(`✅ App listening on port ${port} in ${serverMode} mode!`);
+    console.log(`Url http://localhost:${port}`);
+})
+.catch(err => {
+    console.error(err);
+    process.exit(1);
+});

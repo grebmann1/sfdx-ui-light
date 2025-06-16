@@ -1,0 +1,18 @@
+<template>
+   
+    <!-- Edit -->
+    <div class={editClass}>
+        <div class="slds-form-element__control">
+            <slot name="input"></slot>
+        </div>
+    </div>
+    <!-- Readonly -->
+    <div class={readonlyClass}>
+        <div class="slds-form-element__control">
+            <div class="slds-form-element__static">
+                <slot name="output"></slot>
+            </div>
+        </div>
+        <div class="slds-form-element__help">{errorMessage}</div>
+    </div>
+</template>

@@ -23,9 +23,9 @@ export async function loadCacheSettings(alias) {
 }
 
 async function saveCacheSettings(alias, state) {
-    const { viewerTab, recentPanelToggled, tabs } = state;
+    const { viewerTab, requestTab, recentPanelToggled, tabs } = state;
     const key = `${alias}-${API_SETTINGS_KEY}`;
-    const data = JSON.stringify({ viewerTab, recentPanelToggled, tabs:tabs.map(formatTabBeforeSave) });
+    const data = JSON.stringify({ viewerTab, requestTab, recentPanelToggled, tabs:tabs.map(formatTabBeforeSave) });
     await saveExtensionConfigToCache({ [key]: data });
 }
 
@@ -198,6 +198,7 @@ const apiSlice = createSlice({
     name: 'api',
     initialState: {
         viewerTab: 'Default',
+        requestTab: 'Default',
         recentPanelToggled: false,
         tabs: [],
         currentTab: null,
@@ -215,11 +216,12 @@ const apiSlice = createSlice({
             const { cachedConfig, apiFiles } = action.payload;
             if (cachedConfig && !state.isInitialized) {
                 // Use cached config
-                const { viewerTab, recentPanelToggled, tabs } = cachedConfig;
+                const { viewerTab,requestTab, recentPanelToggled, tabs } = cachedConfig;
                 const cachedTabs = tabs && tabs.length > 0 ? enrichTabs(tabs, { apiFiles },SELECTORS.apiFiles) : [];
                 const allTabs = [...cachedTabs, ...state.tabs];
                 Object.assign(state, {
                     viewerTab,
+                    requestTab,
                     recentPanelToggled,
                     tabs: allTabs,
                     currentTab: allTabs.length > 0 ? allTabs[allTabs.length-1] : null,
@@ -236,6 +238,13 @@ const apiSlice = createSlice({
         updateViewerTab: (state, action) => {
             const { value, alias } = action.payload;
             state.viewerTab = value;
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
+            }
+        },
+        updateRequestTab: (state, action) => {
+            const { value, alias } = action.payload;
+            state.requestTab = value;
             if (isNotUndefinedOrNull(alias)) {
                 saveCacheSettings(alias, state);
             }

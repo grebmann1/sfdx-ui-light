@@ -1,0 +1,71 @@
+<template>
+    <div class={formElementClasses} >
+        <label lwc:if={hasLabel}
+            class="slds-form-element__label"
+            for="combobox-id-2"
+            id="combobox-label-id-130"
+        >
+            <abbr
+                if:true={required}
+                class="slds-required"
+                title="required"
+            >* </abbr>
+            {label}
+        </label>
+        <div class="slds-form-element__control">
+            <div class="slds-combobox_container">
+                <div class={classes}>
+                    <div class="slds-combobox__form-element " role="none"> <!-- slds-input-has-icon slds-input-has-icon_right -->
+                        <div class="slds-form-element">
+                            <div class="slds-form-element__control slds-input-has-icon  "> <!-- slds-input-has-icon_right -->
+                                <!-- <lightning-icon
+                                    size="x-small"
+                                    class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default"
+                                    icon-name="utility:search"
+                                ></lightning-icon> -->
+                                <!-- sldsValidatorIgnoreNextLine -->
+                                <input
+                                    required={required}
+                                    type="text"
+                                    class={inputClasses}
+                                    value={value}
+                                    onkeyup={handleChange}
+                                    onfocus={handleFocus}
+                                    onblur={handleBlur}
+                                    onkeydown={handleKeyDown}
+                                    oninput={handleInput}
+                                    aria-invalid={isInvalid}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div lwc:if={hasOptions}
+                        class="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid"
+                        role="listbox"
+                        onmousedown={handleDropdownMouseDown}
+                        onmouseup={handleDropdownMouseUp}
+                        onmouseleave={handleDropdownMouseLeave}
+                    >
+                        <ul class="slds-listbox slds-listbox_vertical" role="presentation" >
+                            <li for:each={filteredOptions} for:item="option" key={option.value} role="presentation" class="slds-listbox__item">
+                                <div
+                                    onclick={handleSelect}
+                                    data-value={option.value}
+                                    class={option.classes}
+                                    role="option"
+                                    data-focused={option.focused}
+                                >
+                                    <span class="slds-media__figure slds-listbox__option-icon"></span>
+                                    <span class="slds-media__body">
+                                        <span class="slds-truncate" title={option.label} >{option.label}</span>
+                                    </span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slds-form-element__help" if:true={isInvalid} >{messageWhenInvalid}</div>
+    </div>
+</template>
