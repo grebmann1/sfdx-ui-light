@@ -294,14 +294,13 @@ export default class App extends ToolkitElement {
             PerformanceModal.open({ plans });
         } catch (e) {
             // handle error here
-            console.log('error', e);
+            console.error('error', e);
 
             //this.isLoading = false;
         }
     };
 
     executeAction = e => {
-        console.log('---> executeAction');
         const isAllRows = false;
         const inputEl = this.refs?.editor?.editor?.currentModel;
         if (!inputEl) return;

@@ -532,7 +532,7 @@ export default class App extends ToolkitElement {
 
     header_change = e => {
         this.header = e.detail.value;
-        console.log('App [header_change]', this.header);
+        //console.log('App [header_change]', this.header);
         this.updateRequestStates(e);
     };
 

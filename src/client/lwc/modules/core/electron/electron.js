@@ -224,11 +224,9 @@ export default class Electron extends ToolkitElement {
                     ...res.payload?.response || {},
                     tabId: tabId,
                 };
-                console.log('Execute Apex [_output]', _output);
                 if(res.error){
                     _output.error = res.error;
                 }
-                LOGGER.debug('MCP Response [output]', _output);
                 window.electron.send(callBackChannel, _output);
 
             });

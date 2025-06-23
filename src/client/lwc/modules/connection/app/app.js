@@ -109,7 +109,6 @@ export default class App extends ToolkitElement {
             size: 'medium',
         }).then(res => {
             if (res) {
-                console.log('res',res);
                 if(isElectronApp()){
                     window.electron.invoke('OPEN_INSTANCE', {alias:res.conn.alias,username:res.configuration.username});
                 }else{
@@ -357,9 +356,7 @@ export default class App extends ToolkitElement {
                     if (!strategy)
                         throw new Error(`No strategy for credential type: ${credentialType}`);
 
-                    console.log('Connecting with configuration --> 1', configuration);
                     const connector = await strategy.directConnect(configuration);
-                    console.log('connector --> 1', connector);
                     url = connector.frontDoorUrl;
                 } else {
                     url = redirectUrl;

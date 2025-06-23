@@ -26,7 +26,6 @@ export function getWorker(conn, workerName) {
 
     const workerId = guid();
     const instance = new Worker(`/libs/workers/${workerName}`);
-    console.log('instance', instance);
 
     workerInstances[workerId] = {
         instance: instance,
@@ -37,9 +36,7 @@ export function getWorker(conn, workerName) {
 
     // Listen for messages from the worker
     workerInstances[workerId].instance.onmessage = event => {
-        console.log('workerInstance.onmessage', event);
         if (event?.data?.status) {
-            console.log('Status update', event.data.status);
             workerInstances[workerId].status = event.data.status; // Worker status update
         }
     };

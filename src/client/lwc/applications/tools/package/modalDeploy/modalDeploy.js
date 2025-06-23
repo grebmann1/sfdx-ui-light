@@ -56,7 +56,6 @@ export default class ModalDeploy extends LightningModal {
         // Deployment
         const deployState = package2.currentDeploymentJob;
         if (deployState) {
-            console.log('deployState', deployState);
             this.isRunning = deployState.isFetching;
             if (this.isRunning) {
                 this.loading_enableAutoDate(deployState.createdDate);

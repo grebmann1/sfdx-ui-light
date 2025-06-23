@@ -113,7 +113,6 @@ export default class App extends ToolkitElement {
     /** Events **/
 
     handleItemSelection = e => {
-        console.log('handleItemSelection', e.detail);
         if (this.refs.retrieve) {
             this.refs.retrieve.toggleMetadata(e.detail);
         }

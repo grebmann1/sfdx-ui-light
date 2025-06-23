@@ -322,7 +322,7 @@ export default class RecordExplorer extends ToolkitElement {
         try {
             const res = await _connector.sobject(this.sobjectName).update([toUpdate]);
             const response = res[0];
-            console.log('###### response ######', response);
+            //console.log('###### response ######', response);
             if (response.success) {
                 Toast.show({
                     label: 'Record saved successfully',
@@ -569,7 +569,7 @@ export default class RecordExplorer extends ToolkitElement {
     }
 
     get label() {
-        console.log('this.metadata', this.metadata);
+        //console.log('this.metadata', this.metadata);
         return this.metadata?.label;
     }
 

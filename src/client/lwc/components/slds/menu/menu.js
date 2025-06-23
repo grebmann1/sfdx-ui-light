@@ -81,7 +81,6 @@ export default class Menu extends ToolkitElement {
     };
 
     handleSelection = e => {
-        console.log('---> ', e.detail);
         this.selectedItem = e.detail.name;
         const index = this.items.findIndex(x => x.name === e.detail.name);
         const oldIndex = this.items.findIndex(x => x.isSelected);

@@ -10,7 +10,6 @@ export default class Notes extends LightningElement {
         const url = isChromeExtension()
             ? `${chrome.runtime.getURL('releaseNotes.json')}`
             : '/public/releaseNotes.json';
-        console.log('url', url);
         fetch(url)
             .then(response => response.json())
             .then(data => {

@@ -30,7 +30,6 @@ export default class OutputCell extends LightningElement {
     }
 
     handle_copyClick = e => {
-        console.log('handle_copyClick', this.recordId, this.column, this.value);
         e.preventDefault();
         e.stopPropagation();
         navigator.clipboard.writeText(this.value);

@@ -24,7 +24,7 @@ export default class StructureViewer extends ToolkitElement {
     set record(value) {
         this._record = value;
         this.formatTree(value);
-        console.log('---> record', value);
+        //console.log('---> record', value);
     }
 
     /** Events **/

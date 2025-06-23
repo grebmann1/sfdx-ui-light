@@ -55,7 +55,6 @@ export default class StoragePanel extends ToolkitElement {
         const items = category == CATEGORY_STORAGE.RECENT ? this.recentItems : this.savedItems;
         const selectedItem = items.find(item => item.id === id);
         if (selectedItem) {
-            console.log('removeItem');
             this.dispatchEvent(
                 new CustomEvent('removeitem', {
                     detail: {

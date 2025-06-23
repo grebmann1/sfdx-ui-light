@@ -18,7 +18,7 @@ export default class Company extends ToolkitElement {
 
     init = async () => {
         this.orgInformation = await this.load_orgInformations();
-        console.log('this.orgInformation', this.orgInformation);
+        //console.log('this.orgInformation', this.orgInformation);
     };
 
     /** Methods */

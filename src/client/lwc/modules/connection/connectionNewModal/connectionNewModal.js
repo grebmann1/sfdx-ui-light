@@ -275,7 +275,6 @@ export default class ConnectionNewModal extends LightningModal {
                 },
                 { saveFullConfiguration: true }
             );
-            console.log('result', result);
             this.close(result);
         } catch (e) {
             handleError(e, 'OAuth Error');

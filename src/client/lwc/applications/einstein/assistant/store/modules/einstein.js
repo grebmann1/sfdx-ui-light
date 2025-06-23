@@ -139,16 +139,16 @@ export const einsteinExecuteModel = createAsyncThunk(
         //await testTimer();
         //throw new Error('ERROR_HTTP_503:test by gui');
         try {
-            console.log('headers', formatHeaders(getState().einstein));
+            //console.log('headers', formatHeaders(getState().einstein));
             const res = await _executeApexAnonymous(
                 connector,
                 body,
                 formatHeaders(getState().einstein)
             );
             if (!res.success) {
-                console.group('Einstein Error');
-                console.error(res.exceptionMessage || res.compileProblem);
-                console.groupEnd();
+                //console.group('Einstein Error');
+                //console.error(res.exceptionMessage || res.compileProblem);
+                //console.groupEnd();
                 throw new Error(
                     "Einstein Access: You org doesn't provide Einstein access to your user."
                 );

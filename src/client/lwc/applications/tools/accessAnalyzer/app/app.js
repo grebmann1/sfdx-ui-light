@@ -293,7 +293,7 @@ export default class App extends ToolkitElement {
         this.customAdditionalMessage = 'This request might take up to a few minutes.';
         var _metadata;
         try {
-            console.log('this.connector.configuration.alias', this.connector.configuration.alias);
+            //console.log('this.connector.configuration.alias', this.connector.configuration.alias);
             // Cache loading only for full mode
             if (isNotUndefinedOrNull(this.connector.configuration.alias)) {
                 let key = `${this.connector.configuration.alias}-metadata`;

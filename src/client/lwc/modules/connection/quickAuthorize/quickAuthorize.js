@@ -56,7 +56,6 @@ export default class QuickAuthorize extends ToolkitElement {
             ...params,
             size: isChromeExtension() ? 'full' : 'medium',
         }).then(async res => {
-            console.log('addConnection_authorize - res', res);
             if (isNotUndefinedOrNull(res)) {
                 Toast.show({
                     label: `${res?.configuration?.alias || res?.alias} has been added.`,

@@ -126,7 +126,7 @@ export default class Menu extends ToolkitElement {
     /** Events */
 
     handleMenuSelection = async e => {
-        console.log('e.detail', e.detail);
+        //console.log('e.detail', e.detail);
         const { name, label, _developerName } = e.detail;
         if (this.currentLevel === 0) {
             //this.currentMetadata = name;

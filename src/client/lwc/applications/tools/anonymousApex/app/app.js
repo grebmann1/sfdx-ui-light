@@ -346,7 +346,7 @@ export default class App extends ToolkitElement {
     };
 
     executeSave = () => {
-        console.log('---> executeSave');
+        //console.log('---> executeSave');
         const { apex } = store.getState();
         const file = apex.currentTab.fileId
             ? SELECTORS.apexFiles.selectById(store.getState(), lowerCaseKey(apex.currentTab.fileId))
@@ -375,7 +375,7 @@ export default class App extends ToolkitElement {
                 title: 'Save Apex Script',
                 _file: file,
             }).then(async data => {
-                console.log('Save Apex Script', data);
+                //console.log('Save Apex Script', data);
                 if (isUndefinedOrNull(data)) return;
 
                 const { name, isGlobal } = data;

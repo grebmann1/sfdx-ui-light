@@ -78,7 +78,7 @@ export default class Default extends ToolkitElement {
                 JSON.stringify(JSON.parse(this.currentModel.getValue()), null, 2)
             );
         } else {
-            console.log('Format not supported');
+            console.error('Format not supported');
         }
         this.monaco.editor.setModelLanguage(this.editor.getModel(), format);
     };
