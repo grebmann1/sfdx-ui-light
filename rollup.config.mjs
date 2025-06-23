@@ -1,14 +1,13 @@
-
 import path from 'path'; // Import the path module
 import lwc from '@lwc/rollup-plugin';
 import replace from '@rollup/plugin-replace';
 import resolve from '@rollup/plugin-node-resolve';
 import cjs from '@rollup/plugin-commonjs';
+import terser from '@rollup/plugin-terser';
 import copy from 'rollup-plugin-copy';
 import alias from '@rollup/plugin-alias';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
 import postcss from 'rollup-plugin-postcss'
-
 
 import * as data from './package.json';
 
@@ -41,7 +40,8 @@ const basicBundler = (input, output, name, useLwc = false, modules, extraPlugins
             'process.env.IS_CHROME': true,
             'import.meta.url':'""'// to prevent issue when building the package
         }),
-        ...extraPlugins ? extraPlugins : [] // to add extra plugins
+        ...extraPlugins ? extraPlugins : [],
+        terser()
     ],
 });
 
@@ -122,6 +122,7 @@ const coreBuilder = (modules) => {
                     },
                 ],
             }),
+            terser()
         ]
     }
 }

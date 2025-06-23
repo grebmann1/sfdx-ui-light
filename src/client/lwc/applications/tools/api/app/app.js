@@ -169,7 +169,7 @@ export default class App extends ToolkitElement {
         }
         if (this.header != api.header) {
             this.header = api.header || null;
-            this.headerRows = this.parseHeaderStringToRows(this.header);
+            //this.headerRows = this.parseHeaderStringToRows(this.header);
             if (this._hasRendered) {
                 // No textarea to update
             }
@@ -531,9 +531,9 @@ export default class App extends ToolkitElement {
     };
 
     header_change = e => {
-        const headerRows = e.detail.value;
-        this.headerRows = [...headerRows];
-        this.syncHeaderRows();
+        this.header = e.detail.value;
+        console.log('App [header_change]', this.header);
+        this.updateRequestStates(e);
     };
 
     endpoint_change = e => {
@@ -628,41 +628,6 @@ export default class App extends ToolkitElement {
             // Reset draft
         });
     };
-
-    syncHeaderRows = () => {
-        // Remove empty rows except the last one
-        let rows = this.headerRows.filter((row, i, arr) => row.key || row.value || i === arr.length - 1);
-        // Always keep at least one empty row
-        if (rows.length === 0 || rows[rows.length - 1].key || rows[rows.length - 1].value) {
-            rows.push({ id: guid(), key: '', value: '' });
-        }
-        // Mark duplicates
-        const keyCounts = rows.reduce((acc, row) => {
-            if (row.key) acc[row.key.toLowerCase()] = (acc[row.key.toLowerCase()] || 0) + 1;
-            return acc;
-        }, {});
-        rows = rows.map(row => ({ ...row, hasDuplicate: row.key && keyCounts[row.key.toLowerCase()] > 1 }));
-        this.headerRows = rows;
-        this.header = this.headerRows
-            .filter(row => row.key)
-            .map(row => `${row.key} : ${row.value}`)
-            .join('\n');
-        this.updateRequestStates({});
-    };
-
-    parseHeaderStringToRows(headerStr) {
-        if (!headerStr) return [{ id: guid(), key: '', value: '' }];
-        const lines = headerStr.split(/\r?\n/).filter(Boolean);
-        const rows = lines.map(line => {
-            const [key, ...rest] = line.split(':');
-            return { id: guid(), key: key ? key.trim() : '', value: rest.join(':').trim() };
-        });
-        // Always at least one empty row
-        if (rows.length === 0 || rows[rows.length - 1].key || rows[rows.length - 1].value) {
-            rows.push({ id: guid(), key: '', value: '' });
-        }
-        return rows;
-    }
 
     /** Tabs */
 

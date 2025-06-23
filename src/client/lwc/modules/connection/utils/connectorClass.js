@@ -38,6 +38,7 @@ export class Connector {
             return null;
         }
         const jwt = await this.conn.oauth2.refreshToken(this.conn.refreshToken);
+        console.log('refreshToken -> jwt',jwt);
         return {
             ...jwt,
             frontDoorUrl: jwt.instance_url + '/secur/frontdoor.jsp?sid=' + jwt.access_token,

@@ -139,6 +139,7 @@ export const einsteinExecuteModel = createAsyncThunk(
         //await testTimer();
         //throw new Error('ERROR_HTTP_503:test by gui');
         try {
+            console.log('headers', formatHeaders(getState().einstein));
             const res = await _executeApexAnonymous(
                 connector,
                 body,

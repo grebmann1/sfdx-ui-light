@@ -4,6 +4,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import babel from '@rollup/plugin-babel';
 import json from '@rollup/plugin-json';
 import alias from '@rollup/plugin-alias';
+import terser from '@rollup/plugin-terser';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
 
 
@@ -65,7 +66,8 @@ export default (args) => {
 				babel({
 					babelHelpers: 'bundled',
 					presets: ['@babel/preset-env']
-				})
+				}),
+				terser()
 			]
 		}
 	]

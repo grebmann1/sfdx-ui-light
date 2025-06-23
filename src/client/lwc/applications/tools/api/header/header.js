@@ -1,22 +1,32 @@
 import { LightningElement, api,track } from 'lwc';
-
+import { guid } from 'shared/utils';
 export default class Header extends LightningElement {
 
-    @track _headers = [];
-    @api
-    get headers() {
-        return this._headers;
+    @track _headerList = [];
+
+    @api 
+    set header(value) {
+        this.headerList = this.parseHeaderStringToRows(value);
     }
-    set headers(value) {
-        this._headers = value;
+    get header() {
+        return this.formattedHeaders;
+    }
+
+    @api
+    get headerList() {
+        return this._headerList;
+    }
+    set headerList(value) {
+        this._headerList = value;
         this.ensureLastHeaderIsEmpty();
+        this.syncHeaderRows();
     }
 
     ensureLastHeaderIsEmpty() {
-        if (this._headers.length === 0 || this.isHeaderEmpty(this._headers[this._headers.length - 1])) {
+        if (this._headerList.length === 0 || this.isHeaderEmpty(this._headerList[this._headerList.length - 1])) {
             return;
         }
-        this._headers = [...this._headers, { key: '', value: '', checked: true }];
+        this._headerList = [...this._headerList, { key: '', value: '', checked: true }];
     }
 
     isHeaderEmpty(header) {
@@ -24,7 +34,7 @@ export default class Header extends LightningElement {
     }
 
     isTemplateRow(header) {
-        return this.isHeaderEmpty(header) && this._headers.indexOf(header) === this._headers.length - 1;
+        return this.isHeaderEmpty(header) && this._headerList.indexOf(header) === this._headerList.length - 1;
     }
 
     /** Event Handlers **/
@@ -38,40 +48,40 @@ export default class Header extends LightningElement {
         const value = event.detail.value;
         const row = parseInt(event.target.dataset.index, 10);
         const field = event.target.dataset.field;
-        let headerLine = { ...this._headers[row] };
+        let headerLine = { ...this._headerList[row] };
         headerLine[field] = value;
-
+guid
         // Create a new array to trigger reactivity
-        const newHeaders = [...this._headers];
+        const newHeaders = [...this._headerList];
         newHeaders[row] = headerLine;
-        this._headers = newHeaders;
+        this._headerList = newHeaders;
         this.ensureLastHeaderIsEmpty();
-        this.dispatchEvent(new CustomEvent('change', { detail: { value: this._headers } }));
+        this.dispatchEvent(new CustomEvent('change', { detail: { value: this.header } }));
     }
 
     handleDelete(event) {
         const index = parseInt(event.target.dataset.index, 10);
-        this._headers = [...this._headers.filter((_, idx) => idx !== index)];
-        this.dispatchEvent(new CustomEvent('change', { detail: { value: this._headers } }));
+        this._headerList = [...this._headerList.filter((_, idx) => idx !== index)];
+        this.dispatchEvent(new CustomEvent('change', { detail: { value: this.header } }));
     }
 
     handleKeyChange(event) {
         const value = event.detail.value;
         const row = parseInt(event.target.dataset.index, 10);
-        let headerLine = { ...this._headers[row] };
+        let headerLine = { ...this._headerList[row] };
         headerLine.key = value;
 
         // Create a new array to trigger reactivity
-        const newHeaders = [...this._headers];
+        const newHeaders = [...this._headerList];
         newHeaders[row] = headerLine;
-        this._headers = newHeaders;
-        this.dispatchEvent(new CustomEvent('change', { detail: { value: this._headers } }));
+        this._headerList = newHeaders;
+        this.dispatchEvent(new CustomEvent('change', { detail: { value: this.header } }));
     }
 
     handleKeyInput(event) {
         const value = event.target.value;
         const row = parseInt(event.target.dataset.index, 10);
-        let headerLine = { ...this._headers[row] };
+        let headerLine = { ...this._headerList[row] };
         headerLine.key = value;
 
         // Filter suggestions based on input
@@ -81,30 +91,37 @@ export default class Header extends LightningElement {
         headerLine.showSuggestions = headerLine.filteredSuggestions.length > 0;
 
         // Create a new array to trigger reactivity
-        const newHeaders = [...this._headers];
+        const newHeaders = [...this._headerList];
         newHeaders[row] = headerLine;
-        this._headers = newHeaders;
-        this.dispatchEvent(new CustomEvent('change', { detail: { value: this._headers } }));
+        this._headerList = newHeaders;
+        this.dispatchEvent(new CustomEvent('change', { detail: { value: this.header } }));
     }
 
     handleSuggestionClick(event) {
         const value = event.target.dataset.value;
         const row = parseInt(event.target.dataset.index, 10);
-        let headerLine = { ...this._headers[row] };
+        let headerLine = { ...this._headerList[row] };
         headerLine.key = value;
         headerLine.showSuggestions = false;
 
         // Create a new array to trigger reactivity
-        const newHeaders = [...this._headers];
+        const newHeaders = [...this._headerList];
         newHeaders[row] = headerLine;
-        this._headers = newHeaders;
-        this.dispatchEvent(new CustomEvent('change', { detail: { value: this._headers } }));
+        this._headerList = newHeaders;
+        this.dispatchEvent(new CustomEvent('change', { detail: { value: this.header } }));
     }
 
     /** Getters **/
 
+    get formattedHeaders() {
+        return this.headerList
+            .filter(row => row.key)
+            .map(row => `${row.key} : ${row.value}`)
+            .join('\n');
+    }
+
     get computedHeaders() {
-        return this.headers.map((header, idx) => {
+        return this.headerList.map((header, idx) => {
             return {
                 ...header,
                 index: idx,
@@ -173,6 +190,36 @@ export default class Header extends LightningElement {
             { label: 'X-Sfdc-Edge-Cache', value: 'X-Sfdc-Edge-Cache' },
             { label: 'X-Sfdc-Request-Id', value: 'X-Sfdc-Request-Id' }
         ];
+    }
+
+    syncHeaderRows() {
+        // Remove empty rows except the last one
+        let rows = this._headerList.filter((row, i, arr) => row.key || row.value || i === arr.length - 1);
+        // Always keep at least one empty row
+        if (rows.length === 0 || rows[rows.length - 1].key || rows[rows.length - 1].value) {
+            rows.push({ id: guid(), key: '', value: '' });
+        }
+        // Mark duplicates
+        const keyCounts = rows.reduce((acc, row) => {
+            if (row.key) acc[row.key.toLowerCase()] = (acc[row.key.toLowerCase()] || 0) + 1;
+            return acc;
+        }, {});
+        rows = rows.map(row => ({ ...row, hasDuplicate: row.key && keyCounts[row.key.toLowerCase()] > 1 }));
+        this._headerList = rows;
+    }
+
+    parseHeaderStringToRows(headerStr) {
+        if (!headerStr) return [{ id: guid(), key: '', value: '' }];
+        const lines = headerStr.split(/\r?\n/).filter(Boolean);
+        const rows = lines.map(line => {
+            const [key, ...rest] = line.split(':');
+            return { id: guid(), key: key ? key.trim() : '', value: rest.join(':').trim() };
+        });
+        // Always at least one empty row
+        if (rows.length === 0 || rows[rows.length - 1].key || rows[rows.length - 1].value) {
+            rows.push({ id: guid(), key: '', value: '' });
+        }
+        return rows;
     }
 
 }

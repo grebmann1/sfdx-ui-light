@@ -1,20 +1,31 @@
 <template>
-    <template lwc:if={isBoolean}>
-        <template lwc:if={value}>
-            <img src="/images/checkbox_checked.gif" />
+    <div class="slds-flex-row slds-justify-content-space-between">
+        <template lwc:if={isBoolean}>
+            <template lwc:if={value}>
+                <img src="/images/checkbox_checked.gif" />
+            </template>
+            <template lwc:else>
+                <img src="/images/checkbox_unchecked.gif" />
+            </template>
         </template>
-        <template lwc:else>
-            <img src="/images/checkbox_unchecked.gif" />
+        <template lwc:elseif={isLink}>
+            <lightning-button
+                variant="base"
+                label={urlLabel}
+                onclick={goToUrl}
+                data-url={urlLink}></lightning-button>
         </template>
-    </template>
-    <template lwc:elseif={isLink}>
-        <lightning-button
-            variant="base"
-            label={urlLabel}
-            onclick={goToUrl}
-            data-url={urlLink}></lightning-button>
-    </template>
-    <template lwc:else>{value}</template>
+        <template lwc:else>{value}</template>
+        <template lwc:if={isFormula}>
+            <lightning-button-icon
+                alternative-text="formula"
+                icon-name="utility:formula"
+                onclick={handleFormulaClick}
+                tooltip={tooltip_formula}
+                variant="bare"
+            ></lightning-button-icon>
+        </template>
+    </div>
 </template>
 
 <!--

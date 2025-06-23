@@ -38,7 +38,9 @@ export async function connect({ alias, loginUrl }, settings = {}) {
         // Try to connect using the existing configuration
         // (Assume refreshToken is sufficient for OAuth reconnect)
         const connectionParams = normalizeConnection(OAUTH_TYPES.OAUTH, configuration, platform);
+        LOGGER.log('connectionParams -> ',connectionParams);
         const connection = await new window.jsforce.Connection(connectionParams);
+        LOGGER.log('connection -->',connection);
         const connector = await Connector.createConnector({
             alias,
             connection,
@@ -49,14 +51,17 @@ export async function connect({ alias, loginUrl }, settings = {}) {
         if (isNotUndefinedOrNull(connection.refreshToken) && isUndefinedOrNull(connection.accessToken)) {
             await connector.generateAccessToken();
         }
+        LOGGER.log('connector -> ',connector);
         if (connector.hasError) {
             throw new Error(connector.errorMessage);
         }
+        LOGGER.log('connect -> connector',connector);
         return connector;
     }
 
     
     const normalizedUrl = processHost(loginUrl || 'https://login.salesforce.com');
+    LOGGER.log('normalizedUrl -> ',normalizedUrl);
 
     if (platform === PLATFORM.CHROME) {
         LOGGER.log('Chrome OAuth');
@@ -112,6 +117,7 @@ export async function connect({ alias, loginUrl }, settings = {}) {
                     connection,
                     credentialType: OAUTH_TYPES.OAUTH,
                 });
+                console.log('connect -> connector Web',connector);
                 if (saveFullConfiguration) {
                     await saveConfiguration(alias, connector.configuration);
                 }

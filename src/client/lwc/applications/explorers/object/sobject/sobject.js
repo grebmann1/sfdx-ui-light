@@ -124,7 +124,8 @@ export default class Sobject extends ToolkitElement {
                 )
             ).payload;
             LOGGER.debug('sobjectConfig', sobjectConfig);
-            this.selectedDetails = deepClone(sobjectConfig.data);
+            this.selectedDetails = this.enrichSelectedDetails(deepClone(sobjectConfig.data));
+            console.log('this.selectedDetails',this.selectedDetails);
             this.checkTotalRecords();
             setTimeout(() => {
                 this.buildUML();
@@ -134,6 +135,15 @@ export default class Sobject extends ToolkitElement {
             this.isNoRecord = true;
         }
     };
+
+    enrichSelectedDetails = (data) => {
+        data.fields.forEach(field => {
+            console.log('field',field);
+            const isFormula = field?.calculated || false;
+            field._type = isFormula?`fx: ${field.type}`:field.type;
+        });
+        return data;
+    }
 
     checkIfPresent = (a, b) => {
         return (a || '').toLowerCase().includes((b || '').toLowerCase());
@@ -189,7 +199,7 @@ export default class Sobject extends ToolkitElement {
             },
             {
                 title: 'Type',
-                field: 'type',
+                field: '_type',
                 headerHozAlign: 'center',
                 resizable: true,
                 formatter: this.formatterField_type,
@@ -300,7 +310,7 @@ export default class Sobject extends ToolkitElement {
         Object.assign(element, {
             value,
             ...{
-                isBoolean: value === true || value === false,
+                isBoolean: value === true || value === false
             },
         });
         return element;
@@ -311,8 +321,8 @@ export default class Sobject extends ToolkitElement {
         const value = cell._cell.value;
         const config = {
             isBoolean: false,
+            fieldInfo: cell._cell.row.data,
         };
-
         if (value === 'reference') {
             const data = cell._cell.row.data;
             const referenceTo = data?.referenceTo?.length > 0 ? data.referenceTo[0] : null; // We take only 1 for now
@@ -337,6 +347,8 @@ export default class Sobject extends ToolkitElement {
         return element;
     };
 
+    
+
     /** Getters **/
 
     get noRecordMessage() {
@@ -350,7 +362,7 @@ export default class Sobject extends ToolkitElement {
             x =>
                 this.checkIfPresent(x.name, this.fields_filter) ||
                 this.checkIfPresent(x.label, this.fields_filter) ||
-                this.checkIfPresent(x.type, this.fields_filter)
+                this.checkIfPresent(x._type, this.fields_filter)
         );
     }
 

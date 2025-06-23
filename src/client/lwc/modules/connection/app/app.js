@@ -296,7 +296,7 @@ export default class App extends ToolkitElement {
                     });
                 }
             } catch (e) {
-                console.error('login error', e);
+                LOGGER.error('login error', e);
                 handleError(e, 'Login Error');
                 store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
                 this.fetchAllConnections();
@@ -308,20 +308,31 @@ export default class App extends ToolkitElement {
         if (isElectronApp()) return;
         
         this.isLoading = true;
-        let { alias, loginUrl, ...settings } = this.data.find(x => x.id == row.id);
-        const connector = await credentialStrategies[OAUTH_TYPES.OAUTH].connect(
-            { alias, loginUrl },
-            { saveFullConfiguration: true, bypass: true }
-        );
-        if (connector.hasError) {
-            LOGGER.error('authorizeExistingOrg', connector.errorMessage);
-            throw new Error(connector.errorMessage);
+        let { alias, loginUrl,instanceUrl, ...settings } = this.data.find(x => x.id == row.id);
+        try{
+            LOGGER.log('settings',settings,alias,loginUrl,instanceUrl);
+            const _loginUrl = instanceUrl || loginUrl;
+            LOGGER.log('settings',settings,alias,_loginUrl);
+            const connector = await credentialStrategies[OAUTH_TYPES.OAUTH].connect(
+                { alias, loginUrl: _loginUrl },
+                { saveFullConfiguration: true, bypass: true }
+            );
+            if (connector.hasError) {
+                LOGGER.error('authorizeExistingOrg', connector.errorMessage);
+                throw new Error(connector.errorMessage);
+            }
+            store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
+            this.dispatchEvent(
+                new CustomEvent('login', { detail: { value: connector }, bubbles: true })
+            );
+            this.fetchAllConnections();
+        }catch(e){
+            LOGGER.error('authorizeExistingOrg error', e);
+            handleError(e, 'Authorize Existing Org Error');
+            store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
+            this.fetchAllConnections();
         }
-        store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
-        this.dispatchEvent(
-            new CustomEvent('login', { detail: { value: connector }, bubbles: true })
-        );
-        this.fetchAllConnections();
+        
     };
 
     openBrowser = async (row, target) => {

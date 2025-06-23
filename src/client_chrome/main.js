@@ -17,7 +17,7 @@ const init = async () => {
         clientId:
             '3MVG9_kZcLde7U5oNdaqndT3T9qa54eaA.ycC6APuOkYzRP286pPeOvwOqAQ2ue7l5ejNAxPYj4xTbWn3zS6Y',
         chromeId: 'dmlgjapbfifmeopbfikbdmlgdcgcdmfb',
-        redirectUri: 'https://sf-toolkit.com/chrome/callback',
+        redirectUri: chrome.identity.getRedirectURL()//'https://sf-toolkit.com/chrome/callback',
         //proxyUrl:   'https://sf-toolkit.com/proxy/',
         //redirectUri: `http://localhost:3000/chrome/callback`,
         //proxyUrl: `http://localhost:3000/proxy/`,

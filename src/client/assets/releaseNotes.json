@@ -1,5 +1,52 @@
 [
   {
+    "version": "1.3.40",
+    "date": "June 20th, 2025",
+    "sections": [
+      {
+        "title": "Enhancements",
+        "categories": [
+          {
+            "category": "SObject Explorer",
+            "items": [
+              "Added support for 'Formula' fields, allowing users to view and interact with formula fields directly in the SObject explorer."
+            ]
+          },
+          {
+            "category": "API Explorer",
+            "items": [
+              "Enhanced the header for improved usability and navigation in the API Explorer."
+            ]
+          },
+          {
+            "category": "Performance & Optimization",
+            "items": [
+              "Upgraded to the latest version of JSforce for improved Salesforce API compatibility and performance.",
+              "Minified the entire code base to ensure faster loading times and a smoother user experience."
+            ]
+          },
+          {
+            "category": "MCP (Model Context Protocol)",
+            "items": [
+              "MCP is now available in beta phase. Note: MCP features require installation of the DESKTOP app."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Bug Fixes",
+        "categories": [
+          {
+            "category": "SOAP API",
+            "items": [
+              "Resolved several issues related to SOAP API integration, improving reliability and error handling."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.3.39",
     "date": "June 10th, 2025",
     "sections": [
