@@ -74,13 +74,14 @@ The SF Toolkit repository provides a comprehensive suite of tools designed for S
 - Enhanced option page and full localhost support for processing.
 
 ### Multi-Platform Support
-- ✅ Chrome Extension available for installation [here](https://chromewebstore.google.com/detail/sf-toolkit-light/konbmllgicfccombdckckakhnmejjoei).
-- ✅ Electron App for Mac OS available for download [here](https://github.com/grebmann1/sfdx-ui-light/releases/latest).
+- ✅ Chrome Extension available for installation [here](https://chromewebstore.google.com/detail/salesforce-toolkit/konbmllgicfccombdckckakhnmejjoei).
+- ✅ Electron App for Mac OS available for download [here](https://github.com/grebmann1/sf-toolkit-desktop/releases/latest).
 - Planned Electron App for Windows.
+
 
 ### Code Analyzer
 - Ongoing development of a code extractor and analyzer.
-- Planned integration with SFDX-HARDIS for org monitoring (Desktop only).
+
 
 ### Data and Object Assignment
 - Analysis of layout assignments and usage.
@@ -110,7 +111,12 @@ The Electron-based desktop application leverages the Salesforce Developer Experi
 
 The Chrome Extension integrates directly into your browser, offering quick access to SF Toolkit functionalities. It allows you to visualize profiles, manage connections, and export data as CSV or PDF, streamlining Salesforce access management from within the browser.
 
-![Chrome Extension](./git_images/chrome.png)
+![Embedded UI](./git_images/embedded.png)
+![Embedded UI](./git_images/orgManagement.png)
+![Side Panel Org Overview](./git_images/sidePanel.png)
+![Quick Record Edit](./git_images/recordEdit.png)
+![Application Example (SOQL Explorer)](./git_images/application.png)
+
 
 ## Features Overview
 
@@ -146,42 +152,75 @@ The Chrome Extension integrates directly into your browser, offering quick acces
 
 ## Installation and Usage
 
-### Install the Entire Repository
-1. Clone the repository.
-2. Run `npm install`.
-3. Create a Salesforce Connected App and set up the following in a `.env` file:
-   ```
-   CLIENT_SECRET='XXXXX'
-   CLIENT_ID='XXXX'
-   ```
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v16+ recommended)
+- [npm](https://www.npmjs.com/)
+- (Optional) [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli) for local Heroku testing
 
-### SF Toolkit Website
-- Visit [SF Toolkit](https://www.sf-toolkit.com) and connect your orgs. Note that org information is stored locally in the browser.
+### 1. Clone and Install Dependencies
+```sh
+git clone https://github.com/grebmann1/sf-toolkit.git
+cd sf-toolkit
+npm install
+```
 
-#### Run in Development Mode
-- Execute `npm run start:dev:client`.
+### 2. Environment Setup
+Create a `.env` file in the project root with your Salesforce Connected App credentials:
+```
+CLIENT_SECRET='XXXXX'
+CLIENT_ID='XXXX'
+```
+You may also set `REDIRECT_URI` if needed for production/Heroku.
 
-#### Run in Production Mode (Static Version)
-1. Execute `npm run heroku-postbuild`.
-2. Execute `npm run start:heroku`.
+---
 
-To test with Heroku (optional), after installing the Heroku CLI:
-1. Execute `npm run heroku-postbuild`.
-2. Execute `heroku local --port 3000`.
+### 3. Running the Web App
 
-### Electron Desktop App
-- Navigate to the specific repository: [GitHub](https://github.com/grebmann1/sfdx-ui-desktop).
+#### Development Mode
+- Hot-reloads the client and server for rapid development.
+```sh
+npm run start:dev:client
+```
 
-### Chrome Extension
-- Refer to the 'extension' directory for installation steps and usage guidelines.
+#### Production Mode (Static Build)
+- Build and serve the optimized production version.
+```sh
+npm run heroku-postbuild
+npm run start:heroku
+```
 
-#### Testing in Developer Mode (Chrome)
-1. Clone the repository.
-2. Run `npm install`.
-3. Open `chrome://extensions/`.
-4. Enable `Developer mode`.
-5. Click `Load unpacked extension...`.
-6. Select the folder `extension` containing the extension module.
+#### Heroku Local Testing (Optional)
+- Requires Heroku CLI.
+```sh
+npm run heroku-postbuild
+heroku local --port 3000
+```
+
+---
+
+### 4. Chrome Extension
+
+#### Build the Extension
+- The extension is built into the `chrome_ext` folder.
+```sh
+npm run start:dev:extension
+```
+- For production build:
+```sh
+npm run start:prod:extension
+```
+
+#### Load in Chrome
+1. Open `chrome://extensions/`
+2. Enable **Developer mode**
+3. Click **Load unpacked**
+4. Select the `chrome_ext` folder
+
+---
+
+### 5. Electron Desktop App
+
+- Navigate to the specific repository: [GitHub](https://github.com/grebmann1/sf-toolkit-desktop).
 
 ## Contribution
 
