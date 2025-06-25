@@ -6,24 +6,24 @@ import { Connector } from '../connectorClass';
 import LOGGER from 'shared/logger';
 
 export async function connect({ sessionId, serverUrl, extra = {}, alias }) {
-    const platform = getCurrentPlatform();
-    const {
-        isProxyDisabled = false,
-        isAliasMatchingDisabled = false,
-        isEnrichDisabled = false,
-    } = extra;
-    const formattedServerUrl = serverUrl.startsWith('https://')
-        ? serverUrl
-        : `https://${serverUrl}`;
-    let params = {
-        sessionId,
-        serverUrl: formattedServerUrl,
-        instanceUrl: formattedServerUrl,
-        loginUrl: formattedServerUrl,
-        version: window.jsforceSettings?.apiVersion,
-        logLevel: null,
-    };
     try {
+        const platform = getCurrentPlatform();
+        const {
+            isProxyDisabled = false,
+            isAliasMatchingDisabled = false,
+            isEnrichDisabled = false,
+        } = extra;
+        const formattedServerUrl = serverUrl?.startsWith('https://')
+            ? serverUrl
+            : `https://${serverUrl}`;
+        let params = {
+            sessionId,
+            serverUrl: formattedServerUrl,
+            instanceUrl: formattedServerUrl,
+            loginUrl: formattedServerUrl,
+            version: window.jsforceSettings?.apiVersion,
+            logLevel: null,
+        };
         const connection = new window.jsforce.Connection(
             normalizeConnection(OAUTH_TYPES.SESSION, params, platform, extra)
         );

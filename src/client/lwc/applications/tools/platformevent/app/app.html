@@ -18,18 +18,41 @@
                         size="large"></lightning-button>
                 </div>
                 <div slot="meta" class="slds-flex-row slds-align-flex-end">
-                    <slds-lookup
-                        style="width: 300px"
-                        class="slds-p-left_x-small"
-                        label="Platform &amp; Change Event"
-                        placeholder="Select Event"
-                        tooltip="Select an event from your metadata"
-                        selection={lookup_selectedEvents}
-                        onsearch={lookup_handleSearch}
-                        errors={lookup_errors}
-                        onselectionchange={lookup_handleSelectionChange}
-                        required
-                        lwc:ref="lookup"></slds-lookup>
+                    <lightning-button
+                        class="slds-p-right_x-small"
+                        icon-name={manualIconName}
+                        alternative-text={manualAltText}
+                        onclick={toggle_manualInput}
+                        variant="border-filled"
+                        size="medium"
+                        label={manualAltText}
+                    ></lightning-button>
+                    <template lwc:if={isManualChannelDisplayed}>
+                        <lightning-input
+                            style="width: 300px"
+                            class="slds-p-left_x-small"
+                            label="Event Channel"
+                            placeholder="/event/MyEvent__e"
+                            value={manualChannelName}
+                            onchange={handleManualChannelInput}
+                            lwc:ref="manualChannel"
+                        ></lightning-input>
+                    </template>
+                    <template lwc:else>
+                        <slds-lookup
+                            style="width: 300px"
+                            class="slds-p-left_x-small"
+                            label="Platform &amp; Change Event"
+                            placeholder="Select Event"
+                            tooltip="Select an event from your metadata"
+                            selection={lookup_selectedEvents}
+                            onsearch={lookup_handleSearch}
+                            errors={lookup_errors}
+                            onselectionchange={lookup_handleSelectionChange}
+                            required
+                            lwc:ref="lookup"
+                        ></slds-lookup>
+                    </template>
                     <lightning-input
                         style="width: 100px"
                         class="slds-p-left_x-small"

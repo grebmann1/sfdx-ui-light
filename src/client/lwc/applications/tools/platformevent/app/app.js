@@ -42,6 +42,7 @@ export default class App extends ToolkitElement {
     //apexScript = "System.debug('Hello World');"; // ='CCR_TaskNotification__e event = new CCR_TaskNotification__e();\n// Publish the event\nDatabase.SaveResult result = EventBus.publish(event);';
     isApexContainerDisplayed = false;
     isManualChannelDisplayed = false;
+    manualChannelName = '';
     isConnected = false;
     isCometDInitialized = false;
     isRecentToggled = false;
@@ -143,7 +144,6 @@ export default class App extends ToolkitElement {
     handleEventSelection = e => {
         e.stopPropagation();
         e.preventDefault();
-        //console.log('handleEventSelection',e.detail);
         this.selectedEventItem = null;
         this.selectedEventItem = e.detail.value;
         try {
@@ -168,8 +168,21 @@ export default class App extends ToolkitElement {
         );
     };
 
+    toggle_manualInput = () => {
+        this.isManualChannelDisplayed = !this.isManualChannelDisplayed;
+    };
+
+    handleManualChannelInput = (e) => {
+        this.manualChannelName = e.target.value;
+    };
+
     manual_subscribeChannel = e => {
-        const eventName = this.subscribe_lookup();
+        let eventName;
+        if (this.isManualChannelDisplayed) {
+            eventName = this.manualChannelName;
+        } else {
+            eventName = this.subscribe_lookup();
+        }
         const replayId = this.refs.replay.value;
         this._subscribeChannel(eventName, replayId);
     };
@@ -273,10 +286,9 @@ export default class App extends ToolkitElement {
     subscribe_lookup = () => {
         if (this.lookup_selectedEvents.length == 0) return null;
 
-        const apiName = this.lookup_selectedEvents[0].id;
-        //console.log('apiName',apiName);
-        const eventName = apiName.endsWith('__e') ? `/event/${apiName}` : `/data/${apiName}`;
-        return eventName;
+        const selectedEvent = this.lookup_selectedEvents[0];
+        const apiName = selectedEvent.id;
+        return isNotUndefinedOrNull(selectedEvent.associateEntityType) ? `/data/${apiName}` : `/event/${apiName}`;
     };
 
     handleChannelSelection = name => {
@@ -487,7 +499,7 @@ export default class App extends ToolkitElement {
         try {
             const records = (await this.load_toolingGlobal()) || [];
             this.eventObjects = records.filter(
-                x => x.name.endsWith('ChangeEvent') || x.name.endsWith('__e')
+                x => x.name.endsWith('ChangeEvent') || x.name.endsWith('__e') || x.name.includes('Event')
             );
         } catch (e) {
             console.error(e);
@@ -503,6 +515,9 @@ export default class App extends ToolkitElement {
     }
 
     get isSubscribeDisabled() {
+        if (this.isManualChannelDisplayed) {
+            return !this.manualChannelName || this.manualChannelName.trim() === '';
+        }
         return (
             isUndefinedOrNull(this.lookup_selectedEvents) || this.lookup_selectedEvents.length == 0
         );
@@ -522,5 +537,12 @@ export default class App extends ToolkitElement {
 
     get isEventViewerDisplayed() {
         return isNotUndefinedOrNull(this.selectedEventItem);
+    }
+
+    get manualIconName() {
+        return this.isManualChannelDisplayed ? 'utility:search' : 'utility:edit';
+    }
+    get manualAltText() {
+        return this.isManualChannelDisplayed ? 'Switch to Lookup' : 'Switch to Manual';
     }
 }
