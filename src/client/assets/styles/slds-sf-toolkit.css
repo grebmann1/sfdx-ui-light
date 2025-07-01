@@ -21564,7 +21564,7 @@
   transition:-webkit-transform .25s cubic-bezier(0, .3, .15, 1);
   transition:transform .25s cubic-bezier(0, .3, .15, 1);
   transition:transform .25s cubic-bezier(0, .3, .15, 1),-webkit-transform .25s cubic-bezier(0, .3, .15, 1);
-  width:calc(100% - var(--slds-c-button-spacing-inline-start, 0rem) - var(--slds-c-button-spacing-inline-end, 0rem));
+  width:unset; /** calc(100% - var(--slds-c-button-spacing-inline-start, 0rem) - var(--slds-c-button-spacing-inline-end, 0rem)); **/
   will-change:transform-origin, transform;
 }
 @media (prefers-reduced-motion:reduce){

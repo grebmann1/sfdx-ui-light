@@ -1,13 +1,10 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
-import { DEFAULT, generateDefaultTab, formattedContentType } from 'api/utils';
-import { SELECTORS, DOCUMENT } from 'core/store';
-import { cacheManager,loadExtensionConfigFromCache,saveExtensionConfigToCache } from 'shared/cacheManager';
+import {  generateDefaultTab, formattedContentType } from 'api/utils';
+import { SELECTORS, DOCUMENT, ERROR, store } from 'core/store';
+import { loadExtensionConfigFromCache,saveExtensionConfigToCache } from 'shared/cacheManager';
 import {
     lowerCaseKey,
-    guid,
     isNotUndefinedOrNull,
-    isUndefinedOrNull,
-    isChromeExtension,
 } from 'shared/utils';
 import LOGGER from 'shared/logger';
 const API_SETTINGS_KEY = 'API_SETTINGS_KEY';
@@ -119,7 +116,7 @@ const _executeApiRequest = (connector, request, formattedRequest) => {
     //console.log('connector,body,headers',connector,body,headers);
     return new Promise((resolve, reject) => {
         try {
-            const executionStartDate = new Date();
+            const executionStartDate = Date.now();
             const instance = connector.conn.httpApi();
             instance.on('response', async res => {
                 // Set Response variables
@@ -136,15 +133,15 @@ const _executeApiRequest = (connector, request, formattedRequest) => {
                 }
 
                 let contentLength = new TextEncoder().encode(JSON.stringify(content)).length;
-
+                const executionEndDate = Date.now();
                 const result = {
                     content,
                     statusCode,
                     contentHeaders,
                     contentType,
                     contentLength,
-                    executionEndDate: Date.now(),
                     executionStartDate,
+                    executionEndDate,
                 };
                 resolve(result);
             });
@@ -152,7 +149,6 @@ const _executeApiRequest = (connector, request, formattedRequest) => {
             // Execute the request
             instance.request(formattedRequest);
         } catch (e) {
-            console.error(e);
             reject(e);
         }
     });
@@ -183,7 +179,12 @@ export const executeApiRequest = createAsyncThunk(
                 tabId,
             };
         } catch (err) {
-            console.error(err);
+            store.dispatch(
+                ERROR.reduxSlice.actions.addError({
+                    message: 'Error executing API request',
+                    details: err.message,
+                })
+            );
             throw err;
         }
     }

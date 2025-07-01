@@ -8,11 +8,14 @@ import { EVENT } from 'platformevent/store';
 import { RECORDVIEWER } from 'recordviewer/store';
 import logger from 'shared/middleware';
 import { UI, QUERY } from 'soql/store';
+import { createSlice } from '@reduxjs/toolkit';
 
 import * as APPLICATION from './application';
 import * as DESCRIBE from './describe';
 import * as DOCUMENT from './document';
 import * as SOBJECT from './sobject';
+import * as ERROR from './errors';
+
 
 const store = configureStore({
     reducer: {
@@ -32,6 +35,7 @@ const store = configureStore({
         apexFiles: DOCUMENT.reduxSlices.APEXFILE.reducer,
         apiFiles: DOCUMENT.reduxSlices.APIFILE.reducer,
         recents: DOCUMENT.reduxSlices.RECENT.reducer,
+        errors: ERROR.reduxSlice.reducer,
     },
     middleware: getDefaultMiddleware => {
         let middlewares = getDefaultMiddleware({
@@ -92,6 +96,7 @@ export {
     SOBJECT,
     DESCRIBE,
     EINSTEIN,
+    ERROR,
 };
 export { connectStore } from './wire-adapter';
 
@@ -108,4 +113,5 @@ export const SELECTORS = {
     queryFiles: DOCUMENT.queryFileAdapter.getSelectors(state => state.queryFiles),
     apexFiles: DOCUMENT.apexFileAdapter.getSelectors(state => state.apexFiles),
     apiFiles: DOCUMENT.apiFileAdapter.getSelectors(state => state.apiFiles),
+    //errors: ERROR.errorAdapter.getSelectors(state => state.errors),
 };

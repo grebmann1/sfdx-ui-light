@@ -1,0 +1,26 @@
+:host {
+    display: block;
+    
+}
+
+.item-file-text{
+    --slds-c-icon-color-foreground : var(--slds-g-color-brand-base-60);
+}
+
+.slds-tree__item {
+    cursor: pointer;
+    user-select: none;
+    min-height: 2rem;
+    align-items: center;
+    display: flex;
+}
+
+.slds-tree__group {
+    padding-left: 1.5rem;
+}
+
+.slds-tree__item-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}

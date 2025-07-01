@@ -1,0 +1,17 @@
+<template>
+    <div class="slds-scrollable_x slds-full-height">
+        <ul lwc:if={computedTree} class="slds-tree" role="tree">
+            <template for:each={computedTree} for:item="item">
+                <li key={item.id}>
+                    <slds-file-tree-item item={item} expanded={item.expanded} selected={item.selected} 
+                        ontoggle={handleToggle} 
+                        onselect={handleSelect} 
+                        ondelete={handleDelete} 
+                        is-first
+                    ></slds-file-tree-item>
+                </li>
+            </template>
+        </ul>
+        <div lwc:else class="slds-text-body_regular slds-p-around_medium slds-align_absolute-center">{i18n.NoFiles}</div>
+    </div>
+</template>

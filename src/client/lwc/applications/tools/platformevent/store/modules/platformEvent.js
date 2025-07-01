@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
 import { lowerCaseKey, guid, isNotUndefinedOrNull } from 'shared/utils';
+import { ERROR, store } from 'core/store';
 
 const PLATFORM_EVENT_SETTINGS_KEY = 'PLATFORM_EVENT_SETTINGS_KEY';
 
@@ -11,6 +12,12 @@ function loadCacheSettings(alias) {
         if (configText) return JSON.parse(configText);
     } catch (e) {
         console.error('Failed to load CONFIG from localStorage', e);
+        store.dispatch(
+            ERROR.reduxSlice.actions.addError({
+                message: 'Failed to load CONFIG from localStorage',
+                details: e.message,
+            })
+        );
     }
     return null;
 }
@@ -28,6 +35,12 @@ function saveCacheSettings(alias, state) {
         );
     } catch (e) {
         console.error('Failed to save CONFIG to localstorage', e);
+        store.dispatch(
+            ERROR.reduxSlice.actions.addError({
+                message: 'Failed to save CONFIG to localstorage',
+                details: e.message,
+            })
+        );
     }
 }
 

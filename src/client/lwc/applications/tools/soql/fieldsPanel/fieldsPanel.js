@@ -1,7 +1,6 @@
 import { wire, api } from 'lwc';
-import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
-import { store, connectStore, SELECTORS, DESCRIBE, SOBJECT, UI } from 'core/store';
+import { store, connectStore, SELECTORS, SOBJECT, UI } from 'core/store';
 import { fullApiName, lowerCaseKey } from 'shared/utils';
 
 export default class FieldsPanel extends ToolkitElement {
@@ -61,13 +60,13 @@ export default class FieldsPanel extends ToolkitElement {
         // Assign Metadata
         if (sobjectState.data) {
             this.sobjectMeta = sobjectState.data;
-        } else if (sobjectState.error) {
-            console.error(sobjectState);
+        }/*  else if (sobjectState.error) {
+            LOGGER.error(sobjectState.error);
             Toast.show({
                 message: this.i18n.FIELDS_PANEL_FAILED_DESCRIBE_OBJ,
                 errors: sobjectState.error,
             });
-        }
+        } */
     }
 
     deselectSObject() {

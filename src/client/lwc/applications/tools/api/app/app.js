@@ -1,6 +1,5 @@
 import { api, track, wire } from 'lwc';
 import {
-    decodeError,
     guid,
     runActionAfterTimeOut,
     lowerCaseKey,
@@ -754,8 +753,10 @@ export default class App extends ToolkitElement {
     }
 
     get duration() {
-        let total = this.executionEndDate - this.executionStartDate;
-        return moment(total || 0).millisecond();
+        if(this.executionStartDate && this.executionEndDate){
+            return moment(this.executionEndDate).diff(moment(this.executionStartDate), 'milliseconds');
+        }
+        return 0;
     }
 
     get isUndoDisabled() {

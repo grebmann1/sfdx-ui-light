@@ -18,6 +18,7 @@ import {
     isChromeExtension,
     normalizeString as normalize,
     groupBy,
+    getChromePort,
 } from 'shared/utils';
 import {
     getConfigurations,
@@ -42,6 +43,15 @@ const ACTIONS = [
     { label: 'Edit', name: 'setAlias' },
     { label: 'Remove', name: 'removeConfiguration' },
 ];
+
+
+const generateMessage = ({sessionInfo, params})=> ({
+    action: 'redirectToUrl',
+    sessionId: sessionInfo.sessionId,
+    serverUrl: sessionInfo.serverUrl,
+    baseUrl: chrome.runtime.getURL('/views/app.html'),
+    navigation: params,
+})
 
 export default class App extends ToolkitElement {
     @api variant = 'table';
@@ -193,9 +203,7 @@ export default class App extends ToolkitElement {
         this.isLoading = true;
         this.customLoadingMessage = 'Loading Credentials from Cache';
         const configurations = await getConfigurations();
-        console.log('configurations', configurations);
         this.data = this.formatConfigurations(configurations);
-        console.log('getConfigurations', this.data);
         this.formattedData = this.formatDataForCardView();
         this.isLoading = false;
         this.customLoadingMessage = null;
@@ -266,7 +274,6 @@ export default class App extends ToolkitElement {
                 if (!strategy)
                     throw new Error(`No strategy for credential type: ${credentialType}`);
 
-                console.log('Connecting with configuration', configuration);
                 const connector = await strategy.connect(configuration);
                 if(isElectronApp() && row.credentialType === OAUTH_TYPES.USERNAME){
                     const params = {
@@ -364,6 +371,8 @@ export default class App extends ToolkitElement {
 
                 //console.log('isChromeExtension',isChromeExtension(),target);
                 if (isChromeExtension()) {
+
+                    const port = getChromePort();
                     if (target === 'incognito') {
                         const windows = await chrome.windows.getAll({
                             populate: false,
@@ -424,16 +433,42 @@ export default class App extends ToolkitElement {
             if (!strategy) throw new Error(`No strategy for credential type: ${credentialType}`);
             const connector = await strategy.connect({ ...settings, alias, disableEvent: true });
 
-            // Build URL
-            let params = new URLSearchParams();
-            params.append('sessionId', connector.conn.accessToken);
-            params.append('serverUrl', connector.conn.instanceUrl);
-            if (redirect) {
-                params.append('redirectUrl', encodeURIComponent(redirect));
+            let isChromeProcessSuccess = false;
+            if(isChromeExtension()){
+                try{
+                    const port = getChromePort();
+                    const sessionInfo = {
+                        sessionId: connector.conn.accessToken,
+                        serverUrl: connector.conn.instanceUrl,
+                    };
+                    const params = {
+                        type: 'application',
+                    };
+                    if(redirect){
+                        // assume the format is applicationName=api
+                        params.state = {
+                            applicationName: redirect.split('=')[1],
+                        };
+                    }
+                    port.postMessage(generateMessage({sessionInfo, params}));
+                    isChromeProcessSuccess = true;
+                }catch(e){
+                    LOGGER.error('openToolkit error', e);
+                    handleError(e, 'Open Toolkit Error');
+                    // In case of error, we let the default flow to handle it
+                }
             }
-            // Add params
-            url.search = params.toString();
-            window.open(url.href, '_blank');
+            if(!isChromeProcessSuccess){
+                let params = new URLSearchParams();
+                params.append('sessionId', connector.conn.accessToken);
+                params.append('serverUrl', connector.conn.instanceUrl);
+                if (redirect) {
+                    params.append('redirectUrl', encodeURIComponent(redirect));
+                }
+                // Add params
+                url.search = params.toString();
+                window.open(url.href, '_blank');
+            }
         } catch (e) {
             this.fetchAllConnections();
             Toast.show({

@@ -2,6 +2,7 @@
 // TODO: Import actual Toast and Alert modules as needed
 import LOGGER from 'shared/logger';
 import Toast from 'lightning/toast';
+import { ERROR, store } from 'core/store';
 
 export function showToast({ label, message, variant = 'info' }) {
     // TODO: Implement toast logic
@@ -33,6 +34,7 @@ export function showAlert({ message, theme = 'error', label = 'Error!' }) {
 }
 
 export function handleError(error, context = '') {
-    // TODO: Implement error handling logic
+    // Log error to global error store
+    store.dispatch(ERROR.actions.addError(context || 'Error', error.stack || error.message || error));
     showToast({ label: context, message: error.message || error, variant: 'error' });
 }

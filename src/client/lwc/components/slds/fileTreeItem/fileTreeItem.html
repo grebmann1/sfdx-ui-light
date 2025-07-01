@@ -1,0 +1,27 @@
+<template>
+    <div class="slds-tree__item" role="treeitem" aria-expanded={expanded} aria-selected={selected} onclick={handleClick}>
+        <span class="slds-tree__item-label" data-element="tree-item-label">
+            <template lwc:if={isFolder}>
+                <!-- <lightning-button-icon icon-name={chevronIcon} size="small" class={chevronClass} onclick={handleToggle} tabindex="-1" aria-label="Toggle folder" variant="bare"></lightning-button-icon> -->
+                <button class="slds-button slds-button_icon slds-m-right_x-small" tabindex="-1" aria-label={i18n.ToggleFolder}>
+                    <lightning-icon icon-name={chevronIcon} size="x-small" data-element="chevron-icon"></lightning-icon>
+                </button>
+                <lightning-icon icon-name={folderIcon} size="x-small" class="slds-m-right_x-small" data-element="folder-icon"></lightning-icon>
+            </template>
+            <lightning-icon lwc:else variant="bare" icon-name="utility:insert_tag_field" size="x-small" class="item-file-text slds-m-right_x-small" data-element="file-icon"></lightning-icon>
+            <span class="slds-truncate" title={item.name}>{item.name}</span>
+            <template lwc:if={isNotFolder}>
+                <button class="slds-button slds-button_icon slds-button_icon-small slds-m-left_x-small" title="Delete" onclick={handleDelete} tabindex="-1">
+                    <lightning-icon icon-name="utility:delete" size="x-small" class="slds-button__icon"></lightning-icon>
+                </button>
+            </template>
+        </span>
+    </div>
+    <ul lwc:if={expanded} role="group" class="slds-tree__group">
+        <template for:each={item.children} for:item="child">
+            <li key={child.id}>
+                <slds-file-tree-item item={child} expanded={child.expanded} selected={child.selected} ontoggle={handleToggle} onselect={handleSelect}></slds-file-tree-item>
+            </li>
+        </template>
+    </ul>
+</template>

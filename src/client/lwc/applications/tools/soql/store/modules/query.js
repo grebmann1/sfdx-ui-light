@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
 import { DOCUMENT } from 'core/store';
 import { lowerCaseKey } from 'shared/utils';
+import { store, ERROR } from 'core/store';
 
 export const queryAdapter = createEntityAdapter();
 
@@ -23,7 +24,12 @@ export const executeQuery = createAsyncThunk(
             );
             return { data: res, soql, alias: connector.configuration.alias, tabId };
         } catch (err) {
-            console.error(err);
+            store.dispatch(
+                ERROR.reduxSlice.actions.addError({
+                    message: 'Error executing query',
+                    details: err.message,
+                })
+            );
             throw err;
         }
     }
@@ -39,7 +45,12 @@ export const explainQuery = createAsyncThunk(
             //console.log('res',res)
             return { data: res, soql, alias: connector.configuration.alias, tabId };
         } catch (err) {
-            console.error(err);
+            store.dispatch(
+                ERROR.reduxSlice.actions.addError({
+                    message: 'Error executing explainQuery',
+                    details: err.message,
+                })
+            );
             throw err;
         }
     }

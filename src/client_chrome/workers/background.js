@@ -283,6 +283,7 @@ const instanceConnections = new Map();
 
 chrome.runtime.onConnect.addListener(function (port) {
     if (port.name === 'sf-toolkit-instance') {
+        console.log('--> Registering instance',port.name);
         const cleanup = (identityKey) => instanceConnections.delete(identityKey);
         port.onMessage.addListener((msg) => {
             let identityKey = msg.serverUrl;//msg.alias || msg.username;
@@ -294,6 +295,7 @@ chrome.runtime.onConnect.addListener(function (port) {
                         alias: msg.alias,
                         username: msg.username,
                     });
+                    console.log('--> Registering instance (Once is logged in)',identityKey);
                     port.onDisconnect.addListener(() => {
                         if(instanceConnections.has(identityKey)) {
                             cleanup(identityKey);
@@ -306,6 +308,7 @@ chrome.runtime.onConnect.addListener(function (port) {
             }
         });
     } else if (port.name === 'sf-toolkit-injected') {
+        console.log('--> Registering injected',port.name);
         injectedConnections.add(port);
         port.onDisconnect.addListener(() => {
             injectedConnections.delete(port);
@@ -320,14 +323,26 @@ chrome.runtime.onConnect.addListener(function (port) {
             }
         });
     } else if (port.name === 'sf-toolkit-sidepanel') {
+        console.log('--> Registering sidepanel',port.name);
         sidePanelConnections.add(port);
         port.onDisconnect.addListener(() => {
             sidePanelConnections.delete(port);
+        });
+        port.onMessage.addListener((msg) => {
+            console.log('--> sidepanel message',msg);
+            if (msg.action === 'redirectToUrl') {
+                handleRedirectToUrl(msg);
+                /* const url = buildRedirectUrl(msg);
+                if (url) {
+                    chrome.tabs.create({ url });
+                } */
+            }
         });
     }
 });
 
 function handleRedirectToUrl(msg) {
+    console.log('handleRedirectToUrl',msg);
     const { serverUrl } = msg;
 
     if (serverUrl && instanceConnections.has(serverUrl)) {
@@ -598,6 +613,7 @@ chrome.runtime.onInstalled.addListener(async details => {
 
 /*** Commands ***/
 chrome.commands.onCommand.addListener((command, tab) => {
+    console.log('command',command);
     if (command === OVERLAY_TOGGLE) {
         chrome.storage.sync.get(OVERLAY_ENABLED_VAR, data => {
             setOverlayState(!data.overlayEnabled);

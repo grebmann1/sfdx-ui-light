@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
-import { store, METADATA, SOBJECT, DESCRIBE } from 'core/store';
+import { store, METADATA, SOBJECT, DESCRIBE, ERROR } from 'core/store';
 import { METADATA_EXCLUDE_LIST, METADATA_EXCEPTION_LIST } from 'metadata/utils';
 import { cacheManager, CACHE_ORG_DATA_TYPES } from 'shared/cacheManager';
 import LOGGER from 'shared/logger';
@@ -23,6 +23,12 @@ function loadCacheSettings(alias) {
         if (configText) return JSON.parse(configText);
     } catch (e) {
         console.error('Failed to load CONFIG from localStorage', e);
+        store.dispatch(
+            ERROR.reduxSlice.actions.addError({
+                message: 'Error loading metadata settings',
+                details: e.message,
+            })
+        );
     }
     return null;
 }
@@ -40,6 +46,12 @@ function saveCacheSettings(alias, state) {
         );
     } catch (e) {
         console.error('Failed to save CONFIG to localstorage', e);
+        store.dispatch(
+            ERROR.reduxSlice.actions.addError({
+                message: 'Error saving metadata settings',
+                details: e.message,
+            })
+        );
     }
 }
 
@@ -173,6 +185,12 @@ async function loadSpecificMetadataException(
         return { records, label };
     } catch (error) {
         console.error('Error loading specific metadata exception:', error);
+        store.dispatch(
+            ERROR.reduxSlice.actions.addError({
+                message: 'Error loading metadata',
+                details: error.message,
+            })
+        );
         return { records: [], label: name };
     }
 }
@@ -402,6 +420,12 @@ const fetchGlobalMetadata = createAsyncThunk(
             result = [...result, ...METADATA_EXCEPTION_LIST.filter(x => x.isSearchable)];
             return { records: result, label: 'Metadata' };
         } catch (error) {
+            store.dispatch(
+                ERROR.reduxSlice.actions.addError({
+                    message: 'Error fetching global metadata',
+                    details: error.message,
+                })
+            );
             return rejectWithValue(error.message);
         }
     }
@@ -440,6 +464,12 @@ const fetchSpecificMetadata = createAsyncThunk(
             };
         } catch (error) {
             console.error('Error fetching specific metadata:', error);
+            store.dispatch(
+                ERROR.reduxSlice.actions.addError({
+                    message: 'Error fetching specific metadata',
+                    details: error.message,
+                })
+            );
             return rejectWithValue(error.message);
         }
     }
@@ -505,6 +535,12 @@ const fetchMetadataRecord = createAsyncThunk(
             };
         } catch (error) {
             console.error('Error fetching exception metadata:', error);
+            store.dispatch(
+                ERROR.reduxSlice.actions.addError({
+                    message: 'Error fetching exception metadata',
+                    details: error.message,
+                })
+            );
             return rejectWithValue({
                 error: error.message,
                 tabkey,

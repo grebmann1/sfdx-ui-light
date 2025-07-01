@@ -7,7 +7,7 @@ import {
 } from '@jetstreamapp/soql-parser-js';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { SELECTORS, DOCUMENT } from 'core/store';
-import { stripNamespace, isNotUndefinedOrNull, guid, lowerCaseKey } from 'shared/utils';
+import { stripNamespace, isNotUndefinedOrNull, isEmpty, guid, lowerCaseKey } from 'shared/utils';
 
 const SETTINGS_KEY = 'SETTINGS_KEY';
 
@@ -15,7 +15,8 @@ const INITIAL_QUERY = {
     fields: [getField('Id')],
     sObject: undefined,
 };
-const INITIAL_TABS = [enrichTab({ id: guid(), body: 'SELECT Id' }, true)];
+const INITIAL_BODY = 'SELECT Id';
+const INITIAL_TABS = [enrichTab({ id: guid(), body: INITIAL_BODY }, true)];
 
 const QUERY_CONFIG = {
     fieldMaxLineLength: 100,
@@ -276,6 +277,9 @@ const uiSlice = createSlice({
         addTab: (state, action) => {
             const { queryFiles, tab } = action.payload;
             const enrichedTab = enrichTab(formatTab(tab), queryFiles);
+            if(isEmpty(enrichedTab.body)){
+                enrichedTab.body = INITIAL_BODY;
+            }
             state.tabs.push(enrichedTab);
             console.log('--> addTab <---',enrichedTab);
             // Assign new tab

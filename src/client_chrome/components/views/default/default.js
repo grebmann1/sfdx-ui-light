@@ -2,15 +2,13 @@ import { api, LightningElement, wire } from 'lwc';
 import { store as legacyStore } from 'shared/store';
 import { connectStore, store, EINSTEIN } from 'core/store';
 
-import { normalizeString as normalize } from 'shared/utils';
+import { normalizeString as normalize,registerChromePort,disconnectChromePort } from 'shared/utils';
 import { PANELS } from 'extension/utils';
 import LOGGER from 'shared/logger';
 export default class Default extends LightningElement {
     @api currentApplication;
     @api recordId;
     @api panel = PANELS.DEFAULT;
-
-    port;
 
     previousPanel;
     isBackButtonDisplayed = false;
@@ -85,12 +83,15 @@ export default class Default extends LightningElement {
     /** Methods **/
 
     connectToBackground = () => {
-        this.port = chrome.runtime.connect({ name: 'sf-toolkit-sidepanel' });
-        this.port.onDisconnect.addListener(() => {
+        const port = registerChromePort(
+            chrome.runtime.connect({ name: 'sf-toolkit-sidepanel' })
+        );
+        // Copy for global access
+        port.onDisconnect.addListener(() => {
             // Optionally handle disconnect in content script
             // e.g., cleanup, logging, etc.
         });
-        this.port.onMessage.addListener(message => {
+        port.onMessage.addListener(message => {
             LOGGER.log('--> SidePanel - onMessage <--', message);
             if (message.action === 'refresh') {
                 store.dispatch(
@@ -103,9 +104,7 @@ export default class Default extends LightningElement {
     };
 
     disconnectFromBackground = () => {
-        if (this.port) {
-            this.port.disconnect();
-        }
+        disconnectChromePort();
     };
 
     @api

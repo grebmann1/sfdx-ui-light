@@ -86,4 +86,76 @@ export default class StoragePanel extends ToolkitElement {
             iconName: item.isGlobal ? 'utility:world' : 'utility:privately_shared',
         }));
     }
+
+    get savedTree() {
+        // Separate global and org-specific items
+        const globalItems = (this.savedItems || []).filter(item => item.isGlobal).map(item => ({
+            ...item,
+            id: item.id,
+            name: item.name,
+            isLeaf: true,
+        }));
+        const orgItems = (this.savedItems || []).filter(item => !item.isGlobal).map(item => ({
+            ...item,
+            id: item.id,
+            name: item.name,
+            isLeaf: true,
+        }));
+        // Only show folders if they have children
+        const tree = [];
+        if (globalItems.length) {
+            tree.push({
+                id: 'global-folder',
+                name: 'Global',
+                children: globalItems,
+            });
+        }
+        if (orgItems.length) {
+            tree.push({
+                id: 'org-folder',
+                name: 'Org Specific',
+                children: orgItems,
+            });
+        }
+        return tree;
+    }
+
+    selectedId = null;
+
+    handleTreeSelect(event) {
+        const { item } = event.detail;
+        this.selectedId = item.id;
+        // Find the item in savedItems
+        const selectedItem = (this.savedItems || []).find(i => i.id === item.id);
+        if (selectedItem) {
+            this.dispatchEvent(
+                new CustomEvent('selectitem', {
+                    detail: {
+                        category: CATEGORY_STORAGE.SAVED,
+                        ...selectedItem,
+                    },
+                    bubbles: true,
+                    composed: true,
+                })
+            );
+        }
+    }
+
+    handleTreeDelete(event) {
+        const { item } = event.detail;
+        // Find the item in savedItems
+        const selectedItem = (this.savedItems || []).find(i => i.id === item.id);
+        if (selectedItem) {
+            this.dispatchEvent(
+                new CustomEvent('removeitem', {
+                    detail: {
+                        category: CATEGORY_STORAGE.SAVED,
+                        ...selectedItem,
+                    },
+                    bubbles: true,
+                    composed: true,
+                })
+            );
+        }
+    }
 }

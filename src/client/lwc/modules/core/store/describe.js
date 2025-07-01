@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
-import { cacheManager, CACHE_ORG_DATA_TYPES } from 'shared/cacheManager';
 import LOGGER from 'shared/logger';
 import { lowerCaseKey, arrayToMap, isUndefinedOrNull } from 'shared/utils';
+import { cacheManager, CACHE_ORG_DATA_TYPES } from 'shared/cacheManager';
+import { store, ERROR } from 'core/store';
 
 const DESCRIBE_ID = {
     TOOLING: 'TOOLING',
@@ -42,7 +43,13 @@ export const describeSObjects = createAsyncThunk(
                 return await fetchDescribeAndSave();
             }
         } catch (err) {
-            throw new Error(err);
+            store.dispatch(
+                ERROR.reduxSlice.actions.addError({
+                    message: 'Error describing SObjects',
+                    details: err.message,
+                })
+            );
+            throw err;
         }
     }
 );
@@ -77,13 +84,20 @@ export const describeVersion = createAsyncThunk(
                 return await fetchDescribeAndSave();
             }
         } catch (err) {
-            throw new Error(err);
+            store.dispatch(
+                ERROR.reduxSlice.actions.addError({
+                    message: 'Error describing Version',
+                    details: err.message,
+                })
+            );
+            throw err;
         }
     }
 );
 
 export const getDescribeTableName = useToolingApi =>
     useToolingApi ? DESCRIBE_ID.TOOLING : DESCRIBE_ID.STANDARD;
+
 
 // Create a slice with reducers
 const describeSlice = createSlice({
@@ -132,7 +146,6 @@ const describeSlice = createSlice({
                 const { error } = action;
                 state.error = error.message || 'Unknown error';
                 state.isFetching = false;
-                console.error(state.error);
             });
     },
 });

@@ -33,7 +33,7 @@ export default class SobjectsPanel extends ToolkitElement {
                 //this.sobjects = this._rawSObjects;
                 this.filterSObjects(this.keyword);
                 //this.pageNumber = 1; // reset
-            } else if (describe.error) {
+            }/*  else if (describe.error) {
                 console.error(describe.error);
                 Toast.show({
                     label: 'Error',
@@ -41,7 +41,7 @@ export default class SobjectsPanel extends ToolkitElement {
                     variant: 'error',
                     mode: 'sticky',
                 });
-            }
+            } */
         }
     }
 

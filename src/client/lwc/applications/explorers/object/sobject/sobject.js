@@ -125,7 +125,7 @@ export default class Sobject extends ToolkitElement {
             ).payload;
             LOGGER.debug('sobjectConfig', sobjectConfig);
             this.selectedDetails = this.enrichSelectedDetails(deepClone(sobjectConfig.data));
-            console.log('this.selectedDetails',this.selectedDetails);
+            //console.log('this.selectedDetails',this.selectedDetails);
             this.checkTotalRecords();
             setTimeout(() => {
                 this.buildUML();
@@ -138,7 +138,7 @@ export default class Sobject extends ToolkitElement {
 
     enrichSelectedDetails = (data) => {
         data.fields.forEach(field => {
-            console.log('field',field);
+            //console.log('field',field);
             const isFormula = field?.calculated || false;
             field._type = isFormula?`fx: ${field.type}`:field.type;
         });

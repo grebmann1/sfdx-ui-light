@@ -1,6 +1,5 @@
 import { api, track, wire } from 'lwc';
 import {
-    decodeError,
     isNotUndefinedOrNull,
     isUndefinedOrNull,
     guid,
@@ -11,7 +10,7 @@ import {
     isChromeExtension,
 } from 'shared/utils';
 import { ReplayExtension } from 'platformevent/utils';
-import { connectStore, store, EVENT, SELECTORS, DOCUMENT } from 'core/store';
+import { connectStore, store, EVENT, SELECTORS, DOCUMENT, ERROR } from 'core/store';
 import Toast from 'lightning/toast';
 
 import ToolkitElement from 'core/toolkitElement';
@@ -467,6 +466,12 @@ export default class App extends ToolkitElement {
                     variant: 'warning',
                     mode: 'dismissible',
                 });
+                store.dispatch(
+                    ERROR.reduxSlice.actions.addError({
+                        message: 'Error during subscription',
+                        details: message.error || 'Unknown Error',
+                    })
+                );
             }
         });
         cometd.addListener('/meta/disconnect', message => {
@@ -503,6 +508,12 @@ export default class App extends ToolkitElement {
             );
         } catch (e) {
             console.error(e);
+            store.dispatch(
+                ERROR.reduxSlice.actions.addError({
+                    message: 'Error during describeAll',
+                    details: e.message,
+                })
+            );
         }
         this.isLoading = false;
     };

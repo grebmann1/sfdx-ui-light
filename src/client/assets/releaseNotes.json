@@ -1,5 +1,30 @@
 [
   {
+    "version": "1.3.42",
+    "date": "July 1st, 2025",
+    "sections": [
+      {
+        "title": "Enhancements",
+        "categories": [
+          {
+            "category": "Error Handling & Debugging",
+            "items": [
+              "Enhanced error handling across various components by integrating a global error store.",
+              "Implemented error dispatching in metadata loading, cache settings, and API request execution.",
+              "Introduced a footer error panel for displaying and filtering error messages, improving user experience and debugging capabilities."
+            ]
+          },
+          {
+            "category": "Saved Scripts & Queries",
+            "items": [
+              "Redesigned the UI for saved scripts, queries, and related items using a file tree structure, allowing for better organization and easier navigation between global and org-specific resources."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.3.41",
     "date": "June 27th, 2025",
     "sections": [
