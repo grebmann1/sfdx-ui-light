@@ -1,5 +1,22 @@
 [
   {
+    "version": "1.3.43",
+    "date": "July 2nd, 2025",
+    "sections": [
+      {
+        "title": "Bug Fixes",
+        "categories": [
+          {
+            "category": "General",
+            "items": [
+              "Quick bug fix related to Url Redirection."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.3.42",
     "date": "July 1st, 2025",
     "sections": [

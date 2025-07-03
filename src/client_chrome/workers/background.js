@@ -44,6 +44,10 @@ const isEmpty = str => {
     return !str || str.length === 0;
 };
 
+const isNotNullOrUndefined = (value) => {
+    return value !== null && value !== undefined;
+};
+
 const redirectToUrlViaChrome = ({
     baseUrl,
     sessionId,
@@ -59,9 +63,12 @@ const redirectToUrlViaChrome = ({
     if (navigation) {
         // Navigation state is a key-value pair of the state of the navigation
         const redirectUrl = new URLSearchParams();
-        Object.entries(navigation.state).forEach(([key, value]) => {
-            redirectUrl.append(key, value);
-        });
+        if(isNotNullOrUndefined(navigation.state)){
+            console.log('navigation.state',navigation.state);
+            Object.entries(navigation.state).forEach(([key, value]) => {
+                redirectUrl.append(key, value);
+            });
+        }
         params.append('redirectUrl', encodeURIComponent(redirectUrl.toString()));
     }
 
