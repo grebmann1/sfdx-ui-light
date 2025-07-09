@@ -155,21 +155,13 @@
                                 </template>
                             </div>
                         </div>
-                        <div class="bottom-right-panel slds-full-height slds-full-width slds-p-around_small slds-light-bg" slot="right">
+                        <div class="bottom-right-panel slds-full-height slds-full-width slds-p-around_xx-small slds-light-bg" slot="right">
                             <div class="slds-grid slds-wrap slds-full-height slds-is-relative ">
                                 <div class="slds-col slds-size_1-of-1">
                                     <template lwc:if={isApiRunning}>
                                         <slds-spinner message={_loadingMessage}></slds-spinner>
                                     </template>
                                     <template lwc:elseif={isContentDisplayed}>
-                                        <div class="slds-p-around_x-small">
-                                            <div class="slds-float_right">
-                                                <lightning-badge
-                                                    class={badgeClass}
-                                                    label={statusCode}></lightning-badge>
-                                                <span>  {duration} ms</span>
-                                            </div>
-                                        </div>
                                         <!-- Viewers (Body, Headers , etc) -->
                                         <div>
                                             <lightning-tabset
@@ -189,17 +181,25 @@
                                         </div>
                                         <!-- BODY Section-->
                                         <template lwc:if={isBodyDisplayed}>
-                                            <div>
-                                                <lightning-radio-group
-                                                    name="radioGroup"
-                                                    label="Radio Group"
-                                                    options={viewer_options}
-                                                    value={viewer_value}
-                                                    required
-                                                    type="button"
-                                                    variant="label-hidden"
-                                                    class="slds-p-around_x-small"
-                                                    onchange={viewer_handleChange}></lightning-radio-group>
+                                            <div class="slds-grid slds-grid_align-spread slds-p-around_x-small">
+                                                <div class="slds-col">
+                                                    <lightning-radio-group
+                                                        name="radioGroup"
+                                                        label="Radio Group"
+                                                        options={viewer_options}
+                                                        value={viewer_value}
+                                                        required
+                                                        type="button"
+                                                        variant="label-hidden"
+                                                        onchange={viewer_handleChange}
+                                                    ></lightning-radio-group>
+                                                </div>
+                                                <div class="slds-col slds-text-align_right">
+                                                    <lightning-badge
+                                                        class={badgeClass}
+                                                        label={statusCode}></lightning-badge>
+                                                    <span>  {duration} ms</span>
+                                                </div>
                                             </div>
 
                                             <div class={prettyContainerClass}>

@@ -359,10 +359,17 @@ export default class App extends LightningElement {
 
         this.applications = [];
         this.applicationId = null;
-        if (this.isLimitedMode) {
-            await this.load_limitedMode();
-        } else {
-            await this.load_fullMode();
+        try{
+            console.log('Init Mode -->',this.isLimitedMode);
+            if (this.isLimitedMode) {
+                await this.load_limitedMode();
+            } else {
+                await this.load_fullMode();
+            }
+        }catch(e){  
+            console.error('Init Mode Error -->',e);
+            this.pageHasLoaded = true;
+            handleError(e, 'Init Mode Error');
         }
     };
 
@@ -479,11 +486,14 @@ export default class App extends LightningElement {
 
     /** Website & Electron **/
     load_fullMode = async () => {
+        console.log('load_fullMode - SESSION --> 0');
         if (isNotUndefinedOrNull(this.sessionId) && isNotUndefinedOrNull(this.serverUrl)) {
+            console.log('load_fullMode - SESSION --> 11');
             let connector = await credentialStrategies.SESSION.connect({
                 sessionId: this.sessionId,
                 serverUrl: this.serverUrl,
             });
+            console.log('load_fullMode - SESSION --> 22');
             // Reset after to prevent looping
             this.sessionId = null;
             this.serverUrl = null;
@@ -498,25 +508,29 @@ export default class App extends LightningElement {
                     let connector;
                     if (settings.sessionId && settings.serverUrl) {
                         // For Web/Chrome, use SESSION strategy
+                        console.log('load_fullMode - SESSION --> 1');
                         connector = await credentialStrategies.SESSION.connect({
                             sessionId: settings.sessionId,
                             serverUrl: settings.serverUrl,
                         });
+                        console.log('load_fullMode - SESSION --> 2');
                     } else if (
                         settings.credentialType &&
                         credentialStrategies[settings.credentialType || 'OAUTH']
                     ) {
                         // Fallback: use credentialType if present
-                        connector =
-                            await credentialStrategies[settings.credentialType].connect(settings);
+                        console.log('load_fullMode - SESSION --> 3');
+                        connector = await credentialStrategies[settings.credentialType].connect(settings);
+                        console.log('load_fullMode - SESSION --> 4');
                     }
                     if (connector) {
+                        console.log('load_fullMode - SESSION --> 5');
                         store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
                     }
                     // Optionally: handle result (e.g., update store, etc.)
                 } catch (e) {
                     // Optionally: log or show error
-                    console.error(e);
+                    console.error('load_fullMode Error -->',e);
                 }
             }
             // If no session, do nothing (or optionally prompt user)
@@ -547,7 +561,7 @@ export default class App extends LightningElement {
     }
 
     get fullAppLoadingMessageFormatted() {
-        return this._fullAppLoadingMessage || null;
+        return this._fullAppLoadingMessage || 'Loading Page ...';
     }
 
     get isSFDXMissing() {

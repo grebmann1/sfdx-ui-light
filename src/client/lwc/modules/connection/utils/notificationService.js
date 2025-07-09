@@ -35,6 +35,6 @@ export function showAlert({ message, theme = 'error', label = 'Error!' }) {
 
 export function handleError(error, context = '') {
     // Log error to global error store
-    store.dispatch(ERROR.actions.addError(context || 'Error', error.stack || error.message || error));
+    store.dispatch(ERROR.reduxSlice.actions.addError(context || 'Error', error.stack || error.message || error));
     showToast({ label: context, message: error.message || error, variant: 'error' });
 }

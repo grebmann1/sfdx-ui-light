@@ -449,7 +449,7 @@ export default class App extends ToolkitElement {
                     isChromeProcessSuccess = true;
                 }catch(e){
                     LOGGER.error('openToolkit error', e);
-                    handleError(e, 'Open Toolkit Error');
+                    //handleError(e, 'Open Toolkit Error');
                     // In case of error, we let the default flow to handle it
                 }
             }

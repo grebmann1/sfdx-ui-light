@@ -16,6 +16,12 @@ export async function connect({ sessionId, serverUrl, extra = {}, alias }) {
         const formattedServerUrl = serverUrl?.startsWith('https://')
             ? serverUrl
             : `https://${serverUrl}`;
+        if(isEmpty(sessionId)){
+            throw new Error('SessionId is required');
+        }
+        if(isEmpty(serverUrl)){
+            throw new Error('ServerUrl is required');
+        }
         let params = {
             sessionId,
             serverUrl: formattedServerUrl,
