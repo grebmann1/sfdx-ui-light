@@ -1,5 +1,22 @@
 [
   {
+    "version": "1.3.44",
+    "date": "July 2nd, 2025",
+    "sections": [
+      {
+        "title": "Bug Fixes",
+        "categories": [
+          {
+            "category": "UI",
+            "items": [
+              "Fixed a minor bug in the UI for viewing orgs."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.3.43",
     "date": "July 2nd, 2025",
     "sections": [
