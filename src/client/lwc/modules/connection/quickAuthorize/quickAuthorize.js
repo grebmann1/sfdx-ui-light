@@ -120,8 +120,8 @@ export default class QuickAuthorize extends ToolkitElement {
         return SALESFORCE_HOST.some(pattern => hostname.endsWith(pattern));
     };
 
-    isInternalDevOrg = (host,port) => {
-        return ['.dev','.qa'].some(pattern => host.endsWith(pattern)) || isNotUndefinedOrNull(port);
+    _isInternalDevOrg = (host,port) => {
+        return ['.dev','.qa'].some(pattern => host.endsWith(pattern)) || !isEmpty(port);
     };
 
     /** getters */
@@ -159,7 +159,13 @@ export default class QuickAuthorize extends ToolkitElement {
         );
     }
 
+    get isInternalDevOrg() {
+        if(isEmpty(this.instanceUrl)) return false;
+        let _url = new URL(this.instanceUrl);
+        return this._isInternalDevOrg(_url.hostname,_url.port);
+    }
+
     get labelAuthorizeOrg() {
-        return this.isInternalDevOrg ? 'Yes, Add Dev Org' : 'Yes, Authorize';
+        return this.isInternalDevOrg? 'Yes, Add Dev Org' : 'Yes, Authorize';
     }
 }

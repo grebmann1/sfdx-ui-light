@@ -1,0 +1,5 @@
+.slds-box {
+    min-inline-size: unset;
+    display: flex;
+    flex-direction: column;
+}

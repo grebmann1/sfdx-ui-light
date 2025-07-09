@@ -3,7 +3,6 @@ import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
 import ConnectionNewModal from 'connection/connectionNewModal';
 import ConnectionDetailModal from 'connection/connectionDetailModal';
-import ConnectionRenameModal from 'connection/connectionRenameModal';
 import ConnectionImportModal from 'connection/connectionImportModal';
 import ConnectionManualModal from 'connection/connectionManualModal';
 import {
@@ -200,13 +199,11 @@ export default class App extends ToolkitElement {
     @api
     fetchAllConnections = async () => {
         // Browser & Electron version
-        this.isLoading = true;
-        this.customLoadingMessage = 'Loading Credentials from Cache';
+        this.setLoading('Loading Credentials from Cache');
         const configurations = await getConfigurations();
         this.data = this.formatConfigurations(configurations);
         this.formattedData = this.formatDataForCardView();
-        this.isLoading = false;
-        this.customLoadingMessage = null;
+        this.resetLoading();
     };
 
     formatConfigurations = data => {
@@ -235,8 +232,7 @@ export default class App extends ToolkitElement {
     };
 
     fetchInjectedConnections = async () => {
-        this.isLoading = true;
-        this.customLoadingMessage = 'Loading Credentials from Extension';
+        this.setLoading('Loading Credentials from Extension');
         const newConnections = this.injectedConnections.map(x => {
             return {
                 ...x,
@@ -247,8 +243,7 @@ export default class App extends ToolkitElement {
 
         /** Fetch Again **/
         this.fetchAllConnections();
-        this.isLoading = false;
-        this.customLoadingMessage = null;
+        this.resetLoading();
     };
 
     formatDataForCardView = () => {
@@ -313,7 +308,7 @@ export default class App extends ToolkitElement {
     authorizeExistingOrg = async row => {
         if (isElectronApp()) return;
         
-        this.isLoading = true;
+        this.setLoading('Authorizing & Redirecting');
         let { alias, loginUrl,instanceUrl, ...settings } = this.data.find(x => x.id == row.id);
         try{
             LOGGER.log('settings',settings,alias,loginUrl,instanceUrl);
@@ -353,7 +348,7 @@ export default class App extends ToolkitElement {
             } */
             window.electron.invoke('org-openOrgUrl', row);
         } else {
-            this.isLoading = true;
+            this.setLoading('Opening browser...');
             try {
                 const configuration = this.data.find(x => x.id === row.id);
                 const { alias, redirectUrl, credentialType } = configuration;
@@ -405,7 +400,7 @@ export default class App extends ToolkitElement {
                     mode: 'dismissible',
                 });
             }
-            this.isLoading = false;
+            this.resetLoading();
         }
     };
     /*
@@ -420,7 +415,7 @@ export default class App extends ToolkitElement {
     }*/
 
     openToolkit = async (row, redirect) => {
-        this.isLoading = true;
+        this.setLoading('Opening Toolkit...');
         try {
             let url = new URL(
                 isChromeExtension()
@@ -477,7 +472,7 @@ export default class App extends ToolkitElement {
                 mode: 'dismissible',
             });
         }
-        this.isLoading = false;
+        this.resetLoading();
     };
 
     exportRow = async row => {
@@ -514,8 +509,9 @@ export default class App extends ToolkitElement {
     };
 
     seeDetails = async row => {
+        this.setLoading('Loading Credentials...');
         var { company, orgId, name, username, instanceUrl, sfdxAuthUrl, redirectUrl } = row;
-        const { alias, credentialType, ...settings } = this.data.find(x => x.id == row.id);
+        const { alias, credentialType,password, ...settings } = this.data.find(x => x.id == row.id);
         if (isNotUndefinedOrNull(redirectUrl)) {
             // redirect credential
             ConnectionDetailModal.open({
@@ -523,14 +519,22 @@ export default class App extends ToolkitElement {
                 name,
                 alias,
                 redirectUrl,
+                credentialType,
                 size: isChromeExtension() ? 'full' : 'medium',
             });
         } else {
             const strategy = credentialStrategies[credentialType || 'OAUTH'];
             if (!strategy) throw new Error(`No strategy for credential type: ${credentialType}`);
-            const connector = await strategy.connect({ ...settings, alias, disableEvent: true });
-            const accessToken = connector ? connector.conn.accessToken : null;
-            const frontDoorUrl = connector ? connector.frontDoorUrl : null;
+            let accessToken,frontDoorUrl;
+            try{
+                let connector = await strategy.connect({ ...settings, alias, disableEvent: true });
+                accessToken = connector ? connector.conn.accessToken : null;
+                frontDoorUrl = connector ? connector.frontDoorUrl : null;
+            }catch(e){
+                LOGGER.error('seeDetails error', e);
+                accessToken = null;
+                frontDoorUrl = null;
+            }
             if (isElectronApp()) {
                 let settings = await getConfiguration(alias);
                 sfdxAuthUrl = settings.sfdxAuthUrl || sfdxAuthUrl;
@@ -546,21 +550,30 @@ export default class App extends ToolkitElement {
                 accessToken,
                 frontDoorUrl,
                 redirectUrl,
+                credentialType,
+                password,
                 size: isChromeExtension() ? 'full' : 'medium',
             });
         }
+        this.resetLoading();
     };
 
     setAlias = row => {
-        ConnectionRenameModal.open({
-            oldAlias: row.alias,
-            category: row.company,
-            orgName: row.name,
+        ConnectionDetailModal.open({
+            company: row.company,
+            orgId: row.orgId,
+            name: row.name,
+            alias: row.alias,
             username: row.username,
-            isRedirect: !isEmpty(row.redirectUrl),
-            redirectUrl: row.redirectUrl,
+            instanceUrl: row.instanceUrl,
+            sfdxAuthUrl: row.sfdxAuthUrl,
+            frontDoorUrl: row.frontDoorUrl,
+            accessToken: row.accessToken,
             credentialType: row.credentialType,
+            password: row.password,
+            redirectUrl: row.redirectUrl,
             connections: this.data,
+            mode: 'edit',
             size: isChromeExtension() ? 'full' : 'medium',
         }).then(async result => {
             await this.fetchAllConnections();
@@ -831,5 +844,15 @@ export default class App extends ToolkitElement {
 
     get loadingMessage() {
         return this.customLoadingMessage || 'Authorizing & Redirecting';
+    }
+
+    setLoading(message) {
+        this.isLoading = true;
+        this.customLoadingMessage = message;
+    }
+
+    resetLoading() {
+        this.isLoading = false;
+        this.customLoadingMessage = null;
     }
 }

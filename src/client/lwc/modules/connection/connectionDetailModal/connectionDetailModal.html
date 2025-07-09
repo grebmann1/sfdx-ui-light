@@ -1,120 +1,161 @@
 <template>
-    <lightning-modal-header label="Details"></lightning-modal-header>
-    <lightning-modal-body>
-        <section class="">
-            <dl
-                class="slds-box slds-m-left_medium slds-m-bottom_medium slds-list_horizontal slds-wrap">
-                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Category">
-                    Category:
-                </dt>
-                <dd class="slds-item_detail slds-truncate" title={company}>{company}</dd>
-                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Name">
-                    Name:
-                </dt>
-                <dd class="slds-item_detail slds-truncate" title={name}>{name}</dd>
-                <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Alias">
-                    Alias:
-                </dt>
-                <dd class="slds-item_detail slds-truncate" title={alias}>{alias}</dd>
+    <!-- VIEW MODE -->
+    <template lwc:if={isViewMode}>
+        <lightning-modal-header label="Details"></lightning-modal-header>
+        <lightning-modal-body>
+            <!-- Existing detail view content -->
+            <section class="">
+                <div class="slds-box slds-m-left_medium slds-m-bottom_medium">
+                    <div class="slds-grid slds-wrap slds-gutters">
+                        <div class="slds-col slds-size_1-of-3 slds-text-title">Category:</div>
+                        <div class="slds-col slds-size_2-of-3 slds-truncate">{company}</div>
+                        <div class="slds-col slds-size_1-of-3 slds-text-title">Name:</div>
+                        <div class="slds-col slds-size_2-of-3 slds-truncate">{name}</div>
+                        <div class="slds-col slds-size_1-of-3 slds-text-title">Alias:</div>
+                        <div class="slds-col slds-size_2-of-3 slds-truncate">{alias}</div>
+                        <div class="slds-col slds-size_1-of-3 slds-text-title">Credential Type:</div>
+                        <div class="slds-col slds-size_2-of-3 slds-truncate">{credentialType}</div>
+                    </div>
+                </div>
+            </section>
+            <section class="slds-m-left_medium slds-m-bottom_medium">
+                <fieldset class="slds-box">
+                    <legend class="slds-text-title_caps slds-m-bottom_small">Credential Information</legend>
+                    <!-- REDIRECT TYPE -->
+                    <template lwc:if={isRedirectType}>
+                        <div class="slds-grid slds-wrap slds-gutters">
+                            <div class="slds-col slds-size_1-of-3 slds-text-title">Redirect Url:</div>
+                            <div class="slds-col slds-size_2-of-3 slds-truncate">
+                                <lightning-button-icon onclick={handleCopy} icon-name="utility:copy" variant="bare" alternative-text="copy" data-value={redirectUrl}></lightning-button-icon>
+                                {redirectUrl}
+                            </div>
+                        </div>
+                    </template>
+                    <!-- OAUTH TYPE -->
+                    <template lwc:if={isOauthType}>
+                        <div class="slds-grid slds-wrap slds-gutters">
+                            <div class="slds-col slds-size_1-of-3 slds-text-title">OrgId:</div>
+                            <div class="slds-col slds-size_2-of-3 slds-truncate">
+                                <lightning-button-icon onclick={handleCopy} icon-name="utility:copy" variant="bare" alternative-text="copy" data-value={orgId}></lightning-button-icon>
+                                {orgId}
+                            </div>
+                            <div class="slds-col slds-size_1-of-3 slds-text-title">Username:</div>
+                            <div class="slds-col slds-size_2-of-3 slds-truncate">
+                                <lightning-button-icon onclick={handleCopy} icon-name="utility:copy" variant="bare" alternative-text="copy" data-value={username}></lightning-button-icon>
+                                {username}
+                            </div>
+                            <div class="slds-col slds-size_1-of-3 slds-text-title">Instance Url:</div>
+                            <div class="slds-col slds-size_2-of-3 slds-truncate">
+                                <lightning-button-icon onclick={handleCopy} icon-name="utility:copy" variant="bare" alternative-text="copy" data-value={instanceUrl}></lightning-button-icon>
+                                {instanceUrl}
+                            </div>
+                            <div class="slds-col slds-size_1-of-3 slds-text-title">SFDX Auth Url:</div>
+                            <div class="slds-col slds-size_2-of-3 slds-truncate">
+                                <lightning-button-icon onclick={handleCopy} icon-name="utility:copy" variant="bare" alternative-text="copy" data-value={sfdxAuthUrl}></lightning-button-icon>
+                                {sfdxAuthUrl}
+                            </div>
+                            <div class="slds-col slds-size_1-of-3 slds-text-title">Direct Login Url:</div>
+                            <div class="slds-col slds-size_2-of-3 slds-truncate">
+                                <lightning-button-icon onclick={handleCopy} icon-name="utility:copy" variant="bare" alternative-text="copy" data-value={frontDoorUrl}></lightning-button-icon>
+                                {frontDoorUrl}
+                            </div>
+                            <div class="slds-col slds-size_1-of-3 slds-text-title">AccessToken:</div>
+                            <div class="slds-col slds-size_2-of-3 slds-truncate">
+                                <template lwc:if={isAccessTokenAvailable}>
+                                    <lightning-button-icon onclick={handleCopy} icon-name="utility:copy" variant="bare" alternative-text="copy" data-value={accessToken}></lightning-button-icon>
+                                    <lightning-button-icon onclick={toggleShowAccessToken} icon-name={accessTokenIconName} variant="bare" alternative-text="show/hide"></lightning-button-icon>
+                                </template>
+                                {displayAccessToken}
+                            </div>
+                        </div>
+                    </template>
+                    <!-- USERNAME TYPE -->
+                    <template lwc:if={isUsernameType}>
+                        <div class="slds-grid slds-wrap slds-gutters">
+                            <div class="slds-col slds-size_1-of-3 slds-text-title">OrgId:</div>
+                            <div class="slds-col slds-size_2-of-3 slds-truncate">
+                                <lightning-button-icon onclick={handleCopy} icon-name="utility:copy" variant="bare" alternative-text="copy" data-value={orgId}></lightning-button-icon>
+                                {orgId}
+                            </div>
+                            <div class="slds-col slds-size_1-of-3 slds-text-title">Username:</div>
+                            <div class="slds-col slds-size_2-of-3 slds-truncate">
+                                <lightning-button-icon onclick={handleCopy} icon-name="utility:copy" variant="bare" alternative-text="copy" data-value={username}></lightning-button-icon>
+                                {username}
+                            </div>
+                            <div class="slds-col slds-size_1-of-3 slds-text-title">Instance Url:</div>
+                            <div class="slds-col slds-size_2-of-3 slds-truncate">
+                                <lightning-button-icon onclick={handleCopy} icon-name="utility:copy" variant="bare" alternative-text="copy" data-value={instanceUrl}></lightning-button-icon>
+                                {instanceUrl}
+                            </div>
+                            <div class="slds-col slds-size_1-of-3 slds-text-title">Password:</div>
+                            <div class="slds-col slds-size_2-of-3 slds-truncate">
+                                <template lwc:if={isPasswordAvailable}>
+                                    <lightning-button-icon onclick={handleCopy} icon-name="utility:copy" variant="bare" alternative-text="copy" data-value={password}></lightning-button-icon>
+                                    <lightning-button-icon onclick={toggleShowPassword} icon-name={passwordIconName} variant="bare" alternative-text="show/hide"></lightning-button-icon>
+                                </template>
+                                {displayPassword}
+                            </div>
+                        </div>
+                    </template>
+                </fieldset>
+            </section>
+        </lightning-modal-body>
+        <lightning-modal-footer>
+            <lightning-button variant="neutral" label="Close" onclick={handleCloseClick}></lightning-button>
+        </lightning-modal-footer>
+    </template>
+    <!-- EDIT MODE -->
+    <template lwc:if={isEditMode}>
+        <lightning-modal-header label="Edit Connection"></lightning-modal-header>
+        <lightning-modal-body>
+            <section class="min-height-400 slds-is-relative">
+                <div class="slds-grid slds-wrap">
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                        <template lwc:if={isNewCategoryDisplayed}>
+                            <div class="slds-grid">
+                                <div class="slds-col slds-p-horizontal_xx-small">
+                                    <lightning-input lwc:ref="newCategory" class="new-category-to-validate" name="newCategory" type="text" label="New Category" value={newCategory} onchange={newCategory_onChange} message-when-pattern-mismatch="Hyphen '-' is not allowed" pattern="[^\-]*" required></lightning-input>
+                                </div>
+                                <div class="slds-col slds-p-horizontal_xx-small">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__label slds-no-flex dummy-label"></label>
+                                        <div class="slds-form-element__control">
+                                            <lightning-button-group>
+                                                <lightning-button-icon icon-name="utility:close" class="slds-button_destructive" onclick={handleCancelNewCategoryClick}></lightning-button-icon>
+                                                <lightning-button-icon icon-name="utility:check" variant="brand" onclick={handleCreateNewCategoryClick}></lightning-button-icon>
+                                            </lightning-button-group>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                        <template lwc:else>
+                            <slds-lookup lwc:ref="category" label="Category" placeholder="Select Category" tooltip="Select the category to group your credentials" selection={selectedCategory} errors={errors} onsearch={handleLookupSearch} onselectionchange={handleLookupSelectionChange} onnewrecord={handleLookupNewRecordSelection} new-record-options={newRecordOptions} required></slds-lookup>
+                        </template>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                        <lightning-input class="input-to-validate" name="name" type="text" label="Name" field-level-help="Name of your Org" value={orgName} onchange={name_onChange} required></lightning-input>
+                    </div>
+                </div>
+                <div class="slds-grid slds-wrap">
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small"></div>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                        <lightning-input name="alias" type="text" label="Alias" value={generatedAlias} disabled></lightning-input>
+                    </div>
+                </div>
                 <template lwc:if={isRedirect}>
-                    <dt
-                        class="slds-item_label slds-text-color_weak slds-truncate"
-                        title="Redirect Url">
-                        Redirect Url:
-                    </dt>
-                    <dd class="slds-item_detail slds-truncate" title={redirectUrl}>
-                        <lightning-button-icon
-                            onclick={handleCopy}
-                            icon-name="utility:copy"
-                            variant="bare"
-                            alternative-text="copy"
-                            data-value={redirectUrl}></lightning-button-icon>
-                        {redirectUrl}
-                    </dd>
+                    <div class="slds-grid slds-wrap">
+                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small"></div>
+                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-horizontal_small">
+                            <lightning-input class="input-to-validate" name="redirectUrl" type="url" value={redirectUrl} label="Redirect Url" placeholder="Ex: https://sso.coca-cola.com" onchange={redirectUrl_onChange} required></lightning-input>
+                        </div>
+                    </div>
                 </template>
-                <template lwc:else>
-                    <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Org Id">
-                        OrgId:
-                    </dt>
-                    <dd class="slds-item_detail slds-truncate" title={orgId}>
-                        <lightning-button-icon
-                            onclick={handleCopy}
-                            icon-name="utility:copy"
-                            variant="bare"
-                            alternative-text="copy"
-                            data-value={orgId}></lightning-button-icon>
-                        {orgId}
-                    </dd>
-                    <dt class="slds-item_label slds-text-color_weak slds-truncate" title="Username">
-                        Username:
-                    </dt>
-                    <dd class="slds-item_detail slds-truncate" title={username}>
-                        <lightning-button-icon
-                            onclick={handleCopy}
-                            icon-name="utility:copy"
-                            variant="bare"
-                            alternative-text="copy"
-                            data-value={username}></lightning-button-icon>
-                        {username}
-                    </dd>
-                    <dt
-                        class="slds-item_label slds-text-color_weak slds-truncate"
-                        title="Instance url">
-                        Instance Url:
-                    </dt>
-                    <dd class="slds-item_detail slds-truncate" title={instanceUrl}>
-                        <lightning-button-icon
-                            onclick={handleCopy}
-                            icon-name="utility:copy"
-                            variant="bare"
-                            alternative-text="copy"
-                            data-value={instanceUrl}></lightning-button-icon>
-                        {instanceUrl}
-                    </dd>
-                    <dt
-                        class="slds-item_label slds-text-color_weak slds-truncate"
-                        title="SFDX Auth Url">
-                        SFDX Auth Url:
-                    </dt>
-                    <dd class="slds-item_detail slds-truncate" title={sfdxAuthUrl}>
-                        <lightning-button-icon
-                            onclick={handleCopy}
-                            icon-name="utility:copy"
-                            variant="bare"
-                            alternative-text="copy"
-                            data-value={sfdxAuthUrl}></lightning-button-icon>
-                        {sfdxAuthUrl}
-                    </dd>
-                    <dt
-                        class="slds-item_label slds-text-color_weak slds-truncate"
-                        title="SFDX Auth Url">
-                        Direct Login Url:
-                    </dt>
-                    <dd class="slds-item_detail slds-truncate" title={frontDoorUrl}>
-                        <lightning-button-icon
-                            onclick={handleCopy}
-                            icon-name="utility:copy"
-                            variant="bare"
-                            alternative-text="copy"
-                            data-value={frontDoorUrl}></lightning-button-icon>
-                        {frontDoorUrl}
-                    </dd>
-                    <dt
-                        class="slds-item_label slds-text-color_weak slds-truncate"
-                        title="AccessToken">
-                        AccessToken:
-                    </dt>
-                    <dd class="slds-item_detail slds-truncate" title={accessToken}>
-                        <lightning-button-icon
-                            onclick={handleCopy}
-                            icon-name="utility:copy"
-                            variant="bare"
-                            alternative-text="copy"
-                            data-value={accessToken}></lightning-button-icon>
-                        {accessToken}
-                    </dd>
-                </template>
-            </dl>
-        </section>
-    </lightning-modal-body>
+            </section>
+        </lightning-modal-body>
+        <lightning-modal-footer>
+            <lightning-button class="slds-float_left slds-button" disabled={saveInProcess} variant="neutral" label="Cancel" onclick={handleCloseClick}></lightning-button>
+            <lightning-button class="slds-button" disabled={saveInProcess} variant="brand" label="Save" onclick={handleSaveClick}></lightning-button>
+        </lightning-modal-footer>
+    </template>
 </template>
