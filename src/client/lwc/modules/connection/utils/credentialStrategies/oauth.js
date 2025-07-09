@@ -117,7 +117,6 @@ export async function connect({ alias, loginUrl }, settings = {}) {
                     connection,
                     credentialType: OAUTH_TYPES.OAUTH,
                 });
-                console.log('connect -> connector Web',connector);
                 if (saveFullConfiguration) {
                     await saveConfiguration(alias, connector.configuration);
                 }
