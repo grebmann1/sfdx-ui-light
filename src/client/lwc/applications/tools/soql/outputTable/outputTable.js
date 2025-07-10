@@ -65,6 +65,7 @@ export default class OutputTable extends ToolkitElement {
     _response;
     _nextRecordsUrl;
     _hasRendered = false;
+    _tableSearch;
 
     @api tableInstance;
     @api childTitle;
@@ -227,7 +228,24 @@ export default class OutputTable extends ToolkitElement {
                 })
             );
         });
+        this.applyTableSearchFilter();
     };
+
+    applyTableSearchFilter() {
+        if (!this.tableInstance) return;
+        const search = (this._tableSearch || '').toLowerCase();
+        if (!search) {
+            this.tableInstance.clearFilter();
+            return;
+        }
+        this.tableInstance.setFilter((rowData) => {
+            return Object.values(rowData).some(val => {
+                if (val == null) return false;
+                if (typeof val === 'object') return JSON.stringify(val).toLowerCase().includes(search);
+                return String(val).toLowerCase().includes(search);
+            });
+        });
+    }
 
     _convertQueryResponse(res) {
         if (!res) return [];
@@ -268,5 +286,14 @@ export default class OutputTable extends ToolkitElement {
     @api
     get columns() {
         return this._columns;
+    }
+
+    @api
+    get tableSearch() {
+        return this._tableSearch || '';
+    }
+    set tableSearch(val) {
+        this._tableSearch = val || '';
+        this.applyTableSearchFilter();
     }
 }

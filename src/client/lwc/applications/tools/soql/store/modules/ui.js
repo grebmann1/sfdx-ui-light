@@ -194,8 +194,8 @@ function updateCurrentTab(state, attributes) {
 }
 
 function formatTab(tab) {
-    const { id, name, body, isDraft, fileId, fileBody } = tab;
-    return { id, name, body, isDraft, fileId, fileBody };
+    const { id, name, body, isDraft, fileId, fileBody, tableSearch } = tab;
+    return { id, name, body, isDraft, fileId, fileBody, tableSearch: tableSearch || '' };
 }
 
 function enrichTabs(tabs, queryFiles) {
@@ -408,6 +408,14 @@ const uiSlice = createSlice({
         },
         sortFields: (state, action) => {
             state.sort = action.payload.sort;
+        },
+        updateTabTableSearch: (state, action) => {
+            const { value } = action.payload;
+            const tabIndex = state.tabs.findIndex(x => x.id === state.currentTab.id);
+            if (tabIndex > -1) {
+                state.tabs[tabIndex].tableSearch = value;
+                state.currentTab = state.tabs[tabIndex];
+            }
         },
     },
 });

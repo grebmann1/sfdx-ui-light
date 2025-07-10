@@ -19,6 +19,8 @@ export default class OutputPanel extends ToolkitElement {
     currentTab;
     currentChildRecordId;
 
+    @api tableSearch = '';
+
     @wire(connectStore, { store })
     storeChange({ query, ui, application }) {
         const isCurrentApp = this.verifyIsActive(application.currentApplication);

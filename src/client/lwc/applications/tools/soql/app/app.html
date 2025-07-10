@@ -11,10 +11,19 @@
                 sub-title="SOQL Explorer"
                 icon-name="standard:dataset">
                 <div slot="actions" class="slds-builder-toolbar__actions">
-                    <lightning-button
+                    <!-- <lightning-button
                         class="slds-p-left_xx-small"
                         label="Clear Tabs"
-                        onclick={handleClearTabs}></lightning-button>
+                        onclick={handleClearTabs}></lightning-button> -->
+                    <lightning-input
+                        class="slds-p-left_xx-small soql-table-search-input"
+                        type="search"
+                        name="tableSearch"
+                        label="Search Table"
+                        variant="label-hidden"
+                        value={currentTabTableSearch}
+                        placeholder="Search table..."
+                        onchange={handleTableSearchChange}></lightning-input> 
                     <lightning-button
                         class="slds-p-left_xx-small"
                         label={i18n.EDITOR_PANEL_SAVE}
@@ -52,7 +61,7 @@
                         variant="border-filled"
                         icon-name="utility:download"
                         disabled={isDownloadDisabled}
-                        tooltip="Download">
+                    >
                         <lightning-menu-item
                             value="csv"
                             label="CSV"
@@ -66,8 +75,7 @@
                         class="slds-p-left_xx-small"
                         variant="border-filled"
                         icon-name="utility:copy"
-                        disabled={isDownloadDisabled}
-                        tooltip="Copy to clipboard">
+                        disabled={isDownloadDisabled}>
                         <lightning-menu-item
                             value="csv"
                             label="CSV"
@@ -88,7 +96,7 @@
                         size="large"
                         onclick={handlePerformanceCheckClick}
                         disabled={isLoading}
-                        tooltip="Analyze the performance of your query."></lightning-button-icon>
+                    ></lightning-button-icon>
                     <lightning-button-icon-stateful
                         class="slds-p-left_xx-small"
                         selected={isLeftToggled}
@@ -96,7 +104,7 @@
                         icon-name="utility:knowledge_base"
                         size="large"
                         onclick={handleLeftToggle}
-                        tooltip="Display the Object/Field Catalog."></lightning-button-icon-stateful>
+                    ></lightning-button-icon-stateful>
                     <lightning-button-icon-stateful
                         class="slds-p-left_xx-small"
                         selected={isRecentToggled}
@@ -104,7 +112,7 @@
                         icon-name="utility:budget_period"
                         size="large"
                         onclick={handleRecentToggle}
-                        tooltip="Display your Recents/Saved queries."></lightning-button-icon-stateful>
+                    ></lightning-button-icon-stateful>
 
                     <!-- TODO: Add Download and Clipboard copy
                         <lightning-button-menu alternative-text="Download" variant="border-filled" icon-name="utility:download" class="slds-p-right_xx-small">
@@ -164,6 +172,7 @@
                                     lwc:ref="output"
                                     slot="right"
                                     class="slds-full-height"
+                                    table-search={currentTabTableSearch}
                                     application-name={applicationName}
                                     onrowselection={handleRowSelection}></soql-output-panel>
                             </slds-split-view>

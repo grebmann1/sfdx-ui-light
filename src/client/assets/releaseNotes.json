@@ -1,7 +1,53 @@
 [
   {
+    "version": "1.3.46",
+    "date": "July 10th, 2025",
+    "sections": [
+      {
+        "title": "Enhancements",
+        "categories": [
+          {
+            "category": "SOQL Explorer",
+            "items": [
+              "Added search functionality in SOQL Explorer for easier query and result navigation."
+            ]
+          },
+          {
+            "category": "UI",
+            "items": [
+              "Removed tooltips from the UI for a cleaner experience."
+            ]
+          },
+          {
+            "category": "Bug Fixes",
+            "items": [
+              "Fixed a minor bug in the UI for viewing orgs."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.3.45",
+    "date": "July 10th, 2025",
+    "sections": [
+      {
+        "title": "Rollback",
+        "categories": [
+          {
+            "category": "General",
+            "items": [
+              "Rolled back to version 1.3.42 due to issues in later releases."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.3.44",
-    "date": "July 2nd, 2025",
+    "date": "July 9th, 2025",
     "sections": [
       {
         "title": "Bug Fixes",

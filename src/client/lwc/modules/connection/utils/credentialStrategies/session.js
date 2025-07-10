@@ -3,7 +3,7 @@ import { getCurrentPlatform, PLATFORM } from '../platformService';
 import { normalizeConnection } from '../utils';
 import { OAUTH_TYPES } from './index';
 import { Connector } from '../connectorClass';
-import LOGGER from 'shared/logger';
+import { isEmpty } from 'shared/utils';
 
 export async function connect({ sessionId, serverUrl, extra = {}, alias }) {
     try {
@@ -16,6 +16,7 @@ export async function connect({ sessionId, serverUrl, extra = {}, alias }) {
         const formattedServerUrl = serverUrl?.startsWith('https://')
             ? serverUrl
             : `https://${serverUrl}`;
+            
         if(isEmpty(sessionId)){
             throw new Error('SessionId is required');
         }

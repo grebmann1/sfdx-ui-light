@@ -721,6 +721,12 @@ export default class App extends ToolkitElement {
         store.dispatch(DOCUMENT.reduxSlices.QUERYFILE.actions.removeOne(id));
     };
 
+    handleTableSearchChange = (event) => {
+        store.dispatch(
+            UI.reduxSlice.actions.updateTabTableSearch({ value: event.target.value })
+        );
+    };
+
     /** Getters **/
 
     get isLoadingAdvanced() {
@@ -793,5 +799,10 @@ export default class App extends ToolkitElement {
 
     get isDeleteDisabled() {
         return this.selectedRecords.length == 0 && this.selectedChildRecords.length == 0;
+    }
+
+    get currentTabTableSearch() {
+        const { ui } = store.getState();
+        return ui.currentTab?.tableSearch || '';
     }
 }
