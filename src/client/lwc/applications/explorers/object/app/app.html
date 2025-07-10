@@ -1,89 +1,87 @@
 <template>
     <div class={pageClass}>
-        <div class="full-page-header slds-page-header slds-page-header_joined">
-            <div class="slds-page-header__row">
-                <div class="slds-page-header__col-title">
-                    <div class="slds-media">
-                        <div class="slds-media__figure">
-                            <lightning-icon icon-name="standard:bundle_config"></lightning-icon>
-                        </div>
-                        <div class="slds-media__body">
-                            <div class="slds-page-header__name">
-                                <div class="slds-page-header__name-title">
-                                    <h1>
-                                        <span>SObject Explorer</span>
-                                        <span
-                                            class="slds-page-header__title slds-truncate"
-                                            title="Metadata Explorer">
-                                            SObject Explorer
-                                        </span>
-                                    </h1>
+        <builder-editor>
+            <builder-header
+                slot="header"
+                title="Explorer"
+                sub-title="SObject Explorer"
+                icon-name="standard:bundle_config">
+                <div slot="actions" class="slds-builder-toolbar__actions">
+                    <lightning-button-group>
+                        <lightning-button
+                            icon-name="utility:link"
+                            label="Object Manager"
+                            onclick={goToUrl}
+                            data-url="/lightning/setup/ObjectManager/home"></lightning-button>
+                        <lightning-button-icon
+                            icon-name="utility:filterList"
+                            disabled={isLoading}
+                            onclick={filtering_handleClick}
+                            variant={filtering_variant}></lightning-button-icon>
+                    </lightning-button-group>
+                </div>
+            </builder-header>
+            <article class="full-page-body slds-card">
+                <div
+                        class="slds-card__body slds-card__body_inner slds-full-height"
+                        style="overflow: hidden">
+                        <div
+                            class="slds-full-height slds-grid slds-gutters_direct slds-wrap slds-is-relative"
+                            style="min-height: 200px">
+                            <!-- Container -->
+                            <slds-split-view
+                                class="slds-fill-height"
+                                left-min-width="200"
+                                right-min-width="200"
+                                splitter-position="30"
+                                is-horizontal>
+                                <div class="slds-flex-column slds-full-height slds-full-width slds-is-relativ slds-p-horizontal_x-small" slot="left">
+                                    <slds-menu
+                                        class="slds-flex-column slds-full-height min-height-200"
+                                        items={formattedMenuItems}
+                                        title="SObjects"
+                                        onmenuselection={handleItemSelection}
+                                        is-loading={isLoading}
+                                        keep-filter={keepFilter}></slds-menu>
                                 </div>
-                            </div>
+                                <div class="slds-flex-column slds-full-height slds-full-width slds-is-relative slds-p-horizontal_xx-small" slot="right">
+                                    <!-- Tabs -->
+                                    <slds-tabset
+                                        lwc:ref="objectTab"
+                                        variant="scoped"
+                                        active-tab-value={activeTabId}
+                                        onclosetab={handleTabClose}
+                                    >
+                                        <template for:each={formattedTabs} for:item="tab">
+                                            <slds-tab
+                                                key={tab.id}
+                                                label={tab.name}
+                                                value={tab.id}
+                                                onactive={handleTabSelect}
+                                                is-closeable
+                                            ></slds-tab>
+                                        </template>
+                                    </slds-tabset>
+                                    <div class="slds-is-relative slds-flex-column slds-fill-height slds-full-width">
+                                        <!-- Content -->
+                                        <template lwc:if={isViewerDisplayed}>
+                                            <object-sobject
+                                                object-records={records}
+                                                record-name={currentTab.id}
+                                            ></object-sobject>
+                                        </template>
+                                        <template lwc:else>
+                                            <illustration-empty
+                                                size="large"
+                                                title="No record"
+                                                sub-title="No SObject selected or found."
+                                            ></illustration-empty>
+                                        </template>
+                                    </div>
+                                </div>
+                            </slds-split-view>
                         </div>
                     </div>
-                </div>
-                <div class="slds-page-header__col-actions slds-align-middle slds-p-bottom_none">
-                    <div class="slds-page-header__controls">
-                        <div class="slds-page-header__control">
-                            <!-- actions -->
-                            <lightning-button-group>
-                                <lightning-button
-                                    icon-name="utility:link"
-                                    label="Object Manager"
-                                    onclick={goToUrl}
-                                    data-url="/lightning/setup/ObjectManager/home"></lightning-button>
-                                <lightning-button-icon
-                                    icon-name="utility:filterList"
-                                    disabled={isLoading}
-                                    onclick={filtering_handleClick}
-                                    variant={filtering_variant}></lightning-button-icon>
-                            </lightning-button-group>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="slds-page-header__row slds-page-header__row_gutters">
-                <div class="slds-page-header__col-details">
-                    <div
-                        class="slds-page-header__detail-row slds-is-relative"
-                        style="display: block">
-                        <!-- Display Info -->
-                        <h2>
-                            SObject Explorer is currently in Alpha phase (Only basic functionalities
-                            are supported)
-                        </h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="slds-full-height slds-overflow-hidden slds-flex-row">
-            <article class="full-page-body slds-card slds-m-top_small slds-col">
-                <div class="slds-card__body slds-card__body_inner">
-                    <div
-                        class="slds-full-height slds-grid slds-gutters_direct slds-wrap slds-is-relative"
-                        style="min-height: 200px">
-                        <!-- Container -->
-                        <div
-                            class="slds-flex-column slds-full-height slds-col slds-col slds-size_1-of-4 slds-border-right">
-                            <!-- SObject List -->
-                            <slds-menu
-                                class="slds-flex-column slds-full-height min-height-200"
-                                items={formattedMenuItems}
-                                title="SObjects"
-                                onmenuselection={handleItemSelection}
-                                is-loading={isLoading}
-                                keep-filter={keepFilter}></slds-menu>
-                        </div>
-                        <!-- Object Viewer -->
-                        <div
-                            class="slds-flex-column slds-full-height slds-col slds-col slds-size_3-of-4 slds-is-relative">
-                            <object-sobject
-                                object-records={records}
-                                record-name={selectedItem}></object-sobject>
-                        </div>
-                    </div>
-                </div>
             </article>
             <!-- Panel -->
             <slds-vertical-panel is-open={displayFilter} onclose={handleCloseVerticalPanel}>
@@ -110,6 +108,6 @@
                     </ol>
                 </div>
             </slds-vertical-panel>
-        </div>
+        </builder-editor>
     </div>
 </template>

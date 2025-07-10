@@ -13,6 +13,12 @@
             ]
           },
           {
+            "category": "SObject Explorer",
+            "items": [
+              "Optimized SObject Explorer to support multiple open tabs, allowing users to view and switch between several SObjects simultaneously."
+            ]
+          },
+          {
             "category": "UI",
             "items": [
               "Removed tooltips from the UI for a cleaner experience."

@@ -11,6 +11,7 @@ export default class SobjectCell extends LightningElement {
     @api urlLabel;
 
     @api fieldInfo;
+    @api isCascadeDelete;
 
     /* Events */
 

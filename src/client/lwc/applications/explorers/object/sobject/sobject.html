@@ -10,7 +10,7 @@
         <illustration-empty title="No record" sub-title={noRecordMessage}></illustration-empty>
     </template>
     <template lwc:elseif={isDetailDisplayed}>
-        <article class="slds-flex-column slds-full-height slds-card slds-card_boundary">
+        <article class="slds-flex-column slds-full-height">
             <div
                 class="slds-card__header slds-grid slds-page-header slds-flex-column slds-card__header-with-quick-links">
                 <header class="slds-media slds-media_center slds-has-flexi-truncate">
@@ -57,7 +57,7 @@
                         data-url={setupUrl}></lightning-button>
                 </div>
             </div>
-            <div class="slds-flex-column slds-full-height slds-card__body slds-scrollable_y">
+            <div class="slds-flex-column slds-full-height slds-scrollable_y">
                 <div class="slds-card__body slds-card__body_inner">
                     <div class="min-height-200">
                         <!-- Header - Records -->

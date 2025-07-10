@@ -1,4 +1,5 @@
 import { isUndefinedOrNull, safeParseJson, isNotUndefinedOrNull } from 'shared/utils';
+import { store, ERROR } from 'core/store';
 
 const chromeStore = (variant = 'local') => {
     if (variant !== 'local' && variant !== 'sync') {
@@ -70,6 +71,12 @@ const basicStore = (variant = 'local') => {
                 }
                 return Promise.resolve();
             } catch (error) {
+                store.dispatch(
+                    ERROR.reduxSlice.actions.addError({
+                        message: 'Error setting item in basicStore',
+                        details: error.message,
+                    })
+                );
                 return Promise.reject(error);
             }
         },

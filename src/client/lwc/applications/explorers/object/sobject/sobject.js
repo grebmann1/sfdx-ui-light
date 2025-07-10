@@ -217,7 +217,6 @@ export default class Sobject extends ToolkitElement {
         ]; //aggregatable
 
         if (this.tableFieldInstance) {
-            console.log('this.tableFieldInstance', this.tableFieldInstance);
             this.tableFieldInstance.destroy();
         }
         //LOGGER.debug('this.field_filteredList',this.field_filteredList);
@@ -248,7 +247,7 @@ export default class Sobject extends ToolkitElement {
                 field: 'childSObject',
                 headerHozAlign: 'center',
                 resizable: true,
-                formatter: this.formatterField_field,
+                formatter: this.formatterField_fieldSObject,
             },
             {
                 title: 'Child Field',
@@ -301,6 +300,29 @@ export default class Sobject extends ToolkitElement {
         }
     };
 
+    formatterField_fieldSObject = (cell, formatterParams, onRendered) => {
+        const value = cell._cell.value;
+        const data = cell._cell?.row?.data;
+        const config = {
+            urlLabel: value,
+            urlLink: 'sftoolkit:' +
+                    JSON.stringify({
+                        type: 'application',
+                        state: { applicationName: 'sobject', attribute1: value },
+                    })
+        };
+
+        const element = createElement('object-sobject-cell', {
+            is: SObjectCell,
+        });
+        Object.assign(element, {
+            value,
+            ...config,
+        });
+        return element;
+        
+    };
+
     formatterField_value = (cell, formatterParams, onRendered) => {
         let value = cell._cell.value;
         //let data = cell._cell.row.data;
@@ -319,15 +341,16 @@ export default class Sobject extends ToolkitElement {
 
     formatterField_type = cell => {
         const value = cell._cell.value;
+        const data = cell._cell?.row?.data;
         const config = {
             isBoolean: false,
-            fieldInfo: cell._cell.row.data,
+            fieldInfo: data
         };
         if (value === 'reference') {
-            const data = cell._cell.row.data;
             const referenceTo = data?.referenceTo?.length > 0 ? data.referenceTo[0] : null; // We take only 1 for now
+            const isMasterDetail = data?.cascadeDelete === true;
             if (this.objectRecords.find(x => x.name == referenceTo)) {
-                config.urlLabel = referenceTo;
+                config.urlLabel = `${isMasterDetail ? '(MD)' : '(L)'} ${referenceTo} `;
                 config.urlLink =
                     'sftoolkit:' +
                     JSON.stringify({

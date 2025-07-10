@@ -8,6 +8,7 @@ import { EVENT } from 'platformevent/store';
 import { RECORDVIEWER } from 'recordviewer/store';
 import logger from 'shared/middleware';
 import { UI, QUERY } from 'soql/store';
+import { SOBJECTEXPLORER } from 'object/store';
 import { createSlice } from '@reduxjs/toolkit';
 
 import * as APPLICATION from './application';
@@ -36,6 +37,7 @@ const store = configureStore({
         apiFiles: DOCUMENT.reduxSlices.APIFILE.reducer,
         recents: DOCUMENT.reduxSlices.RECENT.reducer,
         errors: ERROR.reduxSlice.reducer,
+        sobjectExplorer: SOBJECTEXPLORER.reduxSlice.reducer,
     },
     middleware: getDefaultMiddleware => {
         let middlewares = getDefaultMiddleware({
@@ -97,6 +99,7 @@ export {
     DESCRIBE,
     EINSTEIN,
     ERROR,
+    SOBJECTEXPLORER,
 };
 export { connectStore } from './wire-adapter';
 

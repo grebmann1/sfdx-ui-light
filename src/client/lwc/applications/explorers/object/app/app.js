@@ -1,16 +1,12 @@
-import { LightningElement, wire, api, track } from 'lwc';
+import { wire, api, track } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { CurrentPageReference, NavigationContext, generateUrl, navigate } from 'lwr/navigation';
+import { CurrentPageReference, NavigationContext,navigate } from 'lwr/navigation';
 import {
-    groupBy,
-    runActionAfterTimeOut,
     isUndefinedOrNull,
     isNotUndefinedOrNull,
-    getFromStorage,
-    classSet,
 } from 'shared/utils';
 import { store_application, store as legacyStore } from 'shared/store';
-import { store, DESCRIBE } from 'core/store';
+import { connectStore,store, DESCRIBE, SOBJECTEXPLORER } from 'core/store';
 
 const TYPEFILTER_OPTIONS = [
     { label: 'Object', value: 'object' },
@@ -34,7 +30,8 @@ export default class App extends ToolkitElement {
     @wire(NavigationContext)
     navContext;
 
-    @track selectedItem;
+    @track tabs = [];
+    @track currentTab;
 
     displayFilter = false;
     records = [];
@@ -43,7 +40,7 @@ export default class App extends ToolkitElement {
     @track formattedMenuItems = [];
 
     // Filter
-    typeFilter_value = []; // by default
+    typeFilter_value = [];
     metadataFilter_value = [];
     keepFilter = false;
 
@@ -51,17 +48,30 @@ export default class App extends ToolkitElement {
     @wire(CurrentPageReference)
     handleNavigation(pageRef) {
         if (isUndefinedOrNull(pageRef)) return;
-        //if(JSON.stringify(this._pageRef) == JSON.stringify(pageRef)) return;
-
         if (pageRef?.state?.applicationName == 'sobject') {
             this._pageRef = pageRef;
             this.loadFromNavigation(pageRef);
         }
     }
 
+    @wire(connectStore, { store })
+    storeChange({ sobjectExplorer, application }) {
+        const isCurrentApp = this.verifyIsActive(application.currentApplication);
+        if (!isCurrentApp) return;
+        this.tabs = sobjectExplorer.tabs;
+        this.currentTab = sobjectExplorer.currentTab;
+    }
+
     connectedCallback() {
         this.loadCachedSettings();
         this.loadAlls();
+    }
+
+    renderedCallback() {
+        this._hasRendered = true;
+        if (this.refs.objectTab) {
+            this.refs.objectTab.activeTabValue = this.currentTab?.id;
+        }
     }
 
     /** Events */
@@ -76,8 +86,8 @@ export default class App extends ToolkitElement {
     };
 
     handleItemSelection = async e => {
-        //this.selectedItem = e.detail.name;
         const objectName = e.detail.name;
+        // Open or focus tab
         navigate(this.navContext, {
             type: 'application',
             state: {
@@ -87,13 +97,22 @@ export default class App extends ToolkitElement {
         });
     };
 
+    handleTabSelect = e => {
+        const tabId = e.target.value;
+        store.dispatch(SOBJECTEXPLORER.reduxSlice.actions.selectTab({ id: tabId }));
+    };
+
+    handleTabClose = e => {
+        const tabId = e.detail.value;
+        store.dispatch(SOBJECTEXPLORER.reduxSlice.actions.removeTab({ id: tabId }));
+    };
+
     filtering_handleClick = e => {
         this.displayFilter = !this.displayFilter;
     };
 
     typeFilter_onChange = e => {
         this.typeFilter_value = e.detail.value;
-        //localStorage.setItem('global-sobject-typeFilter_value',JSON.stringify(this.typeFilter_value));
         setTimeout(() => {
             this.filteredRecords = this.filterRecords();
             this.setFormattedMenuItems();
@@ -102,7 +121,6 @@ export default class App extends ToolkitElement {
 
     metadataFilter_onChange = e => {
         this.metadataFilter_value = e.detail.value;
-        //localStorage.setItem('global-sobject-metadataFilter_value',JSON.stringify(this.metadataFilter_value));
         setTimeout(() => {
             this.filteredRecords = this.filterRecords();
             this.setFormattedMenuItems();
@@ -114,11 +132,12 @@ export default class App extends ToolkitElement {
     loadFromNavigation = async ({ state }) => {
         this.keepFilter = false;
         const { applicationName, attribute1 } = state;
-        if (applicationName != 'sobject') return; // Only for sobject
-
+        if (applicationName != 'sobject') return;
         if (attribute1) {
             this.keepFilter = true;
-            this.selectedItem = attribute1;
+            // Open or focus tab
+            const tab = SOBJECTEXPLORER.formatTab({ id: attribute1, label: attribute1 });
+            store.dispatch(SOBJECTEXPLORER.reduxSlice.actions.upsertTab({ tab }));
         }
         this.setFormattedMenuItems();
     };
@@ -135,13 +154,12 @@ export default class App extends ToolkitElement {
         } else if (item.endsWith('__mdt')) {
             return 'metadata';
         }
-        return 'object'; // default value for the left over
+        return 'object';
     };
 
     filterRecords = () => {
         if (this.typeFilter_value.length == 0 && this.metadataFilter_value.length == 0)
             return this.records;
-
         return this.records
             .filter(
                 x => this.typeFilter_value.includes(x.category) || this.typeFilter_value.length == 0
@@ -184,18 +202,17 @@ export default class App extends ToolkitElement {
 
     loadCachedSettings = () => {
         if (isNotUndefinedOrNull(this.connector.configuration.alias)) {
-            //this.typeFilter_value       = getFromStorage(localStorage.getItem('global-sobject-typeFilter_value'),['object']);
-            //this.metadataFilter_value   = getFromStorage(localStorage.getItem('global-sobject-metadataFilter_value'),['searchable','queryable']);
+            // Optionally load filter settings
         }
     };
 
     setFormattedMenuItems = () => {
         this.formattedMenuItems = this.filteredRecords
             .map(x => ({
-                label: `${x.label}(${x.name})`, // for slds-menu
-                name: x.name, // for slds-menu
-                key: x.name, // for slds-menu
-                isSelected: this.selectedItem == x.name,
+                label: `${x.label}(${x.name})`,
+                name: x.name,
+                key: x.name,
+                isSelected: this.currentTab && this.currentTab.id === x.name,
             }))
             .sort((a, b) => a.name.localeCompare(b.name));
     };
@@ -205,16 +222,25 @@ export default class App extends ToolkitElement {
     get typeFilter_options() {
         return TYPEFILTER_OPTIONS;
     }
-
     get metadataFilter_options() {
         return METADATAFILTER_OPTIONS;
     }
-
     get filtering_variant() {
         return this.displayFilter ? 'brand' : 'border-filled';
     }
-
     get pageClass() {
         return super.pageClass + ' slds-p-around_small';
+    }
+    get formattedTabs() {
+        return this.tabs.map(tab => ({
+            ...tab,
+            name: tab.label || tab.id,
+        }));
+    }
+    get activeTabId() {
+        return this.currentTab?.id;
+    }
+    get isViewerDisplayed() {
+        return isNotUndefinedOrNull(this.currentTab);
     }
 }
