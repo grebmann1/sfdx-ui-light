@@ -67,6 +67,11 @@ export default class Message extends ToolkitElement {
         });
     };
 
+    @api
+    updateItem(message) {
+        this.item = message;
+    }
+
     /** Getters **/
 
     @api

@@ -304,9 +304,9 @@
                                 <lightning-card
                                     class="settings slds-col slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
                                     <div slot="title">
-                                        <h1>OpenAI</h1>
+                                        <h1>LLM Settings</h1>
                                         <p class="description slds-truncate">
-                                            Settings related to OpenAI integration.
+                                            Settings related to LLM integration.
                                         </p>
                                     </div>
                                     <div slot="actions"></div>
@@ -315,9 +315,65 @@
                                             class="slds-col slds-size_1-of-1 slds-p-horizontal_small"
                                             is-first>
                                             <div slot="title">
-                                                <h1>API Key</h1>
+                                                <h1>AI Assistant</h1>
                                                 <p class="description slds-truncate">
-                                                    Key to be used to integrate with OpenAI Platform
+                                                    Select the AI provider to use for the AI Assistant.
+                                                </p>
+                                            </div>
+                                            <div slot="actions"></div>
+                                            <lightning-combobox
+                                                data-key="ai_provider"
+                                                label="AI Provider"
+                                                value={config.ai_provider}
+                                                options={aiProviderOptions}
+                                                onchange={inputfield_change}
+                                                variant="label-hidden"
+                                                class="slds-full-width"
+                                            ></lightning-combobox>
+                                        </settings-card>
+                                        <settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                            <div slot="title">
+                                                <h1>Autocomplete</h1>
+                                                <p class="description slds-truncate">
+                                                    Select the AI provider to use for the Autocomplete feature.
+                                                </p>
+                                            </div>
+                                            <div slot="actions"></div>
+                                            <lightning-input
+                                                label="AI Provider"
+                                                value="Mistral"
+                                                variant="label-hidden"
+                                                class="slds-full-width"
+                                                disabled
+                                            ></lightning-input>
+                                        </settings-card>
+                                        <!--
+										<lightning-input 
+											label="OpenAI Assistant Id [Disabled]" 
+											onchange={handleOpenaiAssistantId_change}
+											type="text"
+											value={openai_assistant_id}
+											disabled
+										></lightning-input>
+										-->
+                                    </div>
+                                </lightning-card>
+                                <lightning-card
+                                    class="settings slds-col slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
+                                    <div slot="title">
+                                        <h1>LLM Keys</h1>
+                                        <p class="description slds-truncate">
+                                            Keys related to LLM integration.
+                                        </p>
+                                    </div>
+                                    <div slot="actions"></div>
+                                    <div class="slds-grid slds-wrap">
+                                        <settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small" is-first>
+                                            <div slot="title">
+                                                <h1>OpenAI Key</h1>
+                                                <p class="description slds-truncate">
+                                                    API key required for OpenAI Platform integration
+                                                    (AI Assistant &amp; Inline Editor)
                                                 </p>
                                             </div>
                                             <div slot="actions"></div>
@@ -332,6 +388,30 @@
                                                     class="slds-full-width"></lightning-input>
                                                 <lightning-button-icon
                                                     data-key="openai_key"
+                                                    alternative-text="copy"
+                                                    icon-name="utility:preview"
+                                                    onclick={handleToggleVisibility}></lightning-button-icon>
+                                            </div>
+                                        </settings-card>
+                                        <settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                            <div slot="title">
+                                                <h1>Mistral Key</h1>
+                                                <p class="description slds-truncate">
+                                                    Key for integrating with the Mistral Platform (Currently supports only the Autocomplete feature)
+                                                </p>
+                                            </div>
+                                            <div slot="actions"></div>
+                                            <div class="slds-flex-row">
+                                                <lightning-input
+                                                    data-key="mistral_key"
+                                                    label="mistral_key"
+                                                    onchange={inputfield_change}
+                                                    type="password"
+                                                    value={config.mistral_key}
+                                                    variant="label-hidden"
+                                                    class="slds-full-width"></lightning-input>
+                                                <lightning-button-icon
+                                                    data-key="mistral_key"
                                                     alternative-text="copy"
                                                     icon-name="utility:preview"
                                                     onclick={handleToggleVisibility}></lightning-button-icon>

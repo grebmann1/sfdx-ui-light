@@ -13,7 +13,16 @@ import ToolkitElement from 'core/toolkitElement';
 import SaveModal from 'assistant/saveModal';
 import { GLOBAL_EINSTEIN, chat_template } from 'assistant/utils';
 import { store, connectStore, EINSTEIN, SELECTORS } from 'core/store';
-const LATEST_MODEL = 'sfdc_ai__DefaultGPT4Omni';
+import ASSISTANTS from 'ai/assistants';
+import LOGGER from 'shared/logger';
+import { MODEL_OPTIONS,PROVIDER_OPTIONS } from 'ai/utils';
+import OpenAI from 'openai';
+/* import { Agent,tool,run,setDefaultOpenAIClient,setOpenAIAPI } from '@openai/agents';
+import { z } from 'zod'; */
+
+const LATEST_MODEL_APEX = 'sfdc_ai__DefaultGPT4Omni';
+
+
 export default class Dialog extends ToolkitElement {
     isLoading = false;
 
@@ -22,6 +31,8 @@ export default class Dialog extends ToolkitElement {
     @api connector;
     @api dialogId;
     @api isMobile = false;
+    @api provider = PROVIDER_OPTIONS[0].value;
+    @api model = MODEL_OPTIONS[0].value;
 
     // prompt
     prompt;
@@ -31,12 +42,11 @@ export default class Dialog extends ToolkitElement {
     error_message;
     errorIds;
 
-    // openaiKey
     openaiKey;
-    isInjected;
 
     connectedCallback() {
-        this.checkForInjected();
+        //this.checkForInjected();
+        this.loadOpenAIKey();
         /*this.worker = new Worker(chrome.runtime.getURL('workers/openaiWorker/worker.js'));
 
         this.worker.addEventListener('message',this.handleMessage);
@@ -54,22 +64,11 @@ export default class Dialog extends ToolkitElement {
     }
 
     /** Actions */
-    checkForInjected = async () => {
-        /** Deprecated: OpenAI Key is now stored in the store !!!!!  */
-        /* let el = document.getElementsByClassName('injected-openai-key');
-        if(el){
-            let content = el[0]?.textContent;
-            if(isEmpty(content)) return;
-            this.isInjected = true;
-            try{
-                const {openai_key} = JSON.parse(content);
-                if(isNotUndefinedOrNull(openai_key)){
-                    this.openaiKey = openai_key;
-                }
-            }catch(e){
-                console.error('Issue while injecting',e);
-            }
-        } */
+    loadOpenAIKey = async () => {
+        const openaiKey = store.getState().application.openaiKey;
+        if(isNotUndefinedOrNull(openaiKey)){
+            this.openaiKey = openaiKey;
+        }
     };
 
     @wire(connectStore, { store })
@@ -85,6 +84,7 @@ export default class Dialog extends ToolkitElement {
         if (einsteinState) {
             this.dialogId = einstein.currentDialogId;
             this.isLoading = einsteinState.isFetching;
+         
             if (einsteinState.error) {
                 //this._abortingMap[apex.currentDialog.id] = null; // Reset the abortingMap
                 //this.resetResponse();
@@ -119,21 +119,21 @@ export default class Dialog extends ToolkitElement {
 
     scrollToBottom = () => {
         window.setTimeout(() => {
-            const messageElements = [...this.template.querySelectorAll('assistant-message')].filter(
-                x => x.isUser
-            );
-            if (this.isLoading) {
-                this.template
-                    .querySelector('.slds-chat-listitem')
-                    .scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } else {
-                messageElements[messageElements.length - 1].scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start',
-                });
+            // Find all assistant-message elements
+            const messageElements = [...this.template.querySelectorAll('assistant-message')];
+            // Scroll to the last message (user or assistant)
+            const lastMessage = messageElements[messageElements.length - 1];
+            if (lastMessage) {
+                lastMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });
             }
-        }, 100);
+        }, 50);
     };
+
+    directUpdateUI = (element,message) => {
+        if (element && element.item) {
+            element.updateItem(message);
+        }
+    }
 
     /** Events **/
 
@@ -177,40 +177,109 @@ export default class Dialog extends ToolkitElement {
         this.template.querySelector('.slds-publisher__input').value = speech;
     };
 
-    handleSendClick = () => {
+    test = async () => {
+        /* const openai = new OpenAI({
+            dangerouslyAllowBrowser:true,
+            apiKey: this.openaiKey, // defaults to process.env["OPENAI_API_KEY"]
+        });
+        setDefaultOpenAIClient(openai);
+        setOpenAIAPI('chat_completions');
+        const historyFunFact = tool({
+            // The name of the tool will be used by the agent to tell what tool to use.
+            name: 'history_fun_fact',
+            // The description is used to describe **when** to use the tool by telling it **what** it does.
+            description: 'Give a fun fact about a historical event',
+            // This tool takes no parameters, so we provide an empty Zod Object.
+            parameters: z.object({}),
+            execute: async () => {
+                // The output will be returned back to the Agent to use
+                return 'Sharks are older than trees.';
+            },
+        });
+        const agent = new Agent({
+            name: 'History Tutor',
+            instructions:
+                'You provide assistance with historical queries. Explain important events and context clearly.',
+            // Adding the tool to the agent
+            tools: [historyFunFact],
+        });
+
+        const result = await run(agent, 'What is the capital of France? Give me a fun fact about the history of France.',{
+            stream: true,
+        });
+        for await (const event of result) {
+            // these are the raw events from the model
+            if (event.type === 'raw_model_stream_event') {
+              console.log(`${event.type} %o`, event.data);
+            }
+            // agent updated events
+            if (event.type === 'agent_updated_stream_event') {
+              console.log(`${event.type} %s`, event.agent.name);
+            }
+            // Agent SDK specific events
+            if (event.type === 'run_item_stream_event') {
+              console.log(`${event.type} %o`, event.item);
+            }
+        } */
+    }
+
+    handleSendClick = async () => {
         const { einstein } = store.getState();
         const value = this.template.querySelector('.slds-publisher__input').value;
         const connector = this.connector || this.legacyConnector;
+
         // Validate Connector
-        if (isUndefinedOrNull(connector)) {
+        if (isUndefinedOrNull(connector) && this.provider === 'apex') {
             this.error_title = 'Error';
             this.error_message = 'Select a valid Salesforce Instance';
             return;
         }
 
         if (!isEmpty(value)) {
-            //this.isLoading = true;
             this.messages.push({
                 role: ROLES.USER,
                 content: value.trim(),
                 id: guid(),
             });
-
-            // sfdc_ai__DefaultGPT35Turbo ## Will provide possibility to select your model
-            const einsteinApexRequest = chat_template(LATEST_MODEL, this.cleanedMessages);
-            //console.log('einsteinApexRequest',einsteinApexRequest);
-            this.scrollToBottom();
-            const einsteinPromise = store.dispatch(
-                EINSTEIN.einsteinExecuteModel({
-                    connector,
-                    alias: GLOBAL_EINSTEIN,
-                    body: einsteinApexRequest,
-                    tabId: einstein.currentDialogId,
-                    messages: this.messages,
-                    createdDate: Date.now(),
-                })
-            );
-            //this.worker.postMessage(this.generateMessageForWorker(value,null,this.threadId));
+            LOGGER.debug('handleSendClick', this.provider, this.model);
+            if (this.provider === 'apex') {
+                // Existing Apex flow
+                const einsteinApexRequest = chat_template(LATEST_MODEL_APEX, this.cleanedMessages);
+                this.scrollToBottom();
+                store.dispatch(
+                    EINSTEIN.einsteinExecuteModel({
+                        connector,
+                        alias: GLOBAL_EINSTEIN,
+                        body: einsteinApexRequest,
+                        tabId: einstein.currentDialogId,
+                        messages: this.messages,
+                        createdDate: Date.now(),
+                    })
+                );
+            } else if (this.provider === 'openai') {
+                // OpenAI flow using Redux thunk with streaming
+                try {
+                    await store.dispatch(
+                        EINSTEIN.openaiExecuteModel({
+                            messages: this.messages,
+                            tabId: einstein.currentDialogId,
+                            alias: GLOBAL_EINSTEIN,
+                            model: this.model,
+                            aiProvider: 'openai',
+                            onStream: (message) => {
+                                
+                                const lastElement = [...this.template.querySelectorAll('assistant-message')].pop();
+                                // Optionally force re-render if needed
+                                this.scrollToBottom();
+                                this.directUpdateUI(lastElement,message);
+                            }
+                        })
+                    );
+                } catch (err) {
+                    this.error_title = 'OpenAI Error';
+                    this.error_message = err.message;
+                }
+            }
             this.template.querySelector('.slds-publisher__input').value = null; // reset
         }
     };
@@ -240,7 +309,7 @@ export default class Dialog extends ToolkitElement {
             this.messages.filter(x => x.id != retryMessage.id),
             [retryMessage]
         );
-        const einsteinApexRequest = chat_template(LATEST_MODEL, this.cleanedMessages);
+        const einsteinApexRequest = chat_template(LATEST_MODEL_APEX, this.cleanedMessages);
 
         const einsteinPromise = store.dispatch(
             EINSTEIN.einsteinExecuteModel({
@@ -277,8 +346,7 @@ export default class Dialog extends ToolkitElement {
     }
 
     get isAudioAssistantDisplayed() {
-        //console.log('this.openaiKey',this.openaiKey)
-        return !isEmpty(this.openaiKey) && !isChromeExtension();
+        return !isEmpty(this.openaiKey);//&& !isChromeExtension();
     }
 
     get isClearButtonDisabled() {

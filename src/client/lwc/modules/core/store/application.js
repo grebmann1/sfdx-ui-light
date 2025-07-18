@@ -12,7 +12,9 @@ const applicationSlice = createSlice({
         isLoggedIn: false,
         currentApplication: null,
         sessionHasExpired: false,
+        aiProvider: 'openai',
         openaiKey: null,
+        mistralKey: null, // Added for Mistral
     },
     reducers: {
         updateCurrentApplication: (state, action) => {
@@ -57,9 +59,17 @@ const applicationSlice = createSlice({
             state.connector = connector;
             state.sessionHasExpired = false;
         },
+        updateAiProvider: (state, action) => {
+            const { aiProvider } = action.payload;
+            state.aiProvider = aiProvider;
+        },
         updateOpenAIKey: (state, action) => {
             const { openaiKey } = action.payload;
             state.openaiKey = openaiKey;
+        },
+        updateMistralKey: (state, action) => {
+            const { mistralKey } = action.payload;
+            state.mistralKey = mistralKey;
         },
     },
 });

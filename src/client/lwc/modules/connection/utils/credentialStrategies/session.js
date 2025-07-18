@@ -4,9 +4,24 @@ import { normalizeConnection } from '../utils';
 import { OAUTH_TYPES } from './index';
 import { Connector } from '../connectorClass';
 import { isEmpty } from 'shared/utils';
+import LOGGER from 'shared/logger';
 
 export async function connect({ sessionId, serverUrl, extra = {}, alias }) {
     try {
+        LOGGER.debug('connect', sessionId, serverUrl);
+        // Retrieve from sessionStorage if not provided
+        if (!sessionId) {
+            const storedSessionId = sessionStorage.getItem('sfSessionId');
+            if (storedSessionId) {
+                sessionId = storedSessionId;
+            }
+        }
+        if (!serverUrl) {
+            const storedServerUrl = sessionStorage.getItem('sfServerUrl');
+            if (storedServerUrl) {
+                serverUrl = storedServerUrl;
+            }
+        }
         const platform = getCurrentPlatform();
         const {
             isProxyDisabled = false,
@@ -23,6 +38,9 @@ export async function connect({ sessionId, serverUrl, extra = {}, alias }) {
         if(isEmpty(serverUrl)){
             throw new Error('ServerUrl is required');
         }
+        // Persist to sessionStorage for this tab
+        sessionStorage.setItem('sfSessionId', sessionId);
+        sessionStorage.setItem('sfServerUrl', serverUrl);
         let params = {
             sessionId,
             serverUrl: formattedServerUrl,

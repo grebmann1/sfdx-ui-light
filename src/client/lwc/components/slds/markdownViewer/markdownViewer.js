@@ -5,12 +5,23 @@ import sldsCodeBlock from 'slds/codeBlock';
 import MarkdownViewerEditorModal from 'slds/MarkdownViewerEditorModal';
 
 export default class MarkdownViewer extends LightningElement {
-    @api value;
+    hasRendered = false;
+    
+    _value = '';
+    @api 
+    set value(value) {
+        this._value = value;
+        if(this.hasRendered){
+            this.getDown(value);
+        }
+    }
+    get value() {
+        return this._value;
+    }
 
-    connectedCallback() {
-        window.setTimeout(() => {
-            this.getDown(this.value);
-        }, 1);
+    renderedCallback() {
+        this.hasRendered = true;
+        this.getDown(this.value);
     }
 
     /** Methods */

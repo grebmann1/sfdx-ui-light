@@ -1,5 +1,44 @@
 [
   {
+    "version": "1.3.47",
+    "date": "July 11th, 2025",
+    "sections": [
+      {
+        "title": "New Features & Enhancements",
+        "categories": [
+          {
+            "category": "AI Assistant",
+            "items": [
+              "Added support for OpenAI as an alternative provider to Salesforce Einstein for the AI Assistant.",
+              "Integrated Mistral as an option for AI-powered autocompletion.",
+              "Enhanced AI assistant settings with provider options and model selection."
+            ]
+          },
+          {
+            "category": "OpenAI Integration",
+            "items": [
+              "Added OpenAI bundler with new configuration files.",
+              "Integrated OpenAI agent libraries for advanced AI features."
+            ]
+          },
+          {
+            "category": "User Experience & UI",
+            "items": [
+              "Refactored components for improved user experience.",
+              "Updated UI elements for better accessibility and functionality."
+            ]
+          },
+          {
+            "category": "Connection Management",
+            "items": [
+              "Streamlined connection management for easier org integration and switching."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.3.46",
     "date": "July 10th, 2025",
     "sections": [

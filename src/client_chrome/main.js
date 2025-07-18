@@ -4,7 +4,6 @@ import jsforce from 'imported/jsforce';
 import { createElement } from 'lwc';
 import { chromeStore } from 'shared/cacheManager';
 import uiFullView from 'ui/fullView';
-
 const init = async () => {
     /** Load Local Forage  **/
     //await loadLocalForage();
@@ -23,6 +22,8 @@ const init = async () => {
         //proxyUrl: `http://localhost:3000/proxy/`,
     };
     window.jsforce = jsforce;
+    //window.openaiAgent = openaiAgent;
+    console.log('openaiAgent --> ',window.openaiAgent);
 };
 
 /** Init **/

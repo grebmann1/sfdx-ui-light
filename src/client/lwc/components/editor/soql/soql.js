@@ -12,7 +12,7 @@ import {
 import { formatQuery, parseQuery } from '@jetstreamapp/soql-parser-js';
 import { SOQL } from 'editor/languages';
 import { store, connectStore } from 'core/store';
-import { setupMonaco, WIDGETS, registerCopilot } from 'editor/utils';
+import { setupMonaco, registerCopilot } from 'editor/utils';
 import { MonacoLwcWidget } from 'editor/editorCompleteWidget';
 import instructions from './instructions/instructions';
 import LOGGER from 'shared/logger';
