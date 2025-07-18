@@ -14,8 +14,6 @@ const APPLICATIONS = {
 
 export default class Default extends LightningElement {
     @api isBackButtonDisplayed = false;
-    openaiKey;
-    openaiAssistantId;
 
     _currentApplication = APPLICATIONS.CONNECTION; //APPLICATIONS.ASSISTANT;//
 
@@ -74,7 +72,7 @@ export default class Default extends LightningElement {
     }
 
     connectedCallback() {
-        this.loadAssistantConfig();
+        this.loadFromCache();
     }
 
     /** Events **/
@@ -128,13 +126,27 @@ export default class Default extends LightningElement {
 
     /** Methods **/
 
-    loadAssistantConfig = async () => {
+    loadFromCache = async () => {
         const configuration = await loadExtensionConfigFromCache([
             CACHE_CONFIG.OPENAI_KEY.key,
-            CACHE_CONFIG.OPENAI_ASSISTANT_ID.key,
+            CACHE_CONFIG.MISTRAL_KEY.key,
+            CACHE_CONFIG.AI_PROVIDER.key,
         ]);
-        this.openaiKey = configuration[CACHE_CONFIG.OPENAI_KEY.key];
-        this.openaiAssistantId = configuration[CACHE_CONFIG.OPENAI_ASSISTANT_ID.key];
+
+        // Handle LLM keys and provider
+        const openaiKey = configuration[CACHE_CONFIG.OPENAI_KEY.key];
+        const mistralKey = configuration[CACHE_CONFIG.MISTRAL_KEY.key];
+        const aiProvider = configuration[CACHE_CONFIG.AI_PROVIDER.key];
+
+        if(openaiKey) {
+            store.dispatch(APPLICATION.reduxSlice.actions.updateOpenAIKey({ openaiKey }));
+        }
+        if(mistralKey) {
+            store.dispatch(APPLICATION.reduxSlice.actions.updateMistralKey({ mistralKey }));
+        }
+        if(aiProvider) {
+            store.dispatch(APPLICATION.reduxSlice.actions.updateAiProvider({ aiProvider }));
+        }
     };
 
     loadFromNavigation = async ({ state }) => {

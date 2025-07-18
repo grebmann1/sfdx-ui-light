@@ -1,6 +1,6 @@
 import { api, wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { connectStore, store } from 'core/store';
+import { connectStore, store, APPLICATION } from 'core/store';
 import { store as legacyStore, store_application } from 'shared/store';
 import {
     isEmpty,
@@ -8,6 +8,8 @@ import {
     isSalesforceId,
     redirectToUrlViaChrome,
 } from 'shared/utils';
+import { CACHE_CONFIG, loadExtensionConfigFromCache } from 'shared/cacheManager';
+
 
 const APPLICATIONS = {
     RECORD_EXPLORER: 'recordExplorer',
@@ -71,7 +73,9 @@ export default class Salesforce extends ToolkitElement {
         return this.connector?.conn?.instanceUrl;
     }
 
-    connectedCallback() {}
+    connectedCallback() {
+        this.loadFromCache();
+    }
 
     @wire(connectStore, { store })
     applicationChange({ application }) {
@@ -165,6 +169,29 @@ export default class Salesforce extends ToolkitElement {
     addConnection_hide = e => {};
 
     /** Methods **/
+
+    loadFromCache = async () => {
+        const configuration = await loadExtensionConfigFromCache([
+            CACHE_CONFIG.OPENAI_KEY.key,
+            CACHE_CONFIG.MISTRAL_KEY.key,
+            CACHE_CONFIG.AI_PROVIDER.key,
+        ]);
+
+        // Handle LLM keys and provider
+        const openaiKey = configuration[CACHE_CONFIG.OPENAI_KEY.key];
+        const mistralKey = configuration[CACHE_CONFIG.MISTRAL_KEY.key];
+        const aiProvider = configuration[CACHE_CONFIG.AI_PROVIDER.key];
+
+        if(openaiKey) {
+            store.dispatch(APPLICATION.reduxSlice.actions.updateOpenAIKey({ openaiKey }));
+        }
+        if(mistralKey) {
+            store.dispatch(APPLICATION.reduxSlice.actions.updateMistralKey({ mistralKey }));
+        }
+        if(aiProvider) {
+            store.dispatch(APPLICATION.reduxSlice.actions.updateAiProvider({ aiProvider }));
+        }
+    };
 
     openSpecificTab = tabName => {
         //if(isUndefinedOrNull(this.connector)) return;

@@ -5,7 +5,6 @@ import { isUndefinedOrNull, isNotUndefinedOrNull, isEmpty, guid, classSet } from
 import { GLOBAL_EINSTEIN } from 'assistant/utils';
 import { getConfigurations, credentialStrategies } from 'connection/utils';
 import { store, connectStore, EINSTEIN, APPLICATION, SELECTORS } from 'core/store';
-import { MODEL_OPTIONS,PROVIDER_OPTIONS } from 'ai/utils';
 
 export default class App extends ToolkitElement {
     isLoading = false;
@@ -22,11 +21,11 @@ export default class App extends ToolkitElement {
     salesforceInstance_alias;
     salesforceInstance_connector;
 
-    @track provider = PROVIDER_OPTIONS[0].value;
-    @track providerOptions = PROVIDER_OPTIONS;
+    @track provider = EINSTEIN.PROVIDER_OPTIONS[0].value;
+    @track providerOptions = EINSTEIN.PROVIDER_OPTIONS;
 
-    @track model = MODEL_OPTIONS[0].value;
-    @track modelOptions = MODEL_OPTIONS;
+    @track model = EINSTEIN.MODEL_OPTIONS[0].value;
+    @track modelOptions = EINSTEIN.MODEL_OPTIONS;
 
     handleModelChange = e => {
         this.model = e.detail.value;

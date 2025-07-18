@@ -15,7 +15,6 @@ import { GLOBAL_EINSTEIN, chat_template } from 'assistant/utils';
 import { store, connectStore, EINSTEIN, SELECTORS } from 'core/store';
 import ASSISTANTS from 'ai/assistants';
 import LOGGER from 'shared/logger';
-import { MODEL_OPTIONS,PROVIDER_OPTIONS } from 'ai/utils';
 import OpenAI from 'openai';
 /* import { Agent,tool,run,setDefaultOpenAIClient,setOpenAIAPI } from '@openai/agents';
 import { z } from 'zod'; */
@@ -31,8 +30,8 @@ export default class Dialog extends ToolkitElement {
     @api connector;
     @api dialogId;
     @api isMobile = false;
-    @api provider = PROVIDER_OPTIONS[0].value;
-    @api model = MODEL_OPTIONS[0].value;
+    @api provider = EINSTEIN.PROVIDER_OPTIONS[0].value;
+    @api model = EINSTEIN.MODEL_OPTIONS[0].value;
 
     // prompt
     prompt;
@@ -346,7 +345,7 @@ export default class Dialog extends ToolkitElement {
     }
 
     get isAudioAssistantDisplayed() {
-        return !isEmpty(this.openaiKey);//&& !isChromeExtension();
+        return !isEmpty(this.openaiKey) && !isChromeExtension();
     }
 
     get isClearButtonDisabled() {

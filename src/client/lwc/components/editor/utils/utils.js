@@ -69,7 +69,6 @@ export const registerCopilot = (monaco, editor, language, handleOpenContextCopil
 
     // Check if Mistral API key is available for the Autocomplete feature
     const mistralKey = store.getState().application.mistralKey;
-    LOGGER.info('mistralKey', mistralKey);
     if(mistralKey) {
         LOGGER.info('registerMonacoAutocomplete --> ', language);
         // Register the monaco autocomplete

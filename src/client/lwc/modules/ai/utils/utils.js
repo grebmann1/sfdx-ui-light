@@ -3,26 +3,12 @@ import LOGGER from 'shared/logger';
 import { guid, isNotUndefinedOrNull } from 'shared/utils';
 import { loadExtensionConfigFromCache, CACHE_CONFIG } from 'shared/cacheManager';
 
-export const PROVIDER_OPTIONS = [
-    { label: 'OpenAI', value: 'openai' },
-    { label: 'Apex (Salesforce)', value: 'apex' },
-];
-
 export const ROLES = {
     USER: 'user',
     SYSTEM: 'system',
     TOOL: 'tool',
 };
 
-export const MODEL_OPTIONS = [
-    { label: 'gpt-4.1', value: 'gpt-4.1-2025-04-14' },
-    { label: 'gpt-4.o', value: 'gpt-4o-2024-08-06' },
-    { label: 'gpt-4.1.mini', value: 'gpt-4.1-mini-2025-04-14' },
-    { label: 'o3.mini', value: 'o3-mini-2025-01-31' },
-    { label: 'o1.mini', value: 'o1-mini-2024-09-12' },
-    { label: 'gpt-4o.mini', value: 'gpt-4o-mini-2024-07-18' },
-    { label: 'o4.mini', value: 'o4-mini-2025-04-16' },
-];
 
 export const functionOutput = ({ tool_call_id, content }) => {
     return [
