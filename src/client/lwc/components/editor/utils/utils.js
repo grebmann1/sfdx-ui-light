@@ -1,11 +1,7 @@
 import { store } from 'core/store';
 import LOGGER from 'shared/logger';
 import { isChromeExtension } from 'shared/utils';
-
-import MonacoLwcWidget from './widgets/monacoLwcWidget.js';
-export const WIDGETS = {
-    MonacoLwcWidget,
-};
+import { registerCompletion,CompletionCopilot } from 'monacopilot';
 
 function buildWorkerDefinition(workerPath, basePath) {
     // eslint-disable-next-line no-restricted-globals
@@ -54,10 +50,12 @@ export const setupMonaco = async () => {
 };
 
 export const registerCopilot = (monaco, editor, language, handleOpenContextCopilot) => {
-    LOGGER.info('registerCopilot', language);
+    
 
-    // Check if OpenAI is available
+    // Check if OpenAI is available for the Context Copilot feature
     if (store.getState().application.openaiKey) {
+        LOGGER.info('registerCopilot --> ', language);
+        // Register the action to open the context copilot
         editor.addAction({
             id: 'openEditor',
             label: 'openEditor',
@@ -68,6 +66,35 @@ export const registerCopilot = (monaco, editor, language, handleOpenContextCopil
             },
         });
     }
+
+    // Check if Mistral API key is available for the Autocomplete feature
+    const mistralKey = store.getState().application.mistralKey;
+    LOGGER.info('mistralKey', mistralKey);
+    if(mistralKey) {
+        LOGGER.info('registerMonacoAutocomplete --> ', language);
+        // Register the monaco autocomplete
+        registerMonacoAutocomplete(monaco, editor, language, mistralKey);
+    }
+};
+
+export const registerMonacoAutocomplete = (monaco, editor, language, mistralKey) => {
+    LOGGER.info('registerMonacoAutocomplete', language);
+    const copilot = new CompletionCopilot(mistralKey, {
+        provider: 'mistral',
+        model: 'codestral',
+    });
+
+    registerCompletion(monaco, editor, {
+        language,
+        technologies:['salesforce'],
+        requestHandler: async ({ body }) => {
+            // Prepare context for the assistant
+            LOGGER.log('body', body);
+            
+            const completion = await copilot.complete({ body});
+            return completion;
+        }
+    }); 
 };
 
 // Completion Formatter

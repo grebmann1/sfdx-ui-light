@@ -140,7 +140,8 @@ export default class App extends LightningElement {
     connectedCallback() {
         this.init();
         //this.checkForInjected();
-        this.checkForOpenAIKey();
+        // Load keys from cache
+
         this.loadFromCache();
         this.initShortcuts();
         //this.test();
@@ -258,41 +259,29 @@ export default class App extends LightningElement {
     loadFromCache = async () => {
         const configuration = await loadExtensionConfigFromCache([
             CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key,
+            CACHE_CONFIG.OPENAI_KEY.key,
+            CACHE_CONFIG.MISTRAL_KEY.key,
+            CACHE_CONFIG.AI_PROVIDER.key,
         ]);
-        this.isApplicationTabVisible =
-            configuration[CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key];
-    };
 
-    checkForInjected = async () => {
-        let el = document.getElementsByClassName('injected-openai-key');
-        if (el) {
-            let content = el[0]?.textContent;
-            if (isEmpty(content)) return;
-            try {
-                const { openai_key } = JSON.parse(content);
-                LOGGER.debug('openai_key', openai_key);
-                if (isNotUndefinedOrNull(openai_key)) {
-                    store.dispatch(
-                        APPLICATION.reduxSlice.actions.updateOpenAIKey({
-                            openaiKey: openai_key,
-                        })
-                    );
-                }
-            } catch (e) {
-                console.error('Issue while injecting', e);
-            }
+        this.isApplicationTabVisible = configuration[CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key];
+
+        // Handle LLM keys and provider
+        const openaiKey = configuration[CACHE_CONFIG.OPENAI_KEY.key];
+        const mistralKey = configuration[CACHE_CONFIG.MISTRAL_KEY.key];
+        const aiProvider = configuration[CACHE_CONFIG.AI_PROVIDER.key];
+
+        if(openaiKey) {
+            store.dispatch(APPLICATION.reduxSlice.actions.updateOpenAIKey({ openaiKey }));
         }
-    };
+        if(mistralKey) {
+            store.dispatch(APPLICATION.reduxSlice.actions.updateMistralKey({ mistralKey }));
+        }
+        if(aiProvider) {
+            store.dispatch(APPLICATION.reduxSlice.actions.updateAiProvider({ aiProvider }));
+        }
 
-    checkForOpenAIKey = async () => {
-        const openaiKey = await getOpenAIKeyFromCache();
-        if (openaiKey) {
-            store.dispatch(
-                APPLICATION.reduxSlice.actions.updateOpenAIKey({
-                    openaiKey,
-                })
-            );
-        } else {
+        if(isEmpty(openaiKey)) {
             this.checkForInjected();
         }
     };
@@ -360,14 +349,14 @@ export default class App extends LightningElement {
         this.applications = [];
         this.applicationId = null;
         try{
-            console.log('Init Mode -->',this.isLimitedMode);
+            LOGGER.log('Init Mode -->',this.isLimitedMode);
             if (this.isLimitedMode) {
                 await this.load_limitedMode();
             } else {
                 await this.load_fullMode();
             }
         }catch(e){  
-            console.error('Init Mode Error -->',e);
+            LOGGER.error('Init Mode Error -->',e);
             this.pageHasLoaded = true;
             handleError(e, 'Init Mode Error');
         }
@@ -486,14 +475,11 @@ export default class App extends LightningElement {
 
     /** Website & Electron **/
     load_fullMode = async () => {
-        console.log('load_fullMode - SESSION --> 0');
         if (isNotUndefinedOrNull(this.sessionId) && isNotUndefinedOrNull(this.serverUrl)) {
-            console.log('load_fullMode - SESSION --> 11');
             let connector = await credentialStrategies.SESSION.connect({
                 sessionId: this.sessionId,
                 serverUrl: this.serverUrl,
             });
-            console.log('load_fullMode - SESSION --> 22');
             // Reset after to prevent looping
             this.sessionId = null;
             this.serverUrl = null;
@@ -508,29 +494,24 @@ export default class App extends LightningElement {
                     let connector;
                     if (settings.sessionId && settings.serverUrl) {
                         // For Web/Chrome, use SESSION strategy
-                        console.log('load_fullMode - SESSION --> 1');
                         connector = await credentialStrategies.SESSION.connect({
                             sessionId: settings.sessionId,
                             serverUrl: settings.serverUrl,
                         });
-                        console.log('load_fullMode - SESSION --> 2');
                     } else if (
                         settings.credentialType &&
                         credentialStrategies[settings.credentialType || 'OAUTH']
                     ) {
                         // Fallback: use credentialType if present
-                        console.log('load_fullMode - SESSION --> 3');
                         connector = await credentialStrategies[settings.credentialType].connect(settings);
-                        console.log('load_fullMode - SESSION --> 4');
                     }
                     if (connector) {
-                        console.log('load_fullMode - SESSION --> 5');
                         store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
                     }
                     // Optionally: handle result (e.g., update store, etc.)
                 } catch (e) {
                     // Optionally: log or show error
-                    console.error('load_fullMode Error -->',e);
+                    LOGGER.error('load_fullMode Error -->',e);
                 }
             }
             // If no session, do nothing (or optionally prompt user)

@@ -5,6 +5,7 @@ import { isUndefinedOrNull, isNotUndefinedOrNull, isEmpty, guid, classSet } from
 import { GLOBAL_EINSTEIN } from 'assistant/utils';
 import { getConfigurations, credentialStrategies } from 'connection/utils';
 import { store, connectStore, EINSTEIN, APPLICATION, SELECTORS } from 'core/store';
+import { MODEL_OPTIONS,PROVIDER_OPTIONS } from 'ai/utils';
 
 export default class App extends ToolkitElement {
     isLoading = false;
@@ -20,6 +21,36 @@ export default class App extends ToolkitElement {
     @track salesforceIntance_connections = [];
     salesforceInstance_alias;
     salesforceInstance_connector;
+
+    @track provider = PROVIDER_OPTIONS[0].value;
+    @track providerOptions = PROVIDER_OPTIONS;
+
+    @track model = MODEL_OPTIONS[0].value;
+    @track modelOptions = MODEL_OPTIONS;
+
+    handleModelChange = e => {
+        this.model = e.detail.value;
+        store.dispatch(
+            EINSTEIN.reduxSlice.actions.updateModel({
+                model: this.model,
+                alias: GLOBAL_EINSTEIN,
+            })
+        );
+    };
+
+    get isApexProvider() {
+        return this.provider === 'apex';
+    }
+
+    handleProviderChange = e => {
+        this.provider = e.detail.value;
+        store.dispatch(
+            EINSTEIN.reduxSlice.actions.updateProvider({
+                provider: this.provider,
+                alias: GLOBAL_EINSTEIN,
+            })
+        );
+    };
 
     async connectedCallback() {
         //this.isLoading = true;
@@ -62,12 +93,22 @@ export default class App extends ToolkitElement {
         //console.log('einstein',einstein)
         this.dialogs = SELECTORS.einstein.selectAll({ einstein });
         this.currentDialogId = einstein.currentDialogId;
+        
+        if (einstein.provider && this.provider !== einstein.provider) {
+            this.provider = einstein.provider;
+        }
+
+        if (einstein.model && this.model !== einstein.model) {
+            this.model = einstein.model;
+        }
+
         if (isUndefinedOrNull(this.currentDialogId) && this.dialogs.length > 0) {
             this.currentDialogId = this.dialogs[0].id;
         }
         if (
             isNotUndefinedOrNull(einstein.connectionAlias) &&
-            this.salesforceInstance_alias != einstein.connectionAlias
+            this.salesforceInstance_alias != einstein.connectionAlias &&
+            this.isApexProvider
         ) {
             // Only reconnect if the connction is different
             if (this.salesforceInstance_alias !== einstein.connectionAlias) {
@@ -77,6 +118,7 @@ export default class App extends ToolkitElement {
                 this.setDefaultEinsteinConnection();
             }
         }
+        
     }
 
     /** Events **/

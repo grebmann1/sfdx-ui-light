@@ -130,8 +130,10 @@ export default class EditorCompleteWidget extends LightningElement {
             .init()
             .setInstructions(systemContent)
             .addMessages([{ role: ROLES.USER, content: userContent }])
-            .onText(this.handleTextStream(fullTextSoFar))
-            .onTextEnd(this.handleTextEnd)
+            .onStream(this.handleTextStream(fullTextSoFar)) // handleTextStream is a function that returns a function that handles the text stream
+            .onStreamEnd(message => {
+                this.handleTextEnd(message.content);
+            })
             .execute();
 
         this.currentAssistant = null;
@@ -187,12 +189,12 @@ export default class EditorCompleteWidget extends LightningElement {
      * @returns {Function} Text handler function
      */
     handleTextStream(fullTextSoFar) {
-        return content => {
+        return message => {
             const parser = new StreamParser(
                 `<${defaultQuickEditFimTags.midTag}>`,
                 `</${defaultQuickEditFimTags.midTag}>`
             );
-            parser.is(content);
+            parser.is(message.content);
             const parsedText = parser.getResult();
 
             if (fullTextSoFar !== parsedText) {

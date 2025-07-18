@@ -48,8 +48,9 @@ class Assistant {
     isExecuting = false;
 
     // Text callback
-    onTextCallback = null;
-    onTextEndCallback = null;
+    onStreamCallback = null;
+    onStreamEndCallback = null;
+    onStreamStartCallback = null;
 
     constructor({
         name,
@@ -60,6 +61,8 @@ class Assistant {
         messages,
         toolLogic = {},
         handoffs = [],
+        aiProvider,
+        openaiKey,
     }) {
         this.name = name;
         this.model = model || 'gpt-4o-mini';
@@ -71,7 +74,9 @@ class Assistant {
         // outputSchema is the schema of the output of the assistant
         if (outputSchema) this.outputSchema = outputSchema;
         if (handoffs.length > 0) this.handoffs = [...handoffs];
-
+        // Set provider, default to Redux value
+        this.aiProvider = aiProvider || store.getState().application.aiProvider || 'openai';
+        this.openaiKey = openaiKey || store.getState().application.openaiKey || '';
         // Create proxied versions of the tool functions that have access to the assistant instance
         this._createToolLogicProxy();
     }
@@ -139,7 +144,7 @@ class Assistant {
     addMessages = messages => {
         if (!messages || !messages.length) return this;
 
-        LOGGER.agent('addMessages', this.messages, messages);
+        //LOGGER.agent('addMessages', this.messages, messages);
         // Create a Set of existing message IDs for faster lookup
         const existingIds = new Set(this.messages.map(msg => msg.id));
 
@@ -152,13 +157,18 @@ class Assistant {
         return this;
     };
 
-    onText(callback) {
-        this.onTextCallback = callback;
+    onStream(callback) {
+        this.onStreamCallback = callback;
         return this;
     }
 
-    onTextEnd(callback) {
-        this.onTextEndCallback = callback;
+    onStreamEnd(callback) {
+        this.onStreamEndCallback = callback;
+        return this;
+    }
+
+    onStreamStart(callback) {
+        this.onStreamStartCallback = callback;
         return this;
     }
 
@@ -171,7 +181,7 @@ class Assistant {
         this.isExecuting = true;
         // Filter out all but the last context message
         const messages = [...this.messages];
-        LOGGER.agent('execute ->', messages);
+        //LOGGER.agent('execute ->', messages);
         const contextMessages = messages.filter(msg => msg.isContext);
         const nonContextMessages = messages.filter(msg => !msg.isContext);
 
@@ -222,11 +232,17 @@ class Assistant {
                 model: this.model,
                 messages,
                 ...this._addAdditionalParams(),
+                provider: this.aiProvider,
+                openaiKey: this.openaiKey,
             };
 
             const { body, abort } = await fetchCompletionStream(params);
             if (!body) {
                 throw new Error('No data returned from the assistant');
+            }
+
+            if (this.onStreamStartCallback) {
+                this.onStreamStartCallback(message);
             }
 
             // Store the abort function for later use
@@ -281,8 +297,8 @@ class Assistant {
                 messages.push(message);
                 this._upsertMessage(message);
                 isFinished = true;
-                if (this.onTextEndCallback) {
-                    this.onTextEndCallback(message.content);
+                if (this.onStreamEndCallback) {
+                    this.onStreamEndCallback(message);
                 }
             }
         });
@@ -299,8 +315,12 @@ class Assistant {
                 ? delta.content
                 : message.content + delta.content;
             // Send the message to the callback
-            if (this.onTextCallback) {
-                this.onTextCallback(message.content);
+            if (this.onStreamCallback) {
+                this.onStreamCallback({
+                    content: message.content,
+                    role: message.role,
+                    id: message.id
+                });
             }
         }
     }
@@ -371,6 +391,8 @@ class Assistant {
                 model: this.model,
                 messages,
                 ...this._addAdditionalParams(),
+                provider: this.aiProvider,
+                openaiKey: this.openaiKey,
             };
             LOGGER.debug('params', params);
             const response = await (await fetchCompletion(params)).json();

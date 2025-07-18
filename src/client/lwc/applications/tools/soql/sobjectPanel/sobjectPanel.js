@@ -75,6 +75,14 @@ export default class SobjectsPanel extends ToolkitElement {
         this.filterSObjects(this.keyword);
     }
 
+    handleRefresh() {
+        store.dispatch(
+            DESCRIBE.describeSObjects({
+                connector: this.connector.conn,
+            })
+        );
+    }
+
     handleScroll(event) {
         //console.log('handleScroll');
         const target = event.target;

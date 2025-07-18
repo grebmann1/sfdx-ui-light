@@ -4,7 +4,18 @@
     </template>
     <div class="slds-tree_container">
         <div>
-            <h2 class="slds-tree__group-header slds-truncate">{i18n.SOBJECTS_PANEL_SOBJECTS}</h2>
+            <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                <h2 class="slds-tree__group-header slds-truncate">{i18n.SOBJECTS_PANEL_SOBJECTS}</h2>
+                <lightning-button-icon
+                    class="slds-p-right_xx-small"
+                    icon-name="utility:refresh"
+                    variant="border-filled"
+                    alternative-text="Refresh"
+                    title="Refresh"
+                    disabled={isLoading}
+                    onclick={handleRefresh}>
+                </lightning-button-icon>
+            </div>
         </div>
         <div class="slds-form-element slds-p-horizontal_large">
             <label class="slds-form-element__label slds-assistive-text">

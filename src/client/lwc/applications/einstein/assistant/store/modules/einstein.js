@@ -2,6 +2,9 @@ import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/too
 import { separator_token, GLOBAL_EINSTEIN } from 'assistant/utils';
 import { SELECTORS, DOCUMENT } from 'core/store';
 import { lowerCaseKey, guid, isNotUndefinedOrNull, splitTextByTimestamp } from 'shared/utils';
+import ASSISTANTS from 'ai/assistants';
+import LOGGER from 'shared/logger';
+import { MODEL_OPTIONS } from 'ai/utils';
 
 const test = `59.0 APEX_CODE,DEBUG
 Execute Anonymous: aiplatform.ModelsAPI.createChatGenerations_Request request = new aiplatform.ModelsAPI.createChatGenerations_Request();
@@ -36,6 +39,7 @@ Please try creating a new dialog, or log the issue on GitHub if the problem pers
 END_EINSTEIN_TOOLKIT
 17:52:18.96 (15101249217)|CODE_UNIT_FINISHED|execute_anonymous_apex
 17:52:18.96 (15101271193)|EXECUTION_FINISHED`;
+
 const Schemas = {};
 Schemas.ExecuteAnonymousResult = {
     column: 'number',
@@ -47,18 +51,19 @@ Schemas.ExecuteAnonymousResult = {
     success: 'boolean',
     debugLog: 'string',
 };
+
 const DEBUG = 'DEBUG';
 const EINSTEIN_SETTINGS_KEY = 'EINSTEIN_SETTINGS_KEY';
 
-const INITIAL_TABS = [enrichTab({ id: guid(), body: '' }, null)];
+//const INITIAL_TABS = [enrichTab({ id: guid(), body: '' }, null)];
 
 /** Methods */
 
-function enrichTabs(tabs, state, selector) {
+/* function enrichTabs(tabs, state, selector) {
     return tabs.map(tab => enrichTab(tab, state, selector));
-}
+} */
 
-function enrichTab(tab, state, selector) {
+/* function enrichTab(tab, state, selector) {
     const file =
         tab.fileId && selector ? selector.selectById(state, lowerCaseKey(tab.fileId)) : null;
     const fileBody = file?.content || tab.fileBody;
@@ -67,7 +72,7 @@ function enrichTab(tab, state, selector) {
         fileBody: fileBody,
         isDraft: fileBody != tab.body && isNotUndefinedOrNull(tab.fileId),
     };
-}
+} */
 
 function extractEinsteinToolkitContent(log) {
     const toolkitRegex = /START_EINSTEIN_TOOLKIT(.*?)END_EINSTEIN_TOOLKIT/s;
@@ -87,11 +92,10 @@ function loadCacheSettings(alias) {
 
 function saveCacheSettings(alias, state) {
     try {
-        const { tabs, dialog, connectionAlias } = state;
-        //console.log(`${alias}-${EINSTEIN_SETTINGS_KEY}`,{ tabs,dialog,connectionAlias });
+        const { tabs, dialog, connectionAlias, provider, model } = state;
         localStorage.setItem(
             `${alias}-${EINSTEIN_SETTINGS_KEY}`,
-            JSON.stringify({ tabs, dialog, connectionAlias })
+            JSON.stringify({ tabs, dialog, connectionAlias, provider, model })
         );
     } catch (e) {
         console.error('Failed to save CONFIG to localstorage', e);
@@ -124,13 +128,13 @@ const formatHeaders = state => ({
     },
 });
 
-const testTimer = () => {
+/* const testTimer = () => {
     return new Promise(resolve => {
         setTimeout(() => {
             resolve();
         }, 4000);
     });
-};
+}; */
 export const einsteinExecuteModel = createAsyncThunk(
     'einstein/executeModel',
     async ({ connector, body, alias, tabId, messages }, { dispatch, getState }) => {
@@ -175,6 +179,55 @@ export const einsteinExecuteModel = createAsyncThunk(
     }
 );
 
+const _innerExecute = (dispatch, { assistant, messages, tabId, onStream, alias }) => {
+    return new Promise((resolve, reject) => {
+        try{
+            assistant
+            .init()
+            .addMessages([...messages])
+            .onStream(message => {
+                resolve(message);
+                if (onStream) onStream(message);
+            })
+            .onStreamEnd(message => {
+                LOGGER.debug('message end --> ', message);
+                dispatch(einsteinSlice.actions.updateStreamingMessage({ tabId, message, alias, isSave: true }));
+            })
+            .execute();
+        }catch(err){
+            reject(err);
+        }
+    });
+}
+
+export const openaiExecuteModel = createAsyncThunk(
+    'einstein/openaiExecuteModel',
+    async ({ messages, tabId, alias, model = 'gpt-4o-mini', aiProvider = 'openai', onStream }, { dispatch, getState }) => {
+        try {
+            const assistant = new ASSISTANTS.Assistant({
+                model,
+                aiProvider
+            });
+
+            const responses = await _innerExecute(dispatch, {
+                assistant,
+                messages,
+                tabId,
+                onStream,
+                alias,
+            });
+            LOGGER.debug('responses', responses);
+            return {
+                data: [].concat(messages, responses),
+                alias,
+                tabId,
+            };
+        } catch (err) {
+            throw err;
+        }
+    }
+);
+
 // Create a slice with reducers and extraReducers
 const einsteinSlice = createSlice({
     name: 'einstein',
@@ -184,6 +237,8 @@ const einsteinSlice = createSlice({
         body: null,
         currentDialogId: null,
         connectionAlias: null,
+        provider: 'apex',
+        model: MODEL_OPTIONS[0].value,
         errorIds: [], // No need to have it on dialog lvl
     },
     reducers: {
@@ -191,10 +246,12 @@ const einsteinSlice = createSlice({
             const { alias } = action.payload;
             const cachedConfig = loadCacheSettings(alias);
             if (cachedConfig) {
-                const { dialog, connectionAlias } = cachedConfig;
+                const { dialog, connectionAlias, provider, model } = cachedConfig;
                 Object.assign(state, {
                     dialog,
                     connectionAlias,
+                    provider: provider || 'apex',
+                    model: model || 'gpt-4.1-mini-2025-04-14',
                 });
             }
         },
@@ -207,6 +264,20 @@ const einsteinSlice = createSlice({
         updateConnectionAlias: (state, action) => {
             const { connectionAlias, alias } = action.payload;
             state.connectionAlias = connectionAlias;
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
+            }
+        },
+        updateProvider: (state, action) => {
+            const { provider, alias } = action.payload;
+            state.provider = provider;
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
+            }
+        },
+        updateModel: (state, action) => {
+            const { model, alias } = action.payload;
+            state.model = model;
             if (isNotUndefinedOrNull(alias)) {
                 saveCacheSettings(alias, state);
             }
@@ -264,6 +335,23 @@ const einsteinSlice = createSlice({
         selectionTab: (state, action) => {
             const { id } = action.payload;
             state.currentDialogId = id;
+        },
+        updateStreamingMessage: (state, action) => {
+            const { tabId, message, isSave, alias } = action.payload;
+            const dialog = SELECTORS.einstein.selectById({einstein: state}, lowerCaseKey(tabId));
+            if (dialog && dialog.data && dialog.data.length > 0) {
+                // Create a new data array with the last message replaced
+                const newData = [...dialog.data];
+                newData[newData.length - 1] = message;
+                einsteinModelAdapter.upsertOne(state.dialog, {
+                    ...dialog,
+                    id: lowerCaseKey(tabId),
+                    data: newData,
+                });
+                if (isSave) {
+                    saveCacheSettings(alias, state);
+                }
+            }
         },
     },
     extraReducers: builder => {
@@ -323,6 +411,50 @@ const einsteinSlice = createSlice({
                     state.errorIds.filter(x => x != lastMessage.id), // to be sure it's unique
                     lastMessage.id
                 );
+            })
+            // OpenAI Thunk
+            .addCase(openaiExecuteModel.pending, (state, action) => {
+                const { tabId } = action.meta.arg;
+                einsteinModelAdapter.upsertOne(state.dialog, {
+                    id: lowerCaseKey(tabId),
+                    data: null,
+                    isFetching: true,
+                    error: null,
+                });
+            })
+            .addCase(openaiExecuteModel.fulfilled, (state, action) => {
+                const { data, alias, tabId } = action.payload;
+                einsteinModelAdapter.upsertOne(state.dialog, {
+                    id: lowerCaseKey(tabId),
+                    data,
+                    isFetching: false,
+                    error: null,
+                });
+                if (isNotUndefinedOrNull(alias)) {
+                    saveCacheSettings(alias, state);
+                }
+                if (chrome?.runtime) {
+                    chrome.runtime.sendMessage({
+                        action: 'broadcastMessageToSidePanel',
+                        content: { action: 'refresh' },
+                    });
+                }
+            })
+            .addCase(openaiExecuteModel.rejected, (state, action) => {
+                const { tabId, messages } = action.meta.arg;
+                const error = action.error;
+                const lastMessage = messages && messages.length > 0 ? messages[messages.length - 1] : {};
+                einsteinModelAdapter.upsertOne(state.dialog, {
+                    id: lowerCaseKey(tabId),
+                    isFetching: false,
+                    error,
+                });
+                if (lastMessage.id) {
+                    state.errorIds = [].concat(
+                        state.errorIds.filter(x => x != lastMessage.id),
+                        lastMessage.id
+                    );
+                }
             });
     },
 });

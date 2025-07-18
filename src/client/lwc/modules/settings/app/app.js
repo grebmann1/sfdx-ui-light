@@ -42,9 +42,15 @@ export default class App extends ToolkitElement {
     @track activeTab;
 
     isOpenAIKeyVisible = false;
+    isMistralKeyVisible = false;
 
     // New property to track API version validity
     _isApiVersionValid = true;
+
+    @track aiProviderOptions = [
+        { label: 'OpenAI', value: 'openai' },
+        { label: 'Einstein', value: 'einstein' },
+    ];
 
     connectedCallback() {
         this.loadConfigFromCache();
@@ -126,7 +132,7 @@ export default class App extends ToolkitElement {
     handleToggleVisibility = e => {
         e.preventDefault();
         let isVisible = e.currentTarget.dataset.isVisible !== 'true'; // toggle the visibility
-        this.template.querySelector('lightning-input[data-key="openai_key"]').type = isVisible
+        this.template.querySelector('lightning-input[data-key="' + e.currentTarget.dataset.key + '"]').type = isVisible
             ? 'text'
             : 'password';
         // update the button
@@ -202,7 +208,7 @@ export default class App extends ToolkitElement {
             }
             if (clientIdChanged) {
                 LOGGER.log('client_id changed', this.originalSessionConfig.client_id);
-                this.connector.conn._callOptions.clientId = this.originalSessionConfig.client_id;
+                this.connector.conn._callOptions.client = this.originalSessionConfig.client_id;
             }
             if (hasChanged) {
                 store.dispatch(
@@ -244,7 +250,10 @@ export default class App extends ToolkitElement {
         Object.values(configurationList).forEach(item => {
             config[item.key] = cachedConfiguration[item.key];// || item.value;
         });
-
+        // Default to 'openai' if not set
+        if (!config.ai_provider) {
+            config.ai_provider = 'openai';
+        }
         this.config = config;
         this.originalConfig = { ...config };
 

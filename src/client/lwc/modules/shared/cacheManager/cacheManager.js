@@ -161,6 +161,7 @@ export const CACHE_CONFIG = {
     CONFIG_POPUP: new CONFIG_OBJECT('openAsPopup', false),
     OPENAI_ASSISTANT_ID: new CONFIG_OBJECT('openai_assistant_id', null),
     OPENAI_KEY: new CONFIG_OBJECT('openai_key', null),
+    MISTRAL_KEY: new CONFIG_OBJECT('mistral_key', null), // Added for Mistral
     OVERLAY_ENABLED: new CONFIG_OBJECT('overlayEnabled', true),
     CONTENT_SCRIPT_INCLUDE_PATTERNS: new CONFIG_OBJECT('content_script_include_patterns', null),
     CONTENT_SCRIPT_EXCLUDE_PATTERNS: new CONFIG_OBJECT('content_script_exclude_patterns', null),
@@ -184,6 +185,7 @@ export const CACHE_CONFIG = {
         false
     ),
     CHROME_SYNC_ORG_INITIALIZED_STORAGE_KEY: new CONFIG_OBJECT('chrome_syncOrgInitialized', false),
+    AI_PROVIDER: new CONFIG_OBJECT('ai_provider', 'openai'),
 };
 
 export const CACHE_SESSION_CONFIG = {
@@ -215,7 +217,13 @@ export async function saveExtensionConfigToCache(config) {
 export const getOpenAIKeyFromCache = async () => {
     return (await cacheManager.getConfigValue(CACHE_CONFIG.OPENAI_KEY.key)) || '';
 };
-
+// Mistral Key
+export const getMistralKeyFromCache = async () => {
+    return (await cacheManager.getConfigValue(CACHE_CONFIG.MISTRAL_KEY.key)) || '';
+};
+export const setMistralKeyInCache = async (key) => {
+    return await cacheManager.setConfigValue(CACHE_CONFIG.MISTRAL_KEY.key, key);
+};
 // Synced Settings
 export const getSyncedSettingsInitializedFromCache = async () => {
     return await cacheManager.loadGeneralData(
