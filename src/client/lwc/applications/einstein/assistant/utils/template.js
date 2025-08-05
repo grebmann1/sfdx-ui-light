@@ -10,7 +10,7 @@ const generateItems = (variableName, content, role) => {
     `;
 };
 
-const instructionFormatted = () => {
+export const instructionFormatted = () => {
     const instructions = [
         'Try to be precise, technical, and provide detailed answers.',
         'Whenever it makes sense to provide multiple solutions, include multiple solutions.',

@@ -283,23 +283,28 @@ class Assistant {
             }
 
             const parsedData = safeParseJson(data);
-            const { finish_reason, delta } = parsedData.choices[0];
+            LOGGER.debug('parsedData', parsedData);
+            try{
+                const { finish_reason, delta } = parsedData.choices[0];
 
-            this._updateMessageFromDelta(message, delta);
+                this._updateMessageFromDelta(message, delta);
 
-            if (delta.tool_calls) {
-                this._accumulateToolCalls(delta.tool_calls, toolCallsAccumulator, message);
-            }
-
-            if (finish_reason === 'tool_calls' && message.tool_calls) {
-                await this._handleToolCalls(message, messages);
-            } else if (finish_reason === 'stop') {
-                messages.push(message);
-                this._upsertMessage(message);
-                isFinished = true;
-                if (this.onStreamEndCallback) {
-                    this.onStreamEndCallback(message);
+                if (delta.tool_calls) {
+                    this._accumulateToolCalls(delta.tool_calls, toolCallsAccumulator, message);
                 }
+
+                if (finish_reason === 'tool_calls' && message.tool_calls) {
+                    await this._handleToolCalls(message, messages);
+                } else if (finish_reason === 'stop') {
+                    messages.push(message);
+                    this._upsertMessage(message);
+                    isFinished = true;
+                    if (this.onStreamEndCallback) {
+                        this.onStreamEndCallback(message);
+                    }
+                }
+            } catch (error) {
+                LOGGER.error('Error in _handleStreamProcessing:', error);
             }
         });
 

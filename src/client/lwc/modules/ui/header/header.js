@@ -16,6 +16,8 @@ export default class Header extends LightningElement {
 
     @api isMenuSmall = false;
 
+    @api isAgentChatExpanded = false;
+
     @wire(NavigationContext)
     navContext;
 
@@ -43,6 +45,14 @@ export default class Header extends LightningElement {
 
         window.defaultStore.setItem('header-isMenuSmall', JSON.stringify(this.isMenuSmall));
     };
+
+    handleToggle_rightPanel = () => {
+        if (this.isAgentChatExpanded) {
+            legacyStore.dispatch(store_application.collapseAgentChat());
+        } else {
+            legacyStore.dispatch(store_application.expandAgentChat());
+        }
+    }
 
     selectTab = e => {
         const target = e.currentTarget.dataset.path;
@@ -114,7 +124,18 @@ export default class Header extends LightningElement {
             .toString();
     }
 
-    get iconName() {
+    get rightPanelCollapseClass() {
+        return classSet('slds-grid button-container slds-show_medium')
+            .add({
+                'slds-grid_align-end': !this.isAgentChatExpanded,
+            })
+            .toString();
+    }
+    get leftPanelIconName() {
         return this.isMenuSmall ? 'utility:toggle_panel_left' : 'utility:toggle_panel_right';
+    }
+
+    get rightPanelIconName(){
+        return this.isAgentChatExpanded ? 'utility:toggle_panel_left' : 'utility:toggle_panel_right';
     }
 }

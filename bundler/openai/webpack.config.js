@@ -10,9 +10,9 @@ module.exports = {
     libraryTarget: 'umd',
     globalObject: 'this',
     umdNamedDefine: true,
-    sourceMapFilename: 'bundle.min.js.map',
+    //sourceMapFilename: 'bundle.min.js.map',
   },
-  devtool: 'source-map',
+  //devtool: 'source-map',
   resolve: {
     extensions: ['.js', '.json'],
   },

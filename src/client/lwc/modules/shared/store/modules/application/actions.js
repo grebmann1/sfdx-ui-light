@@ -65,3 +65,17 @@ export function expandMenu(source) {
         payload: { source },
     };
 }
+
+export function collapseAgentChat(source) {
+    return {
+        type: CONST.AGENT_CHAT_COLLAPSE,
+        payload: { source },
+    };
+}
+
+export function expandAgentChat(source) {
+    return {
+        type: CONST.AGENT_CHAT_EXPAND,
+        payload: { source },
+    };
+}

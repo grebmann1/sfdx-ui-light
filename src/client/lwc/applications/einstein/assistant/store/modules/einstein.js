@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
-import { separator_token, GLOBAL_EINSTEIN } from 'assistant/utils';
+import { separator_token, instructionFormatted } from 'assistant/utils';
 import { SELECTORS, DOCUMENT } from 'core/store';
 import { lowerCaseKey, guid, isNotUndefinedOrNull, splitTextByTimestamp } from 'shared/utils';
 import ASSISTANTS from 'ai/assistants';
@@ -199,6 +199,7 @@ const _innerExecute = (dispatch, { assistant, messages, tabId, onStream, alias }
     return new Promise((resolve, reject) => {
         try{
             assistant
+            .setInstructions(instructionFormatted)
             .init()
             .addMessages([...messages])
             .onStream(message => {

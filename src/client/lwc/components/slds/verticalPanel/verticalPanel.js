@@ -12,6 +12,8 @@ export default class VerticalPanel extends LightningElement {
     @api size = 'slds-size_medium';
     @api title = 'Filter';
 
+    @api isHeaderHidden = false;
+
     hasLoaded = false;
 
     /** Events */
@@ -37,8 +39,8 @@ export default class VerticalPanel extends LightningElement {
 
     get normalizedSize() {
         return normalize(this.size, {
-            fallbackValue: 'default',
-            validValues: ['default', 'slds-size_medium', 'slds-size_full'],
+            fallbackValue: 'default',// Default doesn't exist in SLDS !!!
+            validValues: ['default', 'slds-size_small', 'slds-size_medium', 'slds-size_large', 'slds-size_x-large', 'slds-size_full'],
         });
     }
 
@@ -47,5 +49,9 @@ export default class VerticalPanel extends LightningElement {
             fallbackValue: 'right',
             validValues: ['left', 'right'],
         });
+    }
+
+    get isHeaderVisible() {
+        return !this.isHeaderHidden;
     }
 }

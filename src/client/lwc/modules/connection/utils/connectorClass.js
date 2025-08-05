@@ -21,6 +21,17 @@ export class Connector {
 
     /** Methods */
 
+    toPublic() {
+        return {
+            alias: this.configuration.alias,
+            username: this.configuration.username,
+            credentialType: this.configuration.credentialType,
+            sessionId: this.conn?.accessToken,
+            instanceUrl: this.conn?.instanceUrl,
+            version: this.conn?.version,
+        };
+    }
+
     async generateAccessToken() {
         LOGGER.debug('--> generateAccessToken <--');
         try {
