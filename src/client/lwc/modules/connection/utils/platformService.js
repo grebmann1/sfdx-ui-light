@@ -48,8 +48,8 @@ export async function getConfiguration(alias) {
 
 export function saveConfiguration(alias, configuration) {
     switch (getCurrentPlatform()) {
-        case PLATFORM.ELECTRON:
-            return electron.saveConfiguration(alias, configuration);
+        /*case PLATFORM.ELECTRON:
+            return electron.saveConfiguration(alias, configuration);*/
         /* case PLATFORM.CHROME:
             return chrome.saveConfiguration(alias, configuration); */
         default:
@@ -59,8 +59,8 @@ export function saveConfiguration(alias, configuration) {
 
 export function setConfigurations(configurations) {
     switch (getCurrentPlatform()) {
-        case PLATFORM.ELECTRON:
-            return electron.setConfigurations(configurations);
+        /*case PLATFORM.ELECTRON:
+            return electron.setConfigurations(configurations);*/
         /* case PLATFORM.CHROME:
             return chrome.setConfigurations(configurations); */
         default:

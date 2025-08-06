@@ -1,26 +1,16 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import {
-    isUndefinedOrNull,
     isEmpty,
-    ROLES,
-    guid,
-    lowerCaseKey,
-    isNotUndefinedOrNull,
     isChromeExtension,
     runActionAfterTimeOut
 } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
-import { store, connectStore, EINSTEIN, SELECTORS } from 'core/store';
-import LOGGER from 'shared/logger';
-import OpenAI from 'openai';
-import { tools } from 'agent/utils';
-
-
 
 export default class App extends ToolkitElement {
     isLoading = false;
 
     @api openaiKey;
+    @api isAudioRecorderDisabled = false;
 
     // prompt
     _prompt;
@@ -29,6 +19,18 @@ export default class App extends ToolkitElement {
     error_title;
     error_message;
     errorIds;
+
+    hasRendered = false;
+
+
+    renderedCallback(){
+        if(!this.hasRendered){  
+            this.hasRendered = true;
+            setTimeout(()=>{
+                this.template.querySelector('.slds-publisher__input').focus();
+            },300);
+        }
+    }
 
 
     /** Methods **/
@@ -99,5 +101,9 @@ export default class App extends ToolkitElement {
 
     get isSendButtonDisabled() {
         return this.isLoading || isEmpty(this._prompt);
+    }
+
+    get isAudioRecorderDisplayed() {
+        return !this.isAudioRecorderDisabled;
     }
 }

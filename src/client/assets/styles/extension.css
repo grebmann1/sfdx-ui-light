@@ -72,6 +72,10 @@
     flex-direction: row;
 }
 
+.sf-toolkit .slds-justify-content-center {
+    justify-content: center;
+}
+
 .sf-toolkit .slds-justify-content-flew-end{
     justify-content: flex-end;
 }

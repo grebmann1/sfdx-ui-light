@@ -4,22 +4,24 @@
             <li class="slds-m-top_x-small">
                 <div class="slds-chat-event">
                     <div class="slds-chat-event__body">
-                        <div class="slds-flex-column slds-align-items_center">
+                        <div class="slds-flex-column slds-align-items_center slds-justify-content-center">
                             <p>
                                 <span class="slds-text-title_bold">{tool_message_title}:</span> {tool_name}
                             </p>
-                            <div class="slds-flex-row">
-                                {toolParametersButtonTitle}
-                                <template lwc:if={tool_parameters}>
-                                    <lightning-button-icon
-                                        icon-name={toolParametersButtonIcon}
-                                        variant="container"
-                                        size="small"
-                                        title={toolParametersButtonTitle}
-                                        onclick={handleToggleToolParameters}
-                                    ></lightning-button-icon>
-                                </template>
-                            </div>
+                            <template lwc:if={tool_isFinished}>
+                                <div class="slds-flex-row slds-align-items_center slds-justify-content-center">
+                                    {toolParametersButtonTitle}
+                                    <template lwc:if={tool_parameters}>
+                                        <lightning-button-icon
+                                            icon-name={toolParametersButtonIcon}
+                                            variant="container"
+                                            size="small"
+                                            title={toolParametersButtonTitle}
+                                            onclick={handleToggleToolParameters}
+                                        ></lightning-button-icon>
+                                    </template>
+                                </div>
+                            </template>
                         </div>
                         
                     </div>
@@ -34,8 +36,7 @@
                             ></slds-spinner>
                         </div>
                     </template>
-
-                    <template lwc:if={showToolParameters}>
+                    <template lwc:elseif={showToolParameters}>
                         <div class="slds-chat-event__agent-message slds-truncate slds-truncate-vertical slds-m-top_x-small">
                             <slds-code-block
                                 class="slds-full-height"

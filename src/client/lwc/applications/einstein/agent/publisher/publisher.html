@@ -13,7 +13,7 @@
                     disabled={isLoading}></textarea>
                 <div class="slds-publisher__actions slds-grid slds-grid_align-spread">
                     <ul class="slds-grid slds-publisher__toggle-visibility">
-                        <li>
+                        <li lwc:if={isAudioRecorderDisplayed}>
                             <agent-audio-recorder
                                 openai-key={openaiKey}
                                 onchange={handleSpeechChange}

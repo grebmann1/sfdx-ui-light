@@ -24,7 +24,6 @@ const init = async () => {
     };
     window.jsforce = jsforce;
     //window.OpenAIAgentsBundle = openaiAgent;
-    console.log('openaiAgent --> ',window.OpenAIAgentsBundle);
 };
 
 /** Init **/

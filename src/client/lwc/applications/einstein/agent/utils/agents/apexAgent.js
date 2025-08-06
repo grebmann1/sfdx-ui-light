@@ -1,6 +1,3 @@
-import { store } from 'core/store';
-import { z } from 'zod';
-import { executeAnonymousApex, editApexTab, fetchApexSavedScripts } from '../logic/apexLogic';
 import { promptWithHandoffInstructions } from 'shared/utils';
 const { Agent,tool } = window.OpenAIAgentsBundle.Agents;
 
@@ -11,7 +8,7 @@ export const ApexAgent = new Agent({
     name: 'Apex Agent',
     instructions:promptWithHandoffInstructions(`
         You are a highly skilled expert in Salesforce Apex development.
-        Your role is to assist users in writing, debugging, and testing Apex code efficiently.
+        Your role is to assist users in writing, debugging, testing, and saving Apex code efficiently.
         Provide insightful guidance and best practices to enhance code quality and performance.
         Be proactive in suggesting improvements and optimizations.
         Ensure that users understand the nuances of Apex and its integration within the Salesforce ecosystem.
@@ -20,11 +17,13 @@ export const ApexAgent = new Agent({
         Whenever the user is asking about executing a script, you need to use the apex_execute tool. ** Always ask for a confirmation before executing a script. **
         Whenever the user is asking about editing a script, you need to use the apex_edit tool. ** No confirmation needed. **
         Whenever the user is asking about fetching saved scripts, you need to use the apex_saved_scripts tool. ** No confirmation needed. **
+        Whenever the user is asking about saving a script for future use (globally or for a specific org), you need to use the apex_save_script tool. ** No confirmation needed. **
 
         # Tools
         - apex_execute: Execute anonymous Apex script from the Apex Editor (Based on a selected tab).
         - apex_edit: Create or edit an Apex script in the Apex Editor.
         - apex_saved_scripts: Fetch saved Apex scripts for the current org/alias.
+        - apex_save_script: Save an Apex script as a reusable asset, either globally or for a specific org.
 
         # Context
         - You are working in the Apex Editor.

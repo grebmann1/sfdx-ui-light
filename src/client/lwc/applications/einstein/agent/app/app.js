@@ -34,6 +34,7 @@ export default class App extends ToolkitElement {
     @track currentMessage;
 
     @api connector;
+    @api isAudioRecorderDisabled = false;
 
 
     // Error
@@ -46,7 +47,7 @@ export default class App extends ToolkitElement {
     // Better to use a constant than a getter ! (renderCallback is called too many times)
     welcomeMessage = {
         role: 'assistant',
-        content: 'Hello, I am the SF Toolkit Assistant, I can help you with your Salesforce data.',
+        content: 'Hello, I am the SF Toolkit Assistant, I can help you interact with Salesforce and Salesforce tools.',
         id: 'WELCOME_MESSAGE_ID',
     };
 
@@ -186,6 +187,8 @@ export default class App extends ToolkitElement {
                     return apexContext();
                 case 'api/app':
                     return apiContext();
+                case 'agent': // Limited mode
+                    return sidePanelContext();
                 default:
                     return '';
             }
@@ -237,6 +240,12 @@ export default class App extends ToolkitElement {
             return contextText;
         }
 
+        const sidePanelContext = () => {
+            let contextText = 'You are working in the side panel of the Salesforce Toolkit.';
+                contextText += `\nYou are working in Limited mode.`;
+            return contextText;
+        }
+
         const openai = new OpenAI({
             dangerouslyAllowBrowser: true,
             apiKey: this.openaiKey,
@@ -259,8 +268,8 @@ export default class App extends ToolkitElement {
             ...tools.connections,
             ...tools.general
         ];
-        LOGGER.log('this.isUserLoggedIn',this.isUserLoggedIn);
-        LOGGER.log('getCurrentGlobalContext',getCurrentGlobalContext());
+        //LOGGER.log('this.isUserLoggedIn',this.isUserLoggedIn);
+        //LOGGER.log('getCurrentGlobalContext',getCurrentGlobalContext());
         LOGGER.log('getCurrentApplicationContext',getCurrentApplicationContext());
         const _filteredTools = this.isUserLoggedIn ? [..._loggedInTools,..._loggedOutTools] : [..._loggedOutTools];
 
@@ -325,7 +334,7 @@ export default class App extends ToolkitElement {
                     this.messages.push(this.formatMessage(event.item.rawItem));
                     this.scrollToBottom();
                 }
-                LOGGER.debug('event',JSON.parse(JSON.stringify(event)));
+                //LOGGER.debug('event',JSON.parse(JSON.stringify(event)));
             }
         }
         // Store the history

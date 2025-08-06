@@ -12,6 +12,13 @@
                         size="medium"></lightning-button>
                 </template>
                 <!-- Actions for connections -->
+                <template lwc:if={isAgentDisplayed}>
+                    <lightning-button-icon
+                        icon-name="utility:agent_astro"
+                        onclick={openAgentClick}
+                        title="Agent"
+                        variant={agentVariant}></lightning-button-icon>
+                </template>
                 <lightning-button-icon
                     icon-name="utility:open"
                     onclick={openToolkitClick}
@@ -24,7 +31,7 @@
                     variant={connectionVariant}></lightning-button-icon>
                 <template lwc:if={isAssistantDisplayed}>
                     <lightning-button-icon
-                        icon-name="utility:einstein"
+                        icon-name="utility:agent_session"
                         onclick={einsteinClick}
                         title="Assistant"
                         variant={assistantVariant}></lightning-button-icon>
@@ -68,6 +75,12 @@
                         application-name="assistant"
                         is-mobile
                         lwc:ref="assistant"></assistant-app>
+                </template>
+                <template lwc:elseif={isAgent}>
+                    <agent-app
+                        is-audio-recorder-disabled
+                        lwc:ref="agent"
+                    ></agent-app>
                 </template>
                 <!-- End -->
             </div>

@@ -111,6 +111,10 @@ export default class Message extends ToolkitElement {
         return this.item?.type === 'function_call' && this.isCurrentMessage;
     }
 
+    get tool_isFinished() {
+        return !this.tool_isRunning;
+    }
+
     get tool_message_title() {
         return this.tool_isRunning ? 'Calling function' : 'Called function';
     }
