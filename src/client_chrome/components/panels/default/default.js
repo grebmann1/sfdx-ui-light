@@ -87,7 +87,7 @@ export default class Default extends LightningElement {
         if(application?.openaiKey){
             this.isAgentDisplayed = !isEmpty(application.openaiKey);
             if(isUndefinedOrNull(this._currentApplication)){
-                this.currentApplication = APPLICATIONS.AGENT;
+                //this.currentApplication = APPLICATIONS.AGENT;
             }
         }
     }

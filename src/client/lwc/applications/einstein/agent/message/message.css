@@ -9,7 +9,7 @@
 .slds-chat-message__text_inbound {
     max-width: 100%;
     white-space: normal;
-    background-color: white;
+    background-color: var(--slds-g-color-neutral-base-95, #f3f3f3);;
     font-size: 16px;
 }
 .slds-chat-message__text_outbound {
