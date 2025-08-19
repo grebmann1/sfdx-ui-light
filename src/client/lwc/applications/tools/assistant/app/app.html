@@ -1,0 +1,87 @@
+<template>
+    <div class={pageClass}>
+        <builder-editor>
+            <!-- Header -->
+            <builder-header
+                slot="header"
+                title="GPT-4o, You need to have Einstein GPT Enabled"
+                sub-title="Einstein Assistant work with Salesforce AI Platform or directly with OpenAI"
+                icon-name="standard:story">
+                <div slot="actions" class="slds-builder-toolbar__actions">
+                    <template lwc:if={isApexProvider}>
+                        <lightning-picklist
+                            label="Salesforce Instance"
+                            name="salesforceInstance"
+                            value={salesforceInstance_alias}
+                            options={salesforceInstance_options}
+                            field-level-help="Select Instance with Einstein GPT Enabled"
+                            onchange={salesforceInstance_handleChange}
+                            class={picklistClass}></lightning-picklist>
+                    </template>
+                    <template lwc:else>
+                        <lightning-combobox
+                            label="Model"
+                            name="model"
+                            value={model}
+                            options={modelOptions}
+                            onchange={handleModelChange}
+                            class="slds-m-left_small"
+                            dropdown-alignment="auto"
+                        ></lightning-combobox>
+                    </template>
+                    <lightning-combobox
+                        label="Provider"
+                        name="provider"
+                        value={provider}
+                        options={providerOptions}
+                        onchange={handleProviderChange}
+                        class="slds-m-left_small"
+                        dropdown-alignment="auto"
+                    ></lightning-combobox>
+                </div>
+                <!--
+                <p slot="meta" class="slds-page-header__meta-text">
+                    This feature is still under development using Einstein .GTP40 Omni (GPT-4o)
+                    You need to have Einstein GPT Enabled in your Org to make it work !
+                </p>
+                -->
+            </builder-header>
+            <!-- Body -->
+            <article class="full-page-body slds-card">
+                <div
+                    class="slds-is-relative slds-full-width slds-full-height slds-flex-column"
+                    style="min-height: 200px">
+                    <!-- Tabs -->
+                    <slds-tabset
+                        variant="scoped"
+                        class="slds-without-tab slds-tabs-no-padding-extension"
+                        active-tab-value={currentDialogId}
+                        onaddtab={handleAddTab}
+                        onclosetab={handleCloseTab}
+                        is-add-tab-enabled
+                        is-remove-tab-event-disabled>
+                        <template for:each={formattedTabs} for:item="item">
+                            <slds-tab
+                                key={item.key}
+                                label={item.name}
+                                value={item.id}
+                                onactive={handleSelectTab}
+                                is-closeable={item.isCloseable}
+                                is-draft={item.isDraft}></slds-tab>
+                        </template>
+                    </slds-tabset>
+                    <!-- Dialogs -->
+                    <assistant-dialog
+                        class="slds-fill-height slds-flex-column"
+                        application-name={applicationName}
+                        connector={salesforceInstance_connector}
+                        provider={provider}></assistant-dialog>
+
+                    <template lwc:if={isLoading}>
+                        <slds-spinner alternative-text="Loading" size="small"></slds-spinner>
+                    </template>
+                </div>
+            </article>
+        </builder-editor>
+    </div>
+</template>

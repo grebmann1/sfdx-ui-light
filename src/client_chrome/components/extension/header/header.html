@@ -31,6 +31,7 @@
                                 </div>
                                 <div class="slds-combobox_container slds-combobox-addon_end">
                                     <lightning-input
+                                        lwc:ref="searchInput"
                                         class=""
                                         placeholder={placeholder}
                                         label="Search"
@@ -45,6 +46,7 @@
                 </template>
                 <template lwc:else>
                     <lightning-input
+                        lwc:ref="searchInput"
                         class=""
                         placeholder={placeholder}
                         label="Search"

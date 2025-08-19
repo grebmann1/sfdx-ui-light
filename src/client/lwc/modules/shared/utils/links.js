@@ -44,6 +44,21 @@ export const setupLinks = [
         prod: false,
     },
 
+    // Einstein
+    {
+        label: 'Agentforce Agents',
+        link: '/lightning/setup/EinsteinCopilot/home',
+        section: 'Einstein > Einstein Generative AI > Agentforce Studio',
+        prod: false,
+    },
+    {
+        label: 'Agentforce Assets',
+        link: '/lightning/setup/AgentAssetLibrary/home',
+        section: 'Einstein > Einstein Generative AI > Agentforce Studio',
+        prod: false,
+    },
+    
+
     //Administration > Users
     {
         label: 'Permission Sets Groups',

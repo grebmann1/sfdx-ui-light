@@ -1,0 +1,164 @@
+:host {
+    --slds-g-color-neutral-base-100: #fff;
+    --slds-g-color-neutral-base-95: #f3f3f3;
+    --slds-g-color-neutral-base-90: #e5e5e5;
+    --slds-g-color-neutral-base-80: #c9c9c9;
+    --slds-g-color-neutral-base-70: #aeaeae;
+    --slds-g-color-neutral-base-65: #a0a0a0;
+    --slds-g-color-neutral-base-60: #939393;
+    --slds-g-color-neutral-base-50: #747474;
+    --slds-g-color-neutral-base-40: #5c5c5c;
+    --slds-g-color-neutral-base-30: #444;
+    --slds-g-color-neutral-base-20: #2e2e2e;
+    --slds-g-color-neutral-base-15: #242424;
+    --slds-g-color-neutral-base-10: #181818;
+}
+.slds-publisher {
+    /*border-top:1px solid;
+    border-color: var(--slds-c-card-color-border,var(--sds-c-card-color-border,var(--slds-g-color-border-base-1,#c9c9c9)));*/
+}
+.assistant-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 100%;
+}
+
+.slds-chat-message__text_inbound:not(.slds-chat-loading) {
+    background-color: unset;
+}
+
+.slds-chat {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+}
+.slds-chat-message__text_outbound .slds-chat-message__meta {
+    margin-left: auto;
+}
+
+.slds-icon-typing.slds-is-animated .slds-icon-typing__dot {
+    -webkit-animation: slds-icon-typing__dot-first 1.2s ease-in-out infinite;
+    animation: slds-icon-typing__dot-first 1.2s ease-in-out infinite;
+}
+
+.slds-icon-typing.slds-is-animated .slds-icon-typing__dot:first-child {
+    -webkit-animation-name: slds-icon-typing__dot-first;
+    animation-name: slds-icon-typing__dot-first;
+}
+
+.slds-icon-typing.slds-is-animated .slds-icon-typing__dot:nth-child(2) {
+    -webkit-animation-name: slds-icon-typing__dot-second;
+    animation-name: slds-icon-typing__dot-second;
+}
+
+.slds-icon-typing.slds-is-animated .slds-icon-typing__dot:nth-child(3) {
+    -webkit-animation-name: slds-icon-typing__dot-third;
+    animation-name: slds-icon-typing__dot-third;
+}
+
+.slds-icon-typing.slds-is-paused .slds-icon-typing__dot {
+    -webkit-animation-play-state: paused;
+    animation-play-state: paused;
+}
+
+.slds-icon-typing__dot {
+    background-color: var(--slds-g-color-neutral-base-80, #c9c9c9);
+    border-radius: 50%;
+    display: inline-block;
+    height: 0.5rem;
+    margin: 0 0.125rem;
+    width: 0.5rem;
+}
+
+@-webkit-keyframes slds-icon-typing__dot-first {
+    0% {
+        background-color: var(--slds-g-color-neutral-base-80, #c9c9c9);
+    }
+
+    16% {
+        background-color: var(--slds-g-color-neutral-base-60, #c9c9c9);
+    }
+
+    33%,
+    to {
+        background-color: var(--slds-g-color-neutral-base-80, #c9c9c9);
+    }
+}
+
+@keyframes slds-icon-typing__dot-first {
+    0% {
+        background-color: var(--slds-g-color-neutral-base-80, #c9c9c9);
+    }
+
+    16% {
+        background-color: var(--slds-g-color-neutral-base-60, #c9c9c9);
+    }
+
+    33%,
+    to {
+        background-color: var(--slds-g-color-neutral-base-80, #c9c9c9);
+    }
+}
+
+@-webkit-keyframes slds-icon-typing__dot-second {
+    0%,
+    33% {
+        background-color: var(--slds-g-color-neutral-base-80, #c9c9c9);
+    }
+
+    50% {
+        background-color: var(--slds-g-color-neutral-base-60, #c9c9c9);
+    }
+
+    67%,
+    to {
+        background-color: var(--slds-g-color-neutral-base-80, #c9c9c9);
+    }
+}
+
+@keyframes slds-icon-typing__dot-second {
+    0%,
+    33% {
+        background-color: var(--slds-g-color-neutral-base-80, #c9c9c9);
+    }
+
+    50% {
+        background-color: var(--slds-g-color-neutral-base-60, #c9c9c9);
+    }
+
+    67%,
+    to {
+        background-color: var(--slds-g-color-neutral-base-80, #c9c9c9);
+    }
+}
+
+@-webkit-keyframes slds-icon-typing__dot-third {
+    0%,
+    67% {
+        background-color: var(--slds-g-color-neutral-base-80, #c9c9c9);
+    }
+
+    83% {
+        background-color: var(--slds-g-color-neutral-base-60, #c9c9c9);
+    }
+
+    to {
+        background-color: var(--slds-g-color-neutral-base-80, #c9c9c9);
+    }
+}
+
+@keyframes slds-icon-typing__dot-third {
+    0%,
+    67% {
+        background-color: var(--slds-g-color-neutral-base-80, #c9c9c9);
+    }
+
+    83% {
+        background-color: var(--slds-g-color-neutral-base-60, #c9c9c9);
+    }
+
+    to {
+        background-color: var(--slds-g-color-neutral-base-80, #c9c9c9);
+    }
+}

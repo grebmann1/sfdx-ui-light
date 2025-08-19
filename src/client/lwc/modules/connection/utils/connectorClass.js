@@ -75,6 +75,24 @@ export class Connector {
         this.configuration._errorMessage = null;
     }
 
+    async _lightEnrichWithVersions(){
+        try{
+            const versions = await this.conn.request('/services/data/');
+
+            let latestVersion = Array.isArray(versions)
+                ? versions.sort((a, b) => b.version.localeCompare(a.version))[0]
+                : undefined;
+
+            // Enrich Connection
+            Object.assign(this.conn, {
+                version: latestVersion?.version || this.conn.version,
+                _versions: versions,
+            });
+        }catch(e){
+            LOGGER.error('Error enriching connector', e);
+        }
+    }
+
     async _enrichConnector() {
         try {
             this.resetError();
@@ -168,6 +186,9 @@ export class Connector {
         let connector = new Connector(configuration, connection);
         if (!isEnrichDisabled) {
             await connector._enrichConnector();
+        }else{
+            // to get the latest version
+            await connector._lightEnrichWithVersions();
         }
         return connector;
     }

@@ -5,7 +5,7 @@
         "modules": [
             { "dir": "$rootDir/src/client/lwc/modules" },
             { "dir": "$rootDir/src/client/lwc/components" },
-            { "dir": "$rootDir/src/client/lwc/applications/einstein" },
+            { "dir": "$rootDir/src/client/lwc/ai" },
             { "dir": "$rootDir/src/client/lwc/applications/explorers" },
             { "dir": "$rootDir/src/client/lwc/applications/documentation" },
             { "dir": "$rootDir/src/client/lwc/applications/tools" },

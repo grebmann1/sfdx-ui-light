@@ -10,4 +10,5 @@ export const TYPE = {
     PERMISSION_SET: 'Permission Set',
     USER: 'User',
     FLOW: 'Flow',
+    AGENTFORCE: 'Agentforce',
 };

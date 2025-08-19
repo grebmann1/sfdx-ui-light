@@ -107,6 +107,8 @@ export default class Item extends ToolkitElement {
                 return `/lightning/setup/ApexTriggers/page?address=%2F${this.item?.id}`;
             case TYPE.APEX_CLASS:
                 return `/lightning/setup/ApexClasses/page?address=%2F${this.item?.id}`;
+            case TYPE.AGENTFORCE:
+                return `/lightning/setup/EinsteinCopilot/${this.item?.id}/edit`;
             case TYPE.FLOW:
                 return `/builder_platform_interaction/flowBuilder.app?isFromAloha=true&flowDefId=${
                     this.item?.id
@@ -139,6 +141,8 @@ export default class Item extends ToolkitElement {
                 return 'standard:flow';
             case TYPE.LINK:
                 return 'standard:link';
+            case TYPE.AGENTFORCE:
+                return 'standard:story';
             default:
                 return 'utility:account';
         }
