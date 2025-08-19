@@ -6,7 +6,6 @@
 .cursor/
 
 node_modules
-package-lock.json
 __lwr_cache__
 site
 out/
