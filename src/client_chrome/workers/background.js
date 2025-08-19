@@ -1,3 +1,4 @@
+import { handleChromeInteraction } from './chromeApi.js';
 /** STATIC **/
 const OVERLAY_ENABLE = 'overlay_enable';
 const OVERLAY_DISABLE = 'overlay_disable';
@@ -528,6 +529,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
     handleTabOpening(tab);
 });
 
+// In the main message handler, delegate chrome_* actions to chromeApi.js
 chrome.runtime.onMessage.addListener(
     wrapAsyncFunction(async (message, sender) => {
         if (message.action === 'launchWebAuthFlow') {
@@ -565,6 +567,9 @@ chrome.runtime.onMessage.addListener(
                 action: 'toggleOverlay',
                 enabled: message.enabled,
             });
+        } else if(message.action.startsWith('chrome_')){
+            // Delegate all chrome_* actions to chromeApi.js
+            return await handleChromeInteraction(message);
         }
     })
 );
@@ -652,27 +657,4 @@ function broadcastMessageToAllSidePanelInstances(message) {
     for (const [tabId, port] of sidePanelConnections.entries()) {
         port.postMessage(message);
     }
-}
-
-function sendMessageToInstance(identityKey, message) {
-    const port = instanceConnections.get(identityKey);
-    if (port) {
-        port.postMessage(message);
-    }
-}
-
-function getPortByIdentityKey(identityKey) {
-    // Search for a port by alias or username
-    if (!identityKey) return null;
-    // Direct match (most common case)
-    if (instanceConnections.has(identityKey)) {
-        return instanceConnections.get(identityKey).port;
-    }
-    // Fallback: search by alias or username in the value
-    for (const [key, value] of instanceConnections.entries()) {
-        if (value.alias === identityKey || value.username === identityKey) {
-            return value.port;
-        }
-    }
-    return null;
 }

@@ -1,9 +1,11 @@
 import { api, LightningElement, wire } from 'lwc';
 import { store as legacyStore } from 'shared/store';
-import { connectStore, store, EINSTEIN } from 'core/store';
+import { connectStore, store, EINSTEIN, APPLICATION } from 'core/store';
 
 import { normalizeString as normalize,registerChromePort,disconnectChromePort } from 'shared/utils';
 import { PANELS } from 'extension/utils';
+import { CACHE_CONFIG, loadExtensionConfigFromCache } from 'shared/cacheManager';
+
 import LOGGER from 'shared/logger';
 export default class Default extends LightningElement {
     @api currentApplication;
@@ -50,6 +52,8 @@ export default class Default extends LightningElement {
     connectedCallback() {
         this.panel = this.urlOverwrittenPanel || this.panel;
         this.connectToBackground();
+        this.loadFromCache();
+        store.dispatch(APPLICATION.reduxSlice.actions.setIsSidePanel());
     }
 
     disconnectedCallback() {
@@ -81,6 +85,29 @@ export default class Default extends LightningElement {
     };
 
     /** Methods **/
+
+    loadFromCache = async () => {
+        const configuration = await loadExtensionConfigFromCache([
+            CACHE_CONFIG.OPENAI_KEY.key,
+            CACHE_CONFIG.MISTRAL_KEY.key,
+            CACHE_CONFIG.AI_PROVIDER.key,
+        ]);
+
+        // Handle LLM keys and provider
+        const openaiKey = configuration[CACHE_CONFIG.OPENAI_KEY.key];
+        const mistralKey = configuration[CACHE_CONFIG.MISTRAL_KEY.key];
+        const aiProvider = configuration[CACHE_CONFIG.AI_PROVIDER.key];
+
+        if(openaiKey) {
+            store.dispatch(APPLICATION.reduxSlice.actions.updateOpenAIKey({ openaiKey }));
+        }
+        if(mistralKey) {
+            store.dispatch(APPLICATION.reduxSlice.actions.updateMistralKey({ mistralKey }));
+        }
+        if(aiProvider) {
+            store.dispatch(APPLICATION.reduxSlice.actions.updateAiProvider({ aiProvider }));
+        }
+    };
 
     connectToBackground = () => {
         const port = registerChromePort(

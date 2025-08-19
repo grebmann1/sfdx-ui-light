@@ -9,4 +9,6 @@ export const MENU_SHOW = 'MENU_SHOW';
 export const MENU_HIDE = 'MENU_HIDE';
 export const MENU_COLLAPSE = 'MENU_COLLAPSE';
 export const MENU_EXPAND = 'MENU_EXPAND';
+export const AGENT_CHAT_COLLAPSE = 'AGENT_CHAT_COLLAPSE';
+export const AGENT_CHAT_EXPAND = 'AGENT_CHAT_EXPAND';
 export const UPDATE_IDENTITY = 'UPDATE_IDENTITY';

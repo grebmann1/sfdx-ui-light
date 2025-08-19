@@ -7,11 +7,10 @@ import {
     runActionAfterTimeOut,
     SETUP_LINKS,
     redirectToUrlViaChrome,
-    getRecordId,
 } from 'shared/utils';
 import { connectStore, store, APPLICATION } from 'core/store';
 import { TYPE } from 'overlay/utils';
-import { directConnect, credentialStrategies } from 'connection/utils';
+import { credentialStrategies } from 'connection/utils';
 
 import moment from 'moment';
 import jsforce from 'imported/jsforce';
@@ -38,6 +37,7 @@ export default class Overlay extends ToolkitElement {
     isConnectorLoaded = false;
     isLoading = false;
     hasRendered = false;
+    hasFocused = false;
     isFetchingMetadata = false;
     cachedData;
     viewerTab = 'Search'; // 'QuickLinks'
@@ -67,7 +67,10 @@ export default class Overlay extends ToolkitElement {
     set isOverlayDisplayed(value) {
         this._isOverlayDisplayed = value;
         if (this._isOverlayDisplayed) {
-            this.refs.container.focus();
+            //this.refs.container.focus();
+            this.refs.header?.focusSearchInput();
+        }else{
+            this.hasFocused = false;
         }
     }
     get isOverlayDisplayed() {
@@ -111,6 +114,11 @@ export default class Overlay extends ToolkitElement {
         if (!this.hasRendered) {
             this.refs.container.addEventListener('focusout', this.listenToContainerFocus);
         }
+        // Autofocus search input when overlay is displayed
+        if (this.isOverlayDisplayed && this.refs.header && this.refs.header.focusSearchInput && !this.hasFocused) {
+            this.refs.header.focusSearchInput();
+            this.hasFocused = true;
+        } 
         this.hasRendered = true;
     }
 
@@ -259,7 +267,8 @@ export default class Overlay extends ToolkitElement {
             // keep the focus, don't exit but reset the cancelBlur
             if (this._cancelBlur) {
                 this._cancelBlur = false;
-                this.refs.container.focus();
+                //this.refs.container.focus();
+                this.refs.header?.focusSearchInput();
             }
             return;
         } else {
@@ -573,6 +582,30 @@ export default class Overlay extends ToolkitElement {
             );
         }
 
+        if (this.cachedData?.agentforce && this.checkCategory(TYPE.AGENTFORCE)) {
+            combinedResults.push(
+                ...this.cachedData.agentforce
+                    .filter(
+                        x =>
+                            x.DeveloperName.toLowerCase().includes(lowerCaseTerm) ||
+                            x.MasterLabel.toLowerCase().includes(lowerCaseTerm) ||
+                            isUndefinedOrNull(searchTerm)
+                    )
+                    .map(x => ({
+                        id: x.Id,
+                        type: TYPE.AGENTFORCE,
+                        name: x.DeveloperName,
+                        label: x.MasterLabel || x.DeveloperName,
+                        //description: x.Description,
+                        //apiVersion: x.ApiVersion,
+                        //activeVersionId: x.ActiveVersionId,
+                        //latestVersionId: x.LatestVersionId,
+                        relevance: calculateRelevance(x.DeveloperName, searchTerm),
+                    }))
+            );
+        }
+
+
         // Sort combined results by relevance
         combinedResults.sort((a, b) => b.relevance - a.relevance);
 
@@ -685,6 +718,18 @@ export default class Overlay extends ToolkitElement {
                     autoFetch: true,
                     maxFetch: 100000,
                 })) || [];
+
+            // Fetch Agentforce
+            const agentforceQuery = this.connector.conn.query(
+                'SELECT Id, DeveloperName, MasterLabel FROM BotDefinition'
+            );
+            const agentforce =
+                (await agentforceQuery.run({
+                    responseTarget: 'Records',
+                    autoFetch: true,
+                    maxFetch: 100000,
+                })) || [];
+            console.log('agentforce',agentforce);
             const data = {
                 objects,
                 profiles,
@@ -694,18 +739,21 @@ export default class Overlay extends ToolkitElement {
                 flows,
                 aura,
                 lwc,
+                agentforce,
             };
 
+            const now = Date.now();
             // Cache data with an expiry timestamp
             window.defaultStore.setItem(`${CACHE_KEY}-${this.currentDomain}`, JSON.stringify(data));
             window.defaultStore.setItem(
                 `${CACHE_EXPIRY_KEY}-${this.currentDomain}`,
-                (Date.now() + CACHE_DURATION).toString()
+                (now + CACHE_DURATION).toString()
             );
             window.defaultStore.setItem(
                 `${CACHE_LAST_KEY}-${this.currentDomain}`,
-                Date.now().toString()
+                now.toString()
             );
+            this.lastRefreshDate = now;
             this.header_formatDate();
             return data;
         } catch (error) {
@@ -798,6 +846,7 @@ export default class Overlay extends ToolkitElement {
             { label: 'Profile', value: TYPE.PROFILE },
             { label: 'PermissionSet', value: TYPE.PERMISSION_SET },
             { label: 'User', value: TYPE.USER },
+            { label: 'Agentforce', value: TYPE.AGENTFORCE },
         ];
     }
 

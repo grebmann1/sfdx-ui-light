@@ -154,6 +154,10 @@
     justify-content: space-between;
 }
 
+.sf-toolkit .slds-justify-content-center {
+    justify-content: center;
+}
+
 .sf-toolkit .slds-full-height {
     height: 100%;
 }

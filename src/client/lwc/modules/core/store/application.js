@@ -12,6 +12,7 @@ const applicationSlice = createSlice({
         isLoggedIn: false,
         currentApplication: null,
         sessionHasExpired: false,
+        isSidePanel: false,
         aiProvider: 'openai',
         openaiKey: null,
         mistralKey: null, // Added for Mistral
@@ -26,6 +27,9 @@ const applicationSlice = createSlice({
         },
         stopLoading: (state, action) => {
             state.isLoading = false;
+        },
+        setIsSidePanel: (state, action) => {
+            state.isSidePanel = true;
         },
         login: (state, action) => {
             const { connector } = action.payload;

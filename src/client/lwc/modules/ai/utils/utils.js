@@ -1,7 +1,6 @@
 import { store } from 'core/store';
 import LOGGER from 'shared/logger';
 import { guid, isNotUndefinedOrNull } from 'shared/utils';
-import { loadExtensionConfigFromCache, CACHE_CONFIG } from 'shared/cacheManager';
 
 export const ROLES = {
     USER: 'user',

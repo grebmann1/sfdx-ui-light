@@ -56,6 +56,16 @@ export default function application(
                 isMenuExpanded: true,
                 source: action.payload.source,
             };
+        case CONST.AGENT_CHAT_COLLAPSE:
+            return {
+                isAgentChatExpanded: false,
+                source: action.payload.source,
+            };
+        case CONST.AGENT_CHAT_EXPAND:
+            return {
+                isAgentChatExpanded: true,
+                source: action.payload.source,
+            };
         default:
             return state;
     }

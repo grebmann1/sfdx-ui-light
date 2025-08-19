@@ -1,4 +1,5 @@
 const path = require('path');
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 
 module.exports = {
   mode: 'production',
@@ -10,11 +11,24 @@ module.exports = {
     libraryTarget: 'umd',
     globalObject: 'this',
     umdNamedDefine: true,
-    sourceMapFilename: 'bundle.min.js.map',
+    //sourceMapFilename: 'bundle.js.map',
   },
-  devtool: 'source-map',
+  optimization: {
+    minimize: false
+  },
+  //devtool: 'source-map',
   resolve: {
-    extensions: ['.js', '.json'],
+    extensions: ['.js', '.json', '.mjs'],
+    fallback: {
+      "crypto": require.resolve("crypto-browserify"),
+      "stream": require.resolve("stream-browserify"),
+      "buffer": require.resolve("buffer/index.js"),
+      "assert": require.resolve("assert/"),
+      "http": require.resolve("stream-http"),
+      "https": require.resolve("https-browserify"),
+      "os": require.resolve("os-browserify/browser"),
+      "url": require.resolve("url/"),
+    },
   },
   module: {
     rules: [
@@ -33,9 +47,9 @@ module.exports = {
               ]
             ],
             plugins: [
-              ['@babel/plugin-proposal-class-properties', { loose: true }],
+              /* ['@babel/plugin-proposal-class-properties', { loose: true }],
               ['@babel/plugin-proposal-private-methods', { loose: true }],
-              ['@babel/plugin-transform-private-methods', { loose: true }]
+              ['@babel/plugin-transform-private-methods', { loose: true }] */
             ]
           },
         },
@@ -44,7 +58,16 @@ module.exports = {
         test: /\.json$/,
         type: 'json',
       },
+      {
+        test: /\.mjs$/,
+        resolve: {
+          fullySpecified: false
+        }
+      },
     ],
   },
+  plugins: [
+    new NodePolyfillPlugin()
+  ],
   externals: {},
 }; 

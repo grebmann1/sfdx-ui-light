@@ -1,7 +1,7 @@
 <template>
     <div class="slds-filter-panel-container">
         <div class={filterPanelClass}>
-            <div class="slds-panel__header">
+            <div class="slds-panel__header" lwc:if={isHeaderVisible}>
                 <h2
                     class="slds-panel__header-title slds-text-heading_small slds-truncate"
                     title={title}>

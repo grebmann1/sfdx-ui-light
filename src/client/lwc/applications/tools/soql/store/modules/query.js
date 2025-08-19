@@ -35,6 +35,25 @@ export const executeQuery = createAsyncThunk(
     }
 );
 
+export const executeQueryIncognito = createAsyncThunk(
+    'queries/executeQueryIncognito',
+    async ({ connector, soql, tabId, useToolingApi, includeDeletedRecords }, { dispatch }) => {
+        try {
+            const _conn = useToolingApi ? connector.conn.tooling : connector.conn;
+            const res = await _conn.query(soql).scanAll(includeDeletedRecords || false);
+            return { data: res, soql };    
+        } catch (err) {
+            store.dispatch(
+                ERROR.reduxSlice.actions.addError({
+                    message: 'Error executing query',
+                    details: err.message,
+                })
+            );
+            throw err;
+        }
+    }
+);
+
 export const explainQuery = createAsyncThunk(
     'queries/explainQuery',
     async ({ connector, soql, tabId, useToolingApi }, { dispatch }) => {

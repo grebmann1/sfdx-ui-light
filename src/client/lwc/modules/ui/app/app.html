@@ -45,10 +45,12 @@
                                 ontabchange={handleTabChange}
                                 ontabdelete={handleTabDelete}
                                 is-user-logged-in={isUserLoggedIn}
-                                version={version}></ui-header>
+                                version={version}
+                                is-agent-chat-expanded={isAgentChatExpanded}
+                            ></ui-header>
                         </div>
                     </template>
-                    <div class="slds-show_medium l-cell-auto-size l-container-horizontal">
+                    <div class="slds-show_medium l-cell-auto-size l-container-horizontal slds-fill-height">
                         <!-- Menu -->
                         <div class={menuClass}>
                             <ui-menu
@@ -114,12 +116,26 @@
                             </div>
                         </div>
                         <!-- Container - END -->
+                        <!-- Side Panel container for the Next Gen Agent-->
+                        <slds-vertical-panel
+                            size="slds-size_x-large"
+                            title="Next Gen Agent"
+                            position="right"
+                            is-open={isAgentChatExpanded}
+                            is-header-hidden
+                        >
+                            <!-- Agent App -->
+                            <agent-app class="slds-full-height"></agent-app>
+                            
+                        </slds-vertical-panel>
                     </div>
+
                     <!-- Mobile Illustration -->
                     <slds-preview-illustration
                         class="slds-p-top_x-large slds-hide_medium l-container-horizonta"
                         title="Screen view is too small"
-                        sub-title="SF Toolkit does not support mobile devices."></slds-preview-illustration>
+                        sub-title="SF Toolkit does not support mobile devices."
+                    ></slds-preview-illustration>
                 </div>
             </div>
         </div>

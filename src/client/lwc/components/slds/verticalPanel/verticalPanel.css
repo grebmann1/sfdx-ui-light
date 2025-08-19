@@ -6,9 +6,9 @@
     display: flex;
     flex-direction: row-reverse;
 }
-.slds-panel_docked {
+/* .slds-panel_docked {
     background-color: #fafaf9;
-}
+} */
 
 .slds-panel.slds-flex-column {
     display: flex !important;

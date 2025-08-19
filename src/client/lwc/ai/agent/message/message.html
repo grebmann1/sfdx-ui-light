@@ -1,0 +1,149 @@
+<template>
+    <template lwc:if={isTool}>
+        <template lwc:if={isToolCall}>
+            <li class="slds-m-top_x-small">
+                <div class="slds-chat-event">
+                    <div class="slds-chat-event__body">
+                        <div class="slds-flex-column slds-align-items_center slds-justify-content-center">
+                            <p>
+                                <span class="slds-text-title_bold">{tool_message_title}:</span> {tool_name}
+                            </p>
+                            <template lwc:if={tool_isFinished}>
+                                <div class="slds-flex-row slds-align-items_center slds-justify-content-center">
+                                    {toolParametersButtonTitle}
+                                    <template lwc:if={tool_parameters}>
+                                        <lightning-button-icon
+                                            icon-name={toolParametersButtonIcon}
+                                            variant="container"
+                                            size="small"
+                                            title={toolParametersButtonTitle}
+                                            onclick={handleToggleToolParameters}
+                                        ></lightning-button-icon>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                        
+                    </div>
+    
+                    <template lwc:if={tool_isRunning}>
+                        <div class="slds-chat-event__agent-message slds-m-top_small">
+                            <slds-spinner
+                                variant="brand"
+                                size="small"
+                                label="Loading..."
+                                class="slds-is-relative"
+                            ></slds-spinner>
+                        </div>
+                    </template>
+                    <template lwc:elseif={showToolParameters}>
+                        <div class="slds-chat-event__agent-message slds-truncate slds-truncate-vertical slds-m-top_x-small">
+                            <slds-code-block
+                                class="slds-full-height"
+                                code-block={tool_parametersFormatted}
+                                language="json"
+                                title="Formatted Parameters"
+                            ></slds-code-block>
+                        </div>
+                    </template>
+                </div>
+            </li>
+        </template>
+        <template lwc:elseif={isToolResult}>
+            <li class="">
+                <div class="slds-chat-event">
+                    <div class="slds-chat-event__body">
+                        <div class="slds-flex-row">
+                            {toolResponseButtonTitle}
+                            <template lwc:if={tool_response}>
+                                <lightning-button-icon
+                                    icon-name={toolResponseButtonIcon}
+                                    variant="container"
+                                    size="small"
+                                    title={toolResponseButtonTitle}
+                                    onclick={handleToggleToolResponse}
+                                ></lightning-button-icon>
+                            </template>
+                        </div>
+                    </div>
+                    <template lwc:if={showToolResponse}>
+                        <div class="slds-chat-event__agent-message slds-truncate slds-truncate-vertical slds-m-top_x-small">
+                            <slds-code-block
+                                class="slds-full-height"
+                                code-block={tool_responseFormatted}
+                                language="json"
+                                title="Formatted Response"
+                            ></slds-code-block>
+                        </div>
+                    </template>
+                    
+                </div>
+            </li>
+        </template>
+        
+    </template>
+    <template lwc:else>
+        <li class={itemClass}>
+            <div class="slds-chat-message">
+                <div class="slds-chat-message__body">
+                    <div class={itemMessageClass}>
+                        <template for:each={contentList} for:item="contentItem" for:index="idx">
+                            <template lwc:if={contentItem.isInputText}>
+                                <div key={contentItem.key} class="message-content-text">
+                                    <template lwc:if={isUser}>{contentItem.text}</template>
+                                    <template lwc:else>
+                                        <slds-markdown-viewer
+                                            class="slds-flex-column slds-full-height"
+                                            value={contentItem.text}
+                                            onchange={handleChange}
+                                        ></slds-markdown-viewer>
+                                    </template>
+                                </div>
+                            </template>
+                            <template lwc:elseif={contentItem.isOutputText}>
+                                <div key={contentItem.key} class="message-content-output">
+                                    <slds-markdown-viewer
+                                        class="slds-flex-column slds-full-height"
+                                        value={contentItem.text}
+                                        onchange={handleChange}
+                                    ></slds-markdown-viewer>
+                                </div>
+                            </template>
+                            <template lwc:elseif={contentItem.isInputImage}>
+                                <div key={contentItem.key} class="message-content-image slds-m-vertical_x-small">
+                                    <img src={contentItem.image} alt="User uploaded image" style="max-width: 100%; max-height: 300px;" />
+                                </div>
+                            </template>
+                            <template lwc:elseif={contentItem.isInputFile}>
+                                <div key={contentItem.key} class="message-content-file slds-m-vertical_x-small">
+                                    <span>File: {contentItem.file_id} ({contentItem.size} bytes)</span>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                    <div class="slds-chat-message__meta">
+                    
+                        <!-- Assistant message (Tool or Assistant) -->
+                        <template lwc:if={isNotUser}>
+                            <div class="slds-flex-column">
+                                {originMessage}
+                                <lightning-button-group class="slds-p-right_xx-small slds-m-bottom_x-small">
+                                    <lightning-button-icon
+                                        icon-name="utility:copy_to_clipboard"
+                                        variant="container"
+                                        size="x-small"
+                                        alternative-text="copy"
+                                        title="Copy"
+                                        onclick={handleDownload}
+                                    ></lightning-button-icon>
+                                </lightning-button-group>
+                            </div>
+                        </template>
+    
+                        <!-- • 4:59 PM -->
+                    </div>
+                </div>
+            </div>
+        </li>
+    </template>
+</template>

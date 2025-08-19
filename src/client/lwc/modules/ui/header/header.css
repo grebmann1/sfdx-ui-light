@@ -48,3 +48,7 @@
 .slds-context-bar__item {
     align-items: center;
 }
+
+.right-panel-collapse {
+    padding-right: 0;
+}

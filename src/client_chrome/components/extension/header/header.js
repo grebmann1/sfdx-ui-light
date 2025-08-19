@@ -100,4 +100,12 @@ export default class Header extends LightningElement {
             { label: 'User', value: TYPE.USER },
         ];
     }
+
+    @api
+    focusSearchInput() {
+        // Focus the search input if it exists
+        if (this.refs && this.refs.searchInput && this.refs.searchInput.focus) {
+            this.refs.searchInput.focus();
+        }
+    }
 }

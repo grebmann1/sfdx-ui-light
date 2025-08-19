@@ -21,6 +21,17 @@ export class Connector {
 
     /** Methods */
 
+    toPublic() {
+        return {
+            alias: this.configuration.alias,
+            username: this.configuration.username,
+            credentialType: this.configuration.credentialType,
+            sessionId: this.conn?.accessToken,
+            instanceUrl: this.conn?.instanceUrl,
+            version: this.conn?.version,
+        };
+    }
+
     async generateAccessToken() {
         LOGGER.debug('--> generateAccessToken <--');
         try {
@@ -62,6 +73,24 @@ export class Connector {
     resetError() {
         this.configuration._hasError = false;
         this.configuration._errorMessage = null;
+    }
+
+    async _lightEnrichWithVersions(){
+        try{
+            const versions = await this.conn.request('/services/data/');
+
+            let latestVersion = Array.isArray(versions)
+                ? versions.sort((a, b) => b.version.localeCompare(a.version))[0]
+                : undefined;
+
+            // Enrich Connection
+            Object.assign(this.conn, {
+                version: latestVersion?.version || this.conn.version,
+                _versions: versions,
+            });
+        }catch(e){
+            LOGGER.error('Error enriching connector', e);
+        }
     }
 
     async _enrichConnector() {
@@ -157,6 +186,9 @@ export class Connector {
         let connector = new Connector(configuration, connection);
         if (!isEnrichDisabled) {
             await connector._enrichConnector();
+        }else{
+            // to get the latest version
+            await connector._lightEnrichWithVersions();
         }
         return connector;
     }

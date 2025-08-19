@@ -1,4 +1,4 @@
-import path from 'path'; // Import the path module
+import path from 'path';
 import lwc from '@lwc/rollup-plugin';
 import replace from '@rollup/plugin-replace';
 import resolve from '@rollup/plugin-node-resolve';
@@ -7,175 +7,149 @@ import terser from '@rollup/plugin-terser';
 import copy from 'rollup-plugin-copy';
 import alias from '@rollup/plugin-alias';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
-import postcss from 'rollup-plugin-postcss'
-
+import postcss from 'rollup-plugin-postcss';
 import * as data from './package.json';
 
 const isProduction = process.env.NODE_ENV === 'production';
+const r = (...args) => path.resolve(__dirname, ...args);
 
-const basicBundler = (input, output, name, useLwc = false, modules, extraPlugins) => ({
-    input: path.resolve(__dirname, input), // Use path.resolve
+// Reusable plugin instances
+const resolvePlugin = resolve();
+const cjsPlugin = cjs();
+const terserPlugin = terser();
+
+// Copy targets extracted for clarity
+const assetCopyTargets = [
+    { src: r('src/client/assets/styles'), dest: r('chrome_ext') },
+    { src: r('src/client/assets/libs'), dest: r('chrome_ext') },
+    { src: r('src/client/assets/images'), dest: r('chrome_ext') },
+    { src: r('node_modules/@salesforce-ux/design-system/assets'), dest: r('chrome_ext') },
+    { src: r('src/client/assets/releaseNotes.json'), dest: r('chrome_ext') }
+];
+
+const chromeCopyTargets = [
+    { src: r('src/client_chrome/views/'), dest: r('chrome_ext') },
+    { src: r('src/client_chrome/scripts'), dest: r('chrome_ext') },
+    { src: r('src/client_chrome/images'), dest: r('chrome_ext') },
+    {
+        src: r('manifest.json'),
+        dest: r('chrome_ext'),
+        transform: (contents) => {
+            let newContents = contents.toString();
+            newContents = newContents.replace(
+                '__buildLogo__',
+                isProduction ? 'images/sf-toolkit-icon-128.png' : 'images/sf-toolkit-icon-128-dev.png'
+            );
+            newContents = newContents.replace('__buildVersion__', data.version);
+            return newContents;
+        }
+    }
+];
+
+// Modules array extracted for clarity
+const modules = [
+    { dir: r('src/client_chrome/components') },
+    { dir: r('src/client/lwc/modules') },
+    { dir: r('src/client/lwc/components') },
+    { dir: r('src/client/lwc/ai') },
+    { dir: r('src/client/lwc/applications/documentation') },
+    { dir: r('src/client/lwc/applications/explorers') },
+    { dir: r('src/client/lwc/applications/tools') },
+    { npm: 'lightning-base-components' },
+    { name: 'lwr/profiler', path: r('node_modules/@lwrjs/client-modules/build/modules/lwr/profiler/profiler.js') },
+    { name: 'lwr/metrics', path: r('node_modules/@lwrjs/client-modules/build/modules/lwr/metrics/metrics.js') },
+    { dir: r('node_modules/@lwrjs/router/build/modules') },
+    { name: 'jspdf', path: r('src/client/assets/libs/jspdf/jspdf.es.js') },
+    { name: 'jspdf-autotable', path: r('src/client/assets/libs/jspdf/jspdf.plugin.autotable.js') },
+    { name: 'imported/jsforce', path: r('src/client/assets/libs/jsforce/jsforce.js') }
+];
+
+const prodPlugins = isProduction ? [terserPlugin] : [];
+
+const basicBundler = (input, output, name, useLwc = false, modulesArg, extraPlugins) => ({
+    input: r(input),
     output: {
-        file: path.resolve(__dirname, output), // Use path.resolve
+        file: r(output),
         format: 'esm',
         name,
         sourcemap: true,
         inlineDynamicImports: true
     },
     plugins: [
-        resolve(),
-        cjs(),
+        resolvePlugin,
+        cjsPlugin,
         ...(useLwc
             ? [
                 lwc({
                     enableDynamicComponents: true,
-                    modules,
+                    modules: modulesArg,
                 }),
             ]
-            : []), // If useLwc is false, include an empty array
+            : []),
         replace({
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-            '/assets/icons/': '/_slds/icons/',// replace url for icons
+            '/assets/icons/': '/_slds/icons/',
             preventAssignment: true,
             'process.env.IS_CHROME': true,
-            'import.meta.url':'""'// to prevent issue when building the package
+            'import.meta.url': '""'
         }),
-        ...extraPlugins ? extraPlugins : [],
-        terser()
+        ...(extraPlugins || []),
+        ...prodPlugins
     ],
 });
 
-const coreBuilder = (modules) => {
-    return {
-        input: path.resolve(__dirname, 'src/client_chrome/main.js'), // Use path.resolve
-        output: {
-            dir: path.resolve(__dirname, 'chrome_ext/scripts'), // Use path.resolve
-            format: 'esm',
-            sourcemap: true,
-        },
-        plugins: [
-            replace({
-                'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-                'process.env.IS_CHROME': true,
-                preventAssignment: true,
-            }),
-            resolve(),
-            cjs(),
-            nodePolyfills(),
-            lwc({
-                enableDynamicComponents: true,
-                modules,
-            }),
-            copy({
-                targets: [
-                    {
-                        src: path.resolve(__dirname, 'src/client/assets/styles'),
-                        dest: path.resolve(__dirname, 'chrome_ext')
-                    },
-                    {
-                        src: path.resolve(__dirname, 'src/client/assets/libs'),
-                        dest: path.resolve(__dirname, 'chrome_ext')
-                    },
-                    {
-                        src: path.resolve(__dirname, 'src/client/assets/images'),
-                        dest: path.resolve(__dirname, 'chrome_ext')
-                    },
-                    {
-                        src: path.resolve(__dirname, 'node_modules/@salesforce-ux/design-system/assets'),
-                        dest: path.resolve(__dirname, 'chrome_ext')
-                    },
-                    {
-                        src: path.resolve(__dirname, 'src/client/assets/releaseNotes.json'),
-                        dest: path.resolve(__dirname, 'chrome_ext')
-                    }
-                ],
-                copyOnce: true,
-            }),
-            copy({
-                targets: [
-                    {
-                        src: path.resolve(__dirname, 'src/client_chrome/views/'),
-                        dest: path.resolve(__dirname, 'chrome_ext'),
-                    },
-                    {
-                        src: path.resolve(__dirname, 'src/client_chrome/scripts'),
-                        dest: path.resolve(__dirname, 'chrome_ext'),
-                    },
-                    {
-                        src: path.resolve(__dirname, 'src/client_chrome/images'),
-                        dest: path.resolve(__dirname, 'chrome_ext'),
-                    },
-                    {
-                        src: path.resolve(__dirname, 'manifest.json'),
-                        dest: path.resolve(__dirname, 'chrome_ext'),
-                        transform: (contents, filename) => {
-                            let newContents = contents.toString();
-                            newContents = newContents.replace(
-                                '__buildLogo__',
-                                isProduction
-                                    ? 'images/sf-toolkit-icon-128.png'
-                                    : 'images/sf-toolkit-icon-128-dev.png'
-                            );
-                            newContents = newContents.replace('__buildVersion__', data.version);
-                            return newContents;
-                        },
-                    },
-                ],
-            }),
-            terser()
-        ]
-    }
-}
+const coreBuilder = (modulesArg) => ({
+    input: r('src/client_chrome/main.js'),
+    output: {
+        dir: r('chrome_ext/scripts'),
+        format: 'esm',
+        sourcemap: true,
+    },
+    plugins: [
+        replace({
+            'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+            'process.env.IS_CHROME': true,
+            preventAssignment: true,
+        }),
+        resolvePlugin,
+        cjsPlugin,
+        nodePolyfills(),
+        lwc({
+            enableDynamicComponents: true,
+            modules: modulesArg,
+        }),
+        copy({
+            targets: assetCopyTargets,
+            copyOnce: true,
+        }),
+        copy({
+            targets: chromeCopyTargets,
+        }),
+        ...prodPlugins
+    ]
+});
 
-
-export default (args) => {
-    const modules = [
-        { dir: path.resolve(__dirname, 'src/client_chrome/components') },
-        { dir: path.resolve(__dirname, 'src/client/lwc/modules') },
-        { dir: path.resolve(__dirname, 'src/client/lwc/components') },
-        { dir: path.resolve(__dirname, 'src/client/lwc/applications/documentation') },
-        { dir: path.resolve(__dirname, 'src/client/lwc/applications/explorers') },
-        { dir: path.resolve(__dirname, 'src/client/lwc/applications/tools') },
-        { dir: path.resolve(__dirname, 'src/client/lwc/applications/einstein') },
-        { npm: 'lightning-base-components' },
-        { name: "lwr/profiler", path: path.resolve(__dirname, 'node_modules/@lwrjs/client-modules/build/modules/lwr/profiler/profiler.js') },
-        { name: "lwr/metrics", path: path.resolve(__dirname, 'node_modules/@lwrjs/client-modules/build/modules/lwr/metrics/metrics.js') },
-        { dir: path.resolve(__dirname, 'node_modules/@lwrjs/router/build/modules') },
-        {
-            name:'jspdf',
-            path:"src/client/assets/libs/jspdf/jspdf.es.js"
-        },
-        {
-            name:'jspdf-autotable',
-            path:"src/client/assets/libs/jspdf/jspdf.plugin.autotable.js"
-        },
-        {
-            "name": "imported/jsforce",
-            "path": "src/client/assets/libs/jsforce/jsforce.js"
-        }
-    ];
-    return [
-        coreBuilder(modules),
-        basicBundler(
-            'src/client_chrome/workers/background.js',
-            'chrome_ext/scripts/background.js',
-            'Background',
-            false,
-            modules
-        ),
-        basicBundler(
-            'src/client_chrome/inject/inject_salesforce.js',
-            'chrome_ext/scripts/inject_salesforce.js',
-            'InjectSalesforce',
-            true,
-            modules
-        ),
-        basicBundler(
-            'src/client_chrome/inject/inject_toolkit.js',
-            'chrome_ext/scripts/inject_toolkit.js',
-            'InjectToolkit',
-            false,
-            null
-        )
-    ];
-};
+export default (args) => [
+    coreBuilder(modules),
+    basicBundler(
+        'src/client_chrome/workers/background.js',
+        'chrome_ext/scripts/background.js',
+        'Background',
+        false,
+        modules
+    ),
+    basicBundler(
+        'src/client_chrome/inject/inject_salesforce.js',
+        'chrome_ext/scripts/inject_salesforce.js',
+        'InjectSalesforce',
+        true,
+        modules
+    ),
+    basicBundler(
+        'src/client_chrome/inject/inject_toolkit.js',
+        'chrome_ext/scripts/inject_toolkit.js',
+        'InjectToolkit',
+        false,
+        null
+    )
+];

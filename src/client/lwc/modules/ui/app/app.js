@@ -71,13 +71,8 @@ export default class App extends LightningElement {
     // Port to communicate with background
     _backgroundPort = null;
 
-    /* @api 
-    get connector(){
-        return window.connector;
-    }
-    set connector(value){
-        window.connector = value;
-    }*/
+    // Agent View
+    @api isAgentChatExpanded = false;
 
     @wire(connectStore, { store: legacyStore })
     applicationChange({ application }) {
@@ -93,6 +88,12 @@ export default class App extends LightningElement {
         } else if (isNotUndefinedOrNull(application.isMenuExpanded)) {
             this.isMenuCollapsed = !application.isMenuExpanded;
         }
+
+        // Toggle Agent Chat
+        if (isNotUndefinedOrNull(application.isAgentChatExpanded)) {
+            this.isAgentChatExpanded = application.isAgentChatExpanded;
+        }
+
         // Redirect
         if (application.redirectTo) {
             this.handleRedirection(application);
@@ -270,7 +271,9 @@ export default class App extends LightningElement {
         const openaiKey = configuration[CACHE_CONFIG.OPENAI_KEY.key];
         const mistralKey = configuration[CACHE_CONFIG.MISTRAL_KEY.key];
         const aiProvider = configuration[CACHE_CONFIG.AI_PROVIDER.key];
-
+        LOGGER.debug('loadFromCache - openaiKey',openaiKey);
+        LOGGER.debug('loadFromCache - mistralKey',mistralKey);
+        LOGGER.debug('loadFromCache - aiProvider',aiProvider);
         if(openaiKey) {
             store.dispatch(APPLICATION.reduxSlice.actions.updateOpenAIKey({ openaiKey }));
         }
@@ -788,5 +791,4 @@ export default class App extends LightningElement {
             hotkeys(shortcut.shortcut, shortcut.action);
         });
     }
-
 }

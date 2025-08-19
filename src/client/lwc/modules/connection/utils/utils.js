@@ -78,6 +78,20 @@ export async function getConfigurations() {
     return platformService.getConfigurations();
 }
 
+export async function getPublicConfigurations() {
+    const configurations = await getConfigurations();
+    return configurations.map(x => ({
+        id: x.alias,
+        alias: x.alias,
+        username: x.username,
+        loginUrl: x.loginUrl,
+        credentialType: x.credentialType,
+        company: x.company,
+        name: x.name,
+        instanceUrl: x.instanceUrl,
+    }));
+}
+
 export async function saveSession(value) {
     sessionStorage.setItem('currentConnection', JSON.stringify(value));
 }
