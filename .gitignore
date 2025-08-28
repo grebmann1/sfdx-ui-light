@@ -4,7 +4,6 @@
 .sfdx
 .DS_Store
 .cursor/
-
 node_modules
 __lwr_cache__
 site
@@ -14,3 +13,4 @@ chrome_ext/
 src/documentation/*/
 cert/
 /workers/
+package-lock.json
