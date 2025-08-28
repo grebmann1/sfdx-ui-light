@@ -87,15 +87,38 @@
             <div class="slds-chat-message">
                 <div class="slds-chat-message__body">
                     <div class={itemMessageClass}>
-                        <!--<lightning-formatted-rich-text value={content}></lightning-formatted-rich-text>-->
-                        <template lwc:if={isUser}>{content}</template>
-                        <template lwc:else>
-                            <slds-markdown-viewer
-                                lwc:ref="container"
-                                class="slds-flex-column slds-full-height"
-                                value={content}
-                                onchange={handleChange}
-                            ></slds-markdown-viewer>
+                        <template for:each={contentList} for:item="contentItem" for:index="idx">
+                            <template lwc:if={contentItem.isInputText}>
+                                <div key={contentItem.key} class="message-content-text">
+                                    <template lwc:if={isUser}>{contentItem.text}</template>
+                                    <template lwc:else>
+                                        <slds-markdown-viewer
+                                            class="slds-flex-column slds-full-height"
+                                            value={contentItem.text}
+                                            onchange={handleChange}
+                                        ></slds-markdown-viewer>
+                                    </template>
+                                </div>
+                            </template>
+                            <template lwc:elseif={contentItem.isOutputText}>
+                                <div key={contentItem.key} class="message-content-output">
+                                    <slds-markdown-viewer
+                                        class="slds-flex-column slds-full-height"
+                                        value={contentItem.text}
+                                        onchange={handleChange}
+                                    ></slds-markdown-viewer>
+                                </div>
+                            </template>
+                            <template lwc:elseif={contentItem.isInputImage}>
+                                <div key={contentItem.key} class="message-content-image slds-m-vertical_x-small">
+                                    <img src={contentItem.image} alt="User uploaded image" style="max-width: 100%; max-height: 300px;" />
+                                </div>
+                            </template>
+                            <template lwc:elseif={contentItem.isInputFile}>
+                                <div key={contentItem.key} class="message-content-file slds-m-vertical_x-small">
+                                    <span>File: {contentItem.file_id} ({contentItem.size} bytes)</span>
+                                </div>
+                            </template>
                         </template>
                     </div>
                     <div class="slds-chat-message__meta">

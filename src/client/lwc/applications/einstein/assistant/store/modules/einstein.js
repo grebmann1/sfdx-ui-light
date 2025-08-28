@@ -210,6 +210,10 @@ const _innerExecute = (dispatch, { assistant, messages, tabId, onStream, alias }
                 LOGGER.debug('message end --> ', message);
                 dispatch(einsteinSlice.actions.updateStreamingMessage({ tabId, message, alias, isSave: true }));
             })
+            .onError(error => {
+                LOGGER.error('###### Error in execute:', error);
+                reject(error);
+            })
             .execute();
         }catch(err){
             reject(err);

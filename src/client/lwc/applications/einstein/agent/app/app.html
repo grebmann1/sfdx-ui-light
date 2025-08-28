@@ -21,10 +21,10 @@
                         </template>
                         <template lwc:if={currentMessage}>
                             <!-- Current message displayed alone to improve performances -->
-                            <agent-message item={currentMessage} is-current-message></agent-message>
+                            <agent-message class="chat-item" item={currentMessage} is-current-message></agent-message>
                         </template>
                         <template lwc:if={isLoading}>
-                            <li class="slds-chat-listitem slds-chat-listitem_inbound">
+                            <li class="slds-chat-listitem slds-chat-listitem_inbound chat-item">
                                 <div class="slds-chat-message">
                                     <div class="slds-chat-message__body">
                                         <div
@@ -54,7 +54,9 @@
             is-audio-recorder-disabled={isAudioRecorderDisabled}
             openai-key={openaiKey}
             onsend={handleSendClick}
+            onstop={handleStopClick}
             onclear={handleClearClick}
+            is-loading={isStreaming}
         ></agent-publisher>
     </div>
 </template>

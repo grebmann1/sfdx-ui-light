@@ -1,13 +1,13 @@
 import { store } from 'core/store';
 import LOGGER from 'shared/logger';
 import { guid, isNotUndefinedOrNull } from 'shared/utils';
+import { CACHE_CONFIG } from 'shared/cacheManager';
 
 export const ROLES = {
     USER: 'user',
     SYSTEM: 'system',
     TOOL: 'tool',
 };
-
 
 export const functionOutput = ({ tool_call_id, content }) => {
     return [
@@ -20,26 +20,34 @@ export const functionOutput = ({ tool_call_id, content }) => {
     ];
 };
 
+function buildOpenaiEndpoint(baseUrl, path) {
+    if (!baseUrl) baseUrl = 'https://api.openai.com';
+    let url = baseUrl.replace(/\/$/, '');
+    if (!/\/v1$/.test(url)) url += '/v1';
+    return url + path;
+}
+
 export const fetchCompletion = async ({
     model,
     messages,
     instructions,
     tools,
     response_format,
-    // Optionally allow provider override
     provider,
     openaiKey,
 }) => {
     const state = store.getState().application;
-    const authorization = `Bearer ${openaiKey || state.openaiKey}`;
     const aiProvider = provider || state.aiProvider || 'openai';
+    let openaiUrl = state.openaiUrl;
+    openaiKey = openaiKey || state.openaiKey;
+    if (!openaiKey) throw new Error('No OpenAI API key configured. Please set it in settings.');
     if (aiProvider === 'openai') {
         const tool_choice = isNotUndefinedOrNull(tools) ? 'auto' : undefined;
         const config = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: authorization,
+                'Authorization': `Bearer ${openaiKey}`,
             },
             body: JSON.stringify({
                 model,
@@ -56,7 +64,11 @@ export const fetchCompletion = async ({
             }),
         };
         LOGGER.debug('config', config, JSON.parse(config.body));
-        return fetch('https://api.openai.com/v1/chat/completions', config);
+        const endpoint = buildOpenaiEndpoint(openaiUrl, '/chat/completions');
+        const response = await fetch(endpoint, config);
+        const data = await response.json();
+        if (data && data.error) throw new Error(data.error);
+        return data;
     } else if (aiProvider === 'einstein') {
         throw new Error('Einstein provider is not yet implemented.');
     } else if (aiProvider === 'azure') {
@@ -76,16 +88,19 @@ export const fetchCompletionStream = async ({
     openaiKey,
 }) => {
     const state = store.getState().application;
-    const authorization = `Bearer ${openaiKey || state.openaiKey}`;
     const aiProvider = provider || state.aiProvider || 'openai';
+    let openaiUrl = state.openaiUrl;
+    openaiKey = openaiKey || state.openaiKey;
+    if (!openaiKey) throw new Error('No OpenAI API key configured. Please set it in settings.');
     if (aiProvider === 'openai') {
         const tool_choice = isNotUndefinedOrNull(tools) ? 'auto' : undefined;
         const controller = new AbortController();
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        const endpoint = buildOpenaiEndpoint(openaiUrl, '/chat/completions');
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: authorization,
+                'Authorization': `Bearer ${openaiKey}`,
             },
             body: JSON.stringify({
                 model,
@@ -104,7 +119,12 @@ export const fetchCompletionStream = async ({
             signal: controller.signal,
         });
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            let errMsg = `HTTP error! status: ${response.status}`;
+            try {
+                const errData = await response.json();
+                if (errData && errData.error) errMsg = errData.error?.message || errData.error;
+            } catch {}
+            throw new Error(errMsg);
         }
         return {
             body: response.body,

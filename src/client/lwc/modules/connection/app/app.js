@@ -69,12 +69,23 @@ export default class App extends ToolkitElement {
     filter;
 
     async connectedCallback() {
+        window.addEventListener('electron-orgs-updated', this._onElectronOrgsUpdated);
         await this.fetchAllConnections();
         this.checkForInjected();
         window.setTimeout(() => {
             //this.addConnectionClick();
         }, 10);
     }
+
+    disconnectedCallback() {
+        window.removeEventListener('electron-orgs-updated', this._onElectronOrgsUpdated);
+    }
+
+    _onElectronOrgsUpdated = (event) => {
+        const { orgs } = event.detail;
+        LOGGER.log('electron-orgs-updated', orgs);
+        this._formatConfigurations(orgs);
+    };
 
     /** Actions */
     checkForInjected = async () => {
@@ -201,6 +212,10 @@ export default class App extends ToolkitElement {
         // Browser & Electron version
         this.setLoading('Loading Credentials from Cache');
         const configurations = await getConfigurations();
+        this._formatConfigurations(configurations);
+    };
+
+    _formatConfigurations = (configurations) => {
         this.data = this.formatConfigurations(configurations);
         this.formattedData = this.formatDataForCardView();
         this.resetLoading();

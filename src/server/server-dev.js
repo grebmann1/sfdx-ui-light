@@ -12,6 +12,7 @@ const documentationSearch = require('./modules/documentationSearch');
 
 const CTA_MODULE = require('./modules/cta.js');
 const proxy = require('./modules/proxy.js');
+const openaiProxy = require('./modules/openaiProxy.js');
 
 /** Documentation Temporary Code until a DB is incorporated **/
 const VERSION = process.env.DOC_VERSION || '255.0';
@@ -55,6 +56,7 @@ const lwrServer = createServer({
 });
 
 const app = lwrServer.getInternalServer('express');
+app.use(require('express').json());
 app.use(timeout(295000)); // Related to Heroku 30s timeout
 app.use(haltOnTimedout);
 
@@ -65,6 +67,8 @@ function haltOnTimedout(req, res, next) {
 app.all('/cometd/*', proxy({ enableCORS: true }));
 /* jsForce Proxy */
 app.all('/proxy/*', proxy({ enableCORS: true }));
+/* OpenAI Proxy */
+openaiProxy(app);
 
 app.get('/version', function (req, res) {
     res.json({ version: process.env.npm_package_version });
@@ -162,7 +166,7 @@ app.get('/chrome/callback', async function (req, res) {
         res.redirect('/');
     }
 });
-
+/* 
 app.post('/generatejwt', async (req, res) => {
     const { accessToken, instanceUrl } = req.body;
 
@@ -202,7 +206,7 @@ app.post('/generatejwt', async (req, res) => {
         console.log('error', error);
         res.status(401).json({ error: 'Invalid Salesforce Access Token.' });
     }
-});
+}); */
 
 /** LWR Server **/
 

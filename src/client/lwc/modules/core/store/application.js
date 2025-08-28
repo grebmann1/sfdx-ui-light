@@ -15,6 +15,7 @@ const applicationSlice = createSlice({
         isSidePanel: false,
         aiProvider: 'openai',
         openaiKey: null,
+        openaiUrl: 'https://api.openai.com/v1', // Used for OpenAI proxy
         mistralKey: null, // Added for Mistral
     },
     reducers: {
@@ -68,8 +69,9 @@ const applicationSlice = createSlice({
             state.aiProvider = aiProvider;
         },
         updateOpenAIKey: (state, action) => {
-            const { openaiKey } = action.payload;
+            const { openaiKey, openaiUrl } = action.payload;
             state.openaiKey = openaiKey;
+            state.openaiUrl = openaiUrl;
         },
         updateMistralKey: (state, action) => {
             const { mistralKey } = action.payload;

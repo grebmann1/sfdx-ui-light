@@ -18,6 +18,21 @@ const resolvePlugin = resolve();
 const cjsPlugin = cjs();
 const terserPlugin = terser();
 
+const chevrotainAlias = alias({
+    entries: [
+        {
+            find: 'chevrotain/lib/src/diagrams/render_public.js',
+            replacement: r('scripts/files/chevrotain_render_public_dummy.js')
+        }
+    ]
+});
+
+const chevrotainUrlReplace = replace({
+    'https://unpkg.com/chevrotain@': '__NO_URL_CHROME_EXTENSION__',
+    preventAssignment: false,
+    delimiters: ['', '']
+});
+
 // Copy targets extracted for clarity
 const assetCopyTargets = [
     { src: r('src/client/assets/styles'), dest: r('chrome_ext') },
@@ -51,10 +66,10 @@ const modules = [
     { dir: r('src/client_chrome/components') },
     { dir: r('src/client/lwc/modules') },
     { dir: r('src/client/lwc/components') },
-    { dir: r('src/client/lwc/ai') },
     { dir: r('src/client/lwc/applications/documentation') },
     { dir: r('src/client/lwc/applications/explorers') },
     { dir: r('src/client/lwc/applications/tools') },
+    { dir: r('src/client/lwc/applications/einstein') },
     { npm: 'lightning-base-components' },
     { name: 'lwr/profiler', path: r('node_modules/@lwrjs/client-modules/build/modules/lwr/profiler/profiler.js') },
     { name: 'lwr/metrics', path: r('node_modules/@lwrjs/client-modules/build/modules/lwr/metrics/metrics.js') },
@@ -76,6 +91,8 @@ const basicBundler = (input, output, name, useLwc = false, modulesArg, extraPlug
         inlineDynamicImports: true
     },
     plugins: [
+        chevrotainAlias,
+        chevrotainUrlReplace,
         resolvePlugin,
         cjsPlugin,
         ...(useLwc
@@ -106,6 +123,8 @@ const coreBuilder = (modulesArg) => ({
         sourcemap: true,
     },
     plugins: [
+        chevrotainAlias,
+        chevrotainUrlReplace,
         replace({
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
             'process.env.IS_CHROME': true,

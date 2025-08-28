@@ -1,6 +1,7 @@
 import { getConnectionsFromCache, saveConnectionsToCache } from 'shared/cacheManager';
 import { isUndefinedOrNull, isNotUndefinedOrNull, isEmpty } from 'shared/utils';
 import { normalizeConfiguration } from './utils';
+import LOGGER from 'shared/logger';
 
 const formatConfigurationItem = item => {
     return item; // Keep for now

@@ -260,22 +260,25 @@ export default class App extends LightningElement {
     loadFromCache = async () => {
         const configuration = await loadExtensionConfigFromCache([
             CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key,
-            CACHE_CONFIG.OPENAI_KEY.key,
             CACHE_CONFIG.MISTRAL_KEY.key,
             CACHE_CONFIG.AI_PROVIDER.key,
+            CACHE_CONFIG.OPENAI_KEY.key,
+            CACHE_CONFIG.OPENAI_URL.key,
         ]);
 
         this.isApplicationTabVisible = configuration[CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key];
 
         // Handle LLM keys and provider
         const openaiKey = configuration[CACHE_CONFIG.OPENAI_KEY.key];
+        const openaiUrl = configuration[CACHE_CONFIG.OPENAI_URL.key];
         const mistralKey = configuration[CACHE_CONFIG.MISTRAL_KEY.key];
         const aiProvider = configuration[CACHE_CONFIG.AI_PROVIDER.key];
         LOGGER.debug('loadFromCache - openaiKey',openaiKey);
+        LOGGER.debug('loadFromCache - openaiUrl',openaiUrl);
         LOGGER.debug('loadFromCache - mistralKey',mistralKey);
         LOGGER.debug('loadFromCache - aiProvider',aiProvider);
         if(openaiKey) {
-            store.dispatch(APPLICATION.reduxSlice.actions.updateOpenAIKey({ openaiKey }));
+            store.dispatch(APPLICATION.reduxSlice.actions.updateOpenAIKey({ openaiKey,openaiUrl }));
         }
         if(mistralKey) {
             store.dispatch(APPLICATION.reduxSlice.actions.updateMistralKey({ mistralKey }));

@@ -157,6 +157,11 @@ class Assistant {
         return this;
     };
 
+    onError(callback) {
+        this.onErrorCallback = callback;
+        return this;
+    }
+
     onStream(callback) {
         this.onStreamCallback = callback;
         return this;
@@ -193,6 +198,7 @@ class Assistant {
         let result;
         try {
             result = await this._executePromptStream(nonContextMessages);
+            // Monaco LWC widget listening to textend !!!!
             dispatchEvent(
                 new CustomEvent('textend', {
                     detail: {
@@ -200,7 +206,13 @@ class Assistant {
                     },
                 })
             );
-        } finally {
+        } catch (error) {
+            LOGGER.error('Error in execute:', error);
+            if (this.onErrorCallback) {
+                this.onErrorCallback(error);
+            }
+        }
+        finally {
             this.isExecuting = false;
         }
         return result;
@@ -224,53 +236,58 @@ class Assistant {
     }
 
     async _processMessageStream(messages, maxIterations) {
-        for (let iteration = 0; iteration < maxIterations && this.isExecuting; iteration++) {
-            const message = this._createInitialMessage();
-            this._upsertMessage(message);
-
-            const params = {
-                model: this.model,
-                messages,
-                ...this._addAdditionalParams(),
-                provider: this.aiProvider,
-                openaiKey: this.openaiKey,
-            };
-
-            const { body, abort } = await fetchCompletionStream(params);
-            if (!body) {
-                throw new Error('No data returned from the assistant');
+        try{
+            for (let iteration = 0; iteration < maxIterations && this.isExecuting; iteration++) {
+                const message = this._createInitialMessage();
+                this._upsertMessage(message);
+    
+                const params = {
+                    model: this.model,
+                    messages,
+                    ...this._addAdditionalParams(),
+                    provider: this.aiProvider,
+                    openaiKey: this.openaiKey,
+                };
+    
+                const { body, abort } = await fetchCompletionStream(params);
+                if (!body) {
+                    throw new Error('No data returned from the assistant');
+                }
+    
+                if (this.onStreamStartCallback) {
+                    this.onStreamStartCallback(message);
+                }
+    
+                // Store the abort function for later use
+                this._currentAbort = abort;
+    
+                const toolCallsAccumulator = {};
+                const result = await this._handleStreamProcessing(
+                    body,
+                    { ...message },
+                    toolCallsAccumulator,
+                    messages
+                );
+    
+                // Clear the abort function after processing
+                this._currentAbort = null;
+    
+                if (result.isFinished) {
+                    return messages;
+                }
             }
-
-            if (this.onStreamStartCallback) {
-                this.onStreamStartCallback(message);
+    
+            if (!this.isExecuting) {
+                throw new Error('Execution was stopped');
             }
-
-            // Store the abort function for later use
-            this._currentAbort = abort;
-
-            const toolCallsAccumulator = {};
-            const result = await this._handleStreamProcessing(
-                body,
-                { ...message },
-                toolCallsAccumulator,
-                messages
+    
+            throw new Error(
+                'Maximum iterations reached without a suitable answer. Please try again with a more specific input.'
             );
-
-            // Clear the abort function after processing
-            this._currentAbort = null;
-
-            if (result.isFinished) {
-                return messages;
-            }
+        } catch (error) {
+            LOGGER.error('Error in _processMessageStream:', error);
+            throw error;
         }
-
-        if (!this.isExecuting) {
-            throw new Error('Execution was stopped');
-        }
-
-        throw new Error(
-            'Maximum iterations reached without a suitable answer. Please try again with a more specific input.'
-        );
     }
 
     async _handleStreamProcessing(stream, message, toolCallsAccumulator, messages) {

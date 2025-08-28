@@ -186,6 +186,7 @@ export const CACHE_CONFIG = {
     ),
     CHROME_SYNC_ORG_INITIALIZED_STORAGE_KEY: new CONFIG_OBJECT('chrome_syncOrgInitialized', false),
     AI_PROVIDER: new CONFIG_OBJECT('ai_provider', 'openai'),
+    OPENAI_URL: new CONFIG_OBJECT('openai_url', 'https://api.openai.com'),
 };
 
 export const CACHE_SESSION_CONFIG = {
@@ -200,6 +201,7 @@ export const CACHE_ORG_DATA_TYPES = {
     METADATA_QUERY: 'MetadataQuery',
     CONNECTIONS: 'connections',
     SESSION_SETTINGS: 'session_settings',
+    ELECTRON_ORG_LIST: 'electron_org_list', // Added for electron org list caching
 };
 
 // Backward compatibility functions

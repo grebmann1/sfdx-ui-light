@@ -1,6 +1,7 @@
-import { isNotUndefinedOrNull, isEmpty, decodeError, classSet } from 'shared/utils';
-import { extractName, extractConfig,OAUTH_TYPES } from './utils';
+import { isNotUndefinedOrNull, isEmpty, decodeError, classSet, runActionAfterTimeOut } from 'shared/utils';
+import { extractName, extractConfig, OAUTH_TYPES } from './utils';
 import LOGGER from 'shared/logger';
+import { cacheManager, CACHE_ORG_DATA_TYPES } from 'shared/cacheManager';
 
 
 const CONNECTION_ERRORS = [
@@ -35,7 +36,7 @@ export async function getConfiguration(alias) {
 }
 
 export async function renameConfiguration({ oldAlias, newAlias, username, credentialType }) {
-    if(credentialType === OAUTH_TYPES.USERNAME){
+    if (credentialType === OAUTH_TYPES.USERNAME) {
         let res = await window.electron.invoke('org-renameStoredOrg', {
             alias: oldAlias,
             newAlias: newAlias
@@ -43,7 +44,7 @@ export async function renameConfiguration({ oldAlias, newAlias, username, creden
         if (res?.error) {
             throw decodeError(res.error);
         }
-    }else{
+    } else {
         let res = await window.electron.invoke('org-setAlias', {
             alias: newAlias,
             username: username,
@@ -51,7 +52,7 @@ export async function renameConfiguration({ oldAlias, newAlias, username, creden
         if (res?.error) {
             throw decodeError(res.error);
         }
-    
+
         if (oldAlias !== 'Empty' || isNotUndefinedOrNull(oldAlias)) {
             let res2 = await window.electron.invoke('org-unsetAlias', {
                 alias: oldAlias,
@@ -61,17 +62,17 @@ export async function renameConfiguration({ oldAlias, newAlias, username, creden
             }
         }
     }
-    
+
 }
 
-export async function removeConfiguration({alias,credentialType}) {
+export async function removeConfiguration({ alias, credentialType }) {
     // todo: need to be refactured
-    if(credentialType === OAUTH_TYPES.USERNAME){
+    if (credentialType === OAUTH_TYPES.USERNAME) {
         let res = await window.electron.invoke('org-removeStoredOrg', { alias });
         if (res?.error) {
             throw decodeError(res.error);
         }
-    }else{
+    } else {
         let res = await window.electron.invoke('org-logout', { alias });
         if (res?.error) {
             throw decodeError(res.error);
@@ -82,7 +83,7 @@ export async function removeConfiguration({alias,credentialType}) {
         }
     }
 
-    
+
 }
 
 const getStatusClass = status => {
@@ -95,9 +96,7 @@ const getStatusClass = status => {
     return 'slds-text-color_success slds-text-title_caps';
 };
 
-export async function getConfigurations() {
-    const {sfdxOrgs,storedOrgs} = await window.electron.invoke('org-getAllOrgs');
-    LOGGER.info('getConfigurations - electron - result', sfdxOrgs,storedOrgs); 
+function normalizeOrgs(sfdxOrgs, storedOrgs) {
     let orgs = [].concat(
         sfdxOrgs.result.nonScratchOrgs.map(x => ({
             ...x,
@@ -109,18 +108,16 @@ export async function getConfigurations() {
             _status: x.status,
             _type: 'Scratch',
         })),
-        // Later take care of the unique alias
         storedOrgs.map(x => ({
             ...x,
             _status: x.status,
             _type: 'Stored',
         }))
     );
-    //console.log('orgs',orgs);
-    orgs = orgs.filter(x => isNotUndefinedOrNull(x.alias)); // Remove empty alias
+    orgs = orgs.filter(x => isNotUndefinedOrNull(x.alias));
     orgs = orgs.map((item, index) => {
         let alias = item.alias || 'Empty';
-        const {name,company} = extractName(alias);
+        const { name, company } = extractName(alias);
         let _typeClass = classSet('')
             .add({
                 'slds-color-brand': item._type === 'DevHub',
@@ -128,13 +125,12 @@ export async function getConfigurations() {
                 'slds-color-orange-dark': item._type === 'Scratch',
             })
             .toString();
-        const config = extractConfig(item.sfdxAuthUrl); // { clientId, refreshToken, instanceUrl }
-        if(config){
+        const config = extractConfig(item.sfdxAuthUrl);
+        if (config) {
             item.instanceUrl = config.instanceUrl;
             item.loginUrl = config.instanceUrl;
             item.refreshToken = config.refreshToken;
         }
-            
         return {
             ...item,
             ...{
@@ -142,15 +138,41 @@ export async function getConfigurations() {
                 id: `index-${index}`,
                 company: company,
                 name: name,
-                credentialType: item.credentialType || OAUTH_TYPES.OAUTH, // by default we use OAUTH for electron
+                credentialType: item.credentialType || OAUTH_TYPES.OAUTH,
                 _typeClass,
                 _statusClass: getStatusClass(item._status),
                 _hasError: item._status == 'JwtAuthError',
                 _isRedirect: !isEmpty(item.redirectUrl),
-                //sfdxAuthUrl is not needed as it's generated by the SFDX CLI
             },
         };
     });
     orgs = orgs.sort((a, b) => a.alias.localeCompare(b.alias));
+    return orgs;
+}
+
+export async function getConfigurations({ sync = false } = {}) {
+    const DATA_TYPE = CACHE_ORG_DATA_TYPES.ELECTRON_ORG_LIST;
+    if (!sync) {       
+        // Try to load from cache
+        const cachedOrgs = await cacheManager.loadOrgData('electron', DATA_TYPE);
+        if (cachedOrgs) {
+            // ASYNC (background refresh)
+            window.electron.invoke('org-getAllOrgs')
+            .then(async ({ sfdxOrgs, storedOrgs }) => {
+                const orgs = normalizeOrgs(sfdxOrgs, storedOrgs);
+                await cacheManager.saveOrgData('electron', DATA_TYPE, orgs);
+                dispatchEvent(new CustomEvent('electron-orgs-updated', { detail: { orgs } }));
+            })
+            .catch(() => {/* ignore background errors */ });
+            // Return cached orgs
+            return cachedOrgs;
+        }
+    }
+
+    // If no cache, fetch fresh, update cache, and return (SYNC)
+    const { sfdxOrgs, storedOrgs } = await window.electron.invoke('org-getAllOrgs');
+    LOGGER.info('getConfigurations - electron - result', sfdxOrgs, storedOrgs);
+    const orgs = normalizeOrgs(sfdxOrgs, storedOrgs);
+    await cacheManager.saveOrgData('electron', DATA_TYPE, orgs);
     return orgs;
 }

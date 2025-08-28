@@ -347,15 +347,6 @@
                                                 disabled
                                             ></lightning-input>
                                         </settings-card>
-                                        <!--
-										<lightning-input 
-											label="OpenAI Assistant Id [Disabled]" 
-											onchange={handleOpenaiAssistantId_change}
-											type="text"
-											value={openai_assistant_id}
-											disabled
-										></lightning-input>
-										-->
                                     </div>
                                 </lightning-card>
                                 <lightning-card
@@ -417,15 +408,38 @@
                                                     onclick={handleToggleVisibility}></lightning-button-icon>
                                             </div>
                                         </settings-card>
-                                        <!--
-										<lightning-input 
-											label="OpenAI Assistant Id [Disabled]" 
-											onchange={handleOpenaiAssistantId_change}
-											type="text"
-											value={openai_assistant_id}
-											disabled
-										></lightning-input>
-										-->
+                                    </div>
+                                </lightning-card>
+                                <lightning-card
+                                    class="settings slds-col slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
+                                    <div slot="title">
+                                        <h1>LLM Proxy</h1>
+                                        <p class="description slds-truncate">
+                                            Proxy URL for LLM API. (keep it empty to use the default value)
+                                        </p>
+                                    </div>
+                                    <div slot="actions"></div>
+                                    <div class="slds-grid slds-wrap">
+                                        <settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small" is-first>
+                                            <div slot="title">
+                                                <h1>OpenAI Proxy URL</h1>
+                                                <p class="description slds-truncate">
+                                                    URL of the OpenAI API.
+                                                </p>
+                                            </div>
+                                            <div slot="actions"></div>
+                                            <div class="slds-flex-row">
+                                                <lightning-input
+                                                    data-key="openai_url"
+                                                    label="openai_url"
+                                                    onchange={inputfield_change}
+                                                    type="text"
+                                                    value={config.openai_url}
+                                                    variant="label-hidden"
+                                                    class="slds-full-width"
+                                                ></lightning-input>
+                                            </div>
+                                        </settings-card>
                                     </div>
                                 </lightning-card>
                             </div>

@@ -1,10 +1,7 @@
-import { LightningElement, api, track } from 'lwc';
+import { api, track } from 'lwc';
 import Toast from 'lightning/toast';
-import { isUndefinedOrNull, timeout,isEmpty, classSet, lowerCaseKey, ROLES,safeParseJson } from 'shared/utils';
+import { isEmpty, classSet, ROLES,safeParseJson } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
-import { store, APPLICATION, SELECTORS, EINSTEIN } from 'core/store';
-import { GLOBAL_EINSTEIN } from 'assistant/utils';
-import LOGGER from 'shared/logger';
 
 export default class Message extends ToolkitElement {
     @api item;
@@ -79,6 +76,37 @@ export default class Message extends ToolkitElement {
 
     get content() {
         return Array.isArray(this.item.content) ? this.item.content[0].text : this.item.content;
+    }
+
+    get contentList() {
+        // Always return an array of content items, or an empty array
+        if (Array.isArray(this.item?.content)) {
+            return this.item.content.map((contentItem, idx) => ({
+                ...contentItem,
+                isInputText: contentItem.type === 'input_text',
+                isOutputText: contentItem.type === 'output_text',
+                isInputImage: contentItem.type === 'input_image',
+                isInputFile: contentItem.type === 'input_file',
+                key: contentItem.id || `${contentItem.type}-${idx}`
+            }));
+        } else if (this.item?.content) {
+            // If it's a string, treat as a single input_text
+            return [{ type: 'input_text', text: this.item.content, isInputText: true, isOutputText: false, isInputImage: false, isInputFile: false, key: 'input_text-0' }];
+        }
+        return [];
+    }
+
+    isInputText(contentItem) {
+        return contentItem.type === 'input_text';
+    }
+    isOutputText(contentItem) {
+        return contentItem.type === 'output_text';
+    }
+    isInputImage(contentItem) {
+        return contentItem.type === 'input_image';
+    }
+    isInputFile(contentItem) {
+        return contentItem.type === 'input_file';
     }
 
     get originMessage() {

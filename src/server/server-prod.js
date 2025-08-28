@@ -13,6 +13,7 @@ const serveJson = require('../../site/serve.json');
 const CTA_MODULE = require('./modules/cta.js');
 const proxy = require('./modules/proxy.js');
 const documentationSearch = require('./modules/documentationSearch');
+const openaiProxy = require('./modules/openaiProxy.js');
 
 /** Temporary Code until a DB is incorporated **/
 const VERSION = process.env.DOC_VERSION || '255.0';
@@ -31,6 +32,7 @@ CTA_MODULE.launchScheduleFileDownloaded(files => {
 documentationSearch.initDocumentationIndex(DATA_DOCUMENTATION.contents);
 
 const app = express();
+app.use(require('express').json());
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const CHROME_ID = process.env.CHROME_ID || 'dmlgjapbfifmeopbfikbdmlgdcgcdmfb';
 
@@ -52,8 +54,7 @@ checkIfPresent = (a, b) => {
 app.all('/cometd/*', proxy({ enableCORS: true }));
 /* jsForce Proxy */
 app.all('/proxy/*', proxy({ enableCORS: true }));
-
-app.use(express.json());
+openaiProxy(app);
 
 app.get('/oauth2/callback', async function (req, res) {
     var code = req.query.code;
