@@ -1,6 +1,9 @@
 {
     "name": "sfdx-ui-light",
     "version": "1.3.48",
+    "engines": {
+        "node": "22.14"
+    },
     "scripts": {
         "start:dev:extension": "rm -r chrome_ext; npm-run-all --parallel watch:extension serve:extension",
         "watch:extension": "rollup -c rollup.config.mjs --bundleConfigAsCjs --environment NODE_ENV:development --watch --watch.buildDelay 3000 --logLevel error && node scripts/update-hot-reload.js",
