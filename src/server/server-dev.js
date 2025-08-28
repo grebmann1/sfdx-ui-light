@@ -2,11 +2,8 @@ require('dotenv').config();
 //const express = require('express');
 const fs = require('node:fs');
 
-const timeout = require('connect-timeout');
 const jsforce = require('jsforce');
-const jwt = require('jsonwebtoken');
 const { createServer } = require('lwr');
-//const jsforceAjaxProxy = require("jsforce-ajax-proxy");
 const qs = require('qs');
 const documentationSearch = require('./modules/documentationSearch');
 
@@ -57,7 +54,6 @@ const lwrServer = createServer({
 
 const app = lwrServer.getInternalServer('express');
 app.use(require('express').json());
-app.use(timeout(295000)); // Related to Heroku 30s timeout
 app.use(haltOnTimedout);
 
 function haltOnTimedout(req, res, next) {

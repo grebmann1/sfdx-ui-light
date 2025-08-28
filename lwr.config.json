@@ -138,7 +138,6 @@
     ],
     "moduleProviders": [
         "@lwrjs/router/module-provider",
-        "@lwrjs/label-module-provider",
         "@lwrjs/app-service/moduleProvider",
         "@lwrjs/lwc-module-provider",
         "@lwrjs/npm-module-provider"

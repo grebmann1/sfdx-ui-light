@@ -2,13 +2,11 @@ require('dotenv').config();
 const fs = require('node:fs');
 
 const express = require('express');
-//const timeout = require('connect-timeout');
 const jsforce = require('jsforce');
 const qs = require('qs');
 const handler = require('serve-handler');
 
 const serveJson = require('../../site/serve.json');
-//const jsforceAjaxProxy = require("jsforce-ajax-proxy");
 
 const CTA_MODULE = require('./modules/cta.js');
 const proxy = require('./modules/proxy.js');

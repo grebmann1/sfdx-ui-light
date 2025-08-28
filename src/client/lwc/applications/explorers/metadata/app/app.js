@@ -1,22 +1,12 @@
 import { api, wire, track } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import {
-    isEmpty,
-    isElectronApp,
-    isSalesforceId,
     classSet,
     isUndefinedOrNull,
     isNotUndefinedOrNull,
-    runActionAfterTimeOut,
-    formatFiles,
-    sortObjectsByField,
-    removeDuplicates,
 } from 'shared/utils';
-import { getWorker } from 'core/worker';
-import jsonview from '@pgrabovets/json-view';
-import Toast from 'lightning/toast';
-import { CurrentPageReference, NavigationContext, generateUrl, navigate } from 'lwr/navigation';
-import { store, connectStore, METADATA, APPLICATION } from 'core/store';
+import { CurrentPageReference, NavigationContext, navigate } from 'lwr/navigation';
+import { store, connectStore, METADATA } from 'core/store';
 
 const METADATA_EXCLUDE_LIST = ['Flow', 'FlowDefinition'];
 
@@ -257,16 +247,6 @@ export default class App extends ToolkitElement {
     hideEditor = () => {
         //this.refs.editor.displayFiles(files);
         this.isEditorDisplayed = false;
-    };
-
-    hideJsonViewer = () => {
-        if (this.visualizer) {
-            try {
-                jsonview.destroy(this.visualizer);
-            } catch (e) {
-                console.error(e);
-            }
-        }
     };
 
     /** Getters */

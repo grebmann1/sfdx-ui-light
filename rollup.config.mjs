@@ -7,7 +7,6 @@ import terser from '@rollup/plugin-terser';
 import copy from 'rollup-plugin-copy';
 import alias from '@rollup/plugin-alias';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
-import postcss from 'rollup-plugin-postcss';
 import * as data from './package.json';
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -74,8 +73,8 @@ const modules = [
     { name: 'lwr/profiler', path: r('node_modules/@lwrjs/client-modules/build/modules/lwr/profiler/profiler.js') },
     { name: 'lwr/metrics', path: r('node_modules/@lwrjs/client-modules/build/modules/lwr/metrics/metrics.js') },
     { dir: r('node_modules/@lwrjs/router/build/modules') },
-    { name: 'jspdf', path: r('src/client/assets/libs/jspdf/jspdf.es.js') },
-    { name: 'jspdf-autotable', path: r('src/client/assets/libs/jspdf/jspdf.plugin.autotable.js') },
+    //{ name: 'jspdf', path: r('src/client/assets/libs/jspdf/jspdf.es.js') },
+    //{ name: 'jspdf-autotable', path: r('src/client/assets/libs/jspdf/jspdf.plugin.autotable.js') },
     { name: 'imported/jsforce', path: r('src/client/assets/libs/jsforce/jsforce.js') }
 ];
 
