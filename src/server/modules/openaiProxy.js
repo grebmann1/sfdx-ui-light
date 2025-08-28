@@ -54,7 +54,7 @@ function registerOpenaiProxy(app) {
     app.use('/openai/v1/', corsMiddleware, authMiddleware);
 
     // General OPTIONS handler for all /openai/v1/*
-    app.options('/openai/v1/*', (req, res) => {
+    app.options('/openai/v1/{*splat}', (req, res) => {
         res.status(200).json({ body: 'ok' });
     });
 

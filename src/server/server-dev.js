@@ -60,9 +60,9 @@ function haltOnTimedout(req, res, next) {
     if (!req.timedout) next();
 }
 /* CometD Proxy */
-app.all('/cometd/*', proxy({ enableCORS: true }));
+app.all('/cometd/*splat', proxy({ enableCORS: true }));
 /* jsForce Proxy */
-app.all('/proxy/*', proxy({ enableCORS: true }));
+app.all('/proxy/*splat', proxy({ enableCORS: true }));
 /* OpenAI Proxy */
 openaiProxy(app);
 

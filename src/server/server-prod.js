@@ -49,9 +49,9 @@ checkIfPresent = (a, b) => {
 };
 
 /* CometD Proxy */
-app.all('/cometd/*', proxy({ enableCORS: true }));
+app.all('/cometd/{*splat}', proxy({ enableCORS: true }));
 /* jsForce Proxy */
-app.all('/proxy/*', proxy({ enableCORS: true }));
+app.all('/proxy/{*splat}', proxy({ enableCORS: true }));
 openaiProxy(app);
 
 app.get('/oauth2/callback', async function (req, res) {
@@ -152,7 +152,7 @@ app.get('/cta/search', function (req, res) {
     res.json(result);
 });
 
-app.get('/*', (req, res) => handler(req, res, { public: 'site', ...serveJson }));
+app.get('/{*splat}', (req, res) => handler(req, res, { public: 'site', ...serveJson }));
 
 app.listen(PORT, () => {
     //console.log(`✅ App running in PROD mode ${PORT}`);
