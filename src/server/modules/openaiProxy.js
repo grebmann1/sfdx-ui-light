@@ -1,9 +1,17 @@
 const { openai } = require('./llm/openaiModel');
 
 function authMiddleware(req, res, next) {
-    const apiKey = process.env.SALESFORCE_KEY;
+    const apiKeys = [
+        process.env.SALESFORCE_KEY,
+        process.env.SALESFORCE_KEY1,
+        process.env.SALESFORCE_KEY2,
+        process.env.SALESFORCE_KEY3,
+        process.env.SALESFORCE_KEY4,
+        process.env.SALESFORCE_KEY5,
+    ].filter(Boolean);
     const authHeader = req.headers['authorization'];
-    if (!apiKey || !authHeader || authHeader !== `Bearer ${apiKey}`) {
+    const isAuthorized = apiKeys.some(key => authHeader === `Bearer ${key}`);
+    if (!apiKeys.length || !authHeader || !isAuthorized) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
     next();
