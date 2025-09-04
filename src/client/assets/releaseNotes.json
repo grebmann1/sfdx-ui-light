@@ -1,5 +1,37 @@
 [
   {
+    "version": "1.3.49",
+    "date": "September 4th, 2025",
+    "sections": [
+      {
+        "title": "Enhancements & New Features",
+        "categories": [
+          {
+            "category": "API Integration & OpenAPI Support",
+            "items": [
+              "Enhanced API integration by adding OpenAPI parser library and updating related configurations.",
+              "Refactored existing tools to utilize the OpenAPI parser for improved functionality and streamlined API schema handling.",
+              "API Editor now includes the possibility to use GlobalVariables."
+            ]
+          },
+          {
+            "category": "AI Assistant",
+            "items": [
+              "Agentic AI is now available with the ability to use your own OpenAI key."
+            ]
+          },
+          {
+            "category": "User Experience & UI",
+            "items": [
+              "General UI improvements for better usability and clarity.",
+              "Fixed minor UI bugs and alignment issues across the application."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.3.48",
     "date": "August 19th, 2025",
     "sections": [
