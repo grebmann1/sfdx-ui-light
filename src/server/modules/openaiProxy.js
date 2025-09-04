@@ -55,7 +55,7 @@ function openaiProxy(app, options = {}) {
     app.use(`${path}/`, corsMiddleware, authMiddleware);
 
     // General OPTIONS handler for all /openai/v1/*
-    app.options(`${path}/:splat(*)`, (req, res) => {
+    app.options(`${path}/*splat`, (req, res) => {
         res.status(200).json({ body: 'ok' });
     });
 
@@ -141,7 +141,7 @@ function openaiProxy(app, options = {}) {
     });
 
     // Centralized error handler for non-streaming errors
-    app.use(`${path}/`, (err, req, res, next) => {
+    app.use(`${path}/*splat`, (err, req, res, next) => {
         res.status(500).json({ error: err.message || 'Internal Server Error' });
     });
 }
