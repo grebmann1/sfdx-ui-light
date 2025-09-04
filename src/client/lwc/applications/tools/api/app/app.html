@@ -12,18 +12,38 @@
                         label={i18n.EDITOR_PANEL_SAVE}
                         onclick={executeSave}
                         disabled={isSaveButtonDisabled}></lightning-button>
-                    <lightning-button
-                        class="slds-m-left_small"
-                        icon-name="utility:apex"
-                        onclick={executeAction}
-                        label={i18n.EDITOR_PANEL_RUN}
-                        variant="brand"
-                        disabled={isExecuteApiDisabled}></lightning-button>
+                    <template lwc:if={isApiRunning}>
+                        <lightning-button
+                            class="slds-p-left_xx-small"
+                            icon-name="utility:clear"
+                            label="Abort"
+                            variant="destructive"
+                            onclick={handleCancelApiRequest}
+                        ></lightning-button>
+                    </template>
+                    <template lwc:else>
+                        <lightning-button
+                            class="slds-m-left_small"
+                            icon-name="utility:apex"
+                            onclick={executeAction}
+                            label={i18n.EDITOR_PANEL_RUN}
+                            variant="danger"
+                            disabled={isExecuteApiDisabled}
+                        ></lightning-button>
+                    </template>
                 </div>
                 <div slot="meta" class="slds-flex-row slds-align-flex-end">
+                    <lightning-button-icon-stateful
+                        selected={isApiTreeToggled}
+                        variant="border-filled"
+                        icon-name="utility:notebook"
+                        size="large"
+                        onclick={handle_apiTreeToggle}
+                    ></lightning-button-icon-stateful>
+
                     <lightning-combobox
                         lwc:ref="method"
-                        class="slds-horizontal-input-combobox"
+                        class="slds-horizontal-input-combobox slds-p-left_xx-small"
                         label="Method"
                         dropdown-alignment="left"
                         value={method}
@@ -64,6 +84,13 @@
                         disabled={isApiRunning}></lightning-button>
                     <lightning-button-icon-stateful
                         class="slds-p-left_xx-small"
+                        selected={isSettingsPanelOpen}
+                        variant="border-filled"
+                        icon-name="utility:settings"
+                        size="large"
+                        onclick={handle_settingsToggle}></lightning-button-icon-stateful>
+                    <lightning-button-icon-stateful
+                        class="slds-p-left_xx-small"
                         selected={isRecentToggled}
                         variant="border-filled"
                         icon-name="utility:budget_period"
@@ -78,6 +105,19 @@
                     </div>
                 </template>
             </builder-header>
+            <!-- API Tree (OpenAPI Tree) -->
+            <api-api-tree-panel
+                size="slds-size_medium"
+                title="API Tree"
+                is-open={isApiTreeToggled}
+                tree={apiTreeItems}
+                onselect={handle_apiTreeSelect}
+                onupload={handle_apiTreeUpload}
+                onclose={handle_apiTreeClose}
+                onserverurlchange={handleServerUrlChange}
+                ondeletefile={handleDeleteApiProject}
+            ></api-api-tree-panel>
+            <!-- Content -->
             <article class="full-page-body slds-card">
                 <div class="slds-flex-column slds-full-height slds-api-container full-page-body">
                     <!-- Tabs -->
@@ -105,7 +145,7 @@
                         class="slds-fill-height"
                         left-min-width="200"
                         right-min-width="200"
-                        is-horizontal>
+                        is-horizontal={isApiSplitterHorizontal}>
                         <div class="bottom-left-panel slds-p-around_small slds-full-height slds-full-width slds-light-bg" slot="left">
                             <div class="slds-form-element slds-full-height slds-full-width slds-flex-column">
                                 <lightning-tabset
@@ -120,6 +160,10 @@
                                     <lightning-tab class="slds-sub-tabs__item"
                                         label={PAGE_CONFIG.TABS.BODY}
                                         value={PAGE_CONFIG.TABS.BODY}
+                                        onactive={request_handleSelectTab}></lightning-tab>
+                                    <lightning-tab class="slds-sub-tabs__item"
+                                        label={PAGE_CONFIG.TABS.VARIABLES}
+                                        value={PAGE_CONFIG.TABS.VARIABLES}
                                         onactive={request_handleSelectTab}></lightning-tab>
                                 </lightning-tabset>
                                 <!-- BODY Section-->
@@ -153,6 +197,23 @@
                                         </div>
                                     </div>
                                 </template>
+                                <template lwc:elseif={isRequestVariablesDisplayed}>
+                                    <div class="slds-form-element slds-fill-height slds-flex-column">
+                                        <slds-information-block class="slds-p-around_x-small" title="Variables">
+                                            <p>Variables replace placeholders in headers, endpoints, and body.</p>
+                                            <p>Example: {id} becomes "123", {name} becomes "John Doe".</p>
+                                        </slds-information-block>
+                                        <div class="slds-form-element__control slds-fill-height">
+                                            
+                                            <editor-default
+                                                lwc:ref="variablesEditor"
+                                                class="slds-full-height slds-is-relative"
+                                                model={variablesModel}
+                                                onmonacoloaded={initVariablesEditor}
+                                                onchange={variables_change}></editor-default>
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
                         </div>
                         <div class="bottom-right-panel slds-full-height slds-full-width slds-p-around_xx-small slds-light-bg" slot="right">
@@ -176,6 +237,10 @@
                                                 <lightning-tab
                                                     label={PAGE_CONFIG.TABS.HEADERS}
                                                     value={PAGE_CONFIG.TABS.HEADERS}
+                                                    onactive={viewer_handleSelectTab}></lightning-tab>
+                                                <lightning-tab
+                                                    label={PAGE_CONFIG.TABS.DETAILS}
+                                                    value={PAGE_CONFIG.TABS.DETAILS}
                                                     onactive={viewer_handleSelectTab}></lightning-tab>
                                             </lightning-tabset>
                                         </div>
@@ -231,10 +296,10 @@
 
                                             <div class={rawContainerClass}>
                                                 <editor-default
-                                                    lwc:ref="contentEditor"
+                                                    lwc:ref="responseEditor"
                                                     class="slds-full-height slds-is-relative"
-                                                    model={currentModel}
-                                                    onmonacoloaded={initContentEditor}
+                                                    model={responseModel}
+                                                    onmonacoloaded={initResponseEditor}
                                                     is-read-only></editor-default>
                                             </div>
 
@@ -303,9 +368,18 @@
                                                 </tbody>
                                             </table>
                                         </template>
+                                        <template lwc:elseif={isDetailsDisplayed}>
+                                            <div class="slds-form-element slds-m-top_medium slds-p-around_small">
+                                                <div class="slds-m-top_x-small">
+                                                    <div><b>Full Endpoint:</b> </div>
+                                                    <div>{fullEndpoint}</div>
+                                                    <!-- Add more details here as needed -->
+                                                </div>
+                                            </div>
+                                        </template>
                                     </template>
                                     <template lwc:else>
-                                        <illustration-empty size="large" use-slot-format>
+                                        <illustration-empty size="small" use-slot-format>
                                             <div slot="title">
                                                 <p>
                                                     Click
@@ -318,7 +392,8 @@
                                                         class="slds-text-heading_small slds-p-horizontal_xx-small">
                                                         CMD/CTRL + Enter
                                                     </span>
-                                                    to execute an API Call
+                                                    to execute an API Call.</br>
+                                                    To change the splitter orientation (Vertical, Horizontal), click on the Settings icon
                                                 </p>
                                             </div>
                                         </illustration-empty>
@@ -340,6 +415,22 @@
                 onclose={handleRecentToggle}
                 onremoveitem={handleRemoveItem}
                 onselectitem={handleSelectItem}></builder-storage-panel>
+            <!-- Settings Vertical Panel -->
+            <slds-vertical-panel
+                has-border
+                position="right"
+                is-open={isSettingsPanelOpen}
+                title="API Application Settings"
+                size="slds-size_medium"
+                onclose={handleSettingsPanelClose}
+            >
+                <settings-api-app-settings 
+                    config={applicationConfig} 
+                    inputfield_change={settingsInputfieldChange}
+                    is-full-width
+                    is-section-header-hidden
+                ></settings-api-app-settings>
+            </slds-vertical-panel>
         </builder-editor>
     </div>
 </template>

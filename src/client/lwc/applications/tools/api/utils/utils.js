@@ -10,6 +10,8 @@ export const VIEWERS = {
 export const TABS = {
     BODY: 'Body',
     HEADERS: 'Headers',
+    VARIABLES: 'Variables',
+    DETAILS: 'Details',
 };
 
 export const METHOD = {
@@ -25,6 +27,7 @@ export const DEFAULT = {
     ENDPOINT: version => `/services/data/v${version}`,
     BODY: '',
     METHOD: METHOD.GET,
+    VARIABLES: '{}',    
 };
 
 export const generateDefaultTab = (version,id) => {
@@ -34,6 +37,7 @@ export const generateDefaultTab = (version,id) => {
         endpoint: DEFAULT.ENDPOINT(version),
         body: DEFAULT.BODY,
         method: DEFAULT.METHOD,
+        variables: DEFAULT.VARIABLES,
         actions: [],
         actionPointer: null,
     };
@@ -74,14 +78,16 @@ export const formattedContentType = contentType => {
 
 export const formatApiRequest = ({ endpoint, method, body, header, connector, replaceVariableValues }) => {
     let error = null;
+    // Apply variable replacement to endpoint
+    const replacedEndpoint = replaceVariableValues ? replaceVariableValues(endpoint) : endpoint;
     // Ensure the endpoint starts with a leading slash if not a full URL
-    const formattedEndpoint = endpoint.startsWith('/')
-        ? endpoint
-        : `/${endpoint}`;
+    const formattedEndpoint = replacedEndpoint.startsWith('/')
+        ? replacedEndpoint
+        : `/${replacedEndpoint}`;
 
     // If the endpoint is a full URL, use it, otherwise, prepend the instance URL
-    const targetUrl = endpoint.startsWith('http')
-        ? endpoint
+    const targetUrl = replacedEndpoint.startsWith('http')
+        ? replacedEndpoint
         : `${connector.conn.instanceUrl}${formattedEndpoint}`;
 
     // Create the base request object with method and URL

@@ -1,13 +1,21 @@
 <template>
-    <div class="slds-scrollable_x slds-full-height">
-        <ul lwc:if={computedTree} class="slds-tree" role="tree">
+    <lightning-input class="slds-m-bottom_small slds-m-top_small search-input" name={i18n.Search} type="search" placeholder={i18n.SearchPlaceholder}
+    value={searchValue} onkeyup={handleSearch} onchange={handleSearch} label={i18n.Search} variant="label-hidden"></lightning-input>
+    <div class="file-explorer-container full-height">
+        <ul lwc:if={isTreeVisible} class="slds-tree" role="tree">
             <template for:each={computedTree} for:item="item">
-                <li key={item.id}>
-                    <slds-file-tree-item item={item} expanded={item.expanded} selected={item.selected} 
+                <li key={item.id} class="slds-m-left_xx-small">
+                    <slds-file-tree-item is-first
+                        item={item} 
+                        expanded={item.expanded} 
+                        selected={item.selected}
+                        is-delete-disabled={isDeleteDisabled}
                         ontoggle={handleToggle} 
                         onselect={handleSelect} 
-                        ondelete={handleDelete} 
-                        is-first
+                        search-value={searchValue} 
+                        ondeletefile={handleDeleteFile}
+                        onexpandall={handleExpandAll}
+                        oncollapseall={handleCollapseAll}
                     ></slds-file-tree-item>
                 </li>
             </template>

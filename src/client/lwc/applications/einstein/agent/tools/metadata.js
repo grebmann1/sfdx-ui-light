@@ -42,6 +42,14 @@ async function getMetadataRecord({ sobject, recordId }) {
     return { success: true, ...result.payload };
 }
 
+// Fetch SObject describe/objectInfo for a given SObject name
+async function describeSObject({ sobject }) {
+    // This assumes a Redux action or API exists to fetch describe info. Replace with actual implementation if needed.
+    // Example: METADATA.reduxSlice.actions.fetchSObjectDescribe({ sobject })
+    const result = await store.dispatch(METADATA.reduxSlice.actions.fetchSObjectDescribe({ sobject }));
+    return { success: true, describe: result.payload.describe };
+}
+
 // Tool: Navigate to Metadata Explorer
 const metadataNavigate = tool({
     name: 'metadata_navigate',
@@ -99,10 +107,23 @@ const metadataGetRecord = tool({
     },
 });
 
+// Tool: Describe SObject (fields, types, etc.)
+const metadataDescribeObject = tool({
+    name: 'metadata_describe_object',
+    description: 'Fetch describe/objectInfo (fields, types, etc.) for a given SObject name.',
+    parameters: z.object({
+        sobject: z.string().describe('The API name of the SObject to describe'),
+    }),
+    execute: async ({ sobject }) => {
+        return await describeSObject({ sobject });
+    },
+});
+
 export const metadataTools = [
     metadataNavigate,
     metadataOpenTab,
     metadataListTypes,
     metadataListRecords,
     metadataGetRecord,
+    metadataDescribeObject,
 ];

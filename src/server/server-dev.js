@@ -60,11 +60,11 @@ function haltOnTimedout(req, res, next) {
     if (!req.timedout) next();
 }
 /* CometD Proxy */
-app.all('/cometd/*splat', proxy({ enableCORS: true }));
+app.all('/cometd/:splat(*)', proxy({ enableCORS: true }));
 /* jsForce Proxy */
-app.all('/proxy/*splat', proxy({ enableCORS: true }));
+app.all('/proxy/:splat(*)', proxy({ enableCORS: true }));
 /* OpenAI Proxy */
-openaiProxy(app);
+openaiProxy(app,{path: '/openai/v1'});
 
 app.get('/version', function (req, res) {
     res.json({ version: process.env.npm_package_version });

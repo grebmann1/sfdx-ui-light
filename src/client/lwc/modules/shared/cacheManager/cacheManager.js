@@ -159,12 +159,19 @@ export class CONFIG_OBJECT {
 
 export const CACHE_CONFIG = {
     CONFIG_POPUP: new CONFIG_OBJECT('openAsPopup', false),
-    OPENAI_ASSISTANT_ID: new CONFIG_OBJECT('openai_assistant_id', null),
-    OPENAI_KEY: new CONFIG_OBJECT('openai_key', null),
-    MISTRAL_KEY: new CONFIG_OBJECT('mistral_key', null), // Added for Mistral
+    CACHE_ISCACHED_PROFILES: new CONFIG_OBJECT('cache_isProfilesCache', false),
+    CACHE_ISCACHED_SOBJECTS: new CONFIG_OBJECT('cache_isSObjectsCache', false),
+    CACHE_REFRESH_RATE: new CONFIG_OBJECT('cache_refreshRate', 24),
+    CACHE_EXCLUSION_LIST: new CONFIG_OBJECT('cache_exclusionList', ''),
     OVERLAY_ENABLED: new CONFIG_OBJECT('overlayEnabled', true),
     CONTENT_SCRIPT_INCLUDE_PATTERNS: new CONFIG_OBJECT('content_script_include_patterns', null),
     CONTENT_SCRIPT_EXCLUDE_PATTERNS: new CONFIG_OBJECT('content_script_exclude_patterns', null),
+    // AI Settings
+    OPENAI_KEY: new CONFIG_OBJECT('openai_key', null),
+    MISTRAL_KEY: new CONFIG_OBJECT('mistral_key', null), // Added for Mistral
+    AI_PROVIDER: new CONFIG_OBJECT('ai_provider', 'openai'),
+    OPENAI_URL: new CONFIG_OBJECT('openai_url', 'https://api.openai.com'),
+    // Shortcuts
     SHORTCUT_INJECTION_ENABLED: new CONFIG_OBJECT('shortcut_injection_enabled', false),
     SHORTCUT_RECORDID: new CONFIG_OBJECT('shortcut_recordid', null),
     SHORTCUT_OPEN_PANEL: new CONFIG_OBJECT('shortcut_open_panel', null),
@@ -175,18 +182,14 @@ export const CACHE_CONFIG = {
     SHORTCUT_API: new CONFIG_OBJECT('shortcut_api', null),
     SHORTCUT_DOCUMENTATION: new CONFIG_OBJECT('shortcut_documentation', null),
     EXPERIENCE_CLOUD_LOGINAS_INCOGNITO: new CONFIG_OBJECT('experienceCloudLoginAsIncognito', false),
-    CACHE_ISCACHED_PROFILES: new CONFIG_OBJECT('cache_isProfilesCache', false),
-    CACHE_ISCACHED_SOBJECTS: new CONFIG_OBJECT('cache_isSObjectsCache', false),
-    CACHE_REFRESH_RATE: new CONFIG_OBJECT('cache_refreshRate', 24),
-    CACHE_EXCLUSION_LIST: new CONFIG_OBJECT('cache_exclusionList', ''),
     UI_IS_APPLICATION_TAB_VISIBLE: new CONFIG_OBJECT('ui_isApplicationTabVisible', true),
     CHROME_SYNC_SETTINGS_INITIALIZED_STORAGE_KEY: new CONFIG_OBJECT(
         'chrome_syncSettingsInitialized',
         false
     ),
     CHROME_SYNC_ORG_INITIALIZED_STORAGE_KEY: new CONFIG_OBJECT('chrome_syncOrgInitialized', false),
-    AI_PROVIDER: new CONFIG_OBJECT('ai_provider', 'openai'),
-    OPENAI_URL: new CONFIG_OBJECT('openai_url', 'https://api.openai.com'),
+    // Applications Settings are stored in the general store
+    API_SPLITTER_IS_HORIZONTAL: new CONFIG_OBJECT('api_splitter_is_horizontal', false),
 };
 
 export const CACHE_SESSION_CONFIG = {
@@ -204,6 +207,13 @@ export const CACHE_ORG_DATA_TYPES = {
     ELECTRON_ORG_LIST: 'electron_org_list', // Added for electron org list caching
 };
 
+export const CACHE_DOCUMENTS = {
+    QUERYFILES: 'QUERYFILES',
+    APIFILES: 'APIFILES',
+    OPENAPI_SCHEMAS_FILES: 'OPENAPI_SCHEMAS_FILES',
+    APEXFILES: 'APEXFILES',
+    RECENT: 'RECENTS',
+};
 // Backward compatibility functions
 export async function loadExtensionConfigFromCache(keys) {
     return cacheManager.loadConfig(keys);

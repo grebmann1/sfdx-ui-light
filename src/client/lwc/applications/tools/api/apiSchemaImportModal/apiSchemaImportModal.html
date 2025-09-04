@@ -1,0 +1,32 @@
+<template>
+    <lightning-modal-header label="Import API Schema"></lightning-modal-header>
+    <lightning-modal-body lwc:ref="body" class="body-full-height">
+        <div class="slds-p-around_medium slds-grid slds-wrap slds-is-relative" style="height: 100%; display: flex; flex-direction: column; gap: 1rem;">
+            <!-- <slds-file-uploader
+                title="Drop or select a JSON/YAML file"
+                is-modal
+                type-list='["application/json", "application/x-yaml", "text/yaml", "text/x-yaml", "text/plain"]'
+                onfilechange={handleFileChange}>
+            </slds-file-uploader> -->
+            <editor-default
+                lwc:ref="editor"
+                class="slds-full-height"
+                model={currentModel}
+                onmonacoloaded={handleMonacoLoaded}
+                onchange={handleEditorChange}>
+            </editor-default>
+        </div>
+    </lightning-modal-body>
+    <lightning-modal-footer>
+        <lightning-button
+            class="slds-float_left slds-button"
+            variant="neutral"
+            label="Cancel"
+            onclick={handleCloseClick}></lightning-button>
+        <lightning-button
+            class="slds-button"
+            variant="brand"
+            label="Import"
+            onclick={handleImportClick}></lightning-button>
+    </lightning-modal-footer>
+</template>

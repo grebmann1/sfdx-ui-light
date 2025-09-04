@@ -1,0 +1,12 @@
+:host {
+    --slds-c-textarea-sizing-min-height: 200px;
+}
+
+.description {
+    font-weight: 300;
+    font-size: 0.8125rem;
+}
+
+.slds-full-height {
+    height: 100%;
+}

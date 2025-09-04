@@ -11,7 +11,7 @@ import {
     autoDetectAndFormat,
 } from 'shared/utils';
 import { SOQL, APEX, VF } from 'editor/languages';
-import { registerCopilot, setupMonaco } from 'editor/utils';
+import { registerAIWidgets, setupMonaco } from 'editor/utils';
 import { MonacoLwcWidget } from 'editor/editorCompleteWidget';
 
 /** REQUIRED FIELDS: _source & _bodyField */
@@ -256,6 +256,7 @@ export default class App extends ToolkitElement {
             theme: this.theme || 'vs',
             readOnly: this.isReadOnly,
             wordWrap: 'on',
+            stickyScroll: { enabled: false },
             autoIndent: true,
             formatOnType: true,
             formatOnPaste: true,
@@ -276,8 +277,8 @@ export default class App extends ToolkitElement {
                 this.sendChangeEvent();
             },
         });
-        // Add Copilot
-        registerCopilot(this.monaco, this.editor, null, this.handleOpenContextCopilot);
+        // Add AI Widgets
+        registerAIWidgets({monaco: this.monaco, editor: this.editor, language: null, handleOpenContextCopilot: this.handleOpenContextCopilot});
 
         this.editor.onDidChangeModelContent(this.handleModelContentChange);
     };

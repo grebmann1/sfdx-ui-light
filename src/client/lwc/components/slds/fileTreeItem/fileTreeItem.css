@@ -1,10 +1,10 @@
 :host {
     display: block;
-    
+    --slds-c-badge-radius-border:5px;
 }
 
-.item-file-text{
-    --slds-c-icon-color-foreground : var(--slds-g-color-brand-base-60);
+.item-file-text {
+    --slds-c-icon-color-foreground: var(--slds-g-color-brand-base-60, #4992FE);
 }
 
 .slds-tree__item {
@@ -13,14 +13,24 @@
     min-height: 2rem;
     align-items: center;
     display: flex;
+    padding: .375rem 0 .375rem 0rem;
 }
 
 .slds-tree__group {
-    padding-left: 1.5rem;
+    margin-left: 0.5rem;
+}
+
+.slds-tree__group:not(.is-first) {
+    border-left: 1px dashed #747474;
 }
 
 .slds-tree__item-label {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+.chevron-icon {
+    bottom: 0.125rem;
+    left: 0.125rem;
 }

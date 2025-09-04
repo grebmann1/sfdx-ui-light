@@ -3,7 +3,9 @@ import { store, API, UI, DOCUMENT, SELECTORS } from 'core/store';
 import { formatApiRequest, generateDefaultTab, DEFAULT as API_DEFAULT } from 'api/utils';
 import { formatTabId, waitForLoaded, wrappedNavigate } from './utils/utils.js';
 import LOGGER from 'shared/logger';
-
+import yaml from 'js-yaml'; // Ensure js-yaml is available in your bundle
+//import { dereference, validate } from '@scalar/openapi-parser'; // Ensure @scalar/openapi-parser is available in your bundle
+import { dereference, validate } from 'imported/openapi-parser';
 const { tool } = window.OpenAIAgentsBundle.Agents;
 
 async function navigateToApi() {
@@ -225,4 +227,113 @@ const apiSaveScript = tool({
     },
 });
 
-export const apiTools = [apiNavigate, apiOpenTab, apiEdit, apiExecute, apiSavedScripts, apiSaveScript];
+// Tool: Import OpenAPI Spec and generate API scripts/folders
+const apiImportOpenApiSpec = tool({
+    name: 'api_import_openapi_spec',
+    description: 'Import an OpenAPI spec (YAML/JSON, file or string), parse, validate, and generate API scripts and folders in the cache.',
+    parameters: z.object({
+        //file: z.any().optional().nullable().describe('OpenAPI spec file (YAML or JSON)'),
+        content: z.string().describe('OpenAPI spec as string'),
+        name: z.string().optional().nullable().describe('Optional name for the imported spec/folder'),
+        alias: z.string().optional().nullable().describe('Org alias if not global'),
+        isGlobal: z.boolean().describe('Whether to save globally or for the current org'),
+    }),
+    execute: async ({ file, content, name, alias, isGlobal }) => {
+        try {
+            // 1. Get content from file or string
+            let specText = content;
+            if (!specText && file) {
+                // Use browser FileReader if file is a File object
+                if (typeof FileReader !== 'undefined' && file instanceof File) {
+                    specText = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = e => resolve(e.target.result);
+                        reader.onerror = reject;
+                        reader.readAsText(file);
+                    });
+                } else if (file.content) {
+                    specText = file.content;
+                }
+            }
+            if (!specText) {
+                return { error: 'No OpenAPI spec content provided.' };
+            }
+
+            // 2. Parse YAML or JSON
+            let specObj;
+            try {
+                specObj = yaml.load(specText);
+            } catch (e) {
+                try {
+                    specObj = JSON.parse(specText);
+                } catch (err) {
+                    return { error: 'Failed to parse OpenAPI spec as YAML or JSON.' };
+                }
+            }
+
+            // 3. Validate and dereference
+            const { valid, errors } = await validate(specObj);
+            if (!valid) {
+                return { error: 'OpenAPI spec validation failed', details: errors };
+            }
+            const { schema: derefSpec, errors: derefErrors } = await dereference(specObj);
+            if (derefErrors && derefErrors.length) {
+                return { error: 'OpenAPI dereferencing failed', details: derefErrors };
+            }
+
+            // 4. Generate API scripts for each path/method
+            const scripts = [];
+            const paths = derefSpec.paths || {};
+            const tagsMap = {};
+            Object.entries(paths).forEach(([path, methods]) => {
+                Object.entries(methods).forEach(([method, op]) => {
+                    if (typeof op !== 'object') return;
+                    const scriptName = op.operationId || `${method.toUpperCase()} ${path}`;
+                    const scriptTags = op.tags || ['default'];
+                    const script = {
+                        id: `${scriptName}-${Date.now()}`,
+                        name: scriptName,
+                        method: method.toUpperCase(),
+                        endpoint: path,
+                        body: op.requestBody ? (op.requestBody.example || op.requestBody.examples ? JSON.stringify(op.requestBody.examples || op.requestBody.example, null, 2) : '') : '',
+                        headers: { 'Content-Type': 'application/json' },
+                        isGlobal: !!isGlobal,
+                        alias: isGlobal ? null : (alias || store.getState().application.connector?.conn?.alias),
+                        createdDate: Date.now(),
+                        extra: {
+                            summary: op.summary,
+                            description: op.description,
+                            tags: scriptTags,
+                        },
+                    };
+                    scripts.push(script);
+                    // Group by tag for folder structure
+                    scriptTags.forEach(tag => {
+                        if (!tagsMap[tag]) tagsMap[tag] = [];
+                        tagsMap[tag].push(script);
+                    });
+                });
+            });
+
+            // 5. Save scripts using DOCUMENT/APIFILE logic
+            /* for (const script of scripts) {
+                await store.dispatch(
+                    DOCUMENT.reduxSlices.APIFILE.actions.saveScript({ script })
+                );
+            } */
+
+            // 6. Return summary
+            return {
+                success: true,
+                importedScripts: scripts.length,
+                tags: Object.keys(tagsMap),
+                scriptsByTag: Object.fromEntries(Object.entries(tagsMap).map(([tag, arr]) => [tag, arr.map(s => s.name)])),
+            };
+        } catch (error) {
+            LOGGER.error('api_import_openapi_spec', error);
+            return { error: error.message };
+        }
+    },
+});
+
+export const apiTools = [apiNavigate, apiOpenTab, apiEdit, apiExecute, apiSavedScripts, apiSaveScript, apiImportOpenApiSpec];

@@ -43,7 +43,6 @@ module.exports = function (options = {}) {
                 return res.sendStatus(200);
             }
         }
-
         const sfEndpoint = req.headers['salesforceproxy-endpoint'];
         if (!SF_PROD_ENDPOINT_REGEXP.test(sfEndpoint) && !SF_DEV_ENDPOINT_REGEXP.test(sfEndpoint)) {
             return res

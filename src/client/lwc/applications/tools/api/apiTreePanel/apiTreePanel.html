@@ -1,0 +1,65 @@
+<template>
+    <slds-vertical-panel
+        has-border
+        size={size}
+        title={title}
+        position="left"
+        is-open={isOpen}
+        onclose={handleClose}
+    >
+        <div slot="actions">
+            <lightning-button
+                class="slds-p-right_xx-small"
+                label="Import API"
+                icon-name="utility:upload"
+                icon-position="right"
+                onclick={handleUpload}
+            ></lightning-button>
+        </div>
+        <template if:false={selectedProject}>
+            <!-- View 1: Project selection tree -->
+            <slds-file-tree 
+                is-delete-disabled
+                tree={projectTree}
+                onselect={handleSelectProject}
+            ></slds-file-tree>
+        </template>
+        <template if:true={selectedProject}>
+            <!-- View 2: Project details -->
+            <div class="api-treepanel-header slds-p-around_x-small slds-border_bottom slds-grid">
+                <lightning-button-icon
+                    icon-name="utility:back"
+                    alternative-text="Back"
+                    title="Back"
+                    variant="bare"
+                    onclick={handleBack}
+                    class="slds-m-right_small"
+                ></lightning-button-icon>
+                <h3 class="slds-text-title_bold" title={selectedProject.name}>{selectedProject.name}</h3>
+            </div>
+            <div class="api-treepanel-body slds-p-around_x-small">
+                <lightning-combobox
+                    name="serverUrl"
+                    label="Server URL"
+                    value={selectedServerUrl}
+                    options={serverOptions}
+                    onchange={handleServerChange}
+                    class="slds-m-bottom_small"
+                ></lightning-combobox>
+                <!-- You can add a search input here if needed -->
+                <slds-file-tree
+                    is-delete-disabled
+                    tree={apiDetailsTree}
+                    onselect={handleSelect}
+                ></slds-file-tree>
+                <template if:true={selectedNode}>
+                    <div class="api-treepanel-details slds-m-top_small">
+                        <!-- Render details for selectedNode here -->
+                        <div class="slds-text-title_bold">{selectedNode.label}</div>
+                        <div>{selectedNode.description}</div>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </slds-vertical-panel>
+</template>

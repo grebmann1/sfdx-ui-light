@@ -29,16 +29,24 @@
                         <lightning-button-group>
                             <lightning-button
                                 icon-name="utility:component_customization"
-                                onclick={openSOQLExplorer}
+                                data-application="soql/app"
+                                onclick={openApplication}
                                 label="SOQL Explorer"></lightning-button>
                             <lightning-button
                                 icon-name="utility:component_customization"
-                                onclick={openMetadataExplorer}
+                                data-application="metadata/app"
+                                onclick={openApplication}
                                 label="Metadata Explorer"></lightning-button>
                             <lightning-button
                                 icon-name="utility:component_customization"
-                                onclick={openSobjectExplorer}
+                                data-application="object/app"
+                                onclick={openApplication}
                                 label="SObject Explorer"></lightning-button>
+                            <lightning-button
+                                icon-name="utility:component_customization"
+                                data-application="api/app"
+                                onclick={openApplication}
+                                label="API Explorer"></lightning-button>
                         </lightning-button-group>
                     </li>
                 </ul>

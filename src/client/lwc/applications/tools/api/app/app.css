@@ -25,16 +25,20 @@
     background-color: #f4f6fb;
     transition: background 0.2s;
 }
+
 .header-table-ui .header-row td {
     padding-top: 0.25rem;
     padding-bottom: 0.25rem;
 }
+
 .header-table-ui .header-row-duplicate {
     background-color: #fff7e3 !important;
 }
+
 .slds-icon-text-warning {
     color: #ffb75d !important;
 }
+
 .header-table-ui lightning-button-icon[variant="brand"] {
     box-shadow: 0 0 0 2px #0176d3;
 }

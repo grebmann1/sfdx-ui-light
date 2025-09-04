@@ -36,16 +36,9 @@ export default class App extends ToolkitElement {
         });
     };
 
-    openMetadataExplorer = () => {
-        this.goToTarget('metadata/app');
-    };
-
-    openSobjectExplorer = () => {
-        this.goToTarget('object/app');
-    };
-
-    openSOQLExplorer = () => {
-        this.goToTarget('soql/app');
+    openApplication = e => {
+        const application = e.currentTarget.dataset.application;
+        this.goToTarget(application);
     };
 
     openInBrowser = () => {

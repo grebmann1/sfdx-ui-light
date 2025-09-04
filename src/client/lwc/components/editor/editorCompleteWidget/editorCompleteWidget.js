@@ -61,7 +61,7 @@ export default class EditorCompleteWidget extends LightningElement {
         this.isApprovalDisplayed = false; // If we set the focus on the textarea, we need to reset the approval display
         setTimeout(() => {
             const textarea = this.template.querySelector('textarea');
-            textarea?.focus();
+            if (textarea) textarea.focus();
         }, 50);
     };
 
@@ -114,8 +114,7 @@ export default class EditorCompleteWidget extends LightningElement {
      * @returns {Promise<string>} The generated code
      */
     async generateCode() {
-        const { startLine, endLine, prefix, suffix, originalCode, language } =
-            this.prepareGenerationContext();
+        const { prefix, suffix, originalCode, language } = this.prepareGenerationContext();
         const { userContent, systemContent } = this.prepareAssistantMessages(
             prefix,
             suffix,
@@ -145,6 +144,11 @@ export default class EditorCompleteWidget extends LightningElement {
      * @returns {Object} Generation context
      */
     prepareGenerationContext() {
+        if (!this.file) {
+            return { startLine: 1, endLine: 1, prefix: '', suffix: '', originalCode: '', language: '' };
+        }
+        LOGGER.log('this.selection', this.selection);
+        LOGGER.log('this.selection.range.isEmpty()', this.selection.range.isEmpty());
         const isFullFile = isUndefinedOrNull(this.selection) || this.selection.range.isEmpty();
         const { startLine, endLine } = this.getSelectionLines(isFullFile);
         const { prefix, suffix } = voidPrefixAndSuffix({
@@ -155,7 +159,7 @@ export default class EditorCompleteWidget extends LightningElement {
         const originalCode = this.getOriginalCode(isFullFile, startLine, endLine);
         const language = this.file.language;
 
-        return { startLine, endLine, prefix, suffix, originalCode, language };
+        return { startLine, endLine, prefix, suffix, originalCode, language, };
     }
 
     /**
@@ -269,6 +273,7 @@ export default class EditorCompleteWidget extends LightningElement {
      * @returns {string} The selected code
      */
     getOriginalCode(isFullFile, startLine, endLine) {
+        if (!this.file) return '';
         return isFullFile
             ? this.file.content
             : this.file.content
@@ -301,21 +306,15 @@ export default class EditorCompleteWidget extends LightningElement {
      */
     handleGenerationError(error) {
         LOGGER.error('Code generation failed', error);
-
         // If the error is an AbortError, don't show the error toast
-        if (error.name !== 'AbortError') {
+        if (!error || error.name !== 'AbortError') {
             Toast.show({
                 message: 'Error while generating the code/text. Please try again.',
                 theme: 'error',
                 label: 'Error',
             });
         }
-
-        // Clear any partial generation
-        //
-        /* this.dispatchEvent(
-            new CustomEvent('refresh')
-        ); */
+        // Clear any partial generation (if needed)
     }
 
     /**

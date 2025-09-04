@@ -29,14 +29,86 @@ import SaveModal from 'builder/saveModal';
 import moment from 'moment';
 import LightningConfirm from 'lightning/confirm';
 import LOGGER from 'shared/logger';
+import ApiSchemaImportModal from 'api/apiSchemaImportModal';
+import yaml from 'js-yaml';
+import { dereference, validate } from 'imported/openapi-parser';
+import * as OpenAPISampler from 'openapi-sampler';
+import { NavigationContext, navigate } from 'lwr/navigation';
+import { CACHE_CONFIG, cacheManager } from 'shared/cacheManager';
+
+// Utility: Convert OpenAPI schema to apiTreeItems
+function openApiToApiTreeItems(openApi) {
+    if (!openApi.paths) return [];
+    // Helper to insert a path into the tree
+    function insertPath(tree, path, pathItem) {
+        const segments = path.split('/').filter(Boolean); // remove empty
+        let current = tree;
+        let fullPath = '';
+        for (let i = 0; i < segments.length; i++) {
+            const segment = segments[i];
+            fullPath += '/' + segment;
+            let node = current.children.find(child => child.id === fullPath && child.type === 'folder');
+            if (!node) {
+                node = {
+                    id: fullPath,
+                    name: segment,
+                    title: fullPath,
+                    type: 'folder',
+                    children: [],
+                    extra: i === segments.length - 1 ? pathItem : undefined
+                };
+                current.children.push(node);
+            }
+            current = node;
+        }
+        // Add method nodes as children of the last segment
+        Object.entries(pathItem).forEach(([method, operation]) => {
+            if (['get', 'post', 'put', 'patch', 'delete', 'options', 'head', 'trace'].includes(method)) {
+                current.children.push({
+                    id: `${path}:${method}`,
+                    name: method.toUpperCase(),
+                    title: `${path}:${method}`,
+                    icon: `api:${method}`,
+                    type: 'method',
+                    extra: {
+                        ...operation,
+                        path,
+                        method,
+                        pathItem,
+                    }
+                });
+            }
+        });
+    }
+    // Root node with API title and servers
+    const name = openApi?.info?.title;
+    const root = {
+        id: (name ? name : guid()).toLowerCase(), // Important to lowercase for Redux !!!!!!
+        name: name ? name : 'API',
+        type: 'root',
+        children: [],
+        extra: {
+            ...openApi.info,
+            servers: openApi.servers || []
+        }
+    };
+    Object.entries(openApi.paths).forEach(([path, pathItem]) => {
+        insertPath(root, path, pathItem);
+    });
+    return [root];
+}
 
 export default class App extends ToolkitElement {
+    @wire(NavigationContext)
+    navContext;
+
     isLoading = false;
     isDownloading = false;
 
     @track formattedRequests = [];
     @track endpoint;
     @track method;
+    @track variables;
     @api header;
     @api body;
 
@@ -46,6 +118,8 @@ export default class App extends ToolkitElement {
     isEditing = false;
 
     currentModel;
+    responseModel;
+    variablesModel;
 
     // Aborting
     // _abortingMap is now managed in the Redux store
@@ -60,6 +134,10 @@ export default class App extends ToolkitElement {
     recentApiItems = [];
     savedApiItems = [];
 
+    // API Tree
+    @track isApiTreeToggled = false;
+    @track apiTreeItems = [];
+
     // Content
     @track content;
     @track contentLength;
@@ -68,6 +146,7 @@ export default class App extends ToolkitElement {
     @track statusCode;
     @track executionStartDate;
     @track executionEndDate;
+    @track executedFormattedRequest;
 
     // Viewer
     viewer_value = VIEWERS.PRETTY;
@@ -86,30 +165,50 @@ export default class App extends ToolkitElement {
     _loadingInterval;
     _loadingMessage;
 
+    @track isApiSplitterHorizontal = false;
+    @track isSettingsPanelOpen = false;
+
     _hasRendered = false;
 
     // Add after class properties
     @track headerRows = [{ id: guid(), key: '', value: '' }];
+    @track selectedServerUrl = '';
+
+    // applicationConfig
+    @track applicationConfig = {};
+    // openapiSchemaFiles
+    @track openapiSchemaFiles = [];
 
     connectedCallback() {
         this.isFieldRendered = true;
-
         store.dispatch(async (dispatch, getState) => {
-            const cachedConfig = await API.loadCacheSettings(this.alias);
+            this.applicationConfig = await API.loadCacheSettings(this.alias);
+            LOGGER.log('cachedConfig', this.applicationConfig);
+            this.processCacheSettings(this.applicationConfig);
+            // Update current api version
             await dispatch(
                 API.reduxSlice.actions.updateCurrentApiVersion({
                     alias: this.alias,
                     version: this.currentApiVersion,
                 })
             );
+
+            // Load Files/history from storage (ASYNC, no need to wait)
+            dispatch(
+                DOCUMENT.reduxSlices.OPENAPI_SCHEMA_FILE.actions.loadFromStorage({
+                    alias: this.alias,
+                })
+            );
+            // Load Files/history from storage
             await dispatch(
                 DOCUMENT.reduxSlices.APIFILE.actions.loadFromStorage({
                     alias: this.alias,
                 })
             );
+            // Load REDUX Cache Settings (Used to init the tabs)
             await dispatch(
                 API.reduxSlice.actions.loadCacheSettings({
-                    cachedConfig,
+                    cachedConfig: this.applicationConfig,
                     apiFiles: getState().apiFiles,
                 })
             );
@@ -138,7 +237,7 @@ export default class App extends ToolkitElement {
     }
 
     @wire(connectStore, { store })
-    storeChange({ application, api, recents, apiFiles }) {
+    storeChange({ application, api, recents, apiFiles, openapiSchemaFiles }) {
         const isCurrentApp = this.verifyIsActive(application.currentApplication);
         if (!isCurrentApp) return;
         this.tab_current = api.viewerTab;
@@ -147,13 +246,17 @@ export default class App extends ToolkitElement {
         this.tabs = api.tabs;
         this.currentTab = api.currentTab;
         if (api.currentTab && this._hasRendered) {
-            //this.currentTab = api.currentTab;
             if (this.currentTab.fileId != this.currentFile?.id) {
                 this.currentFile = SELECTORS.apiFiles.selectById(
                     { apiFiles },
                     lowerCaseKey(this.currentTab.fileId)
                 );
             }
+        }
+        // Variables (now global)
+        if (this.variables != api.variables) {
+            this.variables = api.variables;
+            this.updateVariablesEditor();
         }
         // Variables (Need to handle some exceptions)
         if (this.body != api.body) {
@@ -184,6 +287,7 @@ export default class App extends ToolkitElement {
         this.actions = api.actions || [];
         this.actionPointer = api.actionPointer || 0;
 
+
         // Api State
         const apiState = SELECTORS.api.selectById({ api }, lowerCaseKey(api.currentTab?.id));
         if (apiState) {
@@ -209,9 +313,10 @@ export default class App extends ToolkitElement {
                 this.contentLength = apiState.response.contentLength;
                 this.executionStartDate = apiState.response.executionStartDate;
                 this.executionEndDate = apiState.response.executionEndDate;
+                this.executedFormattedRequest = apiState.formattedRequest;
                 if (this.content != apiState.response.content) {
                     this.content = apiState.response.content;
-                    this.updateContentEditor();
+                    this.updateResponseEditor();
                 }
                 ////this.header_formatDate();
                 // Handle Error from Salesforce
@@ -242,6 +347,14 @@ export default class App extends ToolkitElement {
             });
         }
 
+        /** OpenAPI Schema Files */
+        if (openapiSchemaFiles) {
+            this.openapiSchemaFiles = SELECTORS.openapiSchemaFiles.selectAll({ openapiSchemaFiles });
+            this.apiTreeItems = [...this.openapiSchemaFiles].map(file => {
+                return openApiToApiTreeItems(file.content)[0];
+            });
+        }
+
         /** Saved API */
         if (apiFiles) {
             const entities = SELECTORS.apiFiles.selectAll({ apiFiles });
@@ -261,11 +374,13 @@ export default class App extends ToolkitElement {
             method: this.method,
             body: this.body,
             header: this.header,
+            variables: this.variables,
             connector: this.connector,
             replaceVariableValues: this.replaceVariableValues,
         });
         if(error){
             Toast.show({
+                label: 'Failed to format request',
                 message: error,
                 errors: error,
             });
@@ -277,6 +392,7 @@ export default class App extends ToolkitElement {
     executeAction = () => {
         const _originalRequest = this.currentRequestToStore;
         const _formattedRequest = this.formatRequest();
+        LOGGER.log('App [executeAction] _formattedRequest', _formattedRequest);
         if(isUndefinedOrNull(_formattedRequest)) return;
 
         this.isApiRunning = true;
@@ -313,7 +429,7 @@ export default class App extends ToolkitElement {
             this.executionStartDate = action.response.executionStartDate;
             this.executionEndDate = action.response.executionEndDate;
             this.content = action.response.content;
-            this.updateContentEditor();
+            this.updateResponseEditor();
         } else {
             this.reset_click();
         }
@@ -332,15 +448,36 @@ export default class App extends ToolkitElement {
         this.refs.method.value = this.method;
         this.refs.url.value = this.endpoint;
         this.refs.bodyEditor.currentModel.setValue(this.body || '');
-        if (this.refs.contentEditor) {
-            //this.refs.contentEditor.currentModel.setValue(this.content);
+        this.refs.bodyEditor.currentMonaco.editor.setModelLanguage(
+            this.refs.bodyEditor.currentModel,
+            autoDetectAndFormat(this.body, this.header) || 'txt'
+        );
+        if (this.refs.responseEditor) {
+            //this.refs.responseEditor.currentModel.setValue(this.content);
         }
     };
 
     replaceVariableValues = text => {
-        if (isEmpty(text)) return text;
-        // Todo: Enhance this to provide more variables
-        return text.replace(/{sessionId}/g, this.connector.conn.accessToken);
+        if (!text) return text;
+        let result = text;
+        let variablesObj = {};
+        try {
+            variablesObj = JSON.parse(this.variables || '{}');
+        } catch (e) {
+            // If variables is not valid JSON, skip replacement
+            variablesObj = {};
+        }
+        // Replace all {key} from variables
+        Object.keys(variablesObj).forEach(key => {
+            const value = variablesObj[key];
+            const regex = new RegExp(`\\{${key}\\}`, 'g');
+            result = result.replace(regex, value);
+        });
+        // Always replace {sessionId}
+        if (this.connector && this.connector.conn && this.connector.conn.accessToken) {
+            result = result.replace(/\{sessionId\}/g, this.connector.conn.accessToken);
+        }
+        return result;
     };
 
     decreaseActionPointer = () => {
@@ -385,17 +522,17 @@ export default class App extends ToolkitElement {
         this.executionEndDate = null;
     };
 
-    updateContentEditor = () => {
+    updateResponseEditor = () => {
         if (
             !this._hasRendered ||
-            !this.refs.contentEditor ||
-            isUndefinedOrNull(this.currentModel) ||
-            isUndefinedOrNull(this.refs.contentEditor.currentModel)
+            !this.refs.responseEditor ||
+            isUndefinedOrNull(this.responseModel) ||
+            isUndefinedOrNull(this.refs.responseEditor.currentModel)
         )
             return;
-        this.refs.contentEditor.currentModel.setValue(this.formattedContent);
-        this.refs.contentEditor.currentMonaco.editor.setModelLanguage(
-            this.refs.contentEditor.currentModel,
+        this.refs.responseEditor.currentModel.setValue(this.formattedContent);
+        this.refs.responseEditor.currentMonaco.editor.setModelLanguage(
+            this.refs.responseEditor.currentModel,
             formattedContentType(this.contentType)
         );
     };
@@ -406,6 +543,15 @@ export default class App extends ToolkitElement {
         this.refs.bodyEditor.currentMonaco.editor.setModelLanguage(
             this.refs.bodyEditor.currentModel,
             autoDetectAndFormat(this.body, this.header) || 'txt'
+        );
+    };
+
+    updateVariablesEditor = () => {
+        if (!this._hasRendered || !this.refs.variablesEditor || !this.refs.variablesEditor.currentModel) return;
+        this.refs.variablesEditor.currentModel.setValue(this.variables || '');
+        this.refs.variablesEditor.currentMonaco.editor.setModelLanguage(
+            this.refs.variablesEditor.currentModel,
+            'json'
         );
     };
 
@@ -436,14 +582,14 @@ export default class App extends ToolkitElement {
         this.refs.bodyEditor.displayModel(newModel);
     };
 
-    initContentEditor = () => {
-        if (!this._hasRendered || !this.refs.contentEditor) return;
+    initResponseEditor = () => {
+        if (!this._hasRendered || !this.refs.responseEditor) return;
         //this.isLoading = false;
-        this.currentModel = this.refs.contentEditor.createModel({
+        this.responseModel = this.refs.responseEditor.createModel({
             body: this.formattedContent,
             language: formattedContentType(this.contentType),
         });
-        this.refs.contentEditor.displayModel(this.currentModel);
+        this.refs.responseEditor.displayModel(this.responseModel);
     };
 
     viewer_handleChange = e => {
@@ -497,12 +643,14 @@ export default class App extends ToolkitElement {
         runActionAfterTimeOut(
             e,
             async lastEvent => {
+
+                console.log('App [updateRequestStates]', this.variables);
                 const _newDraft =
                     (this.currentFile &&
                         (this.currentFile.extra?.body != this.body ||
                             this.currentFile.extra?.method != this.method ||
                             this.currentFile.extra?.endpoint != this.endpoint ||
-                            this.currentFile.extra?.header != this.header)) === true; // enforce boolean
+                            this.currentFile.extra?.header != this.header)) === true; // variables removed from draft check
                 if (
                     this.body !== api.body ||
                     this.method !== api.method ||
@@ -552,6 +700,14 @@ export default class App extends ToolkitElement {
         this.updateRequestStates(e);
     };
 
+    variables_change = e => {
+        if (this.variables == e.detail.value) return;
+        this.variables = e.detail.value;
+        store.dispatch(
+            API.reduxSlice.actions.updateVariables({ variables: this.variables })
+        );
+    };
+
     handle_customLinkClick = e => {
         // Assuming it's always GET method
         this.endpoint = e.detail.url;
@@ -584,8 +740,10 @@ export default class App extends ToolkitElement {
         } catch (e) {
             console.error(e);
             Toast.show({
+                label: 'Failed Exporting JSON',
                 message: 'Failed Exporting JSON',
                 errors: e,
+                variant: 'error',
             });
         }
         this.isDownloading = false;
@@ -628,6 +786,187 @@ export default class App extends ToolkitElement {
         });
     };
 
+    handle_apiTreeToggle = () => {
+        this.isApiTreeToggled = !this.isApiTreeToggled;
+    };
+
+    handle_apiTreeClose = () => {
+        this.isApiTreeToggled = false;
+    };
+
+    handle_settingsToggle = () => {
+        this.isSettingsPanelOpen = !this.isSettingsPanelOpen;
+    };
+
+    handleSettingsPanelClose = () => {
+        this.isSettingsPanelOpen = false;
+    };
+
+    // When loading an OpenAPI item with parameters, generate sample variables
+    handle_apiTreeSelect = (event) => {
+        const selectedItem = event.detail?.item;
+        const extra = selectedItem.extra;
+        if (extra) {
+            // If this is a method node, open or update a tab
+            if (extra.method && extra.path) {
+                // Generate sample body if available
+                let sampleBody = '';
+                if (extra?.requestBody?.content) {
+                    const content = extra.requestBody.content['application/json'] || Object.values(extra.requestBody.content)[0];
+                    if (content?.schema) {
+                        try {
+                            const sample = OpenAPISampler.sample(content.schema, { skipReadOnly: true });
+                            sampleBody = JSON.stringify(sample, null, 2);
+                        } catch (e) {
+                            LOGGER.error('openapi-sampler error:', e);
+                            sampleBody = JSON.stringify(content.schema, null, 2);
+                        }
+                    }
+                }
+                // Generate sample variables from parameters
+                let sampleVariables = {};
+                const parameters = extra?.pathItem?.parameters || [];
+                if (Array.isArray(parameters) && parameters.length > 0) {
+                    parameters.forEach(param => {
+                        // Use OpenAPISampler if schema exists, else use a placeholder
+                        if (param.schema) {
+                            try {
+                                sampleVariables[param.name] = OpenAPISampler.sample(param.schema, { skipReadOnly: true });
+                            } catch (e) {
+                                sampleVariables[param.name] = param.schema.example || '';
+                            }
+                        } else {
+                            sampleVariables[param.name] = '';
+                        }
+                    });
+                }
+                const variables = JSON.stringify(sampleVariables, null, 2);
+                this.initVariablesEditor();
+                // Compose full endpoint with base URL
+                const baseUrl = this.selectedServerUrl || '';
+                const endpoint = baseUrl.replace(/\/$/, '') + '/' + extra.path.replace(/^\//, '');
+                const method = extra.method.toUpperCase();
+                // Check if a tab already exists for this method+endpoint+server
+                const tabId = selectedItem.id?.toLowerCase();
+                const existingTab = this.tabs.find(tab => tab.id === tabId);
+                if (existingTab) {
+                    store.dispatch(API.reduxSlice.actions.selectionTab({id: tabId}));
+                } else {
+                    // Create a new tab (variables are set globally)
+                    const tab = {
+                        ...generateDefaultTab(this.currentApiVersion,tabId),
+                        method,
+                        endpoint,
+                        body: sampleBody,
+                        serverUrl: baseUrl,
+                    };
+                    store.dispatch(API.reduxSlice.actions.addTab({ tab }));
+                }
+                return;
+            }
+            // Fallback: if not a method node, just update the body as before
+            if (extra?.parameters) {
+                this.body = JSON.stringify(extra.parameters, null, 2);
+                this.updateBodyEditor();
+            } else {
+                this.body = JSON.stringify(extra, null, 2);
+                this.updateBodyEditor();
+            }
+        }
+    };
+
+    handle_apiTreeUpload = async () => {
+        const result = await ApiSchemaImportModal.open({
+            title: 'Import API Schema',
+            value: '',
+        });
+        if (result && result.value) {
+            let parsedSchema;
+            let format = 'json';
+
+            LOGGER.log('handle_apiTreeUpload', result.value);
+            try {
+                // Try JSON first
+                try {
+                    parsedSchema = JSON.parse(result.value);
+                } catch (jsonErr) {
+                    // If not JSON, try YAML
+                    parsedSchema = yaml.load(result.value);
+                    format = 'yaml';
+                }
+                // Validate and dereference with Scalar OpenAPIParser
+                const dereferenced = await dereference(parsedSchema);
+                Toast.show({
+                    label: 'OpenAPI schema imported and parsed successfully',
+                    message: `OpenAPI schema imported and parsed successfully (${format.toUpperCase()})!`,
+                    variant: 'success',
+                });
+                // You can now use 'dereferenced' as the fully parsed OpenAPI spec
+                // eslint-disable-next-line no-console
+                LOGGER.log('Dereferenced OpenAPI schema:', dereferenced);
+                const newOpenApiTreeItems = openApiToApiTreeItems(dereferenced.schema);
+                this.apiTreeItems = [...this.apiTreeItems, ...newOpenApiTreeItems];
+                const root = newOpenApiTreeItems.find(item => item.type === 'root');
+                if(root){
+                    LOGGER.log('Saving OpenAPI schema to document', root.id, dereferenced.schema);
+                    store.dispatch(
+                        DOCUMENT.reduxSlices.OPENAPI_SCHEMA_FILE.actions.upsertOne({
+                            id: root.id,
+                            content: dereferenced.schema,
+                            isGlobal: true,
+                        })
+                    );
+                }
+
+                
+            } catch (err) {
+                Toast.show({
+                    label: 'Failed to parse OpenAPI schema',
+                    message: 'Failed to parse OpenAPI schema: ' + (err.message || err),
+                    variant: 'error',
+                });
+                // eslint-disable-next-line no-console
+                LOGGER.error('OpenAPI parse error:', err);
+            }
+        }
+    };
+
+    handleServerUrlChange = (event) => {
+        this.selectedServerUrl = event.detail.serverUrl;
+        // Optionally, update the endpoint or display the full URL somewhere
+        // Example: this.fullUrl = this.selectedServerUrl + this.endpoint;
+    }
+
+
+
+    handleCancelApiRequest = () => {
+        // Try to abort the in-flight API request for the current tab
+        const { api } = store.getState();
+        const tabId = this.currentTab?.id;
+        if (!tabId) return;
+        const abortingMap = api.abortingMap || {};
+        const promise = abortingMap[tabId];
+        if (promise && typeof promise.abort === 'function') {
+            promise.abort();
+        } else if (promise && typeof promise.cancel === 'function') {
+            promise.cancel();
+        } else {
+            Toast.show({
+                label: 'Abort not supported',
+                message: 'The current API request cannot be aborted.',
+                variant: 'warning',
+            });
+        }
+    };
+
+    handleDeleteApiProject = (event) => {
+        LOGGER.log('handleDeleteApiProject', event.detail);
+        const item = event.detail.item;
+        this.apiTreeItems = this.apiTreeItems.filter(x => x.id !== item.id);
+        LOGGER.log('this.apiTreeItems', this.apiTreeItems);
+        store.dispatch(DOCUMENT.reduxSlices.OPENAPI_SCHEMA_FILE.actions.removeOne(item.id));
+    }
+
     /** Tabs */
 
     handleAddTab = e => {
@@ -655,6 +994,38 @@ export default class App extends ToolkitElement {
             store.dispatch(API.reduxSlice.actions.removeTab({ id: tabId, alias: this.alias }));
         }
     };
+
+    /** Cached Settings */
+
+    settingsInputfieldChange = (e) => {
+        const inputField = e.currentTarget;
+        const _config = this.applicationConfig;
+        if (inputField.type === 'toggle') {
+            _config[inputField.dataset.key] = inputField.checked;
+        } else {
+            _config[inputField.dataset.key] = inputField.value;
+        }
+        this.applicationConfig = null;
+        this.applicationConfig = _config;
+        this.processCacheSettings(this.applicationConfig);
+
+        // Save Config
+        const configurationList = Object.values(CACHE_CONFIG);
+        const config = {};
+        const keyList = Object.keys(this.applicationConfig);
+        Object.values(configurationList).filter(item => keyList.includes(item.key)).forEach(item => {
+            config[item.key] = this.applicationConfig[item.key];
+        });
+        // Use the new CacheManager to save config
+        LOGGER.log('saving config', config);
+        cacheManager.saveConfig(config);
+    }
+
+
+
+    processCacheSettings = (cachedConfig) => {
+        this.isApiSplitterHorizontal = cachedConfig[CACHE_CONFIG.API_SPLITTER_IS_HORIZONTAL.key];
+    }
 
     /** Storage Files */
 
@@ -696,7 +1067,7 @@ export default class App extends ToolkitElement {
             tab.header = extra.header;
             tab.method = extra.method;
             tab.endpoint = extra.endpoint;
-
+            tab.variables = extra.variables;
             store.dispatch(API.reduxSlice.actions.addTab({ tab }));
         } else {
             console.warn(`${category} not supported !`);
@@ -707,6 +1078,17 @@ export default class App extends ToolkitElement {
         e.stopPropagation();
         const { id } = e.detail;
         store.dispatch(DOCUMENT.reduxSlices.APIFILE.actions.removeOne(id));
+    };
+
+
+    // Editor init and change handlers
+    initVariablesEditor = () => {
+        if (!this._hasRendered || !this.refs.variablesEditor) return;
+        this.variablesModel = this.refs.variablesEditor.createModel({
+            body: this.variables,
+            language: 'json',
+        });
+        this.refs.variablesEditor.displayModel(this.variablesModel);
     };
 
     /** Getters */
@@ -788,12 +1170,20 @@ export default class App extends ToolkitElement {
         return this.tab_normalizedCurrent === TABS.HEADERS;
     }
 
+    get isDetailsDisplayed() {
+        return this.tab_normalizedCurrent === TABS.DETAILS;
+    }
+
     get isRequestBodyDisplayed() {
         return this.request_normalizedCurrent === TABS.BODY;
     }
 
     get isRequestHeadersDisplayed() {
         return this.request_normalizedCurrent === TABS.HEADERS;
+    }
+
+    get isRequestVariablesDisplayed() {
+        return this.request_normalizedCurrent === TABS.VARIABLES;
     }
 
     get method_options() {
@@ -864,7 +1254,7 @@ export default class App extends ToolkitElement {
     get tab_normalizedCurrent() {
         return normalize(this.tab_current, {
             fallbackValue: TABS.BODY,
-            validValues: [TABS.BODY, TABS.HEADERS],
+            validValues: [TABS.BODY, TABS.HEADERS, TABS.DETAILS],
             toLowerCase: false,
         });
     }
@@ -872,14 +1262,22 @@ export default class App extends ToolkitElement {
     get request_normalizedCurrent() {
         return normalize(this.request_tab_current, {
             fallbackValue: TABS.BODY,
-            validValues: [TABS.BODY, TABS.HEADERS],
+            validValues: [TABS.BODY, TABS.HEADERS, TABS.VARIABLES],
             toLowerCase: false,
         });
     }
 
+    get fullEndpoint() {
+        // Show the endpoint after variable replacement
+        return this.executedFormattedRequest?.url || '';
+    }
+
+    // Add to PAGE_CONFIG
     get PAGE_CONFIG() {
         return {
-            TABS,
+            TABS: {
+                ...TABS
+            },
         };
     }
 

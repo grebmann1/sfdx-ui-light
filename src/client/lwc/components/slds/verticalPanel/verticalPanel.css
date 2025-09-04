@@ -16,4 +16,35 @@
 
 .slds-panel__body {
     /*background-color: #fafaf9;*/
+    padding: 0.2rem;
+}
+
+.slds-panel_docked-left.with-border {
+    border-left: 1px solid #c9c9c9;
+    border-bottom: 1px solid #c9c9c9;
+}
+
+.slds-panel_docked-right.with-border {
+    border-right: 1px solid #c9c9c9;
+    border-bottom: 1px solid #c9c9c9;
+}
+
+.vertical-panel-drag-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 2;
+    background: transparent;
+}
+
+.slds-panel_docked-right .vertical-panel-drag-handle {
+    left: 0;
+    right: auto;
+}
+.slds-panel_docked-left .vertical-panel-drag-handle {
+    right: 0;
+    left: auto;
 }

@@ -47,19 +47,20 @@ function streamSSE(res, streamFn, errorFn) {
     })();
 }
 
-function registerOpenaiProxy(app) {
+function openaiProxy(app, options = {}) {
     const openaiModel = openai(process.env);
+    const path = options.path || '/openai/v1';
 
     // Apply CORS and Auth middleware to all /openai/v1/ routes
-    app.use('/openai/v1/', corsMiddleware, authMiddleware);
+    app.use(`${path}/`, corsMiddleware, authMiddleware);
 
     // General OPTIONS handler for all /openai/v1/*
-    app.options('/openai/v1/{*splat}', (req, res) => {
+    app.options(`${path}/:splat(*)`, (req, res) => {
         res.status(200).json({ body: 'ok' });
     });
 
     // POST /openai/v1/chat/completions
-    app.post('/openai/v1/chat/completions', async (req, res, next) => {
+    app.post(`${path}/chat/completions`, async (req, res, next) => {
         try {
             const body = req.body;
             if (!body) {
@@ -92,7 +93,7 @@ function registerOpenaiProxy(app) {
     });
 
     // POST /openai/v1/responses
-    app.post('/openai/v1/responses', async (req, res, next) => {
+    app.post(`${path}/responses`, async (req, res, next) => {
         try {
             const body = req.body;
             if (!body) {
@@ -125,7 +126,7 @@ function registerOpenaiProxy(app) {
     });
 
     // GET /openai/v1/models
-    app.get('/openai/v1/models', (req, res, next) => {
+    app.get(`${path}/models`, (req, res, next) => {
         try {
             const data = openaiModel.supportModels.map((model) => ({
                 id: model,
@@ -140,9 +141,9 @@ function registerOpenaiProxy(app) {
     });
 
     // Centralized error handler for non-streaming errors
-    app.use('/openai/v1/', (err, req, res, next) => {
+    app.use(`${path}/`, (err, req, res, next) => {
         res.status(500).json({ error: err.message || 'Internal Server Error' });
     });
 }
 
-module.exports = registerOpenaiProxy;
+module.exports = openaiProxy;

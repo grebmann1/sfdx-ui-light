@@ -29,9 +29,16 @@ export default class PromptWidget extends LightningElement {
 
     setFocus = () => {
         setTimeout(() => {
-            this.template.querySelector('textarea').focus();
+            const textarea = this.template.querySelector('textarea');
+            if (textarea) textarea.focus();
         }, 50); //
     };
+
+    clearInput() {
+        const textarea = this.template.querySelector('textarea');
+        if (textarea) textarea.value = '';
+        this.value = '';
+    }
 
     /** Event Handlers */
 
@@ -83,8 +90,7 @@ export default class PromptWidget extends LightningElement {
             const output = message.content;
             if (output) {
                 this.isApprovalDisplayed = true;
-                this.template.querySelector('textarea').value = null; // Clear the input field
-                this.value = null;
+                this.clearInput();
                 this.dispatchEvent(
                     new CustomEvent('generate', {
                         detail: { output },
@@ -98,18 +104,21 @@ export default class PromptWidget extends LightningElement {
                 theme: 'error',
                 label: 'Error',
             });
+            this.clearInput();
         } finally {
             this.isLoading = false;
         }
     };
 
     handleClose() {
-        this.template.querySelector('textarea').value = null;
+        this.clearInput();
+        this.isApprovalDisplayed = false;
         this.dispatchEvent(new CustomEvent('close'));
     }
 
     handleApprove() {
-        this.template.querySelector('textarea').value = null;
+        this.clearInput();
+        this.isApprovalDisplayed = false;
         this.dispatchEvent(new CustomEvent('approve'));
     }
 

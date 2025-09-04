@@ -140,6 +140,7 @@ class MonacoLwcWidget {
         });
 
         this.lwcElement.addEventListener('textend', event => {
+            LOGGER.log('textend', event.detail.fullText);
             this.applyTextToEditor({ text: event.detail.fullText, isEnd: true });
         });
 
@@ -201,7 +202,10 @@ class MonacoLwcWidget {
      */
     applyTextToEditor = async ({ text, isEnd }) => {
         const model = this.editor.getModel();
-        let range = this.currentSelection?.range || model.getFullModelRange();
+        let range = this.currentSelection?.range;
+        if (!range || range.isEmpty()) {
+            range = model.getFullModelRange();
+        }
 
         const formattedText = this.formatOutput(text);
         const tempModel = this.monaco.editor.createModel(this.originalText, this.language);
@@ -235,20 +239,23 @@ class MonacoLwcWidget {
         this.versionId = this.editor.getModel().getVersionId();
         this.originalText = this.editor.getModel().getValue();
         this.originalModel = this.editor.getModel();
+        const originalModelLanguage = this.originalModel.getLanguageId();
         // Set the current selection
         this.currentSelection = createCodeSelection(this.editor, this.editor.getSelection());
         this.currentFile = createFileSelection(this.editor);
 
         // Set the temporary model as the editor's model
         const format = autoDetectAndFormat(this.originalText);
-        this.temporaryModel = this.monaco.editor.createModel(this.originalText, format);
+        LOGGER.log('Language - Original Model', originalModelLanguage);
+        LOGGER.log('Language - Detected', format);
+        this.temporaryModel = this.monaco.editor.createModel(this.originalText, originalModelLanguage);
         this.editor.setModel(this.temporaryModel);
 
         // Add the widget to the view zone
         this.addWidgetToViewZone(this.line - 1, this.col);
 
         this.isVisible = true;
-
+        LOGGER.log('Widget - Show - Selection', this.currentSelection);
         // Set up text selection decoration
         if (this.currentSelection && !this.currentSelection.range.isEmpty()) {
             this.deltaDecoration = this.editor.deltaDecorations(

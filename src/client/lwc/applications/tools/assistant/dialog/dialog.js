@@ -8,7 +8,6 @@ import {
     isNotUndefinedOrNull,
     isChromeExtension,
 } from 'shared/utils';
-import { cacheManager, CACHE_CONFIG, loadExtensionConfigFromCache } from 'shared/cacheManager';
 import ToolkitElement from 'core/toolkitElement';
 import SaveModal from 'assistant/saveModal';
 import { GLOBAL_EINSTEIN, chat_template } from 'assistant/utils';

@@ -75,7 +75,8 @@ const modules = [
     { dir: r('node_modules/@lwrjs/router/build/modules') },
     //{ name: 'jspdf', path: r('src/client/assets/libs/jspdf/jspdf.es.js') },
     //{ name: 'jspdf-autotable', path: r('src/client/assets/libs/jspdf/jspdf.plugin.autotable.js') },
-    { name: 'imported/jsforce', path: r('src/client/assets/libs/jsforce/jsforce.js') }
+    { name: 'imported/jsforce', path: r('src/client/assets/libs/jsforce/jsforce.js') },
+    { name: 'imported/openapi-parser', path: r('src/client/assets/libs/openapi-parser/openapi-parser.esm.min.js') }
 ];
 
 const prodPlugins = isProduction ? [terserPlugin] : [];

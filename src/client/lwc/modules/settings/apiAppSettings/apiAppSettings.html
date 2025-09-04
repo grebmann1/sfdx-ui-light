@@ -1,0 +1,39 @@
+<template>
+    <div class="slds-section slds-reverse slds-is-open" lwc:if={isSectionHeaderDisplayed}>
+        <h3 class="slds-section__title">
+            <div class="slds-section__title-action slds-p-vertical_x-small">
+                <span class="slds-truncate" title="API Application Settings">
+                    API Application Settings
+                </span>
+            </div>
+        </h3>
+    </div>
+    <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
+        <lightning-card class="settings slds-col slds-size_1-of-1 slds-p-around_medium">
+            <div slot="title" lwc:if={isTitleDisplayed}>
+                <h1>UI Settings</h1>
+                <p class="description slds-truncate"></p>
+            </div>
+            <div slot="actions"></div>
+            <div class="slds-grid slds-wrap">
+                <settings-card class={cardClass} is-first>
+                    <div slot="title">
+                        <h1>Splitter Orientation</h1>
+                        <p class="description slds-truncate">Toggle between vertical and horizontal split view in the API Explorer.</p>
+                    </div>
+                    <div slot="actions"></div>
+                    <lightning-input
+                        data-key="api_splitter_is_horizontal"
+                        label="Horizontal Splitter"
+                        type="toggle"
+                        variant="label-hidden"
+                        checked={config.api_splitter_is_horizontal}
+                        onchange={inputfield_change}
+                        message-toggle-active="Horizontal"
+                        message-toggle-inactive="Vertical"
+                    ></lightning-input>
+                </settings-card>
+            </div>
+        </lightning-card>
+    </div>
+</template>

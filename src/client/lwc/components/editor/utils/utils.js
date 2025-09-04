@@ -49,12 +49,12 @@ export const setupMonaco = async () => {
     return window.monaco;
 };
 
-export const registerCopilot = (monaco, editor, language, handleOpenContextCopilot) => {
+export const registerAIWidgets = ({monaco, editor, language, handleOpenContextCopilot}) => {
     
 
     // Check if OpenAI is available for the Context Copilot feature
     if (store.getState().application.openaiKey) {
-        LOGGER.info('registerCopilot --> ', language);
+        LOGGER.info('registerAIWidgets --> ', language);
         // Register the action to open the context copilot
         editor.addAction({
             id: 'openEditor',
@@ -88,7 +88,7 @@ export const registerMonacoAutocomplete = (monaco, editor, language, mistralKey)
         technologies:['salesforce'],
         requestHandler: async ({ body }) => {
             // Prepare context for the assistant
-            LOGGER.log('body', body);
+            //LOGGER.log('body', body);
             
             const completion = await copilot.complete({ body});
             return completion;

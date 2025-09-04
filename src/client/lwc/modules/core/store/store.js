@@ -35,6 +35,7 @@ const store = configureStore({
         queryFiles: DOCUMENT.reduxSlices.QUERYFILE.reducer,
         apexFiles: DOCUMENT.reduxSlices.APEXFILE.reducer,
         apiFiles: DOCUMENT.reduxSlices.APIFILE.reducer,
+        openapiSchemaFiles: DOCUMENT.reduxSlices.OPENAPI_SCHEMA_FILE.reducer,
         recents: DOCUMENT.reduxSlices.RECENT.reducer,
         errors: ERROR.reduxSlice.reducer,
         sobjectExplorer: SOBJECTEXPLORER.reduxSlice.reducer,
@@ -116,5 +117,6 @@ export const SELECTORS = {
     queryFiles: DOCUMENT.queryFileAdapter.getSelectors(state => state.queryFiles),
     apexFiles: DOCUMENT.apexFileAdapter.getSelectors(state => state.apexFiles),
     apiFiles: DOCUMENT.apiFileAdapter.getSelectors(state => state.apiFiles),
+    openapiSchemaFiles: DOCUMENT.openapiSchemaFileAdapter.getSelectors(state => state.openapiSchemaFiles),
     //errors: ERROR.errorAdapter.getSelectors(state => state.errors),
 };

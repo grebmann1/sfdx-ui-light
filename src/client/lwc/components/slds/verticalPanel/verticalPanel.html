@@ -1,6 +1,7 @@
 <template>
     <div class="slds-filter-panel-container">
-        <div class={filterPanelClass}>
+        <div class={filterPanelClass} style={panelStyle}>
+            <div class="vertical-panel-drag-handle" onmousedown={handleDragHandleMouseDown}></div>
             <div class="slds-panel__header" lwc:if={isHeaderVisible}>
                 <h2
                     class="slds-panel__header-title slds-text-heading_small slds-truncate"
@@ -8,11 +9,13 @@
                     {title}
                 </h2>
                 <div class="slds-panel__header-actions">
+                    <slot name="actions"></slot>
                     <lightning-button-icon
                         class="slds-panel__close"
                         icon-name="utility:close"
                         onclick={handleClose}
-                        tab-index="-1"></lightning-button-icon>
+                        tab-index="-1"
+                    ></lightning-button-icon>
                 </div>
             </div>
             <div class="slds-panel__body slds-fill-height">

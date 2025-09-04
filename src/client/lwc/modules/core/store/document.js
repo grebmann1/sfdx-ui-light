@@ -1,18 +1,14 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
 import { lowerCaseKey, guid, isUndefinedOrNull } from 'shared/utils';
+import { CACHE_DOCUMENTS, cacheManager } from 'shared/cacheManager';
 
 // Adapters
 export const queryFileAdapter = createEntityAdapter();
 export const apexFileAdapter = createEntityAdapter();
 export const apiFileAdapter = createEntityAdapter();
+export const openapiSchemaFileAdapter = createEntityAdapter();
 export const platformEventFileAdapter = createEntityAdapter();
 
-const REFERENCES = {
-    QUERYFILES: 'QUERYFILES',
-    APIFILES: 'APIFILES',
-    APEXFILES: 'APEXFILES',
-    RECENT: 'RECENTS',
-};
 const MAX_RECENT = 20;
 const RECENT_QUERIES_KEY = 'lsb.recentQueries';
 const RECENT_APEX_KEY = 'lsb.recentApex';
@@ -72,17 +68,17 @@ const apexFileSlice = createSlice({
     initialState: apexFileAdapter.getInitialState(),
     reducers: {
         loadFromStorage: (state, action) => {
-            apexFileAdapter.setAll(state, loadFromStorage(REFERENCES.APEXFILES));
+            apexFileAdapter.setAll(state, loadFromStorage(CACHE_DOCUMENTS.APEXFILES));
         },
         upsertOne: (state, action) => {
             apexFileAdapter.upsertOne(state, formatData(action.payload));
             const entities = Object.values(state.entities);
-            setInLocalStorage(REFERENCES.APEXFILES, entities);
+            setInLocalStorage(CACHE_DOCUMENTS.APEXFILES, entities);
         },
         removeOne: (state, action) => {
             apexFileAdapter.removeOne(state, action.payload);
             const entities = Object.values(state.entities);
-            setInLocalStorage(REFERENCES.APEXFILES, entities);
+            setInLocalStorage(CACHE_DOCUMENTS.APEXFILES, entities);
         },
     },
 });
@@ -93,17 +89,17 @@ const queryFileSlice = createSlice({
     initialState: queryFileAdapter.getInitialState(),
     reducers: {
         loadFromStorage: (state, action) => {
-            queryFileAdapter.setAll(state, loadFromStorage(REFERENCES.QUERYFILES));
+            queryFileAdapter.setAll(state, loadFromStorage(CACHE_DOCUMENTS.QUERYFILES));
         },
         upsertOne: (state, action) => {
             queryFileAdapter.upsertOne(state, formatData(action.payload));
             const entities = Object.values(state.entities);
-            setInLocalStorage(REFERENCES.QUERYFILES, entities);
+            setInLocalStorage(CACHE_DOCUMENTS.QUERYFILES, entities);
         },
         removeOne: (state, action) => {
             queryFileAdapter.removeOne(state, action.payload);
             const entities = Object.values(state.entities);
-            setInLocalStorage(REFERENCES.QUERYFILES, entities);
+            setInLocalStorage(CACHE_DOCUMENTS.QUERYFILES, entities);
         },
     },
 });
@@ -114,28 +110,41 @@ const apiFileSlice = createSlice({
     initialState: apiFileAdapter.getInitialState(),
     reducers: {
         loadFromStorage: (state, action) => {
-            apiFileAdapter.setAll(state, loadFromStorage(REFERENCES.APIFILES));
+            apiFileAdapter.setAll(state, loadFromStorage(CACHE_DOCUMENTS.APIFILES));
         },
         upsertOne: (state, action) => {
             apiFileAdapter.upsertOne(state, formatData(action.payload));
             const entities = Object.values(state.entities);
-            setInLocalStorage(REFERENCES.APIFILES, entities);
+            setInLocalStorage(CACHE_DOCUMENTS.APIFILES, entities);
         },
         removeOne: (state, action) => {
             apiFileAdapter.removeOne(state, action.payload);
             const entities = Object.values(state.entities);
-            setInLocalStorage(REFERENCES.APIFILES, entities);
+            setInLocalStorage(CACHE_DOCUMENTS.APIFILES, entities);
         },
     },
 });
 
-function saveItem(key, value) {
-    try {
-        localStorage.setItem(key, value);
-    } catch (e) {
-        console.warn(`Failed to save "${key}" to localStorage`, e);
-    }
-}
+// OPENAPI SCHEMAS
+const openapiSchemaFileSlice = createSlice({
+    name: 'openapiSchemaFiles',
+    initialState: openapiSchemaFileAdapter.getInitialState(),
+    reducers: {
+        loadFromStorage: (state, action) => {
+            openapiSchemaFileAdapter.setAll(state,loadFromStorage(CACHE_DOCUMENTS.OPENAPI_SCHEMAS_FILES));
+        },
+        upsertOne: (state, action) => {
+            openapiSchemaFileAdapter.upsertOne(state, formatData(action.payload));
+            const entities = Object.values(state.entities);
+            setInLocalStorage(CACHE_DOCUMENTS.OPENAPI_SCHEMAS_FILES, entities);
+        },
+        removeOne: (state, action) => {
+            openapiSchemaFileAdapter.removeOne(state, action.payload);
+            const entities = Object.values(state.entities);
+            setInLocalStorage(CACHE_DOCUMENTS.OPENAPI_SCHEMAS_FILES, entities);
+        },
+    },
+});
 // RECENT (Basic Arrays)
 const recentSlice = createSlice({
     name: 'recents',
@@ -162,7 +171,7 @@ const recentSlice = createSlice({
                 soql,
                 ...state.queries.filter(q => q !== soql).slice(0, MAX_RECENT - 1),
             ];
-            saveItem(`${alias}-${RECENT_QUERIES_KEY}`, JSON.stringify(recentQueriesState));
+            setInLocalStorage(`${alias}-${RECENT_QUERIES_KEY}`, recentQueriesState);
             state.queries = recentQueriesState;
         },
         saveApex: (state, action) => {
@@ -171,7 +180,7 @@ const recentSlice = createSlice({
                 body,
                 ...state.apex.filter(q => q !== body).slice(0, MAX_RECENT - 1),
             ];
-            saveItem(`${alias}-${RECENT_APEX_KEY}`, JSON.stringify(recentApexState));
+            setInLocalStorage(`${alias}-${RECENT_APEX_KEY}`, recentApexState);
             state.apex = recentApexState;
         },
         saveApi: (state, action) => {
@@ -183,7 +192,7 @@ const recentSlice = createSlice({
                     .filter(q => q.method !== item.method || q.endpoint !== item.endpoint)
                     .slice(0, MAX_RECENT - 1),
             ];
-            saveItem(`${alias}-${RECENT_API_KEY}`, JSON.stringify(recentApiState));
+            setInLocalStorage(`${alias}-${RECENT_API_KEY}`, recentApiState);
             state.api = recentApiState;
         },
         savePlatformEvents: (state, action) => {
@@ -192,9 +201,9 @@ const recentSlice = createSlice({
                 channel,
                 ...state.platformEvents.filter(q => q !== channel).slice(0, MAX_RECENT - 1),
             ];
-            saveItem(
+            setInLocalStorage(
                 `${alias}-${RECENT_PLATFORM_EVENT_KEY}`,
-                JSON.stringify(recentPlatformEventState)
+                recentPlatformEventState
             );
             state.platformEvents = recentPlatformEventState;
         },
@@ -206,9 +215,9 @@ const recentSlice = createSlice({
                     .filter(q => q.recordId !== item.recordId)
                     .slice(0, MAX_RECENT - 1),
             ];
-            saveItem(
+            setInLocalStorage(
                 `${alias}-${RECENT_RECORD_VIEWER_KEY}`,
-                JSON.stringify(recentRecordViewerState)
+                recentRecordViewerState
             );
             state.recordViewers = recentRecordViewerState;
         },
@@ -219,5 +228,6 @@ export const reduxSlices = {
     QUERYFILE: queryFileSlice,
     APEXFILE: apexFileSlice,
     APIFILE: apiFileSlice,
+    OPENAPI_SCHEMA_FILE: openapiSchemaFileSlice,
     RECENT: recentSlice,
 };

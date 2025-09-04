@@ -81,7 +81,7 @@ async function fetchSoqlSavedQueries({ alias }) {
 
 const soqlQuery = tool({
     name: 'soql_query',
-    description: 'Execute a SOQL query in the Salesforce Toolkit.',
+    description: 'Display and execute an SOQL query in the Salesforce Toolkit Query Editor. Only suitable when the user want to see the query/result in the Salesforce Toolkit Query Editor.',
     parameters: z.object({
         query: z.string(),
         tabId: z.string().optional().nullable().describe('Optional tab ID to reuse when the tool is called again with the same context/request'),
@@ -93,7 +93,7 @@ const soqlQuery = tool({
 
 const soqlQueryIncognito = tool({
     name: 'soql_query_incognito',
-    description: 'Execute a SOQL query in the Salesforce Toolkit (Incognito mode). Perfect if you want to execute a query without displaying it in the UI.',
+    description: 'Execute a SOQL query (Incognito mode) without displaying it in the UI. Recommended if you want to execute a query without displaying it in the UI.',
     parameters: z.object({
         query: z.string(),
         useToolingApi: z.boolean().describe('Use Tooling API').default(false),

@@ -300,7 +300,6 @@ class Assistant {
             }
 
             const parsedData = safeParseJson(data);
-            LOGGER.debug('parsedData', parsedData);
             try{
                 const { finish_reason, delta } = parsedData.choices[0];
 
@@ -460,7 +459,7 @@ class Assistant {
     // ===== REDUX MESSAGE MANAGEMENT METHODS =====
 
     _upsertMessage(message) {
-        LOGGER.debug('upsertMessage --> ', message);
+        //LOGGER.debug('upsertMessage --> ', message);
         const messageExists = this.messages.some(item => item.id === message.id);
         if (!messageExists) {
             this.messages = [...this.messages, message];

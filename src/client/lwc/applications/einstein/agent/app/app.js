@@ -13,7 +13,6 @@ import LOGGER from 'shared/logger';
 import OpenAI from 'openai';
 //import { tools } from 'agent/tools';
 import { NavigationContext } from 'lwr/navigation';
-import { CACHE_CONFIG } from 'shared/cacheManager';
 const { Agent, Runner, user, system, tool, run, setDefaultOpenAIClient, setOpenAIAPI } = window.OpenAIAgentsBundle.Agents;
 import { loggedInAgent, loggedOutAgent } from 'agent/agents';
 import { readFileContent } from 'agent/utils';

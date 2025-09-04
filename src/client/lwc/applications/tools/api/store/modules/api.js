@@ -1,10 +1,11 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
 import {  generateDefaultTab, formattedContentType } from 'api/utils';
 import { SELECTORS, DOCUMENT, ERROR, store } from 'core/store';
-import { loadExtensionConfigFromCache,saveExtensionConfigToCache } from 'shared/cacheManager';
+import { loadExtensionConfigFromCache,saveExtensionConfigToCache,CACHE_CONFIG } from 'shared/cacheManager';
 import {
     lowerCaseKey,
     isNotUndefinedOrNull,
+    safeParseJson
 } from 'shared/utils';
 import LOGGER from 'shared/logger';
 const API_SETTINGS_KEY = 'API_SETTINGS_KEY';
@@ -13,10 +14,14 @@ const API_SETTINGS_KEY = 'API_SETTINGS_KEY';
 
 export async function loadCacheSettings(alias) {
     const key = `${alias}-${API_SETTINGS_KEY}`;
-    const configMap = await loadExtensionConfigFromCache([key]);
-    const configText = configMap?configMap[key]:null;
-    const cachedConfig = configText?JSON.parse(configText):null;
-    return cachedConfig;
+    const arr = [key,CACHE_CONFIG.API_SPLITTER_IS_HORIZONTAL.key];
+    LOGGER.log('arr', arr);
+    const configMap = await loadExtensionConfigFromCache(arr);
+    LOGGER.log('configMap', configMap);
+    if(configMap && configMap.hasOwnProperty(key)){
+        configMap[key] = safeParseJson(configMap[key]) || null;
+    }
+    return configMap;
 }
 
 async function saveCacheSettings(alias, state) {
@@ -45,7 +50,7 @@ function formatTab({
     fileId,
     fileData,
     actions,
-    actionPointer,
+    actionPointer
 }) {
     return {
         id,
@@ -175,6 +180,7 @@ export const executeApiRequest = createAsyncThunk(
             return {
                 response,
                 request,
+                formattedRequest,
                 alias: connector.conn.alias,
                 tabId,
             };
@@ -193,7 +199,10 @@ export const executeApiRequest = createAsyncThunk(
 const createInitialTabs = apiVersion => {
     return [enrichTab(generateDefaultTab(apiVersion), null)];
 };
-
+const DEFAULT_VARIABLES = `{
+    "id": "123",
+    "name": "John Doe"
+}`;
 // Create a slice with reducers and extraReducers
 const apiSlice = createSlice({
     name: 'api',
@@ -207,6 +216,7 @@ const apiSlice = createSlice({
         body: null,
         method: null,
         endpoint: null,
+        variables: DEFAULT_VARIABLES, // GLOBAL
         header: null,
         currentApiVersion: '59.0',
         abortingMap: {},
@@ -415,6 +425,10 @@ const apiSlice = createSlice({
         clearAbortingMap: (state) => {
             state.abortingMap = {};
         },
+        updateVariables: (state, action) => {
+            const { variables } = action.payload;
+            state.variables = variables;
+        },
     },
     extraReducers: builder => {
         builder
@@ -429,7 +443,7 @@ const apiSlice = createSlice({
                 });
             })
             .addCase(executeApiRequest.fulfilled, (state, action) => {
-                const { response, request } = action.payload;
+                const { response, request, formattedRequest } = action.payload;
                 const { tabId, createdDate } = action.meta.arg;
                 state.abortingMap = {
                     ...state.abortingMap,
@@ -439,6 +453,7 @@ const apiSlice = createSlice({
                     id: lowerCaseKey(tabId),
                     response,
                     request,
+                    formattedRequest,
                     isFetching: false,
                     createdDate,
                     error: null,

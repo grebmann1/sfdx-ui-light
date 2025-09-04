@@ -14,6 +14,10 @@
             {
                 "name": "imported/jsforce",
                 "path": "$rootDir/src/client/assets/libs/jsforce/jsforce.js"
+            },
+            {
+                "name": "imported/openapi-parser",
+                "path": "$rootDir/src/client/assets/libs/openapi-parser/openapi-parser.esm.min.js"
             }
         ]
     },
