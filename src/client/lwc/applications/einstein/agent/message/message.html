@@ -52,12 +52,14 @@
     
                     <template lwc:if={tool_isRunning}>
                         <div class="slds-chat-event__agent-message slds-m-top_small">
-                            <slds-spinner
-                                variant="brand"
-                                size="small"
-                                label="Loading..."
-                                class="slds-is-relative"
-                            ></slds-spinner>
+                            <span class="slds-icon-typing slds-is-animated" title="Reasoning">
+                                <span class="slds-icon-typing__dot"></span>
+                                <span class="slds-icon-typing__dot"></span>
+                                <span class="slds-icon-typing__dot"></span>
+                                <span class="slds-assistive-text">
+                                    Loading...
+                                </span>
+                            </span>
                         </div>
                     </template>
                     <template lwc:elseif={showToolParameters}>

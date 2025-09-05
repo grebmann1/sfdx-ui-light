@@ -30,7 +30,8 @@ CTA_MODULE.launchScheduleFileDownloaded(files => {
 documentationSearch.initDocumentationIndex(DATA_DOCUMENTATION.contents);
 
 const app = express();
-app.use(require('express').json());
+app.use(express.json({limit: '50mb'}));
+app.use(express.urlencoded({limit: '50mb'}));
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const CHROME_ID = process.env.CHROME_ID || 'dmlgjapbfifmeopbfikbdmlgdcgcdmfb';
 

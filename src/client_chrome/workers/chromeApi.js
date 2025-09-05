@@ -5,9 +5,10 @@ import LOGGER from '../../client/lwc/modules/shared/logger/logger.js';
 // Helper to coerce string IDs to numbers
 
 
-export async function handleChromeOpenTab(message) {
+export async function handleChromeOpenTab(args) {
     try {
-        const {url, windowId} = message.args;
+        LOGGER.log('--> handleChromeOpenTab',args);
+        const {url, windowId} = args;
         const tab = await chrome.tabs.create({ url, ...(windowId && { windowId }) });
         return createSuccessResponse(`Tab opened successfully in window ${windowId || 'current'}, tabId: ${tab.id}`);
     } catch (error) {
@@ -18,9 +19,9 @@ export async function handleChromeOpenTab(message) {
     }
 }
 
-export async function handleChromeNavigateTab(message) {
+export async function handleChromeNavigateTab(args) {
     try {
-        const { tabId } = message.args;
+        const { tabId } = args;
         const tab = await chrome.tabs.get(tabId);
         await chrome.tabs.update(tab.id, { active: true });
         await chrome.windows.update(tab.windowId, { focused: true });
@@ -32,7 +33,7 @@ export async function handleChromeNavigateTab(message) {
     }
 }
 
-export async function handleChromeListTabs(message) {
+export async function handleChromeListTabs(args) {
     try {
         const tabs = await chrome.tabs.query({});
         return createSuccessResponse(`Tabs listed successfully, ${tabs.length} tabs found : Tabs : ${JSON.stringify(tabs)}`);
@@ -44,7 +45,7 @@ export async function handleChromeListTabs(message) {
     }
 }
 
-export async function handleChromeListTabGroups(message) {
+export async function handleChromeListTabGroups(args) {
     try {
         if (chrome.tabGroups && chrome.tabGroups.query) {
             const groups = await chrome.tabGroups.query({});
@@ -59,9 +60,9 @@ export async function handleChromeListTabGroups(message) {
     }
 }
 
-export async function handleChromeGroupTabs(message) {
+export async function handleChromeGroupTabs(args) {
     try {
-        const { tabIds, windowId, title, color } = message.args;
+        const { tabIds, windowId, title, color } = args;
         const moveTabsAndGroup = async (tabIds, windowId, groupName) => {
             if (windowId) {
                 const movedTabs = await chrome.tabs.move(tabIds, { windowId: toNumber(windowId), index: -1 });
@@ -89,7 +90,7 @@ export async function handleChromeGroupTabs(message) {
     }
 }
 
-export async function handleChromeGetWindows(message) {
+export async function handleChromeGetWindows(args) {
     try {
         const windows = await chrome.windows.getAll({ populate: true });
         return createSuccessResponse(`Windows listed successfully, ${windows.length} windows found : Windows : ${JSON.stringify(windows)}`);
@@ -101,9 +102,9 @@ export async function handleChromeGetWindows(message) {
     }
 }
 
-export async function handleChromeUngroupTabs(message) {
+export async function handleChromeUngroupTabs(args) {
     try {
-        const { tabIds } = message.args;
+        const { tabIds } = args;
         await chrome.tabs.ungroup(tabIds);
         return createSuccessResponse(`Tabs ungrouped successfully, tabIds: ${tabIds}`);
     } catch (error) {
@@ -114,9 +115,9 @@ export async function handleChromeUngroupTabs(message) {
     }
 }
 
-export async function handleChromeCloseTabs(message) {
+export async function handleChromeCloseTabs(args) {
     try {
-        const { tabIds } = message.args;
+        const { tabIds } = args;
         await chrome.tabs.remove(tabIds);
         return createSuccessResponse(`Tabs closed successfully, tabIds: ${tabIds}`);
     } catch (error) {
@@ -127,13 +128,13 @@ export async function handleChromeCloseTabs(message) {
     }
 }
 
-export async function handleChromeUpdateTab(message) {
+export async function handleChromeUpdateTab(args) {
     try {
-        const { tabId, updateProps = {} } = message.args;
+        const { tabId, updateProps = {} } = args;
         const allowedProps = ['url', 'active', 'highlighted', 'muted', 'openerTabId', 'pinned', 'autoDiscardable'];
         for (const key of allowedProps) {
-            if (Object.prototype.hasOwnProperty.call(message.updateProps, key)) {
-                updateProps[key] = message.updateProps[key];
+            if (Object.prototype.hasOwnProperty.call(updateProps, key)) {
+                updateProps[key] = args.updateProps[key];
                 if (['openerTabId'].includes(key)) updateProps[key] = toNumber(updateProps[key]);
             }
         }
@@ -147,10 +148,10 @@ export async function handleChromeUpdateTab(message) {
     }
 }
 
-export async function handleChromeCreateWindow(message) {
+export async function handleChromeCreateWindow(args) {
     try {
         let win;
-        const { tabIds } = message.args;
+        const { tabIds } = args;
         if (tabIds && tabIds.length > 0) {
             win = await chrome.windows.create({ tabId: tabIds[0] });
             if (tabIds.length > 1) {
@@ -168,9 +169,9 @@ export async function handleChromeCreateWindow(message) {
     }
 }
 
-export async function handleChromeGetTab(message) {
+export async function handleChromeGetTab(args) {
     try {
-        const { tabId } = message.args;
+        const { tabId } = args;
         const tab = await chrome.tabs.get(tabId);
         return createSuccessResponse(`Tab retrieved successfully, tabId: ${tabId}, tab: ${JSON.stringify(tab)}`);
     } catch (error) {
@@ -181,9 +182,9 @@ export async function handleChromeGetTab(message) {
     }
 }
 
-export async function handleChromeGetTabGroup(message) {
+export async function handleChromeGetTabGroup(args) {
     try {
-        const { groupId } = message.args;
+        const { groupId } = args;
         const group = await chrome.tabGroups.get(groupId);
         return createSuccessResponse(`Tab group retrieved successfully, groupId: ${groupId}, group: ${JSON.stringify(group)}`);
     } catch (error) {
@@ -194,13 +195,13 @@ export async function handleChromeGetTabGroup(message) {
     }
 }
 
-export async function handleChromeUpdateTabGroup(message) {
+export async function handleChromeUpdateTabGroup(args) {
     try {
-        const { groupId, updateProps = {} } = message.args;
+        const { groupId, updateProps = {} } = args;
         const allowedProps = ['title', 'color'];
         for (const key of allowedProps) {
-            if (Object.prototype.hasOwnProperty.call(message.updateProps, key)) {
-                updateProps[key] = message.updateProps[key];
+            if (Object.prototype.hasOwnProperty.call(updateProps, key)) {
+                updateProps[key] = updateProps[key];
             }
         }
         const group = await chrome.tabGroups.update(groupId, updateProps);
@@ -213,9 +214,9 @@ export async function handleChromeUpdateTabGroup(message) {
     }
 }
 
-export async function handleChromeMoveTab(message) {
+export async function handleChromeMoveTab(args) {
     try {
-        const { tabId, index, windowId } = message.args;
+        const { tabId, index, windowId } = args;
         const moveProps = { index };
         if (windowId) moveProps.windowId = toNumber(windowId);
         const tab = await chrome.tabs.move(tabId, moveProps);
@@ -228,9 +229,9 @@ export async function handleChromeMoveTab(message) {
     }
 }
 
-export async function handleChromeHighlightTabs(message) {
+export async function handleChromeHighlightTabs(args) {
     try {
-        const { tabIds, windowId } = message.args;
+        const { tabIds, windowId } = args;
         const highlightInfo = { tabs: tabIds };
         if (windowId) highlightInfo.windowId = toNumber(windowId);
         const result = await chrome.tabs.highlight(highlightInfo);
@@ -243,9 +244,9 @@ export async function handleChromeHighlightTabs(message) {
     }
 }
 
-export async function handleChromeFocusWindow(message) {
+export async function handleChromeFocusWindow(args) {
     try {
-        const { windowId } = message.args;
+        const { windowId } = args;
         const win = await chrome.windows.update(windowId, { focused: true });
         return createSuccessResponse(`Window focused successfully, windowId: ${windowId}, window: ${JSON.stringify(win)}`);
     } catch (error) {
@@ -256,9 +257,9 @@ export async function handleChromeFocusWindow(message) {
     }
 }
 
-export async function handleChromeRemoveTabGroup(message) {
+export async function handleChromeRemoveTabGroup(args) {
     try {
-        const { groupId } = message.args;
+        const { groupId } = args;
         await chrome.tabGroups.ungroup(groupId);
         await chrome.tabGroups.remove(groupId);
         return createSuccessResponse(`Tab group removed successfully, groupId: ${groupId}`);
@@ -270,9 +271,9 @@ export async function handleChromeRemoveTabGroup(message) {
     }
 }
 
-export async function handleChromeDuplicateTab(message) {
+export async function handleChromeDuplicateTab(args) {
     try {
-        const { tabId } = message.args;
+        const { tabId } = args;
         const tab = await chrome.tabs.duplicate(tabId);
         return createSuccessResponse(`Tab duplicated successfully, tabId: ${tabId}, tab: ${JSON.stringify(tab)}`);
     } catch (error) {
@@ -283,9 +284,9 @@ export async function handleChromeDuplicateTab(message) {
     }
 }
 
-export async function handleChromeReloadTabs(message) {
+export async function handleChromeReloadTabs(args) {
     try {
-        const { tabIds } = message.args;
+        const { tabIds } = args;
         for (const tabId of tabIds) {
             await chrome.tabs.reload(tabId);
         }
@@ -298,10 +299,10 @@ export async function handleChromeReloadTabs(message) {
     }
 }
 
-export async function handleChromeScreenshot(message) {
+export async function handleChromeScreenshot(args) {
     try {
         // Accepts tabId (optional), format (optional: 'png'|'jpeg'), quality (optional, for jpeg)
-        const { format, quality } = message.args || {};
+        const { format, quality } = args || {};
         const options = { format };
         if (format === 'jpeg' && typeof quality === 'number') {
             options.quality = quality;

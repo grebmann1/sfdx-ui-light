@@ -327,8 +327,6 @@ export default class App extends ToolkitElement {
                     }
                     LOGGER.debug('Run Item Stream Event -->',JSON.parse(JSON.stringify(event)));
                 }
-
-                LOGGER.debug('currentMessage',this.currentMessage);
             }
     
             // handle end of stream

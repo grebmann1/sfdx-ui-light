@@ -53,7 +53,8 @@ const lwrServer = createServer({
 });
 
 const app = lwrServer.getInternalServer('express');
-app.use(require('express').json());
+app.use(express.json({limit: '50mb'}));
+app.use(express.urlencoded({limit: '50mb'}));
 app.use(haltOnTimedout);
 
 function haltOnTimedout(req, res, next) {
