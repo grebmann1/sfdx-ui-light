@@ -29,5 +29,9 @@ export const GeneralAgent = new Agent({
     `),
     //handoffDescription: 'Generalist agent that can dispatch to other agents to help with specific tasks.',
     //handoffs:[],
-    modelSettings: { temperature: 0.7, toolChoice: 'auto', store:true, parallelToolCalls:false }
+    modelSettings: { 
+        toolChoice: 'auto', 
+        store:true, 
+        parallelToolCalls:false
+    }
 });

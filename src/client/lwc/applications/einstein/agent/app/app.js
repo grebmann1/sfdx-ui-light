@@ -211,7 +211,7 @@ export default class App extends ToolkitElement {
 
         // Get OpenAI baseURL from config/cache, default to https://api.openai.com
         let baseUrl = store.getState().application?.openaiUrl;
-        LOGGER.log('baseUrl ---> ',baseUrl);
+        LOGGER.log('baseUrl ---> ',store.getState());
 
         const openai = new OpenAI({
             dangerouslyAllowBrowser: true,
@@ -265,7 +265,7 @@ export default class App extends ToolkitElement {
         // For now, we only use the general agent as the current agent. We might use other agents in the background.
         //const _agent = this.currentAgent || generalAgent;
         const runner = new Runner({
-            model: 'gpt-4.1-mini',
+            model: 'gpt-5-mini-2025-08-07',
         });
 
         try{
@@ -320,10 +320,15 @@ export default class App extends ToolkitElement {
                 if (event.type === 'run_item_stream_event') {
                     // Raw Item is the message from the tool call
                     if (event.item && event.item.rawItem) {
-                        this.messages = [...this.messages, this.formatMessage(event.item.rawItem,[])];
+                        this.messages = [
+                            ...this.messages,
+                            this.formatMessage(event.item.rawItem,[])
+                        ]
                     }
                     LOGGER.debug('Run Item Stream Event -->',JSON.parse(JSON.stringify(event)));
                 }
+
+                LOGGER.debug('currentMessage',this.currentMessage);
             }
     
             // handle end of stream
@@ -332,6 +337,7 @@ export default class App extends ToolkitElement {
             LOGGER.error('Error running agent',e);
             this.isLoading = false;
             this.isStreaming = false;
+            this.global_handleError(e);
         } finally {
             this.currentAbortController = null;
         }
@@ -583,7 +589,6 @@ export default class App extends ToolkitElement {
     }
 
     get displayedMessages() {
-        const msgs = this.messages;
-        return msgs.length > 1 ? msgs.slice(0, -1) : [];
+        return (this.messages || []).filter(x => x.type !== 'reasoning'); // We don't want to display the reasoning. TODO: Improve this
     }
 }

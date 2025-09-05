@@ -62,6 +62,10 @@ export default class Message extends ToolkitElement {
         return ['function_call','function_call_pending'].includes(this.item?.type);
     }
 
+    get isReasoning() {
+        return ['reasoning'].includes(this.item?.type);
+    }
+
     get isToolResult() {
         return this.item?.type === 'function_call_result';
     }

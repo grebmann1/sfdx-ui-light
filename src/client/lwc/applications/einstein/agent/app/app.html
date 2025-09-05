@@ -13,7 +13,7 @@
                         <!-- Welcome message -->
                         <agent-message item={welcomeMessage}></agent-message>
                         <!-- Messages -->
-                        <template for:each={messages} for:item="item">
+                        <template for:each={displayedMessages} for:item="item">
                             <agent-message
                                 key={item.key}
                                 item={item}

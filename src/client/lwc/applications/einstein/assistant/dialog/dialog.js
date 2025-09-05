@@ -42,7 +42,7 @@ export default class Dialog extends ToolkitElement {
 
     openaiKey;
 
-    connectedCallback() {
+    connectedCallback() {x
         //this.checkForInjected();
         this.loadOpenAIKey();
         /*this.worker = new Worker(chrome.runtime.getURL('workers/openaiWorker/worker.js'));
@@ -82,11 +82,16 @@ export default class Dialog extends ToolkitElement {
         if (einsteinState) {
             this.dialogId = einstein.currentDialogId;
             this.isLoading = einsteinState.isFetching;
+            if(einsteinState.isFetching){
+                // Scroll to the bottom when the dialog is fetching
+                this.scrollToBottom();
+            }
          
             if (einsteinState.error) {
                 //this._abortingMap[apex.currentDialog.id] = null; // Reset the abortingMap
                 //this.resetResponse();
                 this.global_handleError(einsteinState.error);
+                this.scrollToBottom();
             } else if (einsteinState.data) {
                 //this.resetEditorError();
                 // Assign Data
@@ -256,6 +261,7 @@ export default class Dialog extends ToolkitElement {
                 );
             } else if (this.provider === 'openai') {
                 // OpenAI flow using Redux thunk with streaming
+                LOGGER.debug('handleSendClick', this.provider, this.model);
                 try {
                     await store.dispatch(
                         EINSTEIN.openaiExecuteModel({
@@ -274,6 +280,7 @@ export default class Dialog extends ToolkitElement {
                         })
                     );
                 } catch (err) {
+                    LOGGER.error('###### Error in openaiExecuteModel:', err);
                     this.error_title = 'OpenAI Error';
                     this.error_message = err.message;
                 }
@@ -292,34 +299,58 @@ export default class Dialog extends ToolkitElement {
         this.error_message = errors.join(':');
     };
 
-    handleRetryMessage = e => {
+    handleRetryMessage = async e => {
         const { einstein } = store.getState();
         const retryMessage = e.detail;
         const connector = this.connector || this.legacyConnector;
         // Validate Connector
-        if (isUndefinedOrNull(connector)) {
+        if (isUndefinedOrNull(connector) && this.provider === 'apex') {
             this.error_title = 'Error';
             this.error_message = 'Select a valid Salesforce Instance';
+            this.scrollToBottom();
             return;
         }
-        /** Retry **/
+        // Replace the retried message in the messages array
         this.messages = [].concat(
             this.messages.filter(x => x.id != retryMessage.id),
             [retryMessage]
         );
-        const einsteinApexRequest = chat_template(LATEST_MODEL_APEX, this.cleanedMessages);
-
-        const einsteinPromise = store.dispatch(
-            EINSTEIN.einsteinExecuteModel({
-                connector,
-                alias: GLOBAL_EINSTEIN,
-                body: einsteinApexRequest,
-                tabId: einstein.currentDialogId,
-                messages: this.messages,
-                createdDate: Date.now(),
-            })
-        );
-    };
+        this.scrollToBottom();
+        if (this.provider === 'apex') {
+            const einsteinApexRequest = chat_template(LATEST_MODEL_APEX, this.cleanedMessages);
+            store.dispatch(
+                EINSTEIN.einsteinExecuteModel({
+                    connector,
+                    alias: GLOBAL_EINSTEIN,
+                    body: einsteinApexRequest,
+                    tabId: einstein.currentDialogId,
+                    messages: this.messages,
+                    createdDate: Date.now(),
+                })
+            );
+        } else if (this.provider === 'openai') {
+            try {
+                await store.dispatch(
+                    EINSTEIN.openaiExecuteModel({
+                        messages: this.messages,
+                        tabId: einstein.currentDialogId,
+                        alias: GLOBAL_EINSTEIN,
+                        model: this.model,
+                        aiProvider: 'openai',
+                        onStream: (message) => {
+                            const lastElement = [...this.template.querySelectorAll('assistant-message')].pop();
+                            this.scrollToBottom();
+                            this.directUpdateUI(lastElement, message);
+                        }
+                    })
+                );
+            } catch (err) {
+                this.error_title = 'OpenAI Error';
+                this.error_message = err.message;
+                this.scrollToBottom();
+            }
+        }
+    }
 
     /** Getters **/
 

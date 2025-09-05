@@ -29,5 +29,10 @@ ${sharedInstructions}
         ...(isChromeExtension() ? tools.chrome : [])
     ],
     toolUseBehavior: { stopAtToolNames: ['chrome_screenshot'] },
-    modelSettings: { temperature: 0.7, toolChoice: 'auto', store:true, parallelToolCalls:false }
+    modelSettings: { 
+      toolChoice: 'auto',
+      truncation: 'auto',
+      store:true,
+      parallelToolCalls:false
+    }
 });

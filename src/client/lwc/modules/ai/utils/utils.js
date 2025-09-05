@@ -89,18 +89,20 @@ export const fetchCompletionStream = async ({
 }) => {
     const state = store.getState().application;
     const aiProvider = provider || state.aiProvider || 'openai';
-    let openaiUrl = state.openaiUrl;
-    openaiKey = openaiKey || state.openaiKey;
+    let endpoint = state.openaiUrl;
+    let accessToken = openaiKey || state.openaiKey;
     if (!openaiKey) throw new Error('No OpenAI API key configured. Please set it in settings.');
     if (aiProvider === 'openai') {
+        LOGGER.debug('endpoint --> ', endpoint);
+        LOGGER.debug('accessToken --> ', accessToken);
         const tool_choice = isNotUndefinedOrNull(tools) ? 'auto' : undefined;
         const controller = new AbortController();
-        const endpoint = buildOpenaiEndpoint(openaiUrl, '/chat/completions');
-        const response = await fetch(endpoint, {
+        const formattedEndpoint = buildOpenaiEndpoint(endpoint, '/chat/completions');
+        const response = await fetch(formattedEndpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${openaiKey}`,
+                'Authorization': `Bearer ${accessToken}`,
             },
             body: JSON.stringify({
                 model,
@@ -122,7 +124,9 @@ export const fetchCompletionStream = async ({
             let errMsg = `HTTP error! status: ${response.status}`;
             try {
                 const errData = await response.json();
-                if (errData && errData.error) errMsg = errData.error?.message || errData.error;
+                if (errData && errData.error){
+                    errMsg = errData.error?.message || errData.error;
+                }
             } catch {}
             throw new Error(errMsg);
         }

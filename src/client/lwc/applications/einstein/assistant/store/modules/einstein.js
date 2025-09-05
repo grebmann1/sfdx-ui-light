@@ -6,6 +6,9 @@ import ASSISTANTS from 'ai/assistants';
 import LOGGER from 'shared/logger';
 
 export const MODEL_OPTIONS = [
+    { label: 'gpt-5', value: 'gpt-5-2025-08-07' },
+    { label: 'gpt-5-nano', value: 'gpt-5-nano-2025-08-07' },
+    { label: 'gpt-5-mini', value: 'gpt-5-mini-2025-08-07' },
     { label: 'gpt-4.1', value: 'gpt-4.1-2025-04-14' },
     { label: 'gpt-4.o', value: 'gpt-4o-2024-08-06' },
     { label: 'gpt-4.1.mini', value: 'gpt-4.1-mini-2025-04-14' },
@@ -216,6 +219,7 @@ const _innerExecute = (dispatch, { assistant, messages, tabId, onStream, alias }
             })
             .execute();
         }catch(err){
+            LOGGER.error('###### Error in _innerExecute:', err);
             reject(err);
         }
     });
@@ -229,7 +233,6 @@ export const openaiExecuteModel = createAsyncThunk(
                 model,
                 aiProvider
             });
-
             const responses = await _innerExecute(dispatch, {
                 assistant,
                 messages,
@@ -244,6 +247,7 @@ export const openaiExecuteModel = createAsyncThunk(
                 tabId,
             };
         } catch (err) {
+            LOGGER.error('###### Error in einstein/openaiExecuteModel:', err);
             throw err;
         }
     }
@@ -272,7 +276,7 @@ const einsteinSlice = createSlice({
                     dialog,
                     connectionAlias,
                     provider: provider || 'apex',
-                    model: model || 'gpt-4.1-mini-2025-04-14',
+                    model: model || 'gpt-5-mini-2025-08-07',
                 });
             }
         },

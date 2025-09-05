@@ -36,6 +36,6 @@ export const ApexAgent = new Agent({
     tools: [
         ...tools.apex,
     ],
-    modelSettings: { temperature: 0.7, toolChoice: 'auto', store:true, parallelToolCalls:false }
+    modelSettings: { toolChoice: 'auto', store:true, parallelToolCalls:false }
 });
 

@@ -2,7 +2,7 @@ import { globalActions } from 'ai/functions';
 import { ROLES, functionOutput, fetchCompletion, fetchCompletionStream } from 'ai/utils';
 import { store } from 'core/store';
 import LOGGER from 'shared/logger';
-import { guid, isUndefinedOrNull, safeParseJson } from 'shared/utils';
+import { guid, isUndefinedOrNull, safeParseJson, isNotUndefinedOrNull } from 'shared/utils';
 
 // Process the stream
 const processStream = async (stream, callback) => {
@@ -199,17 +199,22 @@ class Assistant {
         try {
             result = await this._executePromptStream(nonContextMessages);
             // Monaco LWC widget listening to textend !!!!
-            dispatchEvent(
-                new CustomEvent('textend', {
-                    detail: {
-                        content: result[result.length - 1].content,
-                    },
-                })
-            );
+            if(isNotUndefinedOrNull(result)){
+                dispatchEvent(
+                    new CustomEvent('textend', {
+                        detail: {
+                            content: result[result.length - 1].content,
+                        },
+                    })
+                );
+            }
+            this.isExecuting = false;
         } catch (error) {
-            LOGGER.error('Error in execute:', error);
+            this.isExecuting = false;
             if (this.onErrorCallback) {
                 this.onErrorCallback(error);
+            }else{
+                throw new Error(error.message);
             }
         }
         finally {
@@ -225,14 +230,7 @@ class Assistant {
 
         const messages = [..._messages];
         const MAX_ITERATIONS = 10;
-
-        try {
-            // Handle message processing in a separate method for clarity
-            return await this._processMessageStream(messages, MAX_ITERATIONS);
-        } catch (error) {
-            LOGGER.error('Error in _executePromptStream:', error);
-            throw error;
-        }
+        await this._processMessageStream(messages, MAX_ITERATIONS);
     }
 
     async _processMessageStream(messages, maxIterations) {
@@ -240,7 +238,7 @@ class Assistant {
             for (let iteration = 0; iteration < maxIterations && this.isExecuting; iteration++) {
                 const message = this._createInitialMessage();
                 this._upsertMessage(message);
-    
+
                 const params = {
                     model: this.model,
                     messages,
@@ -248,19 +246,20 @@ class Assistant {
                     provider: this.aiProvider,
                     openaiKey: this.openaiKey,
                 };
-    
+                LOGGER.debug('params --> ', params);
+                
                 const { body, abort } = await fetchCompletionStream(params);
                 if (!body) {
                     throw new Error('No data returned from the assistant');
                 }
-    
+                
                 if (this.onStreamStartCallback) {
                     this.onStreamStartCallback(message);
                 }
-    
+
                 // Store the abort function for later use
                 this._currentAbort = abort;
-    
+
                 const toolCallsAccumulator = {};
                 const result = await this._handleStreamProcessing(
                     body,
@@ -268,26 +267,27 @@ class Assistant {
                     toolCallsAccumulator,
                     messages
                 );
-    
+
                 // Clear the abort function after processing
                 this._currentAbort = null;
-    
+
                 if (result.isFinished) {
                     return messages;
                 }
             }
-    
+
             if (!this.isExecuting) {
                 throw new Error('Execution was stopped');
             }
-    
+
             throw new Error(
                 'Maximum iterations reached without a suitable answer. Please try again with a more specific input.'
             );
-        } catch (error) {
+        }catch(error){
             LOGGER.error('Error in _processMessageStream:', error);
-            throw error;
+            throw new Error(error.message);
         }
+
     }
 
     async _handleStreamProcessing(stream, message, toolCallsAccumulator, messages) {

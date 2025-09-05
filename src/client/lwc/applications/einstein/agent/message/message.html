@@ -1,5 +1,29 @@
 <template>
-    <template lwc:if={isTool}>
+    <template lwc:if={isReasoning}>
+        <li class="slds-m-top_x-small">
+            <div class="slds-chat-event">
+                <div class="slds-chat-event__body">
+                    <div class="slds-flex-column slds-align-items_center slds-justify-content-center">
+                        <p>
+                            <span class="slds-text-title_bold">Reasoning:</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="slds-chat-event__agent-message slds-m-top_small">
+                    <span class="slds-icon-typing slds-is-animated" title="Reasoning">
+                        <span class="slds-icon-typing__dot"></span>
+                        <span class="slds-icon-typing__dot"></span>
+                        <span class="slds-icon-typing__dot"></span>
+                        <span class="slds-assistive-text">
+                            Reasoning
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </li>
+    </template>
+    <template lwc:elseif={isTool}>
         <template lwc:if={isToolCall}>
             <li class="slds-m-top_x-small">
                 <div class="slds-chat-event">
