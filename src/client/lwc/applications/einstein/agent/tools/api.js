@@ -193,7 +193,7 @@ const apiAgentTools = [
         No parameters are required. Returns { success: true } if navigation is triggered.`,
         parameters: z.object({}),
         async execute() {
-            const { application } = getState();
+            const { application } = store.getState();
             if (application.isLoading) await waitForLoaded();
             await wrappedNavigate({ applicationName: 'api' });
             return { success: true };

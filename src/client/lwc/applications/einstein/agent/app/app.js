@@ -551,6 +551,7 @@ export default class App extends ToolkitElement {
             return;
         }
         if (!isEmpty(value) || files.length > 0) {
+            this.resetError();
             this.executeAgent(value.trim(), files);
         }
     };
