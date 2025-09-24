@@ -13,6 +13,25 @@ export default class App extends ToolkitElement {
     @api openaiKey;
     @api isAudioRecorderDisabled = false;
 
+    @track selectedModel = 'gpt-5-mini';
+    @track availableModels = [
+        { label: 'gpt-5-mini', value: 'gpt-5-mini' },
+        { label: 'gpt-5', value: 'gpt-5' },
+        { label: 'gpt-4.1', value: 'gpt-4.1' },
+    ];
+
+    @api
+    get model() {
+        return this.selectedModel;
+    }
+    set model(val) {
+        this.selectedModel = val;
+    }
+
+    handleModelChange = (event) => {
+        this.selectedModel = event.target.value;
+    };
+
     // prompt
     _prompt;
 
@@ -28,17 +47,6 @@ export default class App extends ToolkitElement {
 
     @track dragActive = false;
 
-    get hasFiles() {
-        return this.selectedFiles.length > 0;
-    }
-    get filePills() {
-        return this.selectedFiles.map(file => ({
-            file,
-            isImage: file.type && file.type.startsWith('image/'),
-            preview: this.imagePreviews[file.name] || ''
-        }));
-    }
-
     triggerFileInput = () => {
         const fileInput = this.template.querySelector('.file-input');
         if (fileInput) {
@@ -50,9 +58,9 @@ export default class App extends ToolkitElement {
     handleFileChange = (event) => {
         const files = Array.from(event.target.files || []);
         files.forEach(file => {
-            if (!this.selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
-                this.selectedFiles = [...this.selectedFiles, file];
-                if (file.type && file.type.startsWith('image/')) {
+            if (file.type && file.type.startsWith('image/')) {
+                if (!this.selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
+                    this.selectedFiles = [...this.selectedFiles, file];
                     this.generateImagePreview(file);
                 }
             }
@@ -77,13 +85,11 @@ export default class App extends ToolkitElement {
         this.template.querySelector('.file-upload-container').classList.remove('drag-active');
         const files = Array.from(event.dataTransfer.files || []);
         files.forEach(file => {
-            // Only accept images and PDFs
-            if ((file.type && file.type.startsWith('image/')) || file.type === 'application/pdf') {
+            // Only accept images
+            if (file.type && file.type.startsWith('image/')) {
                 if (!this.selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
                     this.selectedFiles = [...this.selectedFiles, file];
-                    if (file.type && file.type.startsWith('image/')) {
-                        this.generateImagePreview(file);
-                    }
+                    this.generateImagePreview(file);
                 }
             }
         });
@@ -108,13 +114,6 @@ export default class App extends ToolkitElement {
         this.imagePreviews = previews;
     };
 
-    get selectedFileName() {
-        return this.selectedFiles.length === 1 ? this.selectedFiles[0].name : '';
-    }
-    get hasImagePreview() {
-        return this.selectedFiles.some(f => f.type && f.type.startsWith('image/'));
-    }
-
     handleMicClick = () => {
         // Optionally focus or trigger the audio recorder logic here
         // If you want to open a modal or start recording, add logic here
@@ -127,7 +126,6 @@ export default class App extends ToolkitElement {
 
     @api
     focusInput() {
-        LOGGER.debug('##### focusInput #####');
         const textarea = this.template.querySelector('.chat-textarea');
         if (textarea) {
             textarea.focus();
@@ -139,7 +137,7 @@ export default class App extends ToolkitElement {
         if(!this.hasRendered){  
             this.hasRendered = true;
             setTimeout(()=>{
-                this.template.querySelector('.chat-textarea').focus();
+                this.focusInput();
             },300);
         }
     }
@@ -157,6 +155,7 @@ export default class App extends ToolkitElement {
         this.selectedFiles = [];
         this.imagePreviews = {};
         this.template.querySelector('.chat-textarea').value = null; // reset
+        this.focusInput();
     };
 
 
@@ -187,7 +186,6 @@ export default class App extends ToolkitElement {
 
     handleSpeechChange = e => {
         const speech = e.detail.value;
-        //console.log('speech data',speech);
         this._prompt = speech;
         this.template.querySelector('.chat-textarea').value = speech;
     };
@@ -196,7 +194,7 @@ export default class App extends ToolkitElement {
     handleSendClick = async () => {
         const value = this.template.querySelector('.chat-textarea').value;
         if (!isEmpty(value) || this.selectedFiles.length > 0) {
-            this.dispatchEvent(new CustomEvent('send', { detail: { prompt: value.trim(), files: this.selectedFiles } }));
+            this.dispatchEvent(new CustomEvent('send', { detail: { prompt: value.trim(), files: this.selectedFiles, model: this.selectedModel } }));
             this.resetPrompt();
         }
     };
@@ -204,6 +202,24 @@ export default class App extends ToolkitElement {
 
 
     /** Getters **/
+
+    get hasFiles() {
+        return this.selectedFiles.length > 0;
+    }
+    get filePills() {
+        return this.selectedFiles.map(file => ({
+            file,
+            isImage: file.type && file.type.startsWith('image/'),
+            preview: this.imagePreviews[file.name] || ''
+        }));
+    }
+
+    get selectedFileName() {
+        return this.selectedFiles.length === 1 ? this.selectedFiles[0].name : '';
+    }
+    get hasImagePreview() {
+        return this.selectedFiles.some(f => f.type && f.type.startsWith('image/'));
+    }
 
     get isAudioAssistantDisplayed() {
         return !isEmpty(this.openaiKey) && !isChromeExtension();

@@ -4,7 +4,7 @@ import LightningAlert from 'lightning/alert';
 import LightningModal from 'lightning/modal';
 import {
     setRedirectCredential,
-    processHost,
+    getSalesforceURL,
     credentialStrategies,
     notificationService,
     validateInputs,
@@ -112,7 +112,7 @@ export default class ConnectionNewModal extends LightningModal {
             ) {
                 try {
                     const _url = new URL(domainToValidate.value);
-                    this.customDomain = processHost(_url.host);
+                    this.customDomain = getSalesforceURL(_url.host);
                 } catch (e) {
                     domainToValidate.setCustomValidity("Don't include the protocol");
                     isValid = false;
@@ -229,7 +229,7 @@ export default class ConnectionNewModal extends LightningModal {
 
     electron_oauth = async () => {
         //console.log('electron_oauth');
-        const normalizedUrl = processHost(this.loginUrl);
+        const normalizedUrl = getSalesforceURL(this.loginUrl);
         let params = {
             alias: this.alias,
             instanceurl: normalizedUrl,

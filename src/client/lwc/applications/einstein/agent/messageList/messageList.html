@@ -1,0 +1,40 @@
+<template>
+    <ul class="slds-chat-list" style="overflow-y: auto; overflow-anchor: auto;">
+        <!-- Welcome message -->
+        <agent-message item={welcomeMessage}></agent-message>
+        <!-- Messages -->
+        <template for:each={displayedMessages} for:item="item">
+            <agent-message
+                key={item._key}
+                item={item}
+            ></agent-message>
+        </template>
+        <template lwc:if={streamingMessage}>
+            <agent-message class="chat-item is-current-message" item={streamingMessage} is-current-message></agent-message>
+        </template>
+        <template lwc:if={isLoading}>
+            <li class="slds-m-top_x-small">
+                <div class="slds-chat-event">
+                    <div class="slds-chat-event__body">
+                        <div class="slds-flex-column slds-align-items_center slds-justify-content-center">
+                            <p>
+                                <span class="slds-text-title_bold">Analyzing your request:</span>
+                            </p>
+                        </div>
+                    </div>
+    
+                    <div class="slds-chat-event__agent-message slds-m-top_small">
+                        <span class="slds-icon-typing slds-is-animated" title="Reasoning">
+                            <span class="slds-icon-typing__dot"></span>
+                            <span class="slds-icon-typing__dot"></span>
+                            <span class="slds-icon-typing__dot"></span>
+                            <span class="slds-assistive-text">
+                                Analyzing your request
+                            </span>
+                        </span>
+                    </div>
+                </div>
+            </li>
+        </template>
+    </ul>
+</template>

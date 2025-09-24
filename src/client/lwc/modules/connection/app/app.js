@@ -513,6 +513,7 @@ export default class App extends ToolkitElement {
             ...param,
             size: isChromeExtension() ? 'full' : 'medium',
         }).then(async res => {
+            console.log('addNewOrg res -->', res);
             if (isNotUndefinedOrNull(res)) {
                 //console.log('force refresh');
                 await this.fetchAllConnections();
@@ -784,6 +785,7 @@ export default class App extends ToolkitElement {
                 label: 'Alias',
                 fieldName: 'alias',
                 type: 'text',
+                initialWidth: 200,
                 cellAttributes: {
                     class: { fieldName: '_typeClass' },
                 },
@@ -824,7 +826,7 @@ export default class App extends ToolkitElement {
                 label: 'User Name',
                 fieldName: 'username',
                 type: 'text',
-                initialWidth: 400,
+                initialWidth: 300,
                 cellAttributes: {
                     class: { fieldName: '_typeClass' },
                 },

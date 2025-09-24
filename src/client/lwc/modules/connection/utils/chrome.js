@@ -4,6 +4,7 @@ import {
     WORKSPACE_NO_MY_DOMAIN_REGEX,
     STANDARD_LIGHTNING_DOMAIN_REGEX,
     SALESFORCE_SETUP_DOMAIN_REGEX,
+    getSalesforceURL,
 } from './utils';
 /*const getCurrentTab = async () => {
     let queryOptions = { active: true, lastFocusedWindow: true };
@@ -13,34 +14,6 @@ import {
 }*/
 
 // --- Salesforce Domain Regex Utilities ---
-
-function getSalesforceURL(tabUrl) {
-    let url = new URL(tabUrl).origin;
-    if (tabUrl.match(SOMA_LOCAL_DOMAIN_REGEX.regex)) {
-        url = new URL(
-            tabUrl.replace(SOMA_LOCAL_DOMAIN_REGEX.regex, SOMA_LOCAL_DOMAIN_REGEX.replace)
-        ).origin;
-    } else if (tabUrl.match(WORKSPACE_NO_MY_DOMAIN_REGEX.regex)) {
-        url = new URL(
-            tabUrl.replace(WORKSPACE_NO_MY_DOMAIN_REGEX.regex, WORKSPACE_NO_MY_DOMAIN_REGEX.replace)
-        ).origin;
-    } else if (tabUrl.match(STANDARD_LIGHTNING_DOMAIN_REGEX.regex)) {
-        url = new URL(
-            tabUrl.replace(
-                STANDARD_LIGHTNING_DOMAIN_REGEX.regex,
-                STANDARD_LIGHTNING_DOMAIN_REGEX.replace
-            )
-        ).origin;
-    } else if (tabUrl.match(SALESFORCE_SETUP_DOMAIN_REGEX.regex)) {
-        url = new URL(
-            tabUrl.replace(
-                SALESFORCE_SETUP_DOMAIN_REGEX.regex,
-                SALESFORCE_SETUP_DOMAIN_REGEX.replace
-            )
-        ).origin;
-    }
-    return url;
-}
 
 const getHostAndSession = async paramTab => {
     try {

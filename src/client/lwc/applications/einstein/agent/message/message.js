@@ -2,16 +2,13 @@ import { api, track } from 'lwc';
 import Toast from 'lightning/toast';
 import { isEmpty, classSet, ROLES,safeParseJson } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
+import { Constants } from 'agent/utils';
 
 export default class Message extends ToolkitElement {
     @api item;
     @api isCurrentMessage = false;
     @track showToolResponse = false;
     @track showToolParameters = false;
-
-    connectedCallback() {}
-
-    renderedCallback() {}
 
     /** Methods **/
 
@@ -21,7 +18,7 @@ export default class Message extends ToolkitElement {
     handleDownload = async () => {
         navigator.clipboard.writeText(this.item.content);
         Toast.show({
-            label: `Message exported to your clipboard`,
+            label: Constants.TOAST_CLIPBOARD_LABEL,
             variant: 'success',
         });
     };
@@ -32,6 +29,11 @@ export default class Message extends ToolkitElement {
 
     handleToggleToolParameters = () => {
         this.showToolParameters = !this.showToolParameters;
+    };
+
+    handleRetry = () => {
+        const retryEvent = new CustomEvent('retry', { detail: { item: this.item } });
+        this.dispatchEvent(retryEvent);
     };
 
     @api
@@ -78,6 +80,10 @@ export default class Message extends ToolkitElement {
         return this.item?.isLastMessage && this.isUser && this.hasError;
     }
 
+    get errorMessage() {
+        return this.item?.errorMessage ? this.item.errorMessage : Constants.ERROR_MESSAGE_DEFAULT;
+    }
+
     get content() {
         return Array.isArray(this.item.content) ? this.item.content[0].text : this.item.content;
     }
@@ -87,30 +93,38 @@ export default class Message extends ToolkitElement {
         if (Array.isArray(this.item?.content)) {
             return this.item.content.map((contentItem, idx) => ({
                 ...contentItem,
-                isInputText: contentItem.type === 'input_text',
-                isOutputText: contentItem.type === 'output_text',
-                isInputImage: contentItem.type === 'input_image',
-                isInputFile: contentItem.type === 'input_file',
+                isInputText: contentItem.type === Constants.CONTENT_TYPE.INPUT_TEXT,
+                isOutputText: contentItem.type === Constants.CONTENT_TYPE.OUTPUT_TEXT,
+                isInputImage: contentItem.type === Constants.CONTENT_TYPE.INPUT_IMAGE,
+                isInputFile: contentItem.type === Constants.CONTENT_TYPE.INPUT_FILE,
                 key: contentItem.id || `${contentItem.type}-${idx}`
             }));
         } else if (this.item?.content) {
             // If it's a string, treat as a single input_text
-            return [{ type: 'input_text', text: this.item.content, isInputText: true, isOutputText: false, isInputImage: false, isInputFile: false, key: 'input_text-0' }];
+            return [{
+                type: Constants.CONTENT_TYPE.INPUT_TEXT,
+                text: this.item.content,
+                isInputText: true, 
+                isOutputText: false, 
+                isInputImage: false, 
+                isInputFile: false, 
+                key: 'input_text-0' 
+            }];
         }
         return [];
     }
 
     isInputText(contentItem) {
-        return contentItem.type === 'input_text';
+        return contentItem.type === Constants.CONTENT_TYPE.INPUT_TEXT;
     }
     isOutputText(contentItem) {
-        return contentItem.type === 'output_text';
+        return contentItem.type === Constants.CONTENT_TYPE.OUTPUT_TEXT;
     }
     isInputImage(contentItem) {
-        return contentItem.type === 'input_image';
+        return contentItem.type === Constants.CONTENT_TYPE.INPUT_IMAGE;
     }
     isInputFile(contentItem) {
-        return contentItem.type === 'input_file';
+        return contentItem.type === Constants.CONTENT_TYPE.INPUT_FILE;
     }
 
     get originMessage() {
@@ -148,15 +162,15 @@ export default class Message extends ToolkitElement {
     }
 
     get tool_message_title() {
-        return this.tool_isRunning ? 'Calling function' : 'Called function';
+        return this.tool_isRunning ? Constants.TOOL_RUNNING_TITLE : Constants.TOOL_FINISHED_TITLE;
     }
 
     get toolResponseButtonTitle() {
-        return this.showToolResponse ? 'Hide Tool Response' : 'Show Tool Response';
+        return this.showToolResponse ? Constants.TOOL_RESPONSE_HIDE : Constants.TOOL_RESPONSE_SHOW
     }
 
     get toolParametersButtonTitle() {
-        return this.showToolParameters ? 'Hide Tool Parameters' : 'Show Tool Parameters';
+        return this.showToolParameters ? Constants.TOOL_PARAMS_HIDE : Constants.TOOL_PARAMS_SHOW;
     }
 
     get toolResponseButtonIcon() {

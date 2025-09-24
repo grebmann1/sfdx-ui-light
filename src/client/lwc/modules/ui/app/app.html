@@ -3,7 +3,7 @@
         <div class="l-cell-content-size">
             <!-- Logged In User-->
             <template lwc:if={isUserLoggedIn}>
-                <ui-notify>
+                <slds-notify>
                     <span
                         class="slds-icon_container slds-icon-utility-user slds-m-right_x-small"
                         title="Description of icon when needed">
@@ -18,7 +18,7 @@
                             <a href="#" onclick={handleLogoutClick}>Log out</a>
                         </template>
                     </h2>
-                </ui-notify>
+                </slds-notify>
             </template>
         </div>
         <div class="l-cell-auto-size">
@@ -125,7 +125,7 @@
                             is-header-hidden
                         >
                             <!-- Agent App -->
-                            <agent-app class="slds-full-height"></agent-app>
+                            <agent-app class="slds-full-height slds-flex-column"></agent-app>
                             
                         </slds-vertical-panel>
                     </div>

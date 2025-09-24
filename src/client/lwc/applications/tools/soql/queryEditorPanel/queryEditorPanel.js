@@ -110,7 +110,7 @@ export default class QueryEditorPanel extends ToolkitElement {
             error &&
             isNotUndefinedOrNull(error.row) &&
             isNotUndefinedOrNull(error.column) &&
-            this.refs.editor &&
+            this.refs?.editor &&
             isUndefinedOrNull(this._error)
         ) {
             this._error = error;
@@ -129,9 +129,9 @@ export default class QueryEditorPanel extends ToolkitElement {
     };
 
     resetError = () => {
-        if (this.refs.editor) {
+        if (this.refs?.editor) {
             //console.log('clear Error');
-            this.refs.editor.resetMarkers();
+            this.refs?.editor.resetMarkers();
             this._error = null;
         }
     };

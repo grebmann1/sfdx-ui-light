@@ -1,6 +1,6 @@
 // session.js
 import { getCurrentPlatform, PLATFORM } from '../platformService';
-import { normalizeConnection } from '../utils';
+import { normalizeConnection, getMatchingConfiguration , getConfigurations} from '../utils';
 import { OAUTH_TYPES } from './index';
 import { Connector } from '../connectorClass';
 import { isEmpty } from 'shared/utils';
@@ -52,13 +52,23 @@ export async function connect({ sessionId, serverUrl, extra = {}, alias }) {
         const connection = new window.jsforce.Connection(
             normalizeConnection(OAUTH_TYPES.SESSION, params, platform, extra)
         );
+
+        /** TODO : Match alias with existing hosts  */
+        const matchingConfiguration = await getMatchingConfiguration(connection);
+        LOGGER.debug('matchingConfiguration', matchingConfiguration);
+        /* if(existingHosts.includes(formattedServerUrl)){
+            throw new Error('ServerUrl already connected');
+        } */
+
         // Build configuration using generateConfiguration
         const connector = await Connector.createConnector({
-            alias,
+            alias:matchingConfiguration?.alias || alias,
             connection,
             credentialType: OAUTH_TYPES.SESSION,
             isEnrichDisabled,
         });
+
+        LOGGER.debug('connector --> ', connector);
         // Return a Connector instance
         return connector;
     } catch (e) {

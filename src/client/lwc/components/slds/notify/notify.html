@@ -1,0 +1,12 @@
+<template>
+    <div class={notifyClass} role="alert">
+        <slot></slot>
+        <template lwc:if={isCloseDiplayed}>
+            <div class="slds-notify__close">
+                <lightning-button-icon
+                    icon-name="utility:close"
+                    onclick={handleClose}></lightning-button-icon>
+            </div>
+        </template>
+    </div>
+</template>

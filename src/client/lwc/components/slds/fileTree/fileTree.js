@@ -13,13 +13,17 @@ export default class FileTree extends LightningElement {
     expandedMap = {};
     visibleMap = {};
     searchValue = '';
-    nonMatchesInDirectory = new Set();
+    matchedIds = new Set();
 
-    _selectedId = null;
+    @api selectedId = '';
     value = '';
 
     @api tree = [];
     @api isDeleteDisabled = false;
+    @api searchFields = ['name','id'];
+    @api minSearchLength = 3;
+    @api hideSearchInput = false;
+    @api includeFoldersInResults = false;
 
     /** Event Handlers */
 
@@ -29,13 +33,21 @@ export default class FileTree extends LightningElement {
             (value) => {
                 this.searchValue = value;
                 // returns a map of what should be expanded and a map of non-matching children in each expanded folder
-                const { expandedMap, nonMatchesInDirectory } = searchDirectories(
+                const options = {
+                    searchFields: this.searchFields,
+                    minSearchLength: this.minSearchLength,
+                };
+                if (this.includeFoldersInResults === true) {
+                    options.includeFoldersInResults = true;
+                }
+                const { expandedMap, matchedIds } = searchDirectories(
                     this.searchValue,
                     this.tree,
-                    this.expandedMap
+                    this.expandedMap,
+                    options
                 );
                 this.expandedMap = expandedMap || {};
-                this.nonMatchesInDirectory = nonMatchesInDirectory || {};
+                this.matchedIds = matchedIds || new Set();
             },
             { timeout: 300 }
         );
@@ -51,7 +63,7 @@ export default class FileTree extends LightningElement {
 
     handleSelect(event) {
         const { item } = event.detail;
-        this._selectedId = item.id;
+        this.selectedId = item.id;
         this.dispatchEvent(new CustomEvent('select', { detail: { item } }));
     }
 
@@ -97,12 +109,20 @@ export default class FileTree extends LightningElement {
     /** Methods */
     injectState(item, level) {
         const expanded = !!this.expandedMap[item.id];
-        const selected = this._selectedId === item.id;
-        const visible =
-            this.searchValue.length < 3 ||
-            (item.children && Array.isArray(item.children)) ||
-            !this.nonMatchesInDirectory.has(item.id);
+        const selected = this.selectedId === item.id;
+        const searchInactive = this.searchValue.length < this.minSearchLength;
+        const isFolder = Array.isArray(item.children);
         const children = item.children ? item.children.map((child) => this.injectState(child, level + 1)) : undefined;
+        let visible;
+        if (searchInactive) {
+            visible = true;
+        } else if (isFolder) {
+            const childVisible = (children || []).some((c) => c.visible);
+            const selfMatchAndIncluded = this.includeFoldersInResults === true && this.matchedIds.has(item.id);
+            visible = childVisible || selfMatchAndIncluded;
+        } else {
+            visible = this.matchedIds.has(item.id);
+        }
         return { 
             ...item, 
             expanded, 

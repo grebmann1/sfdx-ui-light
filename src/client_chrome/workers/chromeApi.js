@@ -63,6 +63,7 @@ export async function handleChromeListTabGroups(args) {
 export async function handleChromeGroupTabs(args) {
     try {
         const { tabIds, windowId, title, color } = args;
+        LOGGER.log('--> handleChromeGroupTabs',args);
         const moveTabsAndGroup = async (tabIds, windowId, groupName) => {
             if (windowId) {
                 const movedTabs = await chrome.tabs.move(tabIds, { windowId: toNumber(windowId), index: -1 });
@@ -367,10 +368,8 @@ export async function handleChromeInteraction(message) {
     if (handler) {
         LOGGER.log('--> handleChromeInteraction',handler);
         if(handler.execute){
-            LOGGER.log('--> handleChromeInteraction.execute',handler.execute);
             return await handler.execute(message.args || message);
         }else{
-            LOGGER.log('--> handleChromeInteraction.handler',handler);    
             return await handler(message.args || message);
         }
     }

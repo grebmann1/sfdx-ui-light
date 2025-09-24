@@ -1,6 +1,6 @@
 // oauth.js
 import { getCurrentPlatform, PLATFORM, getConfiguration } from '../platformService';
-import { processHost, normalizeConnection } from '../utils';
+import { getSalesforceURL, normalizeConnection } from '../utils';
 import { OAUTH_TYPES } from './index';
 import { saveConfiguration } from '../web';
 import { Connector } from '../connectorClass';
@@ -60,7 +60,7 @@ export async function connect({ alias, loginUrl }, settings = {}) {
     }
 
     
-    const normalizedUrl = processHost(loginUrl || 'https://login.salesforce.com');
+    const normalizedUrl = getSalesforceURL(loginUrl || 'https://login.salesforce.com');
     LOGGER.log('normalizedUrl -> ',normalizedUrl);
 
     if (platform === PLATFORM.CHROME) {

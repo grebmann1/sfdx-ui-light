@@ -2,7 +2,7 @@ import LOGGER from 'shared/logger';
 import { saveConfiguration } from './web';
 import { cacheManager, CACHE_ORG_DATA_TYPES, CACHE_SESSION_CONFIG } from 'shared/cacheManager';
 import { OAUTH_TYPES } from './credentialStrategies/index';
-import { store, APPLICATION } from 'core/store';
+import { store, APPLICATION, ERROR } from 'core/store';
 import {
     getConfiguration,
     extractName,
@@ -17,6 +17,34 @@ export class Connector {
     constructor(configuration, conn) {
         this.configuration = configuration;
         this.conn = conn;
+
+        LOGGER.log('Connector -->', this.configuration, this.conn);
+        LOGGER.log('Connector --> Add listeners');
+        if(conn) {
+            this.addListeners(conn);
+        }
+    }
+
+    addListeners(conn) {
+        conn.on('refresh', () => {
+            LOGGER.debug('Connector --> refresh event');
+        });
+        conn.on('error', (e) => {
+            LOGGER.debug('Connector --> error event', e);
+            store.dispatch(
+                ERROR.reduxSlice.actions.addError({ message: 'JSForce error', details: e.message })
+            );
+        });
+        conn.on('sessionExpired', () => {
+            LOGGER.debug('Connector --> sessionExpired event');
+            store.dispatch(
+                APPLICATION.reduxSlice.actions.sessionExpired({ sessionHasExpired: true })
+            );
+        });
+    }
+
+    dispose() {
+        this.conn.dispose();
     }
 
     /** Methods */
@@ -184,6 +212,10 @@ export class Connector {
         }
 
         let connector = new Connector(configuration, connection);
+        if(credentialType === OAUTH_TYPES.REDIRECT) {
+            // If redirect credential type, we don't need to enrich the connector
+            return connector;
+        }
         if (!isEnrichDisabled) {
             await connector._enrichConnector();
         }else{

@@ -79,8 +79,8 @@ export async function getConfigurations() {
                     ? `https://${x.instanceUrl}`
                     : x.instanceUrl;
             let sfdxAuthUrl =
-                x.refreshToken && x.instanceUrl
-                    ? `force://${window.jsforceSettings.clientId}::${x.refreshToken}@${
+                x.refreshToken && x.instanceUrl && window.jsforceSettings
+                    ? `force://${window.jsforceSettings?.clientId}::${x.refreshToken}@${
                           new URL(x.instanceUrl).host
                       }`
                     : null;

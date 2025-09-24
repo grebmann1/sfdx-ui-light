@@ -91,6 +91,7 @@ export default class Item extends ToolkitElement {
                     keyPrefix: this.metadata?.keyPrefix,
                 });
             case TYPE.LINK:
+            case TYPE.DEV_LINK:
                 return this.item?.link || '#';
             case TYPE.PROFILE:
                 return `/lightning/setup/EnhancedProfiles/page?address=%2F${this.item?.id}`;
@@ -140,6 +141,7 @@ export default class Item extends ToolkitElement {
             case TYPE.FLOW:
                 return 'standard:flow';
             case TYPE.LINK:
+            case TYPE.DEV_LINK:
                 return 'standard:link';
             case TYPE.AGENTFORCE:
                 return 'standard:story';

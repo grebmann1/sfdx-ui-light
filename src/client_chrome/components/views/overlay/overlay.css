@@ -52,3 +52,12 @@
 .slds-popup-container-no-footer {
     border-bottom: 4px solid #032d60;
 }
+
+/* Dev server highlighting */
+.dev-banner {
+    background: #032d60;
+    color: #ffffff;
+    text-align: center;
+    font-weight: 600;
+    padding: 6px 8px;
+}

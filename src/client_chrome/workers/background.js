@@ -157,6 +157,9 @@ const getHostAndSession = async tab => {
         if (!tab.url) return;
         // 1. Get the canonical Salesforce URL for the tab
         let url = getSalesforceURL(tab.url);
+        // Detect dev server by checking if a port is specified in the current tab URL
+        const parsedTabUrl = new URL(tab.url);
+        const isDeveloperServer = !!parsedTabUrl.port;
         let cookieStoreId = await getCurrentTabCookieStoreId(tab.id);
         // 2. Try to get the SID cookie for this URL
         let cookie = await chrome.cookies.get({
@@ -178,6 +181,7 @@ const getHostAndSession = async tab => {
             return {
                 domain: url,
                 session: cookie.value,
+                isDeveloperServer,
             };
         } else {
             // 5. No session found
@@ -188,6 +192,100 @@ const getHostAndSession = async tab => {
         return;
     }
 };
+
+/**
+ * Validate a Salesforce session by calling a simple authenticated endpoint.
+ * Returns true if the session is valid (HTTP 200), false otherwise.
+ */
+async function validateSession(serverUrl, sessionId) {
+    try {
+        if (!serverUrl || !sessionId) return false;
+        const url = `${serverUrl}/services/data/v63.0/limits`;
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${sessionId}`,
+            },
+        });
+        return response.ok;
+    } catch (e) {
+        return false;
+    }
+}
+
+/**
+ * Find a valid sessionId from existing tabs for a specific alias and/or instanceUrl.
+ * - If instanceUrl is provided, restrict search to that instance (canonicalized).
+ * - If alias is provided and mapped in current instance connections, use its serverUrl.
+ * - If neither resolves to a target, search across all Salesforce tabs.
+ * Returns { sessionId, serverUrl, tabId } or undefined.
+ */
+async function findExistingSession({ alias, instanceUrl } = {}) {
+    // Derive target serverUrl from alias if available
+    let targetServerUrl;
+    if (instanceUrl) {
+        try {
+            targetServerUrl = getSalesforceURL(instanceUrl);
+        } catch (e) {}
+    }
+    if (!targetServerUrl && alias) {
+        for (const [, instance] of instanceConnections.entries()) {
+            if (instance && instance.alias === alias && instance.serverUrl) {
+                targetServerUrl = getSalesforceURL(instance.serverUrl);
+                break;
+            }
+        }
+    }
+
+    const tabs = await chrome.tabs.query({});
+    for (const tab of tabs) {
+        try {
+            if (!tab || !tab.url) continue;
+            // Consider only Salesforce-related tabs we would inject into
+            if (!(await shouldInjectScriptAsync(tab.url))) continue;
+
+            const canonicalTabServerUrl = getSalesforceURL(tab.url);
+            if (targetServerUrl && canonicalTabServerUrl !== targetServerUrl) continue;
+
+            // Use the tab's cookie store to fetch the SID cookie
+            const storeId = await getCurrentTabCookieStoreId(tab.id);
+            let cookie = await chrome.cookies.get({
+                name: 'sid',
+                url: canonicalTabServerUrl,
+                storeId,
+            });
+
+            // If not found, try soma->sfdcdev fallback like getHostAndSession does
+            if (!cookie || !cookie.value) {
+                const fallbackUrl = canonicalTabServerUrl.replace('soma', 'sfdcdev');
+                if (fallbackUrl !== canonicalTabServerUrl) {
+                    cookie = await chrome.cookies.get({ name: 'sid', url: fallbackUrl, storeId });
+                    if (cookie && cookie.value) {
+                        // Use fallbackUrl as canonical if cookie found there
+                        if (!targetServerUrl) {
+                            targetServerUrl = fallbackUrl;
+                        }
+                    }
+                }
+            }
+
+            if (cookie && cookie.value) {
+                const serverUrlToValidate = targetServerUrl || canonicalTabServerUrl;
+                const isValid = await validateSession(serverUrlToValidate, cookie.value);
+                if (isValid) {
+                    return {
+                        sessionId: cookie.value,
+                        serverUrl: serverUrlToValidate,
+                        tabId: tab.id,
+                    };
+                }
+            }
+        } catch (e) {
+            // Skip tab on any error and continue
+        }
+    }
+    return;
+}
 
 // Refactored isHostMatching to use the same logic as shouldInjectScriptAsync
 async function isHostMatching(url) {
@@ -479,10 +577,10 @@ function injectToolkit(tabId) {
 }
 
 /** Action Button  */
-chrome.action.onClicked.addListener(async tab => {
+/* chrome.action.onClicked.addListener(async tab => {
     //console.log('onClicked');
     //handleTabOpening(tab);
-});
+}); */
 
 /*** Event Listeners ***/
 chrome.contextMenus.onClicked.addListener((info, tab) => {
@@ -567,6 +665,8 @@ chrome.runtime.onMessage.addListener(
                 action: 'toggleOverlay',
                 enabled: message.enabled,
             });
+        } else if (message.action === 'findExistingSession') {
+            return await findExistingSession({ alias: message.alias, instanceUrl: message.instanceUrl });
         } else if(message.action.startsWith('chrome_')){
             // Delegate all chrome_* actions to chromeApi.js
             return await handleChromeInteraction(message);
@@ -576,13 +676,14 @@ chrome.runtime.onMessage.addListener(
 
 /*** On Install/Update Event ***/
 chrome.runtime.onInstalled.addListener(async details => {
+    console.log('--> onInstalled',details);
     const currentVersion = chrome.runtime.getManifest().version;
     const previousVersion = details.previousVersion;
     const reason = details.reason;
     if (reason === 'install') {
         await chrome.storage.local.set({ installedVersion: currentVersion });
         chrome.tabs.create({
-            url: `https://sf-toolkit.com/install?redirect_url=${encodeURIComponent(chrome.runtime.getURL('views/default.html'))}`,
+            url: `https://sf-toolkit.com/install?redirect_url=${encodeURIComponent(chrome.runtime.getURL('views/app.html'))}`,
         });
     } else if (
         reason === 'update' &&

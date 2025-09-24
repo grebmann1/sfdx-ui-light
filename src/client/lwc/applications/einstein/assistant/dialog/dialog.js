@@ -123,7 +123,7 @@ export default class Dialog extends ToolkitElement {
     scrollToBottom = () => {
         window.setTimeout(() => {
             // Find all assistant-message elements
-            const messageElements = [...this.template.querySelectorAll('assistant-message')];
+            const messageElements = [...this.template.querySelectorAll('assistant-message'),...this.template.querySelectorAll('.slds-chat-listitem')];
             // Scroll to the last message (user or assistant)
             const lastMessage = messageElements[messageElements.length - 1];
             if (lastMessage) {
@@ -133,6 +133,7 @@ export default class Dialog extends ToolkitElement {
     };
 
     directUpdateUI = (element,message) => {
+        LOGGER.log('directUpdateUI --> ',element,message);
         if (element && element.item) {
             element.updateItem(message);
         }
@@ -271,7 +272,7 @@ export default class Dialog extends ToolkitElement {
                             model: this.model,
                             aiProvider: 'openai',
                             onStream: (message) => {
-                                
+                                LOGGER.log('message --> ',message);
                                 const lastElement = [...this.template.querySelectorAll('assistant-message')].pop();
                                 // Optionally force re-render if needed
                                 this.scrollToBottom();

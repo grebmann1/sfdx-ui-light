@@ -2,6 +2,7 @@ import { wire, api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import {
     isEmpty,
+    classSet,
     isNotUndefinedOrNull,
     isUndefinedOrNull,
     runActionAfterTimeOut,
@@ -28,6 +29,7 @@ const TABS = {
     SEARCH: 'Search',
     QUICKLINK: 'Quick Links',
     USER: 'Users',
+    DEV: 'Dev Tools',
 };
 
 export default class Overlay extends ToolkitElement {
@@ -44,6 +46,7 @@ export default class Overlay extends ToolkitElement {
 
     // current Info
     currentDomain;
+    isDeveloperServer = false;
 
     // Filtering
     searchResults = [];
@@ -313,6 +316,7 @@ export default class Overlay extends ToolkitElement {
 
         // Use as key for storage
         this.currentDomain = cookieInfo.domain;
+        this.isDeveloperServer = !!(cookieInfo && cookieInfo.isDeveloperServer);
         // Direct Connection (refactored)
         const params = {
             sessionId: cookieInfo.session,
@@ -412,6 +416,31 @@ export default class Overlay extends ToolkitElement {
                         prod: x.prod,
                         relevance: calculateRelevance(x.label, searchTerm),
                     }))
+            );
+        }
+
+        // Dev Server specific links
+        if (this.isDeveloperServer) {
+            const devLinks = [
+                {
+                    label: 'Hose my org (QA)',
+                    link: '/qa/hoseMyOrgPlease.jsp',
+                },
+                {
+                    label: 'Reload labels (QA)',
+                    link: '/qa/labelreload.jsp?reload=Reload+Labels',
+                },
+            ];
+            combinedResults.push(
+                ...devLinks.map((x, index) => ({
+                    id: `dev-${index}-${x.label}`,
+                    type: TYPE.DEV_LINK,
+                    name: x.label,
+                    label: x.label,
+                    link: x.link,
+                    section: 'Dev Tools',
+                    relevance: 100, // Always visible on Dev tab
+                }))
             );
         }
 
@@ -791,7 +820,7 @@ export default class Overlay extends ToolkitElement {
     }
 
     get tab_searchLabel() {
-        return `Search (${this.formattedResults.filter(x => x.type !== TYPE.LINK).length})`;
+        return `Search (${this.formattedResults.filter(x => x.type !== TYPE.LINK && x.type !== TYPE.DEV_LINK).length})`;
     }
 
     get tab_quickLinkLabel() {
@@ -802,16 +831,21 @@ export default class Overlay extends ToolkitElement {
         return `Users (${this.formattedResults.filter(x => x.type === TYPE.USER).length})`;
     }
 
+    get tab_devLabel() {
+        return `Dev Tools (${this.formattedResults.filter(x => x.type === TYPE.DEV_LINK).length})`;
+    }
+
     get sldsPopupContainerClass() {
-        return `slds-popup-container ${
-            this.isFooterDisplayed ? '' : 'slds-popup-container-no-footer'
-        }`;
+        return classSet('slds-popup-container').add({
+            dev: this.isDeveloperServer,
+            'slds-popup-container-no-footer': !this.isFooterDisplayed,
+        }).toString();
     }
 
     get sldsButtonGroupClass() {
-        return `sf-toolkit slds-toolkit-button-group ${
-            this.isOverlayDisplayed ? 'slds-is-active' : ''
-        }`;
+        return classSet('sf-toolkit slds-toolkit-button-group').add({
+            'slds-is-active': this.isOverlayDisplayed,
+        }).toString();
     }
 
     get virtualList() {
@@ -820,7 +854,8 @@ export default class Overlay extends ToolkitElement {
             x =>
                 (this.viewerTab === TABS.SEARCH && x.type !== TYPE.LINK) ||
                 (this.viewerTab === TABS.QUICKLINK && x.type === TYPE.LINK) ||
-                (this.viewerTab === TABS.USER && x.type === TYPE.USER)
+                (this.viewerTab === TABS.USER && x.type === TYPE.USER) ||
+                (this.viewerTab === TABS.DEV && x.type === TYPE.DEV_LINK)
         );
         return _filteredList.slice(0, this.pageNumber * PAGE_LIST_SIZE);
     }
@@ -872,5 +907,9 @@ export default class Overlay extends ToolkitElement {
 
     get isUserTabDisplayed() {
         return this.filter_value.includes(TYPE.USER);
+    }
+
+    get isDevTabDisplayed() {
+        return this.isDeveloperServer;
     }
 }

@@ -29,13 +29,6 @@
                     onclick={openConnectionClick}
                     title="Home"
                     variant={connectionVariant}></lightning-button-icon>
-                <template lwc:if={isAssistantDisplayed}>
-                    <lightning-button-icon
-                        icon-name="utility:agent_session"
-                        onclick={einsteinClick}
-                        title="Assistant"
-                        variant={assistantVariant}></lightning-button-icon>
-                </template>
                 <lightning-button-icon
                     icon-name="utility:knowledge_base"
                     onclick={documentationClick}
@@ -59,7 +52,7 @@
         <!-- BODY slds-background-white -->
         <div class="slds-is-relative slds-grid slds-wrap slds-grid_vertical-stretch full-page-body">
             <!-- SECTION -->
-            <div class="slds-full-height slds-col slds-col slds-size_1-of-1 slds-p-top_small">
+            <div class="slds-full-height slds-col slds-col slds-size_1-of-1">
                 <!-- Start -->
                 <template lwc:if={isConnection}>
                     <connection-app
@@ -69,12 +62,6 @@
                 </template>
                 <template lwc:elseif={isDocumentation}>
                     <doc-app is-responsive lwc:ref="documentation"></doc-app>
-                </template>
-                <template lwc:elseif={isAssistant}>
-                    <assistant-app
-                        application-name="assistant"
-                        is-mobile
-                        lwc:ref="assistant"></assistant-app>
                 </template>
                 <template lwc:elseif={isAgent}>
                     <agent-app class="slds-full-height slds-flex-column"

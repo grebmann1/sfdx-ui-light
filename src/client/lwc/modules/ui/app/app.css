@@ -75,6 +75,6 @@
 
 .home__navigation {
     border-right: 1px solid #dddbda;
-    width: 250px;
+    width: 213px; /* 250px */
     background-color: #fff;
 }

@@ -56,8 +56,7 @@
                     <!-- Quick Authorize -->
                     <div class="slds-grid slds-grid_align-center">
                         <div class="slds-col">
-                            <connection-quick-authorize
-                                instance-url={instanceUrl}></connection-quick-authorize>
+                            <connection-quick-authorize instance-url={instanceUrl}></connection-quick-authorize>
                         </div>
                     </div>
                     <!-- Salesforce Informations -->
@@ -67,6 +66,19 @@
                             class="full-page-body"
                             label="Org Info"
                             value={APPLICATIONS.ORG_INFO}>
+                            <template lwc:if={isAliasKnown}>
+                                <slds-notify variant="brand">
+                                    <span class="slds-icon_container slds-icon-utility-user slds-m-right_x-small">
+                                        <svg class="slds-icon slds-icon_x-small" aria-hidden="true">
+                                            <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#user"></use>
+                                        </svg>
+                                    </span>
+                                    <h2>
+                                        {alias}
+                                    </h2>
+                                </slds-notify>
+                            </template>
+
                             <slds-information-block title="Info">
                                 <p>The content will automatically change based on your URL.</p>
                                 <p>

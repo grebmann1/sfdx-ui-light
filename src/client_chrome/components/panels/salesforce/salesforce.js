@@ -40,45 +40,13 @@ export default class Salesforce extends ToolkitElement {
         }
     }
 
-    /** Getters **/
-
-    get APPLICATIONS() {
-        return APPLICATIONS;
-    }
-
-    get currentActiveTab() {
-        return this.template.querySelector('slds-tabset')?.activeTabValue;
-    }
-
-    //orgInfo
-
-    get isDefaultMenu() {
-        return true;
-    }
-
-    get isRecordExplorerAvailable() {
-        return !isEmpty(this.recordId) && isSalesforceId(this.recordId) && /\d/.test(this.recordId);
-    }
-
-    get isUserExplorerAvailable() {
-        return true; // No specific logic yet to reduce the visibility
-    }
-
-    get isFooterDisplayed() {
-        return this.isConnectorLoaded;
-    }
-
-    get instanceUrl() {
-        return this.connector?.conn?.instanceUrl;
-    }
+    
 
 
     @wire(connectStore, { store })
     applicationChange({ application }) {
         //console.log('application',application,this.connector);
-        if (
-            isNotUndefinedOrNull(application.connector) &&
-            isNotUndefinedOrNull(this.connector) &&
+        if ( isNotUndefinedOrNull(application.connector) && isNotUndefinedOrNull(this.connector) &&
             application.connector?.conn?.accessToken != this.connector.connector?.conn?.accessToken
         ) {
             this.isConnectorLoaded = true;
@@ -181,4 +149,42 @@ export default class Salesforce extends ToolkitElement {
             this.refs.recordexplorer.updateFilter(value);
         }
     };
+
+    /** Getters **/
+
+    get APPLICATIONS() {
+        return APPLICATIONS;
+    }
+
+    get currentActiveTab() {
+        return this.template.querySelector('slds-tabset')?.activeTabValue;
+    }
+
+    get isDefaultMenu() {
+        return true;
+    }
+
+    get isRecordExplorerAvailable() {
+        return !isEmpty(this.recordId) && isSalesforceId(this.recordId) && /\d/.test(this.recordId);
+    }
+
+    get isUserExplorerAvailable() {
+        return true; // No specific logic yet to reduce the visibility
+    }
+
+    get isFooterDisplayed() {
+        return this.isConnectorLoaded;
+    }
+
+    get instanceUrl() {
+        return this.connector?.conn?.instanceUrl;
+    }
+
+    get alias() {
+        return this.connector?.configuration?.alias || null;
+    }
+
+    get isAliasKnown() {
+        return this.isConnectorLoaded && isNotUndefinedOrNull(this.alias);
+    }
 }

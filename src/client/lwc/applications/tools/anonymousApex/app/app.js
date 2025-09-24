@@ -25,6 +25,7 @@ import { CATEGORY_STORAGE } from 'builder/storagePanel';
 import SaveModal from 'builder/saveModal';
 import moment from 'moment';
 import LightningConfirm from 'lightning/confirm';
+import Analytics from 'shared/analytics';
 
 export default class App extends ToolkitElement {
     _hasRendered = false;
@@ -100,6 +101,7 @@ export default class App extends ToolkitElement {
     }
 
     connectedCallback() {
+        Analytics.trackAppOpen('anonymousApex', { alias: this.alias });
         this.isLoading = true;
         store.dispatch(async (dispatch, getState) => {
             await dispatch(
@@ -407,6 +409,12 @@ export default class App extends ToolkitElement {
     // Execute Action : Execute Apex script
     executeAction = async e => {
         this.isApexRunning = true;
+        try {
+            const bodyLength = this.refs?.editor?.currentModel?.getValue()?.length || 0;
+            Analytics.trackAction('anonymousApex', 'execute', { alias: this.alias, body_length: bodyLength });
+        } catch (e) {
+            // ignore analytics errors
+        }
         // Execute
         const apexPromise = store.dispatch(
             APEX.executeApexAnonymous({

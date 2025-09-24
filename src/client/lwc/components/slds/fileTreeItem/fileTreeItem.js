@@ -131,7 +131,7 @@ export default class FileTreeItem extends LightningElement {
     }
 
     get chevronIcon() {
-        return this.expanded ? 'utility:down' : 'utility:right';
+        return this.expanded ? 'utility:chevrondown' : 'utility:chevronright';
     }
 
     get folderIcon() {
@@ -177,7 +177,8 @@ export default class FileTreeItem extends LightningElement {
     get rootClasses() {
         return classSet('slds-tree__item').add({
             'is-first': this.isFirst,
-            'slds-is-hovered': this.isMenuButtonVisible
+            'slds-is-hovered': this.isMenuButtonVisible,
+            'slds-is-selected': this.selected
         }).toString();
     }
 

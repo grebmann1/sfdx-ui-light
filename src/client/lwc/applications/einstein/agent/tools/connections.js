@@ -77,8 +77,13 @@ const listConnectionTool = tool({
     description: 'List all Salesforce org connections (aliases, usernames, etc.) available in the toolkit.',
     parameters: z.object({}),
     execute: async () => {
-        const publicConfigurations = await getPublicConfigurations();
-        return JSON.stringify(publicConfigurations);
+        try{
+            const publicConfigurations = await getPublicConfigurations();
+            return JSON.stringify(publicConfigurations);
+        }catch(e){
+            LOGGER.error('[listConnectionTool] Error listing connections:', e);
+            return { status: 'error', error: e.message || e };
+        }
     },
 });
 
@@ -116,7 +121,12 @@ const connectToOrgTool = tool({
         redirect: z.string().optional().nullable().describe('The redirect url to open (applicationName=api)'),
     }),
     execute: async ({ alias, sessionId, instanceUrl, redirect }) => {
-        return await connectToOrg({ alias, sessionId, instanceUrl, redirect });
+        try{
+            return await connectToOrg({ alias, sessionId, instanceUrl, redirect });
+        }catch(e){
+            LOGGER.error('[connectToOrg] Error connecting:', e);
+            return { status: 'error', error: e.message || e };
+        }
     },
 });
 
@@ -125,7 +135,12 @@ const disconnectOrgTool = tool({
     description: 'Disconnect from the current Salesforce org (removes session).',
     parameters: z.object({}),
     execute: async () => {
-        return await disconnectOrg();
+        try{
+            return await disconnectOrg();
+        }catch(e){
+            LOGGER.error('[disconnectOrg] Error disconnecting:', e);
+            return { status: 'error', error: e.message || e };
+        }
     },
 });
 
@@ -140,7 +155,12 @@ const navigateToOrgTool = tool({
         redirect: z.string().optional().nullable().describe('The redirect url to open'),
     }),
     execute: async ({ alias, sessionId, instanceUrl, redirect }) => {
-        return await navigateToOrg({ alias, sessionId, instanceUrl, redirect });
+        try{
+            return await navigateToOrg({ alias, sessionId, instanceUrl, redirect });
+        }catch(e){
+            LOGGER.error('[navigateToOrg] Error navigating to org:', e);
+            return { status: 'error', error: e.message || e };
+        }
     },
 });
 

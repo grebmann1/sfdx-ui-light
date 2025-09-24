@@ -1,0 +1,29 @@
+<template>
+    <lightning-modal-header label="Session Expired"></lightning-modal-header>
+    <lightning-modal-body>
+    <div class="slds-p-around_medium">
+        <p><span class="slds-text-title_bold slds-text-color_error">Your session has expired.</span></br>If the auto-reconnect button is available, you can attempt to reconnect to the same org by clicking it.</p>
+        <p>If the auto-reconnect button is not available, please log in to your org manually.</p></br>
+        <slds-information-block variant="note" title="The auto-reconnect feature is only available for Salesforce sessions">
+            We will scan for <strong>available sessions</strong> in your open tabs, so ensure that an instance of your org is open in one of your tabs. </br>
+            For credentials of type <span class="slds-text-title_bold">Redirect</span>, you may need to log in to your org first before using the reconnect option.
+        </slds-information-block>
+    </div>
+    </lightning-modal-body>
+    <lightning-modal-footer>
+        <lightning-button
+                class="slds-float_left slds-button"
+                variant="neutral"
+                label="Close"
+                onclick={handleClose}
+        ></lightning-button>
+        <lightning-button
+                class="slds-button"
+                variant="brand"
+                label="Auto-Reconnect"
+                onclick={handleAutoReconnect}
+        ></lightning-button>
+    </lightning-modal-footer>
+</template>
+
+

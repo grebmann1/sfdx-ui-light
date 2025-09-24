@@ -1,6 +1,6 @@
 // usernamePassword.js
 import { getCurrentPlatform, PLATFORM } from '../platformService';
-import { processHost, normalizeConnection } from '../utils';
+import { getSalesforceURL, normalizeConnection } from '../utils';
 import { saveConfiguration } from '../web';
 import { OAUTH_TYPES } from './index';
 import { Connector } from '../connectorClass';
@@ -9,7 +9,7 @@ import { isUndefinedOrNull,isElectronApp } from 'shared/utils';
 
 export async function directConnect({ username, password, loginUrl, alias }) {
     const platform = getCurrentPlatform();
-    const normalizedUrl = processHost(loginUrl);
+    const normalizedUrl = getSalesforceURL(loginUrl);
     const connectionParams = normalizeConnection(
         OAUTH_TYPES.USERNAME,
         {
@@ -42,7 +42,7 @@ export async function connect({ username, password, loginUrl, alias }, settings 
         throw new Error('Username/Password connect is only supported on Web for now');
     } */
 
-    const normalizedUrl = processHost(loginUrl);
+    const normalizedUrl = getSalesforceURL(loginUrl);
     
     try {
         const connectionParams = normalizeConnection(

@@ -2,7 +2,7 @@ import accessAnalyzer_app from 'accessAnalyzer/app';
 import platformEvent_app from 'platformevent/app';
 import anonymousApex_app from 'anonymousApex/app';
 import api_app from 'api/app';
-import assistant_app from 'assistant/app';
+import agent_app from 'agent/app';
 import code_app from 'code/app';
 import connection_app from 'connection/app';
 import doc_app from 'doc/app';
@@ -251,21 +251,21 @@ const APP_MAPPING = {
         shortName: 'PACK',
         path: 'package',
     },
-    'assistant/app': {
-        module: assistant_app,
+    'agent/app': {
+        module: agent_app,
         isFullHeight: true,
         isDeletable: true,
         isElectronOnly: false,
         isOfflineAvailable: true,
         isMenuVisible: true,
         isTabVisible: true,
-        label: 'AI Assistant',
+        label: 'AI Agent',
         type: i18n.DOCUMENTATION,
         description: 'Interact with LLM Models',
         menuIcon: 'utility:einstein',
         quickActionIcon: 'utility:einstein',
         shortName: 'AI',
-        path: 'assistant',
+        path: 'agent',
     },
     'settings/app': {
         module: settings_app,

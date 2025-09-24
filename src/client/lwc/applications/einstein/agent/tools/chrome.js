@@ -28,7 +28,7 @@ const chromeScreenshot = tool({
         quality: z.number().optional().nullable().describe('Quality of the screenshot (0-100)'),
     }),
     execute: async (args) => {
-        const res = await sendChromeMessage('chrome_screenshot', {args});
+        const res = await sendChromeMessage('chrome_screenshot', args);
         LOGGER.log('--> chromeScreenshot',{args,res});
         return res;
     },
@@ -43,7 +43,7 @@ const chromeOpenTab = tool({
         windowId: z.string().optional().nullable().describe('Optional window ID to open the tab in'),
     }),
     execute: async (args) => {
-        return await sendChromeMessage('chrome_open_tab', {args});
+        return await sendChromeMessage('chrome_open_tab',args);
     },
 });
 
@@ -55,7 +55,7 @@ const chromeNavigateTab = tool({
         tabId: z.string().describe('The ID of the tab to navigate to'),
     }),
     execute: async (args) => {
-        return await sendChromeMessage('chrome_navigate_tab', {args});
+        return await sendChromeMessage('chrome_navigate_tab', args);
     },
 });
 
@@ -90,7 +90,7 @@ const chromeGroupTabs = tool({
         color: z.string().optional().nullable().describe('Optional group color'),
     }),
     execute: async (args) => {
-        return await sendChromeMessage('chrome_group_tabs', {args});
+        return await sendChromeMessage('chrome_group_tabs',args);
     },
 });
 
@@ -112,7 +112,7 @@ const chromeUngroupTabs = tool({
         tabIds: z.array(z.string()).describe('Array of tab IDs to ungroup'),
     }),
     execute: async (args) => {
-        return await sendChromeMessage('chrome_ungroup_tabs', {args});
+        return await sendChromeMessage('chrome_ungroup_tabs',args);
     },
 });
 
@@ -124,7 +124,7 @@ const chromeCloseTabs = tool({
         tabIds: z.array(z.string()).describe('Array of tab IDs to close'),
     }),
     execute: async (args) => {
-        return await sendChromeMessage('chrome_close_tabs', {args});
+        return await sendChromeMessage('chrome_close_tabs',args);
     },
 });
 
@@ -145,7 +145,7 @@ const chromeUpdateTab = tool({
         }).describe('Properties to update on the tab'),
     }),
     execute: async (args) => {
-        return await sendChromeMessage('chrome_update_tab', {args});
+        return await sendChromeMessage('chrome_update_tab',args);
     },
 });
 
@@ -157,7 +157,7 @@ const chromeCreateWindow = tool({
         tabIds: z.array(z.string()).optional().nullable().describe('Tab IDs to move to new window'),
     }),
     execute: async (args) => {
-        return await sendChromeMessage('chrome_create_window', {args});
+        return await sendChromeMessage('chrome_create_window',args);
     },
 });
 
@@ -169,7 +169,7 @@ const chromeGetTab = tool({
         tabId: z.string().describe('Tab ID'),
     }),
     execute: async (args) => {
-        return await sendChromeMessage('chrome_get_tab', {args});
+        return await sendChromeMessage('chrome_get_tab',args);
     },
 });
 
@@ -181,7 +181,7 @@ const chromeGetTabGroup = tool({
         groupId: z.string().describe('Tab group ID'),
     }),
     execute: async (args) => {
-        return await sendChromeMessage('chrome_get_tab_group', {args});
+        return await sendChromeMessage('chrome_get_tab_group',args);
     },
 });
 const chromeUpdateTabGroup = tool({
@@ -192,7 +192,7 @@ const chromeUpdateTabGroup = tool({
         updateProps: z.object({}).catchall(z.union([z.string(), z.number(), z.boolean()])).describe('Properties to update'),
     }),
     execute: async (args) => {
-        return await sendChromeMessage('chrome_update_tab_group', {args});
+        return await sendChromeMessage('chrome_update_tab_group',args);
     },
 });
 
@@ -206,7 +206,7 @@ const chromeMoveTab = tool({
         windowId: z.string().optional().nullable().describe('Optional window ID'),
     }),
     execute: async (args) => {
-        return await sendChromeMessage('chrome_move_tab', {args});
+        return await sendChromeMessage('chrome_move_tab',args);
     },
 });
 
@@ -219,7 +219,7 @@ const chromeHighlightTabs = tool({
         windowId: z.string().optional().nullable().describe('Optional window ID'),
     }),
     execute: async (args) => {
-        return await sendChromeMessage('chrome_highlight_tabs', {args});
+        return await sendChromeMessage('chrome_highlight_tabs',args);
     },
 });
 
@@ -231,7 +231,7 @@ const chromeFocusWindow = tool({
         windowId: z.string().describe('Window ID'),
     }),
     execute: async (args) => {
-        return await sendChromeMessage('chrome_focus_window', {args});
+        return await sendChromeMessage('chrome_focus_window',args);
     },
 });
 
@@ -243,7 +243,7 @@ const chromeRemoveTabGroup = tool({
         groupId: z.string().describe('Tab group ID'),
     }),
     execute: async (args) => {
-        return await sendChromeMessage('chrome_remove_tab_group', {args});
+        return await sendChromeMessage('chrome_remove_tab_group',args);
     },
 });
 
@@ -255,7 +255,7 @@ const chromeDuplicateTab = tool({
         tabId: z.string().describe('Tab ID'),
     }),
     execute: async (args) => {
-        return await sendChromeMessage('chrome_duplicate_tab', {args});
+        return await sendChromeMessage('chrome_duplicate_tab',args);
     },
 });
 
@@ -267,7 +267,7 @@ const chromeReloadTabs = tool({
         tabIds: z.array(z.string()).describe('Tab IDs to reload'),
     }),
     execute: async (args) => {
-        return await sendChromeMessage('chrome_reload_tabs', {args});
+        return await sendChromeMessage('chrome_reload_tabs',args);
     },
 });
 

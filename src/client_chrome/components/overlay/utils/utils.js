@@ -4,6 +4,7 @@ export const TYPE = {
     APEX_CLASS: 'Apex Class',
     AURA: 'Aura',
     LINK: 'Link',
+    DEV_LINK: 'Dev Link',
     LWC: 'LWC',
     OBJECT: 'Object',
     PROFILE: 'Profile',

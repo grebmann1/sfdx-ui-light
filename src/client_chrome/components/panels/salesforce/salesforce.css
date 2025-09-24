@@ -21,3 +21,13 @@ extension-header {
 .new-org-message {
     text-align: center;
 }
+
+.alias-pill {
+    background: #0176d3; /* SLDS brand blue */
+    color: #ffffff;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-weight: 600;
+    margin-right: 8px;
+    display: inline-block;
+}

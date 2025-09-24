@@ -1,10 +1,15 @@
 <template>
-    <lightning-input class="slds-m-bottom_small slds-m-top_small search-input" name={i18n.Search} type="search" placeholder={i18n.SearchPlaceholder}
-    value={searchValue} onkeyup={handleSearch} onchange={handleSearch} label={i18n.Search} variant="label-hidden"></lightning-input>
+    <template lwc:if={hideSearchInput}>
+        <!-- external search controls -->
+    </template>
+    <template lwc:else>
+        <lightning-input class="slds-m-bottom_small slds-m-top_small search-input" name={i18n.Search} type="search" placeholder={i18n.SearchPlaceholder}
+        value={searchValue} onkeyup={handleSearch} onchange={handleSearch} label={i18n.Search} variant="label-hidden"></lightning-input>
+    </template>
     <div class="file-explorer-container full-height">
         <ul lwc:if={isTreeVisible} class="slds-tree" role="tree">
             <template for:each={computedTree} for:item="item">
-                <li key={item.id} class="slds-m-left_xx-small">
+                <li key={item.id}>
                     <slds-file-tree-item is-first
                         item={item} 
                         expanded={item.expanded} 

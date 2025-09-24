@@ -4,8 +4,17 @@
             <div class="slds-col slds-size_1-of-1">
                 <!--<label for="comment-text-input2" class="slds-publisher__toggle-visibility slds-m-bottom_small">To: Assistant </label>-->
                 <div class="chat-input-container file-upload-container" ondragover={handleDragOver} ondragleave={handleDragLeave} ondrop={handleDrop}>
-                    <div class="chat-input-pills-row">
-                        <template lwc:if={hasFiles}>
+                    <div class="slds-flex-column slds-align-flex-end">
+                        <div class="chat-input-model-row slds-flex-row" style="width:120px;">
+                            <select id="model-picklist" class="slds-select" value={selectedModel} onchange={handleModelChange}>
+                                <template for:each={availableModels} for:item="model">
+                                    <option key={model.value} value={model.value}>{model.label}</option>
+                                </template>
+                            </select>
+                        </div>
+                    </div>
+                    <template lwc:if={hasFiles}>
+                        <div class="chat-input-pills-row">
                             <template for:each={filePills} for:item="pill">
                                 <div key={pill.file.name} class="chat-pill" tabindex="0" aria-label={pill.file.name}>
                                     <template lwc:if={pill.isImage}>
@@ -19,8 +28,8 @@
                                     <button class="chat-pill-remove" title="Remove file" aria-label="Remove file" data-filename={pill.file.name} onclick={removeSelectedFile} tabindex="0">×</button>
                                 </div>
                             </template>
-                        </template>
-                    </div>
+                        </div>
+                    </template>
                     <textarea
                         id="comment-text-input2"
                         class="chat-textarea"
@@ -58,10 +67,10 @@
                                 </button>
                             </template>
                         </div>
-                        <input type="file" class="file-input" onchange={handleFileChange} aria-label="File input" tabindex="-1" multiple />
+                        <input type="file" class="file-input" onchange={handleFileChange} aria-label="File input" tabindex="-1" multiple accept="image/*" />
                     </div>
                     <template lwc:if={dragActive}>
-                        <div class="file-upload-drag-overlay">Drop images or PDFs here</div>
+                        <div class="file-upload-drag-overlay">Drop images here</div>
                     </template>
                 </div>
                 <!-- <div class="slds-publisher__actions slds-grid slds-grid_align-spread">

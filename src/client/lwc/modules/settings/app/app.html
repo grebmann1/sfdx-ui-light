@@ -37,7 +37,7 @@
                     class="slds-is-relative slds-full-width slds-full-height slds-flex-column slds-p-around_medium"
                     style="min-height: 200px">
                     <slds-tabset variant="vertical" active-tab-value={activeTab}>
-                        <slds-tab label="Session Settings" value="session" lwc:if={isUserLoggedIn}>
+                        <slds-tab label="Session" value="session" lwc:if={isUserLoggedIn}>
                             <!-- UI -->
                             <div class="slds-section slds-reverse slds-is-open">
                                 <h3 class="slds-section__title">
@@ -116,7 +116,7 @@
                                 </settings-card>
                             </div>
                         </slds-tab>
-                        <slds-tab label="UI Settings" value="ui">
+                        <slds-tab label="UI Interface" value="ui">
                             <!-- UI -->
                             <div class="slds-section slds-reverse slds-is-open">
                                 <h3 class="slds-section__title">
@@ -154,16 +154,16 @@
                                 </settings-card>
                             </div>
                         </slds-tab>
-                        <slds-tab label="Applications Settings" value="applications">
+                        <slds-tab label="Applications" value="applications">
                             <settings-api-app-settings config={config} inputfield_change={inputfield_change}></settings-api-app-settings>
                         </slds-tab>
-                        <slds-tab label="General Settings">
-                            <!-- General -->
+                        <slds-tab label="AI">
+                            <!-- AI Settings -->
                             <div class="slds-section slds-reverse slds-is-open">
                                 <h3 class="slds-section__title">
                                     <div class="slds-section__title-action slds-p-vertical_x-small">
-                                        <span class="slds-truncate" title="General settings">
-                                            General Settings
+                                        <span class="slds-truncate" title="AI settings">
+                                            AI Settings
                                         </span>
                                     </div>
                                 </h3>
@@ -447,7 +447,7 @@
                                 </lightning-card>
                             </div>
                         </slds-tab>
-                        <slds-tab label="Shortcuts Settings" value="shortcuts">
+                        <slds-tab label="Shortcuts" value="shortcuts">
                             <div class="slds-section slds-reverse slds-is-open">
                                 <h3 class="slds-section__title">
                                     <div class="slds-section__title-action slds-p-vertical_x-small">
@@ -656,7 +656,7 @@
                         </slds-tab>
                         <!-- Chrome Extension -->
                         <template lwc:if={isChrome}>
-                            <slds-tab label="Chrome Specific Settings" value="chrome">
+                            <slds-tab label="Chrome Extension" value="chrome">
                                 <div class="slds-section slds-reverse slds-is-open">
                                     <h3 class="slds-section__title">
                                         <div

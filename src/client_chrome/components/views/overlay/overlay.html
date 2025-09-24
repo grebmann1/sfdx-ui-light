@@ -67,6 +67,10 @@
                         </slds-vertical-panel>
                         <!-- Content -->
                         <div class="slds-full-width">
+                            <!-- DEV BANNER -->
+                            <template lwc:if={isDevTabDisplayed}>
+                                <div class="dev-banner" title="Detected dev server (port in URL)">DEV SERVER</div>
+                            </template>
                             <!-- HEADER -->
                             <extension-header
                                 lwc:ref="header"
@@ -142,6 +146,13 @@
                                                 class="full-page-body"
                                                 label={tab_userLabel}
                                                 value={FORMATTED_TABS.USER}
+                                                onactive={handleSelectTab}></lightning-tab>
+                                        </template>
+                                        <template lwc:if={isDevTabDisplayed}>
+                                            <lightning-tab
+                                                class="full-page-body"
+                                                label={tab_devLabel}
+                                                value={FORMATTED_TABS.DEV}
                                                 onactive={handleSelectTab}></lightning-tab>
                                         </template>
                                     </lightning-tabset>

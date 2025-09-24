@@ -1,5 +1,5 @@
 import constant from 'core/constant';
-import { isUndefinedOrNull, isElectronApp, isEmpty } from 'shared/utils';
+import { isUndefinedOrNull, isNotUndefinedOrNull, isElectronApp, isEmpty } from 'shared/utils';
 
 import { Connector } from './connectorClass';
 import * as webInterface from './web';
@@ -145,7 +145,7 @@ export const WORKSPACE_NO_MY_DOMAIN_REGEX = {
     replace: '$1',
 };
 
-export const processHost = origin => {
+export const getSalesforceURL = origin => {
     let result = origin;
     if (origin.match(SOMA_LOCAL_DOMAIN_REGEX.regex)) {
         result = new URL(
@@ -251,7 +251,7 @@ export const normalizeConfiguration = (rawData, byPassValidation = false) => {
     }
     // Ensure all required fields are present and shaped consistently
     let sfdxAuthUrl = rawData.sfdxAuthUrl;
-    if (rawData.refreshToken && rawData.instanceUrl && (isEmpty(rawData.sfdxAuthUrl) || !rawData.sfdxAuthUrl.includes(rawData.refreshToken))) {
+    if (rawData.refreshToken && rawData.instanceUrl && window.jsforceSettings && (isEmpty(rawData.sfdxAuthUrl) || !rawData.sfdxAuthUrl.includes(rawData.refreshToken))) {
         // If the sfdxAuthUrl is already set, we don't need to generate a new one (only if the refreshToken is different)
         sfdxAuthUrl = `force://${window.jsforceSettings?.clientId}::${rawData.refreshToken}@${new URL(rawData.instanceUrl).host}`;
     }
@@ -302,4 +302,34 @@ export const extractConfigurationValuesFromConnection = connection => {
         userInfo: connection.userInfo,
         orgId: connection.userInfo?.organization_id,
     };
+};
+
+export const getExistingHostMap = configurations => {
+    const hostMap = new Map();
+    configurations.forEach(config => {
+        let hostname = null;
+        if (isNotUndefinedOrNull(config.instanceUrl)) {
+            hostname = new URL(config.instanceUrl).hostname;
+        } else if (isNotUndefinedOrNull(config.redirectUrl)) {
+            hostname = new URL(config.redirectUrl).hostname;
+        }
+        if (hostname) {
+            hostMap.set(hostname, config);
+        }
+    });
+    return hostMap;
+};
+
+export const getMatchingConfiguration = async (connection) => {
+    const hostMap = getExistingHostMap(await getConfigurations());
+    try{
+        const hostname = new URL(connection.instanceUrl).hostname;
+        if(hostMap.has(hostname)){
+            return hostMap.get(hostname);
+        }
+        return null;
+    }catch(e){
+        LOGGER.error('getMatchingConfiguration issue: ', e);
+        return null;
+    }
 };

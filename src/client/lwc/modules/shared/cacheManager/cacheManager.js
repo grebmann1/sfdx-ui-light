@@ -190,11 +190,17 @@ export const CACHE_CONFIG = {
     CHROME_SYNC_ORG_INITIALIZED_STORAGE_KEY: new CONFIG_OBJECT('chrome_syncOrgInitialized', false),
     // Applications Settings are stored in the general store
     API_SPLITTER_IS_HORIZONTAL: new CONFIG_OBJECT('api_splitter_is_horizontal', false),
+    EINSTEIN_AGENT_CONVERSATIONS: new CONFIG_OBJECT('einstein_agent_conversations', []),
 };
 
 export const CACHE_SESSION_CONFIG = {
     CLIENT_ID: new CONFIG_OBJECT('client_id', null),
     API_VERSION: new CONFIG_OBJECT('api_version', null),
+};
+
+export const CACHE_ANALYTICS_CONFIG = {
+    CLIENT_STORAGE_KEY: new CONFIG_OBJECT('analytics_client_id', null),
+    SESSION_STORAGE_KEY: new CONFIG_OBJECT('analytics_session', null),
 };
 
 export const CACHE_ORG_DATA_TYPES = {
@@ -221,6 +227,10 @@ export async function loadExtensionConfigFromCache(keys) {
 
 export async function saveExtensionConfigToCache(config) {
     return cacheManager.saveConfig(config);
+}
+
+export async function saveSingleExtensionConfigToCache(key, value) {
+    return cacheManager.saveConfig({ [key]: value });
 }
 
 /** Extra Methods to simplify the usage of the cacheManager */

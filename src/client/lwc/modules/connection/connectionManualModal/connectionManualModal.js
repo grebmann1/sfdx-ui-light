@@ -2,7 +2,7 @@ import { api, track } from 'lwc';
 import Toast from 'lightning/toast';
 import LightningModal from 'lightning/modal';
 import {
-    processHost,
+    getSalesforceURL,
     credentialStrategies,
     notificationService,
     validateInputs,
@@ -41,7 +41,7 @@ export default class ConnectionManualModal extends LightningModal {
             ) {
                 try {
                     const _url = new URL(domainToValidate.value);
-                    this.customDomain = processHost(_url.host);
+                    this.customDomain = getSalesforceURL(_url.host);
                     //LOGGER.log('customDomain', this.customDomain);
                 } catch (e) {
                     domainToValidate.setCustomValidity("Don't include the protocol");

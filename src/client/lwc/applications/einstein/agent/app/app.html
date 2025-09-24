@@ -1,62 +1,90 @@
 <template>
-    <template lwc:if={hasError}>
-        <slds-information-block class="slds-p-around_x-small" title={error_title} variant="error">
-            <p>{error_message}</p>
-        </slds-information-block>
-    </template>
-    <div class="assistant-container slds-fill-height slds-is-relative">
-        <!-- Prompt Result -->
-        <section role="log" class="slds-chat slds-fill-height">
-            <div class="slds-grid slds-wrap slds-grid_align-center">
-                <div class="slds-col slds-size_1-of-1">
-                    <ul class="slds-chat-list">
-                        <!-- Welcome message -->
-                        <agent-message item={welcomeMessage}></agent-message>
-                        <!-- Messages -->
-                        <template for:each={displayedMessages} for:item="item">
-                            <agent-message
-                                key={item.key}
-                                item={item}
-                            ></agent-message>
-                        </template>
-                        <template lwc:if={currentMessage}>
-                            <!-- Current message displayed alone to improve performances -->
-                            <agent-message class="chat-item" item={currentMessage} is-current-message></agent-message>
-                        </template>
-                        <template lwc:if={isLoading}>
-                            <li class="slds-chat-listitem slds-chat-listitem_inbound chat-item">
-                                <div class="slds-chat-message">
-                                    <div class="slds-chat-message__body">
-                                        <div
-                                            class="slds-chat-message__text slds-chat-message__text_inbound slds-chat-loading">
-                                            <span
-                                                class="slds-icon-typing slds-is-animated"
-                                                title="Analyzing your request">
-                                                <span class="slds-icon-typing__dot"></span>
-                                                <span class="slds-icon-typing__dot"></span>
-                                                <span class="slds-icon-typing__dot"></span>
-                                                <span class="slds-assistive-text">
-                                                    Analyzing your request
-                                                </span>
-                                            </span>
-                                            <span aria-hidden="true">Analyzing your request</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                        </template>
-                    </ul>
+    
+    <div class="slds-full-height slds-is-relative slds-flex-row">
+        <!-- Side Panel -->
+        <slds-vertical-panel
+            size="slds-size_x-small"
+            title="Conversations"
+            position="left"
+            is-open={isSidePanelOpen}
+            is-header-hidden
+        >
+            <div class="slds-full-height slds-flex-column">
+                <div class="side-panel-header slds-p-around_small slds-border_bottom side-panel-header-custom">
+                    <h2 class="slds-panel__header-title slds-text-heading_small slds-truncate">Conversations</h2>
+                    <div class="slds-panel__header-actions">
+                        <lightning-button-icon icon-name="utility:add" onclick={createNewConversation} title="New conversation" aria-label="New conversation"></lightning-button-icon>
+                    </div>
+                </div>
+               
+                <div class="slds-scrollable_y" style="max-height: 60vh; min-height: 120px;">
+                    <slds-file-tree
+                        tree={conversationTree}
+                        selected-id={activeConversationId}
+                        onselect={handleConversationSelect}
+                        ondeletefile={handleDeleteConversation}
+                        search-fields={conversationSearchFields}
+                        min-search-length={minSearchLengthForConversations}
+                        hide-search-input={hideSearchInputForConversations}
+                        include-folders-in-results={includeFoldersInResultsForConversations}
+                    ></slds-file-tree>
                 </div>
             </div>
-        </section>
-        <!-- Prompt Entry -->
-        <agent-publisher
-            is-audio-recorder-disabled={isAudioRecorderDisabled}
-            openai-key={openaiKey}
-            onsend={handleSendClick}
-            onstop={handleStopClick}
-            onclear={handleClearClick}
-            is-loading={isStreaming}
-        ></agent-publisher>
+        </slds-vertical-panel>
+
+        <!-- Side Panel Toggle Button -->
+        <div class="slds-full-height slds-is-relative slds-flex-column slds-full-width">
+            <div class="slds-p-around_x-small slds-border_bottom slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                <lightning-button-icon-stateful
+                    icon-name="utility:side_list"
+                    selected={isSidePanelOpen}
+                    alternative-text="Toggle conversations"
+                    variant="border-filled"
+                    onclick={toggleSidePanel}
+                ></lightning-button-icon-stateful>
+                <div class={inputSectionClass}>
+                    <template lwc:if={isEditingTitle}>
+                        <input class="slds-input slds-m-right_x-small" type="text" value={pendingTitle} oninput={handleConversationTitleChange} onkeydown={handleConversationTitleKeydown} lwc:ref="titleInput" />
+                        <lightning-button-icon icon-name="utility:check" onclick={saveConversationTitle} title="Save" aria-label="Save"></lightning-button-icon>
+                        <lightning-button-icon icon-name="utility:close" onclick={cancelEditingTitle} title="Cancel" aria-label="Cancel"></lightning-button-icon>
+                    </template>
+                    <template lwc:else>
+                        <span class="slds-text-title_bold slds-m-right_x-small" onclick={startEditingTitle}>{conversationTitle}</span>
+                        <lightning-button-icon class="edit-title-button" icon-name="utility:edit" variant="bare" onclick={startEditingTitle} title="Edit title" aria-label="Edit title"></lightning-button-icon>
+                    </template>
+                </div>
+            </div>
+            <template lwc:if={hasError}>
+                <slds-information-block class="slds-p-around_x-small" title={error_title} variant="error">
+                    <p>{error_message}</p>
+                </slds-information-block>
+            </template>
+            <!-- Prompt Result -->
+            <section role="log" class="slds-chat slds-fill-height">
+                <div class="slds-grid slds-wrap slds-grid_align-center">
+                    <div class="slds-col slds-size_1-of-1 slds-large-size_2-of-3">
+                        <agent-message-list
+                            welcome-message={welcomeMessage}
+                            displayed-messages={displayedMessages}
+                            streaming-message={streamingMessage}
+                            is-loading={isLoading}
+                            onretry={handleRetry}
+                        ></agent-message-list>
+                    </div>
+                </div>
+            </section>
+            <!-- Prompt Entry -->
+            <div class="slds-grid slds-wrap slds-grid_align-center">
+                <agent-publisher class="slds-size_1-of-1 slds-large-size_2-of-3"
+                    is-audio-recorder-disabled={isAudioRecorderDisabled}
+                    openai-key={openaiKey}
+                    onsend={handleSendClick}
+                    onstop={handleStopClick}
+                    onclear={handleClearClick}
+                    is-loading={isStreaming}
+                    model={selectedModel}
+                ></agent-publisher>
+            </div>
+        </div>
     </div>
 </template>

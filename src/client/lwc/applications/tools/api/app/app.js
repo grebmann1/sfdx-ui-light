@@ -35,6 +35,7 @@ import { dereference, validate } from 'imported/openapi-parser';
 import * as OpenAPISampler from 'openapi-sampler';
 import { NavigationContext, navigate } from 'lwr/navigation';
 import { CACHE_CONFIG, cacheManager } from 'shared/cacheManager';
+import Analytics from 'shared/analytics';
 
 // Utility: Convert OpenAPI schema to apiTreeItems
 function openApiToApiTreeItems(openApi) {
@@ -180,6 +181,7 @@ export default class App extends ToolkitElement {
     @track openapiSchemaFiles = [];
 
     connectedCallback() {
+        Analytics.trackAppOpen('api', { alias: this.alias });
         this.isFieldRendered = true;
         store.dispatch(async (dispatch, getState) => {
             this.applicationConfig = await API.loadCacheSettings(this.alias);
@@ -396,6 +398,15 @@ export default class App extends ToolkitElement {
         if(isUndefinedOrNull(_formattedRequest)) return;
 
         this.isApiRunning = true;
+        try {
+            Analytics.trackAction('api', 'execute', {
+                alias: this.alias,
+                method: _formattedRequest?.method || this.method,
+                endpoint: _formattedRequest?.url || this.endpoint,
+            });
+        } catch (e) {
+            // ignore analytics errors
+        }
         // Execute
         const apiPromise = store.dispatch(
             API.executeApiRequest({

@@ -44,7 +44,7 @@ export default class QuickAuthorize extends ToolkitElement {
             ],
             name: newAliasObject.name,
         };
-        if(this.isInternalDevOrg){
+        if(this.isCurrentOrgInternalDevOrg){
             //console.log('addConnection_authorize - this.connector.conn', this.connector);
             params.credentialType = OAUTH_TYPES.USERNAME;
             params.username = this.connector.configuration.username;
@@ -120,7 +120,7 @@ export default class QuickAuthorize extends ToolkitElement {
         return SALESFORCE_HOST.some(pattern => hostname.endsWith(pattern));
     };
 
-    _isInternalDevOrg = (host,port) => {
+    isInternalDevOrg = (host,port) => {
         return ['.dev','.qa'].some(pattern => host.endsWith(pattern)) || !isEmpty(port);
     };
 
@@ -159,13 +159,13 @@ export default class QuickAuthorize extends ToolkitElement {
         );
     }
 
-    get isInternalDevOrg() {
+    get isCurrentOrgInternalDevOrg() {
         if(isEmpty(this.instanceUrl)) return false;
         let _url = new URL(this.instanceUrl);
-        return this._isInternalDevOrg(_url.hostname,_url.port);
+        return this.isInternalDevOrg(_url.hostname,_url.port);
     }
 
     get labelAuthorizeOrg() {
-        return this.isInternalDevOrg? 'Yes, Add Dev Org' : 'Yes, Authorize';
+        return this.isCurrentOrgInternalDevOrg? 'Yes, Add Dev Org' : 'Yes, Authorize';
     }
 }

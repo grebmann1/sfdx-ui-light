@@ -23,6 +23,7 @@ import { handleRedirect } from './utils';
 import LOGGER from 'shared/logger';
 /** Apps  **/
 import { APP_LIST } from './modules';
+import SessionExpiredModal, { RESULT as SESSION_EXPIRED_RESULT } from 'ui/sessionExpiredModal';
 
 /** Store **/
 import { store as legacyStore } from 'shared/store';
@@ -298,13 +299,67 @@ export default class App extends LightningElement {
         this.sessionHasExpiredIsDisplayed = true;
         //this.sessionHasExpired = false;
         //store.dispatch(APPLICATION.reduxSlice.actions.sessionExpired({sessionHasExpired:false}));
-        await LightningAlert.open({
-            message: 'Session has expired. \n Please consider adding it to your list of orgs.', //+'\n You might need to remove and OAuth again.',
-            theme: 'offline', // a red theme intended for error states
-            label: 'Session Expired', // this is the header text
+        const credentialType = this.connector?.configuration?.credentialType;
+        const result = await SessionExpiredModal.open({
+            size: 'small',
+            label: 'Session Expired',
+            message: 'Session has expired. \n Please consider adding it to your list of orgs.',
+            isAutoReconnectEnabled: isChromeExtension() && credentialType === OAUTH_TYPES.SESSION,
         });
+        if(result === SESSION_EXPIRED_RESULT.AUTO_RECONNECT){
+            await this.handleAutoReconnect();
+        }else{
+            await store.dispatch(APPLICATION.reduxSlice.actions.logout());
+        }
         this.sessionHasExpiredIsDisplayed = false;
-        await store.dispatch(APPLICATION.reduxSlice.actions.logout());
+    };
+
+    handleAutoReconnect = async () => {
+        const configuration = this.connector?.configuration;
+        if (configuration?.credentialType === OAUTH_TYPES.SESSION && isChromeExtension()) {
+            try {
+                const alias = configuration?.alias;
+                const instanceUrl = configuration?.instanceUrl;
+                const result = await new Promise(resolve => {
+                    try {
+                        chrome.runtime.sendMessage(
+                            {
+                                action: 'findExistingSession',
+                                alias,
+                                instanceUrl,
+                            },
+                            response => resolve(response)
+                        );
+                    } catch (e) {
+                        resolve(undefined);
+                    }
+                });
+
+                if (result && result.sessionId && result.serverUrl) {
+                    const connector = await credentialStrategies.SESSION.connect({
+                        sessionId: result.sessionId,
+                        serverUrl: result.serverUrl,
+                    });
+                    store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
+                } else {
+                    await LightningAlert.open({
+                        message:
+                            'No valid session found in existing tabs for this org. Please log in again before clicking on the auto reconnect button.',
+                        theme: 'warning',
+                        label: 'Auto Reconnect',
+                    });
+                    this.redirectAfterExpiration();
+                }
+            } catch (e) {
+                LOGGER.error('Auto reconnect failed', e);
+                await LightningAlert.open({
+                    message: 'Auto reconnect failed. Please try logging in again.',
+                    theme: 'error',
+                    label: 'Auto Reconnect',
+                });
+                this.redirectAfterExpiration();
+            }
+        }
     };
 
     openSpecificModule = async target => {
@@ -448,7 +503,7 @@ export default class App extends LightningElement {
                 }); // org is the default
             }
         } catch (e) {
-            console.error(e);
+            LOGGER.error(e);
             if(isElectronApp()){
                 LOGGER.debug('load_limitedMode - ELECTRON - channel : ',window.electron.getChannel());
                 window.electron.send(window.electron.getChannel(),{
@@ -621,7 +676,7 @@ export default class App extends LightningElement {
         const settings = APP_LIST.find(x => x.name === target);
 
         if (!settings) {
-            console.warn(`Unknown app type: ${target}`);
+            LOGGER.warn(`Unknown app type: ${target}`);
             // Run Manual Mode
         } else {
             const application = {

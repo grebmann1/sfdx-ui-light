@@ -1,6 +1,11 @@
 import { loadExtensionConfigFromCache, saveExtensionConfigToCache } from 'shared/cacheManager';
+import StreamingAgentService from './streamingAgentService';
+import Context from './context';
+import Constants from './constants';
+import { guid, isNotUndefinedOrNull } from 'shared/utils';
 
-export const readFileContent = (file) => {
+
+const readFileContent = (file) => {
     return new Promise((resolve) => {
         if (file.size > 20 * 1024 * 1024) { // 20MB limit
             resolve({
@@ -30,6 +35,88 @@ export const readFileContent = (file) => {
             reader.readAsDataURL(file);
         }
     });
+};
+
+function getMessageKey(message) {
+    return message._key || message.id || message.callId || guid();
+}
+
+function areMessagesEqual(msg1, msg2) {
+    return (msg1 && msg2) && (
+        (msg1._key === msg2._key && isNotUndefinedOrNull(msg1._key)) || 
+        (msg1.id === msg2.id && isNotUndefinedOrNull(msg1.id))
+    );
+}
+
+function appendMessageIfNotExists(messages, newMsg) {
+    if (!messages.some(m => areMessagesEqual(m, newMsg))) {
+        return [...messages, newMsg];
+    }
+    return messages || [];
+}
+
+function updateOrAppendMessage(messages, newMsg) {
+    if (messages && messages.length > 0 && areMessagesEqual(messages[messages.length - 1], newMsg)) {
+        return [
+            ...messages.slice(0, messages.length - 1),
+            { ...messages[messages.length - 1], ...newMsg }
+        ];
+    }
+    return [...(messages || []), newMsg];
+}
+
+function formatMessage(message, filesData = [], guidFn = guid) {
+    const result = {
+        ...message,
+        _key: getMessageKey(message),
+    };
+    // Process files and enrich the message with the file informations
+    const files = (filesData || []).map(f => ({ name: f.name, type: f.type, size: f.size, _openaiFileId: f._openaiFileId, content: f.content }));
+    if (files && files.length > 0) {
+        if (!Array.isArray(result.content)) {
+            result.content = [
+                { type: 'input_text', text: result.content, isInputText: true, key: result._key + '-0' }
+            ];
+        }
+        files.forEach(file => {
+            if (file.type && file.type.startsWith('image/') && file.content) {
+                result.content.push({
+                    type: 'input_image',
+                    image: file.content,
+                    key: result._key + '-img-' + file.name
+                });
+            } else if (file.type === 'application/pdf' && file.content) {
+                result.content.push({
+                    type: 'input_file',
+                    file_id: file._openaiFileId,
+                    size: file.size,
+                    key: result._key + '-file-' + file.name
+                });
+            }
+        });
+    }
+    return result;
+}
+
+const formatStreamHistory = (streamHistory) => {
+    return streamHistory.map(message => formatMessage(message));
+}
+
+const Message = {
+    getMessageKey,
+    areMessagesEqual,
+    appendMessageIfNotExists,
+    updateOrAppendMessage,
+    formatMessage,
+    formatStreamHistory
+};
+
+export {
+    readFileContent,
+    StreamingAgentService,
+    Message,
+    Context,
+    Constants
 };
 
 /* export const CONVERSATION_CACHE_KEY = 'einsteinAgentConversation';

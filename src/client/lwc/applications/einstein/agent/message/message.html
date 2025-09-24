@@ -47,7 +47,6 @@
                                 </div>
                             </template>
                         </div>
-                        
                     </div>
     
                     <template lwc:if={tool_isRunning}>
@@ -110,6 +109,21 @@
     </template>
     <template lwc:else>
         <li class={itemClass}>
+            <template lwc:if={hasError}>
+                <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error slds-m-bottom_x-small" role="alert">
+                    <span class="slds-assistive-text">Error</span>
+                    <span>{errorMessage}</span>
+                    <template lwc:if={isUser}>
+                        <lightning-button
+                            variant="brand-outline"
+                            size="small"
+                            label="Retry"
+                            onclick={handleRetry}
+                            class="slds-m-left_x-small"
+                        ></lightning-button>
+                    </template>
+                </div>
+            </template>
             <div class="slds-chat-message">
                 <div class="slds-chat-message__body">
                     <div class={itemMessageClass}>
@@ -145,6 +159,16 @@
                                     <span>File: {contentItem.file_id} ({contentItem.size} bytes)</span>
                                 </div>
                             </template>
+                        </template>
+                        <template lwc:if={isCurrentMessage}>
+                            <div class="slds-chat-typing-indicator slds-m-top_x-small" aria-live="polite" aria-label="Assistant is typing">
+                                <span class="slds-icon-typing slds-is-animated" title="Assistant is typing">
+                                    <span class="slds-icon-typing__dot"></span>
+                                    <span class="slds-icon-typing__dot"></span>
+                                    <span class="slds-icon-typing__dot"></span>
+                                    <span class="slds-assistive-text">Assistant is typing</span>
+                                </span>
+                            </div>
                         </template>
                     </div>
                     <div class="slds-chat-message__meta">

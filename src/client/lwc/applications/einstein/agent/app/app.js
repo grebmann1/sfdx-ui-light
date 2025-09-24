@@ -1,11 +1,9 @@
-import { LightningElement, api, track, wire } from 'lwc';
+import { api, track, wire } from 'lwc';
 import {
     isEmpty,
     guid,
     isNotUndefinedOrNull,
-    isUndefinedOrNull,
-    safeParseJson,
-    isChromeExtension
+    classSet
 } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
 import { store, connectStore } from 'core/store';
@@ -13,10 +11,10 @@ import LOGGER from 'shared/logger';
 import OpenAI from 'openai';
 //import { tools } from 'agent/tools';
 import { NavigationContext } from 'lwr/navigation';
+import { CACHE_CONFIG, loadExtensionConfigFromCache, saveSingleExtensionConfigToCache } from 'shared/cacheManager';
 const { Agent, Runner, user, system, tool, run, setDefaultOpenAIClient, setOpenAIAPI } = window.OpenAIAgentsBundle.Agents;
 import { loggedInAgent, loggedOutAgent } from 'agent/agents';
-import { readFileContent } from 'agent/utils';
-
+import { readFileContent, StreamingAgentService, Message, Context } from 'agent/utils';
 
 export default class App extends ToolkitElement {
     navContext;
@@ -26,21 +24,24 @@ export default class App extends ToolkitElement {
         window.navContext = navContext;
     }
 
-    isLoading = false;
-    isStreaming = false;
-
-    @track _messages = [];
-    set messages(val) {
-        this._messages = val;
-        this.scrollToBottom();
-    }
-    get messages() {
-        return this._messages || [];
-    }
-    @track currentMessage;
+    
+    @track selectedModel = 'gpt-5-mini';
+    @track isSidePanelOpen = false;
+    @track conversations = [
+        { id: 'default', title: 'Conversation 1', messages: [] }
+    ];
+    @track activeConversationId = 'default';
+    @track isEditingTitle = false;
+    @track pendingTitle = '';
 
     @api connector;
     @api isAudioRecorderDisabled = false;
+
+    // FileTree search config for conversations
+    conversationSearchFields = ['name', 'id', 'title', 'keywords', 'searchText'];
+    minSearchLengthForConversations = 1;
+    hideSearchInputForConversations = false;
+    includeFoldersInResultsForConversations = true;
 
 
     // Error
@@ -56,14 +57,20 @@ export default class App extends ToolkitElement {
         content: 'Hello, I am the SF Toolkit Assistant, I can help you interact with Salesforce and Salesforce tools.',
         id: 'WELCOME_MESSAGE_ID',
     };
-
-    // Agents
-    currentAgent;
-
     _shouldFocusPublisher = false;
 
-    currentStream;
-    currentAbortController;
+    // Agents
+    currentAgent = {};
+    isStreamingMap = {};
+    isLoadingMap = {};
+    streamingAgentService = {};
+    @track _messages = {};
+    @track _streamingMessage = {};
+    _pendingDelta = {};
+    _streamingUpdateScheduled = {};
+    _chunkBuffer = {};
+    _chunkFlushTimer = {};
+    _CHUNK_FLUSH_INTERVAL = 80; // ms
 
 
     @wire(connectStore, { store })
@@ -71,11 +78,34 @@ export default class App extends ToolkitElement {
         this.openaiKey = application.openaiKey;
     }
 
+    async connectedCallback() {
+        await this.loadConversationsFromCache();
+    }
+
+    async loadConversationsFromCache() {
+        LOGGER.log('--> loadConversationsFromCache');
+        const config = await loadExtensionConfigFromCache([CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATIONS.key]);
+        LOGGER.log('--> loadConversationsFromCache',config);
+        const conversations = config[CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATIONS.key];
+        if (conversations && Array.isArray(conversations)) {
+            this.conversations = conversations;
+            if(this.conversations.length === 0) {
+                this.createNewConversation();
+            } else {
+                this.activeConversationId = this.conversations[0].id;
+                this._messages[this.activeConversationId] = Message.formatStreamHistory(this.conversations[0].streamHistory) || [];
+            }
+        }
+    }
+
+    async saveConversationsToCache() {
+        LOGGER.log('--> saveConversationsToCache',this.conversations);
+        await saveSingleExtensionConfigToCache(CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATIONS.key, this.conversations);
+    }
+
     renderedCallback() {
-        const publisher = this.template.querySelector('agent-publisher');
-        if (publisher && this._shouldFocusPublisher) {
-            publisher?.focusInput();
-            this._shouldFocusPublisher = false;
+        if (this.isEditingTitle && this.refs && this.refs.titleInput) {
+            this.refs.titleInput.focus();
         }
     }
 
@@ -86,154 +116,37 @@ export default class App extends ToolkitElement {
         this.error_message = null;
     };
 
-    scrollToBottom = () => {
-        window.setTimeout(() => {
-            // Find all assistant-message elements
-            const messageElements = [...this.template.querySelectorAll('.chat-item')];
-            // Scroll to the last message (user or assistant)
-            const lastMessage = messageElements[messageElements.length - 1];
-            if (lastMessage) {
-                lastMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });
-            }
-        }, 1);
-    };
-
-    directUpdateUI = (element,message) => {
-        if (element && element.item) {
-            element.updateItem(message);
-        }
-    }
-
-    /* groupFunctionCalls(messages) {
-        const grouped = [];
-        const usedCallIds = new Set();
-        for (let i = 0; i < messages.length; i++) {
-            const msg = messages[i];
-            if (
-                msg.type === 'function_call' &&
-                msg.callId &&
-                !usedCallIds.has(msg.callId)
-            ) {
-                const matchIdx = messages.findIndex(
-                    (m, idx) =>
-                        idx > i &&
-                        m.type === 'function_call_result' &&
-                        m.callId === msg.callId
-                );
-                if (matchIdx !== -1) {
-                    grouped.push(msg, messages[matchIdx]);
-                    usedCallIds.add(msg.callId);
-                    usedCallIds.add(messages[matchIdx].callId);
-                    continue;
-                }
-            }
-            if (
-                msg.type === 'function_call_result' &&
-                msg.callId &&
-                usedCallIds.has(msg.callId)
-            ) {
-                continue;
-            }
-            grouped.push(msg);
-        }
-        return grouped;
-    } */
-
-    getCurrentAlias() {
-        // Try to get alias from connector (same as in getCurrentGlobalContext)
-        const state = store.getState();
-        const connector = state?.application?.connector;
-        if (connector?.configuration?.alias) {
-            return connector.configuration.alias;
-        }
-        return null;
-    }
-
-    formatMessage = (message,filesData) => {
-        /* let result = this.messages.map((x, index, array) => ({
-            ...x,
-            content: Array.isArray(x.content) ? x.content[0].text : x.content,
-            id: x.id === 'FAKE_ID' ? guid() : (x.id || x.callId ),
-            isLastMessage: index === array.length - 1,
-        }));
-
-        const grouped = this.groupFunctionCalls(result);
-
-        //LOGGER.log('formattedMessages', grouped);
-        return grouped; */
-        const result = {
-            ...message,
-            key: (message.id === 'FAKE_ID' ? guid() : (message.key ||message.id || message.callId )) || guid(),
-        };
-
-        // Process files and enrich the message with the file informations
-        const files = (filesData || []).map(f => ({ name: f.name, type: f.type, size: f.size, _openaiFileId: f._openaiFileId, content: f.content }));
-        if(files && files.length > 0){
-            files.forEach(async file => {
-                if (file.type && file.type.startsWith('image/') && file.content) {
-                    result.content.push({
-                        type: 'input_image',
-                        image: file.content // data URL
-                    });
-                } else if (file.type === 'application/pdf' && file.content) {
-                    // Upload PDF to OpenAI and get file_id
-                    LOGGER.log('uploading PDF',file);
-                    result.content.push({
-                        type: 'input_file',
-                        file_id: file._openaiFileId
-                    });
-                }
-            });
-        }
-        return result;
-    }
-
-    executeAgent = async (prompt, files = []) => {
-        this._executeAgent({prompt, directMessages: [], files});
+    executeAgent = async (prompt, files = [], model = this.selectedModel) => {
+        this._executeAgent({prompt, directMessages: [], files, model, currentConversationId: this.activeConversationId});
     }
 
     executeAgentWithDirectMessages = async (directMessages) => {
-        this._executeAgent({prompt: null, directMessages, files: []});
+        this._executeAgent({prompt: null, directMessages, files: [], currentConversationId: this.activeConversationId});
     }
     
 
-    _executeAgent = async ({prompt, directMessages, files = []}) => {
-        LOGGER.debug('Executing agent with params',{prompt, directMessages, files});
-        // Helper to read file content (text for text files, base64 for others)
-        
-
+    _executeAgent = async ({prompt, directMessages, files = [], model = this.selectedModel, currentConversationId}) => {
+        LOGGER.debug('Executing agent with params',{prompt, directMessages, files, currentConversationId});
         let filesData = [];
         if (files && files.length > 0) {
             filesData = await Promise.all(files.map(readFileContent));
         }
-
-        
-
-        // Get OpenAI baseURL from config/cache, default to https://api.openai.com
         let baseUrl = store.getState().application?.openaiUrl;
         LOGGER.log('baseUrl ---> ',store.getState());
-
         const openai = new OpenAI({
             dangerouslyAllowBrowser: true,
             apiKey: this.openaiKey,
             baseURL: baseUrl,
         });
-        
         setDefaultOpenAIClient(openai);
         setOpenAIAPI('responses');
-
-
-        LOGGER.log('getCurrentApplicationContext',this.getCurrentApplicationContext());
-        // Use new agent selection
+        LOGGER.log('getCurrentApplicationContext',Context.getCurrentApplicationContext(store));
         const _agent = this.isUserLoggedIn ? loggedInAgent : loggedOutAgent;
-
-        // Show loading state while uploading PDFs
-        this.isLoading = true;        // Add each image as an input_image message, and each PDF as input_file (after upload)
+        this.isLoadingMap[currentConversationId] = true;
         for (const file of filesData) {
             if (file.type && file.type.startsWith('image/') && file.content) {
                 // Nothing to do here
             } else if (file.type === 'application/pdf' && file.content) {
-                // Upload PDF to OpenAI and get file_id
                 try {
                     const uploadResponse = await openai.files.create({
                         file: new File([await fetch(file.content).then(r => r.arrayBuffer())], file.name, { type: file.type }),
@@ -243,115 +156,86 @@ export default class App extends ToolkitElement {
                         file._openaiFileId = uploadResponse.id;
                     }
                 } catch (err) {
-                    // Optionally handle upload error
                     LOGGER.error('PDF upload failed', err);
                 }
             }
         }
-        // Remove this.isLoading = false here (move to after stream end)
-
-        // Add the user message to the UI (for chat display)
+        // Set initial messages
         if(prompt){
             let uiMessage = user(prompt);
-            this.messages = [...this.messages, this.formatMessage(uiMessage,filesData)];
+            const messages = [...(this._messages[currentConversationId] || [])];
+            this._messages[currentConversationId] = Message.updateOrAppendMessage(messages, Message.formatMessage(uiMessage,filesData));
         } else if(directMessages){
-            this.messages = [...this.messages, ...directMessages];
+            directMessages.forEach(msg => this._appendMessageIfNotExists(msg, currentConversationId));
         }
-
-        // Build messages array for the agent
-        let messages = [...this.messages]; // previous messages if needed
-
-        LOGGER.log('this.messages',messages);
-        // For now, we only use the general agent as the current agent. We might use other agents in the background.
-        //const _agent = this.currentAgent || generalAgent;
+        let messages = [...this._messages[currentConversationId]];
+        LOGGER.log('##### messages',messages);
         const runner = new Runner({
-            model: 'gpt-5-mini-2025-08-07',
+            model: model || 'gpt-5-mini',
         });
-
         try{
             let context = `
-                    Context:
-                        ${await this.getCurrentGlobalContext()}
-                        ${await this.getCurrentApplicationContext()}
-                    `;
+                Context:
+                    ${await Context.getCurrentGlobalContext(store)}
+                    ${await Context.getCurrentApplicationContext(store)}
+                `;
             LOGGER.log('context',context);
-            this.currentAbortController = new AbortController();
-            const stream = await runner.run(
+            this._chunkBuffer[currentConversationId] = [];
+            this._chunkFlushTimer[currentConversationId] = null;
+            this.streamingAgentService[currentConversationId] = new StreamingAgentService(
+                runner,
                 _agent,
                 messages,
                 {
-                    stream: true,
                     maxTurns: 25,
                     context,
-                    signal: this.currentAbortController?.signal,
+                    onChunk: (chunk) => {
+                        if (chunk.delta !== undefined) {
+                            this._bufferChunk(chunk.delta, currentConversationId);
+                        } else {
+                            this._flushChunkBuffer(currentConversationId);
+                            this._streamingMessage[currentConversationId] = { ...chunk };
+                            this.isLoadingMap[currentConversationId] = false;
+                        }
+                    },
+                    onToolEvent: (rawItem) => {
+                        this._appendMessageIfNotExists(Message.formatMessage(rawItem,[]), currentConversationId);
+                    },
+                    onStreamEnd: (stream) => {
+                        if (this._streamingMessage[currentConversationId]) {
+                            this._appendMessageIfNotExists(this._streamingMessage[currentConversationId], currentConversationId);
+                            this._streamingMessage[currentConversationId] = null;
+                        }
+                        this.handleEndOfStream(stream, currentConversationId);
+                    },
+                    onError: (e) => {
+                        LOGGER.error('Error running agent',e);
+                        this.isLoadingMap[currentConversationId] = false;
+                        this.isStreamingMap[currentConversationId] = false;
+                        this.global_handleError(e);
+                    }
                 }
             );
-            LOGGER.log('stream',stream);
-            this.currentStream = stream;
-            this.isStreaming = true;
-            for await (const event of stream) {
-                if (event.type === 'raw_model_stream_event') {
-                    const data = event.data;
-                    if(data.type === 'response_started'){
-
-                    } else if(data.type === 'model') {
-                        // Model responses
-                        const _event = data.event;
-                        // Response is now streaming, we are not loading anymore
-                        if(_event.type === 'response.output_item.added'){
-                            const item = _event.item;
-                            this.currentMessage = {... item};
-                            this.isLoading = false; // We are not loading anymore, we are streaming the response
-                        }
-                    } else if(data.type === 'response_done'){
-                        // Nothing to do here
-                    }else if(data.type === 'output_text_delta'){
-                        //LOGGER.debug('Chunks --> ', event.data.delta);
-                        if(isUndefinedOrNull(this.currentMessage)){
-                            this.currentMessage = {
-                                id: guid(),
-                                content: ''
-                            };
-                        }
-                        this.currentMessage.content += data.delta;
-                        this.scrollToBottom();
-                    }
-                }
-                if (event.type === 'run_item_stream_event') {
-                    // Raw Item is the message from the tool call
-                    if (event.item && event.item.rawItem) {
-                        this.messages = [
-                            ...this.messages,
-                            this.formatMessage(event.item.rawItem,[])
-                        ]
-                    }
-                    LOGGER.debug('Run Item Stream Event -->',JSON.parse(JSON.stringify(event)));
-                }
-            }
-    
-            // handle end of stream
-            this.handleEndOfStream(stream);
-        }catch(e){
+            await this.streamingAgentService[currentConversationId].startStreaming();
+        } catch(e) {
             LOGGER.error('Error running agent',e);
-            this.isLoading = false;
-            this.isStreaming = false;
+            this.isLoadingMap[currentConversationId] = false;
+            this.isStreamingMap[currentConversationId] = false;
             this.global_handleError(e);
-        } finally {
-            this.currentAbortController = null;
         }
     }
 
-    stopAgent = () => {
-        if (this.currentAbortController) {
-            this.currentAbortController.abort();
-            this.currentAbortController = null;
+    stopAgent = (currentConversationId) => {
+        if (this.streamingAgentService[currentConversationId]) {
+            this.streamingAgentService[currentConversationId].abort();
+            this.streamingAgentService[currentConversationId] = null;
         }
-        this.isLoading = false;
+        this.isLoadingMap[currentConversationId] = false;
     };
 
     /** Agents Helpers **/
 
-    processEndOfStream = async (stream) => {
+    processEndOfStream = async (stream, currentConversationId) => {
         const lastItem = [...stream.newItems].pop();
         const lastOutputName = lastItem.rawItem?.name;
         //let storeHistory = true;
@@ -361,9 +245,9 @@ export default class App extends ToolkitElement {
                 const userMessage = user('');
                 userMessage.content = outputContent;
                 //storeHistory = false;
-                this.executeAgentWithDirectMessages([this.formatMessage(userMessage,[])]);
+                this.executeAgentWithDirectMessages([Message.formatMessage(userMessage,[])]);
             }else if(lastItem.output?.isError){
-                this.executeAgentWithDirectMessages([]); // Dry run to process the error (if possible)
+                this.executeAgentWithDirectMessages([], currentConversationId); // Dry run to process the error (if possible)
             }else{
                 LOGGER.error('No output content',lastItem);
             }
@@ -372,179 +256,44 @@ export default class App extends ToolkitElement {
         LOGGER.debug('stream history',JSON.parse(JSON.stringify(stream.history)));
     }
 
-    handleEndOfStream = async (stream) => {
+    handleEndOfStream = async (stream, currentConversationId) => {
         await stream.completed;
         LOGGER.log('###### stream completed ######',stream);
 
         // Reset the current message
-        this.currentMessage = null;
+        this._streamingMessage[currentConversationId] = null;
         // Reset the streaming state
-        this.isStreaming = false;
+        this.isStreamingMap[currentConversationId] = false;
         // Set the current agent
-        this.currentAgent = stream.lastAgent;
+        this.currentAgent[currentConversationId] = stream.lastAgent;
+        // Store the stream history on the conversation
+        const idx = this.conversations.findIndex(c => c.id === this.activeConversationId);
+        if (idx !== -1) {
+            this.conversations[idx] = { ...this.conversations[idx], streamHistory: stream.history };
+            this.conversations = [...this.conversations];
+            this.saveConversationsToCache();
+        }
         // Store the history
-        this.processEndOfStream(stream);
+        this.processEndOfStream(stream, currentConversationId);
         this._shouldFocusPublisher = true;
-    }
-
-    getCurrentGlobalContext = async() => {
-        const state = store.getState();
-        const connector = state?.application?.connector;
-        const currentApplication = state?.application?.currentApplication;
-        const isLoggedIn = isNotUndefinedOrNull(connector);
-        let email = 'Not available';
-        let displayName = 'Not available';
-        let instanceUrl = 'Not available';
-        let alias = 'Not available';
-        if (isLoggedIn && connector?.configuration) {
-            const userInfo = connector.configuration.userInfo || {};
-            email = userInfo.email || 'Not available';
-            displayName = userInfo.display_name || 'Not available';
-            instanceUrl = connector.configuration.instanceUrl || 'Not available';
-            alias = connector.configuration.alias || 'Not available';
-        }
-        let contextText = `## SF Toolkit (Saleforce Context)`;
-        contextText += `\nUser is logged in: ${isLoggedIn}`;
-        contextText += `\nUser: ${displayName} (${email})`;
-        contextText += `\nOrg Alias: ${alias}`;
-        contextText += `\nInstance URL: ${instanceUrl}`;
-        contextText += `\nCurrent Application: ${currentApplication}`;
-
-        if(isChromeExtension()){
-            contextText += `\n${await this.chromeContext()}`;
-        }
-        return contextText;
-    }
-
-    getCurrentApplicationContext = () => {
-        const state = store.getState();
-        const currentApplication = state?.application?.currentApplication;
-        switch(currentApplication){
-            case 'soql/app':
-                return this.soqlContext();
-            case 'anonymousApex/app':
-                return this.apexContext();
-            case 'api/app':
-                return this.apiContext();
-            case 'agent': // Limited mode
-                return this.sidePanelContext();
-            default:
-                return '';
-        }
-    }
-
-    apexContext = () => {
-        const apex = store.getState().apex;
-        LOGGER.log('apex',apex);
-        const currentTab = apex?.currentTab;
-        let contextText = `Current Apex Tab: ${currentTab?.id}`;
-        contextText += `\n${JSON.stringify(currentTab)}`;
-
-        // Not sure if we need to add all the tabs to the context
-        const tabs = apex?.tabs;
-        if(tabs?.length > 0){
-            contextText += `\nAll Apex Tabs: ${tabs.length}`;
-            contextText += `\n${JSON.stringify(tabs)}`;
-        }
-        return contextText;
-    }
-
-    soqlContext = () => {
-        const soql = store.getState().soql;
-        LOGGER.log('soql',soql);
-        let contextText = `Current SOQL Tab: ${soql?.currentTab?.id}`;
-        contextText += `\n${JSON.stringify(soql?.currentTab)}`;
-
-        // Not sure if we need to add all the tabs to the context
-        const tabs = soql?.tabs;
-        if(tabs?.length > 0){
-            contextText += `\nAll SOQL Tabs: ${tabs.length}`;
-            contextText += `\n${JSON.stringify(tabs)}`;
-        }
-        return contextText;
-    }
-
-    apiContext = () => {
-        const api = store.getState().api;
-        LOGGER.log('api',api);
-        let contextText = `Current API Tab: ${api?.currentTab?.id}`;
-        contextText += `\n${JSON.stringify(api?.currentTab)}`;
-
-        // Not sure if we need to add all the tabs to the context
-        const tabs = api?.tabs;
-        if(tabs?.length > 0){
-            contextText += `\nAll API Tabs: ${tabs.length}`;
-            contextText += `\n${JSON.stringify(tabs)}`;
-        }
-        return contextText;
-    }
-
-    sidePanelContext = () => {
-        let contextText = 'You are working in the side panel of the Salesforce Toolkit.';
-            contextText += `\nYou are working in Limited mode.`;
-        return contextText;
-    }
-
-
-    chromeContext = async () => {
-        if (!isChromeExtension()) {
-            return 'Chrome API is not available in this environment.';
-        }
-        try {
-            // Get current window
-            const currentWindow = await window.chrome.windows.getCurrent({ populate: true });
-            // Get current tab
-            const tabs = await window.chrome.tabs.query({ active: true, currentWindow: true });
-            const currentTab = tabs && tabs[0] ? tabs[0] : null;
-            let contextText = '## Chrome Context:';
-            if (currentWindow) {
-                contextText += `\nCurrent Window: ${JSON.stringify(
-                    {
-                        id: currentWindow.id,
-                        incognito: currentWindow.incognito,
-                        tabs: currentWindow.tabs.map(
-                            t => ({
-                                id: t.id,
-                                title: t.title,
-                                url: t.url,
-                                groupId: t.groupId,
-                            })
-                        ),
-                        totalTabs: currentWindow.tabs.length,
-                    }
-                )}`;
-            }
-            if (currentTab) {
-                contextText += `\nCurrent Tab: ${JSON.stringify(
-                    {
-                        id: currentTab.id,
-                        title: currentTab.title,
-                        url: currentTab.url,
-                    }
-                )}`;
-            }
-            if (!currentWindow && !currentTab) {
-                contextText += '\nNo active window or tab found.';
-            }
-            return contextText;
-        } catch (err) {
-            return `Error retrieving Chrome context: ${err.message}`;
-        }
     }
 
     /** Events **/
 
     handleStopClick = async e => {
-        this.stopAgent();
+        this.stopAgent(this.activeConversationId);
     };
 
     handleClearClick = async e => {
-        this.messages = [];
+        this._messages[this.activeConversationId] = [];
+        this.saveConversationsToCache();
     };
 
     handleSendClick = async (e) => {
         const value = e.detail.prompt;
         const files = e.detail.files || [];
+        const model = e.detail.model || this.selectedModel;
+        this.selectedModel = model;
         if(isEmpty(this.openaiKey)){
             this.error_title = 'Error';
             this.error_message = 'No OpenAI key found';
@@ -552,7 +301,7 @@ export default class App extends ToolkitElement {
         }
         if (!isEmpty(value) || files.length > 0) {
             this.resetError();
-            this.executeAgent(value.trim(), files);
+            this.executeAgent(value.trim(), files, model, this.activeConversationId);
         }
     };
 
@@ -566,17 +315,124 @@ export default class App extends ToolkitElement {
         this.error_message = errors.join(':');
     };
 
+    handleRetry = (event) => {
+        const { item } = event.detail;
+        if (item) {
+            // Remove the failed message from the list
+            this._messages[this.activeConversationId] = this._messages[this.activeConversationId].filter(m => !Message.areMessagesEqual(m, item));
+            // Re-send the message (as a direct message)
+            this.executeAgentWithDirectMessages([item], this.activeConversationId);
+        }
+    };
+
+    toggleSidePanel = () => {
+        this.isSidePanelOpen = !this.isSidePanelOpen;
+    };
+
+    createNewConversation = () => {
+        const newId = 'conv_' + Date.now();
+        const newTitle = `Conversation ${this.conversations.length + 1}`;
+        const newConv = { id: newId, title: newTitle, streamHistory: [] };
+        this.conversations = [...this.conversations, newConv];
+        this.activeConversationId = newId;
+        this._messages[newId] = [];
+        this.isSidePanelOpen = false;
+        this.saveConversationsToCache();
+    };
+
+
+
+    handleConversationSelect = (event) => {
+        const id = event.detail.item.id;
+        if (id && id !== this.activeConversationId) {
+            this.activeConversationId = id;
+            const conv = this.currentConversation;
+            if (conv) {
+                if (conv.messages && conv.messages.length > 0) {
+                    this._messages[this.activeConversationId] = conv.messages;
+                } else if (conv.streamHistory && Array.isArray(conv.streamHistory) && conv.streamHistory.length > 0) {
+                    this._messages[this.activeConversationId] = Message.formatStreamHistory(conv.streamHistory);
+                } else {
+                    this._messages[this.activeConversationId] = [];
+                }
+            }
+        }
+        this.isSidePanelOpen = false;
+    };
+
+    handleDeleteConversation = (event) => {
+        const id = event.detail.item?.id;
+        if (id) {
+            this.deleteConversation(id);
+        }
+    }
+
+    getConversationItemClass(id) {
+        let base = 'side-panel-list-item slds-p-vertical_x-small';
+        if (id === this.activeConversationId) {
+            base += ' slds-theme_shade';
+        }
+        return base;
+    }
+
+    startEditingTitle = () => {
+        const conv = this.conversations.find(c => c.id === this.activeConversationId);
+        this.pendingTitle = conv ? conv.title : '';
+        this.isEditingTitle = true;
+    };
+
+    handleConversationTitleChange = (event) => {
+        this.pendingTitle = event.target.value;
+    };
+
+    handleConversationTitleKeydown = (event) => {
+        if (event.key === 'Enter') {
+            this.saveConversationTitle();
+        } else if (event.key === 'Escape') {
+            this.cancelEditingTitle();
+        }
+    };
+
+    saveConversationTitle = () => {
+        const idx = this.conversations.findIndex(c => c.id === this.activeConversationId);
+        if (idx !== -1 && this.pendingTitle.trim()) {
+            this.conversations[idx] = { ...this.conversations[idx], title: this.pendingTitle.trim() };
+            this.conversations = [...this.conversations];
+            this.saveConversationsToCache();
+        }
+        this.isEditingTitle = false;
+    };
+
+    cancelEditingTitle = () => {
+        this.isEditingTitle = false;
+    };
+
+    deleteConversation = (id) => {
+        let idx = this.conversations.findIndex(c => c.id === id);
+        if (idx !== -1) {
+            this.conversations.splice(idx, 1);
+            if (this.conversations.length === 0) {
+                // If all deleted, create a new one
+                this.createNewConversation();
+            } else {
+                // Switch to the first conversation
+                this.activeConversationId = this.conversations[0].id;
+                this._messages[this.activeConversationId] = this.conversations[0].messages || [];
+            }
+            this.conversations = [...this.conversations];
+            this.saveConversationsToCache();
+        }
+    }
+
+    // Helper: append message only if not already present (by key)
+    _appendMessageIfNotExists = (newMsg, currentConversationId) => {
+        this._messages[currentConversationId] = Message.appendMessageIfNotExists(this._messages[currentConversationId], newMsg);
+    }
+
     /** Getters **/
 
     get legacyConnector() {
         return super.connector;
-    }
-
-    get cleanedMessages() {
-        const { einstein } = store.getState();
-        const filteredMessages = this.messages.filter(x => !einstein.errorIds.includes(x.id)); // Removing the errors
-        const lastTenMessages = filteredMessages.slice(-10); // Taking only the last 10 messages
-        return lastTenMessages;
     }
 
     get hasError() {
@@ -588,6 +444,103 @@ export default class App extends ToolkitElement {
     }
 
     get displayedMessages() {
-        return (this.messages || []).filter(x => x.type !== 'reasoning'); // We don't want to display the reasoning. TODO: Improve this
+        return (this._messages[this.activeConversationId] || []).filter(x => x.type !== 'reasoning'); // We don't want to display the reasoning. TODO: Improve this
+    }
+
+    get streamingMessage() {
+        return this._streamingMessage[this.activeConversationId] || null;
+    }
+
+    get conversationTree() {
+        return this.conversations.map(conv => {
+            const { keywords, searchText } = this._getConversationSearchData(conv);
+            return {
+                id: conv.id,
+                name: conv.title || 'Conversation',
+                title: conv.title || 'Conversation',
+                icon: 'utility:chat',
+                isDeletable: false,
+                keywords,
+                searchText,
+            };
+        });
+    }
+
+    get conversationTitle() {
+        const conv = this.currentConversation;
+        return conv ? conv.title : 'New Conversation';
+    }
+
+    get currentConversation() {
+        return this.conversations.find(c => c.id === this.activeConversationId);
+    }
+
+    get inputSectionClass() {
+        return classSet('slds-grid slds-grid_vertical-align-center title-input-section')
+        .add({
+            'input-section': this.isEditingTitle
+        })
+        .toString();
+    }
+
+    get isLoading() {
+        return this.isLoadingMap[this.activeConversationId] || false;
+    }
+
+    get isStreaming() {
+        return this.isStreamingMap[this.activeConversationId] || false;
+    }
+
+
+
+    _getConversationSearchData(conv) {
+        // Keep lightweight for now; can be enhanced later with message snippets/tags
+        const keywords = [conv.id].filter(Boolean);
+        const searchText = String(conv.title || '');
+        return { keywords, searchText };
+    }
+
+    /** Buffer Chunk **/
+    
+
+
+    _bufferChunk(delta, currentConversationId) {
+        if (!this._chunkBuffer[currentConversationId]) {
+            this._chunkBuffer[currentConversationId] = [];
+        }
+        this._chunkBuffer[currentConversationId].push(delta);
+        // Flush immediately if buffer reaches 5 chunks
+        if (this._chunkBuffer[currentConversationId].length >= 5) {
+            this._flushChunkBuffer(currentConversationId);
+            return;
+        }
+        // Start or reset the timer for this conversation
+        if (!this._chunkFlushTimer[currentConversationId]) {
+            this._chunkFlushTimer[currentConversationId] = setTimeout(() => {
+                this._flushChunkBuffer(currentConversationId);
+            }, this._CHUNK_FLUSH_INTERVAL);
+        }
+    }
+
+    _flushChunkBuffer(currentConversationId) {
+        const buffer = this._chunkBuffer[currentConversationId] || [];
+        if (buffer.length > 0) {
+            if (!this._streamingMessage[currentConversationId]) {
+                this._streamingMessage[currentConversationId] = {
+                    id: guid(),
+                    content: ''
+                };
+            }
+            const combined = buffer.join('');
+            this._streamingMessage[currentConversationId] = {
+                ...this._streamingMessage[currentConversationId],
+                content: (this._streamingMessage[currentConversationId]?.content || '') + combined
+            };
+            this._chunkBuffer[currentConversationId] = [];
+        }
+        if (this._chunkFlushTimer[currentConversationId]) {
+            clearTimeout(this._chunkFlushTimer[currentConversationId]);
+            this._chunkFlushTimer[currentConversationId] = null;
+        }
     }
 }
