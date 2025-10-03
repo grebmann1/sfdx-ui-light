@@ -1,8 +1,7 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
-import { isUndefinedOrNull, isNotUndefinedOrNull, isEmpty, guid, classSet } from 'shared/utils';
-import { GLOBAL_EINSTEIN } from 'assistant/utils';
+import { isUndefinedOrNull, isNotUndefinedOrNull, isEmpty, guid, classSet, ASSISTANT as ASSISTANT_UTILS } from 'shared/utils';
 import { getConfigurations, credentialStrategies } from 'connection/utils';
 import { store, connectStore, EINSTEIN, APPLICATION, SELECTORS } from 'core/store';
 
@@ -32,7 +31,7 @@ export default class App extends ToolkitElement {
         store.dispatch(
             EINSTEIN.reduxSlice.actions.updateModel({
                 model: this.model,
-                alias: GLOBAL_EINSTEIN,
+                alias: ASSISTANT_UTILS.GLOBAL_EINSTEIN,
             })
         );
     };
@@ -46,7 +45,7 @@ export default class App extends ToolkitElement {
         store.dispatch(
             EINSTEIN.reduxSlice.actions.updateProvider({
                 provider: this.provider,
-                alias: GLOBAL_EINSTEIN,
+                alias: ASSISTANT_UTILS.GLOBAL_EINSTEIN,
             })
         );
     };
@@ -58,7 +57,7 @@ export default class App extends ToolkitElement {
         store.dispatch(async (dispatch, getState) => {
             dispatch(
                 EINSTEIN.reduxSlice.actions.loadCacheSettings({
-                    alias: GLOBAL_EINSTEIN,
+                    alias: ASSISTANT_UTILS.GLOBAL_EINSTEIN,
                 })
             );
             // We init the connection only if it's not setup !
@@ -138,7 +137,7 @@ export default class App extends ToolkitElement {
         store.dispatch(
             EINSTEIN.reduxSlice.actions.selectionTab({
                 id: tabId,
-                alias: GLOBAL_EINSTEIN,
+                alias: ASSISTANT_UTILS.GLOBAL_EINSTEIN,
             })
         );
     };
@@ -148,7 +147,7 @@ export default class App extends ToolkitElement {
         store.dispatch(
             EINSTEIN.reduxSlice.actions.removeTab({
                 id: tabId,
-                alias: GLOBAL_EINSTEIN,
+                alias: ASSISTANT_UTILS.GLOBAL_EINSTEIN,
             })
         );
     };
@@ -166,7 +165,7 @@ export default class App extends ToolkitElement {
         store.dispatch(
             EINSTEIN.reduxSlice.actions.updateConnectionAlias({
                 connectionAlias: alias, // Used for the connection
-                alias: GLOBAL_EINSTEIN, // Used for the local storage
+                alias: ASSISTANT_UTILS.GLOBAL_EINSTEIN, // Used for the local storage
             })
         );
     };

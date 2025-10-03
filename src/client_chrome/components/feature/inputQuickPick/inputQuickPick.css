@@ -1,0 +1,171 @@
+.sf-toolkit-quickpick {
+    position: fixed;
+    min-width: 260px;
+    max-width: 420px;
+    max-height: 400px;
+    overflow: auto;
+    background: #ffffff;
+    color: #080707;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    z-index: 2147483646;
+    /* padding: 6px; */
+    box-sizing: border-box;
+}
+
+.sf-toolkit-quickpick-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: #3e3e3c;
+}
+.sf-toolkit-quickpick-actions {
+    display: flex;
+    gap: 6px;
+}
+.sf-toolkit-quickpick-btn {
+    border: 1px solid #dddbda;
+    background: #ffffff;
+    color: #080707;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+}
+.sf-toolkit-quickpick-btn:hover {
+    background: #f3f2f2;
+}
+
+.sf-toolkit-quickpick-controls {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+.sf-toolkit-quickpick-select {
+    border: 1px solid #dddbda;
+    border-radius: 6px;
+    padding: 4px 6px;
+    font-size: 12px;
+    background: #fff;
+    color: #080707;
+}
+.sf-toolkit-quickpick-searchrow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.sf-toolkit-quickpick-searchactions {
+    display: flex;
+    gap: 4px;
+}
+
+/* Composer-like input styles */
+.chat-input-container {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    border: 1px solid var(--lwc-colorBorderInput, #dddbda);
+    border-radius: 8px;
+    padding: 8px 8px 4px;
+    gap: 6px;
+    background: var(--lwc-colorBackgroundInput, #f3f2f2);
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    transition:
+        box-shadow 100ms,
+        border-color 100ms,
+        background 200ms;
+}
+.chat-input-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+}
+.chat-textarea {
+    flex: 1 1 0%;
+    min-height: 28px;
+    max-height: 60px;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 13px;
+    line-height: 1.4;
+    padding: 0;
+    margin: 0;
+    color: #181818;
+}
+.chat-input-actions-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 0.5rem;
+}
+.chat-input-actions-left {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.chat-input-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+.chat-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    display: flex;
+    align-items: center;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background 0.1s;
+}
+.chat-btn:hover,
+.chat-btn:focus {
+    background: #eaf5fe;
+}
+.sf-toolkit-quickpick-badge {
+    display: inline-block;
+    min-width: 36px;
+    margin-right: 6px;
+    color: #16325c;
+    font-weight: 600;
+}
+.sf-toolkit-assistive {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Hidden measurement mirror */
+.mirror {
+    position: absolute;
+    visibility: hidden;
+    pointer-events: none;
+    white-space: pre;
+    /* place it off-screen to avoid layout shifts */
+    left: -9999px;
+    top: -9999px;
+}
+
+/* Small rotating icon used as loading indicator */
+.sftk-rotating {
+    display: inline-flex;
+    animation: sftk-rotate 0.9s linear infinite;
+}
+
+@keyframes sftk-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

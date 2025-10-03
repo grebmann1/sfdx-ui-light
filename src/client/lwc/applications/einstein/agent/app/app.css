@@ -36,12 +36,6 @@
     /*border-top:1px solid;
     border-color: var(--slds-c-card-color-border,var(--sds-c-card-color-border,var(--slds-g-color-border-base-1,#c9c9c9)));*/
 }
-.assistant-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    height: 100%;
-}
 
 .slds-chat-message__text_inbound:not(.slds-chat-loading) {
     background-color: unset;

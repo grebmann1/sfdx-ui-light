@@ -1,48 +1,63 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Processing Link...</title>
-    <link href="/styles/slds-sf-toolkit.css" rel="stylesheet" />
-    <style>
-        body {
-            background: #f3f6fb;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .slds-card {
-            min-width: 340px;
-            max-width: 400px;
-        }
-        .slds-spinner {
-            margin: 0 auto;
-        }
-    </style>
-</head>
-<body>
-    <div class="slds-card">
-        <div class="slds-card__body slds-card__body_inner">
-            <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-spread">
-                <div>
-                    <div class="slds-text-heading_medium slds-m-bottom_x-small">Processing your request...</div>
-                    <div id="status" class="slds-text-body_regular">Please wait while we update your settings.</div>
-                    <div class="slds-m-top_medium slds-text-align_center">
-                        <span id="countdown" class="slds-badge slds-badge_lightest">Redirecting in 5s...</span>
-                        <button id="redirectBtn" class="slds-button slds-button_neutral slds-m-left_small" style="display:none;" type="button">Redirect now</button>
-                    </div>
-                </div>
-                <div>
-                    <div class="slds-spinner slds-spinner_brand slds-spinner_small" role="status">
-                        <span class="slds-assistive-text">Loading</span>
-                        <div class="slds-spinner__dot-a"></div>
-                        <div class="slds-spinner__dot-b"></div>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Processing Link...</title>
+        <link href="/styles/slds-sf-toolkit.css" rel="stylesheet" />
+        <style>
+            body {
+                background: #f3f6fb;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .slds-card {
+                min-width: 340px;
+                max-width: 400px;
+            }
+            .slds-spinner {
+                margin: 0 auto;
+            }
+        </style>
+    </head>
+    <body class="sf-toolkit" style="margin: 0px">
+        <div class="slds-card">
+            <div class="slds-card__body slds-card__body_inner">
+                <div class="slds-full-width">
+                    <div class="slds-flex-column slds-align-center">
+                        <div class="slds-text-heading_medium slds-m-bottom_x-small">
+                            SF Toolkit Deep Links
+                        </div>
+                        <div class="slds-text-body_regular slds-flex-column slds-align-center">
+                            <p id="status">Processing your request...</p>
+                            <!-- Spinner -->
+                            <div class="slds-is-relative">
+                                <div
+                                    class="slds-spinner slds-spinner_brand slds-spinner_small"
+                                    role="status">
+                                    <span class="slds-assistive-text">Loading</span>
+                                    <div class="slds-spinner__dot-a"></div>
+                                    <div class="slds-spinner__dot-b"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-m-top_medium slds-text-align_center">
+                            <span id="countdown" class="slds-badge slds-badge_lightest">
+                                Redirecting in 5s...
+                            </span>
+                            <button
+                                id="redirectBtn"
+                                class="slds-button slds-button_neutral slds-m-left_small"
+                                style="display: none"
+                                type="button">
+                                Redirect now
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <script src="scripts/link-action.js"></script>
-</body>
+        <script src="/scripts/link-action.js"></script>
+    </body>
 </html>

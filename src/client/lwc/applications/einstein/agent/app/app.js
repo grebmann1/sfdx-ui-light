@@ -1,20 +1,15 @@
 import { api, track, wire } from 'lwc';
 import {
     isEmpty,
-    guid,
     isNotUndefinedOrNull,
     classSet
 } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
-import { store, connectStore } from 'core/store';
+import { store, connectStore, AGENT } from 'core/store';
 import LOGGER from 'shared/logger';
-import OpenAI from 'openai';
-//import { tools } from 'agent/tools';
 import { NavigationContext } from 'lwr/navigation';
-import { CACHE_CONFIG, loadExtensionConfigFromCache, saveSingleExtensionConfigToCache } from 'shared/cacheManager';
-const { Agent, Runner, user, system, tool, run, setDefaultOpenAIClient, setOpenAIAPI } = window.OpenAIAgentsBundle.Agents;
-import { loggedInAgent, loggedOutAgent } from 'agent/agents';
-import { readFileContent, StreamingAgentService, Message, Context } from 'agent/utils';
+import { Message } from 'agent/utils';
+import Analytics from 'shared/analytics';
 
 export default class App extends ToolkitElement {
     navContext;
@@ -28,11 +23,15 @@ export default class App extends ToolkitElement {
     @track selectedModel = 'gpt-5-mini';
     @track isSidePanelOpen = false;
     @track conversations = [
-        { id: 'default', title: 'Conversation 1', messages: [] }
+        { id: 'default', title: 'Conversation 1', streamHistory: [] }
     ];
     @track activeConversationId = 'default';
     @track isEditingTitle = false;
     @track pendingTitle = '';
+    @track streamingMessage = null;
+    @track isLoading = false;
+    @track isStreaming = false;
+    @track displayedMessages = [];
 
     @api connector;
     @api isAudioRecorderDisabled = false;
@@ -59,48 +58,61 @@ export default class App extends ToolkitElement {
     };
     _shouldFocusPublisher = false;
 
-    // Agents
-    currentAgent = {};
-    isStreamingMap = {};
-    isLoadingMap = {};
-    streamingAgentService = {};
-    @track _messages = {};
-    @track _streamingMessage = {};
-    _pendingDelta = {};
-    _streamingUpdateScheduled = {};
-    _chunkBuffer = {};
-    _chunkFlushTimer = {};
-    _CHUNK_FLUSH_INTERVAL = 80; // ms
-
-
+    // UI
     @wire(connectStore, { store })
-    storeChange({ application }) {
-        this.openaiKey = application.openaiKey;
+    storeChange({ application, agent }) {
+        this._setIfChanged('openaiKey', application.openaiKey);
+        if (agent) {
+            this._setIfChanged('selectedModel', agent.selectedModel);
+            const convs = agent.conversations || [];
+            if (this.conversations !== convs) {
+                this.conversations = convs;
+            }
+            if (agent.activeConversationId) {
+                this._setIfChanged('activeConversationId', agent.activeConversationId);
+            }
+            // Loading/Streaming flags for current conversation
+            const isLoading = !!(agent.loadingById && agent.loadingById[this.activeConversationId]);
+            const isStreaming = !!(agent.streamingById && agent.streamingById[this.activeConversationId]);
+            
+            const streamMsg = (agent.streamingMessageById && agent.streamingMessageById[this.activeConversationId]) || null;
+            this._setIfChanged('isLoading', isLoading);
+            this._setIfChanged('isStreaming', isStreaming);
+            this._setIfChanged('streamingMessage', streamMsg);
+
+            const rawMessages = (agent.messagesById && agent.messagesById[this.activeConversationId]) || [];
+            const displayed = rawMessages.filter(m => m.type !== 'reasoning');
+            this._setIfChanged('displayedMessages', displayed);
+        }
     }
 
     async connectedCallback() {
+        Analytics.trackAppOpen('agent', { alias: this.alias });
         await this.loadConversationsFromCache();
     }
 
     async loadConversationsFromCache() {
-        LOGGER.log('--> loadConversationsFromCache');
-        const config = await loadExtensionConfigFromCache([CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATIONS.key]);
-        LOGGER.log('--> loadConversationsFromCache',config);
-        const conversations = config[CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATIONS.key];
-        if (conversations && Array.isArray(conversations)) {
-            this.conversations = conversations;
-            if(this.conversations.length === 0) {
-                this.createNewConversation();
-            } else {
-                this.activeConversationId = this.conversations[0].id;
-                this._messages[this.activeConversationId] = Message.formatStreamHistory(this.conversations[0].streamHistory) || [];
+        LOGGER.log('--> loadConversationsFromCache (via store)');
+        await store.dispatch(AGENT.loadConversationsFromCache());
+        const stateConvs = store.getState().agent?.conversations || [];
+        if (stateConvs.length === 0) {
+            this.createNewConversation();
+        } else {
+            // Seed initial messages for active conversation from streamHistory if not already present
+            const state = store.getState();
+            const activeId = state.agent?.activeConversationId || stateConvs[0].id;
+            const hasMessages = (state.agent?.messagesById?.[activeId] || []).length > 0;
+            const conv = stateConvs.find(c => c.id === activeId);
+            if (!hasMessages && conv && Array.isArray(conv.streamHistory) && conv.streamHistory.length > 0) {
+                const msgs = Message.formatStreamHistory(conv.streamHistory);
+                store.dispatch(AGENT.reduxSlice.actions.setMessages({ id: activeId, messages: msgs }));
             }
         }
     }
 
     async saveConversationsToCache() {
-        LOGGER.log('--> saveConversationsToCache',this.conversations);
-        await saveSingleExtensionConfigToCache(CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATIONS.key, this.conversations);
+        LOGGER.log('--> saveConversationsToCache (via store)');
+        await store.dispatch(AGENT.saveConversationsToCache());
     }
 
     renderedCallback() {
@@ -117,175 +129,31 @@ export default class App extends ToolkitElement {
     };
 
     executeAgent = async (prompt, files = [], model = this.selectedModel) => {
-        this._executeAgent({prompt, directMessages: [], files, model, currentConversationId: this.activeConversationId});
+        await store.dispatch(AGENT.executeAgent({ prompt, directMessages: [], files, model, conversationId: this.activeConversationId }));
     }
 
     executeAgentWithDirectMessages = async (directMessages) => {
-        this._executeAgent({prompt: null, directMessages, files: [], currentConversationId: this.activeConversationId});
+        await store.dispatch(AGENT.executeAgent({ prompt: null, directMessages, files: [], conversationId: this.activeConversationId }));
     }
     
 
-    _executeAgent = async ({prompt, directMessages, files = [], model = this.selectedModel, currentConversationId}) => {
-        LOGGER.debug('Executing agent with params',{prompt, directMessages, files, currentConversationId});
-        let filesData = [];
-        if (files && files.length > 0) {
-            filesData = await Promise.all(files.map(readFileContent));
-        }
-        let baseUrl = store.getState().application?.openaiUrl;
-        LOGGER.log('baseUrl ---> ',store.getState());
-        const openai = new OpenAI({
-            dangerouslyAllowBrowser: true,
-            apiKey: this.openaiKey,
-            baseURL: baseUrl,
-        });
-        setDefaultOpenAIClient(openai);
-        setOpenAIAPI('responses');
-        LOGGER.log('getCurrentApplicationContext',Context.getCurrentApplicationContext(store));
-        const _agent = this.isUserLoggedIn ? loggedInAgent : loggedOutAgent;
-        this.isLoadingMap[currentConversationId] = true;
-        for (const file of filesData) {
-            if (file.type && file.type.startsWith('image/') && file.content) {
-                // Nothing to do here
-            } else if (file.type === 'application/pdf' && file.content) {
-                try {
-                    const uploadResponse = await openai.files.create({
-                        file: new File([await fetch(file.content).then(r => r.arrayBuffer())], file.name, { type: file.type }),
-                        purpose: 'user_data'
-                    });
-                    if (uploadResponse && uploadResponse.id) {
-                        file._openaiFileId = uploadResponse.id;
-                    }
-                } catch (err) {
-                    LOGGER.error('PDF upload failed', err);
-                }
-            }
-        }
-        // Set initial messages
-        if(prompt){
-            let uiMessage = user(prompt);
-            const messages = [...(this._messages[currentConversationId] || [])];
-            this._messages[currentConversationId] = Message.updateOrAppendMessage(messages, Message.formatMessage(uiMessage,filesData));
-        } else if(directMessages){
-            directMessages.forEach(msg => this._appendMessageIfNotExists(msg, currentConversationId));
-        }
-        let messages = [...this._messages[currentConversationId]];
-        LOGGER.log('##### messages',messages);
-        const runner = new Runner({
-            model: model || 'gpt-5-mini',
-        });
-        try{
-            let context = `
-                Context:
-                    ${await Context.getCurrentGlobalContext(store)}
-                    ${await Context.getCurrentApplicationContext(store)}
-                `;
-            LOGGER.log('context',context);
-            this._chunkBuffer[currentConversationId] = [];
-            this._chunkFlushTimer[currentConversationId] = null;
-            this.streamingAgentService[currentConversationId] = new StreamingAgentService(
-                runner,
-                _agent,
-                messages,
-                {
-                    maxTurns: 25,
-                    context,
-                    onChunk: (chunk) => {
-                        if (chunk.delta !== undefined) {
-                            this._bufferChunk(chunk.delta, currentConversationId);
-                        } else {
-                            this._flushChunkBuffer(currentConversationId);
-                            this._streamingMessage[currentConversationId] = { ...chunk };
-                            this.isLoadingMap[currentConversationId] = false;
-                        }
-                    },
-                    onToolEvent: (rawItem) => {
-                        this._appendMessageIfNotExists(Message.formatMessage(rawItem,[]), currentConversationId);
-                    },
-                    onStreamEnd: (stream) => {
-                        if (this._streamingMessage[currentConversationId]) {
-                            this._appendMessageIfNotExists(this._streamingMessage[currentConversationId], currentConversationId);
-                            this._streamingMessage[currentConversationId] = null;
-                        }
-                        this.handleEndOfStream(stream, currentConversationId);
-                    },
-                    onError: (e) => {
-                        LOGGER.error('Error running agent',e);
-                        this.isLoadingMap[currentConversationId] = false;
-                        this.isStreamingMap[currentConversationId] = false;
-                        this.global_handleError(e);
-                    }
-                }
-            );
-            await this.streamingAgentService[currentConversationId].startStreaming();
-        } catch(e) {
-            LOGGER.error('Error running agent',e);
-            this.isLoadingMap[currentConversationId] = false;
-            this.isStreamingMap[currentConversationId] = false;
-            this.global_handleError(e);
-        }
-    }
-
-    stopAgent = (currentConversationId) => {
-        if (this.streamingAgentService[currentConversationId]) {
-            this.streamingAgentService[currentConversationId].abort();
-            this.streamingAgentService[currentConversationId] = null;
-        }
-        this.isLoadingMap[currentConversationId] = false;
-    };
+    _executeAgent = async () => {}
 
     /** Agents Helpers **/
-
-    processEndOfStream = async (stream, currentConversationId) => {
-        const lastItem = [...stream.newItems].pop();
-        const lastOutputName = lastItem.rawItem?.name;
-        //let storeHistory = true;
-        if(stream.lastAgent.toolUseBehavior?.stopAtToolNames?.includes(lastOutputName)){
-            const outputContent = lastItem.output?.content;
-            if(outputContent && !lastItem.output?.isError){
-                const userMessage = user('');
-                userMessage.content = outputContent;
-                //storeHistory = false;
-                this.executeAgentWithDirectMessages([Message.formatMessage(userMessage,[])]);
-            }else if(lastItem.output?.isError){
-                this.executeAgentWithDirectMessages([], currentConversationId); // Dry run to process the error (if possible)
-            }else{
-                LOGGER.error('No output content',lastItem);
-            }
+    _setIfChanged = (prop, value) => {
+        if (this[prop] !== value) {
+            this[prop] = value;
         }
-        //LOGGER.debug('stream history',JSON.parse(JSON.stringify(this.messages)));
-        LOGGER.debug('stream history',JSON.parse(JSON.stringify(stream.history)));
-    }
-
-    handleEndOfStream = async (stream, currentConversationId) => {
-        await stream.completed;
-        LOGGER.log('###### stream completed ######',stream);
-
-        // Reset the current message
-        this._streamingMessage[currentConversationId] = null;
-        // Reset the streaming state
-        this.isStreamingMap[currentConversationId] = false;
-        // Set the current agent
-        this.currentAgent[currentConversationId] = stream.lastAgent;
-        // Store the stream history on the conversation
-        const idx = this.conversations.findIndex(c => c.id === this.activeConversationId);
-        if (idx !== -1) {
-            this.conversations[idx] = { ...this.conversations[idx], streamHistory: stream.history };
-            this.conversations = [...this.conversations];
-            this.saveConversationsToCache();
-        }
-        // Store the history
-        this.processEndOfStream(stream, currentConversationId);
-        this._shouldFocusPublisher = true;
     }
 
     /** Events **/
 
     handleStopClick = async e => {
-        this.stopAgent(this.activeConversationId);
+        await store.dispatch(AGENT.stopAgent({ id: this.activeConversationId }));
     };
 
     handleClearClick = async e => {
-        this._messages[this.activeConversationId] = [];
+        store.dispatch(AGENT.reduxSlice.actions.clearMessages({ id: this.activeConversationId }));
         this.saveConversationsToCache();
     };
 
@@ -293,7 +161,8 @@ export default class App extends ToolkitElement {
         const value = e.detail.prompt;
         const files = e.detail.files || [];
         const model = e.detail.model || this.selectedModel;
-        this.selectedModel = model;
+        store.dispatch(AGENT.reduxSlice.actions.updateSelectedModel({ model }));
+        await this.saveConversationsToCache();
         if(isEmpty(this.openaiKey)){
             this.error_title = 'Error';
             this.error_message = 'No OpenAI key found';
@@ -318,10 +187,9 @@ export default class App extends ToolkitElement {
     handleRetry = (event) => {
         const { item } = event.detail;
         if (item) {
-            // Remove the failed message from the list
-            this._messages[this.activeConversationId] = this._messages[this.activeConversationId].filter(m => !Message.areMessagesEqual(m, item));
-            // Re-send the message (as a direct message)
-            this.executeAgentWithDirectMessages([item], this.activeConversationId);
+            const list = (store.getState().agent?.messagesById?.[this.activeConversationId] || []).filter(m => !Message.areMessagesEqual(m, item));
+            store.dispatch(AGENT.reduxSlice.actions.setMessages({ id: this.activeConversationId, messages: list }));
+            this.executeAgentWithDirectMessages([item]);
         }
     };
 
@@ -330,12 +198,12 @@ export default class App extends ToolkitElement {
     };
 
     createNewConversation = () => {
+        const convs = store.getState().agent?.conversations || [];
         const newId = 'conv_' + Date.now();
-        const newTitle = `Conversation ${this.conversations.length + 1}`;
+        const newTitle = `Conversation ${convs.length + 1}`;
         const newConv = { id: newId, title: newTitle, streamHistory: [] };
-        this.conversations = [...this.conversations, newConv];
-        this.activeConversationId = newId;
-        this._messages[newId] = [];
+        store.dispatch(AGENT.reduxSlice.actions.addConversation({ conversation: newConv }));
+        store.dispatch(AGENT.reduxSlice.actions.setActiveConversationId({ id: newId }));
         this.isSidePanelOpen = false;
         this.saveConversationsToCache();
     };
@@ -345,17 +213,8 @@ export default class App extends ToolkitElement {
     handleConversationSelect = (event) => {
         const id = event.detail.item.id;
         if (id && id !== this.activeConversationId) {
-            this.activeConversationId = id;
-            const conv = this.currentConversation;
-            if (conv) {
-                if (conv.messages && conv.messages.length > 0) {
-                    this._messages[this.activeConversationId] = conv.messages;
-                } else if (conv.streamHistory && Array.isArray(conv.streamHistory) && conv.streamHistory.length > 0) {
-                    this._messages[this.activeConversationId] = Message.formatStreamHistory(conv.streamHistory);
-                } else {
-                    this._messages[this.activeConversationId] = [];
-                }
-            }
+            store.dispatch(AGENT.reduxSlice.actions.setActiveConversationId({ id }));
+            this.saveConversationsToCache();
         }
         this.isSidePanelOpen = false;
     };
@@ -394,10 +253,8 @@ export default class App extends ToolkitElement {
     };
 
     saveConversationTitle = () => {
-        const idx = this.conversations.findIndex(c => c.id === this.activeConversationId);
-        if (idx !== -1 && this.pendingTitle.trim()) {
-            this.conversations[idx] = { ...this.conversations[idx], title: this.pendingTitle.trim() };
-            this.conversations = [...this.conversations];
+        if (this.pendingTitle.trim()) {
+            store.dispatch(AGENT.reduxSlice.actions.updateConversationTitle({ id: this.activeConversationId, title: this.pendingTitle.trim() }));
             this.saveConversationsToCache();
         }
         this.isEditingTitle = false;
@@ -408,25 +265,18 @@ export default class App extends ToolkitElement {
     };
 
     deleteConversation = (id) => {
-        let idx = this.conversations.findIndex(c => c.id === id);
-        if (idx !== -1) {
-            this.conversations.splice(idx, 1);
-            if (this.conversations.length === 0) {
-                // If all deleted, create a new one
-                this.createNewConversation();
-            } else {
-                // Switch to the first conversation
-                this.activeConversationId = this.conversations[0].id;
-                this._messages[this.activeConversationId] = this.conversations[0].messages || [];
+        const wasActive = this.activeConversationId === id;
+        store.dispatch(AGENT.reduxSlice.actions.deleteConversation({ id }));
+        const convs = store.getState().agent?.conversations || [];
+        if (convs.length === 0) {
+            this.createNewConversation();
+        } else if (wasActive) {
+            const newActiveId = convs[0]?.id;
+            if (newActiveId) {
+                store.dispatch(AGENT.reduxSlice.actions.setActiveConversationId({ id: newActiveId }));
             }
-            this.conversations = [...this.conversations];
-            this.saveConversationsToCache();
         }
-    }
-
-    // Helper: append message only if not already present (by key)
-    _appendMessageIfNotExists = (newMsg, currentConversationId) => {
-        this._messages[currentConversationId] = Message.appendMessageIfNotExists(this._messages[currentConversationId], newMsg);
+        this.saveConversationsToCache();
     }
 
     /** Getters **/
@@ -443,13 +293,9 @@ export default class App extends ToolkitElement {
         return isNotUndefinedOrNull(store.getState()?.application?.connector);
     }
 
-    get displayedMessages() {
-        return (this._messages[this.activeConversationId] || []).filter(x => x.type !== 'reasoning'); // We don't want to display the reasoning. TODO: Improve this
-    }
+    
 
-    get streamingMessage() {
-        return this._streamingMessage[this.activeConversationId] || null;
-    }
+    
 
     get conversationTree() {
         return this.conversations.map(conv => {
@@ -483,13 +329,7 @@ export default class App extends ToolkitElement {
         .toString();
     }
 
-    get isLoading() {
-        return this.isLoadingMap[this.activeConversationId] || false;
-    }
-
-    get isStreaming() {
-        return this.isStreamingMap[this.activeConversationId] || false;
-    }
+    
 
 
 
@@ -500,47 +340,4 @@ export default class App extends ToolkitElement {
         return { keywords, searchText };
     }
 
-    /** Buffer Chunk **/
-    
-
-
-    _bufferChunk(delta, currentConversationId) {
-        if (!this._chunkBuffer[currentConversationId]) {
-            this._chunkBuffer[currentConversationId] = [];
-        }
-        this._chunkBuffer[currentConversationId].push(delta);
-        // Flush immediately if buffer reaches 5 chunks
-        if (this._chunkBuffer[currentConversationId].length >= 5) {
-            this._flushChunkBuffer(currentConversationId);
-            return;
-        }
-        // Start or reset the timer for this conversation
-        if (!this._chunkFlushTimer[currentConversationId]) {
-            this._chunkFlushTimer[currentConversationId] = setTimeout(() => {
-                this._flushChunkBuffer(currentConversationId);
-            }, this._CHUNK_FLUSH_INTERVAL);
-        }
-    }
-
-    _flushChunkBuffer(currentConversationId) {
-        const buffer = this._chunkBuffer[currentConversationId] || [];
-        if (buffer.length > 0) {
-            if (!this._streamingMessage[currentConversationId]) {
-                this._streamingMessage[currentConversationId] = {
-                    id: guid(),
-                    content: ''
-                };
-            }
-            const combined = buffer.join('');
-            this._streamingMessage[currentConversationId] = {
-                ...this._streamingMessage[currentConversationId],
-                content: (this._streamingMessage[currentConversationId]?.content || '') + combined
-            };
-            this._chunkBuffer[currentConversationId] = [];
-        }
-        if (this._chunkFlushTimer[currentConversationId]) {
-            clearTimeout(this._chunkFlushTimer[currentConversationId]);
-            this._chunkFlushTimer[currentConversationId] = null;
-        }
-    }
 }

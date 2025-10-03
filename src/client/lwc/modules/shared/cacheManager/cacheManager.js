@@ -157,6 +157,13 @@ export class CONFIG_OBJECT {
     }
 }
 
+// NOTE: Chrome extension dependency
+// The Chrome extension page `src/client_chrome/scripts/link-action.js` filters
+// incoming settings against the keys defined in CACHE_CONFIG (mirrored as a
+// whitelist). If you add, remove, or rename keys here, update the
+// `ALLOWED_SETTING_KEYS` set in that file to keep the extension in sync.
+// Alternatively, consider centralizing the whitelist generation if shared
+// bundling becomes feasible.
 export const CACHE_CONFIG = {
     CONFIG_POPUP: new CONFIG_OBJECT('openAsPopup', false),
     CACHE_ISCACHED_PROFILES: new CONFIG_OBJECT('cache_isProfilesCache', false),
@@ -191,6 +198,14 @@ export const CACHE_CONFIG = {
     // Applications Settings are stored in the general store
     API_SPLITTER_IS_HORIZONTAL: new CONFIG_OBJECT('api_splitter_is_horizontal', false),
     EINSTEIN_AGENT_CONVERSATIONS: new CONFIG_OBJECT('einstein_agent_conversations', []),
+    EINSTEIN_AGENT_CONVERSATION_ACTIVE_ID: new CONFIG_OBJECT('einstein_agent_conversation_active_id', null),
+    EINSTEIN_AGENT_CONVERSATION_MODEL: new CONFIG_OBJECT('einstein_agent_conversation_model', null),
+    // Input Quick Pick
+    INPUT_QUICKPICK_DATA: new CONFIG_OBJECT('input_quickpick_data', null),
+    INPUT_QUICKPICK_ENABLED: new CONFIG_OBJECT('input_quickpick_enabled', false),
+    INPUT_QUICKPICK_SELECTED_CATEGORY: new CONFIG_OBJECT('input_quickpick_selected_category', 'ALL'),
+    INPUT_QUICKPICK_RECENTS: new CONFIG_OBJECT('input_quickpick_recents', []),
+    //  TODO: Add Global CLIENT_ID and API_VERSION to the CACHE_CONFIG
 };
 
 export const CACHE_SESSION_CONFIG = {
@@ -223,6 +238,10 @@ export const CACHE_DOCUMENTS = {
 // Backward compatibility functions
 export async function loadExtensionConfigFromCache(keys) {
     return cacheManager.loadConfig(keys);
+}
+
+export async function loadSingleExtensionConfigFromCache(key) {
+    return (await cacheManager.loadConfig([key]))[key];
 }
 
 export async function saveExtensionConfigToCache(config) {

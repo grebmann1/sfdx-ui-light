@@ -1,0 +1,117 @@
+<template>
+    <div class={pageClass}>
+        <builder-editor is-left-panel-toggled={isLeftToggled}>
+            <!-- Header -->
+            <builder-header
+                slot="header"
+                title="Tools"
+                sub-title="Smart Input"
+                icon-name="standard:textarea">
+                <div slot="actions" class="slds-builder-toolbar__actions">
+                    <lightning-button-icon-stateful
+                        selected={isLeftToggled}
+                        variant="border-filled"
+                        icon-name="utility:knowledge_base"
+                        size="large"
+                        onclick={handleLeftToggle}
+                    ></lightning-button-icon-stateful>
+                    <!-- <lightning-button-icon-stateful
+                        selected={showFavoritesOnly}
+                        variant="border-filled"
+                        icon-name="utility:favorite"
+                        size="large"
+                        onclick={handleFavoritesToggle}
+                        alternative-text="Favorites only"
+                        title="Favorites only"
+                        class="slds-m-left_x-small"
+                    ></lightning-button-icon-stateful> -->
+                </div>
+                <div slot="meta" class="slds-flex-row slds-align-flex-end">
+                    <p>Group your inputs and use them directly in any Salesforce Input.</p>
+                </div>
+                <div slot="subactions" class="slds-builder-toolbar__actions">
+                    
+                </div>
+            </builder-header>
+
+            <!-- Left Panel -->
+            <!-- Category Side Panel -->
+            <div slot="left" class="slds-full-height slds-flex-column">
+                <div class="side-panel-header slds-p-around_small slds-border_bottom side-panel-header-custom">
+                    <h2 class="slds-panel__header-title slds-text-heading_small slds-truncate">Categories</h2>
+                    <div class="slds-panel__header-actions">
+                        <lightning-button-icon icon-name="utility:add" onclick={createNewCategory} title="New category" aria-label="New category"></lightning-button-icon>
+                    </div>
+                </div>
+
+                <div class="slds-scrollable_y" style="max-height: 60vh; min-height: 120px;">
+                    <slds-file-tree
+                        tree={formattedCategoryTree}
+                        selected-id={activeCategoryId}
+                        onselect={handleCategorySelect}
+                        ondeletefile={handleDeleteItem}
+                        search-fields={categorySearchFields}
+                        min-search-length={minSearchLengthForCategories}
+                        hide-search-input={hideSearchInputForCategories}
+                        include-folders-in-results={includeFoldersInResultsForCategories}
+                        is-folder-selectable
+                    ></slds-file-tree>
+                </div>
+            </div>  
+            <!-- Body -->
+            <article class="full-page-body slds-card">
+                <!-- Main Content -->
+                <div class="slds-full-height slds-is-relative slds-flex-row">
+                    <div class="slds-full-height slds-is-relative slds-flex-column slds-full-width">
+                        <section class="slds-fill-height slds-flex-column slds-p-around_small">
+                            <template lwc:if={activeCategory}>
+                                <div class="slds-m-vertical_small slds-grid slds-grid_align-spread slds-grid_align-end">
+                                    <div class="slds-size_1-of-1 slds-large-size_1-of-3">
+                                        <slds-field label="Category name" onchange={categoryName_onChange} is-read-only={activeCategory._isReadOnly}>
+                                            <input slot="input" class="slds-input" type="text" value={activeCategory.name} onchange={categoryName_disableEvent} />
+                                            <div slot="output">{activeCategory.name}</div>
+                                        </slds-field>
+                                    </div>
+                                </div>
+                            <template lwc:if={hasDisplayedInputs}>
+                                <div class="slds-scrollable_y slds-p-bottom_small slds-fill-height slds-flex-column">
+                                    <template for:each={displayedInputs} for:item="it">
+                                        <smartinput-item key={it.id}
+                                            item={it}
+                                            editing-value={editingValue}
+                                            oneditclick={handleItemEditClick}
+                                            ondeleteclick={handleItemDeleteClick}
+                                            oneditchange={handleInlineEditChange}
+                                            oneditsave={handleInlineEditSave}
+                                            oneditcancel={handleInlineEditCancel}
+                                            onfavoritechange={handleItemFavoriteChange}
+                                        ></smartinput-item>
+                                    </template>
+                                </div>
+                            </template>
+            
+                            </template>
+                            <template lwc:else>
+                                <illustration-empty
+                                title="No category"
+                                sub-title="Create a category to get started."></illustration-empty>
+                            </template>
+                        </section>
+                        <template lwc:if={activeCategory}>
+                            <div class="slds-grid slds-wrap slds-grid_align-center">
+                                <smartinput-composer class="slds-size_1-of-1 slds-large-size_2-of-3"
+                                    is-enhance-enabled={isEnhanceEnabled}
+                                    value={inputValue}
+                                    onreset={handleReset}
+                                    oncreateitems={handleCreateItems}
+                                ></smartinput-composer>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </article>
+        </builder-editor>
+    </div>
+</template>
+
+

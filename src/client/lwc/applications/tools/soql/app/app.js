@@ -34,6 +34,7 @@ import { CATEGORY_STORAGE } from 'builder/storagePanel';
 import moment from 'moment';
 import { escapeCsvValue, formatQueryWithComment } from './util.js';
 import LOGGER from 'shared/logger';
+import Analytics from 'shared/analytics';
 
 export default class App extends ToolkitElement {
     // used to controle store of childs
@@ -74,6 +75,7 @@ export default class App extends ToolkitElement {
     querySet = new Set();
 
     connectedCallback() {
+        Analytics.trackAppOpen('soql', { alias: this.alias });
         store.dispatch(
             DESCRIBE.describeSObjects({
                 connector: this.connector.conn,
@@ -258,10 +260,7 @@ export default class App extends ToolkitElement {
 
     handleLeftToggle = e => {
         store.dispatch(
-            UI.reduxSlice.actions.updateLeftPanel({
-                value: !this.isLeftToggled,
-                alias: this.alias,
-            })
+            UI.reduxSlice.actions.toggleLeftPanel()
         );
     };
 

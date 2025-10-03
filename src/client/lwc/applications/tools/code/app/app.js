@@ -1,6 +1,7 @@
 import { track } from 'lwc';
 import { decodeError, isNotUndefinedOrNull } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
+import Analytics from 'shared/analytics';
 
 export default class App extends ToolkitElement {
     isLoading = false;
@@ -11,6 +12,7 @@ export default class App extends ToolkitElement {
     initMetadataLoaded = false;
 
     connectedCallback() {
+        Analytics.trackAppOpen('code', { alias: this.alias });
         //getConfig
         this.loadPathFromConfig();
     }

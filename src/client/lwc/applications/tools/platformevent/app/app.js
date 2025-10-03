@@ -16,6 +16,7 @@ import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
 import EditorModal from 'platformevent/editorModal';
 import LightningConfirm from 'lightning/confirm';
+import Analytics from 'shared/analytics';
 
 import lib from 'cometd';
 import moment from 'moment';
@@ -101,6 +102,7 @@ export default class App extends ToolkitElement {
     }
 
     connectedCallback() {
+        Analytics.trackAppOpen('platformevent', { alias: this.alias });
         //this.loadCache();
         this.describeAll();
     }

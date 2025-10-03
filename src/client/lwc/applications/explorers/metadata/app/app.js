@@ -4,9 +4,11 @@ import {
     classSet,
     isUndefinedOrNull,
     isNotUndefinedOrNull,
+    METADATA as METADATA_UTILS,
 } from 'shared/utils';
 import { CurrentPageReference, NavigationContext, navigate } from 'lwr/navigation';
 import { store, connectStore, METADATA } from 'core/store';
+import Analytics from 'shared/analytics';
 
 const METADATA_EXCLUDE_LIST = ['Flow', 'FlowDefinition'];
 
@@ -134,6 +136,7 @@ export default class App extends ToolkitElement {
     };
 
     connectedCallback() {
+        Analytics.trackAppOpen('metadata', { alias: this.alias });
         // Get the singleton instance of the worker
         /*const metadataWorker = getMetadataWorker(this.connector.conn);
             metadataWorker.onmessage = this.handleWorkerMessage.bind(this);

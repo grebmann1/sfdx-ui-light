@@ -1,7 +1,5 @@
 import { z } from 'zod';
 import { store, API, DOCUMENT, SELECTORS } from 'core/store';
-import { generateDefaultTab } from 'api/utils';
-import LOGGER from 'shared/logger';
 import { waitForLoaded, wrappedNavigate, formatTabId } from './utils/utils.js';
 
 const { tool } = window.OpenAIAgentsBundle.Agents;

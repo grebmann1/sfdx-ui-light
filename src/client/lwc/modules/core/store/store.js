@@ -1,21 +1,24 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { APEX } from 'anonymousApex/store';
-import { API } from 'api/store';
-import { EINSTEIN } from 'assistant/store';
-import { METADATA } from 'metadata/store';
-import { PACKAGE } from 'package/store';
-import { EVENT } from 'platformevent/store';
-import { RECORDVIEWER } from 'recordviewer/store';
+import { 
+    APEX,
+    API,
+    EINSTEIN,
+    AGENT,
+    METADATA,
+    PACKAGE,
+    EVENT,
+    RECORDVIEWER,
+    SOBJECTEXPLORER,
+    SOBJECT,
+    DESCRIBE,
+    DOCUMENT,
+    ERROR,
+    UI,
+    QUERY,
+    APPLICATION,
+    SMARTINPUT,
+} from './modules/index';
 import logger from 'shared/middleware';
-import { UI, QUERY } from 'soql/store';
-import { SOBJECTEXPLORER } from 'object/store';
-import { createSlice } from '@reduxjs/toolkit';
-
-import * as APPLICATION from './application';
-import * as DESCRIBE from './describe';
-import * as DOCUMENT from './document';
-import * as SOBJECT from './sobject';
-import * as ERROR from './errors';
 
 
 const store = configureStore({
@@ -32,6 +35,7 @@ const store = configureStore({
         platformEvent: EVENT.reduxSlice.reducer,
         api: API.reduxSlice.reducer,
         einstein: EINSTEIN.reduxSlice.reducer,
+        agent: AGENT.reduxSlice.reducer,
         queryFiles: DOCUMENT.reduxSlices.QUERYFILE.reducer,
         apexFiles: DOCUMENT.reduxSlices.APEXFILE.reducer,
         apiFiles: DOCUMENT.reduxSlices.APIFILE.reducer,
@@ -39,6 +43,7 @@ const store = configureStore({
         recents: DOCUMENT.reduxSlices.RECENT.reducer,
         errors: ERROR.reduxSlice.reducer,
         sobjectExplorer: SOBJECTEXPLORER.reduxSlice.reducer,
+        smartInput: SMARTINPUT.reduxSlice.reducer,
     },
     middleware: getDefaultMiddleware => {
         let middlewares = getDefaultMiddleware({
@@ -99,8 +104,10 @@ export {
     SOBJECT,
     DESCRIBE,
     EINSTEIN,
+    AGENT,
     ERROR,
     SOBJECTEXPLORER,
+    SMARTINPUT
 };
 export { connectStore } from './wire-adapter';
 
@@ -118,5 +125,7 @@ export const SELECTORS = {
     apexFiles: DOCUMENT.apexFileAdapter.getSelectors(state => state.apexFiles),
     apiFiles: DOCUMENT.apiFileAdapter.getSelectors(state => state.apiFiles),
     openapiSchemaFiles: DOCUMENT.openapiSchemaFileAdapter.getSelectors(state => state.openapiSchemaFiles),
+    agent: state => state.agent,
+    smartInput: state => state.smartInput,
     //errors: ERROR.errorAdapter.getSelectors(state => state.errors),
 };

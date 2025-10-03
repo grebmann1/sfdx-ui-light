@@ -9,6 +9,7 @@ const APPLICATIONS = {
     DOCUMENTATION: 'documentation',
     ASSISTANT: 'assistant',
     AGENT: 'agent',
+    SMARTINPUT: 'smartinput',
 };
 
 export default class Default extends LightningElement {
@@ -66,6 +67,10 @@ export default class Default extends LightningElement {
         return this.currentApplication == APPLICATIONS.AGENT;
     }
 
+    get isSmartInput() {
+        return this.currentApplication == APPLICATIONS.SMARTINPUT;
+    }
+
     get isAssistantDisplayed() {
         return true; //isNotUndefinedOrNull(this.openaiAssistantId) && isNotUndefinedOrNull(this.openaiKey);
     }
@@ -86,9 +91,6 @@ export default class Default extends LightningElement {
     stateChange({ application }) {
         if(application?.openaiKey){
             this.isAgentDisplayed = !isEmpty(application.openaiKey);
-            if(isUndefinedOrNull(this._currentApplication)){
-                //this.currentApplication = APPLICATIONS.AGENT;
-            }
         }
     }
 
@@ -96,19 +98,48 @@ export default class Default extends LightningElement {
     /** Events **/
 
     einsteinClick = () => {
-        this.currentApplication = APPLICATIONS.ASSISTANT;
+        legacyStore.dispatch(store_application.fakeNavigate({
+            type: 'application',
+            state: {
+                applicationName: APPLICATIONS.ASSISTANT,
+            },
+        }));
     };
 
     openConnectionClick = () => {
-        this.currentApplication = APPLICATIONS.CONNECTION;
+        legacyStore.dispatch(store_application.fakeNavigate({
+            type: 'application',
+            state: {
+                applicationName: APPLICATIONS.CONNECTION,
+            },
+        }));
     };
 
     documentationClick = e => {
-        this.currentApplication = APPLICATIONS.DOCUMENTATION;
+        legacyStore.dispatch(store_application.fakeNavigate({
+            type: 'application',
+            state: {
+                applicationName: APPLICATIONS.DOCUMENTATION,
+            },
+        }));
     };
 
     openAgentClick = () => {
-        this.currentApplication = APPLICATIONS.AGENT;
+        legacyStore.dispatch(store_application.fakeNavigate({
+            type: 'application',
+            state: {
+                applicationName: APPLICATIONS.AGENT,
+            },
+        }));
+    };
+
+    openSmartInputClick = () => {
+        legacyStore.dispatch(store_application.fakeNavigate({
+            type: 'application',
+            state: {
+                applicationName: APPLICATIONS.SMARTINPUT,
+            },
+        }));
     };
 
     openToolkitClick = () => {
@@ -152,12 +183,7 @@ export default class Default extends LightningElement {
         //('documentation - loadFromNavigation');
         const { applicationName, attribute1 } = state;
         //console.log('applicationName',applicationName);
-        if (applicationName == 'documentation') {
-            this.currentApplication = APPLICATIONS.DOCUMENTATION;
-        } else if (applicationName == 'home') {
-            LOGGER.log('home - loadFromNavigation',this.currentApplication,t);
-            this.currentApplication = APPLICATIONS.CONNECTION;
-        }
+        this.currentApplication = applicationName;
     };
 
     handleSearchConnection = value => {
@@ -178,4 +204,8 @@ export default class Default extends LightningElement {
             this.refs.connection.fetchAllConnections();
         }
     };
+
+    get applications() {
+        return APPLICATIONS;
+    }
 }

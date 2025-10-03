@@ -10,21 +10,13 @@ import {
     classSet,
     normalizeString as normalize,
     prettifyXml,
-    autoDetectAndFormat
+    autoDetectAndFormat,
+    API as API_UTILS
 } from 'shared/utils';
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
 import { connectStore, store, API, DOCUMENT, SELECTORS } from 'core/store';
 import { CATEGORY_STORAGE } from 'builder/storagePanel';
-import {
-    DEFAULT,
-    VIEWERS,
-    METHOD,
-    TABS,
-    generateDefaultTab,
-    formattedContentType,
-    formatApiRequest
-} from 'api/utils';
 import SaveModal from 'builder/saveModal';
 import moment from 'moment';
 import LightningConfirm from 'lightning/confirm';
@@ -150,7 +142,7 @@ export default class App extends ToolkitElement {
     @track executedFormattedRequest;
 
     // Viewer
-    viewer_value = VIEWERS.PRETTY;
+    viewer_value = API_UTILS.VIEWERS.PRETTY;
     
 
     // Tabs
@@ -158,9 +150,9 @@ export default class App extends ToolkitElement {
     currentTab;
 
     // Viewer Tab
-    tab_current = TABS.BODY;
+    tab_current = API_UTILS.TABS.BODY;
     // request tab
-    request_tab_current = TABS.BODY;
+    request_tab_current = API_UTILS.TABS.BODY;
 
     // Interval
     _loadingInterval;
@@ -371,7 +363,7 @@ export default class App extends ToolkitElement {
     /** Methods  **/
 
     formatRequest = () => {
-        const {request,error} = formatApiRequest({
+        const {request,error} = API_UTILS.formatApiRequest({
             endpoint: this.endpoint,
             method: this.method,
             body: this.body,
@@ -514,7 +506,7 @@ export default class App extends ToolkitElement {
         const iframeDocument = iframe.contentWindow.document;
 
         // Check if the content type is an image (e.g., PNG or JPG)
-        if (['png', 'jpeg', 'jpg'].includes(formattedContentType(this.contentType))) {
+        if (['png', 'jpeg', 'jpg'].includes(API_UTILS.formattedContentType(this.contentType))) {
         } else {
             // If it's not an image, inject the content as HTML
             iframeDocument.open();
@@ -544,7 +536,7 @@ export default class App extends ToolkitElement {
         this.refs.responseEditor.currentModel.setValue(this.formattedContent);
         this.refs.responseEditor.currentMonaco.editor.setModelLanguage(
             this.refs.responseEditor.currentModel,
-            formattedContentType(this.contentType)
+            API_UTILS.formattedContentType(this.contentType)
         );
     };
 
@@ -598,7 +590,7 @@ export default class App extends ToolkitElement {
         //this.isLoading = false;
         this.responseModel = this.refs.responseEditor.createModel({
             body: this.formattedContent,
-            language: formattedContentType(this.contentType),
+            language: API_UTILS.formattedContentType(this.contentType),
         });
         this.refs.responseEditor.displayModel(this.responseModel);
     };
@@ -722,8 +714,8 @@ export default class App extends ToolkitElement {
     handle_customLinkClick = e => {
         // Assuming it's always GET method
         this.endpoint = e.detail.url;
-        this.method = METHOD.GET;
-        this.body = DEFAULT.BODY; // Reset Body
+        this.method = API_UTILS.METHOD.GET;
+        this.body = API_UTILS.DEFAULT.BODY; // Reset Body
         //this.header = DEFAULT.HEADER;
 
         //this.updateRequestStates(e);
@@ -745,7 +737,7 @@ export default class App extends ToolkitElement {
             const url = URL.createObjectURL(blob);
             const download = document.createElement('a');
             download.href = window.URL.createObjectURL(blob);
-            download.download = `${Date.now()}.${formattedContentType(this.contentType)}`;
+            download.download = `${Date.now()}.${API_UTILS.formattedContentType(this.contentType)}`;
             download.click();
             URL.revokeObjectURL(url);
         } catch (e) {
@@ -865,7 +857,7 @@ export default class App extends ToolkitElement {
                 } else {
                     // Create a new tab (variables are set globally)
                     const tab = {
-                        ...generateDefaultTab(this.currentApiVersion,tabId),
+                        ...API_UTILS.generateDefaultTab(this.currentApiVersion,tabId),
                         method,
                         endpoint,
                         body: sampleBody,
@@ -981,7 +973,7 @@ export default class App extends ToolkitElement {
     /** Tabs */
 
     handleAddTab = e => {
-        const tab = generateDefaultTab(this.currentApiVersion);
+        const tab = API_UTILS.generateDefaultTab(this.currentApiVersion);
         store.dispatch(API.reduxSlice.actions.addTab({ tab }));
     };
 
@@ -1063,7 +1055,7 @@ export default class App extends ToolkitElement {
                 // Existing tab
                 store.dispatch(API.reduxSlice.actions.selectionTab(existingTab));
             } else {
-                const tab = generateDefaultTab(this.currentApiVersion);
+                const tab = API_UTILS.generateDefaultTab(this.currentApiVersion);
                 tab.body = extra.body;
                 tab.header = extra.header;
                 tab.method = extra.method;
@@ -1073,7 +1065,7 @@ export default class App extends ToolkitElement {
             }
         } else if (category === CATEGORY_STORAGE.RECENT) {
             // Open in new tab
-            const tab = generateDefaultTab(this.currentApiVersion);
+            const tab = API_UTILS.generateDefaultTab(this.currentApiVersion);
             tab.body = extra.body;
             tab.header = extra.header;
             tab.method = extra.method;
@@ -1162,8 +1154,8 @@ export default class App extends ToolkitElement {
 
     get isBodyDisabled() {
         return (
-            this.method == METHOD.GET ||
-            this.method == METHOD.DELETE ||
+            this.method == API_UTILS.METHOD.GET ||
+            this.method == API_UTILS.METHOD.DELETE ||
             this.isLoading ||
             this.isApiRunning
         );
@@ -1174,31 +1166,31 @@ export default class App extends ToolkitElement {
     }
 
     get isBodyDisplayed() {
-        return this.tab_normalizedCurrent === TABS.BODY;
+        return this.tab_normalizedCurrent === API_UTILS.TABS.BODY;
     }
 
     get isHeadersDisplayed() {
-        return this.tab_normalizedCurrent === TABS.HEADERS;
+        return this.tab_normalizedCurrent === API_UTILS.TABS.HEADERS;
     }
 
     get isDetailsDisplayed() {
-        return this.tab_normalizedCurrent === TABS.DETAILS;
+        return this.tab_normalizedCurrent === API_UTILS.TABS.DETAILS;
     }
 
     get isRequestBodyDisplayed() {
-        return this.request_normalizedCurrent === TABS.BODY;
+        return this.request_normalizedCurrent === API_UTILS.TABS.BODY;
     }
 
     get isRequestHeadersDisplayed() {
-        return this.request_normalizedCurrent === TABS.HEADERS;
+        return this.request_normalizedCurrent === API_UTILS.TABS.HEADERS;
     }
 
     get isRequestVariablesDisplayed() {
-        return this.request_normalizedCurrent === TABS.VARIABLES;
+        return this.request_normalizedCurrent === API_UTILS.TABS.VARIABLES;
     }
 
     get method_options() {
-        return Object.keys(METHOD).map(x => ({ label: x, value: x }));
+        return Object.keys(API_UTILS.METHOD).map(x => ({ label: x, value: x }));
     }
 
     get isExecuteApiDisabled() {
@@ -1223,7 +1215,7 @@ export default class App extends ToolkitElement {
     }
 
     get formattedContentType() {
-        return formattedContentType(this.contentType);
+        return API_UTILS.formattedContentType(this.contentType);
     }
 
     get pageClass() {
@@ -1232,7 +1224,7 @@ export default class App extends ToolkitElement {
 
     get prettyContainerClass() {
         return classSet('slds-full-height slds-scrollable_y')
-            .add({ 'slds-hide': !(this.viewer_value === VIEWERS.PRETTY) })
+            .add({ 'slds-hide': !(this.viewer_value === API_UTILS.VIEWERS.PRETTY) })
             .toString();
     }
 
@@ -1244,13 +1236,13 @@ export default class App extends ToolkitElement {
 
     get rawContainerClass() {
         return classSet('slds-full-height slds-scrollable_y')
-            .add({ 'slds-hide': !(this.viewer_value === VIEWERS.RAW) })
+            .add({ 'slds-hide': !(this.viewer_value === API_UTILS.VIEWERS.RAW) })
             .toString();
     }
 
     get previewContainerClass() {
         return classSet('slds-full-height slds-scrollable_y')
-            .add({ 'slds-hide': !(this.viewer_value === VIEWERS.PREVIEW) })
+            .add({ 'slds-hide': !(this.viewer_value === API_UTILS.VIEWERS.PREVIEW) })
             .toString();
     }
 
@@ -1259,21 +1251,21 @@ export default class App extends ToolkitElement {
     }
 
     get viewer_options() {
-        return Object.values(VIEWERS).map(x => ({ value: x, label: x }));
+        return Object.values(API_UTILS.VIEWERS).map(x => ({ value: x, label: x }));
     }
 
     get tab_normalizedCurrent() {
         return normalize(this.tab_current, {
-            fallbackValue: TABS.BODY,
-            validValues: [TABS.BODY, TABS.HEADERS, TABS.DETAILS],
+            fallbackValue: API_UTILS.TABS.BODY,
+            validValues: [API_UTILS.TABS.BODY, API_UTILS.TABS.HEADERS, API_UTILS.TABS.DETAILS],
             toLowerCase: false,
         });
     }
 
     get request_normalizedCurrent() {
         return normalize(this.request_tab_current, {
-            fallbackValue: TABS.BODY,
-            validValues: [TABS.BODY, TABS.HEADERS, TABS.VARIABLES],
+            fallbackValue: API_UTILS.TABS.BODY,
+            validValues: [API_UTILS.TABS.BODY, API_UTILS.TABS.HEADERS, API_UTILS.TABS.VARIABLES],
             toLowerCase: false,
         });
     }
@@ -1287,7 +1279,7 @@ export default class App extends ToolkitElement {
     get PAGE_CONFIG() {
         return {
             TABS: {
-                ...TABS
+                ...API_UTILS.TABS
             },
         };
     }

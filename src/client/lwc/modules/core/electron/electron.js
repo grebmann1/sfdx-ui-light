@@ -1,10 +1,9 @@
-import { LightningElement, wire, api } from 'lwc';
+import { wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { guid,isNotUndefinedOrNull,isUndefinedOrNull } from 'shared/utils';
+import { guid,isNotUndefinedOrNull, API as API_UTILS } from 'shared/utils';
 import { store, API, APPLICATION, UI, QUERY, DOCUMENT,SELECTORS, APEX } from 'core/store';
 import { store as legacyStore, store_application as legacyStore_application } from 'shared/store';
-import { NavigationContext, CurrentPageReference, navigate } from 'lwr/navigation';
-import { formatApiRequest,generateDefaultTab,DEFAULT as API_DEFAULT } from 'api/utils';
+import { NavigationContext, navigate } from 'lwr/navigation';
 import LOGGER from 'shared/logger';
 
 export default class Electron extends ToolkitElement {
@@ -271,9 +270,9 @@ export default class Electron extends ToolkitElement {
                 // Navigate to the api application
                 navigate(this.navContext, { type: 'application', state: { applicationName: 'api' } });
 
-                const headers = Object.keys((payload.headers || {})).map(key => `${key}: ${payload.headers[key]}`).join('\n') || API_DEFAULT.HEADER;
+                const headers = Object.keys((payload.headers || {})).map(key => `${key}: ${payload.headers[key]}`).join('\n') || API_UTILS.DEFAULT.HEADER;
 
-                const {request,error} = formatApiRequest({
+                const {request,error} = API_UTILS.formatApiRequest({
                     endpoint: payload.endpoint,
                     method: payload.method,
                     body: payload.body,
@@ -288,7 +287,7 @@ export default class Electron extends ToolkitElement {
                 
                 // Update the tab
                 if (isNewTab) {
-                    const tab = generateDefaultTab(this.currentApiVersion,tabId);
+                    const tab = API_UTILS.generateDefaultTab(this.currentApiVersion,tabId);
                     tab.body = request.body;
                     tab.header = headers;
                     tab.method = request.method;

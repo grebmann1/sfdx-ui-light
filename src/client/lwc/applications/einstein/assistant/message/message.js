@@ -1,9 +1,8 @@
-import { LightningElement, api, track } from 'lwc';
+import {  api, track } from 'lwc';
 import Toast from 'lightning/toast';
-import { isUndefinedOrNull, timeout, classSet, lowerCaseKey, ROLES } from 'shared/utils';
+import { classSet, lowerCaseKey, ROLES, ASSISTANT as ASSISTANT_UTILS } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
-import { store, APPLICATION, SELECTORS, EINSTEIN } from 'core/store';
-import { GLOBAL_EINSTEIN } from 'assistant/utils';
+import { store, SELECTORS, EINSTEIN } from 'core/store';
 
 export default class Message extends ToolkitElement {
     @api item;
@@ -38,7 +37,7 @@ export default class Message extends ToolkitElement {
             store.dispatch(
                 EINSTEIN.reduxSlice.actions.updateMessage({
                     dialogId: this.dialogId,
-                    alias: GLOBAL_EINSTEIN,
+                    alias: ASSISTANT_UTILS.GLOBAL_EINSTEIN,
                     data,
                 })
             );

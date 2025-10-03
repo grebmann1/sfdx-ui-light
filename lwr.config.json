@@ -18,6 +18,10 @@
             {
                 "name": "imported/openapi-parser",
                 "path": "$rootDir/src/client/assets/libs/openapi-parser/openapi-parser.esm.min.js"
+            },
+            {
+                "name": "feature-input-quick-pick",
+                "path": "$rootDir/src/client_chrome/components/feature/inputQuickPick/inputQuickPick.js"
             }
         ]
     },

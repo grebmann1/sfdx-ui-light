@@ -32,13 +32,13 @@ export default class Editor extends LightningElement {
     /** Methods */
 
     enableShortcuts = () => {
-        hotkeysManager.subscribe('ctrl+s,command+s', this.executeActionSave);
-        hotkeysManager.subscribe('ctrl+enter,command+enter', this.executeActionMethod);
+        hotkeysManager.subscribe('ctrl+s, command+s', this.executeActionSave);
+        hotkeysManager.subscribe('ctrl+enter, command+enter', this.executeActionMethod);
     };
 
     disableShortcuts = () => {
-        hotkeysManager.unsubscribe('ctrl+s,command+s', this.executeActionSave);
-        hotkeysManager.unsubscribe('ctrl+enter,command+enter', this.executeActionMethod);
+        hotkeysManager.unsubscribe('ctrl+s, command+s', this.executeActionSave);
+        hotkeysManager.unsubscribe('ctrl+enter, command+enter', this.executeActionMethod);
     };
 
     executeActionSave = e => {

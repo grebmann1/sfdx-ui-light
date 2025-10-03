@@ -1,10 +1,11 @@
 import { handleChromeInteraction } from './chromeApi.js';
+import { CACHE_CONFIG, saveSingleExtensionConfigToCache, loadSingleExtensionConfigFromCache } from 'shared/cacheManager';
+
 /** STATIC **/
 const OVERLAY_ENABLE = 'overlay_enable';
 const OVERLAY_DISABLE = 'overlay_disable';
 const OVERLAY_ENABLE_TITLE = 'Enable Overlay';
 const OVERLAY_DISABLE_TITLE = 'Disable Overlay';
-const OVERLAY_ENABLED_VAR = 'overlayEnabled';
 const OVERLAY_TOGGLE = 'overlay_toggle';
 // Opening Actions
 const OPEN_OVERLAY_SEARCH = 'open_overlay_search';
@@ -351,8 +352,7 @@ const wrapAsyncFunction = listener => (request, sender, sendResponse) => {
 
 /*** Context Menu Methods ***/
 async function createContextMenu() {
-    const data = await chrome.storage.sync.get(OVERLAY_ENABLED_VAR);
-    const isEnabled = data.overlayEnabled;
+    const isEnabled = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.OVERLAY_ENABLED.key);
     /* chrome.contextMenus.create({
         id: OPEN_SIDE_PANEL,
         title: 'Open Salesforce Toolkit (side panel)',
@@ -477,15 +477,15 @@ function handleRedirectToUrl(msg) {
 }
 
 async function setOverlayState(isEnabled) {
-    await chrome.storage.sync.set({ overlayEnabled: isEnabled });
+    await saveSingleExtensionConfigToCache(CACHE_CONFIG.OVERLAY_ENABLED.key, isEnabled);
     updateContextMenu();
     broadcastMessageToAllInjectedInstances({ action: 'toggleOverlay', enabled: isEnabled });
 }
 
 async function updateContextMenu() {
-    const data = await chrome.storage.sync.get(OVERLAY_ENABLED_VAR);
-    chrome.contextMenus.update(OVERLAY_ENABLE, { enabled: !data.overlayEnabled });
-    chrome.contextMenus.update(OVERLAY_DISABLE, { enabled: data.overlayEnabled });
+    const isEnabled = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.OVERLAY_ENABLED.key);
+    chrome.contextMenus.update(OVERLAY_ENABLE, { enabled: !isEnabled });
+    chrome.contextMenus.update(OVERLAY_DISABLE, { enabled: isEnabled });
 }
 
 // Parse patterns from string (one regex per line)
@@ -667,6 +667,42 @@ chrome.runtime.onMessage.addListener(
             });
         } else if (message.action === 'findExistingSession') {
             return await findExistingSession({ alias: message.alias, instanceUrl: message.instanceUrl });
+        } else if (message.action === 'smartinput_enhance_single') {
+            const prompt = (message && message.prompt) || '';
+            if (!prompt) return { error: 'Missing prompt' };
+            // Read OpenAI config
+            const data = await chrome.storage.local.get(['openai_key', 'openai_url']);
+            const apiKey = data.openai_key;
+            const baseUrl = data.openai_url || 'https://api.openai.com';
+            if (!apiKey) return { error: 'Missing OpenAI key' };
+            try {
+                const body = {
+                    model: 'gpt-4o-mini',
+                    messages: [
+                        { role: 'system', content: 'You are Smart Input Assistant. Return one concise realistic value suitable for a Salesforce form input. No explanations.' },
+                        { role: 'user', content: prompt },
+                    ],
+                    temperature: 0.5,
+                    n: 1,
+                };
+                const resp = await fetch(`${baseUrl}/v1/chat/completions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`,
+                    },
+                    body: JSON.stringify(body),
+                });
+                if (!resp.ok) {
+                    const t = await resp.text();
+                    return { error: `OpenAI error: ${t}` };
+                }
+                const json = await resp.json();
+                const suggestion = (json && json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content) || '';
+                return { suggestion: (suggestion || '').trim() };
+            } catch (e) {
+                return { error: e.message };
+            }
         } else if(message.action.startsWith('chrome_')){
             // Delegate all chrome_* actions to chromeApi.js
             return await handleChromeInteraction(message);
@@ -693,10 +729,10 @@ chrome.runtime.onInstalled.addListener(async details => {
     ) {
         chrome.tabs.create({ url: 'https://sf-toolkit.com/app?applicationName=release' });
     }
-    const data = chrome.storage.sync.get(OVERLAY_ENABLED_VAR);
+    /* const isEnabled = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.OVERLAY_ENABLED.key);
     if (!data.hasOwnProperty(OVERLAY_ENABLED_VAR)) {
-        await chrome.storage.sync.set({ overlayEnabled: true });
-    }
+        await saveSingleExtensionConfigToCache(CACHE_CONFIG.OVERLAY_ENABLED.key, true);
+    } */
     createContextMenu();
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tabs.length > 0) {
@@ -728,8 +764,8 @@ chrome.runtime.onInstalled.addListener(async details => {
 chrome.commands.onCommand.addListener((command, tab) => {
     console.log('command',command);
     if (command === OVERLAY_TOGGLE) {
-        chrome.storage.sync.get(OVERLAY_ENABLED_VAR, data => {
-            setOverlayState(!data.overlayEnabled);
+        loadSingleExtensionConfigFromCache(CACHE_CONFIG.OVERLAY_ENABLED.key).then(isEnabled => {
+            setOverlayState(!isEnabled);
         });
     } else if (command === OPEN_OVERLAY_SEARCH) {
     } else if (command === OPEN_SIDE_PANEL) {

@@ -84,6 +84,10 @@
     height:100%;
 }
 
+.sf-toolkit .slds-full-width {
+    width: 100%;
+}
+
 .sf-toolkit .slds-auto-height{
     height:auto;
 }

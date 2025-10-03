@@ -14,6 +14,7 @@ import {
 import { store, connectStore, PACKAGE, SELECTORS } from 'core/store';
 import { store_application, store as legacyStore } from 'shared/store';
 import Toast from 'lightning/toast';
+import Analytics from 'shared/analytics';
 
 export default class App extends ToolkitElement {
     isLoading = false;
@@ -35,6 +36,7 @@ export default class App extends ToolkitElement {
     label2;
 
     connectedCallback() {
+        Analytics.trackAppOpen('package', { alias: this.alias });
         //this.isLoading = true;
 
         store.dispatch((dispatch, getState) => {

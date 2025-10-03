@@ -7,6 +7,7 @@ import {
 } from 'shared/utils';
 import { store_application, store as legacyStore } from 'shared/store';
 import { connectStore,store, DESCRIBE, SOBJECTEXPLORER } from 'core/store';
+import Analytics from 'shared/analytics';
 
 const TYPEFILTER_OPTIONS = [
     { label: 'Object', value: 'object' },
@@ -63,6 +64,7 @@ export default class App extends ToolkitElement {
     }
 
     connectedCallback() {
+        Analytics.trackAppOpen('object', { alias: this.alias });
         this.loadCachedSettings();
         this.loadAlls();
     }

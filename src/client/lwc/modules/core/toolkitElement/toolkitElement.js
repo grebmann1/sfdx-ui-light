@@ -20,6 +20,7 @@ export default class ToolkitElement extends I18nMixin(LightningElement) {
 
     /** Methods */
     verifyIsActive = applicationName => {
+        console.log('ToolkitElement - verifyIsActive', this.applicationName, applicationName);
         return this.applicationName === applicationName;
     };
 

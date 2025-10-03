@@ -2,17 +2,11 @@ import { api, wire, track } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import {
     isUndefinedOrNull,
-    isNotUndefinedOrNull,
-    sortObjectsByField,
-    removeDuplicates,
+    isNotUndefinedOrNull
 } from 'shared/utils';
-import { CurrentPageReference, NavigationContext, navigate } from 'lwr/navigation';
+import { CurrentPageReference, NavigationContext } from 'lwr/navigation';
 import { store, connectStore, METADATA } from 'core/store';
-import { METADATA_EXCLUDE_LIST } from 'metadata/utils';
 // Constants
-const METADATA_FIELDS = ['Id', 'Name', 'DeveloperName', 'MasterLabel', 'NamespacePrefix'];
-const CACHE_EXPIRY_MS = 5 * 60 * 1000;
-
 export default class Menu extends ToolkitElement {
     @wire(NavigationContext) navContext;
 

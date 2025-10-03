@@ -1,24 +1,18 @@
 import '@webcomponents/custom-elements';
 import '@lwc/synthetic-shadow';
-import test from 'feature/test';
 import hotkeys from 'hotkeys-js';
 import { createElement } from 'lwc';
-import { CACHE_CONFIG, loadExtensionConfigFromCache, chromeStore } from 'shared/cacheManager';
+import { CACHE_CONFIG, loadExtensionConfigFromCache, chromeStore, cacheManager, loadSingleExtensionConfigFromCache } from 'shared/cacheManager';
 import {
     isEmpty,
     runActionAfterTimeOut,
-    redirectToUrlViaChrome,
     getRecordId,
     getSobject,
 } from 'shared/utils';
+import LOGGER from 'shared/logger';
 import ViewsOverlay from 'views/overlay';
+import InputQuickPick from 'feature/inputQuickPick';
 
-const getCookieInfo = async () => {
-    if (chrome.runtime) {
-        return await chrome.runtime.sendMessage({ action: 'fetchCookie', content: null });
-    }
-    return null;
-};
 
 const _showCopiedNotification = copiedValue => {
     // Create the notification element
@@ -80,11 +74,33 @@ const _showCopiedNotification = copiedValue => {
     }, 3000);
 };
 
+// Inject core CSS styles used by the injected UI
+const injectCSS = () => {
+    const head = document.head || document.getElementsByTagName('head')[0];
+    if (!head) return;
+
+    const safeAddStylesheet = (id, href) => {
+        if (document.getElementById(id)) return;
+        const link = document.createElement('link');
+        link.id = id;
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = href;
+        head.appendChild(link);
+    };
+
+    try {
+        safeAddStylesheet('sf-toolkit-slds-css', chrome.runtime.getURL('/styles/slds-sf-toolkit.css'));
+        safeAddStylesheet('sf-toolkit-extension-css', chrome.runtime.getURL('/styles/extension.css'));
+    } catch (e) {
+        console.error('--> injectCSS error', e);
+    }
+};
+
 // Overlay
 let overlayInstance = null;
 const injectOverlay = async () => {
-    const isEnabled = (await chrome.storage.sync.get('overlayEnabled')).overlayEnabled;
-    //console.log('injectOverlay',isEnabled);
+    const isEnabled = (await loadSingleExtensionConfigFromCache(CACHE_CONFIG.OVERLAY_ENABLED.key));
     if (!isEnabled) return;
 
     // LWC
@@ -308,6 +324,21 @@ const injectShortCuts = async () => {
         baseUrl: chrome.runtime.getURL('/views/app.html'),
         navigation: params,
     })
+};
+
+// Input Quick Pick Component
+let quickPickInstance = null;
+const injectInputQuickPick = async () => {
+    if (!quickPickInstance) {
+        quickPickInstance = createElement('feature-input-quick-pick', { is: InputQuickPick });
+        quickPickInstance.className = 'sf-toolkit';
+        const isEnabled = await cacheManager.getConfigValue(CACHE_CONFIG.INPUT_QUICKPICK_ENABLED.key);
+        //const recents = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.INPUT_QUICKPICK_RECENTS.key);
+        //const data = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.INPUT_QUICKPICK_DATA.key);
+        if (isEnabled) {
+            document.body.appendChild(quickPickInstance);
+        }
+    }
 };
 
 /* TODO : Add prompt widget in the web page with vanila JS/HTML/CSS
@@ -561,7 +592,7 @@ class INJECTOR {
         );
     };
 
-    init = () => {
+    init = async () => {
         if (chrome.runtime) chrome.runtime.onMessage.addListener(this.handleMessage);
         const isValid = this.isValidPage();
         console.log(`--> SF Toolkit - ${isValid ? 'Inject Code' : 'Skip injection'}  <--`);
@@ -569,11 +600,18 @@ class INJECTOR {
             connectToBackground();
             this.injectCode();
         }
+/* 
+        const cachedConfiguration = await cacheManager.loadConfig(
+            Object.values(CACHE_CONFIG).map(x => x.key)
+        );
+        LOGGER.log('cachedConfiguration', cachedConfiguration); */
     };
 
     injectCode = () => {
+        injectCSS();
         injectShortCuts();
         injectOverlay();
+        injectInputQuickPick();
         //injectPromptWidget();
     };
 

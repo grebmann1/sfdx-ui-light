@@ -681,11 +681,12 @@
                                         </div>
                                         <div slot="actions"></div>
                                         <div class="slds-grid slds-wrap">
-                                            <!-- Login As -->
 
-                                            <settings-card
+                                            <!-- LEFT -->
+                                            <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-grid slds-wrap">
+                                                <settings-card
                                                 is-first
-                                                class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
+                                                class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
                                                 <div slot="title">
                                                     <h1>Overlay Visibility</h1>
                                                     <p class="description slds-truncate">
@@ -697,8 +698,8 @@
                                                     <lightning-input
                                                         data-key="overlayEnabled"
                                                         label="Show Overlay"
-                                                        message-toggle-active="Overlay is visible"
-                                                        message-toggle-inactive="Overlay is hidden"
+                                                        message-toggle-active="Enabled"
+                                                        message-toggle-inactive="Disabled"
                                                         type="toggle"
                                                         variant="label-hidden"
                                                         checked={config.overlayEnabled}
@@ -706,8 +707,27 @@
                                                 </div>
                                             </settings-card>
                                             <settings-card
-                                                is-first
-                                                class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
+                                                class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                                <div slot="title">
+                                                    <h1>Input Quick Pick</h1>
+                                                    <p class="description slds-truncate">
+                                                        Enable the Input Quick Pick in Salesforce pages.
+                                                    </p>
+                                                </div>
+                                                <div slot="actions">
+                                                    <lightning-input
+                                                        data-key="input_quickpick_enabled"
+                                                        label="Enable Input Quick Pick"
+                                                        message-toggle-active="Enabled"
+                                                        message-toggle-inactive="Disabled"
+                                                        type="toggle"
+                                                        variant="label-hidden"
+                                                        checked={config.input_quickpick_enabled}
+                                                        onchange={inputfield_change}></lightning-input>
+                                                </div>
+                                            </settings-card>
+                                            <settings-card
+                                                class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
                                                 <div slot="title">
                                                     <h1>Login As</h1>
                                                     <p class="description slds-truncate">
@@ -739,39 +759,44 @@
                                                     </p>
                                                 </slds-information-block>
                                             </settings-card>
-                                            <!-- Content Script Patterns -->
-                                            <settings-card
-                                                is-first
-                                                class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
-                                                <div slot="title">
-                                                    <h1>Content Script URL Patterns</h1>
-                                                    <p class="description slds-truncate">
-                                                        Manage the URL patterns for content script
-                                                        injection. One regex per line.
-                                                    </p>
-                                                </div>
-                                                <div slot="actions">
-                                                    <lightning-button
-                                                        label="Reset to Default"
-                                                        onclick={handleResetPatternsClick}
-                                                        variant="neutral"></lightning-button>
-                                                </div>
-                                                <div class="slds-m-bottom_small">
-                                                    <lightning-textarea
-                                                        data-key="content_script_include_patterns"
-                                                        label="Include Patterns (one regex per line)"
-                                                        value={config.content_script_include_patterns}
-                                                        onchange={inputfield_change}
-                                                        class="slds-m-bottom_x-small"
-                                                        variant="label-stacked"></lightning-textarea>
-                                                    <lightning-textarea
-                                                        data-key="content_script_exclude_patterns"
-                                                        label="Exclude Patterns (one regex per line)"
-                                                        value={config.content_script_exclude_patterns}
-                                                        onchange={inputfield_change}
-                                                        variant="label-stacked"></lightning-textarea>
-                                                </div>
-                                            </settings-card>
+                                            </div>
+
+                                            <!-- RIGHT -->
+                                            <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-grid slds-wrap">
+                                                <!-- Content Script Patterns -->
+                                                <settings-card
+                                                    is-first
+                                                    class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                                    <div slot="title">
+                                                        <h1>Content Script URL Patterns</h1>
+                                                        <p class="description slds-truncate">
+                                                            Manage the URL patterns for content script
+                                                            injection. One regex per line.
+                                                        </p>
+                                                    </div>
+                                                    <div slot="actions">
+                                                        <lightning-button
+                                                            label="Reset to Default"
+                                                            onclick={handleResetPatternsClick}
+                                                            variant="neutral"></lightning-button>
+                                                    </div>
+                                                    <div class="slds-m-bottom_small">
+                                                        <lightning-textarea
+                                                            data-key="content_script_include_patterns"
+                                                            label="Include Patterns (one regex per line)"
+                                                            value={config.content_script_include_patterns}
+                                                            onchange={inputfield_change}
+                                                            class="slds-m-bottom_x-small"
+                                                            variant="label-stacked"></lightning-textarea>
+                                                        <lightning-textarea
+                                                            data-key="content_script_exclude_patterns"
+                                                            label="Exclude Patterns (one regex per line)"
+                                                            value={config.content_script_exclude_patterns}
+                                                            onchange={inputfield_change}
+                                                            variant="label-stacked"></lightning-textarea>
+                                                    </div>
+                                                </settings-card>
+                                            </div>
                                         </div>
                                     </lightning-card>
 

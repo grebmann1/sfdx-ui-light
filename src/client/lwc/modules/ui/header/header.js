@@ -136,6 +136,6 @@ export default class Header extends LightningElement {
     }
 
     get rightPanelIconName(){
-        return this.isAgentChatExpanded ? 'utility:toggle_panel_left' : 'utility:toggle_panel_right';
+        return this.isAgentChatExpanded ? 'utility:einstein_alt' : 'utility:einstein';
     }
 }

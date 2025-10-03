@@ -40,7 +40,7 @@ const chromeOpenTab = tool({
     description: '[Chrome] Open a new browser tab with the specified URL.',
     parameters: z.object({
         url: z.string().describe('The URL to open in a new tab'),
-        windowId: z.string().optional().nullable().describe('Optional window ID to open the tab in'),
+        windowId: z.number().optional().nullable().describe('Optional window ID to open the tab in'),
     }),
     execute: async (args) => {
         return await sendChromeMessage('chrome_open_tab',args);
@@ -52,7 +52,7 @@ const chromeNavigateTab = tool({
     name: 'chrome_navigate_tab',
     description: '[Chrome] Navigate to a specific browser tab by tabId.',
     parameters: z.object({
-        tabId: z.string().describe('The ID of the tab to navigate to'),
+        tabId: z.number().describe('The ID of the tab to navigate to'),
     }),
     execute: async (args) => {
         return await sendChromeMessage('chrome_navigate_tab', args);
@@ -84,7 +84,7 @@ const chromeGroupTabs = tool({
     name: 'chrome_group_tabs',
     description: '[Chrome] Group tabs together and optionally move them to another window.',
     parameters: z.object({
-        tabIds: z.array(z.string()).describe('Array of tab IDs to group'),
+        tabIds: z.array(z.number()).describe('Array of tab IDs to group'),
         windowId: z.string().optional().nullable().describe('Optional window ID to move the group to'),
         title: z.string().optional().nullable().describe('Optional group title'),
         color: z.string().optional().nullable().describe('Optional group color'),
@@ -121,7 +121,7 @@ const chromeCloseTabs = tool({
     name: 'chrome_close_tabs',
     description: '[Chrome] Close one or more tabs by ID.',
     parameters: z.object({
-        tabIds: z.array(z.string()).describe('Array of tab IDs to close'),
+        tabIds: z.array(z.number()).describe('Array of tab IDs to close'),
     }),
     execute: async (args) => {
         return await sendChromeMessage('chrome_close_tabs',args);
@@ -133,7 +133,7 @@ const chromeUpdateTab = tool({
     name: 'chrome_update_tab',
     description: '[Chrome] Update tab properties (navigate to a new URL, pin, mute, activate, etc). Use this to change the URL of a specific tab (navigate), or update other properties.',
     parameters: z.object({
-        tabId: z.string().describe('Tab ID'),
+        tabId: z.number().describe('Tab ID'),
         updateProps: z.object({
             url: z.string().optional().nullable().describe('Navigate the tab to this URL (if provided)'),
             active: z.boolean().optional().nullable().describe('Whether the tab should be active'),
@@ -154,7 +154,7 @@ const chromeCreateWindow = tool({
     name: 'chrome_create_window',
     description: '[Chrome] Create a new window, optionally with specific tab IDs.',
     parameters: z.object({
-        tabIds: z.array(z.string()).optional().nullable().describe('Tab IDs to move to new window'),
+        tabIds: z.array(z.number()).optional().nullable().describe('Tab IDs to move to new window'),
     }),
     execute: async (args) => {
         return await sendChromeMessage('chrome_create_window',args);
@@ -166,7 +166,7 @@ const chromeGetTab = tool({
     name: 'chrome_get_tab',
     description: '[Chrome] Get info for a specific tab by ID.',
     parameters: z.object({
-        tabId: z.string().describe('Tab ID'),
+        tabId: z.number().describe('Tab ID'),
     }),
     execute: async (args) => {
         return await sendChromeMessage('chrome_get_tab',args);
@@ -178,7 +178,7 @@ const chromeGetTabGroup = tool({
     name: 'chrome_get_tab_group',
     description: '[Chrome] Get info for a tab group by ID.',
     parameters: z.object({
-        groupId: z.string().describe('Tab group ID'),
+        groupId: z.number().describe('Tab group ID'),
     }),
     execute: async (args) => {
         return await sendChromeMessage('chrome_get_tab_group',args);
@@ -188,7 +188,7 @@ const chromeUpdateTabGroup = tool({
     name: 'chrome_update_tab_group',
     description: '[Chrome] Update tab group properties (title, color).',
     parameters: z.object({
-        groupId: z.string().describe('Tab group ID'),
+        groupId: z.number().describe('Tab group ID'),
         updateProps: z.object({}).catchall(z.union([z.string(), z.number(), z.boolean()])).describe('Properties to update'),
     }),
     execute: async (args) => {
@@ -201,9 +201,9 @@ const chromeMoveTab = tool({
     name: 'chrome_move_tab',
     description: '[Chrome] Move a tab to a specific index in a window.',
     parameters: z.object({
-        tabId: z.string().describe('Tab ID'),
+        tabId: z.number().describe('Tab ID'),
         index: z.number().describe('Target index'),
-        windowId: z.string().optional().nullable().describe('Optional window ID'),
+        windowId: z.number().optional().nullable().describe('Optional window ID'),
     }),
     execute: async (args) => {
         return await sendChromeMessage('chrome_move_tab',args);
@@ -216,7 +216,7 @@ const chromeHighlightTabs = tool({
     description: '[Chrome] Highlight (select) one or more tabs in a window.',
     parameters: z.object({
         tabIds: z.array(z.string()).describe('Tab IDs to highlight'),
-        windowId: z.string().optional().nullable().describe('Optional window ID'),
+        windowId: z.number().optional().nullable().describe('Optional window ID'),
     }),
     execute: async (args) => {
         return await sendChromeMessage('chrome_highlight_tabs',args);
@@ -228,7 +228,7 @@ const chromeFocusWindow = tool({
     name: 'chrome_focus_window',
     description: '[Chrome] Focus a specific window by ID.',
     parameters: z.object({
-        windowId: z.string().describe('Window ID'),
+        windowId: z.number().describe('Window ID'),
     }),
     execute: async (args) => {
         return await sendChromeMessage('chrome_focus_window',args);
@@ -240,7 +240,7 @@ const chromeRemoveTabGroup = tool({
     name: 'chrome_remove_tab_group',
     description: '[Chrome] Remove a tab group (ungroup and delete the group).',
     parameters: z.object({
-        groupId: z.string().describe('Tab group ID'),
+        groupId: z.number().describe('Tab group ID'),
     }),
     execute: async (args) => {
         return await sendChromeMessage('chrome_remove_tab_group',args);
@@ -252,7 +252,7 @@ const chromeDuplicateTab = tool({
     name: 'chrome_duplicate_tab',
     description: '[Chrome] Duplicate a tab by ID.',
     parameters: z.object({
-        tabId: z.string().describe('Tab ID'),
+        tabId: z.number().describe('Tab ID'),
     }),
     execute: async (args) => {
         return await sendChromeMessage('chrome_duplicate_tab',args);
@@ -264,7 +264,7 @@ const chromeReloadTabs = tool({
     name: 'chrome_reload_tabs',
     description: '[Chrome] Reload one or more tabs.',
     parameters: z.object({
-        tabIds: z.array(z.string()).describe('Tab IDs to reload'),
+        tabIds: z.array(z.number()).describe('Tab IDs to reload'),
     }),
     execute: async (args) => {
         return await sendChromeMessage('chrome_reload_tabs',args);

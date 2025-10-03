@@ -1,0 +1,60 @@
+<template>
+    <template if:true={isOpen}>
+        <div class="sf-toolkit-quickpick slds-flex-column">
+            <div class="slds-flex-column">
+                <!-- <div class="sf-toolkit-quickpick-header">
+                    <div class="sf-toolkit-quickpick-controls">
+                    </div>
+                    <div class="sf-toolkit-quickpick-actions">
+                    </div>
+                </div> -->
+                <div class="sf-toolkit-quickpick-searchbar">
+                    <div class="chat-input-container">
+                        <div class="slds-flex-column slds-align-flex-end">
+                            <div class="chat-input-model-row slds-flex-row" style="width:120px;">
+                                <!-- Top Right container-->
+                            </div>
+                        </div>
+                        <textarea
+                            class="chat-textarea"
+                            placeholder="Type a new input…"
+                            onkeyup={handleInput}
+                            onpaste={handleInput}
+                            disabled={isLoading}
+                            aria-label="Smart input value"
+                        >{value}</textarea>
+                        <!-- Hashtag dropdown -->
+                        <slds-hashtag-dropdown
+                            is-open={showHashtagDropdown}
+                            items={categories}
+                            query={value}
+                            top={pos.pageTop}
+                            left={pos.pageLeft}
+                            onitemselect={handleHashtagSelect}
+                        ></slds-hashtag-dropdown>
+                        <!-- End hashtag dropdown -->
+                        <div class="chat-input-actions-row">
+                            <div class="chat-input-actions-left"></div>
+                            <div class="chat-input-actions-right">
+                                <template lwc:if={isEnhanceEnabled}>
+                                    <template lwc:if={isLoading}>
+                                        <lightning-icon icon-name="utility:sync" size="x-small" alternative-text="Loading" class="sftk-rotating"></lightning-icon>
+                                    </template>
+                                    <template lwc:else>
+                                        <button class="chat-btn" title="Enhance" aria-label="Enhance" onclick={handleEnhance} disabled={isLoading}>
+                                            <lightning-icon icon-name="utility:magicwand" size="x-small" alternative-text="Enhance"></lightning-icon>
+                                        </button>
+                                    </template>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <!-- Hidden mirror used for measurement -->
+    <div class="mirror" aria-hidden="true" ref="mirror" lwc:dom="manual"></div>
+</template>
+
+

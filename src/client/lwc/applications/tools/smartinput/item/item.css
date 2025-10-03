@@ -1,0 +1,28 @@
+.slds-box {
+    border-radius: 0.25rem;
+    position: relative;
+}
+
+.smartinput-item-content { max-width: 100%; flex: 1 1 auto; }
+
+.smartinput-item-textarea {
+    min-height: 38px;
+    resize: vertical;
+}
+
+.smartinput-item-edit-actions { display: flex; align-items: center; justify-content: flex-end; }
+
+.smartinput-item-badge {
+    position: absolute;
+    top: 0rem;
+    left: 0rem;
+    background: #0476d4;
+    color: #ffffff;
+    border: 1px solid var(--lwc-colorBorder, #c9c9c9);
+    padding: 0.05rem 0.3rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    line-height: 1rem;
+}
+
+

@@ -1,1 +1,0 @@
-export * as SOBJECTEXPLORER from './modules/sobjectExplorer'; 

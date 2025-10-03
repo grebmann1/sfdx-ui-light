@@ -1,0 +1,88 @@
+.slds-hashtag-dropdown {
+    position: fixed;
+    left: 0;
+    right: auto;
+    transform: translateY(4px);
+    min-width: 220px;
+    max-width: 420px;
+    max-height: 180px;
+    overflow: auto;
+    background: #ffffff;
+    color: #080707;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    z-index: 2147480000;
+}
+
+.slds-hashtag-dropdown__list {
+    list-style: none;
+    margin: 0;
+    padding: 4px;
+}
+.slds-hashtag-dropdown__header {
+    padding: 6px 8px;
+    font-weight: 600;
+    color: #3e3e3c;
+    border-bottom: 1px solid #dddbda;
+}
+.slds-hashtag-dropdown__item {
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+}
+.slds-hashtag-dropdown__item.is-active {
+    background: #f3f2f2;
+}
+.is-keyboard .slds-hashtag-dropdown__item:hover:not(.is-active) {
+    background: transparent;
+}
+.slds-hashtag-dropdown__badge {
+    display: inline-block;
+    /* min-width: 36px; */
+    margin-right: 6px;
+    color: #16325c;
+    font-weight: 600;
+}
+.slds-hashtag-dropdown__label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 320px;
+}
+
+/* chevron now uses lightning-button-icon */
+
+.indent {
+    display: inline-block;
+    width: 6px;
+}
+.indent-0 {
+    width: 6px;
+}
+.indent-1 {
+    width: 18px;
+}
+.indent-2 {
+    width: 30px;
+}
+.indent-3 {
+    width: 42px;
+}
+.indent-4 {
+    width: 54px;
+}
+.indent-5 {
+    width: 66px;
+}
+.indent-6 {
+    width: 78px;
+}
+
+.slds-hashtag-dropdown__empty {
+    padding: 8px 10px;
+    font-size: 12px;
+    color: #706e6b;
+}

@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 import lwc from '@lwc/rollup-plugin';
 import replace from '@rollup/plugin-replace';
 import resolve from '@rollup/plugin-node-resolve';
@@ -31,6 +32,65 @@ const chevrotainUrlReplace = replace({
     preventAssignment: false,
     delimiters: ['', '']
 });
+
+// Build LWC-like alias entries so non-LWC bundles (e.g., background worker)
+// can import modules using the "namespace/name" syntax (e.g., "shared/cacheManager").
+// Supports module descriptors in three shapes:
+// - { dir }
+// - { name, path } → direct single-file alias mapping
+const getLwcModuleAliasEntries = (modulesArg) => {
+    const entries = [];
+    const addDirWithNamespaces = (dirPath) => {
+        try {
+            if (!dirPath || !fs.existsSync(dirPath)) {
+                return;
+            }
+            const namespaces = fs
+                .readdirSync(dirPath, { withFileTypes: true })
+                .filter((d) => d.isDirectory())
+                .map((d) => d.name);
+            namespaces.forEach((ns) => {
+                const nsPath = path.join(dirPath, ns);
+                if (!fs.existsSync(nsPath)) {
+                    return;
+                }
+                const components = fs
+                    .readdirSync(nsPath, { withFileTypes: true })
+                    .filter((d) => d.isDirectory())
+                    .map((d) => d.name);
+                components.forEach((comp) => {
+                    const entryJs = path.join(nsPath, comp, `${comp}.js`);
+                    const entryIndexJs = path.join(nsPath, comp, 'index.js');
+                    const replacement = fs.existsSync(entryJs)
+                        ? entryJs
+                        : (fs.existsSync(entryIndexJs) ? entryIndexJs : null);
+                    if (replacement) {
+                        entries.push({ find: `${ns}/${comp}`, replacement });
+                    }
+                });
+            });
+        } catch (_e) {
+            // Ignore directories that don't follow the expected LWC module structure
+        }
+    };
+    (modulesArg || []).forEach((m) => {
+        if (!m) { return; }
+        if (m.name && m.path && fs.existsSync(m.path)) {
+            entries.push({ find: m.name, replacement: m.path });
+            return;
+        }
+        if (m.dir) {
+            addDirWithNamespaces(m.dir);
+        }
+    });
+    return entries;
+};
+
+const lwcAliasForNonLwcBundles = (modulesArg) => {
+    const entries = getLwcModuleAliasEntries(modulesArg);
+    console.log('--> entries', entries);
+    return entries.length ? alias({ entries }) : null;
+};
 
 // Copy targets extracted for clarity
 const assetCopyTargets = [
@@ -79,6 +139,15 @@ const modules = [
     { name: 'imported/openapi-parser', path: r('src/client/assets/libs/openapi-parser/openapi-parser.esm.min.js') }
 ];
 
+const injectedModules = [
+    { dir: r('src/client_chrome/components') },
+    { dir: r('src/client/lwc/modules') },
+    { dir: r('src/client/lwc/components') },
+    { npm: 'lightning-base-components' },
+    { name: 'smartinput/utils', path: r('src/client/lwc/applications/tools/smartinput/utils/utils.js') },
+    { name: 'imported/jsforce', path: r('src/client/assets/libs/jsforce/jsforce.js') },
+];
+
 const prodPlugins = isProduction ? [terserPlugin] : [];
 
 const basicBundler = (input, output, name, useLwc = false, modulesArg, extraPlugins) => ({
@@ -93,6 +162,7 @@ const basicBundler = (input, output, name, useLwc = false, modulesArg, extraPlug
     plugins: [
         chevrotainAlias,
         chevrotainUrlReplace,
+        ...(useLwc ? [] : ((lwcAliasForNonLwcBundles(modulesArg) ? [lwcAliasForNonLwcBundles(modulesArg)] : []))),
         resolvePlugin,
         cjsPlugin,
         ...(useLwc
@@ -155,14 +225,18 @@ export default (args) => [
         'chrome_ext/scripts/background.js',
         'Background',
         false,
-        modules
+        [
+            { name: 'shared/cacheManager', path: r('src/client/lwc/modules/shared/cacheManager/cacheManager.js') },
+            { name: 'shared/logger', path: r('src/client/lwc/modules/shared/logger/logger.js') },
+            { name: 'shared/utils', path: r('src/client/lwc/modules/shared/utils/utils.js') },
+        ]
     ),
     basicBundler(
         'src/client_chrome/inject/inject_salesforce.js',
         'chrome_ext/scripts/inject_salesforce.js',
         'InjectSalesforce',
         true,
-        modules
+        injectedModules
     ),
     basicBundler(
         'src/client_chrome/inject/inject_toolkit.js',

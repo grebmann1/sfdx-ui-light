@@ -13,6 +13,7 @@
                 <div class="side-panel-header slds-p-around_small slds-border_bottom side-panel-header-custom">
                     <h2 class="slds-panel__header-title slds-text-heading_small slds-truncate">Conversations</h2>
                     <div class="slds-panel__header-actions">
+                        <!-- First New Conversation Button -->
                         <lightning-button-icon icon-name="utility:add" onclick={createNewConversation} title="New conversation" aria-label="New conversation"></lightning-button-icon>
                     </div>
                 </div>
@@ -35,13 +36,17 @@
         <!-- Side Panel Toggle Button -->
         <div class="slds-full-height slds-is-relative slds-flex-column slds-full-width">
             <div class="slds-p-around_x-small slds-border_bottom slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
-                <lightning-button-icon-stateful
-                    icon-name="utility:side_list"
-                    selected={isSidePanelOpen}
-                    alternative-text="Toggle conversations"
-                    variant="border-filled"
-                    onclick={toggleSidePanel}
-                ></lightning-button-icon-stateful>
+                <div class="slds-flex-row">
+                    <lightning-button-icon-stateful
+                        icon-name="utility:side_list"
+                        selected={isSidePanelOpen}
+                        alternative-text="Toggle conversations"
+                        variant="border-filled"
+                        onclick={toggleSidePanel}
+                    ></lightning-button-icon-stateful>
+                    <!-- Second New Conversation Button -->
+                    <lightning-button-icon class="slds-m-left_x-small" icon-name="utility:add" onclick={createNewConversation} title="New conversation" aria-label="New conversation"></lightning-button-icon>
+                </div>
                 <div class={inputSectionClass}>
                     <template lwc:if={isEditingTitle}>
                         <input class="slds-input slds-m-right_x-small" type="text" value={pendingTitle} oninput={handleConversationTitleChange} onkeydown={handleConversationTitleKeydown} lwc:ref="titleInput" />
@@ -62,7 +67,7 @@
             <!-- Prompt Result -->
             <section role="log" class="slds-chat slds-fill-height">
                 <div class="slds-grid slds-wrap slds-grid_align-center">
-                    <div class="slds-col slds-size_1-of-1 slds-large-size_2-of-3">
+                    <div class="slds-col slds-size_1-of-1 slds-large-size_4-of-5">
                         <agent-message-list
                             welcome-message={welcomeMessage}
                             displayed-messages={displayedMessages}

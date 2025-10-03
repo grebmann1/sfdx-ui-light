@@ -10,6 +10,14 @@ function parseQuery(queryString) {
     return result;
 }
 
+// Allowed setting keys mirrored from cacheManager.CACHE_CONFIG (CONFIG_OBJECT.key values)
+// This prevents polluting storage with unknown keys
+const ALLOWED_SETTING_KEYS = new Set([
+    // AI settings
+    'openai_key',
+    'openai_url',
+]);
+
 /**
  * Redirects to the given URL after a delay
  * @param {string} url - The URL to redirect to
@@ -27,22 +35,47 @@ function redirect(url = 'app.html', delay = 0) {
  * @returns {Promise<void>}
  */
 function updateSettings(params) {
-    // Exclude 'message' and 'redirect' from settings
-    const { message, redirect: redirectParam, ...settings } = params;
-    if (Object.keys(settings).length === 0) {
+    // Exclude non-setting fields from params
+    const { message, redirect: redirectParam, data: encodedData, settings: groupedSettings, ...rawSettings } = params;
+    console.log('--> params', params);
+
+    // Prefer grouped settings if present (object or JSON string),
+    // otherwise fall back to legacy top-level flattened keys
+    let candidateSettings = {};
+    if (groupedSettings) {
+        if (typeof groupedSettings === 'string') {
+            try { candidateSettings = JSON.parse(groupedSettings) || {}; } catch { candidateSettings = {}; }
+        } else if (typeof groupedSettings === 'object') {
+            candidateSettings = groupedSettings || {};
+        }
+    } else {
+        candidateSettings = rawSettings;
+    }
+
+    // Filter only known keys defined in cacheManager configuration
+    const filteredSettings = {};
+    for (const [key, value] of Object.entries(candidateSettings)) {
+        if (ALLOWED_SETTING_KEYS.has(key)) {
+            filteredSettings[key] = value;
+        }
+    }
+
+    if (Object.keys(filteredSettings).length === 0) {
         return Promise.resolve('No settings to update.');
     }
+
     return new Promise((resolve, reject) => {
-        chrome.storage.sync.set(settings, function() {
+        console.log('--> filteredSettings', filteredSettings);
+        /* chrome.storage.sync.set(filteredSettings, function() {
             if (chrome.runtime.lastError) reject(chrome.runtime.lastError);
             else resolve();
-        });
+        }); */
     });
 }
 
 function startCountdown(seconds, onTick, onDone) {
     let remaining = seconds;
-    onTick(remaining);
+   /*  onTick(remaining);
     const interval = setInterval(() => {
         remaining--;
         onTick(remaining);
@@ -51,20 +84,54 @@ function startCountdown(seconds, onTick, onDone) {
             onDone();
         }
     }, 1000);
-    return () => clearInterval(interval); // returns a cancel function
+    return () => clearInterval(interval); // returns a cancel function  */
 }
 
 (async function() {
     const params = parseQuery(window.location.search);
+    // Decode optional base64 data payload into params
+    function base64DecodeUnicode(str) {
+        try {
+            return decodeURIComponent(escape(atob(str)));
+        } catch (e) {
+            return null;
+        }
+    }
+    function mergeDecodedData(p) {
+        if (!p.data) return p;
+        const decoded = base64DecodeUnicode(p.data);
+        if (!decoded) return p;
+        try {
+            const obj = JSON.parse(decoded);
+            // Optional: verify extId matches current extension
+            const currentId = (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id) ? chrome.runtime.id : null;
+            if (obj.extId && currentId && obj.extId !== currentId) {
+                // Soft warning by updating status later
+            }
+            const merged = { ...p };
+            // Keep settings grouped under `settings` instead of flattening
+            if (obj.settings && typeof obj.settings === 'object') {
+                merged.settings = obj.settings;
+            }
+            if (obj.message && !merged.message) merged.message = obj.message;
+            if (obj.redirect && !merged.redirect) merged.redirect = obj.redirect;
+            delete merged.data; // prevent storing encoded blob
+            return merged;
+        } catch (e) {
+            return p;
+        }
+    }
+    
+    const decodedParams = mergeDecodedData(params);
     const statusEl = document.getElementById('status');
     const countdownEl = document.getElementById('countdown');
     const redirectBtn = document.getElementById('redirectBtn');
     // Show custom message if provided
-    if (params.message) {
-        statusEl.textContent = params.message;
+    if (decodedParams.message) {
+        statusEl.textContent = decodedParams.message;
     }
     // Determine redirect target (default: app.html)
-    const redirectTarget = params.redirect || 'app.html';
+    const redirectTarget = decodedParams.redirect || 'app.html';
     let redirectDone = false;
     // Countdown logic
     let cancelCountdown = startCountdown(5, (remaining) => {
@@ -86,13 +153,13 @@ function startCountdown(seconds, onTick, onDone) {
         });
     }
     try {
-        const updateResult = await updateSettings(params);
+        const updateResult = await updateSettings(decodedParams);
         if (updateResult === 'No settings to update.') {
-            if (!params.message) statusEl.textContent = 'No parameters found.';
+            if (!decodedParams.message) statusEl.textContent = 'No parameters found.';
             // Let countdown/redirect handle navigation
             return;
         }
-        if (!params.message) statusEl.textContent = 'Settings updated! Redirecting...';
+        if (!decodedParams.message) statusEl.textContent = 'Settings updated! Redirecting...';
         // Let countdown/redirect handle navigation
     } catch (e) {
         statusEl.textContent = 'Error updating settings: ' + e;

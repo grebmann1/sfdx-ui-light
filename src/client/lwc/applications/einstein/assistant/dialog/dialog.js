@@ -1,4 +1,4 @@
-import { LightningElement, api, track, wire } from 'lwc';
+import {  api, track, wire } from 'lwc';
 import {
     isUndefinedOrNull,
     isEmpty,
@@ -7,16 +7,11 @@ import {
     lowerCaseKey,
     isNotUndefinedOrNull,
     isChromeExtension,
+    ASSISTANT as ASSISTANT_UTILS,
 } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
-import SaveModal from 'assistant/saveModal';
-import { GLOBAL_EINSTEIN, chat_template } from 'assistant/utils';
 import { store, connectStore, EINSTEIN, SELECTORS } from 'core/store';
-import ASSISTANTS from 'ai/assistants';
 import LOGGER from 'shared/logger';
-import OpenAI from 'openai';
-/* import { Agent,tool,run,setDefaultOpenAIClient,setOpenAIAPI } from '@openai/agents';
-import { z } from 'zod'; */
 
 const LATEST_MODEL_APEX = 'sfdc_ai__DefaultGPT4Omni';
 
@@ -169,7 +164,7 @@ export default class Dialog extends ToolkitElement {
         store.dispatch(
             EINSTEIN.reduxSlice.actions.clearDialog({
                 id: einstein.currentDialogId,
-                alias: GLOBAL_EINSTEIN,
+                alias: ASSISTANT_UTILS.GLOBAL_EINSTEIN,
             })
         );
     };
@@ -248,12 +243,12 @@ export default class Dialog extends ToolkitElement {
             LOGGER.debug('handleSendClick', this.provider, this.model);
             if (this.provider === 'apex') {
                 // Existing Apex flow
-                const einsteinApexRequest = chat_template(LATEST_MODEL_APEX, this.cleanedMessages);
+                const einsteinApexRequest = ASSISTANT_UTILS.chat_template(LATEST_MODEL_APEX, this.cleanedMessages);
                 this.scrollToBottom();
                 store.dispatch(
                     EINSTEIN.einsteinExecuteModel({
                         connector,
-                        alias: GLOBAL_EINSTEIN,
+                        alias: ASSISTANT_UTILS.GLOBAL_EINSTEIN,
                         body: einsteinApexRequest,
                         tabId: einstein.currentDialogId,
                         messages: this.messages,
@@ -268,7 +263,7 @@ export default class Dialog extends ToolkitElement {
                         EINSTEIN.openaiExecuteModel({
                             messages: this.messages,
                             tabId: einstein.currentDialogId,
-                            alias: GLOBAL_EINSTEIN,
+                            alias: ASSISTANT_UTILS.GLOBAL_EINSTEIN,
                             model: this.model,
                             aiProvider: 'openai',
                             onStream: (message) => {
@@ -318,11 +313,11 @@ export default class Dialog extends ToolkitElement {
         );
         this.scrollToBottom();
         if (this.provider === 'apex') {
-            const einsteinApexRequest = chat_template(LATEST_MODEL_APEX, this.cleanedMessages);
+            const einsteinApexRequest = ASSISTANT_UTILS.chat_template(LATEST_MODEL_APEX, this.cleanedMessages);
             store.dispatch(
                 EINSTEIN.einsteinExecuteModel({
                     connector,
-                    alias: GLOBAL_EINSTEIN,
+                    alias: ASSISTANT_UTILS.GLOBAL_EINSTEIN,
                     body: einsteinApexRequest,
                     tabId: einstein.currentDialogId,
                     messages: this.messages,
@@ -335,7 +330,7 @@ export default class Dialog extends ToolkitElement {
                     EINSTEIN.openaiExecuteModel({
                         messages: this.messages,
                         tabId: einstein.currentDialogId,
-                        alias: GLOBAL_EINSTEIN,
+                        alias: ASSISTANT_UTILS.GLOBAL_EINSTEIN,
                         model: this.model,
                         aiProvider: 'openai',
                         onStream: (message) => {

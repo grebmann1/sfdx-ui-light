@@ -2,6 +2,7 @@ import { api, wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import {
     isElectronApp,
+    isChromeExtension,
     isEmpty,
     classSet,
     isNotUndefinedOrNull,
@@ -131,6 +132,11 @@ export default class Menu extends ToolkitElement {
         if (!isElectronApp()) {
             filtered = filtered.filter(x => !x.isElectronOnly);
         }
+        // If not Chrome, filter out Chrome only apps
+        if (!isChromeExtension()) {
+            filtered = filtered.filter(x => !x.isChromeOnly);
+        }
+
         if (!this.isUserLoggedIn) {
             filtered = filtered.filter(x => x.isOfflineAvailable);
         }

@@ -1,0 +1,19 @@
+.input-section {
+    width: 75%;
+}
+.edit-title-button {
+    visibility: hidden;
+}
+
+.title-input-section:hover .edit-title-button {
+    visibility: visible;
+}
+
+.side-panel-header-custom {
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    align-items: center;
+}
+
+

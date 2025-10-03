@@ -5,6 +5,9 @@ export { generateUniqueId } from './idGenerator';
 export { calculateOverflow } from './sldsOverflowLibrary';
 export { LightningResizeObserver } from './sldsResizeObserver';
 export * as SETUP_LINKS from './links';
+export * as API from './modules/api';
+export * as METADATA from './modules/metadata';
+export * as ASSISTANT from './modules/assistant';
 export {
     keyCodes,
     runActionOnBufferedTypedCharacters,
@@ -767,3 +770,5 @@ You are part of a multi-agent system called the Agents SDK, designed to make age
 export const promptWithHandoffInstructions = (prompt) => {
   return `${RECOMMENDED_PROMPT_PREFIX}\n\n${prompt}`;
 }
+
+export const isMac = () => navigator.platform.toUpperCase().indexOf('MAC') >= 0;

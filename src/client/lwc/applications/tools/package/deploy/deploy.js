@@ -10,9 +10,9 @@ import {
     runActionAfterTimeOut,
     compareString,
     splitTextByTimestamp,
+    API as API_UTILS,
 } from 'shared/utils';
 import { store, connectStore, PACKAGE, SELECTORS } from 'core/store';
-import { VIEWERS } from 'api/utils';
 import Toast from 'lightning/toast';
 import moment from 'moment';
 import ModalDeploy from 'package/modalDeploy';
@@ -42,7 +42,7 @@ export default class Deploy extends ToolkitElement {
     isLoadingSpecificRequest = false;
 
     // Viewer
-    viewer_value = VIEWERS.PRETTY;
+    viewer_value = API_UTILS.VIEWERS.PRETTY;
 
     // Models
     responseModel;
@@ -179,18 +179,18 @@ export default class Deploy extends ToolkitElement {
 
     get prettyContainerClass() {
         return classSet('slds-full-height slds-scrollable_y')
-            .add({ 'slds-hide': !(this.viewer_value === VIEWERS.PRETTY) })
+            .add({ 'slds-hide': !(this.viewer_value === API_UTILS.VIEWERS.PRETTY) })
             .toString();
     }
 
     get rawContainerClass() {
         return classSet('slds-full-height slds-scrollable_y')
-            .add({ 'slds-hide': !(this.viewer_value === VIEWERS.RAW) })
+            .add({ 'slds-hide': !(this.viewer_value === API_UTILS.VIEWERS.RAW) })
             .toString();
     }
 
     get viewer_options() {
-        return [VIEWERS.PRETTY, VIEWERS.RAW].map(x => ({ value: x, label: x }));
+        return [API_UTILS.VIEWERS.PRETTY, API_UTILS.VIEWERS.RAW].map(x => ({ value: x, label: x }));
     }
 
     get formattedResponse() {

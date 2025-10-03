@@ -21,6 +21,7 @@ export default class FileTreeItem extends LightningElement {
     @api saved = false;
     @api searchValue = '';
     @api isDeleteDisabled = false;
+    @api isFolderSelectable = false;
     
     isHover = false;
     isMenuOpen = false;
@@ -31,6 +32,9 @@ export default class FileTreeItem extends LightningElement {
     handleClick(event) {
         if (this.isFolder) {
             this.handleToggle(event);
+            if(this.isFolderSelectable) {
+                this.handleSelect(event);
+            }
         } else {
             this.handleSelect(event);
         }
@@ -159,7 +163,7 @@ export default class FileTreeItem extends LightningElement {
     }
 
     get isDeleteButtonVisible() {
-        return this.isHover && (!this.isDeleteDisabled || this.isDeletable);
+        return this.isHover && this.isDeletable && !this.isDeleteDisabled;
     }
 
     get isDeletable() {

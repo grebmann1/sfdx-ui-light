@@ -36,6 +36,11 @@
                     variant={documentationVariant}></lightning-button-icon>
                 <lightning-button-menu alternative-text="Show menu" menu-alignment="auto">
                     <lightning-menu-item
+                        label="Smart Input"
+                        onclick={openSmartInputClick}
+                        prefix-icon-name="utility:upload"
+                        value="Import"></lightning-menu-item>
+                    <lightning-menu-item
                         label="Import Orgs"
                         onclick={importClick}
                         prefix-icon-name="utility:upload"
@@ -68,6 +73,11 @@
                         is-audio-recorder-disabled
                         lwc:ref="agent"
                     ></agent-app>
+                </template>
+
+                <!-- Display the UI for the Input Quick Pick Side Panel component-->
+                <template lwc:elseif={isSmartInput}>
+                    <smartinput-app application-name={applications.SMARTINPUT}></smartinput-app>
                 </template>
                 <!-- End -->
             </div>

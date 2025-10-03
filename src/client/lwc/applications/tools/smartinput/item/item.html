@@ -1,0 +1,29 @@
+<template>
+    <div class="slds-box slds-m-vertical_x-small slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+        <div class="smartinput-item-badge">#{item.ref}</div>
+        <div class="smartinput-item-content slds-p-top_x-small" title={item.value}>
+            <template lwc:if={item.isEditing}>
+                <textarea class="slds-textarea smartinput-item-textarea" onkeydown={handleKeyDown} oninput={handleEditChange} placeholder="Create a new input">{editingValue}</textarea>
+            </template>
+            <template lwc:else>
+                <slds-markdown-viewer value={item.value}></slds-markdown-viewer>
+            </template>
+        </div>
+        <div class="slds-p-left_x-small">
+            <template lwc:if={item.isEditing}>
+                <lightning-button-icon icon-name="utility:close" variant="border-filled" size="small" alternative-text="Cancel" title="Cancel" onclick={handleEditCancel}></lightning-button-icon>
+                <lightning-button-icon icon-name="utility:check" variant="brand" size="small" alternative-text="Save" title="Save" onclick={handleEditSave} class="slds-m-left_x-small"></lightning-button-icon>
+            </template>
+            <template lwc:else>
+                <lightning-button-group>
+                    <lightning-button-icon icon-name="utility:copy" variant="border-filled" alternative-text="Copy" onclick={handleCopyClick}></lightning-button-icon>
+                    <lightning-button-icon-stateful icon-name="utility:favorite" selected={item.isFavorite} variant="border-filled" alternative-text="Favorite" title="Favorite" onclick={handleFavoriteToggle}></lightning-button-icon-stateful>
+                    <lightning-button-icon icon-name="utility:edit" variant="border-filled" alternative-text="Edit" onclick={handleEditClick}></lightning-button-icon>
+                    <lightning-button-icon icon-name="utility:delete" variant="border-filled" alternative-text="Delete" onclick={handleDeleteClick}></lightning-button-icon>
+                </lightning-button-group>
+            </template>
+        </div>
+    </div>
+</template>
+
+

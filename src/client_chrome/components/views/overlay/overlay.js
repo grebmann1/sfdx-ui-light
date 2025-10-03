@@ -96,8 +96,7 @@ export default class Overlay extends ToolkitElement {
 
     connectedCallback() {
         window.jsforce = jsforce;
-        window.defaultStore =
-            window.defaultStore || localForage.createInstance({ name: 'defaultStore' });
+        window.defaultStore = window.defaultStore || localForage.createInstance({ name: 'defaultStore' });
         this.getSessionId();
         //this.checkRecordId();
         this.header_enableAutoDate();

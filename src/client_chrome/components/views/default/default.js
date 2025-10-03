@@ -1,5 +1,5 @@
 import { api, LightningElement, wire } from 'lwc';
-import { store as legacyStore } from 'shared/store';
+import { store as legacyStore, store_application } from 'shared/store';
 import { connectStore, store, EINSTEIN, APPLICATION } from 'core/store';
 
 import { normalizeString as normalize,registerChromePort,disconnectChromePort } from 'shared/utils';
@@ -132,6 +132,14 @@ export default class Default extends LightningElement {
                         alias: 'global_einstein',
                     })
                 );
+            } else if (message.action === 'show_input_quickpick') {
+                // Ensure default panel is shown and set application to quickpick
+                legacyStore.dispatch(store_application.fakeNavigate({
+                    type: 'application',
+                    state: {
+                        applicationName: 'smartinput',
+                    },
+                }));
             }
         });
     };
@@ -150,7 +158,7 @@ export default class Default extends LightningElement {
         //('documentation - loadFromNavigation');
         const { applicationName, attribute1 } = state;
         //console.log('applicationName',applicationName);
-        if (applicationName === 'documentation' || applicationName === 'home') {
+        if (applicationName === 'documentation' || applicationName === 'home' || applicationName === 'smartinput') {
             this.handlePanelChange({
                 detail: {
                     panel: PANELS.DEFAULT,

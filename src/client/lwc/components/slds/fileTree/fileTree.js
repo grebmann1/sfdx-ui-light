@@ -24,6 +24,7 @@ export default class FileTree extends LightningElement {
     @api minSearchLength = 3;
     @api hideSearchInput = false;
     @api includeFoldersInResults = false;
+    @api isFolderSelectable = false;
 
     /** Event Handlers */
 

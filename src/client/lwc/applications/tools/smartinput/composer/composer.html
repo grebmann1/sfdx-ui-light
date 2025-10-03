@@ -1,0 +1,42 @@
+<template>
+    <div class="slds-publisher slds-is-active slds-p-left_small slds-p-right_small slds-p-bottom_x-small">
+        <div class="slds-grid slds-wrap slds-grid_align-center">
+            <div class="slds-col slds-size_1-of-1">
+                <div class="chat-input-container">
+                    <textarea
+                        class="chat-textarea"
+                        placeholder="Type a new input…"
+                        onkeydown={handleKeyDown}
+                        onkeyup={handleInput}
+                        onpaste={handleInput}
+                        readonly={isEnhancing}
+                        aria-label="Smart input value"
+                    >{value}</textarea>
+                    <div class="chat-input-actions-row">
+                        <div class="chat-input-actions-left"></div>
+                        <div class="chat-input-actions-right">
+                            <!-- <button class="chat-btn" title="Reset" aria-label="Reset" onclick={handleReset} disabled={isLoading}>
+                                <lightning-icon icon-name="utility:delete" size="x-small" alternative-text="Reset"></lightning-icon>
+                            </button>
+                            <button class="chat-btn" title="Save" aria-label="Save" onclick={handleSave} disabled={isLoading}>
+                                <lightning-icon icon-name="utility:save" size="x-small" alternative-text="Save"></lightning-icon>
+                            </button> -->
+                            <template lwc:if={isEnhanceEnabled}>
+                                <template lwc:if={isEnhancing}>
+                                    <lightning-icon icon-name="utility:sync" size="x-small" alternative-text="Loading" class="sftk-rotating"></lightning-icon>
+                                </template>
+                                <template lwc:else>
+                                    <button class="chat-btn" title="Enhance" aria-label="Enhance" onclick={handleEnhance} disabled={isLoading}>
+                                        <lightning-icon icon-name="utility:magicwand" size="x-small" alternative-text="Enhance"></lightning-icon>
+                                    </button>
+                                </template>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+
