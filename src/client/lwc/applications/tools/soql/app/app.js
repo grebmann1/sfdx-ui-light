@@ -307,6 +307,8 @@ export default class App extends ToolkitElement {
         if (!query) return;
 
         const { ui, describe } = store.getState();
+        // Clear current tab selection before running a new query
+        store.dispatch(UI.reduxSlice.actions.updateTabSelection({ selectedRecordIds: [] }));
         store.dispatch(UI.reduxSlice.actions.deselectChildRelationship());
         const queryPromise = store.dispatch(
             QUERY.executeQuery({
@@ -415,6 +417,14 @@ export default class App extends ToolkitElement {
             this.selectedChildRecords = rows;
         } else {
             this.selectedRecords = rows;
+            try {
+                const ids = Array.isArray(rows) ? rows.map(x => x.Id).filter(Boolean) : [];
+                store.dispatch(
+                    UI.reduxSlice.actions.updateTabSelection({ selectedRecordIds: ids })
+                );
+            } catch (e) {
+                // no-op
+            }
         }
     };
 
@@ -422,10 +432,13 @@ export default class App extends ToolkitElement {
         const { describe, ui } = store.getState();
         const customMessages = [];
         let _sobject, _sobjectChild;
-        if (this.selectedRecords.length > 0) {
-            const _item = this.selectedRecords[0];
+        const selectedIds = Array.isArray(ui.currentTab.selectedRecordIds)
+            ? ui.currentTab.selectedRecordIds
+            : [];
+        if (selectedIds.length > 0) {
+            const _firstId = selectedIds[0];
             // Verify if the Id is included
-            if (isUndefinedOrNull(_item.Id)) {
+            if (isUndefinedOrNull(_firstId)) {
                 Toast.show({
                     label: 'Error during deletion',
                     message: 'You need to provide the Record Id',
@@ -434,11 +447,11 @@ export default class App extends ToolkitElement {
                 });
                 return;
             }
-            _sobject = describe.prefixMap[_item.Id.substr(0, 3)];
+            _sobject = describe.prefixMap[_firstId.substr(0, 3)];
             if (_sobject) {
                 customMessages.push(
-                    `${this.selectedRecords.length} ${
-                        this.selectedRecords.length == 1 ? _sobject.label : _sobject.labelPlural
+                    `${selectedIds.length} ${
+                        selectedIds.length == 1 ? _sobject.label : _sobject.labelPlural
                     }`
                 );
             }
@@ -464,7 +477,11 @@ export default class App extends ToolkitElement {
         // Child
         //const retChild  = await this.deleteRecords(_sobjectChild,this.selectedChildRecords) || [];
         // Parent
-        const retParent = (await this.deleteRecords(_sobject, this.selectedRecords)) || [];
+        const retParent =
+            (await this.deleteRecords(
+                _sobject,
+                selectedIds.map(id => ({ Id: id }))
+            )) || [];
         const deletedRecordIds = new Set();
         const errorMessages = [];
         for (const ret of [...retParent]) {
@@ -504,6 +521,9 @@ export default class App extends ToolkitElement {
                 tabId: ui.currentTab.id,
             })
         );
+        // Clear selection for current tab after deletion
+        store.dispatch(UI.reduxSlice.actions.updateTabSelection({ selectedRecordIds: [] }));
+        this.selectedRecords = [];
         store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
     };
 
@@ -797,7 +817,11 @@ export default class App extends ToolkitElement {
     }
 
     get isDeleteDisabled() {
-        return this.selectedRecords.length == 0 && this.selectedChildRecords.length == 0;
+        const { ui } = store.getState();
+        const parentLen = Array.isArray(ui.currentTab.selectedRecordIds)
+            ? ui.currentTab.selectedRecordIds.length
+            : 0;
+        return parentLen == 0 && this.selectedChildRecords.length == 0;
     }
 
     get currentTabTableSearch() {

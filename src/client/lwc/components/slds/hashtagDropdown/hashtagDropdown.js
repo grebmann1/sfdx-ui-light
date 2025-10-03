@@ -211,7 +211,6 @@ export default class HashtagDropdown extends LightningElement {
 
         // '@' only triggers the dropdown;
         const tree = this.normalizeToTree(all);
-        console.log('tree',tree);
         const visible = this.filterTree(tree, queryWithoutAt);
         let flattened;
         if (this.currentFolderId) {

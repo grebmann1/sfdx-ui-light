@@ -78,14 +78,6 @@ export default class InputQuickPick extends LightningElement {
         if (!this.enabled) return;
 
         const cmdPressed = isMac() ? e.metaKey : e.ctrlKey;
-        if (cmdPressed && e.key === 'Enter') {
-            e.preventDefault();
-            e.stopPropagation();
-            if (this.isEnhanceEnabled && !this.isLoading) {
-                await this.handleEnhance();
-            }
-            return;
-        }
         if (cmdPressed && (e.key || '').toLowerCase() === 'k') {
             const target = getDeepActiveElement(document);
             if (isTextInputLike(target)) {
@@ -101,6 +93,14 @@ export default class InputQuickPick extends LightningElement {
         const path = (typeof e.composedPath === 'function') ? e.composedPath() : [];
         const inside = host && path.includes(host);
 
+        if (cmdPressed && e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
+            if (this.isEnhanceEnabled && !this.isLoading) {
+                await this.handleEnhance();
+            }
+            return;
+        }
 
         if (e.key === 'Escape') {
             e.preventDefault();
@@ -350,7 +350,7 @@ export default class InputQuickPick extends LightningElement {
         try {
             const resp = await chrome.runtime.sendMessage({ action: 'smartinput_enhance_single', prompt: value });
             const suggestion = (resp && resp.suggestion) || '';
-            console.log('--> suggestion', suggestion);
+            //console.log('--> suggestion', suggestion);
             if (suggestion) {
                 this.applyValue(suggestion);
             }

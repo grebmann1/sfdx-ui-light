@@ -1,5 +1,78 @@
 [
   {
+    "version": "1.4.00",
+    "date": "October 3rd, 2025",
+    "sections": [
+      {
+        "title": "Enhancements & New Features",
+        "categories": [
+          {
+            "category": "AI Assistant & Agent App",
+            "items": [
+              "Added an input quick pick component to speed up composing agent prompts.",
+              "Introduced a message list component and a typing animation for clearer conversation flow.",
+              "Refactored shared instructions and behavior for more consistent agent interactions.",
+              "Replaced the Assistant with the new Agent, which can control the app and the Chrome extension (Beta; behavior and APIs may change)."
+            ]
+          },
+          {
+            "category": "Chrome Extension & APIs",
+            "items": [
+              "Updated the Chrome extension configuration and standardized argument naming across Chrome API functions.",
+              "Improved message handling and UI polish in the extension."
+            ]
+          },
+          {
+            "category": "Shared Utilities & Context",
+            "items": [
+              "Added new utility functions and refactored shared utilities to improve context management across apps."
+            ]
+          },
+          {
+            "category": "Code Quality & Maintenance",
+            "items": [
+              "Cleaned up unused components and styles for better maintainability."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Sharing & Collaboration",
+        "categories": [
+          {
+            "category": "Deep Links & Sharing",
+            "items": [
+              "Introduced shareable deep links to open specific toolkit states (e.g., Settings, Queries, API scripts), enabling quick collaboration and reproducibility. For now, links are manually controlled and will be fully released at a later stage."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Bug Fixes",
+        "categories": [
+          {
+            "category": "AI Assistant & Agent App",
+            "items": [
+              "Reset error state before executing the agent to avoid stale errors."
+            ]
+          },
+          {
+            "category": "API Tools",
+            "items": [
+              "Improved error handling and aligned application state retrieval with the central store for reliability."
+            ]
+          },
+          {
+            "category": "SOQL Explorer",
+            "items": [
+              "Fixed selection/deselection scoping: selections are now per tab (granular) instead of global, preventing cross-tab deletions in the SOQL editor."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.3.49",
     "date": "September 4th, 2025",
     "sections": [

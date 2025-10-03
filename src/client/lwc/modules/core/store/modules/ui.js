@@ -194,8 +194,17 @@ function updateCurrentTab(state, attributes) {
 }
 
 function formatTab(tab) {
-    const { id, name, body, isDraft, fileId, fileBody, tableSearch } = tab;
-    return { id, name, body, isDraft, fileId, fileBody, tableSearch: tableSearch || '' };
+    const { id, name, body, isDraft, fileId, fileBody, tableSearch, selectedRecordIds } = tab;
+    return {
+        id,
+        name,
+        body,
+        isDraft,
+        fileId,
+        fileBody,
+        tableSearch: tableSearch || '',
+        selectedRecordIds: Array.isArray(selectedRecordIds) ? selectedRecordIds : [],
+    };
 }
 
 function enrichTabs(tabs, queryFiles) {
@@ -414,6 +423,16 @@ const uiSlice = createSlice({
             const tabIndex = state.tabs.findIndex(x => x.id === state.currentTab.id);
             if (tabIndex > -1) {
                 state.tabs[tabIndex].tableSearch = value;
+                state.currentTab = state.tabs[tabIndex];
+            }
+        },
+        updateTabSelection: (state, action) => {
+            const { selectedRecordIds } = action.payload;
+            const tabIndex = state.tabs.findIndex(x => x.id === state.currentTab.id);
+            if (tabIndex > -1) {
+                state.tabs[tabIndex].selectedRecordIds = Array.isArray(selectedRecordIds)
+                    ? selectedRecordIds
+                    : [];
                 state.currentTab = state.tabs[tabIndex];
             }
         },

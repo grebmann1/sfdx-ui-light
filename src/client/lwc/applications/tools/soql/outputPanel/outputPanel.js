@@ -49,6 +49,8 @@ export default class OutputPanel extends ToolkitElement {
                 this.resetError();
                 this.response = queryState.data;
                 this.sobjectName = queryState.sobjectName;
+                // Apply selection when new data arrives
+                this.applySelectedRows(ui.currentTab?.selectedRecordIds);
             } else if (queryState.isFetching) {
                 this.response = null;
                 this.resetError();
@@ -63,6 +65,8 @@ export default class OutputPanel extends ToolkitElement {
             this.childSobjectName = this.childResponse.column;
             this.selectMainTable(this.childResponse.recordId);
         }
+        // Keep selection in sync when only selection changes
+        //this.applySelectedRows(ui.currentTab?.selectedRecordIds);
     }
 
     formatDate = createdDate => {
@@ -111,6 +115,24 @@ export default class OutputPanel extends ToolkitElement {
 
     handleTableBuilt = () => {
         this.selectMainTable(this.currentChildRecordId);
+        // Apply selection after table is built
+        const { ui } = store.getState();
+        this.applySelectedRows(ui.currentTab?.selectedRecordIds);
+    };
+
+    applySelectedRows = selectedIds => {
+        const table = this.refs.maintable?.tableInstance;
+        if (!table) return;
+        try {
+            // Deselect all rows first
+            table.deselectRow();
+            if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
+            const rows = table.getRows();
+            const targetRows = rows.filter(row => selectedIds.includes(row.getData().Id));
+            if (targetRows.length > 0) table.selectRow(targetRows);
+        } catch (e) {
+            // no-op
+        }
     };
 
     handleError = e => {
