@@ -140,12 +140,13 @@ const modules = [
 ];
 
 const injectedModules = [
+    { name: 'core/store', path: r('src/client/lwc/modules/core/store/lightStore.js') }, // fake store for injection
     { dir: r('src/client_chrome/components') },
-    { dir: r('src/client/lwc/modules') },
     { dir: r('src/client/lwc/components') },
+    { dir: r('src/client/lwc/modules') },
     { npm: 'lightning-base-components' },
-    { name: 'smartinput/utils', path: r('src/client/lwc/applications/tools/smartinput/utils/utils.js') },
     { name: 'imported/jsforce', path: r('src/client/assets/libs/jsforce/jsforce.js') },
+    { name: 'smartinput/utils', path: r('src/client/lwc/applications/tools/smartinput/utils/utils.js') },
 ];
 
 const prodPlugins = isProduction ? [terserPlugin] : [];
@@ -157,7 +158,8 @@ const basicBundler = (input, output, name, useLwc = false, modulesArg, extraPlug
         format: 'esm',
         name,
         sourcemap: true,
-        inlineDynamicImports: true
+        inlineDynamicImports: true,
+        intro: '(typeof window!=="undefined"&&(window.openaiAgent=window.openaiAgent||{},window.openaiAgent.Agent={}));'
     },
     plugins: [
         chevrotainAlias,

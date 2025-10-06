@@ -86,33 +86,9 @@ export default class App extends ToolkitElement {
         }
     }
 
-    async connectedCallback() {
+    connectedCallback() {
         Analytics.trackAppOpen('agent', { alias: this.alias });
-        await this.loadConversationsFromCache();
-    }
-
-    async loadConversationsFromCache() {
-        LOGGER.log('--> loadConversationsFromCache (via store)');
-        await store.dispatch(AGENT.loadConversationsFromCache());
-        const stateConvs = store.getState().agent?.conversations || [];
-        if (stateConvs.length === 0) {
-            this.createNewConversation();
-        } else {
-            // Seed initial messages for active conversation from streamHistory if not already present
-            const state = store.getState();
-            const activeId = state.agent?.activeConversationId || stateConvs[0].id;
-            const hasMessages = (state.agent?.messagesById?.[activeId] || []).length > 0;
-            const conv = stateConvs.find(c => c.id === activeId);
-            if (!hasMessages && conv && Array.isArray(conv.streamHistory) && conv.streamHistory.length > 0) {
-                const msgs = Message.formatStreamHistory(conv.streamHistory);
-                store.dispatch(AGENT.reduxSlice.actions.setMessages({ id: activeId, messages: msgs }));
-            }
-        }
-    }
-
-    async saveConversationsToCache() {
-        LOGGER.log('--> saveConversationsToCache (via store)');
-        await store.dispatch(AGENT.saveConversationsToCache());
+        store.dispatch(AGENT.loadCacheSettingsAsync());
     }
 
     renderedCallback() {
@@ -154,7 +130,7 @@ export default class App extends ToolkitElement {
 
     handleClearClick = async e => {
         store.dispatch(AGENT.reduxSlice.actions.clearMessages({ id: this.activeConversationId }));
-        this.saveConversationsToCache();
+        //this.saveConversationsToCache();
     };
 
     handleSendClick = async (e) => {
@@ -162,7 +138,7 @@ export default class App extends ToolkitElement {
         const files = e.detail.files || [];
         const model = e.detail.model || this.selectedModel;
         store.dispatch(AGENT.reduxSlice.actions.updateSelectedModel({ model }));
-        await this.saveConversationsToCache();
+        //await this.saveConversationsToCache();
         if(isEmpty(this.openaiKey)){
             this.error_title = 'Error';
             this.error_message = 'No OpenAI key found';
@@ -197,15 +173,15 @@ export default class App extends ToolkitElement {
         this.isSidePanelOpen = !this.isSidePanelOpen;
     };
 
-    createNewConversation = () => {
+    createNewConversation = async () => {
         const convs = store.getState().agent?.conversations || [];
         const newId = 'conv_' + Date.now();
         const newTitle = `Conversation ${convs.length + 1}`;
         const newConv = { id: newId, title: newTitle, streamHistory: [] };
-        store.dispatch(AGENT.reduxSlice.actions.addConversation({ conversation: newConv }));
-        store.dispatch(AGENT.reduxSlice.actions.setActiveConversationId({ id: newId }));
+        await store.dispatch(AGENT.reduxSlice.actions.addConversation({ conversation: newConv }));
+        await store.dispatch(AGENT.reduxSlice.actions.setActiveConversationId({ id: newId }));
         this.isSidePanelOpen = false;
-        this.saveConversationsToCache();
+        //this.saveConversationsToCache();
     };
 
 
@@ -214,7 +190,7 @@ export default class App extends ToolkitElement {
         const id = event.detail.item.id;
         if (id && id !== this.activeConversationId) {
             store.dispatch(AGENT.reduxSlice.actions.setActiveConversationId({ id }));
-            this.saveConversationsToCache();
+            //this.saveConversationsToCache();
         }
         this.isSidePanelOpen = false;
     };
@@ -255,7 +231,7 @@ export default class App extends ToolkitElement {
     saveConversationTitle = () => {
         if (this.pendingTitle.trim()) {
             store.dispatch(AGENT.reduxSlice.actions.updateConversationTitle({ id: this.activeConversationId, title: this.pendingTitle.trim() }));
-            this.saveConversationsToCache();
+            //this.saveConversationsToCache();
         }
         this.isEditingTitle = false;
     };
@@ -264,9 +240,9 @@ export default class App extends ToolkitElement {
         this.isEditingTitle = false;
     };
 
-    deleteConversation = (id) => {
+    deleteConversation = async (id) => {
         const wasActive = this.activeConversationId === id;
-        store.dispatch(AGENT.reduxSlice.actions.deleteConversation({ id }));
+        await store.dispatch(AGENT.reduxSlice.actions.deleteConversation({ id }));
         const convs = store.getState().agent?.conversations || [];
         if (convs.length === 0) {
             this.createNewConversation();
@@ -276,7 +252,7 @@ export default class App extends ToolkitElement {
                 store.dispatch(AGENT.reduxSlice.actions.setActiveConversationId({ id: newActiveId }));
             }
         }
-        this.saveConversationsToCache();
+        //this.saveConversationsToCache();
     }
 
     /** Getters **/

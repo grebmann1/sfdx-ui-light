@@ -1,7 +1,7 @@
-import { promptWithHandoffInstructions } from 'shared/utils';
-const { Agent } = window.OpenAIAgentsBundle.Agents;
+import { promptWithHandoffInstructions, isUndefinedOrNull } from 'shared/utils';
+const { Agent } = window.OpenAIAgentsBundle?.Agents || {};
 
-export const GeneralAgent = new Agent({
+const _GeneralAgent = isUndefinedOrNull(Agent) ? null : new Agent({
     name: 'SF Toolkit Assistant',
     instructions:promptWithHandoffInstructions(`
         You provide assistance to the user to interact with the Salesforce Toolkit using all your abilities and tools.
@@ -35,3 +35,5 @@ export const GeneralAgent = new Agent({
         parallelToolCalls:false
     }
 });
+
+export const GeneralAgent = _GeneralAgent;

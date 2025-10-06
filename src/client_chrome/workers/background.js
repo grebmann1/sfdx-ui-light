@@ -646,8 +646,18 @@ chrome.runtime.onMessage.addListener(
             ['broadcastMessageToInjected', 'broadcastMessageToSidePanel'].includes(message.action)
         ) {
             const _newMessage = { ...message.content, senderId: sender.id };
+            // Debug logs
             if (message.action === 'broadcastMessageToInjected') {
-                broadcastMessageToAllInjectedInstances(_newMessage);
+                // Prefer routing to the injected port in the same tab as the sender (side panel's host tab)
+                const targetTabId = message.targetTabId;
+                if (targetTabId) {
+                    const wasSent = sendMessageToInjectedInTab(targetTabId, _newMessage);
+                    if (!wasSent) {
+                        broadcastMessageToAllInjectedInstances(_newMessage);
+                    }
+                } else {
+                    broadcastMessageToAllInjectedInstances(_newMessage);
+                }
             } else if (message.action === 'broadcastMessageToSidePanel') {
                 broadcastMessageToAllSidePanelInstances(_newMessage);
             }
@@ -673,7 +683,7 @@ chrome.runtime.onMessage.addListener(
             // Read OpenAI config
             const data = await chrome.storage.local.get(['openai_key', 'openai_url']);
             const apiKey = data.openai_key;
-            const baseUrl = data.openai_url || 'https://api.openai.com';
+            const baseUrl = data.openai_url || 'https://api.openai.com/v1';
             if (!apiKey) return { error: 'Missing OpenAI key' };
             try {
                 const body = {
@@ -685,7 +695,7 @@ chrome.runtime.onMessage.addListener(
                     temperature: 0.5,
                     n: 1,
                 };
-                const resp = await fetch(`${baseUrl}/v1/chat/completions`, {
+                const resp = await fetch(`${baseUrl}/chat/completions`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -794,4 +804,21 @@ function broadcastMessageToAllSidePanelInstances(message) {
     for (const [tabId, port] of sidePanelConnections.entries()) {
         port.postMessage(message);
     }
+}
+
+// Send to only the injected connection that matches the provided tabId. Returns true if a port was found and messaged.
+function sendMessageToInjectedInTab(tabId, message) {
+    let sent = false;
+    try { console.log('[BG] Attempting to send to injected in tab', tabId, 'message.action=', message?.action); } catch (e) {}
+    for (const port of injectedConnections.values()) {
+        const portTabId = port && port.sender && port.sender.tab && port.sender.tab.id;
+        if (portTabId === tabId) {
+            try { console.log('[BG] Found injected port for tab', tabId, '- sending message'); } catch (e) {}
+            port.postMessage(message);
+            sent = true;
+            break;
+        }
+    }
+    if (!sent) { try { console.log('[BG] No injected port matched tab', tabId); } catch (e) {} }
+    return sent;
 }

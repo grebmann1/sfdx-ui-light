@@ -2,7 +2,7 @@ import { track, wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 // Persistence is handled in the SMARTINPUT store slice
 import { connectStore, store, SMARTINPUT } from 'core/store';
-import { guid, isNotUndefinedOrNull } from 'shared/utils';
+import { guid, isNotUndefinedOrNull, isChromeExtension } from 'shared/utils';
 import { CATEGORY_SYSTEM, CATEGORY_CUSTOM } from 'smartinput/utils';
 // AI logic moved to composer
 
@@ -29,12 +29,18 @@ export default class App extends ToolkitElement {
     @track editingValue = '';
     @track itemCounter = 1;
     @track showFavoritesOnly = false;
+    @track isSortReversed = false;
 
     @track isLeftToggled = true;
 
     /**
      * Store wiring - syncs local reactive state with the SMARTINPUT slice
      */
+
+    formattedCategories = (categories) => {
+        if(!categories) return [];
+        return Array.isArray(categories) ? categories : Object.values(categories);
+    }
     @wire(connectStore, { store })
     storeChange({ application, smartInput }) {
         const isCurrentApp = this.verifyIsActive(application.currentApplication);
@@ -43,7 +49,7 @@ export default class App extends ToolkitElement {
         }
         if (!isCurrentApp) return;
         if (smartInput) {
-            this.categories = smartInput.categories || [];
+            this.categories = this.formattedCategories(smartInput.categories) || [];
             this.activeCategoryId = smartInput.activeCategoryId || null;
             this.isSidePanelOpen = !!smartInput.isLeftPanelOpen;
             this.isLeftToggled = !!smartInput.isLeftPanelOpen;
@@ -68,6 +74,10 @@ export default class App extends ToolkitElement {
 
     handleFavoritesToggle = () => {
         this.showFavoritesOnly = !this.showFavoritesOnly;
+    };
+
+    handleToggleSort = () => {
+        this.isSortReversed = !this.isSortReversed;
     };
 
     createNewCategory = () => {
@@ -217,6 +227,18 @@ export default class App extends ToolkitElement {
         store.dispatch(SMARTINPUT.reduxSlice.actions.setCategories(next));
     };
 
+    handleItemApplyClick = (e) => {
+        const { item } = e.detail || {};
+        if (!item) return;
+        if(isChromeExtension()){
+            try { /* Debug */ console.log('[APP:SmartInput] Sending apply_input_value to injected (side panel tab only)', { item }); } catch (e) {}
+            chrome.runtime.sendMessage({
+                action: 'broadcastMessageToInjected',
+                content: { action: 'apply_input_value', item },
+            });
+        }
+    };
+
     /**
      * Category name editing using slds-field
      */
@@ -296,13 +318,13 @@ export default class App extends ToolkitElement {
         if (this.showFavoritesOnly) {
             list = list.filter(x => !!x.isFavorite);
         }
-        return list
+        const prepared = list
             .map(x => ({
                 ...x,
                 disabled: false,
                 isEditing: x.id === this.editingItemId,
-            }))
-            .reverse();
+            }));
+        return this.isSortReversed ? prepared.reverse() : prepared;
     }
 
     get hasDisplayedInputs() {

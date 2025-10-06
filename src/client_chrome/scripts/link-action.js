@@ -66,16 +66,16 @@ function updateSettings(params) {
 
     return new Promise((resolve, reject) => {
         console.log('--> filteredSettings', filteredSettings);
-        /* chrome.storage.sync.set(filteredSettings, function() {
+        chrome.storage.local.set(filteredSettings, function() {
             if (chrome.runtime.lastError) reject(chrome.runtime.lastError);
             else resolve();
-        }); */
+        });
     });
 }
 
 function startCountdown(seconds, onTick, onDone) {
     let remaining = seconds;
-   /*  onTick(remaining);
+   onTick(remaining);
     const interval = setInterval(() => {
         remaining--;
         onTick(remaining);
@@ -84,7 +84,7 @@ function startCountdown(seconds, onTick, onDone) {
             onDone();
         }
     }, 1000);
-    return () => clearInterval(interval); // returns a cancel function  */
+    return () => clearInterval(interval); // returns a cancel function  
 }
 
 (async function() {

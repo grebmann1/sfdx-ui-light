@@ -1,9 +1,10 @@
-import { LightningElement, track } from 'lwc';
+import { LightningElement, track, api } from 'lwc';
 import { guid, isNotUndefinedOrNull} from 'shared/utils';
 import { CACHE_CONFIG, loadSingleExtensionConfigFromCache, saveSingleExtensionConfigToCache, getOpenAIKeyFromCache } from 'shared/cacheManager';
 import { isTextInputLike, positionFor, isMac } from './utils';
 import { checkQuery } from 'slds/hashtagDropdown';
-
+import LOGGER from 'shared/logger';
+import { sanitizeCategories, sanitizeItems } from 'smartinput/utils';
 
 const getDeepActiveElement = (doc = document) => {
     let activeElement = doc.activeElement;
@@ -28,6 +29,9 @@ export default class InputQuickPick extends LightningElement {
     activeInput = null;
     lastFocusedEl = null;
     recentItems = [];
+    // Hotkey cycling state for Recents
+    recentHotkeyIndex = -1;
+    recentHotkeyTarget = null;
     // Mirror
     @track pos = { relTop: 0, relLeft: 0, pageTop: 0, pageLeft: 0 };
 
@@ -78,6 +82,17 @@ export default class InputQuickPick extends LightningElement {
         if (!this.enabled) return;
 
         const cmdPressed = isMac() ? e.metaKey : e.ctrlKey;
+        // Cmd/Ctrl + ArrowUp/ArrowDown → cycle and apply values from Recents to the active input
+        if (cmdPressed && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+            const target = getDeepActiveElement(document);
+            if (isTextInputLike(target)) {
+                e.preventDefault();
+                e.stopPropagation();
+                const direction = (e.key === 'ArrowDown') ? 1 : -1;
+                await this.applyRecentByHotkey(target, direction);
+            }
+            return;
+        }
         if (cmdPressed && (e.key || '').toLowerCase() === 'k') {
             const target = getDeepActiveElement(document);
             if (isTextInputLike(target)) {
@@ -87,7 +102,37 @@ export default class InputQuickPick extends LightningElement {
             return;
         }
 
-        if (!this.isOpen) return;
+		// Cmd/Ctrl + Enter when Quick Pick is NOT open
+		if (!this.isOpen && cmdPressed && e.key === 'Enter') {
+			const target = getDeepActiveElement(document);
+			if (isTextInputLike(target)) {
+				e.preventDefault();
+				e.stopPropagation();
+				const content = (this.getCurrentValueFromTarget(target) || '').trim();
+				if (content) {
+					// Try exact REF match from cache first
+					const matched = await this.findItemByRef(content);
+					if (matched && (matched.value || '')) {
+						this.applyValueToTarget(target, matched.value || '');
+						return;
+					}
+					// Otherwise, process with AI and inject suggestion
+					try {
+						const resp = await chrome.runtime.sendMessage({ action: 'smartinput_enhance_single', prompt: content });
+						const suggestion = (resp && resp.suggestion) || '';
+						if (suggestion) {
+							this.applyValueToTarget(target, suggestion);
+							this.updateRecents({ id: guid(), value: suggestion });
+						}
+					} catch (err) {
+						console.error('--> quick enhance (closed) error', err);
+					}
+				}
+			}
+			return;
+		}
+
+		if (!this.isOpen) return;
 
         const host = this.template && this.template.host;
         const path = (typeof e.composedPath === 'function') ? e.composedPath() : [];
@@ -203,14 +248,24 @@ export default class InputQuickPick extends LightningElement {
         this.handleSearchReset();
     };
 
-    handleEnhance = async () => {
-        try {
-            this.isLoading = true;
-            await this.handleSearchEnhance();
-        } finally {
-            this.isLoading = false;
-        }
-    };
+	handleEnhance = async () => {
+		const value = (this.searchQuery || '').trim();
+		if (!value) return;
+		// Before calling AI, if the current input equals a REF, use it directly
+		try {
+			const matched = await this.findItemByRef(value);
+			if (matched && (matched.value || '')) {
+				this.applyValue(matched);
+				return;
+			}
+		} catch (_) { /* ignore ref lookup errors and fallback to AI */ }
+		try {
+			this.isLoading = true;
+			await this.handleSearchEnhance();
+		} finally {
+			this.isLoading = false;
+		}
+	};
 
     handleSave = async () => {
         await this.handleSearchInjectValue();
@@ -294,6 +349,13 @@ export default class InputQuickPick extends LightningElement {
         const itemObj = typeof valueOrItem === 'string' ? { id: null, value: val } : valueOrItem;
         if (itemObj && (itemObj.value || itemObj.id)) this.updateRecents(itemObj);
         this.close();
+    }
+
+    // Allow external components (e.g., side panel via background → injected) to apply a value
+    @api
+    applyFromSidePanel(valueOrItem) {
+        LOGGER.debug('applyFromSidePanel', valueOrItem);
+        this.applyValue(valueOrItem);
     }
 
     // ===== DOM Helpers =====
@@ -404,6 +466,47 @@ export default class InputQuickPick extends LightningElement {
         this.saveRecents();
     }
 
+    // Apply a recent value to a target input without changing Recents order
+    applyValueToTarget(target, value) {
+        if (!target) return;
+        try {
+            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+                target.focus();
+                target.value = value || '';
+                if (typeof target.setSelectionRange === 'function') {
+                    const len = (target.value || '').length;
+                    target.setSelectionRange(len, len);
+                }
+                target.dispatchEvent(new Event('input', { bubbles: true }));
+                target.dispatchEvent(new Event('change', { bubbles: true }));
+                return;
+            }
+            if (target.isContentEditable === true) {
+                target.focus();
+                target.textContent = value || '';
+                target.dispatchEvent(new Event('input', { bubbles: true }));
+                return;
+            }
+            // Fallback
+            target.focus?.();
+        } catch (_) { }
+    }
+
+    async applyRecentByHotkey(target, direction) {
+        const recents = await this.loadRecents();
+        if (!Array.isArray(recents) || recents.length === 0) return;
+        // Reset index when target changes
+        if (this.recentHotkeyTarget !== target) {
+            this.recentHotkeyTarget = target;
+            this.recentHotkeyIndex = -1;
+        }
+        const next = ((this.recentHotkeyIndex ?? -1) + direction + recents.length) % recents.length;
+        this.recentHotkeyIndex = next;
+        const item = recents[next];
+        const value = (item && item.value) || '';
+        this.applyValueToTarget(target, value);
+    }
+
     // Focus helpers
     getFocusableElements() {
         const nodes = [];
@@ -422,20 +525,71 @@ export default class InputQuickPick extends LightningElement {
         return categories.flatMap(c => [c, ...(c.items || [])]);
     }
 
+    formatRef(ref) {
+        return ref && ref.startsWith('#') ? `${ref.toUpperCase()}` : `#${ref.toUpperCase()}`;
+    }
+
     formatItem(it) {
-        return { ...it, label: it.value, parentId: it.parentId, ...(it.ref ? { ref: `#${it.ref}` } : {}) };
+        return { ...it, label: it.value, parentId: it.parentId, ...(it.ref ? { ref: this.formatRef(it.ref) } : {}) };
     }
 
     formatCategory(c) {
         return { ...c, label: c.name, items: c.items.map(it => this.formatItem(it)) };
     }
 
+	// Lookup: find item by REF in cached Smart Input data or Recents
+	async findItemByRef(refInput) {
+		const raw = (refInput || '').trim();
+		if (!raw) return null;
+		const normalized = this.formatRef(raw);
+		try {
+			// Search categories/items from cache
+			const data = await loadSingleExtensionConfigFromCache(
+				CACHE_CONFIG.INPUT_QUICKPICK_DATA.key,
+				(d) => ({
+					categories: sanitizeCategories(d?.categories).map(c => ({
+						...c,
+						...(c.items && { items: sanitizeItems(c.items) })
+					}))
+				})
+			);
+			const categories = data?.categories || [];
+			for (const c of categories) {
+				for (const it of c.items || []) {
+					if (it?.ref && this.formatRef(it.ref) === normalized) {
+						return { ...it, ref: this.formatRef(it.ref) };
+					}
+				}
+			}
+		} catch (_) { /* ignore and continue to search recents */ }
+
+		// Search recents
+		try {
+			const recents = await this.loadRecents();
+			for (const it of recents || []) {
+				if (it?.ref && this.formatRef(it.ref) === normalized) {
+					return it;
+				}
+			}
+		} catch (_) { /* ignore */ }
+
+		return null;
+	}
+
     // New: Load Smart Input categories and items from cache
     async loadSmartInputItems() {
-        const data = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.INPUT_QUICKPICK_DATA.key);
+        const data = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.INPUT_QUICKPICK_DATA.key,(data) => ({
+            categories: sanitizeCategories(data?.categories).map(c => {
+                return {
+                    ...c,
+                    ...(c.items && { items: sanitizeItems(c.items).map(it => this.formatItem(it)) })
+                }
+            }),
+            activeCategoryId: data?.activeCategoryId
+        }));
 
         // We manually remove the Recent category because it's not needed (Legacy code, not needed anymore)
-        const categories = (data?.categories || []).map(c => this.formatCategory(c)).filter(c => c.name !== 'Recent');
+        const categories = ((data?.categories) ?? []).map(c => this.formatCategory(c)).filter(c => c.name !== 'Recent');
         const recents = (await this.loadRecents()).map(it => this.formatItem(it));
         const allItems = this.getAllItems(categories);
         const favorites = allItems.filter(it => it.isFavorite);

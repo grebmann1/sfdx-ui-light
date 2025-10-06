@@ -1,10 +1,10 @@
-import { promptWithHandoffInstructions } from 'shared/utils';
-const { Agent } = window.OpenAIAgentsBundle.Agents;
+import { promptWithHandoffInstructions, isUndefinedOrNull } from 'shared/utils';
+const { Agent } = window.OpenAIAgentsBundle?.Agents || {};
 
 import { tools } from 'agent/tools';
 
 
-export const ApexAgent = new Agent({
+const _ApexAgent = isUndefinedOrNull(Agent) ? null : new Agent({
     name: 'Apex Agent',
     instructions:promptWithHandoffInstructions(`
         You are a highly skilled expert in Salesforce Apex development.
@@ -39,3 +39,4 @@ export const ApexAgent = new Agent({
     modelSettings: { toolChoice: 'auto', store:true, parallelToolCalls:false }
 });
 
+export const ApexAgent = _ApexAgent;

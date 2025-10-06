@@ -10,3 +10,13 @@ export const CATEGORY_TYPE = {
     CATEGORY: 'category',
     ITEM: 'item',
 };
+
+export function sanitizeCategories(categories) {
+    if(!categories) return [];
+    return Array.isArray(categories) ? categories : Object.values(categories);
+}
+
+export function sanitizeItems(items) {
+    if(!items) return [];
+    return Array.isArray(items) ? items : Object.values(items);
+}

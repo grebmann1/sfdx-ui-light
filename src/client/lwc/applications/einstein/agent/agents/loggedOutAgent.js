@@ -1,9 +1,9 @@
 import { tools } from 'agent/tools';
-const { Agent } = window.OpenAIAgentsBundle.Agents;
-import { isChromeExtension } from 'shared/utils';
+const { Agent } = window.OpenAIAgentsBundle?.Agents || {};
+import { isChromeExtension, isUndefinedOrNull } from 'shared/utils';
 import { sharedInstructions } from './sharedInstructions';
 
-export const loggedOutAgent = new Agent({
+const _LoggedOutAgent = isUndefinedOrNull(Agent) ? null : new Agent({
     name: 'SF Toolkit Assistant (Logged Out)',
     instructions: `
 ${sharedInstructions}
@@ -36,3 +36,5 @@ ${sharedInstructions}
       parallelToolCalls:false
     }
 });
+
+export const loggedOutAgent = _LoggedOutAgent;

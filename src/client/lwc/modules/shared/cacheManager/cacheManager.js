@@ -200,6 +200,7 @@ export const CACHE_CONFIG = {
     EINSTEIN_AGENT_CONVERSATIONS: new CONFIG_OBJECT('einstein_agent_conversations', []),
     EINSTEIN_AGENT_CONVERSATION_ACTIVE_ID: new CONFIG_OBJECT('einstein_agent_conversation_active_id', null),
     EINSTEIN_AGENT_CONVERSATION_MODEL: new CONFIG_OBJECT('einstein_agent_conversation_model', null),
+    EINSTEIN_AGENT_CONVERSATION_DATA: new CONFIG_OBJECT('einstein_agent_conversation_data', null),
     // Input Quick Pick
     INPUT_QUICKPICK_DATA: new CONFIG_OBJECT('input_quickpick_data', null),
     INPUT_QUICKPICK_ENABLED: new CONFIG_OBJECT('input_quickpick_enabled', false),
@@ -240,8 +241,12 @@ export async function loadExtensionConfigFromCache(keys) {
     return cacheManager.loadConfig(keys);
 }
 
-export async function loadSingleExtensionConfigFromCache(key) {
-    return (await cacheManager.loadConfig([key]))[key];
+export async function loadSingleExtensionConfigFromCache(key,format) {
+    const result = (await cacheManager.loadConfig([key]))[key];
+    if(format) {
+        return format(result);
+    }
+    return result;
 }
 
 export async function saveExtensionConfigToCache(config) {

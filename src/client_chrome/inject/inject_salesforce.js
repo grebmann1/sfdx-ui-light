@@ -567,16 +567,22 @@ function hideOverlay() {
 let injectorPort;
 function connectToBackground() {
     injectorPort = chrome.runtime.connect({ name: 'sf-toolkit-injected' });
+    try { console.log('[INJECT] Connected to background via port sf-toolkit-injected'); } catch (e) {}
     injectorPort.onDisconnect.addListener(() => {
         // Optionally handle disconnect in content script
         // e.g., cleanup, logging, etc.
     });
     injectorPort.onMessage.addListener(msg => {
+        LOGGER.debug('injectorPort.onMessage', msg);
         if (msg.action === 'toggleOverlay') {
             if (msg.enabled) {
                 showOverlay();
             } else {
                 hideOverlay();
+            }
+        } else if (msg.action === 'apply_input_value') {
+            if (quickPickInstance && typeof quickPickInstance.applyFromSidePanel === 'function') {
+                quickPickInstance.applyFromSidePanel(msg?.item?.value || '');
             }
         }
     });

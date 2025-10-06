@@ -61,6 +61,14 @@ export default class Item extends LightningElement {
         });
     };
 
+    handleApplyClick = () => {
+        this.dispatchEvent(new CustomEvent('applyclick', {
+            detail: { item: this.item },
+            bubbles: true,
+            composed: true,
+        }));
+    };
+
     handleFavoriteToggle = () => {
         this.dispatchEvent(new CustomEvent('favoritechange', {
             detail: { id: this.item?.id },

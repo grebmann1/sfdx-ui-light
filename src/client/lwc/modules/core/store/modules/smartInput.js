@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { guid, isUndefinedOrNull, isNotUndefinedOrNull } from 'shared/utils';
-import { CATEGORY_SYSTEM, CATEGORY_CUSTOM, CATEGORY_TYPE } from 'smartinput/utils';
+import { CATEGORY_SYSTEM, CATEGORY_CUSTOM, CATEGORY_TYPE, sanitizeCategories, sanitizeItems } from 'smartinput/utils';
 import { ERROR } from 'core/store';
 import { CACHE_CONFIG, loadSingleExtensionConfigFromCache, saveSingleExtensionConfigToCache } from 'shared/cacheManager';
 const DEFAULT_CATEGORY = { id: guid(), type: CATEGORY_SYSTEM, name: 'Default', items: [], createdAt: Date.now(), ref: 'A', isEditable: false, isSelectable: true, isItemsEditable: true };
@@ -29,8 +29,13 @@ function saveCacheSettings(state) {
 function loadCacheSettings(cachedConfig, state) { 
     try {
         const { categories, activeCategoryId } = cachedConfig;
-        console.log('loadCacheSettings --> test', { categories, activeCategoryId });
-        Object.assign(state, { categories, activeCategoryId });
+        Object.assign(state, { 
+            categories:sanitizeCategories(categories).map(c => ({
+                ...c,
+                ...(c.items && { items: sanitizeItems(c.items) })
+            })),
+            activeCategoryId
+        });
     } catch (e) {
         console.error('Failed to load CONFIG from localstorage', e);
     }

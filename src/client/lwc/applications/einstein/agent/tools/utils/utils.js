@@ -4,7 +4,7 @@ import LOGGER from 'shared/logger';
 import { guid, isChromeExtension, getChromePort } from 'shared/utils';
 
 export function formatTabId(tabId, tabs) {
-    LOGGER.log('formatTabId', tabId, tabs);
+    LOGGER.log('Tool -> utils -> formatTabId', tabId, tabs);
     if (tabs.some(tab => tab.id === tabId)) {
         return { tabId, isNewTab: false };
     }

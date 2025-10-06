@@ -47,17 +47,58 @@ export default class HashtagDropdown extends LightningElement {
     }
     set query(value) {
         this._query = value;
-        this.currentFolderId = null;
+        /* this.currentFolderId = null;
         this.activeIndex = 0;
-        this.isKeyboardMode = false;
+        this.isKeyboardMode = false; */
         this.computeFilteredItems();
     }
 
     renderedCallback() {
         const el = this.template.querySelector('.slds-hashtag-dropdown');
         if (el) {
-            el.style.top = `${this.top}px`;
-            el.style.left = `${this.left}px`;
+            const margin = 8;
+            const desiredLeft = this.left || 0;
+            const desiredTop = this.top || 0;
+
+            // Measure dropdown size (may not be positioned yet)
+            const rect = el.getBoundingClientRect();
+            const width = rect.width || el.offsetWidth || 300;
+            const height = rect.height || el.offsetHeight || 150;
+
+            const spaceBelow = window.innerHeight - desiredTop - margin;
+            const spaceAbove = desiredTop - margin;
+
+            let openUp = false;
+            let top = desiredTop + 4; // default open below caret
+            if (spaceBelow < height && spaceAbove > spaceBelow) {
+                openUp = true;
+                top = Math.max(margin, desiredTop - height - 4);
+            }
+
+            let left = desiredLeft;
+            if (left + width > window.innerWidth - margin) {
+                left = Math.max(margin, window.innerWidth - margin - width);
+            }
+            if (left < margin) left = margin;
+
+            if (!openUp) {
+                top = Math.min(top, window.innerHeight - margin - height);
+                if (top < margin) top = margin;
+            }
+
+            // Constrain max height to available space
+            /* const available = openUp ? spaceAbove - 8 : spaceBelow - 8;
+            if (available > 80) {
+                el.style.maxHeight = `${Math.floor(available)}px`;
+            } */
+
+            el.style.top = `${top}px`;
+            el.style.left = `${left}px`;
+            if (openUp) {
+                el.classList.add('drop-up');
+            } else {
+                el.classList.remove('drop-up');
+            }
         }
     }
 
@@ -128,12 +169,10 @@ export default class HashtagDropdown extends LightningElement {
     }
 
     scrollActiveIntoView() {
-        try {
-            const el = this.template.querySelector(`li[data-index="${this.activeIndex}"]`);
-            if (el && typeof el.scrollIntoView === 'function') {
-                el.scrollIntoView({ block: 'nearest' });
-            }
-        } catch (_) {}
+        const el = this.template.querySelector(`li[data-index="${this.activeIndex}"]`);
+        if (el && typeof el.scrollIntoView === 'function') {
+            el.scrollIntoView({ block: 'nearest' });
+        }
     }
 
     // ===== Tree helpers =====
@@ -169,8 +208,8 @@ export default class HashtagDropdown extends LightningElement {
             if (!excludeParent || isUndefinedOrNull(n.items) && excludeParent ){
                 flat.push({ ...n, level });
             }
-            if (n._expanded && Array.isArray(n.items) && n.items.length > 0) {
-                flat.push(...this.flattenVisibleTree(n.items, level + 1, excludeParent));
+            if (n._expanded && Array.isArray(n.filteredItems) && n.filteredItems.length > 0) {
+                flat.push(...this.flattenVisibleTree(n.filteredItems, level + 1, excludeParent));
             }
         }
         return flat;

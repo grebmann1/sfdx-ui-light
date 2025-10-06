@@ -15,6 +15,16 @@
                         size="large"
                         onclick={handleLeftToggle}
                     ></lightning-button-icon-stateful>
+                    <lightning-button-icon-stateful
+                        selected={isSortReversed}
+                        variant="border-filled"
+                        icon-name="utility:sort"
+                        size="large"
+                        title="Reverse order"
+                        alternative-text="Reverse order"
+                        class="slds-m-left_x-small"
+                        onclick={handleToggleSort}
+                    ></lightning-button-icon-stateful>
                     <!-- <lightning-button-icon-stateful
                         selected={showFavoritesOnly}
                         variant="border-filled"
@@ -85,6 +95,7 @@
                                             oneditsave={handleInlineEditSave}
                                             oneditcancel={handleInlineEditCancel}
                                             onfavoritechange={handleItemFavoriteChange}
+                                            onapplyclick={handleItemApplyClick}
                                         ></smartinput-item>
                                     </template>
                                 </div>

@@ -1,5 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { CACHE_CONFIG, loadExtensionConfigFromCache, saveSingleExtensionConfigToCache, saveExtensionConfigToCache } from 'shared/cacheManager';
+import { CACHE_CONFIG, loadExtensionConfigFromCache, saveSingleExtensionConfigToCache, saveExtensionConfigToCache, loadSingleExtensionConfigFromCache } from 'shared/cacheManager';
+import { ERROR } from 'core/store';
+import { isNotUndefinedOrNull, guid } from 'shared/utils';
+import { readFileContent, Message, Context, StreamingAgentService } from 'agent/utils';
+import { loggedInAgent, loggedOutAgent } from 'agent/agents';
+
 const AGENT_CACHE_KEYS = {
     ACTIVE_ID: 'einstein_agent_active_id',
     MODEL: 'einstein_agent_model',
@@ -20,6 +25,47 @@ const initialState = {
     streamingMessageById: {},
 };
 
+function saveCacheSettings(state) {
+    try {
+        const { conversations, activeConversationId, selectedModel } = JSON.parse(JSON.stringify(state));
+        saveSingleExtensionConfigToCache(CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATION_DATA.key,{
+            conversations,
+            activeConversationId,
+            selectedModel
+        });
+    } catch (e) {
+        console.error('Failed to save CONFIG to localstorage', e);
+    }
+}
+
+function loadCacheSettings(cachedConfig, state) { 
+    try {
+        const { conversations, activeConversationId, selectedModel } = cachedConfig;
+        Object.assign(state, { conversations, activeConversationId, selectedModel });
+    } catch (e) {
+        console.error('Failed to load CONFIG from localstorage', e);
+    }
+} 
+
+// Async: load cached settings from extension storage
+export const loadCacheSettingsAsync = createAsyncThunk(
+    'agent/loadCacheSettings',
+    async (_, { dispatch, getState }) => {
+        try {
+            return await loadSingleExtensionConfigFromCache(CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATION_DATA.key);
+        } catch (e) {
+            console.error('loadCacheSettings.rejected --> error', e);
+            dispatch(
+                ERROR.reduxSlice.actions.addError({
+                    message: 'Failed to load CONFIG from localstorage',
+                    details: e.message,
+                })
+            );
+            return null;
+        }
+    }
+);
+
 const agentSlice = createSlice({
     name: 'agent',
     initialState,
@@ -30,10 +76,12 @@ const agentSlice = createSlice({
             if (!state.activeConversationId || !state.conversations.find(c => c.id === state.activeConversationId)) {
                 state.activeConversationId = state.conversations[0]?.id || null;
             }
+            saveCacheSettings(state);
         },
         addConversation: (state, action) => {
             const { conversation } = action.payload;
             state.conversations = [...state.conversations, conversation];
+            saveCacheSettings(state);
         },
         deleteConversation: (state, action) => {
             const { id } = action.payload;
@@ -42,10 +90,12 @@ const agentSlice = createSlice({
             if (wasActive) {
                 state.activeConversationId = state.conversations[0]?.id || null;
             }
+            saveCacheSettings(state);
         },
         setActiveConversationId: (state, action) => {
             const { id } = action.payload;
             state.activeConversationId = id;
+            saveCacheSettings(state);
         },
         updateConversationTitle: (state, action) => {
             const { id, title } = action.payload;
@@ -53,6 +103,7 @@ const agentSlice = createSlice({
             if (idx !== -1) {
                 state.conversations[idx] = { ...state.conversations[idx], title };
             }
+            saveCacheSettings(state);
         },
         updateConversationStreamHistory: (state, action) => {
             const { id, streamHistory } = action.payload;
@@ -60,10 +111,12 @@ const agentSlice = createSlice({
             if (idx !== -1) {
                 state.conversations[idx] = { ...state.conversations[idx], streamHistory };
             }
+            saveCacheSettings(state);
         },
         updateSelectedModel: (state, action) => {
             const { model } = action.payload;
             state.selectedModel = model;
+            saveCacheSettings(state);
         },
         setError: (state, action) => {
             const { title, message } = action.payload || {};
@@ -97,6 +150,11 @@ const agentSlice = createSlice({
         clearMessages: (state, action) => {
             const { id } = action.payload;
             state.messagesById[id] = [];
+            const idx = state.conversations.findIndex(c => c.id === id);
+            if (idx !== -1) {
+                state.conversations[idx] = { ...state.conversations[idx], streamHistory: [] };
+            }
+            saveCacheSettings(state);
         },
         setStreamingMessage: (state, action) => {
             const { id, message } = action.payload;
@@ -122,6 +180,20 @@ const agentSlice = createSlice({
                 } else if (!state.activeConversationId || !state.conversations.find(c => c.id === state.activeConversationId)) {
                     state.activeConversationId = state.conversations[0]?.id || null;
                 }
+            })
+            .addCase(loadCacheSettingsAsync.fulfilled, (state, action) => {
+                const cachedConfig = action.payload;
+                if(isNotUndefinedOrNull(cachedConfig)) {
+                    loadCacheSettings(cachedConfig, state);
+                }
+                // In case there is issue with some missing messages, check this FUNCTION !!!
+                state.conversations.forEach(c => {
+                    const hasMessages = (state.messagesById?.[c.id] || []).length > 0;
+                    if (!hasMessages && c.streamHistory && c.streamHistory.length > 0) {
+                        const msgs = Message.formatStreamHistory(c.streamHistory);
+                        state.messagesById[c.id] = Array.isArray(msgs) ? msgs : [];
+                    }
+                });
             });
     }
 });
@@ -172,11 +244,9 @@ export const executeAgent = createAsyncThunk(
         const baseUrl = state.application?.openaiUrl;
         const isLoggedIn = !!state.application?.connector;
 
-        const { Runner, user, setDefaultOpenAIClient, setOpenAIAPI } = window.OpenAIAgentsBundle?.Agents;
+        const { Runner, user, setDefaultOpenAIClient, setOpenAIAPI } = window.OpenAIAgentsBundle?.Agents || {};
         const OpenAI = (await import('openai')).default;
-        const { readFileContent, Message, Context } = await import('agent/utils');
-        const { loggedInAgent, loggedOutAgent } = await import('agent/agents');
-        const { guid } = await import('shared/utils');
+        
 
         const openai = new OpenAI({ dangerouslyAllowBrowser: true, apiKey: openaiKey, baseURL: baseUrl });
         setDefaultOpenAIClient(openai);
@@ -226,8 +296,6 @@ export const executeAgent = createAsyncThunk(
 
         const fakeStore = { getState };
         const context = `\n                Context:\n                    ${await Context.getCurrentGlobalContext(fakeStore)}\n                    ${await Context.getCurrentApplicationContext(fakeStore)}\n                `;
-
-        const { StreamingAgentService } = await import('agent/utils');
         const service = new StreamingAgentService(
             runner,
             selectedAgent,
@@ -251,7 +319,7 @@ export const executeAgent = createAsyncThunk(
                     const updated = Message.appendMessageIfNotExists(list, msg);
                     dispatch(reduxSlice.actions.setMessages({ id: conversationId, messages: updated }));
                 },
-                onStreamEnd: (stream) => {
+                onStreamEnd: async (stream) => {
                     const streamingMsg = getState().agent?.streamingMessageById?.[conversationId];
                     if (streamingMsg) {
                         const list = (getState().agent?.messagesById?.[conversationId] || []).slice();
@@ -264,6 +332,40 @@ export const executeAgent = createAsyncThunk(
                     dispatch(reduxSlice.actions.updateConversationStreamHistory({ id: conversationId, streamHistory: stream.history }));
                     dispatch(saveConversationsToCache());
                     delete streamingServices[conversationId];
+
+                    // Adapted from previous processEndOfStream logic:
+                    // If the last tool output name is in stopAtToolNames (e.g. chrome_screenshot),
+                    // immediately re-run with the tool output content as a user message.
+                    try {
+                        const stopNames = stream?.lastAgent?.toolUseBehavior?.stopAtToolNames || [];
+                        const newItems = Array.isArray(stream?.newItems) ? stream.newItems : [];
+                        const lastItem = newItems.length > 0 ? newItems[newItems.length - 1] : null;
+                        const lastOutputName = lastItem?.rawItem?.name;
+                        if (lastItem && stopNames.includes(lastOutputName)) {
+                            const outputContent = lastItem?.output?.content;
+                            const isError = lastItem?.output?.isError;
+                            if (outputContent && !isError) {
+                                const userMsg = user('');
+                                userMsg.content = outputContent;
+                                await dispatch(executeAgent({
+                                    prompt: null,
+                                    directMessages: [Message.formatMessage(userMsg, [])],
+                                    files: [],
+                                    conversationId,
+                                }));
+                            } else if (isError) {
+                                // Dry run to process the error (if possible)
+                                await dispatch(executeAgent({ prompt: null, directMessages: [], files: [], conversationId }));
+                            } else {
+                                // No output content
+                                // eslint-disable-next-line no-console
+                                console.error('No output content for stopAtToolNames item', lastItem);
+                            }
+                        }
+                    } catch (e) {
+                        // eslint-disable-next-line no-console
+                        console.error('End-of-stream auto-resend handling failed', e);
+                    }
                 },
                 onError: (e) => {
                     dispatch(reduxSlice.actions.stopLoading({ id: conversationId }));
