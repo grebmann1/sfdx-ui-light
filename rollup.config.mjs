@@ -88,7 +88,6 @@ const getLwcModuleAliasEntries = (modulesArg) => {
 
 const lwcAliasForNonLwcBundles = (modulesArg) => {
     const entries = getLwcModuleAliasEntries(modulesArg);
-    console.log('--> entries', entries);
     return entries.length ? alias({ entries }) : null;
 };
 

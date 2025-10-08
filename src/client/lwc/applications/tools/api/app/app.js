@@ -1230,7 +1230,7 @@ export default class App extends ToolkitElement {
 
     get workbenchContainerClass() {
         return classSet('slds-fill-height slds-flex-column')
-            .add({ 'slds-hide': !(this.viewer_value === VIEWERS.WORKBENCH) })
+            .add({ 'slds-hide': !(this.viewer_value === API_UTILS.VIEWERS.WORKBENCH) })
             .toString();
     }
 

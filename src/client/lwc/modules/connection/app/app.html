@@ -34,14 +34,14 @@
                         <illustration-empty title="No orgs"></illustration-empty>
                     </template>
                 </template>
-                <!-- Loading -->
-                <template lwc:if={isLoading}>
-                    <slds-spinner
-                        message={loadingMessage}
-                        alternative-text="Loading"
-                        size="small"></slds-spinner>
-                </template>
             </div>
+            <!-- Loading -->
+            <template lwc:if={isLoading}>
+                <slds-spinner
+                    message={loadingMessage}
+                    alternative-text="Loading"
+                    size="small"></slds-spinner>
+            </template>
         </div>
     </template>
     <template lwc:else>
