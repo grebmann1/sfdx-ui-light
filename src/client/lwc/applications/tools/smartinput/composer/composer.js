@@ -63,6 +63,7 @@ export default class Composer extends LightningElement {
         this.isEnhancing = true;
         try {
             const suggestions = await this.generateSuggestions(trimmed);
+            console.log('suggestions --> ', suggestions);
             if (!suggestions || suggestions.length === 0) return;
             if (suggestions.length === 1) {
                 this._value = suggestions[0];

@@ -1,5 +1,24 @@
 [
   {
+    "version": "1.4.1",
+    "date": "October 10th, 2025",
+    "sections": [
+      {
+        "title": "Maintenance & Polish",
+        "categories": [
+          {
+            "category": "General",
+            "items": [
+              "Consolidated all pending changes since 1.4.0 across apps and the Chrome extension.",
+              "Stability, UI polish, and small fixes for Agent, Platform Events, Smart Input, Editor, and File Tree.",
+              "Added shared Platform Event utilities and minor refactors in core store and shared utils."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.4.00",
     "date": "October 3rd, 2025",
     "sections": [

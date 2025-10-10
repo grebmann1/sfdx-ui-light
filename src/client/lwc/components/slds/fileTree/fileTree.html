@@ -3,7 +3,7 @@
         <!-- external search controls -->
     </template>
     <template lwc:else>
-        <lightning-input class="slds-m-bottom_small slds-m-top_small search-input" name={i18n.Search} type="search" placeholder={i18n.SearchPlaceholder}
+        <lightning-input class="slds-m-bottom_small slds-m-around_small search-input" name={i18n.Search} type="search" placeholder={i18n.SearchPlaceholder}
         value={searchValue} onkeyup={handleSearch} onchange={handleSearch} label={i18n.Search} variant="label-hidden"></lightning-input>
     </template>
     <div class="file-explorer-container full-height">

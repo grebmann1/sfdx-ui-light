@@ -36,8 +36,7 @@
         </div>
 
         <footer>
-            <div
-                class="slds-grid slds-grid_vertical-align-center slds-p-horizontal_small slds-p-vertical_xx-small">
+            <div class="slds-grid slds-grid_vertical-align-center slds-p-horizontal_small slds-p-vertical_xx-small">
                 <template lwc:if={isApprovalDisplayed}>
                     <button
                         class="slds-button button-accept slds-button_neutral slds-p-right_small"
@@ -81,14 +80,13 @@
                 </template>
                 <template lwc:elseif={hasText}>
                     <lightning-button
-                        class="slds-col_bump-right"
                         label={label}
                         variant="brand"
                         disabled={isLoading}
                         onclick={handleGenerate}></lightning-button>
                     <template lwc:if={isLoading}>
                         <lightning-button
-                            class="slds-col_bump-right"
+                            class="slds-m-left_x-small"
                             label="Stop"
                             variant="destructive"
                             onclick={handleStop}></lightning-button>

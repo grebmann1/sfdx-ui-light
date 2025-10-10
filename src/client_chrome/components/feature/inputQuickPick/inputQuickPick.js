@@ -1,5 +1,5 @@
 import { LightningElement, track, api } from 'lwc';
-import { guid, isNotUndefinedOrNull} from 'shared/utils';
+import { guid, isNotUndefinedOrNull, isEmpty } from 'shared/utils';
 import { CACHE_CONFIG, loadSingleExtensionConfigFromCache, saveSingleExtensionConfigToCache, getOpenAIKeyFromCache } from 'shared/cacheManager';
 import { isTextInputLike, positionFor, isMac } from './utils';
 import { checkQuery } from 'slds/hashtagDropdown';
@@ -70,7 +70,7 @@ export default class InputQuickPick extends LightningElement {
         this.enabled = isEnabled !== false;
         try {
             const key = await getOpenAIKeyFromCache();
-            this.isEnhanceEnabled = !!(key && String(key).trim() !== '');
+            this.isEnhanceEnabled = !isEmpty(key);
         } catch (_) {
             this.isEnhanceEnabled = false;
         }
@@ -94,6 +94,12 @@ export default class InputQuickPick extends LightningElement {
             return;
         }
         if (cmdPressed && (e.key || '').toLowerCase() === 'k') {
+            // If Quick Pick is already open, ignore Cmd/Ctrl+K to avoid re-opening on the internal textarea
+            if (this.isOpen) {
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
             const target = getDeepActiveElement(document);
             if (isTextInputLike(target)) {
                 e.preventDefault();

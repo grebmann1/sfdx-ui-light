@@ -187,7 +187,7 @@ const agentSlice = createSlice({
                     loadCacheSettings(cachedConfig, state);
                 }
                 // In case there is issue with some missing messages, check this FUNCTION !!!
-                state.conversations.forEach(c => {
+                (state.conversations || []).forEach(c => {
                     const hasMessages = (state.messagesById?.[c.id] || []).length > 0;
                     if (!hasMessages && c.streamHistory && c.streamHistory.length > 0) {
                         const msgs = Message.formatStreamHistory(c.streamHistory);

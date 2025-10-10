@@ -20,10 +20,11 @@ import Analytics from 'shared/analytics';
 
 import lib from 'cometd';
 import moment from 'moment';
+import LOGGER from 'shared/logger';
 
 const STATUS_NEW = 'New';
 const STATUS_SUBSCRIBED = 'Subscribed';
-const STATUS_UNSUBSCRIBED = 'Unsubscribed';
+//const STATUS_UNSUBSCRIBED = 'Unsubscribed';
 const STATUS_ERROR = 'Error';
 const TYPE_MAPPING = {
     data: 'Change Data Capture',
@@ -155,7 +156,7 @@ export default class App extends ToolkitElement {
                 })
             );
         } catch (e) {
-            console.error('Issue update events', e);
+            LOGGER.error('Issue update events', e);
         }
     };
 
@@ -206,7 +207,7 @@ export default class App extends ToolkitElement {
             try {
                 this.cometdSubscribe(eventName, replayId);
             } catch (e) {
-                console.error('Big Error', e);
+                LOGGER.error('Big Error', e);
             }
         }
     };
@@ -320,7 +321,7 @@ export default class App extends ToolkitElement {
             );
             //this.subscribedChannels = this.subscribedChannels.filter(x => x.id !== name);
             cometd.unsubscribe(_channelToDelete, null, () => {
-                console.log('--> Unsubscribing <--');
+                LOGGER.debug('--> Unsubscribing <--');
             });
         } else if (!isEmpty(name)) {
             store.dispatch(
@@ -341,12 +342,13 @@ export default class App extends ToolkitElement {
         const keywords = e.detail.rawSearchTerm;
         const results = this.eventObjects
             .filter(x => checkIfPresent(x.name, keywords))
-            .map(x => this.formatForLookup(x.name));
+            .map(x => this.formatForLookup(x));
         lookupElement.setSearchResults(results);
     };
 
     lookup_handleSelectionChange = e => {
         const selection = this.template.querySelector('slds-lookup').getSelection();
+        LOGGER.debug('lookup_handleSelectionChange', selection);
         this.lookup_selectedEvents = selection;
     };
 
@@ -420,7 +422,7 @@ export default class App extends ToolkitElement {
         }
         cometd.handshake(status => {
             if (!status.successful) {
-                console.error('Error during handshake', status);
+                LOGGER.error('Error during handshake', status);
             } else {
                 this.isConnected = true;
             }
@@ -490,9 +492,11 @@ export default class App extends ToolkitElement {
     };
 
     formatForLookup = item => {
+        LOGGER.debug('formatForLookup', item);
         return {
-            id: item,
-            title: item,
+            id: item.name,
+            title: item.name,
+            ...(item.associateEntityType ? { associateEntityType: item.associateEntityType } : {}),
         };
     };
 
@@ -508,8 +512,9 @@ export default class App extends ToolkitElement {
             this.eventObjects = records.filter(
                 x => x.name.endsWith('ChangeEvent') || x.name.endsWith('__e') || x.name.includes('Event')
             );
+            LOGGER.debug('eventObjects', this.eventObjects);
         } catch (e) {
-            console.error(e);
+            LOGGER.error(e);
             store.dispatch(
                 ERROR.reduxSlice.actions.addError({
                     message: 'Error during describeAll',

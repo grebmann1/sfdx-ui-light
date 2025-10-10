@@ -1,4 +1,4 @@
-import { track, wire } from 'lwc';
+import { track, wire, api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 // Persistence is handled in the SMARTINPUT store slice
 import { connectStore, store, SMARTINPUT } from 'core/store';
@@ -12,6 +12,8 @@ export default class App extends ToolkitElement {
      */
     // Side panel
     isSidePanelOpen = true;
+    // When true, closes the left panel automatically when an item (child) is selected
+    @api autoCloseOnItemSelect = false;
     categorySearchFields = ['name'];
     minSearchLengthForCategories = 2;
     hideSearchInputForCategories = false;
@@ -32,6 +34,8 @@ export default class App extends ToolkitElement {
     @track isSortReversed = false;
 
     @track isLeftToggled = true;
+    @track highlightItemId = null;
+    highlightTimer = null;
 
     /**
      * Store wiring - syncs local reactive state with the SMARTINPUT slice
@@ -83,8 +87,8 @@ export default class App extends ToolkitElement {
     createNewCategory = () => {
         // Alias for Add Category
         this.handleAddCategory();
-        // open left panel
-        store.dispatch(SMARTINPUT.reduxSlice.actions.setLeftPanelOpen(true));
+        // close left panel
+        store.dispatch(SMARTINPUT.reduxSlice.actions.setLeftPanelOpen(false));
     };
 
     /**
@@ -93,10 +97,45 @@ export default class App extends ToolkitElement {
     handleCategorySelect = (e) => {
         const { id } = e.detail?.item || {};
         if (!id) return;
+        // First, try to match a top-level category
         const category = this.categoryTree.find(p => p.id === id);
-        if (!category) return;
-        store.dispatch(SMARTINPUT.reduxSlice.actions.setActiveCategoryId(id));
+        if (category) {
+            store.dispatch(SMARTINPUT.reduxSlice.actions.setActiveCategoryId(id));
+            return;
+        }
+        // Otherwise, search items and resolve to their parent category
+        const parentCategory = this.categoryTree.find(cat => (cat.items || []).some(it => it.id === id));
+        if (parentCategory) {
+            store.dispatch(SMARTINPUT.reduxSlice.actions.setActiveCategoryId(parentCategory.id));
+            // Highlight and scroll to the selected item in the list
+            this.highlightAndScrollToItem(id);
+        }
+        if (this.autoCloseOnItemSelect) {
+            store.dispatch(SMARTINPUT.reduxSlice.actions.setLeftPanelOpen(false));
+        }
     };
+
+    highlightAndScrollToItem = (itemId) => {
+        if (!itemId) return;
+        // Set highlight
+        this.highlightItemId = itemId;
+        if (this.highlightTimer) {
+            clearTimeout(this.highlightTimer);
+            this.highlightTimer = null;
+        }
+        // Clear highlight after 400ms
+        this.highlightTimer = setTimeout(() => {
+            this.highlightItemId = null;
+            this.highlightTimer = null;
+        }, 400);
+        // Scroll into view after render
+        requestAnimationFrame(() => {
+            const el = this.template.querySelector(`smartinput-item[data-item-id="${itemId}"]`);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            }
+        });
+    }
 
     handleDeleteItem = async (e) => {
         const { id } = e.detail.item || {};
@@ -231,7 +270,7 @@ export default class App extends ToolkitElement {
         const { item } = e.detail || {};
         if (!item) return;
         if(isChromeExtension()){
-            try { /* Debug */ console.log('[APP:SmartInput] Sending apply_input_value to injected (side panel tab only)', { item }); } catch (e) {}
+            try { console.log('[APP:SmartInput] Sending apply_input_value to injected (side panel tab only)', { item }); } catch (e) {}
             chrome.runtime.sendMessage({
                 action: 'broadcastMessageToInjected',
                 content: { action: 'apply_input_value', item },
@@ -323,6 +362,7 @@ export default class App extends ToolkitElement {
                 ...x,
                 disabled: false,
                 isEditing: x.id === this.editingItemId,
+                isHighlighted: x.id === this.highlightItemId,
             }));
         return this.isSortReversed ? prepared.reverse() : prepared;
     }

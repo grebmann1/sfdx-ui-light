@@ -1,9 +1,11 @@
 import { api, LightningElement } from 'lwc';
+import { classSet } from 'shared/utils';
 import Toast from 'lightning/toast';
 
 export default class Item extends LightningElement {
     @api item; // { id, value, disabled, isEditing }
     @api editingValue = '';
+    @api isHighlighted = false;
 
     handleEditClick = () => {
         this.dispatchEvent(new CustomEvent('editclick', {
@@ -76,6 +78,15 @@ export default class Item extends LightningElement {
             composed: true,
         }));
     };
+
+    /** Getters */
+
+    get itemClass() {
+        return classSet('slds-box slds-m-vertical_x-small slds-grid slds-grid_align-spread slds-grid_vertical-align-center')
+        .add({
+            'smartinput-item-highlighted': this.isHighlighted,
+        }).toString();
+    }
 }
 
 

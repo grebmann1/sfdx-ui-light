@@ -25,4 +25,9 @@
     line-height: 1rem;
 }
 
+.smartinput-item-highlighted {
+    background-color: rgba(27, 150, 255, 0.08);
+    box-shadow: 0 0 0 2px var(--lwc-colorBorderBrand, #1b96ff) inset;
+}
+
 

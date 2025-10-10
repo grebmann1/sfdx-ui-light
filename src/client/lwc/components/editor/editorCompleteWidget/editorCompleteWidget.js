@@ -114,29 +114,35 @@ export default class EditorCompleteWidget extends LightningElement {
      * @returns {Promise<string>} The generated code
      */
     async generateCode() {
-        const { prefix, suffix, originalCode, language } = this.prepareGenerationContext();
-        const { userContent, systemContent } = this.prepareAssistantMessages(
-            prefix,
-            suffix,
-            originalCode,
-            language
-        );
+        return new Promise(async (resolve, reject) => {
+            try {
+                const { prefix, suffix, originalCode, language } = this.prepareGenerationContext();
+                const { userContent, systemContent } = this.prepareAssistantMessages(
+                    prefix,
+                    suffix,
+                    originalCode,
+                    language
+                );
 
-        let fullTextSoFar = '';
-        this.currentAssistant = new ASSISTANTS.Assistant({ name: 'editor-complete' });
+                let fullTextSoFar = '';
+                this.currentAssistant = new ASSISTANTS.Assistant({ name: 'editor-complete' });
 
-        const responses = await this.currentAssistant
-            .init()
-            .setInstructions(systemContent)
-            .addMessages([{ role: ROLES.USER, content: userContent }])
-            .onStream(this.handleTextStream(fullTextSoFar)) // handleTextStream is a function that returns a function that handles the text stream
-            .onStreamEnd(message => {
-                this.handleTextEnd(message.content);
-            })
-            .execute();
+                const responses = await this.currentAssistant
+                    .init()
+                    .setInstructions(systemContent)
+                    .addMessages([{ role: ROLES.USER, content: userContent }])
+                    .onStream(this.handleTextStream(fullTextSoFar)) // handleTextStream is a function that returns a function that handles the text stream
+                    .onStreamEnd(message => {
+                        this.handleTextEnd(message.content);
+                        resolve(message.content);
+                    })
+                    .execute();
 
-        this.currentAssistant = null;
-        return this.parseFinalResponse(responses);
+                this.currentAssistant = null;
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
 
     /**

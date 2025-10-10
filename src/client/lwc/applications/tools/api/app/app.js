@@ -647,7 +647,7 @@ export default class App extends ToolkitElement {
             e,
             async lastEvent => {
 
-                console.log('App [updateRequestStates]', this.variables);
+                LOGGER.log('App [updateRequestStates]', this.variables);
                 const _newDraft =
                     (this.currentFile &&
                         (this.currentFile.extra?.body != this.body ||

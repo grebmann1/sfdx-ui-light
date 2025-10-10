@@ -1,6 +1,6 @@
 <template>
     <div lwc:if={isVisible} class={rootClasses} role="treeitem" aria-expanded={expanded} aria-selected={selected} onclick={handleClick} onmouseenter={handleHover} onmouseleave={handleMouseLeave}>
-        <span class="slds-tree__item-label slds-grid_align-spread slds-size_full slds-p-left_x-small">
+        <span class="slds-tree__item-label slds-grid_align-spread slds-size_full slds-p-horizontal_x-small">
             <span class="slds-truncate slds-grid slds-grid_vertical-align-center">
                 <template lwc:if={isFolder}>
                     <lightning-button-icon icon-name={chevronIcon} variant="bare" class="slds-m-right_x-small chevron-icon slds-is-relative" onclick={handleToggle} alternative-text={i18n.AltTextExpandFolder} data-element="chevron-icon"></lightning-button-icon>

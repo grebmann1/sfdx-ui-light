@@ -1,5 +1,5 @@
 import { api, track, wire } from 'lwc';
-import { decodeError, isNotUndefinedOrNull, classSet } from 'shared/utils';
+import { decodeError, isNotUndefinedOrNull, classSet, PLATFORM_EVENT } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
 import { connectStore, store, EVENT } from 'core/store';
 
@@ -7,7 +7,7 @@ export default class EventViewer extends ToolkitElement {
     isLoading = false;
 
     currentModel;
-    viewerTab = 'Default';
+    viewerTab = PLATFORM_EVENT.VIEWER_TABS.DEFAULT;
 
     @track _item;
     @api
@@ -69,19 +69,19 @@ export default class EventViewer extends ToolkitElement {
 
     get defaultContainerClass() {
         return classSet('slds-full-height slds-scrollable_y')
-            .add({ 'slds-hide': !(this.viewerTab === 'Default') })
+            .add({ 'slds-hide': !(this.viewerTab === PLATFORM_EVENT.VIEWER_TABS.DEFAULT) })
             .toString();
     }
 
     get customContainerClass() {
         return classSet('slds-full-height slds-scrollable_y')
-            .add({ 'slds-hide': !(this.viewerTab === 'Custom') })
+            .add({ 'slds-hide': !(this.viewerTab === PLATFORM_EVENT.VIEWER_TABS.CUSTOM) })
             .toString();
     }
 
     get jsonContainerClass() {
         return classSet('slds-full-height slds-scrollable_y')
-            .add({ 'slds-hide': !(this.viewerTab === 'JSON') })
+            .add({ 'slds-hide': !(this.viewerTab === PLATFORM_EVENT.VIEWER_TABS.JSON) })
             .toString();
     }
 }

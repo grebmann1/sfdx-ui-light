@@ -581,6 +581,7 @@ function connectToBackground() {
                 hideOverlay();
             }
         } else if (msg.action === 'apply_input_value') {
+            console.log('--> apply_input_value', msg);
             if (quickPickInstance && typeof quickPickInstance.applyFromSidePanel === 'function') {
                 quickPickInstance.applyFromSidePanel(msg?.item?.value || '');
             }

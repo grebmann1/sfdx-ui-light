@@ -8,6 +8,7 @@ export * as SETUP_LINKS from './links';
 export * as API from './modules/api';
 export * as METADATA from './modules/metadata';
 export * as ASSISTANT from './modules/assistant';
+export * as PLATFORM_EVENT from './modules/platformEvent';
 export {
     keyCodes,
     runActionOnBufferedTypedCharacters,

@@ -33,6 +33,9 @@ export default class App extends ToolkitElement {
     @track isStreaming = false;
     @track displayedMessages = [];
 
+    _lastScrolledMessageCount = 0;
+    _lastActiveConversationId = null;
+
     @api connector;
     @api isAudioRecorderDisabled = false;
 
@@ -95,6 +98,12 @@ export default class App extends ToolkitElement {
         if (this.isEditingTitle && this.refs && this.refs.titleInput) {
             this.refs.titleInput.focus();
         }
+        const messageCount = Array.isArray(this.displayedMessages) ? this.displayedMessages.length : 0;
+        if (this._lastActiveConversationId !== this.activeConversationId || messageCount > this._lastScrolledMessageCount) {
+            this._scrollChatToBottom();
+        }
+        this._lastActiveConversationId = this.activeConversationId;
+        this._lastScrolledMessageCount = messageCount;
     }
 
     /** Methods **/
@@ -102,6 +111,16 @@ export default class App extends ToolkitElement {
     resetError = () => {
         this.error_title = null;
         this.error_message = null;
+    };
+
+    _scrollChatToBottom = () => {
+        const container = this.template && this.template.querySelector('section[data-id="chatSection"]');
+        if (!container) {
+            return;
+        }
+        requestAnimationFrame(() => {
+            container.scrollTop = container.scrollHeight;
+        });
     };
 
     executeAgent = async (prompt, files = [], model = this.selectedModel) => {

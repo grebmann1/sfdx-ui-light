@@ -1,5 +1,5 @@
 <template>
-    <div class="slds-box slds-m-vertical_x-small slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+    <div class={itemClass}>
         <div class="smartinput-item-badge">#{item.ref}</div>
         <div class="smartinput-item-content slds-p-top_x-small" title={item.value} onclick={handleApplyClick}>
             <template lwc:if={item.isEditing}>

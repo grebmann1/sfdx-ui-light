@@ -87,7 +87,9 @@
                                 <div class="slds-scrollable_y slds-p-bottom_small slds-fill-height slds-flex-column">
                                     <template for:each={displayedInputs} for:item="it">
                                         <smartinput-item key={it.id}
+                                            data-item-id={it.id}
                                             item={it}
+                                            is-highlighted={it.isHighlighted}
                                             editing-value={editingValue}
                                             oneditclick={handleItemEditClick}
                                             ondeleteclick={handleItemDeleteClick}

@@ -1,6 +1,6 @@
 {
     "name": "sfdx-ui-light",
-    "version": "1.4.0",
+    "version": "1.4.1",
     "engines": {
         "node": "22.14"
     },
