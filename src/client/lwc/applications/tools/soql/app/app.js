@@ -260,7 +260,10 @@ export default class App extends ToolkitElement {
 
     handleLeftToggle = e => {
         store.dispatch(
-            UI.reduxSlice.actions.toggleLeftPanel()
+            UI.reduxSlice.actions.updateLeftPanel({
+                value: !this.isLeftToggled,
+                alias: this.alias,
+            })
         );
     };
 

@@ -1,5 +1,22 @@
 [
   {
+    "version": "1.4.2",
+    "date": "October 22nd, 2025",
+    "sections": [
+      {
+        "title": "Bug Fixes",
+        "categories": [
+          {
+            "category": "General",
+            "items": [
+              "Small fix to improve stability and address minor edge cases."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.4.1",
     "date": "October 10th, 2025",
     "sections": [
