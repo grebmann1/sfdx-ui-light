@@ -225,11 +225,12 @@ export default class RecordExplorerRow extends ToolkitElement {
         if (isNotUndefinedOrNull(this.value) && typeof this.value == 'object') {
             _formattedValue = JSON.stringify(this.value);
         }
+        const url = `${this.connector.frontDoorUrl}&retURL=${encodeURIComponent(this.value)}`;
         switch (this.type) {
             case 'address':
                 return `<pre>${_formattedValue}</pre>`;
             case 'reference':
-                return `<a href="${this.currentOrigin}/${this.value}" target="_blank">${_formattedValue}</a>`; // in the futur, return a link
+                return `<a class="link-to-open" href="${url}" target="_blank">${_formattedValue}</a>`; // in the futur, return a link
             case 'boolean':
                 return this.value == true
                     ? '<img src="/images/checkbox_checked.gif"/>'
@@ -243,6 +244,7 @@ export default class RecordExplorerRow extends ToolkitElement {
             if (data.indexOf('href="//') > -1 || data.indexOf('src="//') > -1) {
                 balise = data;
             } else {
+                // Only work in side-panel (as it's a different origin)
                 var balise = data.replace(/href="\//i, `href="https://${this.currentOrigin}/`);
                 balise = balise.replace(/src="\//i, `src="https://${this.currentOrigin}/`);
             }

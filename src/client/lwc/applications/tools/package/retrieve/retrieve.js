@@ -26,6 +26,7 @@ const TESTLEVEL = {
     RunLocalTests: 'RunLocalTests',
     RunAllTestsInOrg: 'RunAllTestsInOrg',
     RunSpecifiedTests: 'RunSpecifiedTests',
+    RunRelevantTests: 'RunRelevantTests'
 };
 
 export default class Retrieve extends ToolkitElement {

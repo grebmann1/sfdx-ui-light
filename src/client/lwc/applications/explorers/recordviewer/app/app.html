@@ -23,6 +23,7 @@
                         type="text"
                         placeholder="RecordId : 001Hr000023GsE9IAK or url : https://demo.lightning.force.com/lightning/r/Account/001Hr000023GsE9IAK/view"
                         value={searchInputValue}
+                        onkeyup={searchInput_handleKeyUp}
                         onchange={searchInput_handleChange}></lightning-input>
                     <lightning-button
                         class="slds-p-left_xx-small"

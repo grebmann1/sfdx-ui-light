@@ -96,9 +96,7 @@ export default class RecordExplorer extends ToolkitElement {
             this.isLoading = true;
 
             this.currentTab = await getCurrentTab();
-            this.currentOrigin = isNotUndefinedOrNull(this.currentTab)
-                ? new URL(this.currentTab.url).origin
-                : this.connector.conn.instanceUrl;
+            this.currentOrigin = this.connector?.frontDoorUrl+'&retURL=';
             // Get sobjectName (Step 2) // Should be optimized to save 1 API Call [Caching]
             this.sobjectName = await getCurrentObjectType(this.connector.conn, this.recordId); // to replace with describeGlobal using lastModified to fetch only the changes !
 
@@ -588,6 +586,7 @@ export default class RecordExplorer extends ToolkitElement {
     get linkConfig() {
         return {
             host: this.currentOrigin,
+            needEncoding: this.needEncoding,
             sobjectName: this.sobjectName,
             durableId: this.metadata?.durableId,
             isCustomSetting: this.metadata?.IsCustomSetting,

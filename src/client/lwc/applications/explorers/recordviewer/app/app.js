@@ -155,6 +155,13 @@ export default class App extends ToolkitElement {
         this.searchInputValue = e.detail.value;
     };
 
+    searchInput_handleKeyUp = e => {
+        if (e.key === 'Enter' || e.code === 'Enter' || e.keyCode === 13) {
+            e.preventDefault();
+            this.executeSearchClick();
+        }
+    };
+
     filterInput_handleChange = e => {
         this.filterInputValue = e.detail.value;
         runActionAfterTimeOut(
