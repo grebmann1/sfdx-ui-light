@@ -44,11 +44,6 @@ export default class Footer extends LightningElement {
     };
 
     handleCopyAccessToken = () => {
-        store.dispatch(ERROR.reduxSlice.actions.addError({
-            message: 'Demo Error',
-            details: 'This is a random error',
-        }));
-        return;
         navigator.clipboard.writeText(this.accessTokenFormatted);
         Toast.show({
             label: 'Access Token exported to your clipboard',

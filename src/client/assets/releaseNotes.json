@@ -1,5 +1,45 @@
 [
   {
+    "version": "1.4.3",
+    "date": "October 28th, 2025",
+    "sections": [
+      {
+        "title": "Enhancements",
+        "categories": [
+          {
+            "category": "Record Viewer",
+            "items": [
+              "Pressing Enter in the search input now triggers search to streamline navigation."
+            ]
+          },
+          {
+            "category": "Links & Navigation",
+            "items": [
+              "Improved record reference link generation using frontDoorUrl and URL encoding for reliability."
+            ]
+          },
+          {
+            "category": "Deployment Tools",
+            "items": [
+              "Added 'RunRelevantTests' option to TESTLEVEL in Deploy and Retrieve for improved testing flexibility."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Bug Fixes",
+        "categories": [
+          {
+            "category": "SOQL Explorer",
+            "items": [
+              "Addressed updates from ticket #35; minor improvements and fixes to the SOQL Explorer."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.4.2",
     "date": "October 22nd, 2025",
     "sections": [
