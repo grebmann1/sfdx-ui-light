@@ -8,6 +8,7 @@ export const apexFileAdapter = createEntityAdapter();
 export const apiFileAdapter = createEntityAdapter();
 export const openapiSchemaFileAdapter = createEntityAdapter();
 export const platformEventFileAdapter = createEntityAdapter();
+export const shortcutFileAdapter = createEntityAdapter();
 
 const MAX_RECENT = 20;
 const RECENT_QUERIES_KEY = 'lsb.recentQueries';
@@ -100,6 +101,27 @@ const queryFileSlice = createSlice({
             queryFileAdapter.removeOne(state, action.payload);
             const entities = Object.values(state.entities);
             setInLocalStorage(CACHE_DOCUMENTS.QUERYFILES, entities);
+        },
+    },
+});
+
+// SHORTCUTS
+const shortcutFileSlice = createSlice({
+    name: 'shortcutFiles',
+    initialState: shortcutFileAdapter.getInitialState(),
+    reducers: {
+        loadFromStorage: (state, action) => {
+            shortcutFileAdapter.setAll(state, loadFromStorage(CACHE_DOCUMENTS.SHORTCUTFILES));
+        },
+        upsertOne: (state, action) => {
+            shortcutFileAdapter.upsertOne(state, formatData(action.payload));
+            const entities = Object.values(state.entities);
+            setInLocalStorage(CACHE_DOCUMENTS.SHORTCUTFILES, entities);
+        },
+        removeOne: (state, action) => {
+            shortcutFileAdapter.removeOne(state, action.payload);
+            const entities = Object.values(state.entities);
+            setInLocalStorage(CACHE_DOCUMENTS.SHORTCUTFILES, entities);
         },
     },
 });
@@ -229,5 +251,6 @@ export const reduxSlices = {
     APEXFILE: apexFileSlice,
     APIFILE: apiFileSlice,
     OPENAPI_SCHEMA_FILE: openapiSchemaFileSlice,
+    SHORTCUTFILE: shortcutFileSlice,
     RECENT: recentSlice,
 };

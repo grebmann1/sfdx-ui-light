@@ -17,6 +17,7 @@ import release_app from 'release/app';
 import sarif_app from 'sarif/app';
 import settings_app from 'settings/app';
 import soql_app from 'soql/app';
+import shortcut_app from 'shortcut/app';
 /*
 const KNOWN_TYPE = new Set([
     "home/app",
@@ -221,6 +222,21 @@ const APP_MAPPING = {
         quickActionIcon: 'standard:events',
         shortName: 'PLEV',
         path: 'platformevent',
+    },
+    'shortcut/app': {
+        module: shortcut_app,
+        isFullHeight: true,
+        isDeletable: true,
+        isElectronOnly: false,
+        isOfflineAvailable: true,
+        isMenuVisible: true,
+        isTabVisible: true,
+        label: 'Shortcut Generator',
+        type: i18n.TOOL,
+        description: 'Create and manage custom shortcuts and record-based links.',
+        quickActionIcon: 'utility:link',
+        shortName: 'Shortcuts',
+        path: 'shortcut',
     },
     'anonymousApex/app': {
         module: anonymousApex_app,

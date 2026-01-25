@@ -41,7 +41,7 @@ export default class QuickLauncher extends ToolkitElement {
     }
 
     get tools() {
-        const tools = ['anonymousApex/app', 'soql/app', 'accessAnalyzer/app'];
+        const tools = ['anonymousApex/app', 'soql/app', 'accessAnalyzer/app', 'shortcut/app'];
         return CONFIG.APP_LIST.filter(x => tools.includes(x.name));
     }
 }

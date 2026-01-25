@@ -12,4 +12,5 @@ export const TYPE = {
     USER: 'User',
     FLOW: 'Flow',
     AGENTFORCE: 'Agentforce',
+    CUSTOM: 'Custom',
 };

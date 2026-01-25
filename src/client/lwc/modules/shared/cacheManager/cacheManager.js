@@ -207,6 +207,9 @@ export const CACHE_CONFIG = {
     INPUT_QUICKPICK_SELECTED_CATEGORY: new CONFIG_OBJECT('input_quickpick_selected_category', 'ALL'),
     INPUT_QUICKPICK_RECENTS: new CONFIG_OBJECT('input_quickpick_recents', []),
     //  TODO: Add Global CLIENT_ID and API_VERSION to the CACHE_CONFIG
+    SHORTCUTS_GLOBAL: new CONFIG_OBJECT('shortcuts_global', []),
+    SHORTCUTS_BY_ORG: new CONFIG_OBJECT('shortcuts_by_org', {}),
+    SHORTCUTS_BY_DOMAIN: new CONFIG_OBJECT('shortcuts_by_domain', {}),
 };
 
 export const CACHE_SESSION_CONFIG = {
@@ -234,6 +237,7 @@ export const CACHE_DOCUMENTS = {
     APIFILES: 'APIFILES',
     OPENAPI_SCHEMAS_FILES: 'OPENAPI_SCHEMAS_FILES',
     APEXFILES: 'APEXFILES',
+    SHORTCUTFILES: 'SHORTCUTFILES',
     RECENT: 'RECENTS',
 };
 // Backward compatibility functions

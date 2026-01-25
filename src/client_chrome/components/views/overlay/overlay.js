@@ -8,10 +8,12 @@ import {
     runActionAfterTimeOut,
     SETUP_LINKS,
     redirectToUrlViaChrome,
+    getRecordId,
 } from 'shared/utils';
 import { connectStore, store, APPLICATION } from 'core/store';
 import { TYPE } from 'overlay/utils';
 import { credentialStrategies } from 'connection/utils';
+import { loadExtensionConfigFromCache, CACHE_CONFIG } from 'shared/cacheManager';
 
 import moment from 'moment';
 import jsforce from 'imported/jsforce';
@@ -28,6 +30,7 @@ const PAGE_LIST_SIZE = 70;
 const TABS = {
     SEARCH: 'Search',
     QUICKLINK: 'Quick Links',
+    CUSTOM: 'Custom',
     USER: 'Users',
     DEV: 'Dev Tools',
 };
@@ -43,6 +46,7 @@ export default class Overlay extends ToolkitElement {
     isFetchingMetadata = false;
     cachedData;
     viewerTab = 'Search'; // 'QuickLinks'
+    customShortcuts = [];
 
     // current Info
     currentDomain;
@@ -340,19 +344,17 @@ export default class Overlay extends ToolkitElement {
 
     init = () => {
         this.isLoading = true;
-        this.loadCachedData()
-            .then(async data => {
+        Promise.all([this.loadCachedData(), this.loadCustomShortcuts()])
+            .then(async results => {
                 this.isLoading = false;
-                this.cachedData = data;
+                this.cachedData = results?.[0] || {};
                 this.manualSearch();
-
-                // For testing
-                //this.searchResults = await this.search('test');
             })
             .catch(e => {
                 console.error(e);
                 this.isLoading = false;
                 this.cachedData = {};
+                this.customShortcuts = [];
                 // to display the default data !
                 this.manualSearch();
             });
@@ -414,6 +416,22 @@ export default class Overlay extends ToolkitElement {
                         section: x.section,
                         prod: x.prod,
                         relevance: calculateRelevance(x.label, searchTerm),
+                    }))
+            );
+        }
+
+        // Custom Shortcuts
+        if (this.customShortcuts && this.customShortcuts.length) {
+            combinedResults.push(
+                ...this.customShortcuts
+                    .filter(
+                        x =>
+                            (x.name || '').toLowerCase().includes(lowerCaseTerm) ||
+                            isUndefinedOrNull(searchTerm)
+                    )
+                    .map(x => ({
+                        ...x,
+                        relevance: calculateRelevance(x.name, searchTerm),
                     }))
             );
         }
@@ -790,6 +808,63 @@ export default class Overlay extends ToolkitElement {
         }
     };
 
+    loadCustomShortcuts = async () => {
+        try {
+            const config = await loadExtensionConfigFromCache([
+                CACHE_CONFIG.SHORTCUTS_GLOBAL.key,
+                CACHE_CONFIG.SHORTCUTS_BY_ORG.key,
+                CACHE_CONFIG.SHORTCUTS_BY_DOMAIN.key,
+            ]);
+            const globals = Array.isArray(config[CACHE_CONFIG.SHORTCUTS_GLOBAL.key])
+                ? config[CACHE_CONFIG.SHORTCUTS_GLOBAL.key]
+                : [];
+            const byDomain = config[CACHE_CONFIG.SHORTCUTS_BY_DOMAIN.key] || {};
+            const domainList = Array.isArray(byDomain[this.currentDomain])
+                ? byDomain[this.currentDomain]
+                : [];
+            this.customShortcuts = [...globals, ...domainList].map((x, idx) => ({
+                id: x.id || `custom-${idx}`,
+                name: x.name || x.id,
+                type: TYPE.LINK,
+                _isCustom: true,
+                link: this.resolveShortcutLink(x),
+                _raw: x,
+            }));
+        } catch (e) {
+            this.customShortcuts = [];
+        }
+    };
+
+    resolveShortcutLink = shortcut => {
+        try {
+            const content = shortcut?.content || {};
+            const type = content?.type;
+            if (type === 'link') {
+                return content?.data?.url || '#';
+            }
+            if (type === 'expression') {
+                const expr = content?.data?.expression || '';
+                const recordId = getRecordId(window.location?.href || '') || '';
+                const baseUrl = this.connector?.conn?.instanceUrl || '';
+                const origin = window.location?.origin || '';
+                return (expr || '')
+                    .replaceAll('{recordId}', recordId)
+                    .replaceAll('{baseUrl}', baseUrl)
+                    .replaceAll('{origin}', origin);
+            }
+            if (type === 'record') {
+                const sobject = content?.data?.sobject;
+                const params = Array.isArray(content?.data?.params) ? content.data.params : [];
+                const dfv = params
+                    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+                    .join(',');
+                return `/lightning/o/${sobject}/new?defaultFieldValues=${encodeURIComponent(dfv)}`;
+            }
+        } catch (e) {
+            // no-op
+        }
+        return '#';
+    };
     handleScroll(event) {
         const target = event.target;
         const scrollDiff = Math.abs(target.clientHeight - (target.scrollHeight - target.scrollTop));
@@ -823,7 +898,11 @@ export default class Overlay extends ToolkitElement {
     }
 
     get tab_quickLinkLabel() {
-        return `Quick Links (${this.formattedResults.filter(x => x.type === TYPE.LINK).length})`;
+        return `Quick Links (${this.formattedResults.filter(x => x.type === TYPE.LINK && !x._isCustom).length})`;
+    }
+
+    get tab_customLabel() {
+        return `Custom (${this.formattedResults.filter(x => x._isCustom === true).length})`;
     }
 
     get tab_userLabel() {
@@ -852,7 +931,8 @@ export default class Overlay extends ToolkitElement {
         const _filteredList = this.formattedResults.filter(
             x =>
                 (this.viewerTab === TABS.SEARCH && x.type !== TYPE.LINK) ||
-                (this.viewerTab === TABS.QUICKLINK && x.type === TYPE.LINK) ||
+                (this.viewerTab === TABS.QUICKLINK && x.type === TYPE.LINK && !x._isCustom) ||
+                (this.viewerTab === TABS.CUSTOM && x._isCustom === true) ||
                 (this.viewerTab === TABS.USER && x.type === TYPE.USER) ||
                 (this.viewerTab === TABS.DEV && x.type === TYPE.DEV_LINK)
         );

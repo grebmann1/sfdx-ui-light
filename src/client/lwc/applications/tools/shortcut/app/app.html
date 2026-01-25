@@ -1,0 +1,192 @@
+<template>
+    <div class={pageClass}>
+        <div class="slds-grid slds-gutters slds-size_1-of-1 slds-wrap">
+            <!-- Left: Storage -->
+            <div class="slds-col slds-size_1-of-4 slds-small-size_1-of-3">
+                <c-builder-storage-panel
+                    title="Shortcuts"
+                    saved-title="Saved"
+                    recent-title="Recent"
+                    is-open={isRecentToggled}
+                    is-saved-item-disabled={false}
+                    saved-items={savedShortcuts}
+                    onselectitem={handleSelectItem}
+                    onremoveitem={handleRemoveItem}
+                ></c-builder-storage-panel>
+            </div>
+            <!-- Right: Builder -->
+            <div class="slds-col slds-size_3-of-4 slds-small-size_2-of-3">
+                <div class="slds-card slds-p-around_medium">
+                    <div class="slds-grid slds-wrap slds-gutters_small">
+                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                            <lightning-input
+                                label="Shortcut Name"
+                                type="text"
+                                value={shortcutName}
+                                onchange={handleNameChange}
+                            ></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                            <lightning-input
+                                label="Global"
+                                type="checkbox"
+                                checked={isGlobal}
+                                onchange={handleIsGlobalChange}
+                            ></lightning-input>
+                        </div>
+                    </div>
+
+                    <div class="slds-m-top_medium">
+                        <lightning-radio-group
+                            name="shortcut-mode"
+                            label="Shortcut Type"
+                            options={modeOptions}
+                            value={mode}
+                            type="button"
+                            onchange={handleModeChange}
+                        ></lightning-radio-group>
+                    </div>
+
+                    <template if:true={isRecordMode}>
+                        <div class="slds-m-top_medium slds-grid slds-wrap slds-gutters_small">
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                <lightning-combobox
+                                    label="Object"
+                                    placeholder="Select an object"
+                                    options={sobjectsOptions}
+                                    value={selectedSObject}
+                                    onchange={handleSObjectChange}
+                                ></lightning-combobox>
+                            </div>
+                        </div>
+
+                        <div class="slds-m-top_medium">
+                            <div class="slds-grid slds-wrap slds-gutters_small">
+                                <template for:each={pairs} for:item="pair">
+                                    <div class="slds-col slds-size_1-of-1" key={pair.id}>
+                                        <div class="slds-grid slds-gutters_small">
+                                            <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-5">
+                                                <lightning-combobox
+                                                    data-id={pair.id}
+                                                    label="Field"
+                                                    placeholder="Select a field"
+                                                    options={fieldsOptions}
+                                                    value={pair.fieldName}
+                                                    onchange={handleFieldChange}
+                                                ></lightning-combobox>
+                                            </div>
+                                            <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-5">
+                                                <template if:true={pair.picklistValues}>
+                                                    <lightning-combobox
+                                                        data-id={pair.id}
+                                                        label="Value"
+                                                        options={pair.picklistValues}
+                                                        value={pair.value}
+                                                        onchange={handleValueChange}
+                                                    ></lightning-combobox>
+                                                </template>
+                                                <template if:false={pair.picklistValues}>
+                                                    <template if:true={pair.isBoolean}>
+                                                        <lightning-input
+                                                            data-id={pair.id}
+                                                            label="Value"
+                                                            type="checkbox"
+                                                            checked={pair.value}
+                                                            onchange={handleValueChange}
+                                                        ></lightning-input>
+                                                    </template>
+                                                    <template if:true={pair.isDate}>
+                                                        <lightning-input
+                                                            data-id={pair.id}
+                                                            label="Value"
+                                                            type="date"
+                                                            value={pair.value}
+                                                            onchange={handleValueChange}
+                                                        ></lightning-input>
+                                                    </template>
+                                                    <template if:true={pair.isDateTime}>
+                                                        <lightning-input
+                                                            data-id={pair.id}
+                                                            label="Value"
+                                                            type="datetime"
+                                                            value={pair.value}
+                                                            onchange={handleValueChange}
+                                                        ></lightning-input>
+                                                    </template>
+                                                    <template if:true={pair.isNumber}>
+                                                        <lightning-input
+                                                            data-id={pair.id}
+                                                            label="Value"
+                                                            type="number"
+                                                            value={pair.value}
+                                                            onchange={handleValueChange}
+                                                        ></lightning-input>
+                                                    </template>
+                                                    <template if:true={pair.isText}>
+                                                        <lightning-input
+                                                            data-id={pair.id}
+                                                            label="Value"
+                                                            type="text"
+                                                            value={pair.value}
+                                                            onchange={handleValueChange}
+                                                        ></lightning-input>
+                                                    </template>
+                                                </template>
+                                            </div>
+                                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-5 slds-align_absolute-center">
+                                                <lightning-button-icon
+                                                    data-id={pair.id}
+                                                    icon-name="utility:delete"
+                                                    alternative-text="Remove"
+                                                    onclick={handleRemovePair}
+                                                    variant="bare"
+                                                ></lightning-button-icon>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div class="slds-m-top_small">
+                                <lightning-button
+                                    label="Add Field"
+                                    icon-name="utility:add"
+                                    onclick={handleAddPair}
+                                ></lightning-button>
+                            </div>
+
+                            <template if:true={generatedQueryString}>
+                                <div class="slds-m-top_medium">
+                                    <lightning-formatted-text
+                                        value={generatedQueryString}
+                                    ></lightning-formatted-text>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <template if:false={isRecordMode}>
+                        <div class="slds-m-top_medium">
+                            <template if:true={isLinkMode}>
+                                <lightning-textarea label="Link" value={linkValue} onchange={handleLinkChange}></lightning-textarea>
+                            </template>
+                            <template if:true={isExpressionMode}>
+                                <lightning-textarea label="Expression" value={expressionValue} onchange={handleExpressionChange}></lightning-textarea>
+                            </template>
+                        </div>
+                    </template>
+
+                    <div class="slds-m-top_large slds-align_absolute-center">
+                        <lightning-button
+                            variant="brand"
+                            label="Save Shortcut"
+                            onclick={handleSaveClick}
+                        ></lightning-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+
