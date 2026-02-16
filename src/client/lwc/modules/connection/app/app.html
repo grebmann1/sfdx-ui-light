@@ -3,7 +3,25 @@
         <!-- Card Variant -->
         <div class="slds-flex-column slds-p-horizontal_x-small slds-is-relative slds-full-height">
             <div class="slds-grid slds-wrap slds-grid_align-center slds-p-around_small">
-                <div class="slds-col slds-p-horizontal_x-small">
+                <div class="slds-col slds-size_1-of-1 slds-grid slds-grid_align-center slds-m-bottom_x-small">
+                    <div class="slds-p-horizontal_x-small">
+                        <lightning-input
+                            type="checkbox"
+                            name="showOrgFarm"
+                            label="OrgFarm"
+                            checked={showOrgFarm}
+                            onchange={handleOrgFarmFilterChange}></lightning-input>
+                    </div>
+                    <div class="slds-p-horizontal_x-small">
+                        <lightning-input
+                            type="checkbox"
+                            name="showNonOrgFarm"
+                            label="Non-OrgFarm"
+                            checked={showNonOrgFarm}
+                            onchange={handleOrgFarmFilterChange}></lightning-input>
+                    </div>
+                </div>
+                <div class="slds-col slds-size_1-of-1 slds-grid slds-grid_align-center">
                     <lightning-button
                         icon-name="utility:add"
                         variant="brand"
@@ -141,6 +159,26 @@
                         </template>
 
                         <!-- Search -->
+                        <!-- Filters -->
+                        <div class="slds-grid slds-wrap slds-m-bottom_x-small slds-gutters_x-small">
+                            <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-2 slds-medium-size_1-of-4">
+                                <lightning-input
+                                    type="checkbox"
+                                    name="showOrgFarm"
+                                    label="OrgFarm"
+                                    checked={showOrgFarm}
+                                    onchange={handleOrgFarmFilterChange}></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-small-size_1-of-2 slds-medium-size_1-of-4">
+                                <lightning-input
+                                    type="checkbox"
+                                    name="showNonOrgFarm"
+                                    label="Non-OrgFarm"
+                                    checked={showNonOrgFarm}
+                                    onchange={handleOrgFarmFilterChange}></lightning-input>
+                            </div>
+                        </div>
+
                         <lightning-input
                             class="slds-m-bottom_medium"
                             type="search"

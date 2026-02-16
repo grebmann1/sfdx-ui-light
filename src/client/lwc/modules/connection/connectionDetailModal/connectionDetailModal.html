@@ -99,10 +99,21 @@
                     </template>
                 </fieldset>
             </section>
+            <section class="slds-m-left_medium slds-m-bottom_medium">
+                <fieldset class="slds-box">
+                    <legend class="slds-text-title_caps slds-m-bottom_small">Sharing</legend>
+                    <div class="slds-grid slds-grid_vertical-align-center slds-grid_align-end">
+                        <lightning-button
+                            label="Share"
+                            icon-name="utility:share"
+                            variant="brand"
+                            onclick={handleShare}></lightning-button>
+                    </div>
+                </fieldset>
+            </section>
         </lightning-modal-body>
         <lightning-modal-footer>
             <lightning-button variant="neutral" label="Close" onclick={handleCloseClick}></lightning-button>
-            <lightning-button variant="brand" label="Share" icon-name="utility:share" onclick={handleShare}></lightning-button>
         </lightning-modal-footer>
     </template>
     <!-- EDIT MODE -->

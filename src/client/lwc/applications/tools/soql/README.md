@@ -3,7 +3,7 @@
 Build, run, and save SOQL queries with schema-aware assistance and exports.
 
 ## Where to find
-- Tools → SOQL Explorer
+- Developer → SOQL Explorer
 
 ## Key features
 - Describe-driven SObject and Fields panels with search and relationships

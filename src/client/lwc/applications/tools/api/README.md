@@ -3,7 +3,7 @@
 Compose and send REST API requests against your org with saved requests and recents.
 
 ## Where to find
-- Tools → API Explorer
+- Developer → API Explorer
 
 ## Key features
 - Choose method, endpoint, and body; add headers

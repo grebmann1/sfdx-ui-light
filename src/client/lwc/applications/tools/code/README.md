@@ -3,7 +3,7 @@
 Retrieve code, run static code analysis, and open Visualforce — all from your desktop app.
 
 ## Where to find
-- Tools → Code Toolkit (Electron builds only)
+- Developer → Code Toolkit (Electron builds only)
 
 ## Key features
 - Metadata/code retrieval helpers

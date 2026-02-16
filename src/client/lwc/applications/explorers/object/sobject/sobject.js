@@ -1,10 +1,9 @@
-import { wire, api, createElement } from 'lwc';
+import { api, wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { CurrentPageReference, NavigationContext, generateUrl, navigate } from 'lwr/navigation';
-import { isEmpty, runActionAfterTimeOut, isNotUndefinedOrNull, classSet } from 'shared/utils';
-import { TabulatorFull as Tabulator } from 'tabulator-tables';
-import SObjectCell from 'object/sobjectCell';
+import { NavigationContext, navigate } from 'lwr/navigation';
+import { classSet, isEmpty, isNotUndefinedOrNull, isUndefinedOrNull } from 'shared/utils';
 import LOGGER from 'shared/logger';
+import Toast from 'lightning/toast';
 /** Store */
 import { store, SOBJECT } from 'core/store';
 import { store as legacyStore, store_application } from 'shared/store';
@@ -16,15 +15,23 @@ export default class Sobject extends ToolkitElement {
     navContext;
 
     isLoading = false;
-    isTableLoading = false;
     isNoRecord = false;
 
-    fields_filter;
-    child_filter;
+    fieldSearch = '';
+    relationshipSearch = '';
+    relationshipTab = 'lookups';
+
+    page = 'code';
+
+    openSections = {
+        availableApis: true,
+        relationships: true,
+        fields: true,
+    };
 
     recordDetails = {};
     selectedDetails;
-    extraSelectedDetails;
+    extraSelectedDetails = { totalRecords: null };
 
     isDiagramDisplayed = false;
 
@@ -54,18 +61,12 @@ export default class Sobject extends ToolkitElement {
         legacyStore.dispatch(store_application.navigate(redirectUrl));
     };
 
-    handleFieldsFilter = e => {
-        runActionAfterTimeOut(e.detail.value, newValue => {
-            this.fields_filter = newValue;
-            this.updateFieldsTable();
-        });
+    handleFieldSearch = (e) => {
+        this.fieldSearch = (e.detail?.value || '').trim();
     };
 
-    handleChildFilter = e => {
-        runActionAfterTimeOut(e.detail.value, newValue => {
-            this.child_filter = newValue;
-            this.updateChildTable();
-        });
+    handleRelationshipSearch = (e) => {
+        this.relationshipSearch = (e.detail?.value || '').trim();
     };
 
     handleDisplayDiagram = e => {
@@ -73,15 +74,64 @@ export default class Sobject extends ToolkitElement {
         localStorage.setItem(`object-explorer-isDiagramDisplayed`, e.detail.checked);
     };
 
+    handleRelationshipTabActive = (e) => {
+        const value = e.target?.value;
+        if (!isEmpty(value)) {
+            this.relationshipTab = value;
+        }
+    };
+
+    handlePageSelect = (e) => {
+        const page = e.currentTarget?.dataset?.page;
+        if (!isEmpty(page)) {
+            this.page = page;
+        }
+    };
+
+    handleToggleSection = (e) => {
+        const section = e.currentTarget?.dataset?.section;
+        if (isEmpty(section)) return;
+        this.openSections = {
+            ...this.openSections,
+            [section]: !this.openSections[section],
+        };
+    };
+
+    handleCopyValue = async (e) => {
+        const value = e.currentTarget?.dataset?.value;
+        if (isEmpty(value)) return;
+        try {
+            await navigator.clipboard.writeText(value);
+            Toast.show({ label: 'Copied to clipboard', variant: 'success' });
+        } catch (err) {
+            LOGGER.warn('Copy failed', err);
+            Toast.show({ label: 'Copy failed', variant: 'error' });
+        }
+    };
+
+    handleOpenQuery = () => {
+        if (isUndefinedOrNull(this.selectedDetails?.name)) return;
+        const query = `Select Id from ${this.selectedDetails.name}`;
+        navigate(this.navContext, { type: 'application', state: { applicationName: 'soql', query } });
+    };
+
+    handleOpenRelatedSObject = (e) => {
+        const name = e.currentTarget?.dataset?.name;
+        if (isEmpty(name)) return;
+        navigate(this.navContext, {
+            type: 'application',
+            state: {
+                applicationName: 'sobject',
+                attribute1: name,
+            },
+        });
+    };
+
     loadSpecificRecord = async () => {
         this.reset();
         this.isLoading = true;
         await this.describeSpecific(this.recordName);
         this.isLoading = false;
-        runActionAfterTimeOut(null, param => {
-            this.createFieldsTable();
-            this.createChildsTable();
-        });
     };
 
     /** Methods  **/
@@ -92,23 +142,31 @@ export default class Sobject extends ToolkitElement {
     };
 
     reset = () => {
-        this.fields_filter = null;
-        this.child_filter = null;
         this.isNoRecord = false;
         this.isLoading = false;
-        this.isTableLoading = false;
+        this.fieldSearch = '';
+        this.relationshipSearch = '';
+        this.relationshipTab = 'lookups';
+        this.page = 'code';
+        this.openSections = {
+            availableApis: true,
+            relationships: true,
+            fields: true,
+        };
     };
 
     checkTotalRecords = async () => {
         this.extraSelectedDetails = { totalRecords: 0 };
         try {
-            this.extraSelectedDetails.totalRecords = (
-                await this.connector.conn.query(
-                    `SELECT Count(Id) total FROM ${this.selectedDetails.name}`
-                )
-            ).records[0].total;
+            const res = await this.connector.conn.query(
+                `SELECT Count(Id) total FROM ${this.selectedDetails.name}`
+            );
+            const total = res?.records?.[0]?.total;
+            // IMPORTANT: replace object to trigger re-render
+            this.extraSelectedDetails = { ...this.extraSelectedDetails, totalRecords: total };
         } catch (e) {
             console.error('checkTotalRecords', e);
+            this.extraSelectedDetails = { ...this.extraSelectedDetails, totalRecords: null };
         }
     };
 
@@ -137,19 +195,43 @@ export default class Sobject extends ToolkitElement {
     };
 
     enrichSelectedDetails = (data) => {
-        data.fields.forEach(field => {
-            //console.log('field',field);
-            const isFormula = field?.calculated || false;
-            field._type = isFormula?`fx: ${field.type}`:field.type;
+        (data.fields || []).forEach((field) => {
+            const isFormula = field?.calculated === true;
+            const isPicklist = field?.type === 'picklist' || field?.type === 'multipicklist';
+
+            field._isFormula = isFormula;
+            field._isPicklist = isPicklist;
+
+            // Type label
+            field._type = isFormula ? `fx: ${field.type}` : field.type;
+
+            // Formula helpers
+            const formula = field?.calculatedFormula || '';
+            field._formulaRaw = formula;
+            field._formulaPreview = isEmpty(formula)
+                ? ''
+                : formula.length > 120
+                  ? `${formula.slice(0, 120)}…`
+                  : formula;
+
+            // Picklist helpers
+            const values = (field?.picklistValues || []).filter((x) => x && x.active !== false);
+            const labels = values.map((x) => x.label || x.value).filter((x) => !isEmpty(x));
+            field._picklistValuesRaw = labels.join(', ');
+            field._picklistCount = labels.length;
+            field._picklistCountLabel = `${labels.length} value${labels.length === 1 ? '' : 's'}`;
+            field._picklistValuesPreview =
+                labels.length > 10 ? `${labels.slice(0, 10).join(', ')} …(+${labels.length - 10})` : field._picklistValuesRaw;
         });
         return data;
-    }
+    };
 
     checkIfPresent = (a, b) => {
         return (a || '').toLowerCase().includes((b || '').toLowerCase());
     };
 
     buildUML = async () => {
+        if (!this.refs?.mermaid) return;
         this.refs.mermaid.innerHTML = '';
         const source = this.selectedDetails.name;
         const result = ['classDiagram', 'direction LR', `class \`${source}\``];
@@ -179,231 +261,182 @@ export default class Sobject extends ToolkitElement {
             bindFunctions(this.refs.mermaid);
         }
     };
-
-    createFieldsTable = () => {
-        let colModel = [
-            /*{ title: 'Setup', width:100, field: 'id'     ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField_link},*/
-            {
-                title: 'Field Label',
-                field: 'label',
-                headerHozAlign: 'center',
-                resizable: true,
-                formatter: this.formatterField_field,
-            },
-            {
-                title: 'ApiName',
-                field: 'name',
-                headerHozAlign: 'center',
-                resizable: true,
-                formatter: this.formatterField_field,
-            },
-            {
-                title: 'Type',
-                field: '_type',
-                headerHozAlign: 'center',
-                resizable: true,
-                formatter: this.formatterField_type,
-            },
-            //{ title: 'Unique'       , field: 'unique'   ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField_value},
-            {
-                title: 'Length',
-                field: 'length',
-                headerHozAlign: 'center',
-                resizable: true,
-                formatter: this.formatterField_value,
-            },
-            //{ title: 'Createable'   , field: 'createable'   ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField_value},
-            //{ title: 'Updateable'   , field: 'updateable'   ,  headerHozAlign: "center", resizable: true ,formatter:this.formatterField_value}
-        ]; //aggregatable
-
-        if (this.tableFieldInstance) {
-            this.tableFieldInstance.destroy();
-        }
-        //LOGGER.debug('this.field_filteredList',this.field_filteredList);
-        this.tableFieldInstance = new Tabulator(
-            this.template.querySelector('.custom-table-fields'),
-            {
-                height: 424,
-                data: this.field_filteredList,
-                layout: 'fitColumns',
-                columns: colModel,
-                columnHeaderVertAlign: 'middle',
-                autoResize: false,
-            }
-        );
-    };
-
-    createChildsTable = () => {
-        let colModel = [
-            {
-                title: 'Relationship Name',
-                field: 'relationshipName',
-                headerHozAlign: 'center',
-                resizable: true,
-                formatter: this.formatterField_field,
-            },
-            {
-                title: 'SObject',
-                field: 'childSObject',
-                headerHozAlign: 'center',
-                resizable: true,
-                formatter: this.formatterField_fieldSObject,
-            },
-            {
-                title: 'Child Field',
-                field: 'field',
-                headerHozAlign: 'center',
-                resizable: true,
-                formatter: this.formatterField_field,
-            },
-        ]; //aggregatable
-
-        if (this.tableChildInstance) {
-            this.tableChildInstance.destroy();
-        }
-        //LOGGER.debug('this.child_filteredList',this.child_filteredList);
-        this.tableChildInstance = new Tabulator(
-            this.template.querySelector('.custom-table-child'),
-            {
-                height: 424,
-                data: this.child_filteredList,
-                layout: 'fitColumns',
-                columns: colModel,
-                columnHeaderVertAlign: 'middle',
-                autoResize: false,
-            }
-        );
-    };
-
-    updateFieldsTable = () => {
-        this.tableFieldInstance.replaceData(this.field_filteredList);
-    };
-
-    updateChildTable = () => {
-        this.tableChildInstance.replaceData(this.child_filteredList);
-    };
-
-    formatterField_field = (cell, formatterParams, onRendered) => {
-        let field = cell._cell.value;
-        if (isEmpty(this.fields_filter)) {
-            return field;
-        }
-
-        var regex = new RegExp('(' + this.fields_filter + ')', 'gi');
-        if (regex.test(field)) {
-            return field
-                .toString()
-                .replace(/<?>?/, '')
-                .replace(regex, '<span style="font-weight:Bold; color:blue;">$1</span>');
-        } else {
-            return field;
-        }
-    };
-
-    formatterField_fieldSObject = (cell, formatterParams, onRendered) => {
-        const value = cell._cell.value;
-        const data = cell._cell?.row?.data;
-        const config = {
-            urlLabel: value,
-            urlLink: 'sftoolkit:' +
-                    JSON.stringify({
-                        type: 'application',
-                        state: { applicationName: 'sobject', attribute1: value },
-                    })
-        };
-
-        const element = createElement('object-sobject-cell', {
-            is: SObjectCell,
-        });
-        Object.assign(element, {
-            value,
-            ...config,
-        });
-        return element;
-        
-    };
-
-    formatterField_value = (cell, formatterParams, onRendered) => {
-        let value = cell._cell.value;
-        //let data = cell._cell.row.data;
-        const element = createElement('object-sobject-cell', {
-            is: SObjectCell,
-        });
-        Object.assign(element, {
-            value,
-            ...{
-                isBoolean: value === true || value === false
-            },
-        });
-        return element;
-        //return "Mr" + cell.getValue(); //return the contents of the cell;
-    };
-
-    formatterField_type = cell => {
-        const value = cell._cell.value;
-        const data = cell._cell?.row?.data;
-        const config = {
-            isBoolean: false,
-            fieldInfo: data
-        };
-        if (value === 'reference') {
-            const referenceTo = data?.referenceTo?.length > 0 ? data.referenceTo[0] : null; // We take only 1 for now
-            const isMasterDetail = data?.cascadeDelete === true;
-            if (this.objectRecords.find(x => x.name == referenceTo)) {
-                config.urlLabel = `${isMasterDetail ? '(MD)' : '(L)'} ${referenceTo} `;
-                config.urlLink =
-                    'sftoolkit:' +
-                    JSON.stringify({
-                        type: 'application',
-                        state: { applicationName: 'sobject', attribute1: referenceTo },
-                    });
-            }
-        }
-
-        const element = createElement('object-sobject-cell', {
-            is: SObjectCell,
-        });
-        Object.assign(element, {
-            value,
-            ...config,
-        });
-        return element;
-    };
-
-    
-
     /** Getters **/
 
     get noRecordMessage() {
         return `${this.recordName} wasn't found in your metadata.`;
     }
 
-    get field_filteredList() {
-        //if(!this.isDetailDisplayed) return [];
-        if (isEmpty(this.fields_filter)) return this.selectedDetails.fields;
-        return this.selectedDetails.fields.filter(
-            x =>
-                this.checkIfPresent(x.name, this.fields_filter) ||
-                this.checkIfPresent(x.label, this.fields_filter) ||
-                this.checkIfPresent(x._type, this.fields_filter)
+    get filteredFields() {
+        if (!this.isDetailDisplayed) return [];
+        const search = (this.fieldSearch || '').trim();
+        if (isEmpty(search)) return this.selectedDetails.fields || [];
+        return (this.selectedDetails.fields || []).filter(
+            (x) =>
+                this.checkIfPresent(x.name, search) ||
+                this.checkIfPresent(x.label, search) ||
+                this.checkIfPresent(x._type, search)
         );
     }
 
-    get child_filteredList() {
-        const records = this.selectedDetails.childRelationships.filter(
-            x => !isEmpty(x.relationshipName)
+    get lookups() {
+        if (!this.isDetailDisplayed) return [];
+        const fields = this.selectedDetails.fields || [];
+        const refs = fields.filter((f) => f.type === 'reference' && f.referenceTo?.length > 0);
+        return refs
+            .map((f) => {
+                const target = f.referenceTo?.[0] || 'Unknown';
+                return {
+                    key: `${f.name}:${target}`,
+                    label: f.label || f.name,
+                    fieldName: f.name,
+                    target,
+                };
+            })
+            .sort((a, b) => a.label.localeCompare(b.label));
+    }
+
+    get filteredLookups() {
+        const search = (this.relationshipSearch || '').trim();
+        if (isEmpty(search)) return this.lookups;
+        return this.lookups.filter(
+            (x) =>
+                this.checkIfPresent(x.label, search) ||
+                this.checkIfPresent(x.fieldName, search) ||
+                this.checkIfPresent(x.target, search)
         );
-        if (isEmpty(this.child_filter)) return records;
-        return records.filter(
-            x =>
-                this.checkIfPresent(x.relationshipName, this.child_filter) ||
-                this.checkIfPresent(x.field, this.child_filter) ||
-                this.checkIfPresent(x.childSObject, this.child_filter)
+    }
+
+    get children() {
+        if (!this.isDetailDisplayed) return [];
+        return (this.selectedDetails.childRelationships || [])
+            .filter((x) => !isEmpty(x.relationshipName))
+            .map((x) => ({
+                ...x,
+                key: `${x.childSObject}:${x.relationshipName}:${x.field}`,
+            }))
+            .sort((a, b) => (a.relationshipName || '').localeCompare(b.relationshipName || ''));
+    }
+
+    get filteredChildren() {
+        const search = (this.relationshipSearch || '').trim();
+        if (isEmpty(search)) return this.children;
+        return this.children.filter(
+            (x) =>
+                this.checkIfPresent(x.relationshipName, search) ||
+                this.checkIfPresent(x.field, search) ||
+                this.checkIfPresent(x.childSObject, search)
         );
     }
 
     get isDetailDisplayed() {
         return isNotUndefinedOrNull(this.selectedDetails);
+    }
+
+    get hasNoFields() {
+        return this.filteredFields.length === 0;
+    }
+
+    get hasNoLookups() {
+        return this.filteredLookups.length === 0;
+    }
+
+    get hasNoChildren() {
+        return this.filteredChildren.length === 0;
+    }
+
+    get fieldsCount() {
+        return (this.selectedDetails?.fields || []).length;
+    }
+
+    get relationshipsCount() {
+        return this.lookups.length + this.children.length;
+    }
+
+    get availableApis() {
+        if (!this.isDetailDisplayed) return [];
+        const map = [
+            { key: 'queryable', label: 'Queryable' },
+            { key: 'searchable', label: 'Searchable' },
+            { key: 'layoutable', label: 'Layoutable' },
+            { key: 'retrieveable', label: 'Retrieveable' },
+            { key: 'createable', label: 'Createable' },
+            { key: 'updateable', label: 'Updateable' },
+            { key: 'deletable', label: 'Deletable' },
+        ];
+        return map.filter((x) => this.selectedDetails?.[x.key] === true);
+    }
+
+    get availableApisCount() {
+        return this.availableApis.length;
+    }
+
+    get isCodePage() {
+        return this.page === 'code';
+    }
+
+    get codeButtonVariant() {
+        return this.isCodePage ? 'brand' : 'neutral';
+    }
+
+    get isAvailableApisOpen() {
+        return this.openSections.availableApis === true;
+    }
+
+    get isRelationshipsOpen() {
+        return this.openSections.relationships === true;
+    }
+
+    get isFieldsOpen() {
+        return this.openSections.fields === true;
+    }
+
+    get availableApisSectionClass() {
+        return classSet('slds-section')
+            .add({ 'slds-is-open': this.isAvailableApisOpen })
+            .toString();
+    }
+
+    get relationshipsSectionClass() {
+        return classSet('slds-section slds-m-top_small')
+            .add({ 'slds-is-open': this.isRelationshipsOpen })
+            .toString();
+    }
+
+    get fieldsSectionClass() {
+        return classSet('slds-section slds-m-top_small')
+            .add({ 'slds-is-open': this.isFieldsOpen })
+            .toString();
+    }
+
+    get availableApisChevronIcon() {
+        return this.isAvailableApisOpen ? 'utility:chevrondown' : 'utility:chevronright';
+    }
+
+    get relationshipsChevronIcon() {
+        return this.isRelationshipsOpen ? 'utility:chevrondown' : 'utility:chevronright';
+    }
+
+    get fieldsChevronIcon() {
+        return this.isFieldsOpen ? 'utility:chevrondown' : 'utility:chevronright';
+    }
+
+    get keyPrefixFormatted() {
+        return this.selectedDetails?.keyPrefix || 'N/A';
+    }
+
+    get keyPrefixCopyValue() {
+        return this.selectedDetails?.keyPrefix || null;
+    }
+
+    get totalRecordsFormatted() {
+        const total = this.extraSelectedDetails?.totalRecords;
+        if (total === undefined || total === null) return '—';
+        return `${total}`;
+    }
+
+    get objectKindLabel() {
+        return this.selectedDetails?.custom ? 'CUSTOM' : 'STANDARD';
     }
 
     get fieldUrl() {
@@ -416,6 +449,14 @@ export default class Sobject extends ToolkitElement {
 
     get setupUrl() {
         return `/lightning/setup/ObjectManager/${this.selectedDetails.name}/Details/view`;
+    }
+
+    get layoutsUrl() {
+        return `/lightning/setup/ObjectManager/${this.selectedDetails.name}/PageLayouts/view`;
+    }
+
+    get listViewsUrl() {
+        return `/lightning/setup/ObjectManager/${this.selectedDetails.name}/ListViews/view`;
     }
 
     get mermaidClass() {

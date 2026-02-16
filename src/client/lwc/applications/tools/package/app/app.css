@@ -1,0 +1,7 @@
+.sf-left-panel-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #ffffff;
+    border-bottom: 1px solid #dddbda;
+}

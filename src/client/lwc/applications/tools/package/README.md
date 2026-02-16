@@ -3,7 +3,7 @@
 Assist with retrieving and deploying metadata packages.
 
 ## Where to find
-- Tools → Deploy/Retrieve
+- Data → Deploy/Retrieve
 
 ## Key features
 - Build retrieval and deployment sets

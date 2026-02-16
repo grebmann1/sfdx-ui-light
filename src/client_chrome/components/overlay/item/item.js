@@ -3,21 +3,17 @@ import ToolkitElement from 'core/toolkitElement';
 
 import {
     isEmpty,
-    isElectronApp,
-    classSet,
-    isNotUndefinedOrNull,
-    runActionAfterTimeOut,
-    guid,
-    getCurrentObjectType,
-    getCurrentTab,
     getObjectDocLink,
     getObjectFieldsSetupLink,
     getObjectListLink,
     getObjectSetupLink,
-    getRecordTypesLink,
     redirectToUrlViaChrome,
 } from 'shared/utils';
 import { TYPE } from 'overlay/utils';
+
+function escapeRegExp(value) {
+    return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 export default class Item extends ToolkitElement {
     @api item;
@@ -48,8 +44,10 @@ export default class Item extends ToolkitElement {
     }
 
     handleItemClick = e => {
-        debugger;
         const isNewTab = e.metaKey || e.ctrlKey;
+        if (this.type === TYPE.OBJECT) {
+            this.emitRecentObject();
+        }
 
         switch (this.type) {
             case TYPE.APEX_CLASS:
@@ -81,6 +79,55 @@ export default class Item extends ToolkitElement {
         }
     };
 
+    emitRecentObject() {
+        if (this.type !== TYPE.OBJECT) return;
+        this.dispatchEvent(
+            new CustomEvent('recentobject', {
+                detail: { name: this.name, label: this.label },
+                bubbles: true,
+                composed: true,
+            })
+        );
+    }
+
+    handleOpenObjectList = e => {
+        e.stopPropagation();
+        this.emitRecentObject();
+        const link = getObjectListLink({
+            host: '',
+            sobjectName: this.name,
+            keyPrefix: this.keyPrefix,
+            isCustomSetting: this.isCustomSetting,
+        });
+        window.open(link, '_blank', 'noopener');
+    };
+
+    handleOpenObjectFields = e => {
+        e.stopPropagation();
+        this.emitRecentObject();
+        const link = getObjectFieldsSetupLink({
+            host: '',
+            sobjectName: this.name,
+            durableId: this.durableId,
+            isCustomSetting: this.isCustomSetting,
+        });
+        window.open(link, '_blank', 'noopener');
+    };
+
+    handleOpenObjectDocs = e => {
+        e.stopPropagation();
+        this.emitRecentObject();
+        const link = getObjectDocLink(this.name, false);
+        window.open(link, '_blank', 'noopener');
+    };
+
+    handleOpenObjectSetup = e => {
+        e.stopPropagation();
+        this.emitRecentObject();
+        const link = this.generateLink();
+        window.open(link, '_blank', 'noopener');
+    };
+
     generateLink = () => {
         switch (this.type) {
             case TYPE.OBJECT:
@@ -89,7 +136,6 @@ export default class Item extends ToolkitElement {
                     sobjectName: this.name,
                     durableId: this.item?.durableId,
                     isCustomSetting: this.item?.isCustomSetting,
-                    keyPrefix: this.metadata?.keyPrefix,
                 });
             case TYPE.LINK:
             case TYPE.DEV_LINK:
@@ -164,6 +210,10 @@ export default class Item extends ToolkitElement {
         return this.item?.type;
     }
 
+    get isObject() {
+        return this.type === TYPE.OBJECT;
+    }
+
     get apiVersion() {
         return this.item?.apiVersion;
     }
@@ -182,6 +232,18 @@ export default class Item extends ToolkitElement {
 
     get isCustomSetting() {
         return this.item?.isCustomSetting;
+    }
+
+    get isQueryable() {
+        return !!this.item?.queryable;
+    }
+
+    get isCreateable() {
+        return !!this.item?.createable;
+    }
+
+    get isUpdateable() {
+        return !!this.item?.updateable;
     }
 
     get email() {
@@ -232,13 +294,28 @@ export default class Item extends ToolkitElement {
     get formattedRichTextTitle() {
         if (!isEmpty(this.filter)) {
             // new RegExp('(?<!`)\b'+this.filter+'\b(?!`)','gim');
-            const regex = new RegExp('(' + this.filter + ')', 'gi');
-            if (regex.test(this.formattedTitle)) {
-                return this.formattedTitle
-                    .replace(/<?>?/, '')
-                    .replace(regex, '<span style="font-weight:Bold; color:blue;">$1</span>');
-            }
+            const escaped = escapeRegExp(this.filter);
+            const regex = new RegExp(`(${escaped})`, 'gi');
+            return this.formattedTitle.replace(regex, '<span class="highlight">$1</span>');
         }
         return this.name;
+    }
+
+    get objectTitleRichText() {
+        const title = this.label || this.name;
+        if (isEmpty(this.filter)) {
+            return title;
+        }
+        const regex = new RegExp(`(${escapeRegExp(this.filter)})`, 'gi');
+        return String(title).replace(regex, '<span class="highlight">$1</span>');
+    }
+
+    get objectApiNameRichText() {
+        const apiName = this.name;
+        if (isEmpty(this.filter)) {
+            return apiName;
+        }
+        const regex = new RegExp(`(${escapeRegExp(this.filter)})`, 'gi');
+        return String(apiName).replace(regex, '<span class="highlight">$1</span>');
     }
 }

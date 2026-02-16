@@ -3,7 +3,7 @@
 Review and compare access provided by Permission Sets and Profiles.
 
 ## Where to find
-- Tools → Access Analyzer
+- Explorers → Access Analyzer
 
 ## Key features
 - Compare Profiles and Permission Sets

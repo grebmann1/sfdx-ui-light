@@ -7,13 +7,19 @@ import {
     cacheManager,
     loadSingleExtensionConfigFromCache,
 } from 'shared/cacheManager';
-import {
-    runActionAfterTimeOut,
-} from 'shared/utils';
+import { runActionAfterTimeOut } from 'shared/utils';
 import LOGGER from 'shared/logger';
 import ViewsOverlay from 'views/overlay';
 import InputQuickPick from 'feature/inputQuickPick';
 
+const OVERLAY_DEBUG = true;
+function debugLog(...args) {
+    if (!OVERLAY_DEBUG) return;
+    try {
+        // eslint-disable-next-line no-console
+        console.log('[SF-TOOLKIT][INJECT]', ...args);
+    } catch (e) {}
+}
 
 const _showCopiedNotification = copiedValue => {
     // Create the notification element
@@ -91,23 +97,52 @@ const injectCSS = () => {
     };
 
     try {
-        safeAddStylesheet('sf-toolkit-slds-css', chrome.runtime.getURL('/styles/slds-sf-toolkit.css'));
-        safeAddStylesheet('sf-toolkit-extension-css', chrome.runtime.getURL('/styles/extension.css'));
+        safeAddStylesheet(
+            'sf-toolkit-slds-css',
+            chrome.runtime.getURL('/styles/slds-sf-toolkit.css')
+        );
+        safeAddStylesheet(
+            'sf-toolkit-extension-css',
+            chrome.runtime.getURL('/styles/extension.css')
+        );
+        debugLog('injectCSS ok', {
+            slds: !!document.getElementById('sf-toolkit-slds-css'),
+            extension: !!document.getElementById('sf-toolkit-extension-css'),
+        });
     } catch (e) {
         console.error('--> injectCSS error', e);
+        debugLog('injectCSS error', e);
     }
 };
 
 // Overlay
 let overlayInstance = null;
 const injectOverlay = async () => {
-    const isEnabled = (await loadSingleExtensionConfigFromCache(CACHE_CONFIG.OVERLAY_ENABLED.key));
-    if (!isEnabled) return;
+    try {
+        debugLog('injectOverlay called', {
+            existing: !!overlayInstance,
+            url: location.href,
+        });
+        const isEnabled = await loadSingleExtensionConfigFromCache(
+            CACHE_CONFIG.OVERLAY_ENABLED.key
+        );
+        debugLog('overlay enabled?', isEnabled);
+        if (!isEnabled) return;
+        if (overlayInstance) return;
 
-    // LWC
-    overlayInstance = createElement('views-overlay', { is: ViewsOverlay });
-    Object.assign(overlayInstance, { variant: 'overlay' });
-    document.body.appendChild(overlayInstance);
+        // LWC
+        overlayInstance = createElement('views-overlay', { is: ViewsOverlay });
+        Object.assign(overlayInstance, { variant: 'overlay' });
+        document.body.appendChild(overlayInstance);
+        window.__sfToolkitOverlay = overlayInstance;
+        debugLog('overlay appended', {
+            tag: overlayInstance?.tagName,
+            inDom: document.body.contains(overlayInstance),
+        });
+    } catch (e) {
+        debugLog('injectOverlay error', e);
+        console.error('[SF-TOOLKIT][INJECT] injectOverlay error', e);
+    }
 };
 
 // (Shortcut injection removed)
@@ -117,7 +152,9 @@ const injectInputQuickPick = async () => {
     if (!quickPickInstance) {
         quickPickInstance = createElement('feature-input-quick-pick', { is: InputQuickPick });
         quickPickInstance.className = 'sf-toolkit';
-        const isEnabled = await cacheManager.getConfigValue(CACHE_CONFIG.INPUT_QUICKPICK_ENABLED.key);
+        const isEnabled = await cacheManager.getConfigValue(
+            CACHE_CONFIG.INPUT_QUICKPICK_ENABLED.key
+        );
         //const recents = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.INPUT_QUICKPICK_RECENTS.key);
         //const data = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.INPUT_QUICKPICK_DATA.key);
         if (isEnabled) {
@@ -317,12 +354,16 @@ class LWC_CUSTOM {
 
 function showOverlay() {
     if (!overlayInstance) {
+        debugLog('showOverlay -> injecting');
         injectOverlay();
+    } else {
+        debugLog('showOverlay -> already injected');
     }
 }
 
 function hideOverlay() {
     if (overlayInstance) {
+        debugLog('hideOverlay -> removing');
         overlayInstance.remove();
         overlayInstance = null;
     }
@@ -331,13 +372,15 @@ function hideOverlay() {
 let injectorPort;
 function connectToBackground() {
     injectorPort = chrome.runtime.connect({ name: 'sf-toolkit-injected' });
-    try { console.log('[INJECT] Connected to background via port sf-toolkit-injected'); } catch (e) {}
+    debugLog('connected to background port sf-toolkit-injected');
     injectorPort.onDisconnect.addListener(() => {
         // Optionally handle disconnect in content script
         // e.g., cleanup, logging, etc.
+        debugLog('background port disconnected');
     });
     injectorPort.onMessage.addListener(msg => {
         LOGGER.debug('injectorPort.onMessage', msg);
+        debugLog('port message', msg?.action, msg);
         if (msg.action === 'toggleOverlay') {
             if (msg.enabled) {
                 showOverlay();
@@ -365,11 +408,12 @@ class INJECTOR {
     init = async () => {
         if (chrome.runtime) chrome.runtime.onMessage.addListener(this.handleMessage);
         const isValid = this.isValidPage();
+        debugLog('injector init', { isValid, host: location.host });
         if (isValid) {
             connectToBackground();
             this.injectCode();
         }
-/* 
+        /* 
         const cachedConfiguration = await cacheManager.loadConfig(
             Object.values(CACHE_CONFIG).map(x => x.key)
         );

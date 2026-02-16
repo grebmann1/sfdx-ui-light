@@ -36,12 +36,19 @@ export default class QuickLauncher extends ToolkitElement {
     /** Getters */
 
     get explorers() {
-        const explorers = ['object/app', 'metadata/app', 'doc/app'];
+        const explorers = [
+            'org/app',
+            'accessAnalyzer/app',
+            'metadata/app',
+            'object/app',
+            'recordviewer/app',
+            'doc/app',
+        ];
         return CONFIG.APP_LIST.filter(x => explorers.includes(x.name));
     }
 
     get tools() {
-        const tools = ['anonymousApex/app', 'soql/app', 'accessAnalyzer/app'];
-        return CONFIG.APP_LIST.filter(x => tools.includes(x.name));
+        const utilities = ['smartinput/app', 'textCompare/app'];
+        return CONFIG.APP_LIST.filter(x => utilities.includes(x.name));
     }
 }

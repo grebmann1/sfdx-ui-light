@@ -33,6 +33,39 @@ const DEFAULT_CATEGORY = {
     title: 'Default',
 };
 
+const ORGFARM_CATEGORY = {
+    id: 'orgfarm',
+    icon: 'standard:category',
+    title: 'OrgFarm',
+};
+
+const ORGFARM_PASSWORD = 'orgfarm1234';
+
+const isOrgFarmString = value =>
+    typeof value === 'string' && value.toLowerCase().includes(ORGFARM_CATEGORY.id);
+
+// Supports:
+// - orgfarm-023232023
+// - orgfarm-029f24a5d9
+// - orgfarm_029f24a5d9
+// Stops at first non [a-z0-9] char (e.g. '.', ':', '/', '@')
+const ORGFARM_ID_REGEX = /orgfarm[-_\s]?([a-z0-9]+)/i;
+
+const extractOrgFarmId = value => {
+    if (typeof value !== 'string') return null;
+    const match = value.match(ORGFARM_ID_REGEX);
+    const raw = match?.[1];
+    return raw ? raw.trim() : null;
+};
+
+const isOrgFarmId = value => typeof value === 'string' && /^[a-z0-9]+$/i.test(value.trim());
+
+const generateOrgFarmNumericId = () => {
+    // 9 digits, left-padded with zeros: 000000000 - 999999999
+    const n = Math.floor(Math.random() * 1_000_000_000);
+    return String(n).padStart(9, '0');
+};
+
 const ORG_TYPES = {
     PRODUCTION: 'Production',
     SANDBOX: 'Sandbox',
@@ -56,6 +89,7 @@ export default class ConnectionNewModal extends LightningModal {
 
     newCategory;
     orgType = ORG_TYPES.PRODUCTION;
+    orgFarmGeneratedId;
 
     _isNewCategoryDisplayed;
     set isNewCategoryDisplayed(value) {
@@ -77,9 +111,65 @@ export default class ConnectionNewModal extends LightningModal {
 
     connectedCallback() {
         this.isNewCategoryDisplayed = false;
+        // Apply OrgFarm defaults for prefilled values (if any).
+        window.setTimeout(() => this.applyOrgFarmDefaultsIfNeeded(), 1);
     }
 
     /** Methods **/
+
+    applyOrgFarmDefaultsIfNeeded() {
+        const categoryId = this.selectedCategory?.[0]?.id;
+        const categoryTitle = this.selectedCategory?.[0]?.title;
+
+        const isOrgFarm =
+            isOrgFarmString(this.username) ||
+            isOrgFarmString(this.customDomain) ||
+            isOrgFarmString(this.name) ||
+            isOrgFarmString(categoryId) ||
+            isOrgFarmString(categoryTitle);
+
+        if (!isOrgFarm) return;
+
+        // Default category to OrgFarm only when still on default/empty category.
+        // Also normalize case/format if category is already some variant of OrgFarm.
+        if (!categoryId || categoryId === DEFAULT_CATEGORY.id || isOrgFarmString(categoryId)) {
+            this.selectedCategory = [ORGFARM_CATEGORY];
+            this.syncLookupSelection();
+        }
+
+        // Normalize name to just the numeric OrgFarm id so alias becomes: orgfarm-XXXXXXXXX
+        // - If user typed `orgfarm-023...`, keep `023...`
+        // - If name is empty, try to infer from username/domain
+        const nameMatch = typeof this.name === 'string' ? this.name.match(ORGFARM_ID_REGEX) : null;
+        if (nameMatch?.[1]) {
+            this.name = nameMatch[1];
+        } else if (!isOrgFarmId(this.name)) {
+            const inferredId =
+                extractOrgFarmId(this.username) ||
+                extractOrgFarmId(this.customDomain) ||
+                null;
+
+            if (inferredId) {
+                this.name = inferredId;
+            } else {
+                this.orgFarmGeneratedId = this.orgFarmGeneratedId || generateOrgFarmNumericId();
+                this.name = this.orgFarmGeneratedId;
+            }
+        }
+
+        // Password is always the same for OrgFarm (when using Username/Password).
+        if (this.isUsernamePassword) {
+            this.password = ORGFARM_PASSWORD;
+        }
+    }
+
+    syncLookupSelection() {
+        if (this.isNewCategoryDisplayed) return;
+        const lookup = this.refs?.category || this.template.querySelector('slds-lookup');
+        if (lookup) {
+            lookup.selection = this.selectedCategory;
+        }
+    }
 
     initLookupDefaultResults() {
         // Make sure that the lookup is present and if so, set its default results
@@ -295,10 +385,15 @@ export default class ConnectionNewModal extends LightningModal {
     }
 
     formatForLookup = item => {
+        const normalizedItem =
+            typeof item === 'string' && item.toLowerCase() === ORGFARM_CATEGORY.id
+                ? ORGFARM_CATEGORY.id
+                : item;
+
         return {
-            id: item,
+            id: normalizedItem,
             icon: 'standard:category',
-            title: item,
+            title: normalizedItem === ORGFARM_CATEGORY.id ? ORGFARM_CATEGORY.title : normalizedItem,
         };
     };
 
@@ -320,6 +415,7 @@ export default class ConnectionNewModal extends LightningModal {
 
     handleLookupSelectionChange = event => {
         this.checkForErrors();
+        this.applyOrgFarmDefaultsIfNeeded();
     };
 
     handleLookupNewRecordSelection = event => {
@@ -361,6 +457,7 @@ export default class ConnectionNewModal extends LightningModal {
 
     name_onChange = e => {
         this.name = e.target.value;
+        this.applyOrgFarmDefaultsIfNeeded();
     };
 
     newCategory_onChange = e => {
@@ -369,14 +466,17 @@ export default class ConnectionNewModal extends LightningModal {
 
     customDomain_onChange = e => {
         this.customDomain = e.target.value;
+        this.applyOrgFarmDefaultsIfNeeded();
     };
 
     domainType_onChange = e => {
         this.selectedDomain = e.target.value;
+        this.applyOrgFarmDefaultsIfNeeded();
     };
 
     username_onChange = e => {
         this.username = e.target.value;
+        this.applyOrgFarmDefaultsIfNeeded();
     };
 
     password_onChange = e => {
@@ -389,6 +489,7 @@ export default class ConnectionNewModal extends LightningModal {
 
     handleCredentialTypeChange = e => {
         this.credentialType = e.target.value;
+        this.applyOrgFarmDefaultsIfNeeded();
     };
 
     redirectUrl_onChange = e => {
@@ -435,7 +536,10 @@ export default class ConnectionNewModal extends LightningModal {
         if (this.selectedCategory.length > 0) {
             _connections.push(this.selectedCategory[0].id);
         }
-        return [...new Set(_connections)];
+        const normalized = _connections.map(x =>
+            typeof x === 'string' && x.toLowerCase() === ORGFARM_CATEGORY.id ? ORGFARM_CATEGORY.id : x
+        );
+        return [...new Set(normalized)];
     }
 
     get generatedAlias() {

@@ -3,7 +3,7 @@
 Write, run, and save Anonymous Apex scripts with logs and inline error markers.
 
 ## Where to find
-- Tools → Anonymous Apex
+- Developer → Anonymous Apex
 
 ## Key features
 - Monaco-based Apex editor with tabs

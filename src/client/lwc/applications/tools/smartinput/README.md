@@ -3,7 +3,7 @@
 AI-assisted input composer to quickly generate realistic values for forms or data seeding.
 
 ## Where to find
-- Tools → Smart Input
+- Utilities → Smart Input
 
 ## Key features
 - Compose values and generate suggestions (AI)

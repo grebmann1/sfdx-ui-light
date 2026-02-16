@@ -33,10 +33,84 @@
     line-height: 1.2;
 }
 
+.highlight {
+    font-weight: 700;
+    color: #0176d3;
+}
+
 /** Icons **/
 
 .icon-extra-object {
     --slds-c-icon-color-background: #2a739e;
     --slds-c-icon-color-foreground: white;
     --slds-c-icon-color-foreground-default: white;
+}
+
+/** Object modern row **/
+
+.object-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+    margin-left: 0.75rem;
+    flex: 0 0 auto;
+}
+
+.object-actions {
+    display: flex;
+}
+
+.object-action-group {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #dddbda;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.object-action {
+    border: 0;
+    border-radius: 0;
+    padding: 0.125rem;
+    background: transparent;
+}
+
+.object-action:not(:last-child) {
+    border-right: 1px solid #dddbda;
+}
+
+.object-action:hover {
+    background: #f3f2f2;
+}
+
+.object-badges {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.object-badge {
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.25rem;
+    font-size: 10px;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1;
+}
+
+.object-badge--q {
+    background: #0176d3;
+}
+
+.object-badge--c {
+    background: #2e844a;
+}
+
+.object-badge--u {
+    background: #fe9339;
 }

@@ -28,6 +28,7 @@
 
 .slds-context-bar__primary {
     padding-right: var(--slds-g-spacing-large, 1.5rem);
+    padding-inline-start: unset !important;
 }
 
 .slds-context-bar__secondary {

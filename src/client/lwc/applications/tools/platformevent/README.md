@@ -3,7 +3,7 @@
 Subscribe to and inspect Platform Events for troubleshooting and development.
 
 ## Where to find
-- Tools → Event Explorer
+- Developer → Event Explorer
 
 ## Key features
 - Subscribe to channels (e.g., `/event/*`)

@@ -184,11 +184,19 @@ export default class Menu extends ToolkitElement {
     get isSmallToolDisplayed() {}
 
     get applicationLabel() {
-        return this.isMenuSmall ? 'App' : 'Applications';
+        return this.isMenuSmall ? 'Exp' : 'Explorers';
     }
 
-    get toolsLabel() {
-        return this.isMenuSmall ? 'Tools' : 'Tools';
+    get developerLabel() {
+        return this.isMenuSmall ? 'Dev' : 'Developer';
+    }
+
+    get dataLabel() {
+        return this.isMenuSmall ? 'Data' : 'Data';
+    }
+
+    get utilitiesLabel() {
+        return this.isMenuSmall ? 'Util' : 'Utilities';
     }
 
     get connectionLabel() {
@@ -207,12 +215,12 @@ export default class Menu extends ToolkitElement {
         return this.filterBySearch(this.homes, this.filterText);
     }
 
-    get applications() {
-        return this.generateFilter('application');
+    get explorers() {
+        return this.generateFilter('explorer');
     }
 
-    get filteredApplications() {
-        return this.filterBySearch(this.applications, this.filterText);
+    get filteredExplorers() {
+        return this.filterBySearch(this.explorers, this.filterText);
     }
 
     get documentations() {
@@ -231,28 +239,44 @@ export default class Menu extends ToolkitElement {
         return this.filterBySearch(this.extras, this.filterText);
     }
 
-    get tools() {
-        return this.generateFilter('tool');
+    get developerTools() {
+        return this.generateFilter('developer');
     }
 
-    get filteredTools() {
-        return this.filterBySearch(this.tools, this.filterText);
+    get filteredDeveloperTools() {
+        return this.filterBySearch(this.developerTools, this.filterText);
     }
 
-    get hasTools() {
-        return this.tools.length > 0;
+    get dataTools() {
+        return this.generateFilter('data');
     }
 
-    get hasApplications() {
-        return this.applications.length > 0;
+    get filteredDataTools() {
+        return this.filterBySearch(this.dataTools, this.filterText);
     }
 
-    get hasFilteredApplications() {
-        return this.filteredApplications.length > 0;
+    get utilities() {
+        return this.generateFilter('utility');
     }
 
-    get hasFilteredTools() {
-        return this.filteredTools.length > 0;
+    get filteredUtilities() {
+        return this.filterBySearch(this.utilities, this.filterText);
+    }
+
+    get hasFilteredExplorers() {
+        return this.filteredExplorers.length > 0;
+    }
+
+    get hasFilteredDeveloperTools() {
+        return this.filteredDeveloperTools.length > 0;
+    }
+
+    get hasFilteredDataTools() {
+        return this.filteredDataTools.length > 0;
+    }
+
+    get hasFilteredUtilities() {
+        return this.filteredUtilities.length > 0;
     }
 
     get connections() {

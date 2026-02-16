@@ -11,19 +11,87 @@
                     <!---->
                     <!---->
                 </span>
-                <span class="slds-media__body slds-flex-column">
-                    <span class="slds-listbox__option-text slds-listbox__option-text_entity">
-                        <lightning-formatted-rich-text
-                            value={formattedRichTextTitle}
-                            disable-linkify></lightning-formatted-rich-text>
+                <template lwc:if={isObject}>
+                    <span class="slds-media__body slds-flex-column object-body">
+                        <span class="slds-listbox__option-text slds-listbox__option-text_entity">
+                            <lightning-formatted-rich-text
+                                value={objectTitleRichText}
+                                disable-linkify></lightning-formatted-rich-text>
+                        </span>
+                        <span
+                            class="slds-listbox__option-meta slds-listbox__option-meta_entity slds-truncate">
+                            <lightning-formatted-rich-text
+                                value={objectApiNameRichText}
+                                disable-linkify></lightning-formatted-rich-text>
+                        </span>
                     </span>
-                    <span
-                        class="slds-listbox__option-meta slds-listbox__option-meta_entity slds-truncate">
-                        <lightning-formatted-rich-text
-                            value={description}
-                            disable-linkify></lightning-formatted-rich-text>
+                    <span class="object-side">
+                        <span class="object-actions">
+                            <lightning-button-group class="object-action-group">
+                                <lightning-button-icon
+                                    class="object-action"
+                                    icon-name="utility:search"
+                                    variant="bare"
+                                    size="small"
+                                    title="Open list view"
+                                    onclick={handleOpenObjectList}></lightning-button-icon>
+                                <lightning-button-icon
+                                    class="object-action"
+                                    icon-name="utility:setup"
+                                    variant="bare"
+                                    size="small"
+                                    title="Open fields"
+                                    onclick={handleOpenObjectFields}></lightning-button-icon>
+                                <lightning-button-icon
+                                    class="object-action"
+                                    icon-name="utility:info"
+                                    variant="bare"
+                                    size="small"
+                                    title="Open docs"
+                                    onclick={handleOpenObjectDocs}></lightning-button-icon>
+                                <lightning-button-icon
+                                    class="object-action"
+                                    icon-name="utility:new_window"
+                                    variant="bare"
+                                    size="small"
+                                    title="Open setup (new tab)"
+                                    onclick={handleOpenObjectSetup}></lightning-button-icon>
+                            </lightning-button-group>
+                        </span>
+                        <span class="object-badges">
+                            <template lwc:if={isQueryable}>
+                                <span class="object-badge object-badge--q" title="Queryable">
+                                    Q
+                                </span>
+                            </template>
+                            <template lwc:if={isCreateable}>
+                                <span class="object-badge object-badge--c" title="Createable">
+                                    C
+                                </span>
+                            </template>
+                            <template lwc:if={isUpdateable}>
+                                <span class="object-badge object-badge--u" title="Updateable">
+                                    U
+                                </span>
+                            </template>
+                        </span>
                     </span>
-                </span>
+                </template>
+                <template lwc:else>
+                    <span class="slds-media__body slds-flex-column">
+                        <span class="slds-listbox__option-text slds-listbox__option-text_entity">
+                            <lightning-formatted-rich-text
+                                value={formattedRichTextTitle}
+                                disable-linkify></lightning-formatted-rich-text>
+                        </span>
+                        <span
+                            class="slds-listbox__option-meta slds-listbox__option-meta_entity slds-truncate">
+                            <lightning-formatted-rich-text
+                                value={description}
+                                disable-linkify></lightning-formatted-rich-text>
+                        </span>
+                    </span>
+                </template>
             </div>
         </li>
     </template>

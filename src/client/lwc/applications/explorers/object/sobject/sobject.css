@@ -2,6 +2,25 @@
     height: 100%;
 }
 
-.slds-page-header{
-    border-radius:unset !important;
+.sobject-summary-label {
+    color: var(--slds-g-color-neutral-base-50, #3e3e3c);
+}
+
+.sobject-summary {
+    border-radius: 0.75rem;
+}
+
+.table-container {
+    max-height: 22rem;
+}
+
+.sobject-root .slds-section__title-action {
+    width: 100%;
+    justify-content: flex-start;
+    text-align: left;
+}
+
+.query-button__icon {
+    --slds-c-icon-color-foreground: var(--slds-g-color-neutral-base-100, #fff);
+    --slds-c-icon-color-foreground-default: var(--slds-g-color-neutral-base-100, #fff);
 }

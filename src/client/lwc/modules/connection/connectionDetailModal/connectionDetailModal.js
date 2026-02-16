@@ -181,6 +181,10 @@ export default class ConnectionDetailModal extends LightningModal {
     };
 
     handleShare = async () => {
+        return this.handleShareMessage();
+    };
+
+    handleShareMessage = async () => {
         const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '';
         const basePath = origin ? `${origin}/app` : '/app';
         let message;
@@ -220,7 +224,6 @@ export default class ConnectionDetailModal extends LightningModal {
                 `OrgId: ${this.orgId || ''}`,
                 `Username: ${this.username || ''}`,
                 `Instance Url: ${this.instanceUrl || ''}`,
-                this.sfdxAuthUrl ? `SFDX Auth Url: ${this.sfdxAuthUrl}` : '',
                 '',
                 'Connect (add org and sign in with refresh token):',
             ];
@@ -247,7 +250,7 @@ export default class ConnectionDetailModal extends LightningModal {
 
         try {
             await navigator.clipboard.writeText(message);
-            showToast({ label: 'Share message copied to clipboard', variant: 'success' });
+            showToast({ label: 'Share copied to clipboard', variant: 'success' });
         } catch (e) {
             handleError(e, 'Share');
         }

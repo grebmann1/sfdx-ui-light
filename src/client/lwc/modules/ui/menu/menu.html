@@ -67,14 +67,14 @@
 
         <template lwc:if={isMenuSmall}>
             <!-- SMALL MENU - START -->
-            <!-- Applications -->
-            <template lwc:if={hasFilteredApplications}>
+            <!-- Explorers -->
+            <template lwc:if={hasFilteredExplorers}>
                 <lightning-button-menu
                     variant="container"
-                    tooltip="Applications"
+                    tooltip="Explorers"
                     icon-name="utility:builder"
                     onselect={handleApplicationSelection}>
-                    <template for:each={filteredApplications} for:item="item">
+                    <template for:each={filteredExplorers} for:item="item">
                         <lightning-menu-item
                             tooltip={item.menuLabel}
                             data-key={item.path}
@@ -85,14 +85,50 @@
                     </template>
                 </lightning-button-menu>
             </template>
-            <!-- Tools -->
-            <template lwc:if={hasFilteredTools}>
+            <!-- Developer -->
+            <template lwc:if={hasFilteredDeveloperTools}>
                 <lightning-button-menu
                     variant="container"
-                    tooltip="Tools"
+                    tooltip="Developer"
                     icon-name="utility:apex"
                     onselect={handleApplicationSelection}>
-                    <template for:each={filteredTools} for:item="item">
+                    <template for:each={filteredDeveloperTools} for:item="item">
+                        <lightning-menu-item
+                            tooltip={item.menuLabel}
+                            data-key={item.path}
+                            key={item.name}
+                            value={item.path}
+                            label={item.menuLabel}
+                            icon-name={item.menuIcon}></lightning-menu-item>
+                    </template>
+                </lightning-button-menu>
+            </template>
+            <!-- Data -->
+            <template lwc:if={hasFilteredDataTools}>
+                <lightning-button-menu
+                    variant="container"
+                    tooltip="Data"
+                    icon-name="utility:download"
+                    onselect={handleApplicationSelection}>
+                    <template for:each={filteredDataTools} for:item="item">
+                        <lightning-menu-item
+                            tooltip={item.menuLabel}
+                            data-key={item.path}
+                            key={item.name}
+                            value={item.path}
+                            label={item.menuLabel}
+                            icon-name={item.menuIcon}></lightning-menu-item>
+                    </template>
+                </lightning-button-menu>
+            </template>
+            <!-- Utilities -->
+            <template lwc:if={hasFilteredUtilities}>
+                <lightning-button-menu
+                    variant="container"
+                    tooltip="Utilities"
+                    icon-name="utility:magicwand"
+                    onselect={handleApplicationSelection}>
+                    <template for:each={filteredUtilities} for:item="item">
                         <lightning-menu-item
                             tooltip={item.menuLabel}
                             data-key={item.path}
@@ -138,11 +174,11 @@
         </template>
         <template lwc:else>
             <!-- LARGE MENU - START -->
-            <!-- Applications -->
-            <template lwc:if={hasFilteredApplications}>
-                <h2 class="slds-nav-vertical__title">Applications</h2>
+            <!-- Explorers -->
+            <template lwc:if={hasFilteredExplorers}>
+                <h2 class="slds-nav-vertical__title">Explorers</h2>
             </template>
-            <template for:each={filteredApplications} for:item="item">
+            <template for:each={filteredExplorers} for:item="item">
                 <template lwc:if={item.menuIcon}>
                     <lightning-vertical-navigation-item-icon
                         data-key={item.path}
@@ -159,13 +195,57 @@
                         name={item.path}></lightning-vertical-navigation-item>
                 </template>
             </template>
-            <!-- Tools -->
-            <template lwc:if={hasFilteredTools}>
+            <!-- Developer -->
+            <template lwc:if={hasFilteredDeveloperTools}>
                 <div class="slds-has-divider_top-space"></div>
-                <h2 class="slds-nav-vertical__title">Tools</h2>
+                <h2 class="slds-nav-vertical__title">Developer</h2>
             </template>
 
-            <template for:each={filteredTools} for:item="item">
+            <template for:each={filteredDeveloperTools} for:item="item">
+                <template lwc:if={item.menuIcon}>
+                    <lightning-vertical-navigation-item-icon
+                        data-key={item.path}
+                        key={item.name}
+                        label={item.menuLabel}
+                        name={item.path}
+                        icon-name={item.menuIcon}></lightning-vertical-navigation-item-icon>
+                </template>
+                <template lwc:else>
+                    <lightning-vertical-navigation-item
+                        data-key={item.path}
+                        key={item.name}
+                        label={item.menuLabel}
+                        name={item.path}></lightning-vertical-navigation-item>
+                </template>
+            </template>
+            <!-- Data -->
+            <template lwc:if={hasFilteredDataTools}>
+                <div class="slds-has-divider_top-space"></div>
+                <h2 class="slds-nav-vertical__title">Data</h2>
+            </template>
+            <template for:each={filteredDataTools} for:item="item">
+                <template lwc:if={item.menuIcon}>
+                    <lightning-vertical-navigation-item-icon
+                        data-key={item.path}
+                        key={item.name}
+                        label={item.menuLabel}
+                        name={item.path}
+                        icon-name={item.menuIcon}></lightning-vertical-navigation-item-icon>
+                </template>
+                <template lwc:else>
+                    <lightning-vertical-navigation-item
+                        data-key={item.path}
+                        key={item.name}
+                        label={item.menuLabel}
+                        name={item.path}></lightning-vertical-navigation-item>
+                </template>
+            </template>
+            <!-- Utilities -->
+            <template lwc:if={hasFilteredUtilities}>
+                <div class="slds-has-divider_top-space"></div>
+                <h2 class="slds-nav-vertical__title">Utilities</h2>
+            </template>
+            <template for:each={filteredUtilities} for:item="item">
                 <template lwc:if={item.menuIcon}>
                     <lightning-vertical-navigation-item-icon
                         data-key={item.path}

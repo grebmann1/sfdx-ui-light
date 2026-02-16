@@ -3,8 +3,8 @@
 Compare two texts side-by-side and review differences. Paste or type in the left and right panes to see a live diff.
 
 ## Where to find
-- Tools → Text Compare
-- Home quick launcher (Tools section)
+- Utilities → Text Compare
+- Home quick launcher (Utilities section)
 
 ## Key features
 - Side-by-side diff viewer (Monaco diff editor)

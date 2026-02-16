@@ -3,7 +3,12 @@
 .env
 .sfdx
 .DS_Store
-.cursor/
+**/.cursor/*
+!/.cursor/
+!/.cursor/skills/
+!/.cursor/skills/**
+!/.cursor/rules/
+!/.cursor/rules/**
 node_modules
 __lwr_cache__
 site

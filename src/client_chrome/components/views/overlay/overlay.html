@@ -22,10 +22,7 @@
             </div>
         </div>
         <template lwc:if={isOverlayDisplayed}>
-            <div
-                class="sf-toolkit slds-toolkit-overlay slds-is-relative"
-                tabindex="0"
-                style="background-color: white; width: 500px">
+            <div class="sf-toolkit slds-toolkit-overlay slds-is-relative" tabindex="0">
                 <template lwc:if={isLoading}>
                     <slds-spinner
                         message="Fetching Metadata"
@@ -69,7 +66,9 @@
                         <div class="slds-full-width">
                             <!-- DEV BANNER -->
                             <template lwc:if={isDevTabDisplayed}>
-                                <div class="dev-banner" title="Detected dev server (port in URL)">DEV SERVER</div>
+                                <div class="dev-banner" title="Detected dev server (port in URL)">
+                                    DEV SERVER
+                                </div>
                             </template>
                             <!-- HEADER -->
                             <extension-header
@@ -114,10 +113,10 @@
                             <span class="slds-metadata-info slds-p-around_x-small">
                                 <div class="slds-truncate">
                                     <template lwc:if={hasItems}>
-                                        <span>{formattedResults.length} results</span>
+                                        <span>{currentTabCountLabel}</span>
                                         <span class="slds-p-horizontal_xx-small">•</span>
                                     </template>
-                                    <span>Metadata refreshed {lastRefreshDateFormatted}</span>
+                                    <span>{refreshLabel} {refreshDateFormatted}</span>
                                 </div>
                                 <lightning-button-icon
                                     class="slds-float_right"
@@ -134,13 +133,20 @@
                                         <lightning-tab
                                             class="full-page-body"
                                             label={tab_searchLabel}
-                                            value={FORMATTED_TABS.SEARCH}
+                                            value={FORMATTED_TABS.ORGANIZATION}
                                             onactive={handleSelectTab}></lightning-tab>
                                         <lightning-tab
                                             class="full-page-body"
                                             label={tab_quickLinkLabel}
                                             value={FORMATTED_TABS.QUICKLINK}
                                             onactive={handleSelectTab}></lightning-tab>
+                                        <template lwc:if={isObjectTabDisplayed}>
+                                            <lightning-tab
+                                                class="full-page-body"
+                                                label={tab_objectLabel}
+                                                value={FORMATTED_TABS.OBJECT}
+                                                onactive={handleSelectTab}></lightning-tab>
+                                        </template>
                                         <template lwc:if={isUserTabDisplayed}>
                                             <lightning-tab
                                                 class="full-page-body"
@@ -157,29 +163,157 @@
                                         </template>
                                     </lightning-tabset>
                                     <!-- SECTION -->
-                                    <div class="slds-fill-height slds-col slds-size_1-of-1">
+                                    <div
+                                        class="slds-flex-column slds-fill-height slds-col slds-size_1-of-1">
                                         <!-- Start -->
-                                        <ul
-                                            class="slds-scrollable_y scroll-container-header"
-                                            onscroll={handleScroll}>
-                                            <li
-                                                for:each={virtualList}
-                                                for:item="item"
-                                                key={item.id}>
-                                                <overlay-item
-                                                    filter={searchValue}
-                                                    name={item.name}
-                                                    item={item}></overlay-item>
-                                            </li>
-                                        </ul>
-                                        <template lwc:if={hasNoItems}>
-                                            <illustration-empty
-                                                sub-title="No Data matching your criteria"></illustration-empty>
+                                        <template lwc:if={isOrganizationTab}>
+                                            <div
+                                                class="sf-org-panel slds-p-around_small slds-scrollable_y scroll-container-header">
+                                                <fieldset class="sf-info-card">
+                                                    <legend class="sf-info-card__legend">
+                                                        ORGANIZATION
+                                                    </legend>
+                                                    <div class="sf-info-card__body">
+                                                        <template for:each={orgRows} for:item="row">
+                                                            <div
+                                                                class="sf-info-row"
+                                                                key={row.label}>
+                                                                <div
+                                                                    class="sf-info-row__label"
+                                                                    title={row.label}>
+                                                                    {row.label}:
+                                                                </div>
+                                                                <div class="sf-info-row__value">
+                                                                    <template
+                                                                        lwc:if={row.isCopyable}>
+                                                                        <lightning-button-icon
+                                                                            class="sf-info-row__icon"
+                                                                            alternative-text="copy"
+                                                                            icon-name="utility:copy"
+                                                                            onclick={handleCopyOrgValue}
+                                                                            data-value={row.value}
+                                                                            data-label="Copied to clipboard"
+                                                                            variant="bare"></lightning-button-icon>
+                                                                    </template>
+                                                                    <span
+                                                                        class="sf-info-row__text"
+                                                                        title={row.value}>
+                                                                        {row.value}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </fieldset>
+
+                                                <fieldset class="sf-info-card sf-info-card--spaced">
+                                                    <legend class="sf-info-card__legend">
+                                                        USER
+                                                    </legend>
+                                                    <div class="sf-info-card__body">
+                                                        <template
+                                                            for:each={userRows}
+                                                            for:item="row">
+                                                            <div
+                                                                class="sf-info-row"
+                                                                key={row.label}>
+                                                                <div
+                                                                    class="sf-info-row__label"
+                                                                    title={row.label}>
+                                                                    {row.label}:
+                                                                </div>
+                                                                <div class="sf-info-row__value">
+                                                                    <template
+                                                                        lwc:if={row.isCopyable}>
+                                                                        <lightning-button-icon
+                                                                            class="sf-info-row__icon"
+                                                                            alternative-text="copy"
+                                                                            icon-name="utility:copy"
+                                                                            onclick={handleCopyOrgValue}
+                                                                            data-value={row.value}
+                                                                            data-label="Copied to clipboard"
+                                                                            variant="bare"></lightning-button-icon>
+                                                                    </template>
+                                                                    <span
+                                                                        class="sf-info-row__text"
+                                                                        title={row.value}>
+                                                                        {row.value}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </fieldset>
+
+                                                <template lwc:if={isFetchingOrgInfo}>
+                                                    <div class="sf-info-card__loading">
+                                                        <slds-spinner
+                                                            alternative-text="Loading"
+                                                            size="small"></slds-spinner>
+                                                    </div>
+                                                </template>
+                                            </div>
                                         </template>
-                                        <template lwc:if={isFetchingMetadata}>
-                                            <slds-spinner
-                                                alternative-text="Loading"
-                                                size="small"></slds-spinner>
+                                        <template lwc:else>
+                                            <template lwc:if={isObjectTab}>
+                                                <div
+                                                    class="sf-object-toolbar slds-p-around_x-small">
+                                                    <div class="sf-object-filters">
+                                                        <template lwc:if={isRecentObjectFilter}>
+                                                            <template
+                                                                lwc:if={isFetchingRecentlyViewed}>
+                                                                <span
+                                                                    class="sf-object-filters__loading">
+                                                                    <slds-spinner
+                                                                        alternative-text="Loading"
+                                                                        size="xx-small"></slds-spinner>
+                                                                </span>
+                                                            </template>
+                                                        </template>
+                                                        <template
+                                                            for:each={objectFilters}
+                                                            for:item="f">
+                                                            <button
+                                                                key={f.value}
+                                                                type="button"
+                                                                class={f.className}
+                                                                data-value={f.value}
+                                                                onclick={handleObjectFilterClick}>
+                                                                {f.label}
+                                                            </button>
+                                                        </template>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        class="sf-pill sf-pill--setup"
+                                                        onclick={handleOpenObjectManagerSetup}>
+                                                        Setup
+                                                    </button>
+                                                </div>
+                                            </template>
+                                            <ul
+                                                class="slds-scrollable_y scroll-container-header"
+                                                onscroll={handleScroll}>
+                                                <li
+                                                    for:each={virtualList}
+                                                    for:item="item"
+                                                    key={item.id}>
+                                                    <overlay-item
+                                                        filter={searchValue}
+                                                        name={item.name}
+                                                        onrecentobject={handleRecentObject}
+                                                        item={item}></overlay-item>
+                                                </li>
+                                            </ul>
+                                            <template lwc:if={hasNoItems}>
+                                                <illustration-empty
+                                                    sub-title="No Data matching your criteria"></illustration-empty>
+                                            </template>
+                                            <template lwc:if={isFetchingMetadata}>
+                                                <slds-spinner
+                                                    alternative-text="Loading"
+                                                    size="small"></slds-spinner>
+                                            </template>
                                         </template>
                                         <!-- End -->
                                     </div>

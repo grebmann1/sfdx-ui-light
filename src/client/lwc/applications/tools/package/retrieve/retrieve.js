@@ -19,14 +19,74 @@ import { store, connectStore, PACKAGE, SELECTORS } from 'core/store';
 import Toast from 'lightning/toast';
 import moment from 'moment';
 import { TEMPLATE } from 'package/utils';
-import xml2js from 'xml2js';
+
+function getXmlError(doc) {
+    try {
+        const err = doc.getElementsByTagName('parsererror')?.[0];
+        return err ? err.textContent : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+function getElementsByTagNameSafe(parent, ns, tagName) {
+    if (!parent) return [];
+    try {
+        if (ns) return Array.from(parent.getElementsByTagNameNS(ns, tagName) || []);
+        return Array.from(parent.getElementsByTagName(tagName) || []);
+    } catch (e) {
+        return [];
+    }
+}
+
+function getFirstChildText(parent, ns, tagName) {
+    const els = getElementsByTagNameSafe(parent, ns, tagName);
+    const el = els?.[0];
+    return el ? (el.textContent || '').trim() : '';
+}
+
+function setSingleChildText(doc, parent, ns, tagName, value) {
+    const existing = getElementsByTagNameSafe(parent, ns, tagName)?.[0];
+    const el = existing || (ns ? doc.createElementNS(ns, tagName) : doc.createElement(tagName));
+    if (!existing) parent.appendChild(el);
+    el.textContent = value;
+    return el;
+}
+
+function parsePackageXml(xml) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xml || '', 'application/xml');
+    const parseError = getXmlError(doc);
+    if (parseError) {
+        throw new Error('Invalid XML manifest');
+    }
+    const pkg = doc.documentElement;
+    const ns = pkg?.namespaceURI || null;
+
+    const typesEls = getElementsByTagNameSafe(pkg, ns, 'types');
+    const types = typesEls.map(t => {
+        const name = getFirstChildText(t, ns, 'name');
+        const members = getElementsByTagNameSafe(t, ns, 'members').map(m =>
+            (m.textContent || '').trim()
+        );
+        return { name, members, _node: t };
+    });
+
+    const version = getFirstChildText(pkg, ns, 'version');
+    return { doc, pkg, ns, types, version };
+}
+
+function buildPackageXml(doc) {
+    const xml = new XMLSerializer().serializeToString(doc);
+    return prettifyXml(xml);
+}
 
 const TESTLEVEL = {
     NoTestRun: 'NoTestRun',
     RunLocalTests: 'RunLocalTests',
     RunAllTestsInOrg: 'RunAllTestsInOrg',
     RunSpecifiedTests: 'RunSpecifiedTests',
-    RunRelevantTests: 'RunRelevantTests'
+    RunRelevantTests: 'RunRelevantTests',
 };
 
 export default class Retrieve extends ToolkitElement {
@@ -135,75 +195,88 @@ export default class Retrieve extends ToolkitElement {
     };
 
     updateManifest = async (xml, membersToToggle, selectAll, unselectAll) => {
-        const parser = new xml2js.Parser();
-        const builder = new xml2js.Builder();
-
         try {
-            // Parse the XML
-            const parsedData = await parser.parseStringPromise(xml);
+            const { doc, pkg, ns, types } = parsePackageXml(xml);
 
-            // Ensure Package and types array exist
-            if (!parsedData.Package) parsedData.Package = {};
-            if (!parsedData.Package.types) parsedData.Package.types = [];
+            const typesByName = new Map(types.map(t => [t.name, t]));
 
-            // Convert types array to a map for easy lookup
-            const typesMap = {};
-            parsedData.Package.types.forEach(type => {
-                typesMap[type.name[0]] = type;
-            });
+            const createTypesNode = typeName => {
+                const typesEl = ns ? doc.createElementNS(ns, 'types') : doc.createElement('types');
+                setSingleChildText(doc, typesEl, ns, 'name', typeName);
+                pkg.appendChild(typesEl);
+                const entry = { name: typeName, members: [], _node: typesEl };
+                typesByName.set(typeName, entry);
+                return entry;
+            };
 
-            // Process each type in membersToToggle
-            for (const [typeName, newMembers] of Object.entries(membersToToggle)) {
-                let type = typesMap[typeName];
+            const setMembers = (entry, members) => {
+                const typesEl = entry._node;
+                // Remove all existing <members>
+                getElementsByTagNameSafe(typesEl, ns, 'members').forEach(m => m.remove());
+                // Append members before <name> (order doesn't matter for Salesforce but keeps it tidy)
+                const nameNode = getElementsByTagNameSafe(typesEl, ns, 'name')?.[0] || null;
+                (members || []).forEach(mem => {
+                    const m = ns
+                        ? doc.createElementNS(ns, 'members')
+                        : doc.createElement('members');
+                    m.textContent = mem;
+                    typesEl.insertBefore(m, nameNode);
+                });
+                entry.members = members;
+            };
 
-                if (!type) {
-                    // If type doesn't exist, create a new type object and add to the types array
-                    type = { members: [], name: [typeName] };
-                    parsedData.Package.types.push(type);
-                }
-
-                // Get existing members, remove '*' if present
-                let existingMembers = type.members || [];
-                existingMembers = existingMembers.filter(member => member !== '*');
-
-                // Add new members that are not already in the list
-                newMembers.forEach(newMember => {
-                    if (!existingMembers.includes(newMember)) {
-                        existingMembers.push(newMember);
+            // Toggle specific members
+            for (const [typeName, newMembers] of Object.entries(membersToToggle || {})) {
+                const entry = typesByName.get(typeName) || createTypesNode(typeName);
+                const existing = (entry.members || []).filter(m => m !== '*');
+                (newMembers || []).forEach(mem => {
+                    if (!existing.includes(mem)) {
+                        existing.push(mem);
                     } else {
-                        existingMembers = existingMembers.filter(member => member !== newMember);
+                        const idx = existing.indexOf(mem);
+                        if (idx >= 0) existing.splice(idx, 1);
                     }
                 });
-
-                // Update the members in the object
-                type.members = existingMembers;
+                setMembers(entry, existing);
             }
 
-            // Process select all
-            selectAll.forEach(typeName => {
-                let type = typesMap[typeName];
-
-                if (!type) {
-                    // If type doesn't exist, create a new type object and add to the types array
-                    type = { members: [], name: [typeName] };
-                    parsedData.Package.types.push(type);
-                }
-                type.members = ['*'];
+            // Select all
+            (selectAll || []).forEach(typeName => {
+                const entry = typesByName.get(typeName) || createTypesNode(typeName);
+                setMembers(entry, ['*']);
             });
-            // Process unselect all
-            parsedData.Package.types = parsedData.Package.types.filter(
-                type => !unselectAll.includes(type.name[0])
-            );
 
-            // Filter and sort
-            parsedData.Package.types = parsedData.Package.types
-                .filter(type => type.members.length > 0)
-                .sort((a, b) => a.name[0].localeCompare(b.name[0]));
-            // Build the modified XML back into a string
-            const updatedXml = builder.buildObject(parsedData);
-            return updatedXml;
+            // Unselect all
+            (unselectAll || []).forEach(typeName => {
+                const entry = typesByName.get(typeName);
+                if (entry?._node) {
+                    entry._node.remove();
+                }
+                typesByName.delete(typeName);
+            });
+
+            // Remove empty types
+            for (const [typeName, entry] of Array.from(typesByName.entries())) {
+                const members = entry.members || [];
+                if (!members.length) {
+                    try {
+                        entry._node?.remove();
+                    } catch (e) {}
+                    typesByName.delete(typeName);
+                }
+            }
+
+            // Sort by name and rewrite <types> nodes in order
+            const sorted = Array.from(typesByName.values()).sort((a, b) =>
+                String(a.name || '').localeCompare(String(b.name || ''))
+            );
+            getElementsByTagNameSafe(pkg, ns, 'types').forEach(t => t.remove());
+            sorted.forEach(entry => pkg.appendChild(entry._node));
+
+            return buildPackageXml(doc);
         } catch (err) {
             console.error('Error processing XML:', err);
+            throw err;
         }
     };
 
@@ -213,19 +286,17 @@ export default class Retrieve extends ToolkitElement {
         const manifestXml = this.refs.manifest.currentModel.getValue();
 
         try {
-            const jsonFormatted = await xml2js.parseStringPromise(manifestXml, {
-                explicitArray: false,
-            });
+            const { types, version } = parsePackageXml(manifestXml);
             const _request = {
                 unpackaged: {
-                    types: jsonFormatted.hasOwnProperty('Package')
-                        ? jsonFormatted.Package.types
-                        : jsonFormatted.types,
+                    types: (types || [])
+                        .filter(t => !isEmpty(t.name))
+                        .map(t => ({
+                            name: t.name,
+                            members: Array.isArray(t.members) ? t.members : [],
+                        })),
                 },
-                apiVersion:
-                    (jsonFormatted.hasOwnProperty('Package')
-                        ? jsonFormatted.Package.version
-                        : jsonFormatted.version) || this.currentApiVersion,
+                apiVersion: version || this.currentApiVersion,
                 singlePackage: request.options.singlePackage || false,
             };
 
@@ -234,13 +305,16 @@ export default class Retrieve extends ToolkitElement {
                     connector: this.connector,
                     request: _request,
                     createdDate: new Date(),
-                    proxyUrl: isElectronApp() || isChromeExtension() ? null : window.jsforceSettings.proxyUrl,
+                    proxyUrl:
+                        isElectronApp() || isChromeExtension()
+                            ? null
+                            : window.jsforceSettings.proxyUrl,
                 })
             );
         } catch (e) {
             Toast.show({
                 label: `Error while retrieving`,
-                description: e.message,
+                description: e?.message || String(e),
                 variant: 'error',
                 mode: 'dismissible',
             });

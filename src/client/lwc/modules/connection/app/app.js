@@ -32,6 +32,7 @@ import {
 } from 'connection/utils';
 import { store, APPLICATION } from 'core/store';
 import LOGGER from 'shared/logger';
+import { cacheManager } from 'shared/cacheManager';
 
 const { showToast, handleError } = notificationService;
 const ACTIONS = [
@@ -52,6 +53,22 @@ const generateMessage = ({sessionInfo, params})=> ({
     navigation: params,
 })
 
+const CONNECTION_FILTER_SHOW_ORGFARM_KEY = 'connection_filter_show_orgfarm';
+const CONNECTION_FILTER_SHOW_NON_ORGFARM_KEY = 'connection_filter_show_non_orgfarm';
+
+const isOrgFarmConnection = (connection) => {
+    const haystack = [
+        connection?.instanceUrl,
+        connection?.loginUrl,
+        connection?.redirectUrl,
+        connection?.alias,
+        connection?.company,
+        connection?.name,
+        connection?.username,
+    ];
+    return haystack.some((v) => typeof v === 'string' && v.toLowerCase().includes('orgfarm'));
+};
+
 export default class App extends ToolkitElement {
     @api variant = 'table';
     @api isHeaderLess = false;
@@ -68,8 +85,13 @@ export default class App extends ToolkitElement {
     // Search
     filter;
 
+    // Filters
+    showOrgFarm = true;
+    showNonOrgFarm = true;
+
     async connectedCallback() {
         window.addEventListener('electron-orgs-updated', this._onElectronOrgsUpdated);
+        await this._loadConnectionFiltersFromCache();
         await this.fetchAllConnections();
         this.checkForInjected();
         window.setTimeout(() => {
@@ -117,6 +139,24 @@ export default class App extends ToolkitElement {
     disconnectedCallback() {
         window.removeEventListener('electron-orgs-updated', this._onElectronOrgsUpdated);
     }
+
+    _loadConnectionFiltersFromCache = async () => {
+        try {
+            const [showOrgFarm, showNonOrgFarm] = await Promise.all([
+                cacheManager.store.getItem(CONNECTION_FILTER_SHOW_ORGFARM_KEY),
+                cacheManager.store.getItem(CONNECTION_FILTER_SHOW_NON_ORGFARM_KEY),
+            ]);
+            this.showOrgFarm = isNotUndefinedOrNull(showOrgFarm) ? showOrgFarm === true : true;
+            this.showNonOrgFarm = isNotUndefinedOrNull(showNonOrgFarm)
+                ? showNonOrgFarm === true
+                : true;
+        } catch (e) {
+            // Non-blocking: fall back to defaults
+            LOGGER.error('load connection filters from cache failed', e);
+            this.showOrgFarm = true;
+            this.showNonOrgFarm = true;
+        }
+    };
 
     _onElectronOrgsUpdated = (event) => {
         const { orgs } = event.detail;
@@ -662,6 +702,18 @@ export default class App extends ToolkitElement {
         });
     };
 
+    handleOrgFarmFilterChange = async (e) => {
+        const name = e?.target?.name;
+        const checked = e?.detail?.checked ?? e?.target?.checked ?? false;
+        if (name === 'showOrgFarm') {
+            this.showOrgFarm = checked;
+            await cacheManager.saveGeneralData(CONNECTION_FILTER_SHOW_ORGFARM_KEY, checked);
+        } else if (name === 'showNonOrgFarm') {
+            this.showNonOrgFarm = checked;
+            await cacheManager.saveGeneralData(CONNECTION_FILTER_SHOW_NON_ORGFARM_KEY, checked);
+        }
+    };
+
     formatSpecificField = content => {
         var regex = new RegExp('(' + this.filter + ')', 'gi');
         if (regex.test(content)) {
@@ -721,7 +773,7 @@ export default class App extends ToolkitElement {
     /** Getters  */
 
     get isNoRecord() {
-        return this.formattedData.length == 0;
+        return this.filteredOriginal.length === 0;
     }
 
     get isSearchDisplayed() {
@@ -741,33 +793,41 @@ export default class App extends ToolkitElement {
     }
 
     get filteredFormatted() {
-        return this.formattedData.map(group => ({
-            ...group,
-            items: group.items
-                .filter(
-                    x =>
-                        isUndefinedOrNull(this.filter) ||
-                        (isNotUndefinedOrNull(this.filter) &&
-                            (checkIfPresent(x.alias, this.filter) ||
-                                checkIfPresent(x.username, this.filter)))
-                )
-                .map(x => ({
-                    ...x,
-                    _name: this.formatSpecificField(x.name || ''),
-                    _username: this.formatSpecificField(x.username || ''),
-                })),
-        }));
+        return this.formattedData
+            .map(group => ({
+                ...group,
+                items: group.items
+                    .filter((x) => {
+                        const matchesText =
+                            isUndefinedOrNull(this.filter) ||
+                            (isNotUndefinedOrNull(this.filter) &&
+                                (checkIfPresent(x.alias, this.filter) ||
+                                    checkIfPresent(x.username, this.filter)));
+                        if (!matchesText) return false;
+
+                        const isOrgFarm = isOrgFarmConnection(x);
+                        return (this.showOrgFarm && isOrgFarm) || (this.showNonOrgFarm && !isOrgFarm);
+                    })
+                    .map(x => ({
+                        ...x,
+                        _name: this.formatSpecificField(x.name || ''),
+                        _username: this.formatSpecificField(x.username || ''),
+                    })),
+            }))
+            .filter(group => Array.isArray(group.items) && group.items.length > 0);
     }
 
     get filteredOriginal() {
-        let filtered = this.data.filter(
-            x =>
+        return this.data.filter((x) => {
+            const matchesText =
                 isUndefinedOrNull(this.filter) ||
                 (isNotUndefinedOrNull(this.filter) &&
-                    (checkIfPresent(x.alias, this.filter) ||
-                        checkIfPresent(x.username, this.filter)))
-        );
-        return filtered;
+                    (checkIfPresent(x.alias, this.filter) || checkIfPresent(x.username, this.filter)));
+            if (!matchesText) return false;
+
+            const isOrgFarm = isOrgFarmConnection(x);
+            return (this.showOrgFarm && isOrgFarm) || (this.showNonOrgFarm && !isOrgFarm);
+        });
     }
 
     get normalizedVariant() {

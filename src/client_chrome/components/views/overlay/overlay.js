@@ -1,5 +1,6 @@
 import { wire, api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
+import Toast from 'lightning/toast';
 import {
     isEmpty,
     classSet,
@@ -24,11 +25,28 @@ const CACHE_TAB_SETTINGS = 'sf_cached_tab';
 const CACHE_EXPIRY_KEY = 'sf_cache_expiry';
 const CACHE_LAST_KEY = 'sf_cached_date';
 const CACHE_DURATION = 1000 * 60 * 60 * 24; // 24 hours
+const ORG_CACHE_KEY = 'sf_org_info';
+const ORG_CACHE_EXPIRY_KEY = 'sf_org_info_expiry';
+const ORG_CACHE_LAST_KEY = 'sf_org_info_date';
+const ORG_CACHE_DURATION = 1000 * 60 * 60; // 1 hour
+const RECENT_OBJECTS_KEY = 'sf_recent_objects';
+const RECENTLY_VIEWED_KEY = 'sf_recently_viewed_objects';
+const RECENTLY_VIEWED_EXPIRY_KEY = 'sf_recently_viewed_objects_expiry';
+const RECENTLY_VIEWED_DURATION = 1000 * 60 * 5; // 5 minutes
+const OBJECT_FILTER_KEY = 'sf_object_filter';
 const PAGE_LIST_SIZE = 70;
 
+const OBJECT_FILTER = {
+    RECENT: 'Recent',
+    ALL: 'All',
+    STANDARD: 'Standard',
+    CUSTOM: 'Custom',
+};
+
 const TABS = {
-    SEARCH: 'Search',
+    ORGANIZATION: 'Organization',
     QUICKLINK: 'Quick Links',
+    OBJECT: 'Object',
     USER: 'Users',
     DEV: 'Dev Tools',
 };
@@ -43,7 +61,7 @@ export default class Overlay extends ToolkitElement {
     hasFocused = false;
     isFetchingMetadata = false;
     cachedData;
-    viewerTab = 'Search'; // 'QuickLinks'
+    viewerTab = 'Organization';
 
     // current Info
     currentDomain;
@@ -58,6 +76,20 @@ export default class Overlay extends ToolkitElement {
     lastRefreshDate;
     lastRefreshDateFormatted;
     _forceRefresh = false;
+    _forceOrgRefresh = false;
+
+    // Organization info (Organization tab)
+    orgInfo;
+    orgUser;
+    orgRefreshDate;
+    orgRefreshDateFormatted;
+    isFetchingOrgInfo = false;
+
+    // Object tab filtering
+    objectFilter = OBJECT_FILTER.ALL;
+    recentObjects = [];
+    recentlyViewedObjects = [];
+    isFetchingRecentlyViewed = false;
 
     // Counter buffer
     _headerInterval;
@@ -73,7 +105,7 @@ export default class Overlay extends ToolkitElement {
         if (this._isOverlayDisplayed) {
             //this.refs.container.focus();
             this.refs.header?.focusSearchInput();
-        }else{
+        } else {
             this.hasFocused = false;
         }
     }
@@ -96,14 +128,25 @@ export default class Overlay extends ToolkitElement {
     }
 
     connectedCallback() {
+        const lf = localForage?.default || localForage;
+        try {
+            // eslint-disable-next-line no-console
+            console.log('[SF-TOOLKIT][Overlay] connectedCallback', {
+                hasLocalForage: !!lf,
+                hasCreateInstance: typeof lf?.createInstance === 'function',
+            });
+        } catch (e) {}
         window.jsforce = jsforce;
-        window.defaultStore = window.defaultStore || localForage.createInstance({ name: 'defaultStore' });
+        window.defaultStore = window.defaultStore || lf.createInstance({ name: 'defaultStore' });
         this.getSessionId();
         //this.checkRecordId();
         this.header_enableAutoDate();
         // Default filter options
         this.filter_setValue();
         this.viewerTab_setValue();
+        this.objectFilter_setValue();
+        this.recentObjects_setValue();
+        this.recentlyViewedObjects_setValue();
         //this.stopListening = this.onUrlChange(this.checkUrl);
     }
 
@@ -118,10 +161,15 @@ export default class Overlay extends ToolkitElement {
             this.refs.container.addEventListener('focusout', this.listenToContainerFocus);
         }
         // Autofocus search input when overlay is displayed
-        if (this.isOverlayDisplayed && this.refs.header && this.refs.header.focusSearchInput && !this.hasFocused) {
+        if (
+            this.isOverlayDisplayed &&
+            this.refs.header &&
+            this.refs.header.focusSearchInput &&
+            !this.hasFocused
+        ) {
             this.refs.header.focusSearchInput();
             this.hasFocused = true;
-        } 
+        }
         this.hasRendered = true;
     }
 
@@ -130,6 +178,8 @@ export default class Overlay extends ToolkitElement {
     handleSelectTab = e => {
         this.viewerTab = e.target.value;
         window.defaultStore.setItem(CACHE_TAB_SETTINGS, this.viewerTab);
+        this.pageNumber = 1;
+        this.scrollToTop();
         //this.manualSearch();
     };
 
@@ -206,9 +256,9 @@ export default class Overlay extends ToolkitElement {
         this.isOverlayDisplayed = false;
     };
 
-
     handleRefresh = () => {
         this._forceRefresh = true;
+        this._forceOrgRefresh = true;
         this.init();
     };
 
@@ -244,7 +294,50 @@ export default class Overlay extends ToolkitElement {
     }*/
 
     viewerTab_setValue = async () => {
-        this.viewerTab = (await window.defaultStore.getItem(CACHE_TAB_SETTINGS)) || TABS.QUICKLINK;
+        const cached = (await window.defaultStore.getItem(CACHE_TAB_SETTINGS)) || TABS.ORGANIZATION;
+        this.viewerTab = Object.values(TABS).includes(cached) ? cached : TABS.QUICKLINK;
+    };
+
+    objectFilter_setValue = async () => {
+        try {
+            const cached =
+                (await window.defaultStore.getItem(`${OBJECT_FILTER_KEY}-${this.currentDomain}`)) ||
+                OBJECT_FILTER.ALL;
+            this.objectFilter = Object.values(OBJECT_FILTER).includes(cached)
+                ? cached
+                : OBJECT_FILTER.ALL;
+        } catch (e) {
+            this.objectFilter = OBJECT_FILTER.ALL;
+        }
+    };
+
+    recentObjects_setValue = async () => {
+        try {
+            const cached = await window.defaultStore.getItem(
+                `${RECENT_OBJECTS_KEY}-${this.currentDomain}`
+            );
+            const parsed = cached ? JSON.parse(cached) : [];
+            this.recentObjects = Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            this.recentObjects = [];
+        }
+    };
+
+    recentlyViewedObjects_setValue = async () => {
+        try {
+            const cached = await window.defaultStore.getItem(
+                `${RECENTLY_VIEWED_KEY}-${this.currentDomain}`
+            );
+            const expiry = await window.defaultStore.getItem(
+                `${RECENTLY_VIEWED_EXPIRY_KEY}-${this.currentDomain}`
+            );
+            if (cached && expiry && Date.now() < parseInt(expiry)) {
+                const parsed = JSON.parse(cached);
+                this.recentlyViewedObjects = Array.isArray(parsed) ? parsed : [];
+            }
+        } catch (e) {
+            this.recentlyViewedObjects = [];
+        }
     };
 
     filter_searchAfterChange = () => {
@@ -298,6 +391,9 @@ export default class Overlay extends ToolkitElement {
     header_formatDate = () => {
         const _lastDate = this.lastRefreshDate ? parseInt(this.lastRefreshDate) : new Date();
         this.lastRefreshDateFormatted = _lastDate ? moment(_lastDate).fromNow() : null;
+
+        const _orgDate = this.orgRefreshDate ? parseInt(this.orgRefreshDate) : null;
+        this.orgRefreshDateFormatted = _orgDate ? moment(_orgDate).fromNow() : null;
     };
 
     getSessionId = async () => {
@@ -341,7 +437,7 @@ export default class Overlay extends ToolkitElement {
 
     init = () => {
         this.isLoading = true;
-        Promise.all([this.loadCachedData()])
+        Promise.all([this.loadCachedData(), this.loadOrgAndUserInfo()])
             .then(async results => {
                 this.isLoading = false;
                 this.cachedData = results?.[0] || {};
@@ -354,6 +450,129 @@ export default class Overlay extends ToolkitElement {
                 // to display the default data !
                 this.manualSearch();
             });
+    };
+
+    isBlankValue(value) {
+        if (isUndefinedOrNull(value)) return true;
+        return String(value).trim().length === 0;
+    }
+
+    getUserIdFromPageContext() {
+        try {
+            const direct = window?.UserContext?.userId;
+            if (!this.isBlankValue(direct)) return direct;
+
+            const auraUserId =
+                typeof window?.$A?.get === 'function'
+                    ? window.$A.get('$SObjectType.CurrentUser.Id')
+                    : undefined;
+            if (!this.isBlankValue(auraUserId)) return auraUserId;
+        } catch (e) {
+            // ignore
+        }
+        return undefined;
+    }
+
+    getUserIdFromChatterMe = async () => {
+        try {
+            const version = this.connector?.conn?.version;
+            if (this.isBlankValue(version)) return undefined;
+            const me = await this.connector.conn.request(
+                `/services/data/v${version}/chatter/users/me`
+            );
+            const id = me?.id;
+            if (!this.isBlankValue(id)) return id;
+        } catch (e) {
+            // ignore
+        }
+        return undefined;
+    };
+
+    loadOrgAndUserInfo = async () => {
+        try {
+            if (!this.connector?.conn || !window.defaultStore) return;
+            const domainKey = this.currentDomain || this.connector?.conn?.instanceUrl || 'unknown';
+
+            this.isFetchingOrgInfo = true;
+            const cached = await window.defaultStore.getItem(`${ORG_CACHE_KEY}-${domainKey}`);
+            const expiry = await window.defaultStore.getItem(
+                `${ORG_CACHE_EXPIRY_KEY}-${domainKey}`
+            );
+            const last = await window.defaultStore.getItem(`${ORG_CACHE_LAST_KEY}-${domainKey}`);
+            if (!this._forceOrgRefresh && cached && expiry && Date.now() < parseInt(expiry)) {
+                const parsed = JSON.parse(cached);
+                this.orgInfo = parsed?.orgInfo;
+                this.orgUser = parsed?.orgUser;
+                this.orgRefreshDate = last;
+                this.header_formatDate();
+                this.isFetchingOrgInfo = false;
+                return parsed;
+            }
+
+            this._forceOrgRefresh = false;
+
+            // Organization
+            const orgResult = await this.connector.conn.query(
+                'SELECT Id, Name, IsSandbox, OrganizationType, InstanceName FROM Organization LIMIT 1'
+            );
+            const orgInfo = orgResult?.records?.[0] || {};
+
+            // Current user
+            const userId =
+                this.connector?.configuration?.userInfo?.user_id ||
+                this.connector?.conn?.userInfo?.id ||
+                this.getUserIdFromPageContext() ||
+                (await this.getUserIdFromChatterMe());
+
+            let orgUser;
+            if (!this.isBlankValue(userId)) {
+                const escapedId = String(userId).replace(/'/g, "\\'");
+                const userResult = await this.connector.conn.query(
+                    `SELECT Id, Username, Email, Name FROM User WHERE Id = '${escapedId}' LIMIT 1`
+                );
+                orgUser = userResult?.records?.[0];
+            }
+
+            this.orgInfo = orgInfo;
+            this.orgUser = orgUser;
+
+            const now = Date.now();
+            window.defaultStore.setItem(
+                `${ORG_CACHE_KEY}-${domainKey}`,
+                JSON.stringify({ orgInfo, orgUser })
+            );
+            window.defaultStore.setItem(
+                `${ORG_CACHE_EXPIRY_KEY}-${domainKey}`,
+                (now + ORG_CACHE_DURATION).toString()
+            );
+            window.defaultStore.setItem(`${ORG_CACHE_LAST_KEY}-${domainKey}`, now.toString());
+            this.orgRefreshDate = now;
+            this.header_formatDate();
+            this.isFetchingOrgInfo = false;
+            return { orgInfo, orgUser };
+        } catch (e) {
+            this.isFetchingOrgInfo = false;
+            // Non-blocking: Organization tab can show partial info
+            try {
+                // eslint-disable-next-line no-console
+                console.debug('[SF-TOOLKIT][Overlay] loadOrgAndUserInfo failed', e?.message || e);
+            } catch (_) {}
+            return null;
+        }
+    };
+
+    handleCopyOrgValue = e => {
+        try {
+            const { value, label } = e.currentTarget.dataset;
+            if (this.isBlankValue(value)) return;
+            navigator.clipboard.writeText(value);
+            Toast.show({
+                label: label || 'Copied to clipboard',
+                variant: 'success',
+            });
+        } catch (err) {
+            // ignore
+        }
     };
 
     checkCategory(category) {
@@ -420,12 +639,92 @@ export default class Overlay extends ToolkitElement {
         if (this.isDeveloperServer) {
             const devLinks = [
                 {
-                    label: 'Hose my org (QA)',
+                    label: 'Hose My Org (Sir)',
+                    link: '/qa/hoseMyOrgPleaseSir.jsp',
+                },
+                {
+                    label: 'Hose My Org',
                     link: '/qa/hoseMyOrgPlease.jsp',
                 },
                 {
-                    label: 'Reload labels (QA)',
-                    link: '/qa/labelreload.jsp?reload=Reload+Labels',
+                    label: 'Access Check Explorer',
+                    link: '/qa/accessCheckExplorer.jsp',
+                },
+                {
+                    label: 'LWC Dev Preview',
+                    link: '/lwr/application/e/devpreview/ai/localdev%2Fpreview',
+                },
+                {
+                    label: 'Curated Experience Framework',
+                    link: '/cef/info.apexp',
+                },
+                {
+                    label: 'Release Version',
+                    link: '/sfdc/releaseVersion.jsp',
+                },
+                {
+                    label: 'Eager Developer',
+                    link: '/qa/eagerDeveloper.jsp',
+                },
+                {
+                    label: 'Sign-up',
+                    link: '/qa/signup.jsp',
+                },
+                {
+                    label: 'Oauth2',
+                    link: '/qa/initSdxOauth.jsp',
+                },
+                {
+                    label: 'QA',
+                    link: '/qa',
+                },
+                {
+                    label: 'Get Label',
+                    link: '/qa/getLabel.jsp',
+                },
+                {
+                    label: 'Label Reload',
+                    link: '/qa/labelreload.jsp',
+                },
+                {
+                    label: 'View Gack',
+                    link: '/qa/gack/viewGacks.jsp',
+                },
+                {
+                    label: 'Scratch Org Features',
+                    link: '/qa/scratch/features.jsp',
+                },
+                {
+                    label: 'CDP Setup',
+                    link: '/qa/cdp/cdp.jsp',
+                },
+                {
+                    label: 'B2B Search',
+                    link: '/qa/b2b/search.jsp',
+                },
+                {
+                    label: 'Make An Org',
+                    link: '/qa/makeAnOrg.jsp',
+                },
+                {
+                    label: 'Tagalog Tests',
+                    link: '/qa/tagalog/',
+                },
+                {
+                    label: 'Static Asset Console',
+                    link: '/qa/staticasset/console.jsp',
+                },
+                {
+                    label: 'FTest Console',
+                    link: '/qa/ftests/console.html',
+                },
+                {
+                    label: 'Add File Based Flow',
+                    link: '/qa/addFileBasedFlow.jsp',
+                },
+                {
+                    label: 'Edit File Based Flow',
+                    link: '/qa/editFileBasedFlows.jsp',
                 },
             ];
             combinedResults.push(
@@ -459,6 +758,9 @@ export default class Overlay extends ToolkitElement {
                         keyPrefix: x.keyPrefix,
                         isCustomSetting: x.isCustomSetting,
                         durableId: x.durableId,
+                        queryable: x.queryable,
+                        createable: x.createable,
+                        updateable: x.updateable,
                         extra: x,
                         relevance: calculateRelevance(x.label, searchTerm),
                     }))
@@ -631,7 +933,6 @@ export default class Overlay extends ToolkitElement {
             );
         }
 
-
         // Sort combined results by relevance
         combinedResults.sort((a, b) => b.relevance - a.relevance);
 
@@ -666,7 +967,14 @@ export default class Overlay extends ToolkitElement {
             cacheExpiry &&
             Date.now() < parseInt(cacheExpiry)
         ) {
-            return JSON.parse(cachedData);
+            const parsed = JSON.parse(cachedData);
+            const needsUpgrade =
+                Array.isArray(parsed?.objects) &&
+                parsed.objects.length > 0 &&
+                typeof parsed.objects[0]?.queryable === 'undefined';
+            if (!needsUpgrade) {
+                return parsed;
+            }
         }
         this._forceRefresh = false; // Reset
         try {
@@ -678,6 +986,9 @@ export default class Overlay extends ToolkitElement {
                 keyPrefix: x.keyPrefix,
                 isCustomSetting: x.isCustomSetting,
                 durableId: x.durableId,
+                queryable: x.queryable,
+                createable: x.createable,
+                updateable: x.updateable,
             }));
 
             // Fetch Apex Classes
@@ -755,7 +1066,7 @@ export default class Overlay extends ToolkitElement {
                     autoFetch: true,
                     maxFetch: 100000,
                 })) || [];
-            console.log('agentforce',agentforce);
+            console.log('agentforce', agentforce);
             const data = {
                 objects,
                 profiles,
@@ -775,10 +1086,7 @@ export default class Overlay extends ToolkitElement {
                 `${CACHE_EXPIRY_KEY}-${this.currentDomain}`,
                 (now + CACHE_DURATION).toString()
             );
-            window.defaultStore.setItem(
-                `${CACHE_LAST_KEY}-${this.currentDomain}`,
-                now.toString()
-            );
+            window.defaultStore.setItem(`${CACHE_LAST_KEY}-${this.currentDomain}`, now.toString());
             this.lastRefreshDate = now;
             this.header_formatDate();
             return data;
@@ -817,7 +1125,8 @@ export default class Overlay extends ToolkitElement {
     }
 
     get tab_searchLabel() {
-        return `Search (${this.formattedResults.filter(x => x.type !== TYPE.LINK && x.type !== TYPE.DEV_LINK).length})`;
+        // Legacy (keep getter name to avoid downstream breakage)
+        return 'Organization';
     }
 
     get tab_quickLinkLabel() {
@@ -828,33 +1137,177 @@ export default class Overlay extends ToolkitElement {
         return `Users (${this.formattedResults.filter(x => x.type === TYPE.USER).length})`;
     }
 
+    get tab_objectLabel() {
+        return `Object (${this.formattedResults.filter(x => x.type === TYPE.OBJECT).length})`;
+    }
+
     get tab_devLabel() {
         return `Dev Tools (${this.formattedResults.filter(x => x.type === TYPE.DEV_LINK).length})`;
     }
 
+    get isOrganizationTab() {
+        return this.viewerTab === TABS.ORGANIZATION;
+    }
+
+    get isObjectTab() {
+        return this.viewerTab === TABS.OBJECT;
+    }
+
+    get objectFilters() {
+        const list = [
+            { label: 'Recent', value: OBJECT_FILTER.RECENT },
+            { label: 'All', value: OBJECT_FILTER.ALL },
+            { label: 'Standard', value: OBJECT_FILTER.STANDARD },
+            { label: 'Custom', value: OBJECT_FILTER.CUSTOM },
+        ];
+        return list.map(x => ({
+            ...x,
+            className: classSet('sf-pill')
+                .add({ 'is-active': this.objectFilter === x.value })
+                .toString(),
+        }));
+    }
+
+    get isRecentObjectFilter() {
+        return this.objectFilter === OBJECT_FILTER.RECENT;
+    }
+
+    get refreshLabel() {
+        return this.isOrganizationTab ? 'Org info refreshed' : 'Metadata refreshed';
+    }
+
+    get refreshDateFormatted() {
+        return this.isOrganizationTab
+            ? this.orgRefreshDateFormatted
+            : this.lastRefreshDateFormatted;
+    }
+
+    get orgRows() {
+        const org = this.orgInfo || {};
+        const instanceUrl = this.connector?.conn?.instanceUrl || '';
+        const sandbox =
+            org?.IsSandbox === true ? 'Yes' : org?.IsSandbox === false ? 'No' : undefined;
+        return [
+            { label: 'Org Name', value: org?.Name || '-' },
+            { label: 'Org Id', value: org?.Id || '-', isCopyable: !this.isBlankValue(org?.Id) },
+            {
+                label: 'Instance URL',
+                value: instanceUrl || '-',
+                isCopyable: !this.isBlankValue(instanceUrl),
+            },
+            { label: 'Sandbox', value: sandbox || '-' },
+            { label: 'Org Type', value: org?.OrganizationType || '-' },
+            { label: 'API Version', value: this.connector?.conn?.version || '-' },
+        ];
+    }
+
+    get userRows() {
+        const user = this.orgUser || {};
+        return [
+            { label: 'User Name', value: user?.Name || '-' },
+            { label: 'User Id', value: user?.Id || '-', isCopyable: !this.isBlankValue(user?.Id) },
+            {
+                label: 'Username',
+                value: user?.Username || '-',
+                isCopyable: !this.isBlankValue(user?.Username),
+            },
+            {
+                label: 'Email',
+                value: user?.Email || '-',
+                isCopyable: !this.isBlankValue(user?.Email),
+            },
+        ];
+    }
+
     get sldsPopupContainerClass() {
-        return classSet('slds-popup-container').add({
-            dev: this.isDeveloperServer,
-            'slds-popup-container-no-footer': !this.isFooterDisplayed,
-        }).toString();
+        return classSet('slds-popup-container')
+            .add({
+                dev: this.isDeveloperServer,
+                'slds-popup-container-no-footer': !this.isFooterDisplayed,
+            })
+            .toString();
     }
 
     get sldsButtonGroupClass() {
-        return classSet('sf-toolkit slds-toolkit-button-group').add({
-            'slds-is-active': this.isOverlayDisplayed,
-        }).toString();
+        return classSet('sf-toolkit slds-toolkit-button-group')
+            .add({
+                'slds-is-active': this.isOverlayDisplayed,
+            })
+            .toString();
     }
 
     get virtualList() {
         // Best UX Improvement !!!!
-        const _filteredList = this.formattedResults.filter(
-            x =>
-                (this.viewerTab === TABS.SEARCH && x.type !== TYPE.LINK) ||
-                (this.viewerTab === TABS.QUICKLINK && x.type === TYPE.LINK && !x._isCustom) ||
-                (this.viewerTab === TABS.USER && x.type === TYPE.USER) ||
-                (this.viewerTab === TABS.DEV && x.type === TYPE.DEV_LINK)
+        return this.tabResults.slice(0, this.pageNumber * PAGE_LIST_SIZE);
+    }
+
+    get tabResults() {
+        const results = this.formattedResults;
+        switch (this.viewerTab) {
+            case TABS.ORGANIZATION:
+                return [];
+            case TABS.QUICKLINK:
+                return results.filter(x => x.type === TYPE.LINK && !x._isCustom);
+            case TABS.OBJECT:
+                return this.filterObjectsForTab(results.filter(x => x.type === TYPE.OBJECT));
+            case TABS.USER:
+                return results.filter(x => x.type === TYPE.USER);
+            case TABS.DEV:
+                return results.filter(x => x.type === TYPE.DEV_LINK);
+            default:
+                return results;
+        }
+    }
+
+    isCustomObject(item) {
+        const name = item?.name || '';
+        const isKnownCustomSuffix = ['__c', '__mdt', '__e', '__b', '__x'].some(s =>
+            name.endsWith(s)
         );
-        return _filteredList.slice(0, this.pageNumber * PAGE_LIST_SIZE);
+        return !!item?.isCustomSetting || isKnownCustomSuffix;
+    }
+
+    filterObjectsForTab(list) {
+        const objects = Array.isArray(list) ? list : [];
+        switch (this.objectFilter) {
+            case OBJECT_FILTER.CUSTOM:
+                return objects.filter(x => this.isCustomObject(x));
+            case OBJECT_FILTER.STANDARD:
+                return objects.filter(x => !this.isCustomObject(x));
+            case OBJECT_FILTER.RECENT: {
+                const recent =
+                    Array.isArray(this.recentlyViewedObjects) && this.recentlyViewedObjects.length
+                        ? this.recentlyViewedObjects
+                        : Array.isArray(this.recentObjects)
+                          ? this.recentObjects
+                          : [];
+                const idx = new Map(recent.map((n, i) => [String(n), i]));
+                return objects
+                    .filter(x => idx.has(x.name))
+                    .sort((a, b) => idx.get(a.name) - idx.get(b.name));
+            }
+            case OBJECT_FILTER.ALL:
+            default:
+                return objects;
+        }
+    }
+
+    get currentTabCountLabel() {
+        const count = this.tabResults.length;
+        switch (this.viewerTab) {
+            case TABS.ORGANIZATION:
+                return '';
+            case TABS.OBJECT:
+                return `${count} objects`;
+            case TABS.QUICKLINK:
+                return `${count} quick links`;
+            case TABS.USER:
+                return `${count} users`;
+            case TABS.DEV:
+                return `${count} dev links`;
+            default:
+                return `${count} results`;
+        }
     }
 
     get formattedResults() {
@@ -906,7 +1359,100 @@ export default class Overlay extends ToolkitElement {
         return this.filter_value.includes(TYPE.USER);
     }
 
+    get isObjectTabDisplayed() {
+        return this.filter_value.includes(TYPE.OBJECT);
+    }
+
     get isDevTabDisplayed() {
         return this.isDeveloperServer;
     }
+
+    /** Object tab events **/
+
+    handleObjectFilterClick = async e => {
+        const value = e.currentTarget?.dataset?.value;
+        if (!Object.values(OBJECT_FILTER).includes(value)) return;
+        this.objectFilter = value;
+        this.pageNumber = 1;
+        this.scrollToTop();
+        try {
+            await window.defaultStore.setItem(`${OBJECT_FILTER_KEY}-${this.currentDomain}`, value);
+        } catch (err) {
+            // ignore
+        }
+        if (value === OBJECT_FILTER.RECENT) {
+            void this.loadRecentlyViewedObjects();
+        }
+    };
+
+    handleOpenObjectManagerSetup = e => {
+        e.preventDefault();
+        window.open('/lightning/setup/ObjectManager/home', '_blank', 'noopener');
+    };
+
+    handleRecentObject = async e => {
+        try {
+            const name = e?.detail?.name;
+            if (this.isBlankValue(name)) return;
+            const next = [name, ...(this.recentObjects || []).filter(x => x !== name)].slice(0, 20);
+            this.recentObjects = next;
+            await window.defaultStore.setItem(
+                `${RECENT_OBJECTS_KEY}-${this.currentDomain}`,
+                JSON.stringify(next)
+            );
+        } catch (err) {
+            // ignore
+        }
+    };
+
+    loadRecentlyViewedObjects = async () => {
+        try {
+            if (!this.connector?.conn || !window.defaultStore) return [];
+            if (this.isFetchingRecentlyViewed) return this.recentlyViewedObjects;
+            this.isFetchingRecentlyViewed = true;
+
+            const cached = await window.defaultStore.getItem(
+                `${RECENTLY_VIEWED_KEY}-${this.currentDomain}`
+            );
+            const expiry = await window.defaultStore.getItem(
+                `${RECENTLY_VIEWED_EXPIRY_KEY}-${this.currentDomain}`
+            );
+            if (cached && expiry && Date.now() < parseInt(expiry)) {
+                const parsed = JSON.parse(cached);
+                this.recentlyViewedObjects = Array.isArray(parsed) ? parsed : [];
+                this.isFetchingRecentlyViewed = false;
+                return this.recentlyViewedObjects;
+            }
+
+            // Recently viewed records in Salesforce (we extract distinct sObject types)
+            const result = await this.connector.conn.query(
+                'SELECT Type, LastViewedDate FROM RecentlyViewed WHERE Type != null ORDER BY LastViewedDate DESC LIMIT 200'
+            );
+            const types = [];
+            const seen = new Set();
+            (result?.records || []).forEach(r => {
+                const t = r?.Type;
+                if (!t || seen.has(t)) return;
+                seen.add(t);
+                types.push(t);
+            });
+
+            this.recentlyViewedObjects = types;
+            const now = Date.now();
+            await window.defaultStore.setItem(
+                `${RECENTLY_VIEWED_KEY}-${this.currentDomain}`,
+                JSON.stringify(types)
+            );
+            await window.defaultStore.setItem(
+                `${RECENTLY_VIEWED_EXPIRY_KEY}-${this.currentDomain}`,
+                (now + RECENTLY_VIEWED_DURATION).toString()
+            );
+            this.isFetchingRecentlyViewed = false;
+            return types;
+        } catch (e) {
+            this.isFetchingRecentlyViewed = false;
+            // Non-blocking: keep fallback local recent list
+            return this.recentlyViewedObjects;
+        }
+    };
 }
