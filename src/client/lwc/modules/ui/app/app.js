@@ -8,26 +8,30 @@ import {
     isEmpty,
     isElectronApp,
     isChromeExtension,
+    decodeBase64UrlToJson,
 } from 'shared/utils';
-import {
-    cacheManager,
-    getOpenAIKeyFromCache,
-    CACHE_CONFIG,
-    loadExtensionConfigFromCache,
-} from 'shared/cacheManager';
-
-import { credentialStrategies, OAUTH_TYPES, getConfiguration } from 'connection/utils';
 import { NavigationContext, CurrentPageReference, navigate } from 'lwr/navigation';
-import { basicStore } from 'shared/cacheManager';
 import { handleRedirect } from './utils';
 import LOGGER from 'shared/logger';
+import {
+    getConfigurations,
+    setConfigurations,
+    extractConfig,
+    normalizeConfiguration,
+    saveSession,
+} from 'connection/utils';
 /** Apps  **/
 import { APP_LIST } from './modules';
 import SessionExpiredModal, { RESULT as SESSION_EXPIRED_RESULT } from 'ui/sessionExpiredModal';
+/** Helpers **/
+import { loadLimitedMode, loadFullMode } from './session';
+import { connectToBackgroundWithIdentity, disconnectFromBackground } from './background';
+import { initShortcuts } from './shortcuts';
+import { initCacheStorage, loadFromCache } from './cache';
 
 /** Store **/
+import { connectStore, store, DOCUMENT, APPLICATION, SHELL } from 'core/store';
 import { store as legacyStore } from 'shared/store';
-import { connectStore, store, DOCUMENT, APPLICATION } from 'core/store';
 
 const LIMITED = 'limited';
 
@@ -152,7 +156,8 @@ export default class App extends LightningElement {
     }
 
     init = async () => {
-        await this.initCacheStorage();
+        await initCacheStorage();
+        await this.processShareParams();
         if (isElectronApp()) {
             await this.initElectron();
             this.isCommandCheckFinished = true;
@@ -162,11 +167,62 @@ export default class App extends LightningElement {
         this.initDragDrop();
     };
 
-    initCacheStorage = async () => {
-        if (isChromeExtension()) return;
-        LOGGER.debug('initCacheStorage');
-        window.defaultStore = await basicStore('local');
-        window.settingsStore = await basicStore('session');
+    processShareParams = async () => {
+        if (typeof window === 'undefined' || !window.location) return;
+        const url = new URL(window.location.href);
+        const share = url.searchParams.get('share');
+        const shareUser = url.searchParams.get('shareUser');
+        let urlChanged = false;
+
+        if (share) {
+            try {
+                const payload = decodeBase64UrlToJson(decodeURIComponent(share));
+                if (payload?.v === 1 && payload.alias && payload.sfdxAuthUrl) {
+                    const params = extractConfig(payload.sfdxAuthUrl);
+                    if (params) {
+                        let instanceUrl = params.instanceUrl;
+                        if (instanceUrl && !instanceUrl.startsWith('http')) {
+                            instanceUrl = `https://${instanceUrl}`;
+                        }
+                        const rawConfig = {
+                            credentialType: 'OAUTH',
+                            alias: payload.alias,
+                            refreshToken: params.refreshToken,
+                            instanceUrl,
+                        };
+                        const normalized = normalizeConfiguration(rawConfig, true);
+                        const configs = await getConfigurations();
+                        const next = configs.some((c) => c.alias === payload.alias)
+                            ? configs.map((c) => (c.alias === payload.alias ? normalized : c))
+                            : [...configs, normalized];
+                        await setConfigurations(next);
+                        await saveSession({ credentialType: 'OAUTH', alias: payload.alias });
+                    }
+                }
+            } catch (e) {
+                LOGGER.error('processShareParams share', e);
+            }
+            url.searchParams.delete('share');
+            urlChanged = true;
+        }
+
+        if (shareUser) {
+            try {
+                const payload = decodeBase64UrlToJson(decodeURIComponent(shareUser));
+                if (payload?.v === 1) {
+                    sessionStorage.setItem('connectionNewModalPrefill', JSON.stringify(payload));
+                }
+            } catch (e) {
+                LOGGER.error('processShareParams shareUser', e);
+            }
+            url.searchParams.delete('shareUser');
+            urlChanged = true;
+        }
+
+        if (urlChanged) {
+            const cleanUrl = url.pathname + (url.search || '') + (url.hash || '');
+            window.history.replaceState(null, '', cleanUrl);
+        }
     };
 
     /** Events */
@@ -194,7 +250,13 @@ export default class App extends LightningElement {
         );
 
         // Connect to background
-        this.connectToBackgroundWithIdentity();
+        const context = { 
+            connector: this.connector, 
+            navContext: this.navContext, 
+            _backgroundPort: this._backgroundPort 
+        };
+        connectToBackgroundWithIdentity(context);
+        this._backgroundPort = context._backgroundPort;
     };
 
     handleLogout = () => {
@@ -202,7 +264,9 @@ export default class App extends LightningElement {
         this.applications = this.applications.filter(x => x.name == 'home/app');
         navigate(this.navContext, { type: 'application', state: { applicationName: 'home' } });
         // Disconnect from background
-        this.disconnectFromBackground();
+        const context = { _backgroundPort: this._backgroundPort };
+        disconnectFromBackground(context);
+        this._backgroundPort = context._backgroundPort;
     };
 
     handleLogoutClick = async e => {
@@ -227,8 +291,8 @@ export default class App extends LightningElement {
         this.loadModule(e.detail);
     };
 
-    handleRedirection = async application => {
-        let url = application.redirectTo || '';
+    handleRedirection = async ({ redirectTo }) => {
+        let url = redirectTo || '';
         if (url.startsWith('sftoolkit:')) {
             /* Inner Navigation */
             const navigationConfig = url.replace('sftoolkit:', '');
@@ -264,38 +328,10 @@ export default class App extends LightningElement {
     /** Methods  */
 
     loadFromCache = async () => {
-        const configuration = await loadExtensionConfigFromCache([
-            CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key,
-            CACHE_CONFIG.MISTRAL_KEY.key,
-            CACHE_CONFIG.AI_PROVIDER.key,
-            CACHE_CONFIG.OPENAI_KEY.key,
-            CACHE_CONFIG.OPENAI_URL.key,
-            CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key,
-        ]);
-
-        this.isApplicationTabVisible = configuration[CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key];
-        this.betaSmartInputEnabled = !!configuration[CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key];
-
-        // Handle LLM keys and provider
-        const openaiKey = configuration[CACHE_CONFIG.OPENAI_KEY.key];
-        const openaiUrl = configuration[CACHE_CONFIG.OPENAI_URL.key];
-        const mistralKey = configuration[CACHE_CONFIG.MISTRAL_KEY.key];
-        const aiProvider = configuration[CACHE_CONFIG.AI_PROVIDER.key];
-        LOGGER.debug('loadFromCache - openaiKey',openaiKey);
-        LOGGER.debug('loadFromCache - openaiUrl',openaiUrl);
-        LOGGER.debug('loadFromCache - mistralKey',mistralKey);
-        LOGGER.debug('loadFromCache - aiProvider',aiProvider);
-        if(openaiKey) {
-            store.dispatch(APPLICATION.reduxSlice.actions.updateOpenAIKey({ openaiKey,openaiUrl }));
-        }
-        if(mistralKey) {
-            store.dispatch(APPLICATION.reduxSlice.actions.updateMistralKey({ mistralKey }));
-        }
-        if(aiProvider) {
-            store.dispatch(APPLICATION.reduxSlice.actions.updateAiProvider({ aiProvider }));
-        }
-
-        if(isEmpty(openaiKey)) {
+        const config = await loadFromCache(this);
+        this.isApplicationTabVisible = config.isApplicationTabVisible;
+        
+        if (isEmpty(config.openaiKey)) {
             this.checkForInjected();
         }
     };
@@ -423,10 +459,9 @@ export default class App extends LightningElement {
             } else {
                 await this.load_fullMode();
             }
-        }catch(e){  
-            LOGGER.error('Init Mode Error -->',e);
+        } catch (e) {
+            LOGGER.error('Init Mode Error -->', e);
             this.pageHasLoaded = true;
-            handleError(e, 'Init Mode Error');
         }
     };
 
@@ -454,87 +489,22 @@ export default class App extends LightningElement {
 
     /** Extension & Electron Org Window  **/
     load_limitedMode = async () => {
-        try {
-            let connector;
-            LOGGER.debug('load_limitedMode - alias', this.alias);
-            LOGGER.debug('load_limitedMode - sessionId', this.sessionId);
-            LOGGER.debug('load_limitedMode - serverUrl', this.serverUrl);
-            if (isNotUndefinedOrNull(this.alias)) {
-                LOGGER.debug('load_limitedMode - OAUTH');
-                let configuration = await getConfiguration(this.alias);
-                if (configuration && configuration.credentialType === OAUTH_TYPES.OAUTH) {
-                    connector = await credentialStrategies.OAUTH.connect({ alias: this.alias });
-                } else if (configuration && configuration.credentialType === OAUTH_TYPES.USERNAME) {
-                    connector = await credentialStrategies.USERNAME.connect({
-                        username: configuration.username,
-                        password: configuration.password,
-                        loginUrl: configuration.instanceUrl,
-                        alias: this.alias,
-                    });
-                } else {
-                    connector = null;
-                    throw new Error('No configuration found');
-                }
-            } else if (isNotUndefinedOrNull(this.sessionId) && isNotUndefinedOrNull(this.serverUrl)) {
-                LOGGER.debug('load_limitedMode - SESSION');
-                connector = await credentialStrategies.SESSION.connect({
-                    sessionId: this.sessionId,
-                    serverUrl: this.serverUrl,
-                });
-                // Reset after to prevent looping
-                this.sessionId = null;
-                this.serverUrl = null;
-            } else {
-                LOGGER.debug('load_limitedMode - NO CREDENTIALS');
-                connector = null;
-                throw new Error('No credentials found');
-            }
-
-            store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
-
-            if(isElectronApp()){
-                LOGGER.debug('load_limitedMode - ELECTRON - channel : ',window.electron.getChannel());
-                window.electron.send(window.electron.getChannel(),{
-                    isLoggedIn:true,
-                    username:connector.configuration.username,
-                });
-            }
-
-            if (this.redirectUrl) {
-                // This method use LWR redirection or window.location based on the url !
-                handleRedirect(this.navContext, this.redirectUrl);
-            } else {
-                navigate(this.navContext, {
-                    type: 'application',
-                    state: { applicationName: 'org' },
-                }); // org is the default
-            }
-        } catch (e) {
-            LOGGER.error(e);
-            if(isElectronApp()){
-                LOGGER.debug('load_limitedMode - ELECTRON - channel : ',window.electron.getChannel());
-                window.electron.send(window.electron.getChannel(),{
-                    isLoggedIn:false,
-                    message:e.message,
-                });
-            }
-            await LightningAlert.open({
-                message: e.message, //+'\n You might need to remove and OAuth again.',
-                theme: 'error', // this is the header text
-                label: 'Error!', // this is the header text
-            });
+        const result = await loadLimitedMode({
+            alias: this.alias,
+            sessionId: this.sessionId,
+            serverUrl: this.serverUrl,
+            redirectUrl: this.redirectUrl,
+            navContext: this.navContext,
+            targetPage: this.targetPage,
+            handleNavigation: this.handleNavigation.bind(this),
+        });
+        
+        // Reset session params after use
+        if (result.success && isNotUndefinedOrNull(this.sessionId)) {
+            this.sessionId = null;
+            this.serverUrl = null;
         }
-
-        // Default Mode
-        /*await this.loadModule({
-            component:'extension/app',
-            name:"Apps",
-            isDeletable:false,
-        });*/
-
-        // Should be loaded via login !
-        //this.openSpecificModule('org/app');
-        //this.openSpecificModule('code/app');
+        
         this.pageHasLoaded = true;
         if (this.targetPage) {
             this.handleNavigation(this.targetPage);
@@ -543,54 +513,20 @@ export default class App extends LightningElement {
 
     /** Website & Electron **/
     load_fullMode = async () => {
-        if (isNotUndefinedOrNull(this.sessionId) && isNotUndefinedOrNull(this.serverUrl)) {
-            let connector = await credentialStrategies.SESSION.connect({
-                sessionId: this.sessionId,
-                serverUrl: this.serverUrl,
-            });
-            // Reset after to prevent looping
+        await loadFullMode({
+            sessionId: this.sessionId,
+            serverUrl: this.serverUrl,
+            redirectUrl: this.redirectUrl,
+            navContext: this.navContext,
+            targetPage: this.targetPage,
+            loadModule: this.loadModule.bind(this),
+            handleNavigation: this.handleNavigation.bind(this),
+        });
+        
+        // Reset session params after use
+        if (isNotUndefinedOrNull(this.sessionId)) {
             this.sessionId = null;
             this.serverUrl = null;
-            store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
-        } else {
-            // New logic inspired by old getExistingSession
-            const currentConnectionRaw = sessionStorage.getItem('currentConnection');
-            if (currentConnectionRaw) {
-                try {
-                    const settings = JSON.parse(currentConnectionRaw);
-                    settings.logLevel = null;
-                    let connector;
-                    if (settings.sessionId && settings.serverUrl) {
-                        // For Web/Chrome, use SESSION strategy
-                        connector = await credentialStrategies.SESSION.connect({
-                            sessionId: settings.sessionId,
-                            serverUrl: settings.serverUrl,
-                        });
-                    } else if (
-                        settings.credentialType &&
-                        credentialStrategies[settings.credentialType || 'OAUTH']
-                    ) {
-                        // Fallback: use credentialType if present
-                        connector = await credentialStrategies[settings.credentialType].connect(settings);
-                    }
-                    if (connector) {
-                        store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
-                    }
-                    // Optionally: handle result (e.g., update store, etc.)
-                } catch (e) {
-                    // Optionally: log or show error
-                    LOGGER.error('load_fullMode Error -->',e);
-                }
-            }
-            // If no session, do nothing (or optionally prompt user)
-        }
-
-        if (this.redirectUrl) {
-            // This method use LWR redirection or window.location based on the url !
-            handleRedirect(this.navContext, this.redirectUrl);
-        } else {
-            // Default Mode
-            this.loadModule('home/app', true);
         }
 
         this.pageHasLoaded = true;
@@ -735,42 +671,8 @@ export default class App extends LightningElement {
         }
     };
 
-    /** Background  Communication **/
-
-    connectToBackgroundWithIdentity() {
-        if (isChromeExtension()) {
-            if (!this._backgroundPort) {
-                this._backgroundPort = chrome.runtime.connect({ name: 'sf-toolkit-instance' });
-                const connector = this.connector;
-                if (connector && connector.configuration) {
-                    this._backgroundPort.postMessage({
-                        action: 'registerInstance',
-                        serverUrl: connector.conn.instanceUrl,
-                        alias: connector.configuration.alias,
-                        username: connector.configuration.username,
-                    });
-                }
-                this._backgroundPort.onMessage.addListener((msg) => {
-                    // handle messages from background if needed
-                    LOGGER.log('[Instance] onMessage', msg);
-                    if(msg.action === 'redirectToUrl'){
-                        navigate(this.navContext, msg.navigation);
-                    }
-                });
-                this._backgroundPort.onDisconnect.addListener(() => {
-                    this._backgroundPort = null;
-                });
-            }
-        }
+    /** Shortcuts **/
+    initShortcuts = async () => {
+        await initShortcuts({ navContext: this.navContext });
     }
-
-    disconnectFromBackground() {
-        if (isChromeExtension()) {
-            if (this._backgroundPort) {
-                this._backgroundPort.postMessage({ action: 'closeConnection' });
-                this._backgroundPort = null;
-            }
-        }
-    }
-
 }

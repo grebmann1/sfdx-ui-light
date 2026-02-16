@@ -10,6 +10,7 @@ import {
     isChromeExtension,
     decodeError,
     checkIfPresent,
+    encodeJsonToBase64Url,
 } from 'shared/utils';
 
 const { showToast, handleError } = notificationService;
@@ -178,6 +179,80 @@ export default class ConnectionDetailModal extends LightningModal {
     handleCopy = e => {
         navigator.clipboard.writeText(e.currentTarget.dataset.value);
     };
+
+    handleShare = async () => {
+        const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '';
+        const basePath = origin ? `${origin}/app` : '/app';
+        let message;
+
+        if (this.isUsernameType) {
+            const lines = [
+                '--- SF Toolkit Connection (Username/Password) ---',
+                `Category: ${this.company || ''}`,
+                `Name: ${this.name || ''}`,
+                `Alias: ${this.alias || ''}`,
+                `Credential Type: ${this.credentialType || 'USERNAME'}`,
+                `OrgId: ${this.orgId || ''}`,
+                `Username: ${this.username || ''}`,
+                `Instance Url: ${this.instanceUrl || ''}`,
+                `Password: ${this.password || ''}`,
+                '',
+                'Connect (prefill username, enter password in app):',
+            ];
+            const shareUserPayload = encodeJsonToBase64Url({
+                v: 1,
+                alias: this.alias,
+                username: this.username,
+                instanceUrl: this.instanceUrl,
+                company: this.company,
+                name: this.name,
+            });
+            const connectUrl = `${basePath}?shareUser=${encodeURIComponent(shareUserPayload)}`;
+            lines.push(connectUrl);
+            message = lines.join('\n');
+        } else if (this.isOauthType) {
+            const lines = [
+                '--- SF Toolkit Connection (OAuth) ---',
+                `Category: ${this.company || ''}`,
+                `Name: ${this.name || ''}`,
+                `Alias: ${this.alias || ''}`,
+                `Credential Type: ${this.credentialType || 'OAUTH'}`,
+                `OrgId: ${this.orgId || ''}`,
+                `Username: ${this.username || ''}`,
+                `Instance Url: ${this.instanceUrl || ''}`,
+                this.sfdxAuthUrl ? `SFDX Auth Url: ${this.sfdxAuthUrl}` : '',
+                '',
+                'Connect (add org and sign in with refresh token):',
+            ];
+            const sharePayload = encodeJsonToBase64Url({
+                v: 1,
+                alias: this.alias,
+                sfdxAuthUrl: this.sfdxAuthUrl,
+            });
+            const connectUrl = `${basePath}?share=${encodeURIComponent(sharePayload)}`;
+            lines.push(connectUrl);
+            message = lines.filter(Boolean).join('\n');
+        } else {
+            message = [
+                '--- SF Toolkit Connection ---',
+                `Category: ${this.company || ''}`,
+                `Name: ${this.name || ''}`,
+                `Alias: ${this.alias || ''}`,
+                `Credential Type: ${this.credentialType || ''}`,
+                this.redirectUrl ? `Redirect Url: ${this.redirectUrl}` : '',
+            ]
+                .filter(Boolean)
+                .join('\n');
+        }
+
+        try {
+            await navigator.clipboard.writeText(message);
+            showToast({ label: 'Share message copied to clipboard', variant: 'success' });
+        } catch (e) {
+            handleError(e, 'Share');
+        }
+    };
+
     handleCloseClick() {
         this.close('canceled');
     }

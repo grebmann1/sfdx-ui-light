@@ -73,9 +73,46 @@ export default class App extends ToolkitElement {
         await this.fetchAllConnections();
         this.checkForInjected();
         window.setTimeout(() => {
-            //this.addConnectionClick();
+            this.openNewConnectionModalFromPrefill();
         }, 10);
     }
+
+    openNewConnectionModalFromPrefill = () => {
+        try {
+            const raw = sessionStorage.getItem('connectionNewModalPrefill');
+            if (!raw) return;
+            sessionStorage.removeItem('connectionNewModalPrefill');
+            const prefill = JSON.parse(raw);
+            if (!prefill || prefill.v !== 1 || !prefill.username) return;
+            let customDomain = '';
+            if (prefill.instanceUrl) {
+                try {
+                    const u = new URL(prefill.instanceUrl.startsWith('http') ? prefill.instanceUrl : `https://${prefill.instanceUrl}`);
+                    customDomain = u.host;
+                } catch (_) {}
+            }
+            const selectedCategory = prefill.company
+                ? [{ id: prefill.company, icon: 'standard:category', title: prefill.company }]
+                : [{ id: 'default', icon: 'standard:category', title: 'Default' }];
+            ConnectionNewModal.open({
+                connections: this.data,
+                credentialType: OAUTH_TYPES.USERNAME,
+                username: prefill.username,
+                alias: prefill.alias,
+                name: prefill.name || prefill.alias || '',
+                selectedCategory,
+                selectedDomain: customDomain ? 'custom' : undefined,
+                customDomain: customDomain || undefined,
+                size: isChromeExtension() ? 'full' : 'medium',
+            }).then(async (res) => {
+                if (isNotUndefinedOrNull(res)) {
+                    await this.fetchAllConnections();
+                }
+            });
+        } catch (e) {
+            LOGGER.error('openNewConnectionModalFromPrefill', e);
+        }
+    };
 
     disconnectedCallback() {
         window.removeEventListener('electron-orgs-updated', this._onElectronOrgsUpdated);

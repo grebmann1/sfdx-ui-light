@@ -326,12 +326,14 @@ async function findExistingSession({ alias, instanceUrl } = {}) {
 
 // Refactored isHostMatching to use the same logic as shouldInjectScriptAsync
 async function isHostMatching(url) {
+    const normalizedUrl = normalizeUrlForPatternMatch(url);
+    if (!normalizedUrl) return false;
     const { includePatterns, excludePatterns } = await getContentScriptPatterns();
     for (const pattern of excludePatterns) {
-        if (pattern.test(url)) return false;
+        if (pattern.test(normalizedUrl)) return false;
     }
     for (const pattern of includePatterns) {
-        if (pattern.test(url)) return true;
+        if (pattern.test(normalizedUrl)) return true;
     }
     return false;
 }
@@ -613,16 +615,33 @@ async function getContentScriptPatterns() {
     return _contentScriptPatternsCachePromise;
 }
 
+/**
+ * Normalize a URL for pattern matching.
+ * - Only allow http/https pages (never inject into chrome-extension://, chrome://, etc.)
+ * - Ignore querystring and hash to avoid false positives (e.g. serverUrl=...lightning.force.com)
+ */
+function normalizeUrlForPatternMatch(rawUrl) {
+    try {
+        const u = new URL(rawUrl);
+        if (u.protocol !== 'http:' && u.protocol !== 'https:') return null;
+        return `${u.origin}${u.pathname}`;
+    } catch (e) {
+        return null;
+    }
+}
+
 // Async version of shouldInjectScript
 async function shouldInjectScriptAsync(url) {
+    const normalizedUrl = normalizeUrlForPatternMatch(url);
+    if (!normalizedUrl) return false;
     const { includePatterns, excludePatterns } = await getContentScriptPatterns();
     // Exclude first
     for (const pattern of excludePatterns) {
-        if (pattern.test(url)) return false;
+        if (pattern.test(normalizedUrl)) return false;
     }
     // Then include
     for (const pattern of includePatterns) {
-        if (pattern.test(url)) return true;
+        if (pattern.test(normalizedUrl)) return true;
     }
     return false;
 }

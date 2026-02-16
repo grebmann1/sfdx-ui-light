@@ -20,6 +20,7 @@ export default class Menu extends ToolkitElement {
     @api version;
     isMenuSmall = false;
     selectedItem = 'home';
+    filterText = '';
 
     isApplicationTabVisible = false;
     betaSmartInputEnabled = false;
@@ -90,7 +91,20 @@ export default class Menu extends ToolkitElement {
         }
     };
 
+    handleSearchInput = (e) => {
+        this.filterText = (e.target.value || '').trim();
+    };
+
     /** Methods **/
+
+    filterBySearch = (items, searchText) => {
+        if (isEmpty(searchText)) return items;
+        const lower = searchText.toLowerCase();
+        return items.filter((x) => {
+            const label = (x.menuLabel || x.label || x.name || '').toString().toLowerCase();
+            return label.includes(lower);
+        });
+    };
 
     loadFromCache = async () => {
         const configuration = await loadExtensionConfigFromCache([
@@ -189,20 +203,40 @@ export default class Menu extends ToolkitElement {
         return this.generateFilter('home', this.isMenuSmall);
     }
 
+    get filteredHomes() {
+        return this.filterBySearch(this.homes, this.filterText);
+    }
+
     get applications() {
         return this.generateFilter('application');
+    }
+
+    get filteredApplications() {
+        return this.filterBySearch(this.applications, this.filterText);
     }
 
     get documentations() {
         return this.generateFilter('documentation');
     }
 
+    get filteredDocumentations() {
+        return this.filterBySearch(this.documentations, this.filterText);
+    }
+
     get extras() {
         return this.generateFilter('extra');
     }
 
+    get filteredExtras() {
+        return this.filterBySearch(this.extras, this.filterText);
+    }
+
     get tools() {
         return this.generateFilter('tool');
+    }
+
+    get filteredTools() {
+        return this.filterBySearch(this.tools, this.filterText);
     }
 
     get hasTools() {
@@ -213,8 +247,24 @@ export default class Menu extends ToolkitElement {
         return this.applications.length > 0;
     }
 
+    get hasFilteredApplications() {
+        return this.filteredApplications.length > 0;
+    }
+
+    get hasFilteredTools() {
+        return this.filteredTools.length > 0;
+    }
+
     get connections() {
         return this.generateFilter('connection');
+    }
+
+    get filteredConnections() {
+        return this.filterBySearch(this.connections, this.filterText);
+    }
+
+    get isUnlimitedModeAndHasConnections() {
+        return this.isUnlimitedMode && this.filteredConnections.length > 0;
     }
 
     get others() {
@@ -246,6 +296,14 @@ export default class Menu extends ToolkitElement {
 
     get isNotMenuSmall() {
         return !this.isMenuSmall;
+    }
+
+    get filteredOthers() {
+        return this.filterBySearch(this.others, this.filterText);
+    }
+
+    get isUnlimitedMode() {
+        return !isElectronApp();
     }
 
     get formattedVersion() {
