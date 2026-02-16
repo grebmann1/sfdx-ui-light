@@ -11,20 +11,28 @@
     width: 50px !important;
 }
 
-.main-app-container {
-    z-index: 50;
-}
-
 .custom-utility-bar-alert {
     background-color: var(--slds-g-color-error-base-40, #ea001e);
     height: 1.5rem !important;
     color: white;
 }
 
-/** Structure **/
+/** Structure – SLDS2 tokenized **/
 
 .home {
-    background-color: #fafaf9;
+    background-color: var(--slds-g-color-neutral-base-95, #f3f3f3);
+}
+
+.main-app-container {
+    z-index: 50;
+    padding: var(--slds-g-spacing-small, 0.75rem);
+}
+
+.main-app-container .section {
+    background-color: var(--slds-g-color-neutral-base-95, #f3f3f3);
+    border: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
+    border-radius: var(--slds-g-border-radius-medium, 0.25rem);
+    box-shadow: 0 1px 3px var(--slds-g-color-neutral-10-opacity-10, rgba(0, 0, 0, 0.08));
 }
 
 .l-container-vertical {
@@ -74,7 +82,7 @@
 }
 
 .home__navigation {
-    border-right: 1px solid #dddbda;
-    width: 213px; /* 250px */
-    background-color: #fff;
+    border-right: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
+    width: 213px;
+    background-color: var(--slds-g-color-neutral-base-100, #fff);
 }

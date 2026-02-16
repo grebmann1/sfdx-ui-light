@@ -1,0 +1,77 @@
+<template>
+    <div class={pageClass}>
+        <builder-editor>
+            <builder-header
+                slot="header"
+                title="Tools"
+                sub-title="Text Compare"
+                icon-name="utility:merge">
+                <div slot="actions" class="slds-builder-toolbar__actions">
+                    <lightning-button
+                        class="slds-p-left_xx-small"
+                        variant="neutral"
+                        label="Copy Left"
+                        icon-name="utility:copy"
+                        onclick={handleCopyLeft}></lightning-button>
+                    <lightning-button
+                        class="slds-p-left_xx-small"
+                        variant="neutral"
+                        label="Copy Right"
+                        icon-name="utility:copy"
+                        onclick={handleCopyRight}></lightning-button>
+                    <lightning-button
+                        class="slds-p-left_xx-small"
+                        variant="neutral"
+                        label="Swap"
+                        icon-name="utility:swap"
+                        onclick={handleSwap}></lightning-button>
+                    <lightning-button
+                        class="slds-p-left_xx-small"
+                        variant="neutral"
+                        label="Clear"
+                        icon-name="utility:delete"
+                        onclick={handleClear}></lightning-button>
+                </div>
+                <template lwc:if={showEmptyState}>
+                    <p slot="meta" class="slds-page-header__meta-text slds-text-color_weak">
+                        Paste or type text in the left and right panes to compare. Use the toolbar to copy, swap, or clear.
+                    </p>
+                </template>
+                <div slot="subactions" class="slds-builder-toolbar__actions">
+                    <lightning-input
+                        class="slds-p-right_x-small toolkit-small"
+                        type="toggle"
+                        label="Ignore whitespace"
+                        name="ignoreWhitespace"
+                        message-toggle-active=""
+                        message-toggle-inactive=""
+                        checked={ignoreWhitespace}
+                        onchange={handleIgnoreWhitespaceChange}></lightning-input>
+                    <lightning-input
+                        class="slds-p-right_x-small toolkit-small"
+                        type="toggle"
+                        label="Ignore case"
+                        name="ignoreCase"
+                        message-toggle-active=""
+                        message-toggle-inactive=""
+                        checked={ignoreCase}
+                        onchange={handleIgnoreCaseChange}></lightning-input>
+                </div>
+            </builder-header>
+            <article class="full-page-body slds-card text-compare-article">
+                <div class="slds-is-relative slds-full-width slds-flex-column text-compare-body">
+                    <div class="slds-fill-height text-compare-editor">
+                        <editor-diff
+                            left-value={leftText}
+                            right-value={rightText}
+                            ignore-whitespace={ignoreWhitespace}
+                            ignore-case={ignoreCase}
+                            lwc:ref="diffEditor"
+                            onmonacoloaded={handleMonacoLoaded}
+                            onchange={handleDiffChange}></editor-diff>
+                    </div>
+                </div>
+            </article>
+        </builder-editor>
+    </div>
+</template>

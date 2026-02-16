@@ -11,7 +11,7 @@ import {
 import { CACHE_CONFIG, loadExtensionConfigFromCache } from 'shared/cacheManager';
 
 import { CONFIG } from 'ui/app';
-import { connectStore, store as legacyStore, store_application } from 'shared/store';
+import { connectStore, store, SHELL } from 'core/store';
 import { NavigationContext, CurrentPageReference, generateUrl, navigate } from 'lwr/navigation';
 import LOGGER from 'shared/logger';
 
@@ -20,18 +20,20 @@ export default class Menu extends ToolkitElement {
     @api version;
     isMenuSmall = false;
     selectedItem = 'home';
+    filterText = '';
 
     isApplicationTabVisible = false;
 
     @wire(NavigationContext)
     navContext;
 
-    @wire(connectStore, { store: legacyStore })
-    applicationChange({ application }) {
-        LOGGER.debug('applicationChange', application);
+    @wire(connectStore, { store })
+    shellChange({ shell }) {
+        if (!shell) return;
+        LOGGER.debug('shellChange', shell);
         // Toggle Menu
-        if (isNotUndefinedOrNull(application.isMenuExpanded)) {
-            this.isMenuSmall = !application.isMenuExpanded;
+        if (isNotUndefinedOrNull(shell.menuExpanded)) {
+            this.isMenuSmall = !shell.menuExpanded;
         }
     }
 
@@ -55,7 +57,7 @@ export default class Menu extends ToolkitElement {
     connectedCallback() {
         if (isElectronApp()) {
             this.isMenuSmall = true; // by default it small for electron apps
-            legacyStore.dispatch(store_application.collapseMenu());
+            store.dispatch(SHELL.reduxSlice.actions.collapseMenu());
         }
         this.loadFromCache();
     }
@@ -77,19 +79,32 @@ export default class Menu extends ToolkitElement {
         e.preventDefault();
         e.stopPropagation();
         const url = e.currentTarget.dataset.url;
-        legacyStore.dispatch(store_application.navigate(url));
+        store.dispatch(SHELL.reduxSlice.actions.navigate({ target: url }));
     };
 
     handleToggle = () => {
         this.isMenuSmall = !this.isMenuSmall;
         if (this.isMenuSmall) {
-            legacyStore.dispatch(store_application.collapseMenu());
+            store.dispatch(SHELL.reduxSlice.actions.collapseMenu());
         } else {
-            legacyStore.dispatch(store_application.expandMenu());
+            store.dispatch(SHELL.reduxSlice.actions.expandMenu());
         }
     };
 
+    handleSearchInput = (e) => {
+        this.filterText = (e.target.value || '').trim();
+    };
+
     /** Methods **/
+
+    filterBySearch = (items, searchText) => {
+        if (isEmpty(searchText)) return items;
+        const lower = searchText.toLowerCase();
+        return items.filter((x) => {
+            const label = (x.menuLabel || x.label || x.name || '').toString().toLowerCase();
+            return label.includes(lower);
+        });
+    };
 
     loadFromCache = async () => {
         const configuration = await loadExtensionConfigFromCache([
@@ -181,20 +196,40 @@ export default class Menu extends ToolkitElement {
         return this.generateFilter('home', this.isMenuSmall);
     }
 
+    get filteredHomes() {
+        return this.filterBySearch(this.homes, this.filterText);
+    }
+
     get applications() {
         return this.generateFilter('application');
+    }
+
+    get filteredApplications() {
+        return this.filterBySearch(this.applications, this.filterText);
     }
 
     get documentations() {
         return this.generateFilter('documentation');
     }
 
+    get filteredDocumentations() {
+        return this.filterBySearch(this.documentations, this.filterText);
+    }
+
     get extras() {
         return this.generateFilter('extra');
     }
 
+    get filteredExtras() {
+        return this.filterBySearch(this.extras, this.filterText);
+    }
+
     get tools() {
         return this.generateFilter('tool');
+    }
+
+    get filteredTools() {
+        return this.filterBySearch(this.tools, this.filterText);
     }
 
     get hasTools() {
@@ -205,8 +240,24 @@ export default class Menu extends ToolkitElement {
         return this.applications.length > 0;
     }
 
+    get hasFilteredApplications() {
+        return this.filteredApplications.length > 0;
+    }
+
+    get hasFilteredTools() {
+        return this.filteredTools.length > 0;
+    }
+
     get connections() {
         return this.generateFilter('connection');
+    }
+
+    get filteredConnections() {
+        return this.filterBySearch(this.connections, this.filterText);
+    }
+
+    get isUnlimitedModeAndHasConnections() {
+        return this.isUnlimitedMode && this.filteredConnections.length > 0;
     }
 
     get others() {
@@ -238,6 +289,14 @@ export default class Menu extends ToolkitElement {
 
     get isNotMenuSmall() {
         return !this.isMenuSmall;
+    }
+
+    get filteredOthers() {
+        return this.filterBySearch(this.others, this.filterText);
+    }
+
+    get isUnlimitedMode() {
+        return !isElectronApp();
     }
 
     get formattedVersion() {

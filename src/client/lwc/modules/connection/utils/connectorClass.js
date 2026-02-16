@@ -18,8 +18,8 @@ export class Connector {
         this.configuration = configuration;
         this.conn = conn;
 
-        LOGGER.log('Connector -->', this.configuration, this.conn);
-        LOGGER.log('Connector --> Add listeners');
+        LOGGER.debug('Connector -->', this.configuration, this.conn);
+        LOGGER.debug('Connector --> Add listeners');
         if(conn) {
             this.addListeners(conn);
         }

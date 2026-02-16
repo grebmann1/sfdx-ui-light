@@ -439,7 +439,8 @@ const fetchSpecificMetadata = createAsyncThunk(
             LOGGER.debug('application.connector', application.connector);
             const exceptionMetadata = METADATA_UTILS.METADATA_EXCEPTION_LIST.find(x => x.name === sobject) || null;
             // Check if the requested sobject differs from the current state
-            if (metadata.currentMetadata !== sobject || force) {
+            // Also reload if metadata_records is null (e.g., after goBack)
+            if (metadata.currentMetadata !== sobject || force || !metadata.metadata_records) {
                 const _metadata = exceptionMetadata
                     ? await loadSpecificMetadataException(
                           application.connector,
@@ -680,7 +681,11 @@ const metadataSlice = createSlice({
         },
         goBack: (state, action) => {
             // Back is only from records to global
+            // Reset currentMetadata and related fields to allow reselecting the same metadata type
             state.metadata_records = null;
+            state.currentMetadata = null;
+            state.param1 = null;
+            state.label1 = null;
         },
         updateMetadata: (state, action) => {
             const { metadata } = action.payload;

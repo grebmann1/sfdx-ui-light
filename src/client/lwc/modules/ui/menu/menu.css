@@ -1,5 +1,37 @@
 .slds-inner-menu-header {
     overflow: hidden;
     padding: unset;
-    padding-left: 0.6rem;
+    padding-left: var(--slds-g-spacing-x-small, 0.5rem);
+}
+
+.explorer-rail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--slds-g-spacing-x-small, 0.5rem);
+}
+
+.explorer-header {
+    padding: var(--slds-g-spacing-x-small, 0.5rem) var(--slds-g-spacing-small, 0.75rem);
+    border-bottom: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
+}
+
+.explorer-title {
+    font-size: var(--slds-g-font-size-2, 0.75rem);
+    font-weight: var(--slds-g-font-weight-bold, 700);
+    color: var(--slds-g-color-neutral-base-30, #444);
+    margin: 0;
+    letter-spacing: 0.025em;
+    text-transform: uppercase;
+}
+
+.explorer-search {
+    padding: 0 var(--slds-g-spacing-small, 0.75rem) var(--slds-g-spacing-x-small, 0.5rem);
+}
+
+.explorer-search-input {
+    --slds-c-input-radius-border: var(--slds-g-border-radius-small, 0.125rem);
+}
+
+.menu-header {
+    padding-top: var(--slds-g-spacing-x-small, 0.5rem);
 }
