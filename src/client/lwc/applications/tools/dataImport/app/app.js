@@ -1,0 +1,1000 @@
+import { api, track, wire } from 'lwc';
+import ToolkitElement from 'core/toolkitElement';
+import Toast from 'lightning/toast';
+import { connectStore, store, DESCRIBE } from 'core/store';
+import { CSV, isEmpty, isUndefinedOrNull } from 'shared/utils';
+import Analytics from 'shared/analytics';
+
+const MODE = {
+    REST: 'REST',
+    BULK_V2: 'BULK_V2',
+    BULK_V1: 'BULK_V1',
+};
+
+const ACTION = {
+    INSERT: 'insert',
+    UPDATE: 'update',
+    UPSERT: 'upsert',
+};
+
+const DELIMITER = {
+    COMMA: 'COMMA',
+    SEMICOLON: 'SEMICOLON',
+    TAB: 'TAB',
+    PIPE: 'PIPE',
+};
+
+const DELIMITER_TO_CHAR = {
+    [DELIMITER.COMMA]: ',',
+    [DELIMITER.SEMICOLON]: ';',
+    [DELIMITER.TAB]: '\t',
+    [DELIMITER.PIPE]: '|',
+};
+
+export default class App extends ToolkitElement {
+    @api namespace;
+
+    // Active gating
+    isActive = true;
+
+    // Configure
+    @track mode = MODE.REST;
+    @track action = ACTION.INSERT;
+    @track objectApiName = 'Account';
+    @track externalIdFieldName = '';
+    @track delimiterKey = DELIMITER.COMMA;
+    @track restBatchSize = 200;
+
+    // CSV
+    @track csvFileName;
+    @track csvError;
+    csvText;
+    csvHeaders = [];
+    csvRows = []; // array of objects keyed by header
+
+    // SObject describe
+    sobjectDescribe;
+    @track objectError;
+    @track sobjectOptions = [];
+    @track fieldNames = [];
+    @track externalIdOptions = [];
+
+    // Mapping
+    @track mappingRows = []; // { key, csvHeader, targetField, error, inputId, inputClass }
+
+    // Running
+    isWorking = false;
+    cancelRequested = false;
+    lastRunMessage;
+    lastRunMessageVariant = 'info';
+    results = []; // row-level results, normalized
+    lastRestPayload = null; // [{ rowIndex, record }]
+
+    // Jobs
+    @track jobs = [];
+    @track jobsError;
+    isJobsRefreshing = false;
+    @track selectedJob;
+    @track selectedJobDetails;
+    lastCreatedJobId;
+
+    connectedCallback() {
+        Analytics.trackAppOpen('dataImport', { alias: this.alias });
+        if (this.connector?.conn) {
+            store.dispatch(
+                DESCRIBE.describeSObjects({
+                    connector: this.connector.conn,
+                })
+            );
+            this.loadSObjectDescribe();
+        }
+    }
+
+    @wire(connectStore, { store })
+    storeChange({ application, describe }) {
+        const isCurrentApp = this.verifyIsActive(application.currentApplication);
+        this.isActive = isCurrentApp;
+        if (!isCurrentApp) return;
+
+        // Populate object datalist from describe
+        if (describe?.nameMap) {
+            const list = Object.values(describe.nameMap)
+                .filter(x => !!x?.name)
+                .map(x => ({ label: x.name, value: x.name }))
+                .sort((a, b) => a.value.localeCompare(b.value));
+            this.sobjectOptions = list;
+        }
+    }
+
+    /** UI handlers */
+    handleModeChange = (e) => {
+        this.mode = e.detail?.value || e.target?.value;
+        this._setInfo(`Mode set to ${this.modeLabel}.`);
+    };
+
+    handleActionChange = (e) => {
+        this.action = e.detail?.value || e.target?.value;
+        // Reset externalId selection if leaving upsert
+        if (this.action !== ACTION.UPSERT) {
+            this.externalIdFieldName = '';
+        }
+        this.validateMapping();
+    };
+
+    handleDelimiterChange = (e) => {
+        this.delimiterKey = e.detail?.value || e.target?.value;
+        if (this.csvText) {
+            this.parseCsv(this.csvText);
+        }
+    };
+
+    handleRestBatchSizeChange = (e) => {
+        const value = Number(e.detail?.value ?? e.target?.value);
+        this.restBatchSize = Number.isFinite(value) && value > 0 ? value : 200;
+    };
+
+    handleObjectInput = async (e) => {
+        this.objectApiName = e.target?.value;
+        await this.loadSObjectDescribe();
+        this.validateMapping();
+    };
+
+    handleExternalIdChange = (e) => {
+        this.externalIdFieldName = e.detail?.value || e.target?.value;
+        this.validateMapping();
+    };
+
+    handleFileChange = async (e) => {
+        this.csvError = null;
+        const file = e.target?.files?.[0];
+        if (!file) return;
+        this.csvFileName = file.name;
+
+        try {
+            const text = await file.text();
+            this.csvText = text;
+            this.parseCsv(text);
+        } catch (err) {
+            this.csvError = err?.message || String(err);
+        }
+    };
+
+    handleMappingInput = (e) => {
+        const key = e.target?.dataset?.key;
+        const value = e.target?.value ?? '';
+        const idx = this.mappingRows.findIndex(r => r.key === key);
+        if (idx === -1) return;
+        this.mappingRows[idx] = {
+            ...this.mappingRows[idx],
+            targetField: value,
+        };
+        this.validateMapping();
+    };
+
+    handleClearSingleMapping = (e) => {
+        const key = e.currentTarget?.dataset?.key;
+        const idx = this.mappingRows.findIndex(r => r.key === key);
+        if (idx === -1) return;
+        this.mappingRows[idx] = {
+            ...this.mappingRows[idx],
+            targetField: '',
+            error: null,
+            inputClass: 'slds-input',
+        };
+        this.validateMapping();
+    };
+
+    handleAutoMap = () => {
+        this.autoMapFields();
+        this.validateMapping();
+    };
+
+    handleClearMapping = () => {
+        this.mappingRows = this.mappingRows.map(r => ({
+            ...r,
+            targetField: '',
+            error: null,
+            inputClass: 'slds-input',
+        }));
+        this.validateMapping();
+    };
+
+    handleRun = async () => {
+        if (this.isWorking) return;
+        const validation = this.validateBeforeRun();
+        if (!validation.ok) {
+            this._setError(validation.message);
+            Toast.show({
+                label: 'Cannot run import',
+                message: validation.message,
+                variant: 'error',
+                mode: 'sticky',
+            });
+            return;
+        }
+
+        this.cancelRequested = false;
+        this.isWorking = true;
+        this.results = [];
+        this.lastRunMessage = null;
+
+        try {
+            if (this.mode === MODE.REST) {
+                await this.runRestImport();
+            } else if (this.mode === MODE.BULK_V2) {
+                await this.runBulkV2Import();
+            } else {
+                await this.runBulkV1Import();
+            }
+        } catch (e) {
+            this._setError(e?.message || String(e));
+        } finally {
+            this.isWorking = false;
+        }
+    };
+
+    handleCancel = async () => {
+        if (!this.isWorking) return;
+        this.cancelRequested = true;
+        if (this.mode === MODE.BULK_V2 && this.lastCreatedJobId) {
+            try {
+                await this.abortBulkV2Job(this.lastCreatedJobId);
+                this._setInfo(`Abort requested for job ${this.lastCreatedJobId}.`);
+            } catch (e) {
+                // ignore, already completed or not abortable
+            }
+        }
+    };
+
+    /** Jobs UI */
+    handleRefreshJobs = async () => {
+        await this.refreshJobs();
+    };
+
+    handleSelectJob = async (e) => {
+        e.preventDefault?.();
+        const id = e.currentTarget?.dataset?.id || e.target?.dataset?.id;
+        if (!id) return;
+        this.selectedJob = this.jobs.find(j => j.id === id) || { id };
+        await this.refreshSelectedJob();
+    };
+
+    handleRefreshSelectedJob = async () => {
+        await this.refreshSelectedJob();
+    };
+
+    handleDownloadSuccess = async () => {
+        if (!this.selectedJob?.id) return;
+        await this.downloadBulkV2Results(this.selectedJob.id, 'successfulResults', 'successful');
+    };
+
+    handleDownloadFailed = async () => {
+        if (!this.selectedJob?.id) return;
+        await this.downloadBulkV2Results(this.selectedJob.id, 'failedResults', 'failed');
+    };
+
+    handleDownloadUnprocessed = async () => {
+        if (!this.selectedJob?.id) return;
+        // Salesforce docs sometimes show `unprocessedrecords` (lowercase r)
+        await this.downloadBulkV2Results(this.selectedJob.id, 'unprocessedrecords', 'unprocessed');
+    };
+
+    handleAbortSelectedJob = async () => {
+        if (!this.selectedJob?.id) return;
+        await this.abortBulkV2Job(this.selectedJob.id);
+        await this.refreshSelectedJob();
+        Toast.show({ label: 'Abort requested', variant: 'success' });
+    };
+
+    /** Results */
+    handleDownloadResults = () => {
+        const csv = this.buildResultsCsv();
+        if (!csv) return;
+        this.downloadText(`${this.objectApiName || 'results'}-import-results.csv`, csv, 'text/csv');
+    };
+
+    handleRetryFailed = async () => {
+        if (this.isRetryFailedDisabled) return;
+        const failedRowIndexes = (this.results || [])
+            .filter(r => r && r.success === false)
+            .map(r => (r.rowNumber || 0) - 1)
+            .filter(i => i >= 0);
+        if (!failedRowIndexes.length) return;
+
+        this.cancelRequested = false;
+        this.isWorking = true;
+        this.lastRunMessage = null;
+        try {
+            await this.runRestImport({ onlyRowIndexes: new Set(failedRowIndexes) });
+        } catch (e) {
+            this._setError(e?.message || String(e));
+        } finally {
+            this.isWorking = false;
+        }
+    };
+
+    /** CSV + mapping */
+    parseCsv(text) {
+        this.csvError = null;
+        this.csvHeaders = [];
+        this.csvRows = [];
+        this.mappingRows = [];
+
+        const delimiter = DELIMITER_TO_CHAR[this.delimiterKey] || ',';
+        const parsed = CSV.parseCsvText(text, { delimiter });
+        if (parsed.error) {
+            this.csvError = parsed.error;
+            return;
+        }
+
+        this.csvHeaders = parsed.headers;
+        this.csvRows = parsed.rows;
+
+        this.mappingRows = this.csvHeaders.map((h, idx) => ({
+            key: String(idx),
+            csvHeader: h,
+            targetField: '',
+            error: null,
+            inputId: `di-map-${idx}`,
+            inputClass: 'slds-input',
+        }));
+
+        this.autoMapFields();
+        this.validateMapping();
+    }
+
+    autoMapFields() {
+        const fieldSet = new Set((this.fieldNames || []).map(f => f.toLowerCase()));
+        this.mappingRows = this.mappingRows.map(r => {
+            const candidate = (r.csvHeader || '').trim();
+            const mapped = fieldSet.has(candidate.toLowerCase()) ? candidate : r.targetField;
+            return { ...r, targetField: mapped };
+        });
+    }
+
+    validateMapping() {
+        if (!this.mappingRows?.length) return;
+
+        const descFields = Array.isArray(this.sobjectDescribe?.fields) ? this.sobjectDescribe.fields : [];
+        const validFieldSet = new Set((this.fieldNames || []).map(f => f.toLowerCase()));
+        const writeableFieldSet = new Set(
+            descFields
+                .filter(f => {
+                    if (!f?.name) return false;
+                    if (f.name === 'Id') return true;
+                    if (this.action === ACTION.INSERT) return f.createable === true;
+                    if (this.action === ACTION.UPDATE) return f.updateable === true;
+                    // UPSERT
+                    return f.createable === true || f.updateable === true;
+                })
+                .map(f => f.name.toLowerCase())
+        );
+
+        const updated = this.mappingRows.map(r => {
+            const target = (r.targetField || '').trim();
+            let error = null;
+            if (target) {
+                // Relationship dot notation is allowed (Bulk + REST nested)
+                const isRelationship = target.includes('.');
+                if (!isRelationship && !validFieldSet.has(target.toLowerCase())) {
+                    error = 'Unknown field';
+                } else if (!isRelationship && !writeableFieldSet.has(target.toLowerCase())) {
+                    error = 'Field not writeable for this action';
+                }
+            }
+            return {
+                ...r,
+                error,
+                inputClass: error ? 'slds-input slds-has-error' : 'slds-input',
+            };
+        });
+        this.mappingRows = updated;
+
+        // Object error is driven by describe load
+        // no toast spam; inline errors only
+    }
+
+    validateBeforeRun() {
+        if (isUndefinedOrNull(this.connector?.conn)) {
+            return { ok: false, message: 'No active Salesforce connection.' };
+        }
+        if (isEmpty(this.objectApiName)) {
+            return { ok: false, message: 'Object is required.' };
+        }
+        if (this.objectError) {
+            return { ok: false, message: this.objectError };
+        }
+        if (!this.csvRows?.length) {
+            return { ok: false, message: 'CSV is empty or not loaded.' };
+        }
+
+        const mappingTargets = this.mappingRows
+            .map(r => (r.targetField || '').trim())
+            .filter(Boolean);
+        if (!mappingTargets.length) {
+            return { ok: false, message: 'No mapped fields. Map at least one CSV column.' };
+        }
+
+        const hasMappingErrors = this.mappingRows.some(r => !!r.error);
+        if (hasMappingErrors) {
+            return { ok: false, message: 'Fix mapping errors before running.' };
+        }
+
+        if (this.action === ACTION.UPDATE) {
+            const hasId = mappingTargets.some(t => t.toLowerCase() === 'id');
+            if (!hasId) return { ok: false, message: 'Update requires an Id column mapped to the Id field.' };
+        }
+
+        if (this.action === ACTION.UPSERT) {
+            if (isEmpty(this.externalIdFieldName)) {
+                return { ok: false, message: 'Upsert requires selecting an External ID field.' };
+            }
+            const hasExt = mappingTargets.some(
+                t => t.toLowerCase() === this.externalIdFieldName.toLowerCase()
+            );
+            if (!hasExt) {
+                return {
+                    ok: false,
+                    message: `Upsert requires a CSV column mapped to ${this.externalIdFieldName}.`,
+                };
+            }
+        }
+
+        return { ok: true };
+    }
+
+    /** Describe helpers */
+    async loadSObjectDescribe() {
+        this.objectError = null;
+        this.fieldNames = [];
+        this.externalIdOptions = [];
+        this.sobjectDescribe = null;
+
+        if (isUndefinedOrNull(this.connector?.conn) || isEmpty(this.objectApiName)) return;
+
+        try {
+            const desc = await this.connector.conn.sobject(this.objectApiName).describe();
+            this.sobjectDescribe = desc;
+            this.fieldNames = (desc?.fields || []).map(f => f.name).filter(Boolean);
+            const externalIdFields = (desc?.fields || [])
+                .filter(f => f.externalId === true || f.name === 'Id')
+                .map(f => ({ label: f.name, value: f.name }));
+            this.externalIdOptions = externalIdFields;
+        } catch (e) {
+            this.objectError = e?.message || 'Failed to describe object';
+        }
+    }
+
+    /** REST import */
+    async runRestImport({ onlyRowIndexes } = {}) {
+        this._setInfo('Running REST import...');
+        const batchSize = Math.min(Math.max(Number(this.restBatchSize) || 200, 1), 2000);
+        const payload = this.buildRecordsForRestPayload();
+        this.lastRestPayload = payload;
+
+        const selectedPayload = onlyRowIndexes
+            ? payload.filter(p => onlyRowIndexes.has(p.rowIndex))
+            : payload;
+
+        const conn = this.connector.conn;
+        const sobj = conn.sobject(this.objectApiName);
+
+        const resultsMap = new Map((this.results || []).map(r => [r.rowNumber - 1, r]));
+        const total = selectedPayload.length;
+
+        for (let i = 0; i < selectedPayload.length; i += batchSize) {
+            if (this.cancelRequested) break;
+            const chunk = selectedPayload.slice(i, i + batchSize);
+            const chunkRecords = chunk.map(x => x.record);
+            let rets;
+            if (this.action === ACTION.INSERT) {
+                rets = await sobj.create(chunkRecords, { allOrNone: false });
+            } else if (this.action === ACTION.UPDATE) {
+                rets = await sobj.update(chunkRecords, { allOrNone: false });
+            } else {
+                rets = await sobj.upsert(
+                    chunkRecords,
+                    this.externalIdFieldName,
+                    { allOrNone: false }
+                );
+            }
+            const arr = Array.isArray(rets) ? rets : [rets];
+            for (let c = 0; c < arr.length; c++) {
+                const ret = arr[c];
+                const originalRowIndex = chunk[c]?.rowIndex ?? i + c;
+                resultsMap.set(originalRowIndex, this.normalizeRestResult(originalRowIndex, ret));
+            }
+            const processed = Math.min(i + chunk.length, total);
+            this._setInfo(`Running REST import... ${processed}/${total} processed`);
+        }
+
+        const merged = Array.from(resultsMap.values()).sort((a, b) => a.rowNumber - b.rowNumber);
+        this.results = merged;
+        const { succeeded, failed } = this.countResults(merged);
+        if (this.cancelRequested) {
+            this._setWarning(`Import canceled. Succeeded: ${succeeded}, Failed: ${failed}.`);
+        } else {
+            this._setSuccess(`Import completed. Succeeded: ${succeeded}, Failed: ${failed}.`);
+        }
+    }
+
+    buildRecordsForRestPayload() {
+        const mapped = this.mappingRows
+            .map(r => ({ csv: r.csvHeader, target: (r.targetField || '').trim() }))
+            .filter(m => !!m.target);
+
+        const payload = [];
+        for (let i = 0; i < this.csvRows.length; i++) {
+            const row = this.csvRows[i] || {};
+            const record = {};
+            for (const m of mapped) {
+                const rawValue = row[m.csv];
+                const value =
+                    rawValue === undefined || rawValue === null || String(rawValue).trim() === ''
+                        ? null
+                        : rawValue;
+                if (m.target.includes('.')) {
+                    this.assignRelationshipField(record, m.target, value);
+                } else {
+                    record[m.target] = value;
+                }
+            }
+            payload.push({ rowIndex: i, record });
+        }
+        return payload;
+    }
+
+    assignRelationshipField(targetRecord, dottedField, value) {
+        // Supports e.g. Parent__r.External_ID__c → { Parent__r: { External_ID__c: value } }
+        const parts = dottedField.split('.').map(p => p.trim()).filter(Boolean);
+        if (parts.length < 2) {
+            targetRecord[dottedField] = value;
+            return;
+        }
+        const rel = parts[0];
+        const field = parts.slice(1).join('.');
+        if (!targetRecord[rel] || typeof targetRecord[rel] !== 'object') {
+            targetRecord[rel] = {};
+        }
+        targetRecord[rel][field] = value;
+    }
+
+    normalizeRestResult(rowIndex, ret) {
+        const errors = Array.isArray(ret?.errors) ? ret.errors : [];
+        return {
+            rowNumber: rowIndex + 1,
+            success: ret?.success === true,
+            id: ret?.id || '',
+            errors: errors.map(e => e?.message || e?.content || String(e)).filter(Boolean).join('; '),
+        };
+    }
+
+    /** Bulk v2 ingest */
+    async runBulkV2Import() {
+        this._setInfo('Starting Bulk v2 ingest job...');
+        const version = this.connector.conn.version;
+        const operation = this.action;
+        const delimiter = this.bulkV2ColumnDelimiter;
+        const csv = this.buildMappedCsv();
+
+        const job = await this.connector.conn.request({
+            method: 'POST',
+            url: `/services/data/v${version}/jobs/ingest`,
+            body: JSON.stringify({
+                object: this.objectApiName,
+                operation,
+                contentType: 'CSV',
+                lineEnding: 'LF',
+                columnDelimiter: delimiter,
+                ...(this.action === ACTION.UPSERT ? { externalIdFieldName: this.externalIdFieldName } : {}),
+            }),
+            headers: { 'Content-Type': 'application/json' },
+        });
+
+        this.lastCreatedJobId = job?.id;
+        if (!job?.id) throw new Error('Bulk ingest job creation failed (no job id).');
+
+        await this.connector.conn.request({
+            method: 'PUT',
+            url: `/services/data/v${version}/jobs/ingest/${job.id}/batches`,
+            body: csv,
+            headers: { 'Content-Type': 'text/csv' },
+        });
+
+        await this.connector.conn.request({
+            method: 'PATCH',
+            url: `/services/data/v${version}/jobs/ingest/${job.id}`,
+            body: JSON.stringify({ state: 'UploadComplete' }),
+            headers: { 'Content-Type': 'application/json' },
+        });
+
+        this._setInfo(`Job ${job.id} created. Polling...`);
+        const completed = await this.pollBulkV2Job(job.id);
+
+        this.selectedJob = { id: job.id };
+        this.selectedJobDetails = completed;
+        const processed = completed?.numberRecordsProcessed ?? '';
+        const failed = completed?.numberRecordsFailed ?? '';
+        this._setSuccess(`Bulk v2 job completed. Processed: ${processed}, Failed: ${failed}.`);
+    }
+
+    async pollBulkV2Job(jobId) {
+        const version = this.connector.conn.version;
+        const start = Date.now();
+        const timeoutMs = 20 * 60 * 1000;
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            if (this.cancelRequested) break;
+            if (!this.isActive) break;
+            const job = await this.connector.conn.request({
+                method: 'GET',
+                url: `/services/data/v${version}/jobs/ingest/${jobId}`,
+            });
+            const state = job?.state;
+            if (['JobComplete', 'Failed', 'Aborted'].includes(state)) {
+                return job;
+            }
+            if (Date.now() - start > timeoutMs) {
+                throw new Error('Polling timed out. Job is still running.');
+            }
+            // Wait 2s between polls
+            // eslint-disable-next-line no-await-in-loop
+            await new Promise(r => setTimeout(r, 2000));
+        }
+        return await this.connector.conn.request({
+            method: 'GET',
+            url: `/services/data/v${version}/jobs/ingest/${jobId}`,
+        });
+    }
+
+    async abortBulkV2Job(jobId) {
+        const version = this.connector.conn.version;
+        await this.connector.conn.request({
+            method: 'PATCH',
+            url: `/services/data/v${version}/jobs/ingest/${jobId}`,
+            body: JSON.stringify({ state: 'Aborted' }),
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    buildMappedCsv() {
+        const delimiter = DELIMITER_TO_CHAR[this.delimiterKey] || ',';
+        const mapped = this.mappingRows
+            .map(r => ({ csv: r.csvHeader, target: (r.targetField || '').trim() }))
+            .filter(m => !!m.target);
+        const header = mapped.map(m => m.target).join(delimiter);
+        const lines = this.csvRows.map(row => {
+            return mapped
+                .map(m => {
+                    const v = row[m.csv];
+                    return CSV.escapeCsvValue(delimiter, v);
+                })
+                .join(delimiter);
+        });
+        return `${header}\n${lines.join('\n')}`;
+    }
+
+    async downloadBulkV2Results(jobId, endpointSuffix, label) {
+        const version = this.connector.conn.version;
+        const candidates = [
+            endpointSuffix,
+            endpointSuffix.toLowerCase(),
+            endpointSuffix === 'unprocessedrecords' ? 'unprocessedRecords' : null,
+        ].filter(Boolean);
+
+        let text = null;
+        let lastError = null;
+        for (const suffix of candidates) {
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                text = await this.connector.conn.request({
+                    method: 'GET',
+                    url: `/services/data/v${version}/jobs/ingest/${jobId}/${suffix}`,
+                    headers: { Accept: 'text/csv' },
+                });
+                break;
+            } catch (e) {
+                lastError = e;
+            }
+        }
+        if (text == null) throw lastError || new Error('Failed downloading results.');
+
+        // jsforce may parse response; ensure we stringify
+        const content = typeof text === 'string' ? text : JSON.stringify(text, null, 2);
+        this.downloadText(
+            `${this.objectApiName || 'bulk'}-${jobId}-${label}.csv`,
+            content,
+            'text/csv'
+        );
+    }
+
+    /** Bulk v1 */
+    async runBulkV1Import() {
+        // Minimal implementation using jsforce bulk wrapper
+        this._setInfo('Running Bulk v1 import...');
+        const csv = this.buildMappedCsv();
+        const operation = this.action;
+        const extId = this.externalIdFieldName;
+
+        const bulk = this.connector.conn.bulk;
+        if (!bulk) throw new Error('Bulk API v1 is not available on this connection.');
+
+        const rets = await new Promise((resolve, reject) => {
+            const options = operation === ACTION.UPSERT && extId ? { extIdField: extId } : {};
+            const batch = bulk.load(this.objectApiName, operation, options, csv, (err, results) => {
+                if (err) reject(err);
+                else resolve(results);
+            });
+            batch.on('error', err => reject(err));
+        });
+        // Try to normalize as REST-like results
+        const arr = Array.isArray(rets) ? rets : [];
+        this.results = arr.map((r, idx) => ({
+            rowNumber: idx + 1,
+            success: r?.success === true || r?.success === 'true',
+            id: r?.id || '',
+            errors: Array.isArray(r?.errors)
+                ? r.errors.map(e => e?.message || e?.statusCode || String(e)).join('; ')
+                : r?.errors || '',
+        }));
+        const { succeeded, failed } = this.countResults(this.results);
+        this._setSuccess(`Bulk v1 finished. Succeeded: ${succeeded}, Failed: ${failed}.`);
+    }
+
+    /** Job monitor */
+    async refreshJobs() {
+        if (this.isJobsRefreshing) return;
+        if (isUndefinedOrNull(this.connector?.conn)) return;
+        this.isJobsRefreshing = true;
+        this.jobsError = null;
+        try {
+            const version = this.connector.conn.version;
+            const first = await this.connector.conn.request({
+                method: 'GET',
+                url: `/services/data/v${version}/jobs/ingest`,
+            });
+
+            const records = Array.isArray(first) ? first : await this._fetchAllJobPages(first);
+            this.jobs = records
+                .map(j => ({
+                    id: j.id,
+                    object: j.object,
+                    operation: j.operation,
+                    state: j.state,
+                    numberRecordsProcessed: j.numberRecordsProcessed,
+                    numberRecordsFailed: j.numberRecordsFailed,
+                    createdDate: j.createdDate,
+                }))
+                .sort((a, b) => String(b.createdDate || '').localeCompare(String(a.createdDate || '')));
+        } catch (e) {
+            this.jobsError = e?.message || String(e);
+        } finally {
+            this.isJobsRefreshing = false;
+        }
+    }
+
+    async _fetchAllJobPages(firstPage) {
+        const records = [];
+        let page = firstPage;
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            const pageRecords = Array.isArray(page?.records)
+                ? page.records
+                : Array.isArray(page?.jobs)
+                  ? page.jobs
+                  : [];
+            if (pageRecords.length) {
+                records.push(...pageRecords);
+            }
+            const next = page?.nextRecordsUrl;
+            if (!next) break;
+            // eslint-disable-next-line no-await-in-loop
+            page = await this.connector.conn.request({ method: 'GET', url: next });
+        }
+        return records;
+    }
+
+    async refreshSelectedJob() {
+        if (!this.selectedJob?.id) return;
+        try {
+            const version = this.connector.conn.version;
+            const detail = await this.connector.conn.request({
+                method: 'GET',
+                url: `/services/data/v${version}/jobs/ingest/${this.selectedJob.id}`,
+            });
+            this.selectedJobDetails = detail;
+        } catch (e) {
+            this.jobsError = e?.message || String(e);
+        }
+    }
+
+    /** Results CSV */
+    buildResultsCsv() {
+        if (!this.results?.length) return '';
+        const delimiter = ',';
+        const header = ['RowNumber', 'Success', 'Id', 'Errors'].join(delimiter);
+        const rows = this.results.map(r =>
+            [
+                r.rowNumber,
+                r.success ? 'true' : 'false',
+                CSV.escapeCsvValue(delimiter, r.id),
+                CSV.escapeCsvValue(delimiter, r.errors),
+            ].join(delimiter)
+        );
+        return `${header}\n${rows.join('\n')}`;
+    }
+
+    countResults(list) {
+        let succeeded = 0;
+        let failed = 0;
+        for (const r of list || []) {
+            if (r?.success) succeeded++;
+            else failed++;
+        }
+        return { succeeded, failed };
+    }
+
+    /** Download utility */
+    downloadText(name, text, contentType) {
+        const blob = new Blob([text], { type: contentType || 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    /** Banner helpers */
+    _setInfo(msg) {
+        this.lastRunMessage = msg;
+        this.lastRunMessageVariant = 'info';
+    }
+    _setSuccess(msg) {
+        this.lastRunMessage = msg;
+        this.lastRunMessageVariant = 'success';
+    }
+    _setWarning(msg) {
+        this.lastRunMessage = msg;
+        this.lastRunMessageVariant = 'warning';
+    }
+    _setError(msg) {
+        this.lastRunMessage = msg;
+        this.lastRunMessageVariant = 'error';
+    }
+
+    /** Getters */
+    get pageClass() {
+        return super.pageClass + ' slds-p-around_small data-import-root';
+    }
+
+    get modeOptions() {
+        return [
+            { label: 'REST (normal)', value: MODE.REST },
+            { label: 'Bulk API 2.0 (Ingest)', value: MODE.BULK_V2 },
+            { label: 'Bulk API 1.0 (classic)', value: MODE.BULK_V1 },
+        ];
+    }
+
+    get actionOptions() {
+        return [
+            { label: 'Insert', value: ACTION.INSERT },
+            { label: 'Update', value: ACTION.UPDATE },
+            { label: 'Upsert', value: ACTION.UPSERT },
+        ];
+    }
+
+    get delimiterOptions() {
+        return [
+            { label: 'Comma (,)', value: DELIMITER.COMMA },
+            { label: 'Semicolon (;)', value: DELIMITER.SEMICOLON },
+            { label: 'Tab (\\t)', value: DELIMITER.TAB },
+            { label: 'Pipe (|)', value: DELIMITER.PIPE },
+        ];
+    }
+
+    get modeLabel() {
+        return this.modeOptions.find(o => o.value === this.mode)?.label || this.mode;
+    }
+
+    get showExternalId() {
+        return this.action === ACTION.UPSERT;
+    }
+
+    get hasCsv() {
+        return (this.csvHeaders?.length || 0) > 0 && (this.csvRows?.length || 0) > 0;
+    }
+
+    get csvRowCountFormatted() {
+        return String(this.csvRows?.length || 0);
+    }
+
+    get mappingSummary() {
+        const mapped = this.mappingRows.filter(r => (r.targetField || '').trim()).length;
+        const total = this.mappingRows.length;
+        return total ? `${mapped}/${total} mapped` : '';
+    }
+
+    get fieldDatalistOptions() {
+        return this.fieldNames || [];
+    }
+
+    get isRunDisabled() {
+        return (
+            this.isWorking ||
+            !!this.objectError ||
+            !this.hasCsv ||
+            this.mappingRows.some(r => !!r.error) ||
+            isEmpty(this.objectApiName)
+        );
+    }
+
+    get isCancelDisabled() {
+        return !this.isWorking;
+    }
+
+    get runButtonLabel() {
+        if (this.isWorking) return 'Running...';
+        return this.mode === MODE.REST
+            ? 'Run (REST)'
+            : this.mode === MODE.BULK_V2
+              ? 'Run (Bulk v2)'
+              : 'Run (Bulk v1)';
+    }
+
+    get resultsSummary() {
+        if (!this.results?.length) return this.isWorking ? 'Running...' : 'No results yet';
+        const { succeeded, failed } = this.countResults(this.results);
+        return `Succeeded: ${succeeded} • Failed: ${failed}`;
+    }
+
+    get lastRunMessageClass() {
+        const base = 'slds-text-body_small';
+        if (this.lastRunMessageVariant === 'success') return `${base} slds-text-color_success`;
+        if (this.lastRunMessageVariant === 'warning') return `${base} slds-text-color_warning`;
+        if (this.lastRunMessageVariant === 'error') return `${base} slds-text-color_error`;
+        return `${base} slds-text-color_weak`;
+    }
+
+    get hasResults() {
+        return (this.results?.length || 0) > 0;
+    }
+
+    get isRetryFailedDisabled() {
+        const hasFailed = (this.results || []).some(r => r && r.success === false);
+        return this.isWorking || this.mode !== MODE.REST || !hasFailed;
+    }
+
+    get jobsCount() {
+        return this.jobs?.length || 0;
+    }
+
+    get hasJobs() {
+        return (this.jobs?.length || 0) > 0;
+    }
+
+    get isDownloadDisabled() {
+        return isUndefinedOrNull(this.selectedJob?.id) || this.isJobsRefreshing;
+    }
+
+    get isAbortDisabled() {
+        const state = this.selectedJobDetails?.state;
+        if (this.isJobsRefreshing) return true;
+        // Abort generally only works in Open/UploadComplete/InProgress
+        return !this.selectedJob?.id || ['JobComplete', 'Failed', 'Aborted'].includes(state);
+    }
+
+    get bulkV2ColumnDelimiter() {
+        switch (this.delimiterKey) {
+            case DELIMITER.SEMICOLON:
+                return 'SEMICOLON';
+            case DELIMITER.TAB:
+                return 'TAB';
+            case DELIMITER.PIPE:
+                return 'PIPE';
+            default:
+                return 'COMMA';
+        }
+    }
+}
+

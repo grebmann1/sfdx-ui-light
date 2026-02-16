@@ -13,8 +13,22 @@ import * as data from './package.json';
 const isProduction = process.env.NODE_ENV === 'production';
 const r = (...args) => path.resolve(__dirname, ...args);
 
+// Some UMD/CJS deps (e.g. `sax`) rely on top-level `this` to attach globals.
+// In ESM bundles Rollup rewrites top-level `this` to `undefined` by default, which can break them.
+const moduleContext = (id) => {
+    if (!id) return undefined;
+    if (id.includes('node_modules/sax/')) return 'globalThis';
+    return undefined;
+};
+
 // Reusable plugin instances
-const resolvePlugin = resolve();
+// Important: this project targets the browser (Chrome extension + web).
+// Ensure Rollup resolves browser-compatible entrypoints and does not treat Node built-ins
+// (e.g., "stream") as external modules.
+const resolvePlugin = resolve({
+    browser: true,
+    preferBuiltins: false,
+});
 const cjsPlugin = cjs();
 const terserPlugin = terser();
 
@@ -152,6 +166,8 @@ const prodPlugins = isProduction ? [terserPlugin] : [];
 
 const basicBundler = (input, output, name, useLwc = false, modulesArg, extraPlugins) => ({
     input: r(input),
+    context: 'globalThis',
+    moduleContext,
     output: {
         file: r(output),
         format: 'esm',
@@ -166,6 +182,8 @@ const basicBundler = (input, output, name, useLwc = false, modulesArg, extraPlug
         ...(useLwc ? [] : ((lwcAliasForNonLwcBundles(modulesArg) ? [lwcAliasForNonLwcBundles(modulesArg)] : []))),
         resolvePlugin,
         cjsPlugin,
+        // Provide polyfills for any Node built-ins used by bundled deps (browser-only output).
+        nodePolyfills(),
         ...(useLwc
             ? [
                 lwc({
@@ -188,6 +206,8 @@ const basicBundler = (input, output, name, useLwc = false, modulesArg, extraPlug
 
 const coreBuilder = (modulesArg) => ({
     input: r('src/client_chrome/main.js'),
+    context: 'globalThis',
+    moduleContext,
     output: {
         dir: r('chrome_ext/scripts'),
         format: 'esm',
@@ -201,9 +221,10 @@ const coreBuilder = (modulesArg) => ({
             'process.env.IS_CHROME': true,
             preventAssignment: true,
         }),
+        // Polyfill Node built-ins before resolving dependencies.
+        nodePolyfills(),
         resolvePlugin,
         cjsPlugin,
-        nodePolyfills(),
         lwc({
             enableDynamicComponents: true,
             modules: modulesArg,

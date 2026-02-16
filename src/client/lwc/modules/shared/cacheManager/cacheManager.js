@@ -178,16 +178,6 @@ export const CACHE_CONFIG = {
     MISTRAL_KEY: new CONFIG_OBJECT('mistral_key', null), // Added for Mistral
     AI_PROVIDER: new CONFIG_OBJECT('ai_provider', 'openai'),
     OPENAI_URL: new CONFIG_OBJECT('openai_url', 'https://api.openai.com'),
-    // Shortcuts
-    SHORTCUT_INJECTION_ENABLED: new CONFIG_OBJECT('shortcut_injection_enabled', false),
-    SHORTCUT_RECORDID: new CONFIG_OBJECT('shortcut_recordid', null),
-    SHORTCUT_OPEN_PANEL: new CONFIG_OBJECT('shortcut_open_panel', null),
-    SHORTCUT_OPEN_OVERLAY: new CONFIG_OBJECT('shortcut_open_overlay', null),
-    SHORTCUT_OVERVIEW: new CONFIG_OBJECT('shortcut_overview', null),
-    SHORTCUT_SOQL: new CONFIG_OBJECT('shortcut_soql', null),
-    SHORTCUT_APEX: new CONFIG_OBJECT('shortcut_apex', null),
-    SHORTCUT_API: new CONFIG_OBJECT('shortcut_api', null),
-    SHORTCUT_DOCUMENTATION: new CONFIG_OBJECT('shortcut_documentation', null),
     EXPERIENCE_CLOUD_LOGINAS_INCOGNITO: new CONFIG_OBJECT('experienceCloudLoginAsIncognito', false),
     UI_IS_APPLICATION_TAB_VISIBLE: new CONFIG_OBJECT('ui_isApplicationTabVisible', true),
     CHROME_SYNC_SETTINGS_INITIALIZED_STORAGE_KEY: new CONFIG_OBJECT(
@@ -206,10 +196,9 @@ export const CACHE_CONFIG = {
     INPUT_QUICKPICK_ENABLED: new CONFIG_OBJECT('input_quickpick_enabled', false),
     INPUT_QUICKPICK_SELECTED_CATEGORY: new CONFIG_OBJECT('input_quickpick_selected_category', 'ALL'),
     INPUT_QUICKPICK_RECENTS: new CONFIG_OBJECT('input_quickpick_recents', []),
+    // Beta Features
+    BETA_SMARTINPUT_ENABLED: new CONFIG_OBJECT('beta_smartinput_enabled', false),
     //  TODO: Add Global CLIENT_ID and API_VERSION to the CACHE_CONFIG
-    SHORTCUTS_GLOBAL: new CONFIG_OBJECT('shortcuts_global', []),
-    SHORTCUTS_BY_ORG: new CONFIG_OBJECT('shortcuts_by_org', {}),
-    SHORTCUTS_BY_DOMAIN: new CONFIG_OBJECT('shortcuts_by_domain', {}),
 };
 
 export const CACHE_SESSION_CONFIG = {
@@ -237,7 +226,6 @@ export const CACHE_DOCUMENTS = {
     APIFILES: 'APIFILES',
     OPENAPI_SCHEMAS_FILES: 'OPENAPI_SCHEMAS_FILES',
     APEXFILES: 'APEXFILES',
-    SHORTCUTFILES: 'SHORTCUTFILES',
     RECENT: 'RECENTS',
 };
 // Backward compatibility functions

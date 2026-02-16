@@ -27,7 +27,6 @@ async function fetchObjectsAndFields() {
             objectDescribeResults
             .filter(objectDescribe => objectDescribe.fields.length > 0)
             .forEach(objectDescribe => {
-                console.log(`Finished fetching object: ${objectDescribe.label}`); // Log for each object
                 results.push({
                     name: objectDescribe.label || objectDescribe.fullName,
                     apiName: objectDescribe.fullName,
@@ -44,7 +43,6 @@ async function fetchObjectsAndFields() {
 
         // Write results to file
         fs.writeFileSync('salesforce-metadata.json', JSON.stringify(results, null, 2));
-        console.log('Metadata export completed successfully!');
 
     } catch (error) {
         console.error('Error:', error);

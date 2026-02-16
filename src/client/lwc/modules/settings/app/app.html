@@ -447,211 +447,40 @@
                                 </lightning-card>
                             </div>
                         </slds-tab>
-                        <slds-tab label="Shortcuts" value="shortcuts">
+                        <slds-tab label="Beta Feature" value="beta">
+                            <!-- Beta Features -->
                             <div class="slds-section slds-reverse slds-is-open">
                                 <h3 class="slds-section__title">
                                     <div class="slds-section__title-action slds-p-vertical_x-small">
-                                        <span class="slds-truncate" title="Shortcuts">
-                                            Shortcuts
+                                        <span class="slds-truncate" title="Beta features">
+                                            Beta Features
                                         </span>
                                     </div>
                                 </h3>
                             </div>
-                            <div
-                                class="slds-grid  slds-wrap slds-grid_vertical-stretch">
-                                <lightning-card
-                                    class="settings slds-auto-height slds-col slds-size_1-of-1 slds-p-around_medium">
+                            <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
+                                <settings-card
+                                    class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small"
+                                    is-first>
                                     <div slot="title">
-                                        <h1>Chrome Extension Shortcuts</h1>
-                                        <p class="description">
-                                            Inject shortcuts in the Web Browser.
+                                        <h1>Smart Input</h1>
+                                        <p
+                                            class="description slds-truncate"
+                                            title="Enable the Smart Input tool (Beta).">
+                                            Enable the Smart Input tool (Beta).
                                         </p>
                                     </div>
-                                    <div slot="actions">
-                                        <lightning-input
-                                            data-key="shortcut_injection_enabled"
-                                            label="Enable ShortCut Injection"
-                                            message-toggle-active=""
-                                            message-toggle-inactive=""
-                                            type="toggle"
-                                            variant="label-hidden"
-                                            checked={config.shortcut_injection_enabled}
-                                            onchange={inputfield_change}></lightning-input>
-                                    </div>
-                                    <div class="slds-grid slds-wrap">
-                                        <settings-card
-                                            is-first
-                                            class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-1 slds-p-around_medium">
-                                            <div slot="title">
-                                                <h1>Navigation Shortcuts</h1>
-                                                <p class="description">
-                                                    Open a specific application with a shortcut.
-                                                </p>
-                                            </div>
-                                            <div class="slds-grid slds-wrap">
-                                                <settings-card
-                                                    is-first
-                                                    class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
-                                                    <div slot="title">
-                                                        <h1>Org Overview</h1>
-                                                        <p class="description">
-                                                            &rarr; Open Org Overview with a shortcut.
-                                                        </p>
-                                                    </div>
-                                                    <div class="slds-grid slds-wrap">
-                                                        <slds-shortcut-selector
-                                                            lwc:ref="shortcut_overview"
-                                                            data-key="shortcut_overview"
-                                                            disabled={isShortcutDisabled}
-                                                            label="Shortcut to open Org Overview"
-                                                            value={config.shortcut_overview}
-                                                            onchange={inputfield_change}></slds-shortcut-selector>
-                                                    </div>
-                                                </settings-card>
-                                                <settings-card
-                                                    is-first
-                                                    class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
-                                                    <div slot="title">
-                                                        <h1>SOQL Explorer</h1>
-                                                        <p class="description">
-                                                            &rarr; Open SOQL Explorer with a shortcut.
-                                                        </p>
-                                                    </div>
-                                                    <div class="slds-grid slds-wrap">
-                                                        <slds-shortcut-selector
-                                                            lwc:ref="shortcut_soql"
-                                                            data-key="shortcut_soql"
-                                                            disabled={isShortcutDisabled}
-                                                            label="Shortcut to open SOQL Explorer"
-                                                            value={config.shortcut_soql}
-                                                            onchange={inputfield_change}></slds-shortcut-selector>
-                                                    </div>
-                                                </settings-card>
-                                                <settings-card
-                                                    class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
-                                                    <div slot="title">
-                                                        <h1>APEX Explorer</h1>
-                                                        <p class="description">
-                                                            &rarr; Open APEX Explorer with a shortcut.
-                                                        </p>
-                                                    </div>
-                                                    <div class="slds-grid slds-wrap">
-                                                        <slds-shortcut-selector
-                                                            lwc:ref="shortcut_apex"
-                                                            data-key="shortcut_apex"
-                                                            disabled={isShortcutDisabled}
-                                                            label="Shortcut to open APEX Explorer"
-                                                            value={config.shortcut_apex}
-                                                            onchange={inputfield_change}></slds-shortcut-selector>
-                                                    </div>
-                                                </settings-card>
-                                                <settings-card
-                                                    class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
-                                                    <div slot="title">
-                                                        <h1>API Explorer</h1>
-                                                        <p class="description">
-                                                            &rarr; Open API Explorer with a shortcut.
-                                                        </p>
-                                                    </div>
-                                                    <div class="slds-grid slds-wrap">
-                                                        <slds-shortcut-selector
-                                                            lwc:ref="shortcut_api"
-                                                            data-key="shortcut_api"
-                                                            disabled={isShortcutDisabled}
-                                                            label="Shortcut to open API Explorer"
-                                                            value={config.shortcut_api}
-                                                            onchange={inputfield_change}></slds-shortcut-selector>
-                                                    </div>
-                                                </settings-card>
-                                                <settings-card
-                                                    class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
-                                                    <div slot="title">
-                                                        <h1>Documentation</h1>
-                                                        <p class="description">
-                                                            &rarr; Open Documentation with a shortcut.
-                                                        </p>
-                                                    </div>
-                                                    <div class="slds-grid slds-wrap">
-                                                        <slds-shortcut-selector
-                                                            lwc:ref="shortcut_documentation"
-                                                            data-key="shortcut_documentation"
-                                                            disabled={isShortcutDisabled}
-                                                            label="Shortcut to open Documentation"
-                                                            value={config.shortcut_documentation}
-                                                            onchange={inputfield_change}></slds-shortcut-selector>
-                                                    </div>
-                                                </settings-card>
-                                            </div>
-                                        </settings-card>
-                                        <settings-card
-                                            is-first
-                                            class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-1 slds-p-around_medium">
-                                            <div slot="title">
-                                                <h1>Other</h1>
-                                                <p class="description">
-                                                    Other shortcuts that are not related to navigation.
-                                                </p>
-                                            </div>
-                                            <div class="slds-grid slds-wrap">
-                                                <settings-card
-                                                    is-first
-                                                    class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
-                                                    <div slot="title">
-                                                        <h1>Record Id</h1>
-                                                        <p class="description">&rarr; Fetch Record Id</p>
-                                                    </div>
-                                                    <div class="slds-grid slds-wrap">
-                                                        <slds-shortcut-selector
-                                                            lwc:ref="recordidshortcut"
-                                                            data-key="shortcut_recordid"
-                                                            disabled={isShortcutDisabled}
-                                                            label="Shortcut to fetch &rarr;	 Record Id"
-                                                            value={config.shortcut_recordid}
-                                                            onchange={inputfield_change}></slds-shortcut-selector>
-                                                    </div>
-                                                </settings-card>
-                                                <settings-card
-                                                    is-first
-                                                    class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
-                                                    <div slot="title">
-                                                        <h1>Open Panel</h1>
-                                                        <p class="description">&rarr; Open Panel</p>
-                                                    </div>
-                                                    <div class="slds-grid slds-wrap">
-                                                        <slds-shortcut-selector
-                                                            lwc:ref="shortcut_open_panel"
-                                                            data-key="shortcut_open_panel"
-                                                            disabled={isShortcutDisabled}
-                                                            label="Shortcut to open Panel"
-                                                            value={config.shortcut_open_panel}
-                                                            onchange={inputfield_change}></slds-shortcut-selector>
-                                                    </div>
-                                                </settings-card>
-                                                <settings-card
-                                                    class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
-                                                    <div slot="title">
-                                                        <h1>Open Overlay</h1>
-                                                        <p class="description">&rarr; Open Overlay</p>
-                                                    </div>
-                                                    <div class="slds-grid slds-wrap">
-                                                        <slds-shortcut-selector
-                                                            lwc:ref="shortcut_open_overlay"
-                                                            data-key="shortcut_open_overlay"
-                                                            disabled={isShortcutDisabled}
-                                                            label="Shortcut to open Overlay"
-                                                            value={config.shortcut_open_overlay}
-                                                            onchange={inputfield_change}></slds-shortcut-selector>
-                                                    </div>
-                                                </settings-card>
-                                            </div>
-                                        </settings-card>
-
-                                        
-                                        
-                                        
-                                        
-                                    </div>
-                                </lightning-card>
+                                    <div slot="actions"></div>
+                                    <lightning-input
+                                        data-key="beta_smartinput_enabled"
+                                        label="Enable Smart Input"
+                                        message-toggle-active="Enabled"
+                                        message-toggle-inactive="Disabled"
+                                        type="toggle"
+                                        variant="label-hidden"
+                                        checked={config.beta_smartinput_enabled}
+                                        onchange={inputfield_change}></lightning-input>
+                                </settings-card>
                             </div>
                         </slds-tab>
                         <!-- Chrome Extension -->

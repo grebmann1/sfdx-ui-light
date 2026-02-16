@@ -3,6 +3,7 @@ import { store as legacyStore, store_application } from 'shared/store';
 import { isNotUndefinedOrNull, redirectToUrlViaChrome, isEmpty, isUndefinedOrNull } from 'shared/utils';
 import { APPLICATION, connectStore, store } from 'core/store';
 import LOGGER from 'shared/logger';
+import { CACHE_CONFIG, loadSingleExtensionConfigFromCache } from 'shared/cacheManager';
 
 const APPLICATIONS = {
     CONNECTION: 'connection',
@@ -16,6 +17,21 @@ export default class Default extends LightningElement {
     @api isBackButtonDisplayed = false;
 
     _currentApplication; //APPLICATIONS.ASSISTANT;//
+    betaSmartInputEnabled = false;
+
+    connectedCallback() {
+        this.loadBetaFlags();
+    }
+
+    loadBetaFlags = async () => {
+        try {
+            this.betaSmartInputEnabled = !!(await loadSingleExtensionConfigFromCache(
+                CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key
+            ));
+        } catch (e) {
+            this.betaSmartInputEnabled = false;
+        }
+    };
 
     @api
     get currentApplication() {
@@ -69,6 +85,10 @@ export default class Default extends LightningElement {
 
     get isSmartInput() {
         return this.currentApplication == APPLICATIONS.SMARTINPUT;
+    }
+
+    get isSmartInputDisplayed() {
+        return this.betaSmartInputEnabled && this.isSmartInput;
     }
 
     get isAssistantDisplayed() {
@@ -134,6 +154,7 @@ export default class Default extends LightningElement {
     };
 
     openSmartInputClick = () => {
+        if (!this.betaSmartInputEnabled) return;
         legacyStore.dispatch(store_application.fakeNavigate({
             type: 'application',
             state: {
@@ -181,9 +202,21 @@ export default class Default extends LightningElement {
 
     loadFromNavigation = async ({ state }) => {
         //('documentation - loadFromNavigation');
-        const { applicationName, attribute1 } = state;
-        //console.log('applicationName',applicationName);
-        this.currentApplication = applicationName;
+        const { applicationName } = state || {};
+        // `home` is used by the org-view ellipsis (and some inject actions) to mean
+        // "open the default panel". In the side panel, `currentApplication` must be
+        // a concrete app (connection/docs/agent/smartinput). Default to Connections.
+        let targetApplication = applicationName === 'home' ? APPLICATIONS.CONNECTION : applicationName;
+        if (isUndefinedOrNull(targetApplication) || isEmpty(targetApplication)) {
+            targetApplication = APPLICATIONS.CONNECTION;
+        }
+        if (!Object.values(APPLICATIONS).includes(targetApplication)) {
+            targetApplication = APPLICATIONS.CONNECTION;
+        }
+        if (targetApplication === APPLICATIONS.SMARTINPUT && !this.betaSmartInputEnabled) {
+            targetApplication = APPLICATIONS.CONNECTION;
+        }
+        this.currentApplication = targetApplication;
     };
 
     handleSearchConnection = value => {

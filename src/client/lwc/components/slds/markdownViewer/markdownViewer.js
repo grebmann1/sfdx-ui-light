@@ -79,7 +79,6 @@ export default class MarkdownViewer extends LightningElement {
             const newElement = createElement('slds-code-block', {
                 is: sldsCodeBlock,
             });
-            console.log('createElement',mapping[c] || c);
             Object.assign(newElement, {
                 codeBlock: el.innerHTML,
                 language: mapping[c] || c,

@@ -105,7 +105,6 @@ export default class QueryEditorPanel extends ToolkitElement {
 
     handleError = e => {
         const error = extractErrorDetailsFromQuery(e.message);
-        console.log('error', error);
         if (
             error &&
             isNotUndefinedOrNull(error.row) &&

@@ -159,7 +159,6 @@ export default class OutputTable extends ToolkitElement {
 
     displayTable = () => {
         if (this.tableInstance) {
-            console.log('Need to destroy table !!!');
             this.tableInstance.destroy();
         }
         const element = this.template.querySelector('.custom-table');

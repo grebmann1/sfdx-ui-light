@@ -173,10 +173,10 @@ export default class CodeBlock extends LightningElement {
                 const { svg } = await window.mermaid.render(`id-${guid()}`, diagramText); // 'graphDiv'
                 el.innerHTML = svg;
             } else {
-                console.log('Invalid format');
+                console.warn('Invalid format');
             }
         } catch (e) {
-            console.log('Unknown diagram & error', e);
+            console.warn('Unknown diagram & error', e);
         }
     };
 

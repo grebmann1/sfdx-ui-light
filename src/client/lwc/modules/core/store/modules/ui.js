@@ -290,7 +290,6 @@ const uiSlice = createSlice({
                 enrichedTab.body = INITIAL_BODY;
             }
             state.tabs.push(enrichedTab);
-            console.log('--> addTab <---',enrichedTab);
             // Assign new tab
             state.currentTab = enrichedTab;
             state.currentFileId = enrichedTab.fileId;

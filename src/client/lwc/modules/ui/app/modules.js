@@ -17,7 +17,7 @@ import release_app from 'release/app';
 import sarif_app from 'sarif/app';
 import settings_app from 'settings/app';
 import soql_app from 'soql/app';
-import shortcut_app from 'shortcut/app';
+import dataImport_app from 'dataImport/app';
 /*
 const KNOWN_TYPE = new Set([
     "home/app",
@@ -178,6 +178,21 @@ const APP_MAPPING = {
         shortName: 'SOQL',
         path: 'soql',
     },
+    'dataImport/app': {
+        module: dataImport_app,
+        isFullHeight: true,
+        isDeletable: true,
+        isElectronOnly: false,
+        isOfflineAvailable: false,
+        isMenuVisible: true,
+        isTabVisible: true,
+        label: 'Data Import',
+        type: i18n.TOOL,
+        description: 'Insert/Update/Upsert records from CSV using REST or Bulk APIs.',
+        quickActionIcon: 'standard:data_model',
+        shortName: 'Import',
+        path: 'dataimport',
+    },
     'recordviewer/app': {
         module: recordViewer_app,
         isFullHeight: true,
@@ -222,21 +237,6 @@ const APP_MAPPING = {
         quickActionIcon: 'standard:events',
         shortName: 'PLEV',
         path: 'platformevent',
-    },
-    'shortcut/app': {
-        module: shortcut_app,
-        isFullHeight: true,
-        isDeletable: true,
-        isElectronOnly: false,
-        isOfflineAvailable: true,
-        isMenuVisible: true,
-        isTabVisible: true,
-        label: 'Shortcut Generator',
-        type: i18n.TOOL,
-        description: 'Create and manage custom shortcuts and record-based links.',
-        quickActionIcon: 'utility:link',
-        shortName: 'Shortcuts',
-        path: 'shortcut',
     },
     'anonymousApex/app': {
         module: anonymousApex_app,

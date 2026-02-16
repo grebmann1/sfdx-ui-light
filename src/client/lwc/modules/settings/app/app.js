@@ -16,7 +16,6 @@ export default class App extends ToolkitElement {
     //openAsPopup_checked = false;
     //openai_key;
     //openai_assistant_id;
-    //shortcut_recordid;
     //experienceCloudLoginAsIncognito;
 
     // Cache
@@ -312,10 +311,6 @@ export default class App extends ToolkitElement {
         // Disable if config hasn't changed or if API version is invalid
         if (this._isApiVersionValid === false) return true;
         return !this.hasChanged;
-    }
-
-    get isShortcutDisabled() {
-        return isUndefinedOrNull(this.config) || !this.config?.shortcut_injection_enabled;
     }
 
     get isFullIncognitoAccess() {

@@ -48,6 +48,7 @@ export default class Item extends ToolkitElement {
     }
 
     handleItemClick = e => {
+        debugger;
         const isNewTab = e.metaKey || e.ctrlKey;
 
         switch (this.type) {

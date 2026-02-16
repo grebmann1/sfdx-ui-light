@@ -1,13 +1,14 @@
 import '@webcomponents/custom-elements';
 import '@lwc/synthetic-shadow';
-import hotkeys from 'hotkeys-js';
 import { createElement } from 'lwc';
-import { CACHE_CONFIG, loadExtensionConfigFromCache, chromeStore, cacheManager, loadSingleExtensionConfigFromCache } from 'shared/cacheManager';
 import {
-    isEmpty,
+    CACHE_CONFIG,
+    chromeStore,
+    cacheManager,
+    loadSingleExtensionConfigFromCache,
+} from 'shared/cacheManager';
+import {
     runActionAfterTimeOut,
-    getRecordId,
-    getSobject,
 } from 'shared/utils';
 import LOGGER from 'shared/logger';
 import ViewsOverlay from 'views/overlay';
@@ -109,223 +110,7 @@ const injectOverlay = async () => {
     document.body.appendChild(overlayInstance);
 };
 
-// Shortcuts
-const injectShortCuts = async () => {
-    // Use the new cacheManager instead of directly accessing chrome.storage
-    const configuration = await loadExtensionConfigFromCache([
-        CACHE_CONFIG.SHORTCUT_INJECTION_ENABLED.key,
-        CACHE_CONFIG.SHORTCUT_RECORDID.key,
-        CACHE_CONFIG.SHORTCUT_OVERVIEW.key,
-        CACHE_CONFIG.SHORTCUT_SOQL.key,
-        CACHE_CONFIG.SHORTCUT_APEX.key,
-        CACHE_CONFIG.SHORTCUT_API.key,
-        CACHE_CONFIG.SHORTCUT_DOCUMENTATION.key,
-        CACHE_CONFIG.SHORTCUT_OPEN_PANEL.key,
-        CACHE_CONFIG.SHORTCUT_OPEN_OVERLAY.key,
-    ]);
-
-    const shortcutEnabled = configuration[CACHE_CONFIG.SHORTCUT_INJECTION_ENABLED.key];
-    const shortcutRecordId = configuration[CACHE_CONFIG.SHORTCUT_RECORDID.key];
-    const shortcutOverview = configuration[CACHE_CONFIG.SHORTCUT_OVERVIEW.key];
-    const shortcutSoql = configuration[CACHE_CONFIG.SHORTCUT_SOQL.key];
-    const shortcutApex = configuration[CACHE_CONFIG.SHORTCUT_APEX.key];
-    const shortcutApi = configuration[CACHE_CONFIG.SHORTCUT_API.key];
-    const shortcutDocumentation = configuration[CACHE_CONFIG.SHORTCUT_DOCUMENTATION.key];
-    const shortcutOpenPanel = configuration[CACHE_CONFIG.SHORTCUT_OPEN_PANEL.key];
-    const shortcutOpenOverlay = configuration[CACHE_CONFIG.SHORTCUT_OPEN_OVERLAY.key];
-    if (!shortcutEnabled) return;
-
-    //console.log('### SF Toolkit - Shortcut Injection ###');
-
-    // Create a container for our shortcuts if it doesn't exist
-    let shortcutContainer = document.getElementById('sf-toolkit-shortcut-container');
-    if (!shortcutContainer) {
-        shortcutContainer = document.createElement('div');
-        shortcutContainer.id = 'sf-toolkit-shortcut-container';
-        shortcutContainer.className = 'sf-toolkit-shortcut-container';
-        document.body.appendChild(shortcutContainer);
-
-        // Add styles for the shortcut container and buttons
-        const style = document.createElement('style');
-        style.id = 'sf-toolkit-shortcut-styles';
-        style.textContent = `
-            .sf-toolkit-shortcut-container {
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-                z-index: 9999;
-            }
-            
-            .sf-toolkit-shortcut-button {
-                width: 45px;
-                height: 45px;
-                border-radius: 50%;
-                background-color: #0070d2;
-                border: none;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: transform 0.2s, background-color 0.2s;
-            }
-            
-            .sf-toolkit-shortcut-button:hover {
-                transform: scale(1.1);
-                background-color: #005fb2;
-            }
-            
-            .sf-toolkit-shortcut-button svg {
-                width: 20px;
-                height: 20px;
-                fill: white;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
-    // Clear any existing shortcuts
-    shortcutContainer.innerHTML = '';
-
-    // Define all shortcuts
-    const shortcuts = [
-        {
-            id: 'record-view',
-            shortcut: shortcutRecordId,
-            action: (event, handler) => {
-                event.preventDefault();
-                const recordId = getRecordId(window.location.href);
-                if (!isEmpty(recordId)) {
-                    navigator.clipboard.writeText(recordId);
-                    _showCopiedNotification(recordId);
-                }
-            },
-        },
-        {
-            id: 'open-panel',
-            shortcut: shortcutOpenPanel,
-            action: async (event, handler) => {
-                event.preventDefault();
-                await chrome.runtime.sendMessage({ action: 'open_side_panel', content: null });
-            },
-        },
-        {
-            id: 'open-overlay',
-            shortcut: shortcutOpenOverlay,
-            action: async (event, handler) => {
-                event.preventDefault();
-                overlayInstance.toggleOverlay(event);
-            },
-        },
-        {
-            id: 'org-overview',
-            shortcut: shortcutOverview,
-            action: async (event, handler) => {
-                event.preventDefault();
-                const sessionInfo = overlayInstance.currentOrg;
-                const params = {
-                    type: 'application',
-                    state: {
-                        applicationName: 'home',
-                    },
-                };
-                if (injectorPort) {
-                    injectorPort.postMessage(generateMessage({sessionInfo, params}));
-                }
-            },
-        },
-        {
-            id: 'api-explorer',
-            shortcut: shortcutApi,
-            action: async (event, handler) => {
-                event.preventDefault();
-                const sessionInfo = overlayInstance.currentOrg;
-                const params = {
-                    type: 'application',
-                    state: {
-                        applicationName: 'api',
-                    },
-                };
-                if (injectorPort) {
-                    injectorPort.postMessage(generateMessage({sessionInfo, params}));
-                }
-            },
-        },
-        {
-            id: 'soql-explorer',
-            shortcut: shortcutSoql,
-            action: async (event, handler) => {
-                event.preventDefault();
-                const sessionInfo = overlayInstance.currentOrg;
-                const sobject = getSobject(window.location.href);
-                const params = {
-                    type: 'application',
-                    state: {
-                        applicationName: 'soql',
-                    },
-                };
-
-                if (sobject) {
-                    params.state.query = `SELECT Id FROM ${sobject}`;
-                }
-                
-                if (injectorPort) {
-                    injectorPort.postMessage(generateMessage({sessionInfo, params}));
-                }
-            },
-        },
-        {
-            id: 'apex-explorer',
-            shortcut: shortcutApex,
-            action: async (event, handler) => {
-                event.preventDefault();
-                const sessionInfo = overlayInstance.currentOrg;
-                const params = {
-                    type: 'application',
-                    state: {
-                        applicationName: 'anonymousapex',
-                    },
-                };
-                if (injectorPort) {
-                    injectorPort.postMessage(generateMessage({sessionInfo, params}));
-                }
-            },
-        },
-        {
-            id: 'documentation',
-            shortcut: shortcutDocumentation,
-            action: async (event, handler) => {
-                event.preventDefault();
-                const sessionInfo = overlayInstance.currentOrg;
-                const params = {
-                    type: 'application',
-                    state: {
-                        applicationName: 'documentation',
-                    },
-                };
-                if (injectorPort) {
-                    injectorPort.postMessage(generateMessage({sessionInfo, params}));
-                }
-            },
-        },
-    ];
-
-    shortcuts.forEach(shortcut => {
-        hotkeys(shortcut.shortcut, shortcut.action);
-    });
-
-    generateMessage = ({sessionInfo, params})=> ({
-        action: 'redirectToUrl',
-        sessionId: sessionInfo.sessionId,
-        serverUrl: sessionInfo.serverUrl,
-        baseUrl: chrome.runtime.getURL('/views/app.html'),
-        navigation: params,
-    })
-};
-
+// (Shortcut injection removed)
 // Input Quick Pick Component
 let quickPickInstance = null;
 const injectInputQuickPick = async () => {
@@ -340,27 +125,6 @@ const injectInputQuickPick = async () => {
         }
     }
 };
-
-/* TODO : Add prompt widget in the web page with vanila JS/HTML/CSS
-const injectPromptWidget = async () => {
-    const isEnabled = (await chrome.storage.sync.get('overlayEnabled')).overlayEnabled;
-    //console.log('injectOverlay',isEnabled);
-    if(!isEnabled) return;
-
-    const elm = createElement('feature-test', {is: test});
-    Object.assign(elm, {
-        isMovable:true
-    });
-    document.body.appendChild(elm);
-
-    hotkeys('cmd+k', function (event, handler) {
-        // Prevent the default refresh event under WINDOWS system
-        event.preventDefault();
-        console.log('cmd+k');
-        elm.display();
-    });
-};
-*/
 
 class LWC_CUSTOM {
     config;
@@ -581,7 +345,6 @@ function connectToBackground() {
                 hideOverlay();
             }
         } else if (msg.action === 'apply_input_value') {
-            console.log('--> apply_input_value', msg);
             if (quickPickInstance && typeof quickPickInstance.applyFromSidePanel === 'function') {
                 quickPickInstance.applyFromSidePanel(msg?.item?.value || '');
             }
@@ -602,7 +365,6 @@ class INJECTOR {
     init = async () => {
         if (chrome.runtime) chrome.runtime.onMessage.addListener(this.handleMessage);
         const isValid = this.isValidPage();
-        console.log(`--> SF Toolkit - ${isValid ? 'Inject Code' : 'Skip injection'}  <--`);
         if (isValid) {
             connectToBackground();
             this.injectCode();
@@ -616,7 +378,6 @@ class INJECTOR {
 
     injectCode = () => {
         injectCSS();
-        injectShortCuts();
         injectOverlay();
         injectInputQuickPick();
         //injectPromptWidget();

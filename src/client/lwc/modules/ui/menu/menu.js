@@ -22,6 +22,7 @@ export default class Menu extends ToolkitElement {
     selectedItem = 'home';
 
     isApplicationTabVisible = false;
+    betaSmartInputEnabled = false;
 
     @wire(NavigationContext)
     navContext;
@@ -94,8 +95,10 @@ export default class Menu extends ToolkitElement {
     loadFromCache = async () => {
         const configuration = await loadExtensionConfigFromCache([
             CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key,
+            CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key,
         ]);
         this.isApplicationTabVisible = configuration[CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key];
+        this.betaSmartInputEnabled = !!configuration[CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key];
     };
 
     updateSelectedItem = () => {
@@ -139,6 +142,11 @@ export default class Menu extends ToolkitElement {
 
         if (!this.isUserLoggedIn) {
             filtered = filtered.filter(x => x.isOfflineAvailable);
+        }
+
+        // Beta features
+        if (!this.betaSmartInputEnabled) {
+            filtered = filtered.filter(x => x.name !== 'smartinput/app');
         }
 
         return filtered;

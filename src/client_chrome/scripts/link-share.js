@@ -70,7 +70,6 @@
     }
 
     function init() {
-        console.log('--> init');
         const kvContainer = document.getElementById('kvContainer');
         const addRowBtn = document.getElementById('addRow');
         const generateBtn = document.getElementById('generateBtn');

@@ -14,6 +14,7 @@ export default class Default extends LightningElement {
 
     previousPanel;
     isBackButtonDisplayed = false;
+    betaSmartInputEnabled = false;
 
     /** Getters **/
 
@@ -93,7 +94,10 @@ export default class Default extends LightningElement {
             CACHE_CONFIG.AI_PROVIDER.key,
             CACHE_CONFIG.OPENAI_KEY.key,
             CACHE_CONFIG.OPENAI_URL.key,
+            CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key,
         ]);
+
+        this.betaSmartInputEnabled = !!configuration[CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key];
 
         // Handle LLM keys and provider
         const openaiKey = configuration[CACHE_CONFIG.OPENAI_KEY.key];
@@ -134,6 +138,7 @@ export default class Default extends LightningElement {
                 );
             } else if (message.action === 'show_input_quickpick') {
                 // Ensure default panel is shown and set application to quickpick
+                if (!this.betaSmartInputEnabled) return;
                 legacyStore.dispatch(store_application.fakeNavigate({
                     type: 'application',
                     state: {
@@ -158,7 +163,11 @@ export default class Default extends LightningElement {
         //('documentation - loadFromNavigation');
         const { applicationName, attribute1 } = state;
         //console.log('applicationName',applicationName);
-        if (applicationName === 'documentation' || applicationName === 'home' || applicationName === 'smartinput') {
+        if (
+            applicationName === 'documentation' ||
+            applicationName === 'home' ||
+            (applicationName === 'smartinput' && this.betaSmartInputEnabled)
+        ) {
             this.handlePanelChange({
                 detail: {
                     panel: PANELS.DEFAULT,

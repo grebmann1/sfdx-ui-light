@@ -120,7 +120,7 @@ export default class App extends ToolkitElement {
 
     @api
     directConnectClick = () => {
-        console.log('directConnectClick');
+        // console.log('directConnectClick');
     };
 
     @api
@@ -513,7 +513,6 @@ export default class App extends ToolkitElement {
             ...param,
             size: isChromeExtension() ? 'full' : 'medium',
         }).then(async res => {
-            console.log('addNewOrg res -->', res);
             if (isNotUndefinedOrNull(res)) {
                 //console.log('force refresh');
                 await this.fetchAllConnections();

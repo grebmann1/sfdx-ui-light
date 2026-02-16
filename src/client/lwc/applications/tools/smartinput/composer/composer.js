@@ -63,7 +63,6 @@ export default class Composer extends LightningElement {
         this.isEnhancing = true;
         try {
             const suggestions = await this.generateSuggestions(trimmed);
-            console.log('suggestions --> ', suggestions);
             if (!suggestions || suggestions.length === 0) return;
             if (suggestions.length === 1) {
                 this._value = suggestions[0];
@@ -109,7 +108,6 @@ export default class Composer extends LightningElement {
             const data = await fetchCompletion({ model: 'gpt-4o-mini', messages, response_format });
             const content = data?.choices?.[0]?.message?.content || '';
             try {
-                console.log('content --> ', content);
                 const parsed = typeof content === 'string' ? JSON.parse(content) : content;
                 const items = Array.isArray(parsed?.items) ? parsed.items : [];
                 return items.map(v => (v || '').toString().trim()).filter(Boolean);

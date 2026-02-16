@@ -144,7 +144,6 @@ export const reduxSlice = createSlice({
                 flattenedCategories = flattenedCategories.filter(p => p.id !== id);
             }
             const newCategories = unflattenCategories(flattenedCategories);
-            console.log('--> newCategories', newCategories);
             state.categories = newCategories;
             if (state.activeCategoryId === id) {
                 state.activeCategoryId = state.categories[0]?.id || null;

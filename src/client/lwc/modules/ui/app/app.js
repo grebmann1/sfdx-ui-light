@@ -29,8 +29,6 @@ import SessionExpiredModal, { RESULT as SESSION_EXPIRED_RESULT } from 'ui/sessio
 import { store as legacyStore } from 'shared/store';
 import { connectStore, store, DOCUMENT, APPLICATION } from 'core/store';
 
-import hotkeys from 'hotkeys-js';
-
 const LIMITED = 'limited';
 
 export * as CONFIG from './modules';
@@ -49,6 +47,7 @@ export default class App extends LightningElement {
 
     version;
     isApplicationTabVisible = false;
+    betaSmartInputEnabled = false;
     isSalesforceCliInstalled = false;
     isJavaCliInstalled = false;
     isCommandCheckFinished = false;
@@ -129,6 +128,10 @@ export default class App extends LightningElement {
             case 'home':
             case 'application':
                 const formattedApplicationName = (state.applicationName || '').toLowerCase();
+                if (formattedApplicationName === 'smartinput' && !this.betaSmartInputEnabled) {
+                    this.handleApplicationSelection('home/app');
+                    break;
+                }
                 const target = APP_LIST.find(x => x.path === formattedApplicationName);
                 if (isNotUndefinedOrNull(target)) {
                     this.handleApplicationSelection(target.name);
@@ -145,7 +148,6 @@ export default class App extends LightningElement {
         // Load keys from cache
 
         this.loadFromCache();
-        this.initShortcuts();
         //this.test();
     }
 
@@ -248,6 +250,9 @@ export default class App extends LightningElement {
     };
 
     handleApplicationSelection = async target => {
+        if (target === 'smartinput/app' && !this.betaSmartInputEnabled) {
+            target = 'home/app';
+        }
         if (this.applications.filter(x => x.name === target).length == 0) {
             this.loadModule(target);
         } else {
@@ -265,9 +270,11 @@ export default class App extends LightningElement {
             CACHE_CONFIG.AI_PROVIDER.key,
             CACHE_CONFIG.OPENAI_KEY.key,
             CACHE_CONFIG.OPENAI_URL.key,
+            CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key,
         ]);
 
         this.isApplicationTabVisible = configuration[CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key];
+        this.betaSmartInputEnabled = !!configuration[CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key];
 
         // Handle LLM keys and provider
         const openaiKey = configuration[CACHE_CONFIG.OPENAI_KEY.key];
@@ -655,6 +662,14 @@ export default class App extends LightningElement {
             .toString();
     }
 
+    get uiMenuClass() {
+        return classSet('l-container-vertical')
+        .add({
+            'slds-fill-height': !this.isMenuCollapsed,
+        })
+        .toString();
+    }
+
     get applicationPreFormatted() {
         return this.applications.map(x => ({
             ...x,
@@ -673,6 +688,10 @@ export default class App extends LightningElement {
     /** Dynamic Loading */
 
     loadModule = (target, isFirst = false) => {
+        if (target === 'smartinput/app' && !this.betaSmartInputEnabled) {
+            LOGGER.warn('Smart Input is disabled by beta feature flag');
+            target = 'home/app';
+        }
         const settings = APP_LIST.find(x => x.name === target);
 
         if (!settings) {
@@ -754,99 +773,4 @@ export default class App extends LightningElement {
         }
     }
 
-    /** Shortcuts **/
-
-    initShortcuts = async() => {
-        const configuration = await loadExtensionConfigFromCache([
-            CACHE_CONFIG.SHORTCUT_INJECTION_ENABLED.key,
-            CACHE_CONFIG.SHORTCUT_OVERVIEW.key,
-            CACHE_CONFIG.SHORTCUT_SOQL.key,
-            CACHE_CONFIG.SHORTCUT_APEX.key,
-            CACHE_CONFIG.SHORTCUT_API.key,
-            CACHE_CONFIG.SHORTCUT_DOCUMENTATION.key,
-        ]);
-    
-        const shortcutEnabled = configuration[CACHE_CONFIG.SHORTCUT_INJECTION_ENABLED.key];
-        const shortcutOverview = configuration[CACHE_CONFIG.SHORTCUT_OVERVIEW.key];
-        const shortcutSoql = configuration[CACHE_CONFIG.SHORTCUT_SOQL.key];
-        const shortcutApex = configuration[CACHE_CONFIG.SHORTCUT_APEX.key];
-        const shortcutApi = configuration[CACHE_CONFIG.SHORTCUT_API.key];
-        const shortcutDocumentation = configuration[CACHE_CONFIG.SHORTCUT_DOCUMENTATION.key];
-        if (!shortcutEnabled) return;
-    
-    
-        // Define all shortcuts
-        const shortcuts = [
-            {
-                id: 'org-overview',
-                shortcut: shortcutOverview,
-                action: async (event, handler) => {
-                    event.preventDefault();
-                    navigate(this.navContext, {
-                        type: 'application',
-                        state: {
-                            applicationName: 'home',
-                        },
-                    });
-                },
-            },
-            {
-                id: 'soql-explorer',
-                shortcut: shortcutSoql,
-                action: async (event, handler) => {
-                    event.preventDefault();
-                    
-                    navigate(this.navContext, {
-                        type: 'application',
-                        state: {
-                            applicationName: 'soql',
-                        },
-                    });
-                },
-            },
-            {
-                id: 'apex-explorer',
-                shortcut: shortcutApex,
-                action: async (event, handler) => {
-                    event.preventDefault();
-                    navigate(this.navContext, {
-                        type: 'application',
-                        state: {
-                            applicationName: 'anonymousapex',
-                        },
-                    });
-                },
-            },
-            {
-                id: 'api-explorer',
-                shortcut: shortcutApi,
-                action: async (event, handler) => {
-                    event.preventDefault();
-                    navigate(this.navContext, {
-                        type: 'application',
-                        state: {
-                            applicationName: 'api',
-                        },
-                    });
-                },
-            },
-            {
-                id: 'documentation',
-                shortcut: shortcutDocumentation,
-                action: async (event, handler) => {
-                    event.preventDefault();
-                    navigate(this.navContext, {
-                        type: 'application',
-                        state: {
-                            applicationName: 'documentation',
-                        },
-                    });
-                },
-            },
-        ];
-    
-        shortcuts.forEach(shortcut => {
-            hotkeys(shortcut.shortcut, shortcut.action);
-        });
-    }
 }

@@ -17,7 +17,7 @@ import {
 } from './mapping';
 
 export const loadMetadata_async = async (conn, callback, updateLoadingMessage) => {
-    console.log('executing -> loadMetadata_async');
+    // console.log('executing -> loadMetadata_async');
     let results_1 = await Promise.all([
         getPermissionSet(conn),
         getEntityDefinition(conn),

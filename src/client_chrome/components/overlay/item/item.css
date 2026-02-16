@@ -24,18 +24,13 @@
     margin-bottom: 0.125rem;
 }
 
-.slds-listbox__option-text,
-.slds-listbox__option-meta {
-    height: 18px;
-    line-height: 18px;
-}
-
 .slds-listbox__option-meta {
     display: block;
-    margin-top: -0.25rem;
+    margin-top: 0;
     color: #3e3e3c;
     font-size: x-small;
     opacity: 0.9;
+    line-height: 1.2;
 }
 
 /** Icons **/
