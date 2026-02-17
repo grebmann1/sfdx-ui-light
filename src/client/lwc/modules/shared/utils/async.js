@@ -25,15 +25,33 @@ export function chunkPromises(arr, size, method) {
     return collector;
 }
 
-const buffer = {};
-export function runActionAfterTimeOut(value, action, { timeout = 300 } = {}) {
-    if (buffer._clearBufferId) {
-        clearTimeout(buffer._clearBufferId);
+const timeoutsByKey = new Map();
+
+function parseTimeoutOptions(optionsOrTimeout) {
+    if (typeof optionsOrTimeout === 'number') {
+        return { timeout: optionsOrTimeout, key: '__default__' };
+    }
+    if (optionsOrTimeout && typeof optionsOrTimeout === 'object') {
+        return {
+            timeout: typeof optionsOrTimeout.timeout === 'number' ? optionsOrTimeout.timeout : 300,
+            key: optionsOrTimeout.key ?? '__default__',
+        };
+    }
+    return { timeout: 300, key: '__default__' };
+}
+
+export function runActionAfterTimeOut(value, action, optionsOrTimeout) {
+    const { timeout, key } = parseTimeoutOptions(optionsOrTimeout);
+    const existing = timeoutsByKey.get(key);
+    if (existing) {
+        clearTimeout(existing);
     }
     // eslint-disable-next-line @lwc/lwc/no-async-operation
-    buffer._clearBufferId = setTimeout(() => {
+    const id = setTimeout(() => {
+        timeoutsByKey.delete(key);
         action(value);
     }, timeout);
+    timeoutsByKey.set(key, id);
 }
 
 export const runSilent = async (func, placeholder) => {

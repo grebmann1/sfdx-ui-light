@@ -288,7 +288,7 @@ export default class App extends ToolkitElement {
                     }
                 }
             },
-            { timeout: 20 }
+            { timeout: 20, key: 'anonymousApex.app.handleBodyChange' }
         );
     };
 

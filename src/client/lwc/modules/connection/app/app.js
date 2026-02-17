@@ -696,10 +696,14 @@ export default class App extends ToolkitElement {
     };
 
     handleFieldsFilter = e => {
-        runActionAfterTimeOut(e.detail.value, newValue => {
-            this.filter = newValue;
-            //this.updateFieldsTable();
-        });
+        runActionAfterTimeOut(
+            e.detail.value,
+            newValue => {
+                this.filter = newValue;
+                //this.updateFieldsTable();
+            },
+            { timeout: 300, key: 'connection.app.fieldsFilter' }
+        );
     };
 
     handleOrgFarmFilterChange = async (e) => {

@@ -50,7 +50,7 @@ export default class FileTree extends LightningElement {
                 this.expandedMap = expandedMap || {};
                 this.matchedIds = matchedIds || new Set();
             },
-            { timeout: 300 }
+            { timeout: 300, key: 'slds.fileTree.search' }
         );
     }
 

@@ -200,7 +200,7 @@ export default class Soql extends ToolkitElement {
                     })
                 );
             },
-            { timeout: 200 }
+            { timeout: 200, key: 'editor.soql.changeEvent' }
         );
     };
 
@@ -398,7 +398,7 @@ export default class Soql extends ToolkitElement {
                     })
                 );
             },
-            { timeout: 200 }
+            { timeout: 200, key: 'editor.soql.sendChangeEvent' }
         );
     };
 }

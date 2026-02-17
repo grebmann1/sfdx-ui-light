@@ -34,9 +34,13 @@ export default class App extends LightningElement {
     }
 
     connectedCallback() {
-        runActionAfterTimeOut(null, param => {
-            this.loadCachedFile();
-        });
+        runActionAfterTimeOut(
+            null,
+            param => {
+                this.loadCachedFile();
+            },
+            { timeout: 0, key: 'sarif.app.loadCachedFile' }
+        );
     }
 
     /** Events */
@@ -67,9 +71,13 @@ export default class App extends LightningElement {
 
     handleSearchInput = e => {
         let val = e.currentTarget.value;
-        runActionAfterTimeOut(val, newValue => {
-            this.filterWith(newValue);
-        });
+        runActionAfterTimeOut(
+            val,
+            newValue => {
+                this.filterWith(newValue);
+            },
+            { timeout: 300, key: 'sarif.app.searchInput' }
+        );
     };
 
     /** Methods  */

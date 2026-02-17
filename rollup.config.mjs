@@ -10,7 +10,7 @@ import alias from '@rollup/plugin-alias';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
 import * as data from './package.json';
 
-const isProduction = process.env.NODE_ENV === 'production';
+const getIsProduction = (args) => (args?.NODE_ENV || process.env.NODE_ENV) === 'production';
 const r = (...args) => path.resolve(__dirname, ...args);
 
 // Some UMD/CJS deps (e.g. `sax`) rely on top-level `this` to attach globals.
@@ -114,7 +114,7 @@ const assetCopyTargets = [
     { src: r('src/client/assets/releaseNotes.json'), dest: r('chrome_ext') }
 ];
 
-const chromeCopyTargets = [
+const getChromeCopyTargets = (isProduction) => [
     { src: r('src/client_chrome/views/'), dest: r('chrome_ext') },
     { src: r('src/client_chrome/scripts'), dest: r('chrome_ext') },
     { src: r('src/client_chrome/images'), dest: r('chrome_ext') },
@@ -162,9 +162,15 @@ const injectedModules = [
     { name: 'smartinput/utils', path: r('src/client/lwc/applications/tools/smartinput/utils/utils.js') },
 ];
 
-const prodPlugins = isProduction ? [terserPlugin] : [];
-
-const basicBundler = (input, output, name, useLwc = false, modulesArg, extraPlugins) => ({
+const basicBundler = (
+    input,
+    output,
+    name,
+    isProduction,
+    useLwc = false,
+    modulesArg,
+    extraPlugins
+) => ({
     input: r(input),
     context: 'globalThis',
     moduleContext,
@@ -172,7 +178,7 @@ const basicBundler = (input, output, name, useLwc = false, modulesArg, extraPlug
         file: r(output),
         format: 'esm',
         name,
-        sourcemap: true,
+        sourcemap: false,
         inlineDynamicImports: true,
         intro: '(typeof window!=="undefined"&&(window.openaiAgent=window.openaiAgent||{},window.openaiAgent.Agent={}));'
     },
@@ -200,18 +206,18 @@ const basicBundler = (input, output, name, useLwc = false, modulesArg, extraPlug
             'import.meta.url': '""'
         }),
         ...(extraPlugins || []),
-        ...prodPlugins
+        ...(isProduction ? [terserPlugin] : []),
     ],
 });
 
-const coreBuilder = (modulesArg) => ({
+const coreBuilder = (modulesArg, isProduction) => ({
     input: r('src/client_chrome/main.js'),
     context: 'globalThis',
     moduleContext,
     output: {
         dir: r('chrome_ext/scripts'),
         format: 'esm',
-        sourcemap: true,
+        sourcemap: false,
     },
     plugins: [
         chevrotainAlias,
@@ -234,18 +240,21 @@ const coreBuilder = (modulesArg) => ({
             copyOnce: true,
         }),
         copy({
-            targets: chromeCopyTargets,
+            targets: getChromeCopyTargets(isProduction),
         }),
-        ...prodPlugins
+        ...(isProduction ? [terserPlugin] : []),
     ]
 });
 
-export default (args) => [
-    coreBuilder(modules),
-    basicBundler(
+export default (args) => {
+    const isProduction = getIsProduction(args);
+    return [
+        coreBuilder(modules, isProduction),
+        basicBundler(
         'src/client_chrome/workers/background.js',
         'chrome_ext/scripts/background.js',
         'Background',
+        isProduction,
         false,
         [
             { name: 'shared/cacheManager', path: r('src/client/lwc/modules/shared/cacheManager/cacheManager.js') },
@@ -253,18 +262,21 @@ export default (args) => [
             { name: 'shared/utils', path: r('src/client/lwc/modules/shared/utils/utils.js') },
         ]
     ),
-    basicBundler(
+        basicBundler(
         'src/client_chrome/inject/inject_salesforce.js',
         'chrome_ext/scripts/inject_salesforce.js',
         'InjectSalesforce',
+        isProduction,
         true,
         injectedModules
     ),
-    basicBundler(
+        basicBundler(
         'src/client_chrome/inject/inject_toolkit.js',
         'chrome_ext/scripts/inject_toolkit.js',
         'InjectToolkit',
+        isProduction,
         false,
         null
     )
-];
+    ];
+};

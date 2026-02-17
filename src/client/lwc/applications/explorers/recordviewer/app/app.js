@@ -171,7 +171,7 @@ export default class App extends ToolkitElement {
                     this.refs.recordViewerExplorer.updateFilter(newValue);
                 }
             },
-            400
+            { timeout: 400, key: 'recordviewer.app.filterInput' }
         );
     };
 

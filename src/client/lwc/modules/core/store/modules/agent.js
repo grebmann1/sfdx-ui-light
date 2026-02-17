@@ -1,14 +1,19 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { CACHE_CONFIG, loadExtensionConfigFromCache, saveSingleExtensionConfigToCache, saveExtensionConfigToCache, loadSingleExtensionConfigFromCache } from 'shared/cacheManager';
 import { ERROR } from 'core/store';
+import { ensureOpenAIAgentsBundleLoaded } from 'shared/loader';
 import { isNotUndefinedOrNull, guid } from 'shared/utils';
 import { readFileContent, Message, Context, StreamingAgentService } from 'agent/utils';
-import { loggedInAgent, loggedOutAgent } from 'agent/agents';
 
 const AGENT_CACHE_KEYS = {
     ACTIVE_ID: 'einstein_agent_active_id',
     MODEL: 'einstein_agent_model',
 };
+
+async function loadAgents() {
+    await ensureOpenAIAgentsBundleLoaded();
+    return await import('agent/agents');
+}
 
 const initialState = {
     conversations: [
@@ -244,9 +249,9 @@ export const executeAgent = createAsyncThunk(
         const baseUrl = state.application?.openaiUrl;
         const isLoggedIn = !!state.application?.connector;
 
-        const { Runner, user, setDefaultOpenAIClient, setOpenAIAPI } = window.OpenAIAgentsBundle?.Agents || {};
+        const { loggedInAgent, loggedOutAgent } = await loadAgents();
+        const { Runner, user, setDefaultOpenAIClient, setOpenAIAPI } = window.OpenAIAgentsBundle.Agents;
         const OpenAI = (await import('openai')).default;
-        
 
         const openai = new OpenAI({ dangerouslyAllowBrowser: true, apiKey: openaiKey, baseURL: baseUrl });
         setDefaultOpenAIClient(openai);

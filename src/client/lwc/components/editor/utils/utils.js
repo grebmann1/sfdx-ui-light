@@ -1,7 +1,8 @@
 import { store } from 'core/store';
 import LOGGER from 'shared/logger';
+import { ensureMonacoLoaded } from 'shared/loader';
 import { isChromeExtension } from 'shared/utils';
-import { registerCompletion,CompletionCopilot } from 'monacopilot';
+import { CompletionCopilot, registerCompletion } from 'monacopilot';
 
 function buildWorkerDefinition(workerPath, basePath) {
     // eslint-disable-next-line no-restricted-globals
@@ -41,6 +42,7 @@ function buildWorkerDefinition(workerPath, basePath) {
 
 export const setupMonaco = async () => {
     //console.log('######## setupMonaco ########');
+    await ensureMonacoLoaded();
     // import.meta.url is replaced when building it for the chrome app
     const _modulePath = isChromeExtension()
         ? chrome.runtime.getURL('/libs/monaco/workers')

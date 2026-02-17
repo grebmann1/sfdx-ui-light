@@ -18,7 +18,7 @@ export default class BasicSearch extends LightningElement {
                     })
                 );
             },
-            { timeout: 500 }
+            { timeout: 500, key: 'documentation.cta.basicSearch.filter' }
         );
     };
 

@@ -68,6 +68,37 @@ td,
     padding: 0px !important;
     border-right: 1px solid #dddbda !important;
 }
+
+.sftk-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0 0.25rem;
+    min-height: 28px;
+}
+
+.sftk-cell-main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.sftk-cell-actions {
+    flex: 0 0 auto;
+    display: flex;
+    gap: 0.125rem;
+}
+
+.sftk-cell-btn {
+    line-height: 1;
+}
+
+.sftk-cell-link {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 .tabulator-col.tabulator-col-sortable .tabulator-arrow {
     border-color: #3e3e3c;
 }

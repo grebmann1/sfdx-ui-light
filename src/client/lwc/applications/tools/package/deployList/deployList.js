@@ -34,9 +34,13 @@ export default class DeployList extends ToolkitElement {
     /** Events **/
 
     handleSearch = e => {
-        runActionAfterTimeOut(e.detail.value, newValue => {
-            this.filter = newValue;
-        });
+        runActionAfterTimeOut(
+            e.detail.value,
+            newValue => {
+                this.filter = newValue;
+            },
+            { timeout: 300, key: 'package.deployList.search' }
+        );
     };
 
     handleRefreshClick = () => {

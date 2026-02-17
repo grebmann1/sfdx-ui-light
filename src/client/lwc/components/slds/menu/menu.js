@@ -76,7 +76,7 @@ export default class Menu extends ToolkitElement {
             newValue => {
                 this.filter = newValue;
             },
-            1000
+            { timeout: 1000, key: 'slds.menu.search' }
         );
     };
 

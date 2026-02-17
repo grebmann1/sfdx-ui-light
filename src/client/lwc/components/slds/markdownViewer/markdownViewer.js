@@ -1,18 +1,22 @@
 import { api, LightningElement, createElement } from 'lwc';
+import { ensureMermaidLoaded } from 'shared/loader';
 import { marked } from 'shared/markdown';
-import { isEmpty, classSet, normalizeString as normalize,runActionAfterTimeOut } from 'shared/utils';
+import { classSet, isEmpty, normalizeString as normalize, runActionAfterTimeOut } from 'shared/utils';
 import sldsCodeBlock from 'slds/codeBlock';
 import MarkdownViewerEditorModal from 'slds/MarkdownViewerEditorModal';
 
 export default class MarkdownViewer extends LightningElement {
     hasRendered = false;
+    _renderRequested = false;
+    _lastRenderedValue = null;
     
     _value = '';
     @api 
     set value(value) {
         this._value = value;
-        if(this.hasRendered){
-            this.getDown(value);
+        this._renderRequested = true;
+        if (this.hasRendered) {
+            this.scheduleRender();
         }
     }
     get value() {
@@ -21,7 +25,9 @@ export default class MarkdownViewer extends LightningElement {
 
     renderedCallback() {
         this.hasRendered = true;
-        this.getDown(this.value);
+        if (this._renderRequested) {
+            this.scheduleRender();
+        }
     }
 
     /** Methods */
@@ -46,8 +52,22 @@ export default class MarkdownViewer extends LightningElement {
         });
     };
 
-    getDown = content => {
-        this.setMarkdown(content);
+    scheduleRender = () => {
+        runActionAfterTimeOut(
+            null,
+            () => {
+                this.renderIfNeeded();
+            },
+            { timeout: 0, key: 'slds.markdownViewer.render' }
+        );
+    };
+
+    renderIfNeeded = () => {
+        this._renderRequested = false;
+        const value = this.value || '';
+        if (this._lastRenderedValue === value) return;
+        this._lastRenderedValue = value;
+        this.setMarkdown(value);
     };
 
     setMarkdown = markdown => {
@@ -57,7 +77,7 @@ export default class MarkdownViewer extends LightningElement {
             async value => {
                 this.enable_codeViewer();
             },
-            { timeout: 500 }
+            { timeout: 500, key: 'slds.markdownViewer.enableCodeViewer' }
         );
     };
 
@@ -149,8 +169,10 @@ export default class MarkdownViewer extends LightningElement {
             const diagramText = this.fixDiagram(el.innerText);
             //console.log('diagramText');
             //console.log(diagramText);
+            const mermaid = await ensureMermaidLoaded();
+            if (!mermaid) return;
             if (await mermaid.parse(diagramText)) {
-                const { svg, bindFunctions } = await window.mermaid.render('graphDiv', diagramText);
+                const { svg, bindFunctions } = await mermaid.render('graphDiv', diagramText);
                 el.innerHTML = svg;
             } else {
                 //console.log('Invalid format')

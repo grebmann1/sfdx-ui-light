@@ -11,7 +11,6 @@ const init = async () => {
     window.settingsStore = await chromeStore('sync');
     /** Define Settings **/
     window.Prism = Prism;
-    window.OpenAIAgentsBundle = OpenAIAgentsBundle;
     //window.connections = {}; // use for faster connection, during live processing
     window.jsforceSettings = {
         clientId:

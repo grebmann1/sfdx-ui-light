@@ -180,7 +180,7 @@ export default class Default extends ToolkitElement {
                     })
                 );
             },
-            { timeout: CHANGE_EVENT_TIMEOUT }
+            { timeout: CHANGE_EVENT_TIMEOUT, key: 'editor.default.handleModelContentChange' }
         );
     };
 
@@ -233,7 +233,7 @@ export default class Default extends ToolkitElement {
                     })
                 );
             },
-            { timeout: 200 }
+            { timeout: 200, key: 'editor.default.sendChangeEvent' }
         );
     };
 

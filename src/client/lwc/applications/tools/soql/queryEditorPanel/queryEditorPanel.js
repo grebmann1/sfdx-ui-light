@@ -187,7 +187,7 @@ export default class QueryEditorPanel extends ToolkitElement {
                     }
                 }
             },
-            { timeout: 20 }
+            { timeout: 20, key: 'soql.queryEditorPanel.handleSoqlChange' }
         );
     }
 

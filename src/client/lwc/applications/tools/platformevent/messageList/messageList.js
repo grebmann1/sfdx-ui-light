@@ -22,9 +22,13 @@ export default class MessageList extends ToolkitElement {
     /** Events **/
 
     handleSearch = e => {
-        runActionAfterTimeOut(e.detail.value, newValue => {
-            this.filter = newValue;
-        });
+        runActionAfterTimeOut(
+            e.detail.value,
+            newValue => {
+                this.filter = newValue;
+            },
+            { timeout: 300, key: 'platformevent.messageList.search' }
+        );
     };
 
     selectPlatformEvent = () => {};

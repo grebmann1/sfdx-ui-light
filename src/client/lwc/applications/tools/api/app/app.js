@@ -676,7 +676,7 @@ export default class App extends ToolkitElement {
                 }*/
                 }
             },
-            { timeout: 500 }
+            { timeout: 500, key: 'api.app.updateRequestStates' }
         );
     };
 

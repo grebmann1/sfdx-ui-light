@@ -1,15 +1,24 @@
 import { LightningElement, api, track } from 'lwc';
+import { ensureMermaidLoaded } from 'shared/loader';
 import { isEmpty, runActionAfterTimeOut, guid } from 'shared/utils';
+
+let prismWrapHookInstalled = false;
 
 export default class CodeBlock extends LightningElement {
     prismInitialized = false;
     prism;
     isLight = false;
+    _needsHighlight = false;
+    _lastHighlightedLanguage = null;
+    _lastHighlightedCode = null;
 
     @api
     set language(value) {
         this._language = value.toLowerCase();
-        this.highlightCodeSegment();
+        this._needsHighlight = true;
+        if (this.prismInitialized === true) {
+            this.highlightCodeSegment();
+        }
     }
     get language() {
         return this._language;
@@ -19,6 +28,7 @@ export default class CodeBlock extends LightningElement {
     @api
     set codeBlock(value) {
         this._codeBlock = value;
+        this._needsHighlight = true;
         if (this.prismInitialized === true) {
             this.highlightCodeSegment();
         }
@@ -42,22 +52,59 @@ export default class CodeBlock extends LightningElement {
     /** Methods  **/
 
     loadPrism() {
+        if (this.prismInitialized === true && this._needsHighlight !== true) {
+            return;
+        }
         this.prismInitialized = true;
         if (this.prism === undefined) {
             this.prism = window.Prism;
-            this.highlightCodeSegment();
-        } else {
-            this.highlightCodeSegment();
         }
+        if (!this.prism) {
+            return;
+        }
+        if (!prismWrapHookInstalled) {
+            prismWrapHookInstalled = true;
+            this.prism.hooks.add('wrap', function (env) {
+                if (env.type !== 'string') return;
+                const text = env.content.replaceAll('"', '').replaceAll("'", '');
+                if (text.startsWith('/') || text.startsWith('http')) {
+                    env.attributes['data-url'] = text;
+                    env.tag = 'a';
+                    if (env.classes.length > 0) {
+                        env.classes.push('slds-link');
+                    }
+                }
+            });
+        }
+        this.highlightCodeSegment();
+    }
+
+    _getDecodedCodeBlock() {
+        return String(this._codeBlock || '')
+            .replaceAll('&lt;', '<')
+            .replaceAll('&gt;', '>')
+            .replaceAll('&amp;', '&')
+            .replaceAll('&quot;', '"')
+            .replaceAll('&#039;', "'");
     }
 
     highlightCodeSegment() {
-        if (this.prism) {
-            if (this.language === 'mermaid') {
-                this.highlightCode_mermaid();
-            } else {
-                this.highlightCode_default();
-            }
+        if (!this.prism || this._needsHighlight !== true) {
+            return;
+        }
+        const code = this._getDecodedCodeBlock();
+        if (this._lastHighlightedLanguage === this.language && this._lastHighlightedCode === code) {
+            this._needsHighlight = false;
+            return;
+        }
+        this._lastHighlightedLanguage = this.language;
+        this._lastHighlightedCode = code;
+        this._needsHighlight = false;
+
+        if (this.language === 'mermaid') {
+            this.highlightCode_mermaid();
+        } else {
+            this.highlightCode_default(code);
         }
     }
 
@@ -66,39 +113,15 @@ export default class CodeBlock extends LightningElement {
         this.renderMermaid(codeBlockEl);
     };
 
-    highlightCode_default = () => {
+    highlightCode_default = (decodedCode) => {
         let codeBlockEl = this.template.querySelector('pre');
-        // eslint-disable-next-line
-        if (codeBlockEl.innerHTML !== '') {
-            // eslint-disable-next-line
-            codeBlockEl.innerHTML = '';
-            //codeBlockEl.classList.remove("language-javascript");
-        }
+        if (!codeBlockEl) return;
+        codeBlockEl.textContent = '';
         codeBlockEl.classList.add('line-numbers');
         const codeEl = document.createElement('code');
         codeEl.classList.add(`language-${this._language}`);
-        if (this._language === 'java') {
-            this._codeBlock = this._codeBlock.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        }
-        // eslint-disable-next-line
-        codeEl.innerHTML = this._codeBlock;
+        codeEl.textContent = decodedCode || '';
         codeBlockEl.appendChild(codeEl);
-        //console.log('codeBlockEl',codeBlockEl);
-        this.prism.hooks.add('wrap', function (env) {
-            if (env.type !== 'string') return;
-            const text = env.content.replaceAll('"', '').replaceAll("'", '');
-            if (text.startsWith('/') || text.startsWith('http')) {
-                //console.log('env',env);
-                env.attributes['data-url'] = text;
-                env.tag = 'a';
-                if (env.classes.length > 0) {
-                    env.classes.push('slds-link');
-                }
-            }
-        });
-
-        //this.prism.hooks.add('after-highlight',(env) => {})
-
         this.prism.highlightAllUnder(codeBlockEl, false, () => {
             //console.log('callback');
         });
@@ -169,8 +192,10 @@ export default class CodeBlock extends LightningElement {
         try {
             el.innerHTML = this._codeBlock;
             const diagramText = this.fixDiagram(el.innerText);
+            const mermaid = await ensureMermaidLoaded();
+            if (!mermaid) return;
             if (await mermaid.parse(diagramText)) {
-                const { svg } = await window.mermaid.render(`id-${guid()}`, diagramText); // 'graphDiv'
+                const { svg } = await mermaid.render(`id-${guid()}`, diagramText); // 'graphDiv'
                 el.innerHTML = svg;
             } else {
                 console.warn('Invalid format');
@@ -253,11 +278,7 @@ export default class CodeBlock extends LightningElement {
     };
 
     handleCopy = () => {
-        const value = this._codeBlock
-            .replaceAll('&lt;', '<')
-            .replaceAll('&gt;', '>')
-            .replaceAll('&amp;', '&');
-        navigator.clipboard.writeText(value);
+        navigator.clipboard.writeText(this._getDecodedCodeBlock());
     };
 
     /** Getters **/

@@ -1,14 +1,14 @@
-import { api, createElement } from 'lwc';
+import { api, wire } from 'lwc';
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
-import { TabulatorFull as Tabulator } from 'tabulator-tables';
+import { store, UI } from 'core/store';
+import { NavigationContext, navigate } from 'lwr/navigation';
 import {
-    isObject,
     isNotUndefinedOrNull,
     isUndefinedOrNull,
     runActionAfterTimeOut,
 } from 'shared/utils';
-import outputCell from 'soql/outputCell';
+import { store as legacyStore, store_application } from 'shared/store';
 
 class ColumnCollector {
     columnMap = new Map();
@@ -59,6 +59,9 @@ class ColumnCollector {
 }
 
 export default class OutputTable extends ToolkitElement {
+    @wire(NavigationContext)
+    navContext;
+
     isLoading = false;
     _columns;
     rows;
@@ -66,15 +69,30 @@ export default class OutputTable extends ToolkitElement {
     _nextRecordsUrl;
     _hasRendered = false;
     _tableSearch;
+    _lastColumnsKey = '';
+    _displayTableRunId = 0;
+    _tabulatorCtor;
+    _tabulatorImportPromise;
 
     @api tableInstance;
     @api childTitle;
     @api sobjectName;
     @api isChildTable = false;
 
+    async ensureTabulator() {
+        if (this._tabulatorCtor) return this._tabulatorCtor;
+        if (!this._tabulatorImportPromise) {
+            this._tabulatorImportPromise = import('tabulator-tables').then(mod => {
+                return mod.TabulatorFull || mod.default || mod.Tabulator;
+            });
+        }
+        this._tabulatorCtor = await this._tabulatorImportPromise;
+        return this._tabulatorCtor;
+    }
+
     @api
     set response(res) {
-        this._response = JSON.parse(JSON.stringify(res));
+        this._response = res;
         this._nextRecordsUrl = res.nextRecordsUrl;
         const collector = new ColumnCollector(res.records);
         this._columns = collector.collect();
@@ -99,10 +117,168 @@ export default class OutputTable extends ToolkitElement {
     /** Methods */
 
     formatDataForTable = () => {
-        return this._response.records.map(x => {
-            delete x.attributes;
-            return x;
+        const records = this._response?.records || [];
+        return records.map(record => {
+            const row = { ...record };
+            delete row.attributes;
+            row.__searchText = this._buildRowSearchText(row);
+            return row;
         });
+    };
+
+    _buildRowSearchText(row) {
+        try {
+            return Object.values(row)
+                .map(val => {
+                    if (val == null) return '';
+                    if (typeof val === 'object') {
+                        try {
+                            return JSON.stringify(val);
+                        } catch (_e) {
+                            return '';
+                        }
+                    }
+                    return String(val);
+                })
+                .join(' ')
+                .toLowerCase();
+        } catch (_e) {
+            return '';
+        }
+    };
+
+    _escapeHtml(value) {
+        return String(value)
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    _iconButtonHtml({ action, iconName, assistiveText, title }) {
+        const safeTitle = this._escapeHtml(title || assistiveText || '');
+        const safeText = this._escapeHtml(assistiveText || '');
+        return `
+            <button class="slds-button slds-button_icon slds-button_icon-bare sftk-cell-btn" type="button" data-action="${action}" title="${safeTitle}">
+                <svg class="slds-button__icon" aria-hidden="true" focusable="false">
+                    <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#${iconName}"></use>
+                </svg>
+                <span class="slds-assistive-text">${safeText}</span>
+            </button>
+        `;
+    }
+
+    _formatChildRelationshipLabel(value) {
+        const count = Array.isArray(value) ? value.length : (value?.totalSize || 0);
+        return `${count} records`;
+    }
+
+    tabulatorCellFormatter = (cell) => {
+        const value = cell.getValue();
+        const field = cell.getColumn().getField();
+        const rowData = cell.getRow().getData() || {};
+        const recordId = rowData.Id;
+
+        const isChildRelationship = value && typeof value === 'object';
+        if (isChildRelationship) {
+            const label = this._formatChildRelationshipLabel(value);
+            return `
+                <div class="sftk-cell">
+                    <button class="slds-button slds-button_neutral sftk-cell-child" type="button" data-action="child" title="${this._escapeHtml(label)}">
+                        ${this._escapeHtml(label)}
+                    </button>
+                </div>
+            `;
+        }
+
+        const text = value == null ? '' : String(value);
+        const isIdLike = /^[0-9A-Za-z]{18}$/.test(text);
+        const isRecordIdField = field === 'Id';
+
+        const valueHtml = isIdLike
+            ? `<a href="#" class="sftk-cell-link" data-action="navigate" title="${this._escapeHtml(text)}">${this._escapeHtml(text)}</a>`
+            : `<div class="slds-truncate sftk-cell-value" title="${this._escapeHtml(text)}">${this._escapeHtml(text)}</div>`;
+
+        const actions = [];
+        if (isRecordIdField && recordId) {
+            actions.push(this._iconButtonHtml({ action: 'edit', iconName: 'edit', assistiveText: 'edit' }));
+        }
+        if (value != null && text !== '') {
+            actions.push(this._iconButtonHtml({ action: 'copy', iconName: 'copy', assistiveText: 'copy' }));
+        }
+
+        return `
+            <div class="sftk-cell">
+                <div class="sftk-cell-main">${valueHtml}</div>
+                <div class="sftk-cell-actions">${actions.join('')}</div>
+            </div>
+        `;
+    };
+
+    _handleCellClick = (e, cell) => {
+        const actionEl = e?.target?.closest?.('[data-action]');
+        const action = actionEl?.dataset?.action;
+        if (!action) return;
+
+        const value = cell.getValue();
+        const field = cell.getColumn().getField();
+        const rowData = cell.getRow().getData() || {};
+        const recordId = rowData.Id;
+
+        if (action === 'copy') {
+            e.preventDefault();
+            e.stopPropagation();
+            navigator.clipboard.writeText(value == null ? '' : String(value));
+            Toast.show({
+                label: `${field} exported to your clipboard`,
+                variant: 'success',
+            });
+            return;
+        }
+
+        if (action === 'edit') {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!recordId) return;
+            navigate(this.navContext, {
+                type: 'application',
+                state: {
+                    applicationName: 'recordviewer',
+                    recordId,
+                },
+            });
+            return;
+        }
+
+        if (action === 'navigate') {
+            e.preventDefault();
+            e.stopPropagation();
+            if (value == null) return;
+            legacyStore.dispatch(store_application.navigate(String(value)));
+            return;
+        }
+
+        if (action === 'child') {
+            e.preventDefault();
+            e.stopPropagation();
+            const base = {
+                recordId,
+                column: field,
+            };
+            let clonedValue = value;
+            try {
+                clonedValue = JSON.parse(JSON.stringify(value));
+            } catch (_e) {}
+            store.dispatch(
+                UI.reduxSlice.actions.selectChildRelationship({
+                    childRelationship: {
+                        ...base,
+                        ...(clonedValue && typeof clonedValue === 'object' ? clonedValue : {}),
+                    },
+                })
+            );
+        }
     };
 
     formatColumns = () => {
@@ -111,7 +287,8 @@ export default class OutputTable extends ToolkitElement {
                 title: key,
                 field: key,
                 maxWidth: 500,
-                formatter: this.formatterField_value, // Bad performances !!
+                formatter: this.tabulatorCellFormatter,
+                cellClick: this._handleCellClick,
             };
         });
 
@@ -120,21 +297,6 @@ export default class OutputTable extends ToolkitElement {
         } else {
             return columns;
         }
-    };
-
-    elementPool = [];
-    formatterField_value = (cell, formatterParams, onRendered) => {
-        //return `<div class="slds-truncate" title="Acme Partners">Acme Partners</div><lightning-button-icon class="slds-copy-clipboards" variant="bare"><button class="slds-button slds-button_icon slds-button_icon-bare" title="copy" type="button" part="button button-icon"><lightning-primitive-icon variant="bare" ><svg class="slds-button__icon" focusable="false" data-key="copy" aria-hidden="true" part="icon"><use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#copy"></use></svg></lightning-primitive-icon><span class="slds-assistive-text">copy</span></button></lightning-button-icon>`;
-        const outputCellElement = createElement('soql-output-cell', {
-            is: outputCell,
-        });
-        let value = cell._cell.value;
-        Object.assign(outputCellElement, {
-            value,
-            column: cell._cell.column.field,
-            recordId: cell._cell.row.data.Id,
-        });
-        return outputCellElement;
     };
 
     tableResizeEvent = e => {
@@ -153,14 +315,13 @@ export default class OutputTable extends ToolkitElement {
                     this.tableInstance.setHeight(height);
                 }
             },
-            timeout
+            { timeout, key: 'soql.outputTable.resize' }
         );
     };
 
-    displayTable = () => {
-        if (this.tableInstance) {
-            this.tableInstance.destroy();
-        }
+    displayTable = async () => {
+        const runId = ++this._displayTableRunId;
+        const columnsKey = Array.isArray(this._columns) ? this._columns.join('|') : '';
         const element = this.template.querySelector('.custom-table');
         const rowSelector = {
             headerSort: false,
@@ -176,21 +337,37 @@ export default class OutputTable extends ToolkitElement {
         };
         if (!element) return;
         this.isLoading = true;
+        const data = this.formatDataForTable();
+        const columns = this.formatColumns();
+
+        if (this.tableInstance && this._lastColumnsKey === columnsKey) {
+            this.tableInstance.replaceData(data);
+            this.applyTableSearchFilter();
+            this.isLoading = false;
+            return;
+        }
+
+        const Tabulator = await this.ensureTabulator();
+        if (!Tabulator || runId !== this._displayTableRunId) {
+            return;
+        }
+
+        if (this.tableInstance) {
+            this.tableInstance.destroy();
+        }
+
+        this._lastColumnsKey = columnsKey;
         this.tableInstance = new Tabulator(element, {
             height: '100%',
-            data: this.formatDataForTable(),
+            data,
             autoResize: false,
             layout: 'fitDataFill',
-            columns: this.formatColumns(),
-            //autoColumns:true,
+            columns,
             columnHeaderVertAlign: 'middle',
             minHeight: 100,
             rowHeight: 28,
-            //maxHeight:"100%"
-            rowHeader: this.isChildTable || this._response.records.length == 0 ? null : rowSelector,
+            rowHeader: this.isChildTable || data.length === 0 ? null : rowSelector,
             headerSortElement: function (column, dir) {
-                //column - column component for current column
-                //dir - current sort direction ("asc", "desc", "none")
                 const _arrowIcon = iconName =>
                     `<svg class="slds-icon slds-icon-text-default slds-is-sortable__icon " aria-hidden="true"><use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#${iconName}"></use></svg>`;
                 switch (dir) {
@@ -238,11 +415,8 @@ export default class OutputTable extends ToolkitElement {
             return;
         }
         this.tableInstance.setFilter((rowData) => {
-            return Object.values(rowData).some(val => {
-                if (val == null) return false;
-                if (typeof val === 'object') return JSON.stringify(val).toLowerCase().includes(search);
-                return String(val).toLowerCase().includes(search);
-            });
+            const text = rowData?.__searchText || '';
+            return text.includes(search);
         });
     }
 

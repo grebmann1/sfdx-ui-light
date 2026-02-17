@@ -1,6 +1,7 @@
 import { api, wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import { NavigationContext, navigate } from 'lwr/navigation';
+import { ensureMermaidLoaded } from 'shared/loader';
 import { classSet, isEmpty, isNotUndefinedOrNull, isUndefinedOrNull } from 'shared/utils';
 import LOGGER from 'shared/logger';
 import Toast from 'lightning/toast';
@@ -232,6 +233,8 @@ export default class Sobject extends ToolkitElement {
 
     buildUML = async () => {
         if (!this.refs?.mermaid) return;
+        const mermaid = await ensureMermaidLoaded();
+        if (!mermaid) return;
         this.refs.mermaid.innerHTML = '';
         const source = this.selectedDetails.name;
         const result = ['classDiagram', 'direction LR', `class \`${source}\``];
@@ -252,7 +255,7 @@ export default class Sobject extends ToolkitElement {
         });
         */
         //console.log('r',[].concat(result,interactions).join('\n'));
-        const { svg, bindFunctions } = await window.mermaid.render(
+        const { svg, bindFunctions } = await mermaid.render(
             'graphDiv',
             [].concat(result, interactions).join('\n')
         );

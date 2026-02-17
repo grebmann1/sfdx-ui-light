@@ -13,10 +13,7 @@ module.exports = {
     umdNamedDefine: true,
     //sourceMapFilename: 'bundle.js.map',
   },
-  optimization: {
-    minimize: false
-  },
-  //devtool: 'source-map',
+  devtool: false,
   resolve: {
     extensions: ['.js', '.json', '.mjs'],
     fallback: {
@@ -42,7 +39,7 @@ module.exports = {
               [
                 '@babel/preset-env',
                 {
-                  targets: { "ie": "11" },
+                  targets: { chrome: '120' },
                 }
               ]
             ],

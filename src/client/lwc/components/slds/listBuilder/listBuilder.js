@@ -36,19 +36,23 @@ export default class ListBuilder extends LightningElement {
     handleChange = e => {
         let searchTerm = e.target.value;
 
-        runActionAfterTimeOut(searchTerm, param => {
-            this.searchTerms = param;
-            this.dispatchEvent(
-                new CustomEvent('search', {
-                    composed: true,
-                    bubbles: true,
-                    cancelable: true,
-                    detail: {
-                        search: param,
-                    },
-                })
-            );
-        });
+        runActionAfterTimeOut(
+            searchTerm,
+            param => {
+                this.searchTerms = param;
+                this.dispatchEvent(
+                    new CustomEvent('search', {
+                        composed: true,
+                        bubbles: true,
+                        cancelable: true,
+                        detail: {
+                            search: param,
+                        },
+                    })
+                );
+            },
+            { timeout: 300, key: 'slds.listBuilder.search' }
+        );
     };
 
     handleRowSelection = e => {
