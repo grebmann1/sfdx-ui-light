@@ -22,7 +22,6 @@
 
 .data-import-mapping {
     max-height: 420px;
-    overflow: auto;
 }
 
 .data-import-mapping-row .slds-input {
@@ -33,3 +32,34 @@
     cursor: pointer;
 }
 
+.data-import-failed-preview {
+    display: flex;
+    flex-direction: column;
+    min-height: 420px;
+    height: 60vh;
+    overflow: hidden;
+}
+
+.data-import-failed-preview-tabset {
+    flex: 1;
+    min-height: 0;
+}
+
+.data-import-failed-preview-tab {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.data-import-failed-preview-table {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+.data-import-failed-preview-editor {
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+}

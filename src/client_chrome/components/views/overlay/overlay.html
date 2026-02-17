@@ -291,25 +291,65 @@
                                                     </button>
                                                 </div>
                                             </template>
-                                            <ul
-                                                class="slds-scrollable_y scroll-container-header"
-                                                onscroll={handleScroll}>
-                                                <li
-                                                    for:each={virtualList}
-                                                    for:item="item"
-                                                    key={item.id}>
-                                                    <overlay-item
-                                                        filter={searchValue}
-                                                        name={item.name}
-                                                        onrecentobject={handleRecentObject}
-                                                        item={item}></overlay-item>
-                                                </li>
-                                            </ul>
+                                            <template lwc:if={isQuickLinkTab}>
+                                                <div
+                                                    class="slds-scrollable_y scroll-container-header sf-quicklinks"
+                                                    onscroll={handleScroll}>
+                                                    <template
+                                                        for:each={quickLinkGroups}
+                                                        for:item="group">
+                                                        <section
+                                                            key={group.key}
+                                                            class="sf-quicklinks-group">
+                                                            <div
+                                                                class="sf-quicklinks-group__header">
+                                                                <span
+                                                                    class="sf-quicklinks-group__title"
+                                                                    title={group.label}>
+                                                                    {group.label}
+                                                                </span>
+                                                                <span
+                                                                    class="sf-quicklinks-group__count">
+                                                                    {group.count}
+                                                                </span>
+                                                            </div>
+                                                            <ul class="sf-quicklinks-group__list">
+                                                                <li
+                                                                    for:each={group.items}
+                                                                    for:item="item"
+                                                                    key={item.id}>
+                                                                    <overlay-item
+                                                                        filter={searchValue}
+                                                                        name={item.name}
+                                                                        onrecentobject={handleRecentObject}
+                                                                        item={item}></overlay-item>
+                                                                </li>
+                                                            </ul>
+                                                        </section>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                            <template lwc:else>
+                                                <ul
+                                                    class="slds-scrollable_y scroll-container-header"
+                                                    onscroll={handleScroll}>
+                                                    <li
+                                                        for:each={virtualList}
+                                                        for:item="item"
+                                                        key={item.id}>
+                                                        <overlay-item
+                                                            filter={searchValue}
+                                                            name={item.name}
+                                                            onrecentobject={handleRecentObject}
+                                                            item={item}></overlay-item>
+                                                    </li>
+                                                </ul>
+                                            </template>
                                             <template lwc:if={hasNoItems}>
                                                 <illustration-empty
                                                     sub-title="No Data matching your criteria"></illustration-empty>
                                             </template>
-                                            <template lwc:if={isFetchingMetadata}>
+                                            <template lwc:if={isFetchingList}>
                                                 <slds-spinner
                                                     alternative-text="Loading"
                                                     size="small"></slds-spinner>

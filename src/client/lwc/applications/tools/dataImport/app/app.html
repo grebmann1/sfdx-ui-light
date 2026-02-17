@@ -32,18 +32,20 @@
                         onclick={handleRefreshJobs}></lightning-button>
                 </div>
                 <p slot="meta" class="slds-page-header__meta-text slds-text-color_weak">
-                    Import CSV records with REST or Bulk APIs. Use Job Monitor to view Bulk Ingest jobs and download result files.
+                    Import CSV records with REST or Bulk APIs. Use Job Monitor to view Bulk Ingest
+                    jobs and download result files.
                 </p>
             </builder-header>
 
-            <article class="full-page-body slds-card data-import-article">
+            <article class="slds-full-height slds-card data-import-article">
                 <div class="slds-p-around_small slds-is-relative">
                     <lightning-tabset>
                         <lightning-tab label="Import">
                             <div class="slds-grid slds-gutters slds-wrap">
                                 <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2">
                                     <section class="slds-card">
-                                        <div class="slds-card__header slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                                        <div
+                                            class="slds-card__header slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
                                             <h3 class="slds-text-heading_small">Configure</h3>
                                             <div class="slds-text-color_weak slds-text-body_small">
                                                 {modeLabel}
@@ -51,7 +53,8 @@
                                         </div>
                                         <div class="slds-card__body slds-card__body_inner">
                                             <div class="slds-grid slds-gutters slds-wrap">
-                                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                                <div
+                                                    class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
                                                     <lightning-combobox
                                                         label="Mode"
                                                         value={mode}
@@ -59,7 +62,8 @@
                                                         onchange={handleModeChange}
                                                         disabled={isWorking}></lightning-combobox>
                                                 </div>
-                                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                                <div
+                                                    class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
                                                     <lightning-combobox
                                                         label="Action"
                                                         value={action}
@@ -69,26 +73,18 @@
                                                 </div>
                                             </div>
 
-                                            <div class="slds-grid slds-gutters slds-wrap slds-m-top_small">
+                                            <div
+                                                class="slds-grid slds-gutters slds-wrap slds-m-top_small">
                                                 <div class="slds-col slds-size_1-of-1">
-                                                    <label class="slds-form-element__label" for="di-object">Object</label>
-                                                    <div class="slds-form-element__control">
-                                                        <input
-                                                            id="di-object"
-                                                            class="slds-input"
-                                                            type="search"
-                                                            value={objectApiName}
-                                                            list="di-sobjectlist"
-                                                            disabled={isWorking}
-                                                            oninput={handleObjectInput} />
-                                                        <datalist id="di-sobjectlist">
-                                                            <template for:each={sobjectOptions} for:item="opt">
-                                                                <option key={opt.value} value={opt.value}></option>
-                                                            </template>
-                                                        </datalist>
-                                                    </div>
+                                                    <slds-searchable-combobox
+                                                        label="Object"
+                                                        options={sobjectOptions}
+                                                        value={objectApiName}
+                                                        disabled={isWorking}
+                                                        onchange={handleObjectInput}></slds-searchable-combobox>
                                                     <template lwc:if={objectError}>
-                                                        <div class="slds-form-element__help slds-text-color_error">
+                                                        <div
+                                                            class="slds-form-element__help slds-text-color_error">
                                                             {objectError}
                                                         </div>
                                                     </template>
@@ -106,8 +102,10 @@
                                                 </div>
                                             </template>
 
-                                            <div class="slds-grid slds-gutters slds-wrap slds-m-top_small">
-                                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                            <div
+                                                class="slds-grid slds-gutters slds-wrap slds-m-top_small">
+                                                <div
+                                                    class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
                                                     <lightning-combobox
                                                         label="CSV delimiter"
                                                         value={delimiterKey}
@@ -115,7 +113,8 @@
                                                         onchange={handleDelimiterChange}
                                                         disabled={isWorking}></lightning-combobox>
                                                 </div>
-                                                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                                <div
+                                                    class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
                                                     <lightning-input
                                                         type="number"
                                                         label="Batch size (REST)"
@@ -135,12 +134,15 @@
                                                     disabled={isWorking}
                                                     onchange={handleFileChange}></lightning-input>
                                                 <template lwc:if={csvFileName}>
-                                                    <div class="slds-text-body_small slds-text-color_weak slds-m-top_x-small">
-                                                        Loaded: {csvFileName} ({csvRowCountFormatted} rows)
+                                                    <div
+                                                        class="slds-text-body_small slds-text-color_weak slds-m-top_x-small">
+                                                        Loaded: {csvFileName}
+                                                        ({csvRowCountFormatted} rows)
                                                     </div>
                                                 </template>
                                                 <template lwc:if={csvError}>
-                                                    <div class="slds-text-color_error slds-m-top_x-small">
+                                                    <div
+                                                        class="slds-text-color_error slds-m-top_x-small">
                                                         {csvError}
                                                     </div>
                                                 </template>
@@ -151,15 +153,18 @@
 
                                 <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2">
                                     <section class="slds-card">
-                                        <div class="slds-card__header slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                                        <div
+                                            class="slds-card__header slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
                                             <h3 class="slds-text-heading_small">Field Mapping</h3>
                                             <div class="slds-text-body_small slds-text-color_weak">
                                                 {mappingSummary}
                                             </div>
                                         </div>
-                                        <div class="slds-card__body slds-card__body_inner data-import-mapping">
+                                        <div
+                                            class="slds-card__body slds-card__body_inner data-import-mapping">
                                             <template lwc:if={hasCsv}>
-                                                <div class="slds-m-bottom_small slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                                                <div
+                                                    class="slds-m-bottom_small slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
                                                     <lightning-button
                                                         variant="neutral"
                                                         label="Auto-map"
@@ -173,38 +178,47 @@
                                                         disabled={isWorking}></lightning-button>
                                                 </div>
 
-                                                <datalist id="di-fieldlist">
-                                                    <template for:each={fieldDatalistOptions} for:item="f">
-                                                        <option key={f} value={f}></option>
-                                                    </template>
-                                                </datalist>
-
                                                 <template for:each={mappingRows} for:item="row">
-                                                    <div key={row.key} class="slds-grid slds-gutters slds-m-bottom_x-small data-import-mapping-row">
+                                                    <div
+                                                        key={row.key}
+                                                        class="slds-grid slds-gutters slds-m-bottom_x-small data-import-mapping-row">
                                                         <div class="slds-col slds-size_5-of-12">
-                                                            <div class="slds-truncate" title={row.csvHeader}>
-                                                                <span class="slds-text-title_caps">CSV</span>
-                                                                <div class="slds-text-body_regular">{row.csvHeader}</div>
+                                                            <div
+                                                                class="slds-truncate"
+                                                                title={row.csvHeader}>
+                                                                <span class="slds-text-title_caps">
+                                                                    CSV
+                                                                </span>
+                                                                <div class="slds-text-body_regular">
+                                                                    {row.csvHeader}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                         <div class="slds-col slds-size_6-of-12">
-                                                            <label class="slds-form-element__label slds-assistive-text" for={row.inputId}>Salesforce field</label>
-                                                            <input
-                                                                id={row.inputId}
-                                                                class={row.inputClass}
-                                                                type="search"
-                                                                list="di-fieldlist"
-                                                                value={row.targetField}
-                                                                disabled={isWorking}
-                                                                data-key={row.key}
-                                                                oninput={handleMappingInput} />
+                                                            <label
+                                                                class="slds-form-element__label slds-assistive-text"
+                                                                for={row.inputId}>
+                                                                Salesforce field
+                                                            </label>
+                                                            <div
+                                                                class={row.mappingWrapperClass}
+                                                                id={row.inputId}>
+                                                                <slds-searchable-combobox
+                                                                    options={fieldMappingOptions}
+                                                                    value={row.targetField}
+                                                                    disabled={isWorking}
+                                                                    data-key={row.key}
+                                                                    onchange={handleMappingChange}></slds-searchable-combobox>
+                                                            </div>
                                                             <template lwc:if={row.error}>
-                                                                <div class="slds-form-element__help slds-text-color_error">
+                                                                <div
+                                                                    class="slds-form-element__help slds-text-color_error">
                                                                     {row.error}
                                                                 </div>
                                                             </template>
                                                         </div>
-                                                        <div class="slds-col slds-size_1-of-12 slds-text-align_right">
+                                                        <div
+                                                            class="slds-col slds-size_1-of-12 slds-text-align_right">
                                                             <lightning-button-icon
                                                                 icon-name="utility:delete"
                                                                 alternative-text="Clear"
@@ -228,7 +242,8 @@
                             </div>
 
                             <section class="slds-card slds-m-top_small">
-                                <div class="slds-card__header slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                                <div
+                                    class="slds-card__header slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
                                     <h3 class="slds-text-heading_small">Results</h3>
                                     <div class="slds-text-body_small slds-text-color_weak">
                                         {resultsSummary}
@@ -236,13 +251,11 @@
                                 </div>
                                 <div class="slds-card__body slds-card__body_inner">
                                     <template lwc:if={lastRunMessage}>
-                                        <div class={lastRunMessageClass}>
-                                            {lastRunMessage}
-                                        </div>
+                                        <div class={lastRunMessageClass}>{lastRunMessage}</div>
                                     </template>
                                     <template lwc:if={hasResults}>
                                         <div class="slds-m-top_small">
-                                            <div class="slds-button-group" role="group">
+                                            <lightning-button-group>
                                                 <lightning-button
                                                     variant="neutral"
                                                     label="Download results (CSV)"
@@ -255,7 +268,7 @@
                                                     icon-name="utility:refresh"
                                                     onclick={handleRetryFailed}
                                                     disabled={isRetryFailedDisabled}></lightning-button>
-                                            </div>
+                                            </lightning-button-group>
                                         </div>
                                     </template>
                                 </div>
@@ -264,7 +277,8 @@
 
                         <lightning-tab label="Job Monitor">
                             <section class="slds-card">
-                                <div class="slds-card__header slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                                <div
+                                    class="slds-card__header slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
                                     <h3 class="slds-text-heading_small">Bulk Ingest Jobs</h3>
                                     <div class="slds-text-body_small slds-text-color_weak">
                                         Showing {jobsCount} jobs
@@ -278,57 +292,121 @@
                                     </template>
                                     <template lwc:if={hasJobs}>
                                         <div class="slds-scrollable_x">
-                                            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                                            <table
+                                                class="slds-table slds-table_cell-buffer slds-table_bordered">
                                                 <thead>
                                                     <tr class="slds-line-height_reset">
                                                         <th scope="col">
-                                                            <div class="slds-truncate" title="Job Id">Job Id</div>
+                                                            <div
+                                                                class="slds-truncate"
+                                                                title="Job Id">
+                                                                Job Id
+                                                            </div>
                                                         </th>
                                                         <th scope="col">
-                                                            <div class="slds-truncate" title="Object">Object</div>
+                                                            <div
+                                                                class="slds-truncate"
+                                                                title="Object">
+                                                                Object
+                                                            </div>
                                                         </th>
                                                         <th scope="col">
-                                                            <div class="slds-truncate" title="Operation">Operation</div>
+                                                            <div
+                                                                class="slds-truncate"
+                                                                title="Operation">
+                                                                Operation
+                                                            </div>
                                                         </th>
                                                         <th scope="col">
-                                                            <div class="slds-truncate" title="State">State</div>
+                                                            <div
+                                                                class="slds-truncate"
+                                                                title="State">
+                                                                State
+                                                            </div>
                                                         </th>
                                                         <th scope="col">
-                                                            <div class="slds-truncate" title="Processed">Processed</div>
+                                                            <div
+                                                                class="slds-truncate"
+                                                                title="Processed">
+                                                                Processed
+                                                            </div>
                                                         </th>
                                                         <th scope="col">
-                                                            <div class="slds-truncate" title="Failed">Failed</div>
+                                                            <div
+                                                                class="slds-truncate"
+                                                                title="Failed">
+                                                                Failed
+                                                            </div>
                                                         </th>
                                                         <th scope="col">
-                                                            <div class="slds-truncate" title="Created">Created</div>
+                                                            <div
+                                                                class="slds-truncate"
+                                                                title="Created">
+                                                                Created
+                                                            </div>
                                                         </th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     <template for:each={jobs} for:item="job">
-                                                        <tr key={job.id} class="slds-hint-parent data-import-job-row" data-id={job.id} onclick={handleSelectJob}>
+                                                        <tr
+                                                            key={job.id}
+                                                            class="slds-hint-parent data-import-job-row"
+                                                            data-id={job.id}
+                                                            onclick={handleSelectJob}>
                                                             <td data-label="Job Id">
-                                                                <div class="slds-truncate" title={job.id}>
-                                                                    <a href="javascript:void(0);" data-id={job.id} onclick={handleSelectJob}>{job.id}</a>
+                                                                <div
+                                                                    class="slds-truncate"
+                                                                    title={job.id}>
+                                                                    <a
+                                                                        href="javascript:void(0);"
+                                                                        data-id={job.id}
+                                                                        onclick={handleSelectJob}>
+                                                                        {job.id}
+                                                                    </a>
                                                                 </div>
                                                             </td>
                                                             <td data-label="Object">
-                                                                <div class="slds-truncate" title={job.object}>{job.object}</div>
+                                                                <div
+                                                                    class="slds-truncate"
+                                                                    title={job.object}>
+                                                                    {job.object}
+                                                                </div>
                                                             </td>
                                                             <td data-label="Operation">
-                                                                <div class="slds-truncate" title={job.operation}>{job.operation}</div>
+                                                                <div
+                                                                    class="slds-truncate"
+                                                                    title={job.operation}>
+                                                                    {job.operation}
+                                                                </div>
                                                             </td>
                                                             <td data-label="State">
-                                                                <div class="slds-truncate" title={job.state}>{job.state}</div>
+                                                                <div
+                                                                    class="slds-truncate"
+                                                                    title={job.state}>
+                                                                    {job.state}
+                                                                </div>
                                                             </td>
                                                             <td data-label="Processed">
-                                                                <div class="slds-truncate" title={job.numberRecordsProcessed}>{job.numberRecordsProcessed}</div>
+                                                                <div
+                                                                    class="slds-truncate"
+                                                                    title={job.numberRecordsProcessed}>
+                                                                    {job.numberRecordsProcessed}
+                                                                </div>
                                                             </td>
                                                             <td data-label="Failed">
-                                                                <div class="slds-truncate" title={job.numberRecordsFailed}>{job.numberRecordsFailed}</div>
+                                                                <div
+                                                                    class="slds-truncate"
+                                                                    title={job.numberRecordsFailed}>
+                                                                    {job.numberRecordsFailed}
+                                                                </div>
                                                             </td>
                                                             <td data-label="Created">
-                                                                <div class="slds-truncate" title={job.createdDate}>{job.createdDate}</div>
+                                                                <div
+                                                                    class="slds-truncate"
+                                                                    title={job.createdDate}>
+                                                                    {job.createdDate}
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     </template>
@@ -344,14 +422,19 @@
 
                                     <template lwc:if={selectedJob}>
                                         <div class="slds-m-top_medium slds-box slds-theme_default">
-                                            <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                                            <div
+                                                class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
                                                 <div>
-                                                    <div class="slds-text-title_caps">Selected Job</div>
-                                                    <div class="slds-text-body_regular slds-truncate" title={selectedJob.id}>
+                                                    <div class="slds-text-title_caps">
+                                                        Selected Job
+                                                    </div>
+                                                    <div
+                                                        class="slds-text-body_regular slds-truncate"
+                                                        title={selectedJob.id}>
                                                         {selectedJob.id}
                                                     </div>
                                                 </div>
-                                                <div class="slds-button-group" role="group">
+                                                <lightning-button-group>
                                                     <lightning-button
                                                         variant="neutral"
                                                         label="Refresh"
@@ -362,6 +445,11 @@
                                                         label="Download Success"
                                                         onclick={handleDownloadSuccess}
                                                         disabled={isDownloadDisabled}></lightning-button>
+                                                    <lightning-button
+                                                        variant="neutral"
+                                                        label="Preview Failed"
+                                                        onclick={handlePreviewFailed}
+                                                        disabled={isPreviewFailedDisabled}></lightning-button>
                                                     <lightning-button
                                                         variant="neutral"
                                                         label="Download Failed"
@@ -377,11 +465,112 @@
                                                         label="Abort"
                                                         onclick={handleAbortSelectedJob}
                                                         disabled={isAbortDisabled}></lightning-button>
-                                                </div>
+                                                </lightning-button-group>
                                             </div>
                                             <template lwc:if={selectedJobDetails}>
-                                                <div class="slds-m-top_small slds-text-body_small slds-text-color_weak">
-                                                    State: {selectedJobDetails.state} • Processed: {selectedJobDetails.numberRecordsProcessed} • Failed: {selectedJobDetails.numberRecordsFailed}
+                                                <div
+                                                    class="slds-m-top_small slds-text-body_small slds-text-color_weak">
+                                                    State: {selectedJobDetails.state} • Processed:
+                                                    {selectedJobDetails.numberRecordsProcessed} •
+                                                    Failed: {selectedJobDetails.numberRecordsFailed}
+                                                </div>
+                                            </template>
+                                            <template lwc:if={isFailedPreviewOpen}>
+                                                <div
+                                                    class="slds-m-top_small slds-box slds-theme_shade data-import-failed-preview">
+                                                    <div
+                                                        class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center slds-m-bottom_x-small">
+                                                        <div class="slds-text-title_caps">
+                                                            Failed Results Preview
+                                                        </div>
+                                                        <lightning-button-icon
+                                                            icon-name="utility:close"
+                                                            alternative-text="Close"
+                                                            title="Close"
+                                                            onclick={handleCloseFailedPreview}></lightning-button-icon>
+                                                    </div>
+
+                                                    <template lwc:if={failedPreviewError}>
+                                                        <div
+                                                            class="slds-text-color_error slds-m-bottom_small">
+                                                            {failedPreviewError}
+                                                        </div>
+                                                    </template>
+
+                                                    <template lwc:if={failedPreviewLoading}>
+                                                        <div
+                                                            class="slds-is-relative slds-p-vertical_small">
+                                                            <slds-spinner
+                                                                alternative-text="Loading"
+                                                                size="small"></slds-spinner>
+                                                        </div>
+                                                    </template>
+                                                    <template lwc:else>
+                                                        <lightning-tabset
+                                                            class="data-import-failed-preview-tabset">
+                                                            <lightning-tab label="Errors">
+                                                                <div
+                                                                    class="data-import-failed-preview-tab">
+                                                                    <template
+                                                                        lwc:if={failedPreviewHasRows}>
+                                                                        <div
+                                                                            class="data-import-failed-preview-table">
+                                                                            <lightning-datatable
+                                                                                key-field="key"
+                                                                                data={failedPreviewRows}
+                                                                                columns={failedPreviewColumns}
+                                                                                hide-checkbox-column></lightning-datatable>
+                                                                        </div>
+                                                                        <template
+                                                                            lwc:if={failedPreviewIsTruncated}>
+                                                                            <div
+                                                                                class="slds-text-body_small slds-text-color_weak slds-m-top_x-small">
+                                                                                Showing first
+                                                                                {failedPreviewRowLimit}
+                                                                                rows. Use “Download
+                                                                                Failed” for the full
+                                                                                file.
+                                                                            </div>
+                                                                        </template>
+                                                                    </template>
+                                                                    <template lwc:else>
+                                                                        <div
+                                                                            class="slds-text-color_weak slds-p-vertical_x-small">
+                                                                            No failed rows to
+                                                                            preview.
+                                                                        </div>
+                                                                    </template>
+                                                                </div>
+                                                            </lightning-tab>
+                                                            <lightning-tab
+                                                                label="Raw (CSV)"
+                                                                class="slds-full-height">
+                                                                <div
+                                                                    class="data-import-failed-preview-tab">
+                                                                    <template
+                                                                        lwc:if={failedPreviewRawIsTruncated}>
+                                                                        <div
+                                                                            class="slds-text-body_small slds-text-color_weak slds-m-bottom_x-small">
+                                                                            CSV truncated for
+                                                                            display. Use “Download
+                                                                            Failed” for the full
+                                                                            file.
+                                                                        </div>
+                                                                    </template>
+                                                                    <div
+                                                                        class="data-import-failed-preview-editor">
+                                                                        <editor-default
+                                                                            class="slds-full-height"
+                                                                            lwc:ref="failedPreviewEditor"
+                                                                            is-read-only
+                                                                            is-toolkit-hidden
+                                                                            is-einstein-hidden
+                                                                            onmonacoloaded={handleFailedPreviewMonacoLoaded}></editor-default>
+                                                                    </div>
+                                                                </div>
+                                                            </lightning-tab>
+                                                        </lightning-tabset>
+                                                    </template>
                                                 </div>
                                             </template>
                                         </div>
@@ -395,4 +584,3 @@
         </builder-editor>
     </div>
 </template>
-

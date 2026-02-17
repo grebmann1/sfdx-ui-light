@@ -5,6 +5,7 @@ export default class InputWithDropDown extends LightningElement {
 	highlightCounter = null;
 	_value = "";
 	hasInteracted = false;
+	@api disabled = false;
 
 	@api messageWhenInvalid = "Please type or select a value";
 	@api required = false;
@@ -51,6 +52,7 @@ export default class InputWithDropDown extends LightningElement {
     /** Event Handlers **/
 
     handleChange(event) {
+		if (this.disabled) return;
 		this._value = event.target.value;
 		if (this._value) {
 			this.hasInteracted = false;
@@ -59,6 +61,7 @@ export default class InputWithDropDown extends LightningElement {
 	}
 
 	handleInput() {
+		if (this.disabled) return;
 		this.isOpen = true;
 	}
 
@@ -98,6 +101,7 @@ export default class InputWithDropDown extends LightningElement {
 	}
 
 	handleFocus() {
+		if (this.disabled) return;
 		this._inputHasFocus = true;
 		this.isOpen = true;
 		this.highlightCounter = null;
@@ -105,6 +109,7 @@ export default class InputWithDropDown extends LightningElement {
 	}
 
 	handleSelect(event) {
+		if (this.disabled) return;
 		this.isOpen = false;
 		this.allowBlur();
 		this._value = event.currentTarget.dataset.value;
@@ -112,6 +117,7 @@ export default class InputWithDropDown extends LightningElement {
 	}
 
 	handleKeyDown(event) {
+		if (this.disabled) return;
 		if (event.key == "Escape") {
 			this.isOpen = !this.isOpen;
 			this.highlightCounter = null;
@@ -152,6 +158,7 @@ export default class InputWithDropDown extends LightningElement {
 
     @api
     focus() {
+		if (this.disabled) return;
         this.template.querySelector("input").focus();
     }
 

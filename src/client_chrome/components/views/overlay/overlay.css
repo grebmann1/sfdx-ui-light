@@ -190,3 +190,51 @@
 .sf-pill--setup {
     font-weight: 600;
 }
+
+/* Quick Links grouping */
+.sf-quicklinks {
+    padding: 6px 0;
+}
+
+.sf-quicklinks-group {
+    padding: 0 8px 10px;
+}
+
+.sf-quicklinks-group__header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 8px;
+    border: 1px solid rgba(221, 219, 218, 0.9);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.sf-quicklinks-group__title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #3e3e3c;
+}
+
+.sf-quicklinks-group__count {
+    flex: 0 0 auto;
+    font-size: 12px;
+    color: #706e6b;
+}
+
+.sf-quicklinks-group__list {
+    list-style: none;
+    margin: 6px 0 0;
+    padding: 0;
+}

@@ -60,8 +60,10 @@ export default class Overlay extends ToolkitElement {
     hasRendered = false;
     hasFocused = false;
     isFetchingMetadata = false;
+    isFetchingUsers = false;
     cachedData;
     viewerTab = 'Organization';
+    userBrowseResults = [];
 
     // current Info
     currentDomain;
@@ -180,7 +182,8 @@ export default class Overlay extends ToolkitElement {
         window.defaultStore.setItem(CACHE_TAB_SETTINGS, this.viewerTab);
         this.pageNumber = 1;
         this.scrollToTop();
-        //this.manualSearch();
+        // Load a default list for Users tab when no search is provided
+        void this.ensureUsersLoaded();
     };
 
     selectAll_handleClick = e => {
@@ -442,6 +445,7 @@ export default class Overlay extends ToolkitElement {
                 this.isLoading = false;
                 this.cachedData = results?.[0] || {};
                 this.manualSearch();
+                void this.ensureUsersLoaded();
             })
             .catch(e => {
                 console.error(e);
@@ -449,7 +453,48 @@ export default class Overlay extends ToolkitElement {
                 this.cachedData = {};
                 // to display the default data !
                 this.manualSearch();
+                void this.ensureUsersLoaded();
             });
+    };
+
+    ensureUsersLoaded = async () => {
+        // Only preload users when Users tab is active and search is empty.
+        if (this.viewerTab !== TABS.USER) return;
+        if (!this.isBlankValue((this.searchValue || '').trim())) return;
+        if (this.isFetchingUsers) return;
+        // Avoid refetching if we already have a list (unless user refreshed metadata)
+        if (Array.isArray(this.userBrowseResults) && this.userBrowseResults.length > 0) return;
+        await this.loadInitialUsers();
+    };
+
+    loadInitialUsers = async () => {
+        try {
+            if (!this.connector?.conn) return;
+            this.isFetchingUsers = true;
+            const result = await this.connector.conn.query(
+                'SELECT Id, Name, Username, Email, Profile.Name, IsActive FROM User ORDER BY Name LIMIT 50'
+            );
+            const records = result?.records || [];
+            this.userBrowseResults = records.map(x => ({
+                id: x.Id,
+                type: TYPE.USER,
+                name: x.Name,
+                email: x.Email,
+                profile: x.Profile?.Name,
+                username: x.Username,
+                isActive: x.IsActive,
+                relevance: 0,
+            }));
+        } catch (e) {
+            // Non-blocking: Users list is optional
+            try {
+                // eslint-disable-next-line no-console
+                console.debug('[SF-TOOLKIT][Overlay] loadInitialUsers failed', e?.message || e);
+            } catch (_) {}
+            this.userBrowseResults = [];
+        } finally {
+            this.isFetchingUsers = false;
+        }
     };
 
     isBlankValue(value) {
@@ -978,9 +1023,28 @@ export default class Overlay extends ToolkitElement {
         }
         this._forceRefresh = false; // Reset
         try {
+            const safeLoad = async (label, fn, fallback) => {
+                try {
+                    return await fn();
+                } catch (e) {
+                    try {
+                        // eslint-disable-next-line no-console
+                        console.debug(
+                            `[SF-TOOLKIT][Overlay] ${label} metadata unavailable`,
+                            e?.message || e
+                        );
+                    } catch (_) {}
+                    return fallback;
+                }
+            };
+
             // Fetch Objects
-            const globalDescribe = await this.connector.conn.describeGlobal();
-            const objects = globalDescribe.sobjects.map(x => ({
+            const globalDescribe = await safeLoad(
+                'GlobalDescribe',
+                async () => this.connector.conn.describeGlobal(),
+                { sobjects: [] }
+            );
+            const objects = (globalDescribe?.sobjects || []).map(x => ({
                 label: x.label,
                 name: x.name,
                 keyPrefix: x.keyPrefix,
@@ -992,81 +1056,138 @@ export default class Overlay extends ToolkitElement {
             }));
 
             // Fetch Apex Classes
-            const apexClassQuery = this.connector.conn.query(
-                'SELECT Id,Name,NamespacePrefix,Status,ApiVersion FROM ApexClass WHERE NamespacePrefix = null'
+            const apexClass = await safeLoad(
+                'ApexClass',
+                async () => {
+                    const apexClassQuery = this.connector.conn.query(
+                        'SELECT Id,Name,NamespacePrefix,Status,ApiVersion FROM ApexClass WHERE NamespacePrefix = null'
+                    );
+                    return (
+                        (await apexClassQuery.run({
+                            responseTarget: 'Records',
+                            autoFetch: true,
+                            maxFetch: 100000,
+                        })) || []
+                    );
+                },
+                []
             );
-            const apexClass =
-                (await apexClassQuery.run({
-                    responseTarget: 'Records',
-                    autoFetch: true,
-                    maxFetch: 100000,
-                })) || [];
 
             // Fetch Apex Trigger
-            const apexTriggerQuery = this.connector.conn.query(
-                'SELECT Id,Name,NamespacePrefix,Status,ApiVersion FROM ApexTrigger WHERE NamespacePrefix = null'
+            const apexTrigger = await safeLoad(
+                'ApexTrigger',
+                async () => {
+                    const apexTriggerQuery = this.connector.conn.query(
+                        'SELECT Id,Name,NamespacePrefix,Status,ApiVersion FROM ApexTrigger WHERE NamespacePrefix = null'
+                    );
+                    return (
+                        (await apexTriggerQuery.run({
+                            responseTarget: 'Records',
+                            autoFetch: true,
+                            maxFetch: 100000,
+                        })) || []
+                    );
+                },
+                []
             );
-            const apexTrigger =
-                (await apexTriggerQuery.run({
-                    responseTarget: 'Records',
-                    autoFetch: true,
-                    maxFetch: 100000,
-                })) || [];
 
             // Fetch Aura
-            const auraQuery = this.connector.conn.query(
-                'SELECT Id,DeveloperName,NamespacePrefix,ApiVersion,MasterLabel FROM AuraDefinitionBundle WHERE NamespacePrefix = null'
+            const aura = await safeLoad(
+                'Aura',
+                async () => {
+                    const auraQuery = this.connector.conn.query(
+                        'SELECT Id,DeveloperName,NamespacePrefix,ApiVersion,MasterLabel FROM AuraDefinitionBundle WHERE NamespacePrefix = null'
+                    );
+                    return (
+                        (await auraQuery.run({
+                            responseTarget: 'Records',
+                            autoFetch: true,
+                            maxFetch: 100000,
+                        })) || []
+                    );
+                },
+                []
             );
-            const aura =
-                (await auraQuery.run({
-                    responseTarget: 'Records',
-                    autoFetch: true,
-                    maxFetch: 100000,
-                })) || [];
 
             // Fetch LWC
-            const lwcQuery = this.connector.conn.tooling.query(
-                'SELECT Id,DeveloperName,NamespacePrefix,ApiVersion,MasterLabel FROM LightningComponentBundle WHERE NamespacePrefix = null'
+            const lwc = await safeLoad(
+                'LWC',
+                async () => {
+                    const lwcQuery = this.connector.conn.tooling.query(
+                        'SELECT Id,DeveloperName,NamespacePrefix,ApiVersion,MasterLabel FROM LightningComponentBundle WHERE NamespacePrefix = null'
+                    );
+                    return (
+                        (await lwcQuery.run({
+                            responseTarget: 'Records',
+                            autoFetch: true,
+                            maxFetch: 100000,
+                        })) || []
+                    );
+                },
+                []
             );
-            const lwc =
-                (await lwcQuery.run({
-                    responseTarget: 'Records',
-                    autoFetch: true,
-                    maxFetch: 100000,
-                })) || [];
 
             // Fetch Profiles
-            const profilesResult = await this.connector.conn.query('SELECT Id, Name FROM Profile');
-            const profiles = profilesResult.records;
+            const profiles = await safeLoad(
+                'Profiles',
+                async () => {
+                    const profilesResult = await this.connector.conn.query(
+                        'SELECT Id, Name FROM Profile'
+                    );
+                    return profilesResult?.records || [];
+                },
+                []
+            );
 
             // Fetch PermissionSets
-            const permSetsResult = await this.connector.conn.query(
-                'SELECT Id, Name FROM PermissionSet'
+            const permissionSets = await safeLoad(
+                'PermissionSets',
+                async () => {
+                    const permSetsResult = await this.connector.conn.query(
+                        'SELECT Id, Name FROM PermissionSet'
+                    );
+                    return permSetsResult?.records || [];
+                },
+                []
             );
-            const permissionSets = permSetsResult.records;
 
             // Fetch Flow
-            const flowQuery = this.connector.conn.tooling.query(
-                'SELECT Id, ActiveVersionId,LatestVersionId, Description, MasterLabel, DeveloperName, NamespacePrefix FROM FlowDefinition WHERE NamespacePrefix = null'
+            const flows = await safeLoad(
+                'FlowDefinition',
+                async () => {
+                    const flowQuery = this.connector.conn.tooling.query(
+                        'SELECT Id, ActiveVersionId,LatestVersionId, Description, MasterLabel, DeveloperName, NamespacePrefix FROM FlowDefinition WHERE NamespacePrefix = null'
+                    );
+                    return (
+                        (await flowQuery.run({
+                            responseTarget: 'Records',
+                            autoFetch: true,
+                            maxFetch: 100000,
+                        })) || []
+                    );
+                },
+                []
             );
-            const flows =
-                (await flowQuery.run({
-                    responseTarget: 'Records',
-                    autoFetch: true,
-                    maxFetch: 100000,
-                })) || [];
 
             // Fetch Agentforce
-            const agentforceQuery = this.connector.conn.query(
-                'SELECT Id, DeveloperName, MasterLabel FROM BotDefinition'
+            // BotDefinition is not available in all orgs/editions and can raise INVALID_TYPE.
+            // Treat as optional to avoid failing the entire overlay metadata load.
+            const agentforce = await safeLoad(
+                'Agentforce',
+                async () => {
+                    const agentforceQuery = this.connector.conn.tooling.query(
+                        'SELECT Id, DeveloperName, MasterLabel FROM BotDefinition'
+                    );
+                    return (
+                        (await agentforceQuery.run({
+                            responseTarget: 'Records',
+                            autoFetch: true,
+                            maxFetch: 100000,
+                        })) || []
+                    );
+                },
+                []
             );
-            const agentforce =
-                (await agentforceQuery.run({
-                    responseTarget: 'Records',
-                    autoFetch: true,
-                    maxFetch: 100000,
-                })) || [];
-            console.log('agentforce', agentforce);
             const data = {
                 objects,
                 profiles,
@@ -1134,7 +1255,11 @@ export default class Overlay extends ToolkitElement {
     }
 
     get tab_userLabel() {
-        return `Users (${this.formattedResults.filter(x => x.type === TYPE.USER).length})`;
+        const isBlankSearch = this.isBlankValue((this.searchValue || '').trim());
+        const count = isBlankSearch
+            ? this.userBrowseResults?.length || 0
+            : this.formattedResults.filter(x => x.type === TYPE.USER).length;
+        return `Users (${count})`;
     }
 
     get tab_objectLabel() {
@@ -1149,8 +1274,41 @@ export default class Overlay extends ToolkitElement {
         return this.viewerTab === TABS.ORGANIZATION;
     }
 
+    get isQuickLinkTab() {
+        return this.viewerTab === TABS.QUICKLINK;
+    }
+
     get isObjectTab() {
         return this.viewerTab === TABS.OBJECT;
+    }
+
+    get quickLinkGroups() {
+        if (!this.isQuickLinkTab) return [];
+        const items = Array.isArray(this.virtualList) ? this.virtualList : [];
+        const groups = new Map();
+
+        for (const item of items) {
+            const raw = item?.section || 'Other';
+            const section = String(raw).trim() || 'Other';
+            if (!groups.has(section)) {
+                groups.set(section, []);
+            }
+            groups.get(section).push(item);
+        }
+
+        return Array.from(groups.entries()).map(([section, list]) => {
+            const sorted = (list || []).slice().sort((a, b) => {
+                const la = String(a?.label || a?.name || '');
+                const lb = String(b?.label || b?.name || '');
+                return la.localeCompare(lb);
+            });
+            return {
+                key: section,
+                label: section,
+                count: sorted.length,
+                items: sorted,
+            };
+        });
     }
 
     get objectFilters() {
@@ -1251,6 +1409,9 @@ export default class Overlay extends ToolkitElement {
             case TABS.OBJECT:
                 return this.filterObjectsForTab(results.filter(x => x.type === TYPE.OBJECT));
             case TABS.USER:
+                if (this.isBlankValue((this.searchValue || '').trim())) {
+                    return Array.isArray(this.userBrowseResults) ? this.userBrowseResults : [];
+                }
                 return results.filter(x => x.type === TYPE.USER);
             case TABS.DEV:
                 return results.filter(x => x.type === TYPE.DEV_LINK);
@@ -1341,6 +1502,10 @@ export default class Overlay extends ToolkitElement {
 
     get hasNoItems() {
         return !this.hasItems;
+    }
+
+    get isFetchingList() {
+        return this.isFetchingMetadata || (this.viewerTab === TABS.USER && this.isFetchingUsers);
     }
 
     get isFooterDisplayed() {

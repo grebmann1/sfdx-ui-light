@@ -78,6 +78,20 @@ export default class App extends ToolkitElement {
     @track selectedJobDetails;
     lastCreatedJobId;
 
+    // Failed results preview (Job Monitor)
+    isFailedPreviewOpen = false;
+    failedPreviewLoading = false;
+    @track failedPreviewError;
+    @track failedPreviewColumns = [];
+    @track failedPreviewRows = [];
+    failedPreviewRowLimit = 200;
+    failedPreviewIsTruncated = false;
+    failedPreviewRawIsTruncated = false;
+    failedPreviewRawLimitChars = 1024 * 1024; // ~1MB
+    failedPreviewRawText = '';
+    failedPreviewEditorLoaded = false;
+    failedPreviewEditorModel = null;
+
     connectedCallback() {
         Analytics.trackAppOpen('dataImport', { alias: this.alias });
         if (this.connector?.conn) {
@@ -107,12 +121,12 @@ export default class App extends ToolkitElement {
     }
 
     /** UI handlers */
-    handleModeChange = (e) => {
+    handleModeChange = e => {
         this.mode = e.detail?.value || e.target?.value;
         this._setInfo(`Mode set to ${this.modeLabel}.`);
     };
 
-    handleActionChange = (e) => {
+    handleActionChange = e => {
         this.action = e.detail?.value || e.target?.value;
         // Reset externalId selection if leaving upsert
         if (this.action !== ACTION.UPSERT) {
@@ -121,30 +135,30 @@ export default class App extends ToolkitElement {
         this.validateMapping();
     };
 
-    handleDelimiterChange = (e) => {
+    handleDelimiterChange = e => {
         this.delimiterKey = e.detail?.value || e.target?.value;
         if (this.csvText) {
             this.parseCsv(this.csvText);
         }
     };
 
-    handleRestBatchSizeChange = (e) => {
+    handleRestBatchSizeChange = e => {
         const value = Number(e.detail?.value ?? e.target?.value);
         this.restBatchSize = Number.isFinite(value) && value > 0 ? value : 200;
     };
 
-    handleObjectInput = async (e) => {
-        this.objectApiName = e.target?.value;
+    handleObjectInput = async e => {
+        this.objectApiName = e.detail?.value ?? e.target?.value;
         await this.loadSObjectDescribe();
         this.validateMapping();
     };
 
-    handleExternalIdChange = (e) => {
+    handleExternalIdChange = e => {
         this.externalIdFieldName = e.detail?.value || e.target?.value;
         this.validateMapping();
     };
 
-    handleFileChange = async (e) => {
+    handleFileChange = async e => {
         this.csvError = null;
         const file = e.target?.files?.[0];
         if (!file) return;
@@ -159,9 +173,11 @@ export default class App extends ToolkitElement {
         }
     };
 
-    handleMappingInput = (e) => {
-        const key = e.target?.dataset?.key;
-        const value = e.target?.value ?? '';
+    // Legacy: mapping input used to be a plain <input/> with a datalist. We now use slds-searchable-combobox.
+
+    handleMappingChange = e => {
+        const key = e.currentTarget?.dataset?.key;
+        const value = e.detail?.value ?? '';
         const idx = this.mappingRows.findIndex(r => r.key === key);
         if (idx === -1) return;
         this.mappingRows[idx] = {
@@ -171,7 +187,7 @@ export default class App extends ToolkitElement {
         this.validateMapping();
     };
 
-    handleClearSingleMapping = (e) => {
+    handleClearSingleMapping = e => {
         const key = e.currentTarget?.dataset?.key;
         const idx = this.mappingRows.findIndex(r => r.key === key);
         if (idx === -1) return;
@@ -251,10 +267,11 @@ export default class App extends ToolkitElement {
         await this.refreshJobs();
     };
 
-    handleSelectJob = async (e) => {
+    handleSelectJob = async e => {
         e.preventDefault?.();
         const id = e.currentTarget?.dataset?.id || e.target?.dataset?.id;
         if (!id) return;
+        this.resetFailedPreview();
         this.selectedJob = this.jobs.find(j => j.id === id) || { id };
         await this.refreshSelectedJob();
     };
@@ -271,6 +288,83 @@ export default class App extends ToolkitElement {
     handleDownloadFailed = async () => {
         if (!this.selectedJob?.id) return;
         await this.downloadBulkV2Results(this.selectedJob.id, 'failedResults', 'failed');
+    };
+
+    handlePreviewFailed = async () => {
+        if (!this.selectedJob?.id) return;
+        if (isUndefinedOrNull(this.connector?.conn)) return;
+
+        const jobId = this.selectedJob.id;
+        this.isFailedPreviewOpen = true;
+        this.failedPreviewLoading = true;
+        this.failedPreviewError = null;
+        this.failedPreviewColumns = [];
+        this.failedPreviewRows = [];
+        this.failedPreviewIsTruncated = false;
+        this.failedPreviewRawIsTruncated = false;
+        this.failedPreviewRawText = '';
+        this._updateFailedPreviewEditor('');
+
+        try {
+            const csv = await this.fetchBulkV2ResultsText(jobId, 'failedResults');
+            const rawText = this._truncateFailedPreviewRaw(csv);
+            this.failedPreviewRawText = rawText;
+            this._updateFailedPreviewEditor(rawText);
+
+            const text = String(csv || '');
+            const trimmed = text.trimStart();
+            if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+                throw new Error(
+                    'Failed results preview is not a CSV file (received JSON). Use “Download Failed” to inspect the full response.'
+                );
+            }
+
+            // Let the parser auto-detect delimiter to avoid locale-specific CSV formats.
+            const parsed = CSV.parseCsvText(text, { delimiter: '' });
+            if (parsed?.error && !(parsed?.rows?.length || 0)) {
+                const msg = String(parsed.error || 'Failed to parse CSV');
+                if (msg.toLowerCase().includes('too many fields')) {
+                    throw new Error(
+                        'Failed to parse results CSV (malformed or unexpected delimiter). Use “Download Failed” for the full file.'
+                    );
+                }
+                throw new Error(msg);
+            }
+
+            const { columns, rows, isTruncated } = this._buildFailedPreviewTable({
+                jobId,
+                headers: parsed?.headers || [],
+                rows: parsed?.rows || [],
+            });
+            this.failedPreviewColumns = columns;
+            this.failedPreviewRows = rows;
+            this.failedPreviewIsTruncated = isTruncated;
+        } catch (e) {
+            this.failedPreviewError = e?.message || String(e);
+        } finally {
+            this.failedPreviewLoading = false;
+        }
+    };
+
+    handleCloseFailedPreview = () => {
+        this.resetFailedPreview();
+    };
+
+    handleFailedPreviewMonacoLoaded = () => {
+        this.failedPreviewEditorLoaded = true;
+        if (!this.refs?.failedPreviewEditor) return;
+
+        try {
+            this.failedPreviewEditorModel?.dispose?.();
+        } catch (e) {
+            // ignore
+        }
+        const model = this.refs.failedPreviewEditor.createModel({
+            body: this.failedPreviewRawText || '',
+            language: 'plaintext',
+        });
+        this.failedPreviewEditorModel = model;
+        this.refs.failedPreviewEditor.displayModel(model);
     };
 
     handleDownloadUnprocessed = async () => {
@@ -337,6 +431,7 @@ export default class App extends ToolkitElement {
             error: null,
             inputId: `di-map-${idx}`,
             inputClass: 'slds-input',
+            mappingWrapperClass: '',
         }));
 
         this.autoMapFields();
@@ -355,7 +450,9 @@ export default class App extends ToolkitElement {
     validateMapping() {
         if (!this.mappingRows?.length) return;
 
-        const descFields = Array.isArray(this.sobjectDescribe?.fields) ? this.sobjectDescribe.fields : [];
+        const descFields = Array.isArray(this.sobjectDescribe?.fields)
+            ? this.sobjectDescribe.fields
+            : [];
         const validFieldSet = new Set((this.fieldNames || []).map(f => f.toLowerCase()));
         const writeableFieldSet = new Set(
             descFields
@@ -386,6 +483,7 @@ export default class App extends ToolkitElement {
                 ...r,
                 error,
                 inputClass: error ? 'slds-input slds-has-error' : 'slds-input',
+                mappingWrapperClass: error ? 'slds-has-error' : '',
             };
         });
         this.mappingRows = updated;
@@ -422,7 +520,11 @@ export default class App extends ToolkitElement {
 
         if (this.action === ACTION.UPDATE) {
             const hasId = mappingTargets.some(t => t.toLowerCase() === 'id');
-            if (!hasId) return { ok: false, message: 'Update requires an Id column mapped to the Id field.' };
+            if (!hasId)
+                return {
+                    ok: false,
+                    message: 'Update requires an Id column mapped to the Id field.',
+                };
         }
 
         if (this.action === ACTION.UPSERT) {
@@ -492,11 +594,9 @@ export default class App extends ToolkitElement {
             } else if (this.action === ACTION.UPDATE) {
                 rets = await sobj.update(chunkRecords, { allOrNone: false });
             } else {
-                rets = await sobj.upsert(
-                    chunkRecords,
-                    this.externalIdFieldName,
-                    { allOrNone: false }
-                );
+                rets = await sobj.upsert(chunkRecords, this.externalIdFieldName, {
+                    allOrNone: false,
+                });
             }
             const arr = Array.isArray(rets) ? rets : [rets];
             for (let c = 0; c < arr.length; c++) {
@@ -546,7 +646,10 @@ export default class App extends ToolkitElement {
 
     assignRelationshipField(targetRecord, dottedField, value) {
         // Supports e.g. Parent__r.External_ID__c → { Parent__r: { External_ID__c: value } }
-        const parts = dottedField.split('.').map(p => p.trim()).filter(Boolean);
+        const parts = dottedField
+            .split('.')
+            .map(p => p.trim())
+            .filter(Boolean);
         if (parts.length < 2) {
             targetRecord[dottedField] = value;
             return;
@@ -565,7 +668,10 @@ export default class App extends ToolkitElement {
             rowNumber: rowIndex + 1,
             success: ret?.success === true,
             id: ret?.id || '',
-            errors: errors.map(e => e?.message || e?.content || String(e)).filter(Boolean).join('; '),
+            errors: errors
+                .map(e => e?.message || e?.content || String(e))
+                .filter(Boolean)
+                .join('; '),
         };
     }
 
@@ -586,7 +692,9 @@ export default class App extends ToolkitElement {
                 contentType: 'CSV',
                 lineEnding: 'LF',
                 columnDelimiter: delimiter,
-                ...(this.action === ACTION.UPSERT ? { externalIdFieldName: this.externalIdFieldName } : {}),
+                ...(this.action === ACTION.UPSERT
+                    ? { externalIdFieldName: this.externalIdFieldName }
+                    : {}),
             }),
             headers: { 'Content-Type': 'application/json' },
         });
@@ -674,7 +782,7 @@ export default class App extends ToolkitElement {
         return `${header}\n${lines.join('\n')}`;
     }
 
-    async downloadBulkV2Results(jobId, endpointSuffix, label) {
+    async fetchBulkV2ResultsText(jobId, endpointSuffix) {
         const version = this.connector.conn.version;
         const candidates = [
             endpointSuffix,
@@ -700,7 +808,11 @@ export default class App extends ToolkitElement {
         if (text == null) throw lastError || new Error('Failed downloading results.');
 
         // jsforce may parse response; ensure we stringify
-        const content = typeof text === 'string' ? text : JSON.stringify(text, null, 2);
+        return typeof text === 'string' ? text : JSON.stringify(text, null, 2);
+    }
+
+    async downloadBulkV2Results(jobId, endpointSuffix, label) {
+        const content = await this.fetchBulkV2ResultsText(jobId, endpointSuffix);
         this.downloadText(
             `${this.objectApiName || 'bulk'}-${jobId}-${label}.csv`,
             content,
@@ -765,7 +877,9 @@ export default class App extends ToolkitElement {
                     numberRecordsFailed: j.numberRecordsFailed,
                     createdDate: j.createdDate,
                 }))
-                .sort((a, b) => String(b.createdDate || '').localeCompare(String(a.createdDate || '')));
+                .sort((a, b) =>
+                    String(b.createdDate || '').localeCompare(String(a.createdDate || ''))
+                );
         } catch (e) {
             this.jobsError = e?.message || String(e);
         } finally {
@@ -845,6 +959,130 @@ export default class App extends ToolkitElement {
         URL.revokeObjectURL(url);
     }
 
+    /** Failed results preview helpers */
+    resetFailedPreview() {
+        this.isFailedPreviewOpen = false;
+        this.failedPreviewLoading = false;
+        this.failedPreviewError = null;
+        this.failedPreviewColumns = [];
+        this.failedPreviewRows = [];
+        this.failedPreviewIsTruncated = false;
+        this.failedPreviewRawIsTruncated = false;
+        this.failedPreviewRawText = '';
+        try {
+            this.failedPreviewEditorModel?.dispose?.();
+        } catch (e) {
+            // ignore
+        }
+        this.failedPreviewEditorLoaded = false;
+        this.failedPreviewEditorModel = null;
+    }
+
+    _truncateFailedPreviewRaw(text) {
+        const raw = String(text || '');
+        if (raw.length > this.failedPreviewRawLimitChars) {
+            this.failedPreviewRawIsTruncated = true;
+            return raw.slice(0, this.failedPreviewRawLimitChars);
+        }
+        this.failedPreviewRawIsTruncated = false;
+        return raw;
+    }
+
+    _updateFailedPreviewEditor(text) {
+        if (!this.failedPreviewEditorLoaded || !this.failedPreviewEditorModel) return;
+        try {
+            this.failedPreviewEditorModel.setValue(String(text || ''));
+        } catch (e) {
+            // non-blocking: editor may have been unmounted
+        }
+    }
+
+    _buildFailedPreviewTable({ jobId, headers, rows }) {
+        const normalizedHeaders = (headers || []).map(h => String(h));
+        const lowerToOriginal = new Map(normalizedHeaders.map(h => [h.toLowerCase(), h]));
+
+        const findHeader = (priorities, predicate) => {
+            for (const p of priorities || []) {
+                const h = lowerToOriginal.get(String(p).toLowerCase());
+                if (h) return h;
+            }
+            if (typeof predicate === 'function') {
+                const match = normalizedHeaders.find(h => predicate(h.toLowerCase()));
+                if (match) return match;
+            }
+            return null;
+        };
+
+        const lineHeader = findHeader(
+            ['sf__linenumber', 'linenumber', 'sf__rownumber', 'rownumber', 'row', 'rownumber'],
+            h => h.includes('line')
+        );
+        const idHeader = findHeader(['sf__id', 'id'], h => h === 'sf__id' || h.endsWith('id'));
+        const errorHeader = findHeader(
+            ['sf__error', 'error', 'errormessage', 'sf__errormessage'],
+            h => h.includes('error')
+        );
+
+        const used = new Set([lineHeader, idHeader, errorHeader].filter(Boolean));
+        const extraHeaders = normalizedHeaders.filter(h => !used.has(h)).slice(0, 2);
+        const extraKeys = extraHeaders.map((h, idx) => ({ header: h, key: `extra${idx}` }));
+
+        const columns = [
+            {
+                label: 'Line',
+                fieldName: 'lineNumber',
+                type: 'number',
+                initialWidth: 90,
+            },
+            ...(idHeader
+                ? [
+                      {
+                          label: 'Id',
+                          fieldName: 'recordId',
+                          type: 'text',
+                          initialWidth: 220,
+                      },
+                  ]
+                : []),
+            ...(errorHeader
+                ? [
+                      {
+                          label: 'Error',
+                          fieldName: 'error',
+                          type: 'text',
+                          wrapText: true,
+                      },
+                  ]
+                : []),
+            ...extraKeys.map(x => ({
+                label: x.header,
+                fieldName: x.key,
+                type: 'text',
+                wrapText: true,
+            })),
+        ];
+
+        const inputRows = Array.isArray(rows) ? rows : [];
+        const isTruncated = inputRows.length > this.failedPreviewRowLimit;
+        const limited = inputRows.slice(0, this.failedPreviewRowLimit);
+        const data = limited.map((r, idx) => {
+            const lineNumberValue = lineHeader ? r?.[lineHeader] : null;
+            const lineNumber = Number(lineNumberValue);
+            const base = {
+                key: `${jobId}-${idx}`,
+                lineNumber: Number.isFinite(lineNumber) && lineNumber > 0 ? lineNumber : idx + 1,
+                recordId: idHeader ? String(r?.[idHeader] || '') : '',
+                error: errorHeader ? String(r?.[errorHeader] || '') : '',
+            };
+            for (const x of extraKeys) {
+                base[x.key] = String(r?.[x.header] || '');
+            }
+            return base;
+        });
+
+        return { columns, rows: data, isTruncated };
+    }
+
     /** Banner helpers */
     _setInfo(msg) {
         this.lastRunMessage = msg;
@@ -915,8 +1153,27 @@ export default class App extends ToolkitElement {
         return total ? `${mapped}/${total} mapped` : '';
     }
 
-    get fieldDatalistOptions() {
-        return this.fieldNames || [];
+    get fieldMappingOptions() {
+        const descFields = Array.isArray(this.sobjectDescribe?.fields)
+            ? this.sobjectDescribe.fields
+            : [];
+
+        const isWriteable = f => {
+            if (!f?.name) return false;
+            if (f.name === 'Id') return true;
+            if (this.action === ACTION.INSERT) return f.createable === true;
+            if (this.action === ACTION.UPDATE) return f.updateable === true;
+            // UPSERT
+            return f.createable === true || f.updateable === true;
+        };
+
+        return descFields
+            .filter(isWriteable)
+            .map(f => ({
+                label: `${f.label || f.name} (${f.name})`,
+                value: f.name,
+            }))
+            .sort((a, b) => a.label.localeCompare(b.label));
     }
 
     get isRunDisabled() {
@@ -977,11 +1234,19 @@ export default class App extends ToolkitElement {
         return isUndefinedOrNull(this.selectedJob?.id) || this.isJobsRefreshing;
     }
 
+    get isPreviewFailedDisabled() {
+        return this.isDownloadDisabled || this.failedPreviewLoading;
+    }
+
     get isAbortDisabled() {
         const state = this.selectedJobDetails?.state;
         if (this.isJobsRefreshing) return true;
         // Abort generally only works in Open/UploadComplete/InProgress
         return !this.selectedJob?.id || ['JobComplete', 'Failed', 'Aborted'].includes(state);
+    }
+
+    get failedPreviewHasRows() {
+        return (this.failedPreviewRows?.length || 0) > 0;
     }
 
     get bulkV2ColumnDelimiter() {
@@ -997,4 +1262,3 @@ export default class App extends ToolkitElement {
         }
     }
 }
-
