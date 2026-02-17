@@ -303,6 +303,7 @@ export default class App extends ToolkitElement {
         return data.map(x => {
             const isMatch = x.username && x.username === _username && !x._hasError;
             const isUsernameType = x.credentialType === OAUTH_TYPES.USERNAME;
+            const _isOrgFarm = isOrgFarmConnection(x);
             return {
                 ...x,
                 id: x.id || x.alias,
@@ -319,6 +320,7 @@ export default class App extends ToolkitElement {
                       ? 'authorize'
                       : 'login',
                 _isRedirect: x.credentialType === OAUTH_TYPES.REDIRECT,
+                _isOrgFarm,
             };
         });
     };
@@ -809,7 +811,7 @@ export default class App extends ToolkitElement {
                                     checkIfPresent(x.username, this.filter)));
                         if (!matchesText) return false;
 
-                        const isOrgFarm = isOrgFarmConnection(x);
+                        const isOrgFarm = x._isOrgFarm === true;
                         return (this.showOrgFarm && isOrgFarm) || (this.showNonOrgFarm && !isOrgFarm);
                     })
                     .map(x => ({
@@ -829,7 +831,7 @@ export default class App extends ToolkitElement {
                     (checkIfPresent(x.alias, this.filter) || checkIfPresent(x.username, this.filter)));
             if (!matchesText) return false;
 
-            const isOrgFarm = isOrgFarmConnection(x);
+            const isOrgFarm = x._isOrgFarm === true;
             return (this.showOrgFarm && isOrgFarm) || (this.showNonOrgFarm && !isOrgFarm);
         });
     }
