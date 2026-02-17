@@ -1,5 +1,54 @@
 [
   {
+    "version": "1.5.0",
+    "date": "February 17th, 2026",
+    "sections": [
+      {
+        "title": "Enhancements",
+        "categories": [
+          {
+            "category": "Data Import",
+            "items": [
+              "Added a failed-results preview to quickly inspect rejected rows and errors.",
+              "Improved the import UI and CSV processing for smoother workflows."
+            ]
+          },
+          {
+            "category": "Text Compare",
+            "items": [
+              "Refreshed Text Compare with clearer diff highlighting and synced scrolling.",
+              "Ignore whitespace now focuses the diff on meaningful content changes."
+            ]
+          },
+          {
+            "category": "Connections",
+            "items": [
+              "Improved the connection import OAuth flow with clearer feedback and better error handling.",
+              "Updated connection cards styling and interactions for faster navigation."
+            ]
+          },
+          {
+            "category": "UI & Styling",
+            "items": [
+              "Introduced SLDS Plus styles and applied UI polish across menus, layouts, and panels."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Bug Fixes",
+        "categories": [
+          {
+            "category": "Text Compare",
+            "items": [
+              "Removed the non-functional \"Ignore case\" toggle to avoid misleading diffs."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.4.3",
     "date": "October 28th, 2025",
     "sections": [
