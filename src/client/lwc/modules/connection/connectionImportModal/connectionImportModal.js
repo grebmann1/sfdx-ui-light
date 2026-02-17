@@ -4,10 +4,13 @@ import LightningModal from 'lightning/modal';
 import { api, track } from 'lwc';
 import { isNotUndefinedOrNull } from 'shared/utils';
 import {
-    extractConfig,
+    extractConfig as extractSfdxAuthUrlConfig,
     credentialStrategies,
     notificationService,
     validateInputs,
+    normalizeConfiguration,
+    OAUTH_TYPES,
+    platformService,
 } from 'connection/utils';
 const { showToast, handleError } = notificationService;
 
@@ -38,7 +41,7 @@ export default class ConnectionImportModal extends LightningModal {
             this.originalSize = config.length;
             // Processing
             config.forEach(item => {
-                const params = extractConfig(item.sfdxAuthUrl);
+                const params = extractSfdxAuthUrlConfig(item.sfdxAuthUrl);
                 if (!params.instanceUrl.startsWith('http')) {
                     params.instanceUrl = `https://${params.instanceUrl}`;
                 }
@@ -58,24 +61,26 @@ export default class ConnectionImportModal extends LightningModal {
         textAreaCmp.reportValidity();
     };
 
-    getOauthForNewConnections = async () => {
-        return await Promise.all(
-            this.newConnections
-                .filter(x => this.list_new.includes(x.alias))
-                .map(async settings => {
-                    try {
-                        // Assume OAuth for imported connections
-                        const connector = await credentialStrategies.OAUTH.connect({
-                            alias: settings.alias,
-                            loginUrl: settings.instanceUrl,
-                        });
-                        return connector;
-                    } catch (e) {
-                        handleError(e, 'Import OAuth Connect Error');
-                        return null;
-                    }
-                })
+    buildNormalizedImportedConfiguration = settings => {
+        // Imported org.json entries contain a refresh token (sfdxAuthUrl).
+        // Persist as an OAuth config so the OAuth strategy can refresh silently (no interactive login).
+        return normalizeConfiguration(
+            {
+                credentialType: OAUTH_TYPES.OAUTH,
+                alias: settings.alias,
+                refreshToken: settings.refreshToken,
+                instanceUrl: settings.instanceUrl,
+            },
+            true
         );
+    };
+
+    importAndConnect = async settings => {
+        const normalized = this.buildNormalizedImportedConfiguration(settings);
+        await platformService.saveConfiguration(settings.alias, normalized);
+        // Now that configuration is persisted, oauth.connect will use the refreshToken branch (no web auth flow).
+        const connector = await credentialStrategies.OAUTH.connect({ alias: settings.alias });
+        return connector;
     };
 
     /** events **/
@@ -89,7 +94,7 @@ export default class ConnectionImportModal extends LightningModal {
         const config = JSON.parse(e.detail.value);
         // Processing
         config.forEach(item => {
-            const params = extractConfig(item.sfdxAuthUrl);
+            const params = extractSfdxAuthUrlConfig(item.sfdxAuthUrl);
             if (!params.instanceUrl.startsWith('http')) {
                 params.instanceUrl = `https://${params.instanceUrl}`;
             }
@@ -123,16 +128,39 @@ export default class ConnectionImportModal extends LightningModal {
     handleSaveClick = async () => {
         this.isLoading = true;
         try {
-            const connectors = await this.getOauthForNewConnections();
+            const selected = this.newConnections.filter(x => this.list_new.includes(x.alias));
+            if (!selected.length) {
+                showToast({
+                    label: 'No credentials selected to import.',
+                    variant: 'warning',
+                });
+                return;
+            }
+
+            const results = await Promise.allSettled(selected.map(this.importAndConnect));
+            const successCount = results.filter(r => r.status === 'fulfilled').length;
+            const failures = results
+                .filter(r => r.status === 'rejected')
+                .map(r => (r.reason?.message ? r.reason.message : String(r.reason)));
+
+            if (failures.length) {
+                failures.forEach(msg => handleError(new Error(msg), 'Import OAuth Connect Error'));
+            }
+
             showToast({
-                label: `${this.list_new.length} credential(s) added !`,
-                variant: 'success',
+                label:
+                    failures.length === 0
+                        ? `${successCount} credential(s) imported and validated.`
+                        : `${successCount}/${selected.length} credential(s) imported. Some need re-authorization.`,
+                variant: failures.length === 0 ? 'success' : 'warning',
             });
-            this.close('success');
+
+            this.close(failures.length === 0 ? 'success' : 'partial');
         } catch (e) {
             handleError(e, 'Import Save Error');
+        } finally {
+            this.isLoading = false;
         }
-        this.isLoading = false;
     };
 
     handleDualListChange = e => {
@@ -157,5 +185,9 @@ export default class ConnectionImportModal extends LightningModal {
 
     get isResultDisplayed() {
         return isNotUndefinedOrNull(this.newConnections) && this.newConnections.length > 0;
+    }
+
+    get saveInProcess() {
+        return this.isLoading;
     }
 }
