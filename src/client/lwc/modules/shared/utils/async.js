@@ -58,7 +58,7 @@ export const runSilent = async (func, placeholder) => {
     try {
         return await func();
     } catch (e) {
-        console.error('Run Silent', e);
+        console.warn('Run Silent', e);
     }
     return placeholder;
 };

@@ -31,6 +31,10 @@ const DELIMITER_TO_CHAR = {
     [DELIMITER.PIPE]: '|',
 };
 
+const REST_MAX_BATCH_SIZE = 200;
+const CSV_WARN_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+const CSV_MAX_SIZE_BYTES = 25 * 1024 * 1024; // 25MB
+
 export default class App extends ToolkitElement {
     @api namespace;
 
@@ -144,7 +148,10 @@ export default class App extends ToolkitElement {
 
     handleRestBatchSizeChange = e => {
         const value = Number(e.detail?.value ?? e.target?.value);
-        this.restBatchSize = Number.isFinite(value) && value > 0 ? value : 200;
+        this.restBatchSize =
+            Number.isFinite(value) && value > 0
+                ? Math.min(value, REST_MAX_BATCH_SIZE)
+                : REST_MAX_BATCH_SIZE;
     };
 
     handleObjectInput = async e => {
@@ -165,6 +172,26 @@ export default class App extends ToolkitElement {
         this.csvFileName = file.name;
 
         try {
+            if (file.size > CSV_MAX_SIZE_BYTES) {
+                const sizeMb = (file.size / 1024 / 1024).toFixed(1);
+                const maxMb = (CSV_MAX_SIZE_BYTES / 1024 / 1024).toFixed(0);
+                this.csvText = null;
+                this.csvHeaders = [];
+                this.csvRows = [];
+                this.mappingRows = [];
+                this.csvError = `CSV is too large (${sizeMb}MB). Max supported size is ${maxMb}MB. Split the file into smaller parts.`;
+                return;
+            }
+
+            if (file.size > CSV_WARN_SIZE_BYTES) {
+                const sizeMb = (file.size / 1024 / 1024).toFixed(1);
+                Toast.show({
+                    label: 'Large CSV file',
+                    message: `This CSV is ${sizeMb}MB and may slow down the UI while parsing/mapping.`,
+                    variant: 'warning',
+                });
+            }
+
             const text = await file.text();
             this.csvText = text;
             this.parseCsv(text);
@@ -421,8 +448,32 @@ export default class App extends ToolkitElement {
             return;
         }
 
-        this.csvHeaders = parsed.headers;
-        this.csvRows = parsed.rows;
+        const headers = (parsed.headers || []).map(h => String(h || '').trim());
+        const rows = Array.isArray(parsed.rows) ? parsed.rows : [];
+
+        const emptyHeaders = headers.filter(h => !h);
+        if (emptyHeaders.length) {
+            this.csvError =
+                'CSV header contains empty column name(s). Ensure the first row has a name for every column.';
+            return;
+        }
+
+        const seen = new Set();
+        const duplicates = new Set();
+        for (const h of headers) {
+            const key = h.toLowerCase();
+            if (seen.has(key)) duplicates.add(h);
+            else seen.add(key);
+        }
+        if (duplicates.size) {
+            this.csvError = `CSV has duplicate column headers: ${Array.from(duplicates).join(
+                ', '
+            )}. Rename columns to make them unique.`;
+            return;
+        }
+
+        this.csvHeaders = headers;
+        this.csvRows = rows;
 
         this.mappingRows = this.csvHeaders.map((h, idx) => ({
             key: String(idx),
@@ -442,7 +493,12 @@ export default class App extends ToolkitElement {
         const fieldSet = new Set((this.fieldNames || []).map(f => f.toLowerCase()));
         this.mappingRows = this.mappingRows.map(r => {
             const candidate = (r.csvHeader || '').trim();
-            const mapped = fieldSet.has(candidate.toLowerCase()) ? candidate : r.targetField;
+            const candidateLower = candidate.toLowerCase();
+            // Avoid suggesting Id for insert/upsert (it commonly fails). Id is only relevant for Update.
+            if (candidateLower === 'id' && this.action !== ACTION.UPDATE) {
+                return r;
+            }
+            const mapped = fieldSet.has(candidateLower) ? candidate : r.targetField;
             return { ...r, targetField: mapped };
         });
     }
@@ -458,7 +514,7 @@ export default class App extends ToolkitElement {
             descFields
                 .filter(f => {
                     if (!f?.name) return false;
-                    if (f.name === 'Id') return true;
+                    if (f.name === 'Id') return this.action === ACTION.UPDATE;
                     if (this.action === ACTION.INSERT) return f.createable === true;
                     if (this.action === ACTION.UPDATE) return f.updateable === true;
                     // UPSERT
@@ -467,16 +523,34 @@ export default class App extends ToolkitElement {
                 .map(f => f.name.toLowerCase())
         );
 
+        const targetCounts = new Map();
+        for (const r of this.mappingRows) {
+            const target = (r.targetField || '').trim();
+            if (!target) continue;
+            const key = target.toLowerCase();
+            targetCounts.set(key, (targetCounts.get(key) || 0) + 1);
+        }
+        const duplicateTargets = new Set(
+            Array.from(targetCounts.entries())
+                .filter(([, count]) => count > 1)
+                .map(([key]) => key)
+        );
+
         const updated = this.mappingRows.map(r => {
             const target = (r.targetField || '').trim();
             let error = null;
             if (target) {
+                const targetLower = target.toLowerCase();
                 // Relationship dot notation is allowed (Bulk + REST nested)
                 const isRelationship = target.includes('.');
-                if (!isRelationship && !validFieldSet.has(target.toLowerCase())) {
+                if (!isRelationship && targetLower === 'id' && this.action !== ACTION.UPDATE) {
+                    error = 'Id can only be used for Update';
+                } else if (!isRelationship && !validFieldSet.has(targetLower)) {
                     error = 'Unknown field';
-                } else if (!isRelationship && !writeableFieldSet.has(target.toLowerCase())) {
+                } else if (!isRelationship && !writeableFieldSet.has(targetLower)) {
                     error = 'Field not writeable for this action';
+                } else if (duplicateTargets.has(targetLower)) {
+                    error = 'Duplicate mapping';
                 }
             }
             return {
@@ -559,7 +633,7 @@ export default class App extends ToolkitElement {
             this.sobjectDescribe = desc;
             this.fieldNames = (desc?.fields || []).map(f => f.name).filter(Boolean);
             const externalIdFields = (desc?.fields || [])
-                .filter(f => f.externalId === true || f.name === 'Id')
+                .filter(f => f.externalId === true)
                 .map(f => ({ label: f.name, value: f.name }));
             this.externalIdOptions = externalIdFields;
         } catch (e) {
@@ -570,7 +644,11 @@ export default class App extends ToolkitElement {
     /** REST import */
     async runRestImport({ onlyRowIndexes } = {}) {
         this._setInfo('Running REST import...');
-        const batchSize = Math.min(Math.max(Number(this.restBatchSize) || 200, 1), 2000);
+        // JSforce multi-record CRUD uses sObject collections/composite APIs (200 records/request).
+        const batchSize = Math.min(
+            Math.max(Number(this.restBatchSize) || REST_MAX_BATCH_SIZE, 1),
+            REST_MAX_BATCH_SIZE
+        );
         const payload = this.buildRecordsForRestPayload();
         this.lastRestPayload = payload;
 
@@ -717,30 +795,56 @@ export default class App extends ToolkitElement {
         });
 
         this._setInfo(`Job ${job.id} created. Polling...`);
-        const completed = await this.pollBulkV2Job(job.id);
+        const { job: completed, stoppedReason } = await this.pollBulkV2Job(job.id);
 
         this.selectedJob = { id: job.id };
         this.selectedJobDetails = completed;
         const processed = completed?.numberRecordsProcessed ?? '';
         const failed = completed?.numberRecordsFailed ?? '';
-        this._setSuccess(`Bulk v2 job completed. Processed: ${processed}, Failed: ${failed}.`);
+
+        // Avoid banner updates if the user navigated away from the app.
+        if (!this.isActive) return;
+
+        const state = completed?.state;
+        if (state === 'JobComplete') {
+            this._setSuccess(`Bulk v2 job completed. Processed: ${processed}, Failed: ${failed}.`);
+        } else if (state === 'Failed') {
+            this._setError(`Bulk v2 job failed. Processed: ${processed}, Failed: ${failed}.`);
+        } else if (state === 'Aborted') {
+            this._setWarning(`Bulk v2 job aborted. Processed: ${processed}, Failed: ${failed}.`);
+        } else if (stoppedReason === 'cancelRequested') {
+            this._setWarning(
+                `Cancel requested. Job state: ${state || 'Unknown'}. Processed: ${processed}, Failed: ${failed}.`
+            );
+        } else {
+            this._setInfo(
+                `Bulk v2 job state: ${state || 'Unknown'}. Processed: ${processed}, Failed: ${failed}.`
+            );
+        }
     }
 
     async pollBulkV2Job(jobId) {
         const version = this.connector.conn.version;
         const start = Date.now();
         const timeoutMs = 20 * 60 * 1000;
+        let stoppedReason = null;
         // eslint-disable-next-line no-constant-condition
         while (true) {
-            if (this.cancelRequested) break;
-            if (!this.isActive) break;
+            if (this.cancelRequested) {
+                stoppedReason = 'cancelRequested';
+                break;
+            }
+            if (!this.isActive) {
+                stoppedReason = 'inactive';
+                break;
+            }
             const job = await this.connector.conn.request({
                 method: 'GET',
                 url: `/services/data/v${version}/jobs/ingest/${jobId}`,
             });
             const state = job?.state;
             if (['JobComplete', 'Failed', 'Aborted'].includes(state)) {
-                return job;
+                return { job, stoppedReason: null };
             }
             if (Date.now() - start > timeoutMs) {
                 throw new Error('Polling timed out. Job is still running.');
@@ -749,10 +853,11 @@ export default class App extends ToolkitElement {
             // eslint-disable-next-line no-await-in-loop
             await new Promise(r => setTimeout(r, 2000));
         }
-        return await this.connector.conn.request({
+        const job = await this.connector.conn.request({
             method: 'GET',
             url: `/services/data/v${version}/jobs/ingest/${jobId}`,
         });
+        return { job, stoppedReason };
     }
 
     async abortBulkV2Job(jobId) {
@@ -955,8 +1060,17 @@ export default class App extends ToolkitElement {
         const a = document.createElement('a');
         a.href = url;
         a.download = name;
+        a.style.display = 'none';
+        document.body.appendChild(a);
         a.click();
-        URL.revokeObjectURL(url);
+        // Delay revoke to avoid flaky downloads in some browsers (notably Safari/WebKit).
+        setTimeout(() => {
+            try {
+                URL.revokeObjectURL(url);
+            } finally {
+                a.remove();
+            }
+        }, 1000);
     }
 
     /** Failed results preview helpers */
@@ -1160,7 +1274,7 @@ export default class App extends ToolkitElement {
 
         const isWriteable = f => {
             if (!f?.name) return false;
-            if (f.name === 'Id') return true;
+            if (f.name === 'Id') return this.action === ACTION.UPDATE;
             if (this.action === ACTION.INSERT) return f.createable === true;
             if (this.action === ACTION.UPDATE) return f.updateable === true;
             // UPSERT

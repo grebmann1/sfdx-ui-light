@@ -332,7 +332,12 @@ export default class App extends LightningElement {
         this.isApplicationTabVisible = config.isApplicationTabVisible;
         
         if (isEmpty(config.openaiKey)) {
-            this.checkForInjected();
+            // `checkForInjected` exists in some app modules but not all.
+            // Guard to avoid runtime crash when the method isn't implemented.
+            const maybeCheckForInjected = this.checkForInjected;
+            if (typeof maybeCheckForInjected === 'function') {
+                maybeCheckForInjected.call(this);
+            }
         }
     };
 

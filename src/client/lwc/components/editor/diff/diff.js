@@ -1,3 +1,4 @@
+import * as DiffLib from 'diff';
 import { api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import { setupMonaco } from 'editor/utils';
@@ -11,17 +12,21 @@ export default class Diff extends ToolkitElement {
     _leftValue = '';
     _rightValue = '';
     _ignoreWhitespace = false;
-    _ignoreCase = false;
 
     monaco;
-    diffEditor;
     originalModel;
     modifiedModel;
+    leftEditor;
+    rightEditor;
     isLoading = true;
     hasLoaded = false;
     _hasRendered = false;
     _changeTimeout;
     _skipNextChange = false;
+    _leftDecorationIds = [];
+    _rightDecorationIds = [];
+    _leftScrollDisposable;
+    _rightScrollDisposable;
 
     @api
     get leftValue() {
@@ -50,25 +55,13 @@ export default class Diff extends ToolkitElement {
         this._applyOptionsFromProps();
     }
 
-    @api
-    get ignoreCase() {
-        return this._ignoreCase;
-    }
-    set ignoreCase(value) {
-        this._ignoreCase = !!value;
-        this._applyOptionsFromProps();
-    }
-
     connectedCallback() {}
 
     disconnectedCallback() {
         if (this._changeTimeout) {
             clearTimeout(this._changeTimeout);
         }
-        if (this.diffEditor) {
-            this.diffEditor.dispose();
-            this.diffEditor = null;
-        }
+        this._disposeEditors();
         if (this.originalModel && !this.originalModel.isDisposed()) {
             this.originalModel.dispose();
         }
@@ -82,42 +75,67 @@ export default class Diff extends ToolkitElement {
             this._hasRendered = true;
             setupMonaco().then(monaco => {
                 this.monaco = monaco;
-                this.createDiffEditor();
+                this.createEditors();
             });
         }
     }
 
-    createDiffEditor() {
-        if (!this.monaco || !this.refs.editor) return;
+    createEditors() {
+        if (!this.monaco || !this.refs.leftEditor || !this.refs.rightEditor) return;
 
-        const container = this.refs.editor;
-        container.style.width = '100%';
-        container.style.height = '100%';
+        const leftContainer = this.refs.leftEditor;
+        const rightContainer = this.refs.rightEditor;
+        leftContainer.style.width = '100%';
+        leftContainer.style.height = '100%';
+        rightContainer.style.width = '100%';
+        rightContainer.style.height = '100%';
 
         this.originalModel = this.monaco.editor.createModel(this._leftValue, LANGUAGE);
         this.modifiedModel = this.monaco.editor.createModel(this._rightValue, LANGUAGE);
 
-        this.diffEditor = this.monaco.editor.createDiffEditor(container, {
+        this.leftEditor = this.monaco.editor.create(leftContainer, {
+            model: this.originalModel,
             theme: this.theme,
             readOnly: false,
-            originalEditable: true,
             wordWrap: 'on',
             minimap: { enabled: false },
             automaticLayout: true,
             scrollBeyondLastLine: false,
-            renderSideBySide: true,
-            ignoreTrimWhitespace: this._ignoreWhitespace,
         });
 
-        this.diffEditor.setModel({
-            original: this.originalModel,
-            modified: this.modifiedModel,
+        this.rightEditor = this.monaco.editor.create(rightContainer, {
+            model: this.modifiedModel,
+            theme: this.theme,
+            readOnly: false,
+            wordWrap: 'on',
+            minimap: { enabled: false },
+            automaticLayout: true,
+            scrollBeyondLastLine: false,
         });
 
         this._applyOptionsFromProps();
+        this._recomputeDiff();
+
+        let isSyncingFromLeft = false;
+        let isSyncingFromRight = false;
+        this._leftScrollDisposable = this.leftEditor.onDidScrollChange(e => {
+            if (isSyncingFromRight) return;
+            isSyncingFromLeft = true;
+            this.rightEditor.setScrollTop(e.scrollTop);
+            this.rightEditor.setScrollLeft(e.scrollLeft);
+            isSyncingFromLeft = false;
+        });
+        this._rightScrollDisposable = this.rightEditor.onDidScrollChange(e => {
+            if (isSyncingFromLeft) return;
+            isSyncingFromRight = true;
+            this.leftEditor.setScrollTop(e.scrollTop);
+            this.leftEditor.setScrollLeft(e.scrollLeft);
+            isSyncingFromRight = false;
+        });
 
         const onDidChangeContent = () => {
             if (this._skipNextChange) return;
+            this._recomputeDiff();
             if (this._changeTimeout) clearTimeout(this._changeTimeout);
             this._changeTimeout = setTimeout(() => {
                 this._changeTimeout = null;
@@ -125,8 +143,8 @@ export default class Diff extends ToolkitElement {
             }, CHANGE_EVENT_TIMEOUT);
         };
 
-        this.originalModel.onDidChangeContent(onDidChangeContent);
-        this.modifiedModel.onDidChangeContent(onDidChangeContent);
+        this.leftEditor.onDidChangeModelContent(onDidChangeContent);
+        this.rightEditor.onDidChangeModelContent(onDidChangeContent);
 
         this.isLoading = false;
         this.hasLoaded = true;
@@ -147,6 +165,7 @@ export default class Diff extends ToolkitElement {
         this._skipNextChange = true;
         this.originalModel.setValue(this._leftValue);
         this.modifiedModel.setValue(this._rightValue);
+        this._recomputeDiff();
         setTimeout(() => {
             this._skipNextChange = false;
         }, 0);
@@ -171,30 +190,119 @@ export default class Diff extends ToolkitElement {
     }
 
     _applyOptionsFromProps() {
-        if (!this.diffEditor) return;
+        if (!this.leftEditor || !this.rightEditor) return;
         try {
-            this.diffEditor.updateOptions({
-                ignoreTrimWhitespace: this._ignoreWhitespace,
-            });
+            this.monaco?.editor?.setTheme?.(this.theme);
         } catch (e) {
             // ignore
         }
-        try {
-            this.diffEditor.updateOptions({ ignoreCase: this._ignoreCase });
-        } catch (e) {
-            // ignoreCase is not in Monaco's IDiffEditorBaseOptions; keep for future support
+        this._recomputeDiff();
+    }
+
+    _disposeEditors() {
+        if (this._leftScrollDisposable) {
+            this._leftScrollDisposable.dispose();
+            this._leftScrollDisposable = null;
         }
+        if (this._rightScrollDisposable) {
+            this._rightScrollDisposable.dispose();
+            this._rightScrollDisposable = null;
+        }
+        if (this.leftEditor) {
+            this.leftEditor.dispose();
+            this.leftEditor = null;
+        }
+        if (this.rightEditor) {
+            this.rightEditor.dispose();
+            this.rightEditor = null;
+        }
+    }
+
+    _normalizeTextForDiff(text) {
+        let value = text == null ? '' : String(text);
+        if (this._ignoreWhitespace) {
+            value = value
+                .split('\n')
+                // Monaco's ignoreTrimWhitespace ignores leading/trailing whitespace
+                .map(line => line.trim())
+                .join('\n');
+        }
+        return value;
+    }
+
+    _getPartLineCount(part) {
+        if (typeof part?.count === 'number') return part.count;
+        const value = part?.value || '';
+        if (!value) return 0;
+        const lines = value.split('\n');
+        return lines[lines.length - 1] === '' ? Math.max(0, lines.length - 1) : lines.length;
+    }
+
+    _recomputeDiff() {
+        if (!this.monaco || !this.leftEditor || !this.rightEditor) return;
+        if (!this.originalModel || !this.modifiedModel) return;
+
+        const leftMax = this.originalModel.getLineCount();
+        const rightMax = this.modifiedModel.getLineCount();
+
+        const leftNormalized = this._normalizeTextForDiff(this.originalModel.getValue());
+        const rightNormalized = this._normalizeTextForDiff(this.modifiedModel.getValue());
+
+        const parts = DiffLib.diffLines(leftNormalized, rightNormalized);
+
+        const leftDecorations = [];
+        const rightDecorations = [];
+
+        let leftLine = 1;
+        let rightLine = 1;
+
+        for (const part of parts) {
+            const count = this._getPartLineCount(part);
+            if (count <= 0) continue;
+
+            if (part.removed) {
+                const start = leftLine;
+                const end = Math.min(leftMax, leftLine + count - 1);
+                if (end >= start) {
+                    leftDecorations.push({
+                        range: new this.monaco.Range(start, 1, end, 1),
+                        options: { isWholeLine: true, className: 'diff-line-removed' },
+                    });
+                }
+                leftLine += count;
+                continue;
+            }
+
+            if (part.added) {
+                const start = rightLine;
+                const end = Math.min(rightMax, rightLine + count - 1);
+                if (end >= start) {
+                    rightDecorations.push({
+                        range: new this.monaco.Range(start, 1, end, 1),
+                        options: { isWholeLine: true, className: 'diff-line-added' },
+                    });
+                }
+                rightLine += count;
+                continue;
+            }
+
+            leftLine += count;
+            rightLine += count;
+        }
+
+        this._leftDecorationIds = this.leftEditor.deltaDecorations(
+            this._leftDecorationIds,
+            leftDecorations
+        );
+        this._rightDecorationIds = this.rightEditor.deltaDecorations(
+            this._rightDecorationIds,
+            rightDecorations
+        );
     }
 
     /** @api */
     setIgnoreWhitespace(ignore) {
         this._ignoreWhitespace = !!ignore;
-        this._applyOptionsFromProps();
-    }
-
-    /** @api */
-    setIgnoreCase(ignore) {
-        this._ignoreCase = !!ignore;
         this._applyOptionsFromProps();
     }
 }

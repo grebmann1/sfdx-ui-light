@@ -8,7 +8,6 @@ export default class App extends ToolkitElement {
     @track leftText = '';
     @track rightText = '';
     @track ignoreWhitespace = false;
-    @track ignoreCase = false;
 
     connectedCallback() {
         Analytics.trackAppOpen('textCompare', { alias: this.alias });
@@ -27,7 +26,6 @@ export default class App extends ToolkitElement {
             this.leftText = textCompare.leftText ?? '';
             this.rightText = textCompare.rightText ?? '';
             this.ignoreWhitespace = !!textCompare.ignoreWhitespace;
-            this.ignoreCase = !!textCompare.ignoreCase;
         }
     }
 
@@ -96,17 +94,6 @@ export default class App extends ToolkitElement {
         store.dispatch(
             TEXTCOMPARE.reduxSlice.actions.setOptions({
                 ignoreWhitespace: checked,
-                alias: this.alias,
-            })
-        );
-    };
-
-    handleIgnoreCaseChange = (e) => {
-        const checked = e.detail?.checked === true || e.target?.checked === true;
-        this.ignoreCase = checked;
-        store.dispatch(
-            TEXTCOMPARE.reduxSlice.actions.setOptions({
-                ignoreCase: checked,
                 alias: this.alias,
             })
         );

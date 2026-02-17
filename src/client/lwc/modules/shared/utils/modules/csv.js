@@ -12,6 +12,8 @@ export function parseCsvText(text, { delimiter = CSV_DELIMITERS.COMMA } = {}) {
         header: true,
         skipEmptyLines: 'greedy',
         delimiter,
+        // Normalize headers to avoid BOM/whitespace breaking mapping.
+        transformHeader: header => String(header || '').replace(/^\uFEFF/, '').trim(),
     });
 
     const error = parsed?.errors?.length

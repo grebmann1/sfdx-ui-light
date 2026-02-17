@@ -47,15 +47,6 @@
                         message-toggle-inactive=""
                         checked={ignoreWhitespace}
                         onchange={handleIgnoreWhitespaceChange}></lightning-input>
-                    <lightning-input
-                        class="slds-p-right_x-small toolkit-small"
-                        type="toggle"
-                        label="Ignore case"
-                        name="ignoreCase"
-                        message-toggle-active=""
-                        message-toggle-inactive=""
-                        checked={ignoreCase}
-                        onchange={handleIgnoreCaseChange}></lightning-input>
                 </div>
             </builder-header>
             <article class="full-page-body slds-card text-compare-article">
@@ -65,7 +56,6 @@
                             left-value={leftText}
                             right-value={rightText}
                             ignore-whitespace={ignoreWhitespace}
-                            ignore-case={ignoreCase}
                             lwc:ref="diffEditor"
                             onmonacoloaded={handleMonacoLoaded}
                             onchange={handleDiffChange}></editor-diff>

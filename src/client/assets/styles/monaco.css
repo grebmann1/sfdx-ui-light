@@ -10,6 +10,16 @@
 .insertedCodeDecoration {
     background-color: rgba(9, 122, 9, 0.5);
 }
+
+/* Text Compare: right side additions */
+.diff-line-added {
+    background: rgba(46, 160, 67, 0.18);
+}
+
+/* Text Compare: left side removals */
+.diff-line-removed {
+    background: rgba(248, 81, 73, 0.18);
+}
 /* Decoration for the gap where text was deleted (optional) */
 /* Style for the view zone that displays deleted text */
 .deletedViewZone {

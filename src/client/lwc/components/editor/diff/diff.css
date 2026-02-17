@@ -14,6 +14,14 @@
     position: relative;
 }
 
+.diff-split {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+}
+
 .diff-editor-host {
     flex: 1;
     min-height: 200px;

@@ -7,7 +7,6 @@ const initialState = {
     leftText: '',
     rightText: '',
     ignoreWhitespace: false,
-    ignoreCase: false,
 };
 
 function saveCacheSettings(alias, state) {
@@ -19,7 +18,6 @@ function saveCacheSettings(alias, state) {
                     leftText: state.leftText,
                     rightText: state.rightText,
                     ignoreWhitespace: state.ignoreWhitespace,
-                    ignoreCase: state.ignoreCase,
                 })
             );
         }
@@ -78,9 +76,8 @@ export const reduxSlice = createSlice({
             saveCacheSettings(alias, state);
         },
         setOptions(state, action) {
-            const { ignoreWhitespace, ignoreCase, alias } = action.payload || {};
+            const { ignoreWhitespace, alias } = action.payload || {};
             if (ignoreWhitespace !== undefined) state.ignoreWhitespace = !!ignoreWhitespace;
-            if (ignoreCase !== undefined) state.ignoreCase = !!ignoreCase;
             saveCacheSettings(alias, state);
         },
         loadCacheSettings(state, action) {
@@ -90,7 +87,6 @@ export const reduxSlice = createSlice({
                 if (cached.leftText !== undefined) state.leftText = cached.leftText;
                 if (cached.rightText !== undefined) state.rightText = cached.rightText;
                 if (cached.ignoreWhitespace !== undefined) state.ignoreWhitespace = cached.ignoreWhitespace;
-                if (cached.ignoreCase !== undefined) state.ignoreCase = cached.ignoreCase;
             }
         },
     },
