@@ -5,6 +5,81 @@
     --slds-g-spacing-6: 6px;
 }
 
+.connection-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 1.5rem;
+    padding: 0 0.625rem;
+    border-radius: 999px;
+    border: 1px solid var(--slds-g-color-border-base-1, #dddbda);
+    background: var(--slds-g-color-neutral-base-95, #f3f3f3);
+    color: var(--slds-g-color-on-surface-1, #080707);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    user-select: none;
+}
+
+.connection-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    flex: 0 0 auto;
+    background: var(--slds-g-color-neutral-base-60, #8e8e8e);
+    box-shadow: 0 0 0 2px color-mix(in oklab, currentColor, transparent 80%);
+}
+
+.connection-pill_connected {
+    border-color: color-mix(in oklab, var(--slds-g-color-success-base-50, #2e844a), transparent 60%);
+    background: color-mix(in oklab, var(--slds-g-color-success-base-50, #2e844a), white 90%);
+    color: var(--slds-g-color-success-base-50, #2e844a);
+}
+.connection-dot_connected {
+    background: var(--slds-g-color-success-base-50, #2e844a);
+}
+
+.connection-pill_connecting {
+    border-color: color-mix(in oklab, var(--slds-g-color-warning-base-50, #fe9339), transparent 60%);
+    background: color-mix(in oklab, var(--slds-g-color-warning-base-50, #fe9339), white 90%);
+    color: var(--slds-g-color-warning-base-50, #fe9339);
+}
+.connection-dot_connecting {
+    background: var(--slds-g-color-warning-base-50, #fe9339);
+    animation: connectionPulse 1.2s ease-in-out infinite;
+}
+
+.connection-pill_error {
+    border-color: color-mix(in oklab, var(--slds-g-color-error-base-50, #ea001e), transparent 60%);
+    background: color-mix(in oklab, var(--slds-g-color-error-base-50, #ea001e), white 92%);
+    color: var(--slds-g-color-error-base-50, #ea001e);
+}
+.connection-dot_error {
+    background: var(--slds-g-color-error-base-50, #ea001e);
+}
+
+.connection-pill_disconnected {
+    color: var(--slds-g-color-on-surface-2, #3e3e3c);
+}
+.connection-dot_disconnected {
+    background: var(--slds-g-color-neutral-base-60, #8e8e8e);
+}
+
+@keyframes connectionPulse {
+    0% {
+        transform: scale(0.9);
+        opacity: 0.7;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.9);
+        opacity: 0.7;
+    }
+}
+
 .body {
     flex: 1;
     display: flex;

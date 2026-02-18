@@ -3,3 +3,44 @@
     display: flex;
     flex-direction: column;
 }
+
+.viewer-root {
+    min-height: 0;
+}
+
+.viewer-header {
+    flex: 0 0 auto;
+}
+
+.viewer-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.viewer-panel {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.schema-panel {
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.schema-table-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    border: 1px solid var(--slds-g-color-border-base-1, #dddbda);
+    border-radius: 0.25rem;
+    background: var(--slds-g-color-neutral-base-100, #fff);
+}
+
+.schema-table {
+    /* Force horizontal scroll availability on narrow panes */
+    min-width: 60rem;
+}

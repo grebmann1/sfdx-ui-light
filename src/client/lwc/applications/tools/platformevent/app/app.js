@@ -15,6 +15,7 @@ import Toast from 'lightning/toast';
 
 import ToolkitElement from 'core/toolkitElement';
 import EditorModal from 'platformevent/editorModal';
+import PublisherModal from 'platformevent/publisherModal';
 import LightningConfirm from 'lightning/confirm';
 import Analytics from 'shared/analytics';
 
@@ -29,11 +30,20 @@ const STATUS_ERROR = 'Error';
 const TYPE_MAPPING = {
     data: 'Change Data Capture',
     event: 'Platform Event',
+    topic: 'PushTopic',
     default: 'Other',
 };
 
 const cometd = new lib.CometD();
 const DEFAULT_LAST_MESSAGE = 'Waiting for events';
+const CHANNEL_PREFIXES = {
+    event: '/event/',
+    data: '/data/',
+    topic: '/topic/',
+    generic: '/',
+    user: '/u/',
+    systemTopic: '/systemTopic/',
+};
 
 export default class App extends ToolkitElement {
     isLoading = false;
@@ -43,13 +53,19 @@ export default class App extends ToolkitElement {
     //apexScript = "System.debug('Hello World');"; // ='CCR_TaskNotification__e event = new CCR_TaskNotification__e();\n// Publish the event\nDatabase.SaveResult result = EventBus.publish(event);';
     isApexContainerDisplayed = false;
     isManualChannelDisplayed = false;
+    manualChannelPrefix = CHANNEL_PREFIXES.event;
     manualChannelName = '';
     isConnected = false;
+    isConnecting = false;
     isCometDInitialized = false;
     isRecentToggled = false;
+    connectionStatus = 'Disconnected';
+    _reconnectTimer;
+    _reconnectAttempt = 0;
 
     @track recentChannels = [];
     @track eventObjects = [];
+    @track pushTopics = [];
 
     // Used to store platformEvent records
     @track subscribedChannels = [];
@@ -110,6 +126,10 @@ export default class App extends ToolkitElement {
 
     disconnectedCallback() {
         clearInterval(this._lastMessageInternal);
+        if (this._reconnectTimer) {
+            clearTimeout(this._reconnectTimer);
+            this._reconnectTimer = null;
+        }
         if (cometd) {
             // Unsubscribe from the channel
             cometd.clearSubscriptions();
@@ -141,6 +161,17 @@ export default class App extends ToolkitElement {
         if (this.isApexContainerDisplayed) {
             this.openEditorModal();
         }
+    };
+
+    openPublisherModal = () => {
+        if (!this.canPublishPlatformEvent) return;
+        PublisherModal.open({
+            title: 'Publish Platform Event',
+            apiName: this.currentChannel?.name,
+            instanceUrl: this.connector.conn.instanceUrl,
+            accessToken: this.connector.conn.accessToken,
+            apiVersion: this.connector.conn.version,
+        }).catch(() => {});
     };
 
     handleEventSelection = e => {
@@ -178,10 +209,17 @@ export default class App extends ToolkitElement {
         this.manualChannelName = e.target.value;
     };
 
+    handleManualChannelPrefixChange = (e) => {
+        this.manualChannelPrefix = e.detail.value;
+    };
+
     manual_subscribeChannel = e => {
         let eventName;
         if (this.isManualChannelDisplayed) {
-            eventName = this.manualChannelName;
+            const raw = (this.manualChannelName || '').trim();
+            if (!raw) return;
+            // Allow power users to paste the full channel path (/event/..., /data/..., /topic/..., /u/..., etc.)
+            eventName = raw.startsWith('/') ? raw : `${this.manualChannelPrefix}${raw}`;
         } else {
             eventName = this.subscribe_lookup();
         }
@@ -250,22 +288,7 @@ export default class App extends ToolkitElement {
         );
 
         // Subscribing
-        this.activeSubscriptions[_formattedEventName] = cometd.subscribe(
-            eventName,
-            async message => {
-                const item = {
-                    id: message.data.event.replayId,
-                    receivedDate: Date.now(),
-                    content: message,
-                };
-                store.dispatch(
-                    EVENT.reduxSlice.actions.upsertSubscriptionMessages({
-                        messages: [item],
-                        channel: _formattedEventName,
-                    })
-                );
-            }
-        );
+        this.activeSubscriptions[_formattedEventName] = this.subscribeToChannel(eventName, _formattedEventName);
 
         store.dispatch(
             EVENT.reduxSlice.actions.updateSubscriptionStatus({
@@ -289,8 +312,7 @@ export default class App extends ToolkitElement {
         if (this.lookup_selectedEvents.length == 0) return null;
 
         const selectedEvent = this.lookup_selectedEvents[0];
-        const apiName = selectedEvent.id;
-        return isNotUndefinedOrNull(selectedEvent.associateEntityType) ? `/data/${apiName}` : `/event/${apiName}`;
+        return selectedEvent.channel;
     };
 
     handleChannelSelection = name => {
@@ -341,7 +363,7 @@ export default class App extends ToolkitElement {
         const lookupElement = e.target;
         const keywords = e.detail.rawSearchTerm;
         const results = this.eventObjects
-            .filter(x => checkIfPresent(x.name, keywords))
+            .filter(x => checkIfPresent(x.name, keywords) || checkIfPresent(x.channel, keywords))
             .map(x => this.formatForLookup(x));
         lookupElement.setSearchResults(results);
     };
@@ -416,17 +438,98 @@ export default class App extends ToolkitElement {
     };
 
     connectToCometD = () => {
-        if (this.isConnected) return;
+        if (this.isConnected || this.isConnecting) return;
         if (!this.isCometDInitialized) {
             this.initializeCometD();
         }
+        this.isConnecting = true;
+        this.connectionStatus = 'Connecting';
         cometd.handshake(status => {
+            this.isConnecting = false;
             if (!status.successful) {
                 LOGGER.error('Error during handshake', status);
+                this.connectionStatus = 'Error';
+                this.scheduleReconnect();
             } else {
                 this.isConnected = true;
+                this.connectionStatus = 'Connected';
+                this._reconnectAttempt = 0;
+                this.resubscribeAll();
             }
         });
+    };
+
+    subscribeToChannel = (eventName, formattedEventName) => {
+        return cometd.subscribe(eventName, async message => {
+            try {
+                const replayId = message?.data?.event?.replayId;
+                const item = {
+                    id: replayId || Date.now(),
+                    receivedDate: Date.now(),
+                    content: message,
+                };
+                store.dispatch(
+                    EVENT.reduxSlice.actions.upsertSubscriptionMessages({
+                        messages: [item],
+                        channel: formattedEventName,
+                    })
+                );
+            } catch (e) {
+                LOGGER.error('Failed to process incoming message', e);
+            }
+        });
+    };
+
+    resubscribeAll = () => {
+        try {
+            const { platformEvent } = store.getState();
+            const subs = SELECTORS.platformEvents.selectAll({ platformEvent }) || [];
+            subs.forEach((s) => {
+                const channel = s.id; // stored id is lower-cased channel path
+                if (this.activeSubscriptions[channel]) return;
+                const originalChannel =
+                    s.type === 'event'
+                        ? `/event/${s.name}`
+                        : (s.type === 'data'
+                              ? `/data/${s.name}`
+                              : (s.type === 'topic' ? `/topic/${s.name}` : s.id));
+                const replayId = s.replayId ?? -1;
+                // Attach replayId via ReplayExtension by ensuring fetchReplayId returns latest
+                this.activeSubscriptions[channel] = this.subscribeToChannel(originalChannel, channel);
+                store.dispatch(
+                    EVENT.reduxSlice.actions.updateSubscriptionStatus({
+                        channel,
+                        status: STATUS_SUBSCRIBED,
+                    })
+                );
+                // keep replayId in state (no-op here, but ensures fetchReplayId works)
+                if (replayId !== undefined) {
+                    // nothing to do; replayId already stored
+                }
+            });
+        } catch (e) {
+            LOGGER.error('resubscribeAll failed', e);
+        }
+    };
+
+    scheduleReconnect = () => {
+        if (this._reconnectTimer) return;
+        const attempt = Math.min(this._reconnectAttempt, 6);
+        const delayMs = Math.min(30000, 1000 * Math.pow(2, attempt));
+        this._reconnectAttempt += 1;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        this._reconnectTimer = setTimeout(() => {
+            this._reconnectTimer = null;
+            const { platformEvent } = store.getState();
+            const subs = SELECTORS.platformEvents.selectAll({ platformEvent }) || [];
+            if (subs.length > 0) {
+                try {
+                    cometd.disconnect();
+                } catch (_e) {}
+                this.isConnected = false;
+                this.connectToCometD();
+            }
+        }, delayMs);
     };
 
     initializeCometD = () => {
@@ -456,6 +559,19 @@ export default class App extends ToolkitElement {
         cometd.registerExtension('ReplayExtension', new ReplayExtension(this.fetchReplayId));
 
         // Add a listener for disconnection & error events
+        cometd.addListener('/meta/handshake', message => {
+            if (!message.successful) {
+                this.connectionStatus = 'Error';
+            }
+        });
+        cometd.addListener('/meta/connect', message => {
+            if (!message.successful) {
+                this.isConnected = false;
+                this.connectionStatus = 'Disconnected';
+                this.activeSubscriptions = {};
+                this.scheduleReconnect();
+            }
+        });
         cometd.addListener('/meta/subscribe', message => {
             if (!message.successful) {
                 store.dispatch(
@@ -480,6 +596,9 @@ export default class App extends ToolkitElement {
         });
         cometd.addListener('/meta/disconnect', message => {
             this.isConnected = false;
+            this.connectionStatus = 'Disconnected';
+            this.activeSubscriptions = {};
+            this.scheduleReconnect();
         });
     };
 
@@ -492,11 +611,12 @@ export default class App extends ToolkitElement {
     };
 
     formatForLookup = item => {
-        LOGGER.debug('formatForLookup', item);
         return {
             id: item.name,
             title: item.name,
-            ...(item.associateEntityType ? { associateEntityType: item.associateEntityType } : {}),
+            subtitle: item.subtitle,
+            icon: item.icon,
+            channel: item.channel,
         };
     };
 
@@ -505,14 +625,58 @@ export default class App extends ToolkitElement {
         return result?.sobjects || [];
     };
 
+    load_toolingPushTopics = async () => {
+        try {
+            const res = await this.connector.conn.tooling.query(
+                'SELECT Id, Name, Query FROM PushTopic ORDER BY Name'
+            );
+            return res?.records || [];
+        } catch (e) {
+            // Many orgs don’t use PushTopics; tooling access may also be restricted.
+            LOGGER.debug('PushTopic tooling query failed', e?.message);
+            return [];
+        }
+    };
+
     describeAll = async () => {
         this.isLoading = true;
         try {
             const records = (await this.load_toolingGlobal()) || [];
-            this.eventObjects = records.filter(
-                x => x.name.endsWith('ChangeEvent') || x.name.endsWith('__e') || x.name.includes('Event')
+            const platformEvents = records
+                .filter(x => x.name.endsWith('__e'))
+                .map(x => ({
+                    name: x.name,
+                    type: 'event',
+                    subtitle: TYPE_MAPPING.event,
+                    icon: 'standard:events',
+                    channel: `${CHANNEL_PREFIXES.event}${x.name}`,
+                }));
+
+            const cdcEvents = records
+                .filter(x => x.name.endsWith('ChangeEvent'))
+                .map(x => ({
+                    name: x.name,
+                    type: 'data',
+                    subtitle: TYPE_MAPPING.data,
+                    icon: 'standard:data_integration_hub',
+                    channel: `${CHANNEL_PREFIXES.data}${x.name}`,
+                }));
+
+            const pushTopics = (await this.load_toolingPushTopics()).map(pt => ({
+                name: pt.Name,
+                type: 'topic',
+                subtitle: TYPE_MAPPING.topic,
+                icon: 'standard:topic',
+                channel: `${CHANNEL_PREFIXES.topic}${pt.Name}`,
+                query: pt.Query,
+            }));
+
+            this.pushTopics = pushTopics;
+
+            // Lookup source
+            this.eventObjects = [...platformEvents, ...cdcEvents, ...pushTopics].sort((a, b) =>
+                a.name.localeCompare(b.name)
             );
-            LOGGER.debug('eventObjects', this.eventObjects);
         } catch (e) {
             LOGGER.error(e);
             store.dispatch(
@@ -562,5 +726,51 @@ export default class App extends ToolkitElement {
     }
     get manualAltText() {
         return this.isManualChannelDisplayed ? 'Switch to Lookup' : 'Switch to Manual';
+    }
+
+    get manualPrefixOptions() {
+        return [
+            { label: '/event/ (Platform Events)', value: CHANNEL_PREFIXES.event },
+            { label: '/data/ (CDC)', value: CHANNEL_PREFIXES.data },
+            { label: '/topic/ (PushTopic)', value: CHANNEL_PREFIXES.topic },
+            { label: '/u/ (Generic User Channel)', value: CHANNEL_PREFIXES.user },
+            { label: '/systemTopic/ (System)', value: CHANNEL_PREFIXES.systemTopic },
+            { label: '/ (Generic)', value: CHANNEL_PREFIXES.generic },
+        ];
+    }
+
+    get canPublishPlatformEvent() {
+        return (
+            isNotUndefinedOrNull(this.currentChannel) &&
+            this.currentChannel.type === 'event' &&
+            (this.currentChannel.name || '').endsWith('__e')
+        );
+    }
+
+    get isPublishDisabled() {
+        return !this.canPublishPlatformEvent;
+    }
+
+    get connectionTooltip() {
+        if (this.connectionStatus === 'Connected') return 'Connected to Streaming API (CometD)';
+        if (this.connectionStatus === 'Connecting') return 'Connecting to Streaming API (CometD)…';
+        if (this.connectionStatus === 'Error') return 'Connection error (will retry automatically)';
+        return 'Disconnected (will retry automatically if you have subscriptions)';
+    }
+
+    get connectionPillClass() {
+        const base = 'connection-pill';
+        if (this.connectionStatus === 'Connected') return `${base} connection-pill_connected`;
+        if (this.connectionStatus === 'Connecting') return `${base} connection-pill_connecting`;
+        if (this.connectionStatus === 'Error') return `${base} connection-pill_error`;
+        return `${base} connection-pill_disconnected`;
+    }
+
+    get connectionDotClass() {
+        const base = 'connection-dot';
+        if (this.connectionStatus === 'Connected') return `${base} connection-dot_connected`;
+        if (this.connectionStatus === 'Connecting') return `${base} connection-dot_connecting`;
+        if (this.connectionStatus === 'Error') return `${base} connection-dot_error`;
+        return `${base} connection-dot_disconnected`;
     }
 }

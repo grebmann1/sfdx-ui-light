@@ -16,7 +16,23 @@
                         icon-name="utility:apex"
                         icon-position="right"
                         size="large"></lightning-button>
+                    <lightning-button
+                        class="slds-p-left_xx-small"
+                        label="Publish"
+                        onclick={openPublisherModal}
+                        variant="brand"
+                        icon-name="utility:send"
+                        icon-position="right"
+                        size="large"
+                        disabled={isPublishDisabled}
+                    ></lightning-button>
                 </div>
+                <span slot="subtitle">
+                    <span class={connectionPillClass} title={connectionTooltip} aria-label={connectionTooltip}>
+                        <span class={connectionDotClass} aria-hidden="true"></span>
+                        <span class="slds-truncate">{connectionStatus}</span>
+                    </span>
+                </span>
                 <div slot="meta" class="slds-flex-row slds-align-flex-end">
                     <lightning-button
                         class="slds-p-right_x-small"
@@ -28,11 +44,19 @@
                         label={manualAltText}
                     ></lightning-button>
                     <template lwc:if={isManualChannelDisplayed}>
+                        <lightning-combobox
+                            style="width: 170px"
+                            class="slds-p-left_x-small"
+                            label="Prefix"
+                            value={manualChannelPrefix}
+                            options={manualPrefixOptions}
+                            onchange={handleManualChannelPrefixChange}
+                        ></lightning-combobox>
                         <lightning-input
                             style="width: 300px"
                             class="slds-p-left_x-small"
                             label="Event Channel"
-                            placeholder="/event/MyEvent__e"
+                            placeholder="MyEvent__e or /event/MyEvent__e"
                             value={manualChannelName}
                             onchange={handleManualChannelInput}
                             lwc:ref="manualChannel"
@@ -42,9 +66,9 @@
                         <slds-lookup
                             style="width: 300px"
                             class="slds-p-left_x-small"
-                            label="Platform &amp; Change Event"
-                            placeholder="Select Event"
-                            tooltip="Select an event from your metadata"
+                            label="Event Channel"
+                            placeholder="Select Platform Event, CDC, or PushTopic"
+                            tooltip="Select an event channel from your org metadata (Platform Events, CDC, PushTopics)."
                             selection={lookup_selectedEvents}
                             onsearch={lookup_handleSearch}
                             errors={lookup_errors}

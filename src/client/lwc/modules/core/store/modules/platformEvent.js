@@ -24,13 +24,14 @@ function loadCacheSettings(alias) {
 
 function saveCacheSettings(alias, state) {
     try {
-        const { recentPanelToggled, viewerTab } = state;
+        const { recentPanelToggled, viewerTab, maxMessagesPerChannel } = state;
 
         localStorage.setItem(
             `${alias}-${PLATFORM_EVENT_SETTINGS_KEY}`,
             JSON.stringify({
                 recentPanelToggled,
                 viewerTab,
+                maxMessagesPerChannel,
             })
         );
     } catch (e) {
@@ -54,6 +55,7 @@ const platformEventSlice = createSlice({
     initialState: {
         recentPanelToggled: false,
         viewerTab: 'Default',
+        maxMessagesPerChannel: 500,
         subscriptions: platformEventAdapter.getInitialState(),
         currentChannel: null,
     },
@@ -62,10 +64,12 @@ const platformEventSlice = createSlice({
             const { alias } = action.payload;
             const cachedConfig = loadCacheSettings(alias);
             if (cachedConfig) {
-                const { recentPanelToggled, viewerTab } = cachedConfig;
+                const { recentPanelToggled, viewerTab, maxMessagesPerChannel } = cachedConfig;
                 Object.assign(state, {
                     recentPanelToggled,
                     viewerTab,
+                    maxMessagesPerChannel:
+                        typeof maxMessagesPerChannel === 'number' ? maxMessagesPerChannel : state.maxMessagesPerChannel,
                 });
             }
         },
@@ -93,6 +97,14 @@ const platformEventSlice = createSlice({
                 saveCacheSettings(alias, state);
             }
         },
+        updateMaxMessagesPerChannel: (state, action) => {
+            const { value, alias } = action.payload;
+            const parsed = parseInt(value, 10);
+            state.maxMessagesPerChannel = Number.isFinite(parsed) && parsed > 0 ? parsed : 500;
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
+            }
+        },
         createSubscription: (state, action) => {
             const { channel, status, name, replayId, type } = action.payload;
             platformEventAdapter.upsertOne(state.subscriptions, {
@@ -111,10 +123,11 @@ const platformEventSlice = createSlice({
         },
         updateSubscriptionStatus: (state, action) => {
             const { channel, status } = action.payload;
+            const existing = state.subscriptions.entities[lowerCaseKey(channel)]?.messages || [];
             platformEventAdapter.upsertOne(state.subscriptions, {
                 id: lowerCaseKey(channel),
                 error: null,
-                messages: [],
+                messages: existing,
                 status,
             });
         },
@@ -141,14 +154,36 @@ const platformEventSlice = createSlice({
         },
         upsertSubscriptionMessages: (state, action) => {
             const { channel, messages } = action.payload;
+            const cap = state.maxMessagesPerChannel || 500;
+
+            const existing = state.subscriptions.entities[lowerCaseKey(channel)]?.messages || [];
+
+            const enrich = (m) => {
+                if (m && m._searchText) return m;
+                try {
+                    const content = m?.content || m;
+                    const replayId = content?.data?.event?.replayId ?? m?.id ?? '';
+                    const uuid = content?.data?.event?.EventUuid ?? '';
+                    const ch = content?.channel ?? channel ?? '';
+                    const json = JSON.stringify(content);
+                    const cappedJson = json.length > 10000 ? `${json.slice(0, 10000)}…` : json;
+                    return {
+                        ...m,
+                        _searchText: `${replayId} ${uuid} ${ch} ${cappedJson}`,
+                    };
+                } catch {
+                    return { ...m, _searchText: `${m?.id ?? ''} ${channel ?? ''}` };
+                }
+            };
+
             platformEventAdapter.upsertOne(state.subscriptions, {
                 id: lowerCaseKey(channel),
                 error: null,
                 lastModifiedDate: new Date(),
-                messages: [
-                    ...(state.subscriptions.entities[lowerCaseKey(channel)]?.messages || []),
-                    ...messages,
-                ],
+                messages:
+                    cap > 0
+                        ? [...existing, ...messages.map(enrich)].slice(-cap)
+                        : [...existing, ...messages.map(enrich)],
             });
         },
     },

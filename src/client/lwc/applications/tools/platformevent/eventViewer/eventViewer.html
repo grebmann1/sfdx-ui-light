@@ -1,6 +1,6 @@
 <template>
-    <div class="slds-flex-column slds-full-height slds-light-bg">
-        <div>
+    <div class="viewer-root slds-flex-column slds-full-height slds-light-bg">
+        <div class="viewer-header">
             <div class="slds-grid"></div>
             <lightning-tabset
                 variant="scoped"
@@ -11,32 +11,85 @@
                     value="Default"
                     onactive={handleSelectTab}></lightning-tab>
                 <!--<lightning-tab label="Default" value="Custom"  onactive={handleSelectTab}></lightning-tab>-->
+                <lightning-tab label="Schema" value="Schema" onactive={handleSelectTab}></lightning-tab>
                 <lightning-tab label="JSON" value="JSON" onactive={handleSelectTab}></lightning-tab>
             </lightning-tabset>
         </div>
 
-        <div class={defaultContainerClass}>
-            <slds-code-block
-                class="slds-full-height"
-                code-block={content}
-                language="json"
-                title="Event Content"></slds-code-block>
-        </div>
+        <div class="viewer-body">
+            <div class={defaultContainerClass}>
+                <slds-code-block
+                    class="slds-full-height"
+                    code-block={content}
+                    language="json"
+                    title="Event Content"></slds-code-block>
+            </div>
 
-        <div class={jsonContainerClass}>
-            <editor-default
-                lwc:ref="editor"
-                class="slds-full-height"
-                model={currentModel}
-                onmonacoloaded={handleMonacoLoaded}
-                is-read-only></editor-default>
-            <!--
-            <slds-code-block 
-                code-block={content} 
-                language="json" 
-                title="Event Content"
-            ></slds-code-block>
-            -->
+            <div class={jsonContainerClass}>
+                <editor-default
+                    lwc:ref="editor"
+                    class="slds-full-height"
+                    model={currentModel}
+                    onmonacoloaded={handleMonacoLoaded}
+                    is-read-only></editor-default>
+                <!--
+                <slds-code-block 
+                    code-block={content} 
+                    language="json" 
+                    title="Event Content"
+                ></slds-code-block>
+                -->
+            </div>
+
+            <div class={schemaContainerClass}>
+                <div class="schema-panel slds-p-around_small">
+                    <template lwc:if={schemaError}>
+                        <slds-information-block title="Schema error" variant="error">
+                            <p>{schemaError}</p>
+                        </slds-information-block>
+                    </template>
+
+                    <template lwc:if={isSchemaLoading}>
+                        <slds-spinner alternative-text="Loading schema" size="small"></slds-spinner>
+                    </template>
+
+                    <template lwc:if={schemaInfo}>
+                        <div class="slds-text-title_bold slds-m-bottom_x-small">{schemaInfo.title}</div>
+                        <div class="slds-text-body_small slds-m-bottom_small">
+                            {schemaInfo.subtitle}
+                        </div>
+                    </template>
+
+                    <template lwc:if={hasSchemaFields}>
+                        <div class="schema-table-wrap">
+                            <table class="schema-table slds-table slds-table_cell-buffer slds-table_bordered">
+                                <thead>
+                                    <tr class="slds-line-height_reset">
+                                        <th scope="col"><div class="slds-truncate" title="Field">Field</div></th>
+                                        <th scope="col"><div class="slds-truncate" title="Label">Label</div></th>
+                                        <th scope="col"><div class="slds-truncate" title="Type">Type</div></th>
+                                        <th scope="col"><div class="slds-truncate" title="Length">Length</div></th>
+                                        <th scope="col"><div class="slds-truncate" title="Nillable">Nillable</div></th>
+                                        <th scope="col"><div class="slds-truncate" title="ReferenceTo">ReferenceTo</div></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={schemaFields} for:item="f">
+                                        <tr key={f.name} class={f.rowClass}>
+                                            <td><div class="slds-truncate" title={f.name}>{f.name}</div></td>
+                                            <td><div class="slds-truncate" title={f.label}>{f.label}</div></td>
+                                            <td><div class="slds-truncate" title={f.type}>{f.type}</div></td>
+                                            <td><div class="slds-truncate" title={f.length}>{f.length}</div></td>
+                                            <td><div class="slds-truncate" title={f.nillable}>{f.nillable}</div></td>
+                                            <td><div class="slds-truncate" title={f.referenceTo}>{f.referenceTo}</div></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </template>
+                </div>
+            </div>
         </div>
     </div>
 </template>
