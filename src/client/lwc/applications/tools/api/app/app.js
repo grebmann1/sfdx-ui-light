@@ -57,12 +57,19 @@ function openApiToApiTreeItems(openApi) {
         // Add method nodes as children of the last segment
         Object.entries(pathItem).forEach(([method, operation]) => {
             if (['get', 'post', 'put', 'patch', 'delete', 'options', 'head', 'trace'].includes(method)) {
+                const keywords = [
+                    path,
+                    operation?.summary,
+                    operation?.operationId,
+                    ...(Array.isArray(operation?.tags) ? operation.tags : []),
+                ].filter(Boolean);
                 current.children.push({
                     id: `${path}:${method}`,
-                    name: method.toUpperCase(),
-                    title: `${path}:${method}`,
+                    name: `${method.toUpperCase()} ${path}`,
+                    title: operation?.summary || `${method.toUpperCase()} ${path}`,
                     icon: `api:${method}`,
                     type: 'method',
+                    keywords,
                     extra: {
                         ...operation,
                         path,
@@ -104,6 +111,7 @@ export default class App extends ToolkitElement {
     @track variables;
     @api header;
     @api body;
+    @track defaultHeader;
 
     // Undo/Redo
     @track actions = [];
@@ -131,6 +139,12 @@ export default class App extends ToolkitElement {
     @track isApiTreeToggled = false;
     @track apiTreeItems = [];
 
+    // Salesforce Catalog
+    @track isCatalogToggled = false;
+    @track apiCatalogItems = [];
+    @track isCatalogLoading = false;
+    @track apiCatalogError = null;
+
     // Content
     @track content;
     @track contentLength;
@@ -140,9 +154,17 @@ export default class App extends ToolkitElement {
     @track executionStartDate;
     @track executionEndDate;
     @track executedFormattedRequest;
+    @track executedRequest;
 
     // Viewer
     viewer_value = API_UTILS.VIEWERS.PRETTY;
+
+    // Snippets (inside Result/Body viewer)
+    @track snippetTabValue = 'apex';
+
+    // Viewer toolbar
+    @track viewerSearchQuery = '';
+    @track viewerSearchMode = 'substring';
     
 
     // Tabs
@@ -212,6 +234,9 @@ export default class App extends ToolkitElement {
                 })
             );
         });
+
+        // Load the Salesforce REST catalog (templates + discovery)
+        this.loadSalesforceCatalog();
     }
 
     renderedCallback() {
@@ -270,6 +295,9 @@ export default class App extends ToolkitElement {
                 // No textarea to update
             }
         }
+        if (this.defaultHeader !== api.defaultHeader) {
+            this.defaultHeader = api.defaultHeader;
+        }
         if (this.endpoint != api.endpoint) {
             this.endpoint = api.endpoint;
             if (this._hasRendered) {
@@ -308,6 +336,7 @@ export default class App extends ToolkitElement {
                 this.executionStartDate = apiState.response.executionStartDate;
                 this.executionEndDate = apiState.response.executionEndDate;
                 this.executedFormattedRequest = apiState.formattedRequest;
+                this.executedRequest = apiState.request;
                 if (this.content != apiState.response.content) {
                     this.content = apiState.response.content;
                     this.updateResponseEditor();
@@ -345,7 +374,14 @@ export default class App extends ToolkitElement {
         if (openapiSchemaFiles) {
             this.openapiSchemaFiles = SELECTORS.openapiSchemaFiles.selectAll({ openapiSchemaFiles });
             this.apiTreeItems = [...this.openapiSchemaFiles].map(file => {
-                return openApiToApiTreeItems(file.content)[0];
+                const root = openApiToApiTreeItems(file.content)[0];
+                if (root) {
+                    root.extra = {
+                        ...(root.extra || {}),
+                        selectedServerUrl: file?.extra?.selectedServerUrl,
+                    };
+                }
+                return root;
             });
         }
 
@@ -599,6 +635,13 @@ export default class App extends ToolkitElement {
         this.viewer_value = e.detail.value;
     };
 
+    handleSnippetTabActive = (e) => {
+        const value = e.target?.value;
+        if (value) {
+            this.snippetTabValue = value;
+        }
+    };
+
     viewer_handleSelectTab = event => {
         store.dispatch(
             API.reduxSlice.actions.updateViewerTab({
@@ -686,6 +729,18 @@ export default class App extends ToolkitElement {
         this.updateRequestStates(e);
     };
 
+    handleSetDefaultHeader = (e) => {
+        const value = e.detail?.value;
+        if (isEmpty(value)) return;
+        store.dispatch(
+            API.reduxSlice.actions.updateDefaultHeader({
+                header: value,
+                alias: this.alias,
+            })
+        );
+        Toast.show({ label: 'Default headers saved', message: 'Will apply to new tabs', variant: 'success' });
+    };
+
     endpoint_change = e => {
         LOGGER.log('App [endpoint_change]', e.detail.value);
         this.endpoint = e.detail.value;
@@ -752,6 +807,271 @@ export default class App extends ToolkitElement {
         this.isDownloading = false;
     };
 
+    viewer_handleSearchInput = (e) => {
+        this.viewerSearchQuery = e.detail?.value ?? e.target?.value ?? '';
+    };
+
+    viewer_handleSearchModeChange = (e) => {
+        this.viewerSearchMode = e.detail?.value ?? e.target?.value ?? 'substring';
+    };
+
+    viewer_handleSearchKeyUp = (e) => {
+        if (e.key === 'Enter') {
+            this.viewer_runSearch();
+        }
+    };
+
+    viewer_runSearch = () => {
+        const q = String(this.viewerSearchQuery || '').trim();
+        if (isEmpty(q)) {
+            Toast.show({ label: 'Search', message: 'Enter a search query', variant: 'info' });
+            return;
+        }
+
+        if (this.viewerSearchMode === 'jsonpath' || q.startsWith('$.')) {
+            try {
+                const obj =
+                    typeof this.content === 'object' && isNotUndefinedOrNull(this.content)
+                        ? this.content
+                        : JSON.parse(this.formattedContent || '{}');
+                const value = this.evaluateSimpleJsonPath(obj, q.startsWith('$.') ? q : `$.${q}`);
+                const preview =
+                    typeof value === 'string'
+                        ? value
+                        : JSON.stringify(value, null, 2);
+                Toast.show({
+                    label: 'JSON path',
+                    message: preview?.length > 800 ? `${preview.slice(0, 800)}…` : (preview || 'No result'),
+                    variant: isUndefinedOrNull(value) ? 'warning' : 'success',
+                });
+            } catch (e) {
+                Toast.show({
+                    label: 'JSON path error',
+                    message: e?.message || 'Unable to evaluate JSON path',
+                    variant: 'error',
+                });
+            }
+            return;
+        }
+
+        // Substring search over the formatted response
+        const haystack = String(this.formattedContent || '');
+        const needle = q;
+        let count = 0;
+        let idx = 0;
+        while (true) {
+            const next = haystack.indexOf(needle, idx);
+            if (next === -1) break;
+            count += 1;
+            idx = next + Math.max(needle.length, 1);
+        }
+
+        Toast.show({
+            label: 'Search',
+            message: count === 0 ? 'No matches' : `${count} match${count > 1 ? 'es' : ''}`,
+            variant: count === 0 ? 'warning' : 'success',
+        });
+    };
+
+    evaluateSimpleJsonPath = (obj, path) => {
+        // Supports: $.a.b[0].c and $['a']['b'] (minimal)
+        if (isUndefinedOrNull(obj)) return undefined;
+        const p = String(path || '').trim();
+        if (!p.startsWith('$')) {
+            throw new Error('Path must start with $');
+        }
+        // Normalize bracket-notation to dots where possible
+        let expr = p
+            .replace(/^\$\./, '')
+            .replace(/^\$/, '')
+            .replace(/\[['"]([^'"]+)['"]\]/g, '.$1')
+            .replace(/\[(\d+)\]/g, '.$1');
+        expr = expr.replace(/^\./, '');
+        if (isEmpty(expr)) return obj;
+
+        const parts = expr.split('.').filter(Boolean);
+        let cur = obj;
+        for (const key of parts) {
+            if (isUndefinedOrNull(cur)) return undefined;
+            cur = cur[key];
+        }
+        return cur;
+    };
+
+    viewer_copyBody = async () => {
+        try {
+            await navigator.clipboard.writeText(String(this.formattedContent || ''));
+            Toast.show({ label: 'Copied', message: 'Response body copied', variant: 'success' });
+        } catch (e) {
+            Toast.show({ label: 'Copy failed', message: e?.message || 'Unable to copy', variant: 'warning' });
+        }
+    };
+
+    viewer_downloadBody = () => {
+        this.isDownloading = true;
+        try {
+            const ext = this.formattedContentType || 'txt';
+            const blob = new Blob([String(this.formattedContent || '')], { type: this.contentType || 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const download = document.createElement('a');
+            download.href = url;
+            download.download = `sf-toolkit-api-response-${Date.now()}.${ext}`;
+            download.click();
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            Toast.show({
+                label: 'Download failed',
+                message: e?.message || 'Unable to download response',
+                variant: 'error',
+            });
+        } finally {
+            this.isDownloading = false;
+        }
+    };
+
+    viewer_copyHeaders = async () => {
+        try {
+            await navigator.clipboard.writeText(this.formattedResponseHeadersText);
+            Toast.show({ label: 'Copied', message: 'Response headers copied', variant: 'success' });
+        } catch (e) {
+            Toast.show({ label: 'Copy failed', message: e?.message || 'Unable to copy', variant: 'warning' });
+        }
+    };
+
+    toApexStringLiteral = (value) => {
+        const s = String(value ?? '');
+        return `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+    };
+
+    escapeBashSingleQuoted = (value) => {
+        // In bash: 'foo'"'"'bar'
+        return String(value ?? '').replace(/'/g, `'\"'\"'`);
+    };
+
+    sanitizeHeadersForSnippet = (headers) => {
+        const out = { ...(headers || {}) };
+        Object.keys(out).forEach((k) => {
+            if (String(k).toLowerCase() === 'authorization') {
+                out[k] = 'Bearer {sessionId}';
+            }
+        });
+        return out;
+    };
+
+    get apexHttpRequestSnippet() {
+        const formatted = this.formatRequest();
+        if (isUndefinedOrNull(formatted)) {
+            return '/* Unable to format request */';
+        }
+
+        const lines = [];
+        lines.push('HttpRequest req = new HttpRequest();');
+        lines.push(`req.setMethod(${this.toApexStringLiteral(formatted.method || 'GET')});`);
+        lines.push(`req.setEndpoint(${this.toApexStringLiteral(formatted.url || '')});`);
+
+        const headers = this.sanitizeHeadersForSnippet(formatted.headers || {});
+        Object.keys(headers).forEach((key) => {
+            const val = headers[key];
+            if (isUndefinedOrNull(val)) return;
+            lines.push(`req.setHeader(${this.toApexStringLiteral(key)}, ${this.toApexStringLiteral(val)});`);
+        });
+
+        if (formatted.body && String(formatted.body).length > 0) {
+            lines.push(`req.setBody(${this.toApexStringLiteral(formatted.body)});`);
+        }
+
+        lines.push('Http http = new Http();');
+        lines.push('HTTPResponse res = http.send(req);');
+        lines.push("System.debug('Status=' + res.getStatus());");
+        lines.push("System.debug(res.getBody());");
+        return lines.join('\n');
+    }
+
+    get curlSnippet() {
+        const formatted = this.formatRequest();
+        if (isUndefinedOrNull(formatted)) {
+            return '# Unable to format request';
+        }
+        const method = formatted.method || 'GET';
+        const url = formatted.url || '';
+        const headers = this.sanitizeHeadersForSnippet(formatted.headers || {});
+
+        const parts = [];
+        parts.push(`curl -X ${method} '${this.escapeBashSingleQuoted(url)}'`);
+        Object.keys(headers).forEach((key) => {
+            const val = headers[key];
+            if (isUndefinedOrNull(val) || isEmpty(String(key))) return;
+            parts.push(`  -H '${this.escapeBashSingleQuoted(`${key}: ${val}`)}'`);
+        });
+        if (formatted.body && String(formatted.body).length > 0) {
+            parts.push(`  --data-raw '${this.escapeBashSingleQuoted(formatted.body)}'`);
+        }
+        return parts.join(' \\\n');
+    }
+
+    get jsforceSnippet() {
+        const formatted = this.formatRequest();
+        if (isUndefinedOrNull(formatted)) {
+            return '/* Unable to format request */';
+        }
+
+        let instanceUrl = '';
+        try {
+            instanceUrl = new URL(formatted.url || '').origin;
+        } catch {
+            instanceUrl = '';
+        }
+
+        const endpoint = formatted.endpoint || '';
+        const method = formatted.method || 'GET';
+        const headers = this.sanitizeHeadersForSnippet(formatted.headers || {});
+
+        let bodyLine = '';
+        if (formatted.body && String(formatted.body).length > 0) {
+            // Prefer object body when JSON, else string
+            try {
+                const obj = JSON.parse(formatted.body);
+                bodyLine = `  body: ${JSON.stringify(obj, null, 2).split('\n').join('\n  ')},\n`;
+            } catch {
+                bodyLine = `  body: ${JSON.stringify(String(formatted.body))},\n`;
+            }
+        }
+
+        const headerLines = Object.keys(headers)
+            .filter(k => !isEmpty(k) && !isUndefinedOrNull(headers[k]))
+            .map(k => `    ${JSON.stringify(k)}: ${JSON.stringify(String(headers[k]))}`)
+            .join(',\n');
+
+        return [
+            "const jsforce = require('jsforce');",
+            '',
+            'const conn = new jsforce.Connection({',
+            `  instanceUrl: ${JSON.stringify(instanceUrl || 'https://yourInstance.my.salesforce.com')},`,
+            "  accessToken: '{sessionId}',",
+            '});',
+            '',
+            'conn.request({',
+            `  method: ${JSON.stringify(method)},`,
+            `  url: ${JSON.stringify(endpoint || '/')},`,
+            headerLines ? `  headers: {\n${headerLines}\n  },\n` : '',
+            bodyLine,
+            '}).then((res) => {',
+            '  console.log(res);',
+            '}).catch((err) => {',
+            '  console.error(err);',
+            '});',
+        ].filter(Boolean).join('\n');
+    }
+
+    copyApexHttpRequestSnippet = async () => {
+        try {
+            await navigator.clipboard.writeText(this.apexHttpRequestSnippet);
+            Toast.show({ label: 'Copied', message: 'Apex snippet copied', variant: 'success' });
+        } catch (e) {
+            Toast.show({ label: 'Copy failed', message: e?.message || 'Unable to copy', variant: 'warning' });
+        }
+    };
+
     executeSave = () => {
 
         const { api } = store.getState();
@@ -764,7 +1084,7 @@ export default class App extends ToolkitElement {
         }).then(async data => {
             if (isUndefinedOrNull(data)) return;
             const item = this.currentRequestToStore;
-            const { name, isGlobal } = data;
+            const { name, isGlobal, folder, tags } = data;
             store.dispatch(async (dispatch, getState) => {
                 await dispatch(
                     DOCUMENT.reduxSlices.APIFILE.actions.upsertOne({
@@ -772,7 +1092,11 @@ export default class App extends ToolkitElement {
                         isGlobal, // generic
                         content: null,
                         alias: this.alias,
-                        extra: item,
+                        extra: {
+                            ...item,
+                            folder: folder || '',
+                            tags: Array.isArray(tags) ? tags : [],
+                        },
                     })
                 );
                 const apiFiles = getState().apiFiles;
@@ -789,12 +1113,115 @@ export default class App extends ToolkitElement {
         });
     };
 
+    handleExportSavedRequests = () => {
+        try {
+            const items = (this.savedApiItems || []).map(x => ({
+                id: x.id,
+                isGlobal: !!x.isGlobal,
+                alias: x.alias,
+                extra: x.extra,
+            }));
+            const payload = {
+                kind: 'sf-toolkit.savedRequests',
+                version: 1,
+                exportedAt: new Date().toISOString(),
+                items,
+            };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `sf-toolkit-api-saved-requests-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            Toast.show({ label: 'Exported', message: `${items.length} saved request(s) exported`, variant: 'success' });
+        } catch (e) {
+            Toast.show({ label: 'Export failed', message: e?.message || 'Unable to export', variant: 'error' });
+        }
+    };
+
+    handleImportSavedRequests = (event) => {
+        const text = event.detail?.text;
+        if (isEmpty(text)) {
+            Toast.show({ label: 'Import failed', message: 'Empty file', variant: 'warning' });
+            return;
+        }
+        let parsed;
+        try {
+            parsed = JSON.parse(text);
+        } catch (e) {
+            Toast.show({ label: 'Import failed', message: 'Invalid JSON', variant: 'error' });
+            return;
+        }
+
+        const items = Array.isArray(parsed) ? parsed : parsed?.items;
+        if (!Array.isArray(items)) {
+            Toast.show({ label: 'Import failed', message: 'No items found', variant: 'warning' });
+            return;
+        }
+
+        store.dispatch(async (dispatch) => {
+            let count = 0;
+            for (const it of items) {
+                const id = it?.id;
+                const extra = it?.extra;
+                if (isEmpty(id) || isUndefinedOrNull(extra)) continue;
+                await dispatch(
+                    DOCUMENT.reduxSlices.APIFILE.actions.upsertOne({
+                        id,
+                        isGlobal: !!it.isGlobal,
+                        alias: it.isGlobal ? undefined : (it.alias || this.alias),
+                        content: null,
+                        extra,
+                    })
+                );
+                count += 1;
+            }
+            Toast.show({
+                label: 'Imported',
+                message: `${count} saved request(s) imported`,
+                variant: count > 0 ? 'success' : 'warning',
+            });
+        });
+    };
+
     handle_apiTreeToggle = () => {
-        this.isApiTreeToggled = !this.isApiTreeToggled;
+        const next = !this.isApiTreeToggled;
+        this.isApiTreeToggled = next;
+        if (next) {
+            this.isCatalogToggled = false;
+        }
     };
 
     handle_apiTreeClose = () => {
         this.isApiTreeToggled = false;
+    };
+
+    handle_catalogToggle = () => {
+        const next = !this.isCatalogToggled;
+        this.isCatalogToggled = next;
+        if (next) {
+            this.isApiTreeToggled = false;
+        }
+    };
+
+    handle_catalogClose = () => {
+        this.isCatalogToggled = false;
+    };
+
+    handle_catalogRefresh = () => {
+        this.loadSalesforceCatalog();
+    };
+
+    handle_catalogSelect = (event) => {
+        const item = event.detail?.item;
+        if (!item || Array.isArray(item.children)) return;
+
+        const template = item.extra?.template || item.extra;
+        if (!template) return;
+
+        // Salesforce Catalog templates should NOT mutate global Variables.
+        this.applyRequestTemplate(template, { applyVariables: false });
     };
 
     handle_settingsToggle = () => {
@@ -826,11 +1253,17 @@ export default class App extends ToolkitElement {
                         }
                     }
                 }
-                // Generate sample variables from parameters
+                // Generate sample variables from parameters (path-level + operation-level)
                 let sampleVariables = {};
-                const parameters = extra?.pathItem?.parameters || [];
-                if (Array.isArray(parameters) && parameters.length > 0) {
+                const pathParams = Array.isArray(extra?.pathItem?.parameters) ? extra.pathItem.parameters : [];
+                const opParams = Array.isArray(extra?.parameters) ? extra.parameters : [];
+                const parameters = [...pathParams, ...opParams];
+                const seen = new Set();
+                if (parameters.length > 0) {
                     parameters.forEach(param => {
+                        const key = `${param?.in || ''}:${param?.name || ''}`;
+                        if (seen.has(key)) return;
+                        seen.add(key);
                         // Use OpenAPISampler if schema exists, else use a placeholder
                         if (param.schema) {
                             try {
@@ -844,10 +1277,20 @@ export default class App extends ToolkitElement {
                     });
                 }
                 const variables = JSON.stringify(sampleVariables, null, 2);
-                this.initVariablesEditor();
+                this.variables = variables;
+                store.dispatch(API.reduxSlice.actions.updateVariables({ variables }));
+                if (this._hasRendered) {
+                    this.updateVariablesEditor();
+                }
                 // Compose full endpoint with base URL
                 const baseUrl = this.selectedServerUrl || '';
-                const endpoint = baseUrl.replace(/\/$/, '') + '/' + extra.path.replace(/^\//, '');
+                // Add query placeholders for query params (helps users discover required params)
+                const queryParams = parameters.filter(p => p?.in === 'query' && p?.name);
+                const queryString = queryParams.length
+                    ? `?${queryParams.map(p => `${encodeURIComponent(p.name)}={${p.name}}`).join('&')}`
+                    : '';
+                const endpointPath = extra.path.replace(/^\//, '') + queryString;
+                const endpoint = baseUrl.replace(/\/$/, '') + '/' + endpointPath;
                 const method = extra.method.toUpperCase();
                 // Check if a tab already exists for this method+endpoint+server
                 const tabId = selectedItem.id?.toLowerCase();
@@ -935,9 +1378,37 @@ export default class App extends ToolkitElement {
     };
 
     handleServerUrlChange = (event) => {
-        this.selectedServerUrl = event.detail.serverUrl;
-        // Optionally, update the endpoint or display the full URL somewhere
-        // Example: this.fullUrl = this.selectedServerUrl + this.endpoint;
+        const serverUrl = event.detail.serverUrl;
+        const projectId = event.detail.projectId;
+        this.selectedServerUrl = serverUrl;
+
+        // Persist per-schema selected server URL
+        if (!isEmpty(projectId)) {
+            try {
+                const state = store.getState();
+                const file = SELECTORS.openapiSchemaFiles.selectById(
+                    { openapiSchemaFiles: state.openapiSchemaFiles },
+                    lowerCaseKey(projectId)
+                );
+                if (file) {
+                    store.dispatch(
+                        DOCUMENT.reduxSlices.OPENAPI_SCHEMA_FILE.actions.upsertOne({
+                            id: file.id,
+                            isGlobal: file.isGlobal,
+                            alias: file.alias,
+                            content: file.content,
+                            name: file.name,
+                            extra: {
+                                ...(file.extra || {}),
+                                selectedServerUrl: serverUrl,
+                            },
+                        })
+                    );
+                }
+            } catch (e) {
+                // ignore persistence errors
+            }
+        }
     }
 
 
@@ -962,6 +1433,29 @@ export default class App extends ToolkitElement {
         }
     };
 
+    retryLastRequest = () => {
+        const tabId = this.currentTab?.id;
+        if (!tabId || !this.executedRequest || !this.executedFormattedRequest) return;
+        if (this.isApiRunning) return;
+
+        this.isApiRunning = true;
+        const apiPromise = store.dispatch(
+            API.executeApiRequest({
+                connector: this.connector,
+                request: this.executedRequest,
+                formattedRequest: this.executedFormattedRequest,
+                tabId,
+                createdDate: Date.now(),
+            })
+        );
+        store.dispatch(
+            API.reduxSlice.actions.setAbortingPromise({
+                tabId,
+                promise: apiPromise,
+            })
+        );
+    };
+
     handleDeleteApiProject = (event) => {
         LOGGER.log('handleDeleteApiProject', event.detail);
         const item = event.detail.item;
@@ -969,6 +1463,459 @@ export default class App extends ToolkitElement {
         LOGGER.log('this.apiTreeItems', this.apiTreeItems);
         store.dispatch(DOCUMENT.reduxSlices.OPENAPI_SCHEMA_FILE.actions.removeOne(item.id));
     }
+
+    /** Salesforce catalog */
+
+    buildSalesforceCatalogTree = ({ apiVersion, resources }) => {
+        const v = apiVersion || this.currentApiVersion;
+        const acceptJson = 'Accept : application/json';
+        const contentTypeJson = 'Content-Type : application/json';
+
+        const leaf = ({ id, name, title, icon, template, keywords }) => ({
+            id,
+            name,
+            title: title || name,
+            icon,
+            keywords,
+            extra: { template },
+        });
+
+        const folder = ({ id, name, title, icon, children, keywords }) => ({
+            id,
+            name,
+            title: title || name,
+            icon: icon ?? 'utility:open_folder',
+            keywords,
+            children: children || [],
+        });
+
+        const templates = folder({
+            id: `sf-catalog:templates:v${v}`,
+            name: 'Templates',
+            icon: 'utility:collection',
+            keywords: ['templates', 'salesforce', 'rest'],
+            children: [
+                folder({
+                    id: `sf-catalog:core:v${v}`,
+                    name: 'Core',
+                    children: [
+                        leaf({
+                            id: `sf-catalog:versions`,
+                            name: 'API Versions',
+                            title: 'GET /services/data/',
+                            icon: 'api:get',
+                            keywords: ['versions', 'services', 'data'],
+                            template: {
+                                method: 'GET',
+                                endpoint: '/services/data/',
+                                header: acceptJson,
+                                body: '',
+                            },
+                        }),
+                        leaf({
+                            id: `sf-catalog:resources:v${v}`,
+                            name: `Resources (v${v})`,
+                            title: `GET /services/data/v${v}/`,
+                            icon: 'api:get',
+                            keywords: ['resources', 'root', 'services', 'data'],
+                            template: {
+                                method: 'GET',
+                                endpoint: `/services/data/v${v}/`,
+                                header: acceptJson,
+                                body: '',
+                            },
+                        }),
+                        leaf({
+                            id: `sf-catalog:limits:v${v}`,
+                            name: 'Limits',
+                            title: `GET /services/data/v${v}/limits/`,
+                            icon: 'api:get',
+                            keywords: ['limits'],
+                            template: {
+                                method: 'GET',
+                                endpoint: `/services/data/v${v}/limits/`,
+                                header: acceptJson,
+                                body: '',
+                            },
+                        }),
+                        leaf({
+                            id: `sf-catalog:sobjects:v${v}`,
+                            name: 'SObjects',
+                            title: `GET /services/data/v${v}/sobjects/`,
+                            icon: 'api:get',
+                            keywords: ['sobjects', 'objects'],
+                            template: {
+                                method: 'GET',
+                                endpoint: `/services/data/v${v}/sobjects/`,
+                                header: acceptJson,
+                                body: '',
+                            },
+                        }),
+                    ],
+                }),
+                folder({
+                    id: `sf-catalog:soql:v${v}`,
+                    name: 'SOQL / SOSL',
+                    keywords: ['soql', 'sosl', 'query', 'search'],
+                    children: [
+                        leaf({
+                            id: `sf-catalog:query:v${v}`,
+                            name: 'SOQL Query',
+                            title: `GET /services/data/v${v}/query/?q={soql}`,
+                            icon: 'api:get',
+                            template: {
+                                method: 'GET',
+                                endpoint: `/services/data/v${v}/query/?q={soql}`,
+                                header: acceptJson,
+                                body: '',
+                                variables: JSON.stringify(
+                                    { soql: 'SELECT Id, Name FROM Account ORDER BY CreatedDate DESC LIMIT 10' },
+                                    null,
+                                    2
+                                ),
+                            },
+                        }),
+                        leaf({
+                            id: `sf-catalog:queryAll:v${v}`,
+                            name: 'SOQL QueryAll',
+                            title: `GET /services/data/v${v}/queryAll/?q={soql}`,
+                            icon: 'api:get',
+                            template: {
+                                method: 'GET',
+                                endpoint: `/services/data/v${v}/queryAll/?q={soql}`,
+                                header: acceptJson,
+                                body: '',
+                                variables: JSON.stringify(
+                                    { soql: 'SELECT Id FROM Account WHERE IsDeleted = true LIMIT 10' },
+                                    null,
+                                    2
+                                ),
+                            },
+                        }),
+                        leaf({
+                            id: `sf-catalog:sosl:v${v}`,
+                            name: 'SOSL Search',
+                            title: `GET /services/data/v${v}/search/?q={sosl}`,
+                            icon: 'api:get',
+                            template: {
+                                method: 'GET',
+                                endpoint: `/services/data/v${v}/search/?q={sosl}`,
+                                header: acceptJson,
+                                body: '',
+                                variables: JSON.stringify(
+                                    { sosl: 'FIND {Acme} IN Name Fields RETURNING Account(Id, Name LIMIT 5)' },
+                                    null,
+                                    2
+                                ),
+                            },
+                        }),
+                    ],
+                }),
+                folder({
+                    id: `sf-catalog:tooling:v${v}`,
+                    name: 'Tooling API',
+                    keywords: ['tooling', 'metadata', 'soql'],
+                    children: [
+                        leaf({
+                            id: `sf-catalog:tooling-query:v${v}`,
+                            name: 'Tooling Query',
+                            title: `GET /services/data/v${v}/tooling/query/?q={soql}`,
+                            icon: 'api:get',
+                            template: {
+                                method: 'GET',
+                                endpoint: `/services/data/v${v}/tooling/query/?q={soql}`,
+                                header: acceptJson,
+                                body: '',
+                                variables: JSON.stringify(
+                                    { soql: 'SELECT Id, Name FROM ApexClass ORDER BY Name LIMIT 25' },
+                                    null,
+                                    2
+                                ),
+                            },
+                        }),
+                    ],
+                }),
+                folder({
+                    id: `sf-catalog:composite:v${v}`,
+                    name: 'Composite',
+                    keywords: ['composite', 'batch', 'graph'],
+                    children: [
+                        leaf({
+                            id: `sf-catalog:composite:v${v}:post`,
+                            name: 'Composite Request',
+                            title: `POST /services/data/v${v}/composite/`,
+                            icon: 'api:post',
+                            template: {
+                                method: 'POST',
+                                endpoint: `/services/data/v${v}/composite/`,
+                                header: `${acceptJson}\n${contentTypeJson}`,
+                                body: JSON.stringify(
+                                    {
+                                        allOrNone: true,
+                                        compositeRequest: [
+                                            {
+                                                method: 'GET',
+                                                url: `/services/data/v${v}/limits/`,
+                                                referenceId: 'limits',
+                                            },
+                                        ],
+                                    },
+                                    null,
+                                    2
+                                ),
+                            },
+                        }),
+                        leaf({
+                            id: `sf-catalog:composite-batch:v${v}:post`,
+                            name: 'Composite Batch',
+                            title: `POST /services/data/v${v}/composite/batch`,
+                            icon: 'api:post',
+                            template: {
+                                method: 'POST',
+                                endpoint: `/services/data/v${v}/composite/batch`,
+                                header: `${acceptJson}\n${contentTypeJson}`,
+                                body: JSON.stringify(
+                                    {
+                                        batchRequests: [
+                                            {
+                                                method: 'GET',
+                                                url: `/services/data/v${v}/limits/`,
+                                            },
+                                        ],
+                                    },
+                                    null,
+                                    2
+                                ),
+                            },
+                        }),
+                    ],
+                }),
+                folder({
+                    id: `sf-catalog:sobject-ops:v${v}`,
+                    name: 'SObject operations',
+                    keywords: ['sobject', 'record', 'crud'],
+                    children: [
+                        leaf({
+                            id: `sf-catalog:sobject-describe:v${v}`,
+                            name: 'Describe SObject',
+                            title: `GET /services/data/v${v}/sobjects/{sobject}/describe/`,
+                            icon: 'api:get',
+                            template: {
+                                method: 'GET',
+                                endpoint: `/services/data/v${v}/sobjects/{sobject}/describe/`,
+                                header: acceptJson,
+                                body: '',
+                                variables: JSON.stringify({ sobject: 'Account' }, null, 2),
+                            },
+                        }),
+                        leaf({
+                            id: `sf-catalog:sobject-get:v${v}`,
+                            name: 'Get record (by Id)',
+                            title: `GET /services/data/v${v}/sobjects/{sobject}/{id}`,
+                            icon: 'api:get',
+                            template: {
+                                method: 'GET',
+                                endpoint: `/services/data/v${v}/sobjects/{sobject}/{id}`,
+                                header: acceptJson,
+                                body: '',
+                                variables: JSON.stringify({ sobject: 'Account', id: '001...' }, null, 2),
+                            },
+                        }),
+                        leaf({
+                            id: `sf-catalog:sobject-create:v${v}`,
+                            name: 'Create record',
+                            title: `POST /services/data/v${v}/sobjects/{sobject}/`,
+                            icon: 'api:post',
+                            template: {
+                                method: 'POST',
+                                endpoint: `/services/data/v${v}/sobjects/{sobject}/`,
+                                header: `${acceptJson}\n${contentTypeJson}`,
+                                body: JSON.stringify({ Name: 'Sample' }, null, 2),
+                                variables: JSON.stringify({ sobject: 'Account' }, null, 2),
+                            },
+                        }),
+                        leaf({
+                            id: `sf-catalog:sobject-update:v${v}`,
+                            name: 'Update record',
+                            title: `PATCH /services/data/v${v}/sobjects/{sobject}/{id}`,
+                            icon: 'api:patch',
+                            template: {
+                                method: 'PATCH',
+                                endpoint: `/services/data/v${v}/sobjects/{sobject}/{id}`,
+                                header: `${acceptJson}\n${contentTypeJson}`,
+                                body: JSON.stringify({ Name: 'Updated name' }, null, 2),
+                                variables: JSON.stringify({ sobject: 'Account', id: '001...' }, null, 2),
+                            },
+                        }),
+                        leaf({
+                            id: `sf-catalog:sobject-upsert-external:v${v}`,
+                            name: 'Upsert (External Id)',
+                            title: `PATCH /services/data/v${v}/sobjects/{sobject}/{externalField}/{externalValue}`,
+                            icon: 'api:patch',
+                            template: {
+                                method: 'PATCH',
+                                endpoint: `/services/data/v${v}/sobjects/{sobject}/{externalField}/{externalValue}`,
+                                header: `${acceptJson}\n${contentTypeJson}`,
+                                body: JSON.stringify({ Name: 'Upserted name' }, null, 2),
+                                variables: JSON.stringify(
+                                    { sobject: 'Account', externalField: 'External_Id__c', externalValue: 'EXT-001' },
+                                    null,
+                                    2
+                                ),
+                            },
+                        }),
+                        leaf({
+                            id: `sf-catalog:sobject-delete:v${v}`,
+                            name: 'Delete record',
+                            title: `DELETE /services/data/v${v}/sobjects/{sobject}/{id}`,
+                            icon: 'api:delete',
+                            template: {
+                                method: 'DELETE',
+                                endpoint: `/services/data/v${v}/sobjects/{sobject}/{id}`,
+                                header: acceptJson,
+                                body: '',
+                                variables: JSON.stringify({ sobject: 'Account', id: '001...' }, null, 2),
+                            },
+                        }),
+                    ],
+                }),
+            ],
+        });
+
+        const discoveryChildren = [];
+        if (resources && typeof resources === 'object') {
+            const entries = Object.entries(resources)
+                .filter(([, url]) => typeof url === 'string' && url.startsWith('/'))
+                .sort(([a], [b]) => a.localeCompare(b))
+                .slice(0, 80);
+
+            discoveryChildren.push(
+                ...entries.map(([key, url]) =>
+                    leaf({
+                        id: `sf-catalog:resource:${v}:${key}`,
+                        name: key,
+                        title: `GET ${url}`,
+                        icon: 'api:get',
+                        keywords: ['resource', key],
+                        template: {
+                            method: 'GET',
+                            endpoint: url,
+                            header: acceptJson,
+                            body: '',
+                        },
+                    })
+                )
+            );
+        }
+
+        const discovery = folder({
+            id: `sf-catalog:discovery:v${v}`,
+            name: `Discovery (v${v})`,
+            icon: 'utility:search',
+            keywords: ['discovery', 'resources', 'services', 'data'],
+            children: discoveryChildren,
+        });
+
+        return discoveryChildren.length > 0 ? [templates, discovery] : [templates];
+    };
+
+    loadSalesforceCatalog = async () => {
+        this.isCatalogLoading = true;
+        this.apiCatalogError = null;
+        try {
+            const conn = this.connector?.conn;
+            const apiVersion = this.currentApiVersion;
+            if (!conn || !apiVersion) {
+                this.apiCatalogItems = this.buildSalesforceCatalogTree({ apiVersion });
+                return;
+            }
+
+            let resources = null;
+            try {
+                resources = await conn.request(`/services/data/v${apiVersion}/`);
+            } catch (e) {
+                // Keep templates even if discovery fails
+                resources = null;
+            }
+
+            this.apiCatalogItems = this.buildSalesforceCatalogTree({ apiVersion, resources });
+        } catch (e) {
+            this.apiCatalogItems = this.buildSalesforceCatalogTree({ apiVersion: this.currentApiVersion });
+            this.apiCatalogError = e?.message || 'Unable to load catalog';
+        } finally {
+            this.isCatalogLoading = false;
+        }
+    };
+
+    applyRequestTemplate = (template, options = {}) => {
+        const { applyVariables = true } = options || {};
+        const nextMethod = template?.method || this.method;
+        const nextEndpoint = template?.endpoint ?? this.endpoint;
+        const nextHeader = template?.header ?? this.header;
+        const nextBody = template?.body ?? this.body;
+
+        // Variables are global; merge to avoid clobbering existing user variables.
+        let mergedVariables = null;
+        if (applyVariables === true && !isUndefinedOrNull(template?.variables)) {
+            let currentVars = {};
+            let templateVars = {};
+            try {
+                currentVars = JSON.parse(this.variables || '{}') || {};
+            } catch {
+                currentVars = {};
+            }
+            try {
+                templateVars =
+                    typeof template.variables === 'string'
+                        ? JSON.parse(template.variables || '{}') || {}
+                        : template.variables || {};
+            } catch {
+                templateVars = {};
+            }
+            mergedVariables = JSON.stringify({ ...currentVars, ...templateVars }, null, 2);
+        }
+
+        this.method = nextMethod;
+        this.endpoint = nextEndpoint;
+        this.header = nextHeader;
+        this.body = nextBody;
+        if (!isUndefinedOrNull(mergedVariables)) {
+            this.variables = mergedVariables;
+        }
+
+        if (this._hasRendered) {
+            this.refs.method.value = this.method;
+            this.refs.url.value = this.endpoint;
+            this.updateBodyEditor();
+            if (!isUndefinedOrNull(mergedVariables)) {
+                this.updateVariablesEditor();
+            }
+        }
+
+        if (!isUndefinedOrNull(mergedVariables)) {
+            store.dispatch(API.reduxSlice.actions.updateVariables({ variables: this.variables }));
+        }
+
+        const tabId =
+            this.currentTab?.id ||
+            store.getState()?.api?.currentTab?.id;
+        const isDraft =
+            !this.currentFile ||
+            (this.currentFile &&
+                (this.currentFile.extra?.body != this.body ||
+                    this.currentFile.extra?.method != this.method ||
+                    this.currentFile.extra?.endpoint != this.endpoint ||
+                    this.currentFile.extra?.header != this.header)) === true;
+
+        store.dispatch(
+            API.reduxSlice.actions.updateRequest({
+                ...this.currentRequestToStore,
+                connector: this.connector,
+                tabId,
+                isDraft,
+            })
+        );
+    };
 
     /** Tabs */
 
@@ -1246,6 +2193,12 @@ export default class App extends ToolkitElement {
             .toString();
     }
 
+    get snippetContainerClass() {
+        return classSet('slds-fill-height')
+            .add({ 'slds-hide': !(this.viewer_value === API_UTILS.VIEWERS.SNIPPET) })
+            .toString();
+    }
+
     get isPreviewMode() {
         return '';
     }
@@ -1308,5 +2261,40 @@ export default class App extends ToolkitElement {
         return this.isDownloading
             ? 'Downloading'
             : `Download file (${this.formattedContentLength})`;
+    }
+
+    get canRetryLastRequest() {
+        return !this.isApiRunning && isNotUndefinedOrNull(this.executedRequest) && isNotUndefinedOrNull(this.executedFormattedRequest);
+    }
+
+    get isRetryDisabled() {
+        return !this.canRetryLastRequest;
+    }
+
+    get viewerSearchModeOptions() {
+        return [
+            { label: 'Substring', value: 'substring' },
+            { label: 'JSON path ($.a.b[0])', value: 'jsonpath' },
+        ];
+    }
+
+    get formattedResponseHeadersText() {
+        return (this.contentHeaders || [])
+            .map(h => `${h.key}: ${h.value}`)
+            .join('\n');
+    }
+
+    get responseSizeBytes() {
+        const bytes = (this.contentLength * 3) / 4;
+        return Number.isFinite(bytes) ? bytes : 0;
+    }
+
+    get responseSizeLabel() {
+        const bytes = this.responseSizeBytes;
+        if (!bytes) return '';
+        const mb = bytes / (1024 * 1024);
+        if (mb >= 1) return `${mb.toFixed(2)} MB`;
+        const kb = bytes / 1024;
+        return `${kb.toFixed(2)} KB`;
     }
 }

@@ -25,6 +25,26 @@
                     value={name}
                     required></lightning-input>
             </div>
+            <div class="slds-col slds-size_1-of-2 slds-p-horizontal_x-small slds-m-top_small">
+                <lightning-input
+                    class="input-target"
+                    type="text"
+                    label="Folder"
+                    name="folder"
+                    value={folder}
+                    placeholder="Optional (e.g. Composite, Tooling, Debug)">
+                </lightning-input>
+            </div>
+            <div class="slds-col slds-size_1-of-2 slds-p-horizontal_x-small slds-m-top_small">
+                <lightning-input
+                    class="input-target"
+                    type="text"
+                    label="Tags"
+                    name="tags"
+                    value={tags}
+                    placeholder="Optional (comma-separated)">
+                </lightning-input>
+            </div>
         </div>
         <slot></slot>
         <!-- Body - END-->

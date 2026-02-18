@@ -11,6 +11,7 @@
         --sds-s-button-bordered-transform-hover:var(--slds-s-button-bordered-transform-hover);
         --slds-s-button-bordered-transform-hover:translateY(-1.5px);
         --slds-g-color-on-success-1:white;
+        --slds-g-color-on-surface-1:#0376d3;
     }
 }
 
@@ -521,4 +522,9 @@
 
 .slds-context-bar{
     border-bottom: 3px solid var(--slds-g-color-palette-neutral-80, #d4d4d4) !important;
+}
+
+/** Radio Button Enhancements **/
+.sf-toolkit .slds-radio_button-group, .sf-toolkit .slds-radio--button-group {
+    border:unset !important;
 }

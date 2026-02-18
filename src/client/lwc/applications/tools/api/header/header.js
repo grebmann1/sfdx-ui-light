@@ -1,8 +1,9 @@
-import { LightningElement, api,track } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
 import { guid } from 'shared/utils';
 export default class Header extends LightningElement {
 
     @track _headerList = [];
+    @api defaultHeader = '';
 
     @api 
     set header(value) {
@@ -50,7 +51,6 @@ export default class Header extends LightningElement {
         const field = event.target.dataset.field;
         let headerLine = { ...this._headerList[row] };
         headerLine[field] = value;
-guid
         // Create a new array to trigger reactivity
         const newHeaders = [...this._headerList];
         newHeaders[row] = headerLine;
@@ -58,6 +58,54 @@ guid
         this.ensureLastHeaderIsEmpty();
         this.dispatchEvent(new CustomEvent('change', { detail: { value: this.header } }));
     }
+
+    handlePresetSelect = (event) => {
+        const preset = event.detail.value;
+        const map = {
+            accept_json: { key: 'Accept', value: 'application/json' },
+            content_type_json: { key: 'Content-Type', value: 'application/json' },
+            auth_bearer_session: { key: 'Authorization', value: 'Bearer {sessionId}' },
+            sforce_call_options: { key: 'Sforce-Call-Options', value: 'client=SF-Toolkit' },
+            sforce_query_options: { key: 'Sforce-Query-Options', value: 'batchSize=2000' },
+        };
+        const entry = map[preset];
+        if (!entry) return;
+        this.upsertHeader(entry.key, entry.value);
+    };
+
+    handleApplyDefault = () => {
+        if (!this.defaultHeader) return;
+        this.headerList = this.parseHeaderStringToRows(this.defaultHeader);
+        this.dispatchEvent(new CustomEvent('change', { detail: { value: this.header } }));
+    };
+
+    handleSaveDefault = () => {
+        this.dispatchEvent(
+            new CustomEvent('setdefault', {
+                detail: { value: this.header },
+                bubbles: true,
+                composed: true,
+            })
+        );
+    };
+
+    upsertHeader = (key, value) => {
+        const k = String(key || '').trim();
+        if (!k) return;
+        const v = String(value ?? '');
+
+        const rows = [...(this._headerList || [])];
+        const templateIndex = rows.findIndex(r => this.isHeaderEmpty(r));
+        const idx = rows.findIndex(r => (r.key || '').toLowerCase() === k.toLowerCase());
+        if (idx > -1) {
+            rows[idx] = { ...rows[idx], key: k, value: v };
+        } else {
+            const insertAt = templateIndex > -1 ? templateIndex : rows.length;
+            rows.splice(insertAt, 0, { id: guid(), key: k, value: v, checked: true });
+        }
+        this.headerList = rows;
+        this.dispatchEvent(new CustomEvent('change', { detail: { value: this.header } }));
+    };
 
     handleDelete(event) {
         const index = parseInt(event.target.dataset.index, 10);
@@ -190,6 +238,14 @@ guid
             { label: 'X-Sfdc-Edge-Cache', value: 'X-Sfdc-Edge-Cache' },
             { label: 'X-Sfdc-Request-Id', value: 'X-Sfdc-Request-Id' }
         ];
+    }
+
+    get isApplyDefaultDisabled() {
+        return !this.defaultHeader;
+    }
+
+    get isSaveDefaultDisabled() {
+        return !this.formattedHeaders;
     }
 
     syncHeaderRows() {

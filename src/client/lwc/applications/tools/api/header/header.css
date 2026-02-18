@@ -13,3 +13,7 @@ tr.slds-hint-parent:hover .delete-column lightning-button-icon {
 td.delete-column lightning-button-icon {
     visibility: hidden;
 }
+
+.header-toolbar {
+    gap: 0.5rem;
+}

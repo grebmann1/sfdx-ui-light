@@ -5,6 +5,7 @@ export const VIEWERS = {
     WORKBENCH: 'Workbench',
     RAW: 'Raw',
     PREVIEW: 'Preview',
+    SNIPPET: 'Snippet',
 };
 
 export const TABS = {

@@ -25,9 +25,9 @@ export async function loadCacheSettings(alias) {
 }
 
 async function saveCacheSettings(alias, state) {
-    const { viewerTab, requestTab, recentPanelToggled, tabs } = state;
+    const { viewerTab, requestTab, recentPanelToggled, tabs, defaultHeader } = state;
     const key = `${alias}-${API_SETTINGS_KEY}`;
-    const data = JSON.stringify({ viewerTab, requestTab, recentPanelToggled, tabs:tabs.map(formatTabBeforeSave) });
+    const data = JSON.stringify({ viewerTab, requestTab, recentPanelToggled, defaultHeader, tabs:tabs.map(formatTabBeforeSave) });
     await saveExtensionConfigToCache({ [key]: data });
 }
 
@@ -117,58 +117,66 @@ function addAction({ state, tabId, request, response }) {
 }
 
 export const apiAdapter = createEntityAdapter();
-const _executeApiRequest = (connector, request, formattedRequest) => {
-    //console.log('connector,body,headers',connector,body,headers);
-    return new Promise((resolve, reject) => {
-        try {
-            const executionStartDate = Date.now();
-            const instance = connector.conn.httpApi();
-            instance.on('response', async res => {
-                // Set Response variables
-                let content = res.body;
-                let statusCode = res.statusCode;
-                let _headers = res.headers || {};
-                let contentHeaders = Object.keys(_headers).map(key => ({
-                    key,
-                    value: _headers[key],
-                }));
-                let contentType = instance.getResponseContentType(res);
-                if (API.formattedContentType(contentType) !== 'xml') {
-                    content = await instance.getResponseBody(res);
-                }
+const _executeApiRequest = async (connector, request, formattedRequest, signal) => {
+    const executionStartDate = Date.now();
+    const url = formattedRequest?.url;
+    if (!url) {
+        throw new Error('Missing request URL');
+    }
 
-                let contentLength = new TextEncoder().encode(JSON.stringify(content)).length;
-                const executionEndDate = Date.now();
-                const result = {
-                    content,
-                    statusCode,
-                    contentHeaders,
-                    contentType,
-                    contentLength,
-                    executionStartDate,
-                    executionEndDate,
-                };
-                resolve(result);
-            });
+    // Merge user headers + auth header (if not provided explicitly)
+    const headers = { ...(formattedRequest?.headers || {}) };
+    if (!headers.Authorization && connector?.conn?.accessToken) {
+        headers.Authorization = `Bearer ${connector.conn.accessToken}`;
+    }
 
-            // Execute the request
-            instance.request(formattedRequest);
-        } catch (e) {
-            reject(e);
-        }
+    const res = await fetch(url, {
+        method: formattedRequest?.method || request?.method || 'GET',
+        headers,
+        body: formattedRequest?.body,
+        signal,
     });
+
+    const statusCode = res.status;
+    const contentHeaders = Array.from(res.headers.entries()).map(([key, value]) => ({ key, value }));
+    const contentType = res.headers.get('content-type') || '';
+
+    let content;
+    const formattedType = API.formattedContentType(contentType);
+    if (formattedType === 'json') {
+        try {
+            content = await res.json();
+        } catch {
+            content = await res.text();
+        }
+    } else {
+        content = await res.text();
+    }
+
+    const contentLength = new TextEncoder().encode(JSON.stringify(content)).length;
+    const executionEndDate = Date.now();
+
+    return {
+        content,
+        statusCode,
+        contentHeaders,
+        contentType,
+        contentLength,
+        executionStartDate,
+        executionEndDate,
+    };
 };
 
 export const executeApiRequest = createAsyncThunk(
     'api/callRequest',
     async (
         { connector, request, formattedRequest, tabId, createdDate },
-        { dispatch, getState }
+        { dispatch, signal }
     ) => {
         //console.log('connector, body,tabId',connector, body,tabId);
         //const apiPath = isAllRows ? '/queryAll' : '/query';
         try {
-            const response = await _executeApiRequest(connector, request, formattedRequest);
+            const response = await _executeApiRequest(connector, request, formattedRequest, signal);
             // Add to Recent Panel :
             dispatch(
                 DOCUMENT.reduxSlices.RECENT.actions.saveApi({
@@ -196,8 +204,12 @@ export const executeApiRequest = createAsyncThunk(
     }
 );
 
-const createInitialTabs = apiVersion => {
-    return [enrichTab(API.generateDefaultTab(apiVersion), null)];
+const createInitialTabs = (apiVersion, defaultHeader) => {
+    const tab = API.generateDefaultTab(apiVersion);
+    if (defaultHeader) {
+        tab.header = defaultHeader;
+    }
+    return [enrichTab(tab, null)];
 };
 const DEFAULT_VARIABLES = `{
     "id": "123",
@@ -218,6 +230,7 @@ const apiSlice = createSlice({
         endpoint: null,
         variables: DEFAULT_VARIABLES, // GLOBAL
         header: null,
+        defaultHeader: API.DEFAULT.HEADER,
         currentApiVersion: '59.0',
         abortingMap: {},
         isInitialized: false,
@@ -227,13 +240,14 @@ const apiSlice = createSlice({
             const { cachedConfig, apiFiles } = action.payload;
             if (cachedConfig && !state.isInitialized) {
                 // Use cached config
-                const { viewerTab,requestTab, recentPanelToggled, tabs } = cachedConfig;
+                const { viewerTab,requestTab, recentPanelToggled, tabs, defaultHeader } = cachedConfig;
                 const cachedTabs = tabs && tabs.length > 0 ? enrichTabs(tabs, { apiFiles },SELECTORS.apiFiles) : [];
                 const allTabs = [...cachedTabs, ...state.tabs];
                 Object.assign(state, {
                     viewerTab,
                     requestTab,
                     recentPanelToggled,
+                    defaultHeader: defaultHeader || state.defaultHeader,
                     tabs: allTabs,
                     currentTab: allTabs.length > 0 ? allTabs[allTabs.length-1] : null,
                 });
@@ -276,6 +290,13 @@ const apiSlice = createSlice({
                 state.currentTab = state.tabs[tabIndex];
             }
         },
+        updateDefaultHeader: (state, action) => {
+            const { header, alias } = action.payload;
+            state.defaultHeader = header;
+            if (isNotUndefinedOrNull(alias)) {
+                saveCacheSettings(alias, state);
+            }
+        },
         updateCurrentApiVersion: (state, action) => {
             const { version } = action.payload;
             state.currentApiVersion = version || DEFAULT_API_VERSION;
@@ -290,7 +311,7 @@ const apiSlice = createSlice({
         initTabs: (state, action) => {
             const { apiFiles,reset } = action.payload;
             if(reset || !state.tabs || state.tabs.length === 0){
-                state.tabs = enrichTabs(createInitialTabs(state.currentApiVersion), { apiFiles }, SELECTORS.apiFiles);
+                state.tabs = enrichTabs(createInitialTabs(state.currentApiVersion, state.defaultHeader), { apiFiles }, SELECTORS.apiFiles);
             }else{
                 state.tabs = enrichTabs(state.tabs.map(formatTab), { apiFiles }, SELECTORS.apiFiles);
             }
@@ -325,6 +346,9 @@ const apiSlice = createSlice({
         },
         addTab: (state, action) => {
             const { apiFiles, tab } = action.payload;
+            if (!tab.header || tab.header === API.DEFAULT.HEADER) {
+                tab.header = state.defaultHeader || API.DEFAULT.HEADER;
+            }
             const enrichedTab = enrichTab(formatTab(tab), { apiFiles }, SELECTORS.apiFiles);
             state.tabs.push(enrichedTab);
             // Assign new tab
@@ -470,7 +494,7 @@ const apiSlice = createSlice({
                 apiAdapter.upsertOne(state.api, {
                     id: lowerCaseKey(tabId),
                     isFetching: false,
-                    error,
+                    error: action.meta.aborted ? null : error,
                 });
             });
     },

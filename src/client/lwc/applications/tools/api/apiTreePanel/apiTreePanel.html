@@ -21,6 +21,8 @@
             <slds-file-tree 
                 is-delete-disabled
                 tree={projectTree}
+                min-search-length="1"
+                search-fields={projectSearchFields}
                 onselect={handleSelectProject}
             ></slds-file-tree>
         </template>
@@ -50,6 +52,8 @@
                 <slds-file-tree
                     is-delete-disabled
                     tree={apiDetailsTree}
+                    min-search-length="1"
+                    search-fields={apiSearchFields}
                     onselect={handleSelect}
                 ></slds-file-tree>
                 <template if:true={selectedNode}>

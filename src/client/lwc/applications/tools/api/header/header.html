@@ -1,4 +1,38 @@
 <template>
+    <div class="header-toolbar slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-m-bottom_x-small">
+        <div class="slds-col">
+            <lightning-button-menu
+                alternative-text="Header presets"
+                icon-name="utility:jump_to_right"
+                icon-size="x-small"
+                onselect={handlePresetSelect}
+            >
+                <lightning-menu-item value="accept_json" label="Accept: application/json"></lightning-menu-item>
+                <lightning-menu-item value="content_type_json" label="Content-Type: application/json"></lightning-menu-item>
+                <lightning-menu-item value="auth_bearer_session" label="Authorization: Bearer {sessionId}"></lightning-menu-item>
+                <lightning-menu-item value="sforce_call_options" label="Sforce-Call-Options: client=SF-Toolkit"></lightning-menu-item>
+                <lightning-menu-item value="sforce_query_options" label="Sforce-Query-Options: batchSize=2000"></lightning-menu-item>
+            </lightning-button-menu>
+        </div>
+        <div class="slds-col slds-grid slds-grid_vertical-align-center slds-grid_align-end slds-gutters_x-small">
+            <div class="slds-col">
+                <lightning-button
+                    label="Apply default"
+                    variant="neutral"
+                    onclick={handleApplyDefault}
+                    disabled={isApplyDefaultDisabled}
+                ></lightning-button>
+            </div>
+            <div class="slds-col">
+                <lightning-button
+                    label="Save as default"
+                    variant="brand-outline"
+                    onclick={handleSaveDefault}
+                    disabled={isSaveDefaultDisabled}
+                ></lightning-button>
+            </div>
+        </div>
+    </div>
     <div class="slds-table_edit_container slds-is-relative">
         <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_fixed-layout">
             <thead>
