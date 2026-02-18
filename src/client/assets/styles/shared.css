@@ -1,0 +1,524 @@
+@font-face {
+    font-family: 'seti';
+    src: url('/styles/seti.hash.woff') format('woff');
+}
+
+@layer shared{
+    :where(html){
+        --slds-s-button-bordered-shadow-hover:0 1.5px 0 0 light-dark(var(--slds-g-color-neutral-base-20), var(--slds-g-color-neutral-base-70));
+        --sds-s-button-brand-transform-hover:var(--slds-s-button-brand-transform-hover);
+        --slds-s-button-brand-transform-hover:translateY(-2px);
+        --sds-s-button-bordered-transform-hover:var(--slds-s-button-bordered-transform-hover);
+        --slds-s-button-bordered-transform-hover:translateY(-1.5px);
+        --slds-g-color-on-success-1:white;
+    }
+}
+
+.sf-toolkit{
+    --slds-c-button-shadow-focus:none !important;
+    --_slds-g-shadow-outset-focus:none !important;
+}
+
+.sf-toolkit .fix-slds-button_icon-border-filled {
+    height: 1.5rem;
+}
+
+.sf-toolkit .fix-arrow-button .fix-slds-button_icon-border-filled {
+    height: 1.5rem !important;
+}
+
+/*.sf-toolkit .slds-spinner.slds-spinner_container{
+    z-index: 1 !important;
+}*/
+.sf-toolkit .slds-spinner_container.no-opacity {
+    opacity: 1;
+    background: var(--slds-g-color-neutral-base-100, #fff);
+}
+
+.sf-toolkit .slds-form-element_stacked .slds-grid {
+    display: -webkit-box !important;
+}
+
+.sf-toolkit .slds-color-brand {
+    color: var(--slds-g-color-brand-base-30, #014486);
+}
+
+/* Semantic orange; SLDS2 hot-orange palette */
+.sf-toolkit .slds-color-orange-dark {
+    color: var(--slds-g-color-palette-hot-orange-30, #7e2600);
+}
+
+.sf-toolkit .slds-color-orange-light {
+    color: var(--slds-g-color-palette-hot-orange-60, #ff5d2d);
+}
+
+.sf-toolkit .slds-card-grey {
+    background-color: var(--slds-g-color-neutral-base-95, #f3f3f3);
+}
+
+.sf-toolkit .slds-text-title_bold {
+    font-size: .875rem;
+    font-weight: 700 !important;
+}
+
+.sf-toolkit .slds-border-right {
+    border-right: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
+}
+
+.sf-toolkit .vertical-title {
+    font-size: small;
+    justify-content: flex-start !important;
+}
+
+.sf-toolkit .min-height-400 {
+    min-height: 400px;
+}
+
+.sf-toolkit .min-height-200 {
+    min-height: 200px;
+}
+
+.sf-toolkit .min-width-300 {
+    min-width: 300px;
+}
+
+.sf-toolkit .min-width-150 {
+    min-width: 150px;
+}
+
+.sf-toolkit .slds-width-150 {
+    width: 150px;
+}
+
+.sf-toolkit .slds-full-width {
+    width: 100%;
+}
+
+.sf-toolkit .tab-visible {
+    visibility: visible;
+}
+
+.sf-toolkit .tab-hide {
+    visibility: hidden;
+    height: 0;
+}
+
+.sf-toolkit code-analyzer .slds-vertical-tabs {
+    display: -webkit-box !important;
+}
+
+.sf-toolkit .slds-text-color_warning {}
+
+.sf-toolkit .full-page {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.sf-toolkit .full-page-connected {
+    /*height:calc(97vh - 90px);*/
+}
+
+.sf-toolkit .full-page-header {}
+
+.sf-toolkit .full-page-body {
+    /*height: calc(100% - 120px);*/
+    position: relative;
+    flex-grow: 1;
+    overflow: auto;
+}
+
+.sf-toolkit .full-page-body-builder {
+    height: calc(100% - 2rem);
+    position: relative;
+}
+
+.sf-toolkit .full-page-body > .slds-card__body {
+    height: calc(100% - 2rem);
+}
+
+.sf-toolkit .slds-flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.sf-toolkit .slds-align-flex-end {
+    align-items: flex-end;
+}
+
+.sf-toolkit .slds-flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.sf-toolkit .slds-align-items_center {
+    align-items: center;
+}
+
+.sf-toolkit .slds-justify-content-flew-end {
+    justify-content: flex-end;
+}
+
+.sf-toolkit .slds-justify-content-space-between {
+    justify-content: space-between;
+}
+
+.sf-toolkit .slds-justify-content-center {
+    justify-content: center;
+}
+
+.sf-toolkit .slds-full-height {
+    height: 100%;
+}
+
+.sf-toolkit .slds-auto-height {
+    height: auto;
+}
+
+.sf-toolkit .slds-overflow-hidden {
+    overflow: hidden;
+}
+
+.sf-toolkit .slds-full-height.slds-grid .slds-col {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/*
+.sf-toolkit .slds-full-height .slds-tabs_scoped{
+    height:calc(100% - 41px);
+    display: flex;
+    flex-direction: column;
+}
+*/
+.sf-toolkit .slds-full-height lightning-tabset > div {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.sf-toolkit .slds-padding-top-200 {
+    padding-top: 200px;
+}
+
+.sf-toolkit .slds-no-padding {
+    padding: unset !important;
+}
+
+.sf-toolkit .slds-dark-bg {
+    /*background-color: #292524;*/
+}
+
+.sf-toolkit .slds-light-bg {
+    background-color: white;
+}
+
+.sf-toolkit .slds-grey-bg {
+    background-color: #f3f3f3;
+}
+
+.sf-toolkit .slds-card {
+    border-radius: unset; /* Remove Border radius*/
+}
+
+.sf-toolkit .slds-page-header {
+    border-radius: unset; /* Remove Border radius*/
+}
+
+.sf-toolkit .slds-vertical-button-group button {
+    border-radius: 0;
+}
+
+.sf-toolkit .slds-vertical-button-group .slds-button-first button {
+    border-bottom: 0;
+}
+
+.sf-toolkit .custom-utility-bar {
+    background-color: #032d60;
+    height: 1.5rem !important;
+    color: white;
+}
+
+.sf-toolkit .custom-utility-bar .custom-utility-text {
+    font-weight: 400;
+}
+
+.sf-toolkit .custom-utility-text-copy {
+    --slds-c-icon-color-foreground: rgba(255, 255, 255, 1);
+    cursor: pointer;
+}
+
+.sf-toolkit .custom-utility-text-copy .slds-button:hover {
+    text-decoration: underline;
+}
+
+.sf-toolkit .footer-utility-truncate button {
+    --slds-c-button-line-height : 0.8rem;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sf-toolkit .menu-header .slds-nav-vertical__title:empty {
+    padding: 0px;
+}
+
+.sf-toolkit .menu-header lightning-vertical-navigation-item .slds-nav-vertical__action {
+    padding-left: 3.5rem;
+}
+
+.sf-toolkit .slds-vertical-separator {
+    background: #ffffff !important;
+    opacity: 0.6;
+    width: 1px;
+    height: 16px;
+    margin: 0px 4px;
+}
+
+.sf-toolkit .slds-tabs_scoped__link .slds-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+.sf-toolkit slds-tab.slds-tabs_scoped__content {
+    display: none;
+}
+
+/*
+.sf-toolkit slds-tabset .slds-tabs--scoped__link, .sf-toolkit slds-tabset .slds-tabs_scoped__link {
+    height: 1.5rem;
+    line-height: 1.5rem;
+}
+
+.sf-toolkit slds-tabset .slds-tabs_scoped__overflow-button{
+    height: 1.5rem;
+    line-height: 1.5rem;
+}
+*/
+.sf-toolkit slds-tabset .slds-tabs_scoped__link {
+    padding: 0 0.5rem;
+}
+
+.sf-toolkit .slds-tabs_no-max .slds-tabs_scoped__link {
+    max-width: unset !important;
+}
+
+.sf-toolkit .slds-tabs_max-300 .slds-tabs_scoped__link {
+    max-width: 300px !important;
+}
+
+.sf-toolkit .slds-without-tab lightning-tab {
+    display: none;
+}
+
+.sf-toolkit .slds-without-tab .slds-tabs_scoped__item {
+    margin-bottom: unset;
+}
+
+.sf-toolkit .slds-tabs_scoped__nav {
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+}
+
+.sf-toolkit .slds-menu-collapsed lightning-vertical-navigation-section .slds-nav-vertical__title {
+    padding-left: 0.2rem;
+}
+
+.sf-toolkit .slds-menu-collapsed lightning-vertical-navigation-section .slds-nav-vertical__action {
+    padding-left: unset;
+    padding-right: unset;
+}
+
+.sf-toolkit .slds-menu-collapsed lightning-vertical-navigation-item-icon .slds-nav-vertical__action lightning-icon {
+    padding-left: 0.8rem;
+}
+
+.sf-toolkit .slds-fill-height {
+    /*height: calc(100% - 120px);*/
+    position: relative;
+    flex-grow: 1;
+    overflow: auto;
+}
+
+.sf-toolkit .slds-checkbox-flex .slds-form-element__control {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.sf-toolkit .body-full-height .slds-modal__content {
+    overflow: hidden;
+    height: 100%;
+}
+
+.sf-toolkit .slds-card__header-with-quick-links {
+    padding-bottom: 0px; /* Related to quick links */
+}
+
+.sf-toolkit .slds-quick-links {
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.sf-toolkit .toolkit-small .slds-checkbox_toggle .slds-checkbox_faux {
+    width: 2rem;
+    height: 17px;
+}
+
+.sf-toolkit .toolkit-small .slds-checkbox_toggle [type=checkbox]:checked+.slds-checkbox_faux_container .slds-checkbox_faux:after {
+    top: 0.1rem;
+    left: .3rem;
+    height: .5rem;
+    width: .45rem;
+}
+
+.sf-toolkit .toolkit-small .slds-checkbox_toggle [type=checkbox]:checked+.slds-checkbox_faux_container .slds-checkbox_faux:before {
+    top: 0;
+    right: 0;
+    width: 14px;
+    height: 14px;
+}
+
+.sf-toolkit .toolkit-small .slds-checkbox_toggle .slds-checkbox_faux:after {
+    top: 0;
+    left: 0;
+    width: 14px;
+    height: 14px;
+}
+
+.sf-toolkit .toolkit-small.slds-form-element .slds-form-element__label {
+    padding-top: unset;
+}
+
+.sf-toolkit .toolkit-small.slds-form-element .slds-checkbox_toggle {
+    align-items: center;
+}
+
+.sf-toolkit .slds-inline-flex {
+    display: inline-flex;
+}
+
+.sf-toolkit .slds-inline {
+    display: inline;
+}
+
+.sf-toolkit .slds-contents {
+    display: contents;
+}
+
+.sf-toolkit lightning-input[variant=\"label-stacked\"] .slds-checkbox_toggle {
+    display: flex;
+    flex-direction: column;
+}
+
+.sf-toolkit .tabulator-row.tabulator-highlight-row {
+    --slds-c-button-text-color: white;
+    --slds-c-button-color-border-hover: white;
+    background-color: #888888;
+    color: white;
+}
+
+.sf-toolkit .tabulator-row.tabulator-highlight-row a {
+    color: white;
+}
+
+/*
+.sf-toolkit .tabulator-row.tabulator-row-even {
+    background-color: #fafaf9;
+}
+*/
+
+.sf-toolkit .tabulator-row.tabulator-selected {
+    --slds-c-button-text-color: white;
+    --slds-c-button-color-border-hover: white;
+    background-color: #0176d3;
+    color: white;
+}
+
+.sf-toolkit .tabulator .tabulator-header .tabulator-col {
+    background: #f3f3f3;
+}
+
+.sf-toolkit .tabulator .tabulator-row-header {
+    align-content: center;
+}
+
+.sf-toolkit .tabulator-row.tabulator-selected a {
+    color: white !important;
+}
+
+.sf-toolkit .slds-section.slds-reverse{
+    color: white;
+}
+
+.sf-toolkit .slds-section.slds-reverse .slds-section__title-action{
+    background-color: #032d60;
+}
+
+/** Settings **/
+
+.sf-toolkit .settings .slds-truncate{
+    white-space:normal;
+}
+
+.sf-toolkit .settings .slds-truncate{
+    white-space:normal;
+}
+
+.sf-toolkit .settings .slds-media_center{
+    align-items: flex-start;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .sf-toolkit .tabulator-row.tabulator-selectable:hover {
+        background-color: #e5e5e5;
+        cursor: pointer;
+    }
+
+    .sf-toolkit .tabulator-row.tabulator-selected:hover {
+        --slds-c-button-text-color: white;
+        --slds-c-icon-color-foreground: white;
+        --slds-c-button-color-border-hover: white;
+        --slds-c-button-text-color-hover: white;
+        background-color: #0176d3;
+        color: white;
+    }
+
+    .sf-toolkit .tabulator-highlight-row:hover {
+        --slds-c-button-text-color: white;
+        --slds-c-icon-color-foreground: white;
+        --slds-c-button-color-border-hover: white;
+        --slds-c-button-text-color-hover: white;
+        background-color: #888888 !important;
+        color: white;
+    }
+
+    .sf-toolkit .tabulator .tabulator-header .tabulator-col.tabulator-sortable.tabulator-col-sorter-element:hover {
+        cursor: pointer;
+        background-color: #e5e5e5;
+    }
+}
+
+/** Fake underline **/
+.sf-toolkit [kx-scope=button][kx-type=underline]:hover:after {
+    content:unset !important;
+}
+
+/** lightning-alert **/
+.sf-toolkit lightning-alert p,
+.sf-toolkit lightning-confirm p{
+    padding:1rem;
+}
+
+/** UI Tab Enhancements **/
+.slds-context-bar__item.slds-is-active:before{
+    top:37px !important;
+}
+
+.slds-context-bar{
+    border-bottom: 3px solid var(--slds-g-color-palette-neutral-80, #d4d4d4) !important;
+}

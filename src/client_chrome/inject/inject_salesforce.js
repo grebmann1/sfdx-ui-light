@@ -102,11 +102,16 @@ const injectCSS = () => {
             chrome.runtime.getURL('/styles/slds-sf-toolkit.css')
         );
         safeAddStylesheet(
+            'sf-toolkit-shared-css',
+            chrome.runtime.getURL('/styles/shared.css')
+        );
+        safeAddStylesheet(
             'sf-toolkit-extension-css',
             chrome.runtime.getURL('/styles/extension.css')
         );
         debugLog('injectCSS ok', {
             slds: !!document.getElementById('sf-toolkit-slds-css'),
+            shared: !!document.getElementById('sf-toolkit-shared-css'),
             extension: !!document.getElementById('sf-toolkit-extension-css'),
         });
     } catch (e) {

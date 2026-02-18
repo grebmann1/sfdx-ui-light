@@ -691,8 +691,8 @@ function injectToolkit(tabId) {
             files: [
                 'styles/slds-sf-toolkit.css',
                 'styles/inject.css',
+                'styles/shared.css',
                 'styles/extension.css',
-                'styles/web.css',
             ],
         },
         () => {

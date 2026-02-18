@@ -1,6 +1,10 @@
+/*
+ * Extension-only overrides.
+ *
+ * Shared (cross-web + extension + injected UI) styles are in `shared.css`.
+ */
+
 /*body {
-    //width: 700px;
-    //height: 600px;
     height: 100vh;
 }*/
 
@@ -31,14 +35,6 @@
     height: 1.5rem !important;
 }
 
-.sf-toolkit .footer-utility-truncate button {
-    --slds-c-button-line-height : 0.8rem;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
 .sf-toolkit doc-app .full-page.slds-p-around_small{
     padding: 0 !important;
 }
@@ -47,151 +43,13 @@
     margin-top: 0 !important;
 }
 
-/** Static Mode **/
-.sf-toolkit .full-page{
-    height:100%;
-    display: flex;
-    flex-direction: column;
-}
-
-
-.sf-toolkit .full-page-body{
-    /*height: calc(100% - 120px);*/
-    position: relative;
-    flex-grow: 1;
-    overflow: auto;
-}
-
-.sf-toolkit .slds-flex-column{
-    display: flex;
-    flex-direction: column;
-}
-
-.sf-toolkit .slds-flex-row{
-    display: flex;
-    flex-direction: row;
-}
-
-.sf-toolkit .slds-justify-content-center {
-    justify-content: center;
-}
-
-.sf-toolkit .slds-justify-content-flew-end{
-    justify-content: flex-end;
-}
-
-.sf-toolkit .slds-full-height{
-    height:100%;
-}
-
-.sf-toolkit .slds-full-width {
-    width: 100%;
-}
-
-.sf-toolkit .slds-auto-height{
-    height:auto;
-}
-
-.sf-toolkit .slds-overflow-hidden{
-    overflow: hidden;
-}
-
-.sf-toolkit .slds-full-height.slds-grid .slds-col {
-    height:100%;
-    display: flex;
-    flex-direction: column;
-}
-
 .sf-toolkit .slds-full-height .slds-tabs_scoped{
     height:100%;/*calc(100% - 41px);*/
     display: flex;
     flex-direction: column;
 }
 
-.sf-toolkit .slds-padding-top-200{
-    padding-top: 200px;
-}
-
-.sf-toolkit .slds-no-padding{
-    padding: unset !important;
-}
-
-.sf-toolkit .min-height-400{
-    min-height: 400px;
-}
-
-.sf-toolkit .min-height-200{
-    min-height: 200px;
-}
-
-.sf-toolkit .min-width-300{
-    min-width: 300px;
-}
-
-.sf-toolkit .min-width-150{
-    min-width: 150px;
-}
-
-.sf-toolkit .slds-width-150{
-    width: 150px;
-}
-
-.sf-toolkit .slds-center-container{
-    position: unset;
-    width:unset;
-    left: unset;
-    top: unset;
-    -webkit-transform: unset;
-    transform: unset;
-}
-
-.sf-toolkit .slds-tabs_scoped__nav{
-    border-top-right-radius:0;
-    border-top-left-radius:0;
-}
-
-.sf-toolkit .slds-tabs_scoped__link .slds-icon{
-    width: 1rem;
-    height: 1rem;
-}
-
-.sf-toolkit .slds-tabs_no-max .slds-tabs_scoped__link{
-    max-width: unset;
-}
-
-.sf-toolkit .slds-tabs_max-300 .slds-tabs_scoped__link {
-    max-width: 300px !important;
-}
-
-.sf-toolkit .slds-color-brand{
-    color:rgb(7, 87, 133);
-}
-
-.sf-toolkit .slds-color-orange-dark{
-    color:rgb(133, 74, 7);
-}
-
-.sf-toolkit .slds-color-orange-light{
-    color:rgb(217, 127, 24);
-}
-
-.sf-toolkit .slds-card-grey{
-    background-color:var(--slds-g-color-neutral-base-95,#f3f3f3);
-}
-
-.sf-toolkit .slds-text-title_bold {
-    font-size: .875rem;
-    font-weight: 700 !important;
-}
-
-
 /** Modal **/
-
-.sf-toolkit .body-full-height .slds-modal__content {
-    overflow: hidden;
-    height: 100%;
-}
-
 @media (max-width: 200em){
     .sf-toolkit .slds-modal_full{
       top:env(safe-area-inset-top, 0);
@@ -254,15 +112,8 @@
     display: flex;
 }
 
-.sf-toolkit .slds-fill-height{
-    /*height: calc(100% - 120px);*/
-    position: relative;
-    flex-grow: 1;
-    overflow: auto;
-}
-
 .sf-toolkit .slds-without-tab .slds-tabs_scoped__content{
-    padding: 0.3rem; /*  0.5rem; Only for Extension */
+    padding: 0.3rem; /* Only for Extension */
 }
 
 .sf-toolkit .slds-tabs-no-padding{
@@ -273,47 +124,18 @@
     padding:0 !important;
 }
 
-.sf-toolkit .slds-inline-flex{
-    display: inline-flex;
-}
-
-.sf-toolkit .slds-inline{
-    display: inline;
-}
-
-.sf-toolkit .slds-contents{
-    display: contents;
-}
-
-.sf-toolkit lightning-input[variant="label-stacked"] .slds-checkbox_toggle{
-    display: flex;
-    flex-direction: column;
-}
-
-.sf-toolkit .slds-vertical-separator{
-    background: #ffffff !important;
-    opacity: 0.6;
-    width: 1px;
-    height: 16px;
-    margin: 0px 4px;
-}
-
-.sf-toolkit .slds-card{
-    border-radius: unset; /* Remove Border radius*/
-}
-
-.sf-toolkit .slds-page-header{
-    border-radius: unset; /* Remove Border radius*/
-}
-
 /** Fixed Picklist length for Picklists (Einstein Actions) **/
 .sf-toolkit .slds-max-150 .slds-combobox_container{
     width: 150px;
 }
 
-/** Fake underline **/
-.sf-toolkit [kx-scope=button][kx-type=underline]:hover:after {
-    content:unset !important;
+.sf-toolkit .slds-center-container{
+    position: unset;
+    width:unset;
+    left: unset;
+    top: unset;
+    -webkit-transform: unset;
+    transform: unset;
 }
 
 .sf-toolkit .slds-button:hover{
