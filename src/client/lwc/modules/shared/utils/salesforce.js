@@ -33,43 +33,40 @@ export function getSobject(href) {
 const extractRecordId = href => {
     if (!href) return null;
     try {
-        let url = new URL(href);
+        const url = new URL(href);
         // Find record ID from URL
-        let searchParams = new URLSearchParams(url.search.substring(1));
-        // Salesforce Classic and Console
-        if (url.hostname.endsWith('.salesforce.com') || url.hostname.endsWith('.salesforce.mil')) {
-            let match = url.pathname.match(
-                /\/([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})(?:\/|$)/
-            );
-            if (match) {
-                let res = match[1];
-                if (res.includes('0000') || res.length == 3) {
-                    return match[1];
-                }
-            }
-        }
+        const searchParams = new URLSearchParams(url.search.substring(1));
 
-        // Lightning Experience and Salesforce1
-        if (
-            url.hostname.endsWith('.lightning.force.com') ||
-            url.hostname.endsWith('.lightning.force.mil') ||
-            url.hostname.endsWith('.lightning.crmforce.mil')
-        ) {
+        const isLightningPath = url.pathname.startsWith('/lightning/') || url.pathname === '/one/one.app';
+
+        // Lightning Experience and Salesforce1 (supports enhanced domains like *.my.salesforce.com)
+        if (isLightningPath) {
             let match;
 
-            if (url.pathname == '/one/one.app') {
+            if (url.pathname === '/one/one.app') {
                 // Pre URL change: https://docs.releasenotes.salesforce.com/en-us/spring18/release-notes/rn_general_enhanced_urls_cruc.htm
-                match = url.hash.match(/\/sObject\/([a-zA-Z0-9]+)(?:\/|$)/);
+                match = url.hash.match(/\/sObject\/([a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})(?:\/|$)/);
             } else {
-                match = url.pathname.match(/\/lightning\/[r|o]\/[a-zA-Z0-9_]+\/([a-zA-Z0-9]+)/);
+                match = url.pathname.match(
+                    /\/lightning\/[ro]\/[a-zA-Z0-9_]+\/([a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})(?:\/|$)/
+                );
             }
             if (match) {
                 return match[1];
             }
         }
+
+        // Salesforce Classic and Console
+        if (!isLightningPath && (url.hostname.endsWith('.salesforce.com') || url.hostname.endsWith('.salesforce.mil'))) {
+            const match = url.pathname.match(/\/([a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})(?:\/|$)/);
+            if (match) {
+                return match[1];
+            }
+        }
+
         // Visualforce
         {
-            let idParam = searchParams.get('id');
+            const idParam = searchParams.get('id');
             if (idParam) {
                 return idParam;
             }
@@ -77,7 +74,7 @@ const extractRecordId = href => {
         // Visualforce page that does not follow standard Visualforce naming
         for (let [, p] of searchParams) {
             if (
-                p.match(/^([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/) &&
+                p.match(/^([a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/) &&
                 p.includes('0000')
             ) {
                 return p;
@@ -91,7 +88,7 @@ const extractRecordId = href => {
 
 export function getRecordId(href) {
     const recordId = extractRecordId(href);
-    return recordId && recordId.match(/^([a-zA-Z0-9]{3}|[a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/)
+    return recordId && recordId.match(/^([a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/)
         ? recordId
         : null;
 }

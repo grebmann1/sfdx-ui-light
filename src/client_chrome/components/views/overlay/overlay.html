@@ -70,6 +70,27 @@
                                     DEV SERVER
                                 </div>
                             </template>
+                            <!-- OVERLAY INIT/INJECTION ERROR -->
+                            <template lwc:if={overlayErrorMessage}>
+                                <div
+                                    class="slds-notify slds-notify_alert slds-alert_error sf-overlay-error"
+                                    role="alert">
+                                    <span class="slds-assistive-text">Error</span>
+                                    <span class="sf-overlay-error__message">{overlayErrorMessage}</span>
+                                    <lightning-button-icon
+                                        class="sf-overlay-error__close"
+                                        icon-name="utility:close"
+                                        variant="bare"
+                                        alternative-text="Dismiss"
+                                        onclick={clearOverlayError}></lightning-button-icon>
+                                </div>
+                                <template lwc:if={overlayErrorDetails}>
+                                    <details class="sf-overlay-error__details">
+                                        <summary>Details</summary>
+                                        <pre class="sf-overlay-error__pre">{overlayErrorDetails}</pre>
+                                    </details>
+                                </template>
+                            </template>
                             <!-- HEADER -->
                             <extension-header
                                 lwc:ref="header"

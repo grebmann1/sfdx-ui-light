@@ -21,7 +21,7 @@ function debugLog(...args) {
     } catch (e) {}
 }
 
-const _showCopiedNotification = copiedValue => {
+/* const _showCopiedNotification = copiedValue => {
     // Create the notification element
     const notification = document.createElement('div');
     notification.className = 'sf-toolkit-notification-container';
@@ -79,7 +79,7 @@ const _showCopiedNotification = copiedValue => {
         document.body.removeChild(notification);
         document.head.removeChild(style);
     }, 3000);
-};
+}; */
 
 // Inject core CSS styles used by the injected UI
 const injectCSS = () => {

@@ -57,6 +57,8 @@ export default class Overlay extends ToolkitElement {
     recordId;
     isConnectorLoaded = false;
     isLoading = false;
+    overlayErrorMessage = null;
+    overlayErrorDetails = null;
     hasRendered = false;
     hasFocused = false;
     isFetchingMetadata = false;
@@ -124,10 +126,34 @@ export default class Overlay extends ToolkitElement {
             application.connector?.conn?.accessToken != this.connector.connector?.conn?.accessToken
         ) {
             //console.log('Connected');
+            this.clearOverlayError();
             this.isConnectorLoaded = true;
             this.init();
         }
     }
+
+    _setOverlayError = ({ message, details } = {}) => {
+        const safeMessage =
+            typeof message === 'string' && message.trim().length > 0
+                ? message.trim()
+                : 'Overlay initialization failed';
+
+        let safeDetails = null;
+        if (typeof details === 'string' && details.trim().length > 0) {
+            safeDetails = details.trim();
+        } else if (details && typeof details === 'object') {
+            const msg = details?.message;
+            safeDetails = typeof msg === 'string' && msg.trim().length > 0 ? msg.trim() : null;
+        }
+
+        this.overlayErrorMessage = safeMessage;
+        this.overlayErrorDetails = safeDetails;
+    };
+
+    clearOverlayError = () => {
+        this.overlayErrorMessage = null;
+        this.overlayErrorDetails = null;
+    };
 
     connectedCallback() {
         const lf = localForage?.default || localForage;
@@ -413,6 +439,14 @@ export default class Overlay extends ToolkitElement {
             };
         }
 
+        if (!cookieInfo || this.isBlankValue(cookieInfo.session) || this.isBlankValue(cookieInfo.domain)) {
+            this._setOverlayError({
+                message: 'Overlay injection failed (no Salesforce session found)',
+                details: 'Could not read the SID cookie for this tab (or the tab is not a Salesforce page).',
+            });
+            return;
+        }
+
         // Use as key for storage
         this.currentDomain = cookieInfo.domain;
         this.isDeveloperServer = !!(cookieInfo && cookieInfo.isDeveloperServer);
@@ -428,9 +462,17 @@ export default class Overlay extends ToolkitElement {
         };
         try {
             let connector = await credentialStrategies.SESSION.connect(params);
+            this.clearOverlayError();
             store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
         } catch (e) {
-            console.error(e);
+            this._setOverlayError({
+                message: 'Overlay injection failed (session connect)',
+                details: e?.message || String(e),
+            });
+            try {
+                // eslint-disable-next-line no-console
+                console.debug('[SF-TOOLKIT][Overlay] getSessionId connect failed', e?.message || e);
+            } catch (_) {}
         }
     };
 
@@ -439,6 +481,8 @@ export default class Overlay extends ToolkitElement {
     };
 
     init = () => {
+        // Clear prior overlay errors when retrying init
+        this.clearOverlayError();
         this.isLoading = true;
         Promise.all([this.loadCachedData(), this.loadOrgAndUserInfo()])
             .then(async results => {
@@ -448,7 +492,14 @@ export default class Overlay extends ToolkitElement {
                 void this.ensureUsersLoaded();
             })
             .catch(e => {
-                console.error(e);
+                this._setOverlayError({
+                    message: 'Overlay initialization failed',
+                    details: e?.message || String(e),
+                });
+                try {
+                    // eslint-disable-next-line no-console
+                    console.debug('[SF-TOOLKIT][Overlay] init failed', e?.message || e);
+                } catch (_) {}
                 this.isLoading = false;
                 this.cachedData = {};
                 // to display the default data !

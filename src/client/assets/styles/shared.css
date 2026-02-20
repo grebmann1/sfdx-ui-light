@@ -283,10 +283,6 @@
     height: 1rem;
 }
 
-.sf-toolkit slds-tab.slds-tabs_scoped__content {
-    display: none;
-}
-
 /*
 .sf-toolkit slds-tabset .slds-tabs--scoped__link, .sf-toolkit slds-tabset .slds-tabs_scoped__link {
     height: 1.5rem;
