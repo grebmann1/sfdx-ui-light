@@ -1,5 +1,22 @@
 [
   {
+    "version": "1.5.2",
+    "date": "March 3rd, 2026",
+    "sections": [
+      {
+        "title": "Bug Fixes",
+        "categories": [
+          {
+            "category": "UI",
+            "items": [
+              "Various UI fixes and polish across the application."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.5.1",
     "date": "February 25th, 2026",
     "sections": [
