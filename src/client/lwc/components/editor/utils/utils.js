@@ -1,6 +1,7 @@
 import { store } from 'core/store';
 import LOGGER from 'shared/logger';
 import { isChromeExtension } from 'shared/utils';
+import { ensureMonacoLoaded } from 'shared/loader';
 import { CompletionCopilot, registerCompletion } from 'monacopilot';
 
 function buildWorkerDefinition(workerPath, basePath) {

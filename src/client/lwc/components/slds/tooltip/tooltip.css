@@ -1,0 +1,25 @@
+:host {
+    display: block;
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
+.menu-label {
+    display: inline-block;
+    font-weight: var(--slds-g-font-weight-7, var(--lwc-fontWeightBold, 700));
+    color: var(--slds-g-color-on-surface-3, #03234d);
+    padding: var(--slds-g-spacing-3, var(--lwc-spacingSmall, 0.75rem))
+        var(--slds-g-spacing-5, var(--lwc-spacingLarge, 1.5rem));
+}
+
+.menu {
+    margin: var(--slds-g-spacing-2, var(--lwc-spacingXSmall, 0.5rem))
+        calc(var(--slds-g-spacing-3, var(--lwc-spacingSmall, 0.75rem)) * -1) 0
+        calc(var(--slds-g-spacing-3, var(--lwc-spacingSmall, 0.75rem)) * -1);
+}
+
+.tooltip-body {
+    width: max-content;
+}

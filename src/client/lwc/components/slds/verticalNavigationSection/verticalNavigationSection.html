@@ -1,0 +1,12 @@
+<template>
+    <template lwc:if={isCollapsed}>
+        <slot></slot>
+    </template>
+    <template lwc:else>
+        <lightning-vertical-navigation-section
+            label={label}
+        >
+            <slot></slot>
+        </lightning-vertical-navigation-section>
+    </template>
+</template>

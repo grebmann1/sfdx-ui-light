@@ -1,0 +1,65 @@
+.container {
+    width: 16.6875rem;
+    height: 100%;
+    background-color: var(--slds-g-color-surface-container-1, var(--lwc-colorBackgroundAlt));
+    border-top: var(--slds-g-sizing-border-1, 1px) solid var(--slds-g-color-border-1, var(--lwc-colorBorder));
+    border-right: var(--slds-g-sizing-border-1, 1px) solid var(--slds-g-color-border-1, var(--lwc-colorBorder));
+    transition: width 0.3s ease-in-out;
+}
+
+.container.collapsed {
+    width: 4.1718rem;
+}
+
+.section {
+    display: block;
+    padding: var(--slds-g-spacing-4, var(--lwc-spacingMedium)) 0;
+    border-bottom: var(--slds-g-sizing-border-1, 1px) solid
+        var(--slds-g-color-border-1, var(--lwc-colorBorderSeparatorAlt2));
+}
+
+.section:last-child {
+    border-bottom: none;
+}
+
+.collapse-control-wrapper {
+    left: 0;
+    bottom: var(--slds-g-spacing-2, 0.5rem);
+    z-index: 1000;
+    width: 100%;
+}
+
+.collapse-control-button {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    height: 2.34375rem; /* forcing the height to be the same as the nav item height */
+    width: 100%;
+    padding-left: var(--slds-g-spacing-5, 1.5rem); /* required to align the icon and text while in expanded state */
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    font-weight: var(--slds-g-font-weight-4, 400);
+    color: var(--slds-s-navigation-color, var(--slds-g-color-on-surface-3, #03234d));
+    transform: scale(1); /* required to prevent the button from shifting on hover */
+}
+
+/**
+ * Mimic verticalNavigationItem styles on focus
+ */
+.collapse-control-button:focus-visible {
+    box-shadow: var(--slds-g-shadow-inset-focus-1, 0 0 0 2px #ffffff inset, 0 0 0 4px #0b5cab inset);
+}
+.collapse-control-button:focus-visible {
+    outline: 0;
+    text-decoration: underline;
+}
+
+.collapse-control-button:hover {
+    color: var(--slds-s-navigation-color-hover, var(--slds-g-color-brand-base-15, #03234d));
+}
+
+.collapse-control-button.collapsed {
+    padding: 0;
+    justify-content: center;
+}

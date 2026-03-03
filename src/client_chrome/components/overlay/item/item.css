@@ -15,6 +15,10 @@
     margin-top: 0.25rem;
 }
 
+.slds-media__body {
+    min-width: 0;
+}
+
 .slds-listbox__option-text_entity {
     max-width: 100%;
     overflow: hidden;

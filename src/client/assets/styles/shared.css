@@ -11,7 +11,7 @@
         --sds-s-button-bordered-transform-hover:var(--slds-s-button-bordered-transform-hover);
         --slds-s-button-bordered-transform-hover:translateY(-1.5px);
         --slds-g-color-on-success-1:white;
-        --slds-g-color-on-surface-1:#0376d3;
+        /* --slds-g-color-on-surface-1:#0376d3; */
     }
 }
 

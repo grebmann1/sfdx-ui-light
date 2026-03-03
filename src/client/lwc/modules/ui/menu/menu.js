@@ -12,7 +12,7 @@ import { CACHE_CONFIG, loadExtensionConfigFromCache } from 'shared/cacheManager'
 
 import { CONFIG } from 'ui/app';
 import { connectStore, store as legacyStore, store_application } from 'shared/store';
-import { NavigationContext, CurrentPageReference, generateUrl, navigate } from 'lwr/navigation';
+import { NavigationContext, CurrentPageReference, navigate } from 'lwr/navigation';
 import LOGGER from 'shared/logger';
 
 export default class Menu extends ToolkitElement {
@@ -48,9 +48,7 @@ export default class Menu extends ToolkitElement {
     updateMenuItemFromNavigation = async ({ state }) => {
         const { applicationName } = state;
         if (this.selectedItem != applicationName) {
-            //console.log('Update Menu - From Navigation');
             this.selectedItem = applicationName || 'home';
-            this.updateSelectedItem();
         }
     };
 
@@ -64,22 +62,38 @@ export default class Menu extends ToolkitElement {
 
     /** Events **/
 
-    handleApplicationSelection = e => {
+    handleSelect = (e) => {
         e.stopPropagation();
-        const target = e.detail.name || e.detail.value;
+        const name = e.detail?.name;
+        const external = this.others.find((o) => o.name === name);
+        if (external?.url) {
+            legacyStore.dispatch(store_application.navigate(external.url));
+            return;
+        }
+        const target = isEmpty(name) ? null : name;
         if (!isEmpty(target)) {
             navigate(this.navContext, { type: 'application', state: { applicationName: target } });
         } else {
             navigate(this.navContext, { type: 'home' });
         }
-        this.selectedItem = target;
+        this.selectedItem = target || 'home';
+        const appName = this.items.find((x) => x.path === this.selectedItem)?.name ?? this.selectedItem;
+        this.dispatchEvent(
+            new CustomEvent('applicationselection', {
+                detail: { target: appName },
+                bubbles: true,
+                composed: true,
+            })
+        );
     };
 
-    handleRedirection = e => {
-        e.preventDefault();
-        e.stopPropagation();
-        const url = e.currentTarget.dataset.url;
-        legacyStore.dispatch(store_application.navigate(url));
+    handleCollapse = (e) => {
+        this.isMenuSmall = e.detail?.isCollapsed ?? false;
+        if (this.isMenuSmall) {
+            legacyStore.dispatch(store_application.collapseMenu());
+        } else {
+            legacyStore.dispatch(store_application.expandMenu());
+        }
     };
 
     handleToggle = () => {
@@ -113,21 +127,6 @@ export default class Menu extends ToolkitElement {
         ]);
         this.isApplicationTabVisible = configuration[CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key];
         this.betaSmartInputEnabled = !!configuration[CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key];
-    };
-
-    updateSelectedItem = () => {
-        let currentActiveItem = this.template.querySelector(
-            '.slds-nav-vertical__item.slds-is-active'
-        );
-        let newActiveItem = this.template.querySelector(
-            `.slds-nav-vertical__item[data-key="${this.selectedItem}"]`
-        );
-        if (currentActiveItem) {
-            currentActiveItem.classList.remove('slds-is-active');
-        }
-        if (newActiveItem) {
-            newActiveItem.classList.add('slds-is-active');
-        }
     };
 
     formatMenuItems = (items, hideMenuLabel = false) => {
@@ -164,6 +163,25 @@ export default class Menu extends ToolkitElement {
         }
 
         return filtered;
+    };
+
+    getFilteredItemsByPaths = (paths) => {
+        if (!Array.isArray(paths) || paths.length === 0) return [];
+        let filtered = this.items.filter((x) => paths.includes(x.path));
+        filtered = this.formatMenuItems(filtered);
+        if (!isElectronApp()) {
+            filtered = filtered.filter((x) => !x.isElectronOnly);
+        }
+        if (!isChromeExtension()) {
+            filtered = filtered.filter((x) => !x.isChromeOnly);
+        }
+        if (!this.isUserLoggedIn) {
+            filtered = filtered.filter((x) => x.isOfflineAvailable);
+        }
+        if (!this.betaSmartInputEnabled) {
+            filtered = filtered.filter((x) => x.name !== 'smartinput/app');
+        }
+        return this.filterBySearch(filtered, this.filterText);
     };
 
     /** Getters **/
@@ -336,5 +354,117 @@ export default class Menu extends ToolkitElement {
 
     get isHeaderLightDisplayed() {
         return !this.isApplicationTabVisible;
+    }
+
+    get selectedItemName() {
+        return this.selectedItem;
+    }
+
+    get sections() {
+        const sel = this.selectedItem;
+        const toItem = (x) => ({
+            name: x.path,
+            label: x.menuLabel || x.label || '',
+            iconName: x.menuIcon || x.quickActionIcon,
+            isSelected: x.path === sel,
+            isLink: false,
+        });
+        const toChild = (x) => ({
+            name: x.path,
+            label: x.menuLabel || x.label || x.shortName || '',
+            isSelected: x.path === sel,
+            isLink: false,
+        });
+        const toOtherItem = (x) => ({
+            name: x.name,
+            label: x.menuLabel || '',
+            iconName: x.menuIcon,
+            isSelected: false,
+            isLink: !!x.url,
+        });
+
+        const buildGroups = [
+            {
+                key: 'home',
+                label: 'Home',
+                iconName: 'utility:home',
+                paths: ['home'],
+                flat: true,
+            },
+            {
+                key: 'data',
+                label: 'Data',
+                iconName: 'standard:data_model',
+                paths: ['soql', 'dataimport'],
+                flat: false,
+            },
+            {
+                key: 'code',
+                label: 'Code',
+                iconName: 'standard:apex',
+                paths: ['api', 'platformevent', 'anonymousapex', 'code'],
+                flat: false,
+            },
+            {
+                key: 'explorers',
+                label: 'Explorers',
+                iconName: 'standard:knowledge',
+                paths: ['metadata', 'sobject', 'recordviewer', 'org', 'access'],
+                flat: false,
+            },
+            {
+                key: 'deploy',
+                label: 'Deploy',
+                iconName: 'standard:maintenance_asset',
+                paths: ['package'],
+                flat: false,
+            },
+            {
+                key: 'utilities',
+                label: 'Utilities',
+                iconName: 'utility:magicwand',
+                paths: ['smartinput', 'textcompare'],
+                flat: false,
+            },
+        ];
+
+        const buildItems = [];
+        for (const group of buildGroups) {
+            const filtered = this.getFilteredItemsByPaths(group.paths);
+            if (filtered.length === 0) continue;
+            if (group.flat) {
+                buildItems.push(...filtered.map(toItem));
+            } else {
+                const children = filtered.map(toChild);
+                const hasSelectedChild = children.some((c) => c.isSelected);
+                buildItems.push({
+                    name: `build-${group.key}`,
+                    label: group.label,
+                    iconName: group.iconName,
+                    isSelected: false,
+                    isLink: false,
+                    defaultExpanded: hasSelectedChild,
+                    children,
+                });
+            }
+        }
+
+        const connectionItems = this.isUnlimitedModeAndHasConnections
+            ? this.getFilteredItemsByPaths(['connections']).map(toItem)
+            : [];
+        const documentationItems = this.getFilteredItemsByPaths(['documentation']).map(toItem);
+        const othersItems = [
+            ...this.filteredExtras.map(toItem),
+            ...this.filteredOthers.map(toOtherItem),
+        ];
+
+        return [
+            { label: 'Build', items: buildItems },
+            ...(connectionItems.length > 0 ? [{ label: 'Connections', items: connectionItems }] : []),
+            ...(documentationItems.length > 0
+                ? [{ label: 'Documentation', items: documentationItems }]
+                : []),
+            { label: 'Others', items: othersItems },
+        ];
     }
 }

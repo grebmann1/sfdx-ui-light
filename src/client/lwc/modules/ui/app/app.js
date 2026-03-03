@@ -313,7 +313,11 @@ export default class App extends LightningElement {
         }
     };
 
-    handleApplicationSelection = async target => {
+    handleApplicationSelection = async eventOrTarget => {
+        let target =
+            typeof eventOrTarget === 'object' && eventOrTarget?.detail?.target != null
+                ? eventOrTarget.detail.target
+                : eventOrTarget;
         if (target === 'smartinput/app' && !this.betaSmartInputEnabled) {
             target = 'home/app';
         }

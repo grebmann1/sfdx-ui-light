@@ -1,0 +1,54 @@
+<template>
+    <div class={containerClass}>
+        <lightning-vertical-navigation class="slds-grid slds-grid_vertical">
+            <template for:each={sections} for:item="section">
+                <slds-vertical-navigation-section
+                    class="section"
+                    key={section.label}
+                    label={section.label}
+                    is-collapsed={isCollapsed}
+                >
+                    <template for:each={section.items} for:item="item">
+                        <slds-vertical-navigation-item
+                            key={item.name}
+                            name={item.name}
+                            label={item.label}
+                            icon-name={item.iconName}
+                            is-link={item.isLink}
+                            badge-count={item.badgeCount}
+                            badge-text={item.badgeText}
+                            is-selected={item.isSelected}
+                            default-expanded={item.defaultExpanded}
+                            children={item.children}
+                            is-collapsed={isCollapsed}
+                            onselect={handleSelect}
+                        ></slds-vertical-navigation-item>
+                    </template>
+                </slds-vertical-navigation-section>
+            </template>
+        </lightning-vertical-navigation>
+
+        <!-- Collapse control: always wrap in tooltip but disable it when expanded -->
+        <slds-tooltip
+            label={collapseExpandButtonLabel}
+            disabled={collapseExpandButtonTooltipDisabled}
+            class="collapse-control-wrapper slds-is-absolute"
+        >
+            <button
+                class={collapseControlButtonClass}
+                tabindex="0"
+                aria-label={collapseExpandButtonLabel}
+                onclick={handleToggleCollapse}
+            >
+                <lightning-icon
+                    icon-name={collapseExpandButtonIconName}
+                    size="x-small"
+                    alternative-text={collapseExpandButtonLabel}
+                    class={collapseIconClass}
+                >
+                </lightning-icon>
+                <span lwc:if={showCollapseExpandButtonLabel} class="collapse-label">{collapseExpandButtonLabel}</span>
+            </button>
+        </slds-tooltip>
+    </div>
+</template>

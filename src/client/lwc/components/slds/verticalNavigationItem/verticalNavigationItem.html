@@ -1,0 +1,80 @@
+<template>
+    <div class={navigationItemClass} role="listitem">
+        <slds-tooltip
+            lwc:ref="tooltip"
+            label={label}
+            disabled={tooltipDisabled}
+            items={children}
+            onselect={handleChildSelect}
+        >
+            <a
+                lwc:ref="action"
+                class={actionClass}
+                role="button"
+                tabindex="0"
+                aria-label={label}
+                aria-current={ariaCurrent}
+                aria-controls={ariaControls}
+                aria-expanded={ariaExpanded}
+                onclick={handleClick}
+                onkeydown={handleKeyDown}
+            >
+                <lightning-icon
+                    data-tid="icon"
+                    icon-name={iconName}
+                    alternative-text={label}
+                    size="x-small"
+                    class={iconClass}
+                ></lightning-icon>
+                <span id="label" data-tid="label" lwc:if={showLabel} class="slds-truncate">{label}</span>
+                <span lwc:if={showRightIcons} class="slds-col_bump-left slds-truncate">
+                    <lightning-icon
+                        lwc:if={isLink}
+                        data-tid="link-icon"
+                        class="slds-m-left_x-small"
+                        icon-name="utility:new_window"
+                        alternative-text={i18n.NewWindowIconAltText}
+                        size="x-small"
+                    >
+                    </lightning-icon>
+                    <lightning-icon
+                        lwc:if={hasChildren}
+                        class={expandCollapseIconClass}
+                        icon-name="utility:chevrondown"
+                        alternative-text={expandCollapseIconAltText}
+                        size="x-small"
+                    ></lightning-icon>
+                    <span lwc:if={hasBadgeCount} class="badge slds-m-left_x-small">
+                        <span class="slds-assistive-text">:</span>
+                        <lightning-badge label={badgeCount}></lightning-badge>
+                        <span class="slds-assistive-text">{i18n.BadgeAltText}</span>
+                    </span>
+                    <lightning-badge
+                        lwc:if={hasBadgeText}
+                        class="badge slds-m-left_x-small"
+                        label={badgeText}
+                    ></lightning-badge>
+                </span>
+            </a>
+        </slds-tooltip>
+    </div>
+
+    <ul id="children-list" class={childrenListClass} role="group" aria-labelledby="label">
+        <template for:each={children} for:item="child">
+            <slds-vertical-navigation-item
+                key={child.name}
+                name={child.name}
+                label={child.label}
+                icon-name={child.iconName}
+                is-link={child.isLink}
+                badge-count={child.badgeCount}
+                badge-text={child.badgeText}
+                is-selected={child.isSelected}
+                default-expanded={child.defaultExpanded}
+                children={child.children}
+                is-collapsed={isCollapsed}
+                onselect={handleChildSelect}
+            ></slds-vertical-navigation-item>
+        </template>
+    </ul>
+</template>

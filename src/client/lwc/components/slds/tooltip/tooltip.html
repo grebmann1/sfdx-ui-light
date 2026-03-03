@@ -1,0 +1,41 @@
+<template>
+    <div
+        lwc:ref="trigger"
+        data-tid="trigger"
+        role="group"
+        aria-haspopup="true"
+        aria-expanded={isPopupOpen}
+        onmouseenter={handleMouseEnter}
+        onmouseleave={handleMouseLeave}
+        onfocusin={handleFocusIn}
+        onfocusout={handleFocusOut}
+        onkeydown={handleTriggerKeyDown}
+    >
+        <slot></slot>
+        <lightning-popup lwc:ref="popup" onreturnfocus={handlePopupReturnFocus}>
+            <div data-tid="body" class={tooltipBodyClass}>
+                <lightning-formatted-rich-text
+                    id="menu-label"
+                    value={label}
+                    class={labelClass}
+                ></lightning-formatted-rich-text>
+                <div
+                    lwc:if={hasItems}
+                    class="menu"
+                    role="group"
+                    aria-labelledby="menu-label"
+                    onkeydown={handleMenuKeyDown}
+                >
+                    <template for:each={items} for:item="item">
+                        <slds-vertical-navigation-item
+                            key={item.name}
+                            lwc:spread={item}
+                            is-collapsed={isCollapsed}
+                            onselect={handleMenuItemSelect}
+                        ></slds-vertical-navigation-item>
+                    </template>
+                </div>
+            </div>
+        </lightning-popup>
+    </div>
+</template>

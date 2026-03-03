@@ -1,0 +1,82 @@
+:host {
+    --animation-duration: 0.3s;
+}
+
+/* Make other types of icons look like utility icons */
+.icon:not([icon-name^="utility"]) {
+    transform: scale(1.5);
+    --slds-c-icon-color-background: transparent;
+    --slds-c-icon-color-foreground: var(
+        --slds-c-icon-color-foreground-default,
+        var(--slds-s-icon-color-foreground, var(--lwc-colorTextIconDefault, #747474))
+    );
+}
+
+.icon[icon-name^="action"] {
+    transform: scale(1);
+    padding-block: 0;
+    padding-inline: 0;
+}
+
+.chevron-icon {
+    transform: rotate(0deg);
+    transition: transform var(--animation-duration);
+}
+
+.chevron-icon.expanded {
+    transform: rotate(180deg);
+}
+
+.badge {
+    --slds-c-badge-color-background: var(--slds-g-color-palette-blue-90, var(--lwc-paletteBlue90, #d8e6fe));
+    --slds-c-badge-color-border: transparent;
+    --slds-c-badge-text-color: var(--slds-g-color-palette-blue-40, var(--lwc-paletteBlue40, #0b5cab));
+}
+
+.slds-nav-vertical__item:hover .badge,
+.slds-is-active .badge {
+    --slds-c-badge-color-background: var(
+        --slds-c-badge-lightest-color-background,
+        var(--slds-g-color-surface-container-1)
+    );
+    --slds-c-badge-color-border: var(--slds-c-badge-lightest-color-border, var(--slds-g-color-border-1));
+    --slds-c-badge-text-color: var(--slds-g-color-neutral-base-40, var(--lwc-paletteNeutral40, #5c5c5c));
+}
+
+.children-list {
+    overflow: hidden;
+    visibility: hidden;
+    opacity: 0;
+    max-height: 0;
+
+    transition:
+        max-height var(--animation-duration),
+        opacity var(--animation-duration),
+        visibility 0s linear var(--animation-duration); /* Delay hidden until all animations complete */
+}
+
+.children-list.expanded {
+    visibility: visible;
+    opacity: 1;
+    max-height: 100vh; /* Arbitrary large value to allow expansion */
+
+    /* No delay when expanding */
+    transition-delay: 0s;
+}
+
+.slds-nav-vertical__action.collapsed {
+    height: 2.34375rem; /* corrects the height to match expanded nav item height */
+}
+
+/* resets nav item style for non-active anchors/menu items */
+.slds-nav-vertical__action.non-active {
+    box-shadow: initial;
+    color: var(--slds-s-navigation-color, var(--slds-g-color-on-surface-3));
+    font-weight: initial;
+}
+
+/* restores hover style for non-active anchors/menu items */
+.slds-nav-vertical__action.non-active:hover {
+    box-shadow: inset 2px 0 0 var(--slds-g-color-accent-1, #0176d3);
+    color: var(--slds-s-navigation-color-hover, #2e2e2e);
+}
