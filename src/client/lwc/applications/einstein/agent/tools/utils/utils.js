@@ -91,16 +91,48 @@ export async function openToolkit({connector,redirect}) {
 }
 
 const createOrAddToTabGroup = async (tab, groupName, windowId) => {
-    const groups = await chrome.tabGroups.query({ windowId: windowId });
-    let group = groups.find(g => g.title === groupName);
-    if (group) {
+    const safeGroupName =
+        typeof groupName === 'string' && groupName.trim().length > 0 ? groupName.trim() : 'SF Toolkit';
+
+    const chromeCall = (fn, ...args) =>
+        new Promise((resolve, reject) => {
+            try {
+                fn(...args, result => {
+                    const err = chrome?.runtime?.lastError;
+                    if (err) {
+                        reject(new Error(err.message || String(err)));
+                    } else {
+                        resolve(result);
+                    }
+                });
+            } catch (e) {
+                reject(e);
+            }
+        });
+
+    const groups =
+        (await chromeCall(chrome.tabGroups.query, { windowId })) ||
+        [];
+    const group = (Array.isArray(groups) ? groups : []).find(g => g?.title === safeGroupName);
+
+    if (group?.id && tab?.id) {
         // Group exists, add the tab to this group
-        await chrome.tabs.group({ groupId: group.id, tabIds: tab.id });
-    } else {
-        // Group does not exist, create a new group with this tab
-        const newGroupId = await chrome.tabs.group({ createProperties: {}, tabIds: tab.id });
-        await chrome.tabGroups.update(newGroupId, { title: groupName });
+        await chromeCall(chrome.tabs.group, { groupId: group.id, tabIds: tab.id });
+        if (group?.collapsed === true) {
+            await chromeCall(chrome.tabGroups.update, group.id, { collapsed: false });
+        }
+        return;
     }
+
+    // Group does not exist, create a new group with this tab
+    const newGroupId = await chromeCall(chrome.tabs.group, {
+        createProperties: { windowId },
+        tabIds: tab.id,
+    });
+    await chromeCall(chrome.tabGroups.update, newGroupId, {
+        title: safeGroupName,
+        collapsed: false,
+    });
 };
 
 export async function openBrowser({url,target,alias}) {

@@ -3,7 +3,12 @@
 .env
 .sfdx
 .DS_Store
-.cursor/
+**/.cursor/*
+!/.cursor/
+!/.cursor/skills/
+!/.cursor/skills/**
+!/.cursor/rules/
+!/.cursor/rules/**
 node_modules
 __lwr_cache__
 site
@@ -14,3 +19,6 @@ src/documentation/*/
 cert/
 /workers/
 package-lock.json
+.cursor/rules/do-not-edit-these-rules-from-mcp-gateway/
+.windsurf/rules/do-not-edit-these-rules-from-mcp-gateway/
+/test-results/

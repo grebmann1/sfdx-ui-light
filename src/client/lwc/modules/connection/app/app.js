@@ -5,6 +5,7 @@ import ConnectionNewModal from 'connection/connectionNewModal';
 import ConnectionDetailModal from 'connection/connectionDetailModal';
 import ConnectionImportModal from 'connection/connectionImportModal';
 import ConnectionManualModal from 'connection/connectionManualModal';
+import { buildConnectionShareMessage } from 'connection/shareUtils';
 import {
     download,
     classSet,
@@ -32,12 +33,14 @@ import {
 } from 'connection/utils';
 import { store, APPLICATION } from 'core/store';
 import LOGGER from 'shared/logger';
+import { cacheManager } from 'shared/cacheManager';
 
 const { showToast, handleError } = notificationService;
 const ACTIONS = [
     { label: 'Connect', name: 'login' },
     { label: 'Browser', name: 'openBrowser' },
     { label: 'Export', name: 'export' },
+    { label: 'Share', name: 'share' },
     { label: 'See Details', name: 'seeDetails' },
     { label: 'Edit', name: 'setAlias' },
     { label: 'Remove', name: 'removeConfiguration' },
@@ -51,6 +54,22 @@ const generateMessage = ({sessionInfo, params})=> ({
     baseUrl: chrome.runtime.getURL('/views/app.html'),
     navigation: params,
 })
+
+const CONNECTION_FILTER_SHOW_ORGFARM_KEY = 'connection_filter_show_orgfarm';
+const CONNECTION_FILTER_SHOW_NON_ORGFARM_KEY = 'connection_filter_show_non_orgfarm';
+
+const isOrgFarmConnection = (connection) => {
+    const haystack = [
+        connection?.instanceUrl,
+        connection?.loginUrl,
+        connection?.redirectUrl,
+        connection?.alias,
+        connection?.company,
+        connection?.name,
+        connection?.username,
+    ];
+    return haystack.some((v) => typeof v === 'string' && v.toLowerCase().includes('orgfarm'));
+};
 
 export default class App extends ToolkitElement {
     @api variant = 'table';
@@ -68,18 +87,78 @@ export default class App extends ToolkitElement {
     // Search
     filter;
 
+    // Filters
+    showOrgFarm = true;
+    showNonOrgFarm = true;
+
     async connectedCallback() {
         window.addEventListener('electron-orgs-updated', this._onElectronOrgsUpdated);
+        await this._loadConnectionFiltersFromCache();
         await this.fetchAllConnections();
         this.checkForInjected();
         window.setTimeout(() => {
-            //this.addConnectionClick();
+            this.openNewConnectionModalFromPrefill();
         }, 10);
     }
+
+    openNewConnectionModalFromPrefill = () => {
+        try {
+            const raw = sessionStorage.getItem('connectionNewModalPrefill');
+            if (!raw) return;
+            sessionStorage.removeItem('connectionNewModalPrefill');
+            const prefill = JSON.parse(raw);
+            if (!prefill || prefill.v !== 1 || !prefill.username) return;
+            let customDomain = '';
+            if (prefill.instanceUrl) {
+                try {
+                    const u = new URL(prefill.instanceUrl.startsWith('http') ? prefill.instanceUrl : `https://${prefill.instanceUrl}`);
+                    customDomain = u.host;
+                } catch (_) {}
+            }
+            const selectedCategory = prefill.company
+                ? [{ id: prefill.company, icon: 'standard:category', title: prefill.company }]
+                : [{ id: 'default', icon: 'standard:category', title: 'Default' }];
+            ConnectionNewModal.open({
+                connections: this.data,
+                credentialType: OAUTH_TYPES.USERNAME,
+                username: prefill.username,
+                alias: prefill.alias,
+                name: prefill.name || prefill.alias || '',
+                selectedCategory,
+                selectedDomain: customDomain ? 'custom' : undefined,
+                customDomain: customDomain || undefined,
+                size: isChromeExtension() ? 'full' : 'medium',
+            }).then(async (res) => {
+                if (isNotUndefinedOrNull(res)) {
+                    await this.fetchAllConnections();
+                }
+            });
+        } catch (e) {
+            LOGGER.error('openNewConnectionModalFromPrefill', e);
+        }
+    };
 
     disconnectedCallback() {
         window.removeEventListener('electron-orgs-updated', this._onElectronOrgsUpdated);
     }
+
+    _loadConnectionFiltersFromCache = async () => {
+        try {
+            const [showOrgFarm, showNonOrgFarm] = await Promise.all([
+                cacheManager.store.getItem(CONNECTION_FILTER_SHOW_ORGFARM_KEY),
+                cacheManager.store.getItem(CONNECTION_FILTER_SHOW_NON_ORGFARM_KEY),
+            ]);
+            this.showOrgFarm = isNotUndefinedOrNull(showOrgFarm) ? showOrgFarm === true : true;
+            this.showNonOrgFarm = isNotUndefinedOrNull(showNonOrgFarm)
+                ? showNonOrgFarm === true
+                : true;
+        } catch (e) {
+            // Non-blocking: fall back to defaults
+            LOGGER.error('load connection filters from cache failed', e);
+            this.showOrgFarm = true;
+            this.showNonOrgFarm = true;
+        }
+    };
 
     _onElectronOrgsUpdated = (event) => {
         const { orgs } = event.detail;
@@ -120,7 +199,7 @@ export default class App extends ToolkitElement {
 
     @api
     directConnectClick = () => {
-        console.log('directConnectClick');
+        // console.log('directConnectClick');
     };
 
     @api
@@ -178,7 +257,28 @@ export default class App extends ToolkitElement {
             case 'export':
                 this.exportRow(row);
                 break;
+            case 'share':
+                this.shareRow(row);
+                break;
             default:
+        }
+    };
+
+    shareRow = async (row) => {
+        try {
+            const message = buildConnectionShareMessage(row);
+            await navigator.clipboard.writeText(message);
+            Toast.show({
+                label: 'Share copied to clipboard',
+                variant: 'success',
+            });
+        } catch (e) {
+            Toast.show({
+                label: 'Share failed',
+                message: e?.message || String(e),
+                variant: 'error',
+                mode: 'dismissible',
+            });
         }
     };
 
@@ -226,6 +326,7 @@ export default class App extends ToolkitElement {
         return data.map(x => {
             const isMatch = x.username && x.username === _username && !x._hasError;
             const isUsernameType = x.credentialType === OAUTH_TYPES.USERNAME;
+            const _isOrgFarm = isOrgFarmConnection(x);
             return {
                 ...x,
                 id: x.id || x.alias,
@@ -242,6 +343,7 @@ export default class App extends ToolkitElement {
                       ? 'authorize'
                       : 'login',
                 _isRedirect: x.credentialType === OAUTH_TYPES.REDIRECT,
+                _isOrgFarm,
             };
         });
     };
@@ -333,9 +435,9 @@ export default class App extends ToolkitElement {
                 { alias, loginUrl: _loginUrl },
                 { saveFullConfiguration: true, bypass: true }
             );
-            if (connector.hasError) {
-                LOGGER.error('authorizeExistingOrg', connector.errorMessage);
-                throw new Error(connector.errorMessage);
+            if (connector.hasError || connector == null) {
+                LOGGER.error('authorizeExistingOrg', connector?.errorMessage || 'No Authorization found');
+                throw new Error(connector?.errorMessage || 'No Authorization found');
             }
             store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
             this.dispatchEvent(
@@ -513,7 +615,6 @@ export default class App extends ToolkitElement {
             ...param,
             size: isChromeExtension() ? 'full' : 'medium',
         }).then(async res => {
-            console.log('addNewOrg res -->', res);
             if (isNotUndefinedOrNull(res)) {
                 //console.log('force refresh');
                 await this.fetchAllConnections();
@@ -620,10 +721,26 @@ export default class App extends ToolkitElement {
     };
 
     handleFieldsFilter = e => {
-        runActionAfterTimeOut(e.detail.value, newValue => {
-            this.filter = newValue;
-            //this.updateFieldsTable();
-        });
+        runActionAfterTimeOut(
+            e.detail.value,
+            newValue => {
+                this.filter = newValue;
+                //this.updateFieldsTable();
+            },
+            { timeout: 300, key: 'connection.app.fieldsFilter' }
+        );
+    };
+
+    handleOrgFarmFilterChange = async (e) => {
+        const name = e?.target?.name;
+        const checked = e?.detail?.checked ?? e?.target?.checked ?? false;
+        if (name === 'showOrgFarm') {
+            this.showOrgFarm = checked;
+            await cacheManager.saveGeneralData(CONNECTION_FILTER_SHOW_ORGFARM_KEY, checked);
+        } else if (name === 'showNonOrgFarm') {
+            this.showNonOrgFarm = checked;
+            await cacheManager.saveGeneralData(CONNECTION_FILTER_SHOW_NON_ORGFARM_KEY, checked);
+        }
     };
 
     formatSpecificField = content => {
@@ -685,7 +802,7 @@ export default class App extends ToolkitElement {
     /** Getters  */
 
     get isNoRecord() {
-        return this.formattedData.length == 0;
+        return this.filteredOriginal.length === 0;
     }
 
     get isSearchDisplayed() {
@@ -705,33 +822,41 @@ export default class App extends ToolkitElement {
     }
 
     get filteredFormatted() {
-        return this.formattedData.map(group => ({
-            ...group,
-            items: group.items
-                .filter(
-                    x =>
-                        isUndefinedOrNull(this.filter) ||
-                        (isNotUndefinedOrNull(this.filter) &&
-                            (checkIfPresent(x.alias, this.filter) ||
-                                checkIfPresent(x.username, this.filter)))
-                )
-                .map(x => ({
-                    ...x,
-                    _name: this.formatSpecificField(x.name || ''),
-                    _username: this.formatSpecificField(x.username || ''),
-                })),
-        }));
+        return this.formattedData
+            .map(group => ({
+                ...group,
+                items: group.items
+                    .filter((x) => {
+                        const matchesText =
+                            isUndefinedOrNull(this.filter) ||
+                            (isNotUndefinedOrNull(this.filter) &&
+                                (checkIfPresent(x.alias, this.filter) ||
+                                    checkIfPresent(x.username, this.filter)));
+                        if (!matchesText) return false;
+
+                        const isOrgFarm = x._isOrgFarm === true;
+                        return (this.showOrgFarm && isOrgFarm) || (this.showNonOrgFarm && !isOrgFarm);
+                    })
+                    .map(x => ({
+                        ...x,
+                        _name: this.formatSpecificField(x.name || ''),
+                        _username: this.formatSpecificField(x.username || ''),
+                    })),
+            }))
+            .filter(group => Array.isArray(group.items) && group.items.length > 0);
     }
 
     get filteredOriginal() {
-        let filtered = this.data.filter(
-            x =>
+        return this.data.filter((x) => {
+            const matchesText =
                 isUndefinedOrNull(this.filter) ||
                 (isNotUndefinedOrNull(this.filter) &&
-                    (checkIfPresent(x.alias, this.filter) ||
-                        checkIfPresent(x.username, this.filter)))
-        );
-        return filtered;
+                    (checkIfPresent(x.alias, this.filter) || checkIfPresent(x.username, this.filter)));
+            if (!matchesText) return false;
+
+            const isOrgFarm = x._isOrgFarm === true;
+            return (this.showOrgFarm && isOrgFarm) || (this.showNonOrgFarm && !isOrgFarm);
+        });
     }
 
     get normalizedVariant() {

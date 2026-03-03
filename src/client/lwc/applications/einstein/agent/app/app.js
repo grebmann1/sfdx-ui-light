@@ -1,4 +1,5 @@
 import { api, track, wire } from 'lwc';
+import Toast from 'lightning/toast';
 import {
     isEmpty,
     isNotUndefinedOrNull,
@@ -47,8 +48,9 @@ export default class App extends ToolkitElement {
 
 
     // Error
-    error_title;
-    error_message;
+    @track error_title;
+    @track error_message;
+    @track isErrorDetailsOpen = false;
     errorIds;
 
     openaiKey;
@@ -86,6 +88,10 @@ export default class App extends ToolkitElement {
             const rawMessages = (agent.messagesById && agent.messagesById[this.activeConversationId]) || [];
             const displayed = rawMessages.filter(m => m.type !== 'reasoning');
             this._setIfChanged('displayedMessages', displayed);
+
+            const err = agent?.errorById?.[this.activeConversationId];
+            this._setIfChanged('error_title', err?.title ?? null);
+            this._setIfChanged('error_message', err?.message ?? null);
         }
     }
 
@@ -111,6 +117,26 @@ export default class App extends ToolkitElement {
     resetError = () => {
         this.error_title = null;
         this.error_message = null;
+        this.isErrorDetailsOpen = false;
+        if (this.activeConversationId) {
+            store.dispatch(AGENT.reduxSlice.actions.resetError({ id: this.activeConversationId }));
+        }
+    };
+
+    toggleErrorDetails = () => {
+        this.isErrorDetailsOpen = !this.isErrorDetailsOpen;
+    };
+
+    copyErrorToClipboard = async () => {
+        const text = [this.error_title, this.error_message].filter(Boolean).join(': ');
+        if (text && navigator.clipboard && navigator.clipboard.writeText) {
+            try {
+                await navigator.clipboard.writeText(text);
+                Toast.show({ message: 'Error copied to clipboard', variant: 'success' });
+            } catch (_) {
+                Toast.show({ message: 'Copy failed', variant: 'error' });
+            }
+        }
     };
 
     _scrollChatToBottom = () => {
@@ -158,9 +184,14 @@ export default class App extends ToolkitElement {
         const model = e.detail.model || this.selectedModel;
         store.dispatch(AGENT.reduxSlice.actions.updateSelectedModel({ model }));
         //await this.saveConversationsToCache();
-        if(isEmpty(this.openaiKey)){
-            this.error_title = 'Error';
-            this.error_message = 'No OpenAI key found';
+        if (isEmpty(this.openaiKey)) {
+            store.dispatch(
+                AGENT.reduxSlice.actions.setError({
+                    id: this.activeConversationId,
+                    title: 'Error',
+                    message: 'No OpenAI key found',
+                })
+            );
             return;
         }
         if (!isEmpty(value) || files.length > 0) {
@@ -170,13 +201,19 @@ export default class App extends ToolkitElement {
     };
 
     global_handleError = e => {
-        let errors = e.message.split(':');
-        if (errors.length > 1) {
-            this.error_title = errors.shift();
-        } else {
-            this.error_title = 'Error';
+        const message = typeof e?.message === 'string' ? e.message : String(e);
+        const parts = message.split(':');
+        const title = parts.length > 1 ? parts.shift() : 'Error';
+        const msg = parts.join(':').trim() || message;
+        if (this.activeConversationId) {
+            store.dispatch(
+                AGENT.reduxSlice.actions.setError({
+                    id: this.activeConversationId,
+                    title,
+                    message: msg,
+                })
+            );
         }
-        this.error_message = errors.join(':');
     };
 
     handleRetry = (event) => {
@@ -284,6 +321,14 @@ export default class App extends ToolkitElement {
         return isNotUndefinedOrNull(this.error_message);
     }
 
+    get errorDetailsToggleLabel() {
+        return this.isErrorDetailsOpen ? 'Hide details' : 'Show details';
+    }
+
+    get errorChevronClass() {
+        return this.isErrorDetailsOpen ? 'agent-error-chevron-open' : '';
+    }
+
     get isUserLoggedIn() {
         return isNotUndefinedOrNull(store.getState()?.application?.connector);
     }
@@ -300,7 +345,7 @@ export default class App extends ToolkitElement {
                 name: conv.title || 'Conversation',
                 title: conv.title || 'Conversation',
                 icon: 'utility:chat',
-                isDeletable: false,
+                isDeletable: true,
                 keywords,
                 searchText,
             };

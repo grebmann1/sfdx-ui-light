@@ -25,16 +25,6 @@
             }
         ]
     },
-    "bundleConfig": { 
-        "exclude": [
-            "lwr/navigation",
-            "shared/store",
-            "lwc",
-            "lightning/modal",
-            "@lwc/synthetic-shadow",
-            "monaco-editor"
-        ] 
-    },
     "assets": [
         {
             "alias": "assets",
@@ -143,12 +133,6 @@
                 "syntheticShadow": true
             }
         }
-    ],
-    "moduleProviders": [
-        "@lwrjs/router/module-provider",
-        "@lwrjs/app-service/moduleProvider",
-        "@lwrjs/lwc-module-provider",
-        "@lwrjs/npm-module-provider"
     ],
     "staticSiteGenerator": {
         "_additionalModules": [

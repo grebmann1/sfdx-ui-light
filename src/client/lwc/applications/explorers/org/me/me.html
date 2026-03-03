@@ -24,11 +24,20 @@
                         </lightning-button-group>
                     </template>
                     <template lwc:else>
-                        <lightning-button
-                            icon-name="utility:link"
-                            label="My User"
-                            onclick={goToUrl}
-                            data-url={goToMyUserUrl}></lightning-button>
+                        <lightning-button-group>
+                            <lightning-button
+                                icon-name="utility:link"
+                                label="My User"
+                                onclick={goToUrl}
+                                data-url={goToMyUserUrl}></lightning-button>
+                            <lightning-button-icon
+                                icon-name="utility:share"
+                                onclick={handleShare}
+                                disabled={isShareDisabled}
+                                variant="border-filled"
+                                alternative-text="Share"
+                                title="Share"></lightning-button-icon>
+                        </lightning-button-group>
                     </template>
                 </div>
             </header>

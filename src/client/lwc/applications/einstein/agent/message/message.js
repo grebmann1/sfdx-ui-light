@@ -85,7 +85,11 @@ export default class Message extends ToolkitElement {
     }
 
     get content() {
-        return Array.isArray(this.item.content) ? this.item.content[0].text : this.item.content;
+        if (Array.isArray(this.item?.content)) {
+            const first = this.item.content[0];
+            return first && typeof first.text === 'string' ? first.text : '';
+        }
+        return typeof this.item?.content === 'string' ? this.item.content : '';
     }
 
     get contentList() {

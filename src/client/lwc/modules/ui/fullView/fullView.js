@@ -1,8 +1,7 @@
-import LightningAlert from 'lightning/alert';
 import { LightningElement } from 'lwc';
-import { isUndefinedOrNull, isElectronApp } from 'shared/utils';
+import { isElectronApp } from 'shared/utils';
 
-export default class fullView extends LightningElement {
+export default class FullView extends LightningElement {
     sessionId;
     serverUrl;
     redirectUrl;
@@ -12,6 +11,12 @@ export default class fullView extends LightningElement {
     connector;
 
     connectedCallback() {
+        // LWR Static Site Generation can render this component in a Node context (no `window`).
+        // Avoid accessing browser globals during SSR/SSG.
+        if (typeof window === 'undefined') {
+            return;
+        }
+
         if (isElectronApp()) {
             this.alias = this.getAlias();
         } else {
@@ -22,18 +27,22 @@ export default class fullView extends LightningElement {
     }
 
     getSessionId = () => {
+        if (typeof window === 'undefined') return null;
         return new URLSearchParams(window.location.search).get('sessionId');
     };
 
     getServerUrl = () => {
+        if (typeof window === 'undefined') return null;
         return new URLSearchParams(window.location.search).get('serverUrl');
     };
 
     getRedirectUrl = () => {
+        if (typeof window === 'undefined') return null;
         return new URLSearchParams(window.location.search).get('redirectUrl');
     };
 
     getAlias = () => {
+        if (typeof window === 'undefined') return null;
         return new URLSearchParams(window.location.search).get('alias');
     };
 }

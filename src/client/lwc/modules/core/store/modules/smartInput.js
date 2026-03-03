@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { guid, isUndefinedOrNull, isNotUndefinedOrNull } from 'shared/utils';
 import { CATEGORY_SYSTEM, CATEGORY_CUSTOM, CATEGORY_TYPE, sanitizeCategories, sanitizeItems } from 'smartinput/utils';
-import { ERROR } from 'core/store';
+import * as ERROR from './error';
 import { CACHE_CONFIG, loadSingleExtensionConfigFromCache, saveSingleExtensionConfigToCache } from 'shared/cacheManager';
 const DEFAULT_CATEGORY = { id: guid(), type: CATEGORY_SYSTEM, name: 'Default', items: [], createdAt: Date.now(), ref: 'A', isEditable: false, isSelectable: true, isItemsEditable: true };
 //const RECENT_CATEGORY = { id: guid(), type: CATEGORY_SYSTEM, name: 'Recent', items: [], createdAt: Date.now(), ref: 'R', isEditable: false, isSelectable: false, isItemsEditable: false };
@@ -144,7 +144,6 @@ export const reduxSlice = createSlice({
                 flattenedCategories = flattenedCategories.filter(p => p.id !== id);
             }
             const newCategories = unflattenCategories(flattenedCategories);
-            console.log('--> newCategories', newCategories);
             state.categories = newCategories;
             if (state.activeCategoryId === id) {
                 state.activeCategoryId = state.categories[0]?.id || null;

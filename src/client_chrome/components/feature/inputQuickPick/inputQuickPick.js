@@ -25,6 +25,7 @@ export default class InputQuickPick extends LightningElement {
     @track searchQuery = '';
     @track isLoading = false;
     @track isEnhanceEnabled = false;
+    betaSmartInputEnabled = false;
     enabled = true;
     activeInput = null;
     lastFocusedEl = null;
@@ -68,6 +69,13 @@ export default class InputQuickPick extends LightningElement {
     async loadConfig() {
         const isEnabled = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.INPUT_QUICKPICK_ENABLED.key);
         this.enabled = isEnabled !== false;
+        try {
+            this.betaSmartInputEnabled = !!(await loadSingleExtensionConfigFromCache(
+                CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key
+            ));
+        } catch (_) {
+            this.betaSmartInputEnabled = false;
+        }
         try {
             const key = await getOpenAIKeyFromCache();
             this.isEnhanceEnabled = !isEmpty(key);
@@ -326,14 +334,17 @@ export default class InputQuickPick extends LightningElement {
             }
         });
         // Inform side panel (if open) to switch to the Quick Pick view
-        try {
-            await chrome.runtime.sendMessage({
-                action: 'broadcastMessageToSidePanel',
-                content: { action: 'show_input_quickpick' },
-            });
-        } catch (e) {
-            // ignore if not available
-            console.error(e);
+        // Only if Smart Input (beta) is enabled.
+        if (this.betaSmartInputEnabled) {
+            try {
+                await chrome.runtime.sendMessage({
+                    action: 'broadcastMessageToSidePanel',
+                    content: { action: 'show_input_quickpick' },
+                });
+            } catch (e) {
+                // ignore if not available
+                console.error(e);
+            }
         }
     }
 

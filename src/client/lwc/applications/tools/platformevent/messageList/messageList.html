@@ -1,32 +1,95 @@
 <template>
     <div class="slds-fill-height slds-flex-column" role="tabpanel">
-        <div class="slds-grid slds-grid_align-end">
-            <div class="slds-col">
-                <lightning-button-group class="slds-m-right_medium">
-                    <lightning-button-icon
-                        icon-name="utility:sort"
-                        tooltip="Sort the orders"
-                        onclick={handleSortButtonClick}></lightning-button-icon>
-                    <lightning-button-icon
-                        icon-name={iconPauseButton}
-                        tooltip="Play/Pause the stream of messages."
-                        variant={iconPauseButtonVariant}
-                        onclick={handlePauseButtonClick}></lightning-button-icon>
-                    <lightning-button-icon
-                        icon-name="utility:delete"
-                        tooltip="Empty list of messages."
-                        onclick={handleEmptyMessages}></lightning-button-icon>
-                </lightning-button-group>
-            </div>
+        <div class="toolbar-row slds-grid slds-grid_align-end slds-m-around_medium">
+            <lightning-button-group>
+                <lightning-button-icon-stateful
+                    icon-name="utility:filterList"
+                    icon-name-when-on="utility:filterList"
+                    icon-name-when-off="utility:filterList"
+                    selected={isFilterSelected}
+                    variant="border-filled"
+                    alternative-text="Filter"
+                    title={filterButtonTitle}
+                    onclick={toggleFilterPanel}
+                ></lightning-button-icon-stateful>
+                <lightning-button-icon
+                    icon-name="utility:settings"
+                    tooltip="Settings"
+                    onclick={toggleSettingsPanel}
+                ></lightning-button-icon>
+                <lightning-button-icon
+                    icon-name="utility:sort"
+                    tooltip="Sort"
+                    onclick={handleSortButtonClick}
+                ></lightning-button-icon>
+                <lightning-button-icon
+                    icon-name={iconPauseButton}
+                    tooltip="Play/Pause"
+                    variant={iconPauseButtonVariant}
+                    onclick={handlePauseButtonClick}
+                ></lightning-button-icon>
+                <lightning-button-icon
+                    icon-name="utility:copy"
+                    tooltip="Copy visible messages as JSON"
+                    onclick={exportVisibleAsJson}
+                ></lightning-button-icon>
+                <lightning-button-icon
+                    icon-name="utility:download"
+                    tooltip="Download visible messages as JSON"
+                    onclick={downloadVisibleAsJson}
+                ></lightning-button-icon>
+                <lightning-button-icon
+                    icon-name="utility:delete"
+                    tooltip="Empty list of messages"
+                    onclick={handleEmptyMessages}
+                ></lightning-button-icon>
+            </lightning-button-group>
         </div>
-        <lightning-input
-            class="slds-m-around_medium"
-            type="search"
-            label="Search"
-            variant="label-hidden"
-            value={filter}
-            onchange={handleSearch}></lightning-input>
-        <div class="slds-scrollable_y" onscroll={handleScroll}>
+
+        <template lwc:if={isFilterPanelVisible}>
+            <div class="toolbar-panel slds-m-horizontal_medium slds-m-bottom_small">
+                <div class="slds-grid slds-gutters slds-grid_vertical-align-center">
+                    <div class="slds-col slds-size_4-of-12">
+                        <lightning-combobox
+                            label="Filter"
+                            variant="label-hidden"
+                            value={filterMode}
+                            options={filterModeOptions}
+                            onchange={handleFilterModeChange}
+                        ></lightning-combobox>
+                    </div>
+                    <div class="slds-col slds-size_8-of-12">
+                        <lightning-input
+                            type="search"
+                            label="Search"
+                            variant="label-hidden"
+                            placeholder={filterPlaceholder}
+                            value={filter}
+                            onchange={handleSearch}
+                        ></lightning-input>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template lwc:if={isSettingsPanelVisible}>
+            <div class="toolbar-panel slds-m-horizontal_medium slds-m-bottom_small">
+                <div class="slds-grid slds-gutters slds-grid_vertical-align-center">
+                    <div class="slds-col slds-size_4-of-12">
+                        <lightning-input
+                            type="number"
+                            label="Retention"
+                            field-level-help={maxMessagesHelpText}
+                            value={maxMessagesPerChannel}
+                            min="10"
+                            step="10"
+                            onchange={handleMaxMessagesChange}
+                        ></lightning-input>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <div class="message-scroll slds-scrollable_y" onscroll={handleScroll}>
             <template lwc:if={isEmpty}>
                 <illustration-empty
                     title="No Messages"

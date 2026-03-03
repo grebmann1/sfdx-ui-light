@@ -16,6 +16,18 @@ const ALLOWED_SETTING_KEYS = new Set([
     // AI settings
     'openai_key',
     'openai_url',
+    // Beta features
+    'beta_smartinput_enabled',
+    // Keyboard shortcuts
+    'shortcut_injectionEnabled',
+    'shortcut_recordId',
+    'shortcut_overview',
+    'shortcut_soql',
+    'shortcut_apex',
+    'shortcut_api',
+    'shortcut_documentation',
+    'shortcut_openPanel',
+    'shortcut_openOverlay',
 ]);
 
 /**
@@ -37,7 +49,6 @@ function redirect(url = 'app.html', delay = 0) {
 function updateSettings(params) {
     // Exclude non-setting fields from params
     const { message, redirect: redirectParam, data: encodedData, settings: groupedSettings, ...rawSettings } = params;
-    console.log('--> params', params);
 
     // Prefer grouped settings if present (object or JSON string),
     // otherwise fall back to legacy top-level flattened keys
@@ -65,7 +76,6 @@ function updateSettings(params) {
     }
 
     return new Promise((resolve, reject) => {
-        console.log('--> filteredSettings', filteredSettings);
         chrome.storage.local.set(filteredSettings, function() {
             if (chrome.runtime.lastError) reject(chrome.runtime.lastError);
             else resolve();

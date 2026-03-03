@@ -1,7 +1,9 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
-import { SELECTORS, DOCUMENT } from 'core/store';
+import * as DOCUMENT from './document';
 import { lowerCaseKey, guid, isNotUndefinedOrNull } from 'shared/utils';
 import { cacheManager,loadExtensionConfigFromCache,saveExtensionConfigToCache } from 'shared/cacheManager';
+
+const apexFilesSelectors = DOCUMENT.apexFileAdapter.getSelectors(s => s);
 
 const Schemas = {};
 Schemas.ExecuteAnonymousResult = {
@@ -187,7 +189,7 @@ const apexSlice = createSlice({
             const cachedConfig = loadCacheSettings(alias);
             if (cachedConfig && !state.isInitialized) {
                 const { recentPanelToggled, tabs } = cachedConfig;
-                const cachedTabs = tabs && tabs.length > 0 ? enrichTabs(tabs, { apexFiles },SELECTORS.apexFiles) : [];
+                const cachedTabs = tabs && tabs.length > 0 ? enrichTabs(tabs, { apexFiles }, apexFilesSelectors) : [];
                 const allTabs = [...cachedTabs, ...state.tabs];
                 Object.assign(state, {
                     //body:body || '',
@@ -239,9 +241,9 @@ const apexSlice = createSlice({
         initTabs: (state, action) => {
             const { apexFiles,reset } = action.payload;
             if(reset || !state.tabs || state.tabs.length === 0){
-                state.tabs = enrichTabs(createInitialTabs(), { apexFiles }, SELECTORS.apexFiles);
+                state.tabs = enrichTabs(createInitialTabs(), { apexFiles }, apexFilesSelectors);
             } else {
-                state.tabs = enrichTabs(state.tabs.map(formatTab), { apexFiles }, SELECTORS.apexFiles);
+                state.tabs = enrichTabs(state.tabs.map(formatTab), { apexFiles }, apexFilesSelectors);
             }
             // Set first tab
             if (state.tabs.length > 0) {
@@ -252,7 +254,7 @@ const apexSlice = createSlice({
         },
         addTab: (state, action) => {
             const { apexFiles, tab } = action.payload;
-            const enrichedTab = enrichTab(formatTab(tab), { apexFiles }, SELECTORS.apexFiles);
+            const enrichedTab = enrichTab(formatTab(tab), { apexFiles }, apexFilesSelectors);
             state.tabs.push(enrichedTab);
             // Assign new tab
             state.currentTab = enrichedTab;
@@ -289,7 +291,7 @@ const apexSlice = createSlice({
                 const enrichedTab = enrichTab(
                     formatTab({ ...state.tabs[currentTabIndex], fileId }),
                     { apexFiles },
-                    SELECTORS.apexFiles
+                    apexFilesSelectors
                 );
                 state.tabs[currentTabIndex] = enrichedTab;
                 state.currentTab = enrichedTab;

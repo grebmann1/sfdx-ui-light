@@ -11,7 +11,6 @@ const init = async () => {
     window.settingsStore = await chromeStore('sync');
     /** Define Settings **/
     window.Prism = Prism;
-    window.OpenAIAgentsBundle = OpenAIAgentsBundle;
     //window.connections = {}; // use for faster connection, during live processing
     window.jsforceSettings = {
         clientId:
@@ -23,7 +22,8 @@ const init = async () => {
         //proxyUrl: `http://localhost:3000/proxy/`,
     };
     window.jsforce = jsforce;
-    //window.OpenAIAgentsBundle = openaiAgent;
+    // window.OpenAIAgentsBundle = openaiAgent;
+    //await ensureOpenAIAgentsBundleLoaded();
 };
 
 /** Init **/

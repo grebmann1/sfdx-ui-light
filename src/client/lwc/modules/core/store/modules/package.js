@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
-import { SELECTORS, DOCUMENT, PACKAGE } from 'core/store';
 import { lowerCaseKey, guid, isNotUndefinedOrNull } from 'shared/utils';
 
 const PACKAGE_SETTINGS_KEY = 'PACKAGE_SETTINGS_KEY';

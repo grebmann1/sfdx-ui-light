@@ -1,16 +1,12 @@
 import LightningModal from 'lightning/modal';
 import { api, track } from 'lwc';
-import Toast from 'lightning/toast';
-import LightningAlert from 'lightning/alert';
 import { renameConfiguration, notificationService, validateInputs } from 'connection/utils';
 import {
     isEmpty,
     isNotUndefinedOrNull,
-    isElectronApp,
-    isChromeExtension,
-    decodeError,
     checkIfPresent,
 } from 'shared/utils';
+import { buildConnectionShareMessage } from 'connection/shareUtils';
 
 const { showToast, handleError } = notificationService;
 
@@ -178,6 +174,33 @@ export default class ConnectionDetailModal extends LightningModal {
     handleCopy = e => {
         navigator.clipboard.writeText(e.currentTarget.dataset.value);
     };
+
+    handleShare = async () => {
+        return this.handleShareMessage();
+    };
+
+    handleShareMessage = async () => {
+        const message = buildConnectionShareMessage({
+            company: this.company,
+            orgId: this.orgId,
+            name: this.name,
+            alias: this.alias,
+            username: this.username,
+            instanceUrl: this.instanceUrl,
+            sfdxAuthUrl: this.sfdxAuthUrl,
+            credentialType: this.credentialType,
+            password: this.password,
+            redirectUrl: this.redirectUrl,
+        });
+
+        try {
+            await navigator.clipboard.writeText(message);
+            showToast({ label: 'Share copied to clipboard', variant: 'success' });
+        } catch (e) {
+            handleError(e, 'Share');
+        }
+    };
+
     handleCloseClick() {
         this.close('canceled');
     }

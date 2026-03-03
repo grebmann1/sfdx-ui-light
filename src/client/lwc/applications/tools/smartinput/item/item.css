@@ -16,9 +16,9 @@
     position: absolute;
     top: 0rem;
     left: 0rem;
-    background: #0476d4;
-    color: #ffffff;
-    border: 1px solid var(--lwc-colorBorder, #c9c9c9);
+    background: var(--slds-g-color-brand-base-50, #0176d3);
+    color: var(--slds-g-color-neutral-base-100, #fff);
+    border: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
     padding: 0.05rem 0.3rem;
     font-size: 0.65rem;
     font-weight: 600;
@@ -26,8 +26,8 @@
 }
 
 .smartinput-item-highlighted {
-    background-color: rgba(27, 150, 255, 0.08);
-    box-shadow: 0 0 0 2px var(--lwc-colorBorderBrand, #1b96ff) inset;
+    background-color: var(--slds-g-color-neutral-base-95, #f3f3f3);
+    box-shadow: 0 0 0 2px var(--slds-g-color-brand-base-60, #1b96ff) inset;
 }
 
 

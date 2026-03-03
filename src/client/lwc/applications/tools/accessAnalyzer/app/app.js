@@ -240,11 +240,14 @@ export default class App extends ToolkitElement {
     tableResize = () => {
         if (!this._isActive) return;
 
-        runActionAfterTimeOut(null, param => {
-            if (isUndefinedOrNull(this.tableInstance)) return;
-
-            this.tableInstance.setHeight(this.calculatedHeight);
-        });
+        runActionAfterTimeOut(
+            null,
+            param => {
+                if (isUndefinedOrNull(this.tableInstance)) return;
+                this.tableInstance.setHeight(this.calculatedHeight);
+            },
+            { timeout: 200, key: 'accessAnalyzer.tableResize' }
+        );
     };
 
     loadCachedSettings = () => {

@@ -188,6 +188,8 @@ export default class FileTreeItem extends LightningElement {
 
     get apiIconClass() {
         return classSet('slds-badge slds-m-horizontal_xx-small').add({
+            'api-badge--get': this.item?.icon === 'api:get',
+            'slds-theme_info': this.item?.icon === 'api:get',
             'slds-theme_error': this.item?.icon === 'api:delete',
             'slds-theme_success': this.item?.icon === 'api:post',
             'slds-theme_warning': this.item?.icon === 'api:put',

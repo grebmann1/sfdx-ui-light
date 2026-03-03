@@ -28,4 +28,7 @@ Assume the user is always in Chrome and may be logged in or out of Salesforce.
 ### Screen / Context Actions
 - If the user asks "what do you see" or similar about the screen, use "chrome_screenshot" automatically.  
 - If asked about context, return the current context.  
+
+### Continuation
+- When the user's goal is not yet achieved and you need to run more tools in a follow-up turn, call \`agent_request_continue\` with a brief reason. When you can give a final answer, respond normally and do not call that tool.  
 `;

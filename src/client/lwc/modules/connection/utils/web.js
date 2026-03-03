@@ -1,6 +1,6 @@
 import { getConnectionsFromCache, saveConnectionsToCache } from 'shared/cacheManager';
 import { isUndefinedOrNull, isNotUndefinedOrNull, isEmpty } from 'shared/utils';
-import { normalizeConfiguration } from './utils';
+import { extractName, normalizeConfiguration } from './utils';
 import LOGGER from 'shared/logger';
 
 const formatConfigurationItem = item => {
@@ -47,15 +47,38 @@ export async function setConfigurations(configurations) {
 export async function renameConfiguration({ oldAlias, newAlias, username, redirectUrl }) {
     let configurations = await getConnectionsFromCache();
 
-    // Switch Name
+    if (isEmpty(oldAlias) || isEmpty(newAlias)) {
+        throw new Error('renameConfiguration: oldAlias and newAlias are required');
+    }
+    if (oldAlias === newAlias) return;
+
+    const existing = configurations.find(c => c && c.alias === newAlias);
+    if (existing) {
+        throw new Error(`Alias already exists: ${newAlias}`);
+    }
+
+    let renamed = false;
+    const { company, name } = extractName(newAlias);
     configurations.forEach(conn => {
-        if (conn.alias === oldAlias) {
+        if (conn?.alias === oldAlias) {
+            renamed = true;
             conn.alias = newAlias;
-            conn.redirectUrl = redirectUrl;
+            conn.id = newAlias;
+            conn.company = company;
+            conn.name = name;
+            if (isNotUndefinedOrNull(redirectUrl)) {
+                conn.redirectUrl = redirectUrl;
+            }
         }
     });
+
+    if (!renamed) {
+        throw new Error(`renameConfiguration: connection not found for alias ${oldAlias}`);
+    }
     // Order configurations
-    configurations = configurations.sort((a, b) => a.alias.localeCompare(b.alias));
+    configurations = configurations.sort((a, b) =>
+        String(a?.alias || '').localeCompare(String(b?.alias || ''))
+    );
 
     await saveConnectionsToCache(formatConfigurations(configurations));
 }

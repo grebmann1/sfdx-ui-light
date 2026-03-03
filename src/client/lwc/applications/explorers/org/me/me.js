@@ -64,6 +64,51 @@ export default class Me extends ToolkitElement {
         legacyStore.dispatch(store_application.navigate(redirectUrl));
     };
 
+    handleShare = async () => {
+        try {
+            const sessionId = this.connector?.conn?.accessToken;
+            const serverUrl = this.connector?.conn?.instanceUrl;
+            if (isEmpty(sessionId) || isEmpty(serverUrl)) return;
+
+            const origin =
+                typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '';
+            const base =
+                typeof chrome !== 'undefined' && chrome.runtime?.getURL
+                    ? chrome.runtime.getURL('/views/app.html')
+                    : origin
+                      ? `${origin}/app`
+                      : '/app';
+
+            const url = new URL(base, origin || undefined);
+            url.searchParams.set('sessionId', sessionId);
+            url.searchParams.set('serverUrl', serverUrl);
+
+            const message = [
+                '--- SF Toolkit Current User ---',
+                this.user?.Name ? `Name: ${this.user.Name}` : '',
+                this.user?.Username ? `Username: ${this.user.Username}` : '',
+                this.user?.Id ? `User Id: ${this.user.Id}` : '',
+                this.connector?.configuration?.alias ? `Alias: ${this.connector.configuration.alias}` : '',
+                `Server Url: ${serverUrl}`,
+                '',
+                'Open in SF Toolkit:',
+                url.toString(),
+            ]
+                .filter(Boolean)
+                .join('\n');
+
+            await navigator.clipboard.writeText(message);
+            Toast.show({ label: 'Share copied to clipboard', variant: 'success' });
+        } catch (e) {
+            Toast.show({
+                label: 'Share failed',
+                message: e?.message || String(e),
+                variant: 'error',
+                mode: 'dismissible',
+            });
+        }
+    };
+
     load_metadata = async () => {
         this.metadata = await runSilent(async () => {
             return await this.connector.conn.sobject('user').describe();
@@ -210,6 +255,14 @@ export default class Me extends ToolkitElement {
 
     get isEditButtonDisabled() {
         return isUndefinedOrNull(this.metadata);
+    }
+
+    get isShareDisabled() {
+        return (
+            this.isEdit ||
+            isEmpty(this.connector?.conn?.accessToken) ||
+            isEmpty(this.connector?.conn?.instanceUrl)
+        );
     }
 
     get isReadOnly() {

@@ -18,8 +18,8 @@ export class Connector {
         this.configuration = configuration;
         this.conn = conn;
 
-        LOGGER.log('Connector -->', this.configuration, this.conn);
-        LOGGER.log('Connector --> Add listeners');
+        LOGGER.debug('Connector -->', this.configuration, this.conn);
+        LOGGER.debug('Connector --> Add listeners');
         if(conn) {
             this.addListeners(conn);
         }
@@ -124,6 +124,8 @@ export class Connector {
     async _enrichConnector() {
         try {
             this.resetError();
+            // set for connection, to avoid refresh if it's failing
+            this.conn._maxSessionRefreshRetries = 0;
 
             let identity = undefined;
             let versions = undefined;
@@ -135,6 +137,7 @@ export class Connector {
                     this.conn.identity(),
                     this.conn.request('/services/data/'),
                 ]);
+                this.conn._maxSessionRefreshRetries = 1;
             }
 
             let latestVersion = Array.isArray(versions)
@@ -178,6 +181,7 @@ export class Connector {
             // Always normalize configuration before returning
             this.configuration = normalizeConfiguration(this.configuration, true);
         } catch (e) {
+            console.error('Error enriching connector', e);
             LOGGER.error('Error enriching connector', e);
             await this.handleError(e);
         }

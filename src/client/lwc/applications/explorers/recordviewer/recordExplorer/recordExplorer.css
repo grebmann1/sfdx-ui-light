@@ -34,3 +34,8 @@
 .slds-editor-footer {
     background-color: #fafaf9;
 }
+
+.record-links {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}

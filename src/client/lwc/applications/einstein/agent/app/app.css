@@ -1,3 +1,45 @@
+.agent-error-panel {
+    background-color: var(--slds-g-color-error-base-95, #fef3f2);
+    border: 1px solid var(--slds-g-color-error-base-50, #c23934);
+    border-radius: 0.25rem;
+}
+
+.agent-error-header {
+    min-height: 2rem;
+}
+
+.agent-error-summary {
+    color: var(--slds-g-color-neutral-base-30, #444);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 4rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.agent-error-details {
+    border-top: 1px solid var(--slds-g-color-error-base-80, #e87575);
+    padding-top: 0.5rem;
+}
+
+.agent-error-pre {
+    margin: 0;
+    padding: 0.75rem;
+    background: var(--slds-g-color-neutral-base-100, #fff);
+    border: 1px solid var(--slds-g-color-border-base-1, #c9c9c9);
+    border-radius: 0.25rem;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 12rem;
+    overflow: auto;
+}
+
+.agent-error-chevron-open {
+    transform: rotate(180deg);
+}
+
 :host {
     --slds-g-color-neutral-base-100: #fff;
     --slds-g-color-neutral-base-95: #f3f3f3;

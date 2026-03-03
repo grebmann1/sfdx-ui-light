@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { 
+import { storeRef } from './storeRef';
+import {
     APEX,
     API,
     EINSTEIN,
@@ -17,9 +18,10 @@ import {
     QUERY,
     APPLICATION,
     SMARTINPUT,
+    SHELL,
+    TEXTCOMPARE,
 } from './modules/index';
 import logger from 'shared/middleware';
-
 
 const store = configureStore({
     reducer: {
@@ -44,6 +46,8 @@ const store = configureStore({
         errors: ERROR.reduxSlice.reducer,
         sobjectExplorer: SOBJECTEXPLORER.reduxSlice.reducer,
         smartInput: SMARTINPUT.reduxSlice.reducer,
+        shell: SHELL.reduxSlice.reducer,
+        textCompare: TEXTCOMPARE.reduxSlice.reducer,
     },
     middleware: getDefaultMiddleware => {
         let middlewares = getDefaultMiddleware({
@@ -89,6 +93,8 @@ const store = configureStore({
     devTools: process.env.NODE_ENV !== 'production',
 });
 
+storeRef.current = store;
+
 export {
     store,
     UI,
@@ -107,7 +113,9 @@ export {
     AGENT,
     ERROR,
     SOBJECTEXPLORER,
-    SMARTINPUT
+    SMARTINPUT,
+    SHELL,
+    TEXTCOMPARE,
 };
 export { connectStore } from './wire-adapter';
 
@@ -127,5 +135,18 @@ export const SELECTORS = {
     openapiSchemaFiles: DOCUMENT.openapiSchemaFileAdapter.getSelectors(state => state.openapiSchemaFiles),
     agent: state => state.agent,
     smartInput: state => state.smartInput,
+    textCompare: state => state.textCompare,
+    shell: state => {
+        // Provide legacy-compatible structure for fakeNavigate
+        const shell = state.shell;
+        if (shell.fakeNavigateType === 'FAKE_NAVIGATE') {
+            return {
+                ...shell,
+                type: 'FAKE_NAVIGATE',
+                target: shell.fakeNavigateTarget,
+            };
+        }
+        return shell;
+    },
     //errors: ERROR.errorAdapter.getSelectors(state => state.errors),
 };

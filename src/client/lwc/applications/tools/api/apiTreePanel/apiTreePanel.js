@@ -23,7 +23,9 @@ export default class ApiTreePanel extends LightningElement {
         LOGGER.log('selectedProject', this.selectedProject);
         // Set default server URL if available
         const servers = this.selectedProject?.extra?.servers || [];
-        this.selectedServerUrl = servers.length > 0 ? servers[0].url : '';
+        const persisted = this.selectedProject?.extra?.selectedServerUrl;
+        const isPersistedValid = persisted && servers.some(s => s.url === persisted);
+        this.selectedServerUrl = isPersistedValid ? persisted : (servers.length > 0 ? servers[0].url : '');
         this.emitServerUrl();
     }
 
@@ -48,7 +50,11 @@ export default class ApiTreePanel extends LightningElement {
     /** Methods */
 
     emitServerUrl() {
-        this.dispatchEvent(new CustomEvent('serverurlchange', { detail: { serverUrl: this.selectedServerUrl } }));
+        this.dispatchEvent(
+            new CustomEvent('serverurlchange', {
+                detail: { serverUrl: this.selectedServerUrl, projectId: this.selectedProject?.id },
+            })
+        );
     }
 
     /** Getters */
@@ -70,5 +76,13 @@ export default class ApiTreePanel extends LightningElement {
     get serverOptions() {
         const servers = this.selectedProject?.extra?.servers || [];
         return servers.map(s => ({ label: s.description ? `${s.url} (${s.description})` : s.url, value: s.url }));
+    }
+
+    get apiSearchFields() {
+        return ['name', 'id', 'title', 'keywords'];
+    }
+
+    get projectSearchFields() {
+        return ['name', 'id', 'title'];
     }
 }

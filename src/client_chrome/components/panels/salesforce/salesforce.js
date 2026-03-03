@@ -35,8 +35,10 @@ export default class Salesforce extends ToolkitElement {
 
     set recordId(value) {
         this._recordId = value;
-        if (isNotUndefinedOrNull(this._recordId)) {
+        if (this.isRecordExplorerAvailable) {
             this.openSpecificTab(APPLICATIONS.RECORD_EXPLORER);
+        } else {
+            this.openSpecificTab(APPLICATIONS.ORG_INFO);
         }
     }
 
@@ -50,7 +52,11 @@ export default class Salesforce extends ToolkitElement {
             application.connector?.conn?.accessToken != this.connector.connector?.conn?.accessToken
         ) {
             this.isConnectorLoaded = true;
-            this.openSpecificTab(APPLICATIONS.RECORD_EXPLORER);
+            if (this.isRecordExplorerAvailable) {
+                this.openSpecificTab(APPLICATIONS.RECORD_EXPLORER);
+            } else {
+                this.openSpecificTab(APPLICATIONS.ORG_INFO);
+            }
         }
     }
 

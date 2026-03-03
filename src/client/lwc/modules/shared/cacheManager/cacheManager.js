@@ -1,5 +1,5 @@
 import LOGGER from 'shared/logger';
-import { isChromeExtension, isEmpty,isUndefinedOrNull,isNotUndefinedOrNull } from 'shared/utils';
+import { isChromeExtension, isEmpty, isUndefinedOrNull, isNotUndefinedOrNull } from 'shared/utils';
 
 import { chromeStore, basicStore } from './interfaces';
 
@@ -177,17 +177,7 @@ export const CACHE_CONFIG = {
     OPENAI_KEY: new CONFIG_OBJECT('openai_key', null),
     MISTRAL_KEY: new CONFIG_OBJECT('mistral_key', null), // Added for Mistral
     AI_PROVIDER: new CONFIG_OBJECT('ai_provider', 'openai'),
-    OPENAI_URL: new CONFIG_OBJECT('openai_url', 'https://api.openai.com'),
-    // Shortcuts
-    SHORTCUT_INJECTION_ENABLED: new CONFIG_OBJECT('shortcut_injection_enabled', false),
-    SHORTCUT_RECORDID: new CONFIG_OBJECT('shortcut_recordid', null),
-    SHORTCUT_OPEN_PANEL: new CONFIG_OBJECT('shortcut_open_panel', null),
-    SHORTCUT_OPEN_OVERLAY: new CONFIG_OBJECT('shortcut_open_overlay', null),
-    SHORTCUT_OVERVIEW: new CONFIG_OBJECT('shortcut_overview', null),
-    SHORTCUT_SOQL: new CONFIG_OBJECT('shortcut_soql', null),
-    SHORTCUT_APEX: new CONFIG_OBJECT('shortcut_apex', null),
-    SHORTCUT_API: new CONFIG_OBJECT('shortcut_api', null),
-    SHORTCUT_DOCUMENTATION: new CONFIG_OBJECT('shortcut_documentation', null),
+    OPENAI_URL: new CONFIG_OBJECT('openai_url', 'https://api.openai.com/v1'),
     EXPERIENCE_CLOUD_LOGINAS_INCOGNITO: new CONFIG_OBJECT('experienceCloudLoginAsIncognito', false),
     UI_IS_APPLICATION_TAB_VISIBLE: new CONFIG_OBJECT('ui_isApplicationTabVisible', true),
     CHROME_SYNC_SETTINGS_INITIALIZED_STORAGE_KEY: new CONFIG_OBJECT(
@@ -198,14 +188,33 @@ export const CACHE_CONFIG = {
     // Applications Settings are stored in the general store
     API_SPLITTER_IS_HORIZONTAL: new CONFIG_OBJECT('api_splitter_is_horizontal', false),
     EINSTEIN_AGENT_CONVERSATIONS: new CONFIG_OBJECT('einstein_agent_conversations', []),
-    EINSTEIN_AGENT_CONVERSATION_ACTIVE_ID: new CONFIG_OBJECT('einstein_agent_conversation_active_id', null),
+    EINSTEIN_AGENT_CONVERSATION_ACTIVE_ID: new CONFIG_OBJECT(
+        'einstein_agent_conversation_active_id',
+        null
+    ),
     EINSTEIN_AGENT_CONVERSATION_MODEL: new CONFIG_OBJECT('einstein_agent_conversation_model', null),
     EINSTEIN_AGENT_CONVERSATION_DATA: new CONFIG_OBJECT('einstein_agent_conversation_data', null),
+    EINSTEIN_AGENT_SKILLS: new CONFIG_OBJECT('einstein_agent_skills', []),
     // Input Quick Pick
     INPUT_QUICKPICK_DATA: new CONFIG_OBJECT('input_quickpick_data', null),
     INPUT_QUICKPICK_ENABLED: new CONFIG_OBJECT('input_quickpick_enabled', false),
-    INPUT_QUICKPICK_SELECTED_CATEGORY: new CONFIG_OBJECT('input_quickpick_selected_category', 'ALL'),
+    INPUT_QUICKPICK_SELECTED_CATEGORY: new CONFIG_OBJECT(
+        'input_quickpick_selected_category',
+        'ALL'
+    ),
     INPUT_QUICKPICK_RECENTS: new CONFIG_OBJECT('input_quickpick_recents', []),
+    // Beta Features
+    BETA_SMARTINPUT_ENABLED: new CONFIG_OBJECT('beta_smartinput_enabled', false),
+    // Keyboard shortcuts (injected page + app)
+    SHORTCUT_INJECTION_ENABLED: new CONFIG_OBJECT('shortcut_injectionEnabled', true),
+    SHORTCUT_RECORDID: new CONFIG_OBJECT('shortcut_recordId', null),
+    SHORTCUT_OVERVIEW: new CONFIG_OBJECT('shortcut_overview', null),
+    SHORTCUT_SOQL: new CONFIG_OBJECT('shortcut_soql', null),
+    SHORTCUT_APEX: new CONFIG_OBJECT('shortcut_apex', null),
+    SHORTCUT_API: new CONFIG_OBJECT('shortcut_api', null),
+    SHORTCUT_DOCUMENTATION: new CONFIG_OBJECT('shortcut_documentation', null),
+    SHORTCUT_OPEN_PANEL: new CONFIG_OBJECT('shortcut_openPanel', null),
+    SHORTCUT_OPEN_OVERLAY: new CONFIG_OBJECT('shortcut_openOverlay', null),
     //  TODO: Add Global CLIENT_ID and API_VERSION to the CACHE_CONFIG
 };
 
@@ -241,9 +250,9 @@ export async function loadExtensionConfigFromCache(keys) {
     return cacheManager.loadConfig(keys);
 }
 
-export async function loadSingleExtensionConfigFromCache(key,format) {
+export async function loadSingleExtensionConfigFromCache(key, format) {
     const result = (await cacheManager.loadConfig([key]))[key];
-    if(format) {
+    if (format) {
         return format(result);
     }
     return result;
@@ -267,7 +276,7 @@ export const getOpenAIKeyFromCache = async () => {
 export const getMistralKeyFromCache = async () => {
     return (await cacheManager.getConfigValue(CACHE_CONFIG.MISTRAL_KEY.key)) || '';
 };
-export const setMistralKeyInCache = async (key) => {
+export const setMistralKeyInCache = async key => {
     return await cacheManager.setConfigValue(CACHE_CONFIG.MISTRAL_KEY.key, key);
 };
 // Synced Settings

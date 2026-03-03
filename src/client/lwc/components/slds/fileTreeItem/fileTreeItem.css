@@ -42,3 +42,9 @@
 .file-tree-item-title {
     font-size: small;
 }
+
+.api-badge--get {
+    background: var(--slds-g-color-brand-base-50, #0176d3);
+    color: var(--slds-g-color-neutral-base-100, #ffffff);
+    border-color: transparent;
+}

@@ -84,7 +84,14 @@
                     </div>
             </article>
             <!-- Panel -->
-            <slds-vertical-panel is-open={displayFilter} onclose={handleCloseVerticalPanel}>
+            <slds-vertical-panel
+                has-border
+                position="right"
+                size="slds-size_small"
+                title="Filters"
+                is-open={displayFilter}
+                onclose={handleCloseVerticalPanel}
+            >
                 <div class="slds-filters">
                     <ol class="slds-list_vertical slds-list_vertical-space">
                         <!-- FILTER -->

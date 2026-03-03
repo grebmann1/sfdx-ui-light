@@ -1,5 +1,97 @@
 [
   {
+    "version": "1.5.1",
+    "date": "February 25th, 2026",
+    "sections": [
+      {
+        "title": "Enhancements",
+        "categories": [
+          {
+            "category": "Connections",
+            "items": [
+              "Added a Share action on connection cards and in connection details to copy a connection share message to the clipboard.",
+              "Centralized connection share message generation for consistent links and formatting."
+            ]
+          },
+          {
+            "category": "User Explorer",
+            "items": [
+              "Added a Share button to the Current User (Me) explorer to copy an \u201copen in SF Toolkit\u201d message to the clipboard."
+            ]
+          },
+          {
+            "category": "Chrome Extension",
+            "items": [
+              "Added a Share action in the injected overlay to copy a session-based \u201copen in SF Toolkit\u201d link to the clipboard.",
+              "Improved tab grouping reliability when opening the toolkit from the Agent (safer Chrome API calls and auto-expanding the group).",
+              "Note: share messages can include sensitive information (session IDs or credentials). Only share with trusted recipients."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Bug Fixes",
+        "categories": [
+          {
+            "category": "SOQL Explorer",
+            "items": [
+              "Improved results table refresh stability by cloning the response payload before rendering."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "version": "1.5.0",
+    "date": "February 17th, 2026",
+    "sections": [
+      {
+        "title": "Enhancements",
+        "categories": [
+          {
+            "category": "Data Import",
+            "items": [
+              "Added a failed-results preview to quickly inspect rejected rows and errors.",
+              "Improved the import UI and CSV processing for smoother workflows."
+            ]
+          },
+          {
+            "category": "Text Compare",
+            "items": [
+              "Refreshed Text Compare with clearer diff highlighting and synced scrolling.",
+              "Ignore whitespace now focuses the diff on meaningful content changes."
+            ]
+          },
+          {
+            "category": "Connections",
+            "items": [
+              "Improved the connection import OAuth flow with clearer feedback and better error handling.",
+              "Updated connection cards styling and interactions for faster navigation."
+            ]
+          },
+          {
+            "category": "UI & Styling",
+            "items": [
+              "Introduced SLDS Plus styles and applied UI polish across menus, layouts, and panels."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Bug Fixes",
+        "categories": [
+          {
+            "category": "Text Compare",
+            "items": [
+              "Removed the non-functional \"Ignore case\" toggle to avoid misleading diffs."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.4.3",
     "date": "October 28th, 2025",
     "sections": [

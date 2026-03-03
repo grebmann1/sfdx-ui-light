@@ -64,6 +64,19 @@ export default class Card extends ToolkitElement {
 
     /** getters */
 
+    get cardContainerClass() {
+        return classSet('card-container')
+            .add({
+                'card-container-orgfarm': this.isOrgFarmGroup,
+            })
+            .toString();
+    }
+
+    get isOrgFarmGroup() {
+        const title = (this.title || '').toString().toLowerCase();
+        return title.includes('orgfarm');
+    }
+
     get isOpenFormatted() {
         return this.isOpen && this.items.length > 0;
     }

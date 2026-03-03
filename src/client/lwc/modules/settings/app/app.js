@@ -1,6 +1,6 @@
 import { api, track, wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { isChromeExtension, isUndefinedOrNull } from 'shared/utils';
+import { isChromeExtension, isUndefinedOrNull, guid } from 'shared/utils';
 import {
     cacheManager,
     CACHE_CONFIG,
@@ -9,6 +9,25 @@ import {
     CACHE_ORG_DATA_TYPES,
 } from 'shared/cacheManager';
 import Toast from 'lightning/toast';
+
+const DEFAULT_AGENT_SKILL_DEFINITIONS = [
+    { name: 'SOQL', content: 'Use SOQL tools to run and display queries. Prefer soql_query_incognito when the user does not need to see the query in the UI.', enabled: true },
+    { name: 'Apex', content: 'Use Apex tools to edit and execute anonymous Apex. Always ask for confirmation before executing scripts.', enabled: true },
+    { name: 'API', content: 'Use API tools to run REST calls and manage saved API scripts.', enabled: true },
+    { name: 'Connections', content: 'Use connection tools to list, connect, disconnect, or open Salesforce orgs.', enabled: true },
+    { name: 'Chrome', content: 'Use Chrome tools only for browser automation (screenshots, tab management). Prefer Salesforce Toolkit tools for org and data actions.', enabled: true },
+    { name: 'Metadata', content: 'Use Metadata tools to navigate and inspect metadata types and records.', enabled: true },
+    { name: 'Agent continuation', content: 'When the user\'s goal requires more tool steps, call agent_request_continue with a brief reason. When you can give a final answer, respond normally and do not call that tool.', enabled: true },
+];
+
+function getDefaultAgentSkills() {
+    return DEFAULT_AGENT_SKILL_DEFINITIONS.map(({ name, content, enabled }) => ({
+        id: guid(),
+        name,
+        content,
+        enabled,
+    }));
+}
 import LOGGER from 'shared/logger';
 import { store, APPLICATION } from 'core/store';
 
@@ -16,7 +35,6 @@ export default class App extends ToolkitElement {
     //openAsPopup_checked = false;
     //openai_key;
     //openai_assistant_id;
-    //shortcut_recordid;
     //experienceCloudLoginAsIncognito;
 
     // Cache
@@ -132,9 +150,9 @@ export default class App extends ToolkitElement {
     handleToggleVisibility = e => {
         e.preventDefault();
         let isVisible = e.currentTarget.dataset.isVisible !== 'true'; // toggle the visibility
-        this.template.querySelector('lightning-input[data-key="' + e.currentTarget.dataset.key + '"]').type = isVisible
-            ? 'text'
-            : 'password';
+        this.template.querySelector(
+            'lightning-input[data-key="' + e.currentTarget.dataset.key + '"]'
+        ).type = isVisible ? 'text' : 'password';
         // update the button
         e.currentTarget.dataset.isVisible = isVisible;
         e.currentTarget.iconName = isVisible ? 'utility:hide' : 'utility:preview';
@@ -161,6 +179,39 @@ export default class App extends ToolkitElement {
 
     handleResetApiVersion = e => {
         this.sessionConfig.api_version = CACHE_SESSION_CONFIG.API_VERSION.value;
+    };
+
+    handleAddAgentSkill = () => {
+        const key = CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key;
+        const skills = Array.isArray(this.config[key]) ? [...this.config[key]] : [];
+        skills.push({ id: guid(), name: '', content: '', enabled: true });
+        this.config = { ...this.config, [key]: skills };
+    };
+
+    handleRemoveAgentSkill = e => {
+        const id = e.currentTarget.dataset.skillId;
+        if (!id) return;
+        const key = CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key;
+        const skills = (this.config[key] || []).filter(s => s.id !== id);
+        this.config = { ...this.config, [key]: skills };
+    };
+
+    handleAgentSkillChange = e => {
+        const { skillId, property } = e.currentTarget.dataset;
+        if (!skillId || !property) return;
+        const key = CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key;
+        const skills = Array.isArray(this.config[key]) ? [...this.config[key]] : [];
+        const idx = skills.findIndex(s => s.id === skillId);
+        if (idx === -1) return;
+        const value =
+            e.currentTarget.type === 'toggle' ? e.currentTarget.checked : e.currentTarget.value;
+        skills[idx] = { ...skills[idx], [property]: value };
+        this.config = { ...this.config, [key]: skills };
+    };
+
+    handleResetAgentSkillsToDefault = () => {
+        const key = CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key;
+        this.config = { ...this.config, [key]: getDefaultAgentSkills() };
     };
 
     /** Methods **/
@@ -248,11 +299,25 @@ export default class App extends ToolkitElement {
         const configurationList = Object.values(CACHE_CONFIG);
         const config = {};
         Object.values(configurationList).forEach(item => {
-            config[item.key] = cachedConfiguration[item.key];// || item.value;
+            config[item.key] = cachedConfiguration[item.key]; // || item.value;
         });
         // Default to 'openai' if not set
         if (!config.ai_provider) {
             config.ai_provider = 'openai';
+        }
+        // Normalize agent skills: seed defaults when never set, otherwise normalize or keep empty
+        const rawSkills = config[CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key];
+        if (rawSkills === undefined || rawSkills === null) {
+            config[CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key] = getDefaultAgentSkills();
+        } else if (Array.isArray(rawSkills)) {
+            config[CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key] = rawSkills.map(s => ({
+                id: s.id || guid(),
+                name: s.name ?? '',
+                content: s.content ?? '',
+                enabled: s.enabled !== false,
+            }));
+        } else {
+            config[CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key] = [];
         }
         this.config = config;
         this.originalConfig = { ...config };
@@ -268,7 +333,7 @@ export default class App extends ToolkitElement {
             const sessionConfigurationList = Object.values(CACHE_SESSION_CONFIG);
             const sessionConfig = {};
             Object.values(sessionConfigurationList).forEach(item => {
-                sessionConfig[item.key] = sessionCachedConfiguration[item.key];// || item.value;
+                sessionConfig[item.key] = sessionCachedConfiguration[item.key]; // || item.value;
             });
 
             this.sessionConfig = sessionConfig;
@@ -314,15 +379,21 @@ export default class App extends ToolkitElement {
         return !this.hasChanged;
     }
 
-    get isShortcutDisabled() {
-        return isUndefinedOrNull(this.config) || !this.config?.shortcut_injection_enabled;
-    }
-
     get isFullIncognitoAccess() {
         return this.hasIncognitoAccess;
     }
 
     get userName() {
         return this.connector?.configuration?.username;
+    }
+
+    get agentSkills() {
+        const key = CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key;
+        const list = this.config[key];
+        return Array.isArray(list) ? list : [];
+    }
+
+    get agentSkillsEmpty() {
+        return this.agentSkills.length === 0;
     }
 }

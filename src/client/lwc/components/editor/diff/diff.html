@@ -1,0 +1,11 @@
+<template>
+    <div class="slds-flex-column slds-light-bg diff-editor-container">
+        <div class="diff-split">
+            <div lwc:ref="leftEditor" class="diff-editor-host" lwc:dom="manual"></div>
+            <div lwc:ref="rightEditor" class="diff-editor-host" lwc:dom="manual"></div>
+        </div>
+        <template lwc:if={isLoading}>
+            <slds-spinner alternative-text="Loading" size="small"></slds-spinner>
+        </template>
+    </div>
+</template>

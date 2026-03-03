@@ -1,5 +1,9 @@
 import { handleChromeInteraction } from './chromeApi.js';
-import { CACHE_CONFIG, saveSingleExtensionConfigToCache, loadSingleExtensionConfigFromCache } from 'shared/cacheManager';
+import {
+    CACHE_CONFIG,
+    saveSingleExtensionConfigToCache,
+    loadSingleExtensionConfigFromCache,
+} from 'shared/cacheManager';
 
 /** STATIC **/
 const OVERLAY_ENABLE = 'overlay_enable';
@@ -46,16 +50,11 @@ const isEmpty = str => {
     return !str || str.length === 0;
 };
 
-const isNotNullOrUndefined = (value) => {
+const isNotNullOrUndefined = value => {
     return value !== null && value !== undefined;
 };
 
-const redirectToUrlViaChrome = ({
-    baseUrl,
-    sessionId,
-    serverUrl,
-    navigation,
-}) => {
+const redirectToUrlViaChrome = ({ baseUrl, sessionId, serverUrl, navigation }) => {
     let params = new URLSearchParams();
     if (sessionId) {
         params.append('sessionId', sessionId);
@@ -65,8 +64,8 @@ const redirectToUrlViaChrome = ({
     if (navigation) {
         // Navigation state is a key-value pair of the state of the navigation
         const redirectUrl = new URLSearchParams();
-        if(isNotNullOrUndefined(navigation.state)){
-            console.log('navigation.state',navigation.state);
+        if (isNotNullOrUndefined(navigation.state)) {
+            console.log('navigation.state', navigation.state);
             Object.entries(navigation.state).forEach(([key, value]) => {
                 redirectUrl.append(key, value);
             });
@@ -75,7 +74,7 @@ const redirectToUrlViaChrome = ({
     }
 
     let url = new URL(baseUrl);
-        url.search = params.toString();
+    url.search = params.toString();
     // Open a new tab
     chrome.tabs.create({
         url: url.href,
@@ -153,6 +152,15 @@ function getSalesforceURL(tabUrl) {
     return url;
 }
 
+function canonicalizeServerUrl(serverUrl) {
+    if (!serverUrl) return serverUrl;
+    try {
+        return getSalesforceURL(serverUrl);
+    } catch (e) {
+        return serverUrl;
+    }
+}
+
 const getHostAndSession = async tab => {
     try {
         if (!tab.url) return;
@@ -198,10 +206,37 @@ const getHostAndSession = async tab => {
  * Validate a Salesforce session by calling a simple authenticated endpoint.
  * Returns true if the session is valid (HTTP 200), false otherwise.
  */
+const _servicesDataBaseUrlCache = new Map(); // serverUrl -> "/services/data/vXX.X"
+
+async function getServicesDataBaseUrl(serverUrl, sessionId) {
+    if (!serverUrl || !sessionId) return '/services/data/v63.0';
+    const cached = _servicesDataBaseUrlCache.get(serverUrl);
+    if (cached) return cached;
+    try {
+        const resp = await fetch(`${serverUrl}/services/data/`, {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${sessionId}` },
+        });
+        if (!resp.ok) throw new Error('services/data discovery failed');
+        const json = await resp.json();
+        if (!Array.isArray(json) || json.length === 0) throw new Error('services/data invalid');
+        const best = json
+            .map(x => ({ version: Number(x?.version), url: x?.url }))
+            .filter(x => Number.isFinite(x.version) && typeof x.url === 'string')
+            .sort((a, b) => b.version - a.version)[0];
+        const baseUrl = best && best.url ? best.url.replace(/\/+$/, '') : '/services/data/v63.0';
+        _servicesDataBaseUrlCache.set(serverUrl, baseUrl);
+        return baseUrl;
+    } catch (e) {
+        return '/services/data/v63.0';
+    }
+}
+
 async function validateSession(serverUrl, sessionId) {
     try {
         if (!serverUrl || !sessionId) return false;
-        const url = `${serverUrl}/services/data/v63.0/limits`;
+        const base = await getServicesDataBaseUrl(serverUrl, sessionId);
+        const url = `${serverUrl}${base}/limits`;
         const response = await fetch(url, {
             method: 'GET',
             headers: {
@@ -290,15 +325,19 @@ async function findExistingSession({ alias, instanceUrl } = {}) {
 
 // Refactored isHostMatching to use the same logic as shouldInjectScriptAsync
 async function isHostMatching(url) {
+    const normalizedUrl = normalizeUrlForPatternMatch(url);
+    if (!normalizedUrl) return false;
     const { includePatterns, excludePatterns } = await getContentScriptPatterns();
     for (const pattern of excludePatterns) {
-        if (pattern.test(url)) return false;
+        if (pattern.test(normalizedUrl)) return false;
     }
     for (const pattern of includePatterns) {
-        if (pattern.test(url)) return true;
+        if (pattern.test(normalizedUrl)) return true;
     }
     return false;
 }
+
+const _lastSidePanelOptionsByTabId = new Map(); // tabId -> { url, ts }
 
 const handleTabOpening = async tab => {
     // Instead of loading the configuration every time, send a message to the background job !!!
@@ -308,24 +347,19 @@ const handleTabOpening = async tab => {
     //console.log('handleTabOpening - openPopupInSidePanel',openPopupInSidePanel);
 
     try {
-        const url = new URL(tab.url);
-        const path = `views/default.html?${isHostMatching(url) ? 'salesforce' : 'default'}`;
-        const existingOptions = await chrome.sidePanel.getOptions({ tabId: tab.id });
-        /** Remove by default **/
-        if (!existingOptions.enabled) {
-            await chrome.sidePanel.setOptions({
-                tabId: tab.id,
-                enabled: false,
-            });
-        }
+        if (!tab?.id || !tab?.url) return;
+        const now = Date.now();
+        const last = _lastSidePanelOptionsByTabId.get(tab.id);
+        if (last && last.url === tab.url && now - last.ts < 750) return;
 
-        /**  Filter Tabs **/
-        await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+        const isSalesforceTab = await isHostMatching(tab.url);
+        const path = `views/default.html?${isSalesforceTab ? 'salesforce' : 'default'}`;
         await chrome.sidePanel.setOptions({
             tabId: tab.id,
             path: path,
             enabled: true,
         });
+        _lastSidePanelOptionsByTabId.set(tab.id, { url: tab.url, ts: now });
     } catch (e) {
         //console.log('Issue handleTabOpening',e);
     }
@@ -351,36 +385,71 @@ const wrapAsyncFunction = listener => (request, sender, sendResponse) => {
 };
 
 /*** Context Menu Methods ***/
+let _ensureContextMenuPromise = null;
+
+async function ensureContextMenu() {
+    if (_ensureContextMenuPromise) return _ensureContextMenuPromise;
+    _ensureContextMenuPromise = (async () => {
+        await createContextMenu();
+    })().finally(() => {
+        _ensureContextMenuPromise = null;
+    });
+    return _ensureContextMenuPromise;
+}
+
 async function createContextMenu() {
     const isEnabled = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.OVERLAY_ENABLED.key);
+    // Idempotent menu creation: MV3 service worker can restart, so recreate safely.
+    await new Promise(resolve => {
+        try {
+            chrome.contextMenus.removeAll(() => resolve());
+        } catch (e) {
+            resolve();
+        }
+    });
     /* chrome.contextMenus.create({
         id: OPEN_SIDE_PANEL,
         title: 'Open Salesforce Toolkit (side panel)',
         contexts: ['page'],
     }); */
 
-    chrome.contextMenus.create({
-        id: OPEN_TOOLKIT,
-        title: 'Open Salesforce Toolkit (in new tab)',
-        contexts: ['action'],
-        enabled: true,
-        visible: true,
-    });
+    chrome.contextMenus.create(
+        {
+            id: OPEN_TOOLKIT,
+            title: 'Open Salesforce Toolkit (in new tab)',
+            contexts: ['action'],
+            enabled: true,
+            visible: true,
+        },
+        () => {
+            void chrome.runtime.lastError;
+        }
+    );
 
-    chrome.contextMenus.create({
-        id: OVERLAY_ENABLE,
-        title: OVERLAY_ENABLE_TITLE,
-        contexts: ['action'],
-        enabled: !isEnabled,
-        visible: true,
-    });
-    chrome.contextMenus.create({
-        id: OVERLAY_DISABLE,
-        title: OVERLAY_DISABLE_TITLE,
-        contexts: ['action'],
-        enabled: isEnabled,
-        visible: true,
-    });
+    chrome.contextMenus.create(
+        {
+            id: OVERLAY_ENABLE,
+            title: OVERLAY_ENABLE_TITLE,
+            contexts: ['action'],
+            enabled: !isEnabled,
+            visible: true,
+        },
+        () => {
+            void chrome.runtime.lastError;
+        }
+    );
+    chrome.contextMenus.create(
+        {
+            id: OVERLAY_DISABLE,
+            title: OVERLAY_DISABLE_TITLE,
+            contexts: ['action'],
+            enabled: isEnabled,
+            visible: true,
+        },
+        () => {
+            void chrome.runtime.lastError;
+        }
+    );
 }
 
 const injectedConnections = new Set();
@@ -389,37 +458,59 @@ const instanceConnections = new Map();
 
 chrome.runtime.onConnect.addListener(function (port) {
     if (port.name === 'sf-toolkit-instance') {
-        console.log('--> Registering instance',port.name);
-        const cleanup = (identityKey) => instanceConnections.delete(identityKey);
-        port.onMessage.addListener((msg) => {
-            let identityKey = msg.serverUrl;//msg.alias || msg.username;
+        console.log('--> Registering instance', port.name);
+        const cleanup = identityKey => {
+            if (!identityKey) return;
+            instanceConnections.delete(identityKey);
+        };
+        let registeredIdentityKey;
+        port.onDisconnect.addListener(() => {
+            cleanup(registeredIdentityKey);
+        });
+        port.onMessage.addListener(msg => {
+            const identityKey = canonicalizeServerUrl(msg.serverUrl); // canonical origin
             if (msg.action === 'registerInstance') {
                 if (identityKey) {
+                    // If the same port re-registers (e.g., connection changes), clean up the old key.
+                    if (registeredIdentityKey && registeredIdentityKey !== identityKey) {
+                        cleanup(registeredIdentityKey);
+                    }
+                    registeredIdentityKey = identityKey;
                     instanceConnections.set(identityKey, {
                         port,
-                        serverUrl: msg.serverUrl,
+                        serverUrl: identityKey,
                         alias: msg.alias,
                         username: msg.username,
                     });
-                    console.log('--> Registering instance (Once is logged in)',identityKey);
-                    port.onDisconnect.addListener(() => {
-                        if(instanceConnections.has(identityKey)) {
-                            cleanup(identityKey);
-                        }
-                    });
+                    console.log('--> Registering instance (Once is logged in)', identityKey);
                 }
             } else if (msg.action === 'closeConnection') {
-                cleanup(identityKey);
-                try { port.disconnect(); } catch (e) {}
+                cleanup(identityKey || registeredIdentityKey);
+                try {
+                    port.disconnect();
+                } catch (e) {}
             }
         });
     } else if (port.name === 'sf-toolkit-injected') {
-        console.log('--> Registering injected',port.name);
+        try {
+            console.log('[SF-TOOLKIT][BG] Registering injected port', {
+                name: port.name,
+                tabId: port?.sender?.tab?.id,
+                url: port?.sender?.tab?.url,
+                beforeCount: injectedConnections.size,
+            });
+        } catch (e) {}
         injectedConnections.add(port);
         port.onDisconnect.addListener(() => {
             injectedConnections.delete(port);
+            try {
+                console.log('[SF-TOOLKIT][BG] Injected port disconnected', {
+                    tabId: port?.sender?.tab?.id,
+                    afterCount: injectedConnections.size,
+                });
+            } catch (e) {}
         });
-        port.onMessage.addListener((msg) => {
+        port.onMessage.addListener(msg => {
             if (msg.action === 'redirectToUrl') {
                 handleRedirectToUrl(msg);
                 /* const url = buildRedirectUrl(msg);
@@ -429,13 +520,13 @@ chrome.runtime.onConnect.addListener(function (port) {
             }
         });
     } else if (port.name === 'sf-toolkit-sidepanel') {
-        console.log('--> Registering sidepanel',port.name);
+        console.log('--> Registering sidepanel', port.name);
         sidePanelConnections.add(port);
         port.onDisconnect.addListener(() => {
             sidePanelConnections.delete(port);
         });
-        port.onMessage.addListener((msg) => {
-            console.log('--> sidepanel message',msg);
+        port.onMessage.addListener(msg => {
+            console.log('--> sidepanel message', msg);
             if (msg.action === 'redirectToUrl') {
                 handleRedirectToUrl(msg);
                 /* const url = buildRedirectUrl(msg);
@@ -448,20 +539,21 @@ chrome.runtime.onConnect.addListener(function (port) {
 });
 
 function handleRedirectToUrl(msg) {
-    console.log('handleRedirectToUrl',msg);
-    const { serverUrl } = msg;
+    console.log('handleRedirectToUrl', msg);
+    const key = canonicalizeServerUrl(msg?.serverUrl);
 
-    if (serverUrl && instanceConnections.has(serverUrl)) {
+    if (key && instanceConnections.has(key)) {
         // Send the message to the correct port/instance
-        const instance = instanceConnections.get(serverUrl);
+        const instance = instanceConnections.get(key);
         if (instance && instance.port) {
             instance.port.postMessage({
                 ...msg,
+                serverUrl: key,
                 action: 'redirectToUrl',
             });
             const tab = instance.port?.sender?.tab;
-            if(tab && tab.windowId){
-                chrome.tabs.update(tab.id, { active: true }, function(tab) {
+            if (tab && tab.windowId) {
+                chrome.tabs.update(tab.id, { active: true }, function (tab) {
                     // Optionally, focus the window containing the tab
                     chrome.windows.update(tab.windowId, { focused: true });
                 });
@@ -469,24 +561,36 @@ function handleRedirectToUrl(msg) {
             //chrome.tabs.update(instance.tabId, { active: true });
             return;
         }
-    }else{
+    } else {
         // If no port found, or no serverUrl, open a new tab
-        redirectToUrlViaChrome(msg);
+        redirectToUrlViaChrome({ ...msg, serverUrl: key || msg?.serverUrl });
     }
-    
 }
 
 async function setOverlayState(isEnabled) {
     await saveSingleExtensionConfigToCache(CACHE_CONFIG.OVERLAY_ENABLED.key, isEnabled);
     updateContextMenu();
+    try {
+        console.log('[SF-TOOLKIT][BG] setOverlayState', { isEnabled });
+    } catch (e) {}
     broadcastMessageToAllInjectedInstances({ action: 'toggleOverlay', enabled: isEnabled });
 }
 
 async function updateContextMenu() {
+    // Ensure menus exist (and avoid creation races) before updating.
+    await ensureContextMenu().catch(() => {});
     const isEnabled = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.OVERLAY_ENABLED.key);
-    chrome.contextMenus.update(OVERLAY_ENABLE, { enabled: !isEnabled });
-    chrome.contextMenus.update(OVERLAY_DISABLE, { enabled: isEnabled });
+    try {
+        chrome.contextMenus.update(OVERLAY_ENABLE, { enabled: !isEnabled }, () => {});
+    } catch (e) {}
+    try {
+        chrome.contextMenus.update(OVERLAY_DISABLE, { enabled: isEnabled }, () => {});
+    } catch (e) {}
 }
+
+// In-memory cache of compiled include/exclude regex patterns
+let _contentScriptPatternsCache = null;
+let _contentScriptPatternsCachePromise = null;
 
 // Parse patterns from string (one regex per line)
 function parsePatterns(patternString, fallback) {
@@ -510,39 +614,74 @@ function parsePatterns(patternString, fallback) {
         .filter(Boolean);
 }
 
-// Async version to get patterns from storage
+async function refreshContentScriptPatternsCache() {
+    const data = await chrome.storage.local.get([
+        'content_script_include_patterns',
+        'content_script_exclude_patterns',
+    ]);
+    const includePatterns = parsePatterns(
+        data.content_script_include_patterns,
+        DEFAULT_INCLUDE_PATTERNS
+    );
+    const excludePatterns = parsePatterns(
+        data.content_script_exclude_patterns,
+        DEFAULT_EXCLUDE_PATTERNS
+    );
+    _contentScriptPatternsCache = { includePatterns, excludePatterns };
+    return _contentScriptPatternsCache;
+}
+
+// Get cached patterns (loads once per service-worker lifetime, refreshed via storage.onChanged)
 async function getContentScriptPatterns() {
-    return new Promise(resolve => {
-        chrome.storage.local.get(
-            ['content_script_include_patterns', 'content_script_exclude_patterns'],
-            async data => {
-                let includePatterns = parsePatterns(
-                    data.content_script_include_patterns,
-                    DEFAULT_INCLUDE_PATTERNS
-                );
-                let excludePatterns = parsePatterns(
-                    data.content_script_exclude_patterns,
-                    DEFAULT_EXCLUDE_PATTERNS
-                );
-                resolve({ includePatterns, excludePatterns });
-            }
-        );
+    if (_contentScriptPatternsCache) return _contentScriptPatternsCache;
+    if (_contentScriptPatternsCachePromise) return _contentScriptPatternsCachePromise;
+    _contentScriptPatternsCachePromise = refreshContentScriptPatternsCache().finally(() => {
+        _contentScriptPatternsCachePromise = null;
     });
+    return _contentScriptPatternsCachePromise;
+}
+
+/**
+ * Normalize a URL for pattern matching.
+ * - Only allow http/https pages (never inject into chrome-extension://, chrome://, etc.)
+ * - Ignore querystring and hash to avoid false positives (e.g. serverUrl=...lightning.force.com)
+ */
+function normalizeUrlForPatternMatch(rawUrl) {
+    try {
+        const u = new URL(rawUrl);
+        if (u.protocol !== 'http:' && u.protocol !== 'https:') return null;
+        return `${u.origin}${u.pathname}`;
+    } catch (e) {
+        return null;
+    }
 }
 
 // Async version of shouldInjectScript
 async function shouldInjectScriptAsync(url) {
+    const normalizedUrl = normalizeUrlForPatternMatch(url);
+    if (!normalizedUrl) return false;
     const { includePatterns, excludePatterns } = await getContentScriptPatterns();
     // Exclude first
     for (const pattern of excludePatterns) {
-        if (pattern.test(url)) return false;
+        if (pattern.test(normalizedUrl)) return false;
     }
     // Then include
     for (const pattern of includePatterns) {
-        if (pattern.test(url)) return true;
+        if (pattern.test(normalizedUrl)) return true;
     }
     return false;
 }
+
+// Refresh cached patterns when settings change
+chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== 'local') return;
+    if (
+        Object.prototype.hasOwnProperty.call(changes, 'content_script_include_patterns') ||
+        Object.prototype.hasOwnProperty.call(changes, 'content_script_exclude_patterns')
+    ) {
+        refreshContentScriptPatternsCache().catch(() => {});
+    }
+});
 
 function injectToolkit(tabId) {
     // Inject CSS files first
@@ -552,8 +691,8 @@ function injectToolkit(tabId) {
             files: [
                 'styles/slds-sf-toolkit.css',
                 'styles/inject.css',
+                'styles/shared.css',
                 'styles/extension.css',
-                'styles/web.css',
             ],
         },
         () => {
@@ -598,8 +737,8 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 chrome.tabs.onActivated.addListener(async ({ tabId, windowId }) => {
     if (!tabId) return;
     const tab = await chrome.tabs.get(tabId);
-    try{
-        handleTabOpening(tab);
+    try {
+        await handleTabOpening(tab);
     } catch (e) {
         console.error('handleTabOpening issue: ', e);
     }
@@ -607,24 +746,22 @@ chrome.tabs.onActivated.addListener(async ({ tabId, windowId }) => {
 
 chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
     if (!tab.url || info.status !== 'complete') return;
-    if (info.status === 'complete' && tab.url) {
-        if (await shouldInjectScriptAsync(tab.url)) {
-            chrome.scripting.executeScript(
-                {
-                    target: { tabId: tabId },
-                    func: () => window.__SF_TOOLKIT_SCRIPT_INJECTED,
-                },
-                results => {
-                    if (chrome.runtime.lastError) {
-                        injectToolkit(tabId);
-                    } else if (!results || !results[0] || !results[0].result) {
-                        injectToolkit(tabId);
-                    }
+    if (await shouldInjectScriptAsync(tab.url)) {
+        chrome.scripting.executeScript(
+            {
+                target: { tabId: tabId },
+                func: () => window.__SF_TOOLKIT_SCRIPT_INJECTED,
+            },
+            results => {
+                if (chrome.runtime.lastError) {
+                    injectToolkit(tabId);
+                } else if (!results || !results[0] || !results[0].result) {
+                    injectToolkit(tabId);
                 }
-            );
-        }
+            }
+        );
     }
-    handleTabOpening(tab);
+    await handleTabOpening(tab);
 });
 
 // In the main message handler, delegate chrome_* actions to chromeApi.js
@@ -671,58 +808,129 @@ chrome.runtime.onMessage.addListener(
                 excludePatterns: DEFAULT_EXCLUDE_PATTERNS,
             };
         } else if (message.action === 'toggleOverlay') {
+            try {
+                console.log('[SF-TOOLKIT][BG] received toggleOverlay message', {
+                    enabled: message.enabled,
+                    from: sender?.url || sender?.tab?.url,
+                });
+            } catch (e) {}
             broadcastMessageToAllInjectedInstances({
                 action: 'toggleOverlay',
                 enabled: message.enabled,
             });
         } else if (message.action === 'findExistingSession') {
-            return await findExistingSession({ alias: message.alias, instanceUrl: message.instanceUrl });
+            return await findExistingSession({
+                alias: message.alias,
+                instanceUrl: message.instanceUrl,
+            });
         } else if (message.action === 'smartinput_enhance_single') {
-            const prompt = (message && message.prompt) || '';
-            if (!prompt) return { error: 'Missing prompt' };
+            // Restrict this endpoint to trusted senders (extension pages or injected Salesforce pages).
+            const senderUrl = sender?.url || '';
+            const isExtensionPageSender =
+                typeof senderUrl === 'string' && senderUrl.startsWith(chrome.runtime.getURL(''));
+            const isInjectedSalesforceSender =
+                !isExtensionPageSender &&
+                !!sender?.tab?.url &&
+                (await shouldInjectScriptAsync(sender.tab.url));
+            if (!isExtensionPageSender && !isInjectedSalesforceSender) {
+                return { error: 'Untrusted sender' };
+            }
+
+            const prompt = typeof message?.prompt === 'string' ? message.prompt : '';
+            const trimmedPrompt = prompt.trim();
+            if (!trimmedPrompt) return { error: 'Missing prompt' };
+            if (trimmedPrompt.length > 4000) return { error: 'Prompt too long' };
+
+            const sanitizeBaseUrl = raw => {
+                const fallback = 'https://api.openai.com/v1';
+                const value = (raw || '').trim();
+                if (!value) return fallback;
+                try {
+                    const u = new URL(value);
+                    if (u.username || u.password) return fallback;
+                    if (u.protocol !== 'https:' && u.protocol !== 'http:') return fallback;
+                    if (
+                        u.protocol === 'http:' &&
+                        !['localhost', '127.0.0.1'].includes(u.hostname)
+                    ) {
+                        return fallback;
+                    }
+                    u.search = '';
+                    u.hash = '';
+                    u.pathname = (u.pathname || '').replace(/\/+$/, '');
+                    return u.toString();
+                } catch (e) {
+                    return fallback;
+                }
+            };
+
             // Read OpenAI config
             const data = await chrome.storage.local.get(['openai_key', 'openai_url']);
             const apiKey = data.openai_key;
-            const baseUrl = data.openai_url || 'https://api.openai.com/v1';
+            const baseUrl = sanitizeBaseUrl(data.openai_url);
             if (!apiKey) return { error: 'Missing OpenAI key' };
             try {
                 const body = {
                     model: 'gpt-4o-mini',
                     messages: [
-                        { role: 'system', content: 'You are Smart Input Assistant. Return one concise realistic value suitable for a Salesforce form input. No explanations.' },
-                        { role: 'user', content: prompt },
+                        {
+                            role: 'system',
+                            content:
+                                'You are Smart Input Assistant. Return one concise realistic value suitable for a Salesforce form input. No explanations.',
+                        },
+                        { role: 'user', content: trimmedPrompt },
                     ],
                     temperature: 0.5,
                     n: 1,
                 };
-                const resp = await fetch(`${baseUrl}/chat/completions`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`,
-                    },
-                    body: JSON.stringify(body),
-                });
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 20000);
+                let resp;
+                try {
+                    resp = await fetch(`${baseUrl}/chat/completions`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${apiKey}`,
+                        },
+                        body: JSON.stringify(body),
+                        signal: controller.signal,
+                    });
+                } finally {
+                    clearTimeout(timeoutId);
+                }
                 if (!resp.ok) {
                     const t = await resp.text();
                     return { error: `OpenAI error: ${t}` };
                 }
                 const json = await resp.json();
-                const suggestion = (json && json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content) || '';
+                const suggestion =
+                    (json &&
+                        json.choices &&
+                        json.choices[0] &&
+                        json.choices[0].message &&
+                        json.choices[0].message.content) ||
+                    '';
                 return { suggestion: (suggestion || '').trim() };
             } catch (e) {
                 return { error: e.message };
             }
-        } else if(message.action.startsWith('chrome_')){
+        } else if (message.action.startsWith('chrome_')) {
             // Delegate all chrome_* actions to chromeApi.js
             return await handleChromeInteraction(message);
         }
     })
 );
 
+/*** On Startup Event (MV3) ***/
+chrome.runtime.onStartup.addListener(() => {
+    // Service worker can restart; ensure menus exist.
+    ensureContextMenu().catch(() => {});
+});
+
 /*** On Install/Update Event ***/
 chrome.runtime.onInstalled.addListener(async details => {
-    console.log('--> onInstalled',details);
+    console.log('--> onInstalled', details);
     const currentVersion = chrome.runtime.getManifest().version;
     const previousVersion = details.previousVersion;
     const reason = details.reason;
@@ -743,7 +951,7 @@ chrome.runtime.onInstalled.addListener(async details => {
     if (!data.hasOwnProperty(OVERLAY_ENABLED_VAR)) {
         await saveSingleExtensionConfigToCache(CACHE_CONFIG.OVERLAY_ENABLED.key, true);
     } */
-    createContextMenu();
+    await ensureContextMenu();
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tabs.length > 0) {
         const currentTab = tabs[0];
@@ -753,26 +961,26 @@ chrome.runtime.onInstalled.addListener(async details => {
             enabled: true,
         });
     }
-    chrome.storage.local.get(
-        ['content_script_include_patterns', 'content_script_exclude_patterns'],
-        async data => {
-            if (!data.content_script_include_patterns) {
-                await chrome.storage.local.set({
-                    content_script_include_patterns: DEFAULT_INCLUDE_PATTERNS.join('\n'),
-                });
-            }
-            if (!data.content_script_exclude_patterns) {
-                await chrome.storage.local.set({
-                    content_script_exclude_patterns: DEFAULT_EXCLUDE_PATTERNS.join('\n'),
-                });
-            }
-        }
-    );
+    const data = await chrome.storage.local.get([
+        'content_script_include_patterns',
+        'content_script_exclude_patterns',
+    ]);
+    if (!data.content_script_include_patterns) {
+        await chrome.storage.local.set({
+            content_script_include_patterns: DEFAULT_INCLUDE_PATTERNS.join('\n'),
+        });
+    }
+    if (!data.content_script_exclude_patterns) {
+        await chrome.storage.local.set({
+            content_script_exclude_patterns: DEFAULT_EXCLUDE_PATTERNS.join('\n'),
+        });
+    }
+    await refreshContentScriptPatternsCache();
 });
 
 /*** Commands ***/
 chrome.commands.onCommand.addListener((command, tab) => {
-    console.log('command',command);
+    console.log('command', command);
     if (command === OVERLAY_TOGGLE) {
         loadSingleExtensionConfigFromCache(CACHE_CONFIG.OVERLAY_ENABLED.key).then(isEnabled => {
             setOverlayState(!isEnabled);
@@ -788,6 +996,9 @@ const init = async () => {
     chrome.sidePanel
         .setPanelBehavior({ openPanelOnActionClick: true })
         .catch(error => console.error(error));
+    // Ensure context menus are available even after service worker restarts.
+    ensureContextMenu().catch(() => {});
+    refreshContentScriptPatternsCache().catch(() => {});
 };
 
 chrome.runtime.setUninstallURL('https://forms.gle/cd8SkEPe5RGTVijJA');
@@ -795,30 +1006,73 @@ chrome.runtime.setUninstallURL('https://forms.gle/cd8SkEPe5RGTVijJA');
 init();
 
 function broadcastMessageToAllInjectedInstances(message) {
-    for (const [tabId, port] of injectedConnections.entries()) {
-        port.postMessage(message);
+    let count = 0;
+    for (const port of injectedConnections) {
+        try {
+            port.postMessage(message);
+            count++;
+        } catch (e) {
+            try {
+                injectedConnections.delete(port);
+            } catch (_) {}
+        }
     }
+    try {
+        if (message?.action === 'toggleOverlay') {
+            console.log('[SF-TOOLKIT][BG] broadcastMessageToAllInjectedInstances', {
+                action: message.action,
+                enabled: message.enabled,
+                sentTo: count,
+            });
+        }
+    } catch (e) {}
 }
 
 function broadcastMessageToAllSidePanelInstances(message) {
-    for (const [tabId, port] of sidePanelConnections.entries()) {
-        port.postMessage(message);
+    for (const port of sidePanelConnections) {
+        try {
+            port.postMessage(message);
+        } catch (e) {
+            try {
+                sidePanelConnections.delete(port);
+            } catch (_) {}
+        }
     }
 }
 
 // Send to only the injected connection that matches the provided tabId. Returns true if a port was found and messaged.
 function sendMessageToInjectedInTab(tabId, message) {
     let sent = false;
-    try { console.log('[BG] Attempting to send to injected in tab', tabId, 'message.action=', message?.action); } catch (e) {}
+    try {
+        console.log(
+            '[BG] Attempting to send to injected in tab',
+            tabId,
+            'message.action=',
+            message?.action
+        );
+    } catch (e) {}
     for (const port of injectedConnections.values()) {
         const portTabId = port && port.sender && port.sender.tab && port.sender.tab.id;
         if (portTabId === tabId) {
-            try { console.log('[BG] Found injected port for tab', tabId, '- sending message'); } catch (e) {}
-            port.postMessage(message);
+            try {
+                console.log('[BG] Found injected port for tab', tabId, '- sending message');
+            } catch (e) {}
+            try {
+                port.postMessage(message);
+            } catch (e) {
+                try {
+                    injectedConnections.delete(port);
+                } catch (_) {}
+                break;
+            }
             sent = true;
             break;
         }
     }
-    if (!sent) { try { console.log('[BG] No injected port matched tab', tabId); } catch (e) {} }
+    if (!sent) {
+        try {
+            console.log('[BG] No injected port matched tab', tabId);
+        } catch (e) {}
+    }
     return sent;
 }

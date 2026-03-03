@@ -168,7 +168,7 @@ export default class App extends ToolkitElement {
             async newValue => {
                 this._prompt = newValue;
             },
-            { timeout: 100 }
+            { timeout: 100, key: 'einstein.agent.publisher.inputChange' }
         );
     };
 

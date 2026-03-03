@@ -490,7 +490,6 @@ export default class App extends ToolkitElement {
         for (const ret of [...retParent]) {
             // ...retChild,
             if (ret.success) {
-                console.log(`Deleted Successfully : ${ret.id}`);
                 deletedRecordIds.add(ret.id);
             } else {
                 errorMessages.push(

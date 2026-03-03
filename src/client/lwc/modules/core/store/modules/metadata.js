@@ -1,5 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { store, METADATA, SOBJECT, DESCRIBE, ERROR } from 'core/store';
+import * as ERROR from './error';
+import * as SOBJECT from './sobject';
+import * as DESCRIBE from './describe';
+import { getStore } from '../storeRef';
 import { cacheManager, CACHE_ORG_DATA_TYPES } from 'shared/cacheManager';
 import LOGGER from 'shared/logger';
 import {
@@ -20,7 +23,7 @@ function loadCacheSettings(alias) {
         if (configText) return JSON.parse(configText);
     } catch (e) {
         console.error('Failed to load CONFIG from localStorage', e);
-        store.dispatch(
+        getStore()?.dispatch(
             ERROR.reduxSlice.actions.addError({
                 message: 'Error loading metadata settings',
                 details: e.message,
@@ -43,7 +46,7 @@ function saveCacheSettings(alias, state) {
         );
     } catch (e) {
         console.error('Failed to save CONFIG to localstorage', e);
-        store.dispatch(
+        getStore()?.dispatch(
             ERROR.reduxSlice.actions.addError({
                 message: 'Error saving metadata settings',
                 details: e.message,
@@ -55,7 +58,7 @@ function saveCacheSettings(alias, state) {
 const getMetadataConfig = async (connector, sobject) => {
     LOGGER.debug('getMetadataConfig', sobject, connector);
     const sobjectConfig = (
-        await store.dispatch(
+        await getStore()?.dispatch(
             SOBJECT.describeSObject({
                 connector: connector.conn,
                 sObjectName: sobject,
@@ -81,7 +84,7 @@ const getMetadataConfig = async (connector, sobject) => {
 // Helper function to load specific metadata
 async function loadSpecificMetadata(connector, sobject, bypass) {
     const isSobject =
-        store.getState().metadata.metadata_global.records.find(x => x.name == sobject)?.isSobject ||
+        getStore()?.getState().metadata.metadata_global.records.find(x => x.name == sobject)?.isSobject ||
         false;
 
     if (!isSobject) {
@@ -182,7 +185,7 @@ async function loadSpecificMetadataException(
         return { records, label };
     } catch (error) {
         console.error('Error loading specific metadata exception:', error);
-        store.dispatch(
+        getStore()?.dispatch(
             ERROR.reduxSlice.actions.addError({
                 message: 'Error loading metadata',
                 details: error.message,
@@ -366,7 +369,7 @@ const loadSpecificMetadataRecord2 = async (connector, { sobject, recordId, fullN
         files = await recordLoaders[sobject]();
     } else {
         const isSobject =
-            store.getState().metadata.metadata_global.records.find(x => x.name == sobject)
+            getStore()?.getState().metadata.metadata_global.records.find(x => x.name == sobject)
                 ?.isSobject || false;
         if (isSobject) {
             selectedRecord = await load_recordFromToolingAPI(connector, sobject, recordId);
@@ -417,7 +420,7 @@ const fetchGlobalMetadata = createAsyncThunk(
             result = [...result, ...METADATA_UTILS.METADATA_EXCEPTION_LIST.filter(x => x.isSearchable)];
             return { records: result, label: 'Metadata' };
         } catch (error) {
-            store.dispatch(
+            getStore()?.dispatch(
                 ERROR.reduxSlice.actions.addError({
                     message: 'Error fetching global metadata',
                     details: error.message,
@@ -433,13 +436,14 @@ const fetchSpecificMetadata = createAsyncThunk(
     async ({ sobject, bypass = false, force = false }, { dispatch, getState, rejectWithValue }) => {
         try {
             //bypass = bypass || false; // Default is false;
-            await dispatch(METADATA.reduxSlice.actions.setAttributes({ sobject }));
+            await dispatch(reduxSlice.actions.setAttributes({ sobject }));
 
             const { application, metadata } = getState();
             LOGGER.debug('application.connector', application.connector);
             const exceptionMetadata = METADATA_UTILS.METADATA_EXCEPTION_LIST.find(x => x.name === sobject) || null;
             // Check if the requested sobject differs from the current state
-            if (metadata.currentMetadata !== sobject || force) {
+            // Also reload if metadata_records is null (e.g., after goBack)
+            if (metadata.currentMetadata !== sobject || force || !metadata.metadata_records) {
                 const _metadata = exceptionMetadata
                     ? await loadSpecificMetadataException(
                           application.connector,
@@ -461,7 +465,7 @@ const fetchSpecificMetadata = createAsyncThunk(
             };
         } catch (error) {
             console.error('Error fetching specific metadata:', error);
-            store.dispatch(
+            getStore()?.dispatch(
                 ERROR.reduxSlice.actions.addError({
                     message: 'Error fetching specific metadata',
                     details: error.message,
@@ -532,7 +536,7 @@ const fetchMetadataRecord = createAsyncThunk(
             };
         } catch (error) {
             console.error('Error fetching exception metadata:', error);
-            store.dispatch(
+            getStore()?.dispatch(
                 ERROR.reduxSlice.actions.addError({
                     message: 'Error fetching exception metadata',
                     details: error.message,
@@ -680,7 +684,11 @@ const metadataSlice = createSlice({
         },
         goBack: (state, action) => {
             // Back is only from records to global
+            // Reset currentMetadata and related fields to allow reselecting the same metadata type
             state.metadata_records = null;
+            state.currentMetadata = null;
+            state.param1 = null;
+            state.label1 = null;
         },
         updateMetadata: (state, action) => {
             const { metadata } = action.payload;

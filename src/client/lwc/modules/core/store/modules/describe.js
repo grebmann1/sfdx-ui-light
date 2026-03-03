@@ -2,7 +2,8 @@ import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/too
 import LOGGER from 'shared/logger';
 import { lowerCaseKey, arrayToMap, isUndefinedOrNull } from 'shared/utils';
 import { cacheManager, CACHE_ORG_DATA_TYPES } from 'shared/cacheManager';
-import { store, ERROR } from 'core/store';
+import * as ERROR from './error';
+import { getStore } from '../storeRef';
 
 const DESCRIBE_ID = {
     TOOLING: 'TOOLING',
@@ -43,7 +44,7 @@ export const describeSObjects = createAsyncThunk(
                 return await fetchDescribeAndSave();
             }
         } catch (err) {
-            store.dispatch(
+            getStore()?.dispatch(
                 ERROR.reduxSlice.actions.addError({
                     message: 'Error describing SObjects',
                     details: err.message,
@@ -84,7 +85,7 @@ export const describeVersion = createAsyncThunk(
                 return await fetchDescribeAndSave();
             }
         } catch (err) {
-            store.dispatch(
+            getStore()?.dispatch(
                 ERROR.reduxSlice.actions.addError({
                     message: 'Error describing Version',
                     details: err.message,

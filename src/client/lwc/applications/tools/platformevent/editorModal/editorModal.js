@@ -82,7 +82,7 @@ export default class EditorModal extends LightningModal {
                 name: 'Script',
                 apiVersion: 60,
                 body: isEmpty(this.apexScript)
-                    ? "Update new Account(Id='001Hr000023GsE9IAK');"
+                    ? "Update [Select Id from Account limit 1];"
                     : this.apexScript,
                 language: 'apex',
             },

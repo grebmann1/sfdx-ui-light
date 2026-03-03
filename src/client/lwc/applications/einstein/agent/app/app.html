@@ -60,9 +60,45 @@
                 </div>
             </div>
             <template lwc:if={hasError}>
-                <slds-information-block class="slds-p-around_x-small" title={error_title} variant="error">
-                    <p>{error_message}</p>
-                </slds-information-block>
+                <div class="agent-error-panel slds-p-around_x-small" role="alert">
+                    <div class="agent-error-header slds-grid slds-grid_vertical-align-center slds-wrap">
+                        <span class="slds-col slds-no-flex slds-m-right_x-small">
+                            <lightning-icon icon-name="utility:error" size="small" variant="error" alternative-text="Error"></lightning-icon>
+                        </span>
+                        <span class="slds-col slds-grow slds-text-title_bold">{error_title}</span>
+                        <div class="slds-col slds-no-flex">
+                            <lightning-button-group>
+                                <lightning-button-icon
+                                    icon-name="utility:chevrondown"
+                                    alternative-text={errorDetailsToggleLabel}
+                                    title={errorDetailsToggleLabel}
+                                    onclick={toggleErrorDetails}
+                                    class={errorChevronClass}
+                                ></lightning-button-icon>
+                                <lightning-button-icon
+                                    icon-name="utility:copy"
+                                    alternative-text="Copy error"
+                                    title="Copy error"
+                                    onclick={copyErrorToClipboard}
+                                ></lightning-button-icon>
+                                <lightning-button-icon
+                                    icon-name="utility:close"
+                                    alternative-text="Dismiss"
+                                    title="Dismiss"
+                                    onclick={resetError}
+                                ></lightning-button-icon>
+                            </lightning-button-group>
+                        </div>
+                    </div>
+                    <template lwc:if={isErrorDetailsOpen}>
+                        <div class="agent-error-details slds-m-top_x-small">
+                            <pre class="agent-error-pre">{error_message}</pre>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <p class="agent-error-summary slds-m-top_x-small slds-text-body_small">{error_message}</p>
+                    </template>
+                </div>
             </template>
             <!-- Prompt Result -->
             <section role="log" class="slds-chat slds-fill-height" data-id="chatSection">

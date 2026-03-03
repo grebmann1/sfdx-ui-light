@@ -14,3 +14,10 @@
     position: absolute;
     bottom: -50px;
 }
+
+.subtitle-addon {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}

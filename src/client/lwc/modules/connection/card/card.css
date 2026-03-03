@@ -13,6 +13,10 @@
     align-items: stretch;
 }
 
+.card-container-orgfarm {
+    border-left-color: rgb(255 154 60);
+}
+
 .card-header {
     display: flex;
     flex-direction: row;

@@ -10,6 +10,7 @@ import {
     classSet,
 } from 'shared/utils';
 import { CurrentPageReference, NavigationContext, generateUrl, navigate } from 'lwr/navigation';
+import { ensureMermaidLoaded } from 'shared/loader';
 import { connectStore, store as legacyStore, store_application } from 'shared/store';
 import sldsCodeBlock from 'slds/codeBlock';
 
@@ -234,7 +235,7 @@ export default class App extends ToolkitElement {
                 this.filter = newValue;
                 this.isMenuLoading = false;
             },
-            { timeout: 500 }
+            { timeout: 500, key: 'documentation.doc.handleFilter' }
         );
     };
 
@@ -285,11 +286,13 @@ export default class App extends ToolkitElement {
         }
     };
 
-    initializeMermaid = () => {
+    initializeMermaid = async () => {
+        const mermaid = await ensureMermaidLoaded();
+        if (!mermaid) return;
         window.mermaidCallback = nodeId => {
             this.interactWithDiagram(nodeId);
         };
-        window.mermaid.initialize({
+        mermaid.initialize({
             startOnLoad: false,
             securityLevel: 'loose',
         });
@@ -391,7 +394,7 @@ export default class App extends ToolkitElement {
                     }
                 });
             },
-            { timeout: 300 }
+            { timeout: 300, key: 'documentation.doc.applyFilterOnTable' }
         );
     };
 

@@ -1,7 +1,9 @@
 <template>
     <ul class="slds-chat-list" style="overflow-y: auto; overflow-anchor: auto;">
-        <!-- Welcome message -->
-        <agent-message item={welcomeMessage}></agent-message>
+        <!-- Welcome message: show only when no messages, or first message is not the welcome (e.g. new conversation) -->
+        <template lwc:if={showStandaloneWelcome}>
+            <agent-message item={welcomeMessage}></agent-message>
+        </template>
         <!-- Messages -->
         <template for:each={displayedMessages} for:item="item">
             <agent-message

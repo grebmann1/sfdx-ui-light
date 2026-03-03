@@ -301,7 +301,7 @@ export default class App extends ToolkitElement {
                     })
                 );
             },
-            { timeout: 300 }
+            { timeout: 300, key: 'editor.app.handleModelContentChange' }
         );
     };
 

@@ -1,0 +1,46 @@
+<template>
+    <lightning-modal-header label={title}></lightning-modal-header>
+    <lightning-modal-body class="slds-is-relative">
+        <template lwc:if={hasError}>
+            <slds-information-block title="Publish error" variant="error">
+                <p>{errorMessage}</p>
+            </slds-information-block>
+        </template>
+
+        <div class="slds-p-around_small">
+            <div class="slds-text-title_bold slds-m-bottom_x-small">Payload (JSON)</div>
+            <editor-default
+                lwc:ref="editor"
+                class="slds-full-width"
+                onmonacoloaded={handleMonacoLoaded}
+            ></editor-default>
+
+            <div class="slds-m-top_medium slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                <div class="slds-text-title_bold">Apex snippet</div>
+                <lightning-button
+                    label="Copy"
+                    variant="neutral"
+                    icon-name="utility:copy"
+                    onclick={copyApexSnippet}
+                ></lightning-button>
+            </div>
+            <slds-code-block
+                class="slds-m-top_x-small"
+                code-block={apexSnippet}
+                language="apex"
+                title="Publish event (Apex)"
+            ></slds-code-block>
+        </div>
+    </lightning-modal-body>
+    <lightning-modal-footer>
+        <lightning-button label="Cancel" variant="neutral" onclick={handleCloseClick}></lightning-button>
+        <lightning-button
+            class="slds-m-left_small"
+            label="Publish"
+            variant="brand"
+            onclick={publish}
+            disabled={isPublishDisabled}
+        ></lightning-button>
+    </lightning-modal-footer>
+</template>
+

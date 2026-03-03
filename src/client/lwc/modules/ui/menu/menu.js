@@ -20,8 +20,10 @@ export default class Menu extends ToolkitElement {
     @api version;
     isMenuSmall = false;
     selectedItem = 'home';
+    filterText = '';
 
     isApplicationTabVisible = false;
+    betaSmartInputEnabled = false;
 
     @wire(NavigationContext)
     navContext;
@@ -89,13 +91,28 @@ export default class Menu extends ToolkitElement {
         }
     };
 
+    handleSearchInput = (e) => {
+        this.filterText = (e.target.value || '').trim();
+    };
+
     /** Methods **/
+
+    filterBySearch = (items, searchText) => {
+        if (isEmpty(searchText)) return items;
+        const lower = searchText.toLowerCase();
+        return items.filter((x) => {
+            const label = (x.menuLabel || x.label || x.name || '').toString().toLowerCase();
+            return label.includes(lower);
+        });
+    };
 
     loadFromCache = async () => {
         const configuration = await loadExtensionConfigFromCache([
             CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key,
+            CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key,
         ]);
         this.isApplicationTabVisible = configuration[CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key];
+        this.betaSmartInputEnabled = !!configuration[CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key];
     };
 
     updateSelectedItem = () => {
@@ -141,6 +158,11 @@ export default class Menu extends ToolkitElement {
             filtered = filtered.filter(x => x.isOfflineAvailable);
         }
 
+        // Beta features
+        if (!this.betaSmartInputEnabled) {
+            filtered = filtered.filter(x => x.name !== 'smartinput/app');
+        }
+
         return filtered;
     };
 
@@ -162,11 +184,19 @@ export default class Menu extends ToolkitElement {
     get isSmallToolDisplayed() {}
 
     get applicationLabel() {
-        return this.isMenuSmall ? 'App' : 'Applications';
+        return this.isMenuSmall ? 'Exp' : 'Explorers';
     }
 
-    get toolsLabel() {
-        return this.isMenuSmall ? 'Tools' : 'Tools';
+    get developerLabel() {
+        return this.isMenuSmall ? 'Dev' : 'Developer';
+    }
+
+    get dataLabel() {
+        return this.isMenuSmall ? 'Data' : 'Data';
+    }
+
+    get utilitiesLabel() {
+        return this.isMenuSmall ? 'Util' : 'Utilities';
     }
 
     get connectionLabel() {
@@ -181,32 +211,84 @@ export default class Menu extends ToolkitElement {
         return this.generateFilter('home', this.isMenuSmall);
     }
 
-    get applications() {
-        return this.generateFilter('application');
+    get filteredHomes() {
+        return this.filterBySearch(this.homes, this.filterText);
+    }
+
+    get explorers() {
+        return this.generateFilter('explorer');
+    }
+
+    get filteredExplorers() {
+        return this.filterBySearch(this.explorers, this.filterText);
     }
 
     get documentations() {
         return this.generateFilter('documentation');
     }
 
+    get filteredDocumentations() {
+        return this.filterBySearch(this.documentations, this.filterText);
+    }
+
     get extras() {
         return this.generateFilter('extra');
     }
 
-    get tools() {
-        return this.generateFilter('tool');
+    get filteredExtras() {
+        return this.filterBySearch(this.extras, this.filterText);
     }
 
-    get hasTools() {
-        return this.tools.length > 0;
+    get developerTools() {
+        return this.generateFilter('developer');
     }
 
-    get hasApplications() {
-        return this.applications.length > 0;
+    get filteredDeveloperTools() {
+        return this.filterBySearch(this.developerTools, this.filterText);
+    }
+
+    get dataTools() {
+        return this.generateFilter('data');
+    }
+
+    get filteredDataTools() {
+        return this.filterBySearch(this.dataTools, this.filterText);
+    }
+
+    get utilities() {
+        return this.generateFilter('utility');
+    }
+
+    get filteredUtilities() {
+        return this.filterBySearch(this.utilities, this.filterText);
+    }
+
+    get hasFilteredExplorers() {
+        return this.filteredExplorers.length > 0;
+    }
+
+    get hasFilteredDeveloperTools() {
+        return this.filteredDeveloperTools.length > 0;
+    }
+
+    get hasFilteredDataTools() {
+        return this.filteredDataTools.length > 0;
+    }
+
+    get hasFilteredUtilities() {
+        return this.filteredUtilities.length > 0;
     }
 
     get connections() {
         return this.generateFilter('connection');
+    }
+
+    get filteredConnections() {
+        return this.filterBySearch(this.connections, this.filterText);
+    }
+
+    get isUnlimitedModeAndHasConnections() {
+        return this.isUnlimitedMode && this.filteredConnections.length > 0;
     }
 
     get others() {
@@ -238,6 +320,14 @@ export default class Menu extends ToolkitElement {
 
     get isNotMenuSmall() {
         return !this.isMenuSmall;
+    }
+
+    get filteredOthers() {
+        return this.filterBySearch(this.others, this.filterText);
+    }
+
+    get isUnlimitedMode() {
+        return !isElectronApp();
     }
 
     get formattedVersion() {

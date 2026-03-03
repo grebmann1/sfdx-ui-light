@@ -1,6 +1,6 @@
 {
     "name": "sfdx-ui-light",
-    "version": "1.4.3",
+    "version": "1.5.1",
     "engines": {
         "node": "22.14"
     },
@@ -10,7 +10,7 @@
         "serve:extension": "serve chrome_ext",
         "start:dev:client": "npm run clean; NODE_ENV=development node -r dotenv/config src/server/server-dev.js",
         "start:dev:workers": "rollup -c worker.rollup.config.mjs --bundleConfigAsCjs --environment NODE_ENV:development;",
-        "start:prod:client": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --minify --clean; NODE_ENV=production node -r dotenv/config src/server/server-prod.js",
+        "start:prod:client": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --clean; NODE_ENV=production node -r dotenv/config src/server/server-prod.js",
         "start:prod:extension": "rm -r chrome_ext; rollup -c rollup.config.mjs --bundleConfigAsCjs --environment NODE_ENV:production; rollup -c worker.rollup.config.mjs --bundleConfigAsCjs --environment NODE_ENV:production",
         "clean": "rm -r __lwr_cache__ site __skip_directory_creation__",
         "fix:lightning": "node scripts/fix_lightning.js",
@@ -18,7 +18,7 @@
         "script:documentation": "node scripts/load_documentation.js",
         "start:heroku": "NODE_ENV=production REDIRECT_URI=https://sf-toolkit.com/oauth2/callback node -r dotenv/config src/server/server-prod.js",
         "heroku-postbuild": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --clean",
-        "start:prod:build": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --minify --clean;",
+        "start:prod:build": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --clean;",
         "start:prod:run": "NODE_ENV=production node -r dotenv/config src/server/server-prod.js",
         "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,html}\"",
         "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,scss,html}\"",
@@ -48,8 +48,9 @@
     ],
     "dependencies": {
         "@jetstreamapp/soql-parser-js": "^6.2.4",
-        "@lwc/synthetic-shadow": "^8.21.2",
+        "@lwc/synthetic-shadow": "^8.20.1",
         "@lwrjs/router": "^0.18.3",
+        "@lwrjs/o11y": "^0.18.3",
         "@reduxjs/toolkit": "^2.8.2",
         "@salesforce-ux/design-system": "2.27.2",
         "@webcomponents/custom-elements": "^1.6.0",
@@ -70,7 +71,9 @@
         "monacopilot": "1.2.7",
         "node-fetch": "^2.7.0",
         "node-schedule": "^2.1.1",
-        "openai": "^5.16.0",
+        "openai": "^6.25.0",
+        "openapi-sampler": "^1.6.1",
+        "papaparse": "^5.5.3",
         "qs": "^6.11.2",
         "redux": "^4.0.5",
         "redux-thunk": "^2.3.0",
@@ -80,13 +83,12 @@
         "tabulator-tables": "6.2.1",
         "xml2js": "^0.6.2",
         "xterm": "^5.3.0",
-        "zod": "^3.23.8",
-        "openapi-sampler":"^1.6.1"
+        "zod": "^3.23.8"
     },
     "devDependencies": {
         "@babel/preset-env": "^7.28.3",
         "@babel/runtime": "^7.28.3",
-        "@lwc/rollup-plugin": "^8.21.2",
+        "@lwc/rollup-plugin": "^8.20.1",
         "@rollup/plugin-alias": "^5.1.1",
         "@rollup/plugin-babel": "^6.0.4",
         "@rollup/plugin-commonjs": "^26.0.1",
@@ -94,11 +96,19 @@
         "@rollup/plugin-node-resolve": "^15.2.3",
         "@rollup/plugin-replace": "^5.0.7",
         "@rollup/plugin-terser": "^0.4.4",
-        "lwc": "^8.21.2",
+        "@salesforce-ux/eslint-plugin-slds": "^1.1.0",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-import": "^2.32.0",
+        "eslint-plugin-prettier": "^5.5.5",
+        "lwc": "^8.20.1",
         "npm-run-all": "^4.1.5",
         "prettier": "^3.6.2",
         "rollup-plugin-copy": "^3.5.0",
         "rollup-plugin-polyfill-node": "^0.13.0",
         "serve-handler": "^6.1.6"
+    },
+    "overrides": {
+        "@lwc/compiler": "8.20.1",
+        "@lwc/babel-plugin-component": "8.20.1"
     }
 }

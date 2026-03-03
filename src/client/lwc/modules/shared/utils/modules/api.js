@@ -1,10 +1,12 @@
-import { guid, isUndefinedOrNull,isNotUndefinedOrNull } from '../utils';
+import { guid } from '../ids';
+import { isUndefinedOrNull, isNotUndefinedOrNull } from '../validation';
 
 export const VIEWERS = {
     PRETTY: 'Pretty',
     WORKBENCH: 'Workbench',
     RAW: 'Raw',
     PREVIEW: 'Preview',
+    SNIPPET: 'Snippet',
 };
 
 export const TABS = {

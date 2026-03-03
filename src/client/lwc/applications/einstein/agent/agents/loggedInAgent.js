@@ -3,11 +3,7 @@ const { Agent } = window.OpenAIAgentsBundle?.Agents || {};
 import { isChromeExtension, isUndefinedOrNull } from 'shared/utils';
 import { sharedInstructions } from './sharedInstructions';
 
-const _LoggedInAgent = isUndefinedOrNull(Agent) ? null : new Agent({
-    name: 'SF Toolkit Assistant (Logged In)',
-    instructions: `
-${sharedInstructions}
-
+const loggedInRoleBlock = `
 ## Additional Responsibilities (Logged In)
 - **Toolkit & Org Actions:**
   - You can access and interact with Salesforce data and tools (SOQL, Apex, API, connections, etc.).
@@ -18,23 +14,34 @@ ${sharedInstructions}
   - If the user says: "Write an Apex Script" → Use the Apex tools and present the results.
   - If the user says: "Open my org" → Use the org navigation tools.
   - If the user asks: "What is SOQL?" → Answer directly using your available tools.
-`,
-    tools: [
-        ...tools.soql,
-        ...tools.apex,
-        ...tools.api,
-        ...tools.connections,
-        ...tools.general,
-        //webSearchTool,
-        ...(isChromeExtension() ? tools.chrome : [])
-    ],
-    toolUseBehavior: { stopAtToolNames: ['chrome_screenshot'] },
-    modelSettings: { 
-      toolChoice: 'auto', 
-      truncation: 'auto', 
-      store:true, 
-      parallelToolCalls:false 
-    }
-});
+`;
+
+const _LoggedInAgent = isUndefinedOrNull(Agent)
+    ? null
+    : new Agent({
+          name: 'SF Toolkit Assistant (Logged In)',
+          instructions: runContext =>
+              `${sharedInstructions}
+${loggedInRoleBlock}
+${runContext?.dynamicContext ?? ''}
+${runContext?.skillsText ?? ''}`,
+          tools: [
+              ...tools.soql,
+              ...tools.apex,
+              ...tools.api,
+              ...tools.connections,
+              ...tools.general,
+              ...tools.agent,
+              //webSearchTool,
+              ...(isChromeExtension() ? tools.chrome : []),
+          ],
+          toolUseBehavior: { stopAtToolNames: ['chrome_screenshot', 'agent_request_continue'] },
+          modelSettings: {
+              toolChoice: 'auto',
+              truncation: 'auto',
+              store: true,
+              parallelToolCalls: false,
+          },
+      });
 
 export const loggedInAgent = _LoggedInAgent;

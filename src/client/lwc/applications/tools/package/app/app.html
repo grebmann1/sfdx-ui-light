@@ -60,22 +60,34 @@
                     </template>
                     -->
                 </div>
-                <p slot="meta" class="slds-page-header__meta-text">Currently in Beta</p>
-                <div slot="subactions" class="slds-builder-toolbar__actions">
+                <p slot="meta" class="slds-page-header__meta-text">
                     <lightning-button-icon-stateful
-                        class="slds-p-left_xx-small"
                         disabled={isCatalogDisabled}
                         selected={isLeftToggled}
                         variant="border-filled"
                         icon-name="utility:knowledge_base"
                         size="large"
                         onclick={handleLeftToggle}
-                        tooltip="Display the Metadata Catalog."></lightning-button-icon-stateful>
+                        tooltip="Display the Metadata Catalog."
+                    ></lightning-button-icon-stateful>
+                </p>
+                <div slot="subactions" class="slds-builder-toolbar__actions">
                 </div>
             </builder-header>
 
             <!-- Left Panel -->
             <div slot="left" class="slds-full-height slds-full-width slds-flex-column">
+                <div class="sf-left-panel-header slds-grid slds-grid_align-spread slds-p-around_x-small">
+                    <div class="slds-text-title_caps slds-truncate" title="Metadata Catalog">
+                        Metadata Catalog
+                    </div>
+                    <lightning-button-icon
+                        icon-name="utility:close"
+                        variant="bare"
+                        onclick={handleLeftToggle}
+                        alternative-text="Close"
+                        title="Close"></lightning-button-icon>
+                </div>
                 <metadata-menu
                     lwc:ref="menu"
                     class="slds-full-height slds-p-horizontal_x-small"

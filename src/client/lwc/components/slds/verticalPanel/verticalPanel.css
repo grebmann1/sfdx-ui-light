@@ -7,7 +7,7 @@
     flex-direction: row-reverse;
 }
 /* .slds-panel_docked {
-    background-color: #fafaf9;
+    background-color: var(--slds-g-color-neutral-base-95, #f3f3f3);
 } */
 
 .slds-panel.slds-flex-column {
@@ -15,18 +15,18 @@
 }
 
 .slds-panel__body {
-    /*background-color: #fafaf9;*/
-    padding: 0.2rem;
+    padding: var(--slds-g-spacing-xxx-small, 0.25rem);
+    background-color: var(--slds-g-color-neutral-base-100, #fff);
 }
 
 .slds-panel_docked-left.with-border {
-    border-left: 1px solid #c9c9c9;
-    border-bottom: 1px solid #c9c9c9;
+    border-left: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
+    border-bottom: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
 }
 
 .slds-panel_docked-right.with-border {
-    border-right: 1px solid #c9c9c9;
-    border-bottom: 1px solid #c9c9c9;
+    border-right: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
+    border-bottom: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
 }
 
 .vertical-panel-drag-handle {

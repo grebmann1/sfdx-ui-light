@@ -1,0 +1,41 @@
+<template>
+    <slds-vertical-panel
+        has-border
+        size={size}
+        title={title}
+        position="left"
+        is-open={isOpen}
+        onclose={handleClose}
+    >
+        <div slot="actions" class="slds-grid slds-grid_vertical-align-center">
+            <lightning-button-icon
+                icon-name="utility:refresh"
+                variant="border-filled"
+                alternative-text="Refresh"
+                title="Refresh"
+                onclick={handleRefresh}
+            ></lightning-button-icon>
+        </div>
+
+        <template lwc:if={hasError}>
+            <div class="slds-p-around_x-small">
+                <slds-information-block title="Catalog unavailable" variant="warning">
+                    <p>{errorMessage}</p>
+                </slds-information-block>
+            </div>
+        </template>
+
+        <template lwc:if={isLoading}>
+            <div class="slds-is-relative slds-p-around_small">
+                <slds-spinner message="Loading catalog"></slds-spinner>
+            </div>
+        </template>
+
+        <slds-file-tree
+            tree={tree}
+            onselect={handleSelect}
+            min-search-length={minSearchLength}
+            search-fields={searchFields}
+        ></slds-file-tree>
+    </slds-vertical-panel>
+</template>

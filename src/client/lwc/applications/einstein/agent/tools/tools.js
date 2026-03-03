@@ -5,6 +5,7 @@ import { connectionTools } from './connections';
 import { generalTools } from './general';
 import { chromeTools } from './chrome';
 import { metadataTools } from './metadata';
+import { agentTools } from './agentTools';
 
 export const tools = {
     soql: soqlTools,
@@ -14,4 +15,5 @@ export const tools = {
     general: generalTools,
     chrome: chromeTools,
     metadata: metadataTools,
+    agent: agentTools,
 };

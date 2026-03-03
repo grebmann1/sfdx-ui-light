@@ -13,7 +13,6 @@ const initialState = sObjectsAdapter.getInitialState();
 export const describeSObject = createAsyncThunk(
     'sObjects/describeSObject',
     async ({ connector, sObjectName, useToolingApi }, thunkAPI) => {
-        console.log('describeSObject', sObjectName, useToolingApi);
         const fetchDescribeAndSave = async sObjectName => {
             const conn = useToolingApi ? connector.tooling : connector;
             const result = {

@@ -6,7 +6,9 @@ import {
     isQueryValid,
 } from '@jetstreamapp/soql-parser-js';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { SELECTORS, DOCUMENT } from 'core/store';
+import * as DOCUMENT from './document';
+
+const queryFilesSelectors = DOCUMENT.queryFileAdapter.getSelectors(s => s);
 import { stripNamespace, isNotUndefinedOrNull, isEmpty, guid, lowerCaseKey } from 'shared/utils';
 
 const SETTINGS_KEY = 'SETTINGS_KEY';
@@ -213,7 +215,7 @@ function enrichTabs(tabs, queryFiles) {
 
 function enrichTab(tab, queryFiles) {
     const file = tab.fileId
-        ? SELECTORS.queryFiles.selectById({ queryFiles }, lowerCaseKey(tab.fileId))
+        ? queryFilesSelectors.selectById({ queryFiles }, lowerCaseKey(tab.fileId))
         : null;
     const fileBody = file?.content || tab.fileBody;
     return {
@@ -290,7 +292,6 @@ const uiSlice = createSlice({
                 enrichedTab.body = INITIAL_BODY;
             }
             state.tabs.push(enrichedTab);
-            console.log('--> addTab <---',enrichedTab);
             // Assign new tab
             state.currentTab = enrichedTab;
             state.currentFileId = enrichedTab.fileId;

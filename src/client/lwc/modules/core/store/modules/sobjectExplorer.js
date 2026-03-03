@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { ERROR, store } from 'core/store';
+import * as ERROR from './error';
+import { getStore } from '../storeRef';
 import { isNotUndefinedOrNull } from 'shared/utils';
 
 const SOBJECTEXPLORER_SETTINGS_KEY = 'SOBJECTEXPLORER_SETTINGS_KEY';
@@ -10,7 +11,7 @@ function loadCacheSettings(alias) {
         if (configText) return JSON.parse(configText);
     } catch (e) {
         console.error('Failed to load CONFIG from localStorage', e);
-        store.dispatch(
+        getStore()?.dispatch(
             ERROR.reduxSlice.actions.addError({
                 message: 'Failed to load CONFIG from localStorage',
                 details: e.message,
@@ -31,7 +32,7 @@ function saveCacheSettings(alias, state) {
         );
     } catch (e) {
         console.error('Failed to save CONFIG to localstorage', e);
-        store.dispatch(
+        getStore()?.dispatch(
             ERROR.reduxSlice.actions.addError({
                 message: 'Failed to save CONFIG to localstorage',
                 details: e.message,

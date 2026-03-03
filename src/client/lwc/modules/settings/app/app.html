@@ -54,8 +54,7 @@
                                     </slds-information-block>
                                 </div>
                             </div>
-                            <div
-                                class="slds-grid  slds-wrap slds-grid_vertical-stretch">
+                            <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
                                 <settings-card
                                     class="slds-col slds-size_1-of-2 slds-large-size_1-of-2 slds-p-horizontal_small"
                                     is-first>
@@ -127,8 +126,7 @@
                                     </div>
                                 </h3>
                             </div>
-                            <div
-                                class="slds-grid  slds-wrap slds-grid_vertical-stretch">
+                            <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
                                 <settings-card
                                     class="slds-col slds-size_1-of-2 slds-large-size_1-of-2 slds-p-horizontal_small"
                                     is-first>
@@ -155,7 +153,9 @@
                             </div>
                         </slds-tab>
                         <slds-tab label="Applications" value="applications">
-                            <settings-api-app-settings config={config} inputfield_change={inputfield_change}></settings-api-app-settings>
+                            <settings-api-app-settings
+                                config={config}
+                                inputfield_change={inputfield_change}></settings-api-app-settings>
                         </slds-tab>
                         <slds-tab label="AI">
                             <!-- AI Settings -->
@@ -168,8 +168,7 @@
                                     </div>
                                 </h3>
                             </div>
-                            <div
-                                class="slds-grid  slds-wrap slds-grid_vertical-stretch">
+                            <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
                                 <!-- SECTION - Cache Metadata -->
                                 <lightning-card
                                     class="settings slds-col slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
@@ -320,7 +319,8 @@
                                             <div slot="title">
                                                 <h1>AI Assistant</h1>
                                                 <p class="description slds-truncate">
-                                                    Select the AI provider to use for the AI Assistant.
+                                                    Select the AI provider to use for the AI
+                                                    Assistant.
                                                 </p>
                                             </div>
                                             <div slot="actions"></div>
@@ -331,14 +331,15 @@
                                                 options={aiProviderOptions}
                                                 onchange={inputfield_change}
                                                 variant="label-hidden"
-                                                class="slds-full-width"
-                                            ></lightning-combobox>
+                                                class="slds-full-width"></lightning-combobox>
                                         </settings-card>
-                                        <settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                        <settings-card
+                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
                                             <div slot="title">
                                                 <h1>Autocomplete</h1>
                                                 <p class="description slds-truncate">
-                                                    Select the AI provider to use for the Autocomplete feature.
+                                                    Select the AI provider to use for the
+                                                    Autocomplete feature.
                                                 </p>
                                             </div>
                                             <div slot="actions"></div>
@@ -347,8 +348,7 @@
                                                 value="Mistral"
                                                 variant="label-hidden"
                                                 class="slds-full-width"
-                                                disabled
-                                            ></lightning-input>
+                                                disabled></lightning-input>
                                         </settings-card>
                                     </div>
                                 </lightning-card>
@@ -362,7 +362,9 @@
                                     </div>
                                     <div slot="actions"></div>
                                     <div class="slds-grid slds-wrap">
-                                        <settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small" is-first>
+                                        <settings-card
+                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small"
+                                            is-first>
                                             <div slot="title">
                                                 <h1>OpenAI Key</h1>
                                                 <p class="description slds-truncate">
@@ -387,11 +389,14 @@
                                                     onclick={handleToggleVisibility}></lightning-button-icon>
                                             </div>
                                         </settings-card>
-                                        <settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                        <settings-card
+                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
                                             <div slot="title">
                                                 <h1>Mistral Key</h1>
                                                 <p class="description slds-truncate">
-                                                    Key for integrating with the Mistral Platform (Currently supports only the Autocomplete feature)
+                                                    Key for integrating with the Mistral Platform
+                                                    (Currently supports only the Autocomplete
+                                                    feature)
                                                 </p>
                                             </div>
                                             <div slot="actions"></div>
@@ -418,12 +423,15 @@
                                     <div slot="title">
                                         <h1>LLM Proxy</h1>
                                         <p class="description slds-truncate">
-                                            Proxy URL for LLM API. (keep it empty to use the default value)
+                                            Proxy URL for LLM API. (keep it empty to use the default
+                                            value)
                                         </p>
                                     </div>
                                     <div slot="actions"></div>
                                     <div class="slds-grid slds-wrap">
-                                        <settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small" is-first>
+                                        <settings-card
+                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small"
+                                            is-first>
                                             <div slot="title">
                                                 <h1>OpenAI Proxy URL</h1>
                                                 <p class="description slds-truncate">
@@ -439,219 +447,138 @@
                                                     type="text"
                                                     value={config.openai_url}
                                                     variant="label-hidden"
-                                                    class="slds-full-width"
-                                                ></lightning-input>
+                                                    class="slds-full-width"></lightning-input>
                                             </div>
                                         </settings-card>
+                                    </div>
+                                </lightning-card>
+                                <lightning-card
+                                    class="settings agent-skills-card slds-col slds-size_1-of-1 slds-p-around_medium">
+                                    <div slot="title">
+                                        <h1>Agent skills</h1>
+                                        <p class="description slds-truncate">
+                                            User-defined instruction blocks applied to the AI
+                                            Assistant. Each skill is appended to the agent
+                                            instructions when enabled.
+                                        </p>
+                                    </div>
+                                    <div slot="actions">
+                                        <lightning-button
+                                            label="Reset to default"
+                                            onclick={handleResetAgentSkillsToDefault}
+                                            variant="neutral"
+                                            icon-name="utility:refresh"
+                                            title="Restore predefined skills"></lightning-button>
+                                        <lightning-button
+                                            label="Add skill"
+                                            onclick={handleAddAgentSkill}
+                                            variant="neutral"
+                                            icon-name="utility:add"></lightning-button>
+                                    </div>
+                                    <div class="agent-skills-body">
+                                        <template for:each={agentSkills} for:item="skill">
+                                            <div
+                                                key={skill.id}
+                                                class="agent-skill-item">
+                                                <div class="agent-skill-item-inner">
+                                                    <div class="agent-skill-item-header">
+                                                        <lightning-input
+                                                            data-skill-id={skill.id}
+                                                            data-property="name"
+                                                            label="Name"
+                                                            placeholder="e.g. Answer in French"
+                                                            value={skill.name}
+                                                            variant="label-stacked"
+                                                            class="agent-skill-name-input"
+                                                            onchange={handleAgentSkillChange}></lightning-input>
+                                                        <div class="agent-skill-controls">
+                                                            <lightning-input
+                                                                data-skill-id={skill.id}
+                                                                data-property="enabled"
+                                                                label="Enabled"
+                                                                type="toggle"
+                                                                checked={skill.enabled}
+                                                                variant="label-hidden"
+                                                                onchange={handleAgentSkillChange}></lightning-input>
+                                                            <lightning-button-icon
+                                                                data-skill-id={skill.id}
+                                                                alternative-text="Remove skill"
+                                                                icon-name="utility:delete"
+                                                                onclick={handleRemoveAgentSkill}
+                                                                class="agent-skill-remove-btn"></lightning-button-icon>
+                                                        </div>
+                                                    </div>
+                                                    <lightning-textarea
+                                                        data-skill-id={skill.id}
+                                                        data-property="content"
+                                                        label="Content"
+                                                        placeholder="Instruction text (e.g. Always respond in French.)"
+                                                        value={skill.content}
+                                                        variant="label-stacked"
+                                                        class="agent-skill-content-input"
+                                                        onchange={handleAgentSkillChange}></lightning-textarea>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <template lwc:if={agentSkillsEmpty}>
+                                            <div class="agent-skills-empty">
+                                                <span class="agent-skills-empty-icon" aria-hidden="true">
+                                                    <lightning-icon
+                                                        icon-name="utility:richtext_bulleted_list"
+                                                        alternative-text=""
+                                                        size="large"></lightning-icon>
+                                                </span>
+                                                <h2 class="agent-skills-empty-title">No skills yet</h2>
+                                                <p class="agent-skills-empty-description">
+                                                    Add a skill to give the AI Assistant custom instructions—for example,
+                                                    always respond in a certain language or follow your team’s guidelines.
+                                                </p>
+                                                <lightning-button
+                                                    label="Add your first skill"
+                                                    onclick={handleAddAgentSkill}
+                                                    variant="brand"
+                                                    icon-name="utility:add"
+                                                    class="agent-skills-empty-cta"></lightning-button>
+                                            </div>
+                                        </template>
                                     </div>
                                 </lightning-card>
                             </div>
                         </slds-tab>
-                        <slds-tab label="Shortcuts" value="shortcuts">
+                        <slds-tab label="Beta Feature" value="beta">
+                            <!-- Beta Features -->
                             <div class="slds-section slds-reverse slds-is-open">
                                 <h3 class="slds-section__title">
                                     <div class="slds-section__title-action slds-p-vertical_x-small">
-                                        <span class="slds-truncate" title="Shortcuts">
-                                            Shortcuts
+                                        <span class="slds-truncate" title="Beta features">
+                                            Beta Features
                                         </span>
                                     </div>
                                 </h3>
                             </div>
-                            <div
-                                class="slds-grid  slds-wrap slds-grid_vertical-stretch">
-                                <lightning-card
-                                    class="settings slds-auto-height slds-col slds-size_1-of-1 slds-p-around_medium">
+                            <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
+                                <settings-card
+                                    class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small"
+                                    is-first>
                                     <div slot="title">
-                                        <h1>Chrome Extension Shortcuts</h1>
-                                        <p class="description">
-                                            Inject shortcuts in the Web Browser.
+                                        <h1>Smart Input</h1>
+                                        <p
+                                            class="description slds-truncate"
+                                            title="Enable the Smart Input tool (Beta).">
+                                            Enable the Smart Input tool (Beta).
                                         </p>
                                     </div>
-                                    <div slot="actions">
-                                        <lightning-input
-                                            data-key="shortcut_injection_enabled"
-                                            label="Enable ShortCut Injection"
-                                            message-toggle-active=""
-                                            message-toggle-inactive=""
-                                            type="toggle"
-                                            variant="label-hidden"
-                                            checked={config.shortcut_injection_enabled}
-                                            onchange={inputfield_change}></lightning-input>
-                                    </div>
-                                    <div class="slds-grid slds-wrap">
-                                        <settings-card
-                                            is-first
-                                            class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-1 slds-p-around_medium">
-                                            <div slot="title">
-                                                <h1>Navigation Shortcuts</h1>
-                                                <p class="description">
-                                                    Open a specific application with a shortcut.
-                                                </p>
-                                            </div>
-                                            <div class="slds-grid slds-wrap">
-                                                <settings-card
-                                                    is-first
-                                                    class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
-                                                    <div slot="title">
-                                                        <h1>Org Overview</h1>
-                                                        <p class="description">
-                                                            &rarr; Open Org Overview with a shortcut.
-                                                        </p>
-                                                    </div>
-                                                    <div class="slds-grid slds-wrap">
-                                                        <slds-shortcut-selector
-                                                            lwc:ref="shortcut_overview"
-                                                            data-key="shortcut_overview"
-                                                            disabled={isShortcutDisabled}
-                                                            label="Shortcut to open Org Overview"
-                                                            value={config.shortcut_overview}
-                                                            onchange={inputfield_change}></slds-shortcut-selector>
-                                                    </div>
-                                                </settings-card>
-                                                <settings-card
-                                                    is-first
-                                                    class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
-                                                    <div slot="title">
-                                                        <h1>SOQL Explorer</h1>
-                                                        <p class="description">
-                                                            &rarr; Open SOQL Explorer with a shortcut.
-                                                        </p>
-                                                    </div>
-                                                    <div class="slds-grid slds-wrap">
-                                                        <slds-shortcut-selector
-                                                            lwc:ref="shortcut_soql"
-                                                            data-key="shortcut_soql"
-                                                            disabled={isShortcutDisabled}
-                                                            label="Shortcut to open SOQL Explorer"
-                                                            value={config.shortcut_soql}
-                                                            onchange={inputfield_change}></slds-shortcut-selector>
-                                                    </div>
-                                                </settings-card>
-                                                <settings-card
-                                                    class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
-                                                    <div slot="title">
-                                                        <h1>APEX Explorer</h1>
-                                                        <p class="description">
-                                                            &rarr; Open APEX Explorer with a shortcut.
-                                                        </p>
-                                                    </div>
-                                                    <div class="slds-grid slds-wrap">
-                                                        <slds-shortcut-selector
-                                                            lwc:ref="shortcut_apex"
-                                                            data-key="shortcut_apex"
-                                                            disabled={isShortcutDisabled}
-                                                            label="Shortcut to open APEX Explorer"
-                                                            value={config.shortcut_apex}
-                                                            onchange={inputfield_change}></slds-shortcut-selector>
-                                                    </div>
-                                                </settings-card>
-                                                <settings-card
-                                                    class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
-                                                    <div slot="title">
-                                                        <h1>API Explorer</h1>
-                                                        <p class="description">
-                                                            &rarr; Open API Explorer with a shortcut.
-                                                        </p>
-                                                    </div>
-                                                    <div class="slds-grid slds-wrap">
-                                                        <slds-shortcut-selector
-                                                            lwc:ref="shortcut_api"
-                                                            data-key="shortcut_api"
-                                                            disabled={isShortcutDisabled}
-                                                            label="Shortcut to open API Explorer"
-                                                            value={config.shortcut_api}
-                                                            onchange={inputfield_change}></slds-shortcut-selector>
-                                                    </div>
-                                                </settings-card>
-                                                <settings-card
-                                                    class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
-                                                    <div slot="title">
-                                                        <h1>Documentation</h1>
-                                                        <p class="description">
-                                                            &rarr; Open Documentation with a shortcut.
-                                                        </p>
-                                                    </div>
-                                                    <div class="slds-grid slds-wrap">
-                                                        <slds-shortcut-selector
-                                                            lwc:ref="shortcut_documentation"
-                                                            data-key="shortcut_documentation"
-                                                            disabled={isShortcutDisabled}
-                                                            label="Shortcut to open Documentation"
-                                                            value={config.shortcut_documentation}
-                                                            onchange={inputfield_change}></slds-shortcut-selector>
-                                                    </div>
-                                                </settings-card>
-                                            </div>
-                                        </settings-card>
-                                        <settings-card
-                                            is-first
-                                            class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-1 slds-p-around_medium">
-                                            <div slot="title">
-                                                <h1>Other</h1>
-                                                <p class="description">
-                                                    Other shortcuts that are not related to navigation.
-                                                </p>
-                                            </div>
-                                            <div class="slds-grid slds-wrap">
-                                                <settings-card
-                                                    is-first
-                                                    class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
-                                                    <div slot="title">
-                                                        <h1>Record Id</h1>
-                                                        <p class="description">&rarr; Fetch Record Id</p>
-                                                    </div>
-                                                    <div class="slds-grid slds-wrap">
-                                                        <slds-shortcut-selector
-                                                            lwc:ref="recordidshortcut"
-                                                            data-key="shortcut_recordid"
-                                                            disabled={isShortcutDisabled}
-                                                            label="Shortcut to fetch &rarr;	 Record Id"
-                                                            value={config.shortcut_recordid}
-                                                            onchange={inputfield_change}></slds-shortcut-selector>
-                                                    </div>
-                                                </settings-card>
-                                                <settings-card
-                                                    is-first
-                                                    class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
-                                                    <div slot="title">
-                                                        <h1>Open Panel</h1>
-                                                        <p class="description">&rarr; Open Panel</p>
-                                                    </div>
-                                                    <div class="slds-grid slds-wrap">
-                                                        <slds-shortcut-selector
-                                                            lwc:ref="shortcut_open_panel"
-                                                            data-key="shortcut_open_panel"
-                                                            disabled={isShortcutDisabled}
-                                                            label="Shortcut to open Panel"
-                                                            value={config.shortcut_open_panel}
-                                                            onchange={inputfield_change}></slds-shortcut-selector>
-                                                    </div>
-                                                </settings-card>
-                                                <settings-card
-                                                    class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
-                                                    <div slot="title">
-                                                        <h1>Open Overlay</h1>
-                                                        <p class="description">&rarr; Open Overlay</p>
-                                                    </div>
-                                                    <div class="slds-grid slds-wrap">
-                                                        <slds-shortcut-selector
-                                                            lwc:ref="shortcut_open_overlay"
-                                                            data-key="shortcut_open_overlay"
-                                                            disabled={isShortcutDisabled}
-                                                            label="Shortcut to open Overlay"
-                                                            value={config.shortcut_open_overlay}
-                                                            onchange={inputfield_change}></slds-shortcut-selector>
-                                                    </div>
-                                                </settings-card>
-                                            </div>
-                                        </settings-card>
-
-                                        
-                                        
-                                        
-                                        
-                                    </div>
-                                </lightning-card>
+                                    <div slot="actions"></div>
+                                    <lightning-input
+                                        data-key="beta_smartinput_enabled"
+                                        label="Enable Smart Input"
+                                        message-toggle-active="Enabled"
+                                        message-toggle-inactive="Disabled"
+                                        type="toggle"
+                                        variant="label-hidden"
+                                        checked={config.beta_smartinput_enabled}
+                                        onchange={inputfield_change}></lightning-input>
+                                </settings-card>
                             </div>
                         </slds-tab>
                         <!-- Chrome Extension -->
@@ -669,8 +596,7 @@
                                         </div>
                                     </h3>
                                 </div>
-                                <div
-                                    class="slds-grid  slds-wrap slds-grid_vertical-stretch">
+                                <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
                                     <lightning-card
                                         class="settings slds-auto-height slds-col slds-size_1-of-1 slds-p-around_medium">
                                         <div slot="title">
@@ -681,88 +607,90 @@
                                         </div>
                                         <div slot="actions"></div>
                                         <div class="slds-grid slds-wrap">
-
                                             <!-- LEFT -->
-                                            <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-grid slds-wrap">
+                                            <div
+                                                class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-grid slds-wrap">
                                                 <settings-card
-                                                is-first
-                                                class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
-                                                <div slot="title">
-                                                    <h1>Overlay Visibility</h1>
-                                                    <p class="description slds-truncate">
-                                                        Show or hide the SF Toolkit overlay in
-                                                        Salesforce pages.
-                                                    </p>
-                                                </div>
-                                                <div slot="actions">
-                                                    <lightning-input
-                                                        data-key="overlayEnabled"
-                                                        label="Show Overlay"
-                                                        message-toggle-active="Enabled"
-                                                        message-toggle-inactive="Disabled"
-                                                        type="toggle"
-                                                        variant="label-hidden"
-                                                        checked={config.overlayEnabled}
-                                                        onchange={inputfield_change}></lightning-input>
-                                                </div>
-                                            </settings-card>
-                                            <settings-card
-                                                class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
-                                                <div slot="title">
-                                                    <h1>Input Quick Pick</h1>
-                                                    <p class="description slds-truncate">
-                                                        Enable the Input Quick Pick in Salesforce pages.
-                                                    </p>
-                                                </div>
-                                                <div slot="actions">
-                                                    <lightning-input
-                                                        data-key="input_quickpick_enabled"
-                                                        label="Enable Input Quick Pick"
-                                                        message-toggle-active="Enabled"
-                                                        message-toggle-inactive="Disabled"
-                                                        type="toggle"
-                                                        variant="label-hidden"
-                                                        checked={config.input_quickpick_enabled}
-                                                        onchange={inputfield_change}></lightning-input>
-                                                </div>
-                                            </settings-card>
-                                            <settings-card
-                                                class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
-                                                <div slot="title">
-                                                    <h1>Login As</h1>
-                                                    <p class="description slds-truncate">
-                                                        LoginAs in
-                                                        <span class="slds-text-title_bold">
-                                                            Experience Cloud
-                                                        </span>
-                                                        in an Incognito Window.
-                                                    </p>
-                                                </div>
-                                                <div slot="actions">
-                                                    <lightning-input
-                                                        data-key="experienceCloudLoginAsIncognito"
-                                                        label="Open Experience Cloud in Incognito"
-                                                        message-toggle-active=""
-                                                        message-toggle-inactive=""
-                                                        type="toggle"
-                                                        variant="label-hidden"
-                                                        checked={config.experienceCloudLoginAsIncognito}
-                                                        onchange={inputfield_change}></lightning-input>
-                                                </div>
+                                                    is-first
+                                                    class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                                    <div slot="title">
+                                                        <h1>Overlay Visibility</h1>
+                                                        <p class="description slds-truncate">
+                                                            Show or hide the SF Toolkit overlay in
+                                                            Salesforce pages.
+                                                        </p>
+                                                    </div>
+                                                    <div slot="actions">
+                                                        <lightning-input
+                                                            data-key="overlayEnabled"
+                                                            label="Show Overlay"
+                                                            message-toggle-active="Enabled"
+                                                            message-toggle-inactive="Disabled"
+                                                            type="toggle"
+                                                            variant="label-hidden"
+                                                            checked={config.overlayEnabled}
+                                                            onchange={inputfield_change}></lightning-input>
+                                                    </div>
+                                                </settings-card>
+                                                <settings-card
+                                                    class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                                    <div slot="title">
+                                                        <h1>Input Quick Pick</h1>
+                                                        <p class="description slds-truncate">
+                                                            Enable the Input Quick Pick in
+                                                            Salesforce pages.
+                                                        </p>
+                                                    </div>
+                                                    <div slot="actions">
+                                                        <lightning-input
+                                                            data-key="input_quickpick_enabled"
+                                                            label="Enable Input Quick Pick"
+                                                            message-toggle-active="Enabled"
+                                                            message-toggle-inactive="Disabled"
+                                                            type="toggle"
+                                                            variant="label-hidden"
+                                                            checked={config.input_quickpick_enabled}
+                                                            onchange={inputfield_change}></lightning-input>
+                                                    </div>
+                                                </settings-card>
+                                                <settings-card
+                                                    class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                                    <div slot="title">
+                                                        <h1>Login As</h1>
+                                                        <p class="description slds-truncate">
+                                                            LoginAs in
+                                                            <span class="slds-text-title_bold">
+                                                                Experience Cloud
+                                                            </span>
+                                                            in an Incognito Window.
+                                                        </p>
+                                                    </div>
+                                                    <div slot="actions">
+                                                        <lightning-input
+                                                            data-key="experienceCloudLoginAsIncognito"
+                                                            label="Open Experience Cloud in Incognito"
+                                                            message-toggle-active=""
+                                                            message-toggle-inactive=""
+                                                            type="toggle"
+                                                            variant="label-hidden"
+                                                            checked={config.experienceCloudLoginAsIncognito}
+                                                            onchange={inputfield_change}></lightning-input>
+                                                    </div>
 
-                                                <slds-information-block
-                                                    class="slds-p-horizontal_small slds-flex-column">
-                                                    <p>
-                                                        To have full access to incognito, you need
-                                                        to set "Allow in Incognito" in your chrome
-                                                        extension settings.
-                                                    </p>
-                                                </slds-information-block>
-                                            </settings-card>
+                                                    <slds-information-block
+                                                        class="slds-p-horizontal_small slds-flex-column">
+                                                        <p>
+                                                            To have full access to incognito, you
+                                                            need to set "Allow in Incognito" in your
+                                                            chrome extension settings.
+                                                        </p>
+                                                    </slds-information-block>
+                                                </settings-card>
                                             </div>
 
                                             <!-- RIGHT -->
-                                            <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-grid slds-wrap">
+                                            <div
+                                                class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-grid slds-wrap">
                                                 <!-- Content Script Patterns -->
                                                 <settings-card
                                                     is-first
@@ -770,8 +698,8 @@
                                                     <div slot="title">
                                                         <h1>Content Script URL Patterns</h1>
                                                         <p class="description slds-truncate">
-                                                            Manage the URL patterns for content script
-                                                            injection. One regex per line.
+                                                            Manage the URL patterns for content
+                                                            script injection. One regex per line.
                                                         </p>
                                                     </div>
                                                     <div slot="actions">

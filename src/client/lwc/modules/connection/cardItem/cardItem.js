@@ -37,7 +37,7 @@ export default class CardItem extends ToolkitElement {
                     })
                 );
             },
-            { timeout: 200 }
+            { timeout: 200, key: 'connection.cardItem.rowaction' }
         );
     };
 

@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
 import { lowerCaseKey, guid, isUndefinedOrNull } from 'shared/utils';
-import { CACHE_DOCUMENTS, cacheManager } from 'shared/cacheManager';
+import { CACHE_DOCUMENTS } from 'shared/cacheManager';
 
 // Adapters
 export const queryFileAdapter = createEntityAdapter();

@@ -1,5 +1,27 @@
 <template>
     <slds-vertical-panel size={size} title={title} is-open={isOpen}>
+        <div slot="actions" lwc:if={enableImportExport}>
+            <lightning-button-icon
+                class="slds-m-right_x-small"
+                icon-name="utility:download"
+                alternative-text="Export saved"
+                title="Export saved"
+                onclick={handleExportSavedClick}
+            ></lightning-button-icon>
+            <lightning-button-icon
+                icon-name="utility:upload"
+                alternative-text="Import saved"
+                title="Import saved"
+                onclick={handleImportSavedClick}
+            ></lightning-button-icon>
+            <input
+                data-id="importSaved"
+                class="slds-hide"
+                type="file"
+                accept="application/json,.json"
+                onchange={handleImportFileChange}
+            />
+        </div>
         <lightning-tabset>
             <lightning-tab label={recentTitle}>
                 <div class="slds-scrollable slds-p-top_small">
@@ -25,7 +47,14 @@
                 <lightning-tab label={savedTitle}>
                     <div class="slds-scrollable slds-p-top_small">
                         <template lwc:if={hasSavedItems}>
-                            <slds-file-tree tree={savedTree} selected-id={selectedId} onselect={handleTreeSelect} ondelete={handleTreeDelete}></slds-file-tree>
+                            <slds-file-tree
+                                tree={savedTree}
+                                selected-id={selectedId}
+                                search-fields={savedSearchFields}
+                                min-search-length="1"
+                                onselect={handleTreeSelect}
+                                ondeletefile={handleTreeDelete}
+                            ></slds-file-tree>
                         </template>
                         <template lwc:else>
                             <illustration-research

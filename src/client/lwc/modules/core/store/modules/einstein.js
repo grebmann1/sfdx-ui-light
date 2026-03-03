@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
-import { SELECTORS } from 'core/store';
 import { lowerCaseKey, isNotUndefinedOrNull, splitTextByTimestamp, ASSISTANT as ASSISTANT_UTILS } from 'shared/utils';
 import ASSISTANTS from 'ai/assistants';
 import LOGGER from 'shared/logger';
@@ -123,6 +122,7 @@ function saveCacheSettings(alias, state) {
 /** Redux */
 
 export const einsteinModelAdapter = createEntityAdapter();
+const einsteinSelectors = einsteinModelAdapter.getSelectors(s => s);
 const _executeApexAnonymous = (connector, body, headers) => {
     return connector.conn.soap._invoke(
         'executeAnonymous',
@@ -362,7 +362,7 @@ const einsteinSlice = createSlice({
         },
         updateStreamingMessage: (state, action) => {
             const { tabId, message, isSave, alias } = action.payload;
-            const dialog = SELECTORS.einstein.selectById({einstein: state}, lowerCaseKey(tabId));
+            const dialog = einsteinSelectors.selectById(state.dialog, lowerCaseKey(tabId));
             if (dialog && dialog.data && dialog.data.length > 0) {
                 // Create a new data array with the last message replaced
                 const newData = [...dialog.data];

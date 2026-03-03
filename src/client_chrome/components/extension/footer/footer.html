@@ -4,7 +4,17 @@
             <li
                 class="slds-utility-bar__item custom-utility-text custom-utility-left slds-truncate">
                 <template lwc:if={isConnectorDisplayed}>
+                    
+                    <lightning-button
+                        class="footer-utility-truncate custom-utility-text-copy"
+                        icon-name="utility:copy"
+                        label="Access Token"
+                        onclick={handleCopyAccessToken}
+                        title="Copy Access Token"
+                        variant="base"
+                    ></lightning-button>
                     <template lwc:if={isUsernameDisplayed}>
+                        <div class="slds-vertical-separator"></div>
                         <lightning-button-icon
                             alternative-text="copy"
                             class="custom-utility-text-copy"
@@ -15,19 +25,7 @@
                         <a class="slds-truncate" href="#" onclick={handleUsernameClick}>
                             {usernameFormatted}
                         </a>
-                        <div class="slds-vertical-separator"></div>
                     </template>
-                    <template lwc:if={isShortcutOpenPanelDisplayed}>
-                        <span>{shortcutOpenPanel}</span>
-                        <div class="slds-vertical-separator"></div>
-                    </template>
-                    <lightning-button
-                        class="footer-utility-truncate custom-utility-text-copy"
-                        icon-name="utility:copy"
-                        label="Access Token"
-                        onclick={handleCopyAccessToken}
-                        title="Copy Access Token"
-                        variant="base"></lightning-button>
                 </template>
             </li>
             <li

@@ -22,3 +22,99 @@
     font-weight: 300;
     font-size: 0.8125rem;
 }
+
+/* Agent skills card */
+.agent-skills-card .slds-card__body {
+    padding-top: 0;
+}
+
+.agent-skills-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.agent-skill-item {
+    width: 100%;
+    margin: 1rem;
+}
+
+.agent-skill-item-inner {
+    padding: 1rem 1.25rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
+    background: var(--slds-g-color-neutral-base-95, #f9f9f9);
+}
+
+.agent-skill-item-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.agent-skill-name-input {
+    flex: 1;
+    min-width: 12rem;
+}
+
+.agent-skill-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.agent-skill-remove-btn {
+    --slds-c-button-color-border-hover: var(--slds-g-color-error-base-40, #c23934);
+    --slds-c-button-color-border-active: var(--slds-g-color-error-base-30, #a62c26);
+}
+
+.agent-skill-content-input {
+    display: block;
+}
+
+/* Agent skills empty state */
+.agent-skills-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 3rem 2rem;
+    margin: 1rem;
+    border-radius: 0.5rem;
+    border: 1px dashed var(--slds-g-color-border-base-2, #c9c9c9);
+    background: var(--slds-g-color-neutral-base-98, #fafafa);
+}
+
+.agent-skills-empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-bottom: 1.25rem;
+    border-radius: 50%;
+    background: var(--slds-g-color-neutral-base-90, #ecebea);
+    color: var(--slds-g-color-brand-base-50, #0176d3);
+}
+
+.agent-skills-empty-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--slds-g-color-neutral-base-10, #181818);
+    margin: 0 0 0.5rem 0;
+}
+
+.agent-skills-empty-description {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--slds-g-color-neutral-base-30, #706e6b);
+    margin: 0 0 1.5rem 0;
+    max-width: 28rem;
+}
+
+.agent-skills-empty-cta {
+    margin-top: 0.5rem;
+}

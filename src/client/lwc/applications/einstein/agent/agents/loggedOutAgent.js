@@ -3,11 +3,7 @@ const { Agent } = window.OpenAIAgentsBundle?.Agents || {};
 import { isChromeExtension, isUndefinedOrNull } from 'shared/utils';
 import { sharedInstructions } from './sharedInstructions';
 
-const _LoggedOutAgent = isUndefinedOrNull(Agent) ? null : new Agent({
-    name: 'SF Toolkit Assistant (Logged Out)',
-    instructions: `
-${sharedInstructions}
-
+const loggedOutRoleBlock = `
 ## Additional Responsibilities (Logged Out)
 - **Connection First:**
   - If the user wants to interact with the Salesforce Toolkit (e.g., run queries, use SOQL, Apex, API, or access org-specific features), your **primary goal is to help them connect to a Salesforce org first**.
@@ -21,20 +17,31 @@ ${sharedInstructions}
   - If the user says: "Open my org" → Guide them to connect, then hand off.
   - If the user asks: "What is SOQL?" → Answer directly using your available tools.
   - If the user asks: "Open the X org?" → List the orgs the user has access to and open the one they specify.
-`,
-    tools: [
-        ...tools.connections,
-        ...tools.general,
-        //webSearchTool,
-        ...(isChromeExtension() ? tools.chrome : [])
-    ],
-    toolUseBehavior: { stopAtToolNames: ['chrome_screenshot'] },
-    modelSettings: { 
-      toolChoice: 'auto',
-      truncation: 'auto',
-      store:true,
-      parallelToolCalls:false
-    }
-});
+`;
+
+const _LoggedOutAgent = isUndefinedOrNull(Agent)
+    ? null
+    : new Agent({
+          name: 'SF Toolkit Assistant (Logged Out)',
+          instructions: runContext =>
+              `${sharedInstructions}
+${loggedOutRoleBlock}
+${runContext?.dynamicContext ?? ''}
+${runContext?.skillsText ?? ''}`,
+          tools: [
+              ...tools.connections,
+              ...tools.general,
+              ...tools.agent,
+              //webSearchTool,
+              ...(isChromeExtension() ? tools.chrome : []),
+          ],
+          toolUseBehavior: { stopAtToolNames: ['chrome_screenshot', 'agent_request_continue'] },
+          modelSettings: {
+              toolChoice: 'auto',
+              truncation: 'auto',
+              store: true,
+              parallelToolCalls: false,
+          },
+      });
 
 export const loggedOutAgent = _LoggedOutAgent;

@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
-import { DOCUMENT } from 'core/store';
+import * as DOCUMENT from './document';
 import { lowerCaseKey } from 'shared/utils';
-import { store, ERROR } from 'core/store';
+import * as ERROR from './error';
+import { getStore } from '../storeRef';
 
 export const queryAdapter = createEntityAdapter();
 
@@ -24,7 +25,7 @@ export const executeQuery = createAsyncThunk(
             );
             return { data: res, soql, alias: connector.configuration.alias, tabId };
         } catch (err) {
-            store.dispatch(
+            getStore()?.dispatch(
                 ERROR.reduxSlice.actions.addError({
                     message: 'Error executing query',
                     details: err.message,
@@ -43,7 +44,7 @@ export const executeQueryIncognito = createAsyncThunk(
             const res = await _conn.query(soql).scanAll(includeDeletedRecords || false);
             return { data: res, soql };    
         } catch (err) {
-            store.dispatch(
+            getStore()?.dispatch(
                 ERROR.reduxSlice.actions.addError({
                     message: 'Error executing query',
                     details: err.message,
@@ -64,7 +65,7 @@ export const explainQuery = createAsyncThunk(
             //console.log('res',res)
             return { data: res, soql, alias: connector.configuration.alias, tabId };
         } catch (err) {
-            store.dispatch(
+            getStore()?.dispatch(
                 ERROR.reduxSlice.actions.addError({
                     message: 'Error executing explainQuery',
                     details: err.message,

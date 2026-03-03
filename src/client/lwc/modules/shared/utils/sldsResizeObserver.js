@@ -1,4 +1,4 @@
-import { timeout, animationFrame } from './utils';
+import { timeout, animationFrame } from './dom';
 
 const DELAY_TIMEOUT = 200;
 export class LightningResizeObserver {

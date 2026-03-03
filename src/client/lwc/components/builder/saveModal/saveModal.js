@@ -14,6 +14,8 @@ export default class SaveModal extends LightningModal {
     @api storage = STORAGE_TYPE.LOCAL;
 
     @api name = ''; // Used for direct update
+    @api folder = '';
+    @api tags = '';
 
     @api
     get _file() {
@@ -25,6 +27,9 @@ export default class SaveModal extends LightningModal {
         // Define values based on the file
         this.name = value.id;
         this.storage = value.isGlobal ? STORAGE_TYPE.GLOBAL : STORAGE_TYPE.LOCAL;
+        this.folder = value?.extra?.folder || '';
+        const fileTags = value?.extra?.tags;
+        this.tags = Array.isArray(fileTags) ? fileTags.join(', ') : (fileTags || '');
     }
 
     connectedCallback() {}
@@ -69,6 +74,11 @@ export default class SaveModal extends LightningModal {
 
         const data = this.extractFormValues();
         data.isGlobal = data.storage === STORAGE_TYPE.GLOBAL;
+        data.folder = (data.folder || '').trim();
+        data.tags = String(data.tags || '')
+            .split(',')
+            .map(t => t.trim())
+            .filter(Boolean);
         //console.log('data',data);
         this.close(data);
     };

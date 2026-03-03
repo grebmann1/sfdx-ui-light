@@ -35,11 +35,13 @@
                     title="Documentation"
                     variant={documentationVariant}></lightning-button-icon>
                 <lightning-button-menu alternative-text="Show menu" menu-alignment="auto">
-                    <lightning-menu-item
-                        label="Smart Input"
-                        onclick={openSmartInputClick}
-                        prefix-icon-name="utility:upload"
-                        value="Import"></lightning-menu-item>
+                    <template lwc:if={betaSmartInputEnabled}>
+                        <lightning-menu-item
+                            label="Smart Input"
+                            onclick={openSmartInputClick}
+                            prefix-icon-name="utility:upload"
+                            value="Import"></lightning-menu-item>
+                    </template>
                     <lightning-menu-item
                         label="Import Orgs"
                         onclick={importClick}
@@ -76,7 +78,7 @@
                 </template>
 
                 <!-- Display the UI for the Input Quick Pick Side Panel component-->
-                <template lwc:elseif={isSmartInput}>
+                <template lwc:elseif={isSmartInputDisplayed}>
                     <smartinput-app application-name={applications.SMARTINPUT} auto-close-on-item-select></smartinput-app>
                 </template>
                 <!-- End -->

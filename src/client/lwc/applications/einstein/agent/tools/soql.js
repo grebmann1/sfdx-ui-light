@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { store, UI, QUERY, DOCUMENT, SELECTORS } from 'core/store';
 import { waitForLoaded, wrappedNavigate, formatTabId } from './utils/utils.js';
 import LOGGER from 'shared/logger';
-const { tool } = window.OpenAIAgentsBundle.Agents;
+const { tool } = window.OpenAIAgentsBundle?.Agents || {};
 // Execute a SOQL query and return the result
 async function executeSoqlQuery({ query, tabId }) {
     LOGGER.log('executeSoqlQuery');
