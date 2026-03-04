@@ -394,7 +394,7 @@ export default class Menu extends ToolkitElement {
             {
                 key: 'data',
                 label: 'Data',
-                iconName: 'standard:data_model',
+                iconName: 'utility:database',
                 paths: ['soql', 'dataimport'],
                 flat: false,
             },

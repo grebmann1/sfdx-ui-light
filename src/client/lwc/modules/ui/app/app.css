@@ -82,7 +82,7 @@
 }
 
 .home__navigation {
-    width: 267px;
+    width: 282px; /* 267px + scrolling bar width */
     /* border-right: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
     background-color: var(--slds-g-color-neutral-base-100, #fff); */
 }
