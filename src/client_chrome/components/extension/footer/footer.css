@@ -25,8 +25,10 @@
 
 .custom-utility-bar .custom-utility-right {
     width: 30%;
+    min-width: 280px;
     float: right;
     display: flex;
+    flex-wrap: nowrap;
     justify-content: flex-end;
 }
 
@@ -39,4 +41,55 @@
     --slds-c-button-text-color: rgba(255, 255, 255, 1);
     --slds-c-button-text-color-hover: rgba(255, 255, 255, 1);
     cursor: pointer;
+}
+
+.footer-right {
+    min-width: 0;
+    max-width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
+.footer-shortcut-hint {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+    white-space: nowrap;
+    gap: 2px 6px;
+}
+
+.footer-shortcut-hint .footer-shortcut-label,
+.footer-shortcut-hint .footer-shortcut-key,
+.footer-shortcut-hint .footer-shortcut-sep {
+    white-space: nowrap;
+}
+
+.footer-shortcut-label {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.9em;
+}
+
+.footer-shortcut-key {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.85em;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+.footer-shortcut-sep {
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0 2px;
+}
+
+.footer-version {
+    margin-left: 4px;
+    min-width: 0;
 }

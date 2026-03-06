@@ -27,7 +27,7 @@ export async function directConnect(configuration) {
     return connector;
 }
 
-export async function connect({ alias, loginUrl }, settings = {}) {
+export async function connect({ alias, loginUrl, username }, settings = {}) {
     const { bypass = false, saveFullConfiguration = false } = settings;
 
     const platform = getCurrentPlatform();    
@@ -55,6 +55,7 @@ export async function connect({ alias, loginUrl }, settings = {}) {
         if (connector.hasError) {
             throw new Error(connector.errorMessage);
         }
+        await saveConfiguration(alias, connector.configuration);
         LOGGER.log('connect -> connector',connector);
         return connector;
     }
@@ -72,10 +73,9 @@ export async function connect({ alias, loginUrl }, settings = {}) {
                 redirectUri: chrome.identity.getRedirectURL(),
                 loginUrl: normalizedUrl,
             });
-            const finalUrl = oauth2.getAuthorizationUrl({
-                prompt: 'consent',
-                scope: FULL_SCOPE,
-            });
+            const authzParams = { prompt: 'consent', scope: FULL_SCOPE };
+            if (username) authzParams.login_hint = username;
+            const finalUrl = oauth2.getAuthorizationUrl(authzParams);
             chrome.runtime.sendMessage(
                 { action: 'launchWebAuthFlow', url: finalUrl },
                 async response => {
@@ -122,8 +122,10 @@ export async function connect({ alias, loginUrl }, settings = {}) {
                 }
                 resolve(connector);
             });
+            const loginOptions = { scope: FULL_SCOPE };
+            if (username) loginOptions.login_hint = username;
             window.jsforce.browserClient
-                .login({ scope: FULL_SCOPE })
+                .login(loginOptions)
                 .then(res => {
                     if (res.status === 'cancel') {
                         resolve(null);

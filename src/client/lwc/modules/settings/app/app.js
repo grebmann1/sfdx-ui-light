@@ -105,7 +105,9 @@ export default class App extends ToolkitElement {
     inputfield_change = e => {
         const inputField = e.currentTarget;
         const config = this.config;
-        if (inputField.type === 'toggle') {
+        if (e.detail?.value !== undefined) {
+            config[inputField.dataset.key] = e.detail.value;
+        } else if (inputField.type === 'toggle') {
             config[inputField.dataset.key] = inputField.checked;
         } else {
             config[inputField.dataset.key] = inputField.value;
@@ -299,7 +301,8 @@ export default class App extends ToolkitElement {
         const configurationList = Object.values(CACHE_CONFIG);
         const config = {};
         Object.values(configurationList).forEach(item => {
-            config[item.key] = cachedConfiguration[item.key]; // || item.value;
+            const cached = cachedConfiguration[item.key];
+            config[item.key] = cached !== undefined && cached !== null ? cached : item.defaultValue;
         });
         // Default to 'openai' if not set
         if (!config.ai_provider) {
@@ -367,6 +370,10 @@ export default class App extends ToolkitElement {
 
     get isChrome() {
         return isChromeExtension();
+    }
+
+    get isShortcutDisabled() {
+        return !this.config[CACHE_CONFIG.SHORTCUT_INJECTION_ENABLED.key];
     }
 
     get isCancelDisabled() {

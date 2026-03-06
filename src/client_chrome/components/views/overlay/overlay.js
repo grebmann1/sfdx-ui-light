@@ -14,6 +14,7 @@ import {
 import { connectStore, store, APPLICATION } from 'core/store';
 import { TYPE } from 'overlay/utils';
 import { credentialStrategies } from 'connection/utils';
+import { loadExtensionConfigFromCache, CACHE_CONFIG } from 'shared/cacheManager';
 
 import moment from 'moment';
 import jsforce from 'imported/jsforce';
@@ -104,6 +105,9 @@ export default class Overlay extends ToolkitElement {
 
     _isOverlayDisplayed = false;
     _cancelBlur = false;
+
+    overlayShortcutKey = null;
+    panelShortcutKey = null;
     set isOverlayDisplayed(value) {
         this._isOverlayDisplayed = value;
         if (this._isOverlayDisplayed) {
@@ -515,10 +519,29 @@ export default class Overlay extends ToolkitElement {
         this.searchResults = await this.search(this.searchValue);
     };
 
+    loadShortcutKeys = async () => {
+        try {
+            const config = await loadExtensionConfigFromCache([
+                CACHE_CONFIG.SHORTCUT_OPEN_OVERLAY.key,
+                CACHE_CONFIG.SHORTCUT_OPEN_PANEL.key,
+            ]);
+            this.overlayShortcutKey =
+                config[CACHE_CONFIG.SHORTCUT_OPEN_OVERLAY.key] ??
+                CACHE_CONFIG.SHORTCUT_OPEN_OVERLAY.defaultValue;
+            this.panelShortcutKey =
+                config[CACHE_CONFIG.SHORTCUT_OPEN_PANEL.key] ??
+                CACHE_CONFIG.SHORTCUT_OPEN_PANEL.defaultValue;
+        } catch (e) {
+            this.overlayShortcutKey = CACHE_CONFIG.SHORTCUT_OPEN_OVERLAY.defaultValue;
+            this.panelShortcutKey = CACHE_CONFIG.SHORTCUT_OPEN_PANEL.defaultValue;
+        }
+    };
+
     init = () => {
         // Clear prior overlay errors when retrying init
         this.clearOverlayError();
         this.isLoading = true;
+        void this.loadShortcutKeys();
         Promise.all([this.loadCachedData(), this.loadOrgAndUserInfo()])
             .then(async results => {
                 this.isLoading = false;

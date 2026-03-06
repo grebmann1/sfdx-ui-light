@@ -19,12 +19,12 @@ export async function initShortcuts(context) {
     ]);
 
     const shortcutEnabled = configuration[CACHE_CONFIG.SHORTCUT_INJECTION_ENABLED.key];
-    const shortcutOverview = configuration[CACHE_CONFIG.SHORTCUT_OVERVIEW.key];
-    const shortcutSoql = configuration[CACHE_CONFIG.SHORTCUT_SOQL.key];
-    const shortcutApex = configuration[CACHE_CONFIG.SHORTCUT_APEX.key];
-    const shortcutApi = configuration[CACHE_CONFIG.SHORTCUT_API.key];
-    const shortcutDocumentation = configuration[CACHE_CONFIG.SHORTCUT_DOCUMENTATION.key];
-    
+    const shortcutOverview = configuration[CACHE_CONFIG.SHORTCUT_OVERVIEW.key] ?? CACHE_CONFIG.SHORTCUT_OVERVIEW.defaultValue;
+    const shortcutSoql = configuration[CACHE_CONFIG.SHORTCUT_SOQL.key] ?? CACHE_CONFIG.SHORTCUT_SOQL.defaultValue;
+    const shortcutApex = configuration[CACHE_CONFIG.SHORTCUT_APEX.key] ?? CACHE_CONFIG.SHORTCUT_APEX.defaultValue;
+    const shortcutApi = configuration[CACHE_CONFIG.SHORTCUT_API.key] ?? CACHE_CONFIG.SHORTCUT_API.defaultValue;
+    const shortcutDocumentation = configuration[CACHE_CONFIG.SHORTCUT_DOCUMENTATION.key] ?? CACHE_CONFIG.SHORTCUT_DOCUMENTATION.defaultValue;
+
     if (!shortcutEnabled) return;
 
     const shortcuts = [
@@ -86,6 +86,8 @@ export async function initShortcuts(context) {
     ];
 
     shortcuts.forEach(shortcut => {
-        hotkeys(shortcut.shortcut, shortcut.action);
+        if (shortcut.shortcut) {
+            hotkeys(shortcut.shortcut, shortcut.action);
+        }
     });
 }

@@ -432,7 +432,7 @@ export default class App extends ToolkitElement {
             const _loginUrl = instanceUrl || loginUrl;
             LOGGER.log('settings',settings,alias,_loginUrl);
             const connector = await credentialStrategies[OAUTH_TYPES.OAUTH].connect(
-                { alias, loginUrl: _loginUrl },
+                { alias, loginUrl: _loginUrl, username: settings.username },
                 { saveFullConfiguration: true, bypass: true }
             );
             if (connector.hasError || connector == null) {
@@ -593,13 +593,11 @@ export default class App extends ToolkitElement {
     };
 
     exportRow = async row => {
-        const { alias, sfdxAuthUrl } = row;
-        const exportedRow = [
-            {
-                alias,
-                sfdxAuthUrl,
-            },
-        ];
+        const { alias, sfdxAuthUrl, username, instanceUrl } = row;
+        const item = { alias, sfdxAuthUrl };
+        if (!isEmpty(username)) item.username = username;
+        if (!isEmpty(instanceUrl)) item.instanceUrl = instanceUrl;
+        const exportedRow = [item];
 
         //navigator.clipboard.writeText(JSON.stringify(exportedRow, null, 4));
         download(JSON.stringify(exportedRow), 'application/json', `${alias}_sftoolkit_config.json`);
@@ -813,11 +811,11 @@ export default class App extends ToolkitElement {
         return this.data
             .filter(x => !isEmpty(x.sfdxAuthUrl))
             .map(x => {
-                const { sfdxAuthUrl, alias } = x;
-                return {
-                    alias,
-                    sfdxAuthUrl,
-                };
+                const { sfdxAuthUrl, alias, username, instanceUrl } = x;
+                const item = { alias, sfdxAuthUrl };
+                if (!isEmpty(username)) item.username = username;
+                if (!isEmpty(instanceUrl)) item.instanceUrl = instanceUrl;
+                return item;
             });
     }
 

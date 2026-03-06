@@ -1,4 +1,4 @@
-import { LightningElement, wire } from 'lwc';
+import { api, LightningElement, wire } from 'lwc';
 import Toast from 'lightning/toast';
 import { isNotUndefinedOrNull, isUndefinedOrNull } from 'shared/utils';
 import { chromeOpenInWindow } from 'extension/utils';
@@ -7,6 +7,9 @@ import LOGGER from 'shared/logger';
 import { connectStore, store } from 'core/store';
 
 export default class Footer extends LightningElement {
+    @api overlayShortcut;
+    @api panelShortcut;
+
     connector;
     resolvedUsername;
     resolvedUserInfo;
@@ -194,5 +197,39 @@ export default class Footer extends LightningElement {
         return isUndefinedOrNull(this.connector?.configuration?.versionDetails)
             ? ''
             : `${this.connector.configuration.versionDetails.label} (${this.connector.configuration.versionDetails.version})`;
+    }
+
+    get overlayShortcutFormatted() {
+        if (this.isBlankValue(this.overlayShortcut)) return '';
+        return this.formatShortcutForDisplay(this.overlayShortcut);
+    }
+
+    get panelShortcutFormatted() {
+        if (this.isBlankValue(this.panelShortcut)) return '';
+        return this.formatShortcutForDisplay(this.panelShortcut);
+    }
+
+    get hasShortcutHints() {
+        return !this.isBlankValue(this.overlayShortcutFormatted) || !this.isBlankValue(this.panelShortcutFormatted);
+    }
+
+    get hasShortcutAndVersion() {
+        return this.hasShortcutHints && !this.isBlankValue(this.versionFormatted);
+    }
+
+    formatShortcutForDisplay(combo) {
+        if (this.isBlankValue(combo)) return '';
+        return combo
+            .split('+')
+            .map(part => {
+                const p = part.toLowerCase();
+                if (p === 'ctrl') return 'Ctrl';
+                if (p === 'command' || p === 'cmd') return '⌘';
+                if (p === 'shift') return 'Shift';
+                if (p === 'alt') return 'Alt';
+                if (p === 'option') return '⌥';
+                return part.length === 1 ? part.toUpperCase() : part;
+            })
+            .join('+');
     }
 }

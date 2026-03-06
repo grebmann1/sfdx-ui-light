@@ -79,7 +79,7 @@ export async function removeConfiguration({ alias, credentialType }) {
         }
         let res1 = await window.electron.invoke('org-unsetAlias', { alias });
         if (res1?.error) {
-            throw decodeError(res.error);
+            throw decodeError(res1.error);
         }
     }
 

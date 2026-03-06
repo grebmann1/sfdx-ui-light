@@ -29,8 +29,22 @@
                 </template>
             </li>
             <li
-                class="slds-utility-bar__item custom-utility-text custom-utility-right slds-truncate">
-                <h2 class="slds-truncate">{versionFormatted}</h2>
+                class="slds-utility-bar__item custom-utility-text custom-utility-right slds-grid slds-grid_vertical-align-center slds-gutter_x-x-small footer-right">
+                <template lwc:if={hasShortcutHints}>
+                    <span class="footer-shortcut-hint" title="Keyboard shortcuts">
+                        <template lwc:if={overlayShortcutFormatted}>
+                            <span class="footer-shortcut-label">Overlay:</span>
+                            <span class="footer-shortcut-key">{overlayShortcutFormatted}</span>
+                        </template>
+                        <template lwc:if={panelShortcutFormatted}>
+                            <span lwc:if={overlayShortcutFormatted} class="footer-shortcut-sep">·</span>
+                            <span class="footer-shortcut-label">Panel:</span>
+                            <span class="footer-shortcut-key">{panelShortcutFormatted}</span>
+                        </template>
+                    </span>
+                    <span class="slds-vertical-separator" lwc:if={hasShortcutAndVersion}></span>
+                </template>
+                <h2 class="slds-truncate footer-version">{versionFormatted}</h2>
                 <!--
                     <lightning-button-icon
                     class="custom-utility-text-copy"

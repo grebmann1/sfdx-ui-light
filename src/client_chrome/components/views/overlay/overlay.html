@@ -390,7 +390,10 @@
                     </div>
                     <!-- Footer -->
                     <template lwc:if={isFooterDisplayed}>
-                        <extension-footer version={version}></extension-footer>
+                        <extension-footer
+                            version={version}
+                            overlay-shortcut={overlayShortcutKey}
+                            panel-shortcut={panelShortcutKey}></extension-footer>
                     </template>
                 </div>
             </div>

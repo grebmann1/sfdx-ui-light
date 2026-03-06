@@ -205,16 +205,16 @@ export const CACHE_CONFIG = {
     INPUT_QUICKPICK_RECENTS: new CONFIG_OBJECT('input_quickpick_recents', []),
     // Beta Features
     BETA_SMARTINPUT_ENABLED: new CONFIG_OBJECT('beta_smartinput_enabled', false),
-    // Keyboard shortcuts (injected page + app)
+    // Keyboard shortcuts (injected page + app). Use defaultValue when config not set.
     SHORTCUT_INJECTION_ENABLED: new CONFIG_OBJECT('shortcut_injectionEnabled', true),
-    SHORTCUT_RECORDID: new CONFIG_OBJECT('shortcut_recordId', null),
-    SHORTCUT_OVERVIEW: new CONFIG_OBJECT('shortcut_overview', null),
-    SHORTCUT_SOQL: new CONFIG_OBJECT('shortcut_soql', null),
-    SHORTCUT_APEX: new CONFIG_OBJECT('shortcut_apex', null),
-    SHORTCUT_API: new CONFIG_OBJECT('shortcut_api', null),
-    SHORTCUT_DOCUMENTATION: new CONFIG_OBJECT('shortcut_documentation', null),
-    SHORTCUT_OPEN_PANEL: new CONFIG_OBJECT('shortcut_openPanel', null),
-    SHORTCUT_OPEN_OVERLAY: new CONFIG_OBJECT('shortcut_openOverlay', null),
+    SHORTCUT_RECORDID: new CONFIG_OBJECT('shortcut_recordId', 'shift+c'),
+    SHORTCUT_OVERVIEW: new CONFIG_OBJECT('shortcut_overview', 'shift+o'),
+    SHORTCUT_SOQL: new CONFIG_OBJECT('shortcut_soql', 'shift+q'),
+    SHORTCUT_APEX: new CONFIG_OBJECT('shortcut_apex', 'shift+a'),
+    SHORTCUT_API: new CONFIG_OBJECT('shortcut_api', 'shift+i'),
+    SHORTCUT_DOCUMENTATION: new CONFIG_OBJECT('shortcut_documentation', 'shift+d'),
+    SHORTCUT_OPEN_PANEL: new CONFIG_OBJECT('shortcut_openPanel', 'shift+p'),
+    SHORTCUT_OPEN_OVERLAY: new CONFIG_OBJECT('shortcut_openOverlay', 'shift+v'),
     //  TODO: Add Global CLIENT_ID and API_VERSION to the CACHE_CONFIG
 };
 

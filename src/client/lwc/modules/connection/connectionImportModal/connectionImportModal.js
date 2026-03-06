@@ -49,6 +49,7 @@ export default class ConnectionImportModal extends LightningModal {
                     ...params,
                     alias: item.alias,
                 };
+                if (item.username) newConn.username = item.username;
                 if (newConn.alias && newConn.refreshToken && newConn.instanceUrl) {
                     this.newConnections.push(newConn);
                 }
@@ -64,15 +65,14 @@ export default class ConnectionImportModal extends LightningModal {
     buildNormalizedImportedConfiguration = settings => {
         // Imported org.json entries contain a refresh token (sfdxAuthUrl).
         // Persist as an OAuth config so the OAuth strategy can refresh silently (no interactive login).
-        return normalizeConfiguration(
-            {
-                credentialType: OAUTH_TYPES.OAUTH,
-                alias: settings.alias,
-                refreshToken: settings.refreshToken,
-                instanceUrl: settings.instanceUrl,
-            },
-            true
-        );
+        const config = {
+            credentialType: OAUTH_TYPES.OAUTH,
+            alias: settings.alias,
+            refreshToken: settings.refreshToken,
+            instanceUrl: settings.instanceUrl,
+        };
+        if (settings.username) config.username = settings.username;
+        return normalizeConfiguration(config, true);
     };
 
     importAndConnect = async settings => {
@@ -102,6 +102,7 @@ export default class ConnectionImportModal extends LightningModal {
                 ...params,
                 alias: item.alias,
             };
+            if (item.username) newConn.username = item.username;
             if (newConn.alias && newConn.refreshToken && newConn.instanceUrl) {
                 this.newConnections.push(newConn);
             }
