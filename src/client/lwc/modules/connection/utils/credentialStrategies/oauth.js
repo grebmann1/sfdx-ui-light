@@ -55,6 +55,12 @@ export async function connect({ alias, loginUrl, username }, settings = {}) {
         if (connector.hasError) {
             throw new Error(connector.errorMessage);
         }
+        // Persist any updated tokens (e.g. rotated refresh_token from Salesforce)
+        Object.assign(connector.configuration, {
+            refreshToken: connection.refreshToken,
+            instanceUrl: connection.instanceUrl,
+            accessToken: connection.accessToken,
+        });
         await saveConfiguration(alias, connector.configuration);
         LOGGER.log('connect -> connector',connector);
         return connector;
@@ -89,9 +95,8 @@ export async function connect({ alias, loginUrl, username }, settings = {}) {
                             connection,
                             credentialType: OAUTH_TYPES.OAUTH,
                         });
-                        if (saveFullConfiguration) {
-                            await saveConfiguration(alias, connector.configuration);
-                        }
+                        // Always persist configuration (including refresh token) so we can reconnect later
+                        await saveConfiguration(alias, connector.configuration);
                         resolve(connector);
                     } catch (e) {
                         LOGGER.error('Chrome OAuth Error', e);
@@ -117,9 +122,8 @@ export async function connect({ alias, loginUrl, username }, settings = {}) {
                     connection,
                     credentialType: OAUTH_TYPES.OAUTH,
                 });
-                if (saveFullConfiguration) {
-                    await saveConfiguration(alias, connector.configuration);
-                }
+                // Always persist configuration (including refresh token) so we can reconnect later
+                await saveConfiguration(alias, connector.configuration);
                 resolve(connector);
             });
             const loginOptions = { scope: FULL_SCOPE };
