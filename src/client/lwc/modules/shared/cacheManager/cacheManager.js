@@ -186,7 +186,7 @@ export const CACHE_CONFIG = {
     ),
     CHROME_SYNC_ORG_INITIALIZED_STORAGE_KEY: new CONFIG_OBJECT('chrome_syncOrgInitialized', false),
     // Applications Settings are stored in the general store
-    API_SPLITTER_IS_HORIZONTAL: new CONFIG_OBJECT('api_splitter_is_horizontal', false),
+    API_SPLITTER_IS_HORIZONTAL: new CONFIG_OBJECT('api_splitter_is_horizontal', true),
     EINSTEIN_AGENT_CONVERSATIONS: new CONFIG_OBJECT('einstein_agent_conversations', []),
     EINSTEIN_AGENT_CONVERSATION_ACTIVE_ID: new CONFIG_OBJECT(
         'einstein_agent_conversation_active_id',

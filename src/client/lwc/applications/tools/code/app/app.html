@@ -8,97 +8,63 @@
         </div>
     </template>
     <div class="grid-container">
-        <!-- HEADER-->
-        <div class="slds-page-header slds-page-header_joined">
-            <div class="slds-page-header__row">
-                <div class="slds-page-header__col-title">
-                    <div class="slds-media">
-                        <div class="slds-media__figure">
-                            <lightning-icon icon-name="standard:user"></lightning-icon>
-                        </div>
-                        <div class="slds-media__body">
-                            <div class="slds-page-header__name">
-                                <div class="slds-page-header__name-title">
-                                    <h1>
-                                        <span>Code Toolkit</span>
-                                        <span
-                                            class="slds-page-header__title slds-truncate"
-                                            title="Code Toolkit">
-                                            Code Toolkit
-                                        </span>
-                                    </h1>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        <builder-editor>
+            <builder-header
+                slot="header"
+                title="Tools"
+                sub-title="Code Toolkit"
+                icon-name="standard:user">
+                <div slot="actions" class="slds-builder-toolbar__actions">
+                    <lightning-button-group>
+                        <lightning-button
+                            icon-name="utility:apex"
+                            onclick={openVSCode}
+                            label="Open with VS Code"
+                            disabled={isVSCodeDisabled}></lightning-button>
+                        <template lwc:if={isRetrieveDisplayed}>
+                            <lightning-button
+                                icon-name="utility:sync"
+                                onclick={retrieveCode}
+                                label="Retrieve Code"></lightning-button>
+                        </template>
+                        <template lwc:else>
+                            <lightning-button
+                                icon-name="utility:sync"
+                                onclick={refreshCode}
+                                label="Refresh Code"></lightning-button>
+                        </template>
+                        <lightning-button-icon
+                            variant="border-filled"
+                            icon-name="utility:download"
+                            onclick={downloadCode}
+                            disabled={isDownloadDisabled}></lightning-button-icon>
+                    </lightning-button-group>
                 </div>
-                <div class="slds-page-header__col-actions slds-align-middle slds-p-bottom_none">
-                    <div class="slds-page-header__controls">
-                        <div class="slds-page-header__control">
-                            <lightning-button-group>
-                                <lightning-button
-                                    icon-name="utility:apex"
-                                    onclick={openVSCode}
-                                    label="Open with VS Code"
-                                    disabled={isVSCodeDisabled}></lightning-button>
-                                <template lwc:if={isRetrieveDisplayed}>
-                                    <lightning-button
-                                        icon-name="utility:sync"
-                                        onclick={retrieveCode}
-                                        label="Retrieve Code"></lightning-button>
-                                </template>
-                                <template lwc:else>
-                                    <lightning-button
-                                        icon-name="utility:sync"
-                                        onclick={refreshCode}
-                                        label="Refresh Code"></lightning-button>
-                                </template>
-                                <lightning-button-icon
-                                    variant="border-filled"
-                                    icon-name="utility:download"
-                                    onclick={downloadCode}
-                                    disabled={isDownloadDisabled}></lightning-button-icon>
-                                <!--
-                                    <lightning-button icon-name="utility:relate" disabled={isLoading} onclick={selectProject} label="Select/Create SFDX Project" ></lightning-button>
-                                -->
-                            </lightning-button-group>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="slds-page-header__row slds-page-header__row_gutters">
-                <div class="slds-page-header__col-details">
-                    <div
-                        class="slds-page-header__detail-row slds-is-relative"
-                        style="display: block">
-                        <!-- Display Info -->
+                <ul slot="details" class="slds-page-header__detail-row">
+                    <li class="slds-page-header__detail-block-report">
                         <h2>
                             The code toolkit is currently in development. Everything available here
                             is in Beta mode. It's only possible to
-                            <strong>"Retrieve"</strong>
+                            <strong>Retrieve</strong>
                             ,
-                            <strong>"Download"</strong>
+                            <strong>Download</strong>
                             and
-                            <strong>"Open"</strong>
+                            <strong>Open</strong>
                             metadata for now.
                         </h2>
-                    </div>
-                </div>
-            </div>
-        </div>
+                    </li>
+                </ul>
+            </builder-header>
+            <article class="full-page-body slds-m-top_x-small">
+                <lightning-tabset variant="scoped">
+                    <lightning-tab label="Code Analyzers">
+                        <code-analyzer project-path={projectPath}></code-analyzer>
+                    </lightning-tab>
+                </lightning-tabset>
+            </article>
+        </builder-editor>
     </div>
 
-    <!-- Container -->
-    <div class="slds-m-top_x-small">
-        <lightning-tabset variant="scoped">
-            <lightning-tab label="Code Analyzers">
-                <!-- isPathDisplayed -->
-                <code-analyzer project-path={projectPath}></code-analyzer>
-            </lightning-tab>
-        </lightning-tabset>
-    </div>
-
-    <!-- Footer Path -->
     <template lwc:if={isPathDisplayed}>
         <div class="slds-utility-bar_container" aria-label="Utility Bar">
             <h2 class="slds-assistive-text">Utility Bar</h2>

@@ -24,13 +24,13 @@
                     <div slot="actions"></div>
                     <lightning-input
                         data-key="api_splitter_is_horizontal"
-                        label="Horizontal Splitter"
+                        label="Vertical Splitter"
                         type="toggle"
                         variant="label-hidden"
-                        checked={config.api_splitter_is_horizontal}
-                        onchange={inputfield_change}
-                        message-toggle-active="Horizontal"
-                        message-toggle-inactive="Vertical"
+                        checked={isVerticalSplitterChecked}
+                        onchange={handleSplitterOrientationChange}
+                        message-toggle-active="Vertical"
+                        message-toggle-inactive="Horizontal"
                     ></lightning-input>
                 </settings-card>
             </div>

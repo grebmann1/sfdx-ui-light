@@ -144,13 +144,16 @@ export default class App extends ToolkitElement {
         );
     };
 
-    handleSelectMethod = e => {
-        store.dispatch(
-            PACKAGE.reduxSlice.actions.updateCurrentMethodPanel({
-                alias: this.alias,
-                value: e.target.value,
-            })
-        );
+    handleMethodTabActive = e => {
+        const value = e.target.value;
+        if (value) {
+            store.dispatch(
+                PACKAGE.reduxSlice.actions.updateCurrentMethodPanel({
+                    alias: this.alias,
+                    value,
+                })
+            );
+        }
     };
 
     handleDeploy = e => {
@@ -196,14 +199,6 @@ export default class App extends ToolkitElement {
 
     get isNewDeploymentButtonDisplayed() {
         return this._deploymentResponse?.success;
-    }
-
-    get deployClass() {
-        return `slds-fill-height ${this.isDeployVisible ? 'slds-visible' : 'slds-hide'}`;
-    }
-
-    get retrieveClass() {
-        return `slds-fill-height ${this.isRetrieveVisible ? 'slds-visible' : 'slds-hide'}`;
     }
 
     get noRecordMessage() {

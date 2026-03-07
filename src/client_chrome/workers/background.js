@@ -824,6 +824,10 @@ chrome.runtime.onMessage.addListener(
                 instanceUrl: message.instanceUrl,
             });
         } else if (message.action === 'smartinput_enhance_single') {
+            console.debug('[SmartInput AI] background received smartinput_enhance_single', {
+                senderUrl: (sender?.url || '').slice(0, 80),
+                hasTab: !!sender?.tab,
+            });
             // Restrict this endpoint to trusted senders (extension pages or injected Salesforce pages).
             const senderUrl = sender?.url || '';
             const isExtensionPageSender =
@@ -833,13 +837,20 @@ chrome.runtime.onMessage.addListener(
                 !!sender?.tab?.url &&
                 (await shouldInjectScriptAsync(sender.tab.url));
             if (!isExtensionPageSender && !isInjectedSalesforceSender) {
+                console.debug('[SmartInput AI] background rejected: untrusted sender');
                 return { error: 'Untrusted sender' };
             }
 
             const prompt = typeof message?.prompt === 'string' ? message.prompt : '';
             const trimmedPrompt = prompt.trim();
-            if (!trimmedPrompt) return { error: 'Missing prompt' };
-            if (trimmedPrompt.length > 4000) return { error: 'Prompt too long' };
+            if (!trimmedPrompt) {
+                console.debug('[SmartInput AI] background rejected: missing prompt');
+                return { error: 'Missing prompt' };
+            }
+            if (trimmedPrompt.length > 4000) {
+                console.debug('[SmartInput AI] background rejected: prompt too long', { length: trimmedPrompt.length });
+                return { error: 'Prompt too long' };
+            }
 
             const sanitizeBaseUrl = raw => {
                 const fallback = 'https://api.openai.com/v1';
@@ -868,7 +879,16 @@ chrome.runtime.onMessage.addListener(
             const data = await chrome.storage.local.get(['openai_key', 'openai_url']);
             const apiKey = data.openai_key;
             const baseUrl = sanitizeBaseUrl(data.openai_url);
-            if (!apiKey) return { error: 'Missing OpenAI key' };
+            console.debug('[SmartInput AI] background config', {
+                hasApiKey: !!apiKey,
+                apiKeyLength: apiKey ? apiKey.length : 0,
+                baseUrl,
+                promptLength: trimmedPrompt.length,
+            });
+            if (!apiKey) {
+                console.debug('[SmartInput AI] background rejected: missing OpenAI key');
+                return { error: 'Missing OpenAI key' };
+            }
             try {
                 const body = {
                     model: 'gpt-4o-mini',
@@ -886,8 +906,10 @@ chrome.runtime.onMessage.addListener(
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 20000);
                 let resp;
+                const endpoint = `${baseUrl}/chat/completions`;
+                console.debug('[SmartInput AI] background fetch start', { endpoint });
                 try {
-                    resp = await fetch(`${baseUrl}/chat/completions`, {
+                    resp = await fetch(endpoint, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -899,8 +921,10 @@ chrome.runtime.onMessage.addListener(
                 } finally {
                     clearTimeout(timeoutId);
                 }
+                console.debug('[SmartInput AI] background fetch done', { ok: resp.ok, status: resp.status });
                 if (!resp.ok) {
                     const t = await resp.text();
+                    console.debug('[SmartInput AI] background fetch error body', { status: resp.status, bodyPreview: (t || '').slice(0, 200) });
                     return { error: `OpenAI error: ${t}` };
                 }
                 const json = await resp.json();
@@ -911,8 +935,11 @@ chrome.runtime.onMessage.addListener(
                         json.choices[0].message &&
                         json.choices[0].message.content) ||
                     '';
-                return { suggestion: (suggestion || '').trim() };
+                const result = (suggestion || '').trim();
+                console.debug('[SmartInput AI] background success', { suggestionLength: result.length });
+                return { suggestion: result };
             } catch (e) {
+                console.debug('[SmartInput AI] background exception', { message: e?.message, name: e?.name });
                 return { error: e.message };
             }
         } else if (message.action.startsWith('chrome_')) {

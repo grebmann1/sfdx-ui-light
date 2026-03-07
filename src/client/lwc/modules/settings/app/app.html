@@ -68,6 +68,10 @@
                                     </div>
                                     <div slot="actions">
                                         <lightning-button-icon
+                                            alternative-text="Set default"
+                                            icon-name="utility:toggle_on"
+                                            onclick={handleSetDefaultClientId}></lightning-button-icon>
+                                        <lightning-button-icon
                                             alternative-text="Reset"
                                             icon-name="utility:refresh"
                                             onclick={handleResetClientId}></lightning-button-icon>

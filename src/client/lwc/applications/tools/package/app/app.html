@@ -6,14 +6,23 @@
                 title="Tools"
                 sub-title="Package Import/Export"
                 icon-name="standard:maintenance_asset">
-                <div slot="actions" class="slds-builder-toolbar__actions">
+                <p slot="meta" class="slds-page-header__meta-text">
+                    <lightning-button-icon-stateful
+                        disabled={isCatalogDisabled}
+                        selected={isLeftToggled}
+                        variant="border-filled"
+                        icon-name="utility:knowledge_base"
+                        size="large"
+                        onclick={handleLeftToggle}
+                        tooltip="Display the Metadata Catalog."
+                    ></lightning-button-icon-stateful>
+                </p>
+                <div slot="subactions" class="slds-builder-toolbar__actions">
                     <lightning-button
                         icon-name="utility:link"
                         label="Deployment Manager"
                         onclick={goToUrl}
                         data-url="/lightning/setup/DeployStatus/home"></lightning-button>
-
-                    <!-- For Deploy -->
                     <template lwc:if={isDeployVisible}>
                         <template lwc:if={isNewDeploymentButtonDisplayed}>
                             <lightning-button
@@ -33,7 +42,6 @@
                                 disabled={isDeploymentRunning}></lightning-button>
                         </template>
                     </template>
-                    <!-- For Retrieve -->
                     <template lwc:if={isRetrieveVisible}>
                         <template lwc:if={isRunning}>
                             <lightning-button
@@ -53,25 +61,6 @@
                                 disabled={isRetrieveRunning}></lightning-button>
                         </template>
                     </template>
-
-                    <!--
-                    <template lwc:else>
-                        <lightning-button class="slds-p-left_xx-small" variant="destructive" label={i18n.EDITOR_PANEL_ABORT} icon-name="utility:clear" onclick={handleAbort} disabled={isLoading}></lightning-button>
-                    </template>
-                    -->
-                </div>
-                <p slot="meta" class="slds-page-header__meta-text">
-                    <lightning-button-icon-stateful
-                        disabled={isCatalogDisabled}
-                        selected={isLeftToggled}
-                        variant="border-filled"
-                        icon-name="utility:knowledge_base"
-                        size="large"
-                        onclick={handleLeftToggle}
-                        tooltip="Display the Metadata Catalog."
-                    ></lightning-button-icon-stateful>
-                </p>
-                <div slot="subactions" class="slds-builder-toolbar__actions">
                 </div>
             </builder-header>
 
@@ -106,46 +95,30 @@
             </div>
 
             <article class="full-page-body slds-card">
-                <div
-                    class="slds-is-relative slds-full-width slds-full-height slds-flex-column"
-                    style="min-height: 200px">
+                <div class="slds-p-around_small slds-is-relative slds-full-width slds-full-height slds-flex-column package-article-body" style="min-height: 200px">
                     <template lwc:if={isLoading}>
                         <slds-spinner alternative-text="Loading" size="small"></slds-spinner>
                     </template>
-                    <!-- Content -->
-                    <!-- Tabs -->
-                    <slds-tabset
-                        lwc:ref="tab"
-                        variant="scoped"
-                        class="slds-without-tab"
-                        active-tab-value={currentMethod}
-                        is-remove-tab-event-disabled>
-                        <slds-tab
-                            key={i18n.TAB_DEPLOY}
+                    <lightning-tabset active-tab-value={currentMethod}>
+                        <lightning-tab
                             label={i18n.TAB_DEPLOY}
                             value={i18n.TAB_DEPLOY}
-                            onactive={handleSelectMethod}></slds-tab>
-                        <slds-tab
-                            key={i18n.TAB_RETRIEVE}
+                            onactive={handleMethodTabActive}>
+                            <package-deploy
+                                lwc:ref="deploy"
+                                class="slds-full-height"
+                                application-name={applicationName}></package-deploy>
+                        </lightning-tab>
+                        <lightning-tab
                             label={i18n.TAB_RETRIEVE}
                             value={i18n.TAB_RETRIEVE}
-                            onactive={handleSelectMethod}></slds-tab>
-                    </slds-tabset>
-
-                    <!-- DEPLOY -->
-                    <div class={deployClass}>
-                        <package-deploy
-                            lwc:ref="deploy"
-                            class="slds-full-height"
-                            application-name={applicationName}></package-deploy>
-                    </div>
-                    <!-- RETRIEVE -->
-                    <div class={retrieveClass}>
-                        <package-retrieve
-                            lwc:ref="retrieve"
-                            class="slds-full-height"
-                            application-name={applicationName}></package-retrieve>
-                    </div>
+                            onactive={handleMethodTabActive}>
+                            <package-retrieve
+                                lwc:ref="retrieve"
+                                class="slds-full-height"
+                                application-name={applicationName}></package-retrieve>
+                        </lightning-tab>
+                    </lightning-tabset>
                 </div>
             </article>
             <!-- Panel -->

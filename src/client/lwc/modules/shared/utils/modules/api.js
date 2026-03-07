@@ -152,5 +152,17 @@ export const formatApiRequest = ({ endpoint, method, body, header, connector, re
         }
     }
 
+    // Auto-add Sforce-Call-Options when user has set client_id in Settings (do not override if already set)
+    const clientId = connector?.conn?._callOptions?.client;
+    if (clientId) {
+        request.headers = request.headers || {};
+        const hasSforceCallOptions =
+            request.headers &&
+            Object.keys(request.headers).some(k => k.toLowerCase() === 'sforce-call-options');
+        if (!hasSforceCallOptions) {
+            request.headers['Sforce-Call-Options'] = 'client=' + clientId;
+        }
+    }
+
     return {request,error}; // Return the formatted request object
 }

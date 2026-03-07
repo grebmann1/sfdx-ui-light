@@ -219,18 +219,6 @@
     background-color: #f3f3f3;
 }
 
-.sf-toolkit .slds-card {
-    border-radius: unset; /* Remove Border radius*/
-}
-
-.sf-toolkit .slds-page-header {
-    border-radius: unset; /* Remove Border radius*/
-}
-
-.sf-toolkit .slds-vertical-button-group button {
-    border-radius: 0;
-}
-
 .sf-toolkit .slds-vertical-button-group .slds-button-first button {
     border-bottom: 0;
 }

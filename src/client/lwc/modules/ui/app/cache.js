@@ -24,6 +24,7 @@ export async function initCacheStorage() {
 export async function loadFromCache(context) {
     const configuration = await loadExtensionConfigFromCache([
         CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key,
+        CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key,
         CACHE_CONFIG.MISTRAL_KEY.key,
         CACHE_CONFIG.AI_PROVIDER.key,
         CACHE_CONFIG.OPENAI_KEY.key,
@@ -32,6 +33,7 @@ export async function loadFromCache(context) {
 
     if (context) {
         context.isApplicationTabVisible = configuration[CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key];
+        context.betaSmartInputEnabled = !!configuration[CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key];
     }
 
     // Handle LLM keys and provider
@@ -61,5 +63,6 @@ export async function loadFromCache(context) {
         mistralKey,
         aiProvider,
         isApplicationTabVisible: configuration[CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key],
+        betaSmartInputEnabled: !!configuration[CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key],
     };
 }

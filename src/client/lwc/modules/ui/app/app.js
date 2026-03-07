@@ -157,6 +157,7 @@ export default class App extends LightningElement {
 
     init = async () => {
         await initCacheStorage();
+        await loadFromCache(this);
         await this.processShareParams();
         if (isElectronApp()) {
             await this.initElectron();

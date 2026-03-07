@@ -657,7 +657,7 @@ export default class App extends ToolkitElement {
     }
 
     get filterContainerClass() {
-        return classSet('slds-page-header__row slds-page-header__row_gutters')
+        return classSet('doc-header-details')
             .add({
                 'slds-show': this.displayFilter,
                 'slds-show_small': !this.displayFilter,

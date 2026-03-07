@@ -20,8 +20,23 @@ export default class ApiAppSettings extends LightningElement {
      */
     @api inputfield_change;
 
-
     /** Getters **/
+
+    get isVerticalSplitterChecked() {
+        return !this.config?.api_splitter_is_horizontal;
+    }
+
+    handleSplitterOrientationChange = (event) => {
+        this.inputfield_change({
+            currentTarget: {
+                dataset: { key: 'api_splitter_is_horizontal' },
+                type: 'toggle',
+                get checked() {
+                    return !event.detail.checked;
+                },
+            },
+        });
+    };
 
     get cardClass() {
         return classSet('slds-col slds-size_1-of-1 slds-p-horizontal_small')

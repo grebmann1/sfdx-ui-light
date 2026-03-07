@@ -44,3 +44,16 @@ export const positionFor = (target, containerEl) => {
 
     return { top, left };
 }
+
+export const positionForFallback = (containerEl) => {
+    const margin = 6;
+    const containerWidth = (containerEl && containerEl.offsetWidth) || 320;
+    const containerHeight = (containerEl && containerEl.offsetHeight) || 160;
+    const top = Math.max(margin, (window.innerHeight - containerHeight) / 2);
+    const left = Math.max(margin, (window.innerWidth - containerWidth) / 2);
+    if (containerEl) {
+        containerEl.style.top = `${top}px`;
+        containerEl.style.left = `${left}px`;
+    }
+    return { top, left };
+}

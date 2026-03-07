@@ -180,7 +180,7 @@ export default class App extends ToolkitElement {
     _loadingInterval;
     _loadingMessage;
 
-    @track isApiSplitterHorizontal = false;
+    @track isApiSplitterHorizontal = true;
     @track isSettingsPanelOpen = false;
 
     _hasRendered = false;
@@ -397,6 +397,32 @@ export default class App extends ToolkitElement {
     }
 
     /** Methods  **/
+
+    /**
+     * If connector has session client_id (Sforce-Call-Options), merge "Sforce-Call-Options: client={id}"
+     * into the header string when not already present.
+     */
+    mergeSforceCallOptionsFromConnector(headerStr, connector) {
+        const clientId = connector?.conn?._callOptions?.client;
+        if (!clientId || typeof clientId !== 'string' || !clientId.trim()) return headerStr || '';
+        const lines = (headerStr || '').split(/\r?\n/).filter(Boolean);
+        const hasSforceCallOptions = lines.some(line => {
+            const colonIdx = line.indexOf(':');
+            const key = colonIdx > 0 ? line.slice(0, colonIdx).trim() : '';
+            return key.toLowerCase() === 'sforce-call-options';
+        });
+        if (hasSforceCallOptions) return headerStr || '';
+        const newLine = `Sforce-Call-Options: client=${clientId.trim()}`;
+        return headerStr && headerStr.trim() ? `${headerStr.trim()}\n${newLine}` : newLine;
+    }
+
+    get effectiveHeader() {
+        return this.mergeSforceCallOptionsFromConnector(this.header, this.connector);
+    }
+
+    get effectiveDefaultHeader() {
+        return this.mergeSforceCallOptionsFromConnector(this.defaultHeader, this.connector);
+    }
 
     formatRequest = () => {
         const {request,error} = API_UTILS.formatApiRequest({
@@ -1974,7 +2000,8 @@ export default class App extends ToolkitElement {
 
 
     processCacheSettings = (cachedConfig) => {
-        this.isApiSplitterHorizontal = cachedConfig[CACHE_CONFIG.API_SPLITTER_IS_HORIZONTAL.key];
+        this.isApiSplitterHorizontal =
+            cachedConfig[CACHE_CONFIG.API_SPLITTER_IS_HORIZONTAL.key] ?? true;
     }
 
     /** Storage Files */

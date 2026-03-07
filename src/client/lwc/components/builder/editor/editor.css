@@ -6,6 +6,7 @@
 
 .editor-main-container {
     height: 100%;
+    gap: 5px;
 }
 
 .toolbar-header-container {

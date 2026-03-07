@@ -17,3 +17,8 @@ td.delete-column lightning-button-icon {
 .header-toolbar {
     gap: 0.5rem;
 }
+
+/* Widen header presets dropdown so full labels (e.g. Sforce-Call-Options: client=SF-Toolkit) are visible */
+.header-presets-menu lightning-button-menu::part(dropdown) {
+    min-width: 32rem;
+}

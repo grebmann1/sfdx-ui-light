@@ -1,7 +1,7 @@
 import { LightningElement, track, api } from 'lwc';
 import { guid, isNotUndefinedOrNull, isEmpty } from 'shared/utils';
 import { CACHE_CONFIG, loadSingleExtensionConfigFromCache, saveSingleExtensionConfigToCache, getOpenAIKeyFromCache } from 'shared/cacheManager';
-import { isTextInputLike, positionFor, isMac } from './utils';
+import { isTextInputLike, positionFor, positionForFallback, isMac } from './utils';
 import { checkQuery } from 'slds/hashtagDropdown';
 import LOGGER from 'shared/logger';
 import { sanitizeCategories, sanitizeItems } from 'smartinput/utils';
@@ -58,24 +58,29 @@ export default class InputQuickPick extends LightningElement {
         this.template.addEventListener('focusin', this.onFocusIn);
         document.addEventListener('keydown', this.onKeyDown, true);
         document.addEventListener('mousedown', this.onDocumentMouseDown, true);
+        document.addEventListener('sf-toolkit-open-quickpick', this.handleOpenFromShortcut);
         this.loadConfig();
     }
 
     disconnectedCallback() {
         document.removeEventListener('keydown', this.onKeyDown, true);
         document.removeEventListener('mousedown', this.onDocumentMouseDown, true);
+        document.removeEventListener('sf-toolkit-open-quickpick', this.handleOpenFromShortcut);
     }
 
-    async loadConfig() {
-        const isEnabled = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.INPUT_QUICKPICK_ENABLED.key);
-        this.enabled = isEnabled !== false;
-        try {
-            this.betaSmartInputEnabled = !!(await loadSingleExtensionConfigFromCache(
-                CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key
-            ));
-        } catch (_) {
-            this.betaSmartInputEnabled = false;
+    handleOpenFromShortcut = () => {
+        if (!this.isOpen) {
+            this.openForTarget(null);
         }
+    };
+
+    async loadConfig() {
+        const [inputQuickPickEnabled, betaSmartInputEnabled] = await Promise.all([
+            loadSingleExtensionConfigFromCache(CACHE_CONFIG.INPUT_QUICKPICK_ENABLED.key),
+            loadSingleExtensionConfigFromCache(CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key).catch(() => false),
+        ]);
+        this.enabled = inputQuickPickEnabled !== false || !!betaSmartInputEnabled;
+        this.betaSmartInputEnabled = !!betaSmartInputEnabled;
         try {
             const key = await getOpenAIKeyFromCache();
             this.isEnhanceEnabled = !isEmpty(key);
@@ -108,10 +113,12 @@ export default class InputQuickPick extends LightningElement {
                 e.stopPropagation();
                 return;
             }
+            e.preventDefault();
             const target = getDeepActiveElement(document);
             if (isTextInputLike(target)) {
-                e.preventDefault();
                 await this.openForTarget(target);
+            } else {
+                await this.openForTarget(null);
             }
             return;
         }
@@ -265,10 +272,12 @@ export default class InputQuickPick extends LightningElement {
 	handleEnhance = async () => {
 		const value = (this.searchQuery || '').trim();
 		if (!value) return;
+		LOGGER.debug('[SmartInput AI] handleEnhance start', { promptLength: value.length, isEnhanceEnabled: this.isEnhanceEnabled });
 		// Before calling AI, if the current input equals a REF, use it directly
 		try {
 			const matched = await this.findItemByRef(value);
 			if (matched && (matched.value || '')) {
+				LOGGER.debug('[SmartInput AI] handleEnhance skipped: matched REF', { ref: matched.ref });
 				this.applyValue(matched);
 				return;
 			}
@@ -316,7 +325,10 @@ export default class InputQuickPick extends LightningElement {
         this.isOpen = true;
         // Position after render for accurate size and focus search
         requestAnimationFrame(() => {
-            const { top, left } = positionFor(target, this.template.querySelector('.sf-toolkit-quickpick'));
+            const container = this.template.querySelector('.sf-toolkit-quickpick');
+            const { top, left } = target
+                ? positionFor(target, container)
+                : positionForFallback(container);
             this.top = top;
             this.left = left;
             const ta = this.template.querySelector('.chat-textarea');
@@ -426,14 +438,22 @@ export default class InputQuickPick extends LightningElement {
     handleSearchEnhance = async () => {
         const value = (this.searchQuery || '').trim();
         if (!value) return;
+        LOGGER.debug('[SmartInput AI] handleSearchEnhance sending to background', { promptLength: value.length });
         try {
             const resp = await chrome.runtime.sendMessage({ action: 'smartinput_enhance_single', prompt: value });
             const suggestion = (resp && resp.suggestion) || '';
-            //console.log('--> suggestion', suggestion);
+            const errorFromBackend = resp && resp.error;
+            if (errorFromBackend) {
+                LOGGER.debug('[SmartInput AI] handleSearchEnhance backend error', { error: errorFromBackend });
+            }
             if (suggestion) {
+                LOGGER.debug('[SmartInput AI] handleSearchEnhance success', { suggestionLength: suggestion.length });
                 this.applyValue(suggestion);
+            } else if (!errorFromBackend) {
+                LOGGER.debug('[SmartInput AI] handleSearchEnhance no suggestion and no error in response', { resp: !!resp });
             }
         } catch (e) {
+            LOGGER.debug('[SmartInput AI] handleSearchEnhance exception', { message: e?.message, name: e?.name });
             console.error('--> handleSearchEnhance error', e);
         }
     };

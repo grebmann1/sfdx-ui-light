@@ -319,6 +319,14 @@ const injectShortCuts = async () => {
         }
     });
 
+    hotkeys('cmd+k, ctrl+k', async (event, handler) => {
+        event.preventDefault();
+        await injectInputQuickPick();
+        if (quickPickInstance && document.body.contains(quickPickInstance)) {
+            document.dispatchEvent(new CustomEvent('sf-toolkit-open-quickpick'));
+        }
+    });
+
     generateMessage = ({sessionInfo, params})=> ({
         action: 'redirectToUrl',
         sessionId: sessionInfo.sessionId,
@@ -334,10 +342,11 @@ const injectInputQuickPick = async () => {
     if (!quickPickInstance) {
         quickPickInstance = createElement('feature-input-quick-pick', { is: InputQuickPick });
         quickPickInstance.className = 'sf-toolkit';
-        const isEnabled = await cacheManager.getConfigValue(CACHE_CONFIG.INPUT_QUICKPICK_ENABLED.key);
-        //const recents = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.INPUT_QUICKPICK_RECENTS.key);
-        //const data = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.INPUT_QUICKPICK_DATA.key);
-        if (isEnabled) {
+        const [inputQuickPickEnabled, betaSmartInputEnabled] = await Promise.all([
+            cacheManager.getConfigValue(CACHE_CONFIG.INPUT_QUICKPICK_ENABLED.key),
+            cacheManager.getConfigValue(CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key),
+        ]);
+        if (inputQuickPickEnabled || betaSmartInputEnabled) {
             document.body.appendChild(quickPickInstance);
         }
     }

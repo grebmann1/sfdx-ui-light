@@ -65,7 +65,7 @@ export default class Header extends LightningElement {
             accept_json: { key: 'Accept', value: 'application/json' },
             content_type_json: { key: 'Content-Type', value: 'application/json' },
             auth_bearer_session: { key: 'Authorization', value: 'Bearer {sessionId}' },
-            sforce_call_options: { key: 'Sforce-Call-Options', value: 'client=SF-Toolkit' },
+            sforce_call_options: { key: 'Sforce-Call-Options', value: 'client=SfdcInternalQA/' },
             sforce_query_options: { key: 'Sforce-Query-Options', value: 'batchSize=2000' },
         };
         const entry = map[preset];

@@ -175,6 +175,12 @@ export default class App extends ToolkitElement {
         }
     };
 
+    handleSetDefaultClientId = () => {
+        // Default for Sforce-Call-Options client (SFDC internal), not OAuth client id
+        const defaultCallOptionsClient = 'SfdcInternalQA/';
+        this.sessionConfig = { ...this.sessionConfig, client_id: defaultCallOptionsClient };
+    };
+
     handleResetClientId = e => {
         this.sessionConfig.client_id = CACHE_SESSION_CONFIG.CLIENT_ID.value;
     };
