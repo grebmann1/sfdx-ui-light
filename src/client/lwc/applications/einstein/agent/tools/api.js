@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { store, API, DOCUMENT, SELECTORS } from 'core/store';
 import { waitForLoaded, wrappedNavigate, formatTabId } from './utils/utils.js';
 
-const { tool } = window.OpenAIAgentsBundle.Agents;
+const { tool } = window.OpenAIAgentsBundle?.Agents || {};
 
 // --- Internal Async Functions ---
 async function getTabs() {

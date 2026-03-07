@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { getConfiguration, getPublicConfigurations, saveSession, credentialStrategies, OAUTH_TYPES } from 'connection/utils';
 import LOGGER from 'shared/logger';
 import { store, APPLICATION } from 'core/store';
-const { tool } = window.OpenAIAgentsBundle.Agents;
+const { tool } = window.OpenAIAgentsBundle?.Agents || {};
 import { openToolkit, openBrowser } from './utils/utils.js';
 
 async function _getConnector({ alias, sessionId, instanceUrl, redirect }) {

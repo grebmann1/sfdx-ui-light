@@ -17,6 +17,7 @@ export default class App extends ToolkitElement {
     @track availableModels = [
         { label: 'gpt-5-mini', value: 'gpt-5-mini' },
         { label: 'gpt-5', value: 'gpt-5' },
+        { label: 'gpt-5.4', value: 'gpt-5.4-2026-03-05' },
         { label: 'gpt-4.1', value: 'gpt-4.1' },
     ];
 

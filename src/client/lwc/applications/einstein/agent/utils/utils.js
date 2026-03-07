@@ -65,6 +65,26 @@ function updateOrAppendMessage(messages, newMsg) {
     return [...(messages || []), newMsg];
 }
 
+/**
+ * Ensures message.content is an array (runner/API expect content to be mappable).
+ * Use before passing messages to the runner.
+ */
+function ensureMessageContentArray(message) {
+    if (!message) return message;
+    const raw = message.content;
+    if (Array.isArray(raw)) return message;
+    if (raw === undefined || raw === null) {
+        return { ...message, content: [] };
+    }
+    const text =
+        typeof raw === 'string'
+            ? raw
+            : raw != null && typeof raw === 'object' && typeof raw.text === 'string'
+              ? raw.text
+              : '';
+    return { ...message, content: [{ type: 'text', text }] };
+}
+
 function formatMessage(message, filesData = [], guidFn = guid) {
     const result = {
         ...message,
@@ -108,7 +128,8 @@ const Message = {
     appendMessageIfNotExists,
     updateOrAppendMessage,
     formatMessage,
-    formatStreamHistory
+    formatStreamHistory,
+    ensureMessageContentArray,
 };
 
 export {

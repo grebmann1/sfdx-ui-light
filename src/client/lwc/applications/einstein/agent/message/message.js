@@ -93,29 +93,30 @@ export default class Message extends ToolkitElement {
     }
 
     get contentList() {
-        // Always return an array of content items, or an empty array
-        if (Array.isArray(this.item?.content)) {
-            return this.item.content.map((contentItem, idx) => ({
-                ...contentItem,
-                isInputText: contentItem.type === Constants.CONTENT_TYPE.INPUT_TEXT,
-                isOutputText: contentItem.type === Constants.CONTENT_TYPE.OUTPUT_TEXT,
-                isInputImage: contentItem.type === Constants.CONTENT_TYPE.INPUT_IMAGE,
-                isInputFile: contentItem.type === Constants.CONTENT_TYPE.INPUT_FILE,
-                key: contentItem.id || `${contentItem.type}-${idx}`
-            }));
-        } else if (this.item?.content) {
-            // If it's a string, treat as a single input_text
-            return [{
-                type: Constants.CONTENT_TYPE.INPUT_TEXT,
-                text: this.item.content,
-                isInputText: true, 
-                isOutputText: false, 
-                isInputImage: false, 
-                isInputFile: false, 
-                key: 'input_text-0' 
-            }];
-        }
-        return [];
+        // Normalize to an array so we never call .map on a non-array (e.g. object from API/cache)
+        const raw = this.item?.content;
+        const arr = Array.isArray(raw)
+            ? raw
+            : raw != null && typeof raw === 'object' && typeof raw.text === 'string'
+              ? [raw]
+              : typeof raw === 'string'
+                ? [raw]
+                : [];
+        return arr.map((contentItem, idx) => {
+            const text = typeof contentItem === 'string' ? contentItem : contentItem?.text;
+            let type = typeof contentItem === 'string' ? Constants.CONTENT_TYPE.INPUT_TEXT : (contentItem?.type ?? Constants.CONTENT_TYPE.INPUT_TEXT);
+            if (type === 'text') type = Constants.CONTENT_TYPE.INPUT_TEXT;
+            return {
+                ...(typeof contentItem === 'object' && contentItem != null ? contentItem : {}),
+                type,
+                text: text ?? '',
+                isInputText: type === Constants.CONTENT_TYPE.INPUT_TEXT,
+                isOutputText: type === Constants.CONTENT_TYPE.OUTPUT_TEXT,
+                isInputImage: type === Constants.CONTENT_TYPE.INPUT_IMAGE,
+                isInputFile: type === Constants.CONTENT_TYPE.INPUT_FILE,
+                key: (typeof contentItem === 'object' && contentItem?.id) || `${type}-${idx}`,
+            };
+        });
     }
 
     isInputText(contentItem) {

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-const { tool } = window.OpenAIAgentsBundle.Agents;
+const { tool } = window.OpenAIAgentsBundle?.Agents || {};
 
 /**
  * Tool the agent calls when the user's goal is not yet achieved and it needs

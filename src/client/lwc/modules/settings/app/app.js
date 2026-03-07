@@ -8,26 +8,8 @@ import {
     getSyncedSettingsInitializedFromCache,
     CACHE_ORG_DATA_TYPES,
 } from 'shared/cacheManager';
+import { getDefaultAgentSkills, getEffectiveAgentSkills } from 'shared/defaultAgentSkills';
 import Toast from 'lightning/toast';
-
-const DEFAULT_AGENT_SKILL_DEFINITIONS = [
-    { name: 'SOQL', content: 'Use SOQL tools to run and display queries. Prefer soql_query_incognito when the user does not need to see the query in the UI.', enabled: true },
-    { name: 'Apex', content: 'Use Apex tools to edit and execute anonymous Apex. Always ask for confirmation before executing scripts.', enabled: true },
-    { name: 'API', content: 'Use API tools to run REST calls and manage saved API scripts.', enabled: true },
-    { name: 'Connections', content: 'Use connection tools to list, connect, disconnect, or open Salesforce orgs.', enabled: true },
-    { name: 'Chrome', content: 'Use Chrome tools only for browser automation (screenshots, tab management). Prefer Salesforce Toolkit tools for org and data actions.', enabled: true },
-    { name: 'Metadata', content: 'Use Metadata tools to navigate and inspect metadata types and records.', enabled: true },
-    { name: 'Agent continuation', content: 'When the user\'s goal requires more tool steps, call agent_request_continue with a brief reason. When you can give a final answer, respond normally and do not call that tool.', enabled: true },
-];
-
-function getDefaultAgentSkills() {
-    return DEFAULT_AGENT_SKILL_DEFINITIONS.map(({ name, content, enabled }) => ({
-        id: guid(),
-        name,
-        content,
-        enabled,
-    }));
-}
 import LOGGER from 'shared/logger';
 import { store, APPLICATION } from 'core/store';
 
@@ -69,6 +51,8 @@ export default class App extends ToolkitElement {
         { label: 'OpenAI', value: 'openai' },
         { label: 'Einstein', value: 'einstein' },
     ];
+
+    @track selectedAgentSkillId = null;
 
     connectedCallback() {
         this.loadConfigFromCache();
@@ -192,16 +176,32 @@ export default class App extends ToolkitElement {
     handleAddAgentSkill = () => {
         const key = CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key;
         const skills = Array.isArray(this.config[key]) ? [...this.config[key]] : [];
-        skills.push({ id: guid(), name: '', content: '', enabled: true });
+        const newId = guid();
+        skills.push({ id: newId, name: '', content: '', enabled: true });
+        this.config = { ...this.config, [key]: skills };
+        this.selectedAgentSkillId = newId;
+    };
+
+    handleRemoveAgentSkill = (e) => {
+        e.stopPropagation();
+        const id = e.currentTarget.dataset.skillId;
+        if (!id) return;
+        const skill = this.agentSkills.find(s => s.id === id);
+        if (skill?.defaultToolId) return;
+        const key = CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key;
+        const skills = (this.config[key] || []).filter(s => s.id !== id);
+        const wasSelected = this.selectedAgentSkillId === id;
+        if (wasSelected && skills.length > 0) {
+            this.selectedAgentSkillId = skills[0].id;
+        } else if (wasSelected) {
+            this.selectedAgentSkillId = null;
+        }
         this.config = { ...this.config, [key]: skills };
     };
 
-    handleRemoveAgentSkill = e => {
+    handleSelectAgentSkill = (e) => {
         const id = e.currentTarget.dataset.skillId;
-        if (!id) return;
-        const key = CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key;
-        const skills = (this.config[key] || []).filter(s => s.id !== id);
-        this.config = { ...this.config, [key]: skills };
+        if (id) this.selectedAgentSkillId = id;
     };
 
     handleAgentSkillChange = e => {
@@ -219,7 +219,9 @@ export default class App extends ToolkitElement {
 
     handleResetAgentSkillsToDefault = () => {
         const key = CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key;
-        this.config = { ...this.config, [key]: getDefaultAgentSkills() };
+        const defaults = getDefaultAgentSkills();
+        this.config = { ...this.config, [key]: defaults };
+        this.selectedAgentSkillId = defaults.length > 0 ? defaults[0].id : null;
     };
 
     /** Methods **/
@@ -314,22 +316,28 @@ export default class App extends ToolkitElement {
         if (!config.ai_provider) {
             config.ai_provider = 'openai';
         }
-        // Normalize agent skills: seed defaults when never set, otherwise normalize or keep empty
+        // Agent skills: default skills from files (content) + cache (enabled); custom skills from cache
         const rawSkills = config[CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key];
-        if (rawSkills === undefined || rawSkills === null) {
-            config[CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key] = getDefaultAgentSkills();
-        } else if (Array.isArray(rawSkills)) {
-            config[CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key] = rawSkills.map(s => ({
-                id: s.id || guid(),
-                name: s.name ?? '',
-                content: s.content ?? '',
-                enabled: s.enabled !== false,
-            }));
-        } else {
-            config[CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key] = [];
-        }
+        const cachedSkills =
+            rawSkills === undefined || rawSkills === null
+                ? []
+                : Array.isArray(rawSkills)
+                  ? rawSkills
+                  : [];
+        config[CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key] = getEffectiveAgentSkills(cachedSkills);
         this.config = config;
         this.originalConfig = { ...config };
+
+        const skills = config[CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key] || [];
+        if (Array.isArray(skills) && skills.length > 0) {
+            const hasValidSelection =
+                this.selectedAgentSkillId && skills.some(s => s.id === this.selectedAgentSkillId);
+            if (!hasValidSelection) {
+                this.selectedAgentSkillId = skills[0].id;
+            }
+        } else {
+            this.selectedAgentSkillId = null;
+        }
 
         // Load the session specific settings from the cache
 
@@ -409,4 +417,39 @@ export default class App extends ToolkitElement {
     get agentSkillsEmpty() {
         return this.agentSkills.length === 0;
     }
+
+    get selectedAgentSkill() {
+        if (!this.selectedAgentSkillId) return null;
+        return this.agentSkills.find(s => s.id === this.selectedAgentSkillId) || null;
+    }
+
+    get agentSkillsWithSelection() {
+        const selectedId = this.selectedAgentSkillId;
+        return this.agentSkills.map(s => {
+            const isSelected = s.id === selectedId;
+            const displayName = s.name && String(s.name).trim() ? s.name.trim() : 'Unnamed';
+            const isDefault = Boolean(s.defaultToolId);
+            return {
+                ...s,
+                isSelected,
+                displayName,
+                isDefault,
+                canRemove: !isDefault,
+                navItemClass: `agent-skills-nav-item${isSelected ? ' agent-skills-nav-item_selected' : ''}`,
+            };
+        });
+    }
+
+    get selectedAgentSkillIsDefault() {
+        return Boolean(this.selectedAgentSkill?.defaultToolId);
+    }
+
+    handleAgentSkillNavKeydown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            const id = e.currentTarget.dataset.skillId;
+            if (id) this.selectedAgentSkillId = id;
+        }
+    };
+
 }

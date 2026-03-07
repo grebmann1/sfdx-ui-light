@@ -23,7 +23,7 @@
     font-size: 0.8125rem;
 }
 
-/* Agent skills card */
+/* Agent skills card - no extra gutter padding so content stays in */
 .agent-skills-card .slds-card__body {
     padding-top: 0;
 }
@@ -32,57 +32,149 @@
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
+    min-width: 0;
 }
 
-.agent-skill-item {
-    width: 100%;
-    margin: 1rem;
-}
-
-.agent-skill-item-inner {
-    padding: 1rem 1.25rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
-    background: var(--slds-g-color-neutral-base-95, #f9f9f9);
-}
-
-.agent-skill-item-header {
+/* Vertical tabs layout: nav list + detail panel */
+.agent-skills-vertical {
     display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
+    min-height: 16rem;
+    min-width: 0;
+    border: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
+    border-radius: 0.5rem;
+    background: var(--slds-g-color-neutral-base-98, #fafafa);
 }
 
-.agent-skill-name-input {
-    flex: 1;
-    min-width: 12rem;
+.agent-skills-nav {
+    flex-shrink: 0;
+    width: 14rem;
+    border-right: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
+    padding: 0.5rem 0;
+    overflow-y: auto;
 }
 
-.agent-skill-controls {
+.agent-skills-nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    min-width: 0;
+}
+
+.agent-skills-nav-item:hover {
+    background: var(--slds-g-color-neutral-base-95, #f3f3f3);
+}
+
+.agent-skills-nav-item_selected {
+    background: var(--slds-g-color-neutral-base-95, #f3f3f3);
+    border-left-color: var(--slds-g-color-brand-base-50, #0176d3);
+}
+
+.agent-skills-nav-item-label {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    min-width: 0;
+    font-size: 0.875rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.agent-skills-nav-item-dot {
+    flex-shrink: 0;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--slds-g-color-neutral-base-60, #969492);
+}
+
+.agent-skills-nav-item-dot[data-enabled="true"] {
+    background: var(--slds-g-color-success-base-50, #2e844a);
+}
+
+.agent-skills-nav-item-remove {
+    flex-shrink: 0;
+    --slds-c-button-color-border-hover: var(--slds-g-color-error-base-40, #c23934);
+}
+
+.agent-skills-detail {
+    flex: 1;
+    min-width: 0;
+    padding: 1rem 1.25rem;
+    overflow-y: auto;
+}
+
+.agent-skill-detail-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.agent-skill-detail-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.agent-skill-detail-header .agent-skill-name-input {
+    flex: 1;
+    min-width: 10rem;
+}
+
+.agent-skill-detail-toggle {
     flex-shrink: 0;
 }
 
-.agent-skill-remove-btn {
-    --slds-c-button-color-border-hover: var(--slds-g-color-error-base-40, #c23934);
-    --slds-c-button-color-border-active: var(--slds-g-color-error-base-30, #a62c26);
+.agent-skills-detail-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 10rem;
+    padding: 1rem;
+}
+
+.agent-skill-name-input {
+    max-width: 24rem;
 }
 
 .agent-skill-content-input {
     display: block;
 }
 
-/* Agent skills empty state */
+.agent-skill-content-readonly .slds-form-element__label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--slds-g-color-neutral-base-50, #706e6b);
+    margin-bottom: 0.25rem;
+}
+
+.agent-skill-content-viewer {
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
+    background: var(--slds-g-color-neutral-base-98, #fafafa);
+    min-height: 6rem;
+}
+
+.agent-skill-content-viewer slds-markdown-viewer {
+    display: block;
+}
+
+/* Agent skills empty state - compact */
 .agent-skills-empty {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 3rem 2rem;
-    margin: 1rem;
+    padding: 1.25rem 1.5rem;
+    margin: 0.5rem;
     border-radius: 0.5rem;
     border: 1px dashed var(--slds-g-color-border-base-2, #c9c9c9);
     background: var(--slds-g-color-neutral-base-98, #fafafa);
@@ -92,29 +184,26 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 3.5rem;
-    height: 3.5rem;
-    margin-bottom: 1.25rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    margin-bottom: 0.5rem;
     border-radius: 50%;
     background: var(--slds-g-color-neutral-base-90, #ecebea);
     color: var(--slds-g-color-brand-base-50, #0176d3);
 }
 
-.agent-skills-empty-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--slds-g-color-neutral-base-10, #181818);
-    margin: 0 0 0.5rem 0;
+.agent-skills-empty-description {
+    display: none;
 }
 
-.agent-skills-empty-description {
+.agent-skills-empty-text {
     font-size: 0.875rem;
-    line-height: 1.5;
+    line-height: 1.4;
     color: var(--slds-g-color-neutral-base-30, #706e6b);
-    margin: 0 0 1.5rem 0;
-    max-width: 28rem;
+    margin: 0 0 0.75rem 0;
+    max-width: 24rem;
 }
 
 .agent-skills-empty-cta {
-    margin-top: 0.5rem;
+    margin-top: 0.25rem;
 }

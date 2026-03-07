@@ -9,6 +9,7 @@ import {
 import * as ERROR from './error';
 import { ensureOpenAIAgentsBundleLoaded } from 'shared/loader';
 import { isNotUndefinedOrNull, guid } from 'shared/utils';
+import { getEffectiveAgentSkills } from 'shared/defaultAgentSkills';
 import { readFileContent, Message, Context, StreamingAgentService, Constants } from 'agent/utils';
 import { loggedInAgent, loggedOutAgent } from 'agent/agents';
 
@@ -211,16 +212,24 @@ const agentSlice = createSlice({
                 if (isNotUndefinedOrNull(cachedConfig)) {
                     loadCacheSettings(cachedConfig, state);
                 }
-                // Hydrate messages from streamHistory; prepend welcome so default message shows when re-opening old conversations
+                // Hydrate messages from streamHistory; ensure welcome is first. If no history, set welcome as sole message so it shows on refresh.
+                const welcomePayload = { ...Constants.WELCOME_MESSAGE };
+                const welcome = Message.formatMessage(
+                    {
+                        ...welcomePayload,
+                        content: [{ type: 'input_text', text: welcomePayload.content || '' }],
+                    },
+                    []
+                );
                 (state.conversations || []).forEach(c => {
-                    const hasMessages = (state.messagesById?.[c.id] || []).length > 0;
-                    if (!hasMessages && c.streamHistory && c.streamHistory.length > 0) {
+                    const existing = state.messagesById?.[c.id] || [];
+                    const hasMessages = existing.length > 0;
+                    if (hasMessages) return;
+                    if (c.streamHistory && c.streamHistory.length > 0) {
                         const msgs = Message.formatStreamHistory(c.streamHistory);
-                        const welcome = Message.formatMessage(
-                            { ...Constants.WELCOME_MESSAGE },
-                            []
-                        );
                         state.messagesById[c.id] = [welcome, ...(Array.isArray(msgs) ? msgs : [])];
+                    } else {
+                        state.messagesById[c.id] = [welcome];
                     }
                 });
             });
@@ -374,20 +383,22 @@ async function runExecuteAgent(
             dispatch(reduxSlice.actions.setMessages({ id: conversationId, messages: updated }));
         }
 
-        const messagesForRunner = (getState().agent?.messagesById?.[conversationId] || []).slice();
+        const rawMessages = (getState().agent?.messagesById?.[conversationId] || []).slice();
+        const messagesForRunner = rawMessages.map((msg) => Message.ensureMessageContentArray(msg));
         const runner = new Runner({
             model: model || getState().agent?.selectedModel || 'gpt-5-mini',
         });
 
         const fakeStore = { getState };
         const dynamicContext = `\n                Context:\n                    ${await Context.getCurrentGlobalContext(fakeStore)}\n                    ${await Context.getCurrentApplicationContext(fakeStore)}\n                `;
-        const skills =
+        const cachedSkills =
             (await loadSingleExtensionConfigFromCache(CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key)) ||
             [];
-        const enabledSkills = Array.isArray(skills) ? skills.filter(s => s && s.enabled) : [];
+        const skills = getEffectiveAgentSkills(cachedSkills);
+        const enabledSkills = skills.filter((s) => s && s.enabled);
         const skillsText =
             enabledSkills.length > 0
-                ? `\n## User-defined skills\n${enabledSkills
+                ? `\n## Tool-use guidelines (apply when selecting and calling tools)\nFollow these guidelines to decide which tools to use and when. Do not call a tool when the guideline says "when NOT to use".\n\n${enabledSkills
                       .map(s => (s.content || '').trim())
                       .filter(Boolean)
                       .join('\n\n')}`
@@ -421,11 +432,14 @@ async function runExecuteAgent(
                         })
                     );
                 } else {
-                    const contentStr = Array.isArray(chunk.content)
-                        ? (chunk.content[0]?.text ?? '')
-                        : typeof chunk.content === 'string'
-                          ? chunk.content
-                          : '';
+                    const contentStr =
+                        typeof chunk.text === 'string'
+                            ? chunk.text
+                            : Array.isArray(chunk.content)
+                              ? (chunk.content[0]?.text ?? '')
+                              : typeof chunk.content === 'string'
+                                ? chunk.content
+                                : '';
                     const normalizedMessage = {
                         id: chunk.id || guid(),
                         role: chunk.role || 'assistant',
@@ -544,15 +558,44 @@ async function runExecuteAgent(
                 }
             },
             onError: e => {
+                const msg = e?.message || '';
+                const unsupportedTextMatch =
+                    msg.indexOf('Unsupported output content type') >= 0 &&
+                    (() => {
+                        try {
+                            const start = msg.indexOf('{');
+                            const end = msg.lastIndexOf('}') + 1;
+                            if (start >= 0 && end > start) {
+                                const obj = JSON.parse(msg.slice(start, end));
+                                if (obj && typeof obj.text === 'string' && (obj.type === 'text' || obj.type === 'input_text'))
+                                    return obj.text;
+                            }
+                        } catch (_) {}
+                        const jsonMatch = msg.match(/\{[^{}]*"type"\s*:\s*"(?:text|input_text)"[^{}]*"text"\s*:\s*"([^"]*(?:\\.[^"]*)*)"[^{}]*\}/);
+                        if (jsonMatch) return jsonMatch[1].replace(/\\"/g, '"');
+                        return null;
+                    })();
+                if (unsupportedTextMatch) {
+                    const list = (getState().agent?.messagesById?.[conversationId] || []).slice();
+                    const assistantMessage = {
+                        id: guid(),
+                        role: 'assistant',
+                        content: unsupportedTextMatch,
+                    };
+                    const updated = Message.appendMessageIfNotExists(list, assistantMessage);
+                    dispatch(reduxSlice.actions.setMessages({ id: conversationId, messages: updated }));
+                    dispatch(reduxSlice.actions.clearStreamingMessage({ id: conversationId }));
+                } else {
+                    dispatch(
+                        reduxSlice.actions.setError({
+                            id: conversationId,
+                            title: 'Error',
+                            message: msg,
+                        })
+                    );
+                }
                 dispatch(reduxSlice.actions.stopLoading({ id: conversationId }));
                 dispatch(reduxSlice.actions.stopStreaming({ id: conversationId }));
-                dispatch(
-                    reduxSlice.actions.setError({
-                        id: conversationId,
-                        title: 'Error',
-                        message: e?.message,
-                    })
-                );
                 delete streamingServices[conversationId];
             },
         });

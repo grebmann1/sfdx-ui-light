@@ -1,5 +1,5 @@
 import { z } from 'zod';
-const { tool } = window.OpenAIAgentsBundle.Agents;
+const { tool } = window.OpenAIAgentsBundle?.Agents || {};
 import LOGGER from 'shared/logger';
 //import { TOOL_NAMES, TOOL_SCHEMAS } from 'mcp/constants';
 

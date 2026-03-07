@@ -32,7 +32,13 @@ export default class StreamingAgentService {
                 if (event.type === 'raw_model_stream_event') {
                     const data = event.data;
                     if (data.type === 'model' && data.event?.type === 'response.output_item.added') {
-                        this.onChunk(data.event.item);
+                        const item = data.event.item;
+                        const textContent = typeof item?.text === 'string' ? item.text : '';
+                        if (textContent && (item?.type === 'text' || item?.type === 'input_text')) {
+                            this.onChunk({ text: textContent });
+                        } else {
+                            this.onChunk(item);
+                        }
                     } else if (data.type === 'output_text_delta') {
                         this.onChunk({ delta: data.delta });
                     }

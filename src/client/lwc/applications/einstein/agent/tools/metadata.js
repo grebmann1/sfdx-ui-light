@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { store, METADATA } from 'core/store';
 import { waitForLoaded, wrappedNavigate, formatTabId } from './utils/utils.js';
-const { tool } = window.OpenAIAgentsBundle.Agents;
+const { tool } = window.OpenAIAgentsBundle?.Agents || {};
 // Navigate to Metadata Explorer
 async function navigateToMetadata() {
     return await store.dispatch(async (dispatch, getState) => {

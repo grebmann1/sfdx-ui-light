@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { store } from 'core/store';
 import LOGGER from 'shared/logger';
 import { isNotUndefinedOrNull } from 'shared/utils';
-const { tool } = window.OpenAIAgentsBundle.Agents;
+const { tool } = window.OpenAIAgentsBundle?.Agents || {};
 
 /**
  * Get the current application.

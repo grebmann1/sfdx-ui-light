@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { store, APEX, DOCUMENT, SELECTORS, ERROR } from 'core/store';
 import { waitForLoaded, wrappedNavigate, formatTabId } from './utils/utils.js';
 import LOGGER from 'shared/logger';
-const { tool } = window.OpenAIAgentsBundle.Agents;
+const { tool } = window.OpenAIAgentsBundle?.Agents || {};
 // Execute anonymous Apex and return the result
 async function navigateToApex() {
     return await store.dispatch(async (dispatch, getState) => {
