@@ -10,9 +10,8 @@ const documentationSearch = require('./modules/documentationSearch');
 const CTA_MODULE = require('./modules/cta.js');
 const proxy = require('./modules/proxy.js');
 const openaiProxy = require('./modules/openaiProxy.js');
-
 /** Documentation Temporary Code until a DB is incorporated **/
-const VERSION = process.env.DOC_VERSION || '255.0';
+const VERSION = process.env.DOC_VERSION || '260.0';
 const DATA_DOCUMENTATION = JSON.parse(
     fs.readFileSync(`./src/documentation/${VERSION}.json`, 'utf-8')
 );
@@ -65,7 +64,7 @@ app.all('/cometd/:splat(*)', proxy({ enableCORS: true }));
 /* jsForce Proxy */
 app.all('/proxy/:splat(*)', proxy({ enableCORS: true }));
 /* OpenAI Proxy */
-openaiProxy(app,{path: '/openai/v1'});
+openaiProxy(app, { path: '/openai/v1' });
 
 app.get('/version', function (req, res) {
     res.json({ version: process.env.npm_package_version });

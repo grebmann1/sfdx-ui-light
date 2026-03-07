@@ -1,4 +1,4 @@
-import { tools } from 'agent/tools';
+import { tools, openaiBuiltInTools } from 'agent/tools';
 const { Agent } = window.OpenAIAgentsBundle?.Agents || {};
 import { isChromeExtension, isUndefinedOrNull } from 'shared/utils';
 import { sharedInstructions } from './sharedInstructions';
@@ -32,7 +32,7 @@ ${runContext?.skillsText ?? ''}`,
               ...tools.connections,
               ...tools.general,
               ...tools.agent,
-              //webSearchTool,
+              ...openaiBuiltInTools,
               ...(isChromeExtension() ? tools.chrome : []),
           ],
           toolUseBehavior: { stopAtToolNames: ['chrome_screenshot', 'agent_request_continue'] },

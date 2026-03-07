@@ -10,6 +10,7 @@
         "generate:default-skill-content": "node scripts/generate_default_skill_content.js",
         "serve:extension": "serve chrome_ext",
         "start:dev:client": "npm run clean; NODE_ENV=development node -r dotenv/config src/server/server-dev.js",
+        "serve:dev": "NODE_ENV=development node -r dotenv/config src/server/server-dev.js",
         "start:dev:workers": "rollup -c worker.rollup.config.mjs --bundleConfigAsCjs --environment NODE_ENV:development;",
         "start:prod:client": "npm run clean; NODE_ENV=production WARMUP=true lwr build -m prod --clean; NODE_ENV=production node -r dotenv/config src/server/server-prod.js",
         "start:prod:extension": "rm -r chrome_ext; npm run generate:default-skill-content; rollup -c rollup.config.mjs --bundleConfigAsCjs --environment NODE_ENV:production; rollup -c worker.rollup.config.mjs --bundleConfigAsCjs --environment NODE_ENV:production",

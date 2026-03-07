@@ -21,7 +21,7 @@ export default class App extends ToolkitElement {
     }
 
     
-    @track selectedModel = 'gpt-5-mini';
+    @track selectedModel = 'gpt-5.3';
     @track isSidePanelOpen = false;
     @track conversations = [
         { id: 'default', title: 'Conversation 1', streamHistory: [] }
@@ -54,6 +54,7 @@ export default class App extends ToolkitElement {
     errorIds;
 
     openaiKey;
+    openaiUrl;
 
     // Better to use a constant than a getter ! (renderCallback is called too many times)
     welcomeMessage = {
@@ -67,6 +68,7 @@ export default class App extends ToolkitElement {
     @wire(connectStore, { store })
     storeChange({ application, agent }) {
         this._setIfChanged('openaiKey', application.openaiKey);
+        this._setIfChanged('openaiUrl', application.openaiUrl);
         if (agent) {
             this._setIfChanged('selectedModel', agent.selectedModel);
             const convs = agent.conversations || [];

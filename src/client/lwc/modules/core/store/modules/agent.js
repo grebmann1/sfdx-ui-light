@@ -12,6 +12,7 @@ import { isNotUndefinedOrNull, guid } from 'shared/utils';
 import { getEffectiveAgentSkills } from 'shared/defaultAgentSkills';
 import { readFileContent, Message, Context, StreamingAgentService, Constants } from 'agent/utils';
 import { loggedInAgent, loggedOutAgent } from 'agent/agents';
+import { filterToolsByModel } from 'agent/tools';
 
 const AGENT_CACHE_KEYS = {
     ACTIVE_ID: 'einstein_agent_active_id',
@@ -26,7 +27,7 @@ async function loadAgents() {
 const initialState = {
     conversations: [{ id: 'default', title: 'Conversation 1', streamHistory: [] }],
     activeConversationId: 'default',
-    selectedModel: 'gpt-5-mini',
+    selectedModel: 'gpt-5.3',
     // Per-conversation error: { [conversationId]: { title, message } }
     errorById: {},
     // Per conversation UI state
@@ -318,8 +319,26 @@ async function runExecuteAgent(
     { getState, dispatch, dispatchError }
 ) {
         const state = getState();
-        const openaiKey = state.application?.openaiKey;
-        const baseUrl = state.application?.openaiUrl;
+        let baseUrl = state.application?.openaiUrl || 'https://api.openai.com/v1';
+        const directOpenAI = 'https://api.openai.com/v1';
+        if (typeof window !== 'undefined' && window.location?.origin) {
+            if (!state.application?.openaiUrl || state.application.openaiUrl === directOpenAI) {
+                baseUrl = `${window.location.origin}/openai/v1`;
+            }
+            try {
+                const url = new URL(baseUrl);
+                if (
+                    (url.hostname === 'localhost' || url.hostname === '127.0.0.1') &&
+                    url.protocol === 'https:'
+                ) {
+                    url.protocol = 'http:';
+                    baseUrl = url.toString();
+                }
+            } catch (_) {
+                // keep baseUrl as-is if URL parsing fails
+            }
+        }
+        const openaiKey = state.application?.openaiKey ?? '';
         const isLoggedIn = !!state.application?.connector;
 
         const { loggedInAgent, loggedOutAgent } = await loadAgents();
@@ -384,9 +403,24 @@ async function runExecuteAgent(
         }
 
         const rawMessages = (getState().agent?.messagesById?.[conversationId] || []).slice();
-        const messagesForRunner = rawMessages.map((msg) => Message.ensureMessageContentArray(msg));
+        const conversationOnly = rawMessages.filter(
+            (msg) => msg.id !== Constants.WELCOME_MESSAGE.id
+        );
+        const messagesForRunner = conversationOnly.map((msg) =>
+            Message.ensureMessageContentArray(msg)
+        );
+        const currentModel = model || getState().agent?.selectedModel || 'gpt-5.3';
         const runner = new Runner({
-            model: model || getState().agent?.selectedModel || 'gpt-5-mini',
+            model: currentModel,
+        });
+
+        const filteredTools = filterToolsByModel(selectedAgent.tools || [], currentModel);
+        const agentWithFilteredTools = new Proxy(selectedAgent, {
+            get(target, prop) {
+                if (prop === 'getAllTools') return () => filteredTools;
+                if (prop === 'tools') return filteredTools;
+                return target[prop];
+            },
         });
 
         const fakeStore = { getState };
@@ -404,7 +438,7 @@ async function runExecuteAgent(
                       .join('\n\n')}`
                 : '';
         const runContext = { dynamicContext, skillsText };
-        const service = new StreamingAgentService(runner, selectedAgent, messagesForRunner, {
+        const service = new StreamingAgentService(runner, agentWithFilteredTools, messagesForRunner, {
             maxTurns: 25,
             context: runContext,
             onChunk: chunk => {

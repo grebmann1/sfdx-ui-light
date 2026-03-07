@@ -1,8 +1,4 @@
 import { LightningElement, api } from 'lwc';
-import { Constants } from 'agent/utils';
-import LOGGER from 'shared/logger';
-
-const WELCOME_MESSAGE_ID = 'WELCOME_MESSAGE_ID';
 
 export default class AgentMessageList extends LightningElement {
     @api welcomeMessage;
@@ -10,8 +6,7 @@ export default class AgentMessageList extends LightningElement {
 
     get showStandaloneWelcome() {
         const messages = this.displayedMessages || [];
-        if (messages.length === 0) return true;
-        return messages[0]?.id !== WELCOME_MESSAGE_ID;
+        return messages.length === 0;
     }
     _streamingMessage = null;
     @api isLoading = false;

@@ -14,7 +14,7 @@ const documentationSearch = require('./modules/documentationSearch');
 const openaiProxy = require('./modules/openaiProxy.js');
 
 /** Temporary Code until a DB is incorporated **/
-const VERSION = process.env.DOC_VERSION || '255.0';
+const VERSION = process.env.DOC_VERSION || '260.0';
 const DATA_DOCUMENTATION = JSON.parse(
     fs.readFileSync(`./src/documentation/${VERSION}.json`, 'utf-8')
 );

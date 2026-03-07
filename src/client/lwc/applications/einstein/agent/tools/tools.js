@@ -6,6 +6,7 @@ import { generalTools } from './general';
 import { chromeTools } from './chrome';
 import { metadataTools } from './metadata';
 import { agentTools } from './agentTools';
+import { openaiBuiltInTools } from './openaiBuiltInTools';
 
 export const tools = {
     soql: soqlTools,
@@ -17,3 +18,5 @@ export const tools = {
     metadata: metadataTools,
     agent: agentTools,
 };
+export { openaiBuiltInTools };
+export { filterToolsByModel } from './modelToolSupport';
