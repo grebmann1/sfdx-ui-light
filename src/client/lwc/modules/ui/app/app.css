@@ -20,7 +20,7 @@
 /** Structure – SLDS2 tokenized **/
 
 .home {
-    background-color: var(--slds-g-color-neutral-base-95, #f3f3f3);
+    background-color: var(--slds-g-color-neutral-base-100, #fff);
 }
 
 .main-app-container {

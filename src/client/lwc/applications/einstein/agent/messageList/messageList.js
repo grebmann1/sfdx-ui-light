@@ -5,8 +5,7 @@ export default class AgentMessageList extends LightningElement {
     @api displayedMessages = [];
 
     get showStandaloneWelcome() {
-        const messages = this.displayedMessages || [];
-        return messages.length === 0;
+        return false;
     }
     _streamingMessage = null;
     @api isLoading = false;
@@ -28,7 +27,14 @@ export default class AgentMessageList extends LightningElement {
 
     renderedCallback() {
         this._attachScrollListener();
-        this.setLastComponentInView()
+        this.setLastComponentInView();
+        const list = Array.isArray(this.displayedMessages) ? this.displayedMessages : [];
+        if (list.length > 0) {
+            console.log('[agent-messageList] renderedCallback', {
+                displayedCount: list.length,
+                items: list.map((m) => ({ id: m.id, role: m.role, type: m.type })),
+            });
+        }
     }
 
     connectedCallback() {

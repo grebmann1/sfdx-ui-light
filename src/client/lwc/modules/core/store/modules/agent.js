@@ -24,6 +24,16 @@ async function loadAgents() {
     return { loggedInAgent, loggedOutAgent };
 }
 
+function safeSerializeForDebug(obj) {
+    try {
+        return JSON.parse(
+            JSON.stringify(obj, (_, v) => (typeof v === 'function' ? undefined : v))
+        );
+    } catch (_) {
+        return null;
+    }
+}
+
 const initialState = {
     conversations: [{ id: 'default', title: 'Conversation 1', streamHistory: [] }],
     activeConversationId: 'default',
@@ -35,6 +45,8 @@ const initialState = {
     streamingById: {},
     messagesById: {},
     streamingMessageById: {},
+    debugMode: false,
+    lastRunDebugByConversationId: {},
 };
 
 function saveCacheSettings(state) {
@@ -59,6 +71,30 @@ function loadCacheSettings(cachedConfig, state) {
     } catch (e) {
         console.error('Failed to load CONFIG from localstorage', e);
     }
+}
+
+function hydrateMessagesFromConversations(state) {
+    if (!state.conversations || state.conversations.length === 0) return;
+    if (!state.messagesById) state.messagesById = {};
+    (state.conversations || []).forEach(c => {
+        if (c.streamHistory && c.streamHistory.length > 0) {
+            const msgs = Message.formatStreamHistory(c.streamHistory);
+            const withoutWelcome = Array.isArray(msgs)
+                ? msgs.filter((m) => m.id !== Constants.WELCOME_MESSAGE.id)
+                : [];
+            state.messagesById[c.id] = withoutWelcome;
+            console.log('[agent] hydrateMessagesFromConversations', {
+                conversationId: c.id,
+                streamHistoryLength: c.streamHistory.length,
+                formattedCount: Array.isArray(msgs) ? msgs.length : 0,
+                afterFilterCount: withoutWelcome.length,
+                roles: withoutWelcome.map((m) => m.role),
+                types: withoutWelcome.map((m) => m.type),
+            });
+        } else {
+            state.messagesById[c.id] = [];
+        }
+    });
 }
 
 // Async: load cached settings from extension storage
@@ -170,6 +206,12 @@ const agentSlice = createSlice({
         setMessages: (state, action) => {
             const { id, messages } = action.payload;
             state.messagesById[id] = Array.isArray(messages) ? messages : [];
+            console.log('[agent] setMessages', {
+                conversationId: id,
+                count: state.messagesById[id].length,
+                roles: state.messagesById[id].map((m) => m.role),
+                types: state.messagesById[id].map((m) => m.type),
+            });
         },
         clearMessages: (state, action) => {
             const { id } = action.payload;
@@ -188,9 +230,29 @@ const agentSlice = createSlice({
             const { id } = action.payload;
             state.streamingMessageById[id] = null;
         },
+        setDebugMode: (state, action) => {
+            const { enabled } = action.payload || {};
+            state.debugMode = !!enabled;
+        },
+        setLastRunDebug: (state, action) => {
+            const { id, data } = action.payload || {};
+            if (id != null) {
+                if (!state.lastRunDebugByConversationId) {
+                    state.lastRunDebugByConversationId = {};
+                }
+                state.lastRunDebugByConversationId[id] = data;
+            }
+        },
     },
     extraReducers: builder => {
         builder
+            .addCase(loadCacheSettingsAsync.fulfilled, (state, action) => {
+                const cachedConfig = action.payload;
+                if (isNotUndefinedOrNull(cachedConfig)) {
+                    loadCacheSettings(cachedConfig, state);
+                }
+                hydrateMessagesFromConversations(state);
+            })
             .addCase(loadConversationsFromCache.fulfilled, (state, action) => {
                 const conversations = action.payload?.conversations || [];
                 state.conversations = Array.isArray(conversations) ? conversations : [];
@@ -207,32 +269,7 @@ const agentSlice = createSlice({
                 ) {
                     state.activeConversationId = state.conversations[0]?.id || null;
                 }
-            })
-            .addCase(loadCacheSettingsAsync.fulfilled, (state, action) => {
-                const cachedConfig = action.payload;
-                if (isNotUndefinedOrNull(cachedConfig)) {
-                    loadCacheSettings(cachedConfig, state);
-                }
-                // Hydrate messages from streamHistory; ensure welcome is first. If no history, set welcome as sole message so it shows on refresh.
-                const welcomePayload = { ...Constants.WELCOME_MESSAGE };
-                const welcome = Message.formatMessage(
-                    {
-                        ...welcomePayload,
-                        content: [{ type: 'input_text', text: welcomePayload.content || '' }],
-                    },
-                    []
-                );
-                (state.conversations || []).forEach(c => {
-                    const existing = state.messagesById?.[c.id] || [];
-                    const hasMessages = existing.length > 0;
-                    if (hasMessages) return;
-                    if (c.streamHistory && c.streamHistory.length > 0) {
-                        const msgs = Message.formatStreamHistory(c.streamHistory);
-                        state.messagesById[c.id] = [welcome, ...(Array.isArray(msgs) ? msgs : [])];
-                    } else {
-                        state.messagesById[c.id] = [welcome];
-                    }
-                });
+                hydrateMessagesFromConversations(state);
             });
     },
 });
@@ -438,9 +475,14 @@ async function runExecuteAgent(
                       .join('\n\n')}`
                 : '';
         const runContext = { dynamicContext, skillsText };
-        const service = new StreamingAgentService(runner, agentWithFilteredTools, messagesForRunner, {
+        const debugMode = getState().agent?.debugMode === true;
+        const rawEvents = [];
+        const serviceOptions = {
             maxTurns: 25,
             context: runContext,
+            ...(debugMode && {
+                onRawEvent: (event) => rawEvents.push(safeSerializeForDebug(event) ?? event),
+            }),
             onChunk: chunk => {
                 if (chunk.delta !== undefined) {
                     const current = getState().agent?.streamingMessageById?.[conversationId] || {
@@ -497,23 +539,54 @@ async function runExecuteAgent(
             onStreamEnd: async stream => {
                 const streamingMsg = getState().agent?.streamingMessageById?.[conversationId];
                 if (streamingMsg) {
-                    const list = (getState().agent?.messagesById?.[conversationId] || []).slice();
-                    const updated = Message.appendMessageIfNotExists(list, streamingMsg);
-                    dispatch(
-                        reduxSlice.actions.setMessages({ id: conversationId, messages: updated })
-                    );
+                    const isAssistantWithNoContent =
+                        streamingMsg.role === 'assistant' &&
+                        !Message.hasDisplayableContent(streamingMsg);
+                    if (!isAssistantWithNoContent) {
+                        const list = (getState().agent?.messagesById?.[conversationId] || []).slice();
+                        const updated = Message.appendMessageIfNotExists(list, streamingMsg);
+                        dispatch(
+                            reduxSlice.actions.setMessages({ id: conversationId, messages: updated })
+                        );
+                    }
                     dispatch(reduxSlice.actions.clearStreamingMessage({ id: conversationId }));
                 }
                 dispatch(reduxSlice.actions.stopLoading({ id: conversationId }));
                 dispatch(reduxSlice.actions.stopStreaming({ id: conversationId }));
+                const fullList = getState().agent?.messagesById?.[conversationId] ?? [];
+                console.log('[agent] onStreamEnd: persisting messages', {
+                    conversationId,
+                    fullListCount: fullList.length,
+                    roles: fullList.map((m) => m.role),
+                    types: fullList.map((m) => m.type),
+                });
                 dispatch(
                     reduxSlice.actions.updateConversationStreamHistory({
                         id: conversationId,
-                        streamHistory: stream.history,
+                        streamHistory: fullList,
                     })
                 );
                 dispatch(saveConversationsToCache());
                 delete streamingServices[conversationId];
+
+                if (debugMode) {
+                    const payload = {
+                        runContext: {
+                            model: currentModel,
+                            timestamp: new Date().toISOString(),
+                        },
+                        messagesSent: safeSerializeForDebug(conversationOnly) ?? conversationOnly,
+                        streamSnapshot: {
+                            history: safeSerializeForDebug(stream.history) ?? stream.history,
+                            newItems: safeSerializeForDebug(stream.newItems) ?? stream.newItems,
+                            lastAgent: safeSerializeForDebug(stream.lastAgent) ?? {},
+                        },
+                        rawEvents: rawEvents.slice(),
+                    };
+                    dispatch(
+                        reduxSlice.actions.setLastRunDebug({ id: conversationId, data: payload })
+                    );
+                }
 
                 // If the last tool is in stopAtToolNames (e.g. chrome_screenshot, agent_request_continue),
                 // re-run with the tool output as user message. Cap continuations for agent_request_continue.
@@ -592,6 +665,23 @@ async function runExecuteAgent(
                 }
             },
             onError: e => {
+                if (debugMode) {
+                    dispatch(
+                        reduxSlice.actions.setLastRunDebug({
+                            id: conversationId,
+                            data: {
+                                runContext: {
+                                    model: currentModel,
+                                    timestamp: new Date().toISOString(),
+                                },
+                                error: {
+                                    message: e?.message ?? String(e),
+                                    name: e?.name,
+                                },
+                            },
+                        })
+                    );
+                }
                 const msg = e?.message || '';
                 const unsupportedTextMatch =
                     msg.indexOf('Unsupported output content type') >= 0 &&
@@ -632,7 +722,13 @@ async function runExecuteAgent(
                 dispatch(reduxSlice.actions.stopStreaming({ id: conversationId }));
                 delete streamingServices[conversationId];
             },
-        });
+        };
+        const service = new StreamingAgentService(
+            runner,
+            agentWithFilteredTools,
+            messagesForRunner,
+            serviceOptions
+        );
 
         streamingServices[conversationId] = service;
         await service.startStreaming();

@@ -122,6 +122,32 @@ const formatStreamHistory = (streamHistory) => {
     return streamHistory.map(message => formatMessage(message));
 }
 
+/**
+ * Returns true if the message has content that should be shown in the normal message view
+ * (e.g. non-empty text). Assistant messages with only tool_calls or empty content have no displayable content.
+ */
+function hasDisplayableContent(message) {
+    if (!message) return false;
+    const content = message.content;
+    if (typeof content === 'string') return content.trim().length > 0;
+    if (content != null && typeof content === 'object' && !Array.isArray(content)) {
+        const type = content.type;
+        const text = content.text;
+        return (
+            (type === 'text' || type === 'input_text' || type === 'output_text') &&
+            typeof text === 'string' &&
+            text.trim().length > 0
+        );
+    }
+    if (!Array.isArray(content)) return false;
+    return content.some(
+        (part) =>
+            (part?.type === 'text' || part?.type === 'input_text' || part?.type === 'output_text') &&
+            typeof part?.text === 'string' &&
+            part.text.trim().length > 0
+    );
+}
+
 const Message = {
     getMessageKey,
     areMessagesEqual,
@@ -130,6 +156,7 @@ const Message = {
     formatMessage,
     formatStreamHistory,
     ensureMessageContentArray,
+    hasDisplayableContent,
 };
 
 export {

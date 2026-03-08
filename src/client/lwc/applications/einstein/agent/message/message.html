@@ -160,6 +160,18 @@
                                 </div>
                             </template>
                         </template>
+                        <template lwc:if={showAssistantEmptyFallback}>
+                            <div class="message-content-text agent-message-empty-fallback">—</div>
+                        </template>
+                        <template lwc:if={showAssistantContentFallback}>
+                            <div class="message-content-output message-content-fallback">
+                                <slds-markdown-viewer
+                                    class="slds-flex-column slds-full-height"
+                                    value={content}
+                                    onchange={handleChange}
+                                ></slds-markdown-viewer>
+                            </div>
+                        </template>
                         <template lwc:if={isCurrentMessage}>
                             <div class="slds-chat-typing-indicator slds-m-top_x-small" aria-live="polite" aria-label="Assistant is typing">
                                 <span class="slds-icon-typing slds-is-animated" title="Assistant is typing">

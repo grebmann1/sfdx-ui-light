@@ -13,6 +13,7 @@ export default class StreamingAgentService {
         this.onStreamEnd = options.onStreamEnd || (() => {});
         this.onError = options.onError || (() => {});
         this.onToolEvent = options.onToolEvent || (() => {});
+        this.onRawEvent = options.onRawEvent || (() => {});
     }
 
     async startStreaming() {
@@ -29,6 +30,7 @@ export default class StreamingAgentService {
             );
             this.currentStream = stream;
             for await (const event of stream) {
+                this.onRawEvent(event);
                 if (event.type === 'raw_model_stream_event') {
                     const data = event.data;
                     if (data.type === 'model' && data.event?.type === 'response.output_item.added') {

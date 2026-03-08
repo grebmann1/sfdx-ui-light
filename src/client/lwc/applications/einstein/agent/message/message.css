@@ -2,6 +2,11 @@
     scroll-margin-top: 10px;
 }
 
+.agent-message-empty-fallback {
+    color: var(--slds-g-color-neutral-base-50, #747474);
+    font-style: italic;
+}
+
 .slds-chat-message-error {
     background-color: #cf0d26;
 }

@@ -41,6 +41,24 @@ export default class Message extends ToolkitElement {
         this.item = message;
     }
 
+    renderedCallback() {
+        if (this.item?.role === ROLES.ASSISTANT) {
+            const contentPreview =
+                typeof this.item?.content === 'string'
+                    ? this.item.content?.slice(0, 80)
+                    : JSON.stringify(this.item?.content)?.slice(0, 80);
+            console.log('[agent-message] assistant message render', {
+                id: this.item?.id,
+                type: this.item?.type,
+                contentPreview,
+                hasDisplayableContent: this.hasDisplayableContent,
+                showAssistantEmptyFallback: this.showAssistantEmptyFallback,
+                hasRenderedContentFromList: this.hasRenderedContentFromList,
+                contentListLength: (this.contentList || []).length,
+            });
+        }
+    }
+
     /** Getters **/
 
     @api
@@ -92,6 +110,41 @@ export default class Message extends ToolkitElement {
         return typeof this.item?.content === 'string' ? this.item.content : '';
     }
 
+    get hasDisplayableContent() {
+        const c = this.content;
+        if (typeof c === 'string' && c.trim().length > 0) return true;
+        const list = this.contentList || [];
+        return list.some(
+            (item) =>
+                (item.isInputText || item.isOutputText) &&
+                typeof item.text === 'string' &&
+                item.text.trim().length > 0
+        );
+    }
+
+    get showAssistantEmptyFallback() {
+        return this.isAssistant && !this.hasDisplayableContent;
+    }
+
+    get hasRenderedContentFromList() {
+        const list = this.contentList || [];
+        return list.some(
+            (i) =>
+                (i.isInputText || i.isOutputText) &&
+                typeof i.text === 'string' &&
+                i.text.trim().length > 0
+        );
+    }
+
+    get showAssistantContentFallback() {
+        const c = typeof this.content === 'string' ? this.content : '';
+        return (
+            this.isAssistant &&
+            c.trim().length > 0 &&
+            !this.hasRenderedContentFromList
+        );
+    }
+
     get contentList() {
         // Normalize to an array so we never call .map on a non-array (e.g. object from API/cache)
         const raw = this.item?.content;
@@ -105,6 +158,7 @@ export default class Message extends ToolkitElement {
         return arr.map((contentItem, idx) => {
             const text = typeof contentItem === 'string' ? contentItem : contentItem?.text;
             let type = typeof contentItem === 'string' ? Constants.CONTENT_TYPE.INPUT_TEXT : (contentItem?.type ?? Constants.CONTENT_TYPE.INPUT_TEXT);
+            if (typeof type === 'string') type = type.toLowerCase().trim();
             if (type === 'text') type = Constants.CONTENT_TYPE.INPUT_TEXT;
             return {
                 ...(typeof contentItem === 'object' && contentItem != null ? contentItem : {}),

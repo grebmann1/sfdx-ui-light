@@ -33,6 +33,11 @@ export default class App extends ToolkitElement {
     @track isLoading = false;
     @track isStreaming = false;
     @track displayedMessages = [];
+    @track isDebugMode = false;
+    @track selectedDebugTabId = 'messages';
+    @track debugMessages = [];
+    @track debugStreamHistory = [];
+    debugLastRunDebug = null;
 
     _lastScrolledMessageCount = 0;
     _lastActiveConversationId = null;
@@ -89,11 +94,32 @@ export default class App extends ToolkitElement {
 
             const rawMessages = (agent.messagesById && agent.messagesById[this.activeConversationId]) || [];
             const displayed = rawMessages.filter(m => m.type !== 'reasoning');
+            console.log('[agent-app] syncFromStore: messages for display', {
+                activeConversationId: this.activeConversationId,
+                rawCount: rawMessages.length,
+                displayedCount: displayed.length,
+                rawRoles: rawMessages.map((m) => m.role),
+                rawTypes: rawMessages.map((m) => m.type),
+            });
             this._setIfChanged('displayedMessages', displayed);
 
             const err = agent?.errorById?.[this.activeConversationId];
             this._setIfChanged('error_title', err?.title ?? null);
             this._setIfChanged('error_message', err?.message ?? null);
+
+            this._setIfChanged('isDebugMode', !!agent.debugMode);
+            this._setIfChanged(
+                'debugMessages',
+                agent.messagesById?.[this.activeConversationId] ?? []
+            );
+            const conv = (agent.conversations || []).find(
+                (c) => c.id === this.activeConversationId
+            );
+            this._setIfChanged('debugStreamHistory', conv?.streamHistory ?? []);
+            this._setIfChanged(
+                'debugLastRunDebug',
+                agent.lastRunDebugByConversationId?.[this.activeConversationId] ?? null
+            );
         }
     }
 
@@ -127,6 +153,12 @@ export default class App extends ToolkitElement {
 
     toggleErrorDetails = () => {
         this.isErrorDetailsOpen = !this.isErrorDetailsOpen;
+    };
+
+    toggleDebugMode = () => {
+        store.dispatch(
+            AGENT.reduxSlice.actions.setDebugMode({ enabled: !this.isDebugMode })
+        );
     };
 
     copyErrorToClipboard = async () => {
@@ -369,6 +401,251 @@ export default class App extends ToolkitElement {
             'input-section': this.isEditingTitle
         })
         .toString();
+    }
+
+    get debugTabs() {
+        return [
+            { id: 'messages', label: 'Messages' },
+            { id: 'streamHistory', label: 'Stream' },
+            { id: 'runContext', label: 'Context', visible: !!this.debugRunContextDisplay },
+            { id: 'error', label: 'Error', visible: this.hasLastRunError },
+            { id: 'messagesSent', label: 'Sent' },
+            { id: 'streamSnapshot', label: 'Snapshot' },
+            { id: 'rawEvents', label: 'Events' },
+        ];
+    }
+
+    get visibleDebugTabs() {
+        const activeId = this.activeDebugTabId;
+        return this.debugTabs
+            .filter((t) => t.visible !== false)
+            .map((t) => ({
+                ...t,
+                isActive: activeId === t.id,
+                tabClass: activeId === t.id ? 'agent-debug-tab agent-debug-tab-active' : 'agent-debug-tab',
+            }));
+    }
+
+    get activeDebugTabLabel() {
+        const tab = this.visibleDebugTabs.find((t) => t.id === this.activeDebugTabId);
+        return tab ? tab.label : 'Messages';
+    }
+
+    get activeDebugTabId() {
+        const tabs = this.debugTabs.filter((t) => t.visible !== false);
+        const ids = tabs.map((t) => t.id);
+        return ids.includes(this.selectedDebugTabId)
+            ? this.selectedDebugTabId
+            : (ids[0] || 'messages');
+    }
+
+    get activeDebugTabButtonId() {
+        return `agent-debug-tab-${this.activeDebugTabId}`;
+    }
+
+    selectDebugTab(event) {
+        const tabId = event?.currentTarget?.dataset?.tabId;
+        if (tabId) this.selectedDebugTabId = tabId;
+    }
+
+    get isDebugTabMessages() {
+        return this.activeDebugTabId === 'messages';
+    }
+    get isDebugTabStreamHistory() {
+        return this.activeDebugTabId === 'streamHistory';
+    }
+    get isDebugTabRunContext() {
+        return this.activeDebugTabId === 'runContext';
+    }
+    get isDebugTabError() {
+        return this.activeDebugTabId === 'error';
+    }
+    get isDebugTabMessagesSent() {
+        return this.activeDebugTabId === 'messagesSent';
+    }
+    get isDebugTabStreamSnapshot() {
+        return this.activeDebugTabId === 'streamSnapshot';
+    }
+    get isDebugTabRawEvents() {
+        return this.activeDebugTabId === 'rawEvents';
+    }
+
+    _debugJson(x) {
+        if (x === undefined || x === null) {
+            return '—';
+        }
+        try {
+            return JSON.stringify(
+                x,
+                (_, v) => (typeof v === 'function' ? undefined : v),
+                2
+            );
+        } catch (_) {
+            return String(x);
+        }
+    }
+
+    get debugMessagesJson() {
+        return this._debugJson(this.debugMessages);
+    }
+
+    get debugStreamHistoryJson() {
+        return this._debugJson(this.debugStreamHistory);
+    }
+
+    get debugLastRunMessagesSentJson() {
+        return this._debugJson(this.debugLastRunDebug?.messagesSent);
+    }
+
+    get debugLastRunStreamSnapshotJson() {
+        return this._debugJson(this.debugLastRunDebug?.streamSnapshot);
+    }
+
+    get debugLastRunRawEventsJson() {
+        return this._debugJson(this.debugLastRunDebug?.rawEvents);
+    }
+
+    get debugLastRunRunContextJson() {
+        return this._debugJson(this.debugLastRunDebug?.runContext);
+    }
+
+    get debugLastRunErrorJson() {
+        return this._debugJson(this.debugLastRunDebug?.error);
+    }
+
+    get hasLastRunError() {
+        return !!this.debugLastRunDebug?.error;
+    }
+
+    get debugMessageBlocks() {
+        const list = Array.isArray(this.debugMessages) ? this.debugMessages : [];
+        return list.map((m, i) => {
+            const role = (m.role || 'unknown').toLowerCase();
+            return {
+                key: `msg-${i}-${m.id || ''}`,
+                index: i + 1,
+                role: m.role || 'unknown',
+                roleClass: `agent-debug-block-role-${role}`,
+                id: m.id || '—',
+                content: this._debugJson(m),
+            };
+        });
+    }
+
+    get debugStreamHistoryBlocks() {
+        const list = Array.isArray(this.debugStreamHistory) ? this.debugStreamHistory : [];
+        return list.map((item, i) => ({
+            key: `sh-${i}`,
+            index: i + 1,
+            content: this._debugJson(item),
+        }));
+    }
+
+    get debugRunContextDisplay() {
+        const rc = this.debugLastRunDebug?.runContext;
+        if (!rc) return null;
+        return { model: rc.model ?? '—', timestamp: rc.timestamp ?? '—' };
+    }
+
+    get debugErrorDisplay() {
+        const err = this.debugLastRunDebug?.error;
+        if (!err) return null;
+        return { message: err.message ?? '—', name: err.name ?? '—' };
+    }
+
+    get debugMessagesSentBlocks() {
+        const list = this.debugLastRunDebug?.messagesSent;
+        const arr = Array.isArray(list) ? list : [];
+        return arr.map((m, i) => {
+            const role = (m?.role ?? 'unknown').toLowerCase();
+            return {
+                key: `sent-${i}`,
+                index: i + 1,
+                role: m?.role ?? 'unknown',
+                roleClass: `agent-debug-block-role-${role}`,
+                content: this._debugJson(m),
+            };
+        });
+    }
+
+    get debugStreamSnapshotHistoryBlocks() {
+        const history = this.debugLastRunDebug?.streamSnapshot?.history;
+        const arr = Array.isArray(history) ? history : [];
+        return arr.map((item, i) => ({
+            key: `snap-h-${i}`,
+            index: i + 1,
+            content: this._debugJson(item),
+        }));
+    }
+
+    get debugStreamSnapshotNewItemsBlocks() {
+        const items = this.debugLastRunDebug?.streamSnapshot?.newItems;
+        const arr = Array.isArray(items) ? items : [];
+        return arr.map((item, i) => ({
+            key: `snap-n-${i}`,
+            index: i + 1,
+            content: this._debugJson(item),
+        }));
+    }
+
+    get debugLastAgentDisplay() {
+        const last = this.debugLastRunDebug?.streamSnapshot?.lastAgent;
+        if (!last || typeof last !== 'object') return '—';
+        return this._debugJson(last);
+    }
+
+    get debugRawEventBlocks() {
+        const list = this.debugLastRunDebug?.rawEvents;
+        const arr = Array.isArray(list) ? list : [];
+        return arr.map((evt, i) => {
+            const type = evt?.type ?? 'unknown';
+            const typeClass = type.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+            return {
+                key: `evt-${i}`,
+                index: i + 1,
+                type,
+                typeClass: `agent-debug-event-${typeClass}`,
+                content: this._debugJson(evt),
+            };
+        });
+    }
+
+    copyDebugSection(event) {
+        event.stopPropagation();
+        const key = event?.currentTarget?.dataset?.section || event?.target?.dataset?.section;
+        if (!key) return;
+        let content = '';
+        switch (key) {
+            case 'messages':
+                content = this.debugMessagesJson;
+                break;
+            case 'streamHistory':
+                content = this.debugStreamHistoryJson;
+                break;
+            case 'runContext':
+                content = this.debugLastRunRunContextJson;
+                break;
+            case 'error':
+                content = this.debugLastRunErrorJson;
+                break;
+            case 'messagesSent':
+                content = this.debugLastRunMessagesSentJson;
+                break;
+            case 'streamSnapshot':
+                content = this.debugLastRunStreamSnapshotJson;
+                break;
+            case 'rawEvents':
+                content = this.debugLastRunRawEventsJson;
+                break;
+            default:
+                return;
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(content).then(
+                () => Toast.show({ message: 'Copied to clipboard', variant: 'success' }),
+                () => Toast.show({ message: 'Copy failed', variant: 'error' })
+            );
+        }
     }
 
     
