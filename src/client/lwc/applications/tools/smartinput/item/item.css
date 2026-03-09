@@ -3,14 +3,21 @@
     position: relative;
 }
 
-.smartinput-item-content { max-width: 100%; flex: 1 1 auto; }
+.smartinput-item-content {
+    max-width: 100%;
+    flex: 1 1 auto;
+}
 
 .smartinput-item-textarea {
     min-height: 38px;
     resize: vertical;
 }
 
-.smartinput-item-edit-actions { display: flex; align-items: center; justify-content: flex-end; }
+.smartinput-item-edit-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
 
 .smartinput-item-badge {
     position: absolute;
@@ -29,5 +36,3 @@
     background-color: var(--slds-g-color-neutral-base-95, #f3f3f3);
     box-shadow: 0 0 0 2px var(--slds-g-color-brand-base-60, #1b96ff) inset;
 }
-
-

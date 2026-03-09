@@ -1,5 +1,4 @@
 <template>
-    
     <div class="slds-full-height slds-is-relative slds-flex-row">
         <!-- Side Panel -->
         <slds-vertical-panel
@@ -7,18 +6,24 @@
             title="Conversations"
             position="left"
             is-open={isSidePanelOpen}
-            is-header-hidden
-        >
+            is-header-hidden>
             <div class="slds-full-height slds-flex-column">
-                <div class="side-panel-header slds-p-around_small slds-border_bottom side-panel-header-custom">
-                    <h2 class="slds-panel__header-title slds-text-heading_small slds-truncate">Conversations</h2>
+                <div
+                    class="side-panel-header slds-p-around_small slds-border_bottom side-panel-header-custom">
+                    <h2 class="slds-panel__header-title slds-text-heading_small slds-truncate">
+                        Conversations
+                    </h2>
                     <div class="slds-panel__header-actions">
                         <!-- First New Conversation Button -->
-                        <lightning-button-icon icon-name="utility:add" onclick={createNewConversation} title="New conversation" aria-label="New conversation"></lightning-button-icon>
+                        <lightning-button-icon
+                            icon-name="utility:add"
+                            onclick={createNewConversation}
+                            title="New conversation"
+                            aria-label="New conversation"></lightning-button-icon>
                     </div>
                 </div>
-               
-                <div class="slds-scrollable_y" style="max-height: 60vh; min-height: 120px;">
+
+                <div class="slds-scrollable_y" style="max-height: 60vh; min-height: 120px">
                     <slds-file-tree
                         tree={conversationTree}
                         selected-id={activeConversationId}
@@ -27,25 +32,29 @@
                         search-fields={conversationSearchFields}
                         min-search-length={minSearchLengthForConversations}
                         hide-search-input={hideSearchInputForConversations}
-                        include-folders-in-results={includeFoldersInResultsForConversations}
-                    ></slds-file-tree>
+                        include-folders-in-results={includeFoldersInResultsForConversations}></slds-file-tree>
                 </div>
             </div>
         </slds-vertical-panel>
 
         <!-- Side Panel Toggle Button -->
         <div class="slds-full-height slds-is-relative slds-flex-column slds-full-width">
-            <div class="slds-p-around_x-small slds-border_bottom slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+            <div
+                class="slds-p-around_x-small slds-border_bottom slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
                 <div class="slds-flex-row">
                     <lightning-button-icon-stateful
                         icon-name="utility:side_list"
                         selected={isSidePanelOpen}
                         alternative-text="Toggle conversations"
                         variant="border-filled"
-                        onclick={toggleSidePanel}
-                    ></lightning-button-icon-stateful>
+                        onclick={toggleSidePanel}></lightning-button-icon-stateful>
                     <!-- Second New Conversation Button -->
-                    <lightning-button-icon class="slds-m-left_x-small" icon-name="utility:add" onclick={createNewConversation} title="New conversation" aria-label="New conversation"></lightning-button-icon>
+                    <lightning-button-icon
+                        class="slds-m-left_x-small"
+                        icon-name="utility:add"
+                        onclick={createNewConversation}
+                        title="New conversation"
+                        aria-label="New conversation"></lightning-button-icon>
                     <lightning-button-icon-stateful
                         class="slds-m-left_x-small agent-debug-toggle"
                         icon-name="utility:bug"
@@ -53,26 +62,54 @@
                         variant="border-filled"
                         onclick={toggleDebugMode}
                         title="Toggle debug mode"
-                        alternative-text="Toggle debug mode"
-                    ></lightning-button-icon-stateful>
+                        alternative-text="Toggle debug mode"></lightning-button-icon-stateful>
                 </div>
                 <div class={inputSectionClass}>
                     <template lwc:if={isEditingTitle}>
-                        <input class="slds-input slds-m-right_x-small" type="text" value={pendingTitle} oninput={handleConversationTitleChange} onkeydown={handleConversationTitleKeydown} lwc:ref="titleInput" />
-                        <lightning-button-icon icon-name="utility:check" onclick={saveConversationTitle} title="Save" aria-label="Save"></lightning-button-icon>
-                        <lightning-button-icon icon-name="utility:close" onclick={cancelEditingTitle} title="Cancel" aria-label="Cancel"></lightning-button-icon>
+                        <input
+                            class="slds-input slds-m-right_x-small"
+                            type="text"
+                            value={pendingTitle}
+                            oninput={handleConversationTitleChange}
+                            onkeydown={handleConversationTitleKeydown}
+                            lwc:ref="titleInput" />
+                        <lightning-button-icon
+                            icon-name="utility:check"
+                            onclick={saveConversationTitle}
+                            title="Save"
+                            aria-label="Save"></lightning-button-icon>
+                        <lightning-button-icon
+                            icon-name="utility:close"
+                            onclick={cancelEditingTitle}
+                            title="Cancel"
+                            aria-label="Cancel"></lightning-button-icon>
                     </template>
                     <template lwc:else>
-                        <span class="slds-text-title_bold slds-m-right_x-small" onclick={startEditingTitle}>{conversationTitle}</span>
-                        <lightning-button-icon class="edit-title-button" icon-name="utility:edit" variant="bare" onclick={startEditingTitle} title="Edit title" aria-label="Edit title"></lightning-button-icon>
+                        <span
+                            class="slds-text-title_bold slds-m-right_x-small"
+                            onclick={startEditingTitle}>
+                            {conversationTitle}
+                        </span>
+                        <lightning-button-icon
+                            class="edit-title-button"
+                            icon-name="utility:edit"
+                            variant="bare"
+                            onclick={startEditingTitle}
+                            title="Edit title"
+                            aria-label="Edit title"></lightning-button-icon>
                     </template>
                 </div>
             </div>
             <template lwc:if={hasError}>
                 <div class="agent-error-panel slds-p-around_x-small" role="alert">
-                    <div class="agent-error-header slds-grid slds-grid_vertical-align-center slds-wrap">
+                    <div
+                        class="agent-error-header slds-grid slds-grid_vertical-align-center slds-wrap">
                         <span class="slds-col slds-no-flex slds-m-right_x-small">
-                            <lightning-icon icon-name="utility:error" size="small" variant="error" alternative-text="Error"></lightning-icon>
+                            <lightning-icon
+                                icon-name="utility:error"
+                                size="small"
+                                variant="error"
+                                alternative-text="Error"></lightning-icon>
                         </span>
                         <span class="slds-col slds-grow slds-text-title_bold">{error_title}</span>
                         <div class="slds-col slds-no-flex">
@@ -82,20 +119,17 @@
                                     alternative-text={errorDetailsToggleLabel}
                                     title={errorDetailsToggleLabel}
                                     onclick={toggleErrorDetails}
-                                    class={errorChevronClass}
-                                ></lightning-button-icon>
+                                    class={errorChevronClass}></lightning-button-icon>
                                 <lightning-button-icon
                                     icon-name="utility:copy"
                                     alternative-text="Copy error"
                                     title="Copy error"
-                                    onclick={copyErrorToClipboard}
-                                ></lightning-button-icon>
+                                    onclick={copyErrorToClipboard}></lightning-button-icon>
                                 <lightning-button-icon
                                     icon-name="utility:close"
                                     alternative-text="Dismiss"
                                     title="Dismiss"
-                                    onclick={resetError}
-                                ></lightning-button-icon>
+                                    onclick={resetError}></lightning-button-icon>
                             </lightning-button-group>
                         </div>
                     </div>
@@ -105,12 +139,17 @@
                         </div>
                     </template>
                     <template lwc:else>
-                        <p class="agent-error-summary slds-m-top_x-small slds-text-body_small">{error_message}</p>
+                        <p class="agent-error-summary slds-m-top_x-small slds-text-body_small">
+                            {error_message}
+                        </p>
                     </template>
                 </div>
             </template>
             <template lwc:if={isDebugMode}>
-                <section role="region" aria-label="Debug" class="agent-debug-panel slds-fill-height">
+                <section
+                    role="region"
+                    aria-label="Debug"
+                    class="agent-debug-panel slds-fill-height">
                     <div class="agent-debug-panel-header">
                         <h2 class="agent-debug-title">Debug</h2>
                         <span class="agent-debug-badge">Inspector</span>
@@ -126,27 +165,51 @@
                                 id="agent-debug-tab-{tab.id}"
                                 class={tab.tabClass}
                                 data-tab-id={tab.id}
-                                onclick={selectDebugTab}
-                            >{tab.label}</button>
+                                onclick={selectDebugTab}>
+                                {tab.label}
+                            </button>
                         </template>
                     </div>
                     <div class="agent-debug-tab-content-wrap">
                         <div class="agent-debug-tab-content-header">
                             <span class="agent-debug-tab-content-title">{activeDebugTabLabel}</span>
-                            <lightning-button-icon icon-name="utility:copy" alternative-text="Copy" title="Copy" data-section={activeDebugTabId} onclick={copyDebugSection} class="agent-debug-copy-btn"></lightning-button-icon>
+                            <lightning-button-icon
+                                icon-name="utility:copy"
+                                alternative-text="Copy"
+                                title="Copy"
+                                data-section={activeDebugTabId}
+                                onclick={copyDebugSection}
+                                class="agent-debug-copy-btn"></lightning-button-icon>
                         </div>
-                        <div id="agent-debug-tabpanel" role="tabpanel" aria-labelledby={activeDebugTabButtonId} class="agent-debug-scroll slds-scrollable_y">
+                        <div
+                            id="agent-debug-tabpanel"
+                            role="tabpanel"
+                            aria-labelledby={activeDebugTabButtonId}
+                            class="agent-debug-scroll slds-scrollable_y">
                             <template lwc:if={isDebugTabMessages}>
                                 <div class="agent-debug-section-body">
                                     <template lwc:if={debugMessageBlocks.length}>
                                         <template for:each={debugMessageBlocks} for:item="block">
-                                            <div key={block.key} class="agent-debug-block {block.roleClass}">
-                                                <div class="agent-debug-block-header slds-text-body_small">
-                                                    <span class="agent-debug-block-badge">{block.index}</span>
-                                                    <span class="agent-debug-block-role slds-m-left_x-small">{block.role}</span>
-                                                    <span class="slds-m-left_x-small agent-debug-block-id">id: {block.id}</span>
+                                            <div
+                                                key={block.key}
+                                                class="agent-debug-block {block.roleClass}">
+                                                <div
+                                                    class="agent-debug-block-header slds-text-body_small">
+                                                    <span class="agent-debug-block-badge">
+                                                        {block.index}
+                                                    </span>
+                                                    <span
+                                                        class="agent-debug-block-role slds-m-left_x-small">
+                                                        {block.role}
+                                                    </span>
+                                                    <span
+                                                        class="slds-m-left_x-small agent-debug-block-id">
+                                                        id: {block.id}
+                                                    </span>
                                                 </div>
-                                                <pre class="agent-debug-pre agent-debug-block-pre">{block.content}</pre>
+                                                <pre class="agent-debug-pre agent-debug-block-pre">
+{block.content}</pre
+                                                >
                                             </div>
                                         </template>
                                     </template>
@@ -158,12 +221,19 @@
                             <template lwc:if={isDebugTabStreamHistory}>
                                 <div class="agent-debug-section-body">
                                     <template lwc:if={debugStreamHistoryBlocks.length}>
-                                        <template for:each={debugStreamHistoryBlocks} for:item="block">
+                                        <template
+                                            for:each={debugStreamHistoryBlocks}
+                                            for:item="block">
                                             <div key={block.key} class="agent-debug-block">
-                                                <div class="agent-debug-block-header slds-text-body_small">
-                                                    <span class="agent-debug-block-badge">{block.index}</span>
+                                                <div
+                                                    class="agent-debug-block-header slds-text-body_small">
+                                                    <span class="agent-debug-block-badge">
+                                                        {block.index}
+                                                    </span>
                                                 </div>
-                                                <pre class="agent-debug-pre agent-debug-block-pre">{block.content}</pre>
+                                                <pre class="agent-debug-pre agent-debug-block-pre">
+{block.content}</pre
+                                                >
                                             </div>
                                         </template>
                                     </template>
@@ -191,7 +261,9 @@
                                             <dt>Name</dt>
                                             <dd>{debugErrorDisplay.name}</dd>
                                             <dt>Message</dt>
-                                            <dd class="agent-debug-error-message">{debugErrorDisplay.message}</dd>
+                                            <dd class="agent-debug-error-message">
+                                                {debugErrorDisplay.message}
+                                            </dd>
                                         </dl>
                                     </template>
                                 </div>
@@ -199,13 +271,25 @@
                             <template lwc:if={isDebugTabMessagesSent}>
                                 <div class="agent-debug-section-body">
                                     <template lwc:if={debugMessagesSentBlocks.length}>
-                                        <template for:each={debugMessagesSentBlocks} for:item="block">
-                                            <div key={block.key} class="agent-debug-block {block.roleClass}">
-                                                <div class="agent-debug-block-header slds-text-body_small">
-                                                    <span class="agent-debug-block-badge">{block.index}</span>
-                                                    <span class="agent-debug-block-role slds-m-left_x-small">{block.role}</span>
+                                        <template
+                                            for:each={debugMessagesSentBlocks}
+                                            for:item="block">
+                                            <div
+                                                key={block.key}
+                                                class="agent-debug-block {block.roleClass}">
+                                                <div
+                                                    class="agent-debug-block-header slds-text-body_small">
+                                                    <span class="agent-debug-block-badge">
+                                                        {block.index}
+                                                    </span>
+                                                    <span
+                                                        class="agent-debug-block-role slds-m-left_x-small">
+                                                        {block.role}
+                                                    </span>
                                                 </div>
-                                                <pre class="agent-debug-pre agent-debug-block-pre">{block.content}</pre>
+                                                <pre class="agent-debug-pre agent-debug-block-pre">
+{block.content}</pre
+                                                >
                                             </div>
                                         </template>
                                     </template>
@@ -218,12 +302,19 @@
                                 <div class="agent-debug-section-body agent-debug-snapshot">
                                     <p class="agent-debug-subtitle">History</p>
                                     <template lwc:if={debugStreamSnapshotHistoryBlocks.length}>
-                                        <template for:each={debugStreamSnapshotHistoryBlocks} for:item="block">
+                                        <template
+                                            for:each={debugStreamSnapshotHistoryBlocks}
+                                            for:item="block">
                                             <div key={block.key} class="agent-debug-block">
-                                                <div class="agent-debug-block-header slds-text-body_small">
-                                                    <span class="agent-debug-block-badge">{block.index}</span>
+                                                <div
+                                                    class="agent-debug-block-header slds-text-body_small">
+                                                    <span class="agent-debug-block-badge">
+                                                        {block.index}
+                                                    </span>
                                                 </div>
-                                                <pre class="agent-debug-pre agent-debug-block-pre">{block.content}</pre>
+                                                <pre class="agent-debug-pre agent-debug-block-pre">
+{block.content}</pre
+                                                >
                                             </div>
                                         </template>
                                     </template>
@@ -232,12 +323,19 @@
                                     </template>
                                     <p class="agent-debug-subtitle">New items</p>
                                     <template lwc:if={debugStreamSnapshotNewItemsBlocks.length}>
-                                        <template for:each={debugStreamSnapshotNewItemsBlocks} for:item="block">
+                                        <template
+                                            for:each={debugStreamSnapshotNewItemsBlocks}
+                                            for:item="block">
                                             <div key={block.key} class="agent-debug-block">
-                                                <div class="agent-debug-block-header slds-text-body_small">
-                                                    <span class="agent-debug-block-badge">{block.index}</span>
+                                                <div
+                                                    class="agent-debug-block-header slds-text-body_small">
+                                                    <span class="agent-debug-block-badge">
+                                                        {block.index}
+                                                    </span>
                                                 </div>
-                                                <pre class="agent-debug-pre agent-debug-block-pre">{block.content}</pre>
+                                                <pre class="agent-debug-pre agent-debug-block-pre">
+{block.content}</pre
+                                                >
                                             </div>
                                         </template>
                                     </template>
@@ -245,19 +343,31 @@
                                         <p class="agent-debug-empty slds-m-bottom_small">—</p>
                                     </template>
                                     <p class="agent-debug-subtitle">Last agent</p>
-                                    <pre class="agent-debug-pre agent-debug-block-pre">{debugLastAgentDisplay}</pre>
+                                    <pre class="agent-debug-pre agent-debug-block-pre">
+{debugLastAgentDisplay}</pre
+                                    >
                                 </div>
                             </template>
                             <template lwc:if={isDebugTabRawEvents}>
                                 <div class="agent-debug-section-body">
                                     <template lwc:if={debugRawEventBlocks.length}>
                                         <template for:each={debugRawEventBlocks} for:item="block">
-                                            <div key={block.key} class="agent-debug-block {block.typeClass}">
-                                                <div class="agent-debug-block-header slds-text-body_small">
-                                                    <span class="agent-debug-block-badge">{block.index}</span>
-                                                    <span class="agent-debug-block-type slds-m-left_x-small">{block.type}</span>
+                                            <div
+                                                key={block.key}
+                                                class="agent-debug-block {block.typeClass}">
+                                                <div
+                                                    class="agent-debug-block-header slds-text-body_small">
+                                                    <span class="agent-debug-block-badge">
+                                                        {block.index}
+                                                    </span>
+                                                    <span
+                                                        class="agent-debug-block-type slds-m-left_x-small">
+                                                        {block.type}
+                                                    </span>
                                                 </div>
-                                                <pre class="agent-debug-pre agent-debug-block-pre">{block.content}</pre>
+                                                <pre class="agent-debug-pre agent-debug-block-pre">
+{block.content}</pre
+                                                >
                                             </div>
                                         </template>
                                     </template>
@@ -270,15 +380,15 @@
                     </div>
                 </section>
                 <div class="slds-grid slds-wrap slds-grid_align-center">
-                    <agent-publisher class="slds-size_1-of-1 slds-large-size_2-of-3"
+                    <agent-publisher
+                        class="slds-size_1-of-1 slds-large-size_2-of-3"
                         is-audio-recorder-disabled={isAudioRecorderDisabled}
                         openai-key={openaiKey}
                         onsend={handleSendClick}
                         onstop={handleStopClick}
                         onclear={handleClearClick}
                         is-loading={isStreaming}
-                        model={selectedModel}
-                    ></agent-publisher>
+                        model={selectedModel}></agent-publisher>
                 </div>
             </template>
             <template lwc:else>
@@ -291,22 +401,21 @@
                                 displayed-messages={displayedMessages}
                                 streaming-message={streamingMessage}
                                 is-loading={isLoading}
-                                onretry={handleRetry}
-                            ></agent-message-list>
+                                onretry={handleRetry}></agent-message-list>
                         </div>
                     </div>
                 </section>
                 <!-- Prompt Entry -->
                 <div class="slds-grid slds-wrap slds-grid_align-center">
-                    <agent-publisher class="slds-size_1-of-1 slds-large-size_2-of-3"
+                    <agent-publisher
+                        class="slds-size_1-of-1 slds-large-size_2-of-3"
                         is-audio-recorder-disabled={isAudioRecorderDisabled}
                         openai-key={openaiKey}
                         onsend={handleSendClick}
                         onstop={handleStopClick}
                         onclear={handleClearClick}
                         is-loading={isStreaming}
-                        model={selectedModel}
-                    ></agent-publisher>
+                        model={selectedModel}></agent-publisher>
                 </div>
             </template>
         </div>

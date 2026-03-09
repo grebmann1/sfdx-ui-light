@@ -1,4 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { loggedInAgent, loggedOutAgent } from 'agent/agents';
+import { filterToolsByModel } from 'agent/tools';
+import { readFileContent, Message, Context, StreamingAgentService, Constants } from 'agent/utils';
 import {
     CACHE_CONFIG,
     loadExtensionConfigFromCache,
@@ -6,13 +9,12 @@ import {
     saveExtensionConfigToCache,
     loadSingleExtensionConfigFromCache,
 } from 'shared/cacheManager';
-import * as ERROR from './error';
-import { ensureOpenAIAgentsBundleLoaded } from 'shared/loader';
-import { isNotUndefinedOrNull, guid } from 'shared/utils';
 import { getEffectiveAgentSkills } from 'shared/defaultAgentSkills';
-import { readFileContent, Message, Context, StreamingAgentService, Constants } from 'agent/utils';
-import { loggedInAgent, loggedOutAgent } from 'agent/agents';
-import { filterToolsByModel } from 'agent/tools';
+import { ensureOpenAIAgentsBundleLoaded } from 'shared/loader';
+import LOGGER from 'shared/logger';
+import { isNotUndefinedOrNull, guid } from 'shared/utils';
+
+import * as ERROR from './error';
 
 const AGENT_CACHE_KEYS = {
     ACTIVE_ID: 'einstein_agent_active_id',
@@ -26,9 +28,7 @@ async function loadAgents() {
 
 function safeSerializeForDebug(obj) {
     try {
-        return JSON.parse(
-            JSON.stringify(obj, (_, v) => (typeof v === 'function' ? undefined : v))
-        );
+        return JSON.parse(JSON.stringify(obj, (_, v) => (typeof v === 'function' ? undefined : v)));
     } catch (_) {
         return null;
     }
@@ -60,7 +60,7 @@ function saveCacheSettings(state) {
             selectedModel,
         });
     } catch (e) {
-        console.error('Failed to save CONFIG to localstorage', e);
+        LOGGER.error('Failed to save CONFIG to localstorage', e);
     }
 }
 
@@ -69,7 +69,7 @@ function loadCacheSettings(cachedConfig, state) {
         const { conversations, activeConversationId, selectedModel } = cachedConfig;
         Object.assign(state, { conversations, activeConversationId, selectedModel });
     } catch (e) {
-        console.error('Failed to load CONFIG from localstorage', e);
+        LOGGER.error('Failed to load CONFIG from localstorage', e);
     }
 }
 
@@ -80,16 +80,16 @@ function hydrateMessagesFromConversations(state) {
         if (c.streamHistory && c.streamHistory.length > 0) {
             const msgs = Message.formatStreamHistory(c.streamHistory);
             const withoutWelcome = Array.isArray(msgs)
-                ? msgs.filter((m) => m.id !== Constants.WELCOME_MESSAGE.id)
+                ? msgs.filter(m => m.id !== Constants.WELCOME_MESSAGE.id)
                 : [];
             state.messagesById[c.id] = withoutWelcome;
-            console.log('[agent] hydrateMessagesFromConversations', {
+            LOGGER.debug('[agent] hydrateMessagesFromConversations', {
                 conversationId: c.id,
                 streamHistoryLength: c.streamHistory.length,
                 formattedCount: Array.isArray(msgs) ? msgs.length : 0,
                 afterFilterCount: withoutWelcome.length,
-                roles: withoutWelcome.map((m) => m.role),
-                types: withoutWelcome.map((m) => m.type),
+                roles: withoutWelcome.map(m => m.role),
+                types: withoutWelcome.map(m => m.type),
             });
         } else {
             state.messagesById[c.id] = [];
@@ -106,7 +106,7 @@ export const loadCacheSettingsAsync = createAsyncThunk(
                 CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATION_DATA.key
             );
         } catch (e) {
-            console.error('loadCacheSettings.rejected --> error', e);
+            LOGGER.error('loadCacheSettings.rejected --> error', e);
             dispatch(
                 ERROR.reduxSlice.actions.addError({
                     message: 'Failed to load CONFIG from localstorage',
@@ -206,11 +206,11 @@ const agentSlice = createSlice({
         setMessages: (state, action) => {
             const { id, messages } = action.payload;
             state.messagesById[id] = Array.isArray(messages) ? messages : [];
-            console.log('[agent] setMessages', {
+            LOGGER.debug('[agent] setMessages', {
                 conversationId: id,
                 count: state.messagesById[id].length,
-                roles: state.messagesById[id].map((m) => m.role),
-                types: state.messagesById[id].map((m) => m.type),
+                roles: state.messagesById[id].map(m => m.role),
+                types: state.messagesById[id].map(m => m.type),
             });
         },
         clearMessages: (state, action) => {
@@ -317,14 +317,7 @@ const MAX_CONTINUATIONS = 5;
 export const executeAgent = createAsyncThunk(
     'agent/executeAgent',
     async (
-        {
-            prompt,
-            directMessages = [],
-            files = [],
-            model,
-            conversationId,
-            continuationCount = 0,
-        },
+        { prompt, directMessages = [], files = [], model, conversationId, continuationCount = 0 },
         { getState, dispatch }
     ) => {
         const conversationIdForCleanup = conversationId;
@@ -355,384 +348,372 @@ async function runExecuteAgent(
     { prompt, directMessages = [], files = [], model, conversationId, continuationCount = 0 },
     { getState, dispatch, dispatchError }
 ) {
-        const state = getState();
-        let baseUrl = state.application?.openaiUrl || 'https://api.openai.com/v1';
-        const directOpenAI = 'https://api.openai.com/v1';
-        if (typeof window !== 'undefined' && window.location?.origin) {
-            if (!state.application?.openaiUrl || state.application.openaiUrl === directOpenAI) {
-                baseUrl = `${window.location.origin}/openai/v1`;
-            }
-            try {
-                const url = new URL(baseUrl);
-                if (
-                    (url.hostname === 'localhost' || url.hostname === '127.0.0.1') &&
-                    url.protocol === 'https:'
-                ) {
-                    url.protocol = 'http:';
-                    baseUrl = url.toString();
-                }
-            } catch (_) {
-                // keep baseUrl as-is if URL parsing fails
-            }
+    const state = getState();
+    let baseUrl = state.application?.openaiUrl || 'https://api.openai.com/v1';
+    const directOpenAI = 'https://api.openai.com/v1';
+    if (typeof window !== 'undefined' && window.location?.origin) {
+        if (!state.application?.openaiUrl || state.application.openaiUrl === directOpenAI) {
+            baseUrl = `${window.location.origin}/openai/v1`;
         }
-        const openaiKey = state.application?.openaiKey ?? '';
-        const isLoggedIn = !!state.application?.connector;
+        try {
+            const url = new URL(baseUrl);
+            if (
+                (url.hostname === 'localhost' || url.hostname === '127.0.0.1') &&
+                url.protocol === 'https:'
+            ) {
+                url.protocol = 'http:';
+                baseUrl = url.toString();
+            }
+        } catch (_) {
+            // keep baseUrl as-is if URL parsing fails
+        }
+    }
+    const openaiKey = state.application?.openaiKey ?? '';
+    const isLoggedIn = !!state.application?.connector;
 
-        const { loggedInAgent, loggedOutAgent } = await loadAgents();
-        const { Runner, user, setDefaultOpenAIClient, setOpenAIAPI } =
-            window.OpenAIAgentsBundle.Agents;
-        const OpenAI = (await import('openai')).default;
+    const { loggedInAgent, loggedOutAgent } = await loadAgents();
+    const { Runner, user, setDefaultOpenAIClient, setOpenAIAPI } = window.OpenAIAgentsBundle.Agents;
+    const OpenAI = (await import('openai')).default;
 
-        const openai = new OpenAI({
-            dangerouslyAllowBrowser: true,
-            apiKey: openaiKey,
-            baseURL: baseUrl,
-        });
-        setDefaultOpenAIClient(openai);
-        setOpenAIAPI('responses');
-        const selectedAgent = isLoggedIn ? loggedInAgent : loggedOutAgent;
+    const openai = new OpenAI({
+        dangerouslyAllowBrowser: true,
+        apiKey: openaiKey,
+        baseURL: baseUrl,
+    });
+    setDefaultOpenAIClient(openai);
+    setOpenAIAPI('responses');
+    const selectedAgent = isLoggedIn ? loggedInAgent : loggedOutAgent;
 
-        dispatch(reduxSlice.actions.startLoading({ id: conversationId }));
-        dispatch(reduxSlice.actions.startStreaming({ id: conversationId }));
+    dispatch(reduxSlice.actions.startLoading({ id: conversationId }));
+    dispatch(reduxSlice.actions.startStreaming({ id: conversationId }));
 
-        // Read files and upload PDFs if needed
-        let filesData = [];
-        if (files && files.length > 0) {
-            filesData = await Promise.all(files.map(readFileContent));
-            for (const file of filesData) {
-                if (file.type === 'application/pdf' && file.content) {
-                    try {
-                        const uploadResponse = await openai.files.create({
-                            file: new File(
-                                [await fetch(file.content).then(r => r.arrayBuffer())],
-                                file.name,
-                                { type: file.type }
-                            ),
-                            purpose: 'user_data',
-                        });
-                        if (uploadResponse && uploadResponse.id) {
-                            file._openaiFileId = uploadResponse.id;
-                        }
-                    } catch (err) {
-                        // swallow upload errors; continue without file id
+    // Read files and upload PDFs if needed
+    let filesData = [];
+    if (files && files.length > 0) {
+        filesData = await Promise.all(files.map(readFileContent));
+        for (const file of filesData) {
+            if (file.type === 'application/pdf' && file.content) {
+                try {
+                    const uploadResponse = await openai.files.create({
+                        file: new File(
+                            [await fetch(file.content).then(r => r.arrayBuffer())],
+                            file.name,
+                            { type: file.type }
+                        ),
+                        purpose: 'user_data',
+                    });
+                    if (uploadResponse && uploadResponse.id) {
+                        file._openaiFileId = uploadResponse.id;
                     }
+                } catch (err) {
+                    // swallow upload errors; continue without file id
                 }
             }
         }
+    }
 
-        // Initialize messages
-        let currentMessages = state.agent?.messagesById?.[conversationId] || [];
-        if (prompt) {
-            const uiMessage = user(prompt);
-            currentMessages = Message.updateOrAppendMessage(
-                currentMessages,
-                Message.formatMessage(uiMessage, filesData)
-            );
-            dispatch(
-                reduxSlice.actions.setMessages({ id: conversationId, messages: currentMessages })
-            );
-        } else if (directMessages && directMessages.length > 0) {
-            let updated = currentMessages;
-            directMessages.forEach(msg => {
-                updated = Message.appendMessageIfNotExists(updated, msg);
-            });
-            dispatch(reduxSlice.actions.setMessages({ id: conversationId, messages: updated }));
-        }
-
-        const rawMessages = (getState().agent?.messagesById?.[conversationId] || []).slice();
-        const conversationOnly = rawMessages.filter(
-            (msg) => msg.id !== Constants.WELCOME_MESSAGE.id
+    // Initialize messages
+    let currentMessages = state.agent?.messagesById?.[conversationId] || [];
+    if (prompt) {
+        const uiMessage = user(prompt);
+        currentMessages = Message.updateOrAppendMessage(
+            currentMessages,
+            Message.formatMessage(uiMessage, filesData)
         );
-        const messagesForRunner = conversationOnly.map((msg) =>
-            Message.ensureMessageContentArray(msg)
-        );
-        const currentModel = model || getState().agent?.selectedModel || 'gpt-5.3';
-        const runner = new Runner({
-            model: currentModel,
+        dispatch(reduxSlice.actions.setMessages({ id: conversationId, messages: currentMessages }));
+    } else if (directMessages && directMessages.length > 0) {
+        let updated = currentMessages;
+        directMessages.forEach(msg => {
+            updated = Message.appendMessageIfNotExists(updated, msg);
         });
+        dispatch(reduxSlice.actions.setMessages({ id: conversationId, messages: updated }));
+    }
 
-        const filteredTools = filterToolsByModel(selectedAgent.tools || [], currentModel);
-        const agentWithFilteredTools = new Proxy(selectedAgent, {
-            get(target, prop) {
-                if (prop === 'getAllTools') return () => filteredTools;
-                if (prop === 'tools') return filteredTools;
-                return target[prop];
-            },
-        });
+    const rawMessages = (getState().agent?.messagesById?.[conversationId] || []).slice();
+    const conversationOnly = rawMessages.filter(msg => msg.id !== Constants.WELCOME_MESSAGE.id);
+    const messagesForRunner = conversationOnly.map(msg => Message.ensureMessageContentArray(msg));
+    const currentModel = model || getState().agent?.selectedModel || 'gpt-5.3';
+    const runner = new Runner({
+        model: currentModel,
+    });
 
-        const fakeStore = { getState };
-        const dynamicContext = `\n                Context:\n                    ${await Context.getCurrentGlobalContext(fakeStore)}\n                    ${await Context.getCurrentApplicationContext(fakeStore)}\n                `;
-        const cachedSkills =
-            (await loadSingleExtensionConfigFromCache(CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key)) ||
-            [];
-        const skills = getEffectiveAgentSkills(cachedSkills);
-        const enabledSkills = skills.filter((s) => s && s.enabled);
-        const skillsText =
-            enabledSkills.length > 0
-                ? `\n## Tool-use guidelines (apply when selecting and calling tools)\nFollow these guidelines to decide which tools to use and when. Do not call a tool when the guideline says "when NOT to use".\n\n${enabledSkills
-                      .map(s => (s.content || '').trim())
-                      .filter(Boolean)
-                      .join('\n\n')}`
-                : '';
-        const runContext = { dynamicContext, skillsText };
-        const debugMode = getState().agent?.debugMode === true;
-        const rawEvents = [];
-        const serviceOptions = {
-            maxTurns: 25,
-            context: runContext,
-            ...(debugMode && {
-                onRawEvent: (event) => rawEvents.push(safeSerializeForDebug(event) ?? event),
-            }),
-            onChunk: chunk => {
-                if (chunk.delta !== undefined) {
-                    const current = getState().agent?.streamingMessageById?.[conversationId] || {
-                        id: guid(),
-                        role: 'assistant',
-                        content: '',
-                    };
-                    const prevContent =
-                        typeof current.content === 'string'
-                            ? current.content
-                            : Array.isArray(current.content) && current.content[0]?.text != null
-                              ? current.content[0].text
-                              : '';
-                    const next = {
-                        ...current,
-                        role: current.role || 'assistant',
-                        content: prevContent + chunk.delta,
-                    };
-                    dispatch(
-                        reduxSlice.actions.setStreamingMessage({
-                            id: conversationId,
-                            message: next,
-                        })
-                    );
-                } else {
-                    const contentStr =
-                        typeof chunk.text === 'string'
-                            ? chunk.text
-                            : Array.isArray(chunk.content)
-                              ? (chunk.content[0]?.text ?? '')
-                              : typeof chunk.content === 'string'
-                                ? chunk.content
-                                : '';
-                    const normalizedMessage = {
-                        id: chunk.id || guid(),
-                        role: chunk.role || 'assistant',
-                        content: contentStr,
-                    };
-                    dispatch(
-                        reduxSlice.actions.setStreamingMessage({
-                            id: conversationId,
-                            message: normalizedMessage,
-                        })
-                    );
-                    dispatch(reduxSlice.actions.stopLoading({ id: conversationId }));
-                }
-            },
-            onToolEvent: rawItem => {
-                const msg = Message.formatMessage(rawItem, []);
-                const list = (getState().agent?.messagesById?.[conversationId] || []).slice();
-                const updated = Message.appendMessageIfNotExists(list, msg);
-                dispatch(reduxSlice.actions.setMessages({ id: conversationId, messages: updated }));
-            },
-            onStreamEnd: async stream => {
-                const streamingMsg = getState().agent?.streamingMessageById?.[conversationId];
-                if (streamingMsg) {
-                    const isAssistantWithNoContent =
-                        streamingMsg.role === 'assistant' &&
-                        !Message.hasDisplayableContent(streamingMsg);
-                    if (!isAssistantWithNoContent) {
-                        const list = (getState().agent?.messagesById?.[conversationId] || []).slice();
-                        const updated = Message.appendMessageIfNotExists(list, streamingMsg);
-                        dispatch(
-                            reduxSlice.actions.setMessages({ id: conversationId, messages: updated })
-                        );
-                    }
-                    dispatch(reduxSlice.actions.clearStreamingMessage({ id: conversationId }));
-                }
-                dispatch(reduxSlice.actions.stopLoading({ id: conversationId }));
-                dispatch(reduxSlice.actions.stopStreaming({ id: conversationId }));
-                const fullList = getState().agent?.messagesById?.[conversationId] ?? [];
-                console.log('[agent] onStreamEnd: persisting messages', {
-                    conversationId,
-                    fullListCount: fullList.length,
-                    roles: fullList.map((m) => m.role),
-                    types: fullList.map((m) => m.type),
-                });
+    const filteredTools = filterToolsByModel(selectedAgent.tools || [], currentModel);
+    const agentWithFilteredTools = new Proxy(selectedAgent, {
+        get(target, prop) {
+            if (prop === 'getAllTools') return () => filteredTools;
+            if (prop === 'tools') return filteredTools;
+            return target[prop];
+        },
+    });
+
+    const fakeStore = { getState };
+    const dynamicContext = `\n                Context:\n                    ${await Context.getCurrentGlobalContext(fakeStore)}\n                    ${await Context.getCurrentApplicationContext(fakeStore)}\n                `;
+    const cachedSkills =
+        (await loadSingleExtensionConfigFromCache(CACHE_CONFIG.EINSTEIN_AGENT_SKILLS.key)) || [];
+    const skills = getEffectiveAgentSkills(cachedSkills);
+    const enabledSkills = skills.filter(s => s && s.enabled);
+    const skillsText =
+        enabledSkills.length > 0
+            ? `\n## Tool-use guidelines (apply when selecting and calling tools)\nFollow these guidelines to decide which tools to use and when. Do not call a tool when the guideline says "when NOT to use".\n\n${enabledSkills
+                  .map(s => (s.content || '').trim())
+                  .filter(Boolean)
+                  .join('\n\n')}`
+            : '';
+    const runContext = { dynamicContext, skillsText };
+    const debugMode = getState().agent?.debugMode === true;
+    const rawEvents = [];
+    const serviceOptions = {
+        maxTurns: 25,
+        context: runContext,
+        ...(debugMode && {
+            onRawEvent: event => rawEvents.push(safeSerializeForDebug(event) ?? event),
+        }),
+        onChunk: chunk => {
+            if (chunk.delta !== undefined) {
+                const current = getState().agent?.streamingMessageById?.[conversationId] || {
+                    id: guid(),
+                    role: 'assistant',
+                    content: '',
+                };
+                const prevContent =
+                    typeof current.content === 'string'
+                        ? current.content
+                        : Array.isArray(current.content) && current.content[0]?.text != null
+                          ? current.content[0].text
+                          : '';
+                const next = {
+                    ...current,
+                    role: current.role || 'assistant',
+                    content: prevContent + chunk.delta,
+                };
                 dispatch(
-                    reduxSlice.actions.updateConversationStreamHistory({
+                    reduxSlice.actions.setStreamingMessage({
                         id: conversationId,
-                        streamHistory: fullList,
+                        message: next,
                     })
                 );
-                dispatch(saveConversationsToCache());
-                delete streamingServices[conversationId];
-
-                if (debugMode) {
-                    const payload = {
-                        runContext: {
-                            model: currentModel,
-                            timestamp: new Date().toISOString(),
-                        },
-                        messagesSent: safeSerializeForDebug(conversationOnly) ?? conversationOnly,
-                        streamSnapshot: {
-                            history: safeSerializeForDebug(stream.history) ?? stream.history,
-                            newItems: safeSerializeForDebug(stream.newItems) ?? stream.newItems,
-                            lastAgent: safeSerializeForDebug(stream.lastAgent) ?? {},
-                        },
-                        rawEvents: rawEvents.slice(),
-                    };
-                    dispatch(
-                        reduxSlice.actions.setLastRunDebug({ id: conversationId, data: payload })
-                    );
-                }
-
-                // If the last tool is in stopAtToolNames (e.g. chrome_screenshot, agent_request_continue),
-                // re-run with the tool output as user message. Cap continuations for agent_request_continue.
-                try {
-                    const stopNames = stream?.lastAgent?.toolUseBehavior?.stopAtToolNames || [];
-                    const newItems = Array.isArray(stream?.newItems) ? stream.newItems : [];
-                    const lastItem = newItems.length > 0 ? newItems[newItems.length - 1] : null;
-                    const lastOutputName = lastItem?.rawItem?.name;
-                    if (lastItem && stopNames.includes(lastOutputName)) {
-                        const isAgentContinue = lastOutputName === 'agent_request_continue';
-                        if (
-                            isAgentContinue &&
-                            continuationCount >= MAX_CONTINUATIONS
-                        ) {
-                            dispatch(
-                                reduxSlice.actions.setError({
-                                    id: conversationId,
-                                    title: 'Limit reached',
-                                    message:
-                                        'Max automatic continuations reached. You can continue in a new message.',
-                                })
-                            );
-                            return;
-                        }
-                        const outputContent = lastItem?.output?.content;
-                        const isError = lastItem?.output?.isError;
-                        if (outputContent && !isError) {
-                            if (isAgentContinue) {
-                                const list =
-                                    getState().agent?.messagesById?.[conversationId] || [];
-                                const continuingMsg = {
-                                    id: guid(),
-                                    _key: guid(),
-                                    role: 'assistant',
-                                    content: 'Continuing with more steps…',
-                                };
-                                dispatch(
-                                    reduxSlice.actions.setMessages({
-                                        id: conversationId,
-                                        messages: [...list, continuingMsg],
-                                    })
-                                );
-                            }
-                            const userMsg = user('');
-                            userMsg.content = outputContent;
-                            await dispatch(
-                                executeAgent({
-                                    prompt: null,
-                                    directMessages: [Message.formatMessage(userMsg, [])],
-                                    files: [],
-                                    conversationId,
-                                    model: model || getState().agent?.selectedModel,
-                                    continuationCount: isAgentContinue
-                                        ? continuationCount + 1
-                                        : 0,
-                                })
-                            );
-                        } else if (isError) {
-                            await dispatch(
-                                executeAgent({
-                                    prompt: null,
-                                    directMessages: [],
-                                    files: [],
-                                    conversationId,
-                                    continuationCount,
-                                })
-                            );
-                        } else {
-                            // eslint-disable-next-line no-console
-                            console.error('No output content for stopAtToolNames item', lastItem);
-                        }
-                    }
-                } catch (e) {
-                    // eslint-disable-next-line no-console
-                    console.error('End-of-stream auto-resend handling failed', e);
-                }
-            },
-            onError: e => {
-                if (debugMode) {
-                    dispatch(
-                        reduxSlice.actions.setLastRunDebug({
-                            id: conversationId,
-                            data: {
-                                runContext: {
-                                    model: currentModel,
-                                    timestamp: new Date().toISOString(),
-                                },
-                                error: {
-                                    message: e?.message ?? String(e),
-                                    name: e?.name,
-                                },
-                            },
-                        })
-                    );
-                }
-                const msg = e?.message || '';
-                const unsupportedTextMatch =
-                    msg.indexOf('Unsupported output content type') >= 0 &&
-                    (() => {
-                        try {
-                            const start = msg.indexOf('{');
-                            const end = msg.lastIndexOf('}') + 1;
-                            if (start >= 0 && end > start) {
-                                const obj = JSON.parse(msg.slice(start, end));
-                                if (obj && typeof obj.text === 'string' && (obj.type === 'text' || obj.type === 'input_text'))
-                                    return obj.text;
-                            }
-                        } catch (_) {}
-                        const jsonMatch = msg.match(/\{[^{}]*"type"\s*:\s*"(?:text|input_text)"[^{}]*"text"\s*:\s*"([^"]*(?:\\.[^"]*)*)"[^{}]*\}/);
-                        if (jsonMatch) return jsonMatch[1].replace(/\\"/g, '"');
-                        return null;
-                    })();
-                if (unsupportedTextMatch) {
-                    const list = (getState().agent?.messagesById?.[conversationId] || []).slice();
-                    const assistantMessage = {
-                        id: guid(),
-                        role: 'assistant',
-                        content: unsupportedTextMatch,
-                    };
-                    const updated = Message.appendMessageIfNotExists(list, assistantMessage);
-                    dispatch(reduxSlice.actions.setMessages({ id: conversationId, messages: updated }));
-                    dispatch(reduxSlice.actions.clearStreamingMessage({ id: conversationId }));
-                } else {
-                    dispatch(
-                        reduxSlice.actions.setError({
-                            id: conversationId,
-                            title: 'Error',
-                            message: msg,
-                        })
-                    );
-                }
+            } else {
+                const contentStr =
+                    typeof chunk.text === 'string'
+                        ? chunk.text
+                        : Array.isArray(chunk.content)
+                          ? (chunk.content[0]?.text ?? '')
+                          : typeof chunk.content === 'string'
+                            ? chunk.content
+                            : '';
+                const normalizedMessage = {
+                    id: chunk.id || guid(),
+                    role: chunk.role || 'assistant',
+                    content: contentStr,
+                };
+                dispatch(
+                    reduxSlice.actions.setStreamingMessage({
+                        id: conversationId,
+                        message: normalizedMessage,
+                    })
+                );
                 dispatch(reduxSlice.actions.stopLoading({ id: conversationId }));
-                dispatch(reduxSlice.actions.stopStreaming({ id: conversationId }));
-                delete streamingServices[conversationId];
-            },
-        };
-        const service = new StreamingAgentService(
-            runner,
-            agentWithFilteredTools,
-            messagesForRunner,
-            serviceOptions
-        );
+            }
+        },
+        onToolEvent: rawItem => {
+            const msg = Message.formatMessage(rawItem, []);
+            const list = (getState().agent?.messagesById?.[conversationId] || []).slice();
+            const updated = Message.appendMessageIfNotExists(list, msg);
+            dispatch(reduxSlice.actions.setMessages({ id: conversationId, messages: updated }));
+        },
+        onStreamEnd: async stream => {
+            const streamingMsg = getState().agent?.streamingMessageById?.[conversationId];
+            if (streamingMsg) {
+                const isAssistantWithNoContent =
+                    streamingMsg.role === 'assistant' &&
+                    !Message.hasDisplayableContent(streamingMsg);
+                if (!isAssistantWithNoContent) {
+                    const list = (getState().agent?.messagesById?.[conversationId] || []).slice();
+                    const updated = Message.appendMessageIfNotExists(list, streamingMsg);
+                    dispatch(
+                        reduxSlice.actions.setMessages({ id: conversationId, messages: updated })
+                    );
+                }
+                dispatch(reduxSlice.actions.clearStreamingMessage({ id: conversationId }));
+            }
+            dispatch(reduxSlice.actions.stopLoading({ id: conversationId }));
+            dispatch(reduxSlice.actions.stopStreaming({ id: conversationId }));
+            const fullList = getState().agent?.messagesById?.[conversationId] ?? [];
+            LOGGER.debug('[agent] onStreamEnd: persisting messages', {
+                conversationId,
+                fullListCount: fullList.length,
+                roles: fullList.map(m => m.role),
+                types: fullList.map(m => m.type),
+            });
+            dispatch(
+                reduxSlice.actions.updateConversationStreamHistory({
+                    id: conversationId,
+                    streamHistory: fullList,
+                })
+            );
+            dispatch(saveConversationsToCache());
+            delete streamingServices[conversationId];
 
-        streamingServices[conversationId] = service;
-        await service.startStreaming();
-        return { started: true };
+            if (debugMode) {
+                const payload = {
+                    runContext: {
+                        model: currentModel,
+                        timestamp: new Date().toISOString(),
+                    },
+                    messagesSent: safeSerializeForDebug(conversationOnly) ?? conversationOnly,
+                    streamSnapshot: {
+                        history: safeSerializeForDebug(stream.history) ?? stream.history,
+                        newItems: safeSerializeForDebug(stream.newItems) ?? stream.newItems,
+                        lastAgent: safeSerializeForDebug(stream.lastAgent) ?? {},
+                    },
+                    rawEvents: rawEvents.slice(),
+                };
+                dispatch(reduxSlice.actions.setLastRunDebug({ id: conversationId, data: payload }));
+            }
+
+            // If the last tool is in stopAtToolNames (e.g. chrome_screenshot, agent_request_continue),
+            // re-run with the tool output as user message. Cap continuations for agent_request_continue.
+            try {
+                const stopNames = stream?.lastAgent?.toolUseBehavior?.stopAtToolNames || [];
+                const newItems = Array.isArray(stream?.newItems) ? stream.newItems : [];
+                const lastItem = newItems.length > 0 ? newItems[newItems.length - 1] : null;
+                const lastOutputName = lastItem?.rawItem?.name;
+                if (lastItem && stopNames.includes(lastOutputName)) {
+                    const isAgentContinue = lastOutputName === 'agent_request_continue';
+                    if (isAgentContinue && continuationCount >= MAX_CONTINUATIONS) {
+                        dispatch(
+                            reduxSlice.actions.setError({
+                                id: conversationId,
+                                title: 'Limit reached',
+                                message:
+                                    'Max automatic continuations reached. You can continue in a new message.',
+                            })
+                        );
+                        return;
+                    }
+                    const outputContent = lastItem?.output?.content;
+                    const isError = lastItem?.output?.isError;
+                    if (outputContent && !isError) {
+                        if (isAgentContinue) {
+                            const list = getState().agent?.messagesById?.[conversationId] || [];
+                            const continuingMsg = {
+                                id: guid(),
+                                _key: guid(),
+                                role: 'assistant',
+                                content: 'Continuing with more steps…',
+                            };
+                            dispatch(
+                                reduxSlice.actions.setMessages({
+                                    id: conversationId,
+                                    messages: [...list, continuingMsg],
+                                })
+                            );
+                        }
+                        const userMsg = user('');
+                        userMsg.content = outputContent;
+                        await dispatch(
+                            executeAgent({
+                                prompt: null,
+                                directMessages: [Message.formatMessage(userMsg, [])],
+                                files: [],
+                                conversationId,
+                                model: model || getState().agent?.selectedModel,
+                                continuationCount: isAgentContinue ? continuationCount + 1 : 0,
+                            })
+                        );
+                    } else if (isError) {
+                        await dispatch(
+                            executeAgent({
+                                prompt: null,
+                                directMessages: [],
+                                files: [],
+                                conversationId,
+                                continuationCount,
+                            })
+                        );
+                    } else {
+                        LOGGER.error('No output content for stopAtToolNames item', lastItem);
+                    }
+                }
+            } catch (e) {
+                LOGGER.error('End-of-stream auto-resend handling failed', e);
+            }
+        },
+        onError: e => {
+            if (debugMode) {
+                dispatch(
+                    reduxSlice.actions.setLastRunDebug({
+                        id: conversationId,
+                        data: {
+                            runContext: {
+                                model: currentModel,
+                                timestamp: new Date().toISOString(),
+                            },
+                            error: {
+                                message: e?.message ?? String(e),
+                                name: e?.name,
+                            },
+                        },
+                    })
+                );
+            }
+            const msg = e?.message || '';
+            const unsupportedTextMatch =
+                msg.indexOf('Unsupported output content type') >= 0 &&
+                (() => {
+                    try {
+                        const start = msg.indexOf('{');
+                        const end = msg.lastIndexOf('}') + 1;
+                        if (start >= 0 && end > start) {
+                            const obj = JSON.parse(msg.slice(start, end));
+                            if (
+                                obj &&
+                                typeof obj.text === 'string' &&
+                                (obj.type === 'text' || obj.type === 'input_text')
+                            )
+                                return obj.text;
+                        }
+                    } catch (_) {}
+                    const jsonMatch = msg.match(
+                        /\{[^{}]*"type"\s*:\s*"(?:text|input_text)"[^{}]*"text"\s*:\s*"([^"]*(?:\\.[^"]*)*)"[^{}]*\}/
+                    );
+                    if (jsonMatch) return jsonMatch[1].replace(/\\"/g, '"');
+                    return null;
+                })();
+            if (unsupportedTextMatch) {
+                const list = (getState().agent?.messagesById?.[conversationId] || []).slice();
+                const assistantMessage = {
+                    id: guid(),
+                    role: 'assistant',
+                    content: unsupportedTextMatch,
+                };
+                const updated = Message.appendMessageIfNotExists(list, assistantMessage);
+                dispatch(reduxSlice.actions.setMessages({ id: conversationId, messages: updated }));
+                dispatch(reduxSlice.actions.clearStreamingMessage({ id: conversationId }));
+            } else {
+                dispatch(
+                    reduxSlice.actions.setError({
+                        id: conversationId,
+                        title: 'Error',
+                        message: msg,
+                    })
+                );
+            }
+            dispatch(reduxSlice.actions.stopLoading({ id: conversationId }));
+            dispatch(reduxSlice.actions.stopStreaming({ id: conversationId }));
+            delete streamingServices[conversationId];
+        },
+    };
+    const service = new StreamingAgentService(
+        runner,
+        agentWithFilteredTools,
+        messagesForRunner,
+        serviceOptions
+    );
+
+    streamingServices[conversationId] = service;
+    await service.startStreaming();
+    return { started: true };
 }
 
 export const stopAgent = createAsyncThunk('agent/stopAgent', async ({ id }, { dispatch }) => {

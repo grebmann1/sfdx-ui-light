@@ -9,7 +9,8 @@ export default class Callback extends LightningElement {
     connectedCallback() {
         if (typeof window === 'undefined' || !window.jsforce) return;
         const hash = window.location.hash?.substring(1);
-        const stateFromStorage = typeof localStorage !== 'undefined' ? localStorage.getItem('jsforce_state') : null;
+        const stateFromStorage =
+            typeof localStorage !== 'undefined' ? localStorage.getItem('jsforce_state') : null;
         if (hash && stateFromStorage) {
             const params = new URLSearchParams(hash);
             const stateFromHash = params.get('state');

@@ -1,8 +1,5 @@
 import { LightningElement, api } from 'lwc';
-import {
-    normalizeString as normalize,
-    classSet,
-} from 'shared/utils';
+import { normalizeString as normalize, classSet } from 'shared/utils';
 
 export default class VerticalPanel extends LightningElement {
     @api position;
@@ -41,8 +38,15 @@ export default class VerticalPanel extends LightningElement {
 
     get normalizedSize() {
         return normalize(this.size, {
-            fallbackValue: 'default',// Default doesn't exist in SLDS !!!
-            validValues: ['default', 'slds-size_small', 'slds-size_medium', 'slds-size_large', 'slds-size_x-large', 'slds-size_full'],
+            fallbackValue: 'default', // Default doesn't exist in SLDS !!!
+            validValues: [
+                'default',
+                'slds-size_small',
+                'slds-size_medium',
+                'slds-size_large',
+                'slds-size_x-large',
+                'slds-size_full',
+            ],
         });
     }
 

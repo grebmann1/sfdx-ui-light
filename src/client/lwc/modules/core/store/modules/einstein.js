@@ -1,7 +1,12 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
-import { lowerCaseKey, isNotUndefinedOrNull, splitTextByTimestamp, ASSISTANT as ASSISTANT_UTILS } from 'shared/utils';
 import ASSISTANTS from 'ai/assistants';
 import LOGGER from 'shared/logger';
+import {
+    lowerCaseKey,
+    isNotUndefinedOrNull,
+    splitTextByTimestamp,
+    ASSISTANT as ASSISTANT_UTILS,
+} from 'shared/utils';
 
 export const MODEL_OPTIONS = [
     { label: 'gpt-5', value: 'gpt-5-2025-08-07' },
@@ -17,12 +22,10 @@ export const MODEL_OPTIONS = [
     { label: 'o4.mini', value: 'o4-mini-2025-04-16' },
 ];
 
-
 export const PROVIDER_OPTIONS = [
     { label: 'OpenAI', value: 'openai' },
     { label: 'Apex (Salesforce)', value: 'apex' },
 ];
-
 
 const test = `59.0 APEX_CODE,DEBUG
 Execute Anonymous: aiplatform.ModelsAPI.createChatGenerations_Request request = new aiplatform.ModelsAPI.createChatGenerations_Request();
@@ -180,7 +183,9 @@ export const einsteinExecuteModel = createAsyncThunk(
                 .filter(x => x.includes('|USER_DEBUG|'))
                 .join('');
 
-            const [id, role, content] = extractEinsteinToolkitContent(text).split(ASSISTANT_UTILS.separator_token);
+            const [id, role, content] = extractEinsteinToolkitContent(text).split(
+                ASSISTANT_UTILS.separator_token
+            );
             return {
                 data: [].concat(messages, { id, role, content }),
                 body,
@@ -200,38 +205,48 @@ export const einsteinExecuteModel = createAsyncThunk(
 
 const _innerExecute = (dispatch, { assistant, messages, tabId, onStream, alias }) => {
     return new Promise((resolve, reject) => {
-        try{
+        try {
             assistant
-            .setInstructions(ASSISTANT_UTILS.instructionFormatted)
-            .init()
-            .addMessages([...messages])
-            .onStream(message => {
-                resolve(message);
-                if (onStream) onStream(message);
-            })
-            .onStreamEnd(message => {
-                LOGGER.debug('message end --> ', message);
-                dispatch(einsteinSlice.actions.updateStreamingMessage({ tabId, message, alias, isSave: true }));
-            })
-            .onError(error => {
-                LOGGER.error('###### Error in execute:', error);
-                reject(error);
-            })
-            .execute();
-        }catch(err){
+                .setInstructions(ASSISTANT_UTILS.instructionFormatted)
+                .init()
+                .addMessages([...messages])
+                .onStream(message => {
+                    resolve(message);
+                    if (onStream) onStream(message);
+                })
+                .onStreamEnd(message => {
+                    LOGGER.debug('message end --> ', message);
+                    dispatch(
+                        einsteinSlice.actions.updateStreamingMessage({
+                            tabId,
+                            message,
+                            alias,
+                            isSave: true,
+                        })
+                    );
+                })
+                .onError(error => {
+                    LOGGER.error('###### Error in execute:', error);
+                    reject(error);
+                })
+                .execute();
+        } catch (err) {
             LOGGER.error('###### Error in _innerExecute:', err);
             reject(err);
         }
     });
-}
+};
 
 export const openaiExecuteModel = createAsyncThunk(
     'einstein/openaiExecuteModel',
-    async ({ messages, tabId, alias, model = 'gpt-4o-mini', aiProvider = 'openai', onStream }, { dispatch, getState }) => {
+    async (
+        { messages, tabId, alias, model = 'gpt-4o-mini', aiProvider = 'openai', onStream },
+        { dispatch, getState }
+    ) => {
         try {
             const assistant = new ASSISTANTS.Assistant({
                 model,
-                aiProvider
+                aiProvider,
             });
             const responses = await _innerExecute(dispatch, {
                 assistant,
@@ -468,7 +483,8 @@ const einsteinSlice = createSlice({
             .addCase(openaiExecuteModel.rejected, (state, action) => {
                 const { tabId, messages } = action.meta.arg;
                 const error = action.error;
-                const lastMessage = messages && messages.length > 0 ? messages[messages.length - 1] : {};
+                const lastMessage =
+                    messages && messages.length > 0 ? messages[messages.length - 1] : {};
                 einsteinModelAdapter.upsertOne(state.dialog, {
                     id: lowerCaseKey(tabId),
                     isFetching: false,

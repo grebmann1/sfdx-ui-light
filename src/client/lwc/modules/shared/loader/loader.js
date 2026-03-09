@@ -64,4 +64,3 @@ export async function ensureMermaidLoaded() {
     await loadScriptOnce(src);
     return window.mermaid;
 }
-

@@ -182,7 +182,7 @@ export default class App extends ToolkitElement {
         this.selectedAgentSkillId = newId;
     };
 
-    handleRemoveAgentSkill = (e) => {
+    handleRemoveAgentSkill = e => {
         e.stopPropagation();
         const id = e.currentTarget.dataset.skillId;
         if (!id) return;
@@ -199,7 +199,7 @@ export default class App extends ToolkitElement {
         this.config = { ...this.config, [key]: skills };
     };
 
-    handleSelectAgentSkill = (e) => {
+    handleSelectAgentSkill = e => {
         const id = e.currentTarget.dataset.skillId;
         if (id) this.selectedAgentSkillId = id;
     };
@@ -444,12 +444,11 @@ export default class App extends ToolkitElement {
         return Boolean(this.selectedAgentSkill?.defaultToolId);
     }
 
-    handleAgentSkillNavKeydown = (e) => {
+    handleAgentSkillNavKeydown = e => {
         if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             const id = e.currentTarget.dataset.skillId;
             if (id) this.selectedAgentSkillId = id;
         }
     };
-
 }

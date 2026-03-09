@@ -19,21 +19,20 @@ export default class StreamingAgentService {
     async startStreaming() {
         try {
             this.currentAbortController = new AbortController();
-            const stream = await this.runner.run(
-                this.agent,
-                this.messages,
-                {
-                    ...this.options,
-                    stream: true,
-                    signal: this.currentAbortController.signal,
-                }
-            );
+            const stream = await this.runner.run(this.agent, this.messages, {
+                ...this.options,
+                stream: true,
+                signal: this.currentAbortController.signal,
+            });
             this.currentStream = stream;
             for await (const event of stream) {
                 this.onRawEvent(event);
                 if (event.type === 'raw_model_stream_event') {
                     const data = event.data;
-                    if (data.type === 'model' && data.event?.type === 'response.output_item.added') {
+                    if (
+                        data.type === 'model' &&
+                        data.event?.type === 'response.output_item.added'
+                    ) {
                         const item = data.event.item;
                         const textContent = typeof item?.text === 'string' ? item.text : '';
                         if (textContent && (item?.type === 'text' || item?.type === 'input_text')) {

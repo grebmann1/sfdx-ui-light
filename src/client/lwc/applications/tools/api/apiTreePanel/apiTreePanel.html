@@ -5,26 +5,23 @@
         title={title}
         position="left"
         is-open={isOpen}
-        onclose={handleClose}
-    >
+        onclose={handleClose}>
         <div slot="actions">
             <lightning-button
                 class="slds-p-right_xx-small"
                 label="Import API"
                 icon-name="utility:upload"
                 icon-position="right"
-                onclick={handleUpload}
-            ></lightning-button>
+                onclick={handleUpload}></lightning-button>
         </div>
         <template if:false={selectedProject}>
             <!-- View 1: Project selection tree -->
-            <slds-file-tree 
+            <slds-file-tree
                 is-delete-disabled
                 tree={projectTree}
                 min-search-length="1"
                 search-fields={projectSearchFields}
-                onselect={handleSelectProject}
-            ></slds-file-tree>
+                onselect={handleSelectProject}></slds-file-tree>
         </template>
         <template if:true={selectedProject}>
             <!-- View 2: Project details -->
@@ -35,9 +32,10 @@
                     title="Back"
                     variant="bare"
                     onclick={handleBack}
-                    class="slds-m-right_small"
-                ></lightning-button-icon>
-                <h3 class="slds-text-title_bold" title={selectedProject.name}>{selectedProject.name}</h3>
+                    class="slds-m-right_small"></lightning-button-icon>
+                <h3 class="slds-text-title_bold" title={selectedProject.name}>
+                    {selectedProject.name}
+                </h3>
             </div>
             <div class="api-treepanel-body slds-p-around_x-small">
                 <lightning-combobox
@@ -46,16 +44,14 @@
                     value={selectedServerUrl}
                     options={serverOptions}
                     onchange={handleServerChange}
-                    class="slds-m-bottom_small"
-                ></lightning-combobox>
+                    class="slds-m-bottom_small"></lightning-combobox>
                 <!-- You can add a search input here if needed -->
                 <slds-file-tree
                     is-delete-disabled
                     tree={apiDetailsTree}
                     min-search-length="1"
                     search-fields={apiSearchFields}
-                    onselect={handleSelect}
-                ></slds-file-tree>
+                    onselect={handleSelect}></slds-file-tree>
                 <template if:true={selectedNode}>
                     <div class="api-treepanel-details slds-m-top_small">
                         <!-- Render details for selectedNode here -->

@@ -1,55 +1,59 @@
-import { z } from 'zod';
 import { store, UI, QUERY, DOCUMENT, SELECTORS } from 'core/store';
-import { waitForLoaded, wrappedNavigate, formatTabId } from './utils/utils.js';
 import LOGGER from 'shared/logger';
+import { z } from 'zod';
+
+import { waitForLoaded, wrappedNavigate, formatTabId } from './utils/utils.js';
+
 const { tool } = window.OpenAIAgentsBundle?.Agents || {};
 // Execute a SOQL query and return the result
 async function executeSoqlQuery({ query, tabId }) {
     LOGGER.log('executeSoqlQuery');
     return await store.dispatch(async (dispatch, getState) => {
         const { application, ui } = getState();
-        const { tabId: realTabId, isNewTab } = formatTabId(tabId,ui.tabs);
+        const { tabId: realTabId, isNewTab } = formatTabId(tabId, ui.tabs);
         if (application.isLoading) await waitForLoaded();
         await wrappedNavigate({ applicationName: 'soql' });
         if (isNewTab) {
             await dispatch(UI.reduxSlice.actions.addTab({ tab: { id: realTabId, body: query } }));
         } else {
             await dispatch(UI.reduxSlice.actions.selectionTab({ id: realTabId }));
-            await dispatch(UI.reduxSlice.actions.updateSoql({
-                connector: application.connector,
-                soql: query,
-                //isDraft: false,
-            }));
+            await dispatch(
+                UI.reduxSlice.actions.updateSoql({
+                    connector: application.connector,
+                    soql: query,
+                    //isDraft: false,
+                })
+            );
         }
-        LOGGER.log('ExecuteSoqlQuery - 1',query);
+        LOGGER.log('ExecuteSoqlQuery - 1', query);
         const res = await dispatch(
             QUERY.executeQuery({
-                connector:application.connector,
+                connector: application.connector,
                 soql: query,
                 tabId: realTabId,
                 useToolingApi: false,
                 includeDeletedRecords: false,
             })
         );
-        LOGGER.log('ExecuteSoqlQuery - 2',res);
+        LOGGER.log('ExecuteSoqlQuery - 2', res);
         await dispatch(UI.reduxSlice.actions.selectionTab({ id: realTabId }));
         let _output = res.payload;
         if (res.error) {
             _output = { error: res.error };
         }
         Object.assign(_output, { tabId: realTabId });
-        LOGGER.log('ExecuteSoqlQuery - 3',_output);
+        LOGGER.log('ExecuteSoqlQuery - 3', _output);
         return _output;
     });
 }
 
 async function executeSoqlQueryIncognito({ query, useToolingApi, includeDeletedRecords }) {
-    LOGGER.log('executeSoqlQueryIncognito',query,useToolingApi,includeDeletedRecords);
+    LOGGER.log('executeSoqlQueryIncognito', query, useToolingApi, includeDeletedRecords);
     return await store.dispatch(async (dispatch, getState) => {
         const { application, ui } = getState();
         const res = await dispatch(
             QUERY.executeQueryIncognito({
-                connector:application.connector,
+                connector: application.connector,
                 soql: query,
                 useToolingApi,
                 includeDeletedRecords,
@@ -59,13 +63,13 @@ async function executeSoqlQueryIncognito({ query, useToolingApi, includeDeletedR
         if (res.error) {
             _output = { error: res.error };
         }
-        LOGGER.log('ExecuteSoqlQueryIncognito - 1',_output);
+        LOGGER.log('ExecuteSoqlQueryIncognito - 1', _output);
         return _output;
     });
 }
 
-async function displaySoqlTab({ tabId }) {  
-    LOGGER.log('displaySoqlTab',tabId);
+async function displaySoqlTab({ tabId }) {
+    LOGGER.log('displaySoqlTab', tabId);
     return await store.dispatch(async (dispatch, getState) => {
         await dispatch(UI.reduxSlice.actions.selectionTab({ id: tabId }));
     });
@@ -81,10 +85,17 @@ async function fetchSoqlSavedQueries({ alias }) {
 
 const soqlQuery = tool({
     name: 'soql_query',
-    description: 'Display and execute an SOQL query in the Salesforce Toolkit Query Editor. Only suitable when the user want to see the query/result in the Salesforce Toolkit Query Editor.',
+    description:
+        'Display and execute an SOQL query in the Salesforce Toolkit Query Editor. Only suitable when the user want to see the query/result in the Salesforce Toolkit Query Editor.',
     parameters: z.object({
         query: z.string(),
-        tabId: z.string().optional().nullable().describe('Optional tab ID to reuse when the tool is called again with the same context/request'),
+        tabId: z
+            .string()
+            .optional()
+            .nullable()
+            .describe(
+                'Optional tab ID to reuse when the tool is called again with the same context/request'
+            ),
     }),
     execute: async ({ query, tabId }) => {
         return await executeSoqlQuery({ query, tabId });
@@ -93,7 +104,8 @@ const soqlQuery = tool({
 
 const soqlQueryIncognito = tool({
     name: 'soql_query_incognito',
-    description: 'Execute a SOQL query (Incognito mode) without displaying it in the UI. Recommended if you want to execute a query without displaying it in the UI.',
+    description:
+        'Execute a SOQL query (Incognito mode) without displaying it in the UI. Recommended if you want to execute a query without displaying it in the UI.',
     parameters: z.object({
         query: z.string(),
         useToolingApi: z.boolean().describe('Use Tooling API').default(false),

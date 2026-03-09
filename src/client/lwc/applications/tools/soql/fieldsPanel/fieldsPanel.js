@@ -60,7 +60,7 @@ export default class FieldsPanel extends ToolkitElement {
         // Assign Metadata
         if (sobjectState.data) {
             this.sobjectMeta = sobjectState.data;
-        }/*  else if (sobjectState.error) {
+        } /*  else if (sobjectState.error) {
             LOGGER.error(sobjectState.error);
             Toast.show({
                 message: this.i18n.FIELDS_PANEL_FAILED_DESCRIBE_OBJ,

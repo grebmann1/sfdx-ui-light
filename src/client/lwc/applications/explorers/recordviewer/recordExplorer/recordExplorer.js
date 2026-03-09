@@ -96,7 +96,7 @@ export default class RecordExplorer extends ToolkitElement {
             this.isLoading = true;
 
             this.currentTab = await getCurrentTab();
-            this.currentOrigin = this.connector?.frontDoorUrl+'&retURL=';
+            this.currentOrigin = this.connector?.frontDoorUrl + '&retURL=';
             // Get sobjectName (Step 2) // Should be optimized to save 1 API Call [Caching]
             this.sobjectName = await getCurrentObjectType(this.connector.conn, this.recordId); // to replace with describeGlobal using lastModified to fetch only the changes !
 

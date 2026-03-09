@@ -21,7 +21,7 @@ const TESTLEVEL = {
     RunLocalTests: 'RunLocalTests',
     RunAllTestsInOrg: 'RunAllTestsInOrg',
     RunSpecifiedTests: 'RunSpecifiedTests',
-    RunRelevantTests: 'RunRelevantTests'
+    RunRelevantTests: 'RunRelevantTests',
 };
 export default class ModalDeploy extends LightningModal {
     @api connector;

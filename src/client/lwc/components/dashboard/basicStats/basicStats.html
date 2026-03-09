@@ -5,12 +5,16 @@
             <div class="basic-stats-title text-sm font-normal" title={title}>{title}</div>
         </div>
         <div class="font-medium min-w-0 flex-1 overflow-visible">
-            <div class="basic-stats-value-row flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1 overflow-visible py-1 sm:py-0">
+            <div
+                class="basic-stats-value-row flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1 overflow-visible py-1 sm:py-0">
                 <span
                     class="text-2xl leading-tight text-neutral-100 dark:text-neutral-0 sm:text-3xl lg:text-4xl lg:leading-10">
                     {value}
                 </span>
-                <span class="basic-stats-sub shrink-0 whitespace-nowrap px-2 py-1.5 text-success-main">{subValue}</span>
+                <span
+                    class="basic-stats-sub shrink-0 whitespace-nowrap px-2 py-1.5 text-success-main">
+                    {subValue}
+                </span>
             </div>
         </div>
         <div class="min-w-0 break-words text-2xs font-normal">{description}</div>

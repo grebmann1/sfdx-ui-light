@@ -29,7 +29,7 @@ export default class SaveModal extends LightningModal {
         this.storage = value.isGlobal ? STORAGE_TYPE.GLOBAL : STORAGE_TYPE.LOCAL;
         this.folder = value?.extra?.folder || '';
         const fileTags = value?.extra?.tags;
-        this.tags = Array.isArray(fileTags) ? fileTags.join(', ') : (fileTags || '');
+        this.tags = Array.isArray(fileTags) ? fileTags.join(', ') : fileTags || '';
     }
 
     connectedCallback() {}

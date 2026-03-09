@@ -1,10 +1,12 @@
 // session.js
-import { getCurrentPlatform, PLATFORM } from '../platformService';
-import { normalizeConnection, getMatchingConfiguration , getConfigurations} from '../utils';
-import { OAUTH_TYPES } from './index';
-import { Connector } from '../connectorClass';
-import { isEmpty } from 'shared/utils';
 import LOGGER from 'shared/logger';
+import { isEmpty } from 'shared/utils';
+
+import { Connector } from '../connectorClass';
+import { getCurrentPlatform, PLATFORM } from '../platformService';
+import { normalizeConnection, getMatchingConfiguration, getConfigurations } from '../utils';
+
+import { OAUTH_TYPES } from './index';
 
 export async function connect({ sessionId, serverUrl, extra = {}, alias }) {
     try {
@@ -31,11 +33,11 @@ export async function connect({ sessionId, serverUrl, extra = {}, alias }) {
         const formattedServerUrl = serverUrl?.startsWith('https://')
             ? serverUrl
             : `https://${serverUrl}`;
-            
-        if(isEmpty(sessionId)){
+
+        if (isEmpty(sessionId)) {
             throw new Error('SessionId is required');
         }
-        if(isEmpty(serverUrl)){
+        if (isEmpty(serverUrl)) {
             throw new Error('ServerUrl is required');
         }
         // Persist to sessionStorage for this tab
@@ -62,7 +64,7 @@ export async function connect({ sessionId, serverUrl, extra = {}, alias }) {
 
         // Build configuration using generateConfiguration
         const connector = await Connector.createConnector({
-            alias:matchingConfiguration?.alias || alias,
+            alias: matchingConfiguration?.alias || alias,
             connection,
             credentialType: OAUTH_TYPES.SESSION,
             isEnrichDisabled,

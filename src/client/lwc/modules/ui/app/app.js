@@ -193,8 +193,8 @@ export default class App extends LightningElement {
                         };
                         const normalized = normalizeConfiguration(rawConfig, true);
                         const configs = await getConfigurations();
-                        const next = configs.some((c) => c.alias === payload.alias)
-                            ? configs.map((c) => (c.alias === payload.alias ? normalized : c))
+                        const next = configs.some(c => c.alias === payload.alias)
+                            ? configs.map(c => (c.alias === payload.alias ? normalized : c))
                             : [...configs, normalized];
                         await setConfigurations(next);
                         await saveSession({ credentialType: 'OAUTH', alias: payload.alias });
@@ -251,10 +251,10 @@ export default class App extends LightningElement {
         );
 
         // Connect to background
-        const context = { 
-            connector: this.connector, 
-            navContext: this.navContext, 
-            _backgroundPort: this._backgroundPort 
+        const context = {
+            connector: this.connector,
+            navContext: this.navContext,
+            _backgroundPort: this._backgroundPort,
         };
         connectToBackgroundWithIdentity(context);
         this._backgroundPort = context._backgroundPort;
@@ -335,7 +335,7 @@ export default class App extends LightningElement {
     loadFromCache = async () => {
         const config = await loadFromCache(this);
         this.isApplicationTabVisible = config.isApplicationTabVisible;
-        
+
         if (isEmpty(config.openaiKey)) {
             // `checkForInjected` exists in some app modules but not all.
             // Guard to avoid runtime crash when the method isn't implemented.
@@ -359,9 +359,9 @@ export default class App extends LightningElement {
             message: 'Session has expired. \n Please consider adding it to your list of orgs.',
             isAutoReconnectEnabled: isChromeExtension() && credentialType === OAUTH_TYPES.SESSION,
         });
-        if(result === SESSION_EXPIRED_RESULT.AUTO_RECONNECT){
+        if (result === SESSION_EXPIRED_RESULT.AUTO_RECONNECT) {
             await this.handleAutoReconnect();
-        }else{
+        } else {
             await store.dispatch(APPLICATION.reduxSlice.actions.logout());
         }
         this.sessionHasExpiredIsDisplayed = false;
@@ -462,8 +462,8 @@ export default class App extends LightningElement {
 
         this.applications = [];
         this.applicationId = null;
-        try{
-            LOGGER.log('Init Mode -->',this.isLimitedMode);
+        try {
+            LOGGER.log('Init Mode -->', this.isLimitedMode);
             if (this.isLimitedMode) {
                 await this.load_limitedMode();
             } else {
@@ -508,13 +508,13 @@ export default class App extends LightningElement {
             targetPage: this.targetPage,
             handleNavigation: this.handleNavigation.bind(this),
         });
-        
+
         // Reset session params after use
         if (result.success && isNotUndefinedOrNull(this.sessionId)) {
             this.sessionId = null;
             this.serverUrl = null;
         }
-        
+
         this.pageHasLoaded = true;
         if (this.targetPage) {
             this.handleNavigation(this.targetPage);
@@ -532,7 +532,7 @@ export default class App extends LightningElement {
             loadModule: this.loadModule.bind(this),
             handleNavigation: this.handleNavigation.bind(this),
         });
-        
+
         // Reset session params after use
         if (isNotUndefinedOrNull(this.sessionId)) {
             this.sessionId = null;
@@ -610,10 +610,10 @@ export default class App extends LightningElement {
 
     get uiMenuClass() {
         return classSet('l-container-vertical')
-        .add({
-            'slds-fill-height': !this.isMenuCollapsed,
-        })
-        .toString();
+            .add({
+                'slds-fill-height': !this.isMenuCollapsed,
+            })
+            .toString();
     }
 
     get applicationPreFormatted() {
@@ -684,5 +684,5 @@ export default class App extends LightningElement {
     /** Shortcuts **/
     initShortcuts = async () => {
         await initShortcuts({ navContext: this.navContext });
-    }
+    };
 }

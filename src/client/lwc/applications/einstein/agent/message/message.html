@@ -3,7 +3,8 @@
         <li class="slds-m-top_x-small">
             <div class="slds-chat-event">
                 <div class="slds-chat-event__body">
-                    <div class="slds-flex-column slds-align-items_center slds-justify-content-center">
+                    <div
+                        class="slds-flex-column slds-align-items_center slds-justify-content-center">
                         <p>
                             <span class="slds-text-title_bold">Reasoning:</span>
                         </p>
@@ -15,9 +16,7 @@
                         <span class="slds-icon-typing__dot"></span>
                         <span class="slds-icon-typing__dot"></span>
                         <span class="slds-icon-typing__dot"></span>
-                        <span class="slds-assistive-text">
-                            Reasoning
-                        </span>
+                        <span class="slds-assistive-text">Reasoning</span>
                     </span>
                 </div>
             </div>
@@ -28,12 +27,15 @@
             <li class="slds-m-top_x-small">
                 <div class="slds-chat-event">
                     <div class="slds-chat-event__body">
-                        <div class="slds-flex-column slds-align-items_center slds-justify-content-center">
+                        <div
+                            class="slds-flex-column slds-align-items_center slds-justify-content-center">
                             <p>
-                                <span class="slds-text-title_bold">{tool_message_title}:</span> {tool_name}
+                                <span class="slds-text-title_bold">{tool_message_title}:</span>
+                                {tool_name}
                             </p>
                             <template lwc:if={tool_isFinished}>
-                                <div class="slds-flex-row slds-align-items_center slds-justify-content-center">
+                                <div
+                                    class="slds-flex-row slds-align-items_center slds-justify-content-center">
                                     {toolParametersButtonTitle}
                                     <template lwc:if={tool_parameters}>
                                         <lightning-button-icon
@@ -41,34 +43,31 @@
                                             variant="container"
                                             size="small"
                                             title={toolParametersButtonTitle}
-                                            onclick={handleToggleToolParameters}
-                                        ></lightning-button-icon>
+                                            onclick={handleToggleToolParameters}></lightning-button-icon>
                                     </template>
                                 </div>
                             </template>
                         </div>
                     </div>
-    
+
                     <template lwc:if={tool_isRunning}>
                         <div class="slds-chat-event__agent-message slds-m-top_small">
                             <span class="slds-icon-typing slds-is-animated" title="Reasoning">
                                 <span class="slds-icon-typing__dot"></span>
                                 <span class="slds-icon-typing__dot"></span>
                                 <span class="slds-icon-typing__dot"></span>
-                                <span class="slds-assistive-text">
-                                    Loading...
-                                </span>
+                                <span class="slds-assistive-text">Loading...</span>
                             </span>
                         </div>
                     </template>
                     <template lwc:elseif={showToolParameters}>
-                        <div class="slds-chat-event__agent-message slds-truncate slds-truncate-vertical slds-m-top_x-small">
+                        <div
+                            class="slds-chat-event__agent-message slds-truncate slds-truncate-vertical slds-m-top_x-small">
                             <slds-code-block
                                 class="slds-full-height"
                                 code-block={tool_parametersFormatted}
                                 language="json"
-                                title="Formatted Parameters"
-                            ></slds-code-block>
+                                title="Formatted Parameters"></slds-code-block>
                         </div>
                     </template>
                 </div>
@@ -86,31 +85,30 @@
                                     variant="container"
                                     size="small"
                                     title={toolResponseButtonTitle}
-                                    onclick={handleToggleToolResponse}
-                                ></lightning-button-icon>
+                                    onclick={handleToggleToolResponse}></lightning-button-icon>
                             </template>
                         </div>
                     </div>
                     <template lwc:if={showToolResponse}>
-                        <div class="slds-chat-event__agent-message slds-truncate slds-truncate-vertical slds-m-top_x-small">
+                        <div
+                            class="slds-chat-event__agent-message slds-truncate slds-truncate-vertical slds-m-top_x-small">
                             <slds-code-block
                                 class="slds-full-height"
                                 code-block={tool_responseFormatted}
                                 language="json"
-                                title="Formatted Response"
-                            ></slds-code-block>
+                                title="Formatted Response"></slds-code-block>
                         </div>
                     </template>
-                    
                 </div>
             </li>
         </template>
-        
     </template>
     <template lwc:else>
         <li class={itemClass}>
             <template lwc:if={hasError}>
-                <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error slds-m-bottom_x-small" role="alert">
+                <div
+                    class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error slds-m-bottom_x-small"
+                    role="alert">
                     <span class="slds-assistive-text">Error</span>
                     <span>{errorMessage}</span>
                     <template lwc:if={isUser}>
@@ -119,8 +117,7 @@
                             size="small"
                             label="Retry"
                             onclick={handleRetry}
-                            class="slds-m-left_x-small"
-                        ></lightning-button>
+                            class="slds-m-left_x-small"></lightning-button>
                     </template>
                 </div>
             </template>
@@ -135,8 +132,7 @@
                                         <slds-markdown-viewer
                                             class="slds-flex-column slds-full-height"
                                             value={contentItem.text}
-                                            onchange={handleChange}
-                                        ></slds-markdown-viewer>
+                                            onchange={handleChange}></slds-markdown-viewer>
                                     </template>
                                 </div>
                             </template>
@@ -145,18 +141,26 @@
                                     <slds-markdown-viewer
                                         class="slds-flex-column slds-full-height"
                                         value={contentItem.text}
-                                        onchange={handleChange}
-                                    ></slds-markdown-viewer>
+                                        onchange={handleChange}></slds-markdown-viewer>
                                 </div>
                             </template>
                             <template lwc:elseif={contentItem.isInputImage}>
-                                <div key={contentItem.key} class="message-content-image slds-m-vertical_x-small">
-                                    <img src={contentItem.image} alt="User uploaded image" style="max-width: 100%; max-height: 300px;" />
+                                <div
+                                    key={contentItem.key}
+                                    class="message-content-image slds-m-vertical_x-small">
+                                    <img
+                                        src={contentItem.image}
+                                        alt="User uploaded image"
+                                        style="max-width: 100%; max-height: 300px" />
                                 </div>
                             </template>
                             <template lwc:elseif={contentItem.isInputFile}>
-                                <div key={contentItem.key} class="message-content-file slds-m-vertical_x-small">
-                                    <span>File: {contentItem.file_id} ({contentItem.size} bytes)</span>
+                                <div
+                                    key={contentItem.key}
+                                    class="message-content-file slds-m-vertical_x-small">
+                                    <span>
+                                        File: {contentItem.file_id} ({contentItem.size} bytes)
+                                    </span>
                                 </div>
                             </template>
                         </template>
@@ -168,13 +172,17 @@
                                 <slds-markdown-viewer
                                     class="slds-flex-column slds-full-height"
                                     value={content}
-                                    onchange={handleChange}
-                                ></slds-markdown-viewer>
+                                    onchange={handleChange}></slds-markdown-viewer>
                             </div>
                         </template>
                         <template lwc:if={isCurrentMessage}>
-                            <div class="slds-chat-typing-indicator slds-m-top_x-small" aria-live="polite" aria-label="Assistant is typing">
-                                <span class="slds-icon-typing slds-is-animated" title="Assistant is typing">
+                            <div
+                                class="slds-chat-typing-indicator slds-m-top_x-small"
+                                aria-live="polite"
+                                aria-label="Assistant is typing">
+                                <span
+                                    class="slds-icon-typing slds-is-animated"
+                                    title="Assistant is typing">
                                     <span class="slds-icon-typing__dot"></span>
                                     <span class="slds-icon-typing__dot"></span>
                                     <span class="slds-icon-typing__dot"></span>
@@ -184,24 +192,23 @@
                         </template>
                     </div>
                     <div class="slds-chat-message__meta">
-                    
                         <!-- Assistant message (Tool or Assistant) -->
                         <template lwc:if={isNotUser}>
                             <div class="slds-flex-column">
                                 {originMessage}
-                                <lightning-button-group class="slds-p-right_xx-small slds-m-bottom_x-small">
+                                <lightning-button-group
+                                    class="slds-p-right_xx-small slds-m-bottom_x-small">
                                     <lightning-button-icon
                                         icon-name="utility:copy_to_clipboard"
                                         variant="container"
                                         size="x-small"
                                         alternative-text="copy"
                                         title="Copy"
-                                        onclick={handleDownload}
-                                    ></lightning-button-icon>
+                                        onclick={handleDownload}></lightning-button-icon>
                                 </lightning-button-group>
                             </div>
                         </template>
-    
+
                         <!-- • 4:59 PM -->
                     </div>
                 </div>

@@ -97,7 +97,9 @@
     border-bottom: 2px solid transparent;
     cursor: pointer;
     margin-bottom: -1px;
-    transition: color 0.15s ease, border-color 0.15s ease;
+    transition:
+        color 0.15s ease,
+        border-color 0.15s ease;
 }
 
 .agent-debug-tab:hover {

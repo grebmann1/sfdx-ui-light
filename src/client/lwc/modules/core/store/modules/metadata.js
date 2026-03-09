@@ -1,8 +1,4 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import * as ERROR from './error';
-import * as SOBJECT from './sobject';
-import * as DESCRIBE from './describe';
-import { getStore } from '../storeRef';
 import { cacheManager, CACHE_ORG_DATA_TYPES } from 'shared/cacheManager';
 import LOGGER from 'shared/logger';
 import {
@@ -12,6 +8,12 @@ import {
     sortObjectsByField,
     METADATA as METADATA_UTILS,
 } from 'shared/utils';
+
+import { getStore } from '../storeRef';
+
+import * as DESCRIBE from './describe';
+import * as ERROR from './error';
+import * as SOBJECT from './sobject';
 
 const METADATA_SETTINGS_KEY = 'METADATA_SETTINGS_KEY';
 
@@ -84,8 +86,9 @@ const getMetadataConfig = async (connector, sobject) => {
 // Helper function to load specific metadata
 async function loadSpecificMetadata(connector, sobject, bypass) {
     const isSobject =
-        getStore()?.getState().metadata.metadata_global.records.find(x => x.name == sobject)?.isSobject ||
-        false;
+        getStore()
+            ?.getState()
+            .metadata.metadata_global.records.find(x => x.name == sobject)?.isSobject || false;
 
     if (!isSobject) {
         // Metadata API
@@ -369,8 +372,9 @@ const loadSpecificMetadataRecord2 = async (connector, { sobject, recordId, fullN
         files = await recordLoaders[sobject]();
     } else {
         const isSobject =
-            getStore()?.getState().metadata.metadata_global.records.find(x => x.name == sobject)
-                ?.isSobject || false;
+            getStore()
+                ?.getState()
+                .metadata.metadata_global.records.find(x => x.name == sobject)?.isSobject || false;
         if (isSobject) {
             selectedRecord = await load_recordFromToolingAPI(connector, sobject, recordId);
         } else {
@@ -417,7 +421,10 @@ const fetchGlobalMetadata = createAsyncThunk(
                     isSobject: sobjects.includes(obj.xmlName),
                 }));
 
-            result = [...result, ...METADATA_UTILS.METADATA_EXCEPTION_LIST.filter(x => x.isSearchable)];
+            result = [
+                ...result,
+                ...METADATA_UTILS.METADATA_EXCEPTION_LIST.filter(x => x.isSearchable),
+            ];
             return { records: result, label: 'Metadata' };
         } catch (error) {
             getStore()?.dispatch(
@@ -440,7 +447,8 @@ const fetchSpecificMetadata = createAsyncThunk(
 
             const { application, metadata } = getState();
             LOGGER.debug('application.connector', application.connector);
-            const exceptionMetadata = METADATA_UTILS.METADATA_EXCEPTION_LIST.find(x => x.name === sobject) || null;
+            const exceptionMetadata =
+                METADATA_UTILS.METADATA_EXCEPTION_LIST.find(x => x.name === sobject) || null;
             // Check if the requested sobject differs from the current state
             // Also reload if metadata_records is null (e.g., after goBack)
             if (metadata.currentMetadata !== sobject || force || !metadata.metadata_records) {
@@ -484,7 +492,8 @@ const fetchMetadataRecord = createAsyncThunk(
 
         try {
             const { application } = getState();
-            const exceptionMetadata = METADATA_UTILS.METADATA_EXCEPTION_LIST.find(x => x.name === sobject) || null;
+            const exceptionMetadata =
+                METADATA_UTILS.METADATA_EXCEPTION_LIST.find(x => x.name === sobject) || null;
 
             const flowVersions = { flowVersionOptions: [], flowVersionValue: null };
             if (exceptionMetadata) {

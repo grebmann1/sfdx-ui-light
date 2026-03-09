@@ -1,7 +1,12 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
-import * as DOCUMENT from './document';
+import {
+    cacheManager,
+    loadExtensionConfigFromCache,
+    saveExtensionConfigToCache,
+} from 'shared/cacheManager';
 import { lowerCaseKey, guid, isNotUndefinedOrNull } from 'shared/utils';
-import { cacheManager,loadExtensionConfigFromCache,saveExtensionConfigToCache } from 'shared/cacheManager';
+
+import * as DOCUMENT from './document';
 
 const apexFilesSelectors = DOCUMENT.apexFileAdapter.getSelectors(s => s);
 
@@ -60,8 +65,8 @@ function enrichTab(tab, state, selector) {
 export async function loadCacheSettings(alias) {
     const key = `${alias}-${ANONYNMOUS_APEX_SETTINGS_KEY}`;
     const configMap = await loadExtensionConfigFromCache([key]);
-    const configText = configMap?configMap[key]:null;
-    const cachedConfig = configText?JSON.parse(configText):null;
+    const configText = configMap ? configMap[key] : null;
+    const cachedConfig = configText ? JSON.parse(configText) : null;
     return cachedConfig;
 }
 
@@ -189,7 +194,10 @@ const apexSlice = createSlice({
             const cachedConfig = loadCacheSettings(alias);
             if (cachedConfig && !state.isInitialized) {
                 const { recentPanelToggled, tabs } = cachedConfig;
-                const cachedTabs = tabs && tabs.length > 0 ? enrichTabs(tabs, { apexFiles }, apexFilesSelectors) : [];
+                const cachedTabs =
+                    tabs && tabs.length > 0
+                        ? enrichTabs(tabs, { apexFiles }, apexFilesSelectors)
+                        : [];
                 const allTabs = [...cachedTabs, ...state.tabs];
                 Object.assign(state, {
                     //body:body || '',
@@ -239,11 +247,15 @@ const apexSlice = createSlice({
             });
         },
         initTabs: (state, action) => {
-            const { apexFiles,reset } = action.payload;
-            if(reset || !state.tabs || state.tabs.length === 0){
+            const { apexFiles, reset } = action.payload;
+            if (reset || !state.tabs || state.tabs.length === 0) {
                 state.tabs = enrichTabs(createInitialTabs(), { apexFiles }, apexFilesSelectors);
             } else {
-                state.tabs = enrichTabs(state.tabs.map(formatTab), { apexFiles }, apexFilesSelectors);
+                state.tabs = enrichTabs(
+                    state.tabs.map(formatTab),
+                    { apexFiles },
+                    apexFilesSelectors
+                );
             }
             // Set first tab
             if (state.tabs.length > 0) {
@@ -314,7 +326,7 @@ const apexSlice = createSlice({
                 [tabId]: null,
             };
         },
-        clearAbortingMap: (state) => {
+        clearAbortingMap: state => {
             state.abortingMap = {};
         },
     },

@@ -15,7 +15,9 @@
     border-radius: 8px;
     z-index: 10;
     pointer-events: none;
-    transition: background 0.2s, border-color 0.2s;
+    transition:
+        background 0.2s,
+        border-color 0.2s;
 }
 .file-upload-container.drag-active {
     border-color: var(--slds-g-color-brand-base-50, #0176d3);
@@ -62,7 +64,10 @@
     position: relative;
     box-sizing: border-box;
     width: 100%;
-    transition: box-shadow 100ms, border-color 100ms, background 200ms;
+    transition:
+        box-shadow 100ms,
+        border-color 100ms,
+        background 200ms;
 }
 .chat-input-pills-row {
     display: flex;
@@ -118,7 +123,8 @@
     padding: 0 2px;
     transition: background 0.1s;
 }
-.chat-pill-remove:hover, .chat-pill-remove:focus {
+.chat-pill-remove:hover,
+.chat-pill-remove:focus {
     background: var(--slds-g-color-neutral-base-90, #e5e5e5);
     color: var(--slds-g-color-error-base-50, #ea001e);
 }
@@ -176,7 +182,8 @@
     border-radius: 4px;
     transition: background 0.1s;
 }
-.chat-btn:hover, .chat-btn:focus {
+.chat-btn:hover,
+.chat-btn:focus {
     background: var(--slds-g-color-neutral-base-95, #f3f3f3);
 }
 
@@ -187,8 +194,12 @@
 }
 
 @keyframes sftk-rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 .chat-send-btn {
     margin-left: 2px;
@@ -201,7 +212,10 @@
 }
 .chat-loading-overlay {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: var(--slds-g-color-neutral-100-opacity-75, hsla(0, 0%, 100%, 0.75));
     display: flex;
     align-items: center;

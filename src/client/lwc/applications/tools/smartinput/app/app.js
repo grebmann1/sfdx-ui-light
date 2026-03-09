@@ -41,14 +41,14 @@ export default class App extends ToolkitElement {
      * Store wiring - syncs local reactive state with the SMARTINPUT slice
      */
 
-    formattedCategories = (categories) => {
-        if(!categories) return [];
+    formattedCategories = categories => {
+        if (!categories) return [];
         return Array.isArray(categories) ? categories : Object.values(categories);
-    }
+    };
     @wire(connectStore, { store })
     storeChange({ application, smartInput }) {
         const isCurrentApp = this.verifyIsActive(application.currentApplication);
-        if(isNotUndefinedOrNull(application.openaiKey)) {
+        if (isNotUndefinedOrNull(application.openaiKey)) {
             this.isEnhanceEnabled = true;
         }
         if (!isCurrentApp) return;
@@ -94,7 +94,7 @@ export default class App extends ToolkitElement {
     /**
      * Category Tree Handlers
      */
-    handleCategorySelect = (e) => {
+    handleCategorySelect = e => {
         const { id } = e.detail?.item || {};
         if (!id) return;
         // First, try to match a top-level category
@@ -104,7 +104,9 @@ export default class App extends ToolkitElement {
             return;
         }
         // Otherwise, search items and resolve to their parent category
-        const parentCategory = this.categoryTree.find(cat => (cat.items || []).some(it => it.id === id));
+        const parentCategory = this.categoryTree.find(cat =>
+            (cat.items || []).some(it => it.id === id)
+        );
         if (parentCategory) {
             store.dispatch(SMARTINPUT.reduxSlice.actions.setActiveCategoryId(parentCategory.id));
             // Highlight and scroll to the selected item in the list
@@ -115,7 +117,7 @@ export default class App extends ToolkitElement {
         }
     };
 
-    highlightAndScrollToItem = (itemId) => {
+    highlightAndScrollToItem = itemId => {
         if (!itemId) return;
         // Set highlight
         this.highlightItemId = itemId;
@@ -135,12 +137,12 @@ export default class App extends ToolkitElement {
                 el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
             }
         });
-    }
+    };
 
-    handleDeleteItem = async (e) => {
+    handleDeleteItem = async e => {
         const { id } = e.detail.item || {};
         if (!id) return;
-        
+
         // Delete category by id only (flat list)
         store.dispatch(SMARTINPUT.reduxSlice.actions.deleteItemOrCategory(id));
     };
@@ -166,7 +168,13 @@ export default class App extends ToolkitElement {
             while (existing.has(`${baseName} ${index}`)) index++;
             name = `${baseName} ${index}`;
         }
-        const category = { id: guid(), name, items: [], createdAt: Date.now(), type: CATEGORY_CUSTOM };
+        const category = {
+            id: guid(),
+            name,
+            items: [],
+            createdAt: Date.now(),
+            type: CATEGORY_CUSTOM,
+        };
         // Let the store assign the Category ref and persist
         store.dispatch(SMARTINPUT.reduxSlice.actions.addCategory(category));
     }
@@ -180,7 +188,7 @@ export default class App extends ToolkitElement {
         this.inputValue = '';
     };
 
-    handleCreateItems = async (e) => {
+    handleCreateItems = async e => {
         const items = (e.detail?.items || []).map(v => (v || '').toString().trim()).filter(Boolean);
         if (items.length === 0) return;
         const category = { ...this.activeCategory };
@@ -188,12 +196,18 @@ export default class App extends ToolkitElement {
         // Use highest existing code within the active category to avoid unnecessary increments
         const highestInCategory = Math.max(
             0,
-            ...((category.items || []).map(it => (Number.isFinite(it?.code) ? it.code : 0)))
+            ...(category.items || []).map(it => (Number.isFinite(it?.code) ? it.code : 0))
         );
         let nextCounter = highestInCategory + 1;
         const newItems = items.map(value => {
             const code = nextCounter++;
-            return { id: guid(), value, code, ref: `${category.ref || ''}${code}`, isFavorite: false}
+            return {
+                id: guid(),
+                value,
+                code,
+                ref: `${category.ref || ''}${code}`,
+                isFavorite: false,
+            };
         });
         category.items = [...(category.items || []), ...newItems];
         const next = (this.categories || []).map(p => (p.id === category.id ? category : p));
@@ -206,13 +220,13 @@ export default class App extends ToolkitElement {
      * Item List Handlers
      */
 
-    handleItemDeleteClick = async (e) => {
+    handleItemDeleteClick = async e => {
         const { id } = e.detail || {};
         if (!id) return;
         await this.deleteItemById(id);
     };
 
-    handleItemEditClick = async (e) => {
+    handleItemEditClick = async e => {
         const { id } = e.detail || {};
         if (!id) return;
         const current = (this.inputs || []).find(x => x.id === id);
@@ -220,11 +234,11 @@ export default class App extends ToolkitElement {
         this.editingValue = current?.value || '';
     };
 
-    handleInlineEditChange = (e) => {
+    handleInlineEditChange = e => {
         this.editingValue = e.detail?.value ?? e.target.value;
     };
 
-    handleInlineEditSave = async (e) => {
+    handleInlineEditSave = async e => {
         const id = e.detail?.id;
         if (!id) return;
         const value = (this.editingValue || '').trim();
@@ -245,7 +259,7 @@ export default class App extends ToolkitElement {
         this.editingValue = '';
     };
 
-    deleteItemById = async (id) => {
+    deleteItemById = async id => {
         const category = { ...this.activeCategory };
         if (!category) return;
         category.items = (category.items || []).filter(it => it.id !== id);
@@ -255,22 +269,29 @@ export default class App extends ToolkitElement {
         // persisted via reducers
     };
 
-    handleItemFavoriteChange = (e) => {
+    handleItemFavoriteChange = e => {
         const { id } = e.detail || {};
         if (!id) return;
         const category = { ...this.activeCategory };
         if (!category) return;
-        category.items = (category.items || []).map(it => (it.id === id ? { ...it, isFavorite: !it.isFavorite } : it));
+        category.items = (category.items || []).map(it =>
+            it.id === id ? { ...it, isFavorite: !it.isFavorite } : it
+        );
         const next = (this.categories || []).map(p => (p.id === category.id ? category : p));
         this.categories = next;
         store.dispatch(SMARTINPUT.reduxSlice.actions.setCategories(next));
     };
 
-    handleItemApplyClick = (e) => {
+    handleItemApplyClick = e => {
         const { item } = e.detail || {};
         if (!item) return;
-        if(isChromeExtension()){
-            try { console.log('[APP:SmartInput] Sending apply_input_value to injected (side panel tab only)', { item }); } catch (e) {}
+        if (isChromeExtension()) {
+            try {
+                console.log(
+                    '[APP:SmartInput] Sending apply_input_value to injected (side panel tab only)',
+                    { item }
+                );
+            } catch (e) {}
             chrome.runtime.sendMessage({
                 action: 'broadcastMessageToInjected',
                 content: { action: 'apply_input_value', item },
@@ -281,19 +302,21 @@ export default class App extends ToolkitElement {
     /**
      * Category name editing using slds-field
      */
-    categoryName_disableEvent = (event) => {
+    categoryName_disableEvent = event => {
         event.stopPropagation();
         event.preventDefault();
     };
 
-    categoryName_onChange = async (event) => {
+    categoryName_onChange = async event => {
         const value = (event.detail && event.detail.value) || '';
         const name = (value || '').trim();
         const category = { ...this.activeCategory };
         if (!category) return;
         if (name && name !== category.name) {
             category.name = name;
-            const next = (this.categories || []).map(p => (p.id === category.id ? { ...category } : p));
+            const next = (this.categories || []).map(p =>
+                p.id === category.id ? { ...category } : p
+            );
             this.categories = next;
             store.dispatch(SMARTINPUT.reduxSlice.actions.setCategories(next));
             // persisted via reducers
@@ -315,24 +338,29 @@ export default class App extends ToolkitElement {
     get formattedCategoryTree() {
         return this.categoryTree.map(category => {
             const isSystem = category.type === CATEGORY_SYSTEM;
-            const children = (category.items || []);
+            const children = category.items || [];
             return {
                 id: category.id,
                 name: category.name,
                 label: category.name,
-                icon: category.type === CATEGORY_CUSTOM ? 'utility:knowledge_smart_link' : 'utility:pinned',
+                icon:
+                    category.type === CATEGORY_CUSTOM
+                        ? 'utility:knowledge_smart_link'
+                        : 'utility:pinned',
                 isReadOnly: isSystem,
                 isDeletable: !isSystem,
-                ...(children.length > 0) && { children: children.map(it => ({
-                    id: it.id,
-                    name: it.value || it.name || '',
-                    title: it.value || it.name || '',
-                    isDeletable: true,
-                }))},
+                ...(children.length > 0 && {
+                    children: children.map(it => ({
+                        id: it.id,
+                        name: it.value || it.name || '',
+                        title: it.value || it.name || '',
+                        isDeletable: true,
+                    })),
+                }),
             };
         });
     }
-    
+
     get categoryTree() {
         return [...this.categories];
     }
@@ -353,17 +381,16 @@ export default class App extends ToolkitElement {
     // Enhance disabled state handled in composer
 
     get displayedInputs() {
-        let list = (this.inputs || []);
+        let list = this.inputs || [];
         if (this.showFavoritesOnly) {
             list = list.filter(x => !!x.isFavorite);
         }
-        const prepared = list
-            .map(x => ({
-                ...x,
-                disabled: false,
-                isEditing: x.id === this.editingItemId,
-                isHighlighted: x.id === this.highlightItemId,
-            }));
+        const prepared = list.map(x => ({
+            ...x,
+            disabled: false,
+            isEditing: x.id === this.editingItemId,
+            isHighlighted: x.id === this.highlightItemId,
+        }));
         return this.isSortReversed ? prepared.reverse() : prepared;
     }
 
@@ -371,5 +398,3 @@ export default class App extends ToolkitElement {
         return (this.displayedInputs || []).length > 0;
     }
 }
-
-

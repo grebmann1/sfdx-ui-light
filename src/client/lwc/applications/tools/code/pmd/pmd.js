@@ -37,10 +37,9 @@ export default class Pmd extends ToolkitElement {
     };
 
     installLatestPMD = async () => {
-        const { error, result } = await window.electron.invoke(
-            'code-installLatestPmd',
-            { projectPath: this.projectPath }
-        );
+        const { error, result } = await window.electron.invoke('code-installLatestPmd', {
+            projectPath: this.projectPath,
+        });
         if (error) {
             throw decodeError(error);
         }

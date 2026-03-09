@@ -1,20 +1,28 @@
 // chromeApi.js - Chrome tab/window/group interaction handlers for background.js
-import { compressImage, createErrorResponse, createSuccessResponse, toNumber, toNumberArray } from './utils/utils.js';
 import LOGGER from '../../client/lwc/modules/shared/logger/logger.js';
+
+import {
+    compressImage,
+    createErrorResponse,
+    createSuccessResponse,
+    toNumber,
+    toNumberArray,
+} from './utils/utils.js';
 
 // Helper to coerce string IDs to numbers
 
-
 export async function handleChromeOpenTab(args) {
     try {
-        LOGGER.log('--> handleChromeOpenTab',args);
-        const {url, windowId} = args;
+        LOGGER.log('--> handleChromeOpenTab', args);
+        const { url, windowId } = args;
         const tab = await chrome.tabs.create({ url, ...(windowId && { windowId }) });
-        return createSuccessResponse(`Tab opened successfully in window ${windowId || 'current'}, tabId: ${tab.id}`);
+        return createSuccessResponse(
+            `Tab opened successfully in window ${windowId || 'current'}, tabId: ${tab.id}`
+        );
     } catch (error) {
         LOGGER.error('--> chrome_open_tab error', error);
         return createErrorResponse(
-            `chrome_open_tab error: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+            `chrome_open_tab error: ${error instanceof Error ? error.message : JSON.stringify(error)}`
         );
     }
 }
@@ -28,7 +36,7 @@ export async function handleChromeNavigateTab(args) {
     } catch (error) {
         LOGGER.error('--> chrome_navigate_tab error', error);
         return createErrorResponse(
-            `chrome_navigate_tab error: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+            `chrome_navigate_tab error: ${error instanceof Error ? error.message : JSON.stringify(error)}`
         );
     }
 }
@@ -36,11 +44,13 @@ export async function handleChromeNavigateTab(args) {
 export async function handleChromeListTabs(args) {
     try {
         const tabs = await chrome.tabs.query({});
-        return createSuccessResponse(`Tabs listed successfully, ${tabs.length} tabs found : Tabs : ${JSON.stringify(tabs)}`);
+        return createSuccessResponse(
+            `Tabs listed successfully, ${tabs.length} tabs found : Tabs : ${JSON.stringify(tabs)}`
+        );
     } catch (error) {
         LOGGER.error('--> chrome_list_tabs error', error);
         return createErrorResponse(
-            `chrome_list_tabs error: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+            `chrome_list_tabs error: ${error instanceof Error ? error.message : JSON.stringify(error)}`
         );
     }
 }
@@ -49,13 +59,15 @@ export async function handleChromeListTabGroups(args) {
     try {
         if (chrome.tabGroups && chrome.tabGroups.query) {
             const groups = await chrome.tabGroups.query({});
-            return createSuccessResponse(`Tab groups listed successfully, ${groups.length} groups found : Groups : ${JSON.stringify(groups)}`);
+            return createSuccessResponse(
+                `Tab groups listed successfully, ${groups.length} groups found : Groups : ${JSON.stringify(groups)}`
+            );
         }
         throw new Error('Tab groups API not supported.');
     } catch (error) {
         LOGGER.error('--> chrome_list_tab_groups error', error);
         return createErrorResponse(
-            `chrome_list_tab_groups error: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+            `chrome_list_tab_groups error: ${error instanceof Error ? error.message : JSON.stringify(error)}`
         );
     }
 }
@@ -63,30 +75,35 @@ export async function handleChromeListTabGroups(args) {
 export async function handleChromeGroupTabs(args) {
     try {
         const { tabIds, windowId, title, color } = args;
-        LOGGER.log('--> handleChromeGroupTabs',args);
+        LOGGER.log('--> handleChromeGroupTabs', args);
         const moveTabsAndGroup = async (tabIds, windowId, groupName) => {
             if (windowId) {
-                const movedTabs = await chrome.tabs.move(tabIds, { windowId: toNumber(windowId), index: -1 });
+                const movedTabs = await chrome.tabs.move(tabIds, {
+                    windowId: toNumber(windowId),
+                    index: -1,
+                });
                 const groupId = await chrome.tabs.group({ tabIds, windowId: toNumber(windowId) });
                 // Set the group's title and color
                 await chrome.tabGroups.update(groupId, {
                     title,
-                    color
+                    color,
                 });
-                return createSuccessResponse(`Tabs grouped successfully in window ${windowId}, groupId: ${groupId}`);
+                return createSuccessResponse(
+                    `Tabs grouped successfully in window ${windowId}, groupId: ${groupId}`
+                );
             } else {
                 const groupId = await chrome.tabs.group({ tabIds });
                 // Set the group's title and color
                 await chrome.tabGroups.update(groupId, {
                     ...(title && { title }),
-                    ...(color && { color })
+                    ...(color && { color }),
                 });
                 return createSuccessResponse(`Tabs grouped successfully in group ${groupId}`);
             }
         };
         return await moveTabsAndGroup(tabIds, windowId);
     } catch (e) {
-        LOGGER.error('Error grouping tabs',e);
+        LOGGER.error('Error grouping tabs', e);
         return createErrorResponse(e.message);
     }
 }
@@ -94,11 +111,13 @@ export async function handleChromeGroupTabs(args) {
 export async function handleChromeGetWindows(args) {
     try {
         const windows = await chrome.windows.getAll({ populate: true });
-        return createSuccessResponse(`Windows listed successfully, ${windows.length} windows found : Windows : ${JSON.stringify(windows)}`);
+        return createSuccessResponse(
+            `Windows listed successfully, ${windows.length} windows found : Windows : ${JSON.stringify(windows)}`
+        );
     } catch (error) {
         LOGGER.error('--> chrome_get_windows error', error);
         return createErrorResponse(
-            `chrome_get_windows error: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+            `chrome_get_windows error: ${error instanceof Error ? error.message : JSON.stringify(error)}`
         );
     }
 }
@@ -111,7 +130,7 @@ export async function handleChromeUngroupTabs(args) {
     } catch (error) {
         LOGGER.error('--> chrome_ungroup_tabs error', error);
         return createErrorResponse(
-            `chrome_ungroup_tabs error: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+            `chrome_ungroup_tabs error: ${error instanceof Error ? error.message : JSON.stringify(error)}`
         );
     }
 }
@@ -124,7 +143,7 @@ export async function handleChromeCloseTabs(args) {
     } catch (error) {
         LOGGER.error('--> chrome_close_tabs error', error);
         return createErrorResponse(
-            `chrome_close_tabs error: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+            `chrome_close_tabs error: ${error instanceof Error ? error.message : JSON.stringify(error)}`
         );
     }
 }
@@ -132,7 +151,15 @@ export async function handleChromeCloseTabs(args) {
 export async function handleChromeUpdateTab(args) {
     try {
         const { tabId, updateProps = {} } = args;
-        const allowedProps = ['url', 'active', 'highlighted', 'muted', 'openerTabId', 'pinned', 'autoDiscardable'];
+        const allowedProps = [
+            'url',
+            'active',
+            'highlighted',
+            'muted',
+            'openerTabId',
+            'pinned',
+            'autoDiscardable',
+        ];
         for (const key of allowedProps) {
             if (Object.prototype.hasOwnProperty.call(updateProps, key)) {
                 updateProps[key] = args.updateProps[key];
@@ -140,11 +167,13 @@ export async function handleChromeUpdateTab(args) {
             }
         }
         const tab = await chrome.tabs.update(tabId, updateProps);
-        return createSuccessResponse(`Tab updated successfully, tabId: ${tabId}, tab: ${JSON.stringify(tab)}`);
+        return createSuccessResponse(
+            `Tab updated successfully, tabId: ${tabId}, tab: ${JSON.stringify(tab)}`
+        );
     } catch (error) {
         LOGGER.error('--> chrome_update_tab error', error);
         return createErrorResponse(
-            `chrome_update_tab error: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+            `chrome_update_tab error: ${error instanceof Error ? error.message : JSON.stringify(error)}`
         );
     }
 }
@@ -165,7 +194,7 @@ export async function handleChromeCreateWindow(args) {
     } catch (error) {
         LOGGER.error('--> chrome_create_window error', error);
         return createErrorResponse(
-            `chrome_create_window error: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+            `chrome_create_window error: ${error instanceof Error ? error.message : JSON.stringify(error)}`
         );
     }
 }
@@ -174,11 +203,13 @@ export async function handleChromeGetTab(args) {
     try {
         const { tabId } = args;
         const tab = await chrome.tabs.get(tabId);
-        return createSuccessResponse(`Tab retrieved successfully, tabId: ${tabId}, tab: ${JSON.stringify(tab)}`);
+        return createSuccessResponse(
+            `Tab retrieved successfully, tabId: ${tabId}, tab: ${JSON.stringify(tab)}`
+        );
     } catch (error) {
         LOGGER.error('--> chrome_get_tab error', error);
         return createErrorResponse(
-            `chrome_get_tab error: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+            `chrome_get_tab error: ${error instanceof Error ? error.message : JSON.stringify(error)}`
         );
     }
 }
@@ -187,11 +218,13 @@ export async function handleChromeGetTabGroup(args) {
     try {
         const { groupId } = args;
         const group = await chrome.tabGroups.get(groupId);
-        return createSuccessResponse(`Tab group retrieved successfully, groupId: ${groupId}, group: ${JSON.stringify(group)}`);
+        return createSuccessResponse(
+            `Tab group retrieved successfully, groupId: ${groupId}, group: ${JSON.stringify(group)}`
+        );
     } catch (error) {
         LOGGER.error('--> chrome_get_tab_group error', error);
         return createErrorResponse(
-            `chrome_get_tab_group error: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+            `chrome_get_tab_group error: ${error instanceof Error ? error.message : JSON.stringify(error)}`
         );
     }
 }
@@ -206,11 +239,13 @@ export async function handleChromeUpdateTabGroup(args) {
             }
         }
         const group = await chrome.tabGroups.update(groupId, updateProps);
-        return createSuccessResponse(`Tab group updated successfully, groupId: ${groupId}, group: ${JSON.stringify(group)}`);
+        return createSuccessResponse(
+            `Tab group updated successfully, groupId: ${groupId}, group: ${JSON.stringify(group)}`
+        );
     } catch (error) {
         LOGGER.error('--> chrome_update_tab_group error', error);
         return createErrorResponse(
-            `chrome_update_tab_group error: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+            `chrome_update_tab_group error: ${error instanceof Error ? error.message : JSON.stringify(error)}`
         );
     }
 }
@@ -221,11 +256,13 @@ export async function handleChromeMoveTab(args) {
         const moveProps = { index };
         if (windowId) moveProps.windowId = toNumber(windowId);
         const tab = await chrome.tabs.move(tabId, moveProps);
-        return createSuccessResponse(`Tab moved successfully, tabId: ${tabId}, tab: ${JSON.stringify(tab)}`);
+        return createSuccessResponse(
+            `Tab moved successfully, tabId: ${tabId}, tab: ${JSON.stringify(tab)}`
+        );
     } catch (error) {
         LOGGER.error('--> chrome_move_tab error', error);
         return createErrorResponse(
-            `chrome_move_tab error: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+            `chrome_move_tab error: ${error instanceof Error ? error.message : JSON.stringify(error)}`
         );
     }
 }
@@ -236,11 +273,13 @@ export async function handleChromeHighlightTabs(args) {
         const highlightInfo = { tabs: tabIds };
         if (windowId) highlightInfo.windowId = toNumber(windowId);
         const result = await chrome.tabs.highlight(highlightInfo);
-        return createSuccessResponse(`Tabs highlighted successfully, tabIds: ${tabIds}, result: ${JSON.stringify(result)}`);
+        return createSuccessResponse(
+            `Tabs highlighted successfully, tabIds: ${tabIds}, result: ${JSON.stringify(result)}`
+        );
     } catch (error) {
         LOGGER.error('--> chrome_highlight_tabs error', error);
         return createErrorResponse(
-            `chrome_highlight_tabs error: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+            `chrome_highlight_tabs error: ${error instanceof Error ? error.message : JSON.stringify(error)}`
         );
     }
 }
@@ -249,11 +288,13 @@ export async function handleChromeFocusWindow(args) {
     try {
         const { windowId } = args;
         const win = await chrome.windows.update(windowId, { focused: true });
-        return createSuccessResponse(`Window focused successfully, windowId: ${windowId}, window: ${JSON.stringify(win)}`);
+        return createSuccessResponse(
+            `Window focused successfully, windowId: ${windowId}, window: ${JSON.stringify(win)}`
+        );
     } catch (error) {
         LOGGER.error('--> chrome_focus_window error', error);
         return createErrorResponse(
-            `chrome_focus_window error: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+            `chrome_focus_window error: ${error instanceof Error ? error.message : JSON.stringify(error)}`
         );
     }
 }
@@ -267,7 +308,7 @@ export async function handleChromeRemoveTabGroup(args) {
     } catch (error) {
         LOGGER.error('--> chrome_remove_tab_group error', error);
         return createErrorResponse(
-            `chrome_remove_tab_group error: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+            `chrome_remove_tab_group error: ${error instanceof Error ? error.message : JSON.stringify(error)}`
         );
     }
 }
@@ -276,11 +317,13 @@ export async function handleChromeDuplicateTab(args) {
     try {
         const { tabId } = args;
         const tab = await chrome.tabs.duplicate(tabId);
-        return createSuccessResponse(`Tab duplicated successfully, tabId: ${tabId}, tab: ${JSON.stringify(tab)}`);
+        return createSuccessResponse(
+            `Tab duplicated successfully, tabId: ${tabId}, tab: ${JSON.stringify(tab)}`
+        );
     } catch (error) {
         LOGGER.error('--> chrome_duplicate_tab error', error);
         return createErrorResponse(
-            `chrome_duplicate_tab error: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+            `chrome_duplicate_tab error: ${error instanceof Error ? error.message : JSON.stringify(error)}`
         );
     }
 }
@@ -295,7 +338,7 @@ export async function handleChromeReloadTabs(args) {
     } catch (error) {
         LOGGER.error('--> chrome_reload_tabs error', error);
         return createErrorResponse(
-            `chrome_reload_tabs error: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+            `chrome_reload_tabs error: ${error instanceof Error ? error.message : JSON.stringify(error)}`
         );
     }
 }
@@ -308,7 +351,7 @@ export async function handleChromeScreenshot(args) {
         if (format === 'jpeg' && typeof quality === 'number') {
             options.quality = quality;
         }
-        LOGGER.log('--> chrome_screenshot options',options);
+        LOGGER.log('--> chrome_screenshot options', options);
         // Get current tab
         const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
         if (!tabs[0]) {
@@ -320,22 +363,22 @@ export async function handleChromeScreenshot(args) {
             scale: 0.7, // Reduce dimensions by 30%
             quality: 0.8, // 80% quality for good balance
             format: 'image/jpeg', // JPEG for better compression
-          });
-          // Include base64 data in response (without prefix)
+        });
+        // Include base64 data in response (without prefix)
         //const base64Data = compressed.dataUrl.replace(/^data:image\/[^;]+;base64,/, '');
         return {
-            content : [
+            content: [
                 {
                     type: 'input_image',
-                    image: compressed.dataUrl
-                }
+                    image: compressed.dataUrl,
+                },
             ],
-            isError: false
-        }
+            isError: false,
+        };
     } catch (error) {
         LOGGER.error('--> chrome_screenshot error', error);
         return createErrorResponse(
-            `chrome_screenshot error: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+            `chrome_screenshot error: ${error instanceof Error ? error.message : JSON.stringify(error)}`
         );
     }
 }
@@ -366,10 +409,10 @@ const chromeActionHandlers = {
 export async function handleChromeInteraction(message) {
     const handler = chromeActionHandlers[message.action];
     if (handler) {
-        LOGGER.log('--> handleChromeInteraction',handler);
-        if(handler.execute){
+        LOGGER.log('--> handleChromeInteraction', handler);
+        if (handler.execute) {
             return await handler.execute(message.args || message);
-        }else{
+        } else {
             return await handler(message.args || message);
         }
     }

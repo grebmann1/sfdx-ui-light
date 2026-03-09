@@ -202,7 +202,10 @@ export default class Tooltip extends LightningElement {
         if (this.disabled) {
             return;
         }
-        if (!this.hasItems && (this.label === undefined || this.label === null || String(this.label).trim() === '')) {
+        if (
+            !this.hasItems &&
+            (this.label === undefined || this.label === null || String(this.label).trim() === '')
+        ) {
             return;
         }
 
@@ -214,7 +217,10 @@ export default class Tooltip extends LightningElement {
                   offset: 0,
               }
             : this.simpleAlignmentOptions;
-        this.refs?.popup?.show(this.refs?.trigger, { ...alignment, autoFlip: !this.autoFlipDisabled });
+        this.refs?.popup?.show(this.refs?.trigger, {
+            ...alignment,
+            autoFlip: !this.autoFlipDisabled,
+        });
 
         this.isPopupOpen = true;
     }

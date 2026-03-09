@@ -107,7 +107,4 @@ export {
 } from './misc';
 
 // AI prompt constants (re-exported for backward compatibility)
-export {
-    RECOMMENDED_PROMPT_PREFIX,
-    promptWithHandoffInstructions,
-} from './prompts';
+export { RECOMMENDED_PROMPT_PREFIX, promptWithHandoffInstructions } from './prompts';

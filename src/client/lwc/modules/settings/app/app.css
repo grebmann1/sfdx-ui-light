@@ -92,7 +92,7 @@
     background: var(--slds-g-color-neutral-base-60, #969492);
 }
 
-.agent-skills-nav-item-dot[data-enabled="true"] {
+.agent-skills-nav-item-dot[data-enabled='true'] {
     background: var(--slds-g-color-success-base-50, #2e844a);
 }
 

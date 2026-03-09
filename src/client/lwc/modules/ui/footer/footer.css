@@ -116,7 +116,7 @@
 
 /* When error details are shown, reduce the error list height */
 .scrollable-error-list.with-details {
-    height:50%;
+    height: 50%;
 }
 
 .errorDetails {

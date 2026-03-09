@@ -31,7 +31,7 @@ export default class App extends ToolkitElement {
 
     handleMonacoLoaded = () => {};
 
-    handleDiffChange = (e) => {
+    handleDiffChange = e => {
         const detail = e.detail || {};
         const left = detail.left ?? '';
         const right = detail.right ?? '';
@@ -88,7 +88,7 @@ export default class App extends ToolkitElement {
         return store.getState()?.textCompare?.rightText ?? '';
     }
 
-    handleIgnoreWhitespaceChange = (e) => {
+    handleIgnoreWhitespaceChange = e => {
         const checked = e.detail?.checked === true || e.target?.checked === true;
         this.ignoreWhitespace = checked;
         store.dispatch(

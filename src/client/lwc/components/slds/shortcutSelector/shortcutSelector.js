@@ -11,7 +11,11 @@ export default class ShortcutSelector extends LightningElement {
     @api
     get value() {
         const key = Array.isArray(this._value) ? this._value[0] : this._value;
-        return key === 'backspace' ? null : Array.isArray(this._value) ? this._value.join('+') : this._value || null;
+        return key === 'backspace'
+            ? null
+            : Array.isArray(this._value)
+              ? this._value.join('+')
+              : this._value || null;
     }
     set value(val) {
         this._value = isUndefinedOrNull(val) || typeof val !== 'string' ? [] : val.split('+');

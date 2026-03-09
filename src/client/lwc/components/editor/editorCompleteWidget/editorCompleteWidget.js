@@ -151,7 +151,14 @@ export default class EditorCompleteWidget extends LightningElement {
      */
     prepareGenerationContext() {
         if (!this.file) {
-            return { startLine: 1, endLine: 1, prefix: '', suffix: '', originalCode: '', language: '' };
+            return {
+                startLine: 1,
+                endLine: 1,
+                prefix: '',
+                suffix: '',
+                originalCode: '',
+                language: '',
+            };
         }
         LOGGER.log('this.selection', this.selection);
         LOGGER.log('this.selection.range.isEmpty()', this.selection.range.isEmpty());
@@ -165,7 +172,7 @@ export default class EditorCompleteWidget extends LightningElement {
         const originalCode = this.getOriginalCode(isFullFile, startLine, endLine);
         const language = this.file.language;
 
-        return { startLine, endLine, prefix, suffix, originalCode, language, };
+        return { startLine, endLine, prefix, suffix, originalCode, language };
     }
 
     /**

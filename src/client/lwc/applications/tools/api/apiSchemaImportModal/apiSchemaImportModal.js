@@ -17,7 +17,7 @@ export default class ApiSchemaImportModal extends LightningModal {
         this.close({ value });
     };
 
-    handleFileChange = (event) => {
+    handleFileChange = event => {
         const { value } = event.detail;
         if (this.currentModel) {
             this.currentModel.setValue(value);
@@ -34,12 +34,12 @@ export default class ApiSchemaImportModal extends LightningModal {
         this.refs.editor.displayModel(this.currentModel);
     };
 
-    handleEditorChange = (event) => {
+    handleEditorChange = event => {
         // Optionally update value for two-way binding
         this.value = event.detail.value;
     };
 
-    detectLanguage = (text) => {
+    detectLanguage = text => {
         // Simple detection for JSON or YAML
         try {
             JSON.parse(text);

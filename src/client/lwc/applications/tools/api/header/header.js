@@ -1,11 +1,10 @@
 import { LightningElement, api, track } from 'lwc';
 import { guid } from 'shared/utils';
 export default class Header extends LightningElement {
-
     @track _headerList = [];
     @api defaultHeader = '';
 
-    @api 
+    @api
     set header(value) {
         this.headerList = this.parseHeaderStringToRows(value);
     }
@@ -24,7 +23,10 @@ export default class Header extends LightningElement {
     }
 
     ensureLastHeaderIsEmpty() {
-        if (this._headerList.length === 0 || this.isHeaderEmpty(this._headerList[this._headerList.length - 1])) {
+        if (
+            this._headerList.length === 0 ||
+            this.isHeaderEmpty(this._headerList[this._headerList.length - 1])
+        ) {
             return;
         }
         this._headerList = [...this._headerList, { key: '', value: '', checked: true }];
@@ -35,12 +37,15 @@ export default class Header extends LightningElement {
     }
 
     isTemplateRow(header) {
-        return this.isHeaderEmpty(header) && this._headerList.indexOf(header) === this._headerList.length - 1;
+        return (
+            this.isHeaderEmpty(header) &&
+            this._headerList.indexOf(header) === this._headerList.length - 1
+        );
     }
 
     /** Event Handlers **/
 
-    disableEvent = (event) => {
+    disableEvent = event => {
         event.stopPropagation();
         event.preventDefault();
     };
@@ -59,7 +64,7 @@ export default class Header extends LightningElement {
         this.dispatchEvent(new CustomEvent('change', { detail: { value: this.header } }));
     }
 
-    handlePresetSelect = (event) => {
+    handlePresetSelect = event => {
         const preset = event.detail.value;
         const map = {
             accept_json: { key: 'Accept', value: 'application/json' },
@@ -173,7 +178,7 @@ export default class Header extends LightningElement {
             return {
                 ...header,
                 index: idx,
-                isDeleteEnabled: !this.isTemplateRow(header)
+                isDeleteEnabled: !this.isTemplateRow(header),
             };
         });
     }
@@ -236,7 +241,7 @@ export default class Header extends LightningElement {
             { label: 'X-Request-Id', value: 'X-Request-Id' },
             { label: 'X-Robots-Tag', value: 'X-Robots-Tag' },
             { label: 'X-Sfdc-Edge-Cache', value: 'X-Sfdc-Edge-Cache' },
-            { label: 'X-Sfdc-Request-Id', value: 'X-Sfdc-Request-Id' }
+            { label: 'X-Sfdc-Request-Id', value: 'X-Sfdc-Request-Id' },
         ];
     }
 
@@ -250,7 +255,9 @@ export default class Header extends LightningElement {
 
     syncHeaderRows() {
         // Remove empty rows except the last one
-        let rows = this._headerList.filter((row, i, arr) => row.key || row.value || i === arr.length - 1);
+        let rows = this._headerList.filter(
+            (row, i, arr) => row.key || row.value || i === arr.length - 1
+        );
         // Always keep at least one empty row
         if (rows.length === 0 || rows[rows.length - 1].key || rows[rows.length - 1].value) {
             rows.push({ id: guid(), key: '', value: '' });
@@ -260,7 +267,10 @@ export default class Header extends LightningElement {
             if (row.key) acc[row.key.toLowerCase()] = (acc[row.key.toLowerCase()] || 0) + 1;
             return acc;
         }, {});
-        rows = rows.map(row => ({ ...row, hasDuplicate: row.key && keyCounts[row.key.toLowerCase()] > 1 }));
+        rows = rows.map(row => ({
+            ...row,
+            hasDuplicate: row.key && keyCounts[row.key.toLowerCase()] > 1,
+        }));
         this._headerList = rows;
     }
 
@@ -277,5 +287,4 @@ export default class Header extends LightningElement {
         }
         return rows;
     }
-
 }

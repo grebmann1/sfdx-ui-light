@@ -1,6 +1,8 @@
 import * as oauth from './oauth';
-import * as usernamePassword from './usernamePassword';
 import * as session from './session';
+import * as usernamePassword from './usernamePassword';
+
+import { OAUTH_TYPES } from './oauthTypes';
 
 export default {
     OAUTH: oauth,
@@ -8,9 +10,4 @@ export default {
     SESSION: session,
 };
 
-export const OAUTH_TYPES = {
-    OAUTH: 'OAUTH',
-    USERNAME: 'USERNAME',
-    SESSION: 'SESSION',
-    REDIRECT: 'REDIRECT',
-};
+export { OAUTH_TYPES };

@@ -4,15 +4,13 @@
             <li
                 class="slds-utility-bar__item custom-utility-text custom-utility-left slds-truncate">
                 <template lwc:if={isConnectorDisplayed}>
-                    
                     <lightning-button
                         class="footer-utility-truncate custom-utility-text-copy"
                         icon-name="utility:copy"
                         label="Access Token"
                         onclick={handleCopyAccessToken}
                         title="Copy Access Token"
-                        variant="base"
-                    ></lightning-button>
+                        variant="base"></lightning-button>
                     <template lwc:if={isUsernameDisplayed}>
                         <div class="slds-vertical-separator"></div>
                         <lightning-button-icon
@@ -37,7 +35,9 @@
                             <span class="footer-shortcut-key">{overlayShortcutFormatted}</span>
                         </template>
                         <template lwc:if={panelShortcutFormatted}>
-                            <span lwc:if={overlayShortcutFormatted} class="footer-shortcut-sep">·</span>
+                            <span lwc:if={overlayShortcutFormatted} class="footer-shortcut-sep">
+                                ·
+                            </span>
                             <span class="footer-shortcut-label">Panel:</span>
                             <span class="footer-shortcut-key">{panelShortcutFormatted}</span>
                         </template>

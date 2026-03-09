@@ -23,10 +23,14 @@
                     </lightning-button-group>
                 </div>
                 <div slot="details" class={filterContainerClass}>
-                    <div class="slds-page-header__detail-row slds-is-relative" style="display: block">
+                    <div
+                        class="slds-page-header__detail-row slds-is-relative"
+                        style="display: block">
                         <h2>
                             Multiple
-                            <span class="slds-text-title_bold slds-m-horizontal_xx-small">Clouds</span>
+                            <span class="slds-text-title_bold slds-m-horizontal_xx-small">
+                                Clouds
+                            </span>
                             are available in the "Filters"
                             <a href="#" onclick={openFilter}>See all clouds available</a>
                         </h2>
@@ -61,7 +65,9 @@
                                 </slds-menu>
                             </div>
                             <template lwc:if={isLoading}>
-                                <slds-spinner alternative-text="Loading" size="small"></slds-spinner>
+                                <slds-spinner
+                                    alternative-text="Loading"
+                                    size="small"></slds-spinner>
                             </template>
                             <div class={documentationContainerClass}>
                                 <div class="min-height-200">

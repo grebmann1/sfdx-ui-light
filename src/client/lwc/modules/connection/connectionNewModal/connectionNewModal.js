@@ -149,9 +149,7 @@ export default class ConnectionNewModal extends LightningModal {
             this.name = nameMatch[1];
         } else if (!isOrgFarmId(this.name)) {
             const inferredId =
-                extractOrgFarmId(this.username) ||
-                extractOrgFarmId(this.customDomain) ||
-                null;
+                extractOrgFarmId(this.username) || extractOrgFarmId(this.customDomain) || null;
 
             if (inferredId) {
                 this.name = inferredId;
@@ -301,7 +299,7 @@ export default class ConnectionNewModal extends LightningModal {
             handleError(e, 'Username/Password Error');
             this.close(null);
         }
-    }
+    };
 
     default_redirect = () => {
         setRedirectCredential(
@@ -329,10 +327,7 @@ export default class ConnectionNewModal extends LightningModal {
             instanceurl: normalizedUrl,
         };
         try {
-            const { error, res } = await window.electron.invoke(
-                'org-createNewOrgAlias',
-                params
-            );
+            const { error, res } = await window.electron.invoke('org-createNewOrgAlias', params);
             if (error) {
                 throw decodeError(error);
             }
@@ -389,7 +384,8 @@ export default class ConnectionNewModal extends LightningModal {
     }
 
     formatForLookup = item => {
-        const normalizedItem = item.toLowerCase() === ORGFARM_CATEGORY.id ? ORGFARM_CATEGORY.id : item;
+        const normalizedItem =
+            item.toLowerCase() === ORGFARM_CATEGORY.id ? ORGFARM_CATEGORY.id : item;
 
         return {
             id: normalizedItem,
@@ -537,7 +533,9 @@ export default class ConnectionNewModal extends LightningModal {
         if (this.selectedCategory.length > 0) {
             _connections.push(this.selectedCategory[0].id);
         }
-        const normalized = _connections.map(x => x.toLowerCase() === ORGFARM_CATEGORY.id ? ORGFARM_CATEGORY.id : x);
+        const normalized = _connections.map(x =>
+            x.toLowerCase() === ORGFARM_CATEGORY.id ? ORGFARM_CATEGORY.id : x
+        );
         return [...new Set(normalized)];
     }
 

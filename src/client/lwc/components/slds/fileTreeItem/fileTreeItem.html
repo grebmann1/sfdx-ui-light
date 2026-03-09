@@ -1,34 +1,88 @@
 <template>
-    <div lwc:if={isVisible} class={rootClasses} role="treeitem" aria-expanded={expanded} aria-selected={selected} onclick={handleClick} onmouseenter={handleHover} onmouseleave={handleMouseLeave}>
-        <span class="slds-tree__item-label slds-grid_align-spread slds-size_full slds-p-horizontal_x-small">
+    <div
+        lwc:if={isVisible}
+        class={rootClasses}
+        role="treeitem"
+        aria-expanded={expanded}
+        aria-selected={selected}
+        onclick={handleClick}
+        onmouseenter={handleHover}
+        onmouseleave={handleMouseLeave}>
+        <span
+            class="slds-tree__item-label slds-grid_align-spread slds-size_full slds-p-horizontal_x-small">
             <span class="slds-truncate slds-grid slds-grid_vertical-align-center">
                 <template lwc:if={isFolder}>
-                    <lightning-button-icon icon-name={chevronIcon} variant="bare" class="slds-m-right_x-small chevron-icon slds-is-relative" onclick={handleToggle} alternative-text={i18n.AltTextExpandFolder} data-element="chevron-icon"></lightning-button-icon>
-                    <lightning-icon lwc:if={isFolderIconDisplayed} icon-name={folderIcon} size="x-small" class="slds-m-right_x-small" alternative-text={i18n.AltTextFolder}></lightning-icon>
+                    <lightning-button-icon
+                        icon-name={chevronIcon}
+                        variant="bare"
+                        class="slds-m-right_x-small chevron-icon slds-is-relative"
+                        onclick={handleToggle}
+                        alternative-text={i18n.AltTextExpandFolder}
+                        data-element="chevron-icon"></lightning-button-icon>
+                    <lightning-icon
+                        lwc:if={isFolderIconDisplayed}
+                        icon-name={folderIcon}
+                        size="x-small"
+                        class="slds-m-right_x-small"
+                        alternative-text={i18n.AltTextFolder}></lightning-icon>
                 </template>
                 <template lwc:else>
                     <template lwc:if={isApiIcon}>
                         <span class={apiIconClass}>{apiIconText}</span>
                     </template>
                     <template lwc:else>
-                        <lightning-icon icon-name={itemIcon} size="x-small" class="slds-m-right_x-small" alternative-text={i18n.AltTextFile}></lightning-icon>
+                        <lightning-icon
+                            icon-name={itemIcon}
+                            size="x-small"
+                            class="slds-m-right_x-small"
+                            alternative-text={i18n.AltTextFile}></lightning-icon>
                     </template>
                 </template>
-               
+
                 <h3 title={title} class="file-tree-item-title slds-truncate">
-                    <lightning-formatted-rich-text value={highlightedName}></lightning-formatted-rich-text>
+                    <lightning-formatted-rich-text
+                        value={highlightedName}></lightning-formatted-rich-text>
                 </h3>
             </span>
             <template lwc:if={isFile}>
-                <button lwc:if={isDeleteButtonVisible} class="slds-button slds-button_icon slds-button_icon-small slds-m-left_x-small" title={i18n.Delete} onclick={handleDelete} tabindex="-1">
-                    <lightning-icon icon-name="utility:delete" size="x-small" class="slds-button__icon"></lightning-icon>
+                <button
+                    lwc:if={isDeleteButtonVisible}
+                    class="slds-button slds-button_icon slds-button_icon-small slds-m-left_x-small"
+                    title={i18n.Delete}
+                    onclick={handleDelete}
+                    tabindex="-1">
+                    <lightning-icon
+                        icon-name="utility:delete"
+                        size="x-small"
+                        class="slds-button__icon"></lightning-icon>
                 </button>
             </template>
             <template lwc:else>
-                <lightning-button-menu lwc:if={isMenuButtonVisible} onclick={handleMenuClick} onblur={handleMenuBlur}  onfocus={handleMenuFocus} alternative-text="Show menu" menu-alignment="auto" onselect={handleMenuSelect} icon-name="utility:threedots" icon-size="x-small" variant="bare" internal-datatable-actions-menu>
-                    <lightning-menu-item value="expandAll" label="Expand All" onblur={handleMenuBlur}></lightning-menu-item>
-                    <lightning-menu-item value="collapseAll" label="Collapse All" onblur={handleMenuBlur}></lightning-menu-item>
-                    <lightning-menu-item value="delete" label="Delete" onblur={handleMenuBlur} lwc:if={isDeletable} ></lightning-menu-item>
+                <lightning-button-menu
+                    lwc:if={isMenuButtonVisible}
+                    onclick={handleMenuClick}
+                    onblur={handleMenuBlur}
+                    onfocus={handleMenuFocus}
+                    alternative-text="Show menu"
+                    menu-alignment="auto"
+                    onselect={handleMenuSelect}
+                    icon-name="utility:threedots"
+                    icon-size="x-small"
+                    variant="bare"
+                    internal-datatable-actions-menu>
+                    <lightning-menu-item
+                        value="expandAll"
+                        label="Expand All"
+                        onblur={handleMenuBlur}></lightning-menu-item>
+                    <lightning-menu-item
+                        value="collapseAll"
+                        label="Collapse All"
+                        onblur={handleMenuBlur}></lightning-menu-item>
+                    <lightning-menu-item
+                        value="delete"
+                        label="Delete"
+                        onblur={handleMenuBlur}
+                        lwc:if={isDeletable}></lightning-menu-item>
                 </lightning-button-menu>
             </template>
         </span>
@@ -36,17 +90,16 @@
     <ul lwc:if={expanded} role="group" class="slds-tree__group">
         <template for:each={children} for:item="child">
             <li key={child.id}>
-                <slds-file-tree-item 
-                    item={child} 
-                    expanded={child.expanded} 
+                <slds-file-tree-item
+                    item={child}
+                    expanded={child.expanded}
                     selected={child.selected}
                     is-delete-disabled={isDeleteDisabled}
-                    ontoggle={handleToggle} 
-                    onselect={handleSelect} 
+                    ontoggle={handleToggle}
+                    onselect={handleSelect}
                     search-value={searchValue}
-                    is-folder-selectable={isFolderSelectable}
-                ></slds-file-tree-item>
+                    is-folder-selectable={isFolderSelectable}></slds-file-tree-item>
             </li>
         </template>
     </ul>
-</template> 
+</template>

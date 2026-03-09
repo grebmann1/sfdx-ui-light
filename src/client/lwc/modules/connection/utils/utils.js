@@ -1,29 +1,29 @@
 import constant from 'core/constant';
+import LOGGER from 'shared/logger';
 import { isUndefinedOrNull, isNotUndefinedOrNull, isElectronApp, isEmpty } from 'shared/utils';
 
 import { Connector } from './connectorClass';
+import { OAUTH_TYPES } from './credentialStrategies/oauthTypes';
+import * as Oauth2 from './credentialStrategies/oauth';
+import * as Session from './credentialStrategies/session';
+import * as UsernamePassword from './credentialStrategies/usernamePassword';
+import * as IntegrationMatrix from './integrationMatrix';
+import * as NotificationService from './notificationService';
 import * as webInterface from './web';
 
-import LOGGER from 'shared/logger';
 export * from './chrome';
 export * from './connectorClass';
 
 /** Credential Strategies **/
 
-import * as Oauth2 from './credentialStrategies/oauth';
-import * as UsernamePassword from './credentialStrategies/usernamePassword';
-import * as Session from './credentialStrategies/session';
-import * as NotificationService from './notificationService';
 import * as PlatformService from './platformService';
-import * as IntegrationMatrix from './integrationMatrix';
-import { OAUTH_TYPES as internalOAUTH_TYPES } from './credentialStrategies/index';
 
 export const credentialStrategies = {
     OAUTH: Oauth2,
     USERNAME: UsernamePassword,
     SESSION: Session,
 };
-export const OAUTH_TYPES = internalOAUTH_TYPES;
+export { OAUTH_TYPES };
 
 export const notificationService = NotificationService;
 
@@ -42,7 +42,7 @@ export const extractName = alias => {
 };
 
 export const extractConfig = config => {
-    if(!config) return null;
+    if (!config) return null;
     // Regular expression pattern to match the required parts
     const regex = /force:\/\/([^:]+)::([^@]+)@(.+)/;
     // Extracting variables using regex
@@ -112,7 +112,7 @@ export async function setRedirectCredential(
         const connector = await Connector.createConnector({
             alias,
             redirectUrl,
-            credentialType: internalOAUTH_TYPES.REDIRECT,
+            credentialType: OAUTH_TYPES.REDIRECT,
         });
         LOGGER.log('connector', connector);
         await webInterface.saveConfiguration(alias, connector.configuration);
@@ -191,7 +191,9 @@ export const normalizeConnection = (credentialType, rawData, platform, extra = {
         accessToken: rawData.accessToken,
         sessionId: rawData.sessionId,
         proxyUrl:
-            extra.isProxyDisabled || platform === PlatformService.PLATFORM.CHROME || platform === PlatformService.PLATFORM.ELECTRON
+            extra.isProxyDisabled ||
+            platform === PlatformService.PLATFORM.CHROME ||
+            platform === PlatformService.PLATFORM.ELECTRON
                 ? null
                 : window.jsforceSettings?.proxyUrl, // For chrome extension, we run without proxy
         version: rawData.version || constant.apiVersion, // This might need to be refactored
@@ -251,7 +253,12 @@ export const normalizeConfiguration = (rawData, byPassValidation = false) => {
     }
     // Ensure all required fields are present and shaped consistently
     let sfdxAuthUrl = rawData.sfdxAuthUrl;
-    if (rawData.refreshToken && rawData.instanceUrl && window.jsforceSettings && (isEmpty(rawData.sfdxAuthUrl) || !rawData.sfdxAuthUrl.includes(rawData.refreshToken))) {
+    if (
+        rawData.refreshToken &&
+        rawData.instanceUrl &&
+        window.jsforceSettings &&
+        (isEmpty(rawData.sfdxAuthUrl) || !rawData.sfdxAuthUrl.includes(rawData.refreshToken))
+    ) {
         // If the sfdxAuthUrl is already set, we don't need to generate a new one (only if the refreshToken is different)
         sfdxAuthUrl = `force://${window.jsforceSettings?.clientId}::${rawData.refreshToken}@${new URL(rawData.instanceUrl).host}`;
     }
@@ -279,7 +286,7 @@ export const normalizeConfiguration = (rawData, byPassValidation = false) => {
         _status: rawData._status || null,
         _statusClass: rawData._statusClass || null,
         _type: rawData._type || null,
-        _typeClass: rawData._typeClass || null
+        _typeClass: rawData._typeClass || null,
         //_typeClass: rawData._typeClass,
         //_statusClass: rawData._statusClass,
         //_connectVariant: rawData._hasError ? 'brand-outline' : 'brand',
@@ -320,15 +327,15 @@ export const getExistingHostMap = configurations => {
     return hostMap;
 };
 
-export const getMatchingConfiguration = async (connection) => {
+export const getMatchingConfiguration = async connection => {
     const hostMap = getExistingHostMap(await getConfigurations());
-    try{
+    try {
         const hostname = new URL(connection.instanceUrl).hostname;
-        if(hostMap.has(hostname)){
+        if (hostMap.has(hostname)) {
             return hostMap.get(hostname);
         }
         return null;
-    }catch(e){
+    } catch (e) {
         LOGGER.error('getMatchingConfiguration issue: ', e);
         return null;
     }

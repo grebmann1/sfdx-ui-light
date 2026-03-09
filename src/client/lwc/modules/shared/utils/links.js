@@ -57,7 +57,6 @@ export const setupLinks = [
         section: 'Einstein > Einstein Generative AI > Agentforce Studio',
         prod: false,
     },
-    
 
     //Administration > Users
     {

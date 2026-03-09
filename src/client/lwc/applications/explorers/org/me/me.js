@@ -71,7 +71,9 @@ export default class Me extends ToolkitElement {
             if (isEmpty(sessionId) || isEmpty(serverUrl)) return;
 
             const origin =
-                typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '';
+                typeof window !== 'undefined' && window.location?.origin
+                    ? window.location.origin
+                    : '';
             const base =
                 typeof chrome !== 'undefined' && chrome.runtime?.getURL
                     ? chrome.runtime.getURL('/views/app.html')
@@ -88,7 +90,9 @@ export default class Me extends ToolkitElement {
                 this.user?.Name ? `Name: ${this.user.Name}` : '',
                 this.user?.Username ? `Username: ${this.user.Username}` : '',
                 this.user?.Id ? `User Id: ${this.user.Id}` : '',
-                this.connector?.configuration?.alias ? `Alias: ${this.connector.configuration.alias}` : '',
+                this.connector?.configuration?.alias
+                    ? `Alias: ${this.connector.configuration.alias}`
+                    : '',
                 `Server Url: ${serverUrl}`,
                 '',
                 'Open in SF Toolkit:',

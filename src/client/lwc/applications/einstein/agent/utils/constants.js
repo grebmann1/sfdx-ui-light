@@ -14,15 +14,16 @@ const Constants = {
     SCROLL_THRESHOLD: 5,
     WELCOME_MESSAGE: {
         role: 'assistant',
-        content: 'Hello, I am the SF Toolkit Assistant, I can help you interact with Salesforce and Salesforce tools.',
+        content:
+            'Hello, I am the SF Toolkit Assistant, I can help you interact with Salesforce and Salesforce tools.',
         id: 'WELCOME_MESSAGE_ID',
     },
     CONTENT_TYPE: {
-        INPUT_TEXT:   "input_text",
-        OUTPUT_TEXT:  "output_text",
-        INPUT_IMAGE:  "input_image",
-        INPUT_FILE:   "input_file",
-    }
+        INPUT_TEXT: 'input_text',
+        OUTPUT_TEXT: 'output_text',
+        INPUT_IMAGE: 'input_image',
+        INPUT_FILE: 'input_file',
+    },
 };
 
 export default Constants;

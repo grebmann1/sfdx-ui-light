@@ -1,10 +1,6 @@
 import { api, track, wire } from 'lwc';
 import Toast from 'lightning/toast';
-import {
-    isEmpty,
-    isNotUndefinedOrNull,
-    classSet
-} from 'shared/utils';
+import { isEmpty, isNotUndefinedOrNull, classSet } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
 import { store, connectStore, AGENT } from 'core/store';
 import LOGGER from 'shared/logger';
@@ -15,17 +11,14 @@ import Analytics from 'shared/analytics';
 export default class App extends ToolkitElement {
     navContext;
     @wire(NavigationContext)
-    updateNavigationContext(navContext){
+    updateNavigationContext(navContext) {
         this.navContext = navContext;
         window.navContext = navContext;
     }
 
-    
     @track selectedModel = 'gpt-5.3';
     @track isSidePanelOpen = false;
-    @track conversations = [
-        { id: 'default', title: 'Conversation 1', streamHistory: [] }
-    ];
+    @track conversations = [{ id: 'default', title: 'Conversation 1', streamHistory: [] }];
     @track activeConversationId = 'default';
     @track isEditingTitle = false;
     @track pendingTitle = '';
@@ -51,7 +44,6 @@ export default class App extends ToolkitElement {
     hideSearchInputForConversations = false;
     includeFoldersInResultsForConversations = true;
 
-
     // Error
     @track error_title;
     @track error_message;
@@ -64,7 +56,8 @@ export default class App extends ToolkitElement {
     // Better to use a constant than a getter ! (renderCallback is called too many times)
     welcomeMessage = {
         role: 'assistant',
-        content: 'Hello, I am the SF Toolkit Assistant, I can help you interact with Salesforce and Salesforce tools.',
+        content:
+            'Hello, I am the SF Toolkit Assistant, I can help you interact with Salesforce and Salesforce tools.',
         id: 'WELCOME_MESSAGE_ID',
     };
     _shouldFocusPublisher = false;
@@ -85,21 +78,27 @@ export default class App extends ToolkitElement {
             }
             // Loading/Streaming flags for current conversation
             const isLoading = !!(agent.loadingById && agent.loadingById[this.activeConversationId]);
-            const isStreaming = !!(agent.streamingById && agent.streamingById[this.activeConversationId]);
-            
-            const streamMsg = (agent.streamingMessageById && agent.streamingMessageById[this.activeConversationId]) || null;
+            const isStreaming = !!(
+                agent.streamingById && agent.streamingById[this.activeConversationId]
+            );
+
+            const streamMsg =
+                (agent.streamingMessageById &&
+                    agent.streamingMessageById[this.activeConversationId]) ||
+                null;
             this._setIfChanged('isLoading', isLoading);
             this._setIfChanged('isStreaming', isStreaming);
             this._setIfChanged('streamingMessage', streamMsg);
 
-            const rawMessages = (agent.messagesById && agent.messagesById[this.activeConversationId]) || [];
+            const rawMessages =
+                (agent.messagesById && agent.messagesById[this.activeConversationId]) || [];
             const displayed = rawMessages.filter(m => m.type !== 'reasoning');
-            console.log('[agent-app] syncFromStore: messages for display', {
+            LOGGER.debug('[agent-app] syncFromStore: messages for display', {
                 activeConversationId: this.activeConversationId,
                 rawCount: rawMessages.length,
                 displayedCount: displayed.length,
-                rawRoles: rawMessages.map((m) => m.role),
-                rawTypes: rawMessages.map((m) => m.type),
+                rawRoles: rawMessages.map(m => m.role),
+                rawTypes: rawMessages.map(m => m.type),
             });
             this._setIfChanged('displayedMessages', displayed);
 
@@ -112,9 +111,7 @@ export default class App extends ToolkitElement {
                 'debugMessages',
                 agent.messagesById?.[this.activeConversationId] ?? []
             );
-            const conv = (agent.conversations || []).find(
-                (c) => c.id === this.activeConversationId
-            );
+            const conv = (agent.conversations || []).find(c => c.id === this.activeConversationId);
             this._setIfChanged('debugStreamHistory', conv?.streamHistory ?? []);
             this._setIfChanged(
                 'debugLastRunDebug',
@@ -132,8 +129,13 @@ export default class App extends ToolkitElement {
         if (this.isEditingTitle && this.refs && this.refs.titleInput) {
             this.refs.titleInput.focus();
         }
-        const messageCount = Array.isArray(this.displayedMessages) ? this.displayedMessages.length : 0;
-        if (this._lastActiveConversationId !== this.activeConversationId || messageCount > this._lastScrolledMessageCount) {
+        const messageCount = Array.isArray(this.displayedMessages)
+            ? this.displayedMessages.length
+            : 0;
+        if (
+            this._lastActiveConversationId !== this.activeConversationId ||
+            messageCount > this._lastScrolledMessageCount
+        ) {
             this._scrollChatToBottom();
         }
         this._lastActiveConversationId = this.activeConversationId;
@@ -156,9 +158,7 @@ export default class App extends ToolkitElement {
     };
 
     toggleDebugMode = () => {
-        store.dispatch(
-            AGENT.reduxSlice.actions.setDebugMode({ enabled: !this.isDebugMode })
-        );
+        store.dispatch(AGENT.reduxSlice.actions.setDebugMode({ enabled: !this.isDebugMode }));
     };
 
     copyErrorToClipboard = async () => {
@@ -174,7 +174,8 @@ export default class App extends ToolkitElement {
     };
 
     _scrollChatToBottom = () => {
-        const container = this.template && this.template.querySelector('section[data-id="chatSection"]');
+        const container =
+            this.template && this.template.querySelector('section[data-id="chatSection"]');
         if (!container) {
             return;
         }
@@ -184,22 +185,36 @@ export default class App extends ToolkitElement {
     };
 
     executeAgent = async (prompt, files = [], model = this.selectedModel) => {
-        await store.dispatch(AGENT.executeAgent({ prompt, directMessages: [], files, model, conversationId: this.activeConversationId }));
-    }
+        await store.dispatch(
+            AGENT.executeAgent({
+                prompt,
+                directMessages: [],
+                files,
+                model,
+                conversationId: this.activeConversationId,
+            })
+        );
+    };
 
-    executeAgentWithDirectMessages = async (directMessages) => {
-        await store.dispatch(AGENT.executeAgent({ prompt: null, directMessages, files: [], conversationId: this.activeConversationId }));
-    }
-    
+    executeAgentWithDirectMessages = async directMessages => {
+        await store.dispatch(
+            AGENT.executeAgent({
+                prompt: null,
+                directMessages,
+                files: [],
+                conversationId: this.activeConversationId,
+            })
+        );
+    };
 
-    _executeAgent = async () => {}
+    _executeAgent = async () => {};
 
     /** Agents Helpers **/
     _setIfChanged = (prop, value) => {
         if (this[prop] !== value) {
             this[prop] = value;
         }
-    }
+    };
 
     /** Events **/
 
@@ -212,7 +227,7 @@ export default class App extends ToolkitElement {
         //this.saveConversationsToCache();
     };
 
-    handleSendClick = async (e) => {
+    handleSendClick = async e => {
         const value = e.detail.prompt;
         const files = e.detail.files || [];
         const model = e.detail.model || this.selectedModel;
@@ -250,11 +265,18 @@ export default class App extends ToolkitElement {
         }
     };
 
-    handleRetry = (event) => {
+    handleRetry = event => {
         const { item } = event.detail;
         if (item) {
-            const list = (store.getState().agent?.messagesById?.[this.activeConversationId] || []).filter(m => !Message.areMessagesEqual(m, item));
-            store.dispatch(AGENT.reduxSlice.actions.setMessages({ id: this.activeConversationId, messages: list }));
+            const list = (
+                store.getState().agent?.messagesById?.[this.activeConversationId] || []
+            ).filter(m => !Message.areMessagesEqual(m, item));
+            store.dispatch(
+                AGENT.reduxSlice.actions.setMessages({
+                    id: this.activeConversationId,
+                    messages: list,
+                })
+            );
             this.executeAgentWithDirectMessages([item]);
         }
     };
@@ -274,9 +296,7 @@ export default class App extends ToolkitElement {
         //this.saveConversationsToCache();
     };
 
-
-
-    handleConversationSelect = (event) => {
+    handleConversationSelect = event => {
         const id = event.detail.item.id;
         if (id && id !== this.activeConversationId) {
             store.dispatch(AGENT.reduxSlice.actions.setActiveConversationId({ id }));
@@ -285,12 +305,12 @@ export default class App extends ToolkitElement {
         this.isSidePanelOpen = false;
     };
 
-    handleDeleteConversation = (event) => {
+    handleDeleteConversation = event => {
         const id = event.detail.item?.id;
         if (id) {
             this.deleteConversation(id);
         }
-    }
+    };
 
     getConversationItemClass(id) {
         let base = 'side-panel-list-item slds-p-vertical_x-small';
@@ -306,11 +326,11 @@ export default class App extends ToolkitElement {
         this.isEditingTitle = true;
     };
 
-    handleConversationTitleChange = (event) => {
+    handleConversationTitleChange = event => {
         this.pendingTitle = event.target.value;
     };
 
-    handleConversationTitleKeydown = (event) => {
+    handleConversationTitleKeydown = event => {
         if (event.key === 'Enter') {
             this.saveConversationTitle();
         } else if (event.key === 'Escape') {
@@ -320,7 +340,12 @@ export default class App extends ToolkitElement {
 
     saveConversationTitle = () => {
         if (this.pendingTitle.trim()) {
-            store.dispatch(AGENT.reduxSlice.actions.updateConversationTitle({ id: this.activeConversationId, title: this.pendingTitle.trim() }));
+            store.dispatch(
+                AGENT.reduxSlice.actions.updateConversationTitle({
+                    id: this.activeConversationId,
+                    title: this.pendingTitle.trim(),
+                })
+            );
             //this.saveConversationsToCache();
         }
         this.isEditingTitle = false;
@@ -330,7 +355,7 @@ export default class App extends ToolkitElement {
         this.isEditingTitle = false;
     };
 
-    deleteConversation = async (id) => {
+    deleteConversation = async id => {
         const wasActive = this.activeConversationId === id;
         await store.dispatch(AGENT.reduxSlice.actions.deleteConversation({ id }));
         const convs = store.getState().agent?.conversations || [];
@@ -339,11 +364,13 @@ export default class App extends ToolkitElement {
         } else if (wasActive) {
             const newActiveId = convs[0]?.id;
             if (newActiveId) {
-                store.dispatch(AGENT.reduxSlice.actions.setActiveConversationId({ id: newActiveId }));
+                store.dispatch(
+                    AGENT.reduxSlice.actions.setActiveConversationId({ id: newActiveId })
+                );
             }
         }
         //this.saveConversationsToCache();
-    }
+    };
 
     /** Getters **/
 
@@ -366,10 +393,6 @@ export default class App extends ToolkitElement {
     get isUserLoggedIn() {
         return isNotUndefinedOrNull(store.getState()?.application?.connector);
     }
-
-    
-
-    
 
     get conversationTree() {
         return this.conversations.map(conv => {
@@ -397,10 +420,10 @@ export default class App extends ToolkitElement {
 
     get inputSectionClass() {
         return classSet('slds-grid slds-grid_vertical-align-center title-input-section')
-        .add({
-            'input-section': this.isEditingTitle
-        })
-        .toString();
+            .add({
+                'input-section': this.isEditingTitle,
+            })
+            .toString();
     }
 
     get debugTabs() {
@@ -418,25 +441,28 @@ export default class App extends ToolkitElement {
     get visibleDebugTabs() {
         const activeId = this.activeDebugTabId;
         return this.debugTabs
-            .filter((t) => t.visible !== false)
-            .map((t) => ({
+            .filter(t => t.visible !== false)
+            .map(t => ({
                 ...t,
                 isActive: activeId === t.id,
-                tabClass: activeId === t.id ? 'agent-debug-tab agent-debug-tab-active' : 'agent-debug-tab',
+                tabClass:
+                    activeId === t.id
+                        ? 'agent-debug-tab agent-debug-tab-active'
+                        : 'agent-debug-tab',
             }));
     }
 
     get activeDebugTabLabel() {
-        const tab = this.visibleDebugTabs.find((t) => t.id === this.activeDebugTabId);
+        const tab = this.visibleDebugTabs.find(t => t.id === this.activeDebugTabId);
         return tab ? tab.label : 'Messages';
     }
 
     get activeDebugTabId() {
-        const tabs = this.debugTabs.filter((t) => t.visible !== false);
-        const ids = tabs.map((t) => t.id);
+        const tabs = this.debugTabs.filter(t => t.visible !== false);
+        const ids = tabs.map(t => t.id);
         return ids.includes(this.selectedDebugTabId)
             ? this.selectedDebugTabId
-            : (ids[0] || 'messages');
+            : ids[0] || 'messages';
     }
 
     get activeDebugTabButtonId() {
@@ -475,11 +501,7 @@ export default class App extends ToolkitElement {
             return '—';
         }
         try {
-            return JSON.stringify(
-                x,
-                (_, v) => (typeof v === 'function' ? undefined : v),
-                2
-            );
+            return JSON.stringify(x, (_, v) => (typeof v === 'function' ? undefined : v), 2);
         } catch (_) {
             return String(x);
         }
@@ -648,15 +670,10 @@ export default class App extends ToolkitElement {
         }
     }
 
-    
-
-
-
     _getConversationSearchData(conv) {
         // Keep lightweight for now; can be enhanced later with message snippets/tags
         const keywords = [conv.id].filter(Boolean);
         const searchText = String(conv.title || '');
         return { keywords, searchText };
     }
-
 }

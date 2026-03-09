@@ -20,7 +20,7 @@ export default class FileTree extends LightningElement {
 
     @api tree = [];
     @api isDeleteDisabled = false;
-    @api searchFields = ['name','id'];
+    @api searchFields = ['name', 'id'];
     @api minSearchLength = 3;
     @api hideSearchInput = false;
     @api includeFoldersInResults = false;
@@ -31,7 +31,7 @@ export default class FileTree extends LightningElement {
     handleSearch(event) {
         runActionAfterTimeOut(
             event.target.value,
-            (value) => {
+            value => {
                 this.searchValue = value;
                 // returns a map of what should be expanded and a map of non-matching children in each expanded folder
                 const options = {
@@ -70,7 +70,9 @@ export default class FileTree extends LightningElement {
 
     handleDeleteFile(event) {
         event.stopPropagation();
-        this.dispatchEvent(new CustomEvent('deletefile', { detail: event.detail, bubbles: true, composed: true }));
+        this.dispatchEvent(
+            new CustomEvent('deletefile', { detail: event.detail, bubbles: true, composed: true })
+        );
     }
 
     handleExpandAll(event) {
@@ -113,23 +115,26 @@ export default class FileTree extends LightningElement {
         const selected = this.selectedId === item.id;
         const searchInactive = this.searchValue.length < this.minSearchLength;
         const isFolder = Array.isArray(item.children);
-        const children = item.children ? item.children.map((child) => this.injectState(child, level + 1)) : undefined;
+        const children = item.children
+            ? item.children.map(child => this.injectState(child, level + 1))
+            : undefined;
         let visible;
         if (searchInactive) {
             visible = true;
         } else if (isFolder) {
-            const childVisible = (children || []).some((c) => c.visible);
-            const selfMatchAndIncluded = this.includeFoldersInResults === true && this.matchedIds.has(item.id);
+            const childVisible = (children || []).some(c => c.visible);
+            const selfMatchAndIncluded =
+                this.includeFoldersInResults === true && this.matchedIds.has(item.id);
             visible = childVisible || selfMatchAndIncluded;
         } else {
             visible = this.matchedIds.has(item.id);
         }
-        return { 
-            ...item, 
-            expanded, 
-            selected, 
-            children, 
-            visible
+        return {
+            ...item,
+            expanded,
+            selected,
+            children,
+            visible,
         };
     }
 
@@ -137,7 +142,7 @@ export default class FileTree extends LightningElement {
 
     @api
     get computedTree() {
-        return (this.tree || []).map((item) => this.injectState(item, 0));
+        return (this.tree || []).map(item => this.injectState(item, 0));
     }
 
     get isTreeVisible() {
@@ -147,5 +152,4 @@ export default class FileTree extends LightningElement {
     get i18n() {
         return i18n;
     }
-
 }

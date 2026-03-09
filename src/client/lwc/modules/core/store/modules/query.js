@@ -1,8 +1,10 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
-import * as DOCUMENT from './document';
 import { lowerCaseKey } from 'shared/utils';
-import * as ERROR from './error';
+
 import { getStore } from '../storeRef';
+
+import * as DOCUMENT from './document';
+import * as ERROR from './error';
 
 export const queryAdapter = createEntityAdapter();
 
@@ -42,7 +44,7 @@ export const executeQueryIncognito = createAsyncThunk(
         try {
             const _conn = useToolingApi ? connector.conn.tooling : connector.conn;
             const res = await _conn.query(soql).scanAll(includeDeletedRecords || false);
-            return { data: res, soql };    
+            return { data: res, soql };
         } catch (err) {
             getStore()?.dispatch(
                 ERROR.reduxSlice.actions.addError({

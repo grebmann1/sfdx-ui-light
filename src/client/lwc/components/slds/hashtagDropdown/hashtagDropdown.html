@@ -10,14 +10,14 @@
             <template lwc:if={hasItems}>
                 <ul class="slds-hashtag-dropdown__list slds-flex-column slds-fill-height">
                     <template for:each={viewItems} for:item="it">
-                        <li key={it.key}
+                        <li
+                            key={it.key}
                             class={it.className}
                             data-index={it.index}
                             role="option"
                             aria-selected={it.isActive}
                             onmouseover={handleMouseOver}
-                            onmousedown={handleMouseDown}
-                        >
+                            onmousedown={handleMouseDown}>
                             <div class="left-side slds-flex-row">
                                 <span class={it.indentClass} aria-hidden="true"></span>
                                 <span class="slds-hashtag-dropdown__badge">{it.ref}</span>
@@ -25,11 +25,15 @@
                             </div>
                             <div class="right-side slds-flex-row">
                                 <template lwc:if={it.isExpandable}>
-                                    <lightning-button-icon icon-name={it.chevronIcon} variant="bare" class="slds-m-right_x-small chevron-icon slds-is-relative slds-float_right" data-action="toggle" data-index={it.index} alternative-text="Toggle folder"></lightning-button-icon>
+                                    <lightning-button-icon
+                                        icon-name={it.chevronIcon}
+                                        variant="bare"
+                                        class="slds-m-right_x-small chevron-icon slds-is-relative slds-float_right"
+                                        data-action="toggle"
+                                        data-index={it.index}
+                                        alternative-text="Toggle folder"></lightning-button-icon>
                                 </template>
                             </div>
-                            
-                            
                         </li>
                     </template>
                 </ul>
@@ -40,5 +44,3 @@
         </div>
     </template>
 </template>
-
-

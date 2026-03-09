@@ -1,7 +1,7 @@
 import { store } from 'core/store';
+import { CACHE_CONFIG } from 'shared/cacheManager';
 import LOGGER from 'shared/logger';
 import { guid, isNotUndefinedOrNull } from 'shared/utils';
-import { CACHE_CONFIG } from 'shared/cacheManager';
 
 export const ROLES = {
     USER: 'user',
@@ -47,7 +47,7 @@ export const fetchCompletion = async ({
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${openaiKey}`,
+                Authorization: `Bearer ${openaiKey}`,
             },
             body: JSON.stringify({
                 model,
@@ -102,7 +102,7 @@ export const fetchCompletionStream = async ({
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`,
+                Authorization: `Bearer ${accessToken}`,
             },
             body: JSON.stringify({
                 model,
@@ -124,7 +124,7 @@ export const fetchCompletionStream = async ({
             let errMsg = `HTTP error! status: ${response.status}`;
             try {
                 const errData = await response.json();
-                if (errData && errData.error){
+                if (errData && errData.error) {
                     errMsg = errData.error?.message || errData.error;
                 }
             } catch {}

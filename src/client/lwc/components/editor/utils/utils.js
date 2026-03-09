@@ -1,8 +1,8 @@
 import { store } from 'core/store';
+import { CompletionCopilot, registerCompletion } from 'monacopilot';
+import { ensureMonacoLoaded } from 'shared/loader';
 import LOGGER from 'shared/logger';
 import { isChromeExtension } from 'shared/utils';
-import { ensureMonacoLoaded } from 'shared/loader';
-import { CompletionCopilot, registerCompletion } from 'monacopilot';
 
 function buildWorkerDefinition(workerPath, basePath) {
     // eslint-disable-next-line no-restricted-globals
@@ -51,9 +51,7 @@ export const setupMonaco = async () => {
     return window.monaco;
 };
 
-export const registerAIWidgets = ({monaco, editor, language, handleOpenContextCopilot}) => {
-    
-
+export const registerAIWidgets = ({ monaco, editor, language, handleOpenContextCopilot }) => {
     // Check if OpenAI is available for the Context Copilot feature
     if (store.getState().application.openaiKey) {
         LOGGER.info('registerAIWidgets --> ', language);
@@ -71,7 +69,7 @@ export const registerAIWidgets = ({monaco, editor, language, handleOpenContextCo
 
     // Check if Mistral API key is available for the Autocomplete feature
     const mistralKey = store.getState().application.mistralKey;
-    if(mistralKey) {
+    if (mistralKey) {
         LOGGER.info('registerMonacoAutocomplete --> ', language);
         // Register the monaco autocomplete
         registerMonacoAutocomplete(monaco, editor, language, mistralKey);
@@ -87,15 +85,15 @@ export const registerMonacoAutocomplete = (monaco, editor, language, mistralKey)
 
     registerCompletion(monaco, editor, {
         language,
-        technologies:['salesforce'],
+        technologies: ['salesforce'],
         requestHandler: async ({ body }) => {
             // Prepare context for the assistant
             //LOGGER.log('body', body);
-            
-            const completion = await copilot.complete({ body});
+
+            const completion = await copilot.complete({ body });
             return completion;
-        }
-    }); 
+        },
+    });
 };
 
 // Completion Formatter

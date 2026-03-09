@@ -13,7 +13,10 @@ export function parseCsvText(text, { delimiter = CSV_DELIMITERS.COMMA } = {}) {
         skipEmptyLines: 'greedy',
         delimiter,
         // Normalize headers to avoid BOM/whitespace breaking mapping.
-        transformHeader: header => String(header || '').replace(/^\uFEFF/, '').trim(),
+        transformHeader: header =>
+            String(header || '')
+                .replace(/^\uFEFF/, '')
+                .trim(),
     });
 
     const error = parsed?.errors?.length
@@ -40,10 +43,7 @@ export function escapeCsvValue(separator, value) {
 export function serializeCsvFromObjects({ headers, rows, separator = ',' }) {
     const headerLine = (headers || []).join(separator);
     const dataLines = (rows || []).map(row => {
-        return (headers || [])
-            .map(h => escapeCsvValue(separator, row?.[h]))
-            .join(separator);
+        return (headers || []).map(h => escapeCsvValue(separator, row?.[h])).join(separator);
     });
     return `${headerLine}\n${dataLines.join('\n')}`;
 }
-

@@ -80,7 +80,7 @@ function openaiProxy(app, options = {}) {
             if (body.stream) {
                 return streamSSE(
                     res,
-                    async (signal) => {
+                    async signal => {
                         for await (const chunk of openaiModel.stream(body, signal)) {
                             res.write(`data: ${JSON.stringify(chunk)}\n\n`);
                             res.flush && res.flush();
@@ -113,7 +113,7 @@ function openaiProxy(app, options = {}) {
             if (body.stream) {
                 return streamSSE(
                     res,
-                    async (signal) => {
+                    async signal => {
                         for await (const chunk of openaiModel.streamResponse(body, signal)) {
                             res.write(`data: ${JSON.stringify(chunk)}\n\n`);
                             res.flush && res.flush();
@@ -136,7 +136,7 @@ function openaiProxy(app, options = {}) {
     // GET /openai/v1/models
     app.get(`${path}/models`, (req, res, next) => {
         try {
-            const data = openaiModel.supportModels.map((model) => ({
+            const data = openaiModel.supportModels.map(model => ({
                 id: model,
                 object: 'model',
                 owned_by: openaiModel.name,

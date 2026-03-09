@@ -75,7 +75,11 @@ export default class PublisherModal extends LightningModal {
             await navigator.clipboard.writeText(this.apexSnippet);
             Toast.show({ label: 'Copied', message: 'Apex snippet copied', variant: 'success' });
         } catch (e) {
-            Toast.show({ label: 'Copy failed', message: e?.message || 'Unable to copy', variant: 'warning' });
+            Toast.show({
+                label: 'Copy failed',
+                message: e?.message || 'Unable to copy',
+                variant: 'warning',
+            });
         }
     };
 
@@ -97,7 +101,11 @@ export default class PublisherModal extends LightningModal {
             }
             const res = await conn.sobject(this.apiName).create(payload);
             if (res?.success) {
-                Toast.show({ label: 'Published', message: `Event published (id=${res.id})`, variant: 'success' });
+                Toast.show({
+                    label: 'Published',
+                    message: `Event published (id=${res.id})`,
+                    variant: 'success',
+                });
                 this.close(res);
             } else {
                 const msg = res?.errors?.join?.(', ') || 'Publish failed';
@@ -110,4 +118,3 @@ export default class PublisherModal extends LightningModal {
         }
     };
 }
-

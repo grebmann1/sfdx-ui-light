@@ -16,7 +16,7 @@ import { NavigationContext, CurrentPageReference, navigate } from 'lwr/navigatio
 import LOGGER from 'shared/logger';
 
 export default class Menu extends ToolkitElement {
-    @api isUserLoggedIn = false; // to enforce t
+    @api isUserLoggedIn = false;
     @api version;
     isMenuSmall = false;
     selectedItem = 'home';
@@ -62,10 +62,10 @@ export default class Menu extends ToolkitElement {
 
     /** Events **/
 
-    handleSelect = (e) => {
+    handleSelect = e => {
         e.stopPropagation();
         const name = e.detail?.name;
-        const external = this.others.find((o) => o.name === name);
+        const external = this.others.find(o => o.name === name);
         if (external?.url) {
             legacyStore.dispatch(store_application.navigate(external.url));
             return;
@@ -77,7 +77,8 @@ export default class Menu extends ToolkitElement {
             navigate(this.navContext, { type: 'home' });
         }
         this.selectedItem = target || 'home';
-        const appName = this.items.find((x) => x.path === this.selectedItem)?.name ?? this.selectedItem;
+        const appName =
+            this.items.find(x => x.path === this.selectedItem)?.name ?? this.selectedItem;
         this.dispatchEvent(
             new CustomEvent('applicationselection', {
                 detail: { target: appName },
@@ -87,7 +88,7 @@ export default class Menu extends ToolkitElement {
         );
     };
 
-    handleCollapse = (e) => {
+    handleCollapse = e => {
         this.isMenuSmall = e.detail?.isCollapsed ?? false;
         if (this.isMenuSmall) {
             legacyStore.dispatch(store_application.collapseMenu());
@@ -105,7 +106,7 @@ export default class Menu extends ToolkitElement {
         }
     };
 
-    handleSearchInput = (e) => {
+    handleSearchInput = e => {
         this.filterText = (e.target.value || '').trim();
     };
 
@@ -114,7 +115,7 @@ export default class Menu extends ToolkitElement {
     filterBySearch = (items, searchText) => {
         if (isEmpty(searchText)) return items;
         const lower = searchText.toLowerCase();
-        return items.filter((x) => {
+        return items.filter(x => {
             const label = (x.menuLabel || x.label || x.name || '').toString().toLowerCase();
             return label.includes(lower);
         });
@@ -125,7 +126,8 @@ export default class Menu extends ToolkitElement {
             CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key,
             CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key,
         ]);
-        this.isApplicationTabVisible = configuration[CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key];
+        this.isApplicationTabVisible =
+            configuration[CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key];
         this.betaSmartInputEnabled = !!configuration[CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key];
     };
 
@@ -165,21 +167,21 @@ export default class Menu extends ToolkitElement {
         return filtered;
     };
 
-    getFilteredItemsByPaths = (paths) => {
+    getFilteredItemsByPaths = paths => {
         if (!Array.isArray(paths) || paths.length === 0) return [];
-        let filtered = this.items.filter((x) => paths.includes(x.path));
+        let filtered = this.items.filter(x => paths.includes(x.path));
         filtered = this.formatMenuItems(filtered);
         if (!isElectronApp()) {
-            filtered = filtered.filter((x) => !x.isElectronOnly);
+            filtered = filtered.filter(x => !x.isElectronOnly);
         }
         if (!isChromeExtension()) {
-            filtered = filtered.filter((x) => !x.isChromeOnly);
+            filtered = filtered.filter(x => !x.isChromeOnly);
         }
         if (!this.isUserLoggedIn) {
-            filtered = filtered.filter((x) => x.isOfflineAvailable);
+            filtered = filtered.filter(x => x.isOfflineAvailable);
         }
         if (!this.betaSmartInputEnabled) {
-            filtered = filtered.filter((x) => x.name !== 'smartinput/app');
+            filtered = filtered.filter(x => x.name !== 'smartinput/app');
         }
         return this.filterBySearch(filtered, this.filterText);
     };
@@ -362,20 +364,20 @@ export default class Menu extends ToolkitElement {
 
     get sections() {
         const sel = this.selectedItem;
-        const toItem = (x) => ({
+        const toItem = x => ({
             name: x.path,
             label: x.menuLabel || x.label || '',
             iconName: x.menuIcon || x.quickActionIcon,
             isSelected: x.path === sel,
             isLink: false,
         });
-        const toChild = (x) => ({
+        const toChild = x => ({
             name: x.path,
             label: x.menuLabel || x.label || x.shortName || '',
             isSelected: x.path === sel,
             isLink: false,
         });
-        const toOtherItem = (x) => ({
+        const toOtherItem = x => ({
             name: x.name,
             label: x.menuLabel || '',
             iconName: x.menuIcon,
@@ -436,7 +438,7 @@ export default class Menu extends ToolkitElement {
                 buildItems.push(...filtered.map(toItem));
             } else {
                 const children = filtered.map(toChild);
-                const hasSelectedChild = children.some((c) => c.isSelected);
+                const hasSelectedChild = children.some(c => c.isSelected);
                 buildItems.push({
                     name: `build-${group.key}`,
                     label: group.label,
@@ -460,7 +462,9 @@ export default class Menu extends ToolkitElement {
 
         return [
             { label: 'Build', items: buildItems },
-            ...(connectionItems.length > 0 ? [{ label: 'Connections', items: connectionItems }] : []),
+            ...(connectionItems.length > 0
+                ? [{ label: 'Connections', items: connectionItems }]
+                : []),
             ...(documentationItems.length > 0
                 ? [{ label: 'Documentation', items: documentationItems }]
                 : []),

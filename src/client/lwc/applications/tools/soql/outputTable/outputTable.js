@@ -3,11 +3,7 @@ import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
 import { store, UI } from 'core/store';
 import { NavigationContext, navigate } from 'lwr/navigation';
-import {
-    isNotUndefinedOrNull,
-    isUndefinedOrNull,
-    runActionAfterTimeOut,
-} from 'shared/utils';
+import { isNotUndefinedOrNull, isUndefinedOrNull, runActionAfterTimeOut } from 'shared/utils';
 import { store as legacyStore, store_application } from 'shared/store';
 
 class ColumnCollector {
@@ -145,7 +141,7 @@ export default class OutputTable extends ToolkitElement {
         } catch (_e) {
             return '';
         }
-    };
+    }
 
     _escapeHtml(value) {
         return String(value)
@@ -170,11 +166,11 @@ export default class OutputTable extends ToolkitElement {
     }
 
     _formatChildRelationshipLabel(value) {
-        const count = Array.isArray(value) ? value.length : (value?.totalSize || 0);
+        const count = Array.isArray(value) ? value.length : value?.totalSize || 0;
         return `${count} records`;
     }
 
-    tabulatorCellFormatter = (cell) => {
+    tabulatorCellFormatter = cell => {
         const value = cell.getValue();
         const field = cell.getColumn().getField();
         const rowData = cell.getRow().getData() || {};
@@ -202,10 +198,14 @@ export default class OutputTable extends ToolkitElement {
 
         const actions = [];
         if (isRecordIdField && recordId) {
-            actions.push(this._iconButtonHtml({ action: 'edit', iconName: 'edit', assistiveText: 'edit' }));
+            actions.push(
+                this._iconButtonHtml({ action: 'edit', iconName: 'edit', assistiveText: 'edit' })
+            );
         }
         if (value != null && text !== '') {
-            actions.push(this._iconButtonHtml({ action: 'copy', iconName: 'copy', assistiveText: 'copy' }));
+            actions.push(
+                this._iconButtonHtml({ action: 'copy', iconName: 'copy', assistiveText: 'copy' })
+            );
         }
 
         return `
@@ -414,7 +414,7 @@ export default class OutputTable extends ToolkitElement {
             this.tableInstance.clearFilter();
             return;
         }
-        this.tableInstance.setFilter((rowData) => {
+        this.tableInstance.setFilter(rowData => {
             const text = rowData?.__searchText || '';
             return text.includes(search);
         });

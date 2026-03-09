@@ -1,16 +1,17 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
-import * as DOCUMENT from './document';
-import * as ERROR from './error';
+
 import { getStore } from '../storeRef';
 
+import * as DOCUMENT from './document';
+import * as ERROR from './error';
+
 const apiFilesSelectors = DOCUMENT.apiFileAdapter.getSelectors(s => s);
-import { loadExtensionConfigFromCache,saveExtensionConfigToCache,CACHE_CONFIG } from 'shared/cacheManager';
 import {
-    lowerCaseKey,
-    isNotUndefinedOrNull,
-    safeParseJson,
-    API
-} from 'shared/utils';
+    loadExtensionConfigFromCache,
+    saveExtensionConfigToCache,
+    CACHE_CONFIG,
+} from 'shared/cacheManager';
+import { lowerCaseKey, isNotUndefinedOrNull, safeParseJson, API } from 'shared/utils';
 import LOGGER from 'shared/logger';
 const API_SETTINGS_KEY = 'API_SETTINGS_KEY';
 
@@ -18,11 +19,11 @@ const API_SETTINGS_KEY = 'API_SETTINGS_KEY';
 
 export async function loadCacheSettings(alias) {
     const key = `${alias}-${API_SETTINGS_KEY}`;
-    const arr = [key,CACHE_CONFIG.API_SPLITTER_IS_HORIZONTAL.key];
+    const arr = [key, CACHE_CONFIG.API_SPLITTER_IS_HORIZONTAL.key];
     LOGGER.log('arr', arr);
     const configMap = await loadExtensionConfigFromCache(arr);
     LOGGER.log('configMap', configMap);
-    if(configMap && configMap.hasOwnProperty(key)){
+    if (configMap && configMap.hasOwnProperty(key)) {
         configMap[key] = safeParseJson(configMap[key]) || null;
     }
     return configMap;
@@ -31,11 +32,17 @@ export async function loadCacheSettings(alias) {
 async function saveCacheSettings(alias, state) {
     const { viewerTab, requestTab, recentPanelToggled, tabs, defaultHeader } = state;
     const key = `${alias}-${API_SETTINGS_KEY}`;
-    const data = JSON.stringify({ viewerTab, requestTab, recentPanelToggled, defaultHeader, tabs:tabs.map(formatTabBeforeSave) });
+    const data = JSON.stringify({
+        viewerTab,
+        requestTab,
+        recentPanelToggled,
+        defaultHeader,
+        tabs: tabs.map(formatTabBeforeSave),
+    });
     await saveExtensionConfigToCache({ [key]: data });
 }
 
-function formatTabBeforeSave(tab){
+function formatTabBeforeSave(tab) {
     return {
         ...tab,
         actions: [], // to avoid too many actions in the cache
@@ -54,7 +61,7 @@ function formatTab({
     fileId,
     fileData,
     actions,
-    actionPointer
+    actionPointer,
 }) {
     return {
         id,
@@ -76,7 +83,8 @@ function enrichTabs(tabs, state, selector) {
 }
 
 function enrichTab(tab, state, selector) {
-    const file = tab.fileId && selector ? selector.selectById(state, lowerCaseKey(tab.fileId)) : null;
+    const file =
+        tab.fileId && selector ? selector.selectById(state, lowerCaseKey(tab.fileId)) : null;
     //const { header,body,method,endpoint } = file;
     const fileData = file?.extra || {};
     return {
@@ -102,7 +110,7 @@ function assignNewApiData(item, value) {
 }
 
 function addAction({ state, tabId, request, response }) {
-    LOGGER.log('addAction',{ state, tabId, request, response });
+    LOGGER.log('addAction', { state, tabId, request, response });
     const tabIndex = state.tabs.findIndex(x => x.id === tabId);
     if (tabIndex > -1) {
         let actions = state.tabs[tabIndex].actions || [];
@@ -142,7 +150,10 @@ const _executeApiRequest = async (connector, request, formattedRequest, signal) 
     });
 
     const statusCode = res.status;
-    const contentHeaders = Array.from(res.headers.entries()).map(([key, value]) => ({ key, value }));
+    const contentHeaders = Array.from(res.headers.entries()).map(([key, value]) => ({
+        key,
+        value,
+    }));
     const contentType = res.headers.get('content-type') || '';
 
     let content;
@@ -173,10 +184,7 @@ const _executeApiRequest = async (connector, request, formattedRequest, signal) 
 
 export const executeApiRequest = createAsyncThunk(
     'api/callRequest',
-    async (
-        { connector, request, formattedRequest, tabId, createdDate },
-        { dispatch, signal }
-    ) => {
+    async ({ connector, request, formattedRequest, tabId, createdDate }, { dispatch, signal }) => {
         //console.log('connector, body,tabId',connector, body,tabId);
         //const apiPath = isAllRows ? '/queryAll' : '/query';
         try {
@@ -244,8 +252,12 @@ const apiSlice = createSlice({
             const { cachedConfig, apiFiles } = action.payload;
             if (cachedConfig && !state.isInitialized) {
                 // Use cached config
-                const { viewerTab,requestTab, recentPanelToggled, tabs, defaultHeader } = cachedConfig;
-                const cachedTabs = tabs && tabs.length > 0 ? enrichTabs(tabs, { apiFiles }, apiFilesSelectors) : [];
+                const { viewerTab, requestTab, recentPanelToggled, tabs, defaultHeader } =
+                    cachedConfig;
+                const cachedTabs =
+                    tabs && tabs.length > 0
+                        ? enrichTabs(tabs, { apiFiles }, apiFilesSelectors)
+                        : [];
                 const allTabs = [...cachedTabs, ...state.tabs];
                 Object.assign(state, {
                     viewerTab,
@@ -253,7 +265,7 @@ const apiSlice = createSlice({
                     recentPanelToggled,
                     defaultHeader: defaultHeader || state.defaultHeader,
                     tabs: allTabs,
-                    currentTab: allTabs.length > 0 ? allTabs[allTabs.length-1] : null,
+                    currentTab: allTabs.length > 0 ? allTabs[allTabs.length - 1] : null,
                 });
             }
             state.isInitialized = true;
@@ -313,10 +325,14 @@ const apiSlice = createSlice({
             }
         },
         initTabs: (state, action) => {
-            const { apiFiles,reset } = action.payload;
-            if(reset || !state.tabs || state.tabs.length === 0){
-                state.tabs = enrichTabs(createInitialTabs(state.currentApiVersion, state.defaultHeader), { apiFiles }, apiFilesSelectors);
-            }else{
+            const { apiFiles, reset } = action.payload;
+            if (reset || !state.tabs || state.tabs.length === 0) {
+                state.tabs = enrichTabs(
+                    createInitialTabs(state.currentApiVersion, state.defaultHeader),
+                    { apiFiles },
+                    apiFilesSelectors
+                );
+            } else {
                 state.tabs = enrichTabs(state.tabs.map(formatTab), { apiFiles }, apiFilesSelectors);
             }
             // Set first tab
@@ -450,7 +466,7 @@ const apiSlice = createSlice({
                 [tabId]: null,
             };
         },
-        clearAbortingMap: (state) => {
+        clearAbortingMap: state => {
             state.abortingMap = {};
         },
         updateVariables: (state, action) => {

@@ -68,7 +68,7 @@ export default class Footer extends LightningElement {
         this.selectedError = null;
     };
 
-    handleErrorItemClick = (event) => {
+    handleErrorItemClick = event => {
         const errorId = event.currentTarget.dataset.id;
         if (this.selectedError && this.selectedError.id == errorId) {
             // Deselect if already selected
@@ -83,7 +83,7 @@ export default class Footer extends LightningElement {
         this.selectedError = null;
     };
 
-    handleFilterInput = (event) => {
+    handleFilterInput = event => {
         this.filterText = event.target.value;
     };
 
@@ -148,19 +148,23 @@ export default class Footer extends LightningElement {
             });
         }
         // Show latest error first and add class for selection
-        return filtered.slice().reverse().map(e => ({
-            ...e,
-            formattedTime: moment(e.time).format('YYYY-MM-DD HH:mm:ss'),
-            selected: this.selectedError && e.id === this.selectedError.id,
-            class: this.getErrorListItemClass(e)
-        }));
+        return filtered
+            .slice()
+            .reverse()
+            .map(e => ({
+                ...e,
+                formattedTime: moment(e.time).format('YYYY-MM-DD HH:mm:ss'),
+                selected: this.selectedError && e.id === this.selectedError.id,
+                class: this.getErrorListItemClass(e),
+            }));
     }
 
     get errorListClass() {
         return classSet('footer-error-list scrollable-error-list slds-flex-column')
-        .add({
-            'with-details': this.selectedError,
-        }).toString();
+            .add({
+                'with-details': this.selectedError,
+            })
+            .toString();
     }
 
     getErrorListItemClass(error) {

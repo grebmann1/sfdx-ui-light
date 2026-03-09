@@ -1,9 +1,11 @@
 import { promptWithHandoffInstructions, isUndefinedOrNull } from 'shared/utils';
 const { Agent } = window.OpenAIAgentsBundle?.Agents || {};
 
-const _GeneralAgent = isUndefinedOrNull(Agent) ? null : new Agent({
-    name: 'SF Toolkit Assistant',
-    instructions:promptWithHandoffInstructions(`
+const _GeneralAgent = isUndefinedOrNull(Agent)
+    ? null
+    : new Agent({
+          name: 'SF Toolkit Assistant',
+          instructions: promptWithHandoffInstructions(`
         You provide assistance to the user to interact with the Salesforce Toolkit using all your abilities and tools.
         If you need to interact with salesforce data, you need to connect or verify if there is a connection to a salesforce org.
 
@@ -27,13 +29,13 @@ const _GeneralAgent = isUndefinedOrNull(Agent) ? null : new Agent({
         # Hidden Tools
         - If you need to run tool without displaying the result in the UI of the sf toolkit, you can use the hidden tools that are marked as "Incognito".
     `),
-    //handoffDescription: 'Generalist agent that can dispatch to other agents to help with specific tasks.',
-    //handoffs:[],
-    modelSettings: { 
-        toolChoice: 'auto', 
-        store:true, 
-        parallelToolCalls:false
-    }
-});
+          //handoffDescription: 'Generalist agent that can dispatch to other agents to help with specific tasks.',
+          //handoffs:[],
+          modelSettings: {
+              toolChoice: 'auto',
+              store: true,
+              parallelToolCalls: false,
+          },
+      });
 
 export const GeneralAgent = _GeneralAgent;

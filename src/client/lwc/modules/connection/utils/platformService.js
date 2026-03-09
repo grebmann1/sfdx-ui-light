@@ -1,10 +1,12 @@
 // platformService.js
-import * as web from './web';
+import LOGGER from 'shared/logger';
+import { isChromeExtension, isElectronApp } from 'shared/utils';
+
 import * as chrome from './chrome';
 import * as electron from './electron';
 import { normalizeConfiguration } from './utils';
-import { isChromeExtension, isElectronApp } from 'shared/utils';
-import LOGGER from 'shared/logger';
+import * as web from './web';
+
 export const PLATFORM = {
     WEB: 'web',
     CHROME: 'chrome',
@@ -42,7 +44,7 @@ export async function getConfiguration(alias) {
         default:
             configuration = await web.getConfiguration(alias);
     }
-    LOGGER.log('getConfiguration -- configuration',configuration);
+    LOGGER.log('getConfiguration -- configuration', configuration);
     return configuration ? normalizeConfiguration(configuration, true) : null;
 }
 

@@ -1,5 +1,6 @@
 <template>
-    <div class="slds-publisher slds-is-active slds-p-left_small slds-p-right_small slds-p-bottom_x-small">
+    <div
+        class="slds-publisher slds-is-active slds-p-left_small slds-p-right_small slds-p-bottom_x-small">
         <div class="slds-grid slds-wrap slds-grid_align-center">
             <div class="slds-col slds-size_1-of-1">
                 <div class="chat-input-container">
@@ -10,8 +11,9 @@
                         onkeyup={handleInput}
                         onpaste={handleInput}
                         readonly={isEnhancing}
-                        aria-label="Smart input value"
-                    >{value}</textarea>
+                        aria-label="Smart input value">
+{value}</textarea
+                    >
                     <div class="chat-input-actions-row">
                         <div class="chat-input-actions-left"></div>
                         <div class="chat-input-actions-right">
@@ -23,11 +25,23 @@
                             </button> -->
                             <template lwc:if={isEnhanceEnabled}>
                                 <template lwc:if={isEnhancing}>
-                                    <lightning-icon icon-name="utility:sync" size="x-small" alternative-text="Loading" class="sftk-rotating"></lightning-icon>
+                                    <lightning-icon
+                                        icon-name="utility:sync"
+                                        size="x-small"
+                                        alternative-text="Loading"
+                                        class="sftk-rotating"></lightning-icon>
                                 </template>
                                 <template lwc:else>
-                                    <button class="chat-btn" title="Enhance" aria-label="Enhance" onclick={handleEnhance} disabled={isLoading}>
-                                        <lightning-icon icon-name="utility:magicwand" size="x-small" alternative-text="Enhance"></lightning-icon>
+                                    <button
+                                        class="chat-btn"
+                                        title="Enhance"
+                                        aria-label="Enhance"
+                                        onclick={handleEnhance}
+                                        disabled={isLoading}>
+                                        <lightning-icon
+                                            icon-name="utility:magicwand"
+                                            size="x-small"
+                                            alternative-text="Enhance"></lightning-icon>
                                     </button>
                                 </template>
                             </template>
@@ -38,5 +52,3 @@
         </div>
     </div>
 </template>
-
-

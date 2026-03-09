@@ -1,7 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import LOGGER from 'shared/logger';
 export default class ApiTreePanel extends LightningElement {
-     // List of OpenAPI projects for view 1
+    // List of OpenAPI projects for view 1
     @api isOpen;
     @api size;
     @api title;
@@ -25,7 +25,11 @@ export default class ApiTreePanel extends LightningElement {
         const servers = this.selectedProject?.extra?.servers || [];
         const persisted = this.selectedProject?.extra?.selectedServerUrl;
         const isPersistedValid = persisted && servers.some(s => s.url === persisted);
-        this.selectedServerUrl = isPersistedValid ? persisted : (servers.length > 0 ? servers[0].url : '');
+        this.selectedServerUrl = isPersistedValid
+            ? persisted
+            : servers.length > 0
+              ? servers[0].url
+              : '';
         this.emitServerUrl();
     }
 
@@ -65,17 +69,20 @@ export default class ApiTreePanel extends LightningElement {
             label: item.name,
             icon: 'utility:notebook',
             children: null,
-            isDeletable: true
+            isDeletable: true,
         }));
     }
 
     get apiDetailsTree() {
-        return this.selectedProject?.children || []
+        return this.selectedProject?.children || [];
     }
 
     get serverOptions() {
         const servers = this.selectedProject?.extra?.servers || [];
-        return servers.map(s => ({ label: s.description ? `${s.url} (${s.description})` : s.url, value: s.url }));
+        return servers.map(s => ({
+            label: s.description ? `${s.url} (${s.description})` : s.url,
+            value: s.url,
+        }));
     }
 
     get apiSearchFields() {

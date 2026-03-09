@@ -208,7 +208,8 @@
                                                     <div slot="title">
                                                         <h1>Org Overview</h1>
                                                         <p class="description">
-                                                            &rarr; Open Org Overview with a shortcut.
+                                                            &rarr; Open Org Overview with a
+                                                            shortcut.
                                                         </p>
                                                     </div>
                                                     <div class="slds-grid slds-wrap">
@@ -227,7 +228,8 @@
                                                     <div slot="title">
                                                         <h1>SOQL Explorer</h1>
                                                         <p class="description">
-                                                            &rarr; Open SOQL Explorer with a shortcut.
+                                                            &rarr; Open SOQL Explorer with a
+                                                            shortcut.
                                                         </p>
                                                     </div>
                                                     <div class="slds-grid slds-wrap">
@@ -246,7 +248,8 @@
                                                     <div slot="title">
                                                         <h1>APEX Explorer</h1>
                                                         <p class="description">
-                                                            &rarr; Open APEX Explorer with a shortcut.
+                                                            &rarr; Open APEX Explorer with a
+                                                            shortcut.
                                                         </p>
                                                     </div>
                                                     <div class="slds-grid slds-wrap">
@@ -264,7 +267,8 @@
                                                     <div slot="title">
                                                         <h1>API Explorer</h1>
                                                         <p class="description">
-                                                            &rarr; Open API Explorer with a shortcut.
+                                                            &rarr; Open API Explorer with a
+                                                            shortcut.
                                                         </p>
                                                     </div>
                                                     <div class="slds-grid slds-wrap">
@@ -282,7 +286,8 @@
                                                     <div slot="title">
                                                         <h1>Documentation</h1>
                                                         <p class="description">
-                                                            &rarr; Open Documentation with a shortcut.
+                                                            &rarr; Open Documentation with a
+                                                            shortcut.
                                                         </p>
                                                     </div>
                                                     <div class="slds-grid slds-wrap">
@@ -303,7 +308,8 @@
                                             <div slot="title">
                                                 <h1>Other</h1>
                                                 <p class="description">
-                                                    Other shortcuts that are not related to navigation.
+                                                    Other shortcuts that are not related to
+                                                    navigation.
                                                 </p>
                                             </div>
                                             <div class="slds-grid slds-wrap">
@@ -312,7 +318,9 @@
                                                     class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
                                                     <div slot="title">
                                                         <h1>Record Id</h1>
-                                                        <p class="description">&rarr; Fetch Record Id</p>
+                                                        <p class="description">
+                                                            &rarr; Fetch Record Id
+                                                        </p>
                                                     </div>
                                                     <div class="slds-grid slds-wrap">
                                                         <slds-shortcut-selector
@@ -346,7 +354,9 @@
                                                     class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
                                                     <div slot="title">
                                                         <h1>Open Overlay</h1>
-                                                        <p class="description">&rarr; Open Overlay</p>
+                                                        <p class="description">
+                                                            &rarr; Open Overlay
+                                                        </p>
                                                     </div>
                                                     <div class="slds-grid slds-wrap">
                                                         <slds-shortcut-selector
@@ -687,16 +697,23 @@
                                     <div class="agent-skills-body">
                                         <template lwc:if={agentSkillsEmpty}>
                                             <div class="agent-skills-empty">
-                                                <span class="agent-skills-empty-icon" aria-hidden="true">
+                                                <span
+                                                    class="agent-skills-empty-icon"
+                                                    aria-hidden="true">
                                                     <lightning-icon
                                                         icon-name="utility:richtext_bulleted_list"
                                                         alternative-text=""
                                                         size="small"></lightning-icon>
                                                 </span>
-                                                <p class="agent-skills-empty-text">No skills yet. Add a skill or enable a default below.</p>
+                                                <p class="agent-skills-empty-text">
+                                                    No skills yet. Add a skill or enable a default
+                                                    below.
+                                                </p>
                                                 <p class="agent-skills-empty-description">
-                                                    Add a skill to give the AI Assistant custom instructions—for example,
-                                                    always respond in a certain language or follow your team’s guidelines.
+                                                    Add a skill to give the AI Assistant custom
+                                                    instructions—for example, always respond in a
+                                                    certain language or follow your team’s
+                                                    guidelines.
                                                 </p>
                                                 <lightning-button
                                                     label="Add your first skill"
@@ -709,8 +726,13 @@
                                         </template>
                                         <template lwc:else>
                                             <div class="agent-skills-vertical">
-                                                <nav class="agent-skills-nav" role="tablist" aria-label="Agent skills">
-                                                    <template for:each={agentSkillsWithSelection} for:item="skill">
+                                                <nav
+                                                    class="agent-skills-nav"
+                                                    role="tablist"
+                                                    aria-label="Agent skills">
+                                                    <template
+                                                        for:each={agentSkillsWithSelection}
+                                                        for:item="skill">
                                                         <div
                                                             key={skill.id}
                                                             class={skill.navItemClass}
@@ -720,8 +742,13 @@
                                                             aria-selected={skill.isSelected}
                                                             onclick={handleSelectAgentSkill}
                                                             onkeydown={handleAgentSkillNavKeydown}>
-                                                            <span class="agent-skills-nav-item-label" title={skill.displayName}>
-                                                                <span class="agent-skills-nav-item-dot" data-enabled={skill.enabled} aria-hidden="true"></span>
+                                                            <span
+                                                                class="agent-skills-nav-item-label"
+                                                                title={skill.displayName}>
+                                                                <span
+                                                                    class="agent-skills-nav-item-dot"
+                                                                    data-enabled={skill.enabled}
+                                                                    aria-hidden="true"></span>
                                                                 {skill.displayName}
                                                             </span>
                                                             <template lwc:if={skill.canRemove}>
@@ -751,7 +778,8 @@
                                                                     class="agent-skill-name-input"
                                                                     disabled={selectedAgentSkillIsDefault}
                                                                     onchange={handleAgentSkillChange}></lightning-input>
-                                                                <div class="agent-skill-detail-toggle">
+                                                                <div
+                                                                    class="agent-skill-detail-toggle">
                                                                     <lightning-input
                                                                         data-skill-id={selectedAgentSkill.id}
                                                                         data-property="enabled"
@@ -762,11 +790,18 @@
                                                                         onchange={handleAgentSkillChange}></lightning-input>
                                                                 </div>
                                                             </div>
-                                                            <template lwc:if={selectedAgentSkillIsDefault}>
-                                                                <div class="agent-skill-content-readonly">
-                                                                    <span class="slds-form-element__label">Content</span>
-                                                                    <div class="agent-skill-content-viewer">
-                                                                        <slds-markdown-viewer value={selectedAgentSkill.content}></slds-markdown-viewer>
+                                                            <template
+                                                                lwc:if={selectedAgentSkillIsDefault}>
+                                                                <div
+                                                                    class="agent-skill-content-readonly">
+                                                                    <span
+                                                                        class="slds-form-element__label">
+                                                                        Content
+                                                                    </span>
+                                                                    <div
+                                                                        class="agent-skill-content-viewer">
+                                                                        <slds-markdown-viewer
+                                                                            value={selectedAgentSkill.content}></slds-markdown-viewer>
                                                                     </div>
                                                                 </div>
                                                             </template>
@@ -785,7 +820,11 @@
                                                     </template>
                                                     <template lwc:else>
                                                         <div class="agent-skills-detail-empty">
-                                                            <p class="slds-text-body_small slds-text-color_weak">Select a skill from the list or add one.</p>
+                                                            <p
+                                                                class="slds-text-body_small slds-text-color_weak">
+                                                                Select a skill from the list or add
+                                                                one.
+                                                            </p>
                                                         </div>
                                                     </template>
                                                 </div>

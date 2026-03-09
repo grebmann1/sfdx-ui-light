@@ -1,11 +1,13 @@
 // usernamePassword.js
+import LOGGER from 'shared/logger';
+import { isUndefinedOrNull, isElectronApp } from 'shared/utils';
+
+import { Connector } from '../connectorClass';
 import { getCurrentPlatform, PLATFORM } from '../platformService';
 import { getSalesforceURL, normalizeConnection } from '../utils';
 import { saveConfiguration } from '../web';
+
 import { OAUTH_TYPES } from './index';
-import { Connector } from '../connectorClass';
-import LOGGER from 'shared/logger';
-import { isUndefinedOrNull,isElectronApp } from 'shared/utils';
 
 export async function directConnect({ username, password, loginUrl, alias }) {
     const platform = getCurrentPlatform();
@@ -43,7 +45,7 @@ export async function connect({ username, password, loginUrl, alias }, settings 
     } */
 
     const normalizedUrl = getSalesforceURL(loginUrl);
-    
+
     try {
         const connectionParams = normalizeConnection(
             OAUTH_TYPES.USERNAME,

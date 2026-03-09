@@ -6,7 +6,7 @@ import {
     runActionAfterTimeOut,
     isUndefinedOrNull,
     isNotUndefinedOrNull,
-    getFromStorage
+    getFromStorage,
 } from 'shared/utils';
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import ModalProfileFilter from 'accessAnalyzer/modalProfileFilter';

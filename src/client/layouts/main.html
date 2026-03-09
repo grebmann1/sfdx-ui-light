@@ -26,13 +26,12 @@
             window.OpenAIAgentsBundle = OpenAIAgentsBundle;
         </script>
         <script>
-
-            if(window?.electron?.ipcRenderer){
+            if (window?.electron?.ipcRenderer) {
                 // Retro-compatibility with old electron version
-                try{
+                try {
                     window.electron.invoke = window.electron.ipcRenderer.invoke;
-                }catch(e){
-                    console.log('--> electron.invoke <---',e);
+                } catch (e) {
+                    console.log('--> electron.invoke <---', e);
                 }
             }
             let host = window.location.origin;
@@ -43,23 +42,25 @@
                         clientId: config.clientId,
                         chromeId: config.chromeId,
                         redirectUri: `${host}/oauth2/callback`,
-                        proxyUrl: window.electron ? null : (config.proxyUrl ? config.proxyUrl : `${host}/proxy/`),
+                        proxyUrl: window.electron
+                            ? null
+                            : config.proxyUrl
+                              ? config.proxyUrl
+                              : `${host}/proxy/`,
                     };
                     //jsforce.browser.init(window.jsforceSettings); // Reset
                 });
             window.Prism = Prism;
 
             window.addEventListener('DOMContentLoaded', () => {
-                if(window.electron && window.electron.listener_once){
+                if (window.electron && window.electron.listener_once) {
                     window.electron.listener_once('set-ready-channel', args => {
-                        const [payload,channel] = args;
+                        const [payload, channel] = args;
                         window.electron.channel = channel;
                         window.electron.setChannel(channel);
                     });
                 }
-            })
-
-            
+            });
         </script>
     </head>
     <!-- Google tag (gtag.js) -->

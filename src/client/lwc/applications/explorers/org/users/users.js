@@ -55,6 +55,8 @@ export default class Users extends ToolkitElement {
 
     /** Getters **/
     get containerClass() {
-        return classSet('org-users-stat').add({ 'org-users-stat-injected': this.isInjected }).toString();
+        return classSet('org-users-stat')
+            .add({ 'org-users-stat-injected': this.isInjected })
+            .toString();
     }
 }

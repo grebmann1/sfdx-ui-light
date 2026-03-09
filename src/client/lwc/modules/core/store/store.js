@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { storeRef } from './storeRef';
+import logger from 'shared/middleware';
+
 import {
     APEX,
     API,
@@ -21,7 +22,7 @@ import {
     SHELL,
     TEXTCOMPARE,
 } from './modules/index';
-import logger from 'shared/middleware';
+import { storeRef } from './storeRef';
 
 const store = configureStore({
     reducer: {
@@ -132,7 +133,9 @@ export const SELECTORS = {
     queryFiles: DOCUMENT.queryFileAdapter.getSelectors(state => state.queryFiles),
     apexFiles: DOCUMENT.apexFileAdapter.getSelectors(state => state.apexFiles),
     apiFiles: DOCUMENT.apiFileAdapter.getSelectors(state => state.apiFiles),
-    openapiSchemaFiles: DOCUMENT.openapiSchemaFileAdapter.getSelectors(state => state.openapiSchemaFiles),
+    openapiSchemaFiles: DOCUMENT.openapiSchemaFileAdapter.getSelectors(
+        state => state.openapiSchemaFiles
+    ),
     agent: state => state.agent,
     smartInput: state => state.smartInput,
     textCompare: state => state.textCompare,

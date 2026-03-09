@@ -2,7 +2,8 @@
     width: 16.6875rem;
     height: 100%;
     background-color: var(--slds-g-color-neutral-base-100, #fff);
-    border-right: var(--slds-g-sizing-border-1, 1px) solid var(--slds-g-color-border-1, var(--lwc-colorBorder));
+    border-right: var(--slds-g-sizing-border-1, 1px) solid
+        var(--slds-g-color-border-1, var(--lwc-colorBorder));
     transition: width 0.3s ease-in-out;
 }
 
@@ -34,7 +35,10 @@
     justify-content: flex-start;
     height: 2.34375rem; /* forcing the height to be the same as the nav item height */
     width: 100%;
-    padding-left: var(--slds-g-spacing-5, 1.5rem); /* required to align the icon and text while in expanded state */
+    padding-left: var(
+        --slds-g-spacing-5,
+        1.5rem
+    ); /* required to align the icon and text while in expanded state */
     border: none;
     border-radius: 0;
     box-shadow: none;
@@ -48,7 +52,11 @@
  * Mimic verticalNavigationItem styles on focus
  */
 .collapse-control-button:focus-visible {
-    box-shadow: var(--slds-g-shadow-inset-focus-1, 0 0 0 2px #ffffff inset, 0 0 0 4px #0b5cab inset);
+    box-shadow: var(
+        --slds-g-shadow-inset-focus-1,
+        0 0 0 2px #ffffff inset,
+        0 0 0 4px #0b5cab inset
+    );
 }
 .collapse-control-button:focus-visible {
     outline: 0;

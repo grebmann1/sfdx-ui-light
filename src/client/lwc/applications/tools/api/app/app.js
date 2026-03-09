@@ -11,7 +11,7 @@ import {
     normalizeString as normalize,
     prettifyXml,
     autoDetectAndFormat,
-    API as API_UTILS
+    API as API_UTILS,
 } from 'shared/utils';
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
@@ -40,7 +40,9 @@ function openApiToApiTreeItems(openApi) {
         for (let i = 0; i < segments.length; i++) {
             const segment = segments[i];
             fullPath += '/' + segment;
-            let node = current.children.find(child => child.id === fullPath && child.type === 'folder');
+            let node = current.children.find(
+                child => child.id === fullPath && child.type === 'folder'
+            );
             if (!node) {
                 node = {
                     id: fullPath,
@@ -48,7 +50,7 @@ function openApiToApiTreeItems(openApi) {
                     title: fullPath,
                     type: 'folder',
                     children: [],
-                    extra: i === segments.length - 1 ? pathItem : undefined
+                    extra: i === segments.length - 1 ? pathItem : undefined,
                 };
                 current.children.push(node);
             }
@@ -56,7 +58,11 @@ function openApiToApiTreeItems(openApi) {
         }
         // Add method nodes as children of the last segment
         Object.entries(pathItem).forEach(([method, operation]) => {
-            if (['get', 'post', 'put', 'patch', 'delete', 'options', 'head', 'trace'].includes(method)) {
+            if (
+                ['get', 'post', 'put', 'patch', 'delete', 'options', 'head', 'trace'].includes(
+                    method
+                )
+            ) {
                 const keywords = [
                     path,
                     operation?.summary,
@@ -75,7 +81,7 @@ function openApiToApiTreeItems(openApi) {
                         path,
                         method,
                         pathItem,
-                    }
+                    },
                 });
             }
         });
@@ -89,8 +95,8 @@ function openApiToApiTreeItems(openApi) {
         children: [],
         extra: {
             ...openApi.info,
-            servers: openApi.servers || []
-        }
+            servers: openApi.servers || [],
+        },
     };
     Object.entries(openApi.paths).forEach(([path, pathItem]) => {
         insertPath(root, path, pathItem);
@@ -165,7 +171,6 @@ export default class App extends ToolkitElement {
     // Viewer toolbar
     @track viewerSearchQuery = '';
     @track viewerSearchMode = 'substring';
-    
 
     // Tabs
     @track tabs = [];
@@ -309,7 +314,6 @@ export default class App extends ToolkitElement {
         this.actions = api.actions || [];
         this.actionPointer = api.actionPointer || 0;
 
-
         // Api State
         const apiState = SELECTORS.api.selectById({ api }, lowerCaseKey(api.currentTab?.id));
         if (apiState) {
@@ -372,7 +376,9 @@ export default class App extends ToolkitElement {
 
         /** OpenAPI Schema Files */
         if (openapiSchemaFiles) {
-            this.openapiSchemaFiles = SELECTORS.openapiSchemaFiles.selectAll({ openapiSchemaFiles });
+            this.openapiSchemaFiles = SELECTORS.openapiSchemaFiles.selectAll({
+                openapiSchemaFiles,
+            });
             this.apiTreeItems = [...this.openapiSchemaFiles].map(file => {
                 const root = openApiToApiTreeItems(file.content)[0];
                 if (root) {
@@ -425,7 +431,7 @@ export default class App extends ToolkitElement {
     }
 
     formatRequest = () => {
-        const {request,error} = API_UTILS.formatApiRequest({
+        const { request, error } = API_UTILS.formatApiRequest({
             endpoint: this.endpoint,
             method: this.method,
             body: this.body,
@@ -434,7 +440,7 @@ export default class App extends ToolkitElement {
             connector: this.connector,
             replaceVariableValues: this.replaceVariableValues,
         });
-        if(error){
+        if (error) {
             Toast.show({
                 label: 'Failed to format request',
                 message: error,
@@ -442,14 +448,14 @@ export default class App extends ToolkitElement {
             });
         }
         return request;
-    }
+    };
 
     // Execute Action - Execute API Call
     executeAction = () => {
         const _originalRequest = this.currentRequestToStore;
         const _formattedRequest = this.formatRequest();
         LOGGER.log('App [executeAction] _formattedRequest', _formattedRequest);
-        if(isUndefinedOrNull(_formattedRequest)) return;
+        if (isUndefinedOrNull(_formattedRequest)) return;
 
         this.isApiRunning = true;
         try {
@@ -603,7 +609,8 @@ export default class App extends ToolkitElement {
     };
 
     updateBodyEditor = () => {
-        if (!this._hasRendered || !this.refs.bodyEditor || !this.refs.bodyEditor.currentModel) return;
+        if (!this._hasRendered || !this.refs.bodyEditor || !this.refs.bodyEditor.currentModel)
+            return;
         this.refs.bodyEditor.currentModel.setValue(this.body || '');
         this.refs.bodyEditor.currentMonaco.editor.setModelLanguage(
             this.refs.bodyEditor.currentModel,
@@ -612,7 +619,12 @@ export default class App extends ToolkitElement {
     };
 
     updateVariablesEditor = () => {
-        if (!this._hasRendered || !this.refs.variablesEditor || !this.refs.variablesEditor.currentModel) return;
+        if (
+            !this._hasRendered ||
+            !this.refs.variablesEditor ||
+            !this.refs.variablesEditor.currentModel
+        )
+            return;
         this.refs.variablesEditor.currentModel.setValue(this.variables || '');
         this.refs.variablesEditor.currentMonaco.editor.setModelLanguage(
             this.refs.variablesEditor.currentModel,
@@ -661,7 +673,7 @@ export default class App extends ToolkitElement {
         this.viewer_value = e.detail.value;
     };
 
-    handleSnippetTabActive = (e) => {
+    handleSnippetTabActive = e => {
         const value = e.target?.value;
         if (value) {
             this.snippetTabValue = value;
@@ -676,7 +688,6 @@ export default class App extends ToolkitElement {
             })
         );
     };
-
 
     request_handleSelectTab = event => {
         store.dispatch(
@@ -715,7 +726,6 @@ export default class App extends ToolkitElement {
         runActionAfterTimeOut(
             e,
             async lastEvent => {
-
                 LOGGER.log('App [updateRequestStates]', this.variables);
                 const _newDraft =
                     (this.currentFile &&
@@ -755,7 +765,7 @@ export default class App extends ToolkitElement {
         this.updateRequestStates(e);
     };
 
-    handleSetDefaultHeader = (e) => {
+    handleSetDefaultHeader = e => {
         const value = e.detail?.value;
         if (isEmpty(value)) return;
         store.dispatch(
@@ -764,7 +774,11 @@ export default class App extends ToolkitElement {
                 alias: this.alias,
             })
         );
-        Toast.show({ label: 'Default headers saved', message: 'Will apply to new tabs', variant: 'success' });
+        Toast.show({
+            label: 'Default headers saved',
+            message: 'Will apply to new tabs',
+            variant: 'success',
+        });
     };
 
     endpoint_change = e => {
@@ -787,9 +801,7 @@ export default class App extends ToolkitElement {
     variables_change = e => {
         if (this.variables == e.detail.value) return;
         this.variables = e.detail.value;
-        store.dispatch(
-            API.reduxSlice.actions.updateVariables({ variables: this.variables })
-        );
+        store.dispatch(API.reduxSlice.actions.updateVariables({ variables: this.variables }));
     };
 
     handle_customLinkClick = e => {
@@ -833,15 +845,15 @@ export default class App extends ToolkitElement {
         this.isDownloading = false;
     };
 
-    viewer_handleSearchInput = (e) => {
+    viewer_handleSearchInput = e => {
         this.viewerSearchQuery = e.detail?.value ?? e.target?.value ?? '';
     };
 
-    viewer_handleSearchModeChange = (e) => {
+    viewer_handleSearchModeChange = e => {
         this.viewerSearchMode = e.detail?.value ?? e.target?.value ?? 'substring';
     };
 
-    viewer_handleSearchKeyUp = (e) => {
+    viewer_handleSearchKeyUp = e => {
         if (e.key === 'Enter') {
             this.viewer_runSearch();
         }
@@ -861,13 +873,13 @@ export default class App extends ToolkitElement {
                         ? this.content
                         : JSON.parse(this.formattedContent || '{}');
                 const value = this.evaluateSimpleJsonPath(obj, q.startsWith('$.') ? q : `$.${q}`);
-                const preview =
-                    typeof value === 'string'
-                        ? value
-                        : JSON.stringify(value, null, 2);
+                const preview = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
                 Toast.show({
                     label: 'JSON path',
-                    message: preview?.length > 800 ? `${preview.slice(0, 800)}…` : (preview || 'No result'),
+                    message:
+                        preview?.length > 800
+                            ? `${preview.slice(0, 800)}…`
+                            : preview || 'No result',
                     variant: isUndefinedOrNull(value) ? 'warning' : 'success',
                 });
             } catch (e) {
@@ -929,7 +941,11 @@ export default class App extends ToolkitElement {
             await navigator.clipboard.writeText(String(this.formattedContent || ''));
             Toast.show({ label: 'Copied', message: 'Response body copied', variant: 'success' });
         } catch (e) {
-            Toast.show({ label: 'Copy failed', message: e?.message || 'Unable to copy', variant: 'warning' });
+            Toast.show({
+                label: 'Copy failed',
+                message: e?.message || 'Unable to copy',
+                variant: 'warning',
+            });
         }
     };
 
@@ -937,7 +953,9 @@ export default class App extends ToolkitElement {
         this.isDownloading = true;
         try {
             const ext = this.formattedContentType || 'txt';
-            const blob = new Blob([String(this.formattedContent || '')], { type: this.contentType || 'text/plain' });
+            const blob = new Blob([String(this.formattedContent || '')], {
+                type: this.contentType || 'text/plain',
+            });
             const url = URL.createObjectURL(blob);
             const download = document.createElement('a');
             download.href = url;
@@ -960,23 +978,27 @@ export default class App extends ToolkitElement {
             await navigator.clipboard.writeText(this.formattedResponseHeadersText);
             Toast.show({ label: 'Copied', message: 'Response headers copied', variant: 'success' });
         } catch (e) {
-            Toast.show({ label: 'Copy failed', message: e?.message || 'Unable to copy', variant: 'warning' });
+            Toast.show({
+                label: 'Copy failed',
+                message: e?.message || 'Unable to copy',
+                variant: 'warning',
+            });
         }
     };
 
-    toApexStringLiteral = (value) => {
+    toApexStringLiteral = value => {
         const s = String(value ?? '');
         return `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
     };
 
-    escapeBashSingleQuoted = (value) => {
+    escapeBashSingleQuoted = value => {
         // In bash: 'foo'"'"'bar'
         return String(value ?? '').replace(/'/g, `'\"'\"'`);
     };
 
-    sanitizeHeadersForSnippet = (headers) => {
+    sanitizeHeadersForSnippet = headers => {
         const out = { ...(headers || {}) };
-        Object.keys(out).forEach((k) => {
+        Object.keys(out).forEach(k => {
             if (String(k).toLowerCase() === 'authorization') {
                 out[k] = 'Bearer {sessionId}';
             }
@@ -996,10 +1018,12 @@ export default class App extends ToolkitElement {
         lines.push(`req.setEndpoint(${this.toApexStringLiteral(formatted.url || '')});`);
 
         const headers = this.sanitizeHeadersForSnippet(formatted.headers || {});
-        Object.keys(headers).forEach((key) => {
+        Object.keys(headers).forEach(key => {
             const val = headers[key];
             if (isUndefinedOrNull(val)) return;
-            lines.push(`req.setHeader(${this.toApexStringLiteral(key)}, ${this.toApexStringLiteral(val)});`);
+            lines.push(
+                `req.setHeader(${this.toApexStringLiteral(key)}, ${this.toApexStringLiteral(val)});`
+            );
         });
 
         if (formatted.body && String(formatted.body).length > 0) {
@@ -1009,7 +1033,7 @@ export default class App extends ToolkitElement {
         lines.push('Http http = new Http();');
         lines.push('HTTPResponse res = http.send(req);');
         lines.push("System.debug('Status=' + res.getStatus());");
-        lines.push("System.debug(res.getBody());");
+        lines.push('System.debug(res.getBody());');
         return lines.join('\n');
     }
 
@@ -1024,7 +1048,7 @@ export default class App extends ToolkitElement {
 
         const parts = [];
         parts.push(`curl -X ${method} '${this.escapeBashSingleQuoted(url)}'`);
-        Object.keys(headers).forEach((key) => {
+        Object.keys(headers).forEach(key => {
             const val = headers[key];
             if (isUndefinedOrNull(val) || isEmpty(String(key))) return;
             parts.push(`  -H '${this.escapeBashSingleQuoted(`${key}: ${val}`)}'`);
@@ -1086,7 +1110,9 @@ export default class App extends ToolkitElement {
             '}).catch((err) => {',
             '  console.error(err);',
             '});',
-        ].filter(Boolean).join('\n');
+        ]
+            .filter(Boolean)
+            .join('\n');
     }
 
     copyApexHttpRequestSnippet = async () => {
@@ -1094,12 +1120,15 @@ export default class App extends ToolkitElement {
             await navigator.clipboard.writeText(this.apexHttpRequestSnippet);
             Toast.show({ label: 'Copied', message: 'Apex snippet copied', variant: 'success' });
         } catch (e) {
-            Toast.show({ label: 'Copy failed', message: e?.message || 'Unable to copy', variant: 'warning' });
+            Toast.show({
+                label: 'Copy failed',
+                message: e?.message || 'Unable to copy',
+                variant: 'warning',
+            });
         }
     };
 
     executeSave = () => {
-
         const { api } = store.getState();
         const file = api.currentTab.fileId
             ? SELECTORS.apiFiles.selectById(store.getState(), lowerCaseKey(api.currentTab.fileId))
@@ -1160,13 +1189,21 @@ export default class App extends ToolkitElement {
             a.download = `sf-toolkit-api-saved-requests-${Date.now()}.json`;
             a.click();
             URL.revokeObjectURL(url);
-            Toast.show({ label: 'Exported', message: `${items.length} saved request(s) exported`, variant: 'success' });
+            Toast.show({
+                label: 'Exported',
+                message: `${items.length} saved request(s) exported`,
+                variant: 'success',
+            });
         } catch (e) {
-            Toast.show({ label: 'Export failed', message: e?.message || 'Unable to export', variant: 'error' });
+            Toast.show({
+                label: 'Export failed',
+                message: e?.message || 'Unable to export',
+                variant: 'error',
+            });
         }
     };
 
-    handleImportSavedRequests = (event) => {
+    handleImportSavedRequests = event => {
         const text = event.detail?.text;
         if (isEmpty(text)) {
             Toast.show({ label: 'Import failed', message: 'Empty file', variant: 'warning' });
@@ -1186,7 +1223,7 @@ export default class App extends ToolkitElement {
             return;
         }
 
-        store.dispatch(async (dispatch) => {
+        store.dispatch(async dispatch => {
             let count = 0;
             for (const it of items) {
                 const id = it?.id;
@@ -1196,7 +1233,7 @@ export default class App extends ToolkitElement {
                     DOCUMENT.reduxSlices.APIFILE.actions.upsertOne({
                         id,
                         isGlobal: !!it.isGlobal,
-                        alias: it.isGlobal ? undefined : (it.alias || this.alias),
+                        alias: it.isGlobal ? undefined : it.alias || this.alias,
                         content: null,
                         extra,
                     })
@@ -1239,7 +1276,7 @@ export default class App extends ToolkitElement {
         this.loadSalesforceCatalog();
     };
 
-    handle_catalogSelect = (event) => {
+    handle_catalogSelect = event => {
         const item = event.detail?.item;
         if (!item || Array.isArray(item.children)) return;
 
@@ -1259,7 +1296,7 @@ export default class App extends ToolkitElement {
     };
 
     // When loading an OpenAPI item with parameters, generate sample variables
-    handle_apiTreeSelect = (event) => {
+    handle_apiTreeSelect = event => {
         const selectedItem = event.detail?.item;
         const extra = selectedItem.extra;
         if (extra) {
@@ -1268,10 +1305,14 @@ export default class App extends ToolkitElement {
                 // Generate sample body if available
                 let sampleBody = '';
                 if (extra?.requestBody?.content) {
-                    const content = extra.requestBody.content['application/json'] || Object.values(extra.requestBody.content)[0];
+                    const content =
+                        extra.requestBody.content['application/json'] ||
+                        Object.values(extra.requestBody.content)[0];
                     if (content?.schema) {
                         try {
-                            const sample = OpenAPISampler.sample(content.schema, { skipReadOnly: true });
+                            const sample = OpenAPISampler.sample(content.schema, {
+                                skipReadOnly: true,
+                            });
                             sampleBody = JSON.stringify(sample, null, 2);
                         } catch (e) {
                             LOGGER.error('openapi-sampler error:', e);
@@ -1281,7 +1322,9 @@ export default class App extends ToolkitElement {
                 }
                 // Generate sample variables from parameters (path-level + operation-level)
                 let sampleVariables = {};
-                const pathParams = Array.isArray(extra?.pathItem?.parameters) ? extra.pathItem.parameters : [];
+                const pathParams = Array.isArray(extra?.pathItem?.parameters)
+                    ? extra.pathItem.parameters
+                    : [];
                 const opParams = Array.isArray(extra?.parameters) ? extra.parameters : [];
                 const parameters = [...pathParams, ...opParams];
                 const seen = new Set();
@@ -1293,7 +1336,9 @@ export default class App extends ToolkitElement {
                         // Use OpenAPISampler if schema exists, else use a placeholder
                         if (param.schema) {
                             try {
-                                sampleVariables[param.name] = OpenAPISampler.sample(param.schema, { skipReadOnly: true });
+                                sampleVariables[param.name] = OpenAPISampler.sample(param.schema, {
+                                    skipReadOnly: true,
+                                });
                             } catch (e) {
                                 sampleVariables[param.name] = param.schema.example || '';
                             }
@@ -1322,11 +1367,11 @@ export default class App extends ToolkitElement {
                 const tabId = selectedItem.id?.toLowerCase();
                 const existingTab = this.tabs.find(tab => tab.id === tabId);
                 if (existingTab) {
-                    store.dispatch(API.reduxSlice.actions.selectionTab({id: tabId}));
+                    store.dispatch(API.reduxSlice.actions.selectionTab({ id: tabId }));
                 } else {
                     // Create a new tab (variables are set globally)
                     const tab = {
-                        ...API_UTILS.generateDefaultTab(this.currentApiVersion,tabId),
+                        ...API_UTILS.generateDefaultTab(this.currentApiVersion, tabId),
                         method,
                         endpoint,
                         body: sampleBody,
@@ -1379,7 +1424,7 @@ export default class App extends ToolkitElement {
                 const newOpenApiTreeItems = openApiToApiTreeItems(dereferenced.schema);
                 this.apiTreeItems = [...this.apiTreeItems, ...newOpenApiTreeItems];
                 const root = newOpenApiTreeItems.find(item => item.type === 'root');
-                if(root){
+                if (root) {
                     LOGGER.log('Saving OpenAPI schema to document', root.id, dereferenced.schema);
                     store.dispatch(
                         DOCUMENT.reduxSlices.OPENAPI_SCHEMA_FILE.actions.upsertOne({
@@ -1389,8 +1434,6 @@ export default class App extends ToolkitElement {
                         })
                     );
                 }
-
-                
             } catch (err) {
                 Toast.show({
                     label: 'Failed to parse OpenAPI schema',
@@ -1403,7 +1446,7 @@ export default class App extends ToolkitElement {
         }
     };
 
-    handleServerUrlChange = (event) => {
+    handleServerUrlChange = event => {
         const serverUrl = event.detail.serverUrl;
         const projectId = event.detail.projectId;
         this.selectedServerUrl = serverUrl;
@@ -1435,9 +1478,7 @@ export default class App extends ToolkitElement {
                 // ignore persistence errors
             }
         }
-    }
-
-
+    };
 
     handleCancelApiRequest = () => {
         // Try to abort the in-flight API request for the current tab
@@ -1482,13 +1523,13 @@ export default class App extends ToolkitElement {
         );
     };
 
-    handleDeleteApiProject = (event) => {
+    handleDeleteApiProject = event => {
         LOGGER.log('handleDeleteApiProject', event.detail);
         const item = event.detail.item;
         this.apiTreeItems = this.apiTreeItems.filter(x => x.id !== item.id);
         LOGGER.log('this.apiTreeItems', this.apiTreeItems);
         store.dispatch(DOCUMENT.reduxSlices.OPENAPI_SCHEMA_FILE.actions.removeOne(item.id));
-    }
+    };
 
     /** Salesforce catalog */
 
@@ -1595,7 +1636,9 @@ export default class App extends ToolkitElement {
                                 header: acceptJson,
                                 body: '',
                                 variables: JSON.stringify(
-                                    { soql: 'SELECT Id, Name FROM Account ORDER BY CreatedDate DESC LIMIT 10' },
+                                    {
+                                        soql: 'SELECT Id, Name FROM Account ORDER BY CreatedDate DESC LIMIT 10',
+                                    },
                                     null,
                                     2
                                 ),
@@ -1612,7 +1655,9 @@ export default class App extends ToolkitElement {
                                 header: acceptJson,
                                 body: '',
                                 variables: JSON.stringify(
-                                    { soql: 'SELECT Id FROM Account WHERE IsDeleted = true LIMIT 10' },
+                                    {
+                                        soql: 'SELECT Id FROM Account WHERE IsDeleted = true LIMIT 10',
+                                    },
                                     null,
                                     2
                                 ),
@@ -1629,7 +1674,9 @@ export default class App extends ToolkitElement {
                                 header: acceptJson,
                                 body: '',
                                 variables: JSON.stringify(
-                                    { sosl: 'FIND {Acme} IN Name Fields RETURNING Account(Id, Name LIMIT 5)' },
+                                    {
+                                        sosl: 'FIND {Acme} IN Name Fields RETURNING Account(Id, Name LIMIT 5)',
+                                    },
                                     null,
                                     2
                                 ),
@@ -1653,7 +1700,9 @@ export default class App extends ToolkitElement {
                                 header: acceptJson,
                                 body: '',
                                 variables: JSON.stringify(
-                                    { soql: 'SELECT Id, Name FROM ApexClass ORDER BY Name LIMIT 25' },
+                                    {
+                                        soql: 'SELECT Id, Name FROM ApexClass ORDER BY Name LIMIT 25',
+                                    },
                                     null,
                                     2
                                 ),
@@ -1744,7 +1793,11 @@ export default class App extends ToolkitElement {
                                 endpoint: `/services/data/v${v}/sobjects/{sobject}/{id}`,
                                 header: acceptJson,
                                 body: '',
-                                variables: JSON.stringify({ sobject: 'Account', id: '001...' }, null, 2),
+                                variables: JSON.stringify(
+                                    { sobject: 'Account', id: '001...' },
+                                    null,
+                                    2
+                                ),
                             },
                         }),
                         leaf({
@@ -1770,7 +1823,11 @@ export default class App extends ToolkitElement {
                                 endpoint: `/services/data/v${v}/sobjects/{sobject}/{id}`,
                                 header: `${acceptJson}\n${contentTypeJson}`,
                                 body: JSON.stringify({ Name: 'Updated name' }, null, 2),
-                                variables: JSON.stringify({ sobject: 'Account', id: '001...' }, null, 2),
+                                variables: JSON.stringify(
+                                    { sobject: 'Account', id: '001...' },
+                                    null,
+                                    2
+                                ),
                             },
                         }),
                         leaf({
@@ -1784,7 +1841,11 @@ export default class App extends ToolkitElement {
                                 header: `${acceptJson}\n${contentTypeJson}`,
                                 body: JSON.stringify({ Name: 'Upserted name' }, null, 2),
                                 variables: JSON.stringify(
-                                    { sobject: 'Account', externalField: 'External_Id__c', externalValue: 'EXT-001' },
+                                    {
+                                        sobject: 'Account',
+                                        externalField: 'External_Id__c',
+                                        externalValue: 'EXT-001',
+                                    },
                                     null,
                                     2
                                 ),
@@ -1800,7 +1861,11 @@ export default class App extends ToolkitElement {
                                 endpoint: `/services/data/v${v}/sobjects/{sobject}/{id}`,
                                 header: acceptJson,
                                 body: '',
-                                variables: JSON.stringify({ sobject: 'Account', id: '001...' }, null, 2),
+                                variables: JSON.stringify(
+                                    { sobject: 'Account', id: '001...' },
+                                    null,
+                                    2
+                                ),
                             },
                         }),
                     ],
@@ -1866,7 +1931,9 @@ export default class App extends ToolkitElement {
 
             this.apiCatalogItems = this.buildSalesforceCatalogTree({ apiVersion, resources });
         } catch (e) {
-            this.apiCatalogItems = this.buildSalesforceCatalogTree({ apiVersion: this.currentApiVersion });
+            this.apiCatalogItems = this.buildSalesforceCatalogTree({
+                apiVersion: this.currentApiVersion,
+            });
             this.apiCatalogError = e?.message || 'Unable to load catalog';
         } finally {
             this.isCatalogLoading = false;
@@ -1922,9 +1989,7 @@ export default class App extends ToolkitElement {
             store.dispatch(API.reduxSlice.actions.updateVariables({ variables: this.variables }));
         }
 
-        const tabId =
-            this.currentTab?.id ||
-            store.getState()?.api?.currentTab?.id;
+        const tabId = this.currentTab?.id || store.getState()?.api?.currentTab?.id;
         const isDraft =
             !this.currentFile ||
             (this.currentFile &&
@@ -1973,7 +2038,7 @@ export default class App extends ToolkitElement {
 
     /** Cached Settings */
 
-    settingsInputfieldChange = (e) => {
+    settingsInputfieldChange = e => {
         const inputField = e.currentTarget;
         const _config = this.applicationConfig;
         if (inputField.type === 'toggle') {
@@ -1989,20 +2054,20 @@ export default class App extends ToolkitElement {
         const configurationList = Object.values(CACHE_CONFIG);
         const config = {};
         const keyList = Object.keys(this.applicationConfig);
-        Object.values(configurationList).filter(item => keyList.includes(item.key)).forEach(item => {
-            config[item.key] = this.applicationConfig[item.key];
-        });
+        Object.values(configurationList)
+            .filter(item => keyList.includes(item.key))
+            .forEach(item => {
+                config[item.key] = this.applicationConfig[item.key];
+            });
         // Use the new CacheManager to save config
         LOGGER.log('saving config', config);
         cacheManager.saveConfig(config);
-    }
+    };
 
-
-
-    processCacheSettings = (cachedConfig) => {
+    processCacheSettings = cachedConfig => {
         this.isApiSplitterHorizontal =
             cachedConfig[CACHE_CONFIG.API_SPLITTER_IS_HORIZONTAL.key] ?? true;
-    }
+    };
 
     /** Storage Files */
 
@@ -2056,7 +2121,6 @@ export default class App extends ToolkitElement {
         const { id } = e.detail;
         store.dispatch(DOCUMENT.reduxSlices.APIFILE.actions.removeOne(id));
     };
-
 
     // Editor init and change handlers
     initVariablesEditor = () => {
@@ -2112,8 +2176,11 @@ export default class App extends ToolkitElement {
     }
 
     get duration() {
-        if(this.executionStartDate && this.executionEndDate){
-            return moment(this.executionEndDate).diff(moment(this.executionStartDate), 'milliseconds');
+        if (this.executionStartDate && this.executionEndDate) {
+            return moment(this.executionEndDate).diff(
+                moment(this.executionStartDate),
+                'milliseconds'
+            );
         }
         return 0;
     }
@@ -2259,7 +2326,7 @@ export default class App extends ToolkitElement {
     get PAGE_CONFIG() {
         return {
             TABS: {
-                ...API_UTILS.TABS
+                ...API_UTILS.TABS,
             },
         };
     }
@@ -2291,7 +2358,11 @@ export default class App extends ToolkitElement {
     }
 
     get canRetryLastRequest() {
-        return !this.isApiRunning && isNotUndefinedOrNull(this.executedRequest) && isNotUndefinedOrNull(this.executedFormattedRequest);
+        return (
+            !this.isApiRunning &&
+            isNotUndefinedOrNull(this.executedRequest) &&
+            isNotUndefinedOrNull(this.executedFormattedRequest)
+        );
     }
 
     get isRetryDisabled() {
@@ -2306,9 +2377,7 @@ export default class App extends ToolkitElement {
     }
 
     get formattedResponseHeadersText() {
-        return (this.contentHeaders || [])
-            .map(h => `${h.key}: ${h.value}`)
-            .join('\n');
+        return (this.contentHeaders || []).map(h => `${h.key}: ${h.value}`).join('\n');
     }
 
     get responseSizeBytes() {

@@ -1,8 +1,12 @@
 // link-share.js: Build shareable URLs for link-action.html with base64-encoded payload
 
-(function() {
+(function () {
     function safeJsonStringify(obj) {
-        try { return JSON.stringify(obj); } catch { return '{}'; }
+        try {
+            return JSON.stringify(obj);
+        } catch {
+            return '{}';
+        }
     }
 
     function base64EncodeUnicode(str) {
@@ -11,7 +15,11 @@
     }
 
     function getExtensionId() {
-        try { return chrome && chrome.runtime && chrome.runtime.id; } catch { return null; }
+        try {
+            return chrome && chrome.runtime && chrome.runtime.id;
+        } catch {
+            return null;
+        }
     }
 
     function buildEncodedPayload(settings, message, redirect) {
@@ -81,7 +89,7 @@
         const redirectEl = document.getElementById('redirect');
 
         addRowBtn?.addEventListener('click', () => addRow(kvContainer));
-        kvContainer?.addEventListener('click', (e) => {
+        kvContainer?.addEventListener('click', e => {
             const btn = e.target.closest('[data-action="remove-row"]');
             if (btn) {
                 const row = btn.closest('.kv-row');
@@ -120,5 +128,3 @@
         init();
     }
 })();
-
-

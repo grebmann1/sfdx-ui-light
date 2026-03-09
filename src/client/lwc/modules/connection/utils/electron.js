@@ -1,18 +1,17 @@
-import { isNotUndefinedOrNull, isEmpty, decodeError, classSet, runActionAfterTimeOut } from 'shared/utils';
-import { extractName, extractConfig, OAUTH_TYPES } from './utils';
-import LOGGER from 'shared/logger';
 import { cacheManager, CACHE_ORG_DATA_TYPES } from 'shared/cacheManager';
+import LOGGER from 'shared/logger';
+import {
+    isNotUndefinedOrNull,
+    isEmpty,
+    decodeError,
+    classSet,
+    runActionAfterTimeOut,
+} from 'shared/utils';
 
+import { extractName, extractConfig, OAUTH_TYPES } from './utils';
 
-const CONNECTION_ERRORS = [
-    'JwtAuthError',
-    'RefreshTokenAuthError'
-];
-const CONNECTION_WARNING = [
-    'DomainNotFoundError'
-];
-
-
+const CONNECTION_ERRORS = ['JwtAuthError', 'RefreshTokenAuthError'];
+const CONNECTION_WARNING = ['DomainNotFoundError'];
 
 export async function getConfiguration(alias) {
     const { res, error } = await window.electron.invoke('org-seeDetails', { alias });
@@ -39,7 +38,7 @@ export async function renameConfiguration({ oldAlias, newAlias, username, creden
     if (credentialType === OAUTH_TYPES.USERNAME) {
         let res = await window.electron.invoke('org-renameStoredOrg', {
             alias: oldAlias,
-            newAlias: newAlias
+            newAlias: newAlias,
         });
         if (res?.error) {
             throw decodeError(res.error);
@@ -62,7 +61,6 @@ export async function renameConfiguration({ oldAlias, newAlias, username, creden
             }
         }
     }
-
 }
 
 export async function removeConfiguration({ alias, credentialType }) {
@@ -82,8 +80,6 @@ export async function removeConfiguration({ alias, credentialType }) {
             throw decodeError(res1.error);
         }
     }
-
-
 }
 
 const getStatusClass = status => {
@@ -152,18 +148,21 @@ function normalizeOrgs(sfdxOrgs, storedOrgs) {
 
 export async function getConfigurations({ sync = false } = {}) {
     const DATA_TYPE = CACHE_ORG_DATA_TYPES.ELECTRON_ORG_LIST;
-    if (!sync) {       
+    if (!sync) {
         // Try to load from cache
         const cachedOrgs = await cacheManager.loadOrgData('electron', DATA_TYPE);
         if (cachedOrgs) {
             // ASYNC (background refresh)
-            window.electron.invoke('org-getAllOrgs')
-            .then(async ({ sfdxOrgs, storedOrgs }) => {
-                const orgs = normalizeOrgs(sfdxOrgs, storedOrgs);
-                await cacheManager.saveOrgData('electron', DATA_TYPE, orgs);
-                dispatchEvent(new CustomEvent('electron-orgs-updated', { detail: { orgs } }));
-            })
-            .catch(() => {/* ignore background errors */ });
+            window.electron
+                .invoke('org-getAllOrgs')
+                .then(async ({ sfdxOrgs, storedOrgs }) => {
+                    const orgs = normalizeOrgs(sfdxOrgs, storedOrgs);
+                    await cacheManager.saveOrgData('electron', DATA_TYPE, orgs);
+                    dispatchEvent(new CustomEvent('electron-orgs-updated', { detail: { orgs } }));
+                })
+                .catch(() => {
+                    /* ignore background errors */
+                });
             // Return cached orgs
             return cachedOrgs;
         }

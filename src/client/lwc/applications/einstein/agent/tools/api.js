@@ -1,5 +1,6 @@
-import { z } from 'zod';
 import { store, API, DOCUMENT, SELECTORS } from 'core/store';
+import { z } from 'zod';
+
 import { waitForLoaded, wrappedNavigate, formatTabId } from './utils/utils.js';
 
 const { tool } = window.OpenAIAgentsBundle?.Agents || {};
@@ -17,10 +18,12 @@ async function upsertTab({ tab }) {
     const { api } = store.getState();
     const existing = api.tabs.find(t => t.id === tab.id);
     if (existing) {
-        await store.dispatch(API.reduxSlice.actions.updateRequest({
-            ...tab,
-            tabId: tab.id,
-        }));
+        await store.dispatch(
+            API.reduxSlice.actions.updateRequest({
+                ...tab,
+                tabId: tab.id,
+            })
+        );
     } else {
         await store.dispatch(API.reduxSlice.actions.addTab({ tab }));
     }
@@ -53,17 +56,21 @@ async function getOpenAPIMethodForScript({ scriptId, method }) {
     return null;
 }
 async function updateBody({ tabId, body }) {
-    await store.dispatch(API.reduxSlice.actions.updateRequest({
-        body,
-        tabId,
-    }));
+    await store.dispatch(
+        API.reduxSlice.actions.updateRequest({
+            body,
+            tabId,
+        })
+    );
     return { success: true };
 }
 async function updateHeader({ tabId, header }) {
-    await store.dispatch(API.reduxSlice.actions.updateRequest({
-        header,
-        tabId,
-    }));
+    await store.dispatch(
+        API.reduxSlice.actions.updateRequest({
+            header,
+            tabId,
+        })
+    );
     return { success: true };
 }
 async function updateVariable({ variables }) {
@@ -71,17 +78,21 @@ async function updateVariable({ variables }) {
     return { success: true };
 }
 async function updateEndpoint({ tabId, endpoint }) {
-    await store.dispatch(API.reduxSlice.actions.updateRequest({
-        endpoint,
-        tabId,
-    }));
+    await store.dispatch(
+        API.reduxSlice.actions.updateRequest({
+            endpoint,
+            tabId,
+        })
+    );
     return { success: true };
 }
 async function updateMethod({ tabId, method }) {
-    await store.dispatch(API.reduxSlice.actions.updateRequest({
-        method,
-        tabId,
-    }));
+    await store.dispatch(
+        API.reduxSlice.actions.updateRequest({
+            method,
+            tabId,
+        })
+    );
     return { success: true };
 }
 
@@ -110,7 +121,17 @@ const apiAgentTools = [
         If the tab.id is new, a new tab will be created. 
         When creating a new tab, ensure the id is unique and not reused from an existing tab. 
         Reusing an existing tab id for a new tab is not allowed and will result in updating the existing tab instead.`,
-        parameters: z.object({ tab: z.object({ id: z.string(), body: z.string().optional().nullable(), header: z.string().optional().nullable(), method: z.string().optional().nullable(), endpoint: z.string().optional().nullable() }).describe('Tab object to upsert') }),
+        parameters: z.object({
+            tab: z
+                .object({
+                    id: z.string(),
+                    body: z.string().optional().nullable(),
+                    header: z.string().optional().nullable(),
+                    method: z.string().optional().nullable(),
+                    endpoint: z.string().optional().nullable(),
+                })
+                .describe('Tab object to upsert'),
+        }),
         execute: upsertTab,
     }),
     tool({
@@ -140,7 +161,10 @@ const apiAgentTools = [
         description: `Get the OpenAPI method definition for a specific script and HTTP method. 
         Provide a valid scriptId and HTTP method (GET, POST, etc.). 
         Returns the path, method, and operation details if found, otherwise returns null.`,
-        parameters: z.object({ scriptId: z.string().describe('OpenAPI schema file ID'), method: z.string().describe('HTTP method (GET, POST, etc.)') }),
+        parameters: z.object({
+            scriptId: z.string().describe('OpenAPI schema file ID'),
+            method: z.string().describe('HTTP method (GET, POST, etc.)'),
+        }),
         execute: getOpenAPIMethodForScript,
     }),
     tool({
@@ -148,7 +172,10 @@ const apiAgentTools = [
         description: `Update the body for a specific tab. 
         The tabId must correspond to an existing tab. 
         The body should be a string representing the request payload.`,
-        parameters: z.object({ tabId: z.string().describe('Tab ID'), body: z.string().describe('Request body') }),
+        parameters: z.object({
+            tabId: z.string().describe('Tab ID'),
+            body: z.string().describe('Request body'),
+        }),
         execute: updateBody,
     }),
     tool({
@@ -156,7 +183,10 @@ const apiAgentTools = [
         description: `Update the header for a specific tab. 
         The tabId must correspond to an existing tab. 
         The header should be a string representing the request headers.`,
-        parameters: z.object({ tabId: z.string().describe('Tab ID'), header: z.string().describe('Request header') }),
+        parameters: z.object({
+            tabId: z.string().describe('Tab ID'),
+            header: z.string().describe('Request header'),
+        }),
         execute: updateHeader,
     }),
     tool({
@@ -172,7 +202,10 @@ const apiAgentTools = [
         description: `Update the endpoint for a specific tab. 
         The tabId must correspond to an existing tab. 
         The endpoint should be a valid API endpoint string.`,
-        parameters: z.object({ tabId: z.string().describe('Tab ID'), endpoint: z.string().describe('API endpoint') }),
+        parameters: z.object({
+            tabId: z.string().describe('Tab ID'),
+            endpoint: z.string().describe('API endpoint'),
+        }),
         execute: updateEndpoint,
     }),
     tool({
@@ -180,7 +213,10 @@ const apiAgentTools = [
         description: `Update the HTTP method for a specific tab. 
         The tabId must correspond to an existing tab. 
         The method should be a valid HTTP method string (e.g., GET, POST, PUT, DELETE).`,
-        parameters: z.object({ tabId: z.string().describe('Tab ID'), method: z.string().describe('HTTP method') }),
+        parameters: z.object({
+            tabId: z.string().describe('Tab ID'),
+            method: z.string().describe('HTTP method'),
+        }),
         execute: updateMethod,
     }),
     // --- New Tools ---

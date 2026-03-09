@@ -3,7 +3,7 @@ export async function injectContentScript(
     tabId,
     files,
     injectImmediately = false,
-    world = 'ISOLATED',
+    world = 'ISOLATED'
 ) {
     console.log(`Injecting ${files.join(', ')} into tab ${tabId}`);
 
@@ -14,14 +14,14 @@ export async function injectContentScript(
             new Promise((_, reject) =>
                 setTimeout(
                     () => reject(new Error(`${this.name} Ping action to tab ${tabId} timed out`)),
-                    PING_TIMEOUT_MS,
-                ),
+                    PING_TIMEOUT_MS
+                )
             ),
         ]);
 
         if (response && response.status === 'pong') {
             console.log(
-                `pong received for action '${this.name}' in tab ${tabId}. Assuming script is active.`,
+                `pong received for action '${this.name}' in tab ${tabId}. Assuming script is active.`
             );
             return;
         } else {
@@ -29,7 +29,7 @@ export async function injectContentScript(
         }
     } catch (error) {
         console.error(
-            `ping content script failed: ${error instanceof Error ? error.message : String(error)}`,
+            `ping content script failed: ${error instanceof Error ? error.message : String(error)}`
         );
     }
 
@@ -45,11 +45,9 @@ export async function injectContentScript(
         const errorMessage =
             injectionError instanceof Error ? injectionError.message : String(injectionError);
         console.error(
-            `Content script '${files.join(', ')}' injection failed for tab ${tabId}: ${errorMessage}`,
+            `Content script '${files.join(', ')}' injection failed for tab ${tabId}: ${errorMessage}`
         );
-        throw new Error(
-            `Failed to inject content script in tab ${tabId}: ${errorMessage}`,
-        );
+        throw new Error(`Failed to inject content script in tab ${tabId}: ${errorMessage}`);
     }
 }
 
@@ -65,7 +63,7 @@ export async function sendMessageToTab(tabId, message) {
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error(
-            `Error sending message to tab ${tabId} for action ${message?.action || 'unknown'}: ${errorMessage}`,
+            `Error sending message to tab ${tabId} for action ${message?.action || 'unknown'}: ${errorMessage}`
         );
 
         if (error instanceof Error) {

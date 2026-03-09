@@ -1,7 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
-import * as ERROR from './error';
-import { getStore } from '../storeRef';
 import { isNotUndefinedOrNull } from 'shared/utils';
+
+import { getStore } from '../storeRef';
+
+import * as ERROR from './error';
 
 const RECORDVIEWER_SETTINGS_KEY = 'RECORDVIEWER_SETTINGS_KEY';
 

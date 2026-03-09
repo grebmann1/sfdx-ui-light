@@ -119,7 +119,7 @@ export default class Soql extends ToolkitElement {
             monaco: this.monaco,
             editor: this.editor,
             language: model.getLanguageId(),
-            handleOpenContextCopilot: this.handleOpenContextCopilot
+            handleOpenContextCopilot: this.handleOpenContextCopilot,
         });
 
         this.editor.onDidChangeModelContent(this.handleModelContentChange);

@@ -9,30 +9,26 @@
         onmouseleave={handleMouseLeave}
         onfocusin={handleFocusIn}
         onfocusout={handleFocusOut}
-        onkeydown={handleTriggerKeyDown}
-    >
+        onkeydown={handleTriggerKeyDown}>
         <slot></slot>
         <lightning-popup lwc:ref="popup" onreturnfocus={handlePopupReturnFocus}>
             <div data-tid="body" class={tooltipBodyClass}>
                 <lightning-formatted-rich-text
                     id="menu-label"
                     value={label}
-                    class={labelClass}
-                ></lightning-formatted-rich-text>
+                    class={labelClass}></lightning-formatted-rich-text>
                 <div
                     lwc:if={hasItems}
                     class="menu"
                     role="group"
                     aria-labelledby="menu-label"
-                    onkeydown={handleMenuKeyDown}
-                >
+                    onkeydown={handleMenuKeyDown}>
                     <template for:each={items} for:item="item">
                         <slds-vertical-navigation-item
                             key={item.name}
                             lwc:spread={item}
                             is-collapsed={isCollapsed}
-                            onselect={handleMenuItemSelect}
-                        ></slds-vertical-navigation-item>
+                            onselect={handleMenuItemSelect}></slds-vertical-navigation-item>
                     </template>
                 </div>
             </div>

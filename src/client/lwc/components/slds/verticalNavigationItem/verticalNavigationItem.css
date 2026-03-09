@@ -3,7 +3,7 @@
 }
 
 /* Make other types of icons look like utility icons */
-.icon:not([icon-name^="utility"]) {
+.icon:not([icon-name^='utility']) {
     transform: scale(1.5);
     --slds-c-icon-color-background: transparent;
     --slds-c-icon-color-foreground: var(
@@ -12,7 +12,7 @@
     );
 }
 
-.icon[icon-name^="action"] {
+.icon[icon-name^='action'] {
     transform: scale(1);
     padding-block: 0;
     padding-inline: 0;
@@ -28,9 +28,15 @@
 }
 
 .badge {
-    --slds-c-badge-color-background: var(--slds-g-color-palette-blue-90, var(--lwc-paletteBlue90, #d8e6fe));
+    --slds-c-badge-color-background: var(
+        --slds-g-color-palette-blue-90,
+        var(--lwc-paletteBlue90, #d8e6fe)
+    );
     --slds-c-badge-color-border: transparent;
-    --slds-c-badge-text-color: var(--slds-g-color-palette-blue-40, var(--lwc-paletteBlue40, #0b5cab));
+    --slds-c-badge-text-color: var(
+        --slds-g-color-palette-blue-40,
+        var(--lwc-paletteBlue40, #0b5cab)
+    );
 }
 
 .slds-nav-vertical__item:hover .badge,
@@ -39,8 +45,14 @@
         --slds-c-badge-lightest-color-background,
         var(--slds-g-color-surface-container-1)
     );
-    --slds-c-badge-color-border: var(--slds-c-badge-lightest-color-border, var(--slds-g-color-border-1));
-    --slds-c-badge-text-color: var(--slds-g-color-neutral-base-40, var(--lwc-paletteNeutral40, #5c5c5c));
+    --slds-c-badge-color-border: var(
+        --slds-c-badge-lightest-color-border,
+        var(--slds-g-color-border-1)
+    );
+    --slds-c-badge-text-color: var(
+        --slds-g-color-neutral-base-40,
+        var(--lwc-paletteNeutral40, #5c5c5c)
+    );
 }
 
 .children-list {

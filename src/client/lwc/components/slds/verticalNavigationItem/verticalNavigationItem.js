@@ -42,7 +42,7 @@ export default class VerticalNavigationItem extends LightningElement {
         // If there is any child that is already selected, expand the children
         // or fallback to defaultExpanded
         // Do not expand when the left nav is collapsed
-        const hasSelectedChild = value?.find((item) => item.isSelected) !== undefined;
+        const hasSelectedChild = value?.find(item => item.isSelected) !== undefined;
         this.areChildrenExpanded = !this.isCollapsed && (hasSelectedChild || this.defaultExpanded);
     }
     get children() {

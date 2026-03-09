@@ -478,10 +478,15 @@ export default class Overlay extends ToolkitElement {
             };
         }
 
-        if (!cookieInfo || this.isBlankValue(cookieInfo.session) || this.isBlankValue(cookieInfo.domain)) {
+        if (
+            !cookieInfo ||
+            this.isBlankValue(cookieInfo.session) ||
+            this.isBlankValue(cookieInfo.domain)
+        ) {
             this._setOverlayError({
                 message: 'Overlay injection failed (no Salesforce session found)',
-                details: 'Could not read the SID cookie for this tab (or the tab is not a Salesforce page).',
+                details:
+                    'Could not read the SID cookie for this tab (or the tab is not a Salesforce page).',
             });
             return;
         }

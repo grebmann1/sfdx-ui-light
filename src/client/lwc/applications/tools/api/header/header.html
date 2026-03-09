@@ -1,17 +1,27 @@
 <template>
-    <div class="header-toolbar slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-m-bottom_x-small">
+    <div
+        class="header-toolbar slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-m-bottom_x-small">
         <div class="slds-col header-presets-menu">
             <lightning-button-menu
                 alternative-text="Header presets"
                 icon-name="utility:jump_to_right"
                 icon-size="x-small"
-                onselect={handlePresetSelect}
-            >
-                <lightning-menu-item value="accept_json" label="Accept: application/json"></lightning-menu-item>
-                <lightning-menu-item value="content_type_json" label="Content-Type: application/json"></lightning-menu-item>
-                <lightning-menu-item value="auth_bearer_session" label="Authorization: Bearer {sessionId}"></lightning-menu-item>
-                <lightning-menu-item value="sforce_call_options" label="Sforce-Call-Options: SfdcInternalQA/"></lightning-menu-item>
-                <lightning-menu-item value="sforce_query_options" label="Sforce-Query-Options: batchSize=2000"></lightning-menu-item>
+                onselect={handlePresetSelect}>
+                <lightning-menu-item
+                    value="accept_json"
+                    label="Accept: application/json"></lightning-menu-item>
+                <lightning-menu-item
+                    value="content_type_json"
+                    label="Content-Type: application/json"></lightning-menu-item>
+                <lightning-menu-item
+                    value="auth_bearer_session"
+                    label="Authorization: Bearer {sessionId}"></lightning-menu-item>
+                <lightning-menu-item
+                    value="sforce_call_options"
+                    label="Sforce-Call-Options: SfdcInternalQA/"></lightning-menu-item>
+                <lightning-menu-item
+                    value="sforce_query_options"
+                    label="Sforce-Query-Options: batchSize=2000"></lightning-menu-item>
             </lightning-button-menu>
         </div>
         <div class="slds-col slds-grid slds-grid_vertical-align-center slds-grid_align-end">
@@ -20,34 +30,33 @@
                     label="Apply default"
                     variant="neutral"
                     onclick={handleApplyDefault}
-                    disabled={isApplyDefaultDisabled}
-                ></lightning-button>
+                    disabled={isApplyDefaultDisabled}></lightning-button>
             </div>
             <div class="slds-col slds-p-left_x-small">
                 <lightning-button
                     label="Save as default"
                     variant="brand-outline"
                     onclick={handleSaveDefault}
-                    disabled={isSaveDefaultDisabled}
-                ></lightning-button>
+                    disabled={isSaveDefaultDisabled}></lightning-button>
             </div>
         </div>
     </div>
     <div class="slds-table_edit_container slds-is-relative">
-        <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_fixed-layout">
+        <table
+            class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_fixed-layout">
             <thead>
                 <tr class="slds-line-height_reset">
                     <!-- <th scope="col"></th> -->
-                    <th scope="col" style="width: 33%;">
+                    <th scope="col" style="width: 33%">
                         <div class="slds-truncate" title="Key">Key</div>
                     </th>
-                    <th scope="col" style="width: 66%;">
+                    <th scope="col" style="width: 66%">
                         <div class="slds-truncate" title="Value">Value</div>
                     </th>
                     <!-- <th scope="col">
                         <div class="slds-truncate" title="Description">Description</div>
                     </th> -->
-                    <th scope="col" style="width: 2.5rem;"></th>
+                    <th scope="col" style="width: 2.5rem"></th>
                 </tr>
             </thead>
             <tbody>
@@ -64,20 +73,36 @@
                             ></lightning-input>
                         </td> -->
                         <td>
-                            <slds-field-light tabindex="0" onchange={handleChange} data-index={header.index} data-field="key">
-                                <slds-searchable-combobox slot="input"
+                            <slds-field-light
+                                tabindex="0"
+                                onchange={handleChange}
+                                data-index={header.index}
+                                data-field="key">
+                                <slds-searchable-combobox
+                                    slot="input"
                                     options={headerKeyOptions}
                                     value={header.key}
-                                    onchange={disableEvent}
-                                ></slds-searchable-combobox>
-                                <div slot="output" class="slds-truncate" onclick={handleValueClick}>{header.key}</div>
+                                    onchange={disableEvent}></slds-searchable-combobox>
+                                <div slot="output" class="slds-truncate" onclick={handleValueClick}>
+                                    {header.key}
+                                </div>
                             </slds-field-light>
-                            
                         </td>
-                        <td >
-                            <slds-field-light tabindex="0" onchange={handleChange} data-index={header.index} data-field="value">
-                                <input slot="input" class="slds-input" type="text" value={header.value} onchange={disableEvent} />
-                                <div slot="output" class="slds-truncate" onclick={handleValueClick}>{header.value}</div>
+                        <td>
+                            <slds-field-light
+                                tabindex="0"
+                                onchange={handleChange}
+                                data-index={header.index}
+                                data-field="value">
+                                <input
+                                    slot="input"
+                                    class="slds-input"
+                                    type="text"
+                                    value={header.value}
+                                    onchange={disableEvent} />
+                                <div slot="output" class="slds-truncate" onclick={handleValueClick}>
+                                    {header.value}
+                                </div>
                             </slds-field-light>
                         </td>
                         <!-- <td class="slds-truncate">
@@ -88,7 +113,12 @@
                         </td> -->
                         <td class="delete-column">
                             <template lwc:if={header.isDeleteEnabled}>
-                                <lightning-button-icon variant="bare" icon-size="x-small" icon-name="utility:delete" data-index={header.index} onclick={handleDelete}></lightning-button-icon>
+                                <lightning-button-icon
+                                    variant="bare"
+                                    icon-size="x-small"
+                                    icon-name="utility:delete"
+                                    data-index={header.index}
+                                    onclick={handleDelete}></lightning-button-icon>
                             </template>
                         </td>
                     </tr>

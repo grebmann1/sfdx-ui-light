@@ -1,4 +1,5 @@
 import { guid } from 'shared/utils';
+
 import { DEFAULT_TOOL_SKILLS, DEFAULT_TOOL_SKILL_IDS } from './defaultToolSkills';
 
 export { DEFAULT_TOOL_SKILLS, DEFAULT_TOOL_SKILL_IDS };
@@ -10,10 +11,10 @@ export { DEFAULT_TOOL_SKILLS, DEFAULT_TOOL_SKILL_IDS };
  */
 export function getEffectiveAgentSkills(cachedSkills) {
     const cached = Array.isArray(cachedSkills) ? cachedSkills : [];
-    const defaultSkills = DEFAULT_TOOL_SKILL_IDS.map((id) => {
+    const defaultSkills = DEFAULT_TOOL_SKILL_IDS.map(id => {
         const def = DEFAULT_TOOL_SKILLS[id];
         if (!def) return null;
-        const fromCache = cached.find((s) => s && s.defaultToolId === id);
+        const fromCache = cached.find(s => s && s.defaultToolId === id);
         return {
             ...def,
             id,
@@ -22,8 +23,8 @@ export function getEffectiveAgentSkills(cachedSkills) {
         };
     }).filter(Boolean);
     const customSkills = cached
-        .filter((s) => s && s.defaultToolId == null)
-        .map((s) => ({
+        .filter(s => s && s.defaultToolId == null)
+        .map(s => ({
             id: s.id || guid(),
             name: s.name ?? '',
             content: s.content ?? '',
@@ -38,7 +39,7 @@ export function getEffectiveAgentSkills(cachedSkills) {
  * Default skills use stable id = defaultToolId so they match getEffectiveAgentSkills.
  */
 export function getDefaultAgentSkills() {
-    return DEFAULT_TOOL_SKILL_IDS.map((id) => {
+    return DEFAULT_TOOL_SKILL_IDS.map(id => {
         const skill = DEFAULT_TOOL_SKILLS[id];
         return skill
             ? { id, defaultToolId: id, name: skill.name, content: skill.content, enabled: true }

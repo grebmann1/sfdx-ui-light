@@ -45,14 +45,16 @@ export const reduxSlice = createSlice({
         setLeftText(state, action) {
             const payload = action.payload;
             const value = typeof payload === 'object' && payload !== null ? payload.value : payload;
-            const alias = typeof payload === 'object' && payload !== null ? payload.alias : undefined;
+            const alias =
+                typeof payload === 'object' && payload !== null ? payload.alias : undefined;
             state.leftText = value ?? '';
             saveCacheSettings(alias, state);
         },
         setRightText(state, action) {
             const payload = action.payload;
             const value = typeof payload === 'object' && payload !== null ? payload.value : payload;
-            const alias = typeof payload === 'object' && payload !== null ? payload.alias : undefined;
+            const alias =
+                typeof payload === 'object' && payload !== null ? payload.alias : undefined;
             state.rightText = value ?? '';
             saveCacheSettings(alias, state);
         },
@@ -86,7 +88,8 @@ export const reduxSlice = createSlice({
             if (cached) {
                 if (cached.leftText !== undefined) state.leftText = cached.leftText;
                 if (cached.rightText !== undefined) state.rightText = cached.rightText;
-                if (cached.ignoreWhitespace !== undefined) state.ignoreWhitespace = cached.ignoreWhitespace;
+                if (cached.ignoreWhitespace !== undefined)
+                    state.ignoreWhitespace = cached.ignoreWhitespace;
             }
         },
     },

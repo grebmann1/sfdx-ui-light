@@ -2,7 +2,7 @@ import { api, track } from 'lwc';
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
 import ConnectionNewModal from 'connection/connectionNewModal';
-import { getConfigurations,OAUTH_TYPES } from 'connection/utils';
+import { getConfigurations, OAUTH_TYPES } from 'connection/utils';
 
 import {
     isEmpty,
@@ -44,11 +44,11 @@ export default class QuickAuthorize extends ToolkitElement {
             ],
             name: newAliasObject.name,
         };
-        if(this.isCurrentOrgInternalDevOrg){
+        if (this.isCurrentOrgInternalDevOrg) {
             //console.log('addConnection_authorize - this.connector.conn', this.connector);
             params.credentialType = OAUTH_TYPES.USERNAME;
             params.username = this.connector.configuration.username;
-        }else{
+        } else {
             params.credentialType = OAUTH_TYPES.OAUTH;
         }
 
@@ -120,8 +120,8 @@ export default class QuickAuthorize extends ToolkitElement {
         return SALESFORCE_HOST.some(pattern => hostname.endsWith(pattern));
     };
 
-    isInternalDevOrg = (host,port) => {
-        return ['.dev','.qa'].some(pattern => host.endsWith(pattern)) || !isEmpty(port);
+    isInternalDevOrg = (host, port) => {
+        return ['.dev', '.qa'].some(pattern => host.endsWith(pattern)) || !isEmpty(port);
     };
 
     /** getters */
@@ -155,17 +155,17 @@ export default class QuickAuthorize extends ToolkitElement {
         return (
             !existingHosts.includes(hostName) &&
             !this.exclusionList.includes(hostName) &&
-            (this.isStandardOrg(hostName) || this.isInternalDevOrg(hostName,port))
+            (this.isStandardOrg(hostName) || this.isInternalDevOrg(hostName, port))
         );
     }
 
     get isCurrentOrgInternalDevOrg() {
-        if(isEmpty(this.instanceUrl)) return false;
+        if (isEmpty(this.instanceUrl)) return false;
         let _url = new URL(this.instanceUrl);
-        return this.isInternalDevOrg(_url.hostname,_url.port);
+        return this.isInternalDevOrg(_url.hostname, _url.port);
     }
 
     get labelAuthorizeOrg() {
-        return this.isCurrentOrgInternalDevOrg? 'Yes, Add Dev Org' : 'Yes, Authorize';
+        return this.isCurrentOrgInternalDevOrg ? 'Yes, Add Dev Org' : 'Yes, Authorize';
     }
 }

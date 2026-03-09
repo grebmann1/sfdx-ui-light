@@ -1,5 +1,5 @@
-import { isNotUndefinedOrNull, isChromeExtension } from 'shared/utils';
 import LOGGER from 'shared/logger';
+import { isNotUndefinedOrNull, isChromeExtension } from 'shared/utils';
 // Accept store and LOGGER as arguments for all context functions
 
 async function getCurrentGlobalContext(store) {
@@ -33,7 +33,7 @@ async function getCurrentGlobalContext(store) {
 function getCurrentApplicationContext(store) {
     const state = store.getState();
     const currentApplication = state?.application?.currentApplication;
-    switch(currentApplication){
+    switch (currentApplication) {
         case 'soql/app':
             return soqlContext(store);
         case 'anonymousApex/app':
@@ -49,12 +49,12 @@ function getCurrentApplicationContext(store) {
 
 function apexContext(store) {
     const apex = store.getState().apex;
-    LOGGER.log('apex',apex);
+    LOGGER.log('apex', apex);
     const currentTab = apex?.currentTab;
     let contextText = `Current Apex Tab: ${currentTab?.id}`;
     contextText += `\n${JSON.stringify(currentTab)}`;
     const tabs = apex?.tabs;
-    if(tabs?.length > 0){
+    if (tabs?.length > 0) {
         contextText += `\nAll Apex Tabs: ${tabs.length}`;
         contextText += `\n${JSON.stringify(tabs)}`;
     }
@@ -63,11 +63,11 @@ function apexContext(store) {
 
 function soqlContext(store) {
     const soql = store.getState().soql;
-    LOGGER.log('soql',soql);
+    LOGGER.log('soql', soql);
     let contextText = `Current SOQL Tab: ${soql?.currentTab?.id}`;
     contextText += `\n${JSON.stringify(soql?.currentTab)}`;
     const tabs = soql?.tabs;
-    if(tabs?.length > 0){
+    if (tabs?.length > 0) {
         contextText += `\nAll SOQL Tabs: ${tabs.length}`;
         contextText += `\n${JSON.stringify(tabs)}`;
     }
@@ -76,11 +76,11 @@ function soqlContext(store) {
 
 function apiContext(store) {
     const api = store.getState().api;
-    LOGGER.log('api',api);
+    LOGGER.log('api', api);
     let contextText = `Current API Tab: ${api?.currentTab?.id}`;
     contextText += `\n${JSON.stringify(api?.currentTab)}`;
     const tabs = api?.tabs;
-    if(tabs?.length > 0){
+    if (tabs?.length > 0) {
         contextText += `\nAll API Tabs: ${tabs.length}`;
         contextText += `\n${JSON.stringify(tabs)}`;
     }
@@ -138,7 +138,7 @@ const Context = {
     soqlContext,
     apiContext,
     sidePanelContext,
-    chromeContext
+    chromeContext,
 };
 
 export default Context;

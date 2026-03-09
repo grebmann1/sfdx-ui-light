@@ -1,6 +1,11 @@
 import { api, LightningElement, wire } from 'lwc';
 import { store as legacyStore, store_application } from 'shared/store';
-import { isNotUndefinedOrNull, redirectToUrlViaChrome, isEmpty, isUndefinedOrNull } from 'shared/utils';
+import {
+    isNotUndefinedOrNull,
+    redirectToUrlViaChrome,
+    isEmpty,
+    isUndefinedOrNull,
+} from 'shared/utils';
 import { APPLICATION, connectStore, store } from 'core/store';
 import LOGGER from 'shared/logger';
 import { CACHE_CONFIG, loadSingleExtensionConfigFromCache } from 'shared/cacheManager';
@@ -107,60 +112,69 @@ export default class Default extends LightningElement {
     }
 
     // New Store
-    @wire(connectStore,{store: store})
+    @wire(connectStore, { store: store })
     stateChange({ application }) {
-        if(application?.openaiKey){
+        if (application?.openaiKey) {
             this.isAgentDisplayed = !isEmpty(application.openaiKey);
         }
     }
 
-
     /** Events **/
 
     einsteinClick = () => {
-        legacyStore.dispatch(store_application.fakeNavigate({
-            type: 'application',
-            state: {
-                applicationName: APPLICATIONS.ASSISTANT,
-            },
-        }));
+        legacyStore.dispatch(
+            store_application.fakeNavigate({
+                type: 'application',
+                state: {
+                    applicationName: APPLICATIONS.ASSISTANT,
+                },
+            })
+        );
     };
 
     openConnectionClick = () => {
-        legacyStore.dispatch(store_application.fakeNavigate({
-            type: 'application',
-            state: {
-                applicationName: APPLICATIONS.CONNECTION,
-            },
-        }));
+        legacyStore.dispatch(
+            store_application.fakeNavigate({
+                type: 'application',
+                state: {
+                    applicationName: APPLICATIONS.CONNECTION,
+                },
+            })
+        );
     };
 
     documentationClick = e => {
-        legacyStore.dispatch(store_application.fakeNavigate({
-            type: 'application',
-            state: {
-                applicationName: APPLICATIONS.DOCUMENTATION,
-            },
-        }));
+        legacyStore.dispatch(
+            store_application.fakeNavigate({
+                type: 'application',
+                state: {
+                    applicationName: APPLICATIONS.DOCUMENTATION,
+                },
+            })
+        );
     };
 
     openAgentClick = () => {
-        legacyStore.dispatch(store_application.fakeNavigate({
-            type: 'application',
-            state: {
-                applicationName: APPLICATIONS.AGENT,
-            },
-        }));
+        legacyStore.dispatch(
+            store_application.fakeNavigate({
+                type: 'application',
+                state: {
+                    applicationName: APPLICATIONS.AGENT,
+                },
+            })
+        );
     };
 
     openSmartInputClick = () => {
         if (!this.betaSmartInputEnabled) return;
-        legacyStore.dispatch(store_application.fakeNavigate({
-            type: 'application',
-            state: {
-                applicationName: APPLICATIONS.SMARTINPUT,
-            },
-        }));
+        legacyStore.dispatch(
+            store_application.fakeNavigate({
+                type: 'application',
+                state: {
+                    applicationName: APPLICATIONS.SMARTINPUT,
+                },
+            })
+        );
     };
 
     openToolkitClick = () => {
@@ -206,7 +220,8 @@ export default class Default extends LightningElement {
         // `home` is used by the org-view ellipsis (and some inject actions) to mean
         // "open the default panel". In the side panel, `currentApplication` must be
         // a concrete app (connection/docs/agent/smartinput). Default to Connections.
-        let targetApplication = applicationName === 'home' ? APPLICATIONS.CONNECTION : applicationName;
+        let targetApplication =
+            applicationName === 'home' ? APPLICATIONS.CONNECTION : applicationName;
         if (isUndefinedOrNull(targetApplication) || isEmpty(targetApplication)) {
             targetApplication = APPLICATIONS.CONNECTION;
         }

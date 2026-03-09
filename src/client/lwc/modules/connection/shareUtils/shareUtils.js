@@ -88,4 +88,3 @@ export function buildConnectionShareMessage(connection, { basePath } = {}) {
         .filter(Boolean)
         .join('\n');
 }
-

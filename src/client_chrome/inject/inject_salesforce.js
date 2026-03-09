@@ -1,18 +1,18 @@
 import '@webcomponents/custom-elements';
 import '@lwc/synthetic-shadow';
+import InputQuickPick from 'feature/inputQuickPick';
 import hotkeys from 'hotkeys-js';
 import { createElement } from 'lwc';
-import { CACHE_CONFIG, loadExtensionConfigFromCache, chromeStore, cacheManager, loadSingleExtensionConfigFromCache } from 'shared/cacheManager';
 import {
-    isEmpty,
-    runActionAfterTimeOut,
-    getRecordId,
-    getSobject,
-} from 'shared/utils';
+    CACHE_CONFIG,
+    loadExtensionConfigFromCache,
+    chromeStore,
+    cacheManager,
+    loadSingleExtensionConfigFromCache,
+} from 'shared/cacheManager';
 import LOGGER from 'shared/logger';
+import { isEmpty, runActionAfterTimeOut, getRecordId, getSobject } from 'shared/utils';
 import ViewsOverlay from 'views/overlay';
-import InputQuickPick from 'feature/inputQuickPick';
-
 
 const _showCopiedNotification = copiedValue => {
     // Create the notification element
@@ -90,8 +90,14 @@ const injectCSS = () => {
     };
 
     try {
-        safeAddStylesheet('sf-toolkit-slds-css', chrome.runtime.getURL('/styles/slds-sf-toolkit.css'));
-        safeAddStylesheet('sf-toolkit-extension-css', chrome.runtime.getURL('/styles/extension.css'));
+        safeAddStylesheet(
+            'sf-toolkit-slds-css',
+            chrome.runtime.getURL('/styles/slds-sf-toolkit.css')
+        );
+        safeAddStylesheet(
+            'sf-toolkit-extension-css',
+            chrome.runtime.getURL('/styles/extension.css')
+        );
     } catch (e) {
         console.error('--> injectCSS error', e);
     }
@@ -100,7 +106,7 @@ const injectCSS = () => {
 // Overlay
 let overlayInstance = null;
 const injectOverlay = async () => {
-    const isEnabled = (await loadSingleExtensionConfigFromCache(CACHE_CONFIG.OVERLAY_ENABLED.key));
+    const isEnabled = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.OVERLAY_ENABLED.key);
     if (!isEnabled) return;
 
     // LWC
@@ -125,14 +131,27 @@ const injectShortCuts = async () => {
     ]);
 
     const shortcutEnabled = configuration[CACHE_CONFIG.SHORTCUT_INJECTION_ENABLED.key];
-    const shortcutRecordId = configuration[CACHE_CONFIG.SHORTCUT_RECORDID.key] ?? CACHE_CONFIG.SHORTCUT_RECORDID.defaultValue;
-    const shortcutOverview = configuration[CACHE_CONFIG.SHORTCUT_OVERVIEW.key] ?? CACHE_CONFIG.SHORTCUT_OVERVIEW.defaultValue;
-    const shortcutSoql = configuration[CACHE_CONFIG.SHORTCUT_SOQL.key] ?? CACHE_CONFIG.SHORTCUT_SOQL.defaultValue;
-    const shortcutApex = configuration[CACHE_CONFIG.SHORTCUT_APEX.key] ?? CACHE_CONFIG.SHORTCUT_APEX.defaultValue;
-    const shortcutApi = configuration[CACHE_CONFIG.SHORTCUT_API.key] ?? CACHE_CONFIG.SHORTCUT_API.defaultValue;
-    const shortcutDocumentation = configuration[CACHE_CONFIG.SHORTCUT_DOCUMENTATION.key] ?? CACHE_CONFIG.SHORTCUT_DOCUMENTATION.defaultValue;
-    const shortcutOpenPanel = configuration[CACHE_CONFIG.SHORTCUT_OPEN_PANEL.key] ?? CACHE_CONFIG.SHORTCUT_OPEN_PANEL.defaultValue;
-    const shortcutOpenOverlay = configuration[CACHE_CONFIG.SHORTCUT_OPEN_OVERLAY.key] ?? CACHE_CONFIG.SHORTCUT_OPEN_OVERLAY.defaultValue;
+    const shortcutRecordId =
+        configuration[CACHE_CONFIG.SHORTCUT_RECORDID.key] ??
+        CACHE_CONFIG.SHORTCUT_RECORDID.defaultValue;
+    const shortcutOverview =
+        configuration[CACHE_CONFIG.SHORTCUT_OVERVIEW.key] ??
+        CACHE_CONFIG.SHORTCUT_OVERVIEW.defaultValue;
+    const shortcutSoql =
+        configuration[CACHE_CONFIG.SHORTCUT_SOQL.key] ?? CACHE_CONFIG.SHORTCUT_SOQL.defaultValue;
+    const shortcutApex =
+        configuration[CACHE_CONFIG.SHORTCUT_APEX.key] ?? CACHE_CONFIG.SHORTCUT_APEX.defaultValue;
+    const shortcutApi =
+        configuration[CACHE_CONFIG.SHORTCUT_API.key] ?? CACHE_CONFIG.SHORTCUT_API.defaultValue;
+    const shortcutDocumentation =
+        configuration[CACHE_CONFIG.SHORTCUT_DOCUMENTATION.key] ??
+        CACHE_CONFIG.SHORTCUT_DOCUMENTATION.defaultValue;
+    const shortcutOpenPanel =
+        configuration[CACHE_CONFIG.SHORTCUT_OPEN_PANEL.key] ??
+        CACHE_CONFIG.SHORTCUT_OPEN_PANEL.defaultValue;
+    const shortcutOpenOverlay =
+        configuration[CACHE_CONFIG.SHORTCUT_OPEN_OVERLAY.key] ??
+        CACHE_CONFIG.SHORTCUT_OPEN_OVERLAY.defaultValue;
     if (!shortcutEnabled) return;
 
     //console.log('### SF Toolkit - Shortcut Injection ###');
@@ -233,7 +252,7 @@ const injectShortCuts = async () => {
                     },
                 };
                 if (injectorPort) {
-                    injectorPort.postMessage(generateMessage({sessionInfo, params}));
+                    injectorPort.postMessage(generateMessage({ sessionInfo, params }));
                 }
             },
         },
@@ -250,7 +269,7 @@ const injectShortCuts = async () => {
                     },
                 };
                 if (injectorPort) {
-                    injectorPort.postMessage(generateMessage({sessionInfo, params}));
+                    injectorPort.postMessage(generateMessage({ sessionInfo, params }));
                 }
             },
         },
@@ -271,9 +290,9 @@ const injectShortCuts = async () => {
                 if (sobject) {
                     params.state.query = `SELECT Id FROM ${sobject}`;
                 }
-                
+
                 if (injectorPort) {
-                    injectorPort.postMessage(generateMessage({sessionInfo, params}));
+                    injectorPort.postMessage(generateMessage({ sessionInfo, params }));
                 }
             },
         },
@@ -290,7 +309,7 @@ const injectShortCuts = async () => {
                     },
                 };
                 if (injectorPort) {
-                    injectorPort.postMessage(generateMessage({sessionInfo, params}));
+                    injectorPort.postMessage(generateMessage({ sessionInfo, params }));
                 }
             },
         },
@@ -307,7 +326,7 @@ const injectShortCuts = async () => {
                     },
                 };
                 if (injectorPort) {
-                    injectorPort.postMessage(generateMessage({sessionInfo, params}));
+                    injectorPort.postMessage(generateMessage({ sessionInfo, params }));
                 }
             },
         },
@@ -327,13 +346,13 @@ const injectShortCuts = async () => {
         }
     });
 
-    generateMessage = ({sessionInfo, params})=> ({
+    generateMessage = ({ sessionInfo, params }) => ({
         action: 'redirectToUrl',
         sessionId: sessionInfo.sessionId,
         serverUrl: sessionInfo.serverUrl,
         baseUrl: chrome.runtime.getURL('/views/app.html'),
         navigation: params,
-    })
+    });
 };
 
 // Input Quick Pick Component
@@ -578,7 +597,9 @@ function hideOverlay() {
 let injectorPort;
 function connectToBackground() {
     injectorPort = chrome.runtime.connect({ name: 'sf-toolkit-injected' });
-    try { console.log('[INJECT] Connected to background via port sf-toolkit-injected'); } catch (e) {}
+    try {
+        console.log('[INJECT] Connected to background via port sf-toolkit-injected');
+    } catch (e) {}
     injectorPort.onDisconnect.addListener(() => {
         // Optionally handle disconnect in content script
         // e.g., cleanup, logging, etc.
@@ -618,7 +639,7 @@ class INJECTOR {
             connectToBackground();
             this.injectCode();
         }
-/* 
+        /* 
         const cachedConfiguration = await cacheManager.loadConfig(
             Object.values(CACHE_CONFIG).map(x => x.key)
         );

@@ -27,9 +27,9 @@ const chromeScreenshot = tool({
         format: z.enum(['png', 'jpeg']).optional().nullable().describe('Format of the screenshot'),
         quality: z.number().optional().nullable().describe('Quality of the screenshot (0-100)'),
     }),
-    execute: async (args) => {
+    execute: async args => {
         const res = await sendChromeMessage('chrome_screenshot', args);
-        LOGGER.log('--> chromeScreenshot',{args,res});
+        LOGGER.log('--> chromeScreenshot', { args, res });
         return res;
     },
 });
@@ -40,10 +40,14 @@ const chromeOpenTab = tool({
     description: '[Chrome] Open a new browser tab with the specified URL.',
     parameters: z.object({
         url: z.string().describe('The URL to open in a new tab'),
-        windowId: z.number().optional().nullable().describe('Optional window ID to open the tab in'),
+        windowId: z
+            .number()
+            .optional()
+            .nullable()
+            .describe('Optional window ID to open the tab in'),
     }),
-    execute: async (args) => {
-        return await sendChromeMessage('chrome_open_tab',args);
+    execute: async args => {
+        return await sendChromeMessage('chrome_open_tab', args);
     },
 });
 
@@ -54,7 +58,7 @@ const chromeNavigateTab = tool({
     parameters: z.object({
         tabId: z.number().describe('The ID of the tab to navigate to'),
     }),
-    execute: async (args) => {
+    execute: async args => {
         return await sendChromeMessage('chrome_navigate_tab', args);
     },
 });
@@ -85,12 +89,16 @@ const chromeGroupTabs = tool({
     description: '[Chrome] Group tabs together and optionally move them to another window.',
     parameters: z.object({
         tabIds: z.array(z.number()).describe('Array of tab IDs to group'),
-        windowId: z.string().optional().nullable().describe('Optional window ID to move the group to'),
+        windowId: z
+            .string()
+            .optional()
+            .nullable()
+            .describe('Optional window ID to move the group to'),
         title: z.string().optional().nullable().describe('Optional group title'),
         color: z.string().optional().nullable().describe('Optional group color'),
     }),
-    execute: async (args) => {
-        return await sendChromeMessage('chrome_group_tabs',args);
+    execute: async args => {
+        return await sendChromeMessage('chrome_group_tabs', args);
     },
 });
 
@@ -111,8 +119,8 @@ const chromeUngroupTabs = tool({
     parameters: z.object({
         tabIds: z.array(z.string()).describe('Array of tab IDs to ungroup'),
     }),
-    execute: async (args) => {
-        return await sendChromeMessage('chrome_ungroup_tabs',args);
+    execute: async args => {
+        return await sendChromeMessage('chrome_ungroup_tabs', args);
     },
 });
 
@@ -123,29 +131,60 @@ const chromeCloseTabs = tool({
     parameters: z.object({
         tabIds: z.array(z.number()).describe('Array of tab IDs to close'),
     }),
-    execute: async (args) => {
-        return await sendChromeMessage('chrome_close_tabs',args);
+    execute: async args => {
+        return await sendChromeMessage('chrome_close_tabs', args);
     },
 });
 
 // Update tab properties
 const chromeUpdateTab = tool({
     name: 'chrome_update_tab',
-    description: '[Chrome] Update tab properties (navigate to a new URL, pin, mute, activate, etc). Use this to change the URL of a specific tab (navigate), or update other properties.',
+    description:
+        '[Chrome] Update tab properties (navigate to a new URL, pin, mute, activate, etc). Use this to change the URL of a specific tab (navigate), or update other properties.',
     parameters: z.object({
         tabId: z.number().describe('Tab ID'),
-        updateProps: z.object({
-            url: z.string().optional().nullable().describe('Navigate the tab to this URL (if provided)'),
-            active: z.boolean().optional().nullable().describe('Whether the tab should be active'),
-            highlighted: z.boolean().optional().nullable().describe('Whether the tab should be highlighted'),
-            muted: z.boolean().optional().nullable().describe('Whether the tab should be muted'),
-            openerTabId: z.string().optional().nullable().describe('ID of the tab that opened this tab'),
-            pinned: z.boolean().optional().nullable().describe('Whether the tab should be pinned'),
-            autoDiscardable: z.boolean().optional().nullable().describe('Whether the tab can be automatically discarded by Chrome'),
-        }).describe('Properties to update on the tab'),
+        updateProps: z
+            .object({
+                url: z
+                    .string()
+                    .optional()
+                    .nullable()
+                    .describe('Navigate the tab to this URL (if provided)'),
+                active: z
+                    .boolean()
+                    .optional()
+                    .nullable()
+                    .describe('Whether the tab should be active'),
+                highlighted: z
+                    .boolean()
+                    .optional()
+                    .nullable()
+                    .describe('Whether the tab should be highlighted'),
+                muted: z
+                    .boolean()
+                    .optional()
+                    .nullable()
+                    .describe('Whether the tab should be muted'),
+                openerTabId: z
+                    .string()
+                    .optional()
+                    .nullable()
+                    .describe('ID of the tab that opened this tab'),
+                pinned: z
+                    .boolean()
+                    .optional()
+                    .nullable()
+                    .describe('Whether the tab should be pinned'),
+                autoDiscardable: z
+                    .boolean()
+                    .optional()
+                    .nullable()
+                    .describe('Whether the tab can be automatically discarded by Chrome'),
+            })
+            .describe('Properties to update on the tab'),
     }),
-    execute: async (args) => {
-        return await sendChromeMessage('chrome_update_tab',args);
+    execute: async args => {
+        return await sendChromeMessage('chrome_update_tab', args);
     },
 });
 
@@ -156,8 +195,8 @@ const chromeCreateWindow = tool({
     parameters: z.object({
         tabIds: z.array(z.number()).optional().nullable().describe('Tab IDs to move to new window'),
     }),
-    execute: async (args) => {
-        return await sendChromeMessage('chrome_create_window',args);
+    execute: async args => {
+        return await sendChromeMessage('chrome_create_window', args);
     },
 });
 
@@ -168,8 +207,8 @@ const chromeGetTab = tool({
     parameters: z.object({
         tabId: z.number().describe('Tab ID'),
     }),
-    execute: async (args) => {
-        return await sendChromeMessage('chrome_get_tab',args);
+    execute: async args => {
+        return await sendChromeMessage('chrome_get_tab', args);
     },
 });
 
@@ -180,8 +219,8 @@ const chromeGetTabGroup = tool({
     parameters: z.object({
         groupId: z.number().describe('Tab group ID'),
     }),
-    execute: async (args) => {
-        return await sendChromeMessage('chrome_get_tab_group',args);
+    execute: async args => {
+        return await sendChromeMessage('chrome_get_tab_group', args);
     },
 });
 const chromeUpdateTabGroup = tool({
@@ -189,10 +228,13 @@ const chromeUpdateTabGroup = tool({
     description: '[Chrome] Update tab group properties (title, color).',
     parameters: z.object({
         groupId: z.number().describe('Tab group ID'),
-        updateProps: z.object({}).catchall(z.union([z.string(), z.number(), z.boolean()])).describe('Properties to update'),
+        updateProps: z
+            .object({})
+            .catchall(z.union([z.string(), z.number(), z.boolean()]))
+            .describe('Properties to update'),
     }),
-    execute: async (args) => {
-        return await sendChromeMessage('chrome_update_tab_group',args);
+    execute: async args => {
+        return await sendChromeMessage('chrome_update_tab_group', args);
     },
 });
 
@@ -205,8 +247,8 @@ const chromeMoveTab = tool({
         index: z.number().describe('Target index'),
         windowId: z.number().optional().nullable().describe('Optional window ID'),
     }),
-    execute: async (args) => {
-        return await sendChromeMessage('chrome_move_tab',args);
+    execute: async args => {
+        return await sendChromeMessage('chrome_move_tab', args);
     },
 });
 
@@ -218,8 +260,8 @@ const chromeHighlightTabs = tool({
         tabIds: z.array(z.string()).describe('Tab IDs to highlight'),
         windowId: z.number().optional().nullable().describe('Optional window ID'),
     }),
-    execute: async (args) => {
-        return await sendChromeMessage('chrome_highlight_tabs',args);
+    execute: async args => {
+        return await sendChromeMessage('chrome_highlight_tabs', args);
     },
 });
 
@@ -230,8 +272,8 @@ const chromeFocusWindow = tool({
     parameters: z.object({
         windowId: z.number().describe('Window ID'),
     }),
-    execute: async (args) => {
-        return await sendChromeMessage('chrome_focus_window',args);
+    execute: async args => {
+        return await sendChromeMessage('chrome_focus_window', args);
     },
 });
 
@@ -242,8 +284,8 @@ const chromeRemoveTabGroup = tool({
     parameters: z.object({
         groupId: z.number().describe('Tab group ID'),
     }),
-    execute: async (args) => {
-        return await sendChromeMessage('chrome_remove_tab_group',args);
+    execute: async args => {
+        return await sendChromeMessage('chrome_remove_tab_group', args);
     },
 });
 
@@ -254,8 +296,8 @@ const chromeDuplicateTab = tool({
     parameters: z.object({
         tabId: z.number().describe('Tab ID'),
     }),
-    execute: async (args) => {
-        return await sendChromeMessage('chrome_duplicate_tab',args);
+    execute: async args => {
+        return await sendChromeMessage('chrome_duplicate_tab', args);
     },
 });
 
@@ -266,8 +308,8 @@ const chromeReloadTabs = tool({
     parameters: z.object({
         tabIds: z.array(z.number()).describe('Tab IDs to reload'),
     }),
-    execute: async (args) => {
-        return await sendChromeMessage('chrome_reload_tabs',args);
+    execute: async args => {
+        return await sendChromeMessage('chrome_reload_tabs', args);
     },
 });
 

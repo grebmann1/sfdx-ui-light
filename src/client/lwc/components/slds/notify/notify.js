@@ -6,7 +6,7 @@ const VARIANTS = {
     WARNING: 'warning',
     OFFLINE: 'offline',
     BRAND: 'brand',
-}
+};
 
 export default class Notify extends LightningElement {
     @api isCloseDiplayed = false;
@@ -23,18 +23,24 @@ export default class Notify extends LightningElement {
     get normalizedVariant() {
         return normalize(this.variant, {
             fallbackValue: VARIANTS.INFO,
-            validValues: [VARIANTS.INFO, VARIANTS.ERROR, VARIANTS.WARNING, VARIANTS.OFFLINE, VARIANTS.BRAND],
+            validValues: [
+                VARIANTS.INFO,
+                VARIANTS.ERROR,
+                VARIANTS.WARNING,
+                VARIANTS.OFFLINE,
+                VARIANTS.BRAND,
+            ],
         });
     }
 
     get notifyClass() {
-        return classSet(
-            `slds-notify slds-notify_alert`
-        ).add({
-            'slds-notify-brand': this.normalizedVariant === VARIANTS.BRAND,
-            'slds-alert_warning': this.normalizedVariant === VARIANTS.WARNING,
-            'slds-alert_error': this.normalizedVariant === VARIANTS.ERROR,
-            'slds-alert_offline': this.normalizedVariant === VARIANTS.OFFLINE,
-        }).toString();
+        return classSet(`slds-notify slds-notify_alert`)
+            .add({
+                'slds-notify-brand': this.normalizedVariant === VARIANTS.BRAND,
+                'slds-alert_warning': this.normalizedVariant === VARIANTS.WARNING,
+                'slds-alert_error': this.normalizedVariant === VARIANTS.ERROR,
+                'slds-alert_offline': this.normalizedVariant === VARIANTS.OFFLINE,
+            })
+            .toString();
     }
 }

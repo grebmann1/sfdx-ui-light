@@ -52,7 +52,7 @@ export default class Header extends LightningElement {
         } else {
             legacyStore.dispatch(store_application.expandAgentChat());
         }
-    }
+    };
 
     selectTab = e => {
         const target = e.currentTarget.dataset.path;
@@ -135,7 +135,7 @@ export default class Header extends LightningElement {
         return this.isMenuSmall ? 'utility:toggle_panel_left' : 'utility:toggle_panel_right';
     }
 
-    get rightPanelIconName(){
+    get rightPanelIconName() {
         return this.isAgentChatExpanded ? 'utility:einstein_alt' : 'utility:einstein';
     }
 }

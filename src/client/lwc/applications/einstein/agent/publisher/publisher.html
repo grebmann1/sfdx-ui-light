@@ -1,14 +1,25 @@
 <template>
-    <div class="slds-publisher slds-is-active slds-p-left_small slds-p-right_small slds-p-bottom_x-small">
+    <div
+        class="slds-publisher slds-is-active slds-p-left_small slds-p-right_small slds-p-bottom_x-small">
         <div class="slds-grid slds-wrap slds-grid_align-center">
             <div class="slds-col slds-size_1-of-1">
                 <!--<label for="comment-text-input2" class="slds-publisher__toggle-visibility slds-m-bottom_small">To: Assistant </label>-->
-                <div class="chat-input-container file-upload-container" ondragover={handleDragOver} ondragleave={handleDragLeave} ondrop={handleDrop}>
+                <div
+                    class="chat-input-container file-upload-container"
+                    ondragover={handleDragOver}
+                    ondragleave={handleDragLeave}
+                    ondrop={handleDrop}>
                     <div class="slds-flex-column slds-align-flex-end">
-                        <div class="chat-input-model-row slds-flex-row" style="width:120px;">
-                            <select id="model-picklist" class="slds-select" value={selectedModel} onchange={handleModelChange}>
+                        <div class="chat-input-model-row slds-flex-row" style="width: 120px">
+                            <select
+                                id="model-picklist"
+                                class="slds-select"
+                                value={selectedModel}
+                                onchange={handleModelChange}>
                                 <template for:each={availableModels} for:item="model">
-                                    <option key={model.value} value={model.value}>{model.label}</option>
+                                    <option key={model.value} value={model.value}>
+                                        {model.label}
+                                    </option>
                                 </template>
                             </select>
                         </div>
@@ -16,16 +27,31 @@
                     <template lwc:if={hasFiles}>
                         <div class="chat-input-pills-row">
                             <template for:each={filePills} for:item="pill">
-                                <div key={pill.file.name} class="chat-pill" tabindex="0" aria-label={pill.file.name}>
+                                <div
+                                    key={pill.file.name}
+                                    class="chat-pill"
+                                    tabindex="0"
+                                    aria-label={pill.file.name}>
                                     <template lwc:if={pill.isImage}>
-                                        <img src={pill.preview} alt="Image preview" class="chat-pill-thumbnail" />
+                                        <img
+                                            src={pill.preview}
+                                            alt="Image preview"
+                                            class="chat-pill-thumbnail" />
                                         <span>Image</span>
                                     </template>
                                     <template lwc:else>
                                         <span class="chat-pill-icon">📎</span>
                                         <span>{pill.file.name}</span>
                                     </template>
-                                    <button class="chat-pill-remove" title="Remove file" aria-label="Remove file" data-filename={pill.file.name} onclick={removeSelectedFile} tabindex="0">×</button>
+                                    <button
+                                        class="chat-pill-remove"
+                                        title="Remove file"
+                                        aria-label="Remove file"
+                                        data-filename={pill.file.name}
+                                        onclick={removeSelectedFile}
+                                        tabindex="0">
+                                        ×
+                                    </button>
                                 </div>
                             </template>
                         </div>
@@ -38,36 +64,75 @@
                         onkeyup={handleInputChange}
                         onpaste={handleInputChange}
                         disabled={isLoading}
-                        aria-label="Prompt input"
-                    ></textarea>
+                        aria-label="Prompt input"></textarea>
                     <div class="chat-input-actions-row">
                         <div class="chat-input-actions-left">
                             <template lwc:if={isAudioRecorderDisplayed}>
                                 <agent-audio-recorder
                                     openai-key={openaiKey}
-                                    onchange={handleSpeechChange}
-                                ></agent-audio-recorder>
+                                    onchange={handleSpeechChange}></agent-audio-recorder>
                             </template>
                         </div>
                         <div class="chat-input-actions-right">
-                            <button class="chat-btn" title="Attach File" aria-label="Attach File" onclick={triggerFileInput} tabindex="0" disabled={isLoading}>
-                                <lightning-icon icon-name="utility:attach" size="x-small" alternative-text="Attach File"></lightning-icon>
+                            <button
+                                class="chat-btn"
+                                title="Attach File"
+                                aria-label="Attach File"
+                                onclick={triggerFileInput}
+                                tabindex="0"
+                                disabled={isLoading}>
+                                <lightning-icon
+                                    icon-name="utility:attach"
+                                    size="x-small"
+                                    alternative-text="Attach File"></lightning-icon>
                             </button>
-                            <button class="chat-btn" title="Clear" aria-label="Clear" onclick={handleClearClick} tabindex="0" disabled={isClearButtonDisabled}>
-                                <lightning-icon icon-name="utility:delete" size="x-small" alternative-text="Clear"></lightning-icon>
+                            <button
+                                class="chat-btn"
+                                title="Clear"
+                                aria-label="Clear"
+                                onclick={handleClearClick}
+                                tabindex="0"
+                                disabled={isClearButtonDisabled}>
+                                <lightning-icon
+                                    icon-name="utility:delete"
+                                    size="x-small"
+                                    alternative-text="Clear"></lightning-icon>
                             </button>
                             <template lwc:if={isLoading}>
-                                <button class="chat-btn" title="Stop" aria-label="Stop" onclick={handleStopClick} tabindex="0">
-                                    <lightning-icon icon-name="utility:stop" size="x-small" alternative-text="Stop"></lightning-icon>
+                                <button
+                                    class="chat-btn"
+                                    title="Stop"
+                                    aria-label="Stop"
+                                    onclick={handleStopClick}
+                                    tabindex="0">
+                                    <lightning-icon
+                                        icon-name="utility:stop"
+                                        size="x-small"
+                                        alternative-text="Stop"></lightning-icon>
                                 </button>
                             </template>
                             <template lwc:else>
-                                <button class="chat-btn" title="Send" aria-label="Send" onclick={handleSendClick} tabindex="0">
-                                    <lightning-icon icon-name="utility:send" size="x-small" alternative-text="Send"></lightning-icon>
+                                <button
+                                    class="chat-btn"
+                                    title="Send"
+                                    aria-label="Send"
+                                    onclick={handleSendClick}
+                                    tabindex="0">
+                                    <lightning-icon
+                                        icon-name="utility:send"
+                                        size="x-small"
+                                        alternative-text="Send"></lightning-icon>
                                 </button>
                             </template>
                         </div>
-                        <input type="file" class="file-input" onchange={handleFileChange} aria-label="File input" tabindex="-1" multiple accept="image/*" />
+                        <input
+                            type="file"
+                            class="file-input"
+                            onchange={handleFileChange}
+                            aria-label="File input"
+                            tabindex="-1"
+                            multiple
+                            accept="image/*" />
                     </div>
                     <template lwc:if={dragActive}>
                         <div class="file-upload-drag-overlay">Drop images here</div>

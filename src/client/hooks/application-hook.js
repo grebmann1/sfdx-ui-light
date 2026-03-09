@@ -21,7 +21,7 @@ const APP_LIST = [
     'assistant',
 ];
 
-function generateRoutes(applications, { contentDir, layoutsDir }) {
+function generateRoutes(applications, { layoutsDir }) {
     return applications.map(app => {
         return {
             id: `app_${app}`,
@@ -37,6 +37,7 @@ function generateRoutes(applications, { contentDir, layoutsDir }) {
 }
 
 class ApplicationHook {
+    // eslint-disable-next-line no-unused-vars -- second param reserved for future use
     async initConfigs(lwrConfig, globalData) {
         lwrConfig.routes.push(...generateRoutes(APP_LIST, lwrConfig));
     }

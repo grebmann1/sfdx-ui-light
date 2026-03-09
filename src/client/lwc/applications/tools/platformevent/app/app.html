@@ -24,11 +24,13 @@
                         icon-name="utility:send"
                         icon-position="right"
                         size="large"
-                        disabled={isPublishDisabled}
-                    ></lightning-button>
+                        disabled={isPublishDisabled}></lightning-button>
                 </div>
                 <span slot="subtitle">
-                    <span class={connectionPillClass} title={connectionTooltip} aria-label={connectionTooltip}>
+                    <span
+                        class={connectionPillClass}
+                        title={connectionTooltip}
+                        aria-label={connectionTooltip}>
                         <span class={connectionDotClass} aria-hidden="true"></span>
                         <span class="slds-truncate">{connectionStatus}</span>
                     </span>
@@ -41,8 +43,7 @@
                         onclick={toggle_manualInput}
                         variant="border-filled"
                         size="medium"
-                        label={manualAltText}
-                    ></lightning-button>
+                        label={manualAltText}></lightning-button>
                     <template lwc:if={isManualChannelDisplayed}>
                         <lightning-combobox
                             style="width: 170px"
@@ -50,8 +51,7 @@
                             label="Prefix"
                             value={manualChannelPrefix}
                             options={manualPrefixOptions}
-                            onchange={handleManualChannelPrefixChange}
-                        ></lightning-combobox>
+                            onchange={handleManualChannelPrefixChange}></lightning-combobox>
                         <lightning-input
                             style="width: 300px"
                             class="slds-p-left_x-small"
@@ -59,8 +59,7 @@
                             placeholder="MyEvent__e or /event/MyEvent__e"
                             value={manualChannelName}
                             onchange={handleManualChannelInput}
-                            lwc:ref="manualChannel"
-                        ></lightning-input>
+                            lwc:ref="manualChannel"></lightning-input>
                     </template>
                     <template lwc:else>
                         <slds-lookup
@@ -74,8 +73,7 @@
                             errors={lookup_errors}
                             onselectionchange={lookup_handleSelectionChange}
                             required
-                            lwc:ref="lookup"
-                        ></slds-lookup>
+                            lwc:ref="lookup"></slds-lookup>
                     </template>
                     <lightning-input
                         style="width: 100px"

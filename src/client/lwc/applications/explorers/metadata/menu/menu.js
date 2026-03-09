@@ -1,9 +1,6 @@
 import { api, wire, track } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import {
-    isUndefinedOrNull,
-    isNotUndefinedOrNull
-} from 'shared/utils';
+import { isUndefinedOrNull, isNotUndefinedOrNull } from 'shared/utils';
 import { CurrentPageReference, NavigationContext } from 'lwr/navigation';
 import { store, connectStore, METADATA } from 'core/store';
 // Constants

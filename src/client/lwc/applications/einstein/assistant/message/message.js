@@ -1,4 +1,4 @@
-import {  api, track } from 'lwc';
+import { api, track } from 'lwc';
 import Toast from 'lightning/toast';
 import { classSet, lowerCaseKey, ROLES, ASSISTANT as ASSISTANT_UTILS } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';

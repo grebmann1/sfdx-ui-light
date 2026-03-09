@@ -1,8 +1,9 @@
 import { api, track } from 'lwc';
 import Toast from 'lightning/toast';
-import { isEmpty, classSet, ROLES,safeParseJson } from 'shared/utils';
+import { isEmpty, classSet, ROLES, safeParseJson } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
 import { Constants } from 'agent/utils';
+import LOGGER from 'shared/logger';
 
 export default class Message extends ToolkitElement {
     @api item;
@@ -13,7 +14,6 @@ export default class Message extends ToolkitElement {
     /** Methods **/
 
     /** Events **/
-
 
     handleDownload = async () => {
         navigator.clipboard.writeText(this.item.content);
@@ -47,7 +47,7 @@ export default class Message extends ToolkitElement {
                 typeof this.item?.content === 'string'
                     ? this.item.content?.slice(0, 80)
                     : JSON.stringify(this.item?.content)?.slice(0, 80);
-            console.log('[agent-message] assistant message render', {
+            LOGGER.debug('[agent-message] assistant message render', {
                 id: this.item?.id,
                 type: this.item?.type,
                 contentPreview,
@@ -66,7 +66,7 @@ export default class Message extends ToolkitElement {
         return this.item?.role === ROLES.USER;
     }
 
-    get isNotUser(){
+    get isNotUser() {
         return !this.isUser;
     }
 
@@ -75,11 +75,13 @@ export default class Message extends ToolkitElement {
     }
 
     get isTool() {
-        return ['function_call_result','function_call','function_call_pending'].includes(this.item?.type);
+        return ['function_call_result', 'function_call', 'function_call_pending'].includes(
+            this.item?.type
+        );
     }
 
     get isToolCall() {
-        return ['function_call','function_call_pending'].includes(this.item?.type);
+        return ['function_call', 'function_call_pending'].includes(this.item?.type);
     }
 
     get isReasoning() {
@@ -115,7 +117,7 @@ export default class Message extends ToolkitElement {
         if (typeof c === 'string' && c.trim().length > 0) return true;
         const list = this.contentList || [];
         return list.some(
-            (item) =>
+            item =>
                 (item.isInputText || item.isOutputText) &&
                 typeof item.text === 'string' &&
                 item.text.trim().length > 0
@@ -129,7 +131,7 @@ export default class Message extends ToolkitElement {
     get hasRenderedContentFromList() {
         const list = this.contentList || [];
         return list.some(
-            (i) =>
+            i =>
                 (i.isInputText || i.isOutputText) &&
                 typeof i.text === 'string' &&
                 i.text.trim().length > 0
@@ -138,11 +140,7 @@ export default class Message extends ToolkitElement {
 
     get showAssistantContentFallback() {
         const c = typeof this.content === 'string' ? this.content : '';
-        return (
-            this.isAssistant &&
-            c.trim().length > 0 &&
-            !this.hasRenderedContentFromList
-        );
+        return this.isAssistant && c.trim().length > 0 && !this.hasRenderedContentFromList;
     }
 
     get contentList() {
@@ -157,7 +155,10 @@ export default class Message extends ToolkitElement {
                 : [];
         return arr.map((contentItem, idx) => {
             const text = typeof contentItem === 'string' ? contentItem : contentItem?.text;
-            let type = typeof contentItem === 'string' ? Constants.CONTENT_TYPE.INPUT_TEXT : (contentItem?.type ?? Constants.CONTENT_TYPE.INPUT_TEXT);
+            let type =
+                typeof contentItem === 'string'
+                    ? Constants.CONTENT_TYPE.INPUT_TEXT
+                    : (contentItem?.type ?? Constants.CONTENT_TYPE.INPUT_TEXT);
             if (typeof type === 'string') type = type.toLowerCase().trim();
             if (type === 'text') type = Constants.CONTENT_TYPE.INPUT_TEXT;
             return {
@@ -225,7 +226,7 @@ export default class Message extends ToolkitElement {
     }
 
     get toolResponseButtonTitle() {
-        return this.showToolResponse ? Constants.TOOL_RESPONSE_HIDE : Constants.TOOL_RESPONSE_SHOW
+        return this.showToolResponse ? Constants.TOOL_RESPONSE_HIDE : Constants.TOOL_RESPONSE_SHOW;
     }
 
     get toolParametersButtonTitle() {

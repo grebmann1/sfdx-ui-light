@@ -55,7 +55,7 @@ export default class Default extends ToolkitElement {
 
     disconnectedCallback() {
         // Dispose Monaco listeners to prevent memory leaks
-        if(this.editor) {
+        if (this.editor) {
             //this.editor.setModel(null);
             //this.editor.dispose();
             //this.monaco.editor.getModels().forEach(model => model.dispose());
@@ -131,7 +131,6 @@ export default class Default extends ToolkitElement {
         });
 
         if (!this.isReadOnly) {
-
             // Widget for Inline Prompt
             this.currentPromptWidget = new MonacoLwcWidget({
                 monaco: this.monaco,
@@ -147,7 +146,7 @@ export default class Default extends ToolkitElement {
                 monaco: this.monaco,
                 editor: this.editor,
                 language: model.getLanguageId(),
-                handleOpenContextCopilot: this.handleOpenContextCopilot
+                handleOpenContextCopilot: this.handleOpenContextCopilot,
             });
 
             this.editor.onDidChangeModelContent(this.handleModelContentChange);

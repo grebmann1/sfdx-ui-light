@@ -1,7 +1,14 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
-import { isUndefinedOrNull, isNotUndefinedOrNull, isEmpty, guid, classSet, ASSISTANT as ASSISTANT_UTILS } from 'shared/utils';
+import {
+    isUndefinedOrNull,
+    isNotUndefinedOrNull,
+    isEmpty,
+    guid,
+    classSet,
+    ASSISTANT as ASSISTANT_UTILS,
+} from 'shared/utils';
 import { getConfigurations, credentialStrategies } from 'connection/utils';
 import { store, connectStore, EINSTEIN, APPLICATION, SELECTORS } from 'core/store';
 
@@ -91,7 +98,7 @@ export default class App extends ToolkitElement {
         //console.log('einstein',einstein)
         this.dialogs = SELECTORS.einstein.selectAll({ einstein });
         this.currentDialogId = einstein.currentDialogId;
-        
+
         if (einstein.provider && this.provider !== einstein.provider) {
             this.provider = einstein.provider;
         }
@@ -116,7 +123,6 @@ export default class App extends ToolkitElement {
                 this.setDefaultEinsteinConnection();
             }
         }
-        
     }
 
     /** Events **/

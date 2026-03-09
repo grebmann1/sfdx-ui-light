@@ -1,4 +1,5 @@
 const OpenAI = require('openai');
+
 const { getSupportedBuiltInToolTypes } = require('./modelToolSupport');
 
 function authMiddleware(req, res, next) {
@@ -18,7 +19,8 @@ function authMiddleware(req, res, next) {
         apiKeys.push('gate');
     }
     const authHeader = req.headers['authorization'];
-    const isAuthorized = apiKeys.length && authHeader && apiKeys.some((key) => authHeader === `Bearer ${key}`);
+    const isAuthorized =
+        apiKeys.length && authHeader && apiKeys.some(key => authHeader === `Bearer ${key}`);
     if (!isAuthorized) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -45,7 +47,7 @@ function corsMiddleware(req, res, next) {
 function filterToolsByModel(tools, model) {
     if (!Array.isArray(tools) || tools.length === 0) return tools;
     const allowed = getSupportedBuiltInToolTypes(model);
-    return tools.filter((tool) => {
+    return tools.filter(tool => {
         if (!tool || typeof tool !== 'object') return false;
         if (tool.type === 'function') return true;
         const builtInType = tool.type || tool.providerData?.type;
@@ -116,7 +118,8 @@ function openAIGate(app, options = {}) {
             if (err.name === 'AbortError') {
                 return res.end();
             }
-            const status = err.status || (err.message && err.message.includes('not supported') ? 400 : 500);
+            const status =
+                err.status || (err.message && err.message.includes('not supported') ? 400 : 500);
             const message = err.message || 'Internal Server Error';
             if (!res.headersSent) {
                 res.status(status).json({ error: message });

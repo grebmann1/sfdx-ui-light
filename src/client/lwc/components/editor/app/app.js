@@ -278,7 +278,12 @@ export default class App extends ToolkitElement {
             },
         });
         // Add AI Widgets
-        registerAIWidgets({monaco: this.monaco, editor: this.editor, language: null, handleOpenContextCopilot: this.handleOpenContextCopilot});
+        registerAIWidgets({
+            monaco: this.monaco,
+            editor: this.editor,
+            language: null,
+            handleOpenContextCopilot: this.handleOpenContextCopilot,
+        });
 
         this.editor.onDidChangeModelContent(this.handleModelContentChange);
     };

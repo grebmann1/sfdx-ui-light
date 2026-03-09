@@ -1,6 +1,6 @@
+import hotkeys from 'hotkeys-js';
 import { navigate } from 'lwr/navigation';
 import { loadExtensionConfigFromCache, CACHE_CONFIG } from 'shared/cacheManager';
-import hotkeys from 'hotkeys-js';
 
 /**
  * Keyboard shortcuts initialization
@@ -8,7 +8,7 @@ import hotkeys from 'hotkeys-js';
  */
 export async function initShortcuts(context) {
     const { navContext } = context;
-    
+
     const configuration = await loadExtensionConfigFromCache([
         CACHE_CONFIG.SHORTCUT_INJECTION_ENABLED.key,
         CACHE_CONFIG.SHORTCUT_OVERVIEW.key,
@@ -19,11 +19,18 @@ export async function initShortcuts(context) {
     ]);
 
     const shortcutEnabled = configuration[CACHE_CONFIG.SHORTCUT_INJECTION_ENABLED.key];
-    const shortcutOverview = configuration[CACHE_CONFIG.SHORTCUT_OVERVIEW.key] ?? CACHE_CONFIG.SHORTCUT_OVERVIEW.defaultValue;
-    const shortcutSoql = configuration[CACHE_CONFIG.SHORTCUT_SOQL.key] ?? CACHE_CONFIG.SHORTCUT_SOQL.defaultValue;
-    const shortcutApex = configuration[CACHE_CONFIG.SHORTCUT_APEX.key] ?? CACHE_CONFIG.SHORTCUT_APEX.defaultValue;
-    const shortcutApi = configuration[CACHE_CONFIG.SHORTCUT_API.key] ?? CACHE_CONFIG.SHORTCUT_API.defaultValue;
-    const shortcutDocumentation = configuration[CACHE_CONFIG.SHORTCUT_DOCUMENTATION.key] ?? CACHE_CONFIG.SHORTCUT_DOCUMENTATION.defaultValue;
+    const shortcutOverview =
+        configuration[CACHE_CONFIG.SHORTCUT_OVERVIEW.key] ??
+        CACHE_CONFIG.SHORTCUT_OVERVIEW.defaultValue;
+    const shortcutSoql =
+        configuration[CACHE_CONFIG.SHORTCUT_SOQL.key] ?? CACHE_CONFIG.SHORTCUT_SOQL.defaultValue;
+    const shortcutApex =
+        configuration[CACHE_CONFIG.SHORTCUT_APEX.key] ?? CACHE_CONFIG.SHORTCUT_APEX.defaultValue;
+    const shortcutApi =
+        configuration[CACHE_CONFIG.SHORTCUT_API.key] ?? CACHE_CONFIG.SHORTCUT_API.defaultValue;
+    const shortcutDocumentation =
+        configuration[CACHE_CONFIG.SHORTCUT_DOCUMENTATION.key] ??
+        CACHE_CONFIG.SHORTCUT_DOCUMENTATION.defaultValue;
 
     if (!shortcutEnabled) return;
 

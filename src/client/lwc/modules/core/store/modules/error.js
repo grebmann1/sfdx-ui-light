@@ -14,7 +14,7 @@ const errorSlice = createSlice({
                     payload: {
                         id: guid(),
                         message: error.message,
-                        details : error.details || '',
+                        details: error.details || '',
                         time: new Date().toISOString(),
                     },
                 };

@@ -62,11 +62,11 @@ export default class Sobject extends ToolkitElement {
         legacyStore.dispatch(store_application.navigate(redirectUrl));
     };
 
-    handleFieldSearch = (e) => {
+    handleFieldSearch = e => {
         this.fieldSearch = (e.detail?.value || '').trim();
     };
 
-    handleRelationshipSearch = (e) => {
+    handleRelationshipSearch = e => {
         this.relationshipSearch = (e.detail?.value || '').trim();
     };
 
@@ -75,21 +75,21 @@ export default class Sobject extends ToolkitElement {
         localStorage.setItem(`object-explorer-isDiagramDisplayed`, e.detail.checked);
     };
 
-    handleRelationshipTabActive = (e) => {
+    handleRelationshipTabActive = e => {
         const value = e.target?.value;
         if (!isEmpty(value)) {
             this.relationshipTab = value;
         }
     };
 
-    handlePageSelect = (e) => {
+    handlePageSelect = e => {
         const page = e.currentTarget?.dataset?.page;
         if (!isEmpty(page)) {
             this.page = page;
         }
     };
 
-    handleToggleSection = (e) => {
+    handleToggleSection = e => {
         const section = e.currentTarget?.dataset?.section;
         if (isEmpty(section)) return;
         this.openSections = {
@@ -98,7 +98,7 @@ export default class Sobject extends ToolkitElement {
         };
     };
 
-    handleCopyValue = async (e) => {
+    handleCopyValue = async e => {
         const value = e.currentTarget?.dataset?.value;
         if (isEmpty(value)) return;
         try {
@@ -113,10 +113,13 @@ export default class Sobject extends ToolkitElement {
     handleOpenQuery = () => {
         if (isUndefinedOrNull(this.selectedDetails?.name)) return;
         const query = `Select Id from ${this.selectedDetails.name}`;
-        navigate(this.navContext, { type: 'application', state: { applicationName: 'soql', query } });
+        navigate(this.navContext, {
+            type: 'application',
+            state: { applicationName: 'soql', query },
+        });
     };
 
-    handleOpenRelatedSObject = (e) => {
+    handleOpenRelatedSObject = e => {
         const name = e.currentTarget?.dataset?.name;
         if (isEmpty(name)) return;
         navigate(this.navContext, {
@@ -195,8 +198,8 @@ export default class Sobject extends ToolkitElement {
         }
     };
 
-    enrichSelectedDetails = (data) => {
-        (data.fields || []).forEach((field) => {
+    enrichSelectedDetails = data => {
+        (data.fields || []).forEach(field => {
             const isFormula = field?.calculated === true;
             const isPicklist = field?.type === 'picklist' || field?.type === 'multipicklist';
 
@@ -216,13 +219,15 @@ export default class Sobject extends ToolkitElement {
                   : formula;
 
             // Picklist helpers
-            const values = (field?.picklistValues || []).filter((x) => x && x.active !== false);
-            const labels = values.map((x) => x.label || x.value).filter((x) => !isEmpty(x));
+            const values = (field?.picklistValues || []).filter(x => x && x.active !== false);
+            const labels = values.map(x => x.label || x.value).filter(x => !isEmpty(x));
             field._picklistValuesRaw = labels.join(', ');
             field._picklistCount = labels.length;
             field._picklistCountLabel = `${labels.length} value${labels.length === 1 ? '' : 's'}`;
             field._picklistValuesPreview =
-                labels.length > 10 ? `${labels.slice(0, 10).join(', ')} …(+${labels.length - 10})` : field._picklistValuesRaw;
+                labels.length > 10
+                    ? `${labels.slice(0, 10).join(', ')} …(+${labels.length - 10})`
+                    : field._picklistValuesRaw;
         });
         return data;
     };
@@ -275,7 +280,7 @@ export default class Sobject extends ToolkitElement {
         const search = (this.fieldSearch || '').trim();
         if (isEmpty(search)) return this.selectedDetails.fields || [];
         return (this.selectedDetails.fields || []).filter(
-            (x) =>
+            x =>
                 this.checkIfPresent(x.name, search) ||
                 this.checkIfPresent(x.label, search) ||
                 this.checkIfPresent(x._type, search)
@@ -285,9 +290,9 @@ export default class Sobject extends ToolkitElement {
     get lookups() {
         if (!this.isDetailDisplayed) return [];
         const fields = this.selectedDetails.fields || [];
-        const refs = fields.filter((f) => f.type === 'reference' && f.referenceTo?.length > 0);
+        const refs = fields.filter(f => f.type === 'reference' && f.referenceTo?.length > 0);
         return refs
-            .map((f) => {
+            .map(f => {
                 const target = f.referenceTo?.[0] || 'Unknown';
                 return {
                     key: `${f.name}:${target}`,
@@ -303,7 +308,7 @@ export default class Sobject extends ToolkitElement {
         const search = (this.relationshipSearch || '').trim();
         if (isEmpty(search)) return this.lookups;
         return this.lookups.filter(
-            (x) =>
+            x =>
                 this.checkIfPresent(x.label, search) ||
                 this.checkIfPresent(x.fieldName, search) ||
                 this.checkIfPresent(x.target, search)
@@ -313,8 +318,8 @@ export default class Sobject extends ToolkitElement {
     get children() {
         if (!this.isDetailDisplayed) return [];
         return (this.selectedDetails.childRelationships || [])
-            .filter((x) => !isEmpty(x.relationshipName))
-            .map((x) => ({
+            .filter(x => !isEmpty(x.relationshipName))
+            .map(x => ({
                 ...x,
                 key: `${x.childSObject}:${x.relationshipName}:${x.field}`,
             }))
@@ -325,7 +330,7 @@ export default class Sobject extends ToolkitElement {
         const search = (this.relationshipSearch || '').trim();
         if (isEmpty(search)) return this.children;
         return this.children.filter(
-            (x) =>
+            x =>
                 this.checkIfPresent(x.relationshipName, search) ||
                 this.checkIfPresent(x.field, search) ||
                 this.checkIfPresent(x.childSObject, search)
@@ -367,7 +372,7 @@ export default class Sobject extends ToolkitElement {
             { key: 'updateable', label: 'Updateable' },
             { key: 'deletable', label: 'Deletable' },
         ];
-        return map.filter((x) => this.selectedDetails?.[x.key] === true);
+        return map.filter(x => this.selectedDetails?.[x.key] === true);
     }
 
     get availableApisCount() {

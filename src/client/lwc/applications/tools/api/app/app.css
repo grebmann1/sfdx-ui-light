@@ -133,6 +133,6 @@
     color: #ffb75d !important;
 }
 
-.header-table-ui lightning-button-icon[variant="brand"] {
+.header-table-ui lightning-button-icon[variant='brand'] {
     box-shadow: 0 0 0 2px #0176d3;
 }

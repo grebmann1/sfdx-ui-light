@@ -20,10 +20,9 @@ export default class App extends ToolkitElement {
     /** Methods  **/
 
     loadPathFromConfig = async () => {
-        const { error, result } = await window.electron.invoke(
-            'code-getInitialConfig',
-            { alias: this.connector.configuration.alias }
-        );
+        const { error, result } = await window.electron.invoke('code-getInitialConfig', {
+            alias: this.connector.configuration.alias,
+        });
         if (error) {
             throw decodeError(error);
         }
@@ -49,10 +48,9 @@ export default class App extends ToolkitElement {
 
     selectProject = async () => {
         /** Electron **/
-        let { error, result } = await window.electron.invoke(
-            'code-createVSCodeProject',
-            { defaultPath: this.projectPath }
-        );
+        let { error, result } = await window.electron.invoke('code-createVSCodeProject', {
+            defaultPath: this.projectPath,
+        });
         if (error) {
             throw decodeError(error);
         }

@@ -123,13 +123,12 @@ export default class App extends ToolkitElement {
         this._pageRef = pageRef;
         if (this._hasRendered) {
             this.loadFromNavigation(pageRef);
-            
         }
         //  this.loadFromNavigation(pageRef);
         //('this._hasRendered',this._hasRendered);
     }
 
-    loadFromNavigation = async (pageRef) => {
+    loadFromNavigation = async pageRef => {
         const { state } = pageRef;
         // Use state.query to force a specific query to be loaded !
         if (isNotUndefinedOrNull(state.query)) {
@@ -742,10 +741,8 @@ export default class App extends ToolkitElement {
         store.dispatch(DOCUMENT.reduxSlices.QUERYFILE.actions.removeOne(id));
     };
 
-    handleTableSearchChange = (event) => {
-        store.dispatch(
-            UI.reduxSlice.actions.updateTabTableSearch({ value: event.target.value })
-        );
+    handleTableSearchChange = event => {
+        store.dispatch(UI.reduxSlice.actions.updateTabTableSearch({ value: event.target.value }));
     };
 
     /** Getters **/

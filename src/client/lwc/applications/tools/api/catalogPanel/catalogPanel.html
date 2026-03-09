@@ -5,16 +5,14 @@
         title={title}
         position="left"
         is-open={isOpen}
-        onclose={handleClose}
-    >
+        onclose={handleClose}>
         <div slot="actions" class="slds-grid slds-grid_vertical-align-center">
             <lightning-button-icon
                 icon-name="utility:refresh"
                 variant="border-filled"
                 alternative-text="Refresh"
                 title="Refresh"
-                onclick={handleRefresh}
-            ></lightning-button-icon>
+                onclick={handleRefresh}></lightning-button-icon>
         </div>
 
         <template lwc:if={hasError}>
@@ -35,7 +33,6 @@
             tree={tree}
             onselect={handleSelect}
             min-search-length={minSearchLength}
-            search-fields={searchFields}
-        ></slds-file-tree>
+            search-fields={searchFields}></slds-file-tree>
     </slds-vertical-panel>
 </template>

@@ -46,19 +46,18 @@ const ACTIONS = [
     { label: 'Remove', name: 'removeConfiguration' },
 ];
 
-
-const generateMessage = ({sessionInfo, params})=> ({
+const generateMessage = ({ sessionInfo, params }) => ({
     action: 'redirectToUrl',
     sessionId: sessionInfo.sessionId,
     serverUrl: sessionInfo.serverUrl,
     baseUrl: chrome.runtime.getURL('/views/app.html'),
     navigation: params,
-})
+});
 
 const CONNECTION_FILTER_SHOW_ORGFARM_KEY = 'connection_filter_show_orgfarm';
 const CONNECTION_FILTER_SHOW_NON_ORGFARM_KEY = 'connection_filter_show_non_orgfarm';
 
-const isOrgFarmConnection = (connection) => {
+const isOrgFarmConnection = connection => {
     const haystack = [
         connection?.instanceUrl,
         connection?.loginUrl,
@@ -68,7 +67,7 @@ const isOrgFarmConnection = (connection) => {
         connection?.name,
         connection?.username,
     ];
-    return haystack.some((v) => typeof v === 'string' && v.toLowerCase().includes('orgfarm'));
+    return haystack.some(v => typeof v === 'string' && v.toLowerCase().includes('orgfarm'));
 };
 
 export default class App extends ToolkitElement {
@@ -111,7 +110,11 @@ export default class App extends ToolkitElement {
             let customDomain = '';
             if (prefill.instanceUrl) {
                 try {
-                    const u = new URL(prefill.instanceUrl.startsWith('http') ? prefill.instanceUrl : `https://${prefill.instanceUrl}`);
+                    const u = new URL(
+                        prefill.instanceUrl.startsWith('http')
+                            ? prefill.instanceUrl
+                            : `https://${prefill.instanceUrl}`
+                    );
                     customDomain = u.host;
                 } catch (_) {}
             }
@@ -128,7 +131,7 @@ export default class App extends ToolkitElement {
                 selectedDomain: customDomain ? 'custom' : undefined,
                 customDomain: customDomain || undefined,
                 size: isChromeExtension() ? 'full' : 'medium',
-            }).then(async (res) => {
+            }).then(async res => {
                 if (isNotUndefinedOrNull(res)) {
                     await this.fetchAllConnections();
                 }
@@ -160,7 +163,7 @@ export default class App extends ToolkitElement {
         }
     };
 
-    _onElectronOrgsUpdated = (event) => {
+    _onElectronOrgsUpdated = event => {
         const { orgs } = event.detail;
         LOGGER.log('electron-orgs-updated', orgs);
         this._formatConfigurations(orgs);
@@ -208,15 +211,17 @@ export default class App extends ToolkitElement {
             size: 'medium',
         }).then(res => {
             if (res) {
-                if(isElectronApp()){
-                    window.electron.invoke('OPEN_INSTANCE', {alias:res.conn.alias,username:res.configuration.username});
-                }else{
+                if (isElectronApp()) {
+                    window.electron.invoke('OPEN_INSTANCE', {
+                        alias: res.conn.alias,
+                        username: res.configuration.username,
+                    });
+                } else {
                     store.dispatch(APPLICATION.reduxSlice.actions.login({ connector: res }));
                     this.dispatchEvent(
                         new CustomEvent('login', { detail: { value: res }, bubbles: true })
                     );
                 }
-                
             }
         });
     };
@@ -264,7 +269,7 @@ export default class App extends ToolkitElement {
         }
     };
 
-    shareRow = async (row) => {
+    shareRow = async row => {
         try {
             const message = buildConnectionShareMessage(row);
             await navigator.clipboard.writeText(message);
@@ -315,7 +320,7 @@ export default class App extends ToolkitElement {
         this._formatConfigurations(configurations);
     };
 
-    _formatConfigurations = (configurations) => {
+    _formatConfigurations = configurations => {
         this.data = this.formatConfigurations(configurations);
         this.formattedData = this.formatDataForCardView();
         this.resetLoading();
@@ -330,7 +335,7 @@ export default class App extends ToolkitElement {
             return {
                 ...x,
                 id: x.id || x.alias,
-                
+
                 _connectLabel: isMatch
                     ? 'Logout'
                     : x._hasError && !isUsernameType
@@ -387,7 +392,7 @@ export default class App extends ToolkitElement {
                     throw new Error(`No strategy for credential type: ${credentialType}`);
 
                 const connector = await strategy.connect(configuration);
-                if(isElectronApp() && row.credentialType === OAUTH_TYPES.USERNAME){
+                if (isElectronApp() && row.credentialType === OAUTH_TYPES.USERNAME) {
                     const params = {
                         alias: row.alias,
                         username: row.username,
@@ -424,19 +429,22 @@ export default class App extends ToolkitElement {
 
     authorizeExistingOrg = async row => {
         if (isElectronApp()) return;
-        
+
         this.setLoading('Authorizing & Redirecting');
-        let { alias, loginUrl,instanceUrl, ...settings } = this.data.find(x => x.id == row.id);
-        try{
-            LOGGER.log('settings',settings,alias,loginUrl,instanceUrl);
+        let { alias, loginUrl, instanceUrl, ...settings } = this.data.find(x => x.id == row.id);
+        try {
+            LOGGER.log('settings', settings, alias, loginUrl, instanceUrl);
             const _loginUrl = instanceUrl || loginUrl;
-            LOGGER.log('settings',settings,alias,_loginUrl);
+            LOGGER.log('settings', settings, alias, _loginUrl);
             const connector = await credentialStrategies[OAUTH_TYPES.OAUTH].connect(
                 { alias, loginUrl: _loginUrl, username: settings.username },
                 { saveFullConfiguration: true, bypass: true }
             );
             if (connector.hasError || connector == null) {
-                LOGGER.error('authorizeExistingOrg', connector?.errorMessage || 'No Authorization found');
+                LOGGER.error(
+                    'authorizeExistingOrg',
+                    connector?.errorMessage || 'No Authorization found'
+                );
                 throw new Error(connector?.errorMessage || 'No Authorization found');
             }
             store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
@@ -444,13 +452,12 @@ export default class App extends ToolkitElement {
                 new CustomEvent('login', { detail: { value: connector }, bubbles: true })
             );
             this.fetchAllConnections();
-        }catch(e){
+        } catch (e) {
             LOGGER.error('authorizeExistingOrg error', e);
             handleError(e, 'Authorize Existing Org Error');
             store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
             this.fetchAllConnections();
         }
-        
     };
 
     openBrowser = async (row, target) => {
@@ -483,7 +490,6 @@ export default class App extends ToolkitElement {
 
                 //console.log('isChromeExtension',isChromeExtension(),target);
                 if (isChromeExtension()) {
-
                     const port = getChromePort();
                     if (target === 'incognito') {
                         const windows = await chrome.windows.getAll({
@@ -546,8 +552,8 @@ export default class App extends ToolkitElement {
             const connector = await strategy.connect({ ...settings, alias, disableEvent: true });
 
             let isChromeProcessSuccess = false;
-            if(isChromeExtension()){
-                try{
+            if (isChromeExtension()) {
+                try {
                     const port = getChromePort();
                     const sessionInfo = {
                         sessionId: connector.conn.accessToken,
@@ -556,21 +562,21 @@ export default class App extends ToolkitElement {
                     const params = {
                         type: 'application',
                     };
-                    if(redirect){
+                    if (redirect) {
                         // assume the format is applicationName=api
                         params.state = {
                             applicationName: redirect.split('=')[1],
                         };
                     }
-                    port.postMessage(generateMessage({sessionInfo, params}));
+                    port.postMessage(generateMessage({ sessionInfo, params }));
                     isChromeProcessSuccess = true;
-                }catch(e){
+                } catch (e) {
                     LOGGER.error('openToolkit error', e);
                     //handleError(e, 'Open Toolkit Error');
                     // In case of error, we let the default flow to handle it
                 }
             }
-            if(!isChromeProcessSuccess){
+            if (!isChromeProcessSuccess) {
                 let params = new URLSearchParams();
                 params.append('sessionId', connector.conn.accessToken);
                 params.append('serverUrl', connector.conn.instanceUrl);
@@ -626,7 +632,9 @@ export default class App extends ToolkitElement {
     seeDetails = async row => {
         this.setLoading('Loading Credentials...');
         var { company, orgId, name, username, instanceUrl, sfdxAuthUrl, redirectUrl } = row;
-        const { alias, credentialType,password, ...settings } = this.data.find(x => x.id == row.id);
+        const { alias, credentialType, password, ...settings } = this.data.find(
+            x => x.id == row.id
+        );
         if (isNotUndefinedOrNull(redirectUrl)) {
             // redirect credential
             ConnectionDetailModal.open({
@@ -640,12 +648,12 @@ export default class App extends ToolkitElement {
         } else {
             const strategy = credentialStrategies[credentialType || 'OAUTH'];
             if (!strategy) throw new Error(`No strategy for credential type: ${credentialType}`);
-            let accessToken,frontDoorUrl;
-            try{
+            let accessToken, frontDoorUrl;
+            try {
                 let connector = await strategy.connect({ ...settings, alias, disableEvent: true });
                 accessToken = connector ? connector.conn.accessToken : null;
                 frontDoorUrl = connector ? connector.frontDoorUrl : null;
-            }catch(e){
+            } catch (e) {
                 LOGGER.error('seeDetails error', e);
                 accessToken = null;
                 frontDoorUrl = null;
@@ -700,7 +708,7 @@ export default class App extends ToolkitElement {
             `Are you sure you wish to remove this Connection : ${row.alias}:${row.username} ?`
         );
         if (confirmed) {
-            await removeConfiguration({alias:row.alias,credentialType:row.credentialType});
+            await removeConfiguration({ alias: row.alias, credentialType: row.credentialType });
             await this.fetchAllConnections();
         }
     };
@@ -729,7 +737,7 @@ export default class App extends ToolkitElement {
         );
     };
 
-    handleOrgFarmFilterChange = async (e) => {
+    handleOrgFarmFilterChange = async e => {
         const name = e?.target?.name;
         const checked = e?.detail?.checked ?? e?.target?.checked ?? false;
         if (name === 'showOrgFarm') {
@@ -824,7 +832,7 @@ export default class App extends ToolkitElement {
             .map(group => ({
                 ...group,
                 items: group.items
-                    .filter((x) => {
+                    .filter(x => {
                         const matchesText =
                             isUndefinedOrNull(this.filter) ||
                             (isNotUndefinedOrNull(this.filter) &&
@@ -833,7 +841,9 @@ export default class App extends ToolkitElement {
                         if (!matchesText) return false;
 
                         const isOrgFarm = x._isOrgFarm === true;
-                        return (this.showOrgFarm && isOrgFarm) || (this.showNonOrgFarm && !isOrgFarm);
+                        return (
+                            (this.showOrgFarm && isOrgFarm) || (this.showNonOrgFarm && !isOrgFarm)
+                        );
                     })
                     .map(x => ({
                         ...x,
@@ -845,11 +855,12 @@ export default class App extends ToolkitElement {
     }
 
     get filteredOriginal() {
-        return this.data.filter((x) => {
+        return this.data.filter(x => {
             const matchesText =
                 isUndefinedOrNull(this.filter) ||
                 (isNotUndefinedOrNull(this.filter) &&
-                    (checkIfPresent(x.alias, this.filter) || checkIfPresent(x.username, this.filter)));
+                    (checkIfPresent(x.alias, this.filter) ||
+                        checkIfPresent(x.username, this.filter)));
             if (!matchesText) return false;
 
             const isOrgFarm = x._isOrgFarm === true;
@@ -930,7 +941,7 @@ export default class App extends ToolkitElement {
                 cellAttributes: {
                     class: { fieldName: '_statusClass' },
                 },
-            },/* 
+            } /* 
             {
                 label: 'Expire',
                 fieldName: 'expirationDate',
@@ -944,7 +955,7 @@ export default class App extends ToolkitElement {
                 type: 'text',
                 initialWidth: 70,
                 _filter: 'electron',
-            }, */
+            }, */,
             {
                 label: 'User Name',
                 fieldName: 'username',

@@ -12,18 +12,16 @@ function initDocumentationIndex(docs) {
                 {
                     field: 'title',
                     tokenize: 'forward',
-                    encoder: Charset.LatinBalance
+                    encoder: Charset.LatinBalance,
                 },
                 {
                     field: 'content',
                     tokenize: 'forward',
-                    encoder: Charset.LatinBalance
-                }
+                    encoder: Charset.LatinBalance,
+                },
             ],
-            tag: [
-                { field: 'documentationId' }
-            ]
-        }
+            tag: [{ field: 'documentationId' }],
+        },
     });
     for (const doc of docs) {
         docIndex.add(doc);
@@ -42,7 +40,7 @@ async function searchDocumentation({ keywords = '', filters = [] }) {
             tag,
             suggest: true,
             enrich: true,
-            merge: true
+            merge: true,
         });
     } else {
         results = await docIndex.where(tag ? tag : {});
@@ -74,5 +72,5 @@ async function searchDocumentation({ keywords = '', filters = [] }) {
 
 module.exports = {
     initDocumentationIndex,
-    searchDocumentation
-}; 
+    searchDocumentation,
+};

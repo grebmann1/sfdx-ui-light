@@ -48,14 +48,24 @@ function redirect(url = 'app.html', delay = 0) {
  */
 function updateSettings(params) {
     // Exclude non-setting fields from params
-    const { message, redirect: redirectParam, data: encodedData, settings: groupedSettings, ...rawSettings } = params;
+    const {
+        message,
+        redirect: redirectParam,
+        data: encodedData,
+        settings: groupedSettings,
+        ...rawSettings
+    } = params;
 
     // Prefer grouped settings if present (object or JSON string),
     // otherwise fall back to legacy top-level flattened keys
     let candidateSettings = {};
     if (groupedSettings) {
         if (typeof groupedSettings === 'string') {
-            try { candidateSettings = JSON.parse(groupedSettings) || {}; } catch { candidateSettings = {}; }
+            try {
+                candidateSettings = JSON.parse(groupedSettings) || {};
+            } catch {
+                candidateSettings = {};
+            }
         } else if (typeof groupedSettings === 'object') {
             candidateSettings = groupedSettings || {};
         }
@@ -76,7 +86,7 @@ function updateSettings(params) {
     }
 
     return new Promise((resolve, reject) => {
-        chrome.storage.local.set(filteredSettings, function() {
+        chrome.storage.local.set(filteredSettings, function () {
             if (chrome.runtime.lastError) reject(chrome.runtime.lastError);
             else resolve();
         });
@@ -85,7 +95,7 @@ function updateSettings(params) {
 
 function startCountdown(seconds, onTick, onDone) {
     let remaining = seconds;
-   onTick(remaining);
+    onTick(remaining);
     const interval = setInterval(() => {
         remaining--;
         onTick(remaining);
@@ -94,10 +104,10 @@ function startCountdown(seconds, onTick, onDone) {
             onDone();
         }
     }, 1000);
-    return () => clearInterval(interval); // returns a cancel function  
+    return () => clearInterval(interval); // returns a cancel function
 }
 
-(async function() {
+(async function () {
     const params = parseQuery(window.location.search);
     // Decode optional base64 data payload into params
     function base64DecodeUnicode(str) {
@@ -114,7 +124,10 @@ function startCountdown(seconds, onTick, onDone) {
         try {
             const obj = JSON.parse(decoded);
             // Optional: verify extId matches current extension
-            const currentId = (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id) ? chrome.runtime.id : null;
+            const currentId =
+                typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id
+                    ? chrome.runtime.id
+                    : null;
             if (obj.extId && currentId && obj.extId !== currentId) {
                 // Soft warning by updating status later
             }
@@ -131,7 +144,7 @@ function startCountdown(seconds, onTick, onDone) {
             return p;
         }
     }
-    
+
     const decodedParams = mergeDecodedData(params);
     const statusEl = document.getElementById('status');
     const countdownEl = document.getElementById('countdown');
@@ -144,15 +157,19 @@ function startCountdown(seconds, onTick, onDone) {
     const redirectTarget = decodedParams.redirect || 'app.html';
     let redirectDone = false;
     // Countdown logic
-    let cancelCountdown = startCountdown(5, (remaining) => {
-        if (countdownEl) countdownEl.textContent = `Redirecting in ${remaining}s...`;
-        if (redirectBtn) redirectBtn.style.display = 'inline-block';
-    }, () => {
-        if (!redirectDone) {
-            redirectDone = true;
-            redirect(redirectTarget, 0);
+    let cancelCountdown = startCountdown(
+        5,
+        remaining => {
+            if (countdownEl) countdownEl.textContent = `Redirecting in ${remaining}s...`;
+            if (redirectBtn) redirectBtn.style.display = 'inline-block';
+        },
+        () => {
+            if (!redirectDone) {
+                redirectDone = true;
+                redirect(redirectTarget, 0);
+            }
         }
-    });
+    );
     if (redirectBtn) {
         redirectBtn.addEventListener('click', () => {
             if (!redirectDone) {

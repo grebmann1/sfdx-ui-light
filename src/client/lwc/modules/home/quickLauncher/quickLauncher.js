@@ -10,9 +10,7 @@ export default class QuickLauncher extends ToolkitElement {
     @wire(NavigationContext)
     navContext;
 
-    connectedCallback() {
-        //console.log('CONFIG',CONFIG);
-    }
+    connectedCallback() {}
 
     /** Events */
 

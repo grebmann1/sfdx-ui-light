@@ -9,7 +9,6 @@ import {
     redirectToUrlViaChrome,
 } from 'shared/utils';
 
-
 const APPLICATIONS = {
     RECORD_EXPLORER: 'recordExplorer',
     USER_EXPLORER: 'userExplorer',
@@ -42,13 +41,12 @@ export default class Salesforce extends ToolkitElement {
         }
     }
 
-    
-
-
     @wire(connectStore, { store })
     applicationChange({ application }) {
         //console.log('application',application,this.connector);
-        if ( isNotUndefinedOrNull(application.connector) && isNotUndefinedOrNull(this.connector) &&
+        if (
+            isNotUndefinedOrNull(application.connector) &&
+            isNotUndefinedOrNull(this.connector) &&
             application.connector?.conn?.accessToken != this.connector.connector?.conn?.accessToken
         ) {
             this.isConnectorLoaded = true;

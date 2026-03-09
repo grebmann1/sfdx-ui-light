@@ -54,7 +54,7 @@ export default class MessageList extends ToolkitElement {
         );
     };
 
-    handleFilterModeChange = (e) => {
+    handleFilterModeChange = e => {
         this.filterMode = e.detail.value;
         this.pageNumber = 1;
     };
@@ -73,7 +73,7 @@ export default class MessageList extends ToolkitElement {
         }
     };
 
-    handleMaxMessagesChange = (e) => {
+    handleMaxMessagesChange = e => {
         const value = e.detail.value;
         store.dispatch(
             EVENT.reduxSlice.actions.updateMaxMessagesPerChannel({
@@ -119,18 +119,26 @@ export default class MessageList extends ToolkitElement {
 
     exportVisibleAsJson = async () => {
         try {
-            const payload = this.virtualList.map((m) => m.content || m);
+            const payload = this.virtualList.map(m => m.content || m);
             const text = JSON.stringify(payload, null, 2);
             await navigator.clipboard.writeText(text);
-            Toast.show({ label: 'Copied', message: 'Visible messages copied as JSON', variant: 'success' });
+            Toast.show({
+                label: 'Copied',
+                message: 'Visible messages copied as JSON',
+                variant: 'success',
+            });
         } catch (e) {
-            Toast.show({ label: 'Copy failed', message: e?.message || 'Unable to copy', variant: 'warning' });
+            Toast.show({
+                label: 'Copy failed',
+                message: e?.message || 'Unable to copy',
+                variant: 'warning',
+            });
         }
     };
 
     downloadVisibleAsJson = () => {
         try {
-            const payload = this.virtualList.map((m) => m.content || m);
+            const payload = this.virtualList.map(m => m.content || m);
             const text = JSON.stringify(payload, null, 2);
             const blob = new Blob([text], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -142,7 +150,11 @@ export default class MessageList extends ToolkitElement {
             a.remove();
             URL.revokeObjectURL(url);
         } catch (e) {
-            Toast.show({ label: 'Download failed', message: e?.message || 'Unable to download', variant: 'warning' });
+            Toast.show({
+                label: 'Download failed',
+                message: e?.message || 'Unable to download',
+                variant: 'warning',
+            });
         }
     };
 
@@ -173,20 +185,20 @@ export default class MessageList extends ToolkitElement {
         if (!needle) return this.bufferMessages;
 
         if (this.filterMode === FILTER_MODES.ID) {
-            return this.bufferMessages.filter((x) => {
+            return this.bufferMessages.filter(x => {
                 const replayId = x?.content?.data?.event?.replayId;
                 return checkIfPresent(`${x.id}`, needle) || checkIfPresent(`${replayId}`, needle);
             });
         }
 
         if (this.filterMode === FILTER_MODES.UUID) {
-            return this.bufferMessages.filter((x) =>
+            return this.bufferMessages.filter(x =>
                 checkIfPresent(`${x?.content?.data?.event?.EventUuid || ''}`, needle)
             );
         }
 
         if (this.filterMode === FILTER_MODES.PAYLOAD_CONTAINS) {
-            return this.bufferMessages.filter((x) => {
+            return this.bufferMessages.filter(x => {
                 const searchText =
                     x?._searchText ||
                     (() => {
@@ -205,7 +217,7 @@ export default class MessageList extends ToolkitElement {
             const path = (rawPath || '').trim();
             const expected = (rawExpected || '').trim();
             if (!path) return this.bufferMessages;
-            return this.bufferMessages.filter((x) => {
+            return this.bufferMessages.filter(x => {
                 const value = this.getValueByPath(x?.content || x, path);
                 if (expected) {
                     return checkIfPresent(`${value}`, expected);
@@ -258,7 +270,8 @@ export default class MessageList extends ToolkitElement {
     }
 
     get filterPlaceholder() {
-        if (this.filterMode === FILTER_MODES.JSON_PATH) return 'path:value (e.g. data.event.replayId:123)';
+        if (this.filterMode === FILTER_MODES.JSON_PATH)
+            return 'path:value (e.g. data.event.replayId:123)';
         if (this.filterMode === FILTER_MODES.PAYLOAD_CONTAINS) return 'Search within payload JSON';
         if (this.filterMode === FILTER_MODES.UUID) return 'Search by EventUuid';
         return 'Search by Id or ReplayId';

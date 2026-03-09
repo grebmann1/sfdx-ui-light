@@ -31,8 +31,9 @@ export function searchDirectories(searchTerm, tree, expandedMap = {}, options = 
     }
     flatten(tree);
     // 2. Filter flat list by search term
-    const getItemSearchString = (item) => {
-        const isPrimitive = (v) => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
+    const getItemSearchString = item => {
+        const isPrimitive = v =>
+            typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
         const values = [];
         for (const field of searchFields) {
             const value = item && item[field];

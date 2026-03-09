@@ -2,8 +2,6 @@ import { LightningElement, api } from 'lwc';
 import { classSet } from 'shared/utils';
 
 export default class ApiAppSettings extends LightningElement {
-
-    
     @api isFullWidth = false;
     @api isTitleHidden = false;
     @api isSectionHeaderHidden = false;
@@ -26,7 +24,7 @@ export default class ApiAppSettings extends LightningElement {
         return !this.config?.api_splitter_is_horizontal;
     }
 
-    handleSplitterOrientationChange = (event) => {
+    handleSplitterOrientationChange = event => {
         this.inputfield_change({
             currentTarget: {
                 dataset: { key: 'api_splitter_is_horizontal' },
@@ -40,10 +38,10 @@ export default class ApiAppSettings extends LightningElement {
 
     get cardClass() {
         return classSet('slds-col slds-size_1-of-1 slds-p-horizontal_small')
-        .add({
-            'slds-large-size_1-of-2': !this.isFullWidth,
-        })
-        .toString();
+            .add({
+                'slds-large-size_1-of-2': !this.isFullWidth,
+            })
+            .toString();
     }
 
     get isTitleDisplayed() {

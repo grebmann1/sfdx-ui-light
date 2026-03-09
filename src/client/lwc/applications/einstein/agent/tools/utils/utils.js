@@ -1,6 +1,6 @@
 import { store } from 'core/store';
-import { store as legacyStore, store_application as legacyStore_application } from 'shared/store';
 import LOGGER from 'shared/logger';
+import { store as legacyStore, store_application as legacyStore_application } from 'shared/store';
 import { guid, isChromeExtension, getChromePort } from 'shared/utils';
 
 export function formatTabId(tabId, tabs) {
@@ -13,7 +13,7 @@ export function formatTabId(tabId, tabs) {
 
 // Helper: waitForLoaded (copied from soqlLogic.js)
 export function waitForLoaded() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
         const checkLoading = () => {
             const { application } = store.getState();
             if (!application.isLoading) {
@@ -35,15 +35,14 @@ export function wrappedNavigate(payload) {
     return legacyStore.dispatch(legacyStore_application.navigate(formattedPayload));
 }
 
-export async function openToolkit({connector,redirect}) {
-
-    const generateMessage = ({sessionInfo, params})=> ({
+export async function openToolkit({ connector, redirect }) {
+    const generateMessage = ({ sessionInfo, params }) => ({
         action: 'redirectToUrl',
         sessionId: sessionInfo.sessionId,
         serverUrl: sessionInfo.serverUrl,
         baseUrl: chrome.runtime.getURL('/views/app.html'),
         navigation: params,
-    })
+    });
 
     LOGGER.log('openToolkit', connector, redirect);
     let url = new URL(
@@ -53,8 +52,8 @@ export async function openToolkit({connector,redirect}) {
     );
 
     let isChromeProcessSuccess = false;
-    if(isChromeExtension()){
-        try{
+    if (isChromeExtension()) {
+        try {
             const port = getChromePort();
             const sessionInfo = {
                 sessionId: connector.conn.accessToken,
@@ -63,21 +62,21 @@ export async function openToolkit({connector,redirect}) {
             const params = {
                 type: 'application',
             };
-            if(redirect){
+            if (redirect) {
                 // assume the format is applicationName=api
                 params.state = {
                     applicationName: redirect.split('=')[1],
                 };
             }
-            port.postMessage(generateMessage({sessionInfo, params}));
+            port.postMessage(generateMessage({ sessionInfo, params }));
             isChromeProcessSuccess = true;
-        }catch(e){
+        } catch (e) {
             LOGGER.error('openToolkit error', e);
             //handleError(e, 'Open Toolkit Error');
             // In case of error, we let the default flow to handle it
         }
     }
-    if(!isChromeProcessSuccess){
+    if (!isChromeProcessSuccess) {
         let params = new URLSearchParams();
         params.append('sessionId', connector.conn.accessToken);
         params.append('serverUrl', connector.conn.instanceUrl);
@@ -92,7 +91,9 @@ export async function openToolkit({connector,redirect}) {
 
 const createOrAddToTabGroup = async (tab, groupName, windowId) => {
     const safeGroupName =
-        typeof groupName === 'string' && groupName.trim().length > 0 ? groupName.trim() : 'SF Toolkit';
+        typeof groupName === 'string' && groupName.trim().length > 0
+            ? groupName.trim()
+            : 'SF Toolkit';
 
     const chromeCall = (fn, ...args) =>
         new Promise((resolve, reject) => {
@@ -110,9 +111,7 @@ const createOrAddToTabGroup = async (tab, groupName, windowId) => {
             }
         });
 
-    const groups =
-        (await chromeCall(chrome.tabGroups.query, { windowId })) ||
-        [];
+    const groups = (await chromeCall(chrome.tabGroups.query, { windowId })) || [];
     const group = (Array.isArray(groups) ? groups : []).find(g => g?.title === safeGroupName);
 
     if (group?.id && tab?.id) {
@@ -135,7 +134,7 @@ const createOrAddToTabGroup = async (tab, groupName, windowId) => {
     });
 };
 
-export async function openBrowser({url,target,alias}) {
+export async function openBrowser({ url, target, alias }) {
     if (isChromeExtension()) {
         if (target === 'incognito') {
             const windows = await chrome.windows.getAll({

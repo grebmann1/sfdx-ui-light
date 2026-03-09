@@ -6,21 +6,18 @@
                 icon-name="utility:download"
                 alternative-text="Export saved"
                 title="Export saved"
-                onclick={handleExportSavedClick}
-            ></lightning-button-icon>
+                onclick={handleExportSavedClick}></lightning-button-icon>
             <lightning-button-icon
                 icon-name="utility:upload"
                 alternative-text="Import saved"
                 title="Import saved"
-                onclick={handleImportSavedClick}
-            ></lightning-button-icon>
+                onclick={handleImportSavedClick}></lightning-button-icon>
             <input
                 data-id="importSaved"
                 class="slds-hide"
                 type="file"
                 accept="application/json,.json"
-                onchange={handleImportFileChange}
-            />
+                onchange={handleImportFileChange} />
         </div>
         <lightning-tabset>
             <lightning-tab label={recentTitle}>
@@ -53,8 +50,7 @@
                                 search-fields={savedSearchFields}
                                 min-search-length="1"
                                 onselect={handleTreeSelect}
-                                ondeletefile={handleTreeDelete}
-                            ></slds-file-tree>
+                                ondeletefile={handleTreeDelete}></slds-file-tree>
                         </template>
                         <template lwc:else>
                             <illustration-research

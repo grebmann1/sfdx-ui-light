@@ -1,6 +1,11 @@
 import { LightningElement, track, api } from 'lwc';
 import { guid, isNotUndefinedOrNull, isEmpty } from 'shared/utils';
-import { CACHE_CONFIG, loadSingleExtensionConfigFromCache, saveSingleExtensionConfigToCache, getOpenAIKeyFromCache } from 'shared/cacheManager';
+import {
+    CACHE_CONFIG,
+    loadSingleExtensionConfigFromCache,
+    saveSingleExtensionConfigToCache,
+    getOpenAIKeyFromCache,
+} from 'shared/cacheManager';
 import { isTextInputLike, positionFor, positionForFallback, isMac } from './utils';
 import { checkQuery } from 'slds/hashtagDropdown';
 import LOGGER from 'shared/logger';
@@ -13,7 +18,7 @@ const getDeepActiveElement = (doc = document) => {
     }
 
     return activeElement;
-}
+};
 
 export default class InputQuickPick extends LightningElement {
     // ===== State & Configuration =====
@@ -43,7 +48,6 @@ export default class InputQuickPick extends LightningElement {
     set value(v) {
         this.searchQuery = v || '';
     }
-
 
     // ===== Getters =====
 
@@ -77,7 +81,9 @@ export default class InputQuickPick extends LightningElement {
     async loadConfig() {
         const [inputQuickPickEnabled, betaSmartInputEnabled] = await Promise.all([
             loadSingleExtensionConfigFromCache(CACHE_CONFIG.INPUT_QUICKPICK_ENABLED.key),
-            loadSingleExtensionConfigFromCache(CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key).catch(() => false),
+            loadSingleExtensionConfigFromCache(CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key).catch(
+                () => false
+            ),
         ]);
         this.enabled = inputQuickPickEnabled !== false || !!betaSmartInputEnabled;
         this.betaSmartInputEnabled = !!betaSmartInputEnabled;
@@ -88,7 +94,6 @@ export default class InputQuickPick extends LightningElement {
             this.isEnhanceEnabled = false;
         }
     }
-
 
     // ===== Keyboard Events =====
     onKeyDown = async e => {
@@ -101,7 +106,7 @@ export default class InputQuickPick extends LightningElement {
             if (isTextInputLike(target)) {
                 e.preventDefault();
                 e.stopPropagation();
-                const direction = (e.key === 'ArrowDown') ? 1 : -1;
+                const direction = e.key === 'ArrowDown' ? 1 : -1;
                 await this.applyRecentByHotkey(target, direction);
             }
             return;
@@ -123,40 +128,43 @@ export default class InputQuickPick extends LightningElement {
             return;
         }
 
-		// Cmd/Ctrl + Enter when Quick Pick is NOT open
-		if (!this.isOpen && cmdPressed && e.key === 'Enter') {
-			const target = getDeepActiveElement(document);
-			if (isTextInputLike(target)) {
-				e.preventDefault();
-				e.stopPropagation();
-				const content = (this.getCurrentValueFromTarget(target) || '').trim();
-				if (content) {
-					// Try exact REF match from cache first
-					const matched = await this.findItemByRef(content);
-					if (matched && (matched.value || '')) {
-						this.applyValueToTarget(target, matched.value || '');
-						return;
-					}
-					// Otherwise, process with AI and inject suggestion
-					try {
-						const resp = await chrome.runtime.sendMessage({ action: 'smartinput_enhance_single', prompt: content });
-						const suggestion = (resp && resp.suggestion) || '';
-						if (suggestion) {
-							this.applyValueToTarget(target, suggestion);
-							this.updateRecents({ id: guid(), value: suggestion });
-						}
-					} catch (err) {
-						console.error('--> quick enhance (closed) error', err);
-					}
-				}
-			}
-			return;
-		}
+        // Cmd/Ctrl + Enter when Quick Pick is NOT open
+        if (!this.isOpen && cmdPressed && e.key === 'Enter') {
+            const target = getDeepActiveElement(document);
+            if (isTextInputLike(target)) {
+                e.preventDefault();
+                e.stopPropagation();
+                const content = (this.getCurrentValueFromTarget(target) || '').trim();
+                if (content) {
+                    // Try exact REF match from cache first
+                    const matched = await this.findItemByRef(content);
+                    if (matched && (matched.value || '')) {
+                        this.applyValueToTarget(target, matched.value || '');
+                        return;
+                    }
+                    // Otherwise, process with AI and inject suggestion
+                    try {
+                        const resp = await chrome.runtime.sendMessage({
+                            action: 'smartinput_enhance_single',
+                            prompt: content,
+                        });
+                        const suggestion = (resp && resp.suggestion) || '';
+                        if (suggestion) {
+                            this.applyValueToTarget(target, suggestion);
+                            this.updateRecents({ id: guid(), value: suggestion });
+                        }
+                    } catch (err) {
+                        console.error('--> quick enhance (closed) error', err);
+                    }
+                }
+            }
+            return;
+        }
 
-		if (!this.isOpen) return;
+        if (!this.isOpen) return;
 
         const host = this.template && this.template.host;
-        const path = (typeof e.composedPath === 'function') ? e.composedPath() : [];
+        const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
         const inside = host && path.includes(host);
 
         if (cmdPressed && e.key === 'Enter') {
@@ -173,7 +181,10 @@ export default class InputQuickPick extends LightningElement {
             this.close();
             return;
         }
-        if (this.showHashtagDropdown && (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === 'Tab')) {
+        if (
+            this.showHashtagDropdown &&
+            (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === 'Tab')
+        ) {
             e.preventDefault();
             e.stopPropagation();
             const dd = this.template.querySelector('slds-hashtag-dropdown');
@@ -191,9 +202,10 @@ export default class InputQuickPick extends LightningElement {
             e.stopPropagation();
 
             const textarea = this.template.querySelector('.chat-textarea');
-            const enhanceBtn = this.isEnhanceEnabled && !this.isLoading
-                ? this.template.querySelector('.chat-input-actions-right .chat-btn')
-                : null;
+            const enhanceBtn =
+                this.isEnhanceEnabled && !this.isLoading
+                    ? this.template.querySelector('.chat-input-actions-right .chat-btn')
+                    : null;
             const candidates = [textarea, enhanceBtn].filter(Boolean);
 
             if (candidates.length === 0) {
@@ -203,15 +215,18 @@ export default class InputQuickPick extends LightningElement {
             const current = this.lastFocusedEl;
             if (candidates.length === 1) {
                 const next = candidates[0];
-                if(next?.focus) next.focus();
+                if (next?.focus) next.focus();
                 return;
             }
 
             const currentIndex = candidates.indexOf(current);
             const direction = e.shiftKey ? -1 : 1;
-            const nextIndex = currentIndex >= 0
-                ? (currentIndex + direction + candidates.length) % candidates.length
-                : (direction > 0 ? 0 : candidates.length - 1);
+            const nextIndex =
+                currentIndex >= 0
+                    ? (currentIndex + direction + candidates.length) % candidates.length
+                    : direction > 0
+                      ? 0
+                      : candidates.length - 1;
             const next = candidates[nextIndex];
             if (next?.focus) next.focus();
             return;
@@ -224,14 +239,13 @@ export default class InputQuickPick extends LightningElement {
         }
     };
 
-
     // ===== Composer-style Input Handlers =====
-    handleInput = (e) => {
+    handleInput = e => {
         this.value = e.target.value;
         this.handleMeasure(e);
     };
 
-    handleHashtagSelect = (e) => {
+    handleHashtagSelect = e => {
         e.stopPropagation();
         e.preventDefault();
         const item = e && e.detail && e.detail.item;
@@ -256,7 +270,7 @@ export default class InputQuickPick extends LightningElement {
         const ta = this.template.querySelector('.chat-textarea');
         if (ta) {
             ta.value = nextValue || '';
-            const pos = (typeof caretPos === 'number') ? caretPos : (ta.value || '').length;
+            const pos = typeof caretPos === 'number' ? caretPos : (ta.value || '').length;
             if (ta.setSelectionRange) {
                 ta.setSelectionRange(pos, pos);
             }
@@ -264,31 +278,37 @@ export default class InputQuickPick extends LightningElement {
         }
     };
 
-
     handleReset = () => {
         this.handleSearchReset();
     };
 
-	handleEnhance = async () => {
-		const value = (this.searchQuery || '').trim();
-		if (!value) return;
-		LOGGER.debug('[SmartInput AI] handleEnhance start', { promptLength: value.length, isEnhanceEnabled: this.isEnhanceEnabled });
-		// Before calling AI, if the current input equals a REF, use it directly
-		try {
-			const matched = await this.findItemByRef(value);
-			if (matched && (matched.value || '')) {
-				LOGGER.debug('[SmartInput AI] handleEnhance skipped: matched REF', { ref: matched.ref });
-				this.applyValue(matched);
-				return;
-			}
-		} catch (_) { /* ignore ref lookup errors and fallback to AI */ }
-		try {
-			this.isLoading = true;
-			await this.handleSearchEnhance();
-		} finally {
-			this.isLoading = false;
-		}
-	};
+    handleEnhance = async () => {
+        const value = (this.searchQuery || '').trim();
+        if (!value) return;
+        LOGGER.debug('[SmartInput AI] handleEnhance start', {
+            promptLength: value.length,
+            isEnhanceEnabled: this.isEnhanceEnabled,
+        });
+        // Before calling AI, if the current input equals a REF, use it directly
+        try {
+            const matched = await this.findItemByRef(value);
+            if (matched && (matched.value || '')) {
+                LOGGER.debug('[SmartInput AI] handleEnhance skipped: matched REF', {
+                    ref: matched.ref,
+                });
+                this.applyValue(matched);
+                return;
+            }
+        } catch (_) {
+            /* ignore ref lookup errors and fallback to AI */
+        }
+        try {
+            this.isLoading = true;
+            await this.handleSearchEnhance();
+        } finally {
+            this.isLoading = false;
+        }
+    };
 
     handleSave = async () => {
         await this.handleSearchInjectValue();
@@ -297,7 +317,7 @@ export default class InputQuickPick extends LightningElement {
     onDocumentMouseDown = e => {
         if (!this.isOpen) return;
         const host = this.template && this.template.host;
-        const path = (typeof e.composedPath === 'function') ? e.composedPath() : [];
+        const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
         const clickedInsideHost = host && path.includes(host);
         if (clickedInsideHost) return;
         // Keep open if clicking the original input target
@@ -338,10 +358,10 @@ export default class InputQuickPick extends LightningElement {
                 try {
                     ta.value = this.value || '';
                     const len = (ta.value || '').length;
-                    if(ta.setSelectionRange) {
+                    if (ta.setSelectionRange) {
                         ta.setSelectionRange(len, len);
                     }
-                } catch (_) { }
+                } catch (_) {}
                 this.lastFocusedEl = ta;
             }
         });
@@ -371,7 +391,7 @@ export default class InputQuickPick extends LightningElement {
         if (!this.activeInput) return;
         const input = this.activeInput;
         input.focus();
-        const val = typeof valueOrItem === 'string' ? valueOrItem : (valueOrItem?.value || '');
+        const val = typeof valueOrItem === 'string' ? valueOrItem : valueOrItem?.value || '';
         input.value = val;
         input.dispatchEvent(new Event('input', { bubbles: true }));
         input.dispatchEvent(new Event('change', { bubbles: true }));
@@ -388,7 +408,6 @@ export default class InputQuickPick extends LightningElement {
     }
 
     // ===== DOM Helpers =====
-    
 
     getCurrentValueFromTarget(target) {
         if (!target) return '';
@@ -408,8 +427,11 @@ export default class InputQuickPick extends LightningElement {
 
     async loadSavedCategoryFilter() {
         try {
-            const saved = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.INPUT_QUICKPICK_SELECTED_CATEGORY.key);
-            const exists = saved && (saved === 'ALL' || (this.categories || []).some(c => c.id === saved));
+            const saved = await loadSingleExtensionConfigFromCache(
+                CACHE_CONFIG.INPUT_QUICKPICK_SELECTED_CATEGORY.key
+            );
+            const exists =
+                saved && (saved === 'ALL' || (this.categories || []).some(c => c.id === saved));
             this.categoryFilter = exists ? saved : 'ALL';
         } catch (_) {
             this.categoryFilter = 'ALL';
@@ -438,29 +460,46 @@ export default class InputQuickPick extends LightningElement {
     handleSearchEnhance = async () => {
         const value = (this.searchQuery || '').trim();
         if (!value) return;
-        LOGGER.debug('[SmartInput AI] handleSearchEnhance sending to background', { promptLength: value.length });
+        LOGGER.debug('[SmartInput AI] handleSearchEnhance sending to background', {
+            promptLength: value.length,
+        });
         try {
-            const resp = await chrome.runtime.sendMessage({ action: 'smartinput_enhance_single', prompt: value });
+            const resp = await chrome.runtime.sendMessage({
+                action: 'smartinput_enhance_single',
+                prompt: value,
+            });
             const suggestion = (resp && resp.suggestion) || '';
             const errorFromBackend = resp && resp.error;
             if (errorFromBackend) {
-                LOGGER.debug('[SmartInput AI] handleSearchEnhance backend error', { error: errorFromBackend });
+                LOGGER.debug('[SmartInput AI] handleSearchEnhance backend error', {
+                    error: errorFromBackend,
+                });
             }
             if (suggestion) {
-                LOGGER.debug('[SmartInput AI] handleSearchEnhance success', { suggestionLength: suggestion.length });
+                LOGGER.debug('[SmartInput AI] handleSearchEnhance success', {
+                    suggestionLength: suggestion.length,
+                });
                 this.applyValue(suggestion);
             } else if (!errorFromBackend) {
-                LOGGER.debug('[SmartInput AI] handleSearchEnhance no suggestion and no error in response', { resp: !!resp });
+                LOGGER.debug(
+                    '[SmartInput AI] handleSearchEnhance no suggestion and no error in response',
+                    { resp: !!resp }
+                );
             }
         } catch (e) {
-            LOGGER.debug('[SmartInput AI] handleSearchEnhance exception', { message: e?.message, name: e?.name });
+            LOGGER.debug('[SmartInput AI] handleSearchEnhance exception', {
+                message: e?.message,
+                name: e?.name,
+            });
             console.error('--> handleSearchEnhance error', e);
         }
     };
 
     // ===== Recents =====
     async loadRecents() {
-        const recents = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.INPUT_QUICKPICK_RECENTS.key);
+        const recents = await loadSingleExtensionConfigFromCache(
+            CACHE_CONFIG.INPUT_QUICKPICK_RECENTS.key
+        );
         if (Array.isArray(recents)) {
             this.recentItems = recents;
         }
@@ -526,7 +565,7 @@ export default class InputQuickPick extends LightningElement {
             }
             // Fallback
             target.focus?.();
-        } catch (_) { }
+        } catch (_) {}
     }
 
     async applyRecentByHotkey(target, direction) {
@@ -553,104 +592,120 @@ export default class InputQuickPick extends LightningElement {
         if (search) nodes.push(search);
         const items = Array.from(this.template.querySelectorAll('.sf-toolkit-quickpick-item'));
         nodes.push(...items);
-        const actions = Array.from(this.template.querySelectorAll('.chat-input-actions-right .chat-btn'));
+        const actions = Array.from(
+            this.template.querySelectorAll('.chat-input-actions-right .chat-btn')
+        );
         nodes.push(...actions);
         return nodes.filter(Boolean);
     }
 
-    getAllItems = (categories) => {
+    getAllItems = categories => {
         return categories.flatMap(c => [c, ...(c.items || [])]);
-    }
+    };
 
     formatRef(ref) {
         return ref && ref.startsWith('#') ? `${ref.toUpperCase()}` : `#${ref.toUpperCase()}`;
     }
 
     formatItem(it) {
-        return { ...it, label: it.value, parentId: it.parentId, ...(it.ref ? { ref: this.formatRef(it.ref) } : {}) };
+        return {
+            ...it,
+            label: it.value,
+            parentId: it.parentId,
+            ...(it.ref ? { ref: this.formatRef(it.ref) } : {}),
+        };
     }
 
     formatCategory(c) {
         return { ...c, label: c.name, items: c.items.map(it => this.formatItem(it)) };
     }
 
-	// Lookup: find item by REF in cached Smart Input data or Recents
-	async findItemByRef(refInput) {
-		const raw = (refInput || '').trim();
-		if (!raw) return null;
-		const normalized = this.formatRef(raw);
-		try {
-			// Search categories/items from cache
-			const data = await loadSingleExtensionConfigFromCache(
-				CACHE_CONFIG.INPUT_QUICKPICK_DATA.key,
-				(d) => ({
-					categories: sanitizeCategories(d?.categories).map(c => ({
-						...c,
-						...(c.items && { items: sanitizeItems(c.items) })
-					}))
-				})
-			);
-			const categories = data?.categories || [];
-			for (const c of categories) {
-				for (const it of c.items || []) {
-					if (it?.ref && this.formatRef(it.ref) === normalized) {
-						return { ...it, ref: this.formatRef(it.ref) };
-					}
-				}
-			}
-		} catch (_) { /* ignore and continue to search recents */ }
+    // Lookup: find item by REF in cached Smart Input data or Recents
+    async findItemByRef(refInput) {
+        const raw = (refInput || '').trim();
+        if (!raw) return null;
+        const normalized = this.formatRef(raw);
+        try {
+            // Search categories/items from cache
+            const data = await loadSingleExtensionConfigFromCache(
+                CACHE_CONFIG.INPUT_QUICKPICK_DATA.key,
+                d => ({
+                    categories: sanitizeCategories(d?.categories).map(c => ({
+                        ...c,
+                        ...(c.items && { items: sanitizeItems(c.items) }),
+                    })),
+                })
+            );
+            const categories = data?.categories || [];
+            for (const c of categories) {
+                for (const it of c.items || []) {
+                    if (it?.ref && this.formatRef(it.ref) === normalized) {
+                        return { ...it, ref: this.formatRef(it.ref) };
+                    }
+                }
+            }
+        } catch (_) {
+            /* ignore and continue to search recents */
+        }
 
-		// Search recents
-		try {
-			const recents = await this.loadRecents();
-			for (const it of recents || []) {
-				if (it?.ref && this.formatRef(it.ref) === normalized) {
-					return it;
-				}
-			}
-		} catch (_) { /* ignore */ }
+        // Search recents
+        try {
+            const recents = await this.loadRecents();
+            for (const it of recents || []) {
+                if (it?.ref && this.formatRef(it.ref) === normalized) {
+                    return it;
+                }
+            }
+        } catch (_) {
+            /* ignore */
+        }
 
-		return null;
-	}
+        return null;
+    }
 
     // New: Load Smart Input categories and items from cache
     async loadSmartInputItems() {
-        const data = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.INPUT_QUICKPICK_DATA.key,(data) => ({
-            categories: sanitizeCategories(data?.categories).map(c => {
-                return {
-                    ...c,
-                    ...(c.items && { items: sanitizeItems(c.items).map(it => this.formatItem(it)) })
-                }
-            }),
-            activeCategoryId: data?.activeCategoryId
-        }));
+        const data = await loadSingleExtensionConfigFromCache(
+            CACHE_CONFIG.INPUT_QUICKPICK_DATA.key,
+            data => ({
+                categories: sanitizeCategories(data?.categories).map(c => {
+                    return {
+                        ...c,
+                        ...(c.items && {
+                            items: sanitizeItems(c.items).map(it => this.formatItem(it)),
+                        }),
+                    };
+                }),
+                activeCategoryId: data?.activeCategoryId,
+            })
+        );
 
         // We manually remove the Recent category because it's not needed (Legacy code, not needed anymore)
-        const categories = ((data?.categories) ?? []).map(c => this.formatCategory(c)).filter(c => c.name !== 'Recent');
+        const categories = (data?.categories ?? [])
+            .map(c => this.formatCategory(c))
+            .filter(c => c.name !== 'Recent');
         const recents = (await this.loadRecents()).map(it => this.formatItem(it));
         const allItems = this.getAllItems(categories);
         const favorites = allItems.filter(it => it.isFavorite);
 
-        
         // Normalize
-        
+
         this.categories = [
             { id: guid(), name: 'Recent', label: 'Recent', items: recents || [] },
             { id: guid(), name: 'Favorites', label: 'Favorites', items: favorites || [] },
-            { id: guid(), name: 'Categories', label: 'Categories', items: categories || [] }
-        ]
+            { id: guid(), name: 'Categories', label: 'Categories', items: categories || [] },
+        ];
     }
-
 
     /** Mirror */
 
-    handleMeasure = (evt) => {
+    handleMeasure = evt => {
         const input = evt.target; // native <input>
-        const coords = this.getCaretCoordinates(input, {offsetTop: 10, offsetLeft: 0});
+        const coords = this.getCaretCoordinates(input, { offsetTop: 10, offsetLeft: 0 });
         this.pos = coords;
     };
 
-    getCaretCoordinates(inputEl, {offsetTop = 0, offsetLeft = 0}) {
+    getCaretCoordinates(inputEl, { offsetTop = 0, offsetLeft = 0 }) {
         const selectionStart = inputEl.selectionStart ?? 0;
 
         // Build a mirror that matches the input's text rendering
@@ -704,7 +759,4 @@ export default class InputQuickPick extends LightningElement {
             pageTop: Math.round(pageTop),
         };
     }
-
 }
-
-

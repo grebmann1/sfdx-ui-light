@@ -1,5 +1,6 @@
-import { z } from 'zod';
 import { store, METADATA } from 'core/store';
+import { z } from 'zod';
+
 import { waitForLoaded, wrappedNavigate, formatTabId } from './utils/utils.js';
 const { tool } = window.OpenAIAgentsBundle?.Agents || {};
 // Navigate to Metadata Explorer
@@ -32,13 +33,17 @@ async function listMetadataTypes() {
 
 // List all records for a metadata type
 async function listMetadataRecords({ sobject }) {
-    const result = await store.dispatch(METADATA.reduxSlice.actions.fetchSpecificMetadata({ sobject }));
+    const result = await store.dispatch(
+        METADATA.reduxSlice.actions.fetchSpecificMetadata({ sobject })
+    );
     return { success: true, records: result.payload.metadata.records };
 }
 
 // Get details/files for a specific metadata record
 async function getMetadataRecord({ sobject, recordId }) {
-    const result = await store.dispatch(METADATA.reduxSlice.actions.fetchMetadataRecord({ sobject, param1: recordId }));
+    const result = await store.dispatch(
+        METADATA.reduxSlice.actions.fetchMetadataRecord({ sobject, param1: recordId })
+    );
     return { success: true, ...result.payload };
 }
 
@@ -46,7 +51,9 @@ async function getMetadataRecord({ sobject, recordId }) {
 async function describeSObject({ sobject }) {
     // This assumes a Redux action or API exists to fetch describe info. Replace with actual implementation if needed.
     // Example: METADATA.reduxSlice.actions.fetchSObjectDescribe({ sobject })
-    const result = await store.dispatch(METADATA.reduxSlice.actions.fetchSObjectDescribe({ sobject }));
+    const result = await store.dispatch(
+        METADATA.reduxSlice.actions.fetchSObjectDescribe({ sobject })
+    );
     return { success: true, describe: result.payload.describe };
 }
 

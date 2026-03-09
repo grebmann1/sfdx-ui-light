@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
-import { lowerCaseKey, guid, isUndefinedOrNull } from 'shared/utils';
 import { CACHE_DOCUMENTS } from 'shared/cacheManager';
+import { lowerCaseKey, guid, isUndefinedOrNull } from 'shared/utils';
 
 // Adapters
 export const queryFileAdapter = createEntityAdapter();
@@ -131,7 +131,10 @@ const openapiSchemaFileSlice = createSlice({
     initialState: openapiSchemaFileAdapter.getInitialState(),
     reducers: {
         loadFromStorage: (state, action) => {
-            openapiSchemaFileAdapter.setAll(state,loadFromStorage(CACHE_DOCUMENTS.OPENAPI_SCHEMAS_FILES));
+            openapiSchemaFileAdapter.setAll(
+                state,
+                loadFromStorage(CACHE_DOCUMENTS.OPENAPI_SCHEMAS_FILES)
+            );
         },
         upsertOne: (state, action) => {
             openapiSchemaFileAdapter.upsertOne(state, formatData(action.payload));
@@ -201,10 +204,7 @@ const recentSlice = createSlice({
                 channel,
                 ...state.platformEvents.filter(q => q !== channel).slice(0, MAX_RECENT - 1),
             ];
-            setInLocalStorage(
-                `${alias}-${RECENT_PLATFORM_EVENT_KEY}`,
-                recentPlatformEventState
-            );
+            setInLocalStorage(`${alias}-${RECENT_PLATFORM_EVENT_KEY}`, recentPlatformEventState);
             state.platformEvents = recentPlatformEventState;
         },
         saveRecordViewers: (state, action) => {
@@ -215,10 +215,7 @@ const recentSlice = createSlice({
                     .filter(q => q.recordId !== item.recordId)
                     .slice(0, MAX_RECENT - 1),
             ];
-            setInLocalStorage(
-                `${alias}-${RECENT_RECORD_VIEWER_KEY}`,
-                recentRecordViewerState
-            );
+            setInLocalStorage(`${alias}-${RECENT_RECORD_VIEWER_KEY}`, recentRecordViewerState);
             state.recordViewers = recentRecordViewerState;
         },
     },

@@ -3,29 +3,41 @@
         <!-- external search controls -->
     </template>
     <template lwc:else>
-        <lightning-input class="slds-m-bottom_small slds-m-around_small search-input" name={i18n.Search} type="search" placeholder={i18n.SearchPlaceholder}
-        value={searchValue} onkeyup={handleSearch} onchange={handleSearch} label={i18n.Search} variant="label-hidden"></lightning-input>
+        <lightning-input
+            class="slds-m-bottom_small slds-m-around_small search-input"
+            name={i18n.Search}
+            type="search"
+            placeholder={i18n.SearchPlaceholder}
+            value={searchValue}
+            onkeyup={handleSearch}
+            onchange={handleSearch}
+            label={i18n.Search}
+            variant="label-hidden"></lightning-input>
     </template>
     <div class="file-explorer-container full-height">
         <ul lwc:if={isTreeVisible} class="slds-tree" role="tree">
             <template for:each={computedTree} for:item="item">
                 <li key={item.id}>
-                    <slds-file-tree-item is-first
-                        item={item} 
-                        expanded={item.expanded} 
+                    <slds-file-tree-item
+                        is-first
+                        item={item}
+                        expanded={item.expanded}
                         selected={item.selected}
                         is-delete-disabled={isDeleteDisabled}
-                        ontoggle={handleToggle} 
-                        onselect={handleSelect} 
-                        search-value={searchValue} 
+                        ontoggle={handleToggle}
+                        onselect={handleSelect}
+                        search-value={searchValue}
                         ondeletefile={handleDeleteFile}
                         onexpandall={handleExpandAll}
                         oncollapseall={handleCollapseAll}
-                        is-folder-selectable={isFolderSelectable}
-                    ></slds-file-tree-item>
+                        is-folder-selectable={isFolderSelectable}></slds-file-tree-item>
                 </li>
             </template>
         </ul>
-        <div lwc:else class="slds-text-body_regular slds-p-around_medium slds-align_absolute-center">{i18n.NoFiles}</div>
+        <div
+            lwc:else
+            class="slds-text-body_regular slds-p-around_medium slds-align_absolute-center">
+            {i18n.NoFiles}
+        </div>
     </div>
 </template>

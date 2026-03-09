@@ -1,10 +1,11 @@
 // integrationMatrix.js
-import { PLATFORM, getCurrentPlatform } from './platformService';
+import { getCurrentPlatform } from './platformService';
 
+// String literals to avoid circular dependency (platformService → utils → integrationMatrix)
 const matrix = {
-    [PLATFORM.WEB]: ['OAUTH', 'USERNAME', 'REDIRECT', 'SESSION'],
-    [PLATFORM.CHROME]: ['OAUTH', 'USERNAME', 'REDIRECT', 'SESSION'],
-    [PLATFORM.ELECTRON]: ['OAUTH', 'USERNAME', 'SFDX', 'SESSION'],
+    web: ['OAUTH', 'USERNAME', 'REDIRECT', 'SESSION'],
+    chrome: ['OAUTH', 'USERNAME', 'REDIRECT', 'SESSION'],
+    electron: ['OAUTH', 'USERNAME', 'SFDX', 'SESSION'],
 };
 
 export function getSupportedCredentialTypes() {

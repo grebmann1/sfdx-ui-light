@@ -2,7 +2,11 @@ import { api, LightningElement, wire } from 'lwc';
 import { store as legacyStore, store_application } from 'shared/store';
 import { connectStore, store, EINSTEIN, APPLICATION } from 'core/store';
 
-import { normalizeString as normalize,registerChromePort,disconnectChromePort } from 'shared/utils';
+import {
+    normalizeString as normalize,
+    registerChromePort,
+    disconnectChromePort,
+} from 'shared/utils';
 import { PANELS } from 'extension/utils';
 import { CACHE_CONFIG, loadExtensionConfigFromCache } from 'shared/cacheManager';
 
@@ -104,25 +108,25 @@ export default class Default extends LightningElement {
         const openaiUrl = configuration[CACHE_CONFIG.OPENAI_URL.key];
         const mistralKey = configuration[CACHE_CONFIG.MISTRAL_KEY.key];
         const aiProvider = configuration[CACHE_CONFIG.AI_PROVIDER.key];
-        LOGGER.debug('loadFromCache - openaiKey',openaiKey);
-        LOGGER.debug('loadFromCache - openaiUrl',openaiUrl);
-        LOGGER.debug('loadFromCache - mistralKey',mistralKey);
-        LOGGER.debug('loadFromCache - aiProvider',aiProvider);
-        if(openaiKey) {
-            store.dispatch(APPLICATION.reduxSlice.actions.updateOpenAIKey({ openaiKey,openaiUrl }));
+        LOGGER.debug('loadFromCache - openaiKey', openaiKey);
+        LOGGER.debug('loadFromCache - openaiUrl', openaiUrl);
+        LOGGER.debug('loadFromCache - mistralKey', mistralKey);
+        LOGGER.debug('loadFromCache - aiProvider', aiProvider);
+        if (openaiKey) {
+            store.dispatch(
+                APPLICATION.reduxSlice.actions.updateOpenAIKey({ openaiKey, openaiUrl })
+            );
         }
-        if(mistralKey) {
+        if (mistralKey) {
             store.dispatch(APPLICATION.reduxSlice.actions.updateMistralKey({ mistralKey }));
         }
-        if(aiProvider) {
+        if (aiProvider) {
             store.dispatch(APPLICATION.reduxSlice.actions.updateAiProvider({ aiProvider }));
         }
     };
 
     connectToBackground = () => {
-        const port = registerChromePort(
-            chrome.runtime.connect({ name: 'sf-toolkit-sidepanel' })
-        );
+        const port = registerChromePort(chrome.runtime.connect({ name: 'sf-toolkit-sidepanel' }));
         // Copy for global access
         port.onDisconnect.addListener(() => {
             // Optionally handle disconnect in content script
@@ -139,12 +143,14 @@ export default class Default extends LightningElement {
             } else if (message.action === 'show_input_quickpick') {
                 // Ensure default panel is shown and set application to quickpick
                 if (!this.betaSmartInputEnabled) return;
-                legacyStore.dispatch(store_application.fakeNavigate({
-                    type: 'application',
-                    state: {
-                        applicationName: 'smartinput',
-                    },
-                }));
+                legacyStore.dispatch(
+                    store_application.fakeNavigate({
+                        type: 'application',
+                        state: {
+                            applicationName: 'smartinput',
+                        },
+                    })
+                );
             }
         });
     };

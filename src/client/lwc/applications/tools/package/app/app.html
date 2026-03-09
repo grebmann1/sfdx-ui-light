@@ -14,8 +14,7 @@
                         icon-name="utility:knowledge_base"
                         size="large"
                         onclick={handleLeftToggle}
-                        tooltip="Display the Metadata Catalog."
-                    ></lightning-button-icon-stateful>
+                        tooltip="Display the Metadata Catalog."></lightning-button-icon-stateful>
                 </p>
                 <div slot="subactions" class="slds-builder-toolbar__actions">
                     <lightning-button
@@ -66,7 +65,8 @@
 
             <!-- Left Panel -->
             <div slot="left" class="slds-full-height slds-full-width slds-flex-column">
-                <div class="sf-left-panel-header slds-grid slds-grid_align-spread slds-p-around_x-small">
+                <div
+                    class="sf-left-panel-header slds-grid slds-grid_align-spread slds-p-around_x-small">
                     <div class="slds-text-title_caps slds-truncate" title="Metadata Catalog">
                         Metadata Catalog
                     </div>
@@ -95,7 +95,9 @@
             </div>
 
             <article class="full-page-body slds-card">
-                <div class="slds-p-around_small slds-is-relative slds-full-width slds-full-height slds-flex-column package-article-body" style="min-height: 200px">
+                <div
+                    class="slds-p-around_small slds-is-relative slds-full-width slds-full-height slds-flex-column package-article-body"
+                    style="min-height: 200px">
                     <template lwc:if={isLoading}>
                         <slds-spinner alternative-text="Loading" size="small"></slds-spinner>
                     </template>

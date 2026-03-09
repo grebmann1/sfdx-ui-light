@@ -1,4 +1,5 @@
 import { getCurrentTab, isEmpty } from 'shared/utils';
+
 import {
     SOMA_LOCAL_DOMAIN_REGEX,
     WORKSPACE_NO_MY_DOMAIN_REGEX,

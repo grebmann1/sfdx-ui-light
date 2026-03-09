@@ -8,31 +8,37 @@ export default class Item extends LightningElement {
     @api isHighlighted = false;
 
     handleEditClick = () => {
-        this.dispatchEvent(new CustomEvent('editclick', {
-            detail: { id: this.item?.id },
-            bubbles: true,
-            composed: true,
-        }));
+        this.dispatchEvent(
+            new CustomEvent('editclick', {
+                detail: { id: this.item?.id },
+                bubbles: true,
+                composed: true,
+            })
+        );
     };
 
     handleDeleteClick = () => {
-        this.dispatchEvent(new CustomEvent('deleteclick', {
-            detail: { id: this.item?.id },
-            bubbles: true,
-            composed: true,
-        }));
+        this.dispatchEvent(
+            new CustomEvent('deleteclick', {
+                detail: { id: this.item?.id },
+                bubbles: true,
+                composed: true,
+            })
+        );
     };
 
-    handleEditChange = (e) => {
+    handleEditChange = e => {
         const value = e.target.value;
-        this.dispatchEvent(new CustomEvent('editchange', {
-            detail: { value, id: this.item?.id },
-            bubbles: true,
-            composed: true,
-        }));
+        this.dispatchEvent(
+            new CustomEvent('editchange', {
+                detail: { value, id: this.item?.id },
+                bubbles: true,
+                composed: true,
+            })
+        );
     };
 
-    handleKeyDown = (e) => {
+    handleKeyDown = e => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             this.handleEditSave();
@@ -40,19 +46,23 @@ export default class Item extends LightningElement {
     };
 
     handleEditSave = () => {
-        this.dispatchEvent(new CustomEvent('editsave', {
-            detail: { id: this.item?.id },
-            bubbles: true,
-            composed: true,
-        }));
+        this.dispatchEvent(
+            new CustomEvent('editsave', {
+                detail: { id: this.item?.id },
+                bubbles: true,
+                composed: true,
+            })
+        );
     };
 
     handleEditCancel = () => {
-        this.dispatchEvent(new CustomEvent('editcancel', {
-            detail: { id: this.item?.id },
-            bubbles: true,
-            composed: true,
-        }));
+        this.dispatchEvent(
+            new CustomEvent('editcancel', {
+                detail: { id: this.item?.id },
+                bubbles: true,
+                composed: true,
+            })
+        );
     };
 
     handleCopyClick = () => {
@@ -64,29 +74,34 @@ export default class Item extends LightningElement {
     };
 
     handleApplyClick = () => {
-        this.dispatchEvent(new CustomEvent('applyclick', {
-            detail: { item: this.item },
-            bubbles: true,
-            composed: true,
-        }));
+        this.dispatchEvent(
+            new CustomEvent('applyclick', {
+                detail: { item: this.item },
+                bubbles: true,
+                composed: true,
+            })
+        );
     };
 
     handleFavoriteToggle = () => {
-        this.dispatchEvent(new CustomEvent('favoritechange', {
-            detail: { id: this.item?.id },
-            bubbles: true,
-            composed: true,
-        }));
+        this.dispatchEvent(
+            new CustomEvent('favoritechange', {
+                detail: { id: this.item?.id },
+                bubbles: true,
+                composed: true,
+            })
+        );
     };
 
     /** Getters */
 
     get itemClass() {
-        return classSet('slds-box slds-m-vertical_x-small slds-grid slds-grid_align-spread slds-grid_vertical-align-center')
-        .add({
-            'smartinput-item-highlighted': this.isHighlighted,
-        }).toString();
+        return classSet(
+            'slds-box slds-m-vertical_x-small slds-grid slds-grid_align-spread slds-grid_vertical-align-center'
+        )
+            .add({
+                'smartinput-item-highlighted': this.isHighlighted,
+            })
+            .toString();
     }
 }
-
-

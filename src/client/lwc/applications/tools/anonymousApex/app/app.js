@@ -411,7 +411,10 @@ export default class App extends ToolkitElement {
         this.isApexRunning = true;
         try {
             const bodyLength = this.refs?.editor?.currentModel?.getValue()?.length || 0;
-            Analytics.trackAction('anonymousApex', 'execute', { alias: this.alias, body_length: bodyLength });
+            Analytics.trackAction('anonymousApex', 'execute', {
+                alias: this.alias,
+                body_length: bodyLength,
+            });
         } catch (e) {
             // ignore analytics errors
         }

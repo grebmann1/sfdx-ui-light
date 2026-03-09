@@ -34,7 +34,9 @@
                         Errors: {formattedErrorCount} | {latestErrorMessage}
                     </span>
                 </template>
-                <h2 class="slds-truncate slds-m-left_x-small">{versionFormatted} {salesforceVersionFormatted}</h2>
+                <h2 class="slds-truncate slds-m-left_x-small">
+                    {versionFormatted} {salesforceVersionFormatted}
+                </h2>
             </li>
         </ul>
         <template lwc:if={isErrorPanelOpen}>
@@ -71,22 +73,22 @@
                         </button>
                     </div>
                 </div>
-                <div class="footer-error-filter slds-p-around_x-small slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                <div
+                    class="footer-error-filter slds-p-around_x-small slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
                     <input
                         type="text"
                         class="slds-input"
                         placeholder="Filter errors..."
                         value={filterText}
                         oninput={handleFilterInput}
-                        style="width: 80%; font-size: 0.95em; margin-right: 8px;"/>
+                        style="width: 80%; font-size: 0.95em; margin-right: 8px" />
                     <lightning-button-icon
                         icon-name="utility:delete"
                         alternative-text="Clear all errors"
                         title="Clear all errors"
                         onclick={handleClearErrors}
                         class="slds-m-left_x-small"
-                        variant="bare"
-                    ></lightning-button-icon>
+                        variant="bare"></lightning-button-icon>
                 </div>
                 <div class="slds-utility-panel__body footer-error-list-panel slds-flex-column">
                     <template lwc:if={filteredErrors}>
@@ -96,10 +98,15 @@
                                     key={error.id}
                                     class={error.class}
                                     data-id={error.id}
-                                    onclick={handleErrorItemClick}
-                                >
-                                    <span class="footer-error-list-time slds-text-color_weak slds-text-font_monospace slds-p-left_x-small">[{error.formattedTime}]</span>
-                                    <span class="footer-error-list-message slds-text-color_error slds-p-left_x-small slds-truncate">{error.message}</span>
+                                    onclick={handleErrorItemClick}>
+                                    <span
+                                        class="footer-error-list-time slds-text-color_weak slds-text-font_monospace slds-p-left_x-small">
+                                        [{error.formattedTime}]
+                                    </span>
+                                    <span
+                                        class="footer-error-list-message slds-text-color_error slds-p-left_x-small slds-truncate">
+                                        {error.message}
+                                    </span>
                                 </li>
                             </template>
                         </ul>
@@ -120,12 +127,12 @@
                                 </div>
                                 <div class="slds-m-top_x-small slds-flex-column slds-fill-height">
                                     <strong>Details:</strong>
-                                    <div class="footer-error-details-block slds-flex-column slds-fill-height">
+                                    <div
+                                        class="footer-error-details-block slds-flex-column slds-fill-height">
                                         <pre class="errorDetails">{selectedError.details}</pre>
                                     </div>
                                 </div>
                             </div>
-                            
                         </div>
                     </template>
                 </div>

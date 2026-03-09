@@ -1,11 +1,7 @@
 import LightningModal from 'lightning/modal';
 import { api, track } from 'lwc';
 import { renameConfiguration, notificationService, validateInputs } from 'connection/utils';
-import {
-    isEmpty,
-    isNotUndefinedOrNull,
-    checkIfPresent,
-} from 'shared/utils';
+import { isEmpty, isNotUndefinedOrNull, checkIfPresent } from 'shared/utils';
 import { buildConnectionShareMessage } from 'connection/shareUtils';
 
 const { showToast, handleError } = notificationService;

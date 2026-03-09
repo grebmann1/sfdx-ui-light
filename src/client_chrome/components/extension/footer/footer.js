@@ -31,8 +31,7 @@ export default class Footer extends LightningElement {
         }
     }
 
-    connectedCallback() {
-    }
+    connectedCallback() {}
 
     /** Methods **/
 
@@ -210,7 +209,10 @@ export default class Footer extends LightningElement {
     }
 
     get hasShortcutHints() {
-        return !this.isBlankValue(this.overlayShortcutFormatted) || !this.isBlankValue(this.panelShortcutFormatted);
+        return (
+            !this.isBlankValue(this.overlayShortcutFormatted) ||
+            !this.isBlankValue(this.panelShortcutFormatted)
+        );
     }
 
     get hasShortcutAndVersion() {

@@ -31,7 +31,11 @@
 }
 
 .connection-pill_connected {
-    border-color: color-mix(in oklab, var(--slds-g-color-success-base-50, #2e844a), transparent 60%);
+    border-color: color-mix(
+        in oklab,
+        var(--slds-g-color-success-base-50, #2e844a),
+        transparent 60%
+    );
     background: color-mix(in oklab, var(--slds-g-color-success-base-50, #2e844a), white 90%);
     color: var(--slds-g-color-success-base-50, #2e844a);
 }
@@ -40,7 +44,11 @@
 }
 
 .connection-pill_connecting {
-    border-color: color-mix(in oklab, var(--slds-g-color-warning-base-50, #fe9339), transparent 60%);
+    border-color: color-mix(
+        in oklab,
+        var(--slds-g-color-warning-base-50, #fe9339),
+        transparent 60%
+    );
     background: color-mix(in oklab, var(--slds-g-color-warning-base-50, #fe9339), white 90%);
     color: var(--slds-g-color-warning-base-50, #fe9339);
 }

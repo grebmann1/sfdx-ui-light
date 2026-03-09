@@ -1,9 +1,10 @@
-import { handleChromeInteraction } from './chromeApi.js';
 import {
     CACHE_CONFIG,
     saveSingleExtensionConfigToCache,
     loadSingleExtensionConfigFromCache,
 } from 'shared/cacheManager';
+
+import { handleChromeInteraction } from './chromeApi.js';
 
 /** STATIC **/
 const OVERLAY_ENABLE = 'overlay_enable';
@@ -848,7 +849,9 @@ chrome.runtime.onMessage.addListener(
                 return { error: 'Missing prompt' };
             }
             if (trimmedPrompt.length > 4000) {
-                console.debug('[SmartInput AI] background rejected: prompt too long', { length: trimmedPrompt.length });
+                console.debug('[SmartInput AI] background rejected: prompt too long', {
+                    length: trimmedPrompt.length,
+                });
                 return { error: 'Prompt too long' };
             }
 
@@ -921,10 +924,16 @@ chrome.runtime.onMessage.addListener(
                 } finally {
                     clearTimeout(timeoutId);
                 }
-                console.debug('[SmartInput AI] background fetch done', { ok: resp.ok, status: resp.status });
+                console.debug('[SmartInput AI] background fetch done', {
+                    ok: resp.ok,
+                    status: resp.status,
+                });
                 if (!resp.ok) {
                     const t = await resp.text();
-                    console.debug('[SmartInput AI] background fetch error body', { status: resp.status, bodyPreview: (t || '').slice(0, 200) });
+                    console.debug('[SmartInput AI] background fetch error body', {
+                        status: resp.status,
+                        bodyPreview: (t || '').slice(0, 200),
+                    });
                     return { error: `OpenAI error: ${t}` };
                 }
                 const json = await resp.json();
@@ -936,10 +945,15 @@ chrome.runtime.onMessage.addListener(
                         json.choices[0].message.content) ||
                     '';
                 const result = (suggestion || '').trim();
-                console.debug('[SmartInput AI] background success', { suggestionLength: result.length });
+                console.debug('[SmartInput AI] background success', {
+                    suggestionLength: result.length,
+                });
                 return { suggestion: result };
             } catch (e) {
-                console.debug('[SmartInput AI] background exception', { message: e?.message, name: e?.name });
+                console.debug('[SmartInput AI] background exception', {
+                    message: e?.message,
+                    name: e?.name,
+                });
                 return { error: e.message };
             }
         } else if (message.action.startsWith('chrome_')) {

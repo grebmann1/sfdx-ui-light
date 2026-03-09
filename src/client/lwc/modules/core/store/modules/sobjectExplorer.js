@@ -1,7 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
-import * as ERROR from './error';
-import { getStore } from '../storeRef';
 import { isNotUndefinedOrNull } from 'shared/utils';
+
+import { getStore } from '../storeRef';
+
+import * as ERROR from './error';
 
 const SOBJECTEXPLORER_SETTINGS_KEY = 'SOBJECTEXPLORER_SETTINGS_KEY';
 
@@ -111,4 +113,4 @@ const sobjectExplorerSlice = createSlice({
     extraReducers: builder => {},
 });
 
-export const reduxSlice = sobjectExplorerSlice; 
+export const reduxSlice = sobjectExplorerSlice;

@@ -1,12 +1,9 @@
 import { wire, api, track } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { CurrentPageReference, NavigationContext,navigate } from 'lwr/navigation';
-import {
-    isUndefinedOrNull,
-    isNotUndefinedOrNull,
-} from 'shared/utils';
+import { CurrentPageReference, NavigationContext, navigate } from 'lwr/navigation';
+import { isUndefinedOrNull, isNotUndefinedOrNull } from 'shared/utils';
 import { store_application, store as legacyStore } from 'shared/store';
-import { connectStore,store, DESCRIBE, SOBJECTEXPLORER } from 'core/store';
+import { connectStore, store, DESCRIBE, SOBJECTEXPLORER } from 'core/store';
 import Analytics from 'shared/analytics';
 
 const TYPEFILTER_OPTIONS = [

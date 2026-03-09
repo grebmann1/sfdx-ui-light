@@ -58,9 +58,13 @@ const basicStore = (variant = 'local') => {
             //console.log('--> getItem <---',key,value);
             const parsedValue = safeParseJson(value);
             if (callback) {
-                callback(isNotUndefinedOrNull(parsedValue) && parsedValue != 'null' ? parsedValue : null); // 'null' is related to legacy code
+                callback(
+                    isNotUndefinedOrNull(parsedValue) && parsedValue != 'null' ? parsedValue : null
+                ); // 'null' is related to legacy code
             }
-            return Promise.resolve(isNotUndefinedOrNull(parsedValue) && parsedValue != 'null' ? parsedValue : null); // 'null' is related to legacy code
+            return Promise.resolve(
+                isNotUndefinedOrNull(parsedValue) && parsedValue != 'null' ? parsedValue : null
+            ); // 'null' is related to legacy code
         },
         setItem: function (key, value, callback) {
             try {

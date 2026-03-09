@@ -1,37 +1,40 @@
 import { loadExtensionConfigFromCache, saveExtensionConfigToCache } from 'shared/cacheManager';
-import StreamingAgentService from './streamingAgentService';
-import Context from './context';
-import Constants from './constants';
 import { guid, isNotUndefinedOrNull } from 'shared/utils';
 
+import Constants from './constants';
+import Context from './context';
+import StreamingAgentService from './streamingAgentService';
 
-const readFileContent = (file) => {
-    return new Promise((resolve) => {
-        if (file.size > 20 * 1024 * 1024) { // 20MB limit
+const readFileContent = file => {
+    return new Promise(resolve => {
+        if (file.size > 20 * 1024 * 1024) {
+            // 20MB limit
             resolve({
                 name: file.name,
                 type: file.type,
                 size: file.size,
                 content: null,
-                note: 'File too large to include content.'
+                note: 'File too large to include content.',
             });
         } else if (file.type.startsWith('text/')) {
             const reader = new FileReader();
-            reader.onload = (e) => resolve({
-                name: file.name,
-                type: file.type,
-                size: file.size,
-                content: e.target.result
-            });
+            reader.onload = e =>
+                resolve({
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    content: e.target.result,
+                });
             reader.readAsText(file);
         } else {
             const reader = new FileReader();
-            reader.onload = (e) => resolve({
-                name: file.name,
-                type: file.type,
-                size: file.size,
-                content: e.target.result
-            });
+            reader.onload = e =>
+                resolve({
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    content: e.target.result,
+                });
             reader.readAsDataURL(file);
         }
     });
@@ -42,9 +45,11 @@ function getMessageKey(message) {
 }
 
 function areMessagesEqual(msg1, msg2) {
-    return (msg1 && msg2) && (
-        (msg1._key === msg2._key && isNotUndefinedOrNull(msg1._key)) || 
-        (msg1.id === msg2.id && isNotUndefinedOrNull(msg1.id))
+    return (
+        msg1 &&
+        msg2 &&
+        ((msg1._key === msg2._key && isNotUndefinedOrNull(msg1._key)) ||
+            (msg1.id === msg2.id && isNotUndefinedOrNull(msg1.id)))
     );
 }
 
@@ -56,10 +61,14 @@ function appendMessageIfNotExists(messages, newMsg) {
 }
 
 function updateOrAppendMessage(messages, newMsg) {
-    if (messages && messages.length > 0 && areMessagesEqual(messages[messages.length - 1], newMsg)) {
+    if (
+        messages &&
+        messages.length > 0 &&
+        areMessagesEqual(messages[messages.length - 1], newMsg)
+    ) {
         return [
             ...messages.slice(0, messages.length - 1),
-            { ...messages[messages.length - 1], ...newMsg }
+            { ...messages[messages.length - 1], ...newMsg },
         ];
     }
     return [...(messages || []), newMsg];
@@ -91,11 +100,22 @@ function formatMessage(message, filesData = [], guidFn = guid) {
         _key: getMessageKey(message),
     };
     // Process files and enrich the message with the file informations
-    const files = (filesData || []).map(f => ({ name: f.name, type: f.type, size: f.size, _openaiFileId: f._openaiFileId, content: f.content }));
+    const files = (filesData || []).map(f => ({
+        name: f.name,
+        type: f.type,
+        size: f.size,
+        _openaiFileId: f._openaiFileId,
+        content: f.content,
+    }));
     if (files && files.length > 0) {
         if (!Array.isArray(result.content)) {
             result.content = [
-                { type: 'input_text', text: result.content, isInputText: true, key: result._key + '-0' }
+                {
+                    type: 'input_text',
+                    text: result.content,
+                    isInputText: true,
+                    key: result._key + '-0',
+                },
             ];
         }
         files.forEach(file => {
@@ -103,14 +123,14 @@ function formatMessage(message, filesData = [], guidFn = guid) {
                 result.content.push({
                     type: 'input_image',
                     image: file.content,
-                    key: result._key + '-img-' + file.name
+                    key: result._key + '-img-' + file.name,
                 });
             } else if (file.type === 'application/pdf' && file.content) {
                 result.content.push({
                     type: 'input_file',
                     file_id: file._openaiFileId,
                     size: file.size,
-                    key: result._key + '-file-' + file.name
+                    key: result._key + '-file-' + file.name,
                 });
             }
         });
@@ -118,9 +138,9 @@ function formatMessage(message, filesData = [], guidFn = guid) {
     return result;
 }
 
-const formatStreamHistory = (streamHistory) => {
+const formatStreamHistory = streamHistory => {
     return streamHistory.map(message => formatMessage(message));
-}
+};
 
 /**
  * Returns true if the message has content that should be shown in the normal message view
@@ -141,8 +161,10 @@ function hasDisplayableContent(message) {
     }
     if (!Array.isArray(content)) return false;
     return content.some(
-        (part) =>
-            (part?.type === 'text' || part?.type === 'input_text' || part?.type === 'output_text') &&
+        part =>
+            (part?.type === 'text' ||
+                part?.type === 'input_text' ||
+                part?.type === 'output_text') &&
             typeof part?.text === 'string' &&
             part.text.trim().length > 0
     );
@@ -159,13 +181,7 @@ const Message = {
     hasDisplayableContent,
 };
 
-export {
-    readFileContent,
-    StreamingAgentService,
-    Message,
-    Context,
-    Constants
-};
+export { readFileContent, StreamingAgentService, Message, Context, Constants };
 
 /* export const CONVERSATION_CACHE_KEY = 'einsteinAgentConversation';
 

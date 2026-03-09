@@ -22,11 +22,11 @@ export default class Composer extends LightningElement {
         ta && ta.focus();
     }
 
-    handleInput = (e) => {
+    handleInput = e => {
         this._value = e.target.value;
     };
 
-    handleKeyDown = async (e) => {
+    handleKeyDown = async e => {
         const cmdPressed = isMac() ? !!e.metaKey : !!e.ctrlKey;
         if (cmdPressed && e.key === 'Enter') {
             e.preventDefault();
@@ -67,7 +67,9 @@ export default class Composer extends LightningElement {
             if (suggestions.length === 1) {
                 this._value = suggestions[0];
             } else {
-                this.dispatchEvent(new CustomEvent('createitems', { detail: { items: suggestions } }));
+                this.dispatchEvent(
+                    new CustomEvent('createitems', { detail: { items: suggestions } })
+                );
                 this._value = '';
                 const ta = this.template.querySelector('textarea');
                 if (ta) ta.value = '';
@@ -86,7 +88,12 @@ export default class Composer extends LightningElement {
                     schema: {
                         type: 'object',
                         properties: {
-                            items: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 20 },
+                            items: {
+                                type: 'array',
+                                items: { type: 'string' },
+                                minItems: 1,
+                                maxItems: 20,
+                            },
                         },
                         required: ['items'],
                         additionalProperties: false,
@@ -95,14 +102,17 @@ export default class Composer extends LightningElement {
                 },
             };
             const messages = [
-                { role: ROLES.SYSTEM, content: `
+                {
+                    role: ROLES.SYSTEM,
+                    content: `
                     You are Smart Input Assistant. 
                     Produce realistic, concise values suitable for Form inputs. 
                     <Important>
                         If the user asks for multiple, return several otherwise ONLY return one. 
                     </Important>
                     Do not include labels or explanations.
-                ` },
+                `,
+                },
                 { role: ROLES.USER, content: promptText },
             ];
             const data = await fetchCompletion({ model: 'gpt-4o-mini', messages, response_format });
@@ -112,7 +122,10 @@ export default class Composer extends LightningElement {
                 const items = Array.isArray(parsed?.items) ? parsed.items : [];
                 return items.map(v => (v || '').toString().trim()).filter(Boolean);
             } catch (_) {
-                const lines = content.split('\n').map(x => x.trim()).filter(Boolean);
+                const lines = content
+                    .split('\n')
+                    .map(x => x.trim())
+                    .filter(Boolean);
                 return lines;
             }
         } catch (e) {
@@ -120,5 +133,3 @@ export default class Composer extends LightningElement {
         }
     }
 }
-
-

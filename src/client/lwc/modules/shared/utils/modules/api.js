@@ -29,10 +29,10 @@ export const DEFAULT = {
     ENDPOINT: version => `/services/data/v${version}`,
     BODY: '',
     METHOD: METHOD.GET,
-    VARIABLES: '{}',    
+    VARIABLES: '{}',
 };
 
-export const generateDefaultTab = (version,id) => {
+export const generateDefaultTab = (version, id) => {
     return {
         id: id || guid(),
         header: DEFAULT.HEADER,
@@ -78,7 +78,14 @@ export const formattedContentType = contentType => {
     return 'text';
 };
 
-export const formatApiRequest = ({ endpoint, method, body, header, connector, replaceVariableValues }) => {
+export const formatApiRequest = ({
+    endpoint,
+    method,
+    body,
+    header,
+    connector,
+    replaceVariableValues,
+}) => {
     let error = null;
     // Apply variable replacement to endpoint
     const replacedEndpoint = replaceVariableValues ? replaceVariableValues(endpoint) : endpoint;
@@ -98,7 +105,6 @@ export const formatApiRequest = ({ endpoint, method, body, header, connector, re
         url: targetUrl,
         endpoint: formattedEndpoint,
     };
-    
 
     // Include body for PATCH, POST, or PUT requests
     if ([METHOD.PATCH, METHOD.POST, METHOD.PUT].includes(method)) {
@@ -129,7 +135,9 @@ export const formatApiRequest = ({ endpoint, method, body, header, connector, re
                     if (lineArr.length >= 2) {
                         const key = lineArr.shift().trim(); // Get the header name
                         headers[key] = lineArr.join(':').trim(); // Combine the remaining parts of the header value
-                        headers[key] = replaceVariableValues ? replaceVariableValues(headers[key]) : headers[key];
+                        headers[key] = replaceVariableValues
+                            ? replaceVariableValues(headers[key])
+                            : headers[key];
                     } else {
                         isValidHeader = false; // Flag invalid header
                     }
@@ -139,7 +147,7 @@ export const formatApiRequest = ({ endpoint, method, body, header, connector, re
         }
 
         // If any headers are invalid, show a toast notification
-        if (!isValidHeader ) {
+        if (!isValidHeader) {
             error = 'Invalid Header';
         } else {
             // Add headers to the request if valid and not empty
@@ -164,5 +172,5 @@ export const formatApiRequest = ({ endpoint, method, body, header, connector, re
         }
     }
 
-    return {request,error}; // Return the formatted request object
-}
+    return { request, error }; // Return the formatted request object
+};

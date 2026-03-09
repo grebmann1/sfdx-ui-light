@@ -76,7 +76,9 @@
                                     class="slds-notify slds-notify_alert slds-alert_error sf-overlay-error"
                                     role="alert">
                                     <span class="slds-assistive-text">Error</span>
-                                    <span class="sf-overlay-error__message">{overlayErrorMessage}</span>
+                                    <span class="sf-overlay-error__message">
+                                        {overlayErrorMessage}
+                                    </span>
                                     <lightning-button-icon
                                         class="sf-overlay-error__close"
                                         icon-name="utility:close"
@@ -87,7 +89,9 @@
                                 <template lwc:if={overlayErrorDetails}>
                                     <details class="sf-overlay-error__details">
                                         <summary>Details</summary>
-                                        <pre class="sf-overlay-error__pre">{overlayErrorDetails}</pre>
+                                        <pre class="sf-overlay-error__pre">
+{overlayErrorDetails}</pre
+                                        >
                                     </details>
                                 </template>
                             </template>
@@ -190,8 +194,7 @@
                                         </template>
                                     </lightning-tabset>
                                     <!-- SECTION -->
-                                    <div
-                                        class="slds-flex-column slds-fill-height">
+                                    <div class="slds-flex-column slds-fill-height">
                                         <!-- Start -->
                                         <template lwc:if={isOrganizationTab}>
                                             <div

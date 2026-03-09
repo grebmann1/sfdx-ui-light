@@ -4,7 +4,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(1, 118, 211, 0.10);
+    background: rgba(1, 118, 211, 0.1);
     border: 2px dashed var(--lwc-colorBorderBrand, #0176d3);
     color: #0176d3;
     font-size: 1.1rem;
@@ -15,7 +15,9 @@
     border-radius: 8px;
     z-index: 10;
     pointer-events: none;
-    transition: background 0.2s, border-color 0.2s;
+    transition:
+        background 0.2s,
+        border-color 0.2s;
 }
 .file-upload-container.drag-active {
     border-color: var(--lwc-colorBorderBrand, #0176d3);
@@ -62,7 +64,10 @@
     position: relative;
     box-sizing: border-box;
     width: 100%;
-    transition: box-shadow 100ms, border-color 100ms, background 200ms;
+    transition:
+        box-shadow 100ms,
+        border-color 100ms,
+        background 200ms;
 }
 .chat-input-pills-row {
     display: flex;
@@ -118,7 +123,8 @@
     padding: 0 2px;
     transition: background 0.1s;
 }
-.chat-pill-remove:hover, .chat-pill-remove:focus {
+.chat-pill-remove:hover,
+.chat-pill-remove:focus {
     background: #eee;
     color: #c00;
 }
@@ -176,7 +182,8 @@
     border-radius: 4px;
     transition: background 0.1s;
 }
-.chat-btn:hover, .chat-btn:focus {
+.chat-btn:hover,
+.chat-btn:focus {
     background: #eaf5fe;
 }
 .chat-send-btn {
@@ -190,8 +197,11 @@
 }
 .chat-loading-overlay {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(255,255,255,0.7);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.7);
     display: flex;
     align-items: center;
     justify-content: center;

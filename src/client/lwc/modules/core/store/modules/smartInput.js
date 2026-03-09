@@ -1,9 +1,30 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {
+    CACHE_CONFIG,
+    loadSingleExtensionConfigFromCache,
+    saveSingleExtensionConfigToCache,
+} from 'shared/cacheManager';
 import { guid, isUndefinedOrNull, isNotUndefinedOrNull } from 'shared/utils';
-import { CATEGORY_SYSTEM, CATEGORY_CUSTOM, CATEGORY_TYPE, sanitizeCategories, sanitizeItems } from 'smartinput/utils';
+import {
+    CATEGORY_SYSTEM,
+    CATEGORY_CUSTOM,
+    CATEGORY_TYPE,
+    sanitizeCategories,
+    sanitizeItems,
+} from 'smartinput/utils';
+
 import * as ERROR from './error';
-import { CACHE_CONFIG, loadSingleExtensionConfigFromCache, saveSingleExtensionConfigToCache } from 'shared/cacheManager';
-const DEFAULT_CATEGORY = { id: guid(), type: CATEGORY_SYSTEM, name: 'Default', items: [], createdAt: Date.now(), ref: 'A', isEditable: false, isSelectable: true, isItemsEditable: true };
+const DEFAULT_CATEGORY = {
+    id: guid(),
+    type: CATEGORY_SYSTEM,
+    name: 'Default',
+    items: [],
+    createdAt: Date.now(),
+    ref: 'A',
+    isEditable: false,
+    isSelectable: true,
+    isItemsEditable: true,
+};
 //const RECENT_CATEGORY = { id: guid(), type: CATEGORY_SYSTEM, name: 'Recent', items: [], createdAt: Date.now(), ref: 'R', isEditable: false, isSelectable: false, isItemsEditable: false };
 
 const initialState = {
@@ -17,29 +38,29 @@ const initialState = {
 function saveCacheSettings(state) {
     try {
         const { categories, activeCategoryId } = JSON.parse(JSON.stringify(state));
-        saveSingleExtensionConfigToCache(CACHE_CONFIG.INPUT_QUICKPICK_DATA.key,{
+        saveSingleExtensionConfigToCache(CACHE_CONFIG.INPUT_QUICKPICK_DATA.key, {
             categories,
-            activeCategoryId
+            activeCategoryId,
         });
     } catch (e) {
         console.error('Failed to save CONFIG to localstorage', e);
     }
 }
 
-function loadCacheSettings(cachedConfig, state) { 
+function loadCacheSettings(cachedConfig, state) {
     try {
         const { categories, activeCategoryId } = cachedConfig;
-        Object.assign(state, { 
-            categories:sanitizeCategories(categories).map(c => ({
+        Object.assign(state, {
+            categories: sanitizeCategories(categories).map(c => ({
                 ...c,
-                ...(c.items && { items: sanitizeItems(c.items) })
+                ...(c.items && { items: sanitizeItems(c.items) }),
             })),
-            activeCategoryId
+            activeCategoryId,
         });
     } catch (e) {
         console.error('Failed to load CONFIG from localstorage', e);
     }
-} 
+}
 
 // Helpers for Category letter refs (A, B, ..., Z, AA, AB, ...)
 function indexToLetters(index) {
@@ -113,13 +134,14 @@ export const reduxSlice = createSlice({
         addCategory(state, action) {
             const newCategory = action.payload;
             if (newCategory) {
-                const ref = newCategory.ref && lettersToIndex(newCategory.ref) >= 0
-                    ? newCategory.ref
-                    : getNextCategoryRef(state.categories);
-                const category = { 
-                    ...newCategory, 
+                const ref =
+                    newCategory.ref && lettersToIndex(newCategory.ref) >= 0
+                        ? newCategory.ref
+                        : getNextCategoryRef(state.categories);
+                const category = {
+                    ...newCategory,
                     ref,
-                    type: CATEGORY_CUSTOM
+                    type: CATEGORY_CUSTOM,
                 };
                 state.categories = [...(state.categories || []), category];
                 state.activeCategoryId = category.id;
@@ -128,18 +150,22 @@ export const reduxSlice = createSlice({
         },
         updateCategory(state, action) {
             const category = action.payload;
-            state.categories = (state.categories || []).map(p => (p.id === category.id ? category : p));
+            state.categories = (state.categories || []).map(p =>
+                p.id === category.id ? category : p
+            );
             saveCacheSettings(state);
         },
         deleteItemOrCategory(state, action) {
             const id = action.payload;
             let flattenedCategories = flattenCategories(state.categories);
             const _toDelete = flattenedCategories.find(p => p.id === id);
-            if(isUndefinedOrNull(_toDelete)) {
+            if (isUndefinedOrNull(_toDelete)) {
                 return;
             }
-            if(_toDelete._type === CATEGORY_TYPE.CATEGORY && _toDelete.type !== CATEGORY_SYSTEM) {
-                flattenedCategories = flattenedCategories.filter(p => p.id !== id && p._parentId !== id);
+            if (_toDelete._type === CATEGORY_TYPE.CATEGORY && _toDelete.type !== CATEGORY_SYSTEM) {
+                flattenedCategories = flattenedCategories.filter(
+                    p => p.id !== id && p._parentId !== id
+                );
             } else if (_toDelete._type === CATEGORY_TYPE.ITEM) {
                 flattenedCategories = flattenedCategories.filter(p => p.id !== id);
             }
@@ -155,14 +181,14 @@ export const reduxSlice = createSlice({
     extraReducers: builder => {
         builder.addCase(loadCacheSettingsAsync.fulfilled, (state, action) => {
             const cachedConfig = action.payload;
-            if(isNotUndefinedOrNull(cachedConfig)) {
+            if (isNotUndefinedOrNull(cachedConfig)) {
                 loadCacheSettings(cachedConfig, state);
             }
         });
-    }
+    },
 });
 
-const flattenCategories = (categories) => {
+const flattenCategories = categories => {
     // [category1, item1 (with parentId: category1), item2 (with parentId: category1), category2, item3 (with parentId: category2), item4 (with parentId: category2)]
     const _createItem = (item, { parentId, type } = {}) => {
         return {
@@ -170,7 +196,7 @@ const flattenCategories = (categories) => {
             ...(type && { _type: type }),
             ...(parentId && { _parentId: parentId }),
         };
-    }
+    };
     const result = [];
     categories.forEach(category => {
         const { items, ...rest } = category;
@@ -180,12 +206,12 @@ const flattenCategories = (categories) => {
         });
     });
     return result;
-}
+};
 
-const unflattenCategories = (flattenedCategories) => {
+const unflattenCategories = flattenedCategories => {
     const categories = new Map();
     flattenedCategories.forEach(item => {
-        if(item._type === CATEGORY_TYPE.CATEGORY) {
+        if (item._type === CATEGORY_TYPE.CATEGORY) {
             const { _type, ...category } = item;
             categories.set(item.id, category);
         } else {
@@ -194,8 +220,6 @@ const unflattenCategories = (flattenedCategories) => {
         }
     });
     return Array.from(categories.values());
-}
-
-
+};
 
 export const actions = reduxSlice.actions;

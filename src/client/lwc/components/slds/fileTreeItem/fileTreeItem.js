@@ -22,17 +22,16 @@ export default class FileTreeItem extends LightningElement {
     @api searchValue = '';
     @api isDeleteDisabled = false;
     @api isFolderSelectable = false;
-    
+
     isHover = false;
     isMenuOpen = false;
-    
 
     /** Event Handlers */
 
     handleClick(event) {
         if (this.isFolder) {
             this.handleToggle(event);
-            if(this.isFolderSelectable) {
+            if (this.isFolderSelectable) {
                 this.handleSelect(event);
             }
         } else {
@@ -58,14 +57,14 @@ export default class FileTreeItem extends LightningElement {
     }
 
     handleMouseLeave() {
-       this.isHover = false;
+        this.isHover = false;
     }
 
     handleMenuClick(event) {
         event.preventDefault();
         event.stopPropagation();
         this.template.querySelector('lightning-button-menu').focus();
-       /*  
+        /*  
         if(event.target.tagName !== event.currentTarget.tagName) {
             this.isMenuOpen = false;
         } */
@@ -74,11 +73,29 @@ export default class FileTreeItem extends LightningElement {
     handleMenuSelect(event) {
         const value = event.detail.value;
         if (value === 'expandAll') {
-            this.dispatchEvent(new CustomEvent('expandall', { detail: { item: this.item }, bubbles: true, composed: true }));
+            this.dispatchEvent(
+                new CustomEvent('expandall', {
+                    detail: { item: this.item },
+                    bubbles: true,
+                    composed: true,
+                })
+            );
         } else if (value === 'collapseAll') {
-            this.dispatchEvent(new CustomEvent('collapseall', { detail: { item: this.item }, bubbles: true, composed: true }));
-        }else if (value === 'delete') {
-            this.dispatchEvent(new CustomEvent('deletefile', { detail: { item: this.item }, bubbles: true, composed: true }));
+            this.dispatchEvent(
+                new CustomEvent('collapseall', {
+                    detail: { item: this.item },
+                    bubbles: true,
+                    composed: true,
+                })
+            );
+        } else if (value === 'delete') {
+            this.dispatchEvent(
+                new CustomEvent('deletefile', {
+                    detail: { item: this.item },
+                    bubbles: true,
+                    composed: true,
+                })
+            );
         }
     }
 
@@ -88,16 +105,22 @@ export default class FileTreeItem extends LightningElement {
 
     handleDelete(event) {
         event.stopPropagation();
-        this.dispatchEvent(new CustomEvent('deletefile', { detail: { item: this.item }, bubbles: true, composed: true }));
+        this.dispatchEvent(
+            new CustomEvent('deletefile', {
+                detail: { item: this.item },
+                bubbles: true,
+                composed: true,
+            })
+        );
     }
 
     handleMenuBlur(event) {
-        if(!this.isHover) {
+        if (!this.isHover) {
             this.isMenuOpen = false;
         }
     }
 
-     /** Methods */
+    /** Methods */
 
     /** Getters */
 
@@ -139,7 +162,12 @@ export default class FileTreeItem extends LightningElement {
     }
 
     get folderIcon() {
-        return this.item?.icon || (this.expanded && !this.isFolderIconExcluded ? 'utility:opened_folder' : 'utility:open_folder');
+        return (
+            this.item?.icon ||
+            (this.expanded && !this.isFolderIconExcluded
+                ? 'utility:opened_folder'
+                : 'utility:open_folder')
+        );
     }
 
     get isFolderIconDisplayed() {
@@ -179,22 +207,26 @@ export default class FileTreeItem extends LightningElement {
     }
 
     get rootClasses() {
-        return classSet('slds-tree__item').add({
-            'is-first': this.isFirst,
-            'slds-is-hovered': this.isMenuButtonVisible,
-            'slds-is-selected': this.selected
-        }).toString();
+        return classSet('slds-tree__item')
+            .add({
+                'is-first': this.isFirst,
+                'slds-is-hovered': this.isMenuButtonVisible,
+                'slds-is-selected': this.selected,
+            })
+            .toString();
     }
 
     get apiIconClass() {
-        return classSet('slds-badge slds-m-horizontal_xx-small').add({
-            'api-badge--get': this.item?.icon === 'api:get',
-            'slds-theme_info': this.item?.icon === 'api:get',
-            'slds-theme_error': this.item?.icon === 'api:delete',
-            'slds-theme_success': this.item?.icon === 'api:post',
-            'slds-theme_warning': this.item?.icon === 'api:put',
-            'slds-theme_info': this.item?.icon === 'api:patch',
-        }).toString();
+        return classSet('slds-badge slds-m-horizontal_xx-small')
+            .add({
+                'api-badge--get': this.item?.icon === 'api:get',
+                'slds-theme_info': this.item?.icon === 'api:get',
+                'slds-theme_error': this.item?.icon === 'api:delete',
+                'slds-theme_success': this.item?.icon === 'api:post',
+                'slds-theme_warning': this.item?.icon === 'api:put',
+                'slds-theme_info': this.item?.icon === 'api:patch',
+            })
+            .toString();
     }
 
     get apiIconText() {

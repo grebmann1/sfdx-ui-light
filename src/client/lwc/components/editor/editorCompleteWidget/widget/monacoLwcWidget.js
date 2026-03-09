@@ -248,7 +248,10 @@ class MonacoLwcWidget {
         const format = autoDetectAndFormat(this.originalText);
         LOGGER.log('Language - Original Model', originalModelLanguage);
         LOGGER.log('Language - Detected', format);
-        this.temporaryModel = this.monaco.editor.createModel(this.originalText, originalModelLanguage);
+        this.temporaryModel = this.monaco.editor.createModel(
+            this.originalText,
+            originalModelLanguage
+        );
         this.editor.setModel(this.temporaryModel);
 
         // Add the widget to the view zone

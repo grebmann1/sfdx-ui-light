@@ -9,9 +9,9 @@ const handler = require('serve-handler');
 const serveJson = require('../../site/serve.json');
 
 const CTA_MODULE = require('./modules/cta.js');
-const proxy = require('./modules/proxy.js');
 const documentationSearch = require('./modules/documentationSearch');
 const openaiProxy = require('./modules/openaiProxy.js');
+const proxy = require('./modules/proxy.js');
 
 /** Temporary Code until a DB is incorporated **/
 const VERSION = process.env.DOC_VERSION || '260.0';
@@ -30,12 +30,12 @@ CTA_MODULE.launchScheduleFileDownloaded(files => {
 documentationSearch.initDocumentationIndex(DATA_DOCUMENTATION.contents);
 
 const app = express();
-app.use(express.json({limit: '50mb'}));
-app.use(express.urlencoded({limit: '50mb'}));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb' }));
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const CHROME_ID = process.env.CHROME_ID || 'dmlgjapbfifmeopbfikbdmlgdcgcdmfb';
 
-getOAuth2Instance = params => {
+const getOAuth2Instance = params => {
     return new jsforce.OAuth2({
         // you can change loginUrl to connect to sandbox or prerelease env.
         clientId: process.env.CLIENT_ID,
@@ -45,7 +45,7 @@ getOAuth2Instance = params => {
     });
 };
 
-checkIfPresent = (a, b) => {
+const checkIfPresent = (a, b) => {
     return (a || '').toLowerCase().includes((b || '').toLowerCase());
 };
 
@@ -145,7 +145,7 @@ app.get('/documentation/search', async (req, res) => {
             id,
             name: isFullTextSearch ? doc.title : title,
             text: isFullTextSearch ? doc.content : doc.title,
-            documentationId: doc.documentationId
+            documentationId: doc.documentationId,
         }));
         res.json(mappedResults);
     } catch (error) {
@@ -157,7 +157,7 @@ app.get('/cta/search', function (req, res) {
     //console.log('DATA_CTA.contents',DATA_CTA);
     const keywords = req.query.keywords;
     const result = DATA_CTA.filter(
-        x => this.checkIfPresent(x.title, keywords) || this.checkIfPresent(x.content, keywords)
+        x => checkIfPresent(x.title, keywords) || checkIfPresent(x.content, keywords)
     ).map(x => ({
         url: x.link,
         content: x.content,

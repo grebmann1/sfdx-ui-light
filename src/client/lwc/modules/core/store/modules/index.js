@@ -18,4 +18,3 @@ export * as ERROR from './error';
 export * as SMARTINPUT from './smartInput';
 export * as SHELL from './shell';
 export * as TEXTCOMPARE from './textCompare';
-

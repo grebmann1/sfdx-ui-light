@@ -17,5 +17,3 @@ export default class SessionExpiredModal extends LightningModal {
         this.close(RESULT.AUTO_RECONNECT);
     };
 }
-
-

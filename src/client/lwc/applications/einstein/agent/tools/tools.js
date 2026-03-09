@@ -1,12 +1,12 @@
-import { soqlTools } from './soql';
+import { agentTools } from './agentTools';
 import { apexTools } from './apex';
 import { apiAgentTools } from './api';
+import { chromeTools } from './chrome';
 import { connectionTools } from './connections';
 import { generalTools } from './general';
-import { chromeTools } from './chrome';
 import { metadataTools } from './metadata';
-import { agentTools } from './agentTools';
 import { openaiBuiltInTools } from './openaiBuiltInTools';
+import { soqlTools } from './soql';
 
 export const tools = {
     soql: soqlTools,

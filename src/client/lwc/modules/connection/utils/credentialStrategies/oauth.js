@@ -1,13 +1,22 @@
 // oauth.js
+import LOGGER from 'shared/logger';
+import { isUndefinedOrNull, isNotUndefinedOrNull } from 'shared/utils';
+
+import { Connector } from '../connectorClass';
 import { getCurrentPlatform, PLATFORM, getConfiguration } from '../platformService';
 import { getSalesforceURL, normalizeConnection } from '../utils';
-import { OAUTH_TYPES } from './index';
 import { saveConfiguration } from '../web';
-import { Connector } from '../connectorClass';
-import LOGGER from 'shared/logger';
-import { isUndefinedOrNull,isNotUndefinedOrNull } from 'shared/utils';
+
+import { OAUTH_TYPES } from './index';
 
 const FULL_SCOPE = 'id api web openid sfap_api einstein_gpt_api refresh_token';
+
+function clearOAuthError(config) {
+    if (config) {
+        config._hasError = false;
+        config._errorMessage = null;
+    }
+}
 
 export async function directConnect(configuration) {
     const platform = getCurrentPlatform();
@@ -30,7 +39,7 @@ export async function directConnect(configuration) {
 export async function connect({ alias, loginUrl, username }, settings = {}) {
     const { bypass = false, saveFullConfiguration = false } = settings;
 
-    const platform = getCurrentPlatform();    
+    const platform = getCurrentPlatform();
 
     // Check for existing configuration first
     const configuration = await getConfiguration(alias);
@@ -38,9 +47,9 @@ export async function connect({ alias, loginUrl, username }, settings = {}) {
         // Try to connect using the existing configuration
         // (Assume refreshToken is sufficient for OAuth reconnect)
         const connectionParams = normalizeConnection(OAUTH_TYPES.OAUTH, configuration, platform);
-        LOGGER.log('connectionParams -> ',connectionParams);
+        LOGGER.log('connectionParams -> ', connectionParams);
         const connection = await new window.jsforce.Connection(connectionParams);
-        LOGGER.log('connection -->',connection);
+        LOGGER.log('connection -->', connection);
         const connector = await Connector.createConnector({
             alias,
             connection,
@@ -48,10 +57,13 @@ export async function connect({ alias, loginUrl, username }, settings = {}) {
             credentialType: OAUTH_TYPES.OAUTH,
         });
 
-        if (isNotUndefinedOrNull(connection.refreshToken) && isUndefinedOrNull(connection.accessToken)) {
+        if (
+            isNotUndefinedOrNull(connection.refreshToken) &&
+            isUndefinedOrNull(connection.accessToken)
+        ) {
             await connector.generateAccessToken();
         }
-        LOGGER.log('connector -> ',connector);
+        LOGGER.log('connector -> ', connector);
         if (connector.hasError) {
             throw new Error(connector.errorMessage);
         }
@@ -61,14 +73,14 @@ export async function connect({ alias, loginUrl, username }, settings = {}) {
             instanceUrl: connection.instanceUrl,
             accessToken: connection.accessToken,
         });
+        clearOAuthError(connector.configuration);
         await saveConfiguration(alias, connector.configuration);
-        LOGGER.log('connect -> connector',connector);
+        LOGGER.log('connect -> connector', connector);
         return connector;
     }
 
-    
     const normalizedUrl = getSalesforceURL(loginUrl || 'https://login.salesforce.com');
-    LOGGER.log('normalizedUrl -> ',normalizedUrl);
+    LOGGER.log('normalizedUrl -> ', normalizedUrl);
 
     if (platform === PLATFORM.CHROME) {
         LOGGER.log('Chrome OAuth');
@@ -95,7 +107,7 @@ export async function connect({ alias, loginUrl, username }, settings = {}) {
                             connection,
                             credentialType: OAUTH_TYPES.OAUTH,
                         });
-                        // Always persist configuration (including refresh token) so we can reconnect later
+                        clearOAuthError(connector.configuration);
                         await saveConfiguration(alias, connector.configuration);
                         resolve(connector);
                     } catch (e) {
@@ -146,6 +158,7 @@ export async function connect({ alias, loginUrl, username }, settings = {}) {
                     connection,
                     credentialType: OAUTH_TYPES.OAUTH,
                 });
+                clearOAuthError(connector.configuration);
                 await saveConfiguration(alias, connector.configuration);
                 resolve(connector);
             });
@@ -207,7 +220,9 @@ export async function connect({ alias, loginUrl, username }, settings = {}) {
                             if (err) {
                                 reject(
                                     new Error(
-                                        [err.error, err.error_description].filter(Boolean).join(': ')
+                                        [err.error, err.error_description]
+                                            .filter(Boolean)
+                                            .join(': ')
                                     )
                                 );
                             } else {

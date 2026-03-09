@@ -1,7 +1,12 @@
 import { api, LightningElement, createElement } from 'lwc';
 import { ensureMermaidLoaded } from 'shared/loader';
 import { marked } from 'shared/markdown';
-import { classSet, isEmpty, normalizeString as normalize, runActionAfterTimeOut } from 'shared/utils';
+import {
+    classSet,
+    isEmpty,
+    normalizeString as normalize,
+    runActionAfterTimeOut,
+} from 'shared/utils';
 import sldsCodeBlock from 'slds/codeBlock';
 import MarkdownViewerEditorModal from 'slds/MarkdownViewerEditorModal';
 
@@ -9,9 +14,9 @@ export default class MarkdownViewer extends LightningElement {
     hasRendered = false;
     _renderRequested = false;
     _lastRenderedValue = null;
-    
+
     _value = '';
-    @api 
+    @api
     set value(value) {
         this._value = value;
         this._renderRequested = true;
@@ -73,7 +78,8 @@ export default class MarkdownViewer extends LightningElement {
     setMarkdown = markdown => {
         var html = marked()(markdown);
         this.refs.container.innerHTML = html;
-        runActionAfterTimeOut(html,
+        runActionAfterTimeOut(
+            html,
             async value => {
                 this.enable_codeViewer();
             },
@@ -99,13 +105,13 @@ export default class MarkdownViewer extends LightningElement {
             const newElement = createElement('slds-code-block', {
                 is: sldsCodeBlock,
             });
-            Object.assign(newElement, {
+            (Object.assign(newElement, {
                 codeBlock: el.innerHTML,
                 language: mapping[c] || c,
                 title: '',
             }),
                 (el.innerHTML = ''),
-                el.appendChild(newElement);
+                el.appendChild(newElement));
             //newTarget.replaceWith(newElement)
         });
     };

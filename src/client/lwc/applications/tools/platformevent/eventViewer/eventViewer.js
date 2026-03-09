@@ -83,7 +83,7 @@ export default class EventViewer extends ToolkitElement {
 
     inferApiNameFromChannel(channel) {
         if (!channel) return null;
-        const prefix = CHANNEL_PREFIXES.find((p) => channel.startsWith(p));
+        const prefix = CHANNEL_PREFIXES.find(p => channel.startsWith(p));
         if (!prefix) return null;
         return channel.slice(prefix.length).split('?')[0] || null;
     }
@@ -91,7 +91,7 @@ export default class EventViewer extends ToolkitElement {
     formatDescribeFields(describeResult) {
         const fields = describeResult?.fields || [];
         return fields
-            .map((f) => ({
+            .map(f => ({
                 name: f.name,
                 label: f.label,
                 type: f.type,

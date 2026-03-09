@@ -3,7 +3,7 @@
 //   node scripts/generate_default_skill_content.js
 
 export const SKILL_CONTENT = {
-    "agent": `# Agent continuation
+    agent: `# Agent continuation
 
 Continue multi-step tool runs when the goal is not yet achieved.
 
@@ -21,7 +21,7 @@ Continue multi-step tool runs when the goal is not yet achieved.
 
 - **agent_request_continue** — Signals that the run should continue for another turn. Pass a brief \`reason\`. The run will auto-continue after this tool.
 `,
-    "apex": `# Apex
+    apex: `# Apex
 
 Edit and execute anonymous Apex with confirmation.
 
@@ -50,7 +50,7 @@ Edit and execute anonymous Apex with confirmation.
 | apex_save_script | Save script (global or org-specific) |
 | apex_get_current_tab | Get current tab content |
 `,
-    "api": `# API
+    api: `# API
 
 Run REST calls and manage saved API scripts.
 
@@ -72,7 +72,7 @@ Run REST calls and manage saved API scripts.
 - getApplicationContext — Current API editor state (tabs, body, method, endpoint).
 - Update body, headers, variables, endpoint, method; saved scripts / OpenAPI as needed.
 `,
-    "chrome": `# Chrome
+    chrome: `# Chrome
 
 Browser automation (screenshots, tabs).
 
@@ -95,7 +95,7 @@ Browser automation (screenshots, tabs).
 - chrome_move_tab, chrome_highlight_tabs, chrome_focus_window, chrome_remove_tab_group.
 - chrome_duplicate_tab, chrome_reload_tabs.
 `,
-    "connections": `# Connections
+    connections: `# Connections
 
 List, connect, disconnect, or open Salesforce orgs.
 
@@ -120,7 +120,7 @@ List, connect, disconnect, or open Salesforce orgs.
 | disconnect_org | Disconnect current org (remove session) |
 | navigate_to_org | Open org in browser (alias or sessionId+instanceUrl) |
 `,
-    "metadata": `# Metadata
+    metadata: `# Metadata
 
 Navigate and inspect metadata types and records.
 
@@ -146,7 +146,7 @@ Navigate and inspect metadata types and records.
 | metadata_get_record | Get details/files for a record (sobject, recordId) |
 | metadata_describe_object | Describe SObject (fields, types) |
 `,
-    "soql": `# SOQL
+    soql: `# SOQL
 
 Run and display SOQL queries in the toolkit.
 

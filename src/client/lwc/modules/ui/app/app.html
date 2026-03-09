@@ -29,8 +29,7 @@
                         class="no-opacity"
                         alternative-text="Loading"
                         size="small"
-                        message={fullAppLoadingMessageFormatted}
-                    ></slds-spinner>
+                        message={fullAppLoadingMessageFormatted}></slds-spinner>
                 </template>
                 <!-- Container & Header -->
                 <div class="home l-container-vertical">
@@ -46,11 +45,11 @@
                                 ontabdelete={handleTabDelete}
                                 is-user-logged-in={isUserLoggedIn}
                                 version={version}
-                                is-agent-chat-expanded={isAgentChatExpanded}
-                            ></ui-header>
+                                is-agent-chat-expanded={isAgentChatExpanded}></ui-header>
                         </div>
                     </template>
-                    <div class="slds-show_medium l-cell-auto-size l-container-horizontal slds-fill-height">
+                    <div
+                        class="slds-show_medium l-cell-auto-size l-container-horizontal slds-fill-height">
                         <!-- Menu -->
                         <div class={menuClass}>
                             <ui-menu
@@ -122,11 +121,9 @@
                             title="Next Gen Agent"
                             position="right"
                             is-open={isAgentChatExpanded}
-                            is-header-hidden
-                        >
+                            is-header-hidden>
                             <!-- Agent App -->
                             <agent-app class="slds-full-height slds-flex-column"></agent-app>
-                            
                         </slds-vertical-panel>
                     </div>
 
@@ -134,8 +131,7 @@
                     <slds-preview-illustration
                         class="slds-p-top_x-large slds-hide_medium l-container-horizonta"
                         title="Screen view is too small"
-                        sub-title="SF Toolkit does not support mobile devices."
-                    ></slds-preview-illustration>
+                        sub-title="SF Toolkit does not support mobile devices."></slds-preview-illustration>
                 </div>
             </div>
         </div>

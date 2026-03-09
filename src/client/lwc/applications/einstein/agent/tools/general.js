@@ -1,7 +1,7 @@
-import { z } from 'zod';
 import { store } from 'core/store';
 import LOGGER from 'shared/logger';
 import { isNotUndefinedOrNull } from 'shared/utils';
+import { z } from 'zod';
 const { tool } = window.OpenAIAgentsBundle?.Agents || {};
 
 /**
@@ -22,7 +22,7 @@ function getCurrentApplication() {
  */
 function getCurrentConnection() {
     const state = store.getState();
-    LOGGER.debug('getCurrentConnection',state.application?.connector);
+    LOGGER.debug('getCurrentConnection', state.application?.connector);
     const connector = state.application?.connector || null;
     return JSON.stringify({
         connector: connector.toPublic(),

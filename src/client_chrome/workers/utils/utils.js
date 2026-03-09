@@ -68,7 +68,13 @@ export async function stitchImages(parts, totalWidthPx, totalHeightPx) {
  * @param {number} [targetHeightOpt] - Optional target output height (CSS pixels)
  * @returns {Promise<OffscreenCanvas>} Cropped canvas
  */
-export async function cropAndResizeImage(originalDataUrl, cropRectPx, dpr = 1, targetWidthOpt, targetHeightOpt) {
+export async function cropAndResizeImage(
+    originalDataUrl,
+    cropRectPx,
+    dpr = 1,
+    targetWidthOpt,
+    targetHeightOpt
+) {
     const img = await createImageBitmapFromUrl(originalDataUrl);
 
     let sx = cropRectPx.x;
@@ -93,7 +99,9 @@ export async function cropAndResizeImage(originalDataUrl, cropRectPx, dpr = 1, t
     }
 
     if (sWidth <= 0 || sHeight <= 0) {
-        throw new Error('Invalid calculated crop size (<=0). Element may not be visible or fully captured.');
+        throw new Error(
+            'Invalid calculated crop size (<=0). Element may not be visible or fully captured.'
+        );
     }
 
     const finalCanvasWidthPx = targetWidthOpt ? targetWidthOpt * dpr : sWidth;
@@ -143,7 +151,10 @@ export async function canvasToDataURL(canvas, format = 'image/png', quality) {
  * @param {string} [options.format='image/jpeg'] - The target image format.
  * @returns {Promise<Object>} A promise that resolves to the compressed image data URL and its MIME type.
  */
-export async function compressImage(imageDataUrl, options = { scale: 1.0, quality: 0.8, format: 'image/jpeg' }) {
+export async function compressImage(
+    imageDataUrl,
+    options = { scale: 1.0, quality: 0.8, format: 'image/jpeg' }
+) {
     const { scale = 1.0, quality = 0.8, format = 'image/jpeg' } = options;
 
     // 1. Create an ImageBitmap from the original data URL for efficient drawing.
@@ -170,7 +181,7 @@ export async function compressImage(imageDataUrl, options = { scale: 1.0, qualit
 
     // A helper to convert blob to data URL since OffscreenCanvas.toDataURL is not standard yet
     // on all execution contexts (like service workers).
-    const dataUrl = await new Promise((resolve) => {
+    const dataUrl = await new Promise(resolve => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result);
         reader.readAsDataURL(compressedDataUrl);
@@ -212,8 +223,8 @@ export async function withActivePage(tab, fn) {
 
     // Add debugging logs
     try {
-        let originalUrl = "unknown";
-        let activeUrl = "unknown";
+        let originalUrl = 'unknown';
+        let activeUrl = 'unknown';
 
         try {
             originalUrl = await page.url();
@@ -234,7 +245,9 @@ export async function withActivePage(tab, fn) {
             LOGGER.log(`withActivePage: Using different page from PageContextManager`);
         }
     } catch (error) {
-        LOGGER.log(`withActivePage: Error getting URLs for debugging: ${error instanceof Error ? error.message : String(error)}`);
+        LOGGER.log(
+            `withActivePage: Error getting URLs for debugging: ${error instanceof Error ? error.message : String(error)}`
+        );
     }
 
     // Execute the function with the active page

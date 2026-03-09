@@ -199,7 +199,7 @@ class Assistant {
         try {
             result = await this._executePromptStream(nonContextMessages);
             // Monaco LWC widget listening to textend !!!!
-            if(isNotUndefinedOrNull(result)){
+            if (isNotUndefinedOrNull(result)) {
                 dispatchEvent(
                     new CustomEvent('textend', {
                         detail: {
@@ -213,11 +213,10 @@ class Assistant {
             this.isExecuting = false;
             if (this.onErrorCallback) {
                 this.onErrorCallback(error);
-            }else{
+            } else {
                 throw new Error(error.message);
             }
-        }
-        finally {
+        } finally {
             this.isExecuting = false;
         }
         return result;
@@ -234,7 +233,7 @@ class Assistant {
     }
 
     async _processMessageStream(messages, maxIterations) {
-        try{
+        try {
             for (let iteration = 0; iteration < maxIterations && this.isExecuting; iteration++) {
                 const message = this._createInitialMessage();
                 this._upsertMessage(message);
@@ -247,12 +246,12 @@ class Assistant {
                     openaiKey: this.openaiKey,
                 };
                 LOGGER.debug('params --> ', params);
-                
+
                 const { body, abort } = await fetchCompletionStream(params);
                 if (!body) {
                     throw new Error('No data returned from the assistant');
                 }
-                
+
                 if (this.onStreamStartCallback) {
                     this.onStreamStartCallback(message);
                 }
@@ -283,11 +282,10 @@ class Assistant {
             throw new Error(
                 'Maximum iterations reached without a suitable answer. Please try again with a more specific input.'
             );
-        }catch(error){
+        } catch (error) {
             LOGGER.error('Error in _processMessageStream:', error);
             throw new Error(error.message);
         }
-
     }
 
     async _handleStreamProcessing(stream, message, toolCallsAccumulator, messages) {
@@ -300,7 +298,7 @@ class Assistant {
             }
 
             const parsedData = safeParseJson(data);
-            try{
+            try {
                 const { finish_reason, delta } = parsedData.choices[0];
 
                 this._updateMessageFromDelta(message, delta);
@@ -340,7 +338,7 @@ class Assistant {
                 this.onStreamCallback({
                     content: message.content,
                     role: message.role,
-                    id: message.id
+                    id: message.id,
                 });
             }
         }

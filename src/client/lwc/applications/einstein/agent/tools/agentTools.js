@@ -9,7 +9,7 @@ const { tool } = window.OpenAIAgentsBundle?.Agents || {};
 const agentRequestContinue = tool({
     name: 'agent_request_continue',
     description:
-        'Call this when the user\'s goal is not yet achieved and you need to run more tools in a follow-up turn. Do not call when you can give a final answer. After calling, the run will continue automatically with another turn.',
+        "Call this when the user's goal is not yet achieved and you need to run more tools in a follow-up turn. Do not call when you can give a final answer. After calling, the run will continue automatically with another turn.",
     parameters: z.object({
         reason: z
             .string()

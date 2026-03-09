@@ -205,11 +205,11 @@ export default class App extends ToolkitElement {
         this.isManualChannelDisplayed = !this.isManualChannelDisplayed;
     };
 
-    handleManualChannelInput = (e) => {
+    handleManualChannelInput = e => {
         this.manualChannelName = e.target.value;
     };
 
-    handleManualChannelPrefixChange = (e) => {
+    handleManualChannelPrefixChange = e => {
         this.manualChannelPrefix = e.detail.value;
     };
 
@@ -288,7 +288,10 @@ export default class App extends ToolkitElement {
         );
 
         // Subscribing
-        this.activeSubscriptions[_formattedEventName] = this.subscribeToChannel(eventName, _formattedEventName);
+        this.activeSubscriptions[_formattedEventName] = this.subscribeToChannel(
+            eventName,
+            _formattedEventName
+        );
 
         store.dispatch(
             EVENT.reduxSlice.actions.updateSubscriptionStatus({
@@ -484,18 +487,23 @@ export default class App extends ToolkitElement {
         try {
             const { platformEvent } = store.getState();
             const subs = SELECTORS.platformEvents.selectAll({ platformEvent }) || [];
-            subs.forEach((s) => {
+            subs.forEach(s => {
                 const channel = s.id; // stored id is lower-cased channel path
                 if (this.activeSubscriptions[channel]) return;
                 const originalChannel =
                     s.type === 'event'
                         ? `/event/${s.name}`
-                        : (s.type === 'data'
-                              ? `/data/${s.name}`
-                              : (s.type === 'topic' ? `/topic/${s.name}` : s.id));
+                        : s.type === 'data'
+                          ? `/data/${s.name}`
+                          : s.type === 'topic'
+                            ? `/topic/${s.name}`
+                            : s.id;
                 const replayId = s.replayId ?? -1;
                 // Attach replayId via ReplayExtension by ensuring fetchReplayId returns latest
-                this.activeSubscriptions[channel] = this.subscribeToChannel(originalChannel, channel);
+                this.activeSubscriptions[channel] = this.subscribeToChannel(
+                    originalChannel,
+                    channel
+                );
                 store.dispatch(
                     EVENT.reduxSlice.actions.updateSubscriptionStatus({
                         channel,

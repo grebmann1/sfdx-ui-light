@@ -1,4 +1,4 @@
-import {  api, track, wire } from 'lwc';
+import { api, track, wire } from 'lwc';
 import {
     isUndefinedOrNull,
     isEmpty,
@@ -14,7 +14,6 @@ import { store, connectStore, EINSTEIN, SELECTORS } from 'core/store';
 import LOGGER from 'shared/logger';
 
 const LATEST_MODEL_APEX = 'sfdc_ai__DefaultGPT4Omni';
-
 
 export default class Dialog extends ToolkitElement {
     isLoading = false;
@@ -37,7 +36,8 @@ export default class Dialog extends ToolkitElement {
 
     openaiKey;
 
-    connectedCallback() {x
+    connectedCallback() {
+        x;
         //this.checkForInjected();
         this.loadOpenAIKey();
         /*this.worker = new Worker(chrome.runtime.getURL('workers/openaiWorker/worker.js'));
@@ -59,7 +59,7 @@ export default class Dialog extends ToolkitElement {
     /** Actions */
     loadOpenAIKey = async () => {
         const openaiKey = store.getState().application.openaiKey;
-        if(isNotUndefinedOrNull(openaiKey)){
+        if (isNotUndefinedOrNull(openaiKey)) {
             this.openaiKey = openaiKey;
         }
     };
@@ -77,11 +77,11 @@ export default class Dialog extends ToolkitElement {
         if (einsteinState) {
             this.dialogId = einstein.currentDialogId;
             this.isLoading = einsteinState.isFetching;
-            if(einsteinState.isFetching){
+            if (einsteinState.isFetching) {
                 // Scroll to the bottom when the dialog is fetching
                 this.scrollToBottom();
             }
-         
+
             if (einsteinState.error) {
                 //this._abortingMap[apex.currentDialog.id] = null; // Reset the abortingMap
                 //this.resetResponse();
@@ -118,7 +118,10 @@ export default class Dialog extends ToolkitElement {
     scrollToBottom = () => {
         window.setTimeout(() => {
             // Find all assistant-message elements
-            const messageElements = [...this.template.querySelectorAll('assistant-message'),...this.template.querySelectorAll('.slds-chat-listitem')];
+            const messageElements = [
+                ...this.template.querySelectorAll('assistant-message'),
+                ...this.template.querySelectorAll('.slds-chat-listitem'),
+            ];
             // Scroll to the last message (user or assistant)
             const lastMessage = messageElements[messageElements.length - 1];
             if (lastMessage) {
@@ -127,12 +130,12 @@ export default class Dialog extends ToolkitElement {
         }, 50);
     };
 
-    directUpdateUI = (element,message) => {
-        LOGGER.log('directUpdateUI --> ',element,message);
+    directUpdateUI = (element, message) => {
+        LOGGER.log('directUpdateUI --> ', element, message);
         if (element && element.item) {
             element.updateItem(message);
         }
-    }
+    };
 
     /** Events **/
 
@@ -220,7 +223,7 @@ export default class Dialog extends ToolkitElement {
               console.log(`${event.type} %o`, event.item);
             }
         } */
-    }
+    };
 
     handleSendClick = async () => {
         const { einstein } = store.getState();
@@ -243,7 +246,10 @@ export default class Dialog extends ToolkitElement {
             LOGGER.debug('handleSendClick', this.provider, this.model);
             if (this.provider === 'apex') {
                 // Existing Apex flow
-                const einsteinApexRequest = ASSISTANT_UTILS.chat_template(LATEST_MODEL_APEX, this.cleanedMessages);
+                const einsteinApexRequest = ASSISTANT_UTILS.chat_template(
+                    LATEST_MODEL_APEX,
+                    this.cleanedMessages
+                );
                 this.scrollToBottom();
                 store.dispatch(
                     EINSTEIN.einsteinExecuteModel({
@@ -266,13 +272,15 @@ export default class Dialog extends ToolkitElement {
                             alias: ASSISTANT_UTILS.GLOBAL_EINSTEIN,
                             model: this.model,
                             aiProvider: 'openai',
-                            onStream: (message) => {
-                                LOGGER.log('message --> ',message);
-                                const lastElement = [...this.template.querySelectorAll('assistant-message')].pop();
+                            onStream: message => {
+                                LOGGER.log('message --> ', message);
+                                const lastElement = [
+                                    ...this.template.querySelectorAll('assistant-message'),
+                                ].pop();
                                 // Optionally force re-render if needed
                                 this.scrollToBottom();
-                                this.directUpdateUI(lastElement,message);
-                            }
+                                this.directUpdateUI(lastElement, message);
+                            },
                         })
                     );
                 } catch (err) {
@@ -313,7 +321,10 @@ export default class Dialog extends ToolkitElement {
         );
         this.scrollToBottom();
         if (this.provider === 'apex') {
-            const einsteinApexRequest = ASSISTANT_UTILS.chat_template(LATEST_MODEL_APEX, this.cleanedMessages);
+            const einsteinApexRequest = ASSISTANT_UTILS.chat_template(
+                LATEST_MODEL_APEX,
+                this.cleanedMessages
+            );
             store.dispatch(
                 EINSTEIN.einsteinExecuteModel({
                     connector,
@@ -333,11 +344,13 @@ export default class Dialog extends ToolkitElement {
                         alias: ASSISTANT_UTILS.GLOBAL_EINSTEIN,
                         model: this.model,
                         aiProvider: 'openai',
-                        onStream: (message) => {
-                            const lastElement = [...this.template.querySelectorAll('assistant-message')].pop();
+                        onStream: message => {
+                            const lastElement = [
+                                ...this.template.querySelectorAll('assistant-message'),
+                            ].pop();
                             this.scrollToBottom();
                             this.directUpdateUI(lastElement, message);
-                        }
+                        },
                     })
                 );
             } catch (err) {
@@ -346,7 +359,7 @@ export default class Dialog extends ToolkitElement {
                 this.scrollToBottom();
             }
         }
-    }
+    };
 
     /** Getters **/
 

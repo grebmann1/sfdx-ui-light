@@ -6,6 +6,7 @@ import {
     isQueryValid,
 } from '@jetstreamapp/soql-parser-js';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+
 import * as DOCUMENT from './document';
 
 const queryFilesSelectors = DOCUMENT.queryFileAdapter.getSelectors(s => s);
@@ -261,12 +262,16 @@ const uiSlice = createSlice({
             const { alias, queryFiles } = action.payload;
             const cachedConfig = loadCacheSettings(alias);
             if (cachedConfig && !state.isInitialized) {
-                const { soql, leftPanelToggled, recentPanelToggled, tabs, includeDeletedRecords } = cachedConfig;
+                const { soql, leftPanelToggled, recentPanelToggled, tabs, includeDeletedRecords } =
+                    cachedConfig;
                 Object.assign(state, {
                     //soql: soql || '',
                     leftPanelToggled,
                     recentPanelToggled,
-                    tabs: !state.tabs || state.tabs.length === 0 ? enrichTabs(tabs || INITIAL_TABS, queryFiles) : state.tabs,
+                    tabs:
+                        !state.tabs || state.tabs.length === 0
+                            ? enrichTabs(tabs || INITIAL_TABS, queryFiles)
+                            : state.tabs,
                     includeDeletedRecords,
                 });
             }
@@ -288,7 +293,7 @@ const uiSlice = createSlice({
         addTab: (state, action) => {
             const { queryFiles, tab } = action.payload;
             const enrichedTab = enrichTab(formatTab(tab), queryFiles);
-            if(isEmpty(enrichedTab.body)){
+            if (isEmpty(enrichedTab.body)) {
                 enrichedTab.body = INITIAL_BODY;
             }
             state.tabs.push(enrichedTab);

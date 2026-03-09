@@ -1,5 +1,7 @@
 import { LightningElement, api } from 'lwc';
 
+import LOGGER from 'shared/logger';
+
 export default class AgentMessageList extends LightningElement {
     @api welcomeMessage;
     @api displayedMessages = [];
@@ -13,8 +15,6 @@ export default class AgentMessageList extends LightningElement {
     prevStreamingKey = null;
     _userIsAtBottom = true; // Track if user is at the bottom
     _scrollThreshold = 40; // px, threshold for being considered "at bottom"
-
-    
 
     @api
     get streamingMessage() {
@@ -30,9 +30,9 @@ export default class AgentMessageList extends LightningElement {
         this.setLastComponentInView();
         const list = Array.isArray(this.displayedMessages) ? this.displayedMessages : [];
         if (list.length > 0) {
-            console.log('[agent-messageList] renderedCallback', {
+            LOGGER.debug('[agent-messageList] renderedCallback', {
                 displayedCount: list.length,
-                items: list.map((m) => ({ id: m.id, role: m.role, type: m.type })),
+                items: list.map(m => ({ id: m.id, role: m.role, type: m.type })),
             });
         }
     }
@@ -47,7 +47,7 @@ export default class AgentMessageList extends LightningElement {
 
     /** Events **/
 
-    handleRetryEvent = (event) => {
+    handleRetryEvent = event => {
         event.stopPropagation();
         this.dispatchEvent(new CustomEvent('retry', { detail: event.detail }));
     };
@@ -88,10 +88,10 @@ export default class AgentMessageList extends LightningElement {
         }
     }
 
-    _onUserScroll = (event) => {
+    _onUserScroll = event => {
         const chatList = event.target;
         const { scrollTop, scrollHeight, clientHeight } = chatList;
         // If user is within threshold of the bottom, consider at bottom
-        this._userIsAtBottom = (scrollHeight - scrollTop - clientHeight) <= this._scrollThreshold;
-    }
+        this._userIsAtBottom = scrollHeight - scrollTop - clientHeight <= this._scrollThreshold;
+    };
 }

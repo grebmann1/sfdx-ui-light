@@ -1,6 +1,7 @@
 import { tools, openaiBuiltInTools } from 'agent/tools';
 const { Agent } = window.OpenAIAgentsBundle?.Agents || {};
 import { isChromeExtension, isUndefinedOrNull } from 'shared/utils';
+
 import { sharedInstructions } from './sharedInstructions';
 
 const loggedOutRoleBlock = `

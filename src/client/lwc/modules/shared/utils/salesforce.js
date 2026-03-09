@@ -37,7 +37,8 @@ const extractRecordId = href => {
         // Find record ID from URL
         const searchParams = new URLSearchParams(url.search.substring(1));
 
-        const isLightningPath = url.pathname.startsWith('/lightning/') || url.pathname === '/one/one.app';
+        const isLightningPath =
+            url.pathname.startsWith('/lightning/') || url.pathname === '/one/one.app';
 
         // Lightning Experience and Salesforce1 (supports enhanced domains like *.my.salesforce.com)
         if (isLightningPath) {
@@ -57,7 +58,10 @@ const extractRecordId = href => {
         }
 
         // Salesforce Classic and Console
-        if (!isLightningPath && (url.hostname.endsWith('.salesforce.com') || url.hostname.endsWith('.salesforce.mil'))) {
+        if (
+            !isLightningPath &&
+            (url.hostname.endsWith('.salesforce.com') || url.hostname.endsWith('.salesforce.mil'))
+        ) {
             const match = url.pathname.match(/\/([a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})(?:\/|$)/);
             if (match) {
                 return match[1];
@@ -73,10 +77,7 @@ const extractRecordId = href => {
         }
         // Visualforce page that does not follow standard Visualforce naming
         for (let [, p] of searchParams) {
-            if (
-                p.match(/^([a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/) &&
-                p.includes('0000')
-            ) {
+            if (p.match(/^([a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/) && p.includes('0000')) {
                 return p;
             }
         }
@@ -88,9 +89,7 @@ const extractRecordId = href => {
 
 export function getRecordId(href) {
     const recordId = extractRecordId(href);
-    return recordId && recordId.match(/^([a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/)
-        ? recordId
-        : null;
+    return recordId && recordId.match(/^([a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})$/) ? recordId : null;
 }
 
 export function getCurrentObjectType(conn, recordId) {

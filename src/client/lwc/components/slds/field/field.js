@@ -20,7 +20,7 @@ export default class Field extends LightningElement {
         this.template.host.addEventListener('focus', this.handleFocus);
     }
 
-    handleFocus = (event) => {
+    handleFocus = event => {
         if (this.isReadOnly) {
             return;
         }
@@ -47,7 +47,7 @@ export default class Field extends LightningElement {
         }
     };
 
-    validateInput = (inputField) => {
+    validateInput = inputField => {
         if (!inputField.checkValidity()) {
             inputField.reportValidity();
             return false;
@@ -88,14 +88,14 @@ export default class Field extends LightningElement {
         this.dispatchEvent(new CustomEvent('edit', { bubbles: true }));
     };
 
-    handleKeyDown = (e) => {
+    handleKeyDown = e => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault(); // Prevent the default behavior of Enter key
             this.inputField.blur();
         }
     };
 
-    handleBlur = (e) => {
+    handleBlur = e => {
         e.preventDefault();
         e.stopPropagation();
         //LOGGER.debug('handleBlur');
@@ -113,7 +113,7 @@ export default class Field extends LightningElement {
                         detail: {
                             field: e.target.dataset.field,
                         },
-                    }),
+                    })
                 );
             }
             //LOGGER.debug('diff value',this._currentValue !== this.inputField.value);
@@ -124,7 +124,7 @@ export default class Field extends LightningElement {
                         detail: {
                             value: this.inputField.value,
                         },
-                    }),
+                    })
                 ); // Propagate the event with "e"
             }
         } else {

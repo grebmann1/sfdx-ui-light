@@ -1,7 +1,8 @@
 import { getConnectionsFromCache, saveConnectionsToCache } from 'shared/cacheManager';
-import { isUndefinedOrNull, isNotUndefinedOrNull, isEmpty } from 'shared/utils';
-import { extractName, normalizeConfiguration } from './utils';
 import LOGGER from 'shared/logger';
+import { isUndefinedOrNull, isNotUndefinedOrNull, isEmpty } from 'shared/utils';
+
+import { extractName, normalizeConfiguration } from './utils';
 
 const formatConfigurationItem = item => {
     return item; // Keep for now
@@ -83,7 +84,7 @@ export async function renameConfiguration({ oldAlias, newAlias, username, redire
     await saveConnectionsToCache(formatConfigurations(configurations));
 }
 
-export async function removeConfiguration({alias}) {
+export async function removeConfiguration({ alias }) {
     let configurations = await getConnectionsFromCache();
     // Remove the alias
     configurations = configurations.filter(x => x.alias !== alias);

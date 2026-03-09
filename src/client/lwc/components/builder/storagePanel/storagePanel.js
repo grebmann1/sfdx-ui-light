@@ -92,7 +92,7 @@ export default class StoragePanel extends ToolkitElement {
     }
 
     get savedTree() {
-        const toLeaf = (item) => {
+        const toLeaf = item => {
             const method = item?.extra?.method || '';
             const endpoint = item?.extra?.endpoint || '';
             const folder = item?.extra?.folder || '';
@@ -101,7 +101,7 @@ export default class StoragePanel extends ToolkitElement {
                 ...item,
                 id: item.id,
                 name: item.name || item.id,
-                title: `${method}${method ? ' ' : ''}${endpoint}`.trim() || (item.name || item.id),
+                title: `${method}${method ? ' ' : ''}${endpoint}`.trim() || item.name || item.id,
                 method,
                 endpoint,
                 folder,
@@ -214,7 +214,7 @@ export default class StoragePanel extends ToolkitElement {
         }
     };
 
-    handleImportFileChange = (event) => {
+    handleImportFileChange = event => {
         const file = event.target.files && event.target.files[0];
         if (!file) return;
         const reader = new FileReader();

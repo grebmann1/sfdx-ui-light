@@ -1,7 +1,9 @@
 import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
 import { lowerCaseKey, guid, isNotUndefinedOrNull } from 'shared/utils';
-import * as ERROR from './error';
+
 import { getStore } from '../storeRef';
+
+import * as ERROR from './error';
 
 const PLATFORM_EVENT_SETTINGS_KEY = 'PLATFORM_EVENT_SETTINGS_KEY';
 
@@ -70,7 +72,9 @@ const platformEventSlice = createSlice({
                     recentPanelToggled,
                     viewerTab,
                     maxMessagesPerChannel:
-                        typeof maxMessagesPerChannel === 'number' ? maxMessagesPerChannel : state.maxMessagesPerChannel,
+                        typeof maxMessagesPerChannel === 'number'
+                            ? maxMessagesPerChannel
+                            : state.maxMessagesPerChannel,
                 });
             }
         },
@@ -159,7 +163,7 @@ const platformEventSlice = createSlice({
 
             const existing = state.subscriptions.entities[lowerCaseKey(channel)]?.messages || [];
 
-            const enrich = (m) => {
+            const enrich = m => {
                 if (m && m._searchText) return m;
                 try {
                     const content = m?.content || m;

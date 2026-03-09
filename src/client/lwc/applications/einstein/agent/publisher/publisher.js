@@ -1,9 +1,5 @@
-import {  api, track } from 'lwc';
-import {
-    isEmpty,
-    isChromeExtension,
-    runActionAfterTimeOut
-} from 'shared/utils';
+import { api, track } from 'lwc';
+import { isEmpty, isChromeExtension, runActionAfterTimeOut } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
 import LOGGER from 'shared/logger';
 
@@ -30,7 +26,7 @@ export default class App extends ToolkitElement {
         this.selectedModel = val;
     }
 
-    handleModelChange = (event) => {
+    handleModelChange = event => {
         this.selectedModel = event.target.value;
     };
 
@@ -57,7 +53,7 @@ export default class App extends ToolkitElement {
         }
     };
 
-    handleFileChange = (event) => {
+    handleFileChange = event => {
         const files = Array.from(event.target.files || []);
         files.forEach(file => {
             if (file.type && file.type.startsWith('image/')) {
@@ -69,19 +65,19 @@ export default class App extends ToolkitElement {
         });
     };
 
-    handleDragOver = (event) => {
+    handleDragOver = event => {
         event.preventDefault();
         this.dragActive = true;
         this.template.querySelector('.file-upload-container').classList.add('drag-active');
     };
 
-    handleDragLeave = (event) => {
+    handleDragLeave = event => {
         event.preventDefault();
         this.dragActive = false;
         this.template.querySelector('.file-upload-container').classList.remove('drag-active');
     };
 
-    handleDrop = (event) => {
+    handleDrop = event => {
         event.preventDefault();
         this.dragActive = false;
         this.template.querySelector('.file-upload-container').classList.remove('drag-active');
@@ -100,14 +96,14 @@ export default class App extends ToolkitElement {
     generateImagePreview(file) {
         if (!file || !file.type.startsWith('image/')) return;
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = e => {
             this.imagePreviews = { ...this.imagePreviews, [file.name]: e.target.result };
             this.requestUpdate?.();
         };
         reader.readAsDataURL(file);
     }
 
-    removeSelectedFile = (event) => {
+    removeSelectedFile = event => {
         const name = event.target?.dataset?.filename;
         if (!name) return;
         this.selectedFiles = this.selectedFiles.filter(f => f.name !== name);
@@ -134,16 +130,14 @@ export default class App extends ToolkitElement {
         }
     }
 
-
-    renderedCallback(){
-        if(!this.hasRendered){  
+    renderedCallback() {
+        if (!this.hasRendered) {
             this.hasRendered = true;
-            setTimeout(()=>{
+            setTimeout(() => {
                 this.focusInput();
-            },300);
+            }, 300);
         }
     }
-
 
     /** Methods **/
 
@@ -160,9 +154,7 @@ export default class App extends ToolkitElement {
         this.focusInput();
     };
 
-
     /** Events **/
-
 
     handleInputChange = e => {
         runActionAfterTimeOut(
@@ -192,16 +184,21 @@ export default class App extends ToolkitElement {
         this.template.querySelector('.chat-textarea').value = speech;
     };
 
-
     handleSendClick = async () => {
         const value = this.template.querySelector('.chat-textarea').value;
         if (!isEmpty(value) || this.selectedFiles.length > 0) {
-            this.dispatchEvent(new CustomEvent('send', { detail: { prompt: value.trim(), files: this.selectedFiles, model: this.selectedModel } }));
+            this.dispatchEvent(
+                new CustomEvent('send', {
+                    detail: {
+                        prompt: value.trim(),
+                        files: this.selectedFiles,
+                        model: this.selectedModel,
+                    },
+                })
+            );
             this.resetPrompt();
         }
     };
-    
-
 
     /** Getters **/
 
@@ -212,7 +209,7 @@ export default class App extends ToolkitElement {
         return this.selectedFiles.map(file => ({
             file,
             isImage: file.type && file.type.startsWith('image/'),
-            preview: this.imagePreviews[file.name] || ''
+            preview: this.imagePreviews[file.name] || '',
         }));
     }
 

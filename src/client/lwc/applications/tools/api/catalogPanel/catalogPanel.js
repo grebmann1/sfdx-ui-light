@@ -28,4 +28,3 @@ export default class CatalogPanel extends LightningElement {
         return !isEmpty(this.errorMessage);
     }
 }
-

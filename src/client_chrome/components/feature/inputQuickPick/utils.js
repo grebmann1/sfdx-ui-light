@@ -1,15 +1,16 @@
 export const isMac = () => navigator.platform.toUpperCase().indexOf('MAC') >= 0;
 
-export const isTextInputLike = (el) => {
+export const isTextInputLike = el => {
     if (!el) return false;
     const tag = el.tagName;
     const type = (el.getAttribute && el.getAttribute('type')) || '';
     return (
-        (tag === 'INPUT' && ['text', 'email', 'number', 'search', 'tel', 'url', 'password'].includes(type)) ||
+        (tag === 'INPUT' &&
+            ['text', 'email', 'number', 'search', 'tel', 'url', 'password'].includes(type)) ||
         tag === 'TEXTAREA' ||
         el.isContentEditable === true
     );
-}
+};
 
 export const positionFor = (target, containerEl) => {
     const rect = target.getBoundingClientRect();
@@ -36,16 +37,15 @@ export const positionFor = (target, containerEl) => {
     top = Math.max(margin, Math.min(top, window.innerHeight - margin));
     left = Math.max(margin, Math.min(left, window.innerWidth - margin));
 
-    
     if (containerEl) {
         containerEl.style.top = `${top}px`;
         containerEl.style.left = `${left}px`;
     }
 
     return { top, left };
-}
+};
 
-export const positionForFallback = (containerEl) => {
+export const positionForFallback = containerEl => {
     const margin = 6;
     const containerWidth = (containerEl && containerEl.offsetWidth) || 320;
     const containerHeight = (containerEl && containerEl.offsetHeight) || 160;
@@ -56,4 +56,4 @@ export const positionForFallback = (containerEl) => {
         containerEl.style.left = `${left}px`;
     }
     return { top, left };
-}
+};

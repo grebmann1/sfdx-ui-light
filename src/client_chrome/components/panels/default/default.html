@@ -71,15 +71,17 @@
                     <doc-app is-responsive lwc:ref="documentation"></doc-app>
                 </template>
                 <template lwc:elseif={isAgent}>
-                    <agent-app class="slds-full-height slds-flex-column"
+                    <agent-app
+                        class="slds-full-height slds-flex-column"
                         is-audio-recorder-disabled
-                        lwc:ref="agent"
-                    ></agent-app>
+                        lwc:ref="agent"></agent-app>
                 </template>
 
                 <!-- Display the UI for the Input Quick Pick Side Panel component-->
                 <template lwc:elseif={isSmartInputDisplayed}>
-                    <smartinput-app application-name={applications.SMARTINPUT} auto-close-on-item-select></smartinput-app>
+                    <smartinput-app
+                        application-name={applications.SMARTINPUT}
+                        auto-close-on-item-select></smartinput-app>
                 </template>
                 <!-- End -->
             </div>

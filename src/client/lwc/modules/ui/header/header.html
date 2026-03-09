@@ -3,7 +3,8 @@
         <!-- Navigation -->
         <div class="slds-context-bar">
             <div class="slds-context-bar__primary">
-                <div class="slds-context-bar__item slds-context-bar__dropdown-trigger slds-dropdown-trigger slds-dropdown-trigger_click slds-no-hover">
+                <div
+                    class="slds-context-bar__item slds-context-bar__dropdown-trigger slds-dropdown-trigger slds-dropdown-trigger_click slds-no-hover">
                     <div class={collapseClass}>
                         <lightning-button-icon
                             icon-name={leftPanelIconName}
@@ -14,7 +15,9 @@
                     <span class="slds-context-bar__label-action slds-context-bar__app-name">
                         <span class="slds-truncate" title="SF Toolkit">SF Toolkit</span>
                     </span>
-                    <span class="slds-truncate slds-p-left_xx-small" title={formattedVersion}>({formattedVersion})</span>
+                    <span class="slds-truncate slds-p-left_xx-small" title={formattedVersion}>
+                        ({formattedVersion})
+                    </span>
                 </div>
             </div>
             <nav class="slds-context-bar__secondary" role="navigation">
@@ -37,25 +40,23 @@
                                         <lightning-button-icon
                                             icon-name="utility:close"
                                             variant="container"
-                                            class="slds-m-left_xx-small"
-                                        ></lightning-button-icon>
+                                            class="slds-m-left_xx-small"></lightning-button-icon>
                                     </a>
                                 </template>
                             </li>
                         </template>
                     </template>
                 </ul>
-                
             </nav>
             <div class="slds-context-bar__primary right-panel-collapse">
-                <div class="slds-context-bar__item slds-context-bar__dropdown-trigger slds-dropdown-trigger slds-dropdown-trigger_click slds-no-hover">
+                <div
+                    class="slds-context-bar__item slds-context-bar__dropdown-trigger slds-dropdown-trigger slds-dropdown-trigger_click slds-no-hover">
                     <div class={rightPanelCollapseClass}>
                         <lightning-button-icon
                             icon-name={rightPanelIconName}
                             variant="bare"
                             size="large"
-                            onclick={handleToggle_rightPanel}
-                        ></lightning-button-icon>
+                            onclick={handleToggle_rightPanel}></lightning-button-icon>
                     </div>
                 </div>
             </div>

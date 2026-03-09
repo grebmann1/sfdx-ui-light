@@ -1,7 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import { isUndefinedOrNull, isNotUndefinedOrNull } from 'shared/utils';
 
-export const checkQuery = (q) => {
+export const checkQuery = q => {
     const reCompat = /(^|[^"])@(\S*)/g; // find all @ not preceded by "
     const matches = [...q.matchAll(reCompat)];
     const last = matches.at(-1);
@@ -11,7 +11,7 @@ export const checkQuery = (q) => {
         return full;
     }
     return null;
-}
+};
 
 export default class HashtagDropdown extends LightningElement {
     @api items = [];
@@ -26,7 +26,7 @@ export default class HashtagDropdown extends LightningElement {
     @track isKeyboardMode = false;
 
     _isOpen = false;
-    @api 
+    @api
     set isOpen(value) {
         this._isOpen = value;
         if (this._isOpen) {
@@ -134,14 +134,14 @@ export default class HashtagDropdown extends LightningElement {
         this.dispatchSelect(item);
     }
 
-    handleMouseOver = (e) => {
+    handleMouseOver = e => {
         this.isKeyboardMode = false;
         const idxStr = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.index;
         const idx = parseInt(idxStr, 10);
         if (!isNaN(idx)) this.activeIndex = idx;
     };
 
-    handleMouseDown = (e) => {
+    handleMouseDown = e => {
         e.preventDefault();
         this.isKeyboardMode = false;
         const action = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.action;
@@ -179,23 +179,37 @@ export default class HashtagDropdown extends LightningElement {
     normalizeToTree(items) {
         const isTree = Array.isArray(items) && items.some(x => Array.isArray(x && x.items));
         if (isTree) return items;
-        return (items || []).map(it => ({ id: it.id, ref: it.ref, label: it.label, value: it.value, items: [] }));
+        return (items || []).map(it => ({
+            id: it.id,
+            ref: it.ref,
+            label: it.label,
+            value: it.value,
+            items: [],
+        }));
     }
 
     filterTree(nodes, tokenUpper) {
         if (!Array.isArray(nodes)) return [];
         const out = [];
         for (const node of nodes) {
-            const refMatch = ((node.ref || '').toUpperCase().includes(tokenUpper));
-            const labelMatch = ((node.label || '').toUpperCase().includes(tokenUpper));
-            const valueMatch = ((node.value || '').toUpperCase().includes(tokenUpper));
-            const subItems = isNotUndefinedOrNull(node.items) ? this.filterTree(node.items || [], tokenUpper) : null;
-            if (tokenUpper ? (refMatch || labelMatch || valueMatch || subItems && subItems.length > 0) : true) {
+            const refMatch = (node.ref || '').toUpperCase().includes(tokenUpper);
+            const labelMatch = (node.label || '').toUpperCase().includes(tokenUpper);
+            const valueMatch = (node.value || '').toUpperCase().includes(tokenUpper);
+            const subItems = isNotUndefinedOrNull(node.items)
+                ? this.filterTree(node.items || [], tokenUpper)
+                : null;
+            if (
+                tokenUpper
+                    ? refMatch || labelMatch || valueMatch || (subItems && subItems.length > 0)
+                    : true
+            ) {
                 const copy = { ...node };
-                if(subItems) {
+                if (subItems) {
                     copy.filteredItems = subItems;
                 }
-                copy._expanded = tokenUpper ? (subItems && subItems.length > 0) : !!this.expandedMap[copy.id];
+                copy._expanded = tokenUpper
+                    ? subItems && subItems.length > 0
+                    : !!this.expandedMap[copy.id];
                 out.push(copy);
             }
         }
@@ -205,7 +219,7 @@ export default class HashtagDropdown extends LightningElement {
     flattenVisibleTree(nodes, level = 0, excludeParent = false) {
         const flat = [];
         for (const n of nodes || []) {
-            if (!excludeParent || isUndefinedOrNull(n.items) && excludeParent ){
+            if (!excludeParent || (isUndefinedOrNull(n.items) && excludeParent)) {
                 flat.push({ ...n, level });
             }
             if (n._expanded && Array.isArray(n.filteredItems) && n.filteredItems.length > 0) {
@@ -223,7 +237,6 @@ export default class HashtagDropdown extends LightningElement {
         }
         return null;
     }
-    
 
     toggleExpand(node) {
         if (!node || !node.id) return;
@@ -237,7 +250,6 @@ export default class HashtagDropdown extends LightningElement {
         this.activeIndex = 0;
         this.computeFilteredItems();
     }
-
 
     computeFilteredItems = () => {
         const all = Array.isArray(this.items) ? this.items : [];
@@ -254,7 +266,7 @@ export default class HashtagDropdown extends LightningElement {
         let flattened;
         if (this.currentFolderId) {
             const folderNode = this.findNodeById(visible, this.currentFolderId);
-            const items = folderNode ? (folderNode.items || []) : [];
+            const items = folderNode ? folderNode.items || [] : [];
             flattened = this.flattenVisibleTree(items);
         } else {
             flattened = this.flattenVisibleTree(visible, 0);
@@ -263,9 +275,7 @@ export default class HashtagDropdown extends LightningElement {
         if (this.activeIndex >= limited.length) this.activeIndex = limited.length - 1;
         if (this.activeIndex < 0) this.activeIndex = 0;
         this.filteredItems = limited;
-    }
-
-    
+    };
 
     /** Getters **/
 
@@ -275,7 +285,7 @@ export default class HashtagDropdown extends LightningElement {
         const tree = this.normalizeToTree(all);
         const visible = this.filterTree(tree, ''); // no filtering by token
         const folderNode = this.findNodeById(visible, this.currentFolderId);
-        return folderNode ? (folderNode.label || '') : '';
+        return folderNode ? folderNode.label || '' : '';
     }
 
     get viewItems() {
@@ -291,13 +301,18 @@ export default class HashtagDropdown extends LightningElement {
             chevronIcon: node._expanded ? 'utility:chevrondown' : 'utility:chevronright',
             index: idx,
             isActive: idx === this.activeIndex,
-            className: 'slds-flex-row slds-justify-content-space-between slds-hashtag-dropdown__item' + (idx === this.activeIndex ? ' is-active' : ''),
+            className:
+                'slds-flex-row slds-justify-content-space-between slds-hashtag-dropdown__item' +
+                (idx === this.activeIndex ? ' is-active' : ''),
             indentClass: `indent indent-${Math.min(6, node.level || 0)}`,
         }));
     }
 
     get dropdownClass() {
-        return 'slds-hashtag-dropdown slds-flex-column slds-full-height' + (this.isKeyboardMode ? ' is-keyboard' : '');
+        return (
+            'slds-hashtag-dropdown slds-flex-column slds-full-height' +
+            (this.isKeyboardMode ? ' is-keyboard' : '')
+        );
     }
 
     get hasItems() {

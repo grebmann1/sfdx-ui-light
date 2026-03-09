@@ -1,15 +1,17 @@
-import LOGGER from 'shared/logger';
-import { saveConfiguration } from './web';
-import { cacheManager, CACHE_ORG_DATA_TYPES, CACHE_SESSION_CONFIG } from 'shared/cacheManager';
-import { OAUTH_TYPES } from './credentialStrategies/index';
 import { store, APPLICATION, ERROR } from 'core/store';
+import { cacheManager, CACHE_ORG_DATA_TYPES, CACHE_SESSION_CONFIG } from 'shared/cacheManager';
+import LOGGER from 'shared/logger';
+import { isElectronApp } from 'shared/utils';
+
+import { OAUTH_TYPES } from './credentialStrategies/index';
 import {
     getConfiguration,
     extractName,
     normalizeConfiguration,
     extractConfigurationValuesFromConnection,
 } from './utils';
-import { isElectronApp } from 'shared/utils';
+import { saveConfiguration } from './web';
+
 export class Connector {
     conn;
     configuration;
@@ -20,7 +22,7 @@ export class Connector {
 
         LOGGER.debug('Connector -->', this.configuration, this.conn);
         LOGGER.debug('Connector --> Add listeners');
-        if(conn) {
+        if (conn) {
             this.addListeners(conn);
         }
     }
@@ -29,7 +31,7 @@ export class Connector {
         conn.on('refresh', () => {
             LOGGER.debug('Connector --> refresh event');
         });
-        conn.on('error', (e) => {
+        conn.on('error', e => {
             LOGGER.debug('Connector --> error event', e);
             store.dispatch(
                 ERROR.reduxSlice.actions.addError({ message: 'JSForce error', details: e.message })
@@ -90,11 +92,10 @@ export class Connector {
             _errorMessage: e.message,
         });
 
-        if(!isElectronApp()){
+        if (!isElectronApp()) {
             await saveConfiguration(this.configuration.alias, this.configuration);
         }
 
-        
         store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
     }
 
@@ -103,8 +104,8 @@ export class Connector {
         this.configuration._errorMessage = null;
     }
 
-    async _lightEnrichWithVersions(){
-        try{
+    async _lightEnrichWithVersions() {
+        try {
             const versions = await this.conn.request('/services/data/');
 
             let latestVersion = Array.isArray(versions)
@@ -116,7 +117,7 @@ export class Connector {
                 version: latestVersion?.version || this.conn.version,
                 _versions: versions,
             });
-        }catch(e){
+        } catch (e) {
             LOGGER.error('Error enriching connector', e);
         }
     }
@@ -216,13 +217,13 @@ export class Connector {
         }
 
         let connector = new Connector(configuration, connection);
-        if(credentialType === OAUTH_TYPES.REDIRECT) {
+        if (credentialType === OAUTH_TYPES.REDIRECT) {
             // If redirect credential type, we don't need to enrich the connector
             return connector;
         }
         if (!isEnrichDisabled) {
             await connector._enrichConnector();
-        }else{
+        } else {
             // to get the latest version
             await connector._lightEnrichWithVersions();
         }

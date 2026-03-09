@@ -1,7 +1,7 @@
-import { isChromeExtension } from 'shared/utils';
-import { basicStore, loadExtensionConfigFromCache, CACHE_CONFIG } from 'shared/cacheManager';
 import { store, APPLICATION } from 'core/store';
+import { basicStore, loadExtensionConfigFromCache, CACHE_CONFIG } from 'shared/cacheManager';
 import LOGGER from 'shared/logger';
+import { isChromeExtension } from 'shared/utils';
 
 /**
  * Cache initialization and loading helpers
@@ -32,7 +32,8 @@ export async function loadFromCache(context) {
     ]);
 
     if (context) {
-        context.isApplicationTabVisible = configuration[CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key];
+        context.isApplicationTabVisible =
+            configuration[CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key];
         context.betaSmartInputEnabled = !!configuration[CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key];
     }
 
@@ -41,12 +42,12 @@ export async function loadFromCache(context) {
     const openaiUrl = configuration[CACHE_CONFIG.OPENAI_URL.key];
     const mistralKey = configuration[CACHE_CONFIG.MISTRAL_KEY.key];
     const aiProvider = configuration[CACHE_CONFIG.AI_PROVIDER.key];
-    
+
     LOGGER.debug('loadFromCache - openaiKey', openaiKey);
     LOGGER.debug('loadFromCache - openaiUrl', openaiUrl);
     LOGGER.debug('loadFromCache - mistralKey', mistralKey);
     LOGGER.debug('loadFromCache - aiProvider', aiProvider);
-    
+
     if (openaiKey) {
         store.dispatch(APPLICATION.reduxSlice.actions.updateOpenAIKey({ openaiKey, openaiUrl }));
     }

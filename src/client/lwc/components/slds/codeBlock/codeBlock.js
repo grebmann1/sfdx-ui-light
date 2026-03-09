@@ -113,7 +113,7 @@ export default class CodeBlock extends LightningElement {
         this.renderMermaid(codeBlockEl);
     };
 
-    highlightCode_default = (decodedCode) => {
+    highlightCode_default = decodedCode => {
         let codeBlockEl = this.template.querySelector('pre');
         if (!codeBlockEl) return;
         codeBlockEl.textContent = '';

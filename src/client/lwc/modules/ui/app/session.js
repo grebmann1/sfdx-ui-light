@@ -1,10 +1,11 @@
-import { isNotUndefinedOrNull, isElectronApp } from 'shared/utils';
 import { credentialStrategies, OAUTH_TYPES, getConfiguration } from 'connection/utils';
-import { navigate } from 'lwr/navigation';
 import { store, APPLICATION } from 'core/store';
-import { handleRedirect } from './utils';
-import LOGGER from 'shared/logger';
 import LightningAlert from 'lightning/alert';
+import { navigate } from 'lwr/navigation';
+import LOGGER from 'shared/logger';
+import { isNotUndefinedOrNull, isElectronApp } from 'shared/utils';
+
+import { handleRedirect } from './utils';
 
 /**
  * Session management helpers for app initialization
@@ -16,14 +17,15 @@ import LightningAlert from 'lightning/alert';
  * @param {Function} handleNavigation - Handler for navigation after load
  */
 export async function loadLimitedMode(context) {
-    const { alias, sessionId, serverUrl, redirectUrl, navContext, targetPage, handleNavigation } = context;
-    
+    const { alias, sessionId, serverUrl, redirectUrl, navContext, targetPage, handleNavigation } =
+        context;
+
     try {
         let connector;
         LOGGER.debug('load_limitedMode - alias', alias);
         LOGGER.debug('load_limitedMode - sessionId', sessionId);
         LOGGER.debug('load_limitedMode - serverUrl', serverUrl);
-        
+
         if (isNotUndefinedOrNull(alias)) {
             LOGGER.debug('load_limitedMode - OAUTH');
             let configuration = await getConfiguration(alias);
@@ -70,7 +72,7 @@ export async function loadLimitedMode(context) {
                 state: { applicationName: 'org' },
             });
         }
-        
+
         return { success: true, connector };
     } catch (e) {
         LOGGER.error(e);
@@ -96,8 +98,16 @@ export async function loadLimitedMode(context) {
  * @param {Function} handleNavigation - Handler for navigation after load
  */
 export async function loadFullMode(context) {
-    const { sessionId, serverUrl, redirectUrl, navContext, targetPage, loadModule, handleNavigation } = context;
-    
+    const {
+        sessionId,
+        serverUrl,
+        redirectUrl,
+        navContext,
+        targetPage,
+        loadModule,
+        handleNavigation,
+    } = context;
+
     if (isNotUndefinedOrNull(sessionId) && isNotUndefinedOrNull(serverUrl)) {
         let connector = await credentialStrategies.SESSION.connect({
             sessionId,
@@ -121,7 +131,8 @@ export async function loadFullMode(context) {
                     settings.credentialType &&
                     credentialStrategies[settings.credentialType || 'OAUTH']
                 ) {
-                    connector = await credentialStrategies[settings.credentialType].connect(settings);
+                    connector =
+                        await credentialStrategies[settings.credentialType].connect(settings);
                 }
                 if (connector) {
                     store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
@@ -137,6 +148,6 @@ export async function loadFullMode(context) {
     } else {
         loadModule('home/app', true);
     }
-    
+
     return { success: true };
 }

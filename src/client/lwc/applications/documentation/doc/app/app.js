@@ -366,13 +366,13 @@ export default class App extends ToolkitElement {
             const newElement = createElement('slds-code-block', {
                 is: sldsCodeBlock,
             });
-            Object.assign(newElement, {
+            (Object.assign(newElement, {
                 codeBlock: el.innerHTML,
                 language: mapping[c] || c,
                 title: '',
             }),
                 (el.innerHTML = ''),
-                el.appendChild(newElement);
+                el.appendChild(newElement));
         });
     };
 
