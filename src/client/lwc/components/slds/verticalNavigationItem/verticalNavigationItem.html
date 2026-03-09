@@ -2,7 +2,7 @@
     <div class={navigationItemClass} role="listitem">
         <slds-tooltip
             lwc:ref="tooltip"
-            label={label}
+            label={computedTooltipLabel}
             disabled={tooltipDisabled}
             items={children}
             onselect={handleChildSelect}
@@ -12,7 +12,8 @@
                 class={actionClass}
                 role="button"
                 tabindex="0"
-                aria-label={label}
+                title={computedTooltipLabel}
+                aria-label={computedTooltipLabel}
                 aria-current={ariaCurrent}
                 aria-controls={ariaControls}
                 aria-expanded={ariaExpanded}

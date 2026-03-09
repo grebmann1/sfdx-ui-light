@@ -27,8 +27,14 @@ export default class QuickLauncher extends ToolkitElement {
 
     handleRedirection = e => {
         const url = e.currentTarget.dataset.url;
-        //console.log('url',url);
         legacyStore.dispatch(store_application.navigate(url));
+    };
+
+    handleItemKeydown = e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.currentTarget.click();
+        }
     };
 
     /** Methods */

@@ -107,14 +107,38 @@ export async function connect({ alias, loginUrl, username }, settings = {}) {
         });
     } else if (platform === PLATFORM.WEB) {
         LOGGER.log('Web OAuth');
-        // Web OAuth
+        // Web OAuth: use authorization code flow so the server can exchange code for tokens
+        // and redirect to /callback#...; jsforce's default login() uses response_type=token
+        // which sends the token in the fragment so the server never receives it and redirects to /
         return new Promise((resolve, reject) => {
-            window.jsforce.browserClient = new window.jsforce.BrowserClient(Date.now());
+            const prefix = String(Date.now());
+            const rand = Math.random().toString(36).substring(2);
+            const stateId = [prefix, 'popup', rand].join('.');
+            const redirectUri =
+                typeof window !== 'undefined' && window.location
+                    ? `${window.location.origin}/oauth2/callback`
+                    : '';
+            const stateParam =
+                stateId +
+                '#' +
+                [
+                    `redirectUri=${encodeURIComponent(redirectUri)}`,
+                    `loginUrl=${encodeURIComponent(normalizedUrl)}`,
+                ].join('&');
+            try {
+                localStorage.setItem('jsforce_state', stateId);
+            } catch (e) {
+                reject(new Error('localStorage not available'));
+                return;
+            }
+
+            window.jsforce.browserClient = new window.jsforce.BrowserClient(prefix);
             window.jsforce.browserClient.init({
                 ...window.jsforceSettings,
                 loginUrl: normalizedUrl,
-                version: window.jsforceSettings.apiVersion,
+                version: window.jsforceSettings?.apiVersion,
             });
+            window.jsforce.browserClient._removeTokens();
 
             window.jsforce.browserClient.on('connect', async connection => {
                 const connector = await Connector.createConnector({
@@ -122,23 +146,80 @@ export async function connect({ alias, loginUrl, username }, settings = {}) {
                     connection,
                     credentialType: OAUTH_TYPES.OAUTH,
                 });
-                // Always persist configuration (including refresh token) so we can reconnect later
                 await saveConfiguration(alias, connector.configuration);
                 resolve(connector);
             });
-            const loginOptions = { scope: FULL_SCOPE };
-            if (username) loginOptions.login_hint = username;
-            window.jsforce.browserClient
-                .login(loginOptions)
-                .then(res => {
-                    if (res.status === 'cancel') {
-                        resolve(null);
+
+            const oauth2 = new window.jsforce.OAuth2({
+                ...window.jsforceSettings,
+                redirectUri,
+                loginUrl: normalizedUrl,
+            });
+            const authzParams = {
+                response_type: 'code',
+                state: stateParam,
+                scope: FULL_SCOPE,
+            };
+            if (username) authzParams.login_hint = username;
+            const authzUrl = oauth2.getAuthorizationUrl(authzParams);
+
+            const popupWidth = 912;
+            const popupHeight = 513;
+            const left = typeof screen !== 'undefined' ? screen.width / 2 - popupWidth / 2 : 0;
+            const top = typeof screen !== 'undefined' ? screen.height / 2 - popupHeight / 2 : 0;
+            const pw =
+                typeof window !== 'undefined' && window.open
+                    ? window.open(
+                          authzUrl,
+                          undefined,
+                          `location=yes,toolbar=no,status=no,menubar=no,width=${popupWidth},height=${popupHeight},top=${top},left=${left}`
+                      )
+                    : null;
+
+            if (!pw) {
+                localStorage.removeItem('jsforce_state');
+                reject(new Error('Popup blocked'));
+                return;
+            }
+
+            const pid = setInterval(() => {
+                try {
+                    if (!pw || pw.closed) {
+                        clearInterval(pid);
+                        const tokens = window.jsforce.browserClient._getTokens();
+                        if (tokens) {
+                            const refreshToken =
+                                typeof localStorage !== 'undefined'
+                                    ? localStorage.getItem(
+                                          window.jsforce.browserClient._prefix + '_refresh_token'
+                                      )
+                                    : null;
+                            if (refreshToken) {
+                                tokens.refreshToken = refreshToken;
+                            }
+                            window.jsforce.browserClient.connection._establish(tokens);
+                            window.jsforce.browserClient.emit(
+                                'connect',
+                                window.jsforce.browserClient.connection
+                            );
+                        } else {
+                            const err = window.jsforce.browserClient._getError();
+                            if (err) {
+                                reject(
+                                    new Error(
+                                        [err.error, err.error_description].filter(Boolean).join(': ')
+                                    )
+                                );
+                            } else {
+                                resolve(null);
+                            }
+                        }
                     }
-                })
-                .catch(e => {
-                    LOGGER.error('Web OAuth Error', e);
+                } catch (e) {
+                    clearInterval(pid);
                     reject(e);
-                });
+                }
+            }, 500);
         });
     } else {
         throw new Error('OAuth connect is not implemented for this platform');

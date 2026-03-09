@@ -1,0 +1,17 @@
+:host {
+    min-width: 0;
+    display: block;
+}
+
+.dashboard-basic-stats-card {
+    height: 100%;
+}
+
+.basic-stats-title {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.basic-stats-value-row {
+    contain: none;
+}

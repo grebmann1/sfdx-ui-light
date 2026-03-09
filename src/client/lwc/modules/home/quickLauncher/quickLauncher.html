@@ -1,102 +1,107 @@
 <template>
-    <div class="slds-card slds-m-top_small slds-grid_vertical">
-        <div class="slds-col">
-            <div class="slds-card__header slds-grid">
-                <header class="slds-media slds-has-flexi-truncate slds-media_center">
-                    <div class="slds-media__body">
-                        <h1 class="slds-card__header-title">
-                            <span>Quick Launcher</span>
-                        </h1>
-                    </div>
-                    <div class="slds-no-flex"></div>
-                </header>
-            </div>
-            <div class="slds-card__body">
-                <div class="slds-grid slds-wrap">
-                    <div class="slds-col slds-size_1-of-2 slds-large-size_1-of-3">
-                        <!-- Explorers -->
-                        <div class="slds-item-title">
-                            <div class="slds-p-left_medium slds-text-heading_small slds-truncate">
-                                Explorers
-                            </div>
-                        </div>
+    <div class="quick-launcher slds-card slds-m-top_small">
+        <div class="slds-card__header slds-grid">
+            <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                <div class="slds-media__body">
+                    <h1 class="slds-card__header-title quick-launcher__title">
+                        <span>Quick Launcher</span>
+                    </h1>
+                </div>
+            </header>
+        </div>
+        <div class="slds-card__body quick-launcher__body">
+            <p class="quick-launcher__intro" role="status">
+                This is <strong>Workbench 2.0</strong>, the replacement of the legacy Workbench.
+                Connect to a Salesforce org if you want to interact with it.
+            </p>
+            <div class="quick-launcher__grid">
+                <!-- Explorers -->
+                <div class="quick-launcher__category">
+                    <h2 class="quick-launcher__category-title">Explorers</h2>
+                    <div class="quick-launcher__list">
                         <template for:each={explorers} for:item="item">
                             <div
                                 key={item.name}
-                                class="slds-item-list"
+                                class="quick-launcher__item"
+                                role="button"
+                                tabindex="0"
                                 onclick={handleQuickAction}
+                                onkeydown={handleItemKeydown}
                                 data-path={item.path}>
-                                <div class="slds-p-horizontal_medium">
-                                    <lightning-icon
-                                        icon-name={item.quickActionIcon}></lightning-icon>
-                                </div>
-                                <div class="slds-item-list-text slds-has-flexi-truncate">
-                                    <b>{item.label}</b>
-                                    <div class="slds-text-title">{item.description}</div>
+                                <span class="quick-launcher__icon" aria-hidden="true">
+                                    <lightning-icon icon-name={item.quickActionIcon}></lightning-icon>
+                                </span>
+                                <div class="quick-launcher__content">
+                                    <span class="quick-launcher__label">{item.label}</span>
+                                    <p class="quick-launcher__description">{item.description}</p>
                                 </div>
                             </div>
                         </template>
                     </div>
-                    <div class="slds-col slds-size_1-of-2 slds-large-size_1-of-3">
-                        <!-- Utilities -->
-                        <div class="slds-item-title">
-                            <div class="slds-p-left_medium slds-text-heading_small slds-truncate">
-                                Utilities
-                            </div>
-                        </div>
+                </div>
+                <!-- Utilities -->
+                <div class="quick-launcher__category">
+                    <h2 class="quick-launcher__category-title">Utilities</h2>
+                    <div class="quick-launcher__list">
                         <template for:each={tools} for:item="item">
                             <div
                                 key={item.name}
-                                class="slds-item-list"
+                                class="quick-launcher__item"
+                                role="button"
+                                tabindex="0"
                                 onclick={handleQuickAction}
+                                onkeydown={handleItemKeydown}
                                 data-path={item.path}>
-                                <div class="slds-p-horizontal_medium">
-                                    <lightning-icon
-                                        icon-name={item.quickActionIcon}></lightning-icon>
-                                </div>
-                                <div class="slds-item-list-text slds-has-flexi-truncate">
-                                    <b>{item.label}</b>
-                                    <div class="slds-text-title">{item.description}</div>
+                                <span class="quick-launcher__icon" aria-hidden="true">
+                                    <lightning-icon icon-name={item.quickActionIcon}></lightning-icon>
+                                </span>
+                                <div class="quick-launcher__content">
+                                    <span class="quick-launcher__label">{item.label}</span>
+                                    <p class="quick-launcher__description">{item.description}</p>
                                 </div>
                             </div>
                         </template>
                     </div>
-                    <div class="slds-col slds-size_1-of-2 slds-large-size_1-of-3">
-                        <!-- Plugins -->
-                        <div class="slds-item-title">
-                            <div class="slds-p-left_medium slds-text-heading_small slds-truncate">
-                                Plugins
-                            </div>
-                        </div>
+                </div>
+                <!-- Plugins -->
+                <div class="quick-launcher__category">
+                    <h2 class="quick-launcher__category-title">Plugins</h2>
+                    <div class="quick-launcher__list">
                         <div
-                            class="slds-item-list"
+                            class="quick-launcher__item"
+                            role="button"
+                            tabindex="0"
                             onclick={handleRedirection}
+                            onkeydown={handleItemKeydown}
                             data-url="https://chromewebstore.google.com/detail/sf-toolkit-light/konbmllgicfccombdckckakhnmejjoei">
-                            <div class="slds-p-horizontal_medium">
+                            <span class="quick-launcher__icon" aria-hidden="true">
                                 <lightning-icon icon-name="standard:apex_plugin"></lightning-icon>
-                            </div>
-                            <div class="slds-item-list-text">
-                                <b>Chrome Extension</b>
-                                <div class="slds-text-title">
+                            </span>
+                            <div class="quick-launcher__content">
+                                <span class="quick-launcher__label">Chrome Extension</span>
+                                <p class="quick-launcher__description">
                                     Extension improving the UX of admins/devs in Salesforce and
-                                    Authenticated redirection to SF Toolkit.
-                                </div>
+                                    authenticated redirection to SF Toolkit.
+                                </p>
                             </div>
                         </div>
                         <div
-                            class="slds-item-list"
+                            class="quick-launcher__item"
+                            role="button"
+                            tabindex="0"
                             onclick={handleRedirection}
+                            onkeydown={handleItemKeydown}
                             data-url="https://github.com/grebmann1/sf-toolkit-desktop/releases">
-                            <div class="slds-p-horizontal_medium">
+                            <span class="quick-launcher__icon" aria-hidden="true">
                                 <lightning-icon
                                     icon-name="standard:scheduling_workspace"></lightning-icon>
-                            </div>
-                            <div class="slds-item-list-text">
-                                <b>Electron</b>
-                                <div class="slds-text-title">
-                                    Desktop version of the SF Toolkit that interact with your SFDX
-                                    CLI and provide extra feature such as PMD, etc.
-                                </div>
+                            </span>
+                            <div class="quick-launcher__content">
+                                <span class="quick-launcher__label">Electron</span>
+                                <p class="quick-launcher__description">
+                                    Desktop version of the SF Toolkit that integrates with your
+                                    SFDX CLI and provides features such as PMD, etc.
+                                </p>
                             </div>
                         </div>
                     </div>

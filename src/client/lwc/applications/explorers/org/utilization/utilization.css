@@ -1,0 +1,18 @@
+.org-utilization-body {
+    min-height: 0;
+}
+
+.org-utilization-scroll {
+    min-height: 280px;
+    max-height: 400px;
+}
+
+.org-utilization-item {
+    min-width: 0;
+}
+
+@media (max-width: 479px) {
+    .org-utilization-scroll {
+        max-height: none;
+    }
+}

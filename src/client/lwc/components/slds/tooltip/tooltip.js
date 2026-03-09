@@ -202,6 +202,9 @@ export default class Tooltip extends LightningElement {
         if (this.disabled) {
             return;
         }
+        if (!this.hasItems && (this.label === undefined || this.label === null || String(this.label).trim() === '')) {
+            return;
+        }
 
         const alignment = this.hasItems
             ? {

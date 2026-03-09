@@ -38,6 +38,7 @@
     border: none;
     border-radius: 0;
     box-shadow: none;
+    background-color: var(--slds-g-color-neutral-base-100, #fff);
     font-weight: var(--slds-g-font-weight-4, 400);
     color: var(--slds-s-navigation-color, var(--slds-g-color-on-surface-3, #03234d));
     transform: scale(1); /* required to prevent the button from shifting on hover */
@@ -55,6 +56,7 @@
 }
 
 .collapse-control-button:hover {
+    background-color: var(--slds-g-color-neutral-base-100, #fff);
     color: var(--slds-s-navigation-color-hover, var(--slds-g-color-brand-base-15, #03234d));
 }
 

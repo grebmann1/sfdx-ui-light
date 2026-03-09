@@ -315,19 +315,19 @@ export default class Menu extends ToolkitElement {
                 name: 'extra_howTo',
                 url: 'https://sf-toolkit.com/install',
                 menuIcon: 'utility:knowledge_base',
-                menuLabel: this.isMenuSmall ? '' : 'How to',
+                menuLabel: 'How to',
             },
             {
                 name: 'extra_reportIssue',
                 url: 'https://github.com/grebmann1/sfdx-ui-light/issues',
                 menuIcon: 'utility:bug',
-                menuLabel: this.isMenuSmall ? '' : 'Report Issue',
+                menuLabel: 'Report issue',
             },
             {
                 name: 'extra_contribute',
                 url: 'https://github.com/grebmann1/sfdx-ui-light',
                 menuIcon: 'utility:recipe',
-                menuLabel: this.isMenuSmall ? '' : 'Contribute',
+                menuLabel: 'Contribute',
             },
         ];
     }

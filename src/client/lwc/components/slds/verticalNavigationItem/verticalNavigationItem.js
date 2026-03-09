@@ -152,6 +152,10 @@ export default class VerticalNavigationItem extends LightningElement {
         return !this.isCollapsed;
     }
 
+    get computedTooltipLabel() {
+        return this.label || this.name || 'Menu item';
+    }
+
     renderedCallback() {
         // If the item has just become active, focus the action element
         if (this._hasRendered && this.isActive && !this._wasActive) {

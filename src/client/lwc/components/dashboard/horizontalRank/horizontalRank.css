@@ -1,0 +1,11 @@
+:host {
+    min-width: 0;
+}
+
+.horizontal-rank-inner {
+    overflow: hidden;
+}
+
+.horizontal-rank-bar {
+    flex-shrink: 0;
+}

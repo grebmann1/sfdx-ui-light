@@ -115,13 +115,23 @@ app.get('/cta/search', function (req, res) {
     res.json(result);
 });
 app.get('/oauth2/callback', async function (req, res) {
-    var code = req.query.code;
-    var states = req.query.state.split('#');
-    var params = qs.parse(states[1]);
+    const code = req.query.code;
+    const stateRaw = req.query.state;
+    if (!code || !stateRaw) {
+        console.log('OAuth2 callback missing code or state');
+        res.redirect('/');
+        return;
+    }
+    const states = stateRaw.split('#');
+    const params = qs.parse(states[1] || '');
+    const redirectUri =
+        params.redirectUri ||
+        `${req.protocol}://${req.get('host') || req.hostname}/oauth2/callback`;
+    const loginUrl = params.loginUrl || 'https://login.salesforce.com';
+    const oauthParams = { ...params, redirectUri, loginUrl };
 
     try {
-        const conn = new jsforce.Connection({ oauth2: getOAuth2Instance(params) });
-
+        const conn = new jsforce.Connection({ oauth2: getOAuth2Instance(oauthParams) });
         const userInfo = await conn.authorize(code);
         res.redirect(
             `/callback#${qs.stringify({
