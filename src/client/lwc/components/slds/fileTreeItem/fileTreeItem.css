@@ -10,28 +10,67 @@
 .slds-tree__item {
     cursor: pointer;
     user-select: none;
-    min-height: 2rem;
+    min-height: var(--slds-g-sizing-7, 1.5rem);
     align-items: center;
     display: flex;
-    padding: 0.375rem 0 0.375rem 0rem;
+    padding: 0.375rem 0;
+    padding-inline-start: var(--slds-g-spacing-1, 0.25rem);
+    padding-block-start: 0 !important;
+    padding-block-end: 0 !important;
+    border-radius: var(--slds-g-radius-border-1, 0.25rem);
 }
+
+.slds-tree__item:focus-visible {
+    outline: 2px solid var(--slds-g-color-brand-base-15, #001e5b);
+    outline-offset: 2px;
+}
+
 .slds-tree__item:hover {
-    --slds-g-color-accent-1: light-dark(#066afe, #066afe); /** Until slds 2 */
-    background: color-mix(in srgb, var(--slds-g-color-accent-1) 10%, transparent);
+    background: var(--slds-g-color-neutral-base-90, #e5e5e5);
+}
+
+.slds-tree__item .show-on-hover {
+    display: none;
+}
+
+.slds-tree__item.slds-is-hovered .show-on-hover {
+    display: block;
+}
+
+.slds-tree__item .tree-item-label-right {
+    --slds-c-icon-color-foreground: var(--slds-g-color-on-disabled-1, #757575);
+}
+
+.slds-tree__item.slds-is-hovered .show-on-hover:hover {
+    --slds-c-icon-color-foreground: var(--slds-g-color-on-surface-2, #2e2e2e);
 }
 
 .slds-tree__group {
     margin-left: 1rem;
+    padding-left: var(--slds-g-spacing-5, 1.5rem);
 }
 
 .slds-tree__group:not(.is-first) {
-    border-left: 1px dashed #74747442;
+    border-left: 1px dashed rgba(116, 116, 116, 0.26);
 }
 
 .slds-tree__item-label {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    min-width: 100%;
+}
+
+.slds-tree__item-label .slds-truncate {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.tree-item-label-right {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    margin-left: auto;
 }
 
 .chevron-icon {
@@ -43,8 +82,62 @@
     font-size: small;
 }
 
-.api-badge--get {
+.tree-item-selected {
+    background: var(--slds-g-color-neutral-base-90, #e5e5e5);
+}
+
+.tree-item.slds-is-hovered,
+.tree-item:hover {
+    background: var(--slds-g-color-neutral-base-90, #e5e5e5);
+}
+
+.tree-item.tree-item-selected.slds-is-hovered,
+.tree-item.tree-item-selected:hover,
+.tree-item.tree-item-selected:focus-visible {
+    background: var(--slds-g-color-neutral-base-90, #e5e5e5);
+}
+
+/* API method badges: consistent look and preserved appearance on selection/hover */
+.slds-tree__item [data-element='api-badge'] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    margin-right: var(--slds-g-spacing-2, 0.5rem);
+    padding: 0.125rem 0.5rem;
+    font-size: var(--slds-g-font-scale-1, 0.75rem);
+    font-weight: var(--slds-g-font-weight-7, 700);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    border-radius: var(--slds-g-radius-border-1, 0.25rem);
+    border: none;
+    flex-shrink: 0;
+}
+
+.tree-item-selected [data-element='api-badge'],
+.slds-tree__item.slds-is-hovered [data-element='api-badge'],
+.slds-tree__item:hover [data-element='api-badge'] {
+    /* Keep badge colors on top of row selection/hover background */
+    isolation: isolate;
+}
+
+.api-badge--get,
+.slds-tree__item .slds-theme_info[data-element='api-badge'] {
     background: var(--slds-g-color-brand-base-50, #0176d3);
     color: var(--slds-g-color-neutral-base-100, #ffffff);
-    border-color: transparent;
+}
+
+.slds-tree__item .slds-theme_success[data-element='api-badge'] {
+    background: var(--slds-g-color-success-base-60, #2e844a);
+    color: var(--slds-g-color-neutral-base-100, #ffffff);
+}
+
+.slds-tree__item .slds-theme_warning[data-element='api-badge'] {
+    background: var(--slds-g-color-warning-base-50, #fe9339);
+    color: var(--slds-g-color-neutral-base-100, #ffffff);
+}
+
+.slds-tree__item .slds-theme_error[data-element='api-badge'] {
+    background: var(--slds-g-color-error-base-50, #ba0517);
+    color: var(--slds-g-color-neutral-base-100, #ffffff);
 }

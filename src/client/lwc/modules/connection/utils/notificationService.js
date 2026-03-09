@@ -35,7 +35,11 @@ export function showAlert({ message, theme = 'error', label = 'Error!' }) {
 export function handleError(error, context = '') {
     const source = context || 'connection';
     const message =
-        error instanceof Error ? error.message : error?.message != null ? String(error.message) : String(error ?? 'Error');
+        error instanceof Error
+            ? error.message
+            : error?.message != null
+              ? String(error.message)
+              : String(error ?? 'Error');
     reportError(error, {
         details: error?.stack || error?.message || message,
         source,

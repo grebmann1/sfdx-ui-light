@@ -1,6 +1,21 @@
 import { api, LightningElement } from 'lwc';
-import { classSet, isEmpty, isNotUndefinedOrNull, isUndefinedOrNull } from 'shared/utils';
-import { getHighlightedRichText } from './utils';
+import { classSet } from 'shared/utils';
+import {
+    getHighlightedRichText,
+    getFirstChildTreeItem,
+    getNextTreeItem,
+    getPreviousTreeItem,
+    getParentTreeItem,
+} from './utils';
+
+const KEY = {
+    Enter: 'Enter',
+    Space: ' ',
+    ArrowUp: 'ArrowUp',
+    ArrowDown: 'ArrowDown',
+    ArrowLeft: 'ArrowLeft',
+    ArrowRight: 'ArrowRight',
+};
 
 const i18n = {
     ToggleFolder: 'Toggle folder',
@@ -22,6 +37,7 @@ export default class FileTreeItem extends LightningElement {
     @api searchValue = '';
     @api isDeleteDisabled = false;
     @api isFolderSelectable = false;
+    @api isTabbable = false;
 
     isHover = false;
     isMenuOpen = false;
@@ -120,6 +136,100 @@ export default class FileTreeItem extends LightningElement {
         }
     }
 
+    get tabIndex() {
+        return this.isTabbable ? 0 : -1;
+    }
+
+    handleKeyDown(event) {
+        const isEnter = event.key === KEY.Enter;
+        const isSpace = event.key === KEY.Space;
+        if (isEnter || isSpace) {
+            event.preventDefault();
+            if (this.isFolder) {
+                this.handleToggle(event);
+                if (this.isFolderSelectable) {
+                    this.handleSelect(event);
+                }
+            } else {
+                this.handleSelect(event);
+            }
+            return;
+        }
+        switch (event.key) {
+            case KEY.ArrowUp: {
+                event.preventDefault();
+                event.stopPropagation();
+                const prev = getPreviousTreeItem(this.template);
+                if (prev) {
+                    this.focusTreeItemElement(prev);
+                }
+                break;
+            }
+            case KEY.ArrowDown: {
+                event.preventDefault();
+                event.stopPropagation();
+                const next = getNextTreeItem(this.template);
+                if (next) {
+                    this.focusTreeItemElement(next);
+                }
+                break;
+            }
+            case KEY.ArrowLeft: {
+                event.preventDefault();
+                event.stopPropagation();
+                if (this.isFolder && this.expanded) {
+                    this.handleToggle(event);
+                } else {
+                    const parent = getParentTreeItem(this.template);
+                    if (parent) {
+                        this.focusTreeItemElement(parent);
+                    }
+                }
+                break;
+            }
+            case KEY.ArrowRight: {
+                event.preventDefault();
+                event.stopPropagation();
+                if (this.isFolder) {
+                    if (!this.expanded) {
+                        this.handleToggle(event);
+                    } else {
+                        const first = getFirstChildTreeItem(this.template);
+                        if (first) {
+                            this.focusTreeItemElement(first);
+                        }
+                    }
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    stopKeydown(event) {
+        if (event.key === KEY.Enter || event.key === KEY.Space) {
+            event.stopPropagation();
+        }
+    }
+
+    @api
+    focus() {
+        const el = this.template.querySelector('[data-tid="file-tree-item"]');
+        if (el) {
+            el.focus();
+        }
+    }
+
+    focusTreeItemElement(componentElement) {
+        if (componentElement && componentElement.shadowRoot) {
+            const el = componentElement.shadowRoot.querySelector('[data-tid="file-tree-item"]');
+            if (el) {
+                el.focus();
+            }
+        }
+    }
+
     /** Methods */
 
     /** Getters */
@@ -128,8 +238,29 @@ export default class FileTreeItem extends LightningElement {
         return this.item?.name || 'Unknown';
     }
 
+    get displayName() {
+        return this.item?.displayName ?? this.item?.name ?? 'Unknown';
+    }
+
     get title() {
-        return this.item?.title || this.item?.name || 'Unknown';
+        return this.item?.title ?? this.displayName;
+    }
+
+    get ariaLabel() {
+        const typeLabel = this.isFolder ? i18n.AltTextFolder : i18n.AltTextFile;
+        return `${typeLabel} ${this.displayName}`;
+    }
+
+    get ariaPosInSet() {
+        return this.item?.posInSet;
+    }
+
+    get ariaSetSize() {
+        return this.item?.setSize;
+    }
+
+    get ariaExpandedAttribute() {
+        return this.isFolder ? this.expanded : undefined;
     }
 
     get i18n() {
@@ -199,19 +330,20 @@ export default class FileTreeItem extends LightningElement {
     }
 
     get highlightedName() {
-        if (!this.searchValue || this.searchValue.length < 3 || !this.item?.name) {
-            return this.item?.name || '';
+        const base = this.displayName;
+        if (!this.searchValue || this.searchValue.length < 3) {
+            return base;
         }
-
-        return getHighlightedRichText(this.item.name, [this.searchValue]);
+        return getHighlightedRichText(base, [this.searchValue]);
     }
 
     get rootClasses() {
-        return classSet('slds-tree__item')
+        return classSet('slds-tree__item tree-item')
             .add({
                 'is-first': this.isFirst,
                 'slds-is-hovered': this.isMenuButtonVisible,
-                'slds-is-selected': this.selected,
+                //'slds-is-selected': this.selected,
+                'tree-item-selected': this.selected,
             })
             .toString();
     }

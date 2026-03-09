@@ -62,7 +62,9 @@
     background: var(--slds-g-color-neutral-base-100, #fff);
     border: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
     border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.08);
+    box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.12),
+        0 0 1px rgba(0, 0, 0, 0.08);
     z-index: 9999;
     overflow: hidden;
     display: flex;
@@ -119,7 +121,9 @@
     background: transparent;
     color: var(--slds-g-color-neutral-base-50, #706e6b);
     cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
 }
 
 .footer-error-panel-close:hover {
@@ -189,7 +193,9 @@
     border: 1px solid transparent;
     border-left: 3px solid transparent;
     cursor: pointer;
-    transition: background 0.12s ease, border-color 0.12s ease;
+    transition:
+        background 0.12s ease,
+        border-color 0.12s ease;
 }
 
 .footer-error-list-item:hover {

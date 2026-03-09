@@ -12,13 +12,16 @@ function normalizeErrorPayload(error) {
         };
     }
     const isErrorInstance = error instanceof Error;
-    const message =
-        isErrorInstance ? error.message : (typeof error === 'object' && error.message != null ? error.message : String(error));
+    const message = isErrorInstance
+        ? error.message
+        : typeof error === 'object' && error.message != null
+          ? error.message
+          : String(error);
     const details =
         typeof error === 'object' && error.details != null
             ? String(error.details)
             : isErrorInstance
-              ? (error.stack || '')
+              ? error.stack || ''
               : '';
     const source = typeof error === 'object' && error.source != null ? String(error.source) : '';
     return {

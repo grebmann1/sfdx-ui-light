@@ -1,0 +1,89 @@
+:host {
+    --background-color: var(--slds-g-color-surface-1, #ffffff);
+    --color-bg-highlight: var(--slds-g-color-surface-container-2, #f3f2f2);
+    --color-lightest: var(--slds-g-color-brand-base-20, #16325c);
+    color: var(--slds-g-color-brand-base-20, #16325c);
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    background-color: var(--background-color);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    font-size: 90%;
+    overflow: hidden;
+}
+
+.file-explorer-container {
+    padding-top: 0;
+    overflow-y: auto;
+    height: 100%;
+    flex: 1;
+}
+
+.container header.row > :first-child {
+    flex-grow: 1;
+}
+
+.container header.row {
+    align-items: baseline;
+}
+
+.row {
+    display: flex;
+}
+
+.container .sticky {
+    --space-unit: 0;
+    background-color: var(--background-color);
+    padding: var(--slds-g-spacing-1, 0.25rem) var(--space-unit);
+    position: sticky;
+    top: 0;
+    z-index: 11;
+}
+
+ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+ul li {
+    display: block;
+}
+
+[role='treeitem'][aria-selected='true'] {
+    background: var(--color-bg-highlight);
+}
+
+[role='treeitem'] {
+    align-items: center;
+    display: flex;
+    font-size: var(--slds-g-font-scale-base, 13px);
+    height: 26px;
+    outline-color: var(--color-accent);
+    padding-left: var(--slds-g-spacing-2, 0.5rem);
+}
+
+[role='treeitem'] > :first-child {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.content {
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.search-input {
+    flex-grow: 1;
+}
+
+.tree-container {
+    padding-bottom: var(--slds-g-spacing-5, 1.5rem) !important;
+}

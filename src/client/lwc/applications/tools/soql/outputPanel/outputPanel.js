@@ -1,7 +1,16 @@
 import { LightningElement, wire, api } from 'lwc';
 import Toast from 'lightning/toast';
 import ToolkitElement from 'core/toolkitElement';
-import { reportError, store, connectStore, SELECTORS, DESCRIBE, SOBJECT, UI, QUERY } from 'core/store';
+import {
+    reportError,
+    store,
+    connectStore,
+    SELECTORS,
+    DESCRIBE,
+    SOBJECT,
+    UI,
+    QUERY,
+} from 'core/store';
 import { isNotUndefinedOrNull, lowerCaseKey } from 'shared/utils';
 import moment from 'moment';
 

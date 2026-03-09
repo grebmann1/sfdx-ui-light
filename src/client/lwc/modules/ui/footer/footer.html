@@ -94,9 +94,13 @@
                                     role="button"
                                     tabindex="0">
                                     <span class="footer-error-list-meta">
-                                        <span class="footer-error-list-time">[{error.formattedTime}]</span>
+                                        <span class="footer-error-list-time">
+                                            [{error.formattedTime}]
+                                        </span>
                                         <template lwc:if={error.source}>
-                                            <span class="footer-error-list-source">[{error.source}]</span>
+                                            <span class="footer-error-list-source">
+                                                [{error.source}]
+                                            </span>
                                         </template>
                                     </span>
                                     <span class="footer-error-list-message">{error.message}</span>
@@ -115,19 +119,27 @@
                                 <template lwc:if={selectedErrorSource}>
                                     <div class="footer-error-details-row">
                                         <dt class="footer-error-details-label">Source</dt>
-                                        <dd class="footer-error-details-value">{selectedErrorSource}</dd>
+                                        <dd class="footer-error-details-value">
+                                            {selectedErrorSource}
+                                        </dd>
                                     </div>
                                 </template>
-                                <div class="footer-error-details-row footer-error-details-row-message">
+                                <div
+                                    class="footer-error-details-row footer-error-details-row-message">
                                     <dt class="footer-error-details-label">Message</dt>
                                     <dd class="footer-error-details-value">
-                                        <pre class="footer-error-pre footer-error-pre-message">{selectedError.message}</pre>
+                                        <pre class="footer-error-pre footer-error-pre-message">
+{selectedError.message}</pre
+                                        >
                                     </dd>
                                 </div>
-                                <div class="footer-error-details-row footer-error-details-row-details">
+                                <div
+                                    class="footer-error-details-row footer-error-details-row-details">
                                     <dt class="footer-error-details-label">Details</dt>
                                     <dd class="footer-error-details-value">
-                                        <pre class="footer-error-pre footer-error-pre-details">{selectedError.details}</pre>
+                                        <pre class="footer-error-pre footer-error-pre-details">
+{selectedError.details}</pre
+                                        >
                                     </dd>
                                 </div>
                             </dl>

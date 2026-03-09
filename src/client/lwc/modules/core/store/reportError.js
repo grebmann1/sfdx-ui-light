@@ -18,7 +18,7 @@ export function reportError(error, options = {}) {
     if (error instanceof Error) {
         payload = {
             message: error.message,
-            details: options.details != null ? options.details : (error.stack || ''),
+            details: options.details != null ? options.details : error.stack || '',
             source: options.source || '',
         };
     } else if (typeof error === 'string') {
@@ -30,8 +30,18 @@ export function reportError(error, options = {}) {
     } else if (error && typeof error === 'object') {
         payload = {
             message: error.message != null ? String(error.message) : 'Unknown error',
-            details: options.details != null ? options.details : (error.details != null ? String(error.details) : ''),
-            source: options.source != null ? options.source : (error.source != null ? String(error.source) : ''),
+            details:
+                options.details != null
+                    ? options.details
+                    : error.details != null
+                      ? String(error.details)
+                      : '',
+            source:
+                options.source != null
+                    ? options.source
+                    : error.source != null
+                      ? String(error.source)
+                      : '',
         };
     } else {
         payload = {

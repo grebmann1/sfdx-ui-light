@@ -3,23 +3,26 @@
         <!-- external search controls -->
     </template>
     <template lwc:else>
-        <lightning-input
-            class="slds-m-bottom_small slds-m-around_small search-input"
-            name={i18n.Search}
-            type="search"
-            placeholder={i18n.SearchPlaceholder}
-            value={searchValue}
-            onkeyup={handleSearch}
-            onchange={handleSearch}
-            label={i18n.Search}
-            variant="label-hidden"></lightning-input>
+        <div class="slds-grid slds-p-around_small slds-m-bottom_small">
+            <lightning-input
+                data-tid="search-input"
+                class="search-input"
+                name={i18n.Search}
+                type="search"
+                placeholder={i18n.SearchPlaceholder}
+                value={searchValue}
+                onchange={handleSearch}
+                label={i18n.Search}
+                variant="label-hidden"></lightning-input>
+        </div>
     </template>
-    <div class="file-explorer-container full-height">
-        <ul lwc:if={isTreeVisible} class="slds-tree" role="tree">
+    <div class="file-explorer-container full-height slds-p-horizontal_small">
+        <ul lwc:if={isTreeVisible} class="slds-tree tree-container" role="tree">
             <template for:each={computedTree} for:item="item">
-                <li key={item.id}>
+                <li key={item.id} role="none">
                     <slds-file-tree-item
                         is-first
+                        is-tabbable={item.isTabbable}
                         item={item}
                         expanded={item.expanded}
                         selected={item.selected}

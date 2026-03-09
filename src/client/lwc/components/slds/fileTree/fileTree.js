@@ -11,9 +11,9 @@ const i18n = {
  */
 export default class FileTree extends LightningElement {
     expandedMap = {};
-    visibleMap = {};
     searchValue = '';
     matchedIds = new Set();
+    nonMatchesInDirectory = new Set();
 
     @api selectedId = '';
     value = '';
@@ -31,9 +31,15 @@ export default class FileTree extends LightningElement {
     handleSearch(event) {
         runActionAfterTimeOut(
             event.target.value,
-            value => {
+            (value) => {
+                if (value.trim() === '') {
+                    this.expandedMap = {};
+                    this.searchValue = '';
+                    this.nonMatchesInDirectory = new Set();
+                    this.matchedIds = new Set();
+                    return;
+                }
                 this.searchValue = value;
-                // returns a map of what should be expanded and a map of non-matching children in each expanded folder
                 const options = {
                     searchFields: this.searchFields,
                     minSearchLength: this.minSearchLength,
@@ -41,7 +47,7 @@ export default class FileTree extends LightningElement {
                 if (this.includeFoldersInResults === true) {
                     options.includeFoldersInResults = true;
                 }
-                const { expandedMap, matchedIds } = searchDirectories(
+                const { expandedMap, matchedIds, nonMatchesInDirectory } = searchDirectories(
                     this.searchValue,
                     this.tree,
                     this.expandedMap,
@@ -49,6 +55,7 @@ export default class FileTree extends LightningElement {
                 );
                 this.expandedMap = expandedMap || {};
                 this.matchedIds = matchedIds || new Set();
+                this.nonMatchesInDirectory = nonMatchesInDirectory || new Set();
             },
             { timeout: 300, key: 'slds.fileTree.search' }
         );
@@ -65,6 +72,12 @@ export default class FileTree extends LightningElement {
     handleSelect(event) {
         const { item } = event.detail;
         this.selectedId = item.id;
+        if (Array.isArray(item?.children) && item.children.length > 0) {
+            this.expandedMap = {
+                ...this.expandedMap,
+                [item.id]: true,
+            };
+        }
         this.dispatchEvent(new CustomEvent('select', { detail: { item } }));
     }
 
@@ -110,31 +123,33 @@ export default class FileTree extends LightningElement {
     }
 
     /** Methods */
-    injectState(item, level) {
+    injectState(item, level, isFirstRoot = false, posInSet = 1, setSize = 1) {
         const expanded = !!this.expandedMap[item.id];
         const selected = this.selectedId === item.id;
+        const isTabbable = selected || (level === 0 && isFirstRoot);
         const searchInactive = this.searchValue.length < this.minSearchLength;
-        const isFolder = Array.isArray(item.children);
+        const isFolder = Array.isArray(item.children) && item.children.length > 0;
+        const childSetSize = item.children?.length ?? 0;
         const children = item.children
-            ? item.children.map(child => this.injectState(child, level + 1))
+            ? item.children.map((child, index) =>
+                  this.injectState(child, level + 1, false, index + 1, childSetSize)
+              )
             : undefined;
-        let visible;
-        if (searchInactive) {
-            visible = true;
-        } else if (isFolder) {
-            const childVisible = (children || []).some(c => c.visible);
-            const selfMatchAndIncluded =
-                this.includeFoldersInResults === true && this.matchedIds.has(item.id);
-            visible = childVisible || selfMatchAndIncluded;
-        } else {
-            visible = this.matchedIds.has(item.id);
-        }
+        const visible =
+            searchInactive ||
+            isFolder ||
+            !this.nonMatchesInDirectory.has(item.id);
+        const displayName = item.displayName ?? item.name ?? '';
         return {
             ...item,
             expanded,
             selected,
+            isTabbable,
             children,
             visible,
+            displayName,
+            posInSet,
+            setSize,
         };
     }
 
@@ -142,7 +157,12 @@ export default class FileTree extends LightningElement {
 
     @api
     get computedTree() {
-        return (this.tree || []).map(item => this.injectState(item, 0));
+        const items = this.tree || [];
+        const setSize = items.length;
+        const hasSelection = this.selectedId != null && this.selectedId !== '';
+        return items.map((item, index) =>
+            this.injectState(item, 0, !hasSelection && index === 0, index + 1, setSize)
+        );
     }
 
     get isTreeVisible() {

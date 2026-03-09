@@ -1,3 +1,20 @@
+/**
+ * Normalizes a string for search comparisons:
+ * - lowercases
+ * - treats underscores and spaces as equivalent by converting to single spaces
+ * - collapses multiple spaces and trims
+ */
+export function normalizeForSearch(input) {
+    if (typeof input !== 'string') {
+        return '';
+    }
+    return input
+        .toLowerCase()
+        .replace(/[_\s]+/g, ' ')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+}
+
 export function searchDirectories(searchTerm, tree, expandedMap = {}, options = {}) {
     const {
         searchFields = ['name', 'id'],
@@ -12,7 +29,7 @@ export function searchDirectories(searchTerm, tree, expandedMap = {}, options = 
             matchedIds: new Set(),
         };
     }
-    const normalizedTerm = caseInsensitive ? String(searchTerm).toLowerCase() : String(searchTerm);
+    const normalizedTerm = normalizeForSearch(String(searchTerm));
     if (normalizedTerm.length < minSearchLength) {
         return {
             expandedMap: {},
@@ -30,7 +47,7 @@ export function searchDirectories(searchTerm, tree, expandedMap = {}, options = 
         });
     }
     flatten(tree);
-    // 2. Filter flat list by search term
+    // 2. Filter flat list by search term (use normalizeForSearch for underscore/space equivalence)
     const getItemSearchString = item => {
         const isPrimitive = v =>
             typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
@@ -45,7 +62,8 @@ export function searchDirectories(searchTerm, tree, expandedMap = {}, options = 
             }
         }
         const combined = values.join(' ').trim().replace(/\s+/g, ' ');
-        return caseInsensitive ? combined.toLowerCase() : combined;
+        const str = caseInsensitive ? combined.toLowerCase() : combined;
+        return normalizeForSearch(str);
     };
 
     const filtered = flatList.filter(item => {
@@ -67,8 +85,20 @@ export function searchDirectories(searchTerm, tree, expandedMap = {}, options = 
     expandedSet.forEach(id => {
         newExpandedMap[id] = true;
     });
+    // 6. nonMatchesInDirectory: leaf nodes in expanded folders that don't match (reference visibility)
+    const nonMatchesInDirectory = new Set();
+    flatList.forEach((entry) => {
+        const isLeaf = !(entry.children && entry.children.length > 0);
+        const parentId = entry.parentIds.length > 0 ? entry.parentIds[entry.parentIds.length - 1] : null;
+        const parentExpanded =
+            parentId === null || expandedSet.has(parentId) || newExpandedMap[parentId];
+        if (isLeaf && parentExpanded && !matchedIdSet.has(entry.id)) {
+            nonMatchesInDirectory.add(entry.id);
+        }
+    });
     return {
         expandedMap: newExpandedMap,
         matchedIds: matchedIdSet,
+        nonMatchesInDirectory,
     };
 }
