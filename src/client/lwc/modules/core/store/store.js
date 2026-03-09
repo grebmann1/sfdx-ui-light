@@ -22,6 +22,7 @@ import {
     SHELL,
     TEXTCOMPARE,
 } from './modules/index';
+import { reportError } from './reportError';
 import { storeRef } from './storeRef';
 
 const store = configureStore({
@@ -96,6 +97,16 @@ const store = configureStore({
 
 storeRef.current = store;
 
+if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
+    window.addEventListener('unhandledrejection', (event) => {
+        reportError(event.reason, {
+            source: 'unhandledRejection',
+            details: event.reason?.stack || String(event.reason),
+        });
+    });
+}
+
+export { reportError };
 export {
     store,
     UI,

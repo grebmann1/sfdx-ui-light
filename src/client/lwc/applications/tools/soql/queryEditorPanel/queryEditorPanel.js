@@ -1,6 +1,6 @@
 import { wire, api, track } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { store, connectStore, SELECTORS, SOBJECT, DESCRIBE, QUERY, UI } from 'core/store';
+import { reportError, store, connectStore, SELECTORS, SOBJECT, DESCRIBE, QUERY, UI } from 'core/store';
 import {
     fullApiName,
     isUndefinedOrNull,
@@ -104,6 +104,7 @@ export default class QueryEditorPanel extends ToolkitElement {
     }
 
     handleError = e => {
+        reportError(e, { source: 'soql' });
         const error = extractErrorDetailsFromQuery(e.message);
         if (
             error &&

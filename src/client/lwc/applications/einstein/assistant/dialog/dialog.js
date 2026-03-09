@@ -10,7 +10,7 @@ import {
     ASSISTANT as ASSISTANT_UTILS,
 } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
-import { store, connectStore, EINSTEIN, SELECTORS } from 'core/store';
+import { reportError, store, connectStore, EINSTEIN, SELECTORS } from 'core/store';
 import LOGGER from 'shared/logger';
 
 const LATEST_MODEL_APEX = 'sfdc_ai__DefaultGPT4Omni';
@@ -294,6 +294,7 @@ export default class Dialog extends ToolkitElement {
     };
 
     global_handleError = e => {
+        reportError(e, { source: 'assistant' });
         let errors = e.message.split(':');
         if (errors.length > 1) {
             this.error_title = errors.shift();

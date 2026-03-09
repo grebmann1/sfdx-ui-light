@@ -1,8 +1,7 @@
 // notificationService.js
 // TODO: Import actual Toast and Alert modules as needed
-import { ERROR, store } from 'core/store';
+import { reportError } from 'core/store';
 import Toast from 'lightning/toast';
-import LOGGER from 'shared/logger';
 
 export function showToast({ label, message, variant = 'info' }) {
     // TODO: Implement toast logic
@@ -34,9 +33,12 @@ export function showAlert({ message, theme = 'error', label = 'Error!' }) {
 }
 
 export function handleError(error, context = '') {
-    // Log error to global error store
-    store.dispatch(
-        ERROR.reduxSlice.actions.addError(context || 'Error', error.stack || error.message || error)
-    );
-    showToast({ label: context, message: error.message || error, variant: 'error' });
+    const source = context || 'connection';
+    const message =
+        error instanceof Error ? error.message : error?.message != null ? String(error.message) : String(error ?? 'Error');
+    reportError(error, {
+        details: error?.stack || error?.message || message,
+        source,
+    });
+    showToast({ label: source, message, variant: 'error' });
 }

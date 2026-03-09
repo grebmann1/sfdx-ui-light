@@ -15,7 +15,7 @@ import {
     isChromeExtension,
     API as API_UTILS,
 } from 'shared/utils';
-import { store, connectStore, PACKAGE, SELECTORS } from 'core/store';
+import { reportError, store, connectStore, PACKAGE, SELECTORS } from 'core/store';
 import Toast from 'lightning/toast';
 import moment from 'moment';
 import { TEMPLATE } from 'package/utils';
@@ -413,6 +413,7 @@ export default class Retrieve extends ToolkitElement {
     // Errors
 
     global_handleError = e => {
+        reportError(e, { source: 'package-retrieve' });
         let errors = e.message.split(':');
         if (errors.length > 1) {
             this.error_title = errors.shift();

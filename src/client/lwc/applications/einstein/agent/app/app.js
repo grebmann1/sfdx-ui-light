@@ -2,7 +2,7 @@ import { api, track, wire } from 'lwc';
 import Toast from 'lightning/toast';
 import { isEmpty, isNotUndefinedOrNull, classSet } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
-import { store, connectStore, AGENT } from 'core/store';
+import { reportError, store, connectStore, AGENT } from 'core/store';
 import LOGGER from 'shared/logger';
 import { NavigationContext } from 'lwr/navigation';
 import { Message } from 'agent/utils';
@@ -250,6 +250,7 @@ export default class App extends ToolkitElement {
     };
 
     global_handleError = e => {
+        reportError(e, { source: 'agent' });
         const message = typeof e?.message === 'string' ? e.message : String(e);
         const parts = message.split(':');
         const title = parts.length > 1 ? parts.shift() : 'Error';

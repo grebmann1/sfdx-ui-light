@@ -44,53 +44,45 @@
                 class="slds-utility-panel slds-grid slds-grid_vertical slds-is-open footer-error-panel"
                 role="dialog"
                 aria-labelledby="panel-heading-01">
-                <div class="slds-utility-panel__header slds-grid slds-shrink-none">
-                    <div class="slds-media slds-media_center">
-                        <div class="slds-media__figure slds-m-right_x-small">
-                            <span class="slds-icon_container">
-                                <svg
-                                    class="slds-icon slds-icon_small slds-icon-text-default"
-                                    aria-hidden="true">
-                                    <use
-                                        xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#error"></use>
-                                </svg>
-                            </span>
-                        </div>
-                        <div class="slds-media__body">
-                            <h2 id="panel-heading-01">Error Log</h2>
-                        </div>
-                    </div>
-                    <div class="slds-col_bump-left slds-shrink-none">
-                        <button
-                            class="slds-button slds-button_icon slds-button_icon"
-                            title="Close Panel"
-                            onclick={handleClosePanel}>
-                            <svg class="slds-button__icon" aria-hidden="true">
+                <header class="footer-error-panel-header">
+                    <div class="footer-error-panel-header-inner">
+                        <span class="slds-icon_container footer-error-panel-icon">
+                            <svg class="slds-icon slds-icon_small" aria-hidden="true">
                                 <use
-                                    xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#minimize_window"></use>
+                                    xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#error"></use>
                             </svg>
-                            <span class="slds-assistive-text">Close Panel</span>
-                        </button>
+                        </span>
+                        <h2 id="panel-heading-01" class="footer-error-panel-title">Error Log</h2>
                     </div>
-                </div>
-                <div
-                    class="footer-error-filter slds-p-around_x-small slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                    <button
+                        type="button"
+                        class="footer-error-panel-close"
+                        title="Close Panel"
+                        onclick={handleClosePanel}
+                        aria-label="Close panel">
+                        <svg class="slds-button__icon" aria-hidden="true">
+                            <use
+                                xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#minimize_window"></use>
+                        </svg>
+                    </button>
+                </header>
+                <div class="footer-error-filter">
                     <input
                         type="text"
-                        class="slds-input"
+                        class="footer-error-filter-input"
                         placeholder="Filter errors..."
                         value={filterText}
                         oninput={handleFilterInput}
-                        style="width: 80%; font-size: 0.95em; margin-right: 8px" />
+                        aria-label="Filter errors" />
                     <lightning-button-icon
                         icon-name="utility:delete"
                         alternative-text="Clear all errors"
                         title="Clear all errors"
                         onclick={handleClearErrors}
-                        class="slds-m-left_x-small"
+                        class="footer-error-filter-clear"
                         variant="bare"></lightning-button-icon>
                 </div>
-                <div class="slds-utility-panel__body footer-error-list-panel slds-flex-column">
+                <div class="footer-error-list-panel slds-flex-column">
                     <template lwc:if={filteredErrors}>
                         <ul class={errorListClass}>
                             <template for:each={filteredErrors} for:item="error">
@@ -98,42 +90,48 @@
                                     key={error.id}
                                     class={error.class}
                                     data-id={error.id}
-                                    onclick={handleErrorItemClick}>
-                                    <span
-                                        class="footer-error-list-time slds-text-color_weak slds-text-font_monospace slds-p-left_x-small">
-                                        [{error.formattedTime}]
+                                    onclick={handleErrorItemClick}
+                                    role="button"
+                                    tabindex="0">
+                                    <span class="footer-error-list-meta">
+                                        <span class="footer-error-list-time">[{error.formattedTime}]</span>
+                                        <template lwc:if={error.source}>
+                                            <span class="footer-error-list-source">[{error.source}]</span>
+                                        </template>
                                     </span>
-                                    <span
-                                        class="footer-error-list-message slds-text-color_error slds-p-left_x-small slds-truncate">
-                                        {error.message}
-                                    </span>
+                                    <span class="footer-error-list-message">{error.message}</span>
                                 </li>
                             </template>
                         </ul>
                     </template>
                     <template lwc:if={selectedError}>
-                        <div class="footer-error-details slds-flex-column">
-                            <h3 class="slds-text-heading_small">Error Details</h3>
-                            <div class="slds-text-body_small slds-flex-column slds-full-height">
-                                <div class="slds-m-top_x-small">
-                                    <strong class="slds-m-right_x-small">Time:</strong>
-                                    {selectedError.time}
+                        <section class="footer-error-details" aria-label="Error details">
+                            <h3 class="footer-error-details-title">Error Details</h3>
+                            <dl class="footer-error-details-list">
+                                <div class="footer-error-details-row">
+                                    <dt class="footer-error-details-label">Time</dt>
+                                    <dd class="footer-error-details-value">{selectedError.time}</dd>
                                 </div>
-                                <div class="slds-m-top_x-small">
-                                    <strong>Message:</strong>
-                                    <div class="footer-error-message-block">
-                                        <pre class="errorMessage">{selectedError.message}</pre>
+                                <template lwc:if={selectedErrorSource}>
+                                    <div class="footer-error-details-row">
+                                        <dt class="footer-error-details-label">Source</dt>
+                                        <dd class="footer-error-details-value">{selectedErrorSource}</dd>
                                     </div>
+                                </template>
+                                <div class="footer-error-details-row footer-error-details-row-message">
+                                    <dt class="footer-error-details-label">Message</dt>
+                                    <dd class="footer-error-details-value">
+                                        <pre class="footer-error-pre footer-error-pre-message">{selectedError.message}</pre>
+                                    </dd>
                                 </div>
-                                <div class="slds-m-top_x-small slds-flex-column slds-fill-height">
-                                    <strong>Details:</strong>
-                                    <div
-                                        class="footer-error-details-block slds-flex-column slds-fill-height">
-                                        <pre class="errorDetails">{selectedError.details}</pre>
-                                    </div>
+                                <div class="footer-error-details-row footer-error-details-row-details">
+                                    <dt class="footer-error-details-label">Details</dt>
+                                    <dd class="footer-error-details-value">
+                                        <pre class="footer-error-pre footer-error-pre-details">{selectedError.details}</pre>
+                                    </dd>
                                 </div>
-                            </div>
-                        </div>
+                            </dl>
+                        </section>
                     </template>
                 </div>
             </div>

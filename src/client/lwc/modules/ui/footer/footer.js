@@ -98,6 +98,10 @@ export default class Footer extends LightningElement {
         return this.errors && this.errors.length > 0;
     }
 
+    get selectedErrorSource() {
+        return this.selectedError?.source || '';
+    }
+
     get latestErrorMessage() {
         return this.hasErrors ? this.errors[this.errors.length - 1].message : '';
     }
@@ -143,6 +147,7 @@ export default class Footer extends LightningElement {
                     (e.name && e.name.toLowerCase().includes(search)) ||
                     (e.message && e.message.toLowerCase().includes(search)) ||
                     (e.details && e.details.toLowerCase().includes(search)) ||
+                    (e.source && e.source.toLowerCase().includes(search)) ||
                     (formattedTime && formattedTime.toLowerCase().includes(search))
                 );
             });

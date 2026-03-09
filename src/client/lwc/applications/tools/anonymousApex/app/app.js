@@ -12,6 +12,7 @@ import {
     splitTextByTimestamp,
 } from 'shared/utils';
 import {
+    reportError,
     store,
     connectStore,
     SELECTORS,
@@ -193,6 +194,7 @@ export default class App extends ToolkitElement {
                 // Handle Error from Salesforce
                 //console.log('this.handleError',!apexState.data.success && !apexState.data.compiled)
                 if (!apexState.data.success /**&& apexState.data.compiled**/) {
+                    reportError(apexState.data, { source: 'anonymousApex' });
                     this.handleError(apexState.data);
                 }
             } else if (apexState.isFetching) {
@@ -478,6 +480,7 @@ export default class App extends ToolkitElement {
     /** Errors */
 
     global_handleError = e => {
+        reportError(e, { source: 'anonymousApex' });
         let errors = e.message.split(':');
         if (errors.length > 1) {
             this.error_title = errors.shift();

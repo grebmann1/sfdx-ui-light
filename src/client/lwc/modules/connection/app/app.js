@@ -31,7 +31,7 @@ import {
     OAUTH_TYPES,
     Connector,
 } from 'connection/utils';
-import { store, APPLICATION } from 'core/store';
+import { reportError, store, APPLICATION } from 'core/store';
 import LOGGER from 'shared/logger';
 import { cacheManager } from 'shared/cacheManager';
 
@@ -515,6 +515,7 @@ export default class App extends ToolkitElement {
                     window.open(url, target);
                 }
             } catch (e) {
+                reportError(e, { source: 'connection' });
                 LOGGER.error(e);
                 this.fetchAllConnections();
                 Toast.show({
