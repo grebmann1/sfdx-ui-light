@@ -1,9 +1,21 @@
-.slds-tree__item {
-    padding-top: 0.2rem;
-    padding-bottom: 0.2rem;
+:host {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
 }
-.relationship-details {
-    font-size: 0.5rem;
-    line-height: 1;
-    color: #919191;
+
+.relationships-tree-wrapper {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.relationships-tree-wrapper slds-file-tree {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 }

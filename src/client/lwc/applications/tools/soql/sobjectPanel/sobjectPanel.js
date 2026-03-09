@@ -1,78 +1,42 @@
-import { wire, api } from 'lwc';
+import { wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 
-import { store, connectStore, SELECTORS, DESCRIBE, UI } from 'core/store';
-
-import Toast from 'lightning/toast';
-
-const PAGE_LIST_SIZE = 70;
+import { store, connectStore, DESCRIBE, UI } from 'core/store';
+import { lowerCaseKey } from 'shared/utils';
 
 export default class SobjectsPanel extends ToolkitElement {
-    keyword = '';
     sobjects;
     isLoading = false;
+    selectedId = '';
 
     _rawSObjects;
-    // Scrolling
-    pageNumber = 1;
 
     @wire(connectStore, { store })
-    storeChange({ describe, application }) {
-        const isCurrentApp = this.verifyIsActive(application.currentApplication);
+    storeChange({ describe, application, ui }) {
+        const isCurrentApp = this.verifyIsActive(application?.currentApplication);
         if (!isCurrentApp) return;
+
+        this.selectedId = ui?.selectedSObject ? lowerCaseKey(ui.selectedSObject) : '';
 
         if (describe) {
             this.isLoading = describe.isFetching;
-            if (describe.isFetching == false && describe.error == null) {
-                this._rawSObjects = Object.values(describe.nameMap).map(sobject => {
-                    return {
-                        ...sobject,
-                        itemLabel: `${sobject.name} / ${sobject.label}`,
-                    };
-                });
-                //this.sobjects = this._rawSObjects;
-                this.filterSObjects(this.keyword);
-                //this.pageNumber = 1; // reset
-            } /*  else if (describe.error) {
-                console.error(describe.error);
-                Toast.show({
-                    label: 'Error',
-                    message: describe.error,
-                    variant: 'error',
-                    mode: 'sticky',
-                });
-            } */
+            if (describe.isFetching === false && describe.error == null) {
+                this._rawSObjects = Object.values(describe.nameMap || {}).map(sobject => ({
+                    ...sobject,
+                    itemLabel: `${sobject.name} / ${sobject.label}`,
+                }));
+                this.sobjects = this._rawSObjects;
+            }
         }
     }
 
-    filterSObjects(keyword) {
-        if (keyword) {
-            const escapedKeyword = keyword; //escapeRegExp(keyword);
-            const keywordPattern = new RegExp(escapedKeyword, 'i');
-            this.sobjects = this._rawSObjects.filter(sobject => {
-                return keywordPattern.test(`${sobject.name} ${sobject.label}`);
-            });
-        } else {
-            this.sobjects = this._rawSObjects;
+    /** Events */
+
+    handleTreeSelect(event) {
+        const item = event.detail?.item;
+        if (item?.rawName) {
+            store.dispatch(UI.reduxSlice.actions.selectSObject({ sObjectName: item.rawName }));
         }
-        this.pageNumber = 1; // reset
-    }
-
-    /** Events **/
-
-    selectSObject(event) {
-        const sObjectName = event.target.dataset.name;
-        store.dispatch(UI.reduxSlice.actions.selectSObject({ sObjectName }));
-    }
-
-    setKeyword(event) {
-        this.keyword = event.target.value;
-        this.filterSObjects(this.keyword);
-    }
-
-    handleClear() {
-        this.keyword = '';
-        this.filterSObjects(this.keyword);
     }
 
     handleRefresh() {
@@ -83,29 +47,28 @@ export default class SobjectsPanel extends ToolkitElement {
         );
     }
 
-    handleScroll(event) {
-        //console.log('handleScroll');
-        const target = event.target;
-        const scrollDiff = Math.abs(target.clientHeight - (target.scrollHeight - target.scrollTop));
-        const isScrolledToBottom = scrollDiff < 5; //5px of buffer
-        if (isScrolledToBottom) {
-            // Fetch more data when user scrolls to the bottom
-            this.pageNumber++;
-        }
-    }
-
     /** Getters */
 
-    get isNoSObjects() {
-        return !this.isLoading && (!this.sobjects || !this.sobjects.length);
+    get computedTree() {
+        if (!this.sobjects || !this.sobjects.length) {
+            return [];
+        }
+        return this.sobjects
+            .filter(sobject => sobject.queryable)
+            .map(sobject => ({
+                id: lowerCaseKey(sobject.name),
+                name: sobject.itemLabel,
+                title: sobject.itemLabel,
+                rawName: sobject.name,
+                icon: 'utility:record_lookup',
+            }));
     }
 
-    get isDisplayClearButton() {
-        return this.keyword !== '';
+    get sobjectSearchFields() {
+        return ['name', 'id'];
     }
 
-    get virtualList() {
-        // Best UX Improvement !!!!
-        return this.sobjects.slice(0, this.pageNumber * PAGE_LIST_SIZE);
+    get minSearchLength() {
+        return 1;
     }
 }

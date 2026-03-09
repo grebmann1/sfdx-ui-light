@@ -162,6 +162,15 @@ const injectedModules = [
     { name: 'smartinput/utils', path: r('src/client/lwc/applications/tools/smartinput/utils/utils.js') },
 ];
 
+const coreStoreToLightStoreAlias = alias({
+    entries: [
+        {
+            find: 'core/store',
+            replacement: r('src/client/lwc/modules/core/store/lightStore.js'),
+        },
+    ],
+});
+
 const basicBundler = (
     input,
     output,
@@ -169,7 +178,8 @@ const basicBundler = (
     isProduction,
     useLwc = false,
     modulesArg,
-    extraPlugins
+    extraPlugins,
+    useLightStoreAlias = false
 ) => ({
     input: r(input),
     context: 'globalThis',
@@ -183,6 +193,7 @@ const basicBundler = (
         intro: '(typeof window!=="undefined"&&(window.openaiAgent=window.openaiAgent||{},window.openaiAgent.Agent={}));'
     },
     plugins: [
+        ...(useLightStoreAlias ? [coreStoreToLightStoreAlias] : []),
         chevrotainAlias,
         chevrotainUrlReplace,
         ...(useLwc ? [] : ((lwcAliasForNonLwcBundles(modulesArg) ? [lwcAliasForNonLwcBundles(modulesArg)] : []))),
@@ -268,7 +279,9 @@ export default (args) => {
         'InjectSalesforce',
         isProduction,
         true,
-        injectedModules
+        injectedModules,
+        undefined,
+        true
     ),
         basicBundler(
         'src/client_chrome/inject/inject_toolkit.js',

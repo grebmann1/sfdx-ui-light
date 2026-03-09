@@ -3,7 +3,7 @@
  * Use this from LWC and app-level handlers; store modules can keep dispatching addError directly.
  */
 import { getStore } from './storeRef';
-import { ERROR } from './modules/index';
+import * as ERROR from './modules/error';
 
 /**
  * Report an error to the global error store (footer).

@@ -122,6 +122,11 @@ export default class Sobject extends ToolkitElement {
     handleOpenRelatedSObject = e => {
         const name = e.currentTarget?.dataset?.name;
         if (isEmpty(name)) return;
+        this.openRelatedSObject(name);
+    };
+
+    openRelatedSObject(name) {
+        if (isEmpty(name)) return;
         navigate(this.navContext, {
             type: 'application',
             state: {
@@ -129,7 +134,26 @@ export default class Sobject extends ToolkitElement {
                 attribute1: name,
             },
         });
-    };
+    }
+
+    handleLookupTreeSelect(event) {
+        const item = event.detail?.item;
+        if (item?.rawName) this.openRelatedSObject(item.rawName);
+    }
+
+    handleChildTreeSelect(event) {
+        const item = event.detail?.item;
+        if (item?.rawName) this.openRelatedSObject(item.rawName);
+    }
+
+    handleFieldTreeSelect(event) {
+        const item = event.detail?.item;
+        if (isEmpty(item?.rawName)) return;
+        navigator.clipboard.writeText(item.rawName).then(
+            () => Toast.show({ label: 'Copied to clipboard', variant: 'success' }),
+            () => Toast.show({ label: 'Copy failed', variant: 'error' })
+        );
+    }
 
     loadSpecificRecord = async () => {
         this.reset();
@@ -313,6 +337,45 @@ export default class Sobject extends ToolkitElement {
                 this.checkIfPresent(x.fieldName, search) ||
                 this.checkIfPresent(x.target, search)
         );
+    }
+
+    get lookupsTree() {
+        return (this.lookups || []).map(rel => ({
+            id: rel.key,
+            name: `${rel.label} / ${rel.target}`,
+            title: `${rel.label} — ${rel.target} (${rel.fieldName})`,
+            rawName: rel.target,
+            icon: 'utility:record_lookup',
+        }));
+    }
+
+    get childrenTree() {
+        return (this.children || []).map(child => ({
+            id: child.key,
+            name: `${child.relationshipName} / ${child.childSObject}`,
+            title: `${child.relationshipName} — ${child.childSObject} (${child.field})`,
+            rawName: child.childSObject,
+            icon: 'utility:record_lookup',
+        }));
+    }
+
+    get fieldsTree() {
+        const fields = this.selectedDetails?.fields || [];
+        return fields.map(f => ({
+            id: f.name,
+            name: f.label || f.name,
+            title: `${f.label || f.name} — ${f._type}`,
+            rawName: f.name,
+            icon: 'utility:slack_channel',
+        }));
+    }
+
+    get explorerSearchFields() {
+        return ['name', 'title'];
+    }
+
+    get explorerMinSearchLength() {
+        return 1;
     }
 
     get children() {

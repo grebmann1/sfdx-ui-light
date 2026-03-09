@@ -40,8 +40,6 @@
     height: 100%;
     left: 0;
     right: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
 }
 .left-panel-non-scrollable {
     position: absolute;

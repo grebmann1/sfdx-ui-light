@@ -86,6 +86,17 @@
     background: var(--slds-g-color-neutral-base-90, #e5e5e5);
 }
 
+.tree-item-active {
+    font-weight: var(--slds-g-font-weight-7, 700);
+}
+
+.tree-item-loading-placeholder {
+    display: flex;
+    align-items: center;
+    padding: var(--slds-g-spacing-2, 0.5rem) var(--slds-g-spacing-1, 0.25rem);
+    padding-inline-start: var(--slds-g-spacing-5, 1.5rem);
+}
+
 .tree-item.slds-is-hovered,
 .tree-item:hover {
     background: var(--slds-g-color-neutral-base-90, #e5e5e5);

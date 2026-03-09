@@ -16,9 +16,11 @@
                 variant="label-hidden"></lightning-input>
         </div>
     </template>
-    <div class="file-explorer-container full-height slds-p-horizontal_small">
+    <div
+        class="file-explorer-container full-height slds-p-horizontal_small"
+        onscroll={handleScroll}>
         <ul lwc:if={isTreeVisible} class="slds-tree tree-container" role="tree">
-            <template for:each={computedTree} for:item="item">
+            <template for:each={visibleTree} for:item="item">
                 <li key={item.id} role="none">
                     <slds-file-tree-item
                         is-first
@@ -27,6 +29,7 @@
                         expanded={item.expanded}
                         selected={item.selected}
                         is-delete-disabled={isDeleteDisabled}
+                        hide-icons={hideIcons}
                         ontoggle={handleToggle}
                         onselect={handleSelect}
                         search-value={searchValue}

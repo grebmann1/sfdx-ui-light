@@ -226,167 +226,45 @@
                                             label="Lookups"
                                             value="lookups"
                                             onactive={handleRelationshipTabActive}>
-                                            <div class="slds-m-top_small">
-                                                <lightning-input
-                                                    type="search"
-                                                    label="Search relationships"
-                                                    variant="label-hidden"
-                                                    placeholder="Search relationships..."
-                                                    value={relationshipSearch}
-                                                    onchange={handleRelationshipSearch}></lightning-input>
-                                            </div>
-                                            <div
-                                                class="slds-m-top_small slds-scrollable_y table-container">
-                                                <table
-                                                    class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_fixed-layout">
-                                                    <thead>
-                                                        <tr class="slds-line-height_reset">
-                                                            <th scope="col">
-                                                                <div
-                                                                    class="slds-truncate"
-                                                                    title="Label">
-                                                                    Label
-                                                                </div>
-                                                            </th>
-                                                            <th scope="col">
-                                                                <div
-                                                                    class="slds-truncate"
-                                                                    title="Related Object">
-                                                                    Related Object
-                                                                </div>
-                                                            </th>
-                                                            <th scope="col">
-                                                                <div
-                                                                    class="slds-truncate"
-                                                                    title="API Name">
-                                                                    API Name
-                                                                </div>
-                                                            </th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <template
-                                                            for:each={filteredLookups}
-                                                            for:item="rel">
-                                                            <tr
-                                                                key={rel.key}
-                                                                class="slds-hint-parent">
-                                                                <td data-label="Label">
-                                                                    <div
-                                                                        class="slds-truncate"
-                                                                        title={rel.label}>
-                                                                        {rel.label}
-                                                                    </div>
-                                                                </td>
-                                                                <td data-label="Related Object">
-                                                                    <lightning-button
-                                                                        variant="base"
-                                                                        label={rel.target}
-                                                                        title={rel.target}
-                                                                        data-name={rel.target}
-                                                                        onclick={handleOpenRelatedSObject}></lightning-button>
-                                                                </td>
-                                                                <td data-label="API Name">
-                                                                    <div
-                                                                        class="slds-truncate"
-                                                                        title={rel.fieldName}>
-                                                                        {rel.fieldName}
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                        </template>
-                                                    </tbody>
-                                                </table>
-                                                <template lwc:if={hasNoLookups}>
-                                                    <div
-                                                        class="slds-text-color_weak slds-m-top_small">
-                                                        No lookups found.
-                                                    </div>
-                                                </template>
-                                            </div>
+                                            <template lwc:if={hasNoLookups}>
+                                                <div
+                                                    class="slds-text-color_weak slds-m-top_small">
+                                                    No lookups found.
+                                                </div>
+                                            </template>
+                                            <template lwc:else>
+                                                <div class="explorer-tree-wrapper">
+                                                    <slds-file-tree
+                                                        tree={lookupsTree}
+                                                        selected-id=""
+                                                        onselect={handleLookupTreeSelect}
+                                                        search-fields={explorerSearchFields}
+                                                        min-search-length={explorerMinSearchLength}
+                                                        is-delete-disabled></slds-file-tree>
+                                                </div>
+                                            </template>
                                         </lightning-tab>
                                         <lightning-tab
                                             label="Children"
                                             value="children"
                                             onactive={handleRelationshipTabActive}>
-                                            <div class="slds-m-top_small">
-                                                <lightning-input
-                                                    type="search"
-                                                    label="Search relationships"
-                                                    variant="label-hidden"
-                                                    placeholder="Search relationships..."
-                                                    value={relationshipSearch}
-                                                    onchange={handleRelationshipSearch}></lightning-input>
-                                            </div>
-                                            <div
-                                                class="slds-m-top_small slds-scrollable_y table-container">
-                                                <table
-                                                    class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_fixed-layout">
-                                                    <thead>
-                                                        <tr class="slds-line-height_reset">
-                                                            <th scope="col">
-                                                                <div
-                                                                    class="slds-truncate"
-                                                                    title="Relationship">
-                                                                    Relationship
-                                                                </div>
-                                                            </th>
-                                                            <th scope="col">
-                                                                <div
-                                                                    class="slds-truncate"
-                                                                    title="Child SObject">
-                                                                    Child SObject
-                                                                </div>
-                                                            </th>
-                                                            <th scope="col">
-                                                                <div
-                                                                    class="slds-truncate"
-                                                                    title="Field">
-                                                                    Field
-                                                                </div>
-                                                            </th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <template
-                                                            for:each={filteredChildren}
-                                                            for:item="child">
-                                                            <tr
-                                                                key={child.key}
-                                                                class="slds-hint-parent">
-                                                                <td data-label="Relationship">
-                                                                    <div
-                                                                        class="slds-truncate"
-                                                                        title={child.relationshipName}>
-                                                                        {child.relationshipName}
-                                                                    </div>
-                                                                </td>
-                                                                <td data-label="Child SObject">
-                                                                    <lightning-button
-                                                                        variant="base"
-                                                                        label={child.childSObject}
-                                                                        title={child.childSObject}
-                                                                        data-name={child.childSObject}
-                                                                        onclick={handleOpenRelatedSObject}></lightning-button>
-                                                                </td>
-                                                                <td data-label="Field">
-                                                                    <div
-                                                                        class="slds-truncate"
-                                                                        title={child.field}>
-                                                                        {child.field}
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                        </template>
-                                                    </tbody>
-                                                </table>
-                                                <template lwc:if={hasNoChildren}>
-                                                    <div
-                                                        class="slds-text-color_weak slds-m-top_small">
-                                                        No child relationships found.
-                                                    </div>
-                                                </template>
-                                            </div>
+                                            <template lwc:if={hasNoChildren}>
+                                                <div
+                                                    class="slds-text-color_weak slds-m-top_small">
+                                                    No child relationships found.
+                                                </div>
+                                            </template>
+                                            <template lwc:else>
+                                                <div class="explorer-tree-wrapper">
+                                                    <slds-file-tree
+                                                        tree={childrenTree}
+                                                        selected-id=""
+                                                        onselect={handleChildTreeSelect}
+                                                        search-fields={explorerSearchFields}
+                                                        min-search-length={explorerMinSearchLength}
+                                                        is-delete-disabled></slds-file-tree>
+                                                </div>
+                                            </template>
                                         </lightning-tab>
                                     </lightning-tabset>
                                 </div>
@@ -414,133 +292,22 @@
                             <template lwc:if={isFieldsOpen}>
                                 <div
                                     class="slds-section__content slds-p-horizontal_small slds-p-bottom_small">
-                                    <div
-                                        class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center slds-wrap">
-                                        <div
-                                            class="slds-col slds-size_1-of-1 slds-large-size_5-of-12">
-                                            <lightning-input
-                                                type="search"
-                                                label="Search fields"
-                                                variant="label-hidden"
-                                                placeholder="Search fields..."
-                                                value={fieldSearch}
-                                                onchange={handleFieldSearch}></lightning-input>
+                                    <template lwc:if={hasNoFields}>
+                                        <div class="slds-text-color_weak slds-m-top_small">
+                                            No fields found.
                                         </div>
-                                    </div>
-                                    <div class="slds-m-top_small slds-scrollable_y table-container">
-                                        <table
-                                            class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_fixed-layout">
-                                            <thead>
-                                                <tr class="slds-line-height_reset">
-                                                    <th scope="col">
-                                                        <div class="slds-truncate" title="Label">
-                                                            Label
-                                                        </div>
-                                                    </th>
-                                                    <th scope="col">
-                                                        <div class="slds-truncate" title="API Name">
-                                                            API Name
-                                                        </div>
-                                                    </th>
-                                                    <th scope="col">
-                                                        <div class="slds-truncate" title="Type">
-                                                            Type
-                                                        </div>
-                                                    </th>
-                                                    <th scope="col">
-                                                        <div class="slds-truncate" title="Details">
-                                                            Details
-                                                        </div>
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <template for:each={filteredFields} for:item="f">
-                                                    <tr key={f.name} class="slds-hint-parent">
-                                                        <td data-label="Label">
-                                                            <div
-                                                                class="slds-truncate"
-                                                                title={f.label}>
-                                                                {f.label}
-                                                            </div>
-                                                        </td>
-                                                        <td data-label="API Name">
-                                                            <div
-                                                                class="slds-truncate"
-                                                                title={f.name}>
-                                                                {f.name}
-                                                            </div>
-                                                        </td>
-                                                        <td data-label="Type">
-                                                            <div
-                                                                class="slds-truncate"
-                                                                title={f._type}>
-                                                                {f._type}
-                                                            </div>
-                                                        </td>
-                                                        <td data-label="Details">
-                                                            <div
-                                                                class="slds-grid slds-grid_vertical-align-center slds-wrap slds-gutters_xx-small">
-                                                                <template lwc:if={f._isPicklist}>
-                                                                    <div class="slds-col">
-                                                                        <lightning-badge
-                                                                            label={f._picklistCountLabel}></lightning-badge>
-                                                                    </div>
-                                                                    <div
-                                                                        class="slds-col slds-size_1-of-1">
-                                                                        <div
-                                                                            class="slds-grid slds-grid_vertical-align-center">
-                                                                            <div
-                                                                                class="slds-truncate"
-                                                                                title={f._picklistValuesRaw}>
-                                                                                {f._picklistValuesPreview}
-                                                                            </div>
-                                                                            <template
-                                                                                lwc:if={f._picklistValuesRaw}>
-                                                                                <lightning-button-icon
-                                                                                    class="slds-m-left_x-small"
-                                                                                    icon-name="utility:copy"
-                                                                                    variant="bare"
-                                                                                    alternative-text="Copy picklist values"
-                                                                                    title="Copy picklist values"
-                                                                                    data-value={f._picklistValuesRaw}
-                                                                                    onclick={handleCopyValue}></lightning-button-icon>
-                                                                            </template>
-                                                                        </div>
-                                                                    </div>
-                                                                </template>
-                                                                <template lwc:if={f._isFormula}>
-                                                                    <div
-                                                                        class="slds-col slds-size_1-of-1">
-                                                                        <div
-                                                                            class="slds-grid slds-grid_vertical-align-center">
-                                                                            <lightning-button-icon
-                                                                                icon-name="utility:formula"
-                                                                                variant="bare"
-                                                                                alternative-text="Copy formula"
-                                                                                title="Copy formula"
-                                                                                data-value={f._formulaRaw}
-                                                                                onclick={handleCopyValue}></lightning-button-icon>
-                                                                            <div
-                                                                                class="slds-truncate slds-m-left_x-small"
-                                                                                title={f._formulaRaw}>
-                                                                                {f._formulaPreview}
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </template>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                </template>
-                                            </tbody>
-                                        </table>
-                                        <template lwc:if={hasNoFields}>
-                                            <div class="slds-text-color_weak slds-m-top_small">
-                                                No fields found.
-                                            </div>
-                                        </template>
-                                    </div>
+                                    </template>
+                                    <template lwc:else>
+                                        <div class="explorer-tree-wrapper">
+                                            <slds-file-tree
+                                                tree={fieldsTree}
+                                                selected-id=""
+                                                onselect={handleFieldTreeSelect}
+                                                search-fields={explorerSearchFields}
+                                                min-search-length={explorerMinSearchLength}
+                                                is-delete-disabled></slds-file-tree>
+                                        </div>
+                                    </template>
                                 </div>
                             </template>
                         </section>

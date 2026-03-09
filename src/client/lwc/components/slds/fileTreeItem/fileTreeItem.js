@@ -38,6 +38,7 @@ export default class FileTreeItem extends LightningElement {
     @api isDeleteDisabled = false;
     @api isFolderSelectable = false;
     @api isTabbable = false;
+    @api hideIcons = false;
 
     isHover = false;
     isMenuOpen = false;
@@ -46,9 +47,13 @@ export default class FileTreeItem extends LightningElement {
 
     handleClick(event) {
         if (this.isFolder) {
-            this.handleToggle(event);
-            if (this.isFolderSelectable) {
+            if (this.item?.isExpandable) {
                 this.handleSelect(event);
+            } else {
+                this.handleToggle(event);
+                if (this.isFolderSelectable) {
+                    this.handleSelect(event);
+                }
             }
         } else {
             this.handleSelect(event);
@@ -268,7 +273,10 @@ export default class FileTreeItem extends LightningElement {
     }
 
     get isFolder() {
-        return Array.isArray(this.item?.children);
+        return (
+            Array.isArray(this.item?.children) ||
+            this.item?.isExpandable === true
+        );
     }
 
     get isFile() {
@@ -276,7 +284,15 @@ export default class FileTreeItem extends LightningElement {
     }
 
     get children() {
-        return this.item?.children || [];
+        return Array.isArray(this.item?.children) ? this.item.children : [];
+    }
+
+    get showLoadingPlaceholder() {
+        return (
+            this.expanded &&
+            this.children.length === 0 &&
+            this.item?.isLoadingChildren === true
+        );
     }
 
     get iconClass() {
@@ -303,6 +319,18 @@ export default class FileTreeItem extends LightningElement {
 
     get isFolderIconDisplayed() {
         return this.item?.icon !== ''; // Different from empty string !!!
+    }
+
+    get isFolderIconDisplayedAndVisible() {
+        return false;
+    }
+
+    get isApiIconAndVisible() {
+        return !this.hideIcons && this.isApiIcon;
+    }
+
+    get isFileIconVisible() {
+        return !this.hideIcons;
     }
 
     get itemIcon() {
@@ -342,8 +370,8 @@ export default class FileTreeItem extends LightningElement {
             .add({
                 'is-first': this.isFirst,
                 'slds-is-hovered': this.isMenuButtonVisible,
-                //'slds-is-selected': this.selected,
                 'tree-item-selected': this.selected,
+                'tree-item-active': this.item?.isActive,
             })
             .toString();
     }

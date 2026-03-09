@@ -14,6 +14,22 @@
     max-height: 22rem;
 }
 
+.explorer-tree-wrapper {
+    flex: 1;
+    min-height: 0;
+    max-height: 22rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.explorer-tree-wrapper slds-file-tree {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
 .sobject-root .slds-section__title-action {
     width: 100%;
     justify-content: flex-start;

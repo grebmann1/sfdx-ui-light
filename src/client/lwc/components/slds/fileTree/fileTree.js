@@ -6,6 +6,10 @@ const i18n = {
     Search: 'Search',
     SearchPlaceholder: 'Search ...',
 };
+
+const VIRTUAL_SCROLL_THRESHOLD = 300;
+const PAGE_LIST_SIZE = 70;
+
 /**
  * Main file tree component. Accepts a tree data structure and renders it using fileTreeItem.
  */
@@ -18,15 +22,40 @@ export default class FileTree extends LightningElement {
     @api selectedId = '';
     value = '';
 
-    @api tree = [];
+    _tree = [];
+    pageNumber = 1;
+
+    @api
+    get tree() {
+        return this._tree;
+    }
+    set tree(value) {
+        this._tree = Array.isArray(value) ? value : [];
+        this.pageNumber = 1;
+    }
+
     @api isDeleteDisabled = false;
     @api searchFields = ['name', 'id'];
     @api minSearchLength = 3;
     @api hideSearchInput = false;
+    @api hideIcons = false;
     @api includeFoldersInResults = false;
     @api isFolderSelectable = false;
 
     /** Event Handlers */
+
+    handleScroll(event) {
+        const totalCount = this.displayList.length;
+        if (totalCount <= VIRTUAL_SCROLL_THRESHOLD) return;
+        const target = event.target;
+        const scrollDiff = Math.abs(
+            target.clientHeight - (target.scrollHeight - target.scrollTop)
+        );
+        const isScrolledToBottom = scrollDiff < 5;
+        if (isScrolledToBottom) {
+            this.pageNumber++;
+        }
+    }
 
     handleSearch(event) {
         runActionAfterTimeOut(
@@ -37,9 +66,11 @@ export default class FileTree extends LightningElement {
                     this.searchValue = '';
                     this.nonMatchesInDirectory = new Set();
                     this.matchedIds = new Set();
+                    this.pageNumber = 1;
                     return;
                 }
                 this.searchValue = value;
+                this.pageNumber = 1;
                 const options = {
                     searchFields: this.searchFields,
                     minSearchLength: this.minSearchLength,
@@ -67,6 +98,9 @@ export default class FileTree extends LightningElement {
             ...this.expandedMap,
             [item.id]: !this.expandedMap[item.id],
         };
+        this.dispatchEvent(
+            new CustomEvent('toggle', { detail: { item }, bubbles: true, composed: true })
+        );
     }
 
     handleSelect(event) {
@@ -128,9 +162,10 @@ export default class FileTree extends LightningElement {
         const selected = this.selectedId === item.id;
         const isTabbable = selected || (level === 0 && isFirstRoot);
         const searchInactive = this.searchValue.length < this.minSearchLength;
-        const isFolder = Array.isArray(item.children) && item.children.length > 0;
+        const hasChildren = Array.isArray(item.children) && item.children.length > 0;
+        const isFolder = hasChildren || item.isExpandable === true;
         const childSetSize = item.children?.length ?? 0;
-        const children = item.children
+        const children = Array.isArray(item.children)
             ? item.children.map((child, index) =>
                   this.injectState(child, level + 1, false, index + 1, childSetSize)
               )
@@ -157,12 +192,29 @@ export default class FileTree extends LightningElement {
 
     @api
     get computedTree() {
-        const items = this.tree || [];
+        const items = this._tree || [];
         const setSize = items.length;
         const hasSelection = this.selectedId != null && this.selectedId !== '';
         return items.map((item, index) =>
             this.injectState(item, 0, !hasSelection && index === 0, index + 1, setSize)
         );
+    }
+
+    get displayList() {
+        const full = this.computedTree;
+        const searchActive = this.searchValue.length >= this.minSearchLength;
+        if (searchActive) {
+            return full.filter(item => item.visible);
+        }
+        return full;
+    }
+
+    get visibleTree() {
+        const list = this.displayList;
+        if (list.length <= VIRTUAL_SCROLL_THRESHOLD) {
+            return list;
+        }
+        return list.slice(0, this.pageNumber * PAGE_LIST_SIZE);
     }
 
     get isTreeVisible() {

@@ -1,44 +1,30 @@
 import { wire, api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import { getFlattenedFields } from '@jetstreamapp/soql-parser-js';
-import { store, connectStore, SELECTORS, DESCRIBE, SOBJECT, UI } from 'core/store';
-import {
-    isEmpty,
-    fullApiName,
-    isSame,
-    escapeRegExp,
-    isNotUndefinedOrNull,
-    lowerCaseKey,
-} from 'shared/utils';
-
-const PAGE_LIST_SIZE = 70;
+import { store, connectStore, SELECTORS, SOBJECT, UI } from 'core/store';
+import { fullApiName, isSame, lowerCaseKey } from 'shared/utils';
 
 export default class FieldsTree extends ToolkitElement {
-    // relationship Path e.g. "Contact.Owner"
     @api relationship;
-    // Child Relationship Name
     @api childrelation;
     @api rootlevel = 1;
 
     sobjectMeta;
-    fields = [];
+    fieldsData = [];
     isLoading = false;
+    selectedId = '';
     _keyword;
     _rawFields = [];
-    _expandedFieldNames = {};
-
-    // Scrolling
-    pageNumber = 1;
+    loadedChildrenByFieldId = {};
+    requestedExpandedRefs = {};
+    loadingRefIds = [];
 
     @api
     get keyword() {
         return this._keyword;
     }
     set keyword(value) {
-        if (this._keyword !== value) {
-            this._keyword = value;
-            this._filterFields();
-        }
+        this._keyword = value;
     }
 
     @api
@@ -54,7 +40,7 @@ export default class FieldsTree extends ToolkitElement {
 
     @wire(connectStore, { store })
     storeChange({ ui, application }) {
-        const isCurrentApp = this.verifyIsActive(application.currentApplication);
+        const isCurrentApp = this.verifyIsActive(application?.currentApplication);
         if (!isCurrentApp) return;
 
         this.updateFieldTree();
@@ -71,10 +57,26 @@ export default class FieldsTree extends ToolkitElement {
             this.sobjectMeta = sobjectState.data;
         }
         this._updateFields(ui.query, ui.sort);
+        this._updateLoadedChildren(sobject, ui?.query);
+        this._updateLoadingRefIds(sobject);
     };
 
+    _updateLoadingRefIds(sobjectState) {
+        const loading = [];
+        for (const [fieldId, ref] of Object.entries(this.requestedExpandedRefs)) {
+            if (this.loadedChildrenByFieldId[fieldId]) continue;
+            const sobjectData = SELECTORS.sobject.selectById(
+                { sobject: sobjectState },
+                lowerCaseKey(ref.relationshipSObjectName)
+            );
+            if (sobjectData?.isFetching) {
+                loading.push(fieldId);
+            }
+        }
+        this.loadingRefIds = loading;
+    }
+
     connectedCallback() {
-        //console.log('connectedCallback - describeSObjectIfNeeded',this.sobject)
         const { describe } = store.getState();
         store.dispatch(
             SOBJECT.describeSObject({
@@ -85,21 +87,112 @@ export default class FieldsTree extends ToolkitElement {
         );
     }
 
-    selectField(event) {
-        const fieldName = event.currentTarget.dataset.name;
+    handleTreeSelect(event) {
+        const item = event.detail?.item;
+        if (!item?.rawName) return;
+        const parts = item.rawName.split('.');
+        const fieldName = parts.pop();
+        const relationships = parts.length > 0 ? parts.join('.') : this.relationship;
         store.dispatch(
             UI.reduxSlice.actions.toggleField({
                 fieldName,
-                relationships: this.relationship,
+                relationships: relationships || undefined,
                 childRelationship: this.childrelation,
             })
         );
     }
 
-    toggleReferenceField(event) {
-        const fieldName = event.target.dataset.field;
-        this._expandedFieldNames[fieldName] = !this._expandedFieldNames[fieldName];
-        this._filterFields();
+    handleTreeToggle(event) {
+        const item = event.detail?.item;
+        if (!item?.isExpandable) return;
+        const hasChildren = Array.isArray(item.children) && item.children.length > 0;
+        if (hasChildren) return;
+        this._loadChildrenForReference(item);
+    }
+
+    _loadChildrenForReference(item) {
+        if (this.loadedChildrenByFieldId[item.id]) return;
+        const { relationshipSObjectName, relationshipPath } = item;
+        if (!relationshipSObjectName) return;
+        this.requestedExpandedRefs = {
+            ...this.requestedExpandedRefs,
+            [item.id]: { relationshipSObjectName, relationshipPath },
+        };
+        if (!this.loadingRefIds.includes(item.id)) {
+            this.loadingRefIds = [...this.loadingRefIds, item.id];
+        }
+        const { describe } = store.getState();
+        store.dispatch(
+            SOBJECT.describeSObject({
+                connector: this.connector.conn,
+                sObjectName: relationshipSObjectName,
+                useToolingApi: describe.nameMap[lowerCaseKey(relationshipSObjectName)]?.useToolingApi,
+            })
+        );
+    }
+
+    _updateLoadedChildren(sobjectState, query) {
+        const nextLoaded = { ...this.loadedChildrenByFieldId };
+        const rootLevelNum = parseInt(this.rootlevel, 10);
+        const maxLevel = 4 + rootLevelNum;
+        const loadingIds = new Set();
+        for (const [fieldId, ref] of Object.entries(this.requestedExpandedRefs)) {
+            if (nextLoaded[fieldId]) continue;
+            const sobjectData = SELECTORS.sobject.selectById(
+                { sobject: sobjectState },
+                lowerCaseKey(ref.relationshipSObjectName)
+            );
+            if (sobjectData?.isFetching) loadingIds.add(fieldId);
+        }
+        const entries = Object.entries(this.requestedExpandedRefs).sort(
+            (a, b) => (b[1].relationshipPath?.length ?? 0) - (a[1].relationshipPath?.length ?? 0)
+        );
+        let updated = false;
+        for (const [fieldId, ref] of entries) {
+            const sobjectData = SELECTORS.sobject.selectById(
+                { sobject: sobjectState },
+                lowerCaseKey(ref.relationshipSObjectName)
+            );
+            if (!sobjectData?.data?.fields) continue;
+            const relationshipPath = ref.relationshipPath;
+            const level = relationshipPath.split('.').length + rootLevelNum;
+            const selectedForPath = (query ? getFlattenedFields(query).map(f => fullApiName(f)) : [])
+                .map(x => (x || '').toLowerCase())
+                .filter(f => f.startsWith((relationshipPath + '.').toLowerCase()));
+            const childFields = sobjectData.data.fields.map(field => {
+                const childRawName = `${relationshipPath}.${field.name}`;
+                const childId = lowerCaseKey(childRawName);
+                const isRef = field.type === 'reference';
+                const childLevel = level + 1;
+                const canExpand = isRef && childLevel < maxLevel;
+                const details = `${field.type.toUpperCase()} / ${field.label}`;
+                const title = `${field.name} — ${details}`;
+                const nestedLoaded =
+                    nextLoaded[childId] ?? this.loadedChildrenByFieldId[childId];
+                const childRelationshipPath = field.relationshipName
+                    ? `${relationshipPath}.${field.relationshipName}`
+                    : undefined;
+                return {
+                    id: childId,
+                    name: field.name,
+                    title,
+                    rawName: childRawName,
+                    icon: 'utility:number_input',
+                    isActive: selectedForPath.includes(childId),
+                    isExpandable: canExpand,
+                    relationshipSObjectName: field.referenceTo?.[0],
+                    relationshipPath: childRelationshipPath,
+                    children: canExpand ? (nestedLoaded || []) : undefined,
+                    isLoadingChildren: canExpand && loadingIds.has(childId),
+                };
+            });
+            childFields.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+            nextLoaded[fieldId] = childFields;
+            updated = true;
+        }
+        if (updated) {
+            this.loadedChildrenByFieldId = nextLoaded;
+        }
     }
 
     _updateFields(query, sort) {
@@ -111,16 +204,14 @@ export default class FieldsTree extends ToolkitElement {
             return {
                 ...field,
                 details: `${field.type.toUpperCase()} / ${field.label}`,
-                isNotReference: field.type !== 'reference',
                 isActive: selectedFields.includes(
                     (this._getRawFieldName(field) || '').toLowerCase()
                 ),
-                isExpanded: false,
                 ...this._generateRelationshipProperties(field),
             };
         });
         this._sortFields(sort);
-        this._filterFields();
+        this.fieldsData = [...this._rawFields];
     }
 
     _getSelectedFieldSuggestion(query) {
@@ -164,43 +255,6 @@ export default class FieldsTree extends ToolkitElement {
         };
     }
 
-    _formatField = field => {
-        var regex = new RegExp('(' + this.keyword + ')', 'gi');
-        if (regex.test(field)) {
-            return field
-                .toString()
-                .replace(/<?>?/, '')
-                .replace(regex, '<span style="font-weight:Bold; color:blue;">$1</span>');
-        } else {
-            return field;
-        }
-    };
-
-    _filterFields = () => {
-        let fields;
-        if (this.level === 1 && this.keyword) {
-            const escapedKeyword = escapeRegExp(this.keyword);
-            const keywordPattern = new RegExp(escapedKeyword, 'i');
-            fields = this._rawFields
-                .filter(field => {
-                    return keywordPattern.test(`${field.name} ${field.label}`);
-                })
-                .map(field => ({
-                    ...field,
-                    formattedName: this._formatField(field.name || ''),
-                }));
-        } else {
-            fields = this._rawFields;
-        }
-        this.fields = fields.map(field => {
-            return {
-                ...field,
-                isExpanded: !!this._expandedFieldNames[field.name],
-            };
-        });
-        this.pageNumber = 1; // reset
-    };
-
     _getFlattenedFields(query) {
         return getFlattenedFields(query).map(field => fullApiName(field));
     }
@@ -221,40 +275,49 @@ export default class FieldsTree extends ToolkitElement {
         }
     }
 
-    /** Events */
-
-    handleScroll(event) {
-        //console.log('handleScroll');
-        const target = event.target;
-        const scrollDiff = Math.abs(target.clientHeight - (target.scrollHeight - target.scrollTop));
-        const isScrolledToBottom = scrollDiff < 5; //5px of buffer
-        if (isScrolledToBottom) {
-            // Fetch more data when user scrolls to the bottom
-            this.pageNumber++;
+    get computedTree() {
+        if (!this.fieldsData || !this.fieldsData.length) {
+            return [];
         }
+        const rootLevelNum = parseInt(this.rootlevel, 10);
+        const maxLevel = 4 + rootLevelNum;
+        return this.fieldsData.map(field => {
+            const rawName = this._getRawFieldName(field);
+            const id = lowerCaseKey(rawName);
+            const title = field.details ? `${field.name} — ${field.details}` : field.name;
+            const isRef = !!field.relationshipSObjectName;
+            const level = this.relationship
+                ? this.relationship.split('.').length + rootLevelNum
+                : rootLevelNum;
+            const canExpand = isRef && level < maxLevel;
+            const children = canExpand
+                ? (this.loadedChildrenByFieldId[id] || [])
+                : undefined;
+            return {
+                id,
+                name: field.name,
+                title,
+                rawName,
+                icon: 'utility:number_input',
+                isActive: !!field.isActive,
+                isExpandable: canExpand,
+                relationshipSObjectName: field.relationshipSObjectName,
+                relationshipPath: field.relationshipPath,
+                children,
+                isLoadingChildren: canExpand && this.loadingRefIds.includes(id),
+            };
+        });
     }
 
-    /** Getters */
-
-    get level() {
-        if (!this.relationship) return this.rootLevelNum;
-        return this.relationship.split('.').length + this.rootLevelNum;
+    get fieldsSearchFields() {
+        return ['name', 'title'];
     }
 
-    get isMaxLevel() {
-        return this.level > 4 + this.rootLevelNum;
-    }
-
-    get rootLevelNum() {
-        return parseInt(this.rootlevel, 10);
+    get minSearchLength() {
+        return 1;
     }
 
     get isNoFields() {
-        return !this.fields || !this.fields.length;
-    }
-
-    get virtualList() {
-        // Best UX Improvement !!!!
-        return this.fields.slice(0, this.pageNumber * PAGE_LIST_SIZE);
+        return !this.computedTree.length;
     }
 }

@@ -1,44 +1,37 @@
 import { wire, api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import { getFlattenedFields } from '@jetstreamapp/soql-parser-js';
-import { store, connectStore, SELECTORS, DESCRIBE, SOBJECT, UI } from 'core/store';
-import { isEmpty, fullApiName, isSame, escapeRegExp, isNotUndefinedOrNull } from 'shared/utils';
+import { store, connectStore, SELECTORS, SOBJECT, UI } from 'core/store';
+import { fullApiName, isSame, lowerCaseKey } from 'shared/utils';
 
-const PAGE_LIST_SIZE = 70;
+const ROOT_LEVEL = 2;
+const MAX_LEVEL = 4 + ROOT_LEVEL;
+
 export default class RelationshipsTree extends ToolkitElement {
-    // sObject Name
     @api sobject;
+
     sobjectMeta;
-    relationships = [];
+    relationshipsData = [];
+    selectedId = '';
     _keyword;
     _rawRelationships = [];
-    _expandedRelationshipNames = {};
-    _sobjectLabelMap;
-    pageNumber = 1;
+    loadedChildrenByRelationshipId = {};
+    requestedExpandedRefs = {};
+    loadingRefIds = [];
 
     @api
     get keyword() {
         return this._keyword;
     }
     set keyword(value) {
-        if (this._keyword !== value) {
-            this._keyword = value;
-            this._filterRelationships();
-        }
+        this._keyword = value;
     }
 
     @wire(connectStore, { store })
     storeChange({ application, sobject, ui }) {
-        const isCurrentApp = this.verifyIsActive(application.currentApplication);
+        const isCurrentApp = this.verifyIsActive(application?.currentApplication);
         if (!isCurrentApp) return;
-        /*
-        const fullSObjectName = lowerCaseKey(fullApiName(selectedSObject,this.namespace));
-        SELECTORS.describe.nameMap[fullSObjectName]
-        const sobjects = SELECTORS.describe.selectById({describe},DESCRIBE.getDescribeTableName(this._useToolingApi));
-        if (!this._sobjectLabelMap && sobjects.data) {
-            //this._sobjectLabelMap = this._getSObjectLabelMap(sobjects.data);
-            // Computation heavy !!!!!
-        }*/
+
         const sobjectState = SELECTORS.sobject.selectById(
             { sobject },
             (this.sobject || '').toLowerCase()
@@ -47,96 +40,186 @@ export default class RelationshipsTree extends ToolkitElement {
         if (sobjectState.data) {
             this.sobjectMeta = sobjectState.data;
         }
-        this._updateRelationships(ui.query);
-    }
-
-    _getSObjectLabelMap(sobjectsData) {
-        return sobjectsData.sobjects.reduce((result, sobj) => {
-            return {
-                ...result,
-                [sobj.name]: sobj.label,
-            };
-        }, {});
+        this._updateRelationships(ui?.query);
+        this._updateLoadedChildren(sobject, ui?.query);
+        this._updateLoadingRefIds(sobject);
     }
 
     _updateRelationships(query) {
         if (!this.sobjectMeta) return;
-        const selectedFields = query ? this._getFlattenedFields(query) : [];
-        this._rawRelationships = this.sobjectMeta.childRelationships.map(relation => {
-            return {
-                ...relation,
-                itemLabel: `${relation.relationshipName} / ${relation.childSObject}`,
-                details: `${relation.childSObject}`, //this._getRelationDetails(relation),
-                isActive: selectedFields.includes(fullApiName(relation.relationshipName)),
-                isExpanded: false,
-            };
-        });
-        this._filterRelationships();
-    }
-
-    _getRelationDetails(relation) {
-        return `${relation.childSObject} / ${this._sobjectLabelMap[relation.childSObject]}`;
-    }
-
-    _filterRelationships() {
-        let relationships;
-        if (this.keyword) {
-            const escapedKeyword = escapeRegExp(this.keyword);
-            const keywordPattern = new RegExp(escapedKeyword, 'i');
-            relationships = this._rawRelationships.filter(relation => {
-                return keywordPattern.test(`${relation.relationshipName} ${relation.childSObject}`);
-            });
-        } else {
-            relationships = this._rawRelationships;
-        }
-
-        this.relationships = relationships.map(relation => {
-            return {
-                ...relation,
-                isExpanded: !!this._expandedRelationshipNames[relation.relationshipName],
-            };
-        });
+        const selectedRelationships = (query ? this._getFlattenedFields(query) : []).map(x =>
+            (x || '').toLowerCase()
+        );
+        this._rawRelationships = (this.sobjectMeta.childRelationships || []).map(relation => ({
+            ...relation,
+            itemLabel: `${relation.relationshipName} / ${relation.childSObject}`,
+            details: relation.childSObject,
+            isActive: selectedRelationships.includes(
+                (fullApiName(relation.relationshipName) || '').toLowerCase()
+            ),
+        }));
+        this.relationshipsData = [...this._rawRelationships];
     }
 
     _getFlattenedFields(query) {
         return getFlattenedFields(query).map(field => fullApiName(field));
     }
 
-    /** Events */
-
-    selectRelationship(event) {
-        const relationshipName = event.currentTarget.dataset.name;
-        store.dispatch(UI.reduxSlice.actions.toggleRelationship({ relationshipName }));
-    }
-
-    toggleChildRelationship(event) {
-        const relationshipName = event.target.dataset.name;
-        this._expandedRelationshipNames[relationshipName] =
-            !this._expandedRelationshipNames[relationshipName];
-        this._filterRelationships();
-    }
-
-    handleScroll(event) {
-        //console.log('handleScroll');
-        const target = event.target;
-        const scrollDiff = Math.abs(target.clientHeight - (target.scrollHeight - target.scrollTop));
-        const isScrolledToBottom = scrollDiff < 5; //5px of buffer
-        if (isScrolledToBottom) {
-            // Fetch more data when user scrolls to the bottom
-            this.pageNumber++;
+    handleTreeSelect(event) {
+        const item = event.detail?.item;
+        if (!item?.rawName) return;
+        if (item.rawName.includes('.')) {
+            const [relationshipName, fieldName] = item.rawName.split('.');
+            store.dispatch(
+                UI.reduxSlice.actions.toggleField({
+                    fieldName,
+                    relationships: undefined,
+                    childRelationship: relationshipName,
+                })
+            );
+        } else {
+            store.dispatch(
+                UI.reduxSlice.actions.toggleRelationship({ relationshipName: item.rawName })
+            );
         }
     }
 
-    /** Getters */
-
-    get isNoRelationships() {
-        return !this.relationships || !this.relationships.length;
+    handleTreeToggle(event) {
+        const item = event.detail?.item;
+        if (!item?.isExpandable) return;
+        const hasChildren = Array.isArray(item.children) && item.children.length > 0;
+        if (hasChildren) return;
+        this._loadChildrenForRelationship(item);
     }
 
-    get virtualList() {
-        // Best UX Improvement !!!!
-        return this.relationships
-            .filter(x => x.relationshipName)
-            .slice(0, this.pageNumber * PAGE_LIST_SIZE);
+    _loadChildrenForRelationship(item) {
+        if (this.loadedChildrenByRelationshipId[item.id]) return;
+        const { childSObject, relationshipName } = item;
+        if (!childSObject) return;
+        this.requestedExpandedRefs = {
+            ...this.requestedExpandedRefs,
+            [item.id]: { childSObject, relationshipName },
+        };
+        if (!this.loadingRefIds.includes(item.id)) {
+            this.loadingRefIds = [...this.loadingRefIds, item.id];
+        }
+        const { describe } = store.getState();
+        store.dispatch(
+            SOBJECT.describeSObject({
+                connector: this.connector.conn,
+                sObjectName: childSObject,
+                useToolingApi: describe.nameMap[lowerCaseKey(childSObject)]?.useToolingApi,
+            })
+        );
+    }
+
+    _updateLoadedChildren(sobjectState, query) {
+        const nextLoaded = { ...this.loadedChildrenByRelationshipId };
+        const loadingIds = new Set();
+        for (const [relId, ref] of Object.entries(this.requestedExpandedRefs)) {
+            if (nextLoaded[relId]) continue;
+            const sobjectData = SELECTORS.sobject.selectById(
+                { sobject: sobjectState },
+                lowerCaseKey(ref.childSObject)
+            );
+            if (sobjectData?.isFetching) loadingIds.add(relId);
+        }
+        let updated = false;
+        for (const [relId, ref] of Object.entries(this.requestedExpandedRefs)) {
+            const sobjectData = SELECTORS.sobject.selectById(
+                { sobject: sobjectState },
+                lowerCaseKey(ref.childSObject)
+            );
+            if (!sobjectData?.data?.fields) continue;
+            const relationshipName = ref.relationshipName;
+            const selectedForSubquery = (
+                query
+                    ? (() => {
+                          const subquery = query.fields.find(
+                              field =>
+                                  field.type === 'FieldSubquery' &&
+                                  isSame(field.subquery?.relationshipName, relationshipName)
+                          );
+                          return subquery
+                              ? getFlattenedFields(subquery.subquery).map(f => fullApiName(f))
+                              : [];
+                      })()
+                    : []
+            )
+                .map(x => (x || '').toLowerCase());
+            const childFields = sobjectData.data.fields.map(field => {
+                const childRawName = `${relationshipName}.${field.name}`;
+                const childId = lowerCaseKey(childRawName);
+                const details = `${field.type.toUpperCase()} / ${field.label}`;
+                const title = `${field.name} — ${details}`;
+                return {
+                    id: childId,
+                    name: field.name,
+                    title,
+                    rawName: childRawName,
+                    icon: 'utility:number_input',
+                    isActive: selectedForSubquery.includes(childId),
+                    isExpandable: false,
+                    children: undefined,
+                };
+            });
+            childFields.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+            nextLoaded[relId] = childFields;
+            updated = true;
+        }
+        if (updated) {
+            this.loadedChildrenByRelationshipId = nextLoaded;
+        }
+    }
+
+    _updateLoadingRefIds(sobjectState) {
+        const loading = [];
+        for (const [relId, ref] of Object.entries(this.requestedExpandedRefs)) {
+            if (this.loadedChildrenByRelationshipId[relId]) continue;
+            const sobjectData = SELECTORS.sobject.selectById(
+                { sobject: sobjectState },
+                lowerCaseKey(ref.childSObject)
+            );
+            if (sobjectData?.isFetching) loading.push(relId);
+        }
+        this.loadingRefIds = loading;
+    }
+
+    get computedTree() {
+        if (!this.relationshipsData || !this.relationshipsData.length) return [];
+        return this.relationshipsData
+            .filter(r => r.relationshipName)
+            .map(relation => {
+                const id = lowerCaseKey(relation.relationshipName);
+                const title = relation.details
+                    ? `${relation.relationshipName} — ${relation.details}`
+                    : relation.relationshipName;
+                const children = this.loadedChildrenByRelationshipId[id] || [];
+                return {
+                    id,
+                    name: relation.itemLabel,
+                    title,
+                    rawName: relation.relationshipName,
+                    icon: 'utility:record_lookup',
+                    isActive: !!relation.isActive,
+                    isExpandable: true,
+                    childSObject: relation.childSObject,
+                    relationshipName: relation.relationshipName,
+                    children,
+                    isLoadingChildren: this.loadingRefIds.includes(id),
+                };
+            });
+    }
+
+    get relationshipsSearchFields() {
+        return ['name', 'title'];
+    }
+
+    get minSearchLength() {
+        return 1;
+    }
+
+    get isNoRelationships() {
+        return !this.computedTree.length;
     }
 }

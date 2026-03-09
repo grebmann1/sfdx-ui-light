@@ -3,6 +3,7 @@ import logger from 'shared/middleware';
 
 import * as APPLICATION from './modules/application';
 import * as ERROR from './modules/error';
+import { reportError } from './reportError';
 
 const store = configureStore({
     reducer: {
@@ -52,7 +53,7 @@ const store = configureStore({
     devTools: process.env.NODE_ENV !== 'production',
 });
 
-export { store, ERROR, APPLICATION };
+export { store, ERROR, APPLICATION, reportError };
 export { connectStore } from './wire-adapter';
 
 export const SELECTORS = {};
