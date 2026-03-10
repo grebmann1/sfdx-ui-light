@@ -2,6 +2,7 @@ import { api, track } from 'lwc';
 import { isEmpty, isChromeExtension, runActionAfterTimeOut } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
 import LOGGER from 'shared/logger';
+import { MODELS } from 'agent/utils';
 
 export default class App extends ToolkitElement {
     @api isLoading = false;
@@ -9,14 +10,8 @@ export default class App extends ToolkitElement {
     @api openaiKey;
     @api isAudioRecorderDisabled = false;
 
-    @track selectedModel = 'gpt-5.3';
-    @track availableModels = [
-        { label: 'gpt-5.3', value: 'gpt-5.3' },
-        { label: 'gpt-5-mini', value: 'gpt-5-mini' },
-        { label: 'gpt-5', value: 'gpt-5' },
-        { label: 'gpt-5.4', value: 'gpt-5.4-2026-03-05' },
-        { label: 'gpt-4.1', value: 'gpt-4.1' },
-    ];
+    @track selectedModel;
+    @track availableModels = MODELS;
 
     @api
     get model() {
@@ -27,7 +22,11 @@ export default class App extends ToolkitElement {
     }
 
     handleModelChange = event => {
-        this.selectedModel = event.target.value;
+        const model = event.target.value;
+        this.selectedModel = model;
+        this.dispatchEvent(
+            new CustomEvent('modelchange', { detail: { model }, bubbles: true, composed: true })
+        );
     };
 
     // prompt

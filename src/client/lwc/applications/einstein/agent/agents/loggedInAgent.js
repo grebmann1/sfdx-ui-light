@@ -36,12 +36,17 @@ ${runContext?.skillsText ?? ''}`,
               ...openaiBuiltInTools,
               ...(isChromeExtension() ? tools.chrome : []),
           ],
-          toolUseBehavior: { stopAtToolNames: ['chrome_screenshot', 'agent_request_continue'] },
+          toolUseBehavior: { stopAtToolNames: ['chrome_screenshot'] },
           modelSettings: {
               toolChoice: 'auto',
               truncation: 'auto',
               store: true,
               parallelToolCalls: false,
+              reasoning: { 
+                effort: 'high',
+                summary:'auto'
+              },
+              text: { verbosity: 'medium' },
           },
       });
 

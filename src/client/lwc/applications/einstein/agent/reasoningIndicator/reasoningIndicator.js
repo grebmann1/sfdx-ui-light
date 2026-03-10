@@ -5,7 +5,7 @@ import { Constants } from 'agent/utils';
 export default class ReasoningIndicator extends LightningElement {
     _reasoningState = null;
     _timerId = null;
-    @track _displayedElapsedSeconds = 0;
+    @track _tick = 0;
 
     @api
     get reasoningState() {
@@ -21,28 +21,20 @@ export default class ReasoningIndicator extends LightningElement {
         }
     }
 
-    connectedCallback() {}
-
     disconnectedCallback() {
         this._clearTimer();
     }
 
     _startTimer() {
         this._clearTimer();
-        const updateElapsed = () => {
+        this._tick = 0;
+        this._timerId = setInterval(() => {
             if (this._reasoningState?.phase !== 'thinking') {
                 this._clearTimer();
                 return;
             }
-            const startedAt = this._reasoningState.startedAt;
-            if (startedAt != null) {
-                this._displayedElapsedSeconds = Math.floor(
-                    (Date.now() - startedAt) / 1000
-                );
-            }
-        };
-        updateElapsed();
-        this._timerId = setInterval(updateElapsed, 1000);
+            this._tick += 1;
+        }, 1000);
     }
 
     _clearTimer() {
@@ -61,7 +53,11 @@ export default class ReasoningIndicator extends LightningElement {
     }
 
     get displayedElapsedSeconds() {
-        return this._displayedElapsedSeconds;
+        if (this._reasoningState?.phase !== 'thinking') return 0;
+        const startedAt = this._reasoningState.startedAt;
+        if (startedAt == null) return 0;
+        void this._tick;
+        return Math.floor((Date.now() - startedAt) / 1000);
     }
 
     get durationSeconds() {

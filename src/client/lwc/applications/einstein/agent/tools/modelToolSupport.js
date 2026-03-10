@@ -43,7 +43,7 @@ const MODEL_FAMILIES = {
     'gpt-5-mini': TOOLS_GPT_5_MINI,
     'gpt-5-nano': TOOLS_GPT_5_MINI,
     'gpt-5': TOOLS_GPT_5,
-    'gpt-5.3': TOOLS_GPT_5,
+    'gpt-5.2': TOOLS_GPT_5,
     'gpt-5.4': TOOLS_GPT_5_4,
     'gpt-4.1': TOOLS_GPT_5,
     'gpt-4.1-mini': TOOLS_GPT_5_MINI,
@@ -70,7 +70,7 @@ function getModelFamily(modelId) {
 
 /**
  * Returns the set of built-in tool types allowed for the given model.
- * @param {string} model - Model id (e.g. 'gpt-5-mini', 'gpt-5.3', 'gpt-5.4-2026-03-05')
+ * @param {string} model - Model id (e.g. 'gpt-5-mini', 'gpt-5.2', 'gpt-5.4-2026-03-05')
  * @returns {Set<string>} Allowed built-in tool types
  */
 export function getSupportedBuiltInToolTypes(model) {

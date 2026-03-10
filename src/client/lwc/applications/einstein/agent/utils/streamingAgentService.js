@@ -29,8 +29,14 @@ export default class StreamingAgentService {
     async startStreaming() {
         try {
             this.currentAbortController = new AbortController();
+            console.log('### startStreaming', {agent: this.agent, messages: this.messages, options: {
+                ...this.options,
+                stream: true,
+                signal: this.currentAbortController.signal,
+            }});
             const stream = await this.runner.run(this.agent, this.messages, {
                 ...this.options,
+                reasoning: {effort: 'high', summary: 'detailed'},
                 stream: true,
                 signal: this.currentAbortController.signal,
             });

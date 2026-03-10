@@ -1,7 +1,7 @@
 /**
  * OpenAI Responses API built-in tools (see https://developers.openai.com/docs/guides/tools?api-mode=responses).
  * These are merged with the agent's function tools when making API requests.
- * When using openAIGate, the backend filters this list by model (e.g. apply_patch only for supported models).
+ * The client filters this list by model via filterToolsByModel (e.g. apply_patch only for supported models).
  * Omitted: File search (needs vector_store_ids), MCP (needs server_url).
  */
 

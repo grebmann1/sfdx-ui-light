@@ -3,6 +3,7 @@ import { guid, isNotUndefinedOrNull } from 'shared/utils';
 
 import Constants from './constants';
 import Context from './context';
+import { DEFAULT_MODEL, MODELS } from './models';
 import StreamingAgentService from './streamingAgentService';
 
 const readFileContent = file => {
@@ -181,7 +182,7 @@ const Message = {
     hasDisplayableContent,
 };
 
-export { readFileContent, StreamingAgentService, Message, Context, Constants };
+export { readFileContent, StreamingAgentService, Message, Context, Constants, MODELS, DEFAULT_MODEL };
 
 /* export const CONVERSATION_CACHE_KEY = 'einsteinAgentConversation';
 

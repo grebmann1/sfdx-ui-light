@@ -6,9 +6,10 @@
     "build": "webpack --config webpack.config.js"
   },
   "dependencies": {
-    "@openai/agents": "0.0.16",
-    "@openai/agents-core": "0.0.16",
-    "@openai/agents-openai": "0.0.16"
+    "@openai/agents": "0.6.0",
+    "@openai/agents-core": "0.6.0",
+    "@openai/agents-openai": "0.6.0",
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",

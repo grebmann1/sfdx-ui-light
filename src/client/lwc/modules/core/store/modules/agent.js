@@ -1,7 +1,14 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { loggedInAgent, loggedOutAgent } from 'agent/agents';
 import { filterToolsByModel } from 'agent/tools';
-import { readFileContent, Message, Context, StreamingAgentService, Constants } from 'agent/utils';
+import {
+    readFileContent,
+    Message,
+    Context,
+    StreamingAgentService,
+    Constants,
+    DEFAULT_MODEL,
+} from 'agent/utils';
 import {
     CACHE_CONFIG,
     loadExtensionConfigFromCache,
@@ -12,7 +19,7 @@ import {
 import { getEffectiveAgentSkills } from 'shared/defaultAgentSkills';
 import { ensureOpenAIAgentsBundleLoaded } from 'shared/loader';
 import LOGGER from 'shared/logger';
-import { isNotUndefinedOrNull, guid } from 'shared/utils';
+import { isNotUndefinedOrNull, guid, ROLES } from 'shared/utils';
 
 import * as ERROR from './error';
 
@@ -37,7 +44,7 @@ function safeSerializeForDebug(obj) {
 const initialState = {
     conversations: [{ id: 'default', title: 'Conversation 1', streamHistory: [] }],
     activeConversationId: 'default',
-    selectedModel: 'gpt-5.3',
+    selectedModel: DEFAULT_MODEL,
     // Per-conversation error: { [conversationId]: { title, message } }
     errorById: {},
     // Per conversation UI state
@@ -124,17 +131,6 @@ const agentSlice = createSlice({
     name: 'agent',
     initialState,
     reducers: {
-        setConversations: (state, action) => {
-            const { conversations } = action.payload;
-            state.conversations = Array.isArray(conversations) ? conversations : [];
-            if (
-                !state.activeConversationId ||
-                !state.conversations.find(c => c.id === state.activeConversationId)
-            ) {
-                state.activeConversationId = state.conversations[0]?.id || null;
-            }
-            saveCacheSettings(state);
-        },
         addConversation: (state, action) => {
             const { conversation } = action.payload;
             state.conversations = [...state.conversations, conversation];
@@ -152,6 +148,10 @@ const agentSlice = createSlice({
             delete state.streamingById[id];
             delete state.streamingMessageById[id];
             delete state.errorById[id];
+            delete state.reasoningById[id];
+            if (state.lastRunDebugByConversationId) {
+                delete state.lastRunDebugByConversationId[id];
+            }
             saveCacheSettings(state);
         },
         setActiveConversationId: (state, action) => {
@@ -234,6 +234,8 @@ const agentSlice = createSlice({
         },
         setReasoningStarted: (state, action) => {
             const { id } = action.payload;
+            const current = state.reasoningById[id];
+            if (current?.phase === 'thinking') return;
             state.reasoningById[id] = {
                 phase: 'thinking',
                 startedAt: Date.now(),
@@ -350,6 +352,7 @@ export const executeAgent = createAsyncThunk(
         const dispatchError = (title, message) => {
             dispatch(reduxSlice.actions.stopLoading({ id: conversationIdForCleanup }));
             dispatch(reduxSlice.actions.stopStreaming({ id: conversationIdForCleanup }));
+            dispatch(reduxSlice.actions.clearReasoning({ id: conversationIdForCleanup }));
             dispatch(
                 reduxSlice.actions.setError({
                     id: conversationIdForCleanup,
@@ -413,6 +416,7 @@ async function runExecuteAgent(
     dispatch(reduxSlice.actions.startLoading({ id: conversationId }));
     dispatch(reduxSlice.actions.startStreaming({ id: conversationId }));
     dispatch(reduxSlice.actions.clearReasoning({ id: conversationId }));
+    dispatch(reduxSlice.actions.setReasoningStarted({ id: conversationId }));
 
     // Read files and upload PDFs if needed
     let filesData = [];
@@ -459,7 +463,7 @@ async function runExecuteAgent(
     const rawMessages = (getState().agent?.messagesById?.[conversationId] || []).slice();
     const conversationOnly = rawMessages.filter(msg => msg.id !== Constants.WELCOME_MESSAGE.id);
     const messagesForRunner = conversationOnly.map(msg => Message.ensureMessageContentArray(msg));
-    const currentModel = model || getState().agent?.selectedModel || 'gpt-5.3';
+    const currentModel = model || getState().agent?.selectedModel || DEFAULT_MODEL;
     const runner = new Runner({
         model: currentModel,
     });
@@ -499,7 +503,7 @@ async function runExecuteAgent(
             if (chunk.delta !== undefined) {
                 const current = getState().agent?.streamingMessageById?.[conversationId] || {
                     id: guid(),
-                    role: 'assistant',
+                    role: ROLES.ASSISTANT,
                     content: '',
                 };
                 const prevContent =
@@ -510,7 +514,7 @@ async function runExecuteAgent(
                           : '';
                 const next = {
                     ...current,
-                    role: current.role || 'assistant',
+                    role: current.role || ROLES.ASSISTANT,
                     content: prevContent + chunk.delta,
                 };
                 dispatch(
@@ -530,7 +534,7 @@ async function runExecuteAgent(
                             : '';
                 const normalizedMessage = {
                     id: chunk.id || guid(),
-                    role: chunk.role || 'assistant',
+                    role: chunk.role || ROLES.ASSISTANT,
                     content: contentStr,
                 };
                 dispatch(
@@ -632,7 +636,7 @@ async function runExecuteAgent(
                             const continuingMsg = {
                                 id: guid(),
                                 _key: guid(),
-                                role: 'assistant',
+                                role: ROLES.ASSISTANT,
                                 content: 'Continuing with more steps…',
                             };
                             dispatch(
@@ -717,7 +721,7 @@ async function runExecuteAgent(
                 const list = (getState().agent?.messagesById?.[conversationId] || []).slice();
                 const assistantMessage = {
                     id: guid(),
-                    role: 'assistant',
+                    role: ROLES.ASSISTANT,
                     content: unsupportedTextMatch,
                 };
                 const updated = Message.appendMessageIfNotExists(list, assistantMessage);
@@ -734,6 +738,7 @@ async function runExecuteAgent(
             }
             dispatch(reduxSlice.actions.stopLoading({ id: conversationId }));
             dispatch(reduxSlice.actions.stopStreaming({ id: conversationId }));
+            dispatch(reduxSlice.actions.clearReasoning({ id: conversationId }));
             delete streamingServices[conversationId];
         },
     };
@@ -759,5 +764,6 @@ export const stopAgent = createAsyncThunk('agent/stopAgent', async ({ id }, { di
     }
     dispatch(reduxSlice.actions.stopLoading({ id }));
     dispatch(reduxSlice.actions.stopStreaming({ id }));
+    dispatch(reduxSlice.actions.clearReasoning({ id }));
     return { id };
 });

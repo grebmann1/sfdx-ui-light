@@ -107,9 +107,6 @@ export default class AgentMessageList extends LightningElement {
                 last = chatList.querySelector('.chat-item.is-reasoning');
             }
             if (!last) {
-                last = chatList.querySelector('.slds-chat-loading');
-            }
-            if (!last) {
                 const items = chatList.querySelectorAll('li, .chat-item');
                 last = items[items.length - 1];
             }
@@ -136,11 +133,4 @@ export default class AgentMessageList extends LightningElement {
         this._userIsAtBottom = scrollHeight - scrollTop - clientHeight <= this._scrollThreshold;
     };
 
-    get showLoadingIndicator() {
-        return (
-            this.isLoading &&
-            this._reasoningState?.phase !== 'thinking' &&
-            this._reasoningState?.phase !== 'done'
-        );
-    }
 }

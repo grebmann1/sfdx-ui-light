@@ -5,7 +5,7 @@ import ToolkitElement from 'core/toolkitElement';
 import { reportError, store, connectStore, AGENT } from 'core/store';
 import LOGGER from 'shared/logger';
 import { NavigationContext } from 'lwr/navigation';
-import { Message } from 'agent/utils';
+import { Message, DEFAULT_MODEL } from 'agent/utils';
 import Analytics from 'shared/analytics';
 
 export default class App extends ToolkitElement {
@@ -16,7 +16,7 @@ export default class App extends ToolkitElement {
         window.navContext = navContext;
     }
 
-    @track selectedModel = 'gpt-5.3';
+    @track selectedModel = DEFAULT_MODEL;
     @track isSidePanelOpen = false;
     @track conversations = [{ id: 'default', title: 'Conversation 1', streamHistory: [] }];
     @track activeConversationId = 'default';
@@ -229,6 +229,13 @@ export default class App extends ToolkitElement {
     handleClearClick = async e => {
         store.dispatch(AGENT.reduxSlice.actions.clearMessages({ id: this.activeConversationId }));
         //this.saveConversationsToCache();
+    };
+
+    handleModelChange = e => {
+        const model = e.detail?.model;
+        if (model) {
+            store.dispatch(AGENT.reduxSlice.actions.updateSelectedModel({ model }));
+        }
     };
 
     handleSendClick = async e => {
