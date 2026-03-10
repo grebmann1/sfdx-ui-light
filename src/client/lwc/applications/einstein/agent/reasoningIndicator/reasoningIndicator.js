@@ -72,4 +72,13 @@ export default class ReasoningIndicator extends LightningElement {
     get thoughtForLabel() {
         return Constants.REASONING_LABEL_THOUGHT_FOR;
     }
+
+    get reasoningTextContent() {
+        return this._reasoningState?.reasoningText ?? '';
+    }
+
+    get hasReasoningTextContent() {
+        const t = this.reasoningTextContent;
+        return typeof t === 'string' && t.trim().length > 0;
+    }
 }

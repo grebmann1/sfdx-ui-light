@@ -10,18 +10,35 @@
                     ondragleave={handleDragLeave}
                     ondrop={handleDrop}>
                     <div class="slds-flex-column slds-align-flex-end">
-                        <div class="chat-input-model-row slds-flex-row" style="width: 120px">
-                            <select
-                                id="model-picklist"
-                                class="slds-select"
-                                value={selectedModel}
-                                onchange={handleModelChange}>
-                                <template for:each={availableModels} for:item="model">
-                                    <option key={model.value} value={model.value}>
-                                        {model.label}
-                                    </option>
-                                </template>
-                            </select>
+                        <div class="chat-input-model-row slds-flex-row slds-grid slds-gutter_x-small">
+                            <div class="slds-col">
+                                <select
+                                    id="model-picklist"
+                                    class="slds-select"
+                                    value={selectedModel}
+                                    onchange={handleModelChange}
+                                    aria-label="Model">
+                                    <template for:each={availableModels} for:item="model">
+                                        <option key={model.value} value={model.value}>
+                                            {model.label}
+                                        </option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div class="slds-col">
+                                <select
+                                    id="reasoning-picklist"
+                                    class="slds-select"
+                                    value={selectedReasoning}
+                                    onchange={handleReasoningChange}
+                                    aria-label="Reasoning">
+                                    <template for:each={availableReasoningOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value}>
+                                            {opt.label}
+                                        </option>
+                                    </template>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <template lwc:if={hasFiles}>

@@ -41,12 +41,7 @@ ${runContext?.skillsText ?? ''}`,
               toolChoice: 'auto',
               truncation: 'auto',
               store: true,
-              parallelToolCalls: false,
-              reasoning: { 
-                effort: 'high',
-                summary:'auto'
-              },
-              text: { verbosity: 'medium' },
+              parallelToolCalls: false
           },
       });
 

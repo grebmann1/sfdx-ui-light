@@ -1,24 +1,27 @@
 <template>
     <template lwc:if={isReasoning}>
-        <li class="slds-m-top_x-small">
-            <div class="slds-chat-event">
-                <div class="slds-chat-event__body">
-                    <div
-                        class="slds-flex-column slds-align-items_center slds-justify-content-center">
-                        <p>
-                            <span class="slds-text-title_bold">Reasoning:</span>
-                        </p>
+        <li class="slds-m-top_x-small chat-item reasoning-message-item">
+            <div class="reasoning-block">
+                <button
+                    type="button"
+                    class="reasoning-block-header"
+                    onclick={handleToggleReasoning}
+                    aria-expanded={reasoningExpanded}
+                    aria-label={reasoningHeaderLabel}>
+                    <lightning-icon
+                        icon-name={reasoningCaretIcon}
+                        size="xx-small"
+                        alternative-text="Toggle"></lightning-icon>
+                    <span class="reasoning-block-header-label">{reasoningHeaderLabel}</span>
+                </button>
+                <template lwc:if={reasoningExpanded}>
+                    <div class="reasoning-block-body">
+                        <slds-markdown-viewer
+                            class="reasoning-block-markdown"
+                            value={reasoningContent}
+                            onchange={handleChange}></slds-markdown-viewer>
                     </div>
-                </div>
-
-                <div class="slds-chat-event__agent-message slds-m-top_small">
-                    <span class="slds-icon-typing slds-is-animated" title="Reasoning">
-                        <span class="slds-icon-typing__dot"></span>
-                        <span class="slds-icon-typing__dot"></span>
-                        <span class="slds-icon-typing__dot"></span>
-                        <span class="slds-assistive-text">Reasoning</span>
-                    </span>
-                </div>
+                </template>
             </div>
         </li>
     </template>

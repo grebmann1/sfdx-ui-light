@@ -1,7 +1,7 @@
 <template>
     <li class="chat-item is-reasoning slds-m-top_x-small">
         <template lwc:if={showThinking}>
-            <div class="slds-chat-event">
+            <div class="slds-chat-event reasoning-indicator-thinking">
                 <div class="slds-chat-event__body">
                     <div
                         class="slds-flex-column slds-align-items_center slds-justify-content-center">
@@ -11,6 +11,13 @@
                         </p>
                     </div>
                 </div>
+                <template lwc:if={hasReasoningTextContent}>
+                    <div class="reasoning-indicator-streaming-text" aria-live="polite">
+                        <slds-markdown-viewer
+                            class="reasoning-indicator-markdown"
+                            value={reasoningTextContent}></slds-markdown-viewer>
+                    </div>
+                </template>
             </div>
         </template>
         <template lwc:if={showDone}>

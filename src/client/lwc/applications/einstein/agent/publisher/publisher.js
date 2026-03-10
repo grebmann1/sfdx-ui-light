@@ -2,7 +2,7 @@ import { api, track } from 'lwc';
 import { isEmpty, isChromeExtension, runActionAfterTimeOut } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
 import LOGGER from 'shared/logger';
-import { MODELS } from 'agent/utils';
+import { MODELS, DEFAULT_REASONING, REASONING_OPTIONS } from 'agent/utils';
 
 export default class App extends ToolkitElement {
     @api isLoading = false;
@@ -13,6 +13,9 @@ export default class App extends ToolkitElement {
     @track selectedModel;
     @track availableModels = MODELS;
 
+    @track selectedReasoning = DEFAULT_REASONING;
+    availableReasoningOptions = REASONING_OPTIONS;
+
     @api
     get model() {
         return this.selectedModel;
@@ -21,11 +24,31 @@ export default class App extends ToolkitElement {
         this.selectedModel = val;
     }
 
+    @api
+    get reasoning() {
+        return this.selectedReasoning;
+    }
+    set reasoning(val) {
+        this.selectedReasoning = val == null || val === '' ? DEFAULT_REASONING : val;
+    }
+
     handleModelChange = event => {
         const model = event.target.value;
         this.selectedModel = model;
         this.dispatchEvent(
             new CustomEvent('modelchange', { detail: { model }, bubbles: true, composed: true })
+        );
+    };
+
+    handleReasoningChange = event => {
+        const reasoning = event.target.value;
+        this.selectedReasoning = reasoning;
+        this.dispatchEvent(
+            new CustomEvent('reasoningchange', {
+                detail: { reasoning },
+                bubbles: true,
+                composed: true,
+            })
         );
     };
 
@@ -192,6 +215,7 @@ export default class App extends ToolkitElement {
                         prompt: value.trim(),
                         files: this.selectedFiles,
                         model: this.selectedModel,
+                        reasoning: this.selectedReasoning,
                     },
                 })
             );

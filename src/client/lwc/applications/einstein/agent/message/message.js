@@ -10,6 +10,7 @@ export default class Message extends ToolkitElement {
     @api isCurrentMessage = false;
     @track showToolResponse = false;
     @track showToolParameters = false;
+    @track reasoningExpanded = false;
 
     /** Methods **/
 
@@ -29,6 +30,10 @@ export default class Message extends ToolkitElement {
 
     handleToggleToolParameters = () => {
         this.showToolParameters = !this.showToolParameters;
+    };
+
+    handleToggleReasoning = () => {
+        this.reasoningExpanded = !this.reasoningExpanded;
     };
 
     handleRetry = () => {
@@ -98,6 +103,32 @@ export default class Message extends ToolkitElement {
 
     get isReasoning() {
         return this.item?.type === Constants.MESSAGE_TYPE.REASONING;
+    }
+
+    get reasoningHeaderLabel() {
+        if (!this.isReasoning) return '';
+        const sec = this.item?.durationSeconds;
+        if (sec != null && sec >= 0) {
+            return `${Constants.REASONING_LABEL_THOUGHT_FOR} ${sec}s`;
+        }
+        return Constants.REASONING_LABEL_THOUGHT_BRIEFLY;
+    }
+
+    get reasoningContent() {
+        if (!this.isReasoning) return '';
+        const c = this.item?.content;
+        if (typeof c === 'string') return c;
+        if (Array.isArray(c)) {
+            return c
+                .map(part => (part && typeof part.text === 'string' ? part.text : ''))
+                .filter(Boolean)
+                .join('\n\n');
+        }
+        return '';
+    }
+
+    get reasoningCaretIcon() {
+        return this.reasoningExpanded ? 'utility:chevrondown' : 'utility:chevronright';
     }
 
     get isToolResult() {

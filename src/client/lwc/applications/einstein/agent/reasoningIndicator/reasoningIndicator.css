@@ -5,3 +5,20 @@
 .chat-item.is-reasoning {
     margin-bottom: 0.25rem;
 }
+
+.reasoning-indicator-streaming-text {
+    overflow-y: auto;
+    padding: 8px 12px;
+    margin-top: 8px;
+    border-radius: 6px;
+    background-color: var(--slds-g-color-neutral-base-95, #f3f3f3);
+    border: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
+    text-align: left;
+}
+
+.reasoning-indicator-markdown {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--slds-g-color-neutral-base-20, #333);
+    text-align: left;
+}

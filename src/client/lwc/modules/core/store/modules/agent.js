@@ -8,6 +8,7 @@ import {
     StreamingAgentService,
     Constants,
     DEFAULT_MODEL,
+    DEFAULT_REASONING,
 } from 'agent/utils';
 import {
     CACHE_CONFIG,
@@ -41,10 +42,16 @@ function safeSerializeForDebug(obj) {
     }
 }
 
+function getReasoningConfigFromSelection(selection) {
+    if (selection === 'off' || selection === 'none' || !selection) return undefined;
+    return { effort: selection, summary: 'auto' };
+}
+
 const initialState = {
     conversations: [{ id: 'default', title: 'Conversation 1', streamHistory: [] }],
     activeConversationId: 'default',
     selectedModel: DEFAULT_MODEL,
+    selectedReasoning: DEFAULT_REASONING,
     // Per-conversation error: { [conversationId]: { title, message } }
     errorById: {},
     // Per conversation UI state
@@ -60,13 +67,13 @@ const initialState = {
 
 function saveCacheSettings(state) {
     try {
-        const { conversations, activeConversationId, selectedModel } = JSON.parse(
-            JSON.stringify(state)
-        );
+        const { conversations, activeConversationId, selectedModel, selectedReasoning } =
+            JSON.parse(JSON.stringify(state));
         saveSingleExtensionConfigToCache(CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATION_DATA.key, {
             conversations,
             activeConversationId,
             selectedModel,
+            selectedReasoning,
         });
     } catch (e) {
         LOGGER.error('Failed to save CONFIG to localstorage', e);
@@ -75,8 +82,16 @@ function saveCacheSettings(state) {
 
 function loadCacheSettings(cachedConfig, state) {
     try {
-        const { conversations, activeConversationId, selectedModel } = cachedConfig;
-        Object.assign(state, { conversations, activeConversationId, selectedModel });
+        const { conversations, activeConversationId, selectedModel, selectedReasoning } =
+            cachedConfig;
+        Object.assign(state, {
+            conversations,
+            activeConversationId,
+            selectedModel,
+        });
+        if (selectedReasoning !== undefined) {
+            state.selectedReasoning = selectedReasoning;
+        }
     } catch (e) {
         LOGGER.error('Failed to load CONFIG from localstorage', e);
     }
@@ -180,6 +195,11 @@ const agentSlice = createSlice({
             state.selectedModel = model;
             saveCacheSettings(state);
         },
+        setSelectedReasoning: (state, action) => {
+            const { reasoning } = action.payload;
+            state.selectedReasoning = reasoning ?? DEFAULT_REASONING;
+            saveCacheSettings(state);
+        },
         setError: (state, action) => {
             const { id, title, message } = action.payload || {};
             if (!id) return;
@@ -242,16 +262,26 @@ const agentSlice = createSlice({
             };
         },
         setReasoningEnded: (state, action) => {
-            const { id } = action.payload;
+            const { id, durationSeconds, reasoningText } = action.payload;
             const current = state.reasoningById[id];
             if (current && current.phase === 'thinking') {
                 const endedAt = Date.now();
+                const duration =
+                    durationSeconds ?? Math.round((endedAt - current.startedAt) / 1000);
                 state.reasoningById[id] = {
                     phase: 'done',
                     startedAt: current.startedAt,
                     endedAt,
-                    durationSeconds: Math.round((endedAt - current.startedAt) / 1000),
+                    durationSeconds: duration,
+                    reasoningText: reasoningText ?? current.reasoningText ?? '',
                 };
+            }
+        },
+        setReasoningText: (state, action) => {
+            const { id, reasoningText } = action.payload;
+            const current = state.reasoningById[id];
+            if (current && current.phase === 'thinking') {
+                state.reasoningById[id] = { ...current, reasoningText: reasoningText ?? '' };
             }
         },
         clearReasoning: (state, action) => {
@@ -462,17 +492,28 @@ async function runExecuteAgent(
 
     const rawMessages = (getState().agent?.messagesById?.[conversationId] || []).slice();
     const conversationOnly = rawMessages.filter(msg => msg.id !== Constants.WELCOME_MESSAGE.id);
-    const messagesForRunner = conversationOnly.map(msg => Message.ensureMessageContentArray(msg));
+    const messagesForRunner = conversationOnly
+        .filter(msg => msg.type !== Constants.MESSAGE_TYPE.REASONING)
+        .map(msg => Message.ensureMessageContentArray(msg));
     const currentModel = model || getState().agent?.selectedModel || DEFAULT_MODEL;
     const runner = new Runner({
         model: currentModel,
     });
 
     const filteredTools = filterToolsByModel(selectedAgent.tools || [], currentModel);
+    const reasoningConfig =         getReasoningConfigFromSelection(
+                getState().agent?.selectedReasoning ?? DEFAULT_REASONING
+            );
     const agentWithFilteredTools = new Proxy(selectedAgent, {
         get(target, prop) {
             if (prop === 'getAllTools') return () => filteredTools;
             if (prop === 'tools') return filteredTools;
+            if (prop === 'modelSettings') {
+                const base = target.modelSettings || {};
+                return reasoningConfig != null
+                    ? { ...base, reasoning: reasoningConfig }
+                    : { ...base, reasoning: undefined };
+            }
             return target[prop];
         },
     });
@@ -496,6 +537,7 @@ async function runExecuteAgent(
     const serviceOptions = {
         maxTurns: 25,
         context: runContext,
+        ...(reasoningConfig != null && { reasoning: reasoningConfig }),
         ...(debugMode && {
             onRawEvent: event => rawEvents.push(safeSerializeForDebug(event) ?? event),
         }),
@@ -555,24 +597,101 @@ async function runExecuteAgent(
         onReasoningStart: () => {
             dispatch(reduxSlice.actions.setReasoningStarted({ id: conversationId }));
         },
-        onReasoningEnd: () => {
-            dispatch(reduxSlice.actions.setReasoningEnded({ id: conversationId }));
+        onReasoningChunk: delta => {
+            const current = getState().agent?.reasoningById?.[conversationId];
+            if (current?.phase === 'thinking') {
+                const prev = current.reasoningText ?? '';
+                dispatch(
+                    reduxSlice.actions.setReasoningText({
+                        id: conversationId,
+                        reasoningText: prev + delta,
+                    })
+                );
+            }
+        },
+        onReasoningEnd: payload => {
+            dispatch(
+                reduxSlice.actions.setReasoningEnded({
+                    id: conversationId,
+                    durationSeconds: payload?.durationSeconds,
+                    reasoningText: payload?.reasoningText,
+                })
+            );
         },
         onStreamEnd: async stream => {
             const streamingMsg = getState().agent?.streamingMessageById?.[conversationId];
-            if (streamingMsg) {
-                const isAssistantWithNoContent =
-                    streamingMsg.role === 'assistant' &&
-                    !Message.hasDisplayableContent(streamingMsg);
-                if (!isAssistantWithNoContent) {
-                    const list = (getState().agent?.messagesById?.[conversationId] || []).slice();
-                    const updated = Message.appendMessageIfNotExists(list, streamingMsg);
-                    dispatch(
-                        reduxSlice.actions.setMessages({ id: conversationId, messages: updated })
-                    );
+            const reasoning = getState().agent?.reasoningById?.[conversationId];
+            let list = (getState().agent?.messagesById?.[conversationId] || []).slice();
+
+            const hadReasoning =
+                reasoning?.phase === 'done' &&
+                (reasoning.reasoningText || reasoning.durationSeconds != null);
+            if (hadReasoning) {
+                const lastReasoningIndex = list.length > 0
+                    ? list.map(m => m.type).lastIndexOf(Constants.MESSAGE_TYPE.REASONING)
+                    : -1;
+                if (lastReasoningIndex >= 0) {
+                    const existing = list[lastReasoningIndex];
+                    list = [...list];
+                    list[lastReasoningIndex] = {
+                        ...existing,
+                        durationSeconds: reasoning.durationSeconds ?? existing.durationSeconds,
+                    };
+                } else {
+                    const reasoningMessage = {
+                        id: guid(),
+                        _key: guid(),
+                        role: ROLES.ASSISTANT,
+                        type: Constants.MESSAGE_TYPE.REASONING,
+                        content: reasoning.reasoningText || '',
+                        durationSeconds: reasoning.durationSeconds,
+                    };
+                    list = Message.appendMessageIfNotExists(list, reasoningMessage);
                 }
+            }
+
+            const isAssistantWithNoContent =
+                streamingMsg &&
+                streamingMsg.role === 'assistant' &&
+                !Message.hasDisplayableContent(streamingMsg);
+            const hasStreamingContent =
+                streamingMsg &&
+                (Message.hasDisplayableContent(streamingMsg) ||
+                    (typeof streamingMsg.content === 'string' &&
+                        streamingMsg.content.trim().length > 0));
+            if (hasStreamingContent) {
+                const formattedStreaming = Message.formatMessage(streamingMsg, []);
+                list = Message.appendMessageIfNotExists(list, formattedStreaming);
+            }
+
+            let usedNewItemsFallback = false;
+            if (!hasStreamingContent && Array.isArray(stream?.newItems)) {
+                const lastAssistant = [...stream.newItems]
+                    .reverse()
+                    .map(item => item?.rawItem ?? item)
+                    .find(
+                        raw =>
+                            raw &&
+                            (raw.role === 'assistant' || raw.role === ROLES.ASSISTANT) &&
+                            Message.hasDisplayableContent(raw)
+                    );
+                if (lastAssistant) {
+                    const formatted = Message.formatMessage(lastAssistant, []);
+                    list = Message.appendMessageIfNotExists(list, formatted);
+                    usedNewItemsFallback = true;
+                }
+            }
+
+            if (hadReasoning || hasStreamingContent || usedNewItemsFallback) {
+                dispatch(
+                    reduxSlice.actions.setMessages({ id: conversationId, messages: list })
+                );
+            }
+            if (streamingMsg) {
                 dispatch(reduxSlice.actions.clearStreamingMessage({ id: conversationId }));
             }
+
+            dispatch(reduxSlice.actions.clearReasoning({ id: conversationId }));
             dispatch(reduxSlice.actions.stopLoading({ id: conversationId }));
             dispatch(reduxSlice.actions.stopStreaming({ id: conversationId }));
             const fullList = getState().agent?.messagesById?.[conversationId] ?? [];

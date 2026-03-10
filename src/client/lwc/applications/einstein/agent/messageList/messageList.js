@@ -1,6 +1,5 @@
 import { LightningElement, api } from 'lwc';
-import { ROLES } from 'shared/utils';
-import LOGGER from 'shared/logger';
+import { Constants } from 'agent/utils';
 
 export default class AgentMessageList extends LightningElement {
     @api welcomeMessage;
@@ -9,6 +8,11 @@ export default class AgentMessageList extends LightningElement {
     get showStandaloneWelcome() {
         return false;
     }
+
+    get listMessages() {
+        return Array.isArray(this.displayedMessages) ? this.displayedMessages : [];
+    }
+
     _streamingMessage = null;
     _reasoningState = null;
     @api isLoading = false;
@@ -23,39 +27,15 @@ export default class AgentMessageList extends LightningElement {
 
     get hasReasoningState() {
         const r = this._reasoningState;
-        return r && (r.phase === 'thinking' || r.phase === 'done');
+        if (!r || (r.phase !== 'thinking' && r.phase !== 'done')) return false;
+        const list = this.listMessages;
+        const last = list.length > 0 ? list[list.length - 1] : null;
+        if (last?.type === Constants.MESSAGE_TYPE.REASONING) return false;
+        return true;
     }
 
-    /** When phase is 'done', we show "Thought for" above the last message only if that message is the assistant's (so we don't put it above the user's message while streaming). */
-    get displayedMessagesForList() {
-        const list = Array.isArray(this.displayedMessages) ? this.displayedMessages : [];
-        const last = list.length > 0 ? list[list.length - 1] : null;
-        if (
-            this._reasoningState?.phase === 'done' &&
-            list.length > 0 &&
-            last?.role === ROLES.ASSISTANT
-        ) {
-            return list.slice(0, -1);
-        }
-        return list;
-    }
-
-    get lastDisplayedMessageWhenDone() {
-        const list = Array.isArray(this.displayedMessages) ? this.displayedMessages : [];
-        const last = list.length > 0 ? list[list.length - 1] : null;
-        if (
-            this._reasoningState?.phase === 'done' &&
-            list.length > 0 &&
-            last?.role === ROLES.ASSISTANT
-        ) {
-            return last;
-        }
-        return null;
-    }
-    prevMessageCount = 0;
-    prevStreamingKey = null;
-    _userIsAtBottom = true; // Track if user is at the bottom
-    _scrollThreshold = 40; // px, threshold for being considered "at bottom"
+    _userIsAtBottom = true;
+    _scrollThreshold = 40;
 
     @api
     get streamingMessage() {
@@ -63,19 +43,12 @@ export default class AgentMessageList extends LightningElement {
     }
     set streamingMessage(val) {
         this._streamingMessage = val;
-        //this.setLastComponentInView();
+        requestAnimationFrame(() => this.setLastComponentInView());
     }
 
     renderedCallback() {
         this._attachScrollListener();
         this.setLastComponentInView();
-        const list = Array.isArray(this.displayedMessages) ? this.displayedMessages : [];
-        if (list.length > 0) {
-            LOGGER.debug('[agent-messageList] renderedCallback', {
-                displayedCount: list.length,
-                items: list,
-            });
-        }
     }
 
     connectedCallback() {

@@ -32,6 +32,7 @@ const Constants = {
     },
     REASONING_LABEL_THINKING: 'Thinking',
     REASONING_LABEL_THOUGHT_FOR: 'Thought for',
+    REASONING_LABEL_THOUGHT_BRIEFLY: 'Thought briefly',
 };
 
 export default Constants;

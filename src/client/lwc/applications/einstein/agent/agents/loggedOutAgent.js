@@ -42,11 +42,6 @@ ${runContext?.skillsText ?? ''}`,
               truncation: 'auto',
               store: true,
               parallelToolCalls: false,
-              reasoning: { 
-                effort: 'high',
-                summary:'auto'
-              },
-              text: { verbosity: 'medium' },
           },
       });
 

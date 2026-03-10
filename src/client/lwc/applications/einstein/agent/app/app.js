@@ -5,7 +5,7 @@ import ToolkitElement from 'core/toolkitElement';
 import { reportError, store, connectStore, AGENT } from 'core/store';
 import LOGGER from 'shared/logger';
 import { NavigationContext } from 'lwr/navigation';
-import { Message, DEFAULT_MODEL } from 'agent/utils';
+import { Message, DEFAULT_MODEL, DEFAULT_REASONING } from 'agent/utils';
 import Analytics from 'shared/analytics';
 
 export default class App extends ToolkitElement {
@@ -17,6 +17,7 @@ export default class App extends ToolkitElement {
     }
 
     @track selectedModel = DEFAULT_MODEL;
+    @track selectedReasoning = DEFAULT_REASONING;
     @track isSidePanelOpen = false;
     @track conversations = [{ id: 'default', title: 'Conversation 1', streamHistory: [] }];
     @track activeConversationId = 'default';
@@ -70,6 +71,7 @@ export default class App extends ToolkitElement {
         this._setIfChanged('openaiUrl', application.openaiUrl);
         if (agent) {
             this._setIfChanged('selectedModel', agent.selectedModel);
+            this._setIfChanged('selectedReasoning', agent.selectedReasoning ?? DEFAULT_REASONING);
             const convs = agent.conversations || [];
             if (this.conversations !== convs) {
                 this.conversations = convs;
@@ -96,15 +98,13 @@ export default class App extends ToolkitElement {
 
             const rawMessages =
                 (agent.messagesById && agent.messagesById[this.activeConversationId]) || [];
-            const displayed = rawMessages.filter(m => m.type !== 'reasoning');
+            this._setIfChanged('displayedMessages', rawMessages);
             LOGGER.debug('[agent-app] syncFromStore: messages for display', {
                 activeConversationId: this.activeConversationId,
-                rawCount: rawMessages.length,
-                displayedCount: displayed.length,
-                rawRoles: rawMessages.map(m => m.role),
-                rawTypes: rawMessages.map(m => m.type),
+                count: rawMessages.length,
+                roles: rawMessages.map(m => m.role),
+                types: rawMessages.map(m => m.type),
             });
-            this._setIfChanged('displayedMessages', displayed);
 
             const err = agent?.errorById?.[this.activeConversationId];
             this._setIfChanged('error_title', err?.title ?? null);
@@ -238,12 +238,20 @@ export default class App extends ToolkitElement {
         }
     };
 
+    handleReasoningChange = e => {
+        const reasoning = e.detail?.reasoning;
+        if (reasoning !== undefined) {
+            store.dispatch(AGENT.reduxSlice.actions.setSelectedReasoning({ reasoning }));
+        }
+    };
+
     handleSendClick = async e => {
         const value = e.detail.prompt;
         const files = e.detail.files || [];
-        const model = e.detail.model || this.selectedModel;
+        const model = e.detail.model ?? this.selectedModel;
+        const reasoning = e.detail.reasoning ?? this.selectedReasoning;
         store.dispatch(AGENT.reduxSlice.actions.updateSelectedModel({ model }));
-        //await this.saveConversationsToCache();
+        store.dispatch(AGENT.reduxSlice.actions.setSelectedReasoning({ reasoning }));
         if (isEmpty(this.openaiKey)) {
             store.dispatch(
                 AGENT.reduxSlice.actions.setError({

@@ -388,8 +388,10 @@
                         onstop={handleStopClick}
                         onclear={handleClearClick}
                         onmodelchange={handleModelChange}
+                        onreasoningchange={handleReasoningChange}
                         is-loading={isStreaming}
-                        model={selectedModel}></agent-publisher>
+                        model={selectedModel}
+                        reasoning={selectedReasoning}></agent-publisher>
                 </div>
             </template>
             <template lwc:else>
@@ -417,8 +419,10 @@
                         onstop={handleStopClick}
                         onclear={handleClearClick}
                         onmodelchange={handleModelChange}
+                        onreasoningchange={handleReasoningChange}
                         is-loading={isStreaming}
-                        model={selectedModel}></agent-publisher>
+                        model={selectedModel}
+                        reasoning={selectedReasoning}></agent-publisher>
                 </div>
             </template>
         </div>
