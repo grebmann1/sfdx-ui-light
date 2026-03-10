@@ -24,6 +24,14 @@ const Constants = {
         INPUT_IMAGE: 'input_image',
         INPUT_FILE: 'input_file',
     },
+    MESSAGE_TYPE: {
+        REASONING: 'reasoning',
+        FUNCTION_CALL: 'function_call',
+        FUNCTION_CALL_PENDING: 'function_call_pending',
+        FUNCTION_CALL_RESULT: 'function_call_result',
+    },
+    REASONING_LABEL_THINKING: 'Thinking',
+    REASONING_LABEL_THOUGHT_FOR: 'Thought for',
 };
 
 export default Constants;

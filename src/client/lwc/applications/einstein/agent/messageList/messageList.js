@@ -1,5 +1,5 @@
 import { LightningElement, api } from 'lwc';
-
+import { ROLES } from 'shared/utils';
 import LOGGER from 'shared/logger';
 
 export default class AgentMessageList extends LightningElement {
@@ -10,7 +10,48 @@ export default class AgentMessageList extends LightningElement {
         return false;
     }
     _streamingMessage = null;
+    _reasoningState = null;
     @api isLoading = false;
+
+    @api
+    get reasoningState() {
+        return this._reasoningState;
+    }
+    set reasoningState(val) {
+        this._reasoningState = val;
+    }
+
+    get hasReasoningState() {
+        const r = this._reasoningState;
+        return r && (r.phase === 'thinking' || r.phase === 'done');
+    }
+
+    /** When phase is 'done', we show "Thought for" above the last message only if that message is the assistant's (so we don't put it above the user's message while streaming). */
+    get displayedMessagesForList() {
+        const list = Array.isArray(this.displayedMessages) ? this.displayedMessages : [];
+        const last = list.length > 0 ? list[list.length - 1] : null;
+        if (
+            this._reasoningState?.phase === 'done' &&
+            list.length > 0 &&
+            last?.role === ROLES.ASSISTANT
+        ) {
+            return list.slice(0, -1);
+        }
+        return list;
+    }
+
+    get lastDisplayedMessageWhenDone() {
+        const list = Array.isArray(this.displayedMessages) ? this.displayedMessages : [];
+        const last = list.length > 0 ? list[list.length - 1] : null;
+        if (
+            this._reasoningState?.phase === 'done' &&
+            list.length > 0 &&
+            last?.role === ROLES.ASSISTANT
+        ) {
+            return last;
+        }
+        return null;
+    }
     prevMessageCount = 0;
     prevStreamingKey = null;
     _userIsAtBottom = true; // Track if user is at the bottom
@@ -32,7 +73,7 @@ export default class AgentMessageList extends LightningElement {
         if (list.length > 0) {
             LOGGER.debug('[agent-messageList] renderedCallback', {
                 displayedCount: list.length,
-                items: list.map(m => ({ id: m.id, role: m.role, type: m.type })),
+                items: list,
             });
         }
     }
@@ -59,15 +100,15 @@ export default class AgentMessageList extends LightningElement {
         // Only auto-scroll if user is at bottom (or near)
         if (!this._userIsAtBottom) return;
         requestAnimationFrame(() => {
-            // Priority: streaming message, loading, last message
+            // Priority: streaming message, reasoning, loading, last message
             let last = null;
-            // Try streaming message
             last = chatList.querySelector('.chat-item.is-current-message');
-            // If not streaming, try loading
+            if (!last) {
+                last = chatList.querySelector('.chat-item.is-reasoning');
+            }
             if (!last) {
                 last = chatList.querySelector('.slds-chat-loading');
             }
-            // If not loading, try last message
             if (!last) {
                 const items = chatList.querySelectorAll('li, .chat-item');
                 last = items[items.length - 1];
@@ -94,4 +135,12 @@ export default class AgentMessageList extends LightningElement {
         // If user is within threshold of the bottom, consider at bottom
         this._userIsAtBottom = scrollHeight - scrollTop - clientHeight <= this._scrollThreshold;
     };
+
+    get showLoadingIndicator() {
+        return (
+            this.isLoading &&
+            this._reasoningState?.phase !== 'thinking' &&
+            this._reasoningState?.phase !== 'done'
+        );
+    }
 }

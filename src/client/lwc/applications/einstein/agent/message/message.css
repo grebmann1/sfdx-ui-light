@@ -2,35 +2,32 @@
     scroll-margin-top: 10px;
 }
 
+/* Empty fallback when assistant has no displayable content */
 .agent-message-empty-fallback {
     color: var(--slds-g-color-neutral-base-50, #747474);
     font-style: italic;
 }
 
-.slds-chat-message-error {
-    background-color: #cf0d26;
+/* Error state for message bubble (custom; do not override SLDS) */
+.message-bubble-error {
+    background-color: var(--slds-g-color-error-base-40, #cf0d26);
 }
 
-.slds-chat-message__text_inbound {
+.message-bubble-inbound {
     max-width: 100%;
     white-space: normal;
     background-color: var(--slds-g-color-neutral-base-95, #f3f3f3);
     font-size: 16px;
 }
-.slds-chat-message__text_outbound {
+
+.message-bubble-outbound {
     font-size: 16px;
 }
 
-.slds-chat-listitem_outbound {
+.message-listitem-outbound {
     max-width: 100%;
     white-space: normal;
 }
-/*
-@media (min-width: 1024px) {
-    .slds-chat-message__text_inbound {
-        max-width: 100%;
-    }
-}*/
 
 .slds-chat-message {
     width: -webkit-fill-available;
@@ -40,38 +37,28 @@
     width: -webkit-fill-available;
 }
 
-.slds-chat-listitem_outbound .slds-chat-message__meta {
+.message-listitem-outbound.slds-chat-listitem_outbound .slds-chat-message__meta {
     margin-left: auto;
 }
 
 .slds-chat-message__meta {
     text-align: center;
     display: flex;
-    /* align-content: center; */
     align-items: center;
     font-size: 12px;
     font-weight: 300;
 }
 
-/** Custom **/
+.message-actions-row {
+    align-items: center;
+}
 
-.small-icon {
-    --slds-c-button-line-height: 16.5px;
-    --slds-c-button-shadow-focus: 0px white solid;
-    --sds-c-button-shadow-focus: unset;
-    /** Danger mode **/
+.message-code-block-truncate {
+    white-space: normal;
+    max-height: 300px;
+    height: 300px;
 }
 
 .slds-chat-message__text_inbound slds-markdown-viewer {
     width: 100%;
-}
-
-.slds-flex-row {
-    align-items: center;
-}
-
-.slds-truncate-vertical {
-    white-space: normal;
-    max-height: 300px;
-    height: 300px;
 }

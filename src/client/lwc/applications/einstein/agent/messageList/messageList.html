@@ -4,9 +4,17 @@
         <template lwc:if={showStandaloneWelcome}>
             <agent-message item={welcomeMessage}></agent-message>
         </template>
-        <!-- Messages -->
-        <template for:each={displayedMessages} for:item="item">
+        <!-- Messages (when phase is 'done', exclude last so "Thought for" appears above it) -->
+        <template for:each={displayedMessagesForList} for:item="item">
             <agent-message key={item._key} item={item}></agent-message>
+        </template>
+        <!-- Reasoning (above message): Thinking / Thought for -->
+        <template lwc:if={hasReasoningState}>
+            <agent-reasoning-indicator reasoning-state={reasoningState}></agent-reasoning-indicator>
+        </template>
+        <!-- Last message when phase is 'done' (so "Thought for" sits above this message) -->
+        <template lwc:if={lastDisplayedMessageWhenDone}>
+            <agent-message key={lastDisplayedMessageWhenDone._key} item={lastDisplayedMessageWhenDone}></agent-message>
         </template>
         <template lwc:if={streamingMessage}>
             <agent-message
@@ -14,7 +22,7 @@
                 item={streamingMessage}
                 is-current-message></agent-message>
         </template>
-        <template lwc:if={isLoading}>
+        <template lwc:if={showLoadingIndicator}>
             <li class="slds-m-top_x-small">
                 <div class="slds-chat-event">
                     <div class="slds-chat-event__body">

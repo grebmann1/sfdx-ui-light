@@ -45,6 +45,8 @@ const initialState = {
     streamingById: {},
     messagesById: {},
     streamingMessageById: {},
+    // Reasoning: { phase: 'thinking', startedAt } | { phase: 'done', startedAt, endedAt, durationSeconds } | null
+    reasoningById: {},
     debugMode: false,
     lastRunDebugByConversationId: {},
 };
@@ -230,6 +232,30 @@ const agentSlice = createSlice({
             const { id } = action.payload;
             state.streamingMessageById[id] = null;
         },
+        setReasoningStarted: (state, action) => {
+            const { id } = action.payload;
+            state.reasoningById[id] = {
+                phase: 'thinking',
+                startedAt: Date.now(),
+            };
+        },
+        setReasoningEnded: (state, action) => {
+            const { id } = action.payload;
+            const current = state.reasoningById[id];
+            if (current && current.phase === 'thinking') {
+                const endedAt = Date.now();
+                state.reasoningById[id] = {
+                    phase: 'done',
+                    startedAt: current.startedAt,
+                    endedAt,
+                    durationSeconds: Math.round((endedAt - current.startedAt) / 1000),
+                };
+            }
+        },
+        clearReasoning: (state, action) => {
+            const { id } = action.payload;
+            state.reasoningById[id] = null;
+        },
         setDebugMode: (state, action) => {
             const { enabled } = action.payload || {};
             state.debugMode = !!enabled;
@@ -386,6 +412,7 @@ async function runExecuteAgent(
 
     dispatch(reduxSlice.actions.startLoading({ id: conversationId }));
     dispatch(reduxSlice.actions.startStreaming({ id: conversationId }));
+    dispatch(reduxSlice.actions.clearReasoning({ id: conversationId }));
 
     // Read files and upload PDFs if needed
     let filesData = [];
@@ -520,6 +547,12 @@ async function runExecuteAgent(
             const list = (getState().agent?.messagesById?.[conversationId] || []).slice();
             const updated = Message.appendMessageIfNotExists(list, msg);
             dispatch(reduxSlice.actions.setMessages({ id: conversationId, messages: updated }));
+        },
+        onReasoningStart: () => {
+            dispatch(reduxSlice.actions.setReasoningStarted({ id: conversationId }));
+        },
+        onReasoningEnd: () => {
+            dispatch(reduxSlice.actions.setReasoningEnded({ id: conversationId }));
         },
         onStreamEnd: async stream => {
             const streamingMsg = getState().agent?.streamingMessageById?.[conversationId];

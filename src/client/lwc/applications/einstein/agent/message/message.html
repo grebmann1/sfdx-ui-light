@@ -35,7 +35,7 @@
                             </p>
                             <template lwc:if={tool_isFinished}>
                                 <div
-                                    class="slds-flex-row slds-align-items_center slds-justify-content-center">
+                                    class="message-actions-row slds-flex-row slds-align-items_center slds-justify-content-center">
                                     {toolParametersButtonTitle}
                                     <template lwc:if={tool_parameters}>
                                         <lightning-button-icon
@@ -52,7 +52,10 @@
 
                     <template lwc:if={tool_isRunning}>
                         <div class="slds-chat-event__agent-message slds-m-top_small">
-                            <span class="slds-icon-typing slds-is-animated" title="Reasoning">
+                            <span
+                                class="slds-icon-typing slds-is-animated"
+                                title="Loading..."
+                                aria-label="Tool is running">
                                 <span class="slds-icon-typing__dot"></span>
                                 <span class="slds-icon-typing__dot"></span>
                                 <span class="slds-icon-typing__dot"></span>
@@ -62,7 +65,7 @@
                     </template>
                     <template lwc:elseif={showToolParameters}>
                         <div
-                            class="slds-chat-event__agent-message slds-truncate slds-truncate-vertical slds-m-top_x-small">
+                            class="slds-chat-event__agent-message message-code-block-truncate slds-truncate slds-m-top_x-small">
                             <slds-code-block
                                 class="slds-full-height"
                                 code-block={tool_parametersFormatted}
@@ -74,10 +77,10 @@
             </li>
         </template>
         <template lwc:elseif={isToolResult}>
-            <li class="">
+            <li class="slds-m-top_x-small">
                 <div class="slds-chat-event">
                     <div class="slds-chat-event__body">
-                        <div class="slds-flex-row">
+                        <div class="message-actions-row slds-flex-row">
                             {toolResponseButtonTitle}
                             <template lwc:if={tool_response}>
                                 <lightning-button-icon
@@ -91,7 +94,7 @@
                     </div>
                     <template lwc:if={showToolResponse}>
                         <div
-                            class="slds-chat-event__agent-message slds-truncate slds-truncate-vertical slds-m-top_x-small">
+                            class="slds-chat-event__agent-message message-code-block-truncate slds-truncate slds-m-top_x-small">
                             <slds-code-block
                                 class="slds-full-height"
                                 code-block={tool_responseFormatted}

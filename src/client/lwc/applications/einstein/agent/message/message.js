@@ -36,6 +36,10 @@ export default class Message extends ToolkitElement {
         this.dispatchEvent(retryEvent);
     };
 
+    handleChange = () => {
+        // No-op: markdown viewer may fire change; we display read-only and do not persist edits.
+    };
+
     @api
     updateItem(message) {
         this.item = message;
@@ -55,11 +59,12 @@ export default class Message extends ToolkitElement {
                 showAssistantEmptyFallback: this.showAssistantEmptyFallback,
                 hasRenderedContentFromList: this.hasRenderedContentFromList,
                 contentListLength: (this.contentList || []).length,
+                contentList:this.contentList
             });
         }
     }
 
-    /** Getters **/
+    /** Getters — role & type **/
 
     @api
     get isUser() {
@@ -75,26 +80,35 @@ export default class Message extends ToolkitElement {
     }
 
     get isTool() {
-        return ['function_call_result', 'function_call', 'function_call_pending'].includes(
-            this.item?.type
+        const t = this.item?.type;
+        return (
+            t === Constants.MESSAGE_TYPE.FUNCTION_CALL_RESULT ||
+            t === Constants.MESSAGE_TYPE.FUNCTION_CALL ||
+            t === Constants.MESSAGE_TYPE.FUNCTION_CALL_PENDING
         );
     }
 
     get isToolCall() {
-        return ['function_call', 'function_call_pending'].includes(this.item?.type);
+        const t = this.item?.type;
+        return (
+            t === Constants.MESSAGE_TYPE.FUNCTION_CALL ||
+            t === Constants.MESSAGE_TYPE.FUNCTION_CALL_PENDING
+        );
     }
 
     get isReasoning() {
-        return ['reasoning'].includes(this.item?.type);
+        return this.item?.type === Constants.MESSAGE_TYPE.REASONING;
     }
 
     get isToolResult() {
-        return this.item?.type === 'function_call_result';
+        return this.item?.type === Constants.MESSAGE_TYPE.FUNCTION_CALL_RESULT;
     }
 
     get hasError() {
         return this.item?.hasError;
     }
+
+    /** Getters — content **/
 
     get isRetryDisplayed() {
         return this.item?.isLastMessage && this.isUser && this.hasError;
@@ -174,22 +188,11 @@ export default class Message extends ToolkitElement {
         });
     }
 
-    isInputText(contentItem) {
-        return contentItem.type === Constants.CONTENT_TYPE.INPUT_TEXT;
-    }
-    isOutputText(contentItem) {
-        return contentItem.type === Constants.CONTENT_TYPE.OUTPUT_TEXT;
-    }
-    isInputImage(contentItem) {
-        return contentItem.type === Constants.CONTENT_TYPE.INPUT_IMAGE;
-    }
-    isInputFile(contentItem) {
-        return contentItem.type === Constants.CONTENT_TYPE.INPUT_FILE;
-    }
-
     get originMessage() {
         return this.isUser ? 'You' : 'Assistant';
     }
+
+    /** Getters — tool **/
 
     get tool_name() {
         return this.item?.name || '';
@@ -214,7 +217,9 @@ export default class Message extends ToolkitElement {
     }
 
     get tool_isRunning() {
-        return this.item?.type === 'function_call' && this.isCurrentMessage;
+        return (
+            this.item?.type === Constants.MESSAGE_TYPE.FUNCTION_CALL && this.isCurrentMessage
+        );
     }
 
     get tool_isFinished() {
@@ -241,11 +246,14 @@ export default class Message extends ToolkitElement {
         return this.showToolParameters ? 'utility:hide' : 'utility:preview';
     }
 
+    /** Getters — CSS classes **/
+
     get itemClass() {
         return classSet('slds-chat-listitem ')
             .add({
                 'slds-chat-listitem_outbound': this.isUser,
                 'slds-chat-listitem_inbound': !this.isUser,
+                'message-listitem-outbound': this.isUser,
             })
             .toString();
     }
@@ -253,9 +261,11 @@ export default class Message extends ToolkitElement {
     get itemMessageClass() {
         return classSet('slds-chat-message__text slds-flex-column')
             .add({
-                'slds-chat-message-error': this.hasError,
                 'slds-chat-message__text_outbound': this.isUser,
                 'slds-chat-message__text_inbound': !this.isUser,
+                'message-bubble-outbound': this.isUser,
+                'message-bubble-inbound': !this.isUser,
+                'message-bubble-error': this.hasError,
             })
             .toString();
     }

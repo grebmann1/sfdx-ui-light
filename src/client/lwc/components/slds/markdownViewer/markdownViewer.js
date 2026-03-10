@@ -2,7 +2,7 @@ import { api, LightningElement, createElement } from 'lwc';
 import { ensureMermaidLoaded } from 'shared/loader';
 import { marked } from 'shared/markdown';
 import {
-    classSet,
+    guid,
     isEmpty,
     normalizeString as normalize,
     runActionAfterTimeOut,
@@ -14,8 +14,13 @@ export default class MarkdownViewer extends LightningElement {
     hasRendered = false;
     _renderRequested = false;
     _lastRenderedValue = null;
+    _instanceKey = '';
 
     _value = '';
+
+    connectedCallback() {
+        this._instanceKey = guid();
+    }
     @api
     set value(value) {
         this._value = value;
@@ -63,7 +68,7 @@ export default class MarkdownViewer extends LightningElement {
             () => {
                 this.renderIfNeeded();
             },
-            { timeout: 0, key: 'slds.markdownViewer.render' }
+            { timeout: 0, key: this._instanceKey }
         );
     };
 
@@ -83,7 +88,7 @@ export default class MarkdownViewer extends LightningElement {
             async value => {
                 this.enable_codeViewer();
             },
-            { timeout: 500, key: 'slds.markdownViewer.enableCodeViewer' }
+            { timeout: 500, key: `${this._instanceKey}.enableCodeViewer` }
         );
     };
 

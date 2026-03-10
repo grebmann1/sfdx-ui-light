@@ -22,6 +22,7 @@ export const ROLES = {
     USER: 'user',
     SYSTEM: 'system',
     TOOL: 'tool',
+    ASSISTANT: 'assistant',
 };
 
 export const forceVariableSave = (variable, value) => {

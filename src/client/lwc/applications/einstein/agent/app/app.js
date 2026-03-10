@@ -23,6 +23,7 @@ export default class App extends ToolkitElement {
     @track isEditingTitle = false;
     @track pendingTitle = '';
     @track streamingMessage = null;
+    @track reasoningState = null;
     @track isLoading = false;
     @track isStreaming = false;
     @track displayedMessages = [];
@@ -89,6 +90,9 @@ export default class App extends ToolkitElement {
             this._setIfChanged('isLoading', isLoading);
             this._setIfChanged('isStreaming', isStreaming);
             this._setIfChanged('streamingMessage', streamMsg);
+            const reasoning =
+                (agent.reasoningById && agent.reasoningById[this.activeConversationId]) || null;
+            this._setIfChanged('reasoningState', reasoning);
 
             const rawMessages =
                 (agent.messagesById && agent.messagesById[this.activeConversationId]) || [];

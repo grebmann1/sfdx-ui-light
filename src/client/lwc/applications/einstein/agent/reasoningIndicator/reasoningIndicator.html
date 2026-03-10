@@ -1,0 +1,30 @@
+<template>
+    <li class="chat-item is-reasoning slds-m-top_x-small">
+        <template lwc:if={showThinking}>
+            <div class="slds-chat-event">
+                <div class="slds-chat-event__body">
+                    <div
+                        class="slds-flex-column slds-align-items_center slds-justify-content-center">
+                        <p>
+                            <span class="slds-text-title_bold">{thinkingLabel}</span>
+                            <span class="reasoning-indicator-time" aria-live="polite">{displayedElapsedSeconds}s</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <template lwc:if={showDone}>
+            <div class="slds-chat-event">
+                <div class="slds-chat-event__body">
+                    <div
+                        class="slds-flex-column slds-align-items_center slds-justify-content-center">
+                        <p>
+                            <span class="slds-text-title_bold">{thoughtForLabel}</span>
+                            <span class="reasoning-indicator-time">{durationSeconds}s</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </li>
+</template>
