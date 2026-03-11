@@ -1,0 +1,24 @@
+<template>
+    <div class="reasoning-block">
+        <button
+            type="button"
+            class="reasoning-block-header"
+            onclick={handleToggle}
+            aria-expanded={expanded}
+            aria-label={ariaLabel}>
+            <lightning-icon
+                icon-name={caretIcon}
+                size="xx-small"
+                alternative-text="Toggle"></lightning-icon>
+            <span class="reasoning-block-header-label">{headerLabel}</span>
+        </button>
+        <template lwc:if={expanded}>
+            <div class="reasoning-block-body">
+                <slds-markdown-viewer
+                    class="reasoning-block-markdown"
+                    value={content}
+                    onchange={handleChange}></slds-markdown-viewer>
+            </div>
+        </template>
+    </div>
+</template>

@@ -42,6 +42,8 @@ function safeSerializeForDebug(obj) {
     }
 }
 
+const deepClone = obj => JSON.parse(JSON.stringify(obj));
+
 function getReasoningConfigFromSelection(selection) {
     if (selection === 'off' || selection === 'none' || !selection) return undefined;
     return { effort: selection, summary: 'auto' };
@@ -59,8 +61,6 @@ const initialState = {
     streamingById: {},
     messagesById: {},
     streamingMessageById: {},
-    // Reasoning: { phase: 'thinking', startedAt } | { phase: 'done', startedAt, endedAt, durationSeconds } | null
-    reasoningById: {},
     debugMode: false,
     lastRunDebugByConversationId: {},
 };
@@ -162,8 +162,11 @@ const agentSlice = createSlice({
             delete state.loadingById[id];
             delete state.streamingById[id];
             delete state.streamingMessageById[id];
+            delete state.streamingReasoningMessageById[id];
+            if (state.streamingReasoningMessageIdById) {
+                delete state.streamingReasoningMessageIdById[id];
+            }
             delete state.errorById[id];
-            delete state.reasoningById[id];
             if (state.lastRunDebugByConversationId) {
                 delete state.lastRunDebugByConversationId[id];
             }
@@ -251,42 +254,6 @@ const agentSlice = createSlice({
         clearStreamingMessage: (state, action) => {
             const { id } = action.payload;
             state.streamingMessageById[id] = null;
-        },
-        setReasoningStarted: (state, action) => {
-            const { id } = action.payload;
-            const current = state.reasoningById[id];
-            if (current?.phase === 'thinking') return;
-            state.reasoningById[id] = {
-                phase: 'thinking',
-                startedAt: Date.now(),
-            };
-        },
-        setReasoningEnded: (state, action) => {
-            const { id, durationSeconds, reasoningText } = action.payload;
-            const current = state.reasoningById[id];
-            if (current && current.phase === 'thinking') {
-                const endedAt = Date.now();
-                const duration =
-                    durationSeconds ?? Math.round((endedAt - current.startedAt) / 1000);
-                state.reasoningById[id] = {
-                    phase: 'done',
-                    startedAt: current.startedAt,
-                    endedAt,
-                    durationSeconds: duration,
-                    reasoningText: reasoningText ?? current.reasoningText ?? '',
-                };
-            }
-        },
-        setReasoningText: (state, action) => {
-            const { id, reasoningText } = action.payload;
-            const current = state.reasoningById[id];
-            if (current && current.phase === 'thinking') {
-                state.reasoningById[id] = { ...current, reasoningText: reasoningText ?? '' };
-            }
-        },
-        clearReasoning: (state, action) => {
-            const { id } = action.payload;
-            state.reasoningById[id] = null;
         },
         setDebugMode: (state, action) => {
             const { enabled } = action.payload || {};
@@ -382,7 +349,6 @@ export const executeAgent = createAsyncThunk(
         const dispatchError = (title, message) => {
             dispatch(reduxSlice.actions.stopLoading({ id: conversationIdForCleanup }));
             dispatch(reduxSlice.actions.stopStreaming({ id: conversationIdForCleanup }));
-            dispatch(reduxSlice.actions.clearReasoning({ id: conversationIdForCleanup }));
             dispatch(
                 reduxSlice.actions.setError({
                     id: conversationIdForCleanup,
@@ -445,8 +411,6 @@ async function runExecuteAgent(
 
     dispatch(reduxSlice.actions.startLoading({ id: conversationId }));
     dispatch(reduxSlice.actions.startStreaming({ id: conversationId }));
-    dispatch(reduxSlice.actions.clearReasoning({ id: conversationId }));
-    dispatch(reduxSlice.actions.setReasoningStarted({ id: conversationId }));
 
     // Read files and upload PDFs if needed
     let filesData = [];
@@ -492,9 +456,7 @@ async function runExecuteAgent(
 
     const rawMessages = (getState().agent?.messagesById?.[conversationId] || []).slice();
     const conversationOnly = rawMessages.filter(msg => msg.id !== Constants.WELCOME_MESSAGE.id);
-    const messagesForRunner = conversationOnly
-        .filter(msg => msg.type !== Constants.MESSAGE_TYPE.REASONING)
-        .map(msg => Message.ensureMessageContentArray(msg));
+    const messagesForRunner = conversationOnly.map(msg => Message.ensureMessageContentArray(msg));
     const currentModel = model || getState().agent?.selectedModel || DEFAULT_MODEL;
     const runner = new Runner({
         model: currentModel,
@@ -534,6 +496,7 @@ async function runExecuteAgent(
     const runContext = { dynamicContext, skillsText };
     const debugMode = getState().agent?.debugMode === true;
     const rawEvents = [];
+    let currentItemId = null;
     const serviceOptions = {
         maxTurns: 25,
         context: runContext,
@@ -542,50 +505,58 @@ async function runExecuteAgent(
             onRawEvent: event => rawEvents.push(safeSerializeForDebug(event) ?? event),
         }),
         onChunk: chunk => {
-            if (chunk.delta !== undefined) {
-                const current = getState().agent?.streamingMessageById?.[conversationId] || {
-                    id: guid(),
-                    role: ROLES.ASSISTANT,
-                    content: '',
-                };
-                const prevContent =
-                    typeof current.content === 'string'
-                        ? current.content
-                        : Array.isArray(current.content) && current.content[0]?.text != null
-                          ? current.content[0].text
-                          : '';
-                const next = {
-                    ...current,
-                    role: current.role || ROLES.ASSISTANT,
-                    content: prevContent + chunk.delta,
-                };
-                dispatch(
-                    reduxSlice.actions.setStreamingMessage({
-                        id: conversationId,
-                        message: next,
-                    })
-                );
-            } else {
-                const contentStr =
-                    typeof chunk.text === 'string'
-                        ? chunk.text
-                        : Array.isArray(chunk.content)
-                          ? (chunk.content[0]?.text ?? '')
-                          : typeof chunk.content === 'string'
-                            ? chunk.content
-                            : '';
-                const normalizedMessage = {
-                    id: chunk.id || guid(),
-                    role: chunk.role || ROLES.ASSISTANT,
-                    content: contentStr,
-                };
-                dispatch(
-                    reduxSlice.actions.setStreamingMessage({
-                        id: conversationId,
-                        message: normalizedMessage,
-                    })
-                );
-                dispatch(reduxSlice.actions.stopLoading({ id: conversationId }));
+            const list = (getState().agent?.messagesById?.[conversationId] || []).slice();
+            const currentStreamingMessage = deepClone(getState().agent?.streamingMessageById?.[conversationId] || {});
+            // Create or Close streaming message
+            if (chunk.type === 'message') {
+                if (chunk.start === true) {
+                    currentItemId = chunk.item_id;
+                    // New streaming message started
+                    dispatch(
+                        reduxSlice.actions.setStreamingMessage({
+                            id: conversationId,
+                            message: {
+                                _key: chunk.item_id,
+                                id: chunk.item_id,
+                                role: chunk.role || ROLES.ASSISTANT,
+                                type: chunk.itemType
+                            },
+                        })
+                    );
+                } else if (chunk.end === true) {
+                    dispatch(reduxSlice.actions.setMessages({ id: conversationId, messages: [...list, { ...currentStreamingMessage }] }));
+                    dispatch(reduxSlice.actions.clearStreamingMessage({ id: conversationId, item_id: currentItemId }));
+                    currentItemId = null;
+                }
+            }else if (chunk.type === 'reasoning') {
+                const summaryIndex = Number(chunk.summary_index) >= 0 ? Number(chunk.summary_index) : 0;
+                if (chunk.partStart === true) {
+                    currentStreamingMessage.content = currentStreamingMessage.content || [];
+                    currentStreamingMessage.content.push({
+                        ...chunk.part,
+                        startedAt: chunk.startedAt != null ? Number(chunk.startedAt) : Date.now(),
+                    });
+                    dispatch(reduxSlice.actions.setStreamingMessage({ id: conversationId, message: currentStreamingMessage }));
+                }else if (chunk.delta !== undefined) {
+                    currentStreamingMessage.content[summaryIndex].text = currentStreamingMessage.content[summaryIndex].text + chunk.delta;
+                    dispatch(reduxSlice.actions.setStreamingMessage({ id: conversationId, message: currentStreamingMessage }));
+                } else if (chunk.partEnd === true) {
+                    currentStreamingMessage.content[summaryIndex].endedAt = chunk.endedAt != null ? Number(chunk.endedAt) : Date.now();
+                    dispatch(reduxSlice.actions.setStreamingMessage({ id: conversationId, message: currentStreamingMessage }));
+                }
+            } else if (chunk.type === 'output_text') {
+                if (chunk.partStart === true) {
+                    currentStreamingMessage.content = currentStreamingMessage.content || [];
+                    currentStreamingMessage.content.push({
+                        ...chunk.part,
+                    });
+                    dispatch(reduxSlice.actions.setStreamingMessage({ id: conversationId, message: currentStreamingMessage }));
+                }else if (chunk.delta !== undefined) {
+                    currentStreamingMessage.content[currentStreamingMessage.content.length - 1].text += chunk.delta;
+                    dispatch(reduxSlice.actions.setStreamingMessage({ id: conversationId, message: currentStreamingMessage }));
+                } else if (chunk.partEnd === true) {
+                    dispatch(reduxSlice.actions.setStreamingMessage({ id: conversationId, message: currentStreamingMessage }));
+                }
             }
         },
         onToolEvent: rawItem => {
@@ -594,104 +565,7 @@ async function runExecuteAgent(
             const updated = Message.appendMessageIfNotExists(list, msg);
             dispatch(reduxSlice.actions.setMessages({ id: conversationId, messages: updated }));
         },
-        onReasoningStart: () => {
-            dispatch(reduxSlice.actions.setReasoningStarted({ id: conversationId }));
-        },
-        onReasoningChunk: delta => {
-            const current = getState().agent?.reasoningById?.[conversationId];
-            if (current?.phase === 'thinking') {
-                const prev = current.reasoningText ?? '';
-                dispatch(
-                    reduxSlice.actions.setReasoningText({
-                        id: conversationId,
-                        reasoningText: prev + delta,
-                    })
-                );
-            }
-        },
-        onReasoningEnd: payload => {
-            dispatch(
-                reduxSlice.actions.setReasoningEnded({
-                    id: conversationId,
-                    durationSeconds: payload?.durationSeconds,
-                    reasoningText: payload?.reasoningText,
-                })
-            );
-        },
         onStreamEnd: async stream => {
-            const streamingMsg = getState().agent?.streamingMessageById?.[conversationId];
-            const reasoning = getState().agent?.reasoningById?.[conversationId];
-            let list = (getState().agent?.messagesById?.[conversationId] || []).slice();
-
-            const hadReasoning =
-                reasoning?.phase === 'done' &&
-                (reasoning.reasoningText || reasoning.durationSeconds != null);
-            if (hadReasoning) {
-                const lastReasoningIndex = list.length > 0
-                    ? list.map(m => m.type).lastIndexOf(Constants.MESSAGE_TYPE.REASONING)
-                    : -1;
-                if (lastReasoningIndex >= 0) {
-                    const existing = list[lastReasoningIndex];
-                    list = [...list];
-                    list[lastReasoningIndex] = {
-                        ...existing,
-                        durationSeconds: reasoning.durationSeconds ?? existing.durationSeconds,
-                    };
-                } else {
-                    const reasoningMessage = {
-                        id: guid(),
-                        _key: guid(),
-                        role: ROLES.ASSISTANT,
-                        type: Constants.MESSAGE_TYPE.REASONING,
-                        content: reasoning.reasoningText || '',
-                        durationSeconds: reasoning.durationSeconds,
-                    };
-                    list = Message.appendMessageIfNotExists(list, reasoningMessage);
-                }
-            }
-
-            const isAssistantWithNoContent =
-                streamingMsg &&
-                streamingMsg.role === 'assistant' &&
-                !Message.hasDisplayableContent(streamingMsg);
-            const hasStreamingContent =
-                streamingMsg &&
-                (Message.hasDisplayableContent(streamingMsg) ||
-                    (typeof streamingMsg.content === 'string' &&
-                        streamingMsg.content.trim().length > 0));
-            if (hasStreamingContent) {
-                const formattedStreaming = Message.formatMessage(streamingMsg, []);
-                list = Message.appendMessageIfNotExists(list, formattedStreaming);
-            }
-
-            let usedNewItemsFallback = false;
-            if (!hasStreamingContent && Array.isArray(stream?.newItems)) {
-                const lastAssistant = [...stream.newItems]
-                    .reverse()
-                    .map(item => item?.rawItem ?? item)
-                    .find(
-                        raw =>
-                            raw &&
-                            (raw.role === 'assistant' || raw.role === ROLES.ASSISTANT) &&
-                            Message.hasDisplayableContent(raw)
-                    );
-                if (lastAssistant) {
-                    const formatted = Message.formatMessage(lastAssistant, []);
-                    list = Message.appendMessageIfNotExists(list, formatted);
-                    usedNewItemsFallback = true;
-                }
-            }
-
-            if (hadReasoning || hasStreamingContent || usedNewItemsFallback) {
-                dispatch(
-                    reduxSlice.actions.setMessages({ id: conversationId, messages: list })
-                );
-            }
-            if (streamingMsg) {
-                dispatch(reduxSlice.actions.clearStreamingMessage({ id: conversationId }));
-            }
-
-            dispatch(reduxSlice.actions.clearReasoning({ id: conversationId }));
             dispatch(reduxSlice.actions.stopLoading({ id: conversationId }));
             dispatch(reduxSlice.actions.stopStreaming({ id: conversationId }));
             const fullList = getState().agent?.messagesById?.[conversationId] ?? [];
@@ -796,6 +670,7 @@ async function runExecuteAgent(
             }
         },
         onError: e => {
+            console.error('onError', e);
             if (debugMode) {
                 dispatch(
                     reduxSlice.actions.setLastRunDebug({
@@ -857,7 +732,6 @@ async function runExecuteAgent(
             }
             dispatch(reduxSlice.actions.stopLoading({ id: conversationId }));
             dispatch(reduxSlice.actions.stopStreaming({ id: conversationId }));
-            dispatch(reduxSlice.actions.clearReasoning({ id: conversationId }));
             delete streamingServices[conversationId];
         },
     };
@@ -883,6 +757,5 @@ export const stopAgent = createAsyncThunk('agent/stopAgent', async ({ id }, { di
     }
     dispatch(reduxSlice.actions.stopLoading({ id }));
     dispatch(reduxSlice.actions.stopStreaming({ id }));
-    dispatch(reduxSlice.actions.clearReasoning({ id }));
     return { id };
 });

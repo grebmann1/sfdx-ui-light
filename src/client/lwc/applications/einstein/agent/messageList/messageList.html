@@ -6,9 +6,6 @@
         <template for:each={listMessages} for:item="item">
             <agent-message key={item._key} item={item}></agent-message>
         </template>
-        <template lwc:if={hasReasoningState}>
-            <agent-reasoning-indicator reasoning-state={reasoningState}></agent-reasoning-indicator>
-        </template>
         <template lwc:if={streamingMessage}>
             <agent-message
                 class="chat-item is-current-message"

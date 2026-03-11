@@ -1,5 +1,4 @@
 import { LightningElement, api } from 'lwc';
-import { Constants } from 'agent/utils';
 
 export default class AgentMessageList extends LightningElement {
     @api welcomeMessage;
@@ -10,29 +9,19 @@ export default class AgentMessageList extends LightningElement {
     }
 
     get listMessages() {
-        return Array.isArray(this.displayedMessages) ? this.displayedMessages : [];
+        // Add _key if it doesn't exist
+        return Array.isArray(this.displayedMessages)
+            ? this.displayedMessages.map(item =>
+                  item._key === undefined
+                      ? { ...item, _key: item.id }
+                      : item
+              )
+            : [];
     }
 
     _streamingMessage = null;
-    _reasoningState = null;
     @api isLoading = false;
 
-    @api
-    get reasoningState() {
-        return this._reasoningState;
-    }
-    set reasoningState(val) {
-        this._reasoningState = val;
-    }
-
-    get hasReasoningState() {
-        const r = this._reasoningState;
-        if (!r || (r.phase !== 'thinking' && r.phase !== 'done')) return false;
-        const list = this.listMessages;
-        const last = list.length > 0 ? list[list.length - 1] : null;
-        if (last?.type === Constants.MESSAGE_TYPE.REASONING) return false;
-        return true;
-    }
 
     _userIsAtBottom = true;
     _scrollThreshold = 40;
@@ -73,11 +62,10 @@ export default class AgentMessageList extends LightningElement {
         // Only auto-scroll if user is at bottom (or near)
         if (!this._userIsAtBottom) return;
         requestAnimationFrame(() => {
-            // Priority: streaming message, reasoning, loading, last message
             let last = null;
             last = chatList.querySelector('.chat-item.is-current-message');
             if (!last) {
-                last = chatList.querySelector('.chat-item.is-reasoning');
+                last = chatList.querySelector('.chat-item.is-streaming-reasoning');
             }
             if (!last) {
                 const items = chatList.querySelectorAll('li, .chat-item');

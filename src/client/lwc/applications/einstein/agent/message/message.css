@@ -63,46 +63,11 @@
     width: 100%;
 }
 
-/* Collapsible reasoning (Thought) block — Cursor-style */
-.reasoning-block {
-    width: 100%;
-    border-radius: 6px;
-    background-color: var(--slds-g-color-neutral-base-95, #f3f3f3);
-    overflow: hidden;
+/* Reasoning message: spacing between multiple reasoning blocks */
+.reasoning-message-item .reasoning-block-item {
+    margin-bottom: 8px;
 }
 
-.reasoning-block-header {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    width: 100%;
-    padding: 8px 12px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    text-align: left;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--slds-g-color-neutral-base-30, #444);
-}
-
-.reasoning-block-header:hover {
-    background-color: var(--slds-g-color-neutral-base-90, #e5e5e5);
-}
-
-.reasoning-block-header-label {
-    flex: 1;
-}
-
-.reasoning-block-body {
-    padding: 0 12px 12px 12px;
-    border-top: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
-    text-align: left;
-}
-
-.reasoning-block-markdown {
-    font-size: 13px;
-    line-height: 1.5;
-    color: var(--slds-g-color-neutral-base-20, #333);
-    text-align: left;
+.reasoning-message-item .reasoning-block-item:last-child {
+    margin-bottom: 0;
 }

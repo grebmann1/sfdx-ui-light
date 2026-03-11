@@ -6,8 +6,12 @@ const RUN_ITEM_STREAM = 'run_item_stream_event';
 
 const MODEL_EVENT = {
     OUTPUT_ITEM_ADDED: 'response.output_item.added',
+    OUTPUT_ITEM_DONE: 'response.output_item.done',
     REASONING_PART_ADDED: 'response.reasoning_summary_part.added',
+    REASONING_PART_DONE: 'response.reasoning_summary_part.done',
     REASONING_TEXT_DELTA: 'response.reasoning_summary_text.delta',
+    OUTPUT_PART_ADDED: 'response.content_part.added',
+    OUTPUT_PART_DONE: 'response.content_part.done',
     OUTPUT_TEXT_DELTA: 'response.output_text.delta',
 };
 
@@ -39,83 +43,115 @@ export default class StreamingAgentService {
         this.onError = options.onError || (() => {});
         this.onToolEvent = options.onToolEvent || (() => {});
         this.onRawEvent = options.onRawEvent || (() => {});
-        this.onReasoningStart = options.onReasoningStart || (() => {});
-        this.onReasoningChunk = options.onReasoningChunk || (() => {});
-        this.onReasoningEnd = options.onReasoningEnd || (() => {});
         this._reasoningActive = false;
         this._reasoningStartedAt = null;
         this._reasoningText = '';
+        this._reasoningItemId = null;
     }
 
-    _startReasoning() {
-        if (!this._reasoningActive) {
-            this._reasoningActive = true;
-            this._reasoningStartedAt = Date.now();
-            this._reasoningText = '';
-            this.onReasoningStart();
-        }
-    }
-
-    _endReasoningIfActive() {
-        if (!this._reasoningActive) return;
-        this._reasoningActive = false;
-        const endedAt = Date.now();
-        const durationSeconds =
-            this._reasoningStartedAt != null
-                ? Math.round((endedAt - this._reasoningStartedAt) / 1000)
-                : 0;
-        this.onReasoningEnd({
-            durationSeconds,
-            reasoningText: this._reasoningText || '',
+    _startReasoning(partAddedEventData) {
+        const itemId =
+            partAddedEventData?.event?.item_id ??
+            partAddedEventData?.item_id ??
+            partAddedEventData?.event?.part?.id ??
+            null;
+        const summaryIndex =
+            partAddedEventData?.event?.summary_index ?? partAddedEventData?.summary_index ?? 0;
+        const part = partAddedEventData?.event?.part ?? partAddedEventData?.part ?? { type: 'summary_text', text: '' };
+        this.onChunk({
+            type: 'reasoning',
+            partStart: true,
+            item_id: itemId,
+            summary_index: summaryIndex,
+            part: { type: part?.type || 'summary_text', text: part?.text ?? '' },
         });
-        this._reasoningStartedAt = null;
-        this._reasoningText = '';
     }
 
-    _handleOutputItemAdded(data) {
+    _stopReasoning(partDoneEventData) {
+        const itemId =
+            partDoneEventData?.event?.item_id ??
+            partDoneEventData?.item_id ??
+            partDoneEventData?.event?.part?.id ??
+            null;
+        this.onChunk({
+            type: 'reasoning',
+            partEnd: true,
+            item_id: itemId,
+            content: this._reasoningText || '',
+        });
+    }
+
+    _startBlock(data) {
         const item = data?.event?.item;
-        if (!item) return;
-
-        const itemType = (item?.type || '').toLowerCase().trim();
-
-        if (itemType === 'reasoning') {
-            this._startReasoning();
+        // Exceptions for function calls
+        if(!item || item.type === 'function_call') {
             return;
         }
 
-        const textContent = typeof item?.text === 'string' ? item.text : '';
-        const isTextItem =
-            textContent && (item?.type === 'text' || item?.type === 'input_text');
-
-        if (isTextItem) {
-            this._endReasoningIfActive();
-            // Assistant text is delivered via output_text.delta; skip here to avoid double text.
-        } else {
-            this.onChunk(item);
-        }
+        this.onChunk({
+            item_id: item.id,
+            itemType: item.type,
+            type: 'message',
+            start: true,
+        });
     }
 
-    _handleReasoningPartAdded(data) {
-        if (this._reasoningActive && this._reasoningText.length > 0) {
-            this._reasoningText += '\n\n';
-            this.onReasoningChunk('\n\n');
+    _stopBlock(data) {
+        const item = data?.event?.item;
+        // Exceptions for function calls
+        if(!item || item.type === 'function_call') {
+            return;
         }
-        this._startReasoning();
+        this.onChunk({
+            item_id: item.id,
+            type: 'message',
+            end: true,
+        });
     }
 
-    _handleReasoningTextDelta(data) {
+    _startText(data) {
+        const itemId =
+            data?.event?.item_id ?? data?.item_id ?? data?.event?.part?.id ?? null;
+        const part = data?.event?.part ?? data?.part ?? null;
+        if (!part) return;
+        this.onChunk({
+            type: 'output_text',
+            partStart: true,
+            item_id: itemId,
+            part,
+        });
+    }
+
+    _stopText(data) {
+        const itemId =
+            data?.event?.item_id ?? data?.item_id ?? data?.event?.part?.id ?? null;
+        const partId = data?.event?.part?.id ?? data?.part?.id ?? null;
+        this.onChunk({
+            type: 'output_text',
+            partEnd: true,
+            item_id: itemId,
+            part_id: partId,
+        });
+    }
+
+    _deltaReasoning(data) {
         const delta = getDelta(data);
         if (!delta) return;
-        this._startReasoning();
-        this._reasoningText += delta;
-        this.onReasoningChunk(delta);
+        const summaryIndex = data?.event?.summary_index ?? data?.summary_index ?? 0;
+        this.onChunk({
+            type: 'reasoning',
+            delta,
+            summary_index: summaryIndex,
+        });
     }
 
-    _handleOutputTextDelta(data) {
+    _deltaText(data) {
         const delta = getDelta(data);
         if (!delta) return;
-        this._endReasoningIfActive();
-        this.onChunk({ delta });
+        this.onChunk({ 
+            type:'output_text',
+            delta,
+         });
     }
 
     _handleRawModelEvent(event) {
@@ -124,22 +160,42 @@ export default class StreamingAgentService {
         const dataType = data?.type;
 
         if (dataType === DATA_TYPE.MODEL && eventType === MODEL_EVENT.OUTPUT_ITEM_ADDED) {
-            this._handleOutputItemAdded(data);
+            this._startBlock(data);
+            return;
+        }
+
+        if (dataType === DATA_TYPE.MODEL && eventType === MODEL_EVENT.OUTPUT_ITEM_DONE) {
+            this._stopBlock(data);
+            return;
+        }
+
+        if (dataType === DATA_TYPE.MODEL && eventType === MODEL_EVENT.OUTPUT_PART_ADDED) {
+            this._startText(data);
+            return;
+        }
+
+        if (dataType === DATA_TYPE.MODEL && eventType === MODEL_EVENT.OUTPUT_PART_DONE) {
+            this._stopText(data);
             return;
         }
 
         if (dataType === DATA_TYPE.MODEL && eventType === MODEL_EVENT.REASONING_PART_ADDED) {
-            this._handleReasoningPartAdded(data);
+            this._startReasoning(data);
             return;
         }
 
-        if (dataType !== DATA_TYPE.MODEL && eventType === MODEL_EVENT.REASONING_TEXT_DELTA) {
-            this._handleReasoningTextDelta(data);
+        if (dataType === DATA_TYPE.MODEL && eventType === MODEL_EVENT.REASONING_PART_DONE) {
+            this._stopReasoning(data);
+            return;
+        }
+
+        if (eventType === MODEL_EVENT.REASONING_TEXT_DELTA) {
+            this._deltaReasoning(data);
             return;
         }
 
         if (dataType !== DATA_TYPE.MODEL && (eventType === MODEL_EVENT.OUTPUT_TEXT_DELTA || dataType === DATA_TYPE.OUTPUT_TEXT_DELTA)) {
-            this._handleOutputTextDelta(data);
+            this._deltaText(data);
             return;
         }
     }
@@ -168,7 +224,6 @@ export default class StreamingAgentService {
 
             for await (const event of stream) {
                 this.onRawEvent(event);
-                console.log('### event', {event:JSON.parse(JSON.stringify(event))});
 
                 if (event.type === RAW_MODEL_STREAM) {
                     this._handleRawModelEvent(event);
@@ -176,8 +231,6 @@ export default class StreamingAgentService {
                     this._handleRunItemEvent(event);
                 }
             }
-
-            this._endReasoningIfActive();
             await stream.completed;
             this.onStreamEnd(stream);
         } catch (e) {
