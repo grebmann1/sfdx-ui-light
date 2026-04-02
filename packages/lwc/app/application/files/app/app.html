@@ -1,0 +1,143 @@
+<template>
+    <div class={pageClass}>
+        <builder-editor is-toolbar-hidden>
+            <builder-header
+                slot="header"
+                title="Explorers"
+                sub-title="Files"
+                icon-name="utility:open_folder">
+                <div slot="actions" class="slds-builder-toolbar__actions">
+                    <template lwc:if={isSelectedFile}>
+                        <lightning-button-icon
+                            class="slds-p-left_xx-small"
+                            icon-name="utility:download"
+                            variant="border-filled"
+                            alternative-text="Download"
+                            title="Download"
+                            onclick={handleDownload}></lightning-button-icon>
+                    </template>
+                    <template lwc:if={canCopyPreview}>
+                        <lightning-button-icon
+                            class="slds-p-left_xx-small"
+                            icon-name="utility:copy"
+                            variant="border-filled"
+                            alternative-text="Copy"
+                            title="Copy"
+                            onclick={handleCopy}></lightning-button-icon>
+                    </template>
+                    <template lwc:if={hasSelection}>
+                        <lightning-button-icon
+                            class="slds-p-left_xx-small"
+                            icon-name="utility:delete"
+                            variant="border-filled"
+                            alternative-text="Delete"
+                            title="Delete"
+                            onclick={handleDelete}></lightning-button-icon>
+                    </template>
+                    <lightning-button-icon
+                        class="slds-p-left_xx-small"
+                        icon-name="utility:refresh"
+                        variant="border-filled"
+                        alternative-text="Refresh"
+                        title="Refresh"
+                        onclick={handleRefresh}></lightning-button-icon>
+                </div>
+                <p slot="meta" class="slds-page-header__meta-text">
+                    Virtual FS root: <span class="files-root">{rootPath}</span>
+                </p>
+            </builder-header>
+
+            <article class="full-page-body slds-card files-card">
+                <div class="files-body slds-full-height slds-full-width slds-is-relative">
+                    <slds-split-view
+                        class="files-split slds-full-height"
+                        left-min-width="260"
+                        right-min-width="320"
+                        splitter-position="28"
+                        is-horizontal>
+                        <div slot="left" class="files-panel files-panel-left slds-full-height">
+                            <slds-file-tree
+                                class="slds-full-height"
+                                tree={tree}
+                                onselect={handleSelect}
+                                ontoggle={handleToggle}
+                                onaction={handleTreeAction}
+                                enable-toggle-on-item-click
+                                is-folder-selectable
+                                search-fields={searchFields}
+                                min-search-length={minSearchLength}
+                                nested-item-spacing={fileTreeNestedItemSpacing}
+                                include-folders-in-results={includeFoldersInResults}></slds-file-tree>
+                        </div>
+
+                        <div slot="right" class="files-panel files-panel-right slds-full-height">
+                            <article class="slds-card slds-full-height files-preview-card">
+                                <div
+                                    class="slds-card__header slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                                    <header
+                                        class="slds-media slds-media_center slds-has-flexi-truncate">
+                                        <div class="slds-media__body slds-truncate">
+                                            <h2
+                                                class="slds-card__header-title slds-truncate"
+                                                title={previewTitle}>
+                                                {previewTitle}
+                                            </h2>
+                                            <template lwc:if={previewSubTitle}>
+                                                <div
+                                                    class="slds-text-body_small slds-text-color_weak slds-truncate">
+                                                    {previewSubTitle}
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </header>
+                                </div>
+
+                                <div class="slds-card__body slds-card__body_inner files-preview-body">
+                                    <template lwc:if={isPreviewLoading}>
+                                        <slds-spinner
+                                            alternative-text="Loading"
+                                            size="small"></slds-spinner>
+                                    </template>
+
+                                    <template lwc:elseif={previewError}>
+                                        <div class="slds-text-color_error slds-text-body_small">
+                                            {previewError}
+                                        </div>
+                                    </template>
+
+                                    <template lwc:elseif={isPreviewEmpty}>
+                                        <div class="slds-text-body_small slds-text-color_weak">
+                                            Select a file from the tree to preview its contents.
+                                        </div>
+                                    </template>
+
+                                    <template lwc:else>
+                                        <template lwc:if={isMarkdownPreview}>
+                                            <div class="files-markdown-preview">
+                                                <slds-markdown-viewer
+                                                    value={selectedContent}></slds-markdown-viewer>
+                                            </div>
+                                        </template>
+                                        <template lwc:elseif={isImagePreview}>
+                                            <div class="files-image-preview">
+                                                <img src={selectedImageUrl} alt={selectedPath} />
+                                            </div>
+                                        </template>
+                                        <template lwc:else>
+                                            <slds-code-block
+                                                class="slds-full-height"
+                                                code-block={selectedContent}
+                                                language={selectedLanguage}
+                                                title="Preview"></slds-code-block>
+                                        </template>
+                                    </template>
+                                </div>
+                            </article>
+                        </div>
+                    </slds-split-view>
+                </div>
+            </article>
+        </builder-editor>
+    </div>
+</template>
+

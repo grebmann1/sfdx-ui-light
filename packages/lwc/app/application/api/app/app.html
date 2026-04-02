@@ -1,0 +1,594 @@
+<template>
+    <div class={pageClass}>
+        <builder-editor onexecuteaction={executeAction} onexecutesave={executeSave}>
+            <builder-header
+                slot="header"
+                title="Light API Explorer"
+                sub-title="API Explorer"
+                icon-name="standard:user">
+                <div slot="actions" class="slds-builder-toolbar__actions">
+                    <lightning-button
+                        class="slds-p-left_xx-small"
+                        label={i18n.EDITOR_PANEL_SAVE}
+                        onclick={executeSave}
+                        disabled={isSaveButtonDisabled}></lightning-button>
+                    <template lwc:if={isApiRunning}>
+                        <lightning-button
+                            class="slds-p-left_xx-small"
+                            icon-name="utility:clear"
+                            label="Abort"
+                            variant="destructive"
+                            onclick={handleCancelApiRequest}
+                        ></lightning-button>
+                    </template>
+                    <template lwc:else>
+                        <lightning-button
+                            class="slds-m-left_small"
+                            icon-name="utility:apex"
+                            onclick={executeAction}
+                            label={i18n.EDITOR_PANEL_RUN}
+                            variant="danger"
+                            disabled={isExecuteApiDisabled}
+                        ></lightning-button>
+                    </template>
+                </div>
+                <div slot="meta" class="slds-flex-row slds-align-flex-end">
+                    <lightning-button-icon-stateful
+                        selected={isApiTreeToggled}
+                        variant="border-filled"
+                        icon-name="utility:notebook"
+                        size="large"
+                        onclick={handle_apiTreeToggle}
+                    ></lightning-button-icon-stateful>
+                    <lightning-button-icon-stateful
+                        class="slds-p-left_xx-small"
+                        selected={isCatalogToggled}
+                        variant="border-filled"
+                        icon-name="utility:apps"
+                        size="large"
+                        onclick={handle_catalogToggle}
+                    ></lightning-button-icon-stateful>
+
+                    <lightning-combobox
+                        lwc:ref="method"
+                        class="slds-horizontal-input-combobox slds-p-left_xx-small"
+                        label="Method"
+                        dropdown-alignment="left"
+                        value={method}
+                        placeholder="Method"
+                        disabled={isApiRunning}
+                        options={method_options}
+                        onchange={method_change}></lightning-combobox>
+                    <lightning-input
+                        lwc:ref="url"
+                        class="slds-horizontal-input-url slds-p-left_x-small"
+                        label="Endpoint"
+                        type="text"
+                        value={endpoint}
+                        onchange={endpoint_change}
+                        disabled={isApiRunning}></lightning-input>
+                </div>
+
+                <div slot="subactions" class="slds-builder-toolbar__actions">
+                    <lightning-button-icon
+                        icon-name="utility:undo"
+                        onclick={undo_click}
+                        label="Undo"
+                        variant="border-filled"
+                        disabled={isUndoDisabled}></lightning-button-icon>
+
+                    <lightning-button-icon
+                        class="slds-m-left_small"
+                        icon-name="utility:redo"
+                        onclick={redo_click}
+                        label="Redo"
+                        variant="border-filled"
+                        disabled={isRedoDisabled}></lightning-button-icon>
+                    <lightning-button
+                        class="slds-m-left_small"
+                        icon-name="utility:refresh"
+                        onclick={reset_click}
+                        label={i18n.EDITOR_PANEL_RESET}
+                        disabled={isApiRunning}></lightning-button>
+                    <lightning-button-icon-stateful
+                        class="slds-p-left_xx-small"
+                        selected={isSettingsPanelOpen}
+                        variant="border-filled"
+                        icon-name="utility:settings"
+                        size="large"
+                        onclick={handle_settingsToggle}></lightning-button-icon-stateful>
+                    <lightning-button-icon-stateful
+                        class="slds-p-left_xx-small"
+                        selected={isRecentToggled}
+                        variant="border-filled"
+                        icon-name="utility:budget_period"
+                        size="large"
+                        onclick={handleRecentToggle}></lightning-button-icon-stateful>
+                </div>
+
+                <template lwc:if={isMetaDisplayed}>
+                    <div slot="meta" class="slds-page-header__meta-text">
+                        <h2 class="slds-text-title_bold">In Alpha, basic support for now.</h2>
+                        <p>For advanced functionalities, it's recommended to use Postman</p>
+                    </div>
+                </template>
+            </builder-header>
+            <!-- Open API (OpenAPI Tree) -->
+            <api-api-tree-panel
+                size="slds-size_medium"
+                title="Open API"
+                is-open={isApiTreeToggled}
+                tree={apiTreeItems}
+                onselect={handle_apiTreeSelect}
+                onupload={handle_apiTreeUpload}
+                onclose={handle_apiTreeClose}
+                onserverurlchange={handleServerUrlChange}
+                ondeletefile={handleDeleteApiProject}
+            ></api-api-tree-panel>
+            <!-- Salesforce Catalog -->
+            <api-catalog-panel
+                size="slds-size_medium"
+                title="Salesforce Catalog"
+                is-open={isCatalogToggled}
+                tree={apiCatalogItems}
+                is-loading={isCatalogLoading}
+                error-message={apiCatalogError}
+                onselect={handle_catalogSelect}
+                onrefresh={handle_catalogRefresh}
+                onclose={handle_catalogClose}
+            ></api-catalog-panel>
+            <!-- Content -->
+            <article class="full-page-body slds-card">
+                <div class="slds-flex-column slds-full-height slds-api-container full-page-body">
+                    <!-- Tabs -->
+                    <slds-tabset
+                        lwc:ref="apiRequestTab"
+                        variant="scoped"
+                        class="slds-without-tab"
+                        active-tab-value={currentTab}
+                        onaddtab={handleAddTab}
+                        onclosetab={handleCloseTab}
+                        is-add-tab-enabled
+                        is-remove-tab-event-disabled>
+                        <template for:each={formattedTabs} for:item="item">
+                            <slds-tab
+                                key={item.id}
+                                label={item.name}
+                                value={item.id}
+                                onactive={handleSelectTab}
+                                is-closeable={item.isCloseable}
+                                is-draft={item.isDraft}></slds-tab>
+                        </template>
+                    </slds-tabset>
+                    <!-- Content -->
+                    <slds-split-view
+                        class="slds-fill-height"
+                        left-min-width="200"
+                        right-min-width="200"
+                        splitter-position="40"
+                        is-horizontal={isApiSplitterHorizontal}>
+                        <div class="bottom-left-panel slds-p-around_small slds-full-height slds-full-width slds-light-bg" slot="left">
+                            <div class="slds-form-element slds-full-height slds-full-width slds-flex-column">
+                                <lightning-tabset
+                                    lwc:ref="requestTab"
+                                    variant="scoped"
+                                    class="slds-without-tab"
+                                    active-tab-value={request_normalizedCurrent}>
+                                    <lightning-tab class="slds-sub-tabs__item"
+                                        label={PAGE_CONFIG.TABS.HEADERS}
+                                        value={PAGE_CONFIG.TABS.HEADERS}
+                                        onactive={request_handleSelectTab}></lightning-tab>
+                                    <lightning-tab class="slds-sub-tabs__item"
+                                        label={PAGE_CONFIG.TABS.BODY}
+                                        value={PAGE_CONFIG.TABS.BODY}
+                                        onactive={request_handleSelectTab}></lightning-tab>
+                                    <lightning-tab class="slds-sub-tabs__item"
+                                        label={PAGE_CONFIG.TABS.VARIABLES}
+                                        value={PAGE_CONFIG.TABS.VARIABLES}
+                                        onactive={request_handleSelectTab}></lightning-tab>
+                                </lightning-tabset>
+                                <!-- BODY Section-->
+                                <template lwc:if={isRequestHeadersDisplayed}>
+                                    <div class="request-section slds-fill-height slds-flex-column">
+                                        <div class="request-section__header slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                                            <div class="slds-text-title_bold">Headers</div>
+                                            <div class="slds-text-color_weak slds-text-body_small slds-truncate" title="Use variables like {sessionId} and custom placeholders from the Variables tab.">
+                                                Use {sessionId} and Variables placeholders
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element__control request-section__body">
+                                            <api-header
+                                                header={effectiveHeader}
+                                                default-header={effectiveDefaultHeader}
+                                                onchange={header_change}
+                                                onsetdefault={handleSetDefaultHeader}
+                                            ></api-header>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template lwc:elseif={isRequestBodyDisplayed}>
+                                    <div class="slds-form-element slds-fill-height slds-flex-column">
+                                        <div class="request-section__header slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                                            <div class="slds-text-title_bold">Body</div>
+                                            <div class="slds-text-color_weak slds-text-body_small slds-truncate" title="Tip: the editor auto-detects JSON/XML based on your headers.">
+                                                Auto-format based on headers
+                                            </div>
+                                        </div>
+                                        <div class="slds-form-element__control slds-fill-height">
+                                            <!--
+                                            <textarea class="slds-textarea slds-text-longform slds-textarea-body" placeholder="Write body here" disabled={isBodyDisabled} oninput={body_change}>
+                                                {body}
+                                            </textarea>
+                                            -->
+                                            <editor-default
+                                                lwc:ref="bodyEditor"
+                                                class="slds-full-height slds-is-relative"
+                                                model={currentModel}
+                                                onmonacoloaded={initBodyEditor}
+                                                onchange={body_change}></editor-default>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template lwc:elseif={isRequestVariablesDisplayed}>
+                                    <div class="slds-form-element slds-fill-height slds-flex-column">
+                                        <slds-information-block class="slds-p-around_x-small" title="Variables">
+                                            <p>Variables replace placeholders in headers, endpoints, and body.</p>
+                                            <p>Example: &#123;id&#125; becomes "123", &#123;name&#125; becomes "John Doe".</p>
+                                        </slds-information-block>
+                                        <div class="slds-form-element__control slds-fill-height">
+                                            
+                                            <editor-default
+                                                lwc:ref="variablesEditor"
+                                                class="slds-full-height slds-is-relative"
+                                                model={variablesModel}
+                                                onmonacoloaded={initVariablesEditor}
+                                                onchange={variables_change}></editor-default>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="bottom-right-panel slds-full-height slds-full-width slds-p-around_xx-small slds-light-bg" slot="right">
+                            <div class="slds-grid slds-wrap slds-full-height slds-is-relative ">
+                                <div class="slds-col slds-size_1-of-1">
+                                    <template lwc:if={isApiRunning}>
+                                        <slds-spinner message={_loadingMessage}></slds-spinner>
+                                    </template>
+                                    <template lwc:elseif={isContentDisplayed}>
+                                        <!-- Viewers (Body, Headers , etc) -->
+                                        <div>
+                                            <lightning-tabset
+                                                lwc:ref="resultTab"
+                                                variant="scoped"
+                                                class="slds-without-tab"
+                                                active-tab-value={tab_normalizedCurrent}>
+                                                <lightning-tab
+                                                    label={PAGE_CONFIG.TABS.BODY}
+                                                    value={PAGE_CONFIG.TABS.BODY}
+                                                    onactive={viewer_handleSelectTab}></lightning-tab>
+                                                <lightning-tab
+                                                    label={PAGE_CONFIG.TABS.HEADERS}
+                                                    value={PAGE_CONFIG.TABS.HEADERS}
+                                                    onactive={viewer_handleSelectTab}></lightning-tab>
+                                                <lightning-tab
+                                                    label={PAGE_CONFIG.TABS.DETAILS}
+                                                    value={PAGE_CONFIG.TABS.DETAILS}
+                                                    onactive={viewer_handleSelectTab}></lightning-tab>
+                                            </lightning-tabset>
+                                        </div>
+                                        <!-- BODY Section-->
+                                        <template lwc:if={isBodyDisplayed}>
+                                            <div class="result-toolbar slds-p-around_x-small slds-border_bottom">
+                                                <div class="result-toolbar__viewers">
+                                                    <lightning-radio-group
+                                                        name="radioGroup"
+                                                        label="Radio Group"
+                                                        options={viewer_options}
+                                                        value={viewer_value}
+                                                        required
+                                                        type="button"
+                                                        variant="label-hidden"
+                                                        onchange={viewer_handleChange}
+                                                    ></lightning-radio-group>
+                                                </div>
+                                                <div class="result-toolbar__right">
+                                                    <div class="result-toolbar__search">
+                                                        <lightning-combobox
+                                                            class="result-toolbar__mode"
+                                                            label="Search mode"
+                                                            variant="label-hidden"
+                                                            value={viewerSearchMode}
+                                                            options={viewerSearchModeOptions}
+                                                            onchange={viewer_handleSearchModeChange}
+                                                        ></lightning-combobox>
+                                                        <lightning-input
+                                                            class="result-toolbar__query"
+                                                            type="search"
+                                                            label="Search"
+                                                            variant="label-hidden"
+                                                            placeholder="Search (substring or $.path)"
+                                                            value={viewerSearchQuery}
+                                                            onchange={viewer_handleSearchInput}
+                                                            onkeyup={viewer_handleSearchKeyUp}
+                                                        ></lightning-input>
+                                                        <lightning-button-icon
+                                                            icon-name="utility:search"
+                                                            variant="border-filled"
+                                                            alternative-text="Search"
+                                                            title="Search"
+                                                            onclick={viewer_runSearch}
+                                                        ></lightning-button-icon>
+                                                    </div>
+                                                    <div class="result-toolbar__actions">
+                                                        <lightning-button-group>
+                                                            <lightning-button-icon
+                                                                icon-name="utility:copy"
+                                                                variant="border-filled"
+                                                                alternative-text="Copy response body"
+                                                                title="Copy response body"
+                                                                onclick={viewer_copyBody}
+                                                            ></lightning-button-icon>
+                                                            <lightning-button-icon
+                                                                icon-name="utility:download"
+                                                                variant="border-filled"
+                                                                alternative-text="Download response"
+                                                                title="Download response"
+                                                                onclick={viewer_downloadBody}
+                                                            ></lightning-button-icon>
+                                                            <lightning-button-icon
+                                                                icon-name="utility:refresh"
+                                                                variant="border-filled"
+                                                                alternative-text="Retry last request"
+                                                                title="Retry last request"
+                                                                onclick={retryLastRequest}
+                                                                disabled={isRetryDisabled}
+                                                            ></lightning-button-icon>
+                                                        </lightning-button-group>
+                                                    </div>
+                                                    <div class="result-toolbar__status">
+                                                    <lightning-badge
+                                                        class={badgeClass}
+                                                        label={statusCode}></lightning-badge>
+                                                    <span>  {duration} ms</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class={prettyContainerClass}>
+                                                <template lwc:if={isFormattedContentDisplayed}>
+                                                    <slds-code-block
+                                                        class="slds-full-height"
+                                                        code-block={formattedContent}
+                                                        language={formattedContentType}
+                                                        title="Formatted Response"
+                                                        oncustomlink={handle_customLinkClick}></slds-code-block>
+                                                </template>
+                                                <template lwc:else>
+                                                    <illustration-default
+                                                        class="slds-p-top_large"
+                                                        title="File to large for preview">
+                                                        <lightning-button
+                                                            title={formattedZipDownloadLabel}
+                                                            label={formattedZipDownloadLabel}
+                                                            onclick={handle_downloadClick}></lightning-button>
+                                                    </illustration-default>
+                                                </template>
+                                            </div>
+
+                                            <div class={workbenchContainerClass}>
+                                                <slds-structure-viewer
+                                                    class="slds-flex-column slds-fill-height slds-m-horizontal_x-small"
+                                                    record={content}></slds-structure-viewer>
+                                            </div>
+
+                                            <div class={rawContainerClass}>
+                                                <editor-default
+                                                    lwc:ref="responseEditor"
+                                                    class="slds-full-height slds-is-relative"
+                                                    model={responseModel}
+                                                    onmonacoloaded={initResponseEditor}
+                                                    is-read-only></editor-default>
+                                            </div>
+
+                                            <!-- Preview hidden for large files -->
+                                            <div class={previewContainerClass}>
+                                                <template lwc:if={isFormattedContentDisplayed}>
+                                                    <iframe
+                                                        onload={injectHTML}
+                                                        width="100%"
+                                                        height="100%"
+                                                        style="border: unset"></iframe>
+                                                </template>
+                                                <template lwc:else>
+                                                    <illustration-default
+                                                        class="slds-p-top_large"
+                                                        title="File to large for preview">
+                                                        <lightning-button
+                                                            title={formattedZipDownloadLabel}
+                                                            label={formattedZipDownloadLabel}
+                                                            onclick={handle_downloadClick}></lightning-button>
+                                                    </illustration-default>
+                                                </template>
+                                            </div>
+
+                                            <div class={snippetContainerClass}>
+                                                <div class="snippet-root">
+                                                    <slds-tabset variant="vertical" active-tab-value={snippetTabValue}>
+                                                        <slds-tab label="Apex" value="apex" onactive={handleSnippetTabActive}>
+                                                            <slds-code-block
+                                                                class="slds-full-height"
+                                                                code-block={apexHttpRequestSnippet}
+                                                                language="apex"
+                                                                title="Apex HttpRequest"
+                                                            ></slds-code-block>
+                                                        </slds-tab>
+                                                        <slds-tab label="cURL" value="curl" onactive={handleSnippetTabActive}>
+                                                            <slds-code-block
+                                                                class="slds-full-height"
+                                                                code-block={curlSnippet}
+                                                                language="bash"
+                                                                title="cURL"
+                                                            ></slds-code-block>
+                                                        </slds-tab>
+                                                        <slds-tab label="jsforce" value="jsforce" onactive={handleSnippetTabActive}>
+                                                            <slds-code-block
+                                                                class="slds-full-height"
+                                                                code-block={jsforceSnippet}
+                                                                language="javascript"
+                                                                title="jsforce"
+                                                            ></slds-code-block>
+                                                        </slds-tab>
+                                                    </slds-tabset>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <!-- HEADERS Section-->
+                                        <template lwc:if={isHeadersDisplayed}>
+                                            <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_fixed-layout slds-table_striped ">
+                                                <thead>
+                                                    <tr class="slds-text-title_bold">
+                                                        <th scope="col">
+                                                            <div
+                                                                class="slds-truncate"
+                                                                title="Key">
+                                                                Key
+                                                            </div>
+                                                        </th>
+                                                        <th scope="col">
+                                                            <div
+                                                                class="slds-truncate"
+                                                                title="Value">
+                                                                Value
+                                                            </div>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <template
+                                                        for:each={contentHeaders}
+                                                        for:item="item">
+                                                        <tr key={item.key}>
+                                                            <td>
+                                                                <div
+                                                                    class="slds-truncate"
+                                                                    title={item.key}>
+                                                                    {item.key}
+                                                                </div>
+                                                            </td>
+                                                            <td class="slds-cell-wrap">
+                                                                <div title={item.value}>
+                                                                    {item.value}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </template>
+                                                </tbody>
+                                            </table>
+                                        </template>
+                                        <template lwc:elseif={isDetailsDisplayed}>
+                                            <div class="slds-form-element slds-p-around_small">
+                                                <dl class="slds-dl_horizontal slds-wrap">
+                                                    <dt class="slds-dl_horizontal__label">
+                                                        <p class="slds-truncate" title="Status">Status</p>
+                                                    </dt>
+                                                    <dd class="slds-dl_horizontal__detail">
+                                                        <p class="slds-truncate">{statusCode}</p>
+                                                    </dd>
+
+                                                    <dt class="slds-dl_horizontal__label">
+                                                        <p class="slds-truncate" title="Duration">Duration</p>
+                                                    </dt>
+                                                    <dd class="slds-dl_horizontal__detail">
+                                                        <p class="slds-truncate">{duration} ms</p>
+                                                    </dd>
+
+                                                    <dt class="slds-dl_horizontal__label">
+                                                        <p class="slds-truncate" title="Content-Type">Content-Type</p>
+                                                    </dt>
+                                                    <dd class="slds-dl_horizontal__detail">
+                                                        <p class="slds-truncate">{contentType}</p>
+                                                    </dd>
+
+                                                    <dt class="slds-dl_horizontal__label">
+                                                        <p class="slds-truncate" title="Size">Size</p>
+                                                    </dt>
+                                                    <dd class="slds-dl_horizontal__detail">
+                                                        <p class="slds-truncate">{responseSizeLabel}</p>
+                                                    </dd>
+
+                                                    <dt class="slds-dl_horizontal__label">
+                                                        <p class="slds-truncate" title="Method">Method</p>
+                                                    </dt>
+                                                    <dd class="slds-dl_horizontal__detail">
+                                                        <p class="slds-truncate">{executedFormattedRequest.method}</p>
+                                                    </dd>
+
+                                                    <dt class="slds-dl_horizontal__label">
+                                                        <p class="slds-truncate" title="Full URL">Full URL</p>
+                                                    </dt>
+                                                    <dd class="slds-dl_horizontal__detail">
+                                                        <p class="slds-truncate" title={fullEndpoint}>{fullEndpoint}</p>
+                                                    </dd>
+                                                </dl>
+                                            </div>
+                                        </template>
+                                    </template>
+                                    <template lwc:else>
+                                        <illustration-empty size="small" use-slot-format>
+                                            <div slot="title">
+                                                <p>
+                                                    Click
+                                                    <span
+                                                        class="slds-text-heading_small slds-p-horizontal_xx-small">
+                                                        Run
+                                                    </span>
+                                                    or use
+                                                    <span
+                                                        class="slds-text-heading_small slds-p-horizontal_xx-small">
+                                                        CMD/CTRL + Enter
+                                                    </span>
+                                                    to execute an API Call.<br />
+                                                    To change the splitter orientation (Vertical, Horizontal), click on the Settings icon
+                                                </p>
+                                            </div>
+                                        </illustration-empty>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </slds-split-view>
+                </div>
+            </article>
+            <!-- RECENT Anonymous Apex -->
+            <builder-storage-panel
+                title="API List"
+                is-open={isRecentToggled}
+                enable-import-export
+                recent-title={i18n.API_LIST_PANEL_RECENT}
+                recent-items={recentApiItems}
+                saved-items={savedApiItems}
+                saved-title={i18n.API_LIST_PANEL_SAVED}
+                onclose={handleRecentToggle}
+                onremoveitem={handleRemoveItem}
+                onexportsaved={handleExportSavedRequests}
+                onimportsaved={handleImportSavedRequests}
+                onselectitem={handleSelectItem}></builder-storage-panel>
+            <!-- Settings Vertical Panel -->
+            <slds-vertical-panel
+                has-border
+                position="right"
+                is-open={isSettingsPanelOpen}
+                title="API Application Settings"
+                size="slds-size_medium"
+                onclose={handleSettingsPanelClose}
+            >
+                <settings-api-app-settings 
+                    config={applicationConfig} 
+                    inputfield_change={settingsInputfieldChange}
+                    is-full-width
+                    is-section-header-hidden
+                ></settings-api-app-settings>
+            </slds-vertical-panel>
+        </builder-editor>
+    </div>
+</template>

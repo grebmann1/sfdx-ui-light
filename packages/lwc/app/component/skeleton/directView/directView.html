@@ -1,0 +1,20 @@
+<template>
+    <skeleton-root>
+        <template lwc:if={isVscodeVariant}>
+            <vscode-full-app
+                alias={alias}
+                session-id={sessionId}
+                server-url={serverUrl}
+                redirect-url={redirectUrl}
+                source-tab-id={sourceTabId}></vscode-full-app>
+        </template>
+        <template lwc:else>
+            <skeleton-app
+                mode="limited"
+                session-id={sessionId}
+                server-url={serverUrl}
+                redirect-url={redirectUrl}
+                alias={alias}></skeleton-app>
+        </template>
+    </skeleton-root>
+</template>

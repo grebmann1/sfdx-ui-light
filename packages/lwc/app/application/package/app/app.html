@@ -1,0 +1,129 @@
+<template>
+    <div class={pageClass}>
+        <builder-editor is-left-panel-toggled={isLeftToggled}>
+            <builder-header
+                slot="header"
+                title="Tools"
+                sub-title="Package Import/Export"
+                icon-name="standard:maintenance_asset">
+                <p slot="meta" class="slds-page-header__meta-text">
+                    <lightning-button-icon-stateful
+                        disabled={isCatalogDisabled}
+                        selected={isLeftToggled}
+                        variant="border-filled"
+                        icon-name="utility:knowledge_base"
+                        size="large"
+                        onclick={handleLeftToggle}
+                        tooltip="Display the Metadata Catalog."></lightning-button-icon-stateful>
+                </p>
+                <div slot="subactions" class="slds-builder-toolbar__actions">
+                    <lightning-button
+                        icon-name="utility:link"
+                        label="Deployment Manager"
+                        onclick={goToUrl}
+                        data-url="/lightning/setup/DeployStatus/home"></lightning-button>
+                    <template lwc:if={isDeployVisible}>
+                        <template lwc:if={isNewDeploymentButtonDisplayed}>
+                            <lightning-button
+                                class="slds-p-left_xx-small"
+                                label={i18n.PACKAGE_NEW_DEPLOYMENT}
+                                icon-name="utility:new"
+                                onclick={handleNewDeployment}
+                                disabled={isDeploymentRunning}></lightning-button>
+                        </template>
+                        <template lwc:else>
+                            <lightning-button
+                                class="slds-p-left_xx-small"
+                                variant="brand"
+                                label={i18n.PACKAGE_DEPLOY}
+                                icon-name="utility:right"
+                                onclick={handleDeploy}
+                                disabled={isDeploymentRunning}></lightning-button>
+                        </template>
+                    </template>
+                    <template lwc:if={isRetrieveVisible}>
+                        <template lwc:if={isRunning}>
+                            <lightning-button
+                                class="slds-p-left_xx-small"
+                                variant="destructive"
+                                label={i18n.EDITOR_PANEL_ABORT}
+                                icon-name="utility:clear"
+                                onclick={handleAbort}></lightning-button>
+                        </template>
+                        <template lwc:else>
+                            <lightning-button
+                                class="slds-p-left_xx-small"
+                                variant="brand"
+                                label={i18n.PACKAGE_RETRIEVE}
+                                icon-name="utility:right"
+                                onclick={handleRetrieve}
+                                disabled={isRetrieveRunning}></lightning-button>
+                        </template>
+                    </template>
+                </div>
+            </builder-header>
+
+            <!-- Left Panel -->
+            <div slot="left" class="slds-full-height slds-full-width slds-flex-column">
+                <div
+                    class="sf-left-panel-header slds-grid slds-grid_align-spread slds-p-around_x-small">
+                    <div class="slds-text-title_caps slds-truncate" title="Metadata Catalog">
+                        Metadata Catalog
+                    </div>
+                    <lightning-button-icon
+                        icon-name="utility:close"
+                        variant="bare"
+                        onclick={handleLeftToggle}
+                        alternative-text="Close"
+                        title="Close"></lightning-button-icon>
+                </div>
+                <metadata-menu
+                    lwc:ref="menu"
+                    class="slds-full-height slds-p-horizontal_x-small"
+                    application-name={applicationName}
+                    label1={label1}
+                    label2={label2}
+                    param1={param1}
+                    param2={param2}
+                    sobject={sobject}
+                    onselect={handleItemSelection}
+                    onselectall={handleSelectAll}
+                    onunselectall={handleUnselectAll}
+                    is-select-all-displayed
+                    is-basic-selection-enabled
+                    is-level2-excluded></metadata-menu>
+            </div>
+
+            <article class="full-page-body slds-card">
+                <div
+                    class="slds-is-relative slds-full-width slds-full-height slds-flex-column package-article-body"
+                    style="min-height: 200px">
+                    <template lwc:if={isLoading}>
+                        <slds-spinner alternative-text="Loading" size="small"></slds-spinner>
+                    </template>
+                    <slds-tabset active-tab-value={currentMethod} class="slds-full-height slds-flex-column">
+                        <slds-tab class="slds-full-height slds-flex-column"
+                            label={i18n.TAB_DEPLOY}
+                            value={i18n.TAB_DEPLOY}
+                            onactive={handleMethodTabActive}>
+                            <package-deploy
+                                lwc:ref="deploy"
+                                class="slds-fill-height slds-flex-column"
+                                application-name={applicationName}></package-deploy>
+                        </slds-tab>
+                        <slds-tab class="slds-full-height slds-flex-column"
+                            label={i18n.TAB_RETRIEVE}
+                            value={i18n.TAB_RETRIEVE}
+                            onactive={handleMethodTabActive}>
+                            <package-retrieve
+                                lwc:ref="retrieve"
+                                class="slds-fill-height slds-flex-column"
+                                application-name={applicationName}></package-retrieve>
+                        </slds-tab>
+                    </slds-tabset>
+                </div>
+            </article>
+            <!-- Panel -->
+        </builder-editor>
+    </div>
+</template>

@@ -1,0 +1,47 @@
+<template>
+    <div class="message-list-container">
+        <ul class="slds-chat-list" style="overflow-y: auto; overflow-anchor: auto">
+            <template lwc:if={showStandaloneWelcome}>
+                <agent-message item={welcomeMessage}></agent-message>
+            </template>
+            <template for:each={listMessages} for:item="item">
+                <agent-message key={item.key} item={item.message}></agent-message>
+            </template>
+            <template lwc:if={visibleStreamingMessage}>
+                <agent-message
+                    class="chat-item is-current-message"
+                    item={visibleStreamingMessage}
+                    is-current-message
+                    is-reasoning-streaming></agent-message>
+            </template>
+            <template lwc:if={isLoading}>
+                <li class="slds-chat-listitem slds-chat-listitem_inbound">
+                    <div
+                        class="slds-chat-typing-indicator slds-m-top_x-small"
+                        aria-live="polite"
+                        aria-label="Assistant is typing">
+                        <span class="slds-icon-typing slds-is-animated" title="Assistant is typing">
+                            <span class="slds-icon-typing__dot"></span>
+                            <span class="slds-icon-typing__dot"></span>
+                            <span class="slds-icon-typing__dot"></span>
+                            <span class="slds-assistive-text">Assistant is typing</span>
+                        </span>
+                        <template lwc:if={hasLoadingStatus}>
+                            <span class="agent-loading-status">{loadingStatus}</span>
+                        </template>
+                    </div>
+                </li>
+            </template>
+        </ul>
+        <template lwc:if={showScrollToBottomButton}>
+            <lightning-button-icon
+                class="scroll-to-bottom-button"
+                icon-name="utility:chevrondown"
+                size="small"
+                variant="border-filled"
+                alternative-text="Scroll to latest"
+                title="Scroll to latest"
+                onclick={handleScrollToBottom}></lightning-button-icon>
+        </template>
+    </div>
+</template>

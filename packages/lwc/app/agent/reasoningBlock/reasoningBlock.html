@@ -1,0 +1,35 @@
+<template>
+    <div class={blockClass}>
+        <button
+            type="button"
+            class="reasoning-block-header"
+            onclick={handleToggle}
+            aria-expanded={expanded}
+            aria-label={ariaLabel}
+            disabled={isBriefThought}>
+            <span class={statusClass}>
+                <lightning-icon
+                    icon-name={statusIconName}
+                    class={statusIconClass}
+                    size="xx-small"
+                    alternative-text="Reasoning status"></lightning-icon>
+                <span class="reasoning-block-header-label">{headerLabel}</span>
+                <template lwc:if={notBriefThought}>
+                    <lightning-icon
+                        icon-name={caretIcon}
+                        class="reasoning-toggle-icon"
+                        size="xx-small"
+                        alternative-text="Toggle"></lightning-icon>
+                </template>
+            </span>
+        </button>
+        <template lwc:if={expanded}>
+            <div class="reasoning-block-body">
+                <slds-markdown-viewer
+                    class="reasoning-block-markdown"
+                    value={content}
+                    onchange={handleChange}></slds-markdown-viewer>
+            </div>
+        </template>
+    </div>
+</template>

@@ -1,0 +1,243 @@
+.install-steps-layout {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.onboarding-steps-label {
+    color: var(--slds-g-color-neutral-base-30, #706e6b);
+    letter-spacing: 0.08em;
+    margin-bottom: 0.75rem;
+    padding: 0 0.75rem;
+}
+
+.onboarding-vertical-menu {
+    background: var(--slds-g-color-neutral-base-100, #ffffff);
+    border: 1px solid var(--slds-g-color-border-base-1, #dddbda);
+    border-radius: 1rem;
+    box-shadow: var(--slds-g-shadow-outset-medium, 0 2px 8px rgba(0, 0, 0, 0.08));
+    padding: 1rem 0.5rem;
+    position: sticky;
+    top: 1rem;
+}
+
+.onboarding-step-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.onboarding-step-list-item {
+    border-radius: 0.5rem;
+}
+
+.onboarding-step-button {
+    width: 100%;
+    text-align: left;
+    padding: 0.625rem 0.75rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--slds-g-color-neutral-base-30, #514f4d);
+    font-size: 0.9rem;
+    line-height: 1.35;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.onboarding-step-button:hover,
+.onboarding-step-button:focus-visible {
+    background: var(--slds-g-color-neutral-base-95, #f3f3f3);
+    outline: none;
+}
+
+.onboarding-step-active .onboarding-step-button {
+    background: rgba(21, 137, 238, 0.12);
+    color: var(--slds-g-color-brand-base-40, #0176d3);
+    font-weight: 600;
+}
+
+.onboarding-main-content {
+    min-width: 0;
+}
+
+.onboarding-progress {
+    background: var(--slds-g-color-neutral-base-100, #ffffff);
+    border: 1px solid var(--slds-g-color-border-base-1, #dddbda);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+}
+
+.onboarding-nav-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.onboarding-dot-indicator {
+    display: flex;
+    justify-content: center;
+}
+
+.slds-dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 50%;
+    background: var(--slds-g-color-border-base-4, #c9c7c5);
+    transition: background-color 0.2s ease-in-out;
+}
+
+.slds-dot_active {
+    background: var(--slds-g-color-brand-base-40, #0176d3);
+}
+
+.onboarding-content-card {
+    background: var(--slds-g-color-neutral-base-100, #ffffff);
+    border: 1px solid var(--slds-g-color-border-base-1, #dddbda);
+    border-radius: 1rem;
+    box-shadow: var(--slds-g-shadow-outset-medium, 0 2px 8px rgba(0, 0, 0, 0.08));
+    padding: 1.5rem;
+    animation: fadeIn 0.35s ease-in-out;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.onboarding-content-copy {
+    color: var(--slds-g-color-neutral-base-20, #181818);
+    line-height: 1.6;
+    font-size: 1.05rem;
+}
+
+.onboarding-content-media {
+    border: 1px solid var(--slds-g-color-border-base-1, #dddbda);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: var(--slds-g-color-neutral-base-95, #f3f3f3);
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.onboarding-content-image {
+    width: 100%;
+    max-height: 520px;
+    display: block;
+    object-fit: contain;
+}
+
+.onboarding-content-media-toolbar {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--slds-g-color-border-base-1, #dddbda);
+    background: var(--slds-g-color-neutral-base-100, #ffffff);
+}
+
+.onboarding-media-fullscreen-btn {
+    font-size: 0.78rem;
+    line-height: 1.2;
+    min-height: auto;
+    padding: 0.2rem 0.55rem;
+}
+
+.onboarding-media-lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(24, 24, 24, 0.85);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.onboarding-media-lightbox__content {
+    position: relative;
+    width: min(96vw, 1600px);
+    max-height: 94vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.onboarding-media-lightbox__image {
+    max-width: 100%;
+    max-height: 94vh;
+    object-fit: contain;
+    border-radius: 0.75rem;
+    box-shadow: var(--slds-g-shadow-outset-large, 0 8px 24px rgba(0, 0, 0, 0.35));
+}
+
+.onboarding-media-lightbox__close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+}
+
+.onboarding-footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.75rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (min-width: 1100px) {
+    .onboarding-content-card {
+        grid-template-columns: minmax(0, 1fr) minmax(380px, 50%);
+        align-items: start;
+    }
+}
+
+@media (max-width: 960px) {
+    .install-steps-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .onboarding-vertical-menu {
+        position: static;
+    }
+}
+
+@media (max-width: 640px) {
+    .onboarding-nav-row {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            'dots dots'
+            'prev next';
+    }
+
+    .onboarding-nav-row .slds-button_neutral {
+        grid-area: prev;
+        justify-self: start;
+    }
+
+    .onboarding-dot-indicator {
+        grid-area: dots;
+        margin-bottom: 0.25rem;
+    }
+
+    .onboarding-nav-row .slds-button_brand {
+        grid-area: next;
+        justify-self: end;
+    }
+}

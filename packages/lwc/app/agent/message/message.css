@@ -1,0 +1,73 @@
+:host {
+    scroll-margin-top: 10px;
+}
+
+/* Empty fallback when assistant has no displayable content */
+.agent-message-empty-fallback {
+    color: var(--slds-g-color-neutral-base-50, #747474);
+    font-style: italic;
+}
+
+/* Error state for message bubble (custom; do not override SLDS) */
+.message-bubble-error {
+    background-color: var(--slds-g-color-error-base-40, #cf0d26);
+}
+
+.message-bubble-inbound {
+    max-width: 100%;
+    white-space: normal;
+    background-color: var(--slds-g-color-neutral-base-100, #f3f3f3);
+    font-size: 16px;
+}
+
+.message-bubble-outbound {
+    font-size: 16px;
+}
+
+.message-listitem-outbound {
+    max-width: 100%;
+    white-space: normal;
+}
+
+.slds-chat-message {
+    width: -webkit-fill-available;
+}
+
+.slds-chat-message__body {
+    width: -webkit-fill-available;
+}
+
+.message-listitem-outbound.slds-chat-listitem_outbound .slds-chat-message__meta {
+    margin-left: auto;
+}
+
+.slds-chat-message__meta {
+    text-align: center;
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 300;
+}
+
+.message-actions-row {
+    align-items: center;
+}
+
+.message-code-block-truncate {
+    white-space: normal;
+    max-height: 300px;
+    height: 300px;
+}
+
+.slds-chat-message__text_inbound slds-markdown-viewer {
+    width: 100%;
+}
+
+/* Reasoning message: spacing between multiple reasoning blocks */
+.reasoning-message-item .reasoning-block-item {
+    margin-bottom: 8px;
+}
+
+.reasoning-message-item .reasoning-block-item:last-child {
+    margin-bottom: 0;
+}

@@ -1,0 +1,27 @@
+
+      import API from "!../../style-loader/dist/runtime/injectStylesIntoStyleTag.js";
+      import domAPI from "!../../style-loader/dist/runtime/styleDomAPI.js";
+      import insertFn from "!../../style-loader/dist/runtime/insertBySelector.js";
+      import setAttributes from "!../../style-loader/dist/runtime/setAttributesWithoutAttributes.js";
+      import insertStyleElement from "!../../style-loader/dist/runtime/insertStyleElement.js";
+      import styleTagTransformFn from "!../../style-loader/dist/runtime/styleTagTransform.js";
+      import content, * as namedExport from "!!../../css-loader/dist/cjs.js!./katex.min.css";
+      
+      
+
+var options = {};
+
+options.styleTagTransform = styleTagTransformFn;
+options.setAttributes = setAttributes;
+
+      options.insert = insertFn.bind(null, "head");
+    
+options.domAPI = domAPI;
+options.insertStyleElement = insertStyleElement;
+
+var update = API(content, options);
+
+
+
+export * from "!!../../css-loader/dist/cjs.js!./katex.min.css";
+       export default content && content.locals ? content.locals : undefined;

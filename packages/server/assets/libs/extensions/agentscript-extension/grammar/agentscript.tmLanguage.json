@@ -1,0 +1,1106 @@
+{
+  "name": "agentscript",
+  "scopeName": "source.agentscript",
+  "fileTypes": ["agent"],
+  "patterns": [
+    {
+      "name": "comment.line.agentscript",
+      "match": "(^|[ \t]+)#.*$"
+    },
+    {
+      "name": "meta.config.agentscript",
+      "begin": "^(config):",
+      "beginCaptures": { "1": { "name": "keyword.control.block.agentscript" } },
+      "end": "^(?=topic\\b|variables\\b|start_agent\\b|system\\b|knowledge\\b|connection\\b|language\\b|model_config\\b|\\z)",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        {
+          "name": "keyword.config.key.agentscript",
+          "match": "^\\s+(model_provider|agent_id|agent_name|agent_version|agent_type|agent_label|default_agent_user|developer_name|description|agent_description|enable_enhanced_event_logs|agent_template|outbound_flow)(?=\\s?:)"
+        },
+        {
+          "name": "entity.name.config.agentscript",
+          "match": "^\\s+([a-zA-Z_][a-zA-Z0-9_]*)(?=\\s?:)"
+        },
+        {
+          "name": "keyword.config.empty.agentscript",
+          "match": "^\\s+empty\\b"
+        },
+        { "include": "#values" }
+      ]
+    },
+    {
+      "name": "meta.language.agentscript",
+      "begin": "^(language):",
+      "beginCaptures": { "1": { "name": "keyword.control.block.agentscript" } },
+      "end": "^(?=topic\\b|config\\b|variables\\b|connection\\b|start_agent\\b|system\\b|knowledge\\b|model_config\\b|\\z)",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        {
+          "name": "keyword.language.field.agentscript",
+          "match": "^\\s+(default_locale|additional_locales|all_additional_locales)(?=\\s?:)"
+        },
+        { "include": "#values" }
+      ]
+    },
+    {
+      "name": "meta.variables.agentscript",
+      "begin": "^(variables):",
+      "beginCaptures": { "1": { "name": "keyword.control.block.agentscript" } },
+      "end": "^(?=topic\\b|config\\b|start_agent\\b|system\\b|knowledge\\b|connection\\b|language\\b|model_config\\b|\\z)",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        {
+          "name": "keyword.variable.metadata.agentscript",
+          "match": "^\\s+(description|source|label|visibility)(?=\\s?:)"
+        },
+        {
+          "name": "variable.definition.agentscript",
+          "match": "^\\s+([a-zA-Z_][a-zA-Z0-9_]*)(?=\\s?:)"
+        },
+        {
+          "name": "storage.modifier.variable.agentscript",
+          "match": "\\b(mutable|linked)\\b"
+        },
+        {
+          "name": "keyword.variable.source.agentscript",
+          "match": "\\b(custom|context)\\b"
+        },
+        {
+          "name": "storage.type.agentscript",
+          "match": "\\b(string|number|boolean|object|date|timestamp|currency|id|list)\\b"
+        },
+        { "include": "#json-structures" },
+        { "include": "#plain-template-block" },
+        { "include": "#values" }
+      ]
+    },
+    {
+      "name": "meta.knowledge.agentscript",
+      "begin": "^(knowledge):",
+      "beginCaptures": { "1": { "name": "keyword.control.block.agentscript" } },
+      "end": "^(?=topic\\b|config\\b|variables\\b|connection\\b|start_agent\\b|system\\b|language\\b|connection\\b|model_config\\b|\\z)",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        {
+          "name": "keyword.knowledge.field.agentscript",
+          "match": "^\\s+(rag_feature_config_id|citations_enabled|citations_url)(?=\\s?:)"
+        },
+        { "include": "#values" }
+      ]
+    },
+    {
+      "name": "meta.connection.agentscript",
+      "begin": "^(connection)\\s+([a-zA-Z_][a-zA-Z0-9_]*):",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.block.agentscript" },
+        "2": { "name": "entity.name.connection.agentscript" }
+      },
+      "end": "^(?=topic\\b|config\\b|variables\\b|knowledge\\b|start_agent\\b|system\\b|language\\b|connection\\b|model_config\\b|\\z)",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        {
+          "name": "keyword.connection.field.agentscript",
+          "match": "^\\s+(escalation_message|outbound_route_type|outbound_route_name|adaptive_response_allowed)(?=\\s?:)"
+        },
+        {
+          "name": "keyword.connection.empty.agentscript",
+          "match": "^\\s+empty\\b"
+        },
+        { "include": "#values" }
+      ]
+    },
+    {
+      "name": "meta.model-config.agentscript",
+      "begin": "^(model_config):",
+      "beginCaptures": { "1": { "name": "keyword.control.block.agentscript" } },
+      "end": "^(?=topic\\b|config\\b|variables\\b|start_agent\\b|system\\b|knowledge\\b|connection\\b|language\\b|\\z)",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        {
+          "name": "keyword.model-config.field.agentscript",
+          "match": "^\\s+model\\s*:"
+        },
+        { "include": "#values" }
+      ]
+    },
+    {
+      "name": "meta.system.agentscript",
+      "begin": "^(system):",
+      "beginCaptures": { "1": { "name": "keyword.control.block.agentscript" } },
+      "end": "^(?=topic\\b|config\\b|variables\\b|start_agent\\b|knowledge\\b|connection\\b|language\\b|model_config\\b|\\z)",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        { "include": "#block-instructions" },
+        { "include": "#system-message-template-block" },
+        {
+          "name": "keyword.system.agentscript",
+          "match": "^\\s+(instructions|messages|prompt)(?=\\s?:)"
+        },
+        {
+          "name": "keyword.system.message-type.agentscript",
+          "match": "^\\s{2,}(error|welcome)(?=\\s?:)"
+        },
+        {
+          "name": "keyword.system.empty.agentscript",
+          "match": "^\\s+empty\\b"
+        },
+        { "include": "#values" }
+      ]
+    },
+    {
+      "name": "meta.topic.agentscript",
+      "begin": "^(topic)\\s+([a-zA-Z_][a-zA-Z0-9_]*):",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.block.agentscript" },
+        "2": { "name": "entity.name.topic.agentscript" }
+      },
+      "end": "^(?=topic\\b|config\\b|variables\\b|start_agent\\b|system\\b|knowledge\\b|connection\\b|language\\b|model_config\\b|\\z)",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        { "include": "#topic-label" },
+        { "include": "#topic-system-block" },
+        { "include": "#reasoning-block" },
+        { "include": "#action-definitions" },
+        { "include": "#agent-task" },
+        { "include": "#task-content" },
+        { "include": "#description-section" },
+        { "include": "#model-config-section" },
+        { "include": "#before-or-after-reasoning" },
+        { "include": "#directives" },
+        {
+          "name": "storage.type.agentscript",
+          "match": "\\b(string|number|boolean|object|date|timestamp|currency|id|list)\\b"
+        },
+        { "include": "#operators" },
+        { "include": "#punctuation" },
+        { "include": "#values" }
+      ]
+    },
+    {
+      "name": "meta.start-agent.agentscript",
+      "begin": "^(start_agent)(?:\\s+([a-zA-Z_][a-zA-Z0-9_]*))?:",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.block.agentscript" },
+        "2": { "name": "entity.name.agent.agentscript" }
+      },
+      "end": "^(?=topic\\b|config\\b|variables\\b|start_agent\\b|system\\b|knowledge\\b|connection\\b|language\\b|model_config\\b|\\z)",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        { "include": "#topic-label" },
+        { "include": "#topic-system-block" },
+        { "include": "#reasoning-block" },
+        { "include": "#action-definitions" },
+        { "include": "#agent-task" },
+        { "include": "#task-content" },
+        { "include": "#description-section" },
+        { "include": "#model-config-section" },
+        { "include": "#before-or-after-reasoning" },
+        { "include": "#directives" },
+        {
+          "name": "storage.type.agentscript",
+          "match": "\\b(string|number|boolean|object|date|timestamp|currency|id|list)\\b"
+        },
+        { "include": "#operators" },
+        { "include": "#punctuation" },
+        { "include": "#values" }
+      ]
+    },
+    {
+      "name": "keyword.control.conditional.available.agentscript",
+      "match": "\\bavailable when\\b"
+    },
+    {
+      "name": "meta.alias.assignment.agentscript",
+      "match": "\\b(as)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\b",
+      "captures": {
+        "1": { "name": "keyword.control.agentscript" },
+        "2": { "name": "entity.name.alias.agentscript" }
+      }
+    },
+    {
+      "name": "keyword.control.agentscript",
+      "match": "\\b(if|else|run|set|with|and|or|not)\\b|\\btransition to\\b|\\bdelegate to\\b"
+    },
+    {
+      "name": "constant.language.agentscript",
+      "match": "\\b(True|False|None)\\b"
+    },
+    {
+      "name": "constant.language.llm.agentscript",
+      "match": "\\.\\.\\."
+    },
+    {
+      "name": "constant.other.timestamp.agentscript",
+      "match": "(?<=\\s|=|,|\\[)\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?Z?\\b"
+    },
+    {
+      "name": "constant.other.date.agentscript",
+      "match": "(?<=\\s|=|,|\\[)\\d{4}-\\d{2}-\\d{2}(?!T)\\b"
+    },
+    {
+      "name": "constant.numeric.agentscript",
+      "match": "\\b\\d+(\\.\\d+)?\\b"
+    },
+    {
+      "name": "string.quoted.double.agentscript",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        { "include": "#template-expression" },
+        {
+          "name": "constant.character.escape.agentscript",
+          "match": "\\\\."
+        }
+      ]
+    },
+    {
+      "name": "meta.utils.call.agentscript",
+      "match": "(@utils)(\\.)([a-zA-Z_][a-zA-Z0-9_]*)\\b",
+      "captures": {
+        "1": { "name": "support.class.agentscript" },
+        "2": { "name": "punctuation.accessor.dot.agentscript" },
+        "3": { "name": "entity.name.function.agentscript" }
+      }
+    },
+    {
+      "name": "keyword.control.transition.agentscript",
+      "match": "\\s+to\\s+"
+    },
+    {
+      "name": "meta.variable.reference.agentscript",
+      "match": "(@)(variables|outputs|inputs|topic|actions|knowledge|system_variables)(\\.)([a-zA-Z_][a-zA-Z0-9_]*)",
+      "captures": {
+        "1": { "name": "support.class.agentscript" },
+        "2": { "name": "support.class.agentscript" },
+        "3": { "name": "punctuation.accessor.dot.agentscript" },
+        "4": { "name": "variable.other.member.agentscript" }
+      }
+    },
+    {
+      "name": "support.class.agentscript",
+      "match": "@[a-zA-Z_][a-zA-Z0-9_]*"
+    },
+    {
+      "name": "variable.other.member.agentscript",
+      "match": "(?<=@(?:variables|topic|inputs|actions|outputs|knowledge|system_variables)\\.)\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+    },
+    {
+      "name": "operator.arithmetic.agentscript",
+      "match": "[+\\-\\*/%]"
+    },
+    {
+      "name": "operator.comparison.agentscript",
+      "match": "==|!=|<=|>=|<|>"
+    },
+    {
+      "name": "operator.assignment.agentscript",
+      "match": "(?<![=!<>])=(?!=)"
+    },
+    {
+      "name": "punctuation.definition.agentscript",
+      "match": "[{}\\[\\]()]"
+    },
+    { "include": "#punctuation" },
+    { "include": "#template-expression" }
+  ],
+  "repository": {
+    "values": {
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        { "include": "#operators" },
+        { "include": "#template-expression" },
+        { "include": "#punctuation" },
+        {
+          "name": "string.quoted.double.agentscript",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            { "include": "#template-expression" },
+            {
+              "name": "constant.character.escape.agentscript",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "constant.language.agentscript",
+          "match": "\\b(True|False|None)\\b"
+        },
+        {
+          "name": "constant.language.llm.agentscript",
+          "match": "\\.\\.\\."
+        },
+        {
+          "name": "constant.other.timestamp.agentscript",
+          "match": "(?<=\\s|=|,|\\[)\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?Z?\\b"
+        },
+        {
+          "name": "constant.other.date.agentscript",
+          "match": "(?<=\\s|=|,|\\[)\\d{4}-\\d{2}-\\d{2}(?!T)\\b"
+        },
+        {
+          "name": "constant.numeric.agentscript",
+          "match": "\\b\\d+(\\.\\d+)?\\b"
+        },
+        {
+          "name": "variable.other.member.agentscript",
+          "match": "(?<=@(?:variables|topic|inputs|actions|outputs|knowledge|system_variables)\\.)\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+        }
+      ]
+    },
+    "json-structures": {
+      "patterns": [
+        {
+          "name": "constant.language.json.agentscript",
+          "match": "=\\s*\\{\\}"
+        },
+        {
+          "name": "meta.structure.dictionary.json.agentscript",
+          "begin": "=\\s*(\\{)",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.dictionary.begin.json.agentscript" }
+          },
+          "end": "(\\})",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.dictionary.end.json.agentscript" }
+          },
+          "patterns": [{ "include": "#json-value" }]
+        },
+        {
+          "name": "meta.structure.array.json.agentscript",
+          "begin": "=\\s*(\\[)",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.array.begin.json.agentscript" }
+          },
+          "end": "(\\])",
+          "endCaptures": { "1": { "name": "punctuation.definition.array.end.json.agentscript" } },
+          "patterns": [{ "include": "#json-value" }]
+        }
+      ]
+    },
+    "topic-label": {
+      "name": "meta.topic.label.agentscript",
+      "begin": "^\\s+(label)(?=\\s?:)",
+      "beginCaptures": { "1": { "name": "keyword.topic.section.agentscript" } },
+      "end": "^(?=\\s+(reasoning|system|description|before_reasoning|after_reasoning|actions|variables|instructions|model_config)\\b)|^(?=topic\\b|config\\b|variables\\b|start_agent\\b|language\\b|knowledge\\b|connection\\b)",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        { "include": "#values" }
+      ]
+    },
+    "model-config-section": {
+      "name": "meta.model-config.section.agentscript",
+      "begin": "^\\s+(model_config)\\s*:",
+      "beginCaptures": { "1": { "name": "keyword.topic.section.agentscript" } },
+      "end": "^(?=\\s+(reasoning|label|system|description|before_reasoning|after_reasoning|actions|variables|instructions|model_config)\\b)|^(?=topic\\b|config\\b|variables\\b|start_agent\\b|system\\b|language\\b|knowledge\\b|connection\\b)",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        {
+          "name": "keyword.model-config.field.agentscript",
+          "match": "^\\s+model\\s*:"
+        },
+        { "include": "#values" }
+      ]
+    },
+    "topic-system-block": {
+      "name": "meta.topic.system.agentscript",
+      "begin": "^\\s+(system)(?=\\s?:)",
+      "beginCaptures": { "1": { "name": "keyword.topic.section.agentscript" } },
+      "end": "^(?=\\s+(reasoning|label|description|before_reasoning|after_reasoning|actions|model_config)\\b)|^(?=topic\\b|config\\b|language\\b|knowledge\\b|connection\\b)",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        { "include": "#block-instructions" },
+        {
+          "name": "keyword.system.agentscript",
+          "match": "\\b(instructions)(?=:)"
+        },
+        { "include": "#values" }
+      ]
+    },
+    "reasoning-block": {
+      "name": "meta.reasoning.block.agentscript",
+      "begin": "^\\s+(reasoning)(?=\\s?:)",
+      "beginCaptures": { "1": { "name": "keyword.topic.section.agentscript" } },
+      "end": "^(?=\\s+(label|system|description|before_reasoning|after_reasoning|variables|model_config)\\b)|^(?=\\s{1,5}actions\\b)|^(?=topic\\b|config\\b|variables\\b|start_agent\\b|system\\b|language\\b|knowledge\\b|connection\\b)",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        { "include": "#block-instructions" },
+        { "include": "#reasoning-actions" }
+      ]
+    },
+    "block-instructions": {
+      "name": "meta.block.instructions.agentscript",
+      "begin": "^(\\s+)(instructions)\\s*(:\\s*(->|\\|))",
+      "beginCaptures": {
+        "2": { "name": "keyword.topic.section.agentscript" },
+        "3": { "name": "keyword.operator.procedure-or-template.agentscript" },
+        "4": {
+          "name": "keyword.operator.procedure.agentscript",
+          "patterns": [
+            {
+              "name": "keyword.operator.template.agentscript",
+              "match": "\\|"
+            }
+          ]
+        }
+      },
+      "end": "^(?=\\s+(reasoning|actions|before_reasoning|after_reasoning|model_config|messages)\\s?:)|^(?=topic\\b|config\\b|variables\\b|start_agent\\b|system\\b|language\\b|knowledge\\b|connection\\b)",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        { "include": "#directives" },
+        {
+          "name": "string.heredoc.agentscript",
+          "begin": "^(\\s+)(?!#)(?!\\s*(?:if|else|run|set|with|transition\\s+to|delegate\\s+to|available\\s+when)\\b)(?!\\s*@)",
+          "beginCaptures": { "1": { "name": "keyword.operator.heredoc.agentscript" } },
+          "end": "^(?=\\s+(reasoning|actions|before_reasoning|after_reasoning|description|label|system|variables|instructions|override|model_config|messages)\\s?:)|^(?=topic\\b|config\\b|variables\\b|start_agent\\b|system\\b|language\\b|knowledge\\b|connection\\b)",
+          "patterns": [
+            { "include": "#template-expression" },
+            {
+              "name": "string.unquoted.heredoc.agentscript",
+              "match": "(?:[^{]|\\{(?!!))*"
+            }
+          ]
+        }
+      ]
+    },
+    "template-block": {
+      "name": "meta.template.block.agentscript",
+      "begin": "^\\s+(\\|)",
+      "beginCaptures": { "1": { "name": "keyword.operator.template.agentscript" } },
+      "end": "^(?!\\s+\\|)",
+      "patterns": [
+        { "include": "#template-expression" },
+        {
+          "name": "string.unquoted.template.agentscript",
+          "match": "(?:[^{]|\\{(?!!))*"
+        }
+      ]
+    },
+    "plain-template-block": {
+      "name": "meta.plain.template.block.agentscript",
+      "begin": "^\\s+(\\|)",
+      "beginCaptures": { "1": { "name": "keyword.operator.template.agentscript" } },
+      "end": "^(?!\\s+\\|)",
+      "patterns": [
+        {
+          "name": "string.unquoted.template.agentscript",
+          "match": ".*"
+        }
+      ]
+    },
+    "system-message-template-block": {
+      "name": "meta.system.message.template.agentscript",
+      "begin": "^(\\s+)(welcome|error)\\s*:\\s*(\\|)\\s*$",
+      "beginCaptures": {
+        "2": { "name": "keyword.system.message-type.agentscript" },
+        "3": { "name": "keyword.operator.template.agentscript" }
+      },
+      "end": "^(?=\\s{2,}(welcome|error)\\s*:)|^(?=\\s+(instructions|messages|prompt)\\s*:)|^(?=topic\\b|config\\b|variables\\b|start_agent\\b|system\\b|knowledge\\b|connection\\b|language\\b|model_config\\b|\\z)",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        {
+          "name": "string.heredoc.agentscript",
+          "begin": "^(\\s+)(?!#)(?!\\s*(welcome|error)\\s*:)",
+          "beginCaptures": { "1": { "name": "keyword.operator.heredoc.agentscript" } },
+          "end": "^(?=\\s{2,}(welcome|error)\\s*:)|^(?=\\s+(instructions|messages|prompt)\\s*:)|^(?=topic\\b|config\\b|variables\\b|start_agent\\b|system\\b|knowledge\\b|connection\\b|language\\b|model_config\\b|\\z)",
+          "patterns": [
+            { "include": "#template-expression" },
+            {
+              "name": "string.unquoted.heredoc.agentscript",
+              "match": "(?:[^{]|\\{(?!!))*"
+            }
+          ]
+        }
+      ]
+    },
+    "agent-task": {
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        {
+          "name": "string.heredoc.agentscript",
+          "begin": "(\\|)\\s*$",
+          "beginCaptures": { "1": { "name": "keyword.operator.heredoc.agentscript" } },
+          "end": "^(?=\\S)",
+          "patterns": [
+            { "include": "#template-expression" },
+            {
+              "name": "string.unquoted.heredoc.agentscript",
+              "match": "(?:[^{]|\\{(?!!))*"
+            }
+          ]
+        },
+        {
+          "name": "string.heredoc.quoted.agentscript",
+          "begin": "(\\|)\\s*\"",
+          "beginCaptures": { "1": { "name": "keyword.operator.heredoc.agentscript" } },
+          "end": "\"",
+          "patterns": [
+            { "include": "#template-expression" },
+            {
+              "name": "constant.character.escape.agentscript",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.agent-task.single-line.agentscript",
+          "match": "\\|\\s+\"(?:[^\"\\\\]|\\\\.)*\"",
+          "captures": {
+            "0": { "name": "string.quoted.double.agentscript" }
+          }
+        }
+      ]
+    },
+    "task-content": {
+      "name": "meta.task.content.agentscript",
+      "begin": "\\b(task):\\s*$",
+      "beginCaptures": { "1": { "name": "keyword.topic.section.agentscript" } },
+      "end": "^(?=\\S)",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        { "include": "#template-expression" },
+        {
+          "name": "string.unquoted.task.agentscript",
+          "match": ".*"
+        }
+      ]
+    },
+    "description-section": {
+      "name": "meta.description.section.agentscript",
+      "begin": "^\\s+(description)(?=\\s?:)",
+      "beginCaptures": { "1": { "name": "keyword.topic.section.agentscript" } },
+      "end": "^(?=\\s+(reasoning|label|system|actions|before_reasoning|after_reasoning|variables|instructions|model_config)\\b)|^(?=\\s{4}override\\s+system\\.instructions:)|^(?=topic\\b|config\\b|variables\\b|start_agent\\b|system\\b|language\\b|knowledge\\b|connection\\b)",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        {
+          "name": "string.quoted.double.agentscript",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [{ "include": "#template-expression" }]
+        },
+        { "include": "#plain-template-block" },
+        { "include": "#values" }
+      ]
+    },
+    "before-or-after-reasoning": {
+      "name": "meta.before-or-after-reasoning.agentscript",
+      "begin": "^(\\s+)(before_reasoning|after_reasoning)(?::|\\s*:\\s*->)",
+      "beginCaptures": { "2": { "name": "keyword.topic.section.agentscript" } },
+      "end": "^(?=\\s{2,4}(reasoning|actions|after_reasoning|before_reasoning|description|label|system|variables|instructions|override|model_config)\\b)|^(?=\\s{4}override\\s+system\\.instructions:)|^(?=topic\\b|config\\b|variables\\b|start_agent\\b|system\\b|language\\b|knowledge\\b|connection\\b)",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        { "include": "#directives" },
+        { "include": "#template-block" },
+        {
+          "name": "meta.utils.call.agentscript",
+          "match": "(@utils)(\\.)([a-zA-Z_][a-zA-Z0-9_]*)\\b",
+          "captures": {
+            "1": { "name": "support.class.agentscript" },
+            "2": { "name": "punctuation.accessor.dot.agentscript" },
+            "3": { "name": "entity.name.function.agentscript" }
+          }
+        },
+        {
+          "name": "meta.variable.reference.agentscript",
+          "match": "(@)(actions|topic|variables|outputs|inputs|knowledge|system_variables)(\\.)([a-zA-Z_][a-zA-Z0-9_]*)",
+          "captures": {
+            "1": { "name": "support.class.agentscript" },
+            "2": { "name": "support.class.agentscript" },
+            "3": { "name": "punctuation.accessor.dot.agentscript" },
+            "4": { "name": "variable.other.member.agentscript" }
+          }
+        },
+        {
+          "name": "meta.alias.assignment.agentscript",
+          "match": "\\b(as)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\b",
+          "captures": {
+            "1": { "name": "keyword.control.agentscript" },
+            "2": { "name": "entity.name.alias.agentscript" }
+          }
+        },
+        {
+          "name": "keyword.control.transition.reasoning.agentscript",
+          "match": "\\s+to\\s+"
+        },
+        {
+          "name": "keyword.reasoning.description.agentscript",
+          "match": "^\\s{12}(description)(?=:)"
+        },
+        {
+          "name": "keyword.control.agentscript",
+          "match": "\\b(setVariables)\\b"
+        },
+        {
+          "name": "entity.name.action.agentscript",
+          "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+        },
+        { "include": "#values" }
+      ]
+    },
+    "action-definitions": {
+      "name": "meta.actions.agentscript",
+      "begin": "^(\\s+)(actions):",
+      "beginCaptures": { "2": { "name": "keyword.topic.section.agentscript" } },
+      "end": "^(?=\\s{2,4}(reasoning|before_reasoning|after_reasoning|description|label|system|variables|instructions|override|model_config)\\b)|^(?=topic\\b|config\\b|variables\\b|start_agent\\b|system\\b|language\\b|knowledge\\b|connection\\b)",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        {
+          "name": "meta.action.inputsAndOutputs.agentscript",
+          "begin": "^\\s{6,12}(inputs|outputs):\\s*",
+          "beginCaptures": { "1": { "name": "keyword.action.property.agentscript" } },
+          "end": "^(?=\\s+(target|inputs|outputs|label|reasoning|require_user_confirmation|include_in_progress_indicator|progress_indicator_message)\\b)|^(?=\\s{4,8}[a-zA-Z_]\\s*:)|^(?=topic\\b|config\\b|variables\\b|start_agent\\b|system\\b|language\\b|knowledge\\b|connection\\b)",
+          "patterns": [
+            {
+              "name": "comment.line.agentscript",
+              "match": "(^|[ \t]+)#.*$"
+            },
+            {
+              "name": "meta.action.parameter.definition.agentscript",
+              "begin": "^\\s{8,16}(?!(?:description|is_required|is_user_input|label|is_displayable|is_used_by_planner|complex_data_type_name|filter_from_agent|schema)\\s*:)([a-zA-Z_][a-zA-Z0-9_]*):\\s*",
+              "beginCaptures": {
+                "1": { "name": "variable.parameter.name.agentscript" }
+              },
+              "end": "^(?=\\s+(?!(?:description|is_required|is_user_input|label|is_displayable|is_used_by_planner|complex_data_type_name|filter_from_agent|schema)\\s*:)[a-zA-Z_][a-zA-Z0-9_]*\\s*:)|^(?=topic\\b|config\\b|variables\\b|start_agent\\b|system\\b|language\\b|knowledge\\b|connection\\b)",
+              "patterns": [
+                {
+                  "name": "comment.line.agentscript",
+                  "match": "(^|[ \t]+)#.*$"
+                },
+                {
+                  "name": "storage.type.agentscript",
+                  "match": "\\b(string|number|boolean|object|date|timestamp|currency|id|list(?:\\[\\w+\\])?)\\b"
+                },
+                {
+                  "name": "keyword.action.parameter.metadata.agentscript",
+                  "match": "^\\s+(description|is_required|is_user_input|label|complex_data_type_name|is_used_by_planner|is_displayable|filter_from_agent|schema)(?=:)"
+                },
+                {
+                  "name": "variable.parameter.name.agentscript",
+                  "match": "^\\s+(?!(?:description|is_required|is_user_input|label|is_displayable|is_used_by_planner|complex_data_type_name|filter_from_agent|schema)\\s*:)[a-zA-Z_][a-zA-Z0-9_]*\\s*:"
+                },
+                { "include": "#plain-template-block" },
+                { "include": "#values" }
+              ]
+            },
+            { "include": "#plain-template-block" },
+            { "include": "#values" }
+          ]
+        },
+        {
+          "name": "keyword.action.property.agentscript",
+          "match": "^\\s{6,12}(description|target|parameters|returns|label|require_user_confirmation|include_in_progress_indicator|progress_indicator_message|is_required|is_user_input|developer_name|complex_data_type_name|is_used_by_planner|is_displayable|filter_from_agent)(?=:)"
+        },
+        {
+          "name": "entity.name.action.agentscript",
+          "match": "^\\s{4,8}([a-zA-Z_][a-zA-Z0-9_]*)(?=:)"
+        },
+        {
+          "name": "storage.type.agentscript",
+          "match": "\\b(string|number|boolean|object|date|timestamp|currency|id|list)\\b"
+        },
+        { "include": "#operators" },
+        { "include": "#punctuation" },
+        { "include": "#plain-template-block" },
+        { "include": "#values" }
+      ]
+    },
+    "reasoning-actions": {
+      "name": "meta.reasoning-actions.agentscript",
+      "begin": "^(\\s+)(actions):",
+      "beginCaptures": { "2": { "name": "keyword.topic.section.agentscript" } },
+      "end": "^(?=\\s+(instructions|before_reasoning|after_reasoning|label|system|override|actions)\\s?:)|^(?=topic\\b|config\\b|variables\\b|start_agent\\b|system\\b|language\\b|knowledge\\b|connection\\b)|^(?=\\s{2,4}(description\\s?:))",
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        {
+          "name": "keyword.reasoning.description.agentscript",
+          "match": "^\\s+(description)(?=\\s?:)"
+        },
+        {
+          "name": "meta.tool.declaration.agentscript",
+          "match": "^\\s+(([a-zA-Z_][a-zA-Z0-9_]*)):\\s*(@(actions|utils|topic|knowledge))",
+          "captures": {
+            "2": { "name": "entity.name.tool.agentscript" },
+            "3": { "name": "support.class.agentscript" },
+            "4": { "name": "support.class.agentscript" }
+          }
+        },
+        { "include": "#directives" },
+        {
+          "name": "meta.utils.call.agentscript",
+          "match": "(@utils)(\\.)([a-zA-Z_][a-zA-Z0-9_]*)\\b",
+          "captures": {
+            "1": { "name": "support.class.agentscript" },
+            "2": { "name": "punctuation.accessor.dot.agentscript" },
+            "3": { "name": "entity.name.function.agentscript" }
+          }
+        },
+        {
+          "name": "meta.variable.reference.agentscript",
+          "match": "(@)(actions|topic|variables|outputs|inputs|knowledge|system_variables)(\\.)([a-zA-Z_][a-zA-Z0-9_]*)",
+          "captures": {
+            "1": { "name": "support.class.agentscript" },
+            "2": { "name": "support.class.agentscript" },
+            "3": { "name": "punctuation.accessor.dot.agentscript" },
+            "4": { "name": "variable.other.member.agentscript" }
+          }
+        },
+        {
+          "name": "meta.alias.assignment.agentscript",
+          "match": "\\b(as)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\b",
+          "captures": {
+            "1": { "name": "keyword.control.agentscript" },
+            "2": { "name": "entity.name.alias.agentscript" }
+          }
+        },
+        {
+          "name": "keyword.control.transition.reasoning.agentscript",
+          "match": "\\s+to\\s+"
+        },
+        {
+          "name": "keyword.control.agentscript",
+          "match": "\\b(setVariables)\\b"
+        },
+        { "include": "#values" }
+      ]
+    },
+    "directives": {
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        {
+          "name": "keyword.control.conditional.available.agentscript",
+          "match": "\\bavailable when\\b"
+        },
+        {
+          "name": "meta.alias.assignment.agentscript",
+          "match": "\\b(as)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\b",
+          "captures": {
+            "1": { "name": "keyword.control.agentscript" },
+            "2": { "name": "entity.name.alias.agentscript" }
+          }
+        },
+        {
+          "name": "keyword.control.directive.agentscript",
+          "match": "\\b(run|set|if|else|after|with|and|or|not)\\b|\\btransition to\\b|\\bdelegate to\\b"
+        },
+        {
+          "name": "keyword.action-call.agentscript",
+          "match": "(@actions)(\\.)",
+          "captures": {
+            "1": { "name": "support.class.agentscript" },
+            "2": { "name": "punctuation.accessor.dot.agentscript" }
+          }
+        },
+        {
+          "name": "keyword.variable-set.agentscript",
+          "match": "(@variables)(\\.)",
+          "captures": {
+            "1": { "name": "support.class.agentscript" },
+            "2": { "name": "punctuation.accessor.dot.agentscript" }
+          }
+        },
+        {
+          "name": "keyword.topic-ref.agentscript",
+          "match": "(@topic)(\\.)",
+          "captures": {
+            "1": { "name": "support.class.agentscript" },
+            "2": { "name": "punctuation.accessor.dot.agentscript" }
+          }
+        },
+        {
+          "name": "keyword.outputs-ref.agentscript",
+          "match": "(@outputs)(\\.)",
+          "captures": {
+            "1": { "name": "support.class.agentscript" },
+            "2": { "name": "punctuation.accessor.dot.agentscript" }
+          }
+        },
+        {
+          "name": "keyword.inputs-ref.agentscript",
+          "match": "(@inputs)(\\.)",
+          "captures": {
+            "1": { "name": "support.class.agentscript" },
+            "2": { "name": "punctuation.accessor.dot.agentscript" }
+          }
+        },
+        {
+          "name": "keyword.knowledge-action-ref.agentscript",
+          "match": "(@knowledge)",
+          "captures": { "1": { "name": "support.class.agentscript" } }
+        },
+        {
+          "name": "keyword.system-variables-ref.agentscript",
+          "match": "(@system_variables)(\\.)",
+          "captures": {
+            "1": { "name": "support.class.agentscript" },
+            "2": { "name": "punctuation.accessor.dot.agentscript" }
+          }
+        },
+        {
+          "name": "variable.other.member.agentscript",
+          "match": "(?<=@(?:variables|topic|inputs|actions|outputs|knowledge|system_variables)\\.)\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+        },
+        { "include": "#operators" },
+        { "include": "#values" }
+      ]
+    },
+    "template-expression": {
+      "name": "meta.template.expression.agentscript",
+      "begin": "\\{!",
+      "beginCaptures": { "0": { "name": "punctuation.definition.template.begin.agentscript" } },
+      "end": "\\}",
+      "endCaptures": { "0": { "name": "punctuation.definition.template.end.agentscript" } },
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        {
+          "name": "string.quoted.single.expression.agentscript",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.agentscript",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.double.expression.agentscript",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.agentscript",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "constant.numeric.expression.agentscript",
+          "match": "\\b\\d+(\\.\\d+)?\\b"
+        },
+        {
+          "name": "constant.language.expression.agentscript",
+          "match": "\\b(True|False|None)\\b"
+        },
+        {
+          "name": "keyword.operator.expression.agentscript",
+          "match": "\\b(and|or|if|else|not)\\b"
+        },
+        {
+          "name": "operator.comparison.expression.agentscript",
+          "match": "==|!=|<=|>=|<|>|\\bis\\b|\\bis not\\b"
+        },
+        {
+          "name": "operator.arithmetic.expression.agentscript",
+          "match": "[+\\-\\*/%]"
+        },
+        {
+          "name": "meta.variable.reference.expression.agentscript",
+          "match": "(@)([a-zA-Z_][a-zA-Z0-9_]*)(\\.)([a-zA-Z_][a-zA-Z0-9_]*)\\b",
+          "captures": {
+            "1": { "name": "support.class.agentscript" },
+            "2": { "name": "support.class.agentscript" },
+            "3": { "name": "punctuation.accessor.dot.agentscript" },
+            "4": { "name": "variable.other.member.agentscript" }
+          }
+        },
+        {
+          "name": "variable.other.expression.agentscript",
+          "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+        },
+        {
+          "name": "punctuation.definition.expression.agentscript",
+          "match": "[()\\[\\]@.,]"
+        }
+      ]
+    },
+    "json-value": {
+      "patterns": [
+        {
+          "name": "comment.line.agentscript",
+          "match": "(^|[ \t]+)#.*$"
+        },
+        {
+          "name": "constant.language.json.agentscript",
+          "match": "\\b(true|false|null)\\b"
+        },
+        {
+          "name": "constant.numeric.json.agentscript",
+          "match": "-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?"
+        },
+        {
+          "name": "string.quoted.double.json.agentscript",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.json.agentscript",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "meta.structure.dictionary.json.agentscript",
+          "begin": "\\{",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.dictionary.begin.json.agentscript" }
+          },
+          "end": "\\}",
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.dictionary.end.json.agentscript" }
+          },
+          "patterns": [
+            {
+              "name": "meta.structure.dictionary.key.json.agentscript",
+              "begin": "\"",
+              "end": "\"",
+              "patterns": [
+                {
+                  "name": "constant.character.escape.json.agentscript",
+                  "match": "\\\\."
+                }
+              ]
+            },
+            {
+              "name": "punctuation.separator.dictionary.key-value.json.agentscript",
+              "match": ":"
+            },
+            {
+              "name": "punctuation.separator.dictionary.pair.json.agentscript",
+              "match": ","
+            },
+            { "include": "#json-value" }
+          ]
+        },
+        {
+          "name": "meta.structure.array.json.agentscript",
+          "begin": "\\[",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.array.begin.json.agentscript" }
+          },
+          "end": "\\]",
+          "endCaptures": { "0": { "name": "punctuation.definition.array.end.json.agentscript" } },
+          "patterns": [
+            {
+              "name": "punctuation.separator.array.json.agentscript",
+              "match": ","
+            },
+            { "include": "#json-value" }
+          ]
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.separator.key-value.agentscript",
+          "match": ":"
+        },
+        {
+          "name": "punctuation.separator.list.agentscript",
+          "match": ","
+        },
+        {
+          "name": "punctuation.definition.brackets.agentscript",
+          "match": "[{}\\[\\]()]"
+        },
+        {
+          "name": "punctuation.accessor.dot.agentscript",
+          "match": "\\."
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "operator.comparison.agentscript",
+          "match": "==|!=|<=|>=|<|>"
+        },
+        {
+          "name": "operator.assignment.agentscript",
+          "match": "\\s=\\s|\\s=(?=[\\{\\[\"\\d])|(?<=[a-zA-Z_])\\s*=\\s*"
+        },
+        {
+          "name": "operator.arithmetic.agentscript",
+          "match": "[+\\-\\*%]"
+        },
+        {
+          "name": "punctuation.separator.path.agentscript",
+          "match": "/"
+        }
+      ]
+    }
+  }
+}

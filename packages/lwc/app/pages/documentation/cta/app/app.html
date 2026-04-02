@@ -1,0 +1,72 @@
+<template>
+    <nav class="navbar navbar-light sticky-top bg-light flex-md-nowrap">
+        <div class="d-flex ms-3">
+            <button
+                class="navbar-toggler d-block d-lg-none"
+                type="button"
+                onclick={handleNavbarMenu}>
+                <i class="fas fa-bars"></i>
+            </button>
+            <a class="navbar-brand col-sm-3 col-md-2 ms-3" href="https://sf-toolkit.com/cta">
+                Workbench 2.0 - CTA Personal Notes
+            </a>
+        </div>
+        <!--
+        <div class="d-flex ms-3">
+            <cta-search-button onclick={displaySearch}></cta-search-button>
+        </div>
+        -->
+    </nav>
+    <div class="container-fluid" style="height: 100%">
+        <div class="row">
+            <!-- Menu -->
+            <div
+                class="menu-container col-md-6 col-lg-3 d-none d-lg-block bg-light"
+                style="border-right: 1px solid hsla(210, 18%, 87%, 1)">
+                <!-- Menu List -->
+                <cta-markdown-menu
+                    lwc:ref="menu"
+                    url="https://raw.githubusercontent.com/grebmann1/cta-cheat-sheet/main/Documentation/Documentation.md"
+                    onmenu={handleMenu}
+                    onfilter={handleFilterChange}></cta-markdown-menu>
+            </div>
+            <!-- Container -->
+            <template lwc:if={isDocumentationDisplayed}>
+                <main
+                    role="main"
+                    class="documentation-container col-md-9 ml-sm-auto col-lg-19 pt-3 px-4">
+                    <!-- Header Navigation -->
+                    <cta-paginator
+                        previous-class={previousClass}
+                        previous-title={previousTitle}
+                        go-previous={goPrevious}
+                        next-class={nextClass}
+                        next-title={nextTitle}
+                        go-next={goNext}></cta-paginator>
+
+                    <cta-markdown-viewer
+                        lwc:ref="viewer"
+                        filter={filter}
+                        default-url="https://raw.githubusercontent.com/grebmann1/cta-cheat-sheet/main/README.md"
+                        base-url="https://raw.githubusercontent.com/grebmann1/cta-cheat-sheet/main/Documentation/"></cta-markdown-viewer>
+
+                    <!-- Footer Navigation -->
+                    <cta-paginator
+                        previous-class={previousClass}
+                        previous-title={previousTitle}
+                        go-previous={goPrevious}
+                        next-class={nextClass}
+                        next-title={nextTitle}
+                        go-next={goNext}></cta-paginator>
+                </main>
+            </template>
+            <template lwc:else>
+                <main
+                    role="main"
+                    class="documentation-container col-md-9 ml-sm-auto col-lg-19 pt-3 px-4">
+                    <!-- cta-algolia></cta-algolia> -->
+                </main>
+            </template>
+        </div>
+    </div>
+</template>

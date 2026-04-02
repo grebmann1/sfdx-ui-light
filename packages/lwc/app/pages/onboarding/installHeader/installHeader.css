@@ -1,0 +1,46 @@
+.header-card {
+    text-align: center;
+    background: var(--slds-g-color-neutral-base-100, #ffffff);
+    border: 1px solid var(--slds-g-color-border-base-1, #dddbda);
+    border-radius: 1rem;
+    box-shadow: var(--slds-g-shadow-outset-medium, 0 2px 8px rgba(0, 0, 0, 0.08));
+    padding: 1.5rem 2rem;
+}
+
+.header-card__brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.header-card__logo {
+    height: 2.75rem;
+    width: auto;
+}
+
+.header-card__kicker {
+    color: var(--slds-g-color-neutral-base-30, #706e6b);
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+}
+
+.header-card__description {
+    max-width: 760px;
+    margin: 0 auto 1rem;
+    line-height: 1.6;
+}
+
+.header-card__badge {
+    padding: 0.35rem 0.7rem;
+}
+
+@media (max-width: 640px) {
+    .header-card {
+        padding: 1rem;
+    }
+
+    .header-card__brand {
+        flex-direction: column;
+    }
+}

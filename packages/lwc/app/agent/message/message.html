@@ -1,0 +1,54 @@
+<template>
+    <li class={itemClass}>
+        <div class="slds-chat-message">
+            <div class="slds-chat-message__body">
+                <div class={itemMessageClass}>
+                    <template for:each={renderedParts} for:item="part">
+                        <template lwc:if={part.isReasoning}>
+                            <agent-reasoning-block
+                                key={part.key}
+                                class="reasoning-block-item"
+                                content={part.text}
+                                state={part.state}
+                                is-pulsing={isReasoningStreaming}></agent-reasoning-block>
+                        </template>
+                        <template lwc:elseif={part.isTool}>
+                            <agent-tool-message
+                                key={part.key}
+                                tool-part={part.toolPart}
+                                tool-call={part.toolCall}
+                                tool-result={part.toolResult}></agent-tool-message>
+                        </template>
+                        <template lwc:elseif={part.isFile}>
+                            <div key={part.key} class="message-content-file slds-m-vertical_x-small">
+                                <template lwc:if={part.isImage}>
+                                    <img class="message-content-image" src={part.url} alt={part.filename} />
+                                </template>
+                                <template lwc:if={part.filename}>
+                                    <a href={part.url} target="_blank" rel="noreferrer">{part.filename}</a>
+                                </template>
+                                <template lwc:else>
+                                    <a href={part.url} target="_blank" rel="noreferrer">Open file</a>
+                                </template>
+                            </div>
+                        </template>
+                        <template lwc:elseif={part.isText}>
+                            <div key={part.key} class="message-content-text">
+                                <template lwc:if={isUser}>{part.text}</template>
+                                <template lwc:else>
+                                    <slds-markdown-viewer
+                                        class="slds-flex-column slds-full-height"
+                                        value={part.text}
+                                        onchange={handleChange}></slds-markdown-viewer>
+                                </template>
+                            </div>
+                        </template>
+                    </template>
+                    <template lwc:if={showAssistantEmptyFallback}>
+                        <div class="message-content-text agent-message-empty-fallback">—</div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </li>
+</template>

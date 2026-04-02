@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "target": "ES2020",
+        "module": "CommonJS",
+        "moduleResolution": "Node",
+        "lib": ["ES2020", "DOM"],
+        "baseUrl": ".",
+        "paths": {
+            "shared/*": ["../shared/modules/*"]
+        },
+        "rootDir": ".",
+        "outDir": "./dist",
+        "sourceMap": true,
+        "strict": false,
+        "noImplicitAny": false,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "resolveJsonModule": true
+    },
+    "include": ["**/*.ts", "types/**/*.d.ts"],
+    "exclude": ["assets", "dist", "node_modules"]
+}

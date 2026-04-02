@@ -1,0 +1,18 @@
+.slds-background-white {
+    background-color: white;
+}
+
+.slds-popup-container {
+    height: 100vh; /* 600px*/
+    /* overflow: visible; */
+    display: flex;
+    flex-direction: column;
+}
+
+extension-header {
+    height: 50px;
+}
+
+.slds-full-height {
+    height: 100%;
+}

@@ -1,0 +1,22 @@
+{
+  "importedFrom": "Open VSX built-in language basics",
+  "note": "Files are only written if missing, so you can modify them locally.",
+  "vsixes": [
+    {
+      "id": "vscode.javascript",
+      "url": "https://open-vsx.org/api/vscode/javascript/1.95.3/file/vscode.javascript-1.95.3.vsix"
+    },
+    {
+      "id": "vscode.typescript",
+      "url": "https://open-vsx.org/api/vscode/typescript/1.95.3/file/vscode.typescript-1.95.3.vsix"
+    },
+    {
+      "id": "vscode.html",
+      "url": "https://open-vsx.org/api/vscode/html/1.95.3/file/vscode.html-1.95.3.vsix"
+    },
+    {
+      "id": "vscode.css",
+      "url": "https://open-vsx.org/api/vscode/css/1.95.3/file/vscode.css-1.95.3.vsix"
+    }
+  ]
+}

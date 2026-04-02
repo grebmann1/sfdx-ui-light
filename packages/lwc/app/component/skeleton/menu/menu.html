@@ -1,0 +1,54 @@
+<template>
+    <template lwc:if={isHeaderLightDisplayed}>
+        <header>
+            <!-- Navigation -->
+            <div class="slds-context-bar slds-inner-menu-header">
+                <div class="slds-context-bar__primary">
+                    <div
+                        class="slds-context-bar__item slds-context-bar__dropdown-trigger slds-dropdown-trigger slds-dropdown-trigger_click slds-no-hover"
+                        style="display: flex; align-items: center">
+                        <div class={collapseClass}>
+                            <lightning-button-icon
+                                icon-name={iconName}
+                                variant="bare"
+                                size="large"
+                                onclick={handleToggle}></lightning-button-icon>
+                        </div>
+                        <template lwc:if={isTitleDisplayed}>
+                            <span
+                                class="slds-p-left_x-small slds-context-bar__label-action slds-context-bar__app-name">
+                                <span class="slds-truncate" title="Workbench 2.0">Workbench 2.0</span>
+                            </span>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </header>
+    </template>
+    <!-- <div class="explorer-rail">
+        <template lwc:if={isNotMenuSmall}>
+            <div class="explorer-header">
+                <h2 class="explorer-title">Explorer</h2>
+            </div>
+            <div class="explorer-search">
+                <lightning-input
+                    type="search"
+                    label="Search"
+                    placeholder="Search..."
+                    value={filterText}
+                    onchange={handleSearchInput}
+                    variant="label-hidden"
+                    icon-name="utility:search"
+                    class="explorer-search-input">
+                </lightning-input>
+            </div>
+        </template>
+    </div> -->
+    <slds-vertical-navigation
+        class="menu-header"
+        selected-item-name={selectedItemName}
+        sections={sections}
+        is-collapsed={isMenuSmall}
+        onselect={handleSelect}
+        oncollapse={handleCollapse}></slds-vertical-navigation>
+</template>

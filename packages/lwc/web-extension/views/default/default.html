@@ -1,0 +1,18 @@
+<template>
+    <!-- Salesforce Panel -->
+    <panels-salesforce
+        class={salesforcePanelClass}
+        is-back-button-displayed={isBackButtonDisplayed}
+        lwc:ref="salesforce"
+        onback={handleGoBack}
+        onchangepanel={handlePanelChange}
+        record-id={recordId}></panels-salesforce>
+    <!-- Default Panel -->
+    <panels-default
+        class={defaultPanelClass}
+        is-back-button-displayed={isBackButtonDisplayed}
+        lwc:ref="default"
+        onback={handleGoBack}
+        onchangepanel={handlePanelChange}
+        onapplicationchange={handleApplicationChange}></panels-default>
+</template>

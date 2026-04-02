@@ -1,0 +1,89 @@
+// platformService.js
+import LOGGER from 'shared/logger';
+import { isChromeExtension, isElectronApp } from 'shared/utils';
+
+import * as electron from './electron';
+import { PLATFORM } from './platform';
+import { normalizeConfiguration } from './base';
+import * as web from './web';
+
+export function getCurrentPlatform() {
+    if (isElectronApp()) return PLATFORM.ELECTRON;
+    if (isChromeExtension()) return PLATFORM.CHROME;
+    return PLATFORM.WEB;
+}
+
+export { PLATFORM };
+
+export async function getConfigurations() {
+    let configurations = [];
+    switch (getCurrentPlatform()) {
+        case PLATFORM.ELECTRON:
+            configurations = await electron.getConfigurations();
+            break;
+        /* case PLATFORM.CHROME:
+            configurations = await chrome.getConfigurations(); */
+        default:
+            configurations = await web.getConfigurations();
+    }
+    return configurations.map(x => normalizeConfiguration(x, true));
+}
+
+export async function getConfiguration(alias) {
+    let configuration = null;
+    switch (getCurrentPlatform()) {
+        case PLATFORM.ELECTRON:
+            configuration = await electron.getConfiguration(alias);
+            break;
+        /* case PLATFORM.CHROME:
+            configuration = await chrome.getConfiguration(alias); */
+        default:
+            configuration = await web.getConfiguration(alias);
+    }
+    LOGGER.log('getConfiguration -- configuration', configuration);
+    return configuration ? normalizeConfiguration(configuration, true) : null;
+}
+
+export function saveConfiguration(alias, configuration) {
+    switch (getCurrentPlatform()) {
+        /*case PLATFORM.ELECTRON:
+            return electron.saveConfiguration(alias, configuration);*/
+        /* case PLATFORM.CHROME:
+            return chrome.saveConfiguration(alias, configuration); */
+        default:
+            return web.saveConfiguration(alias, configuration);
+    }
+}
+
+export function setConfigurations(configurations) {
+    switch (getCurrentPlatform()) {
+        /*case PLATFORM.ELECTRON:
+            return electron.setConfigurations(configurations);*/
+        /* case PLATFORM.CHROME:
+            return chrome.setConfigurations(configurations); */
+        default:
+            return web.setConfigurations(configurations);
+    }
+}
+
+export function renameConfiguration(params) {
+    switch (getCurrentPlatform()) {
+        case PLATFORM.ELECTRON:
+            return electron.renameConfiguration(params);
+        /* case PLATFORM.CHROME:
+            return chrome.renameConfiguration(params); */
+        default:
+            return web.renameConfiguration(params);
+    }
+}
+
+export function removeConfiguration(params) {
+    switch (getCurrentPlatform()) {
+        case PLATFORM.ELECTRON:
+            return electron.removeConfiguration(params);
+        /* case PLATFORM.CHROME:
+            return chrome.removeConfiguration(alias); */
+        default:
+            return web.removeConfiguration(params);
+    }
+}

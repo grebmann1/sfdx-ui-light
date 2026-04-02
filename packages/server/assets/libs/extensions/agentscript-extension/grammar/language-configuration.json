@@ -1,0 +1,127 @@
+{
+  "comments": {
+    "lineComment": "#"
+  },
+  "brackets": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"],
+    ["\"", "\""],
+    ["'", "'"],
+    ["{{", "}}"]
+  ],
+  "autoClosingPairs": [
+    {
+      "open": "{",
+      "close": "}",
+      "notIn": ["string", "comment"]
+    },
+    {
+      "open": "[",
+      "close": "]",
+      "notIn": ["string", "comment"]
+    },
+    {
+      "open": "(",
+      "close": ")",
+      "notIn": ["string", "comment"]
+    },
+    {
+      "open": "\"",
+      "close": "\"",
+      "notIn": ["string"]
+    },
+    {
+      "open": "'",
+      "close": "'",
+      "notIn": ["string", "comment"]
+    },
+    {
+      "open": "{{",
+      "close": "}}",
+      "notIn": ["string", "comment"]
+    }
+  ],
+  "surroundingPairs": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"],
+    ["\"", "\""],
+    ["'", "'"],
+    ["{{", "}}"]
+  ],
+  "folding": {
+    "markers": {
+      "start": "^\\s*INDENT\\s*$",
+      "end": "^\\s*DEDENT\\s*$"
+    }
+  },
+  "wordPattern": "(-?\\d*\\.\\d\\w*)|([^\\`\\~\\!\\@\\#\\%\\^\\&\\*\\(\\)\\-\\=\\+\\[\\{\\]\\}\\\\\\|\\;\\:\\'\\\"\\,\\.\\<\\>\\/\\?\\s]+)",
+  "indentationRules": {
+    "increaseIndentPattern": "^\\s*(INDENT|system:|config:|variables:|knowledge:|connection\\s+\\w+:|language:|reasoning:|before_reasoning:|after_reasoning:|topic\\s+\\w+:|start_agent(?:\\s+\\w+)?:|instructions:|actions:|inputs:|outputs:|available\\s+when:|run|set|with|transition\\s+to|if\\s+.*:|else:|target:|as\\s+\\w+:|>>|description:|messages:|\\{[^}]*$|\\[[^\\]]*$)",
+    "decreaseIndentPattern": "^\\s*(DEDENT|else:|\\}|\\]|\\}\\]|\\}\\s*\\]|\\]\\s*\\})"
+  },
+  "onEnterRules": [
+    {
+      "beforeText": "^\\s*INDENT\\s*$",
+      "action": {
+        "indent": "indent"
+      }
+    },
+    {
+      "beforeText": "^\\s*STOP\\s*$",
+      "action": {
+        "indent": "outdent"
+      }
+    },
+    {
+      "beforeText": "^\\s*(system|config|variables|knowledge|connection\\s+\\w+|language|reasoning|before_reasoning|after_reasoning|topic\\s+\\w+|start_agent(?:\\s+\\w+)?|instructions|actions|inputs|outputs|description|messages)\\s*:",
+      "action": {
+        "indent": "indent"
+      }
+    },
+    {
+      "beforeText": "^\\s*if\\s+.*:",
+      "action": {
+        "indent": "indent"
+      }
+    },
+    {
+      "beforeText": "^\\s*else:",
+      "action": {
+        "indent": "outdent"
+      }
+    },
+    {
+      "beforeText": "^\\s*>>",
+      "action": {
+        "indent": "indent"
+      }
+    },
+    {
+      "beforeText": "^\\s*with\\s+.*",
+      "action": {
+        "indent": "indent"
+      }
+    },
+    {
+      "beforeText": "^\\s*\\{[^}]*$",
+      "action": {
+        "indent": "indent"
+      }
+    },
+    {
+      "beforeText": "^\\s*\\[[^\\]]*$",
+      "action": {
+        "indent": "indent"
+      }
+    },
+    {
+      "beforeText": "^\\s*\\{\\{[^}]*$",
+      "action": {
+        "indent": "indent"
+      }
+    }
+  ],
+  "autoIndent": "advanced"
+}

@@ -1,0 +1,110 @@
+{
+    "manifest_version": 3,
+    "name": "Workbench 2.0",
+    "version": "__buildVersion__",
+    "description": "Use Workbench 2.0 directly from chrome to visualize record details and analyze User access, profile, permissions, etc",
+    "icons": {
+        "128": "__buildLogo__"
+    },
+    "action": {
+        "default_title": "Click to open Workbench 2.0"
+    },
+    "commands": {
+        "overlay_toggle": {
+            "suggested_key": {
+                "default": "Ctrl+Shift+E",
+                "linux": "Ctrl+Shift+E",
+                "mac": "Command+Shift+E",
+                "windows": "Ctrl+Shift+E"
+            },
+            "description": "Enable/Disable the Overlay"
+        },
+        "open_overlay_search": {
+            "description": "Overlay Open Search",
+            "suggested_key": {
+                "default": "Ctrl+Shift+S",
+                "linux": "Ctrl+Shift+S",
+                "mac": "Command+Shift+S",
+                "windows": "Ctrl+Shift+S"
+            }
+        },
+        "open_side_panel": {
+            "description": "Open Side Panel",
+            "suggested_key": {
+                "default": "Ctrl+Shift+Space",
+                "linux": "Ctrl+Shift+Space",
+                "mac": "Command+Shift+Space",
+                "windows": "Ctrl+Shift+Space"
+            }
+        }
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://*.sf-toolkit.com/*",
+                "http://localhost:3000/*"
+            ],
+            "run_at": "document_end",
+            "js": [
+                "scripts/inject_toolkit.js"
+            ]
+        }
+    ],
+    "content_security_policy": {
+        "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-modals; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http:; child-src 'self' blob:",
+        "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+    },
+    "web_accessible_resources": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "resources": [
+                "scripts/*",
+                "assets/*",
+                "styles/*",
+                "libs/*",
+                "views/*",
+                "openai/index.js",
+                "workers/openaiWorker/worker.js",
+                "*/*"
+            ]
+        }
+    ],
+    "options_ui": {
+        "page": "views/app.html?applicationName=settings",
+        "open_in_tab": true
+    },
+    "host_permissions": [
+        "<all_urls>"
+    ],
+    "background": {
+        "service_worker": "scripts/background.js",
+        "type": "module"
+    },
+    "permissions": [
+        "identity",
+        "cookies",
+        "storage",
+        "tabs",
+        "tabGroups",
+        "sidePanel",
+        "contextMenus",
+        "unlimitedStorage",
+        "activeTab",
+        "scripting",
+        "debugger"
+    ],
+    "incognito": "spanning",
+    "externally_connectable": {
+        "matches": [
+            "*://*.sf-toolkit.com/*"
+        ]
+    },
+    "sandbox": {
+        "pages": [
+            "views/sandbox.html",
+            "views/sandbox-render.html"
+        ]
+    }
+}

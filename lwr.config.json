@@ -1,27 +1,43 @@
 {
-    "layoutsDir": "$rootDir/src/client/layouts",   
-    "contentDir": "$rootDir/src/client/content",
+    "layoutsDir": "$rootDir/packages/server/layouts",   
+    "contentDir": "$rootDir/packages/server/content",
     "lwc": {
         "modules": [
-            { "dir": "$rootDir/src/client/lwc/modules" },
-            { "dir": "$rootDir/src/client/lwc/components" },
-            { "dir": "$rootDir/src/client/lwc/applications/einstein" },
-            { "dir": "$rootDir/src/client/lwc/applications/explorers" },
-            { "dir": "$rootDir/src/client/lwc/applications/documentation" },
-            { "dir": "$rootDir/src/client/lwc/applications/tools" },
-            { "dir": "$rootDir/src/client_chrome/components" },
+            { "dir": "$rootDir/packages/lwc/app" },
+            { "dir": "$rootDir/packages/lwc/app/component" },
+            { "dir": "$rootDir/packages/lwc/app/application" },
+            { "dir": "$rootDir/packages/lwc/app/pages" },
+            { "dir": "$rootDir/packages/lwc/app/pages/documentation" },
+            { "dir": "$rootDir/packages/lwc/app/tools" },
+            { "dir": "$rootDir/packages/lwc/web-extension" },
+            { "name": "shared/analytics", "path": "$rootDir/packages/shared/dist/modules/analytics/analytics.js" },
+            { "name": "shared/cacheManager", "path": "$rootDir/packages/shared/dist/modules/cacheManager/cacheManager.js" },
+            { "name": "shared/loader", "path": "$rootDir/packages/shared/dist/modules/loader/loader.js" },
+            { "name": "shared/logger", "path": "$rootDir/packages/shared/dist/modules/logger/logger.js" },
+            { "name": "shared/markdown", "path": "$rootDir/packages/shared/dist/modules/markdown/markdown.js" },
+            { "name": "shared/middleware", "path": "$rootDir/packages/shared/dist/modules/middleware/middleware.js" },
+            { "name": "shared/sf", "path": "$rootDir/packages/shared/dist/modules/sf/sf.js" },
+            { "name": "shared/store", "path": "$rootDir/packages/shared/dist/modules/store/store.js" },
+            { "name": "shared/utils", "path": "$rootDir/packages/shared/dist/modules/utils/utils.js" },
+            { "name": "agent/utils", "path": "$rootDir/packages/lwc/app/agent/utils/utils.ts" },
+            { "name": "core/store/storeRef", "path": "$rootDir/packages/lwc/app/core/store/storeRef.ts" },
+            { "name": "core/connector", "path": "$rootDir/packages/lwc/app/core/connector/connector.ts" },
             { "npm": "lightning-base-components" },
             {
                 "name": "imported/jsforce",
-                "path": "$rootDir/src/client/assets/libs/jsforce/jsforce.js"
+                "path": "$rootDir/packages/server/assets/libs/jsforce/jsforce.js"
             },
             {
                 "name": "imported/openapi-parser",
-                "path": "$rootDir/src/client/assets/libs/openapi-parser/openapi-parser.esm.min.js"
+                "path": "$rootDir/packages/server/assets/libs/openapi-parser/openapi-parser.esm.min.js"
+            },
+            {
+                "name": "just-bash",
+                "path": "$rootDir/packages/server/assets/libs/just-bash/just-bash.browser.js"
             },
             {
                 "name": "feature-input-quick-pick",
-                "path": "$rootDir/src/client_chrome/components/feature/inputQuickPick/inputQuickPick.js"
+                "path": "$rootDir/packages/lwc/web-extension/feature/inputQuickPick/inputQuickPick.js"
             }
         ]
     },
@@ -37,40 +53,45 @@
         },
         {
             "alias":"imagesDir",
-            "dir": "$rootDir/src/client/assets/images",
+            "dir": "$rootDir/packages/server/assets/images",
             "urlPath": "/images"
         },
         {
             "alias":"gifsDir",
-            "dir": "$rootDir/src/client/assets/gifs",
+            "dir": "$rootDir/packages/server/assets/gifs",
             "urlPath": "/gifs"
         },
         {
             "alias":"stylesDir",
-            "dir": "$rootDir/src/client/assets/styles",
+            "dir": "$rootDir/packages/server/assets/styles",
             "urlPath": "/styles"
         },
         {
             "alias":"libsDir",
-            "dir": "$rootDir/src/client/assets/libs",
+            "dir": "$rootDir/packages/server/assets/libs",
             "urlPath": "/libs"
         },
         {
-            "file": "$rootDir/src/client/assets/favicon.ico",
+            "file": "$rootDir/packages/server/assets/favicon.ico",
             "urlPath": "/favicon.ico"
         },
         {
             "alias":"workersDir",
-            "dir": "$rootDir/workers",
+            "dir": "$rootDir/packages/workers/src",
             "urlPath": "/workers"
         },
         {
             "alias":"publicDir",
-            "dir": "$rootDir/src/client/assets",
+            "dir": "$rootDir/packages/server/assets",
             "urlPath": "/public"
+        },
+        {
+            "alias":"skillsPublicDir",
+            "dir": "$rootDir/assets/skills",
+            "urlPath": "/public/skills"
         }
     ],
-    "hooks": ["$rootDir/src/client/hooks/application-hook.js"],
+    "hooks": ["$rootDir/packages/server/dist/hooks/application-hook.js"],
     "routes": [
         {
             "id": "home",
@@ -84,7 +105,7 @@
         {
             "id": "app",
             "path": "/app",
-            "rootComponent": "ui/fullView",
+            "rootComponent": "skeleton/fullView",
             "layoutTemplate": "$layoutsDir/main.html",
             "bootstrap": {
                 "syntheticShadow": true
@@ -93,7 +114,7 @@
         {
             "id": "markdown",
             "path": "/markdown",
-            "rootComponent": "ui/markdownView",
+            "rootComponent": "skeleton/markdownView",
             "layoutTemplate": "$layoutsDir/main.html",
             "bootstrap": {
                 "syntheticShadow": true
@@ -102,7 +123,7 @@
         {
             "id": "extension",
             "path": "/extension",
-            "rootComponent": "ui/directView",
+            "rootComponent": "skeleton/directView",
             "layoutTemplate": "$layoutsDir/main.html",
             "bootstrap": {
                 "syntheticShadow": true

@@ -1,7 +1,7 @@
 # Build outputs
-chrome_ext/
+dist/extension/
 __lwr_cache__/
-site/
+dist/web/
 __skip_directory_creation__/
 
 # Dependencies
@@ -12,7 +12,7 @@ dist/
 build/
 
 # Assets
-src/client/assets/
+packages/server/assets/
 
 
 # Cache

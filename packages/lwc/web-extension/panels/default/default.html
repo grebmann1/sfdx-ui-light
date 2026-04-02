@@ -1,0 +1,90 @@
+<template>
+    <div class="slds-popup-container slds-background-white">
+        <!-- HEADER -->
+        <extension-header onsearch={handleSearch}>
+            <lightning-button-group slot="action">
+                <template lwc:if={isBackButtonDisplayed}>
+                    <lightning-button
+                        class="back-button"
+                        icon-name="utility:back"
+                        label="Back"
+                        onclick={handleBackClick}
+                        size="medium"></lightning-button>
+                </template>
+                <!-- Actions for connections -->
+                <template lwc:if={isAgentDisplayed}>
+                    <lightning-button-icon
+                        icon-name="utility:einstein"
+                        onclick={openAgentClick}
+                        title="Agent"
+                        variant={agentVariant}></lightning-button-icon>
+                </template>
+                <lightning-button-icon
+                    icon-name="utility:open"
+                    onclick={openToolkitClick}
+                    title="Open App"
+                    variant="standard"></lightning-button-icon>
+                <lightning-button-icon
+                    icon-name="utility:salesforce1"
+                    onclick={openConnectionClick}
+                    title="Home"
+                    variant={connectionVariant}></lightning-button-icon>
+                <lightning-button-icon
+                    icon-name="utility:knowledge_base"
+                    onclick={documentationClick}
+                    title="Documentation"
+                    variant={documentationVariant}></lightning-button-icon>
+                <lightning-button-menu alternative-text="Show menu" menu-alignment="auto">
+                    <template lwc:if={betaSmartInputEnabled}>
+                        <lightning-menu-item
+                            label="Smart Input"
+                            onclick={openSmartInputClick}
+                            prefix-icon-name="utility:upload"
+                            value="Import"></lightning-menu-item>
+                    </template>
+                    <lightning-menu-item
+                        label="Import Orgs"
+                        onclick={importClick}
+                        prefix-icon-name="utility:upload"
+                        value="Import"></lightning-menu-item>
+                    <lightning-menu-item
+                        label="Export Orgs"
+                        onclick={exportClick}
+                        prefix-icon-name="utility:download"
+                        value="Export"></lightning-menu-item>
+                </lightning-button-menu>
+            </lightning-button-group>
+        </extension-header>
+
+        <!-- BODY slds-background-white -->
+        <div class="slds-is-relative slds-grid slds-wrap slds-grid_vertical-stretch full-page-body slds-background-white">
+            <!-- SECTION -->
+            <div class="slds-full-height slds-col slds-col slds-size_1-of-1">
+                <!-- Start -->
+                <template lwc:if={isConnection}>
+                    <connection-app
+                        is-header-less
+                        lwc:ref="connection"
+                        variant="card"></connection-app>
+                </template>
+                <template lwc:elseif={isDocumentation}>
+                    <doc-app is-responsive lwc:ref="documentation"></doc-app>
+                </template>
+                <template lwc:elseif={isAgent}>
+                    <agent-app
+                        class="slds-full-height slds-flex-column"
+                        is-audio-recorder-disabled
+                        lwc:ref="agent"></agent-app>
+                </template>
+
+                <!-- Display the UI for the Input Quick Pick Side Panel component-->
+                <template lwc:elseif={isSmartInputDisplayed}>
+                    <smartinput-app
+                        application-name={applications.SMARTINPUT}
+                        auto-close-on-item-select></smartinput-app>
+                </template>
+                <!-- End -->
+            </div>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,146 @@
+<template>
+    <div class="onboard-wrap slds-grid slds-wrap slds-grid_align-center slds-p-around_large">
+        <div class="onboard-card slds-card slds-size_1-of-1">
+            <div class="slds-card__header slds-grid">
+                <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                    <div class="slds-media__figure">
+                        <lightning-icon
+                            icon-name="utility:setup"
+                            size="small"
+                            alternative-text="AI setup"></lightning-icon>
+                    </div>
+                    <div class="slds-media__body">
+                        <h2 class="slds-card__header-title">
+                            <span>Set up your AI provider</span>
+                        </h2>
+                    </div>
+                </header>
+            </div>
+            <div class="slds-card__body slds-card__body_inner">
+                <p class="slds-text-body_regular onboard-intro">
+                    Start by selecting your profile so we can guide you through the right AI setup.
+                </p>
+                <template lwc:if={selectedAudience}>
+                    <div class="slds-m-top_small">
+                        <lightning-button-icon
+                            icon-name="utility:back"
+                            alternative-text="Back"
+                            title="Back"
+                            onclick={handleResetSelection}></lightning-button-icon>
+                        <span class="slds-m-left_x-small slds-text-color_weak">Choose a different option</span>
+                    </div>
+                    <template lwc:if={isEmployeeSelected}>
+                        <div class="slds-box slds-theme_default slds-m-top_medium onboard-section">
+                            <h3 class="slds-text-title_bold">Salesforce employees</h3>
+                            <div class="slds-m-top_x-small slds-text-color_weak">
+                                <p class="onboard-step">
+                                    <span class="onboard-step__label">Step 1</span>
+                                    Go to&nbsp;
+                                    <a
+                                        href={employeeSetupUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer">
+                                        Employee LLM Gateway
+                                    </a>
+                                    .
+                                </p>
+                                <p class="onboard-step">
+                                    <span class="onboard-step__label">Step 2</span>
+                                    Click Generate Key and paste it below.
+                                </p>
+                            </div>
+                            <div class="slds-m-top_small">
+                                <lightning-input
+                                    label="Employee LLM key"
+                                    placeholder="sk-xxxxxx"
+                                    field-level-help="Keys start with sk- and look like sk-xxxxxx."
+                                    value={employeeKey}
+                                    onchange={handleEmployeeKeyChange}
+                                    pattern="^sk-[A-Za-z0-9]+$"
+                                    message-when-pattern-mismatch="Key must start with sk- and contain only letters and numbers."
+                                    type="password"></lightning-input>
+                                <template lwc:if={isEmployeeKeyValid}>
+                                    <div class="slds-m-top_small onboard-actions">
+                                        <lightning-button
+                                            label="Install key"
+                                            variant="brand"
+                                            onclick={handleInstallEmployeeKey}></lightning-button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                    <template lwc:if={isExternalSelected}>
+                        <div class="slds-box slds-theme_default slds-m-top_medium onboard-section">
+                            <h3 class="slds-text-title_bold">Customer, partner, etc</h3>
+                            <p class="slds-m-top_x-small slds-text-color_weak">
+                                Add your OpenAI key in Settings &gt; AI, or paste it below.
+                            </p>
+                            <div class="slds-m-top_small">
+                                <lightning-input
+                                    label="OpenAI key"
+                                    placeholder="sk-xxxxxx"
+                                    field-level-help="Keys start with sk- and look like sk-xxxxxx."
+                                    value={externalKey}
+                                    onchange={handleExternalKeyChange}
+                                    pattern="^sk-[A-Za-z0-9]+$"
+                                    message-when-pattern-mismatch="Key must start with sk- and contain only letters and numbers."
+                                    type="password"></lightning-input>
+                                <template lwc:if={isExternalKeyValid}>
+                                    <div class="slds-m-top_small onboard-actions">
+                                        <lightning-button
+                                            label="Install key"
+                                            variant="brand"
+                                            onclick={handleInstallExternalKey}></lightning-button>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="slds-m-top_small onboard-actions">
+                                <lightning-button
+                                    label="Open AI Setup"
+                                    variant="neutral"></lightning-button>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+                <template lwc:else>
+                    <div class="slds-grid slds-wrap slds-gutters slds-m-top_medium slds-grid_vertical-align-center onboard-options">
+                        <div class="slds-col slds-size_5-of-12">
+                            <button
+                                type="button"
+                                class="onboard-choice onboard-choice--employee"
+                                onclick={handleSelectEmployee}>
+                                <div class="onboard-choice__title">Salesforce employee</div>
+                                <div class="onboard-choice__subtitle">
+                                    Access the Employee LLM Gateway setup
+                                </div>
+                            </button>
+                        </div>
+                        <div class="slds-col slds-size_2-of-12">
+                            <div class="onboard-or" aria-hidden="true">OR</div>
+                        </div>
+                        <div class="slds-col slds-size_5-of-12">
+                            <button
+                                type="button"
+                                class="onboard-choice onboard-choice--external"
+                                onclick={handleSelectExternal}>
+                                <div class="onboard-choice__title">Customer, partner, etc</div>
+                                <div class="onboard-choice__subtitle">
+                                    Use OpenAI key or ChatGPT OAuth
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+                <div class="slds-m-top_large">
+                    <slds-information-block title="AI data safety" variant="warning">
+                        <p>
+                            Do not use or share customer data with AI. Only use anonymized or
+                            non-sensitive information.
+                        </p>
+                    </slds-information-block>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

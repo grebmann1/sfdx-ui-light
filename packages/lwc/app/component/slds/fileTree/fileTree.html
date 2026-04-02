@@ -1,0 +1,52 @@
+<template>
+    <template lwc:if={hideSearchInput}>
+        <!-- external search controls -->
+    </template>
+    <template lwc:else>
+        <div class="slds-grid slds-p-around_small slds-m-bottom_small">
+            <lightning-input
+                data-tid="search-input"
+                class="search-input"
+                name={i18n.Search}
+                type="search"
+                placeholder={i18n.SearchPlaceholder}
+                value={searchValue}
+                onchange={handleSearch}
+                label={i18n.Search}
+                variant="label-hidden"></lightning-input>
+        </div>
+    </template>
+    <div
+        class="file-explorer-container full-height slds-p-horizontal_small"
+        style={treeStyle}
+        onscroll={handleScroll}>
+        <ul lwc:if={isTreeVisible} class="slds-tree tree-container" role="tree">
+            <template for:each={visibleTree} for:item="item">
+                <li key={item.id} role="none">
+                    <slds-file-tree-item
+                        is-first
+                        is-tabbable={item.isTabbable}
+                        item={item}
+                        expanded={item.expanded}
+                        selected={item.selected}
+                        is-delete-disabled={isDeleteDisabled}
+                        hide-icons={hideIcons}
+                        enable-toggle-on-item-click={enableToggleOnItemClick}
+                        ontoggle={handleToggle}
+                        onselect={handleSelect}
+                        search-value={searchValue}
+                        ondeletefile={handleDeleteFile}
+                        onaction={handleAction}
+                        onexpandall={handleExpandAll}
+                        oncollapseall={handleCollapseAll}
+                        is-folder-selectable={isFolderSelectable}></slds-file-tree-item>
+                </li>
+            </template>
+        </ul>
+        <div
+            lwc:else
+            class="slds-text-body_regular slds-p-around_medium slds-align_absolute-center">
+            {i18n.NoFiles}
+        </div>
+    </div>
+</template>

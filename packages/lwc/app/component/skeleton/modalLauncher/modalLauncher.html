@@ -1,0 +1,9 @@
+<template>
+    <lightning-modal-header label="App Launcher"></lightning-modal-header>
+    <lightning-modal-body>
+        <!-- Launcher -->
+        <slds-launcher
+            is-user-logged-in={isUserLoggedIn}
+            onselect={handleSelectApplication}></slds-launcher>
+    </lightning-modal-body>
+</template>

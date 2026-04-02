@@ -1,0 +1,35 @@
+<template>
+    <template lwc:if={showBanner}>
+        <section class="welcome-banner" role="region" aria-label="Home welcome message">
+            <div class="welcome-banner__header">
+                <div class="welcome-banner__heading">
+                    <p class="welcome-banner__eyebrow">Welcome</p>
+                    <h2 class="welcome-banner__title">Get started with Workbench 2.0</h2>
+                </div>
+                <lightning-button-icon
+                    class="welcome-banner__close"
+                    icon-name="utility:close"
+                    variant="bare"
+                    alternative-text="Dismiss welcome message"
+                    title="Dismiss welcome message"
+                    onclick={handleClose}></lightning-button-icon>
+            </div>
+            <p class="welcome-banner__intro">
+                Workbench 2.0 is a modern Salesforce companion built to replace the legacy Workbench
+                with a cleaner, faster, and more consistent experience.
+            </p>
+            <ul class="welcome-banner__list">
+                <li>It centralizes developer and admin workflows in one unified toolkit.</li>
+                <li>
+                    It focuses on reliability, usability, and productivity for everyday Salesforce
+                    work.
+                </li>
+                <li>
+                    It evolves as a long-term platform for the next generation of Workbench
+                    capabilities.
+                </li>
+                <li>It is currently in beta, and feedback will shape the release.</li>
+            </ul>
+        </section>
+    </template>
+</template>

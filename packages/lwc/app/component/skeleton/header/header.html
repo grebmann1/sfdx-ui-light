@@ -1,0 +1,68 @@
+<template>
+    <header class="slds-global-header_container">
+        <!-- Navigation -->
+        <div class="slds-context-bar">
+            <div class="slds-context-bar__primary">
+                <div
+                    class="slds-context-bar__item slds-context-bar__dropdown-trigger slds-dropdown-trigger slds-dropdown-trigger_click slds-no-hover">
+                    <div class={collapseClass}>
+                        <lightning-button-icon
+                            icon-name={leftPanelIconName}
+                            variant="bare"
+                            size="large"
+                            onclick={handleToggle}></lightning-button-icon>
+                    </div>
+                    <span class="slds-context-bar__label-action slds-context-bar__app-name">
+                        <span class="slds-truncate" title="Workbench 2.0">Workbench 2.0</span>
+                    </span>
+                    <span class="beta-badge" title="Beta">Beta</span>
+                    <span class="slds-truncate slds-p-left_xx-small" title={formattedVersion}>
+                        ({formattedVersion})
+                    </span>
+                </div>
+            </div>
+            <nav class="slds-context-bar__secondary" role="navigation">
+                <ul class="slds-grid">
+                    <template for:each={applications} for:item="application">
+                        <template lwc:if={application.isTabVisible}>
+                            <li
+                                key={application.id}
+                                class={application.class}
+                                onclick={selectTab}
+                                data-key={application.id}
+                                data-path={application.path}>
+                                <a class="slds-context-bar__label-action" title={application.label}>
+                                    <span class="slds-truncate" title={application.label}>
+                                        {application.label}
+                                    </span>
+                                </a>
+                                <template lwc:if={application.isDeletable}>
+                                    <a class="slds-context-bar__label-close" onclick={deleteTab}>
+                                        <lightning-button-icon
+                                            icon-name="utility:close"
+                                            variant="container"
+                                            class="slds-m-left_xx-small"></lightning-button-icon>
+                                    </a>
+                                </template>
+                            </li>
+                        </template>
+                    </template>
+                </ul>
+            </nav>
+            <template lwc:if={isAgentVisible}>
+                <div class="slds-context-bar__primary right-panel-collapse">
+                    <div
+                        class="slds-context-bar__item slds-context-bar__dropdown-trigger slds-dropdown-trigger slds-dropdown-trigger_click slds-no-hover">
+                        <div class={rightPanelCollapseClass}>
+                            <lightning-button-icon
+                                icon-name={rightPanelIconName}
+                                variant="bare"
+                                size="large"
+                                onclick={handleToggle_rightPanel}></lightning-button-icon>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </header>
+</template>

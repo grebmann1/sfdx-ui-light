@@ -1,0 +1,121 @@
+<template>
+    <div class="install-steps-layout">
+        <aside class="onboarding-vertical-menu">
+            <p class="slds-text-title_caps onboarding-steps-label">Installation guide</p>
+            <ul class="onboarding-step-list">
+                <template for:each={formattedSteps} for:item="step" for:index="index">
+                    <li key={step.id} class={step.class}>
+                        <button
+                            class="onboarding-step-button"
+                            type="button"
+                            onclick={handleStepMenuClick}
+                            data-step-index={index}
+                            aria-current={step.ariaCurrent}>
+                            <span>{step.title}</span>
+                        </button>
+                    </li>
+                </template>
+            </ul>
+        </aside>
+
+        <div class="onboarding-main-content">
+            <section class="onboarding-progress slds-m-bottom_medium" aria-label="Installation progress">
+                <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center slds-m-bottom_x-small">
+                    <p class="slds-text-title_bold">Getting started</p>
+                    <p class="slds-text-body_small">{stepCounterText}</p>
+                </div>
+                <lightning-progress-bar value={progressPercent} size="medium"></lightning-progress-bar>
+            </section>
+
+            <div class="onboarding-nav-row slds-m-bottom_medium">
+                <button
+                    class="slds-button slds-button_neutral"
+                    onclick={handlePrevious}
+                    disabled={isFirstStep}>
+                    Previous
+                </button>
+                <div class="onboarding-dot-indicator" aria-hidden="true">
+                    <div class="slds-grid slds-grid_align-center">
+                        <template for:each={steps} for:item="step">
+                            <div key={step.id} class="slds-m-horizontal_x-small">
+                                <div class={step.class}></div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                <button class="slds-button slds-button_brand" onclick={handleNext}>
+                    {nextButtonText}
+                </button>
+            </div>
+
+            <section class="onboarding-content-card">
+                <template if:true={currentStep}>
+                    <div class="onboarding-content-copy">
+                        <h2 class="slds-text-heading_medium slds-m-bottom_small">{currentStep.title}</h2>
+                        <lightning-formatted-rich-text
+                            value={currentStep.description}></lightning-formatted-rich-text>
+                        <template if:true={currentStep.list}>
+                            <ul class="slds-list_dotted slds-m-top_medium">
+                                <template for:each={currentStep.list} for:item="item">
+                                    <li key={item}>{item}</li>
+                                </template>
+                            </ul>
+                        </template>
+                    </div>
+                    <template if:true={currentStep.image}>
+                        <div class="onboarding-content-media">
+                            <div class="onboarding-content-media-toolbar">
+                                <button
+                                    class="slds-button slds-button_brand onboarding-media-fullscreen-btn"
+                                    type="button"
+                                    onclick={handleOpenMediaFullscreen}>
+                                    <span class="slds-button__icon slds-button__icon_left">
+                                        <lightning-icon
+                                            icon-name="utility:expand_alt"
+                                            size="xx-small"
+                                            variant="inverse"
+                                            alternative-text="Expand"></lightning-icon>
+                                    </span>
+                                    Full screen
+                                </button>
+                            </div>
+                            <img
+                                src={currentStep.image}
+                                alt={currentStep.title}
+                                class="onboarding-content-image" />
+                        </div>
+                    </template>
+                </template>
+            </section>
+
+            <div class="onboarding-footer-actions">
+                <button class="slds-button slds-button_link" onclick={handleSkip}>Skip tutorial</button>
+            </div>
+        </div>
+    </div>
+
+    <template if:true={isMediaFullscreen}>
+        <section
+            class="onboarding-media-lightbox"
+            data-role="backdrop"
+            onclick={handleMediaLightboxClick}
+            aria-label="Fullscreen media viewer">
+            <div class="onboarding-media-lightbox__content">
+                <button
+                    class="slds-button slds-button_icon slds-button_icon-border-filled onboarding-media-lightbox__close"
+                    type="button"
+                    onclick={handleCloseMediaFullscreen}
+                    aria-label="Close fullscreen media">
+                    <lightning-icon
+                        icon-name="utility:close"
+                        size="x-small"
+                        alternative-text="Close"></lightning-icon>
+                </button>
+                <img
+                    src={currentStep.image}
+                    alt={currentStep.title}
+                    class="onboarding-media-lightbox__image" />
+            </div>
+        </section>
+    </template>
+</template>

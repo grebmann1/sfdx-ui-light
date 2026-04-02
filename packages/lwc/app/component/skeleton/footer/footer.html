@@ -1,0 +1,316 @@
+<template>
+    <div class="slds-utility-bar_container">
+        <ul class="slds-utility-bar custom-utility-bar">
+            <!-- Left side of the utility bar -->
+            <li class="slds-utility-bar__item custom-utility-text custom-utility-left">
+                <template lwc:if={isConnectorDisplayed}>
+                    <lightning-button-icon
+                        class="custom-utility-text-copy"
+                        onclick={handleCopyUsername}
+                        icon-name="utility:copy"
+                        variant="bare"
+                        alternative-text="copy"
+                        title="Copy Username"></lightning-button-icon>
+                    <a class="slds-truncate" href="#" onclick={handleUsernameClick}>
+                        {usernameFormatted}
+                    </a>
+                    <div class="slds-vertical-separator"></div>
+                    <lightning-button
+                        variant="base"
+                        label="Access Token"
+                        title="Copy Access Token"
+                        icon-name="utility:copy"
+                        class="footer-utility-truncate custom-utility-text-copy"
+                        onclick={handleCopyAccessToken}></lightning-button>
+                </template>
+            </li>
+            <!-- Right side of the utility bar -->
+            <li class="slds-utility-bar__item custom-utility-text custom-utility-right">
+                <template lwc:if={hasJobs}>
+                    <span
+                        class="slds-truncate footer-job-message"
+                        onclick={handleJobClick}
+                        style="cursor: pointer">
+                        Jobs: {formattedJobCount} | {latestJobMessage}
+                    </span>
+                </template>
+                <template lwc:if={hasErrors}>
+                    <span
+                        class="slds-truncate slds-text-color_error footer-error-message"
+                        onclick={handleErrorClick}
+                        style="cursor: pointer">
+                        Errors: {formattedErrorCount} | {latestErrorMessage}
+                    </span>
+                </template>
+                <h2 class="slds-truncate slds-m-left_x-small">
+                    {versionFormatted} {salesforceVersionFormatted}
+                </h2>
+            </li>
+        </ul>
+        <template lwc:if={isErrorPanelOpen}>
+            <div
+                class="slds-utility-panel slds-grid slds-grid_vertical slds-is-open footer-error-panel"
+                role="dialog"
+                aria-labelledby="panel-heading-01">
+                <header class="footer-error-panel-header">
+                    <div class="footer-error-panel-header-inner">
+                        <span class="slds-icon_container footer-error-panel-icon">
+                            <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                <use
+                                    xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#error"></use>
+                            </svg>
+                        </span>
+                        <h2 id="panel-heading-01" class="footer-error-panel-title">Error Log</h2>
+                    </div>
+                    <button
+                        type="button"
+                        class="footer-error-panel-close"
+                        title="Close Panel"
+                        onclick={handleClosePanel}
+                        aria-label="Close panel">
+                        <svg class="slds-button__icon" aria-hidden="true">
+                            <use
+                                xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#minimize_window"></use>
+                        </svg>
+                    </button>
+                </header>
+                <div class="footer-error-filter">
+                    <input
+                        type="text"
+                        class="footer-error-filter-input"
+                        placeholder="Filter errors..."
+                        value={filterText}
+                        oninput={handleFilterInput}
+                        aria-label="Filter errors" />
+                    <lightning-button-icon
+                        icon-name="utility:delete"
+                        alternative-text="Clear all errors"
+                        title="Clear all errors"
+                        onclick={handleClearErrors}
+                        class="footer-error-filter-clear"
+                        variant="bare"></lightning-button-icon>
+                </div>
+                <div class="footer-error-list-panel slds-flex-column">
+                    <template lwc:if={filteredErrors}>
+                        <ul class={errorListClass}>
+                            <template for:each={filteredErrors} for:item="error">
+                                <li
+                                    key={error.id}
+                                    class={error.class}
+                                    data-id={error.id}
+                                    onclick={handleErrorItemClick}
+                                    role="button"
+                                    tabindex="0">
+                                    <span class="footer-error-list-meta">
+                                        <span class="footer-error-list-time">
+                                            [{error.formattedTime}]
+                                        </span>
+                                        <template lwc:if={error.source}>
+                                            <span class="footer-error-list-source">
+                                                [{error.source}]
+                                            </span>
+                                        </template>
+                                    </span>
+                                    <span class="footer-error-list-message">{error.message}</span>
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                    <template lwc:if={selectedError}>
+                        <section class="footer-error-details" aria-label="Error details">
+                            <h3 class="footer-error-details-title">Error Details</h3>
+                            <dl class="footer-error-details-list">
+                                <div class="footer-error-details-row">
+                                    <dt class="footer-error-details-label">Time</dt>
+                                    <dd class="footer-error-details-value">{selectedError.time}</dd>
+                                </div>
+                                <template lwc:if={selectedErrorSource}>
+                                    <div class="footer-error-details-row">
+                                        <dt class="footer-error-details-label">Source</dt>
+                                        <dd class="footer-error-details-value">
+                                            {selectedErrorSource}
+                                        </dd>
+                                    </div>
+                                </template>
+                                <div
+                                    class="footer-error-details-row footer-error-details-row-message">
+                                    <dt class="footer-error-details-label">Message</dt>
+                                    <dd class="footer-error-details-value">
+                                        <pre class="footer-error-pre footer-error-pre-message">{selectedError.message}</pre>
+                                    </dd>
+                                </div>
+                                <div
+                                    class="footer-error-details-row footer-error-details-row-details">
+                                    <dt class="footer-error-details-label">Details</dt>
+                                    <dd class="footer-error-details-value">
+                                        <pre class="footer-error-pre footer-error-pre-details">{selectedError.details}</pre>
+                                    </dd>
+                                </div>
+                            </dl>
+                        </section>
+                    </template>
+                </div>
+            </div>
+        </template>
+        <template lwc:if={isJobPanelOpen}>
+            <div
+                class="slds-utility-panel slds-grid slds-grid_vertical slds-is-open footer-job-panel"
+                role="dialog"
+                aria-labelledby="panel-heading-jobs">
+                <header class="footer-job-panel-header">
+                    <div class="footer-job-panel-header-inner">
+                        <span class="slds-icon_container footer-job-panel-icon">
+                            <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                <use
+                                    xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#clock"></use>
+                            </svg>
+                        </span>
+                        <h2 id="panel-heading-jobs" class="footer-job-panel-title">
+                            Background Jobs
+                        </h2>
+                    </div>
+                    <button
+                        type="button"
+                        class="footer-job-panel-close"
+                        title="Close Panel"
+                        onclick={handleClosePanel}
+                        aria-label="Close panel">
+                        <svg class="slds-button__icon" aria-hidden="true">
+                            <use
+                                xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#minimize_window"></use>
+                        </svg>
+                    </button>
+                </header>
+                <div class="footer-job-filter">
+                    <input
+                        type="text"
+                        class="footer-job-filter-input"
+                        placeholder="Filter jobs..."
+                        value={jobFilterText}
+                        oninput={handleJobFilterInput}
+                        aria-label="Filter jobs" />
+                    <lightning-button-icon
+                        icon-name="utility:delete"
+                        alternative-text="Clear all jobs"
+                        title="Clear all jobs"
+                        onclick={handleClearJobs}
+                        class="footer-job-filter-clear"
+                        variant="bare"></lightning-button-icon>
+                </div>
+                <div class="footer-job-list-panel slds-flex-column">
+                    <template lwc:if={filteredJobs}>
+                        <ul class={jobListClass}>
+                            <template for:each={filteredJobs} for:item="job">
+                                <li
+                                    key={job.id}
+                                    class={job.class}
+                                    data-id={job.id}
+                                    onclick={handleJobItemClick}
+                                    role="button"
+                                    tabindex="0">
+                                    <span class="footer-job-list-meta">
+                                        <span class="footer-job-list-time">{job.shortTime}</span>
+                                        <span class="footer-job-list-source">{job.categoryLabel}</span>
+                                        <span class="footer-job-list-status">{job.statusLabel}</span>
+                                        <template lwc:if={job.phaseLabel}>
+                                            <span class="footer-job-list-phase">
+                                                {job.phaseLabel}
+                                            </span>
+                                        </template>
+                                        <template lwc:if={job.elapsedLabel}>
+                                            <span class="footer-job-list-progress">{job.elapsedLabel}</span>
+                                        </template>
+                                    </span>
+                                    <span class="footer-job-list-message">{job.displayMessage}</span>
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                    <template lwc:if={selectedJob}>
+                        <section class="footer-job-details" aria-label="Job details">
+                            <h3 class="footer-job-details-title">Job Details</h3>
+                            <dl class="footer-job-details-list">
+                                <div class="footer-job-details-row">
+                                    <dt class="footer-job-details-label">Label</dt>
+                                    <dd class="footer-job-details-value">{selectedJob.label}</dd>
+                                </div>
+                                <div class="footer-job-details-row">
+                                    <dt class="footer-job-details-label">Updated</dt>
+                                    <dd class="footer-job-details-value">
+                                        {selectedJobUpdatedAtFormatted}
+                                    </dd>
+                                </div>
+                                <div class="footer-job-details-row">
+                                    <dt class="footer-job-details-label">Status</dt>
+                                    <dd class="footer-job-details-value">{selectedJob.status}</dd>
+                                </div>
+                                <template lwc:if={selectedJob.phase}>
+                                    <div class="footer-job-details-row">
+                                        <dt class="footer-job-details-label">Phase</dt>
+                                        <dd class="footer-job-details-value">{selectedJob.phase}</dd>
+                                    </div>
+                                </template>
+                                <template lwc:if={selectedJobElapsedLabel}>
+                                    <div class="footer-job-details-row">
+                                        <dt class="footer-job-details-label">Duration</dt>
+                                        <dd class="footer-job-details-value">
+                                            {selectedJobElapsedLabel}
+                                        </dd>
+                                    </div>
+                                </template>
+                                <template lwc:if={selectedJobSource}>
+                                    <div class="footer-job-details-row">
+                                        <dt class="footer-job-details-label">Source</dt>
+                                        <dd class="footer-job-details-value">
+                                            {selectedJobSource}
+                                        </dd>
+                                    </div>
+                                </template>
+                                <div class="footer-job-details-row footer-job-details-row-message">
+                                    <dt class="footer-job-details-label">Message</dt>
+                                    <dd class="footer-job-details-value">
+                                        <pre class="footer-job-pre footer-job-pre-message">{selectedJob.message}</pre>
+                                    </dd>
+                                </div>
+                                <template lwc:if={selectedJob.error}>
+                                    <div
+                                        class="footer-job-details-row footer-job-details-row-message">
+                                        <dt class="footer-job-details-label">Error</dt>
+                                        <dd class="footer-job-details-value">
+                                            <pre class="footer-job-pre footer-job-pre-details">{selectedJob.error}</pre>
+                                        </dd>
+                                    </div>
+                                </template>
+                                <template lwc:if={selectedJob.resultSummary}>
+                                    <div class="footer-job-details-row">
+                                        <dt class="footer-job-details-label">Result</dt>
+                                        <dd class="footer-job-details-value">
+                                            {selectedJob.resultSummary}
+                                        </dd>
+                                    </div>
+                                </template>
+                                <template lwc:if={hasSelectedJobActions}>
+                                    <div class="footer-job-details-row">
+                                        <dt class="footer-job-details-label">Actions</dt>
+                                        <dd class="footer-job-details-value">
+                                            <lightning-button-group>
+                                                <template for:each={selectedJobActions} for:item="action">
+                                                    <lightning-button
+                                                        key={action.id}
+                                                        label={action.label}
+                                                        data-action-id={action.id}
+                                                        onclick={handleJobActionClick}
+                                                        disabled={isJobActionRunning}></lightning-button>
+                                                </template>
+                                            </lightning-button-group>
+                                        </dd>
+                                    </div>
+                                </template>
+                            </dl>
+                        </section>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

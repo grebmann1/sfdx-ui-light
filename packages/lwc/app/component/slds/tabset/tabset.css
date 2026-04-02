@@ -1,0 +1,17 @@
+.slds-tabs_default {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.slds-tabs_scoped {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.slds-vertical-tabs {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+}

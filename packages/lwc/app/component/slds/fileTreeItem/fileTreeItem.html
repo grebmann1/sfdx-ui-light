@@ -1,0 +1,163 @@
+<template>
+    <div
+        data-tid="file-tree-item"
+        lwc:if={isVisible}
+        class={rootClasses}
+        role="treeitem"
+        tabindex={tabIndex}
+        aria-label={ariaLabel}
+        aria-expanded={ariaExpandedAttribute}
+        aria-selected={selected}
+        aria-posinset={ariaPosInSet}
+        aria-setsize={ariaSetSize}
+        onclick={handleClick}
+        onkeydown={handleKeyDown}
+        onmouseenter={handleHover}
+        onmouseleave={handleMouseLeave}>
+        <span class="slds-tree__item-label" data-element="tree-item-label">
+            <span class="slds-truncate slds-grid slds-grid_vertical-align-center slds-grow">
+                <template lwc:if={isFolder}>
+                    <lightning-button-icon
+                        icon-name={chevronIcon}
+                        variant="bare"
+                        class="slds-m-right_x-small chevron-icon slds-is-relative"
+                        tabindex="-1"
+                        onclick={handleToggle}
+                        onkeydown={stopKeydown}
+                        alternative-text={i18n.AltTextExpandFolder}
+                        data-element="chevron-icon"></lightning-button-icon>
+                    <lightning-icon
+                        lwc:if={isFolderIconDisplayedAndVisible}
+                        icon-name={folderIcon}
+                        size="x-small"
+                        class="slds-m-right_x-small"
+                        alternative-text={i18n.AltTextFolder}></lightning-icon>
+                </template>
+                <template lwc:else>
+                    <template lwc:if={isApiIconAndVisible}>
+                        <span class={apiIconClass} data-element="api-badge">{apiIconText}</span>
+                    </template>
+                    <template lwc:else>
+                        <lightning-icon
+                            lwc:if={isFileIconVisible}
+                            icon-name={itemIcon}
+                            size="x-small"
+                            class="slds-m-right_x-small"
+                            alternative-text={i18n.AltTextFile}></lightning-icon>
+                    </template>
+                </template>
+                <h3
+                    title={title}
+                    class="file-tree-item-title slds-truncate"
+                    data-element="item-name">
+                    <lightning-formatted-rich-text
+                        value={highlightedName}></lightning-formatted-rich-text>
+                </h3>
+            </span>
+            <span class="tree-item-label-right">
+                <template lwc:if={isFile}>
+                    <button
+                        lwc:if={isDeleteButtonVisible}
+                        class="slds-button slds-button_icon slds-button_icon-small show-on-hover"
+                        title={i18n.Delete}
+                        onclick={handleDelete}
+                        tabindex="-1">
+                        <lightning-icon
+                            icon-name="utility:delete"
+                            size="x-small"
+                            class="slds-button__icon"></lightning-icon>
+                    </button>
+                    <lightning-button-menu
+                        lwc:if={isFileMenuVisible}
+                        class="show-on-hover"
+                        onclick={handleMenuClick}
+                        onblur={handleMenuBlur}
+                        onfocus={handleMenuFocus}
+                        alternative-text={i18n.ShowMenu}
+                        menu-alignment="auto"
+                        onselect={handleMenuSelect}
+                        icon-name="utility:threedots"
+                        icon-size="x-small"
+                        variant="bare"
+                        internal-datatable-actions-menu>
+                        <template for:each={customActions} for:item="action">
+                            <lightning-menu-item
+                                key={action.name}
+                                value={action.name}
+                                label={action.label}
+                                prefix-icon-name={action.iconName}
+                                disabled={action.disabled}></lightning-menu-item>
+                        </template>
+                        <lightning-menu-item
+                            value="delete"
+                            label="Delete"
+                            lwc:if={isDeletable}></lightning-menu-item>
+                    </lightning-button-menu>
+                </template>
+                <template lwc:else>
+                    <lightning-button-menu
+                        lwc:if={isFolderMenuVisible}
+                        class="show-on-hover"
+                        onclick={handleMenuClick}
+                        onblur={handleMenuBlur}
+                        onfocus={handleMenuFocus}
+                        alternative-text={i18n.ShowMenu}
+                        menu-alignment="auto"
+                        onselect={handleMenuSelect}
+                        icon-name="utility:threedots"
+                        icon-size="x-small"
+                        variant="bare"
+                        internal-datatable-actions-menu>
+                        <lightning-menu-item
+                            value="expandAll"
+                            label="Expand All"
+                            onblur={handleMenuBlur}></lightning-menu-item>
+                        <lightning-menu-item
+                            value="collapseAll"
+                            label="Collapse All"
+                            onblur={handleMenuBlur}></lightning-menu-item>
+                        <lightning-menu-item
+                            value="delete"
+                            label="Delete"
+                            onblur={handleMenuBlur}
+                            lwc:if={isDeletable}></lightning-menu-item>
+                        <template for:each={customActions} for:item="action">
+                            <lightning-menu-item
+                                key={action.name}
+                                value={action.name}
+                                label={action.label}
+                                prefix-icon-name={action.iconName}
+                                disabled={action.disabled}></lightning-menu-item>
+                        </template>
+                    </lightning-button-menu>
+                </template>
+            </span>
+        </span>
+    </div>
+    <ul lwc:if={expanded} role="group" class="slds-tree__group">
+        <template lwc:if={showLoadingPlaceholder}>
+            <li class="tree-item-loading-placeholder" role="none">
+                <slds-spinner
+                    variant="brand"
+                    size="small"
+                    alternative-text="Loading"></slds-spinner>
+            </li>
+        </template>
+        <template for:each={children} for:item="child">
+            <li key={child.id} role="none">
+                <slds-file-tree-item
+                    item={child}
+                    expanded={child.expanded}
+                    selected={child.selected}
+                    is-tabbable={child.isTabbable}
+                    is-delete-disabled={isDeleteDisabled}
+                    hide-icons={hideIcons}
+                    enable-toggle-on-item-click={enableToggleOnItemClick}
+                    ontoggle={handleToggle}
+                    onselect={handleSelect}
+                    search-value={searchValue}
+                    is-folder-selectable={isFolderSelectable}></slds-file-tree-item>
+            </li>
+        </template>
+    </ul>
+</template>

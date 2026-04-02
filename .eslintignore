@@ -1,7 +1,7 @@
-src/client/assets/libs/**
-src/client/assets/styles/**
-src/client/assets/images/**
-src/client/assets/gifs/**
-chrome_ext/**
-site/**
+packages/server/assets/libs/**
+packages/server/assets/styles/**
+packages/server/assets/images/**
+packages/server/assets/gifs/**
+dist/extension/**
+dist/web/**
 __lwr_cache__/**

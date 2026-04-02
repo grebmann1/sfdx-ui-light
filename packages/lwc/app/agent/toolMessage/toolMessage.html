@@ -1,0 +1,50 @@
+<template>
+    <div class="slds-m-top_x-small tool-message-item">
+        <button
+            type="button"
+            class="tool-header-button"
+            onclick={handleToggle}
+            aria-expanded={expanded}
+            aria-label={toggleAriaLabel}>
+            <span class={statusClass}>
+                <lightning-icon
+                    icon-name={statusIconName}
+                    variant={statusIconVariant}
+                    class={statusIconClass}
+                    size="xx-small"
+                    alternative-text="Tool status"></lightning-icon>
+                <span class="tool-title">{title}</span>
+                <lightning-icon
+                    icon-name={toggleIconName}
+                    class="tool-toggle-icon"
+                    size="xx-small"
+                    alternative-text="Toggle tool details"></lightning-icon>
+            </span>
+        </button>
+
+        <template lwc:if={expanded}>
+            <div class="tool-section">
+                <div class="tool-section-label">{commandLabel}</div>
+                <pre class="tool-section-body"><code>{commandText}</code></pre>
+            </div>
+
+            <template lwc:if={effectiveToolResult}>
+                <div class="tool-section">
+                    <div class="tool-section-label">{resultLabel}</div>
+                    <pre class="tool-section-body"><code>{resultText}</code></pre>
+                    <template lwc:if={resultImages.length}>
+                        <div class="tool-result-images slds-m-top_x-small">
+                            <template for:each={resultImages} for:item="resultImage">
+                                <img
+                                    key={resultImage.key}
+                                    class="tool-result-image"
+                                    src={resultImage.src}
+                                    alt="Tool result screenshot" />
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </template>
+    </div>
+</template>
