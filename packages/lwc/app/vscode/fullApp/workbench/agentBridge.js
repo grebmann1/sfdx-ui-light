@@ -2,10 +2,12 @@ import { Agent } from 'agent/Agent';
 import { sharedInstructions } from 'agent/agents';
 import {
     createUserModelMessage,
+    MODELS,
     DEFAULT_MODEL,
     DEFAULT_REASONING,
 } from 'agent/utils';
 import { store } from 'core/store';
+import { CACHE_CONFIG, loadExtensionConfigFromCache } from 'shared/cacheManager';
 import { guid } from 'shared/utils';
 
 const MAX_INLINE_TEXT_CHARS = 24000;
@@ -30,6 +32,9 @@ You are operating inside an embedded VS Code workbench with access to the worksp
 
 const conversationIdsByKey = new Map();
 const conversationMessagesById = new Map();
+const SUPPORTED_RUNTIME_MODEL_IDS = new Set(
+    (Array.isArray(MODELS) ? MODELS : []).map(model => model?.value).filter(Boolean)
+);
 
 function truncateText(text, maxChars = MAX_INLINE_TEXT_CHARS) {
     const value = typeof text === 'string' ? text : String(text ?? '');
@@ -285,13 +290,40 @@ function createEditorTools(vscode) {
     ];
 }
 
-function createAgentSettings(vscode, modelId) {
+function resolveAgentRuntimeModelId(modelId, state) {
+    const requestedModelId = typeof modelId === 'string' ? modelId.trim() : '';
+    if (requestedModelId && SUPPORTED_RUNTIME_MODEL_IDS.has(requestedModelId)) {
+        return requestedModelId;
+    }
+    return state.agent?.selectedModel || DEFAULT_MODEL;
+}
+
+async function createAgentSettings(vscode, modelId) {
     const state = store.getState();
+    const cachedConfig = await loadExtensionConfigFromCache([
+        CACHE_CONFIG.OPENAI_KEY.key,
+        CACHE_CONFIG.OPENAI_URL.key,
+    ]).catch(() => ({}));
+    const cachedOpenaiKey = cachedConfig?.[CACHE_CONFIG.OPENAI_KEY.key];
+    const cachedOpenaiUrl = cachedConfig?.[CACHE_CONFIG.OPENAI_URL.key];
+    const openaiKey =
+        typeof cachedOpenaiKey === 'string' && cachedOpenaiKey.trim()
+            ? cachedOpenaiKey
+            : state.application?.openaiKey ?? '';
+    const openaiUrl =
+        typeof cachedOpenaiUrl === 'string' && cachedOpenaiUrl.trim()
+            ? cachedOpenaiUrl
+            : state.application?.openaiUrl;
+    const isInternal =
+        typeof openaiUrl === 'string' && openaiUrl
+            ? openaiUrl.includes('eng-ai-model-gateway')
+            : state.application?.isInternal;
+
     return {
-        openaiKey: state.application?.openaiKey ?? '',
-        openaiUrl: state.application?.openaiUrl,
-        isInternal: state.application?.isInternal,
-        selectedModel: modelId || state.agent?.selectedModel || DEFAULT_MODEL,
+        openaiKey,
+        openaiUrl,
+        isInternal,
+        selectedModel: resolveAgentRuntimeModelId(modelId, state),
         selectedReasoning: state.agent?.selectedReasoning ?? DEFAULT_REASONING,
         systemPrompt: WORKBENCH_AGENT_INSTRUCTIONS,
         isStoreEnabled: false,
@@ -403,7 +435,7 @@ async function runAgentRequest({
     const agent = await Agent.create({
         messages: previousMessages,
         conversationId,
-        settings: createAgentSettings(vscode, modelId),
+        settings: await createAgentSettings(vscode, modelId),
     });
 
     const disposeCancellation = attachCancellation(token, agent);
