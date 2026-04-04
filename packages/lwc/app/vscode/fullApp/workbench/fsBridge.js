@@ -291,6 +291,8 @@ export async function seedWorkspaceFiles(
         getVscodeBundle,
         getIndexedDbFileSystem,
         encodeUtf8,
+        ensureDirectories = [],
+        initialFiles = {},
         workspaceRoot,
     }
 ) {
@@ -304,14 +306,31 @@ export async function seedWorkspaceFiles(
     app._fsw = vscodeBundle.services?.FileServiceWrapper ?? null;
     const root = workspaceRoot || getWorkspaceRoot(app);
     app._appFs = getIndexedDbFileSystem({
-        ensureDirectories: [
+        ensureDirectories: ensureDirectories.length > 0
+            ? ensureDirectories
+            : [
+                root,
+                `${root}/.vscode`,
+                `${root}/force-app/main/default`,
+                `${root}/.salesforce`,
+            ],
+        initialFiles,
+    });
+    await app._appFs?.ready;
+    const directoriesToEnsure = ensureDirectories.length > 0
+        ? ensureDirectories
+        : [
             root,
             `${root}/.vscode`,
             `${root}/force-app/main/default`,
             `${root}/.salesforce`,
-        ],
-    });
-    await app._appFs?.ready;
+        ];
+    for (const dir of directoriesToEnsure) {
+        await app._appFs?.mkdir(dir, { recursive: true }).catch(() => {});
+    }
+    if (initialFiles && Object.keys(initialFiles).length > 0) {
+        await app._appFs?.registerInitialFiles(initialFiles).catch(() => {});
+    }
 
     if (!app._fsw) {
         return;

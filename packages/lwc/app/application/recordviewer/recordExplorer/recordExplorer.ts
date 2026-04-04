@@ -147,12 +147,6 @@ export default class RecordExplorer extends ToolkitElement {
                     .retrieve(this.record.RecordTypeId);
             }
 
-            // Initiliaze Picklist Dependencies
-            /*this.initDependencyManager({
-                dependentFields: this.recordUi.objectInfo.dependentFields,
-                picklistValues: filteredPicklistValues
-            });*/
-
             this.dispatchEvent(
                 new CustomEvent('dataload', {
                     detail: {
@@ -601,15 +595,6 @@ export default class RecordExplorer extends ToolkitElement {
         }
         return '';
     }
-
-    /*
-    initDependencyManager(dependencyInfo) {
-        if (!this._depManager) {
-            this._depManager = new DependencyManager(dependencyInfo);
-        } else {
-            this._depManager.registerDependencyInfo(dependencyInfo);
-        }
-    }*/
 
     get objectSetupLink() {
         return getObjectSetupLink(this.linkConfig);

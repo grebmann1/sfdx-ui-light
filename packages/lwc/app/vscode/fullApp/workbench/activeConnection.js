@@ -1,4 +1,6 @@
 import { OAUTH_TYPES } from 'core/connector';
+import { DEFAULT_SOURCE_API_VERSION, normalizeSfApiVersion } from './sfdxProject.js';
+import { deriveWorkspaceRootFromConnection } from './workspaceBootstrap.js';
 
 const STORAGE = {
     workspaceRoot: 'sf_ext_workspaceRoot',
@@ -88,21 +90,33 @@ function toAuthType(credentialType) {
 export function loadStoredConnection() {
     const currentConnection = readCurrentConnection();
     const credentialType = currentConnection?.credentialType;
-    const instanceUrl = normalizeUrlValue(currentConnection?.instanceUrl || currentConnection?.serverUrl || '');
-    const accessToken = String(currentConnection?.accessToken || currentConnection?.sessionId || '').trim();
+    const instanceUrl = normalizeUrlValue(
+        currentConnection?.instanceUrl || currentConnection?.serverUrl || ''
+    );
+    const accessToken = String(
+        currentConnection?.accessToken || currentConnection?.sessionId || ''
+    ).trim();
     const apiVersion = String(
-        currentConnection?.instanceApiVersion || currentConnection?.version || currentConnection?.apiVersion || '63.0'
-    ).trim() || '63.0';
+        normalizeSfApiVersion(
+            currentConnection?.instanceApiVersion ||
+                currentConnection?.version ||
+                currentConnection?.apiVersion,
+            DEFAULT_SOURCE_API_VERSION
+        )
+    ).trim();
     const userInfo = currentConnection?.userInfo || {};
 
     return {
         instanceUrl,
         apiVersion,
         accessToken,
-        authType: currentConnection ? String(currentConnection?.authType || toAuthType(credentialType)).trim() : '',
-        sharedAlias: credentialType === OAUTH_TYPES.OAUTH || credentialType === OAUTH_TYPES.USERNAME
-            ? String(currentConnection?.alias || '').trim()
+        authType: currentConnection
+            ? String(currentConnection?.authType || toAuthType(credentialType)).trim()
             : '',
+        sharedAlias:
+            credentialType === OAUTH_TYPES.OAUTH || credentialType === OAUTH_TYPES.USERNAME
+                ? String(currentConnection?.alias || '').trim()
+                : '',
         oauthConnectionId: '',
         username: String(currentConnection?.username || userInfo?.username || '').trim(),
         userId: String(currentConnection?.userId || userInfo?.user_id || '').trim(),
@@ -125,15 +139,19 @@ export function clearStoredWorkspaceRoot() {
 export function parseUrlConnectionParams(locationLike = window?.location) {
     try {
         const params = new URLSearchParams(locationLike?.search || '');
-        const accessToken = String(params.get('accessToken') || params.get('sessionId') || '').trim();
-        const instanceUrl = normalizeUrlValue(params.get('serverUrl') || params.get('instanceUrl') || '');
+        const accessToken = String(
+            params.get('accessToken') || params.get('sessionId') || ''
+        ).trim();
+        const instanceUrl = normalizeUrlValue(
+            params.get('serverUrl') || params.get('instanceUrl') || ''
+        );
         if (!accessToken || !instanceUrl) {
             return null;
         }
         return {
             instanceUrl,
             accessToken,
-            apiVersion: String(params.get('apiVersion') || '63.0').trim() || '63.0',
+            apiVersion: normalizeSfApiVersion(params.get('apiVersion'), DEFAULT_SOURCE_API_VERSION),
             authType: 'url',
             sharedAlias: '',
             username: String(params.get('username') || '').trim(),
@@ -150,7 +168,16 @@ export function parseUrlConnectionParams(locationLike = window?.location) {
 export function clearUrlConnectionParams(locationLike = window?.location) {
     try {
         const url = new URL(locationLike?.href || window.location.href);
-        const keys = ['accessToken', 'sessionId', 'serverUrl', 'instanceUrl', 'apiVersion', 'username', 'userId', 'orgId'];
+        const keys = [
+            'accessToken',
+            'sessionId',
+            'serverUrl',
+            'instanceUrl',
+            'apiVersion',
+            'username',
+            'userId',
+            'orgId',
+        ];
         let changed = false;
         for (const key of keys) {
             if (url.searchParams.has(key)) {
@@ -166,41 +193,4 @@ export function clearUrlConnectionParams(locationLike = window?.location) {
     }
 }
 
-function sanitizeSegment(value) {
-    return String(value || 'unnamed')
-        .replace(/[\\/:*?"<>|]/g, '_')
-        .replace(/\s+/g, ' ')
-        .trim();
-}
-
-export function deriveWorkspaceBaseRoot(value = '/workspace/orgs') {
-    const raw = String(value || '').trim().replace(/\\/g, '/');
-    if (!raw) {
-        return '/workspace/orgs';
-    }
-    const normalized = `/${raw.replace(/^\/+/, '').replace(/\/+$/, '')}`;
-    if (normalized === '/workspace') {
-        return '/workspace/orgs';
-    }
-    const marker = '/orgs/';
-    if (normalized.includes(marker)) {
-        return normalized.slice(0, normalized.indexOf(marker) + marker.length - 1);
-    }
-    return normalized;
-}
-
-export function deriveWorkspaceRootFromConnection(connection, workspaceBasePath = '/workspace/orgs') {
-    const baseRoot = deriveWorkspaceBaseRoot(workspaceBasePath);
-    let segment = sanitizeSegment(connection?.username || '');
-    if (!segment) {
-        try {
-            segment = sanitizeSegment(new URL(String(connection?.instanceUrl || '')).host);
-        } catch {
-            segment = '';
-        }
-    }
-    if (!segment) {
-        segment = sanitizeSegment(connection?.orgId || 'org');
-    }
-    return `${baseRoot}/${segment}`;
-}
+export { deriveWorkspaceRootFromConnection };

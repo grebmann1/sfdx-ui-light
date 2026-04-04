@@ -1,17 +1,9 @@
-export function isMacPlatform() {
-    if (navigator?.userAgentData?.platform) {
-        return navigator.userAgentData.platform?.toUpperCase()?.indexOf('MAC') >= 0;
-    }
-    return navigator?.userAgent?.toUpperCase()?.indexOf('MAC') >= 0;
-}
-
 export function encodeUtf8(text) {
     return new TextEncoder().encode(text ?? '');
 }
 
 export const STORAGE_KEYS = {
     instanceUrl: 'sf_workbench_instanceUrl',
-    apiVersion: 'sf_workbench_apiVersion',
     accessToken: 'sf_workbench_accessToken',
     useProxy: 'sf_workbench_useProxy',
     proxyUrl: 'sf_workbench_proxyUrl',
@@ -38,19 +30,32 @@ export function auraFilename(bundleName, defType, format) {
     const b = sanitizePathSegment(bundleName);
     const t = String(defType || '').toUpperCase();
     switch (t) {
-        case 'APPLICATION': return `${b}.app`;
-        case 'COMPONENT': return `${b}.cmp`;
-        case 'EVENT': return `${b}.evt`;
-        case 'INTERFACE': return `${b}.intf`;
-        case 'TOKENS': return `${b}.tokens`;
-        case 'TESTSUITE': return `${b}.testSuite`;
-        case 'STYLE': return `${b}.css`;
-        case 'CONTROLLER': return `${b}Controller.js`;
-        case 'HELPER': return `${b}Helper.js`;
-        case 'RENDERER': return `${b}Renderer.js`;
-        case 'DESIGN': return `${b}.design`;
-        case 'DOCUMENTATION': return `${b}.auradoc`;
-        case 'SVG': return `${b}.svg`;
+        case 'APPLICATION':
+            return `${b}.app`;
+        case 'COMPONENT':
+            return `${b}.cmp`;
+        case 'EVENT':
+            return `${b}.evt`;
+        case 'INTERFACE':
+            return `${b}.intf`;
+        case 'TOKENS':
+            return `${b}.tokens`;
+        case 'TESTSUITE':
+            return `${b}.testSuite`;
+        case 'STYLE':
+            return `${b}.css`;
+        case 'CONTROLLER':
+            return `${b}Controller.js`;
+        case 'HELPER':
+            return `${b}Helper.js`;
+        case 'RENDERER':
+            return `${b}Renderer.js`;
+        case 'DESIGN':
+            return `${b}.design`;
+        case 'DOCUMENTATION':
+            return `${b}.auradoc`;
+        case 'SVG':
+            return `${b}.svg`;
         default: {
             const ext = extFromAuraFormat(format);
             return `${b}.${t.toLowerCase()}.${ext}`;

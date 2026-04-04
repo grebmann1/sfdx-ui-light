@@ -1,31 +1,40 @@
 import { loadStoredConnection } from './activeConnection.js';
-import { isAuthError, refreshStoredConnection, resolveStoredConnection } from './sharedConnection.js';
+import { DEFAULT_SOURCE_API_VERSION, normalizeSfApiVersion } from './sfdxProject.js';
+import {
+    isAuthError,
+    refreshStoredConnection,
+    resolveStoredConnection,
+} from './sharedConnection.js';
 
 function getEffectiveProxyUrl(app) {
-    return app.sfUseProxy
-        ? (app.sfProxyUrl?.trim() || window.location.origin)
-        : undefined;
+    return app.sfUseProxy ? app.sfProxyUrl?.trim() || window.location.origin : undefined;
 }
 
 function createAppToolingClient(app, createToolingClient, connection) {
     return createToolingClient({
         instanceUrl: connection.instanceUrl,
         accessToken: connection.accessToken,
-        apiVersion: connection.apiVersion || app.sfApiVersion || '63.0',
+        apiVersion: normalizeSfApiVersion(
+            connection.apiVersion || app.sfApiVersion,
+            DEFAULT_SOURCE_API_VERSION
+        ),
         proxyUrl: getEffectiveProxyUrl(app),
     });
 }
 
 function getAppConnection(app) {
     const storedConnection = loadStoredConnection();
-    if (storedConnection?.sharedAlias || (storedConnection?.instanceUrl && storedConnection?.accessToken)) {
+    if (
+        storedConnection?.sharedAlias ||
+        (storedConnection?.instanceUrl && storedConnection?.accessToken)
+    ) {
         return storedConnection;
     }
 
     return {
         instanceUrl: app.sfInstanceUrl,
         accessToken: app.sfAccessToken,
-        apiVersion: app.sfApiVersion,
+        apiVersion: normalizeSfApiVersion(app.sfApiVersion, DEFAULT_SOURCE_API_VERSION),
         authType: '',
         sharedAlias: '',
         username: '',
@@ -62,12 +71,7 @@ async function withAuthedToolingClient(app, createToolingClient, fn) {
 
 export async function refreshSalesforceMetadataForApp(
     app,
-    {
-        createToolingClient,
-        mapWithConcurrency,
-        sanitizePathSegment,
-        auraFilename,
-    }
+    { createToolingClient, mapWithConcurrency, sanitizePathSegment, auraFilename, mkdirp }
 ) {
     if (!app?.sfConnected) {
         throw new Error('Not connected.');
@@ -86,28 +90,32 @@ export async function refreshSalesforceMetadataForApp(
     const triggersDir = `${root}/triggers`;
     const lwcDir = `${root}/lwc`;
     const auraDir = `${root}/aura`;
-    app._mkdirp(classesDir);
-    app._mkdirp(triggersDir);
-    app._mkdirp(lwcDir);
-    app._mkdirp(auraDir);
-    app._mkdirp(`${workspaceRoot}/.salesforce`);
+    mkdirp(app, classesDir);
+    mkdirp(app, triggersDir);
+    mkdirp(app, lwcDir);
+    mkdirp(app, auraDir);
+    mkdirp(app, `${workspaceRoot}/.salesforce`);
 
-    const { connection, apexClasses, apexTriggers, lwcBundles, auraBundles } = await withAuthedToolingClient(
-        app,
-        createToolingClient,
-        async (client, resolvedConnection) => ({
-            connection: resolvedConnection,
-            apexClasses: await client.listApexClasses(),
-            apexTriggers: await client.listApexTriggers(),
-            lwcBundles: await client.listLwcBundles(),
-            auraBundles: await client.listAuraBundles(),
-        })
-    );
+    const { connection, apexClasses, apexTriggers, lwcBundles, auraBundles } =
+        await withAuthedToolingClient(
+            app,
+            createToolingClient,
+            async (client, resolvedConnection) => ({
+                connection: resolvedConnection,
+                apexClasses: await client.listApexClasses(),
+                apexTriggers: await client.listApexTriggers(),
+                lwcBundles: await client.listLwcBundles(),
+                auraBundles: await client.listAuraBundles(),
+            })
+        );
 
     const index = {
         generatedAt: new Date().toISOString(),
         instanceUrl: connection.instanceUrl,
-        apiVersion: connection.apiVersion || app.sfApiVersion || '63.0',
+        apiVersion: normalizeSfApiVersion(
+            connection.apiVersion || app.sfApiVersion,
+            DEFAULT_SOURCE_API_VERSION
+        ),
         counts: {
             apexClasses: apexClasses.length,
             apexTriggers: apexTriggers.length,
@@ -124,7 +132,7 @@ export async function refreshSalesforceMetadataForApp(
         const name = sanitizePathSegment(c?.Name);
         const path = `${classesDir}/${name}.cls`;
         app._registerSfLazyReadOnlyFile(path, async () => {
-            const row = await withAuthedToolingClient(app, createToolingClient, async (client) => {
+            const row = await withAuthedToolingClient(app, createToolingClient, async client => {
                 return await client.getApexClassBody(c.Id);
             });
             return row?.Body ?? '';
@@ -137,7 +145,7 @@ export async function refreshSalesforceMetadataForApp(
         const name = sanitizePathSegment(t?.Name);
         const path = `${triggersDir}/${name}.trigger`;
         app._registerSfLazyReadOnlyFile(path, async () => {
-            const row = await withAuthedToolingClient(app, createToolingClient, async (client) => {
+            const row = await withAuthedToolingClient(app, createToolingClient, async client => {
                 return await client.getApexTriggerBody(t.Id);
             });
             return row?.Body ?? '';
@@ -146,9 +154,9 @@ export async function refreshSalesforceMetadataForApp(
     }
 
     // LWC bundles + resources
-    const lwcResourcesByBundle = await mapWithConcurrency(lwcBundles, 4, async (bundle) => {
+    const lwcResourcesByBundle = await mapWithConcurrency(lwcBundles, 4, async bundle => {
         const bundleName = sanitizePathSegment(bundle?.DeveloperName);
-        const resources = await withAuthedToolingClient(app, createToolingClient, async (client) => {
+        const resources = await withAuthedToolingClient(app, createToolingClient, async client => {
             return await client.listLwcResources(bundle.Id);
         });
         return { bundle, bundleName, resources };
@@ -157,7 +165,7 @@ export async function refreshSalesforceMetadataForApp(
     for (const entry of lwcResourcesByBundle) {
         const bundleName = entry.bundleName || 'unnamed';
         const bundlePath = `${lwcDir}/${bundleName}`;
-        app._mkdirp(bundlePath);
+        mkdirp(app, bundlePath);
         const bundleIndex = {
             id: entry.bundle?.Id,
             name: entry.bundle?.DeveloperName,
@@ -174,12 +182,16 @@ export async function refreshSalesforceMetadataForApp(
             const filePath = `${bundlePath}/${rel}`;
             const lastSlash = filePath.lastIndexOf('/');
             if (lastSlash > bundlePath.length) {
-                app._mkdirp(filePath.slice(0, lastSlash));
+                mkdirp(app, filePath.slice(0, lastSlash));
             }
             app._registerSfLazyReadOnlyFile(filePath, async () => {
-                const row = await withAuthedToolingClient(app, createToolingClient, async (client) => {
-                    return await client.getLwcResourceSource(resource.Id);
-                });
+                const row = await withAuthedToolingClient(
+                    app,
+                    createToolingClient,
+                    async client => {
+                        return await client.getLwcResourceSource(resource.Id);
+                    }
+                );
                 return row?.Source ?? '';
             });
             bundleIndex.resources.push({
@@ -194,9 +206,9 @@ export async function refreshSalesforceMetadataForApp(
     }
 
     // Aura bundles + definitions
-    const auraDefsByBundle = await mapWithConcurrency(auraBundles, 4, async (bundle) => {
+    const auraDefsByBundle = await mapWithConcurrency(auraBundles, 4, async bundle => {
         const bundleName = sanitizePathSegment(bundle?.DeveloperName);
-        const defs = await withAuthedToolingClient(app, createToolingClient, async (client) => {
+        const defs = await withAuthedToolingClient(app, createToolingClient, async client => {
             return await client.listAuraDefinitions(bundle.Id);
         });
         return { bundle, bundleName, defs };
@@ -205,7 +217,7 @@ export async function refreshSalesforceMetadataForApp(
     for (const entry of auraDefsByBundle) {
         const bundleName = entry.bundleName || 'unnamed';
         const bundlePath = `${auraDir}/${bundleName}`;
-        app._mkdirp(bundlePath);
+        mkdirp(app, bundlePath);
         const bundleIndex = {
             id: entry.bundle?.Id,
             name: entry.bundle?.DeveloperName,
@@ -223,9 +235,13 @@ export async function refreshSalesforceMetadataForApp(
             usedNames.add(fileName);
             const filePath = `${bundlePath}/${fileName}`;
             app._registerSfLazyReadOnlyFile(filePath, async () => {
-                const row = await withAuthedToolingClient(app, createToolingClient, async (client) => {
-                    return await client.getAuraDefinitionSource(definition.Id);
-                });
+                const row = await withAuthedToolingClient(
+                    app,
+                    createToolingClient,
+                    async client => {
+                        return await client.getAuraDefinitionSource(definition.Id);
+                    }
+                );
                 return row?.Source ?? '';
             });
             bundleIndex.definitions.push({

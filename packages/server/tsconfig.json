@@ -6,7 +6,11 @@
         "lib": ["ES2020", "DOM"],
         "baseUrl": ".",
         "paths": {
-            "shared/*": ["../shared/modules/*"]
+            "shared/*": ["../shared/modules/*"],
+            "shared/analytics": ["../shared/modules/analytics/analytics"],
+            "shared/loader": ["../shared/modules/loader/loader"],
+            "shared/markdown": ["../shared/modules/markdown/markdown"],
+            "shared/sf": ["../shared/modules/sf/sf"]
         },
         "rootDir": ".",
         "outDir": "./dist",

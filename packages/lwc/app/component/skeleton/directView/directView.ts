@@ -1,4 +1,4 @@
-import LightningAlert from 'lightning/alert';
+import Toast from 'lightning/toast';
 import { api, LightningElement } from 'lwc';
 import { isUndefinedOrNull, isElectronApp } from 'shared/utils';
 
@@ -59,10 +59,11 @@ export default class directView extends LightningElement {
     }
 
     sendError = () => {
-        LightningAlert.open({
+        Toast.show({
+            label: 'Session Error',
             message: 'Invalid Session',
-            theme: 'error', // a red theme intended for error states
-            label: 'Error!', // this is the header text
+            variant: 'error',
+            mode: 'dismissible',
         });
     };
 }

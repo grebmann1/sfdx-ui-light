@@ -1,6 +1,7 @@
+import Toast from 'lightning/toast';
+
 import { credentialStrategies, OAUTH_TYPES, getConfiguration } from 'core/connector';
 import { store, APPLICATION } from 'core/store';
-import LightningAlert from 'lightning/alert';
 import { navigate } from 'lwr/navigation';
 import LOGGER from 'shared/logger';
 import { isNotUndefinedOrNull, isElectronApp } from 'shared/utils';
@@ -10,6 +11,19 @@ import { handleRedirect } from './utils';
 /**
  * Session management helpers for app initialization
  */
+
+function hasSpecificPageTarget(targetPage) {
+    const type = targetPage?.type;
+    if (type !== 'application') {
+        return false;
+    }
+
+    return Boolean(String(targetPage?.state?.applicationName || '').trim());
+}
+
+function getDefaultLandingTarget() {
+    return store.getState()?.application?.isLoggedIn ? 'org/app' : 'home/app';
+}
 
 /**
  * Load limited mode (Extension/Electron org window)
@@ -66,7 +80,7 @@ export async function loadLimitedMode(context) {
 
         if (redirectUrl) {
             handleRedirect(navContext, redirectUrl);
-        } else {
+        } else if (!hasSpecificPageTarget(targetPage)) {
             navigate(navContext, {
                 type: 'application',
                 state: { applicationName: 'org' },
@@ -83,10 +97,11 @@ export async function loadLimitedMode(context) {
                 message: e.message,
             });
         }
-        await LightningAlert.open({
+        Toast.show({
+            label: 'Session Error',
             message: e.message,
-            theme: 'error',
-            label: 'Error!',
+            variant: 'error',
+            mode: 'dismissible',
         });
         return { success: false, error: e };
     }
@@ -108,45 +123,51 @@ export async function loadFullMode(context) {
         handleNavigation,
     } = context;
 
-    if (isNotUndefinedOrNull(sessionId) && isNotUndefinedOrNull(serverUrl)) {
-        let connector = await credentialStrategies.SESSION.connect({
-            sessionId,
-            serverUrl,
-        });
-        store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
-    } else {
-        // New logic inspired by old getExistingSession
-        const currentConnectionRaw = sessionStorage.getItem('currentConnection');
-        if (currentConnectionRaw) {
-            try {
-                const settings = JSON.parse(currentConnectionRaw);
-                settings.logLevel = null;
-                let connector;
-                if (settings.sessionId && settings.serverUrl) {
-                    connector = await credentialStrategies.SESSION.connect({
-                        sessionId: settings.sessionId,
-                        serverUrl: settings.serverUrl,
-                    });
-                } else if (
-                    settings.credentialType &&
-                    credentialStrategies[settings.credentialType || 'OAUTH']
-                ) {
-                    connector =
-                        await credentialStrategies[settings.credentialType].connect(settings);
+    try {
+        if (isNotUndefinedOrNull(sessionId) && isNotUndefinedOrNull(serverUrl)) {
+            let connector = await credentialStrategies.SESSION.connect({
+                sessionId,
+                serverUrl,
+            });
+            store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
+        } else {
+            // New logic inspired by old getExistingSession
+            const currentConnectionRaw = sessionStorage.getItem('currentConnection');
+            if (currentConnectionRaw) {
+                try {
+                    const settings = JSON.parse(currentConnectionRaw);
+                    settings.logLevel = null;
+                    let connector;
+                    if (settings.sessionId && settings.serverUrl) {
+                        connector = await credentialStrategies.SESSION.connect({
+                            sessionId: settings.sessionId,
+                            serverUrl: settings.serverUrl,
+                        });
+                    } else if (
+                        settings.credentialType &&
+                        credentialStrategies[settings.credentialType || 'OAUTH']
+                    ) {
+                        connector =
+                            await credentialStrategies[settings.credentialType].connect(settings);
+                    }
+                    if (connector) {
+                        store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
+                    }
+                } catch (e) {
+                    LOGGER.error('load_fullMode Error -->', e);
                 }
-                if (connector) {
-                    store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
-                }
-            } catch (e) {
-                LOGGER.error('load_fullMode Error -->', e);
             }
         }
+    } catch (e) {
+        LOGGER.error('loadFullMode bootstrap failed -->', e);
+        // Keep the shell usable even when automatic reconnect fails.
+        store.dispatch(APPLICATION.reduxSlice.actions.logout({}));
     }
 
     if (redirectUrl) {
         handleRedirect(navContext, redirectUrl);
-    } else {
-        loadModule('home/app', true);
+    } else if (!hasSpecificPageTarget(targetPage)) {
+        loadModule(getDefaultLandingTarget(), true);
     }
 
     return { success: true };

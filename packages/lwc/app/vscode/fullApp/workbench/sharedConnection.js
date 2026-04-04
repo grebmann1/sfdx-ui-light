@@ -8,7 +8,14 @@ import {
     removeSession,
     saveSession,
 } from 'core/connector';
-import { clearStoredWorkspaceRoot, saveStoredWorkspaceRoot } from './activeConnection.js';
+import { createToolingClient } from 'vscode/toolingApi';
+
+import {
+    clearStoredWorkspaceRoot,
+    deriveWorkspaceRootFromConnection,
+    saveStoredWorkspaceRoot,
+} from './activeConnection.js';
+import { DEFAULT_SOURCE_API_VERSION, normalizeSfApiVersion } from './sfdxProject.js';
 
 export function getConnectionAuthType(configuration) {
     switch (configuration?.credentialType) {
@@ -27,7 +34,11 @@ export function isAuthError(err) {
     const status = err?.status;
     if (status === 401) return true;
     const msg = String(err?.message || '').toUpperCase();
-    return msg.includes('INVALID_SESSION_ID') || msg.includes('INVALID_SESSION') || msg.includes('(401)');
+    return (
+        msg.includes('INVALID_SESSION_ID') ||
+        msg.includes('INVALID_SESSION') ||
+        msg.includes('(401)')
+    );
 }
 
 export async function connectUsingSharedConfiguration(configuration) {
@@ -75,9 +86,14 @@ export function toStoredConnectionFromConnector(connector, fallback = {}) {
     const userInfo = configuration.userInfo || {};
 
     return {
-        instanceUrl: connection.instanceUrl || configuration.instanceUrl || fallback.instanceUrl || '',
-        apiVersion: connection.version || configuration.version || fallback.apiVersion || '63.0',
-        accessToken: connection.accessToken || configuration.accessToken || fallback.accessToken || '',
+        instanceUrl:
+            connection.instanceUrl || configuration.instanceUrl || fallback.instanceUrl || '',
+        apiVersion: normalizeSfApiVersion(
+            fallback.apiVersion || connection.version || configuration.version,
+            DEFAULT_SOURCE_API_VERSION
+        ),
+        accessToken:
+            connection.accessToken || configuration.accessToken || fallback.accessToken || '',
         authType: getConnectionAuthType(configuration),
         sharedAlias: configuration.alias || fallback.sharedAlias || '',
         oauthConnectionId: fallback.oauthConnectionId || '',
@@ -88,6 +104,66 @@ export function toStoredConnectionFromConnector(connector, fallback = {}) {
     };
 }
 
+async function fetchUserInfo({ instanceUrl, accessToken }) {
+    try {
+        const url = `${String(instanceUrl || '').replace(/\/+$/, '')}/services/oauth2/userinfo`;
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (!response.ok) {
+            return null;
+        }
+        const body = await response.json().catch(() => null);
+        if (!body || typeof body !== 'object') {
+            return null;
+        }
+        return {
+            username: body?.preferred_username || body?.email || body?.username || '',
+            userId: body?.user_id || '',
+            orgId: body?.organization_id || '',
+        };
+    } catch {
+        return null;
+    }
+}
+
+export async function normalizeActiveConnection(connection, options = {}) {
+    if (!connection?.instanceUrl || !connection?.accessToken) {
+        return null;
+    }
+
+    const client = createToolingClient({
+        instanceUrl: connection.instanceUrl,
+        accessToken: connection.accessToken,
+        apiVersion: normalizeSfApiVersion(connection.apiVersion, DEFAULT_SOURCE_API_VERSION),
+        proxyUrl: options.proxyUrl,
+    });
+
+    await client.ping();
+    const userInfo =
+        !connection.username || !connection.userId || !connection.orgId
+            ? await fetchUserInfo({
+                  instanceUrl: client.instanceUrl,
+                  accessToken: connection.accessToken,
+              })
+            : null;
+
+    const normalized = {
+        ...connection,
+        instanceUrl: client.instanceUrl,
+        apiVersion: client.apiVersion,
+        username: connection.username || userInfo?.username || '',
+        userId: connection.userId || userInfo?.userId || '',
+        orgId: connection.orgId || userInfo?.orgId || '',
+    };
+
+    return {
+        ...normalized,
+        workspaceRoot: deriveWorkspaceRootFromConnection(normalized, options.workspaceBasePath),
+    };
+}
+
 function toSharedSessionPayload(configuration, conn) {
     const userInfo = configuration?.userInfo || {};
     return {
@@ -95,7 +171,10 @@ function toSharedSessionPayload(configuration, conn) {
         authType: conn.authType || getConnectionAuthType(configuration),
         instanceUrl: conn.instanceUrl || configuration?.instanceUrl || '',
         accessToken: conn.accessToken || configuration?.accessToken || '',
-        instanceApiVersion: conn.apiVersion || configuration?.version || '63.0',
+        instanceApiVersion: normalizeSfApiVersion(
+            conn.apiVersion || configuration?.version,
+            DEFAULT_SOURCE_API_VERSION
+        ),
         refreshToken: configuration?.refreshToken || '',
         username: conn.username || configuration?.username || userInfo?.username || '',
         userId: conn.userId || configuration?.userId || userInfo?.user_id || '',
@@ -104,7 +183,10 @@ function toSharedSessionPayload(configuration, conn) {
 }
 
 function toSessionPayload(conn, configuration = null) {
-    if (configuration?.credentialType === OAUTH_TYPES.OAUTH || configuration?.credentialType === OAUTH_TYPES.USERNAME) {
+    if (
+        configuration?.credentialType === OAUTH_TYPES.OAUTH ||
+        configuration?.credentialType === OAUTH_TYPES.USERNAME
+    ) {
         return toSharedSessionPayload(configuration, conn);
     }
 
@@ -115,7 +197,7 @@ function toSessionPayload(conn, configuration = null) {
         serverUrl: conn.instanceUrl,
         instanceUrl: conn.instanceUrl,
         accessToken: conn.accessToken,
-        instanceApiVersion: conn.apiVersion || '63.0',
+        instanceApiVersion: normalizeSfApiVersion(conn.apiVersion, DEFAULT_SOURCE_API_VERSION),
         username: conn.username || '',
         userId: conn.userId || '',
         orgId: conn.orgId || '',
@@ -164,8 +246,10 @@ async function refreshSharedOauthConfiguration(configuration) {
     }
 
     const accessToken = jwt?.access_token || connector?.conn?.accessToken || '';
-    const instanceUrl = jwt?.instance_url || connector?.conn?.instanceUrl || configuration.instanceUrl || '';
-    const refreshToken = jwt?.refresh_token || connector?.conn?.refreshToken || configuration.refreshToken || '';
+    const instanceUrl =
+        jwt?.instance_url || connector?.conn?.instanceUrl || configuration.instanceUrl || '';
+    const refreshToken =
+        jwt?.refresh_token || connector?.conn?.refreshToken || configuration.refreshToken || '';
     if (!accessToken || !instanceUrl) {
         throw new Error('Refresh response did not include a usable Salesforce access token.');
     }
@@ -206,7 +290,11 @@ async function getRefreshedConnectorForConfiguration(configuration, { forceRefre
     try {
         return await connectUsingSharedConfiguration(configuration);
     } catch (error) {
-        if (configuration.credentialType !== OAUTH_TYPES.OAUTH || !configuration.refreshToken || !isAuthError(error)) {
+        if (
+            configuration.credentialType !== OAUTH_TYPES.OAUTH ||
+            !configuration.refreshToken ||
+            !isAuthError(error)
+        ) {
             throw error;
         }
         return await refreshSharedOauthConfiguration(configuration);
@@ -229,7 +317,10 @@ export async function clearActiveConnection() {
     await removeSession().catch(() => {});
 }
 
-export async function resolveStoredConnection(connection, { persist = true, forceRefresh = false } = {}) {
+export async function resolveStoredConnection(
+    connection,
+    { persist = true, forceRefresh = false } = {}
+) {
     const sharedAlias = String(connection?.sharedAlias || '').trim();
     if (!sharedAlias) {
         return connection;

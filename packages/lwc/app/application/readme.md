@@ -2,10 +2,13 @@
 
 This folder contains all launchable applications under `application/*`.
 
-The single source of truth for app registration is:
-- `packages/lwc/app/component/skeleton/registry/applicationRegistry.js`
+The shell-facing application registry now lives in:
+- `packages/lwc/app/core/applications/applications.ts`
 
-The skeleton shell and left menu consume that registry, so you should only need to update one file when adding a new `application/*` app.
+Application-specific entries and menu groups are still declared in:
+- `packages/lwc/app/component/skeleton/registry/registry.ts`
+
+The skeleton shell and left menu consume `core/applications`, while this folder remains the home of the launchable application modules.
 
 ## Required Folder Structure
 
@@ -23,7 +26,7 @@ packages/lwc/app/application/<appFolder>/
 
 1. Create your app component in this folder:
    - `packages/lwc/app/application/<appFolder>/app/`
-2. In `skeleton/registry/applicationRegistry.js`, import the module:
+2. In `packages/lwc/app/component/skeleton/registry/registry.ts`, import the module:
    - `import myApp_app from 'myApp/app';`
 3. Add one entry in `APPLICATION_ENTRIES` with:
    - `name`: module name used by shell, usually `<appFolder>/app`
@@ -51,7 +54,7 @@ The minimum practical fields for a new app entry are:
 
 ## Menu Groups
 
-Current build section groups are declared in `APPLICATION_MENU_GROUPS`:
+Current build section groups are declared in `APPLICATION_MENU_GROUPS` and exposed by `packages/lwc/app/core/applications/applications.ts`:
 - `data`
 - `code`
 - `explorers`

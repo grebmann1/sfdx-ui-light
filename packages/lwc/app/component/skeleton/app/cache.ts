@@ -43,10 +43,10 @@ export async function loadFromCache(context) {
     const mistralKey = configuration[CACHE_CONFIG.MISTRAL_KEY.key];
     const aiProvider = configuration[CACHE_CONFIG.AI_PROVIDER.key];
 
-    LOGGER.debug('loadFromCache - openaiKey', openaiKey);
+    /* LOGGER.debug('loadFromCache - openaiKey', openaiKey);
     LOGGER.debug('loadFromCache - openaiUrl', openaiUrl);
     LOGGER.debug('loadFromCache - mistralKey', mistralKey);
-    LOGGER.debug('loadFromCache - aiProvider', aiProvider);
+    LOGGER.debug('loadFromCache - aiProvider', aiProvider); */
 
     if (openaiKey) {
         store.dispatch(APPLICATION.reduxSlice.actions.updateOpenAIKey({ openaiKey, openaiUrl }));

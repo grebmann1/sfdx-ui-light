@@ -6,8 +6,6 @@ import sarif_app from 'sarif/app';
 import settings_app from 'settings/app';
 import smartinput_app from 'smartinput/app';
 import textCompare_app from 'textCompare/app';
-// Modules coming from the applications !!!
-// We shouldn't add "Tools" here, but in the applications folder !!!
 import { APPLICATION_APP_MAPPING, APPLICATION_MENU_GROUPS } from 'skeleton/registry';
 
 const i18n = {
@@ -135,11 +133,6 @@ const APP_MAPPING = {
     ...APPLICATION_APP_MAPPING,
 };
 
-const APP_LIST = (() => {
-    return Object.keys(APP_MAPPING).map(name => ({ name, ...APP_MAPPING[name] }));
-})();
+const APP_LIST = Object.keys(APP_MAPPING).map(name => ({ name, ...APP_MAPPING[name] }));
 
-export {
-    APP_LIST,
-    APPLICATION_MENU_GROUPS,
-};
+export { APP_LIST, APPLICATION_MENU_GROUPS };

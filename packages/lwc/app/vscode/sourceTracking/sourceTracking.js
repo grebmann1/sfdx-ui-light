@@ -14,10 +14,6 @@ async function ensureDir(vscode, absPath) {
     }
 }
 
-export function getSourceTrackingPath() {
-    return SOURCE_TRACKING_PATH;
-}
-
 export function pickRemoteStamp(rec) {
     const v = rec?.SystemModstamp || rec?.LastModifiedDate || rec?.LastModifieddate || null;
     if (!v) return null;

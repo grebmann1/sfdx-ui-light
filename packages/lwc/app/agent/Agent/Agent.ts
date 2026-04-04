@@ -116,6 +116,12 @@ type AgentSettings = {
     maxToolRounds?: number;
     isStoreEnabled?: boolean;
     isInternal?: boolean;
+    extraTools?: Array<{
+        name: string;
+        description?: string;
+        parameters?: unknown;
+        execute: (input: Record<string, unknown>) => Promise<unknown> | unknown;
+    }>;
     store: Store;
 };
 
@@ -142,7 +148,7 @@ async function resolveSkillsSection() {
     return cachedSkillsSection;
 }
 
-export function refreshSkillsCache() {
+function refreshSkillsCache() {
     cachedSkillsSection = null;
 }
 function toAiSdkTools(tools, extraContext = {}) {
@@ -195,12 +201,6 @@ function finalizeMessageForDisplay(message: ModelMessage): ModelMessage {
     });
     return { ...message, content: finalizedContent };
 }
-
-export function cleanupConversationRuntime(conversationId: string) {
-    cleanupBashInstanceForConversation(conversationId);
-    clearCdpHandlerForConversation(conversationId);
-}
-
 
 export class Agent {
     private static streamingMessageListenersByConversation = new Map(); // conversationId -> Set<callback>
@@ -289,7 +289,11 @@ export class Agent {
             execInSandbox: (code, timeoutMs) => cdpHandler.execInSandbox(code, timeoutMs),
         });
         const currentModel = settings.selectedModel || DEFAULT_MODEL;
-        const filteredTools = filterToolsByModel(bashTools, currentModel);
+        const availableTools = [
+            ...bashTools,
+            ...(Array.isArray(settings.extraTools) ? settings.extraTools : []),
+        ];
+        const filteredTools = filterToolsByModel(availableTools, currentModel);
         const aiTools = toAiSdkTools(filteredTools, { conversationId: id });
         const reasoningConfig = getReasoningConfigFromSelection(
             settings.selectedReasoning || DEFAULT_REASONING
@@ -345,6 +349,10 @@ export class Agent {
 
     get messageCount() {
         return this.messages.length;
+    }
+
+    getMessages() {
+        return [...this.messages];
     }
 
     get lastMessageRole() {

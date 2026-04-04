@@ -410,18 +410,19 @@ export default class Menu extends ToolkitElement {
     }
 
     get sections() {
-        const sel = this.selectedItem;
+        const hasActiveSelection = !this.isMenuSmall;
+        const sel = hasActiveSelection ? this.selectedItem : null;
         const toItem = x => ({
             name: x.path,
             label: x.menuLabel || x.label || '',
             iconName: x.menuIcon || x.quickActionIcon,
-            isSelected: x.path === sel,
+            isSelected: hasActiveSelection && x.path === sel,
             isLink: false,
         });
         const toChild = x => ({
             name: x.path,
             label: x.menuLabel || x.label || x.shortName || '',
-            isSelected: x.path === sel,
+            isSelected: hasActiveSelection && x.path === sel,
             isLink: false,
         });
         const toOtherItem = x => ({

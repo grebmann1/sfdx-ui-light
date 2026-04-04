@@ -21,24 +21,21 @@
         </div>
         <div class="slds-card__body slds-card__body_inner org-users-body">
             <div class="org-users-scroll slds-scrollable_y">
-                <div class="slds-grid slds-wrap slds-gutters_small org-users-grid">
-                    <div class={containerClass}>
-                        <slds-basic-stats
-                            title="Active Users (30 Days)"
-                            value={total_active}
-                            sub-value={total_active_30days}></slds-basic-stats>
+                <section class="org-users-panel" aria-label="User health overview">
+                    <div class="org-users-summary">
+                        <div class="org-users-summary-copy">
+                            <p class="org-users-eyebrow">User health</p>
+                            <h3 class="org-users-summary-title">{summaryHeadline}</h3>
+                            <p class="org-users-summary-text">{summaryDescription}</p>
+                        </div>
+                        <div class="org-users-summary-badges" aria-label="User summary highlights">
+                            <span class="org-users-badge org-users-badge-positive">
+                                {activityRateLabel}
+                            </span>
+                            <span class="org-users-badge">{growthLabel}</span>
+                        </div>
                     </div>
-                    <div class={containerClass}>
-                        <slds-basic-stats
-                            title="Total Users"
-                            value={total_users}></slds-basic-stats>
-                    </div>
-                    <div class={containerClass}>
-                        <slds-basic-stats
-                            title="Inactive Users"
-                            value={total_inactive}></slds-basic-stats>
-                    </div>
-                </div>
+                </section>
             </div>
         </div>
     </article>

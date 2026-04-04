@@ -21,7 +21,7 @@ import {
     saveSession,
 } from 'core/connector';
 /** Apps  **/
-import { APP_LIST } from './modules';
+import { APP_LIST } from 'core/applications';
 import SessionExpiredModal, { RESULT as SESSION_EXPIRED_RESULT } from 'skeleton/sessionExpiredModal';
 /** Helpers **/
 import { loadLimitedMode, loadFullMode } from './session';
@@ -35,7 +35,7 @@ import { store as legacyStore } from 'shared/store';
 
 const LIMITED = 'limited';
 
-export * as CONFIG from './modules';
+export * as CONFIG from 'core/applications';
 
 export default class App extends LightningElement {
     @wire(NavigationContext)
@@ -127,11 +127,17 @@ export default class App extends LightningElement {
     handleNavigation(pageRef) {
         this.targetPage = pageRef;
         if (!this.pageHasLoaded) return;
-        const { type, state } = pageRef;
+        const { type, state = {} } = pageRef || {};
         switch (type) {
             case 'home':
-            case 'application':
+                this.handleApplicationSelection(this.defaultLandingTarget);
+                break;
+            case 'application': {
                 const formattedApplicationName = (state.applicationName || '').toLowerCase();
+                if (!formattedApplicationName) {
+                    this.handleApplicationSelection(this.defaultLandingTarget);
+                    break;
+                }
                 if (formattedApplicationName === 'smartinput' && !this.betaSmartInputEnabled) {
                     this.handleApplicationSelection('home/app');
                     break;
@@ -143,6 +149,7 @@ export default class App extends LightningElement {
                     this.handleApplicationSelection('home/app');
                 }
                 break;
+            }
         }
     }
 
@@ -164,7 +171,7 @@ export default class App extends LightningElement {
             this.isCommandCheckFinished = true;
         }
         this.loadVersion();
-        this.initMode();
+        await this.initMode();
         this.initDragDrop();
     };
 
@@ -301,7 +308,9 @@ export default class App extends LightningElement {
             return;
         }
 
-        if (this.isUserLoggedIn && !url.startsWith('http')) {
+        const isAbsoluteUrl = /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(url) || url.startsWith('//');
+
+        if (this.isUserLoggedIn && !isAbsoluteUrl) {
             // to force refresh in case it's not valid anymore :
             await this.connector.conn.identity();
             url = `${this.connector.frontDoorUrl}&retURL=${encodeURI(url)}`;
@@ -597,6 +606,10 @@ export default class App extends LightningElement {
 
     get isUserLoggedIn() {
         return this._isLoggedIn;
+    }
+
+    get defaultLandingTarget() {
+        return this.isUserLoggedIn ? 'org/app' : 'home/app';
     }
 
     get menuClass() {

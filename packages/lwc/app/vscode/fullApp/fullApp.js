@@ -2,20 +2,36 @@ import { api, LightningElement, track } from 'lwc';
 import { initializeVscodeApiWithDefaults, LogLevel } from 'vscode/baseEditor';
 import { getVscodeBundle } from 'vscode/vscodeBundle';
 import { createToolingClient } from 'vscode/toolingApi';
-import { loadExtension as loadSfMetadataExtension, activate as activateSfMetadataExtension } from './extensions/metadata/extension.js';
-import { loadExtension as loadAgentScriptExtension, activate as activateAgentScriptExtension } from './extensions/agentscript/extension.js';
+import {
+    loadExtension as loadSfMetadataExtension,
+    activate as activateSfMetadataExtension,
+} from './extensions/metadata/extension.js';
+import {
+    loadExtension as loadAgentScriptExtension,
+    activate as activateAgentScriptExtension,
+} from './extensions/agentscript/extension.js';
+import { activate as activateWorkbenchAiExtension } from './extensions/ai/extension.js';
 import { getIndexedDbFileSystem } from 'core/fs';
 import { DEFAULT_WORKSPACE_ROOT } from './workbench/constants.js';
-import { buildUserConfiguration, buildWorkspaceConfig, preloadWorkbenchConfiguration } from './workbench/config.js';
+import {
+    buildUserConfiguration,
+    buildWorkspaceConfig,
+    preloadWorkbenchConfiguration,
+} from './workbench/config.js';
 import { createChromeExtensionWorkerFactory } from './workbench/workers.js';
+import { buildWorkspaceBootstrap } from './workbench/workspaceBootstrap.js';
 import { runDemoFeatures } from './workbench/demoFeatures.js';
 import { refreshSalesforceMetadataForApp } from './workbench/salesforceSync.js';
 import {
+    DEFAULT_SOURCE_API_VERSION,
+    normalizeSfApiVersion,
+    resolveWorkspaceApiVersion,
+} from './workbench/sfdxProject.js';
+import {
     clearActiveConnection,
-    connectUsingSharedConfiguration,
+    normalizeActiveConnection,
     persistActiveConnection,
     resolveStoredConnection,
-    toStoredConnectionFromConnector,
 } from './workbench/sharedConnection.js';
 import {
     clearUrlConnectionParams,
@@ -25,15 +41,9 @@ import {
 } from './workbench/activeConnection.js';
 import {
     disposeRegistrations,
-    ensureIndexedDbWritableFileClass,
-    hydrateWorkspaceFromIndexedDb,
     mkdirp,
-    registerFileNode,
-    registerLazyReadOnlyFile,
     registerSfLazyReadOnlyFile,
     registerSfTextFile,
-    registerTextFile,
-    resolveInitialIndexedDbText,
     seedWorkspaceFiles,
 } from './workbench/fsBridge.js';
 import {
@@ -43,6 +53,9 @@ import {
     sanitizePathSegment,
     STORAGE_KEYS,
 } from 'vscode/utils';
+
+const CHAT_MODEL_STORAGE_PREFIX = 'chat.currentLanguageModel.';
+const WORKBENCH_CHAT_MODEL_VENDOR = 'salesforce-workbench';
 
 export default class VscodeWorkbenchApp extends LightningElement {
     // static renderMode = 'light';
@@ -62,7 +75,7 @@ export default class VscodeWorkbenchApp extends LightningElement {
 
     @track sfInstanceUrl = '';
     @track sfAccessToken = '';
-    @track sfApiVersion = '63.0';
+    @track sfApiVersion = DEFAULT_SOURCE_API_VERSION;
     @track sfUseProxy = false;
     @track sfProxyUrl = 'http://localhost:3001';
     @track sfConnected = false;
@@ -78,6 +91,7 @@ export default class VscodeWorkbenchApp extends LightningElement {
     _vscodeBundle = null;
     _vscode = null;
     _globalKeydownDisposer = null;
+    _quickInputKeydownDisposer = null;
     _agentScriptLanguageClientWrapper = null;
     _workspaceRoot = DEFAULT_WORKSPACE_ROOT;
 
@@ -90,12 +104,19 @@ export default class VscodeWorkbenchApp extends LightningElement {
     _IndexedDbWritableFile = null;
     _LazyReadOnlyFile = null;
     _demoDisposables = [];
+    _workspaceBootstrap = null;
 
     connectedCallback() {
         const activeConnection = loadStoredConnection();
         try {
-            this.sfInstanceUrl = activeConnection.instanceUrl || localStorage.getItem(STORAGE_KEYS.instanceUrl) || '';
-            this.sfApiVersion = activeConnection.apiVersion || localStorage.getItem(STORAGE_KEYS.apiVersion) || '63.0';
+            this.sfInstanceUrl =
+                activeConnection.instanceUrl ||
+                localStorage.getItem(STORAGE_KEYS.instanceUrl) ||
+                '';
+            this.sfApiVersion = normalizeSfApiVersion(
+                activeConnection.apiVersion,
+                DEFAULT_SOURCE_API_VERSION
+            );
 
             const storedUseProxy = localStorage.getItem(STORAGE_KEYS.useProxy);
             if (storedUseProxy === null) {
@@ -113,15 +134,19 @@ export default class VscodeWorkbenchApp extends LightningElement {
         }
 
         try {
-            this.sfAccessToken = activeConnection.accessToken || sessionStorage.getItem(STORAGE_KEYS.accessToken) || '';
+            this.sfAccessToken =
+                activeConnection.accessToken ||
+                sessionStorage.getItem(STORAGE_KEYS.accessToken) ||
+                '';
         } catch {
             // ignore
         }
 
         this._workspaceRoot = activeConnection.instanceUrl
             ? this._normalizeWorkspaceRoot(
-                activeConnection.workspaceRoot || this._deriveConnectionWorkspaceRoot(activeConnection)
-            )
+                  activeConnection.workspaceRoot ||
+                      this._deriveConnectionWorkspaceRoot(activeConnection)
+              )
             : this._normalizeWorkspaceRoot(this.workspaceBasePath);
     }
 
@@ -132,6 +157,13 @@ export default class VscodeWorkbenchApp extends LightningElement {
             // ignore
         } finally {
             this._globalKeydownDisposer = null;
+        }
+        try {
+            this._quickInputKeydownDisposer?.dispose?.();
+        } catch {
+            // ignore
+        } finally {
+            this._quickInputKeydownDisposer = null;
         }
         try {
             this._agentScriptLanguageClientWrapper?.dispose?.();
@@ -164,93 +196,178 @@ export default class VscodeWorkbenchApp extends LightningElement {
 
     _deriveConnectionWorkspaceRoot(connection) {
         return this._normalizeWorkspaceRoot(
-            deriveWorkspaceRootFromConnection(connection, this.workspaceBasePath || DEFAULT_WORKSPACE_ROOT)
+            deriveWorkspaceRootFromConnection(
+                connection,
+                this.workspaceBasePath || DEFAULT_WORKSPACE_ROOT
+            )
         );
     }
 
-    async _fetchUserInfo({ instanceUrl, accessToken }) {
+    _buildDefaultWorkspaceBootstrap() {
+        const workspaceRoot = this._normalizeWorkspaceRoot(
+            this._workspaceRoot || this.workspaceBasePath
+        );
+        return {
+            workspaceRoot,
+            ensureDirectories: [
+                workspaceRoot,
+                `${workspaceRoot}/.vscode`,
+                `${workspaceRoot}/force-app/main/default`,
+                `${workspaceRoot}/.salesforce`,
+            ],
+            initialFiles: {},
+        };
+    }
+
+    _isUnsupportedPersistedChatModel(modelId) {
+        if (typeof modelId !== 'string') {
+            return false;
+        }
+        const normalized = modelId.trim();
+        if (!normalized || !normalized.includes('/')) {
+            return false;
+        }
+        const [vendor] = normalized.split('/');
+        return vendor && vendor !== WORKBENCH_CHAT_MODEL_VENDOR;
+    }
+
+    _clearUnsupportedPersistedChatModels(storage, storageName) {
+        if (!storage) {
+            return;
+        }
+        let keys = [];
         try {
-            const url = `${String(instanceUrl || '').replace(/\/+$/, '')}/services/oauth2/userinfo`;
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: { Authorization: `Bearer ${accessToken}` },
-            });
-            if (!response.ok) {
-                return null;
-            }
-            const body = await response.json().catch(() => null);
-            if (!body || typeof body !== 'object') {
-                return null;
-            }
-            return {
-                username: body?.preferred_username || body?.email || body?.username || '',
-                userId: body?.user_id || '',
-                orgId: body?.organization_id || '',
-            };
+            keys = Array.from({ length: storage.length }, (_, index) => storage.key(index)).filter(
+                Boolean
+            );
         } catch {
-            return null;
+            return;
+        }
+
+        for (const key of keys) {
+            if (
+                typeof key !== 'string' ||
+                !key.startsWith(CHAT_MODEL_STORAGE_PREFIX) ||
+                key.endsWith('.isDefault')
+            ) {
+                continue;
+            }
+            try {
+                const value = storage.getItem(key);
+                if (!this._isUnsupportedPersistedChatModel(value)) {
+                    continue;
+                }
+                storage.removeItem(key);
+                storage.removeItem(`${key}.isDefault`);
+                // eslint-disable-next-line no-console
+                console.warn(
+                    `[full-vscode][chat] cleared unsupported persisted model from ${storageName}`,
+                    key,
+                    value
+                );
+            } catch {
+                // ignore
+            }
         }
     }
 
-    async _validateBootstrapConnection(connection) {
+    _sanitizePersistedChatModelSelection() {
+        try {
+            this._clearUnsupportedPersistedChatModels(window.localStorage, 'localStorage');
+        } catch {
+            // ignore
+        }
+        try {
+            this._clearUnsupportedPersistedChatModels(window.sessionStorage, 'sessionStorage');
+        } catch {
+            // ignore
+        }
+    }
+
+    async _prepareWorkspaceBootstrap(connection) {
         if (!connection?.instanceUrl || !connection?.accessToken) {
-            return null;
+            this._workspaceBootstrap = this._buildDefaultWorkspaceBootstrap();
+            this._workspaceRoot = this._workspaceBootstrap.workspaceRoot;
+            return this._workspaceBootstrap;
         }
 
-        const client = createToolingClient({
-            instanceUrl: connection.instanceUrl,
-            accessToken: connection.accessToken,
-            apiVersion: connection.apiVersion || '63.0',
-            proxyUrl: this.sfUseProxy ? (this.sfProxyUrl?.trim() || window.location.origin) : undefined,
+        this._workspaceBootstrap = await buildWorkspaceBootstrap(
+            connection,
+            this.workspaceBasePath || DEFAULT_WORKSPACE_ROOT
+        );
+        this._workspaceRoot = this._normalizeWorkspaceRoot(this._workspaceBootstrap.workspaceRoot);
+        return this._workspaceBootstrap;
+    }
+
+    async _validateBootstrapConnection(connection) {
+        const nextConnection = await this._applyWorkspaceApiVersion(connection);
+        return await normalizeActiveConnection(nextConnection, {
+            proxyUrl: this.sfUseProxy
+                ? this.sfProxyUrl?.trim() || window.location.origin
+                : undefined,
+            workspaceBasePath: this.workspaceBasePath || DEFAULT_WORKSPACE_ROOT,
         });
+    }
 
-        await client.ping();
-        const userInfo =
-            !connection.username || !connection.userId || !connection.orgId
-                ? await this._fetchUserInfo({
-                    instanceUrl: client.instanceUrl,
-                    accessToken: connection.accessToken,
-                })
-                : null;
+    async _resolveWorkspaceApiVersion(
+        workspaceRoot = this._workspaceRoot,
+        fallback = this.sfApiVersion
+    ) {
+        const normalizedRoot = this._normalizeWorkspaceRoot(
+            workspaceRoot || this.workspaceBasePath
+        );
+        const fs =
+            this._appFs ||
+            getIndexedDbFileSystem({
+                ensureDirectories: [normalizedRoot],
+            });
+        await fs?.ready;
+        return await resolveWorkspaceApiVersion({
+            workspaceRoot: normalizedRoot,
+            fallback: normalizeSfApiVersion(fallback, DEFAULT_SOURCE_API_VERSION),
+            readFile: path => fs.readFile(path, 'utf8'),
+        });
+    }
 
+    async _applyWorkspaceApiVersion(connection) {
+        if (!connection) {
+            return null;
+        }
+        const workspaceRoot = this._normalizeWorkspaceRoot(
+            connection.workspaceRoot || this._deriveConnectionWorkspaceRoot(connection)
+        );
+        const apiVersion = await this._resolveWorkspaceApiVersion(
+            workspaceRoot,
+            connection.apiVersion || this.sfApiVersion
+        );
         return {
             ...connection,
-            instanceUrl: client.instanceUrl,
-            apiVersion: client.apiVersion,
-            username: connection.username || userInfo?.username || '',
-            userId: connection.userId || userInfo?.userId || '',
-            orgId: connection.orgId || userInfo?.orgId || '',
-            workspaceRoot: connection.workspaceRoot || this._deriveConnectionWorkspaceRoot(connection),
+            workspaceRoot,
+            apiVersion,
         };
+    }
+
+    async _syncAppApiVersionFromWorkspace(
+        workspaceRoot = this._workspaceRoot,
+        fallback = this.sfApiVersion
+    ) {
+        this.sfApiVersion = await this._resolveWorkspaceApiVersion(workspaceRoot, fallback);
+        return this.sfApiVersion;
     }
 
     async _resolveBootstrapConnectionFromProps() {
         const alias = String(this.alias || '').trim();
         if (alias) {
-            const connector = await connectUsingSharedConfiguration({
-                alias,
-                credentialType: 'OAUTH',
-            }).catch(() => null);
-            if (connector) {
-                const stored = toStoredConnectionFromConnector(connector, {
+            const resolved = await resolveStoredConnection(
+                {
                     sharedAlias: alias,
-                    workspaceRoot: this._deriveConnectionWorkspaceRoot({
-                        username: connector?.configuration?.username,
-                        instanceUrl: connector?.conn?.instanceUrl || connector?.configuration?.instanceUrl,
-                        orgId: connector?.configuration?.orgId,
-                    }),
-                });
-                if (stored.instanceUrl && stored.accessToken) {
-                    return stored;
+                },
+                {
+                    persist: false,
                 }
-            }
-
-            const resolved = await resolveStoredConnection({
-                sharedAlias: alias,
-                workspaceRoot: this._deriveConnectionWorkspaceRoot({ username: alias }),
-            }).catch(() => null);
+            ).catch(() => null);
             if (resolved?.instanceUrl && resolved?.accessToken) {
-                return resolved;
+                return await this._validateBootstrapConnection(resolved);
             }
         }
 
@@ -260,13 +377,13 @@ export default class VscodeWorkbenchApp extends LightningElement {
             return await this._validateBootstrapConnection({
                 instanceUrl: serverUrl,
                 accessToken: sessionId,
-                apiVersion: this.sfApiVersion || '63.0',
+                apiVersion: normalizeSfApiVersion(this.sfApiVersion, DEFAULT_SOURCE_API_VERSION),
                 authType: 'session',
                 sharedAlias: '',
                 username: '',
                 userId: '',
                 orgId: '',
-                workspaceRoot: this._deriveConnectionWorkspaceRoot({ instanceUrl: serverUrl }),
+                workspaceRoot: '',
             });
         }
 
@@ -279,7 +396,10 @@ export default class VscodeWorkbenchApp extends LightningElement {
         }
         this.sfInstanceUrl = connection.instanceUrl;
         this.sfAccessToken = connection.accessToken;
-        this.sfApiVersion = connection.apiVersion || '63.0';
+        this.sfApiVersion = normalizeSfApiVersion(
+            connection.apiVersion,
+            DEFAULT_SOURCE_API_VERSION
+        );
         this.sfConnected = true;
         this.sfError = null;
         this._workspaceRoot = this._normalizeWorkspaceRoot(
@@ -291,7 +411,7 @@ export default class VscodeWorkbenchApp extends LightningElement {
         if (!this._isChromeExtension) return;
         if (this._globalKeydownDisposer) return;
 
-        const handler = (e) => {
+        const handler = e => {
             try {
                 if (!e) return;
                 const key = String(e.key || '').toLowerCase();
@@ -321,13 +441,65 @@ export default class VscodeWorkbenchApp extends LightningElement {
         };
     }
 
+    _getDeepActiveElement(root = document) {
+        let activeElement = root?.activeElement;
+        while (activeElement?.shadowRoot?.activeElement) {
+            activeElement = activeElement.shadowRoot.activeElement;
+        }
+        return activeElement;
+    }
+
+    _installQuickInputEnterWorkaround() {
+        if (this._quickInputKeydownDisposer) return;
+
+        const handler = e => {
+            try {
+                if (!e || e.defaultPrevented || e.isComposing) return;
+                if (e.key !== 'Enter') return;
+                if (e.altKey || e.ctrlKey || e.metaKey) return;
+
+                const activeElement = this._getDeepActiveElement();
+                if (!(activeElement instanceof HTMLElement)) return;
+
+                const quickInputWidget = activeElement.closest?.('.quick-input-widget');
+                const isQuickInputTextField =
+                    activeElement.matches?.('input, textarea') ||
+                    activeElement.getAttribute?.('role') === 'textbox';
+
+                if (!quickInputWidget || !isQuickInputTextField) return;
+
+                // Monaco's embedded quick input can lose the Enter keybinding to the
+                // underlying find input control. Route Enter back to quickInput.accept.
+                e.preventDefault();
+                e.stopPropagation();
+                void this._vscode?.commands?.executeCommand?.('quickInput.accept');
+            } catch {
+                // ignore
+            }
+        };
+
+        window.addEventListener('keydown', handler, true);
+        this._quickInputKeydownDisposer = {
+            dispose: () => {
+                try {
+                    window.removeEventListener('keydown', handler, true);
+                } catch {
+                    // ignore
+                }
+            },
+        };
+    }
+
     async _initializeAgentScriptSupport(vscodeBundle) {
         try {
-            const LanguageClientWrapper = vscodeBundle?.monacoLanguageClient?.LanguageClient?.LanguageClientWrapper;
+            const LanguageClientWrapper =
+                vscodeBundle?.monacoLanguageClient?.LanguageClient?.LanguageClientWrapper;
             if (LanguageClientWrapper && !this._agentScriptLanguageClientWrapper) {
                 const { languageClientConfig } = await activateAgentScriptExtension(vscodeBundle);
                 if (languageClientConfig) {
-                    this._agentScriptLanguageClientWrapper = new LanguageClientWrapper(languageClientConfig);
+                    this._agentScriptLanguageClientWrapper = new LanguageClientWrapper(
+                        languageClientConfig
+                    );
                     await this._agentScriptLanguageClientWrapper.start();
                 }
             }
@@ -337,7 +509,9 @@ export default class VscodeWorkbenchApp extends LightningElement {
         }
 
         try {
-            const extension = vscodeBundle?.vscode?.extensions?.getExtension?.('salesforce.agentscript-extension');
+            const extension = vscodeBundle?.vscode?.extensions?.getExtension?.(
+                'salesforce.agentscript-extension'
+            );
             await extension?.activate?.();
         } catch (e) {
             // eslint-disable-next-line no-console
@@ -347,39 +521,66 @@ export default class VscodeWorkbenchApp extends LightningElement {
 
     async _startWorkbench() {
         try {
-            this._workspaceRoot = this._normalizeWorkspaceRoot(this.workspaceBasePath);
+            this._workspaceRoot = this._normalizeWorkspaceRoot(
+                this._workspaceRoot || this.workspaceBasePath
+            );
+            await this._syncAppApiVersionFromWorkspace(this._workspaceRoot, this.sfApiVersion);
+            this._workspaceBootstrap = this._buildDefaultWorkspaceBootstrap();
             const isChromeExtension = Boolean(globalThis?.chrome?.runtime?.id);
             this._isChromeExtension = isChromeExtension;
+            let activeConnection = null;
 
             const urlConnection = parseUrlConnectionParams();
             if (urlConnection) {
                 try {
-                    const validatedUrlConnection = await this._validateBootstrapConnection(urlConnection);
+                    const validatedUrlConnection =
+                        await this._validateBootstrapConnection(urlConnection);
                     await persistActiveConnection(validatedUrlConnection);
                     this._applyActiveConnection(validatedUrlConnection);
+                    activeConnection = validatedUrlConnection;
                 } catch (e) {
-                    this.sfError = e?.message || 'Failed to validate URL-provided Salesforce connection.';
+                    this.sfError =
+                        e?.message || 'Failed to validate URL-provided Salesforce connection.';
                     await clearActiveConnection();
                 } finally {
                     clearUrlConnectionParams();
                 }
             } else {
-                const propConnection = await this._resolveBootstrapConnectionFromProps().catch(() => null);
+                const propConnection = await this._resolveBootstrapConnectionFromProps().catch(
+                    () => null
+                );
                 if (propConnection?.instanceUrl && propConnection?.accessToken) {
                     await persistActiveConnection(propConnection);
                     this._applyActiveConnection(propConnection);
+                    activeConnection = propConnection;
                 } else {
                     const storedConnection = loadStoredConnection();
-                    if (storedConnection.sharedAlias || (storedConnection.instanceUrl && storedConnection.accessToken)) {
-                        const resolvedConnection = await resolveStoredConnection(storedConnection).catch(() => storedConnection);
+                    if (
+                        storedConnection.sharedAlias ||
+                        (storedConnection.instanceUrl && storedConnection.accessToken)
+                    ) {
+                        const resolvedConnection = await resolveStoredConnection(
+                            storedConnection
+                        ).catch(() => storedConnection);
                         if (resolvedConnection.instanceUrl && resolvedConnection.accessToken) {
-                            this._applyActiveConnection(resolvedConnection);
+                            const validatedStoredConnection =
+                                await this._validateBootstrapConnection(resolvedConnection).catch(
+                                    () => resolvedConnection
+                                );
+                            await persistActiveConnection(validatedStoredConnection);
+                            this._applyActiveConnection(validatedStoredConnection);
+                            activeConnection = validatedStoredConnection;
                         }
                     }
                 }
             }
 
-            if ((!this.sfInstanceUrl || !this.sfAccessToken) && isChromeExtension && this.sourceTabId && chrome?.runtime?.sendMessage) {
+            if (
+                (!this.sfInstanceUrl || !this.sfAccessToken) &&
+                isChromeExtension &&
+                this.sourceTabId &&
+                chrome?.runtime?.sendMessage
+            ) {
                 const tabId = Number(this.sourceTabId);
                 if (Number.isFinite(tabId)) {
                     try {
@@ -393,7 +594,7 @@ export default class VscodeWorkbenchApp extends LightningElement {
                             this.sfInstanceUrl = serverUrl;
                             this.sfAccessToken = sessionId;
                             this.sfUseProxy = false;
-                            await this.handleConnect();
+                            activeConnection = await this.handleConnect();
                         } else if (cookieInfo?.error) {
                             this.sfError = cookieInfo.error;
                         }
@@ -402,6 +603,12 @@ export default class VscodeWorkbenchApp extends LightningElement {
                     }
                 }
             }
+
+            await this._prepareWorkspaceBootstrap(
+                activeConnection?.instanceUrl && activeConnection?.accessToken
+                    ? activeConnection
+                    : null
+            );
 
             const host = this.template.querySelector('.workbench-host');
             if (!host) {
@@ -421,6 +628,20 @@ export default class VscodeWorkbenchApp extends LightningElement {
             this._workbenchContainerEl = workbenchEl;
 
             await this._seedWorkspaceFiles();
+            await this._syncAppApiVersionFromWorkspace(
+                this._workspaceRoot,
+                activeConnection?.apiVersion || this.sfApiVersion
+            );
+            if (activeConnection?.instanceUrl && activeConnection?.accessToken) {
+                const syncedConnection = {
+                    ...activeConnection,
+                    workspaceRoot: this._workspaceRoot,
+                    apiVersion: this.sfApiVersion,
+                };
+                await persistActiveConnection(syncedConnection);
+                this._applyActiveConnection(syncedConnection);
+                activeConnection = syncedConnection;
+            }
 
             const [sfMetadataExtension, agentScriptExtension] = await Promise.all([
                 loadSfMetadataExtension(),
@@ -428,6 +649,9 @@ export default class VscodeWorkbenchApp extends LightningElement {
             ]);
             const userConfiguration = buildUserConfiguration(isChromeExtension);
             const vscodeBundle = await getVscodeBundle();
+            this._vscodeBundle = vscodeBundle;
+            this._vscode = vscodeBundle?.vscode ?? null;
+            this._sanitizePersistedChatModelSelection();
             await preloadWorkbenchConfiguration(vscodeBundle, userConfiguration);
 
             await initializeVscodeApiWithDefaults({
@@ -437,53 +661,55 @@ export default class VscodeWorkbenchApp extends LightningElement {
                         $type: 'WorkbenchService',
                         htmlContainer: this._workbenchContainerEl,
                     },
-                    ...(isChromeExtension ? { monacoWorkerFactory: createChromeExtensionWorkerFactory(vscodeBundle) } : {}),
+                    ...(isChromeExtension
+                        ? { monacoWorkerFactory: createChromeExtensionWorkerFactory(vscodeBundle) }
+                        : {}),
                     advanced: {
                         loadThemes: true,
                         enableExtHostWorker: false,
                         terminal: null,
                         ...(isChromeExtension
                             ? {
-                                workbenchFeatures: {
-                                    terminal: false,
-                                    scm: true,
-                                    extensions: true,
-                                    extensionGallery: true,
-                                    testing: true,
-                                    debug: true,
-                                    ai: true,
-                                    chat: true,
-                                    notebook: true,
-                                    welcome: true,
-                                    walkthrough: true,
-                                    task: true,
-                                    comments: true,
-                                    editSessions: true,
-                                    emmet: true,
-                                    interactive: true,
-                                    issue: true,
-                                    multiDiffEditor: true,
-                                    performance: true,
-                                    relauncher: true,
-                                    share: true,
-                                    speech: true,
-                                    survey: true,
-                                    update: true,
-                                    outline: true,
-                                    timeline: true,
-                                    viewBanner: true,
-                                    snippets: true,
-                                    keybindings: true,
-                                    remoteAgent: true,
-                                    localization: true,
-                                    telemetry: true,
-                                    mcp: false,
-                                    processExplorer: true,
-                                    imageResize: true,
-                                    assignment: true,
-                                    treeSitter: true,
-                                },
-                            }
+                                  workbenchFeatures: {
+                                      terminal: false,
+                                      scm: true,
+                                      extensions: true,
+                                      extensionGallery: true,
+                                      testing: true,
+                                      debug: true,
+                                      ai: true,
+                                      chat: true,
+                                      notebook: true,
+                                      welcome: true,
+                                      walkthrough: true,
+                                      task: true,
+                                      comments: true,
+                                      editSessions: true,
+                                      emmet: true,
+                                      interactive: true,
+                                      issue: true,
+                                      multiDiffEditor: true,
+                                      performance: true,
+                                      relauncher: true,
+                                      share: true,
+                                      speech: true,
+                                      survey: true,
+                                      update: true,
+                                      outline: true,
+                                      timeline: true,
+                                      viewBanner: true,
+                                      snippets: true,
+                                      keybindings: true,
+                                      remoteAgent: true,
+                                      localization: true,
+                                      telemetry: true,
+                                      mcp: true,
+                                      processExplorer: true,
+                                      imageResize: true,
+                                      assignment: true,
+                                      treeSitter: true,
+                                  },
+                              }
                             : {}),
                     },
                     workspaceConfig: await buildWorkspaceConfig(
@@ -500,11 +726,16 @@ export default class VscodeWorkbenchApp extends LightningElement {
                 caller: 'VscodeWorkbenchApp._startWorkbench',
             });
 
-            await activateSfMetadataExtension(await getVscodeBundle());
-            await activateAgentScriptExtension(await getVscodeBundle());
+            await activateSfMetadataExtension(vscodeBundle);
+            await activateAgentScriptExtension(vscodeBundle);
+            const workbenchAiExtension = await activateWorkbenchAiExtension(vscodeBundle);
+            if (workbenchAiExtension?.dispose) {
+                this._demoDisposables.push(workbenchAiExtension);
+            }
 
             //await this._openReadme();
             await this._runDemoFeatures();
+            this._installQuickInputEnterWorkaround();
             if (isChromeExtension) {
                 this._installSaveKeybindingWorkaround();
             }
@@ -535,10 +766,6 @@ export default class VscodeWorkbenchApp extends LightningElement {
         }
     }
 
-    _registerSfFileNode(node) {
-        return registerFileNode(this, node, '_sfRegistrations');
-    }
-
     async _registerSfTextFile(path, text, options = {}) {
         return registerSfTextFile(this, path, text, options, encodeUtf8);
     }
@@ -548,11 +775,15 @@ export default class VscodeWorkbenchApp extends LightningElement {
     }
 
     async _seedWorkspaceFiles() {
+        const workspaceBootstrap =
+            this._workspaceBootstrap || this._buildDefaultWorkspaceBootstrap();
         await seedWorkspaceFiles(this, {
             getVscodeBundle,
             getIndexedDbFileSystem,
             encodeUtf8,
-            workspaceRoot: this._workspaceRoot,
+            ensureDirectories: workspaceBootstrap.ensureDirectories,
+            initialFiles: workspaceBootstrap.initialFiles,
+            workspaceRoot: workspaceBootstrap.workspaceRoot,
         });
     }
 
@@ -565,7 +796,9 @@ export default class VscodeWorkbenchApp extends LightningElement {
                 const last = this.sfLastRefreshAt ? ` • refreshed ${this.sfLastRefreshAt}` : '';
                 return `Connected: ${url.host}${last}`;
             } catch {
-                return this.sfLastRefreshAt ? `Connected • refreshed ${this.sfLastRefreshAt}` : 'Connected';
+                return this.sfLastRefreshAt
+                    ? `Connected • refreshed ${this.sfLastRefreshAt}`
+                    : 'Connected';
             }
         }
         return 'Not connected';
@@ -576,10 +809,12 @@ export default class VscodeWorkbenchApp extends LightningElement {
     }
 
     get connectDisabled() {
-        return this.sfConnecting
-            || this.sfRefreshing
-            || !this.sfInstanceUrl?.trim()
-            || !this.sfAccessToken?.trim();
+        return (
+            this.sfConnecting ||
+            this.sfRefreshing ||
+            !this.sfInstanceUrl?.trim() ||
+            !this.sfAccessToken?.trim()
+        );
     }
 
     get refreshDisabled() {
@@ -596,10 +831,6 @@ export default class VscodeWorkbenchApp extends LightningElement {
 
     handleAccessTokenInput(event) {
         this.sfAccessToken = event?.target?.value ?? '';
-    }
-
-    handleApiVersionInput(event) {
-        this.sfApiVersion = event?.target?.value ?? '';
     }
 
     handleUseProxyToggle(event) {
@@ -634,44 +865,32 @@ export default class VscodeWorkbenchApp extends LightningElement {
         this.sfConnecting = true;
         this.sfConnected = false;
         try {
-            const effectiveProxyUrl = this.sfUseProxy
-                ? (this.sfProxyUrl?.trim() || window.location.origin)
-                : undefined;
-            const client = createToolingClient({
+            await this._syncAppApiVersionFromWorkspace(this._workspaceRoot, this.sfApiVersion);
+            const activeConnection = await this._validateBootstrapConnection({
                 instanceUrl: this.sfInstanceUrl,
-                accessToken: this.sfAccessToken,
                 apiVersion: this.sfApiVersion,
-                proxyUrl: effectiveProxyUrl,
-            });
-
-            await client.ping();
-
-            // Normalize fields after successful connect (e.g. ensure https:// and no trailing slash).
-            this.sfInstanceUrl = client.instanceUrl;
-            this.sfApiVersion = client.apiVersion;
-            const userInfo = await this._fetchUserInfo({
-                instanceUrl: client.instanceUrl,
-                accessToken: this.sfAccessToken,
-            });
-
-            const activeConnection = {
-                instanceUrl: client.instanceUrl,
-                apiVersion: client.apiVersion,
                 accessToken: this.sfAccessToken,
                 authType: 'manual',
                 sharedAlias: '',
-                username: userInfo?.username || '',
-                userId: userInfo?.userId || '',
-                orgId: userInfo?.orgId || '',
+                username: '',
+                userId: '',
+                orgId: '',
                 oauthConnectionId: '',
-                workspaceRoot: this._workspaceRoot,
-            };
+            });
+            const requiresReload =
+                this.vscodeInitialized && activeConnection.workspaceRoot !== this._workspaceRoot;
             await persistActiveConnection(activeConnection);
+            this._applyActiveConnection(activeConnection);
+            await this._prepareWorkspaceBootstrap(activeConnection);
+
+            if (requiresReload) {
+                window.location.reload();
+                return;
+            }
 
             this.sfConnected = true;
             try {
                 localStorage.setItem(STORAGE_KEYS.instanceUrl, this.sfInstanceUrl);
-                localStorage.setItem(STORAGE_KEYS.apiVersion, this.sfApiVersion);
                 localStorage.setItem(STORAGE_KEYS.useProxy, String(this.sfUseProxy));
                 localStorage.setItem(STORAGE_KEYS.proxyUrl, this.sfProxyUrl);
                 localStorage.setItem(STORAGE_KEYS.panelCollapsed, String(this.sfPanelCollapsed));
@@ -683,9 +902,11 @@ export default class VscodeWorkbenchApp extends LightningElement {
             } catch {
                 // ignore
             }
+            return activeConnection;
         } catch (e) {
             this.sfError = e?.message || 'Failed to connect to Salesforce.';
             this.sfConnected = false;
+            return null;
         } finally {
             this.sfConnecting = false;
         }
@@ -743,6 +964,7 @@ export default class VscodeWorkbenchApp extends LightningElement {
             mapWithConcurrency,
             sanitizePathSegment,
             auraFilename,
+            mkdirp,
         });
     }
 
@@ -775,6 +997,4 @@ export default class VscodeWorkbenchApp extends LightningElement {
     async _runDemoFeatures() {
         await runDemoFeatures(this, getVscodeBundle);
     }
-
 }
-

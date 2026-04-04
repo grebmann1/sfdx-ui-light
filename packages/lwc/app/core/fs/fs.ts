@@ -156,6 +156,12 @@ export function getIndexedDbFileSystem(options: IndexedDbFsOptions = {}) {
         existing.registerInitialFiles(initialFiles).catch(() => {});
     }
 
+    if (ensureDirectories && ensureDirectories.length > 0) {
+        for (const dir of ensureDirectories) {
+            existing.mkdir(dir, { recursive: true }).catch(() => {});
+        }
+    }
+
     return existing;
 }
 
