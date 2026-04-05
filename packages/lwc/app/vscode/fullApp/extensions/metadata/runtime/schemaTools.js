@@ -1,8 +1,8 @@
-import { restoreCachedFilesToWorkspace, writeTextFile } from '../core/workspaceCache.js';
+import { writeTextFile } from '../core/workspaceCache.js';
 import { getWorkspaceUri } from '../core/workspacePaths.js';
 
 export async function registerSchemaTools({ connectionRuntime, context }) {
-    const { diagnostics, vscode, vscodeBundle } = context;
+    const { vscode, vscodeBundle } = context;
     const schemaCacheUri = getWorkspaceUri(vscode, '.salesforce/schema-cache.json');
     const schemaTtlMs = 24 * 60 * 60 * 1000;
     let schemaCacheMem = null;
@@ -138,7 +138,12 @@ export async function registerSchemaTools({ connectionRuntime, context }) {
         );
     }
 
-    async function lintLwcDocument(doc) {
+    async function lintLwcDocument() {
+        /*
+        Disabled for now. The web workbench runtime does not currently have a
+        reliable LWC lint execution path, so keep the exported hook as a no-op
+        to avoid breaking deploy/source-tracking integrations that call it.
+
         if (!diagnostics.lwc || !doc || !isLwcDoc(doc)) return;
         const text = doc.getText?.() ?? '';
         const body = JSON.stringify({
@@ -172,6 +177,7 @@ export async function registerSchemaTools({ connectionRuntime, context }) {
             return nextDiagnostic;
         });
         diagnostics.lwc.set(doc.uri, diagnosticsList);
+        */
     }
 
     const register = (command, handler) =>
@@ -473,12 +479,6 @@ export async function registerSchemaTools({ connectionRuntime, context }) {
                 // ignore
             }
         }
-    }
-
-    try {
-        void restoreCachedFilesToWorkspace(vscode);
-    } catch {
-        // ignore
     }
 
     try {

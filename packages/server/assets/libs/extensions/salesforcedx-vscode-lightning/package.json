@@ -1,0 +1,42 @@
+{
+  "name": "salesforcedx-vscode-lightning",
+  "displayName": "Aura Components",
+  "description": "Provides browser-hosted grammar and language registration for Aura Components.",
+  "version": "66.4.4",
+  "publisher": "salesforce",
+  "license": "BSD-3-Clause",
+  "icon": "./images/VSCodeLightning.png",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "browser": "./dist/web/index.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "html",
+        "extensions": [
+          ".app",
+          ".cmp",
+          ".design",
+          ".evt",
+          ".intf",
+          ".auradoc",
+          ".tokens"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "html",
+        "path": "./syntaxes/html.tmLanguage.json",
+        "scopeName": "aura.html"
+      }
+    ]
+  }
+}

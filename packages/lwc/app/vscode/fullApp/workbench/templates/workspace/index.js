@@ -1,6 +1,11 @@
 export const DEFAULT_SOURCE_API_VERSION = '66.0';
 
 export const WORKSPACE_TEMPLATE_FILES = {
+    '.vscode/extensions.json': `{
+  "recommendations": [],
+  "unwantedRecommendations": []
+}
+`,
     'sfdx-project.json': `{
   "packageDirectories": [
     {
@@ -14,9 +19,20 @@ export const WORKSPACE_TEMPLATE_FILES = {
   "sourceApiVersion": "${DEFAULT_SOURCE_API_VERSION}"
 }
 `,
-    'README.md': `# Salesforce DX Project: Next Steps
+    'README.md': `# Salesforce Workbench: Getting Started
 
-Now that you've created a Salesforce DX project, what's next? Here are some documentation resources to get you started.
+Welcome to the embedded Salesforce workbench. This is a lightweight version of VS Code focused on browser-based Salesforce workflows.
+
+## Before You Start
+
+Review the org banner above the workbench so you know whether you are working in production, a sandbox, or an unclassified org context.
+
+## What This Workspace Can Do
+
+- Explore and sync Salesforce metadata into the Explorer
+- Edit project files directly in the browser
+- Run focused Salesforce commands from the command palette
+- Use the built-in agent to help inspect, explain, and update workspace files
 
 ## How Do You Plan to Deploy Your Changes?
 

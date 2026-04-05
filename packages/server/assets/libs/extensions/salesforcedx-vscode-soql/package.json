@@ -1,0 +1,55 @@
+{
+  "name": "salesforcedx-vscode-soql",
+  "displayName": "SOQL",
+  "description": "Provides code-editing features for SOQL",
+  "version": "66.4.4",
+  "publisher": "salesforce",
+  "license": "BSD-3-Clause",
+  "icon": "./images/VSCodeSoql.png",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "extensionDependencies": [
+    "salesforce.salesforcedx-vscode-services"
+  ],
+  "activationEvents": [
+    "onLanguage:soql",
+    "onFileSystem:memfs"
+  ],
+  "browser": "./dist/web/index.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "soql",
+        "aliases": [
+          "soql",
+          "SOQL"
+        ],
+        "extensions": [
+          ".soql"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "soql",
+        "scopeName": "source.soql",
+        "path": "./grammars/soql.tmLanguage"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "SOQL",
+      "properties": {
+        "salesforcedx-vscode-soql.experimental.validateQueries": {
+          "type": "boolean",
+          "default": false,
+          "description": "Validate LIMIT 0 queries against the connected org when the host provides query services."
+        }
+      }
+    }
+  }
+}

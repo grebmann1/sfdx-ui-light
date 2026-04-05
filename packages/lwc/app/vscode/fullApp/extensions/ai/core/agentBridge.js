@@ -1,40 +1,17 @@
-import { Agent } from 'agent/Agent';
-import { sharedInstructions } from 'agent/agents';
 import {
-    createUserModelMessage,
-    MODELS,
-    DEFAULT_MODEL,
-    DEFAULT_REASONING,
-} from 'agent/utils';
-import { store } from 'core/store';
-import { CACHE_CONFIG, loadExtensionConfigFromCache } from 'shared/cacheManager';
-import { guid } from 'shared/utils';
+    CHAT_PARTICIPANT_ID,
+    MAX_INLINE_TEXT_CHARS,
+    MAX_TOOL_STATUS_CHARS,
+    MODEL_FAMILY,
+    MODEL_ID,
+    MODEL_NAME,
+    MODEL_VENDOR,
+    THINKING_PROGRESS_ID,
+} from '../constants.js';
+import { createWorkbenchBashTools } from '../tools/bashTools.js';
+import { createWorkspaceFileTools } from '../tools/vscodeFileTools.js';
 
-const MAX_INLINE_TEXT_CHARS = 24000;
-const MODEL_VENDOR = 'salesforce-workbench';
-const MODEL_ID = 'workbench-agent';
-const MODEL_FAMILY = 'salesforce-workbench-agent';
-const MODEL_NAME = 'Workbench Agent';
-
-const WORKBENCH_AGENT_INSTRUCTIONS = `${sharedInstructions}
-
-## Embedded VS Code Workbench
-
-You are operating inside an embedded VS Code workbench with access to the workspace file system.
-
-- Prefer the existing workspace coding tools (\`readFile\`, \`writeFile\`, \`bash\`) for multi-file work.
-- Use \`getActiveEditorContext\` when you need the latest active file path, selection, or current editor text.
-- Use \`applyActiveEditorEdit\` for precise edits to the file currently open in the editor.
-- Prefer targeted edits over broad rewrites.
-- If a user asks you to update the current file, inspect the active editor context before editing unless the prompt already includes the exact code span you need.
-- Keep responses concise and practical for coding tasks.
-`;
-
-const conversationIdsByKey = new Map();
-const conversationMessagesById = new Map();
-const SUPPORTED_RUNTIME_MODEL_IDS = new Set(
-    (Array.isArray(MODELS) ? MODELS : []).map(model => model?.value).filter(Boolean)
-);
+import { createWorkbenchAgentRequest, formatWorkbenchRuntimeError } from './agentRuntime.js';
 
 function truncateText(text, maxChars = MAX_INLINE_TEXT_CHARS) {
     const value = typeof text === 'string' ? text : String(text ?? '');
@@ -51,18 +28,6 @@ function stringifyUri(uri) {
 
 function normalizePrompt(value) {
     return typeof value === 'string' ? value.trim() : '';
-}
-
-function getOrCreateConversationId(key, shouldReset = false) {
-    if (shouldReset || !conversationIdsByKey.has(key)) {
-        const previousId = conversationIdsByKey.get(key);
-        const nextId = guid();
-        conversationIdsByKey.set(key, nextId);
-        if (shouldReset && previousId) {
-            conversationMessagesById.delete(previousId);
-        }
-    }
-    return conversationIdsByKey.get(key);
 }
 
 function getActiveEditor(vscode) {
@@ -259,6 +224,8 @@ function createEditorTools(vscode) {
                 if (!editor?.document) {
                     return {
                         isError: true,
+                        applied: false,
+                        saved: false,
                         text: 'No active editor is currently open.',
                     };
                 }
@@ -270,89 +237,117 @@ function createEditorTools(vscode) {
                 if (!applied) {
                     return {
                         isError: true,
+                        applied: false,
+                        saved: false,
                         text: `VS Code rejected the edit for ${stringifyUri(editor.document.uri)}.`,
                     };
                 }
 
+                let saved = false;
+                let saveError = null;
                 try {
-                    await editor.document.save?.();
-                } catch {
-                    // Best effort only.
+                    saved = (await editor.document.save?.()) === true;
+                } catch (error) {
+                    saveError = error instanceof Error ? error.message : String(error);
                 }
 
                 return {
                     isError: false,
+                    applied: true,
+                    saved,
+                    saveError,
                     path: stringifyUri(editor.document.uri),
-                    text: `Applied edit to ${stringifyUri(editor.document.uri)}.`,
+                    text:
+                        saveError || !saved
+                            ? `Applied an edit to ${stringifyUri(editor.document.uri)}, but VS Code did not confirm a save.${saveError ? ` ${saveError}` : ''}`
+                            : `Applied an edit to ${stringifyUri(editor.document.uri)} and saved the file.`,
                 };
             },
+            shouldConfirm: () => true,
+            buildConfirmation: vscodeApi => ({
+                title: vscodeApi.l10n.t('Apply editor edit'),
+                message: new vscodeApi.MarkdownString(
+                    'AI wants to update the active editor using `applyActiveEditorEdit`.'
+                ),
+            }),
         },
     ];
 }
 
-function resolveAgentRuntimeModelId(modelId, state) {
-    const requestedModelId = typeof modelId === 'string' ? modelId.trim() : '';
-    if (requestedModelId && SUPPORTED_RUNTIME_MODEL_IDS.has(requestedModelId)) {
-        return requestedModelId;
-    }
-    return state.agent?.selectedModel || DEFAULT_MODEL;
+function createWorkbenchTools(vscode) {
+    return [
+        ...createEditorTools(vscode),
+        ...createWorkspaceFileTools(vscode),
+        ...createWorkbenchBashTools(),
+    ];
 }
 
-async function createAgentSettings(vscode, modelId) {
-    const state = store.getState();
-    const cachedConfig = await loadExtensionConfigFromCache([
-        CACHE_CONFIG.OPENAI_KEY.key,
-        CACHE_CONFIG.OPENAI_URL.key,
-    ]).catch(() => ({}));
-    const cachedOpenaiKey = cachedConfig?.[CACHE_CONFIG.OPENAI_KEY.key];
-    const cachedOpenaiUrl = cachedConfig?.[CACHE_CONFIG.OPENAI_URL.key];
-    const openaiKey =
-        typeof cachedOpenaiKey === 'string' && cachedOpenaiKey.trim()
-            ? cachedOpenaiKey
-            : state.application?.openaiKey ?? '';
-    const openaiUrl =
-        typeof cachedOpenaiUrl === 'string' && cachedOpenaiUrl.trim()
-            ? cachedOpenaiUrl
-            : state.application?.openaiUrl;
-    const isInternal =
-        typeof openaiUrl === 'string' && openaiUrl
-            ? openaiUrl.includes('eng-ai-model-gateway')
-            : state.application?.isInternal;
-
-    return {
-        openaiKey,
-        openaiUrl,
-        isInternal,
-        selectedModel: resolveAgentRuntimeModelId(modelId, state),
-        selectedReasoning: state.agent?.selectedReasoning ?? DEFAULT_REASONING,
-        systemPrompt: WORKBENCH_AGENT_INSTRUCTIONS,
-        isStoreEnabled: false,
-        extraTools: createEditorTools(vscode),
-        store,
-    };
+function compactToolStatusText(value, maxChars = MAX_TOOL_STATUS_CHARS) {
+    return truncateText(
+        String(value ?? '')
+            .replace(/\s+/g, ' ')
+            .trim(),
+        maxChars
+    );
 }
 
-function reportToolCall(onText, toolCalls) {
-    if (typeof onText !== 'function' || !Array.isArray(toolCalls) || toolCalls.length === 0) {
-        return;
-    }
-    for (const toolCall of toolCalls) {
-        const toolName = toolCall?.toolName || 'tool';
-        onText(`\n\n_Using tool: \`${toolName}\`_`);
-    }
-}
+function summarizeToolResult(toolResult) {
+    const structuredResult =
+        toolResult?.type === 'json' && toolResult?.value && typeof toolResult.value === 'object'
+            ? toolResult.value
+            : null;
 
-function reportToolResult(onText, toolCall, toolResult) {
-    if (typeof onText !== 'function') {
-        return;
+    if (structuredResult?.isError) {
+        return {
+            status: 'failed',
+            details: compactToolStatusText(
+                structuredResult.error || structuredResult.text || 'The tool reported an error.'
+            ),
+        };
     }
-    const toolName = toolCall?.toolName || 'tool';
+
     const value =
+        structuredResult?.text ||
         toolResult?.value ||
         toolResult?.text ||
-        (toolResult?.type === 'json' ? JSON.stringify(toolResult.value) : '');
-    const summary = truncateText(typeof value === 'string' ? value : String(value ?? ''), 4000);
-    onText(`\n\n_Tool \`${toolName}\` finished._\n\n${summary}`);
+        (toolResult?.type === 'json' ? JSON.stringify(toolResult.value ?? '') : '');
+    const summary = compactToolStatusText(value);
+    if (!summary) {
+        return { status: 'completed', details: '' };
+    }
+    if (/^(unable to|error:)/i.test(summary)) {
+        return {
+            status: 'failed',
+            details: summary.replace(/^error:\s*/i, ''),
+        };
+    }
+    return { status: 'completed', details: summary };
+}
+
+function formatToolResultMessage(toolCall, toolResult) {
+    const toolName = toolCall?.toolName || 'tool';
+    const { status, details } = summarizeToolResult(toolResult);
+    if (!details) {
+        return `\n\nTool ${toolName} ${status}.`;
+    }
+    return `\n\nTool ${toolName} ${status}: ${details}`;
+}
+
+function formatLanguageModelToolResult(result) {
+    if (result && typeof result === 'object' && typeof result.text === 'string' && result.text) {
+        return result.text;
+    }
+    if (typeof result === 'string') {
+        return result;
+    }
+    if (result === null || result === undefined) {
+        return '';
+    }
+    try {
+        return JSON.stringify(result, null, 2);
+    } catch {
+        return String(result);
+    }
 }
 
 function attachCancellation(token, agent) {
@@ -408,6 +403,17 @@ function extractTextContent(value) {
     return '';
 }
 
+function isWorkbenchLanguageModel(model) {
+    if (!model || typeof model !== 'object') {
+        return false;
+    }
+    return model.id === MODEL_ID || model.family === MODEL_FAMILY || model.name === MODEL_NAME;
+}
+
+function formatErrorForDisplay(error, fallback = 'The request failed.') {
+    return formatWorkbenchRuntimeError(error).message || fallback;
+}
+
 async function runAgentRequest({
     vscode,
     vscodeApi,
@@ -421,50 +427,142 @@ async function runAgentRequest({
     token,
     source,
 }) {
-    const conversationId = getOrCreateConversationId(conversationKey, resetConversation);
-    const previousMessages = conversationMessagesById.get(conversationId) || [];
-    const activeEditorContext = buildActiveEditorContext(vscode);
-    const referencedFiles = await collectReferencedFiles(vscode, vscodeApi, references);
-    const promptText = buildPromptText({
+    const promptText = await buildWorkbenchPromptText({
+        vscode,
+        vscodeApi,
         prompt,
-        activeEditorContext,
-        referencedFiles,
+        references,
         source,
     });
 
-    const agent = await Agent.create({
-        messages: previousMessages,
-        conversationId,
-        settings: await createAgentSettings(vscode, modelId),
+    const agentRequest = await createWorkbenchAgentRequest({
+        conversationKey,
+        resetConversation,
+        modelId,
+        promptText,
+        tools: createWorkbenchTools(vscode),
     });
 
-    const disposeCancellation = attachCancellation(token, agent);
+    const disposeCancellation = attachCancellation(token, agentRequest);
     try {
-        const userMessages = [createUserModelMessage({ text: promptText, filesData: [] })];
-        for await (const chunk of agent.processMessage(userMessages)) {
+        for await (const chunk of agentRequest.stream()) {
             if (chunk.type === 'content' && typeof onText === 'function') {
                 onText(chunk.content);
             } else if (chunk.type === 'reasoning' && typeof onThinking === 'function') {
                 onThinking(chunk.content);
-            } else if (chunk.type === 'tool_calls') {
-                reportToolCall(onText, chunk.toolCalls);
             } else if (chunk.type === 'tool_result') {
-                reportToolResult(onText, chunk.toolCall, chunk.toolResult);
+                if (typeof onText === 'function') {
+                    onText(formatToolResultMessage(chunk.toolCall, chunk.toolResult));
+                }
             } else if (chunk.type === 'error' && typeof onText === 'function') {
                 onText(`\n\n${chunk.content}`);
             }
         }
     } finally {
-        conversationMessagesById.set(conversationId, agent.getMessages());
         disposeCancellation();
     }
 }
 
+async function buildWorkbenchPromptText({
+    vscode,
+    vscodeApi,
+    prompt,
+    references = [],
+    source = 'chat',
+}) {
+    const activeEditorContext = buildActiveEditorContext(vscode);
+    const referencedFiles = await collectReferencedFiles(vscode, vscodeApi, references);
+    return buildPromptText({
+        prompt,
+        activeEditorContext,
+        referencedFiles,
+        source,
+    });
+}
+
+async function relayLanguageModelResponseToChat({
+    vscodeApi,
+    request,
+    response,
+    modelResponse,
+    token,
+}) {
+    if (!modelResponse?.stream || typeof response?.markdown !== 'function') {
+        return;
+    }
+
+    for await (const part of modelResponse.stream) {
+        if (part instanceof vscodeApi.LanguageModelTextPart) {
+            response.markdown(part.value);
+            continue;
+        }
+        if (part instanceof vscodeApi.LanguageModelThinkingPart) {
+            response.thinkingProgress({
+                id: part.id,
+                text: part.value,
+                metadata: part.metadata,
+            });
+            continue;
+        }
+        if (part instanceof vscodeApi.LanguageModelToolCallPart) {
+            await vscodeApi.lm.invokeTool(
+                part.name,
+                {
+                    toolInvocationToken: request?.toolInvocationToken,
+                    input: part.input,
+                },
+                token
+            );
+            response.markdown(`\n\nTool ${part.name} completed.`);
+        }
+    }
+}
+
+function createChatResponseHandlers(response) {
+    return {
+        onText(text) {
+            if (text) {
+                response.markdown(text);
+            }
+        },
+        onThinking(text) {
+            if (text) {
+                response.thinkingProgress({
+                    id: THINKING_PROGRESS_ID,
+                    text,
+                    metadata: { source: 'workbench-agent' },
+                });
+            }
+        },
+    };
+}
+
+function createProviderResponseHandlers(vscode, progress) {
+    return {
+        onText(text) {
+            if (text) {
+                progress.report(new vscode.LanguageModelTextPart(text));
+            }
+        },
+        onThinking(text) {
+            if (text) {
+                progress.report(new vscode.LanguageModelThinkingPart(text, THINKING_PROGRESS_ID));
+            }
+        },
+    };
+}
+
 export function createWorkbenchAgentBridge(vscodeBundle, vscodeApi) {
     const vscode = vscodeBundle?.vscode;
+    const forwardAgentRequest = async requestPayload =>
+        runAgentRequest({
+            vscode,
+            vscodeApi,
+            ...requestPayload,
+        });
 
     return {
-        participantId: 'salesforce.workbench.agent',
+        participantId: CHAT_PARTICIPANT_ID,
         modelVendor: MODEL_VENDOR,
         modelId: MODEL_ID,
         createModelInfo() {
@@ -484,9 +582,7 @@ export function createWorkbenchAgentBridge(vscodeBundle, vscodeApi) {
         },
         async handleChatRequest(request, context, response, token) {
             const historyLength = Array.isArray(context?.history) ? context.history.length : 0;
-            await runAgentRequest({
-                vscode,
-                vscodeApi,
+            const requestPayload = {
                 prompt: request?.prompt || '',
                 modelId: request?.model?.id,
                 conversationKey: 'chat-participant',
@@ -494,75 +590,109 @@ export function createWorkbenchAgentBridge(vscodeBundle, vscodeApi) {
                 references: request?.references || [],
                 token,
                 source: 'vscode-chat-participant',
-                onText: text => {
-                    if (text) {
-                        response.markdown(text);
-                    }
-                },
-                onThinking: text => {
-                    if (text) {
-                        response.thinkingProgress({
-                            id: 'workbench-agent-thinking',
-                            text,
-                            metadata: { source: 'workbench-agent' },
-                        });
-                    }
-                },
+                ...createChatResponseHandlers(response),
+            };
+            console.log('[workbench-agent] handleChatRequest payload', {
+                prompt: requestPayload.prompt,
+                modelId: requestPayload.modelId,
+                conversationKey: requestPayload.conversationKey,
+                resetConversation: requestPayload.resetConversation,
+                referencesCount: Array.isArray(requestPayload.references)
+                    ? requestPayload.references.length
+                    : 0,
+                historyLength,
+                source: requestPayload.source,
             });
+            await forwardAgentRequest(requestPayload);
+        },
+        async handleChatRequestViaModel(request, response, token) {
+            if (
+                !request?.model?.sendRequest ||
+                isWorkbenchLanguageModel(request.model) ||
+                !vscodeApi?.LanguageModelChatMessage?.User ||
+                !response
+            ) {
+                return false;
+            }
+
+            try {
+                const promptText = await buildWorkbenchPromptText({
+                    vscode,
+                    vscodeApi,
+                    prompt: request?.prompt || '',
+                    references: request?.references || [],
+                    source: 'vscode-chat-participant',
+                });
+                const modelResponse = await request.model.sendRequest(
+                    [vscodeApi.LanguageModelChatMessage.User(promptText)],
+                    {},
+                    token
+                );
+                await relayLanguageModelResponseToChat({
+                    vscodeApi,
+                    request,
+                    response,
+                    modelResponse,
+                    token,
+                });
+                return true;
+            } catch (error) {
+                response.markdown(formatErrorForDisplay(error));
+                return true;
+            }
         },
         async handleProviderRequest(model, messages, progress, token) {
-            await runAgentRequest({
-                vscode,
-                vscodeApi,
+            const requestPayload = {
                 prompt: buildProviderPrompt(messages),
                 modelId: model?.id || MODEL_ID,
                 conversationKey: `provider:${model?.id || MODEL_ID}`,
                 resetConversation: true,
                 token,
                 source: 'vscode-language-model-provider',
-                onText: text => {
-                    if (text) {
-                        progress.report(new vscode.LanguageModelTextPart(text));
-                    }
-                },
-                onThinking: text => {
-                    if (text) {
-                        progress.report(
-                            new vscode.LanguageModelThinkingPart(text, 'workbench-agent-thinking')
-                        );
-                    }
-                },
+                ...createProviderResponseHandlers(vscode, progress),
+            };
+            console.log('[workbench-agent] handleProviderRequest payload', {
+                prompt: requestPayload.prompt,
+                modelId: requestPayload.modelId,
+                conversationKey: requestPayload.conversationKey,
+                resetConversation: requestPayload.resetConversation,
+                messagesCount: Array.isArray(messages) ? messages.length : 0,
+                source: requestPayload.source,
             });
+            await forwardAgentRequest(requestPayload);
         },
         async provideTokenCount(_model, value) {
             const text = typeof value === 'string' ? value : buildProviderPrompt([value]);
             return Math.ceil(String(text || '').length / 4);
         },
         createRegisteredTools() {
-            return createEditorTools(vscode).map(tool => ({
+            return createWorkbenchTools(vscode).map(tool => ({
                 definition: tool,
                 createInstance() {
                     return {
                         async invoke(options) {
                             const result = await tool.execute(options?.input || {});
                             return new vscode.LanguageModelToolResult([
-                                new vscode.LanguageModelTextPart(result?.text || ''),
+                                new vscode.LanguageModelTextPart(
+                                    formatLanguageModelToolResult(result)
+                                ),
                             ]);
                         },
-                        async prepareInvocation() {
+                        async prepareInvocation(options) {
+                            let confirmationMessages;
+                            if (typeof tool.prepareInvocation === 'function') {
+                                confirmationMessages = await tool.prepareInvocation(options);
+                            } else if (
+                                typeof tool.buildConfirmation === 'function' &&
+                                tool.shouldConfirm?.(options)
+                            ) {
+                                confirmationMessages = tool.buildConfirmation(vscode, options);
+                            }
                             return {
                                 invocationMessage: new vscode.MarkdownString(
                                     `Running \`${tool.name}\``
                                 ),
-                                confirmationMessages:
-                                    tool.name === 'applyActiveEditorEdit'
-                                        ? {
-                                              title: vscode.l10n.t('Apply editor edit'),
-                                              message: new vscode.MarkdownString(
-                                                  `AI wants to update the active editor using \`${tool.name}\`.`
-                                              ),
-                                          }
-                                        : undefined,
+                                confirmationMessages,
                             };
                         },
                     };

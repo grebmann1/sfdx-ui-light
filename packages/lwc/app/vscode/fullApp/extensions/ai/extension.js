@@ -1,59 +1,17 @@
-import { createWorkbenchAgentBridge } from '../../workbench/agentBridge.js';
-
-const CHAT_PARTICIPANT_ID = 'salesforce.workbench.agent';
-const MODEL_VENDOR = 'salesforce-workbench';
+import {
+    ACTIVE_EDITOR_TOOL_DEFINITIONS,
+    AI_EXTENSION_API_PROPOSALS,
+    CHAT_PARTICIPANT_ID,
+    MODEL_VENDOR,
+} from './constants.js';
+import { createWorkbenchAgentBridge } from './core/agentBridge.js';
+import { WORKBENCH_BASH_TOOL_DEFINITIONS } from './tools/bashTools.js';
+import { VSCODE_FILE_TOOL_DEFINITIONS } from './tools/vscodeFileTools.js';
 
 const TOOL_DEFINITIONS = [
-    {
-        name: 'getActiveEditorContext',
-        toolReferenceName: 'getActiveEditorContext',
-        displayName: 'Get Active Editor Context',
-        userDescription: 'Read the active editor path, selection, and text snapshot.',
-        modelDescription: 'Use this tool to inspect the current active VS Code editor context.',
-        canBeReferencedInPrompt: true,
-        inputSchema: {
-            type: 'object',
-            properties: {
-                includeFullText: {
-                    type: 'boolean',
-                },
-            },
-            additionalProperties: false,
-        },
-    },
-    {
-        name: 'applyActiveEditorEdit',
-        toolReferenceName: 'applyActiveEditorEdit',
-        displayName: 'Apply Active Editor Edit',
-        userDescription: 'Apply a text edit to the current active editor.',
-        modelDescription: 'Use this tool to update the active VS Code editor.',
-        canBeReferencedInPrompt: true,
-        inputSchema: {
-            type: 'object',
-            properties: {
-                content: {
-                    type: 'string',
-                },
-                replaceSelection: {
-                    type: 'boolean',
-                },
-                startLine: {
-                    type: 'number',
-                },
-                startCharacter: {
-                    type: 'number',
-                },
-                endLine: {
-                    type: 'number',
-                },
-                endCharacter: {
-                    type: 'number',
-                },
-            },
-            required: ['content'],
-            additionalProperties: false,
-        },
-    },
+    ...ACTIVE_EDITOR_TOOL_DEFINITIONS,
+    ...WORKBENCH_BASH_TOOL_DEFINITIONS,
+    ...VSCODE_FILE_TOOL_DEFINITIONS,
 ];
 
 const config = {
@@ -73,7 +31,7 @@ const config = {
                 fullName: 'Workbench Agent',
                 name: 'workbench-agent',
                 isDefault: true,
-                modes: ['agent'],
+                modes: ['ask', 'edit', 'agent'],
                 locations: ['panel', 'editor', 'terminal'],
             },
         ],
@@ -85,16 +43,7 @@ const config = {
         ],
         languageModelTools: TOOL_DEFINITIONS,
     },
-    enabledApiProposals: [
-        'aiRelatedInformation',
-        'mappedEditsProvider',
-        'chatSessionsProvider',
-        'defaultChatParticipant',
-        'chatParticipantAdditions',
-        'chatParticipantPrivate',
-        'languageModelThinkingPart',
-        'chatProvider',
-    ],
+    enabledApiProposals: AI_EXTENSION_API_PROPOSALS,
 };
 
 export async function activate(vscodeBundle) {
@@ -142,7 +91,14 @@ export async function activate(vscodeBundle) {
         vscodeApi.chat.createChatParticipant(
             CHAT_PARTICIPANT_ID,
             async (request, context, response, token) => {
-                await bridge.handleChatRequest(request, context, response, token);
+                const handledViaModel = await bridge.handleChatRequestViaModel(
+                    request,
+                    response,
+                    token
+                );
+                if (!handledViaModel) {
+                    await bridge.handleChatRequest(request, context, response, token);
+                }
             }
         )
     );

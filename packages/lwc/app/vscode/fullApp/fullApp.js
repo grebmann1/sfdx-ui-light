@@ -1,4 +1,5 @@
-import { api, LightningElement, track } from 'lwc';
+import { api, track } from 'lwc';
+import ToolkitElement from 'core/toolkitElement';
 import { initializeVscodeApiWithDefaults, LogLevel } from 'vscode/baseEditor';
 import { getVscodeBundle } from 'vscode/vscodeBundle';
 import { createToolingClient } from 'vscode/toolingApi';
@@ -20,6 +21,7 @@ import {
 } from './workbench/config.js';
 import { createChromeExtensionWorkerFactory } from './workbench/workers.js';
 import { buildWorkspaceBootstrap } from './workbench/workspaceBootstrap.js';
+import { createWorkbenchFilesService } from './workbench/workbenchFileService.js';
 import { runDemoFeatures } from './workbench/demoFeatures.js';
 import { refreshSalesforceMetadataForApp } from './workbench/salesforceSync.js';
 import {
@@ -40,24 +42,21 @@ import {
     parseUrlConnectionParams,
 } from './workbench/activeConnection.js';
 import {
-    disposeRegistrations,
-    mkdirp,
-    registerSfLazyReadOnlyFile,
-    registerSfTextFile,
-    seedWorkspaceFiles,
-} from './workbench/fsBridge.js';
+    clearCurrentConnectionProvider,
+    setCurrentConnectionProvider,
+} from './workbench/currentConnection.js';
+import { seedWorkspaceFiles } from './workbench/fsBridge.js';
+import { buildOrgContext } from './workbench/orgContext.js';
 import {
-    auraFilename,
-    encodeUtf8,
-    mapWithConcurrency,
-    sanitizePathSegment,
-    STORAGE_KEYS,
-} from 'vscode/utils';
+    METADATA_WALKTHROUGH_FULL_ID,
+    OPEN_ONBOARDING_COMMAND,
+} from './extensions/metadata/constants.js';
+import { STORAGE_KEYS } from 'vscode/utils';
 
 const CHAT_MODEL_STORAGE_PREFIX = 'chat.currentLanguageModel.';
-const WORKBENCH_CHAT_MODEL_VENDOR = 'salesforce-workbench';
+const WORKBENCH_CHAT_MODEL_VENDOR = 'copilot';
 
-export default class VscodeWorkbenchApp extends LightningElement {
+export default class VscodeWorkbenchApp extends ToolkitElement {
     // static renderMode = 'light';
 
     @api alias;
@@ -84,6 +83,7 @@ export default class VscodeWorkbenchApp extends LightningElement {
     @track sfError = null;
     @track sfLastRefreshAt = null;
     @track sfPanelCollapsed = false;
+    @track orgContext = buildOrgContext();
 
     _started = false;
     _isChromeExtension = false;
@@ -95,24 +95,20 @@ export default class VscodeWorkbenchApp extends LightningElement {
     _agentScriptLanguageClientWrapper = null;
     _workspaceRoot = DEFAULT_WORKSPACE_ROOT;
 
-    _fsw = null;
+    _workbenchFilesService = null;
     _fsProvider = null;
     _fsOverlayDisposable = null;
-    _fsRegistrations = [];
-    _sfRegistrations = [];
     _appFs = null;
-    _IndexedDbWritableFile = null;
-    _LazyReadOnlyFile = null;
     _demoDisposables = [];
     _workspaceBootstrap = null;
+    _currentConnectionProvider = null;
 
     connectedCallback() {
         const activeConnection = loadStoredConnection();
+        this._currentConnectionProvider = () => this._buildCurrentConnection();
+        setCurrentConnectionProvider(this._currentConnectionProvider);
         try {
-            this.sfInstanceUrl =
-                activeConnection.instanceUrl ||
-                localStorage.getItem(STORAGE_KEYS.instanceUrl) ||
-                '';
+            this.sfInstanceUrl = activeConnection.instanceUrl || '';
             this.sfApiVersion = normalizeSfApiVersion(
                 activeConnection.apiVersion,
                 DEFAULT_SOURCE_API_VERSION
@@ -134,10 +130,7 @@ export default class VscodeWorkbenchApp extends LightningElement {
         }
 
         try {
-            this.sfAccessToken =
-                activeConnection.accessToken ||
-                sessionStorage.getItem(STORAGE_KEYS.accessToken) ||
-                '';
+            this.sfAccessToken = activeConnection.accessToken || '';
         } catch {
             // ignore
         }
@@ -148,9 +141,12 @@ export default class VscodeWorkbenchApp extends LightningElement {
                       this._deriveConnectionWorkspaceRoot(activeConnection)
               )
             : this._normalizeWorkspaceRoot(this.workspaceBasePath);
+        this.orgContext = buildOrgContext(activeConnection);
     }
 
     disconnectedCallback() {
+        clearCurrentConnectionProvider(this._currentConnectionProvider);
+        this._currentConnectionProvider = null;
         try {
             this._globalKeydownDisposer?.dispose?.();
         } catch {
@@ -177,6 +173,21 @@ export default class VscodeWorkbenchApp extends LightningElement {
         } catch {
             // ignore
         }
+        try {
+            this._fsOverlayDisposable?.dispose?.();
+        } catch {
+            // ignore
+        } finally {
+            this._fsOverlayDisposable = null;
+        }
+        try {
+            this._fsProvider?.dispose?.();
+        } catch {
+            // ignore
+        } finally {
+            this._fsProvider = null;
+        }
+        this._workbenchFilesService = null;
     }
 
     renderedCallback() {
@@ -390,6 +401,24 @@ export default class VscodeWorkbenchApp extends LightningElement {
         return null;
     }
 
+    _buildCurrentConnection() {
+        return {
+            instanceUrl: String(this.sfInstanceUrl || '').trim(),
+            apiVersion: normalizeSfApiVersion(this.sfApiVersion, DEFAULT_SOURCE_API_VERSION),
+            accessToken: String(this.sfAccessToken || '').trim(),
+            authType: this.orgContext?.sharedAlias ? 'oauth' : 'manual',
+            sharedAlias: this.orgContext?.sharedAlias || '',
+            oauthConnectionId: '',
+            username: this.orgContext?.username || '',
+            userId: '',
+            orgId: this.orgContext?.orgId || '',
+            organizationName: this.orgContext?.organizationName || '',
+            organizationType: this.orgContext?.organizationType || '',
+            isSandbox: this.orgContext?.isSandbox,
+            workspaceRoot: this._workspaceRoot || '',
+        };
+    }
+
     _applyActiveConnection(connection) {
         if (!connection?.instanceUrl || !connection?.accessToken) {
             return;
@@ -405,6 +434,33 @@ export default class VscodeWorkbenchApp extends LightningElement {
         this._workspaceRoot = this._normalizeWorkspaceRoot(
             connection.workspaceRoot || this._deriveConnectionWorkspaceRoot(connection)
         );
+        this.orgContext = buildOrgContext(connection);
+    }
+
+    async _openInitialWalkthrough() {
+        const commands = this._vscode?.commands;
+        if (typeof commands?.executeCommand !== 'function' || !METADATA_WALKTHROUGH_FULL_ID) {
+            return;
+        }
+
+        let lastError = null;
+        for (let attempt = 0; attempt < 6; attempt += 1) {
+            try {
+                const waitMs = attempt === 0 ? 0 : 250 * attempt;
+                if (waitMs > 0) {
+                    await new Promise(resolve => window.setTimeout(resolve, waitMs));
+                }
+                await commands.executeCommand(OPEN_ONBOARDING_COMMAND);
+                return;
+            } catch (error) {
+                lastError = error;
+            }
+        }
+
+        if (lastError) {
+            // eslint-disable-next-line no-console
+            console.warn('Failed to open onboarding walkthrough:', lastError);
+        }
     }
 
     _installSaveKeybindingWorkaround() {
@@ -525,7 +581,6 @@ export default class VscodeWorkbenchApp extends LightningElement {
                 this._workspaceRoot || this.workspaceBasePath
             );
             await this._syncAppApiVersionFromWorkspace(this._workspaceRoot, this.sfApiVersion);
-            this._workspaceBootstrap = this._buildDefaultWorkspaceBootstrap();
             const isChromeExtension = Boolean(globalThis?.chrome?.runtime?.id);
             this._isChromeExtension = isChromeExtension;
             let activeConnection = null;
@@ -644,13 +699,14 @@ export default class VscodeWorkbenchApp extends LightningElement {
             }
 
             const [sfMetadataExtension, agentScriptExtension] = await Promise.all([
-                loadSfMetadataExtension(),
+                loadSfMetadataExtension({ orgContext: this.orgContext }),
                 loadAgentScriptExtension(),
             ]);
             const userConfiguration = buildUserConfiguration(isChromeExtension);
             const vscodeBundle = await getVscodeBundle();
             this._vscodeBundle = vscodeBundle;
             this._vscode = vscodeBundle?.vscode ?? null;
+            const workbenchFilesService = this._ensureWorkbenchFilesService(vscodeBundle);
             this._sanitizePersistedChatModelSelection();
             await preloadWorkbenchConfiguration(vscodeBundle, userConfiguration);
 
@@ -721,6 +777,7 @@ export default class VscodeWorkbenchApp extends LightningElement {
                         json: JSON.stringify(userConfiguration),
                     },
                     extensions: [sfMetadataExtension, agentScriptExtension],
+                    serviceOverrides: workbenchFilesService?.getServiceOverrides(),
                 },
                 logLevel: LogLevel.Info,
                 caller: 'VscodeWorkbenchApp._startWorkbench',
@@ -733,14 +790,16 @@ export default class VscodeWorkbenchApp extends LightningElement {
                 this._demoDisposables.push(workbenchAiExtension);
             }
 
-            //await this._openReadme();
             await this._runDemoFeatures();
+            this.vscodeInitialized = true;
+            await new Promise(resolve =>
+                window.requestAnimationFrame(() => window.requestAnimationFrame(resolve))
+            );
+            await this._openInitialWalkthrough();
             this._installQuickInputEnterWorkaround();
             if (isChromeExtension) {
                 this._installSaveKeybindingWorkaround();
             }
-
-            this.vscodeInitialized = true;
         } catch (error) {
             // eslint-disable-next-line no-console
             console.error('Failed to initialize VSCode workbench:', error);
@@ -748,10 +807,6 @@ export default class VscodeWorkbenchApp extends LightningElement {
                 error?.message ||
                 (typeof error === 'string' ? error : 'Failed to initialize VSCode workbench');
         }
-    }
-
-    _disposeSfRegistrations() {
-        disposeRegistrations(this, '_sfRegistrations');
     }
 
     _disposeDemoRegistrations() {
@@ -766,25 +821,38 @@ export default class VscodeWorkbenchApp extends LightningElement {
         }
     }
 
-    async _registerSfTextFile(path, text, options = {}) {
-        return registerSfTextFile(this, path, text, options, encodeUtf8);
-    }
-
-    _registerSfLazyReadOnlyFile(path, read) {
-        return registerSfLazyReadOnlyFile(this, path, read, encodeUtf8);
-    }
-
     async _seedWorkspaceFiles() {
         const workspaceBootstrap =
             this._workspaceBootstrap || this._buildDefaultWorkspaceBootstrap();
         await seedWorkspaceFiles(this, {
             getVscodeBundle,
             getIndexedDbFileSystem,
-            encodeUtf8,
             ensureDirectories: workspaceBootstrap.ensureDirectories,
             initialFiles: workspaceBootstrap.initialFiles,
             workspaceRoot: workspaceBootstrap.workspaceRoot,
         });
+    }
+
+    _ensureWorkbenchFilesService(vscodeBundle = this._vscodeBundle) {
+        if (
+            this._workbenchFilesService &&
+            this._workbenchFilesService.workspaceRoot === this._workspaceRoot
+        ) {
+            return this._workbenchFilesService;
+        }
+
+        const bundle = vscodeBundle || this._vscodeBundle;
+        const vscode = bundle?.vscode ?? this._vscode;
+        if (!bundle || !vscode) {
+            return null;
+        }
+
+        this._workbenchFilesService = createWorkbenchFilesService({
+            vscodeBundle: bundle,
+            vscode,
+            workspaceRoot: this._workspaceRoot,
+        });
+        return this._workbenchFilesService;
     }
 
     get sfStatusText() {
@@ -806,6 +874,31 @@ export default class VscodeWorkbenchApp extends LightningElement {
 
     get sfPanelChevron() {
         return this.sfPanelCollapsed ? '▸' : '▾';
+    }
+
+    get showOrgBanner() {
+        return Boolean(this.orgContext?.hasConnection);
+    }
+
+    get orgBannerClass() {
+        const tone = this.orgContext?.tone || 'neutral';
+        return `orgBanner orgBanner${tone.charAt(0).toUpperCase()}${tone.slice(1)}`;
+    }
+
+    get orgBannerTitle() {
+        return this.orgContext?.bannerTitle || 'Welcome to Salesforce.';
+    }
+
+    get orgBannerMessage() {
+        return this.orgContext?.bannerMessage || '';
+    }
+
+    get orgBannerEnvironmentLabel() {
+        return this.orgContext?.environmentLabel || '';
+    }
+
+    get orgBannerHost() {
+        return this.orgContext?.host || '';
     }
 
     get connectDisabled() {
@@ -890,15 +983,9 @@ export default class VscodeWorkbenchApp extends LightningElement {
 
             this.sfConnected = true;
             try {
-                localStorage.setItem(STORAGE_KEYS.instanceUrl, this.sfInstanceUrl);
                 localStorage.setItem(STORAGE_KEYS.useProxy, String(this.sfUseProxy));
                 localStorage.setItem(STORAGE_KEYS.proxyUrl, this.sfProxyUrl);
                 localStorage.setItem(STORAGE_KEYS.panelCollapsed, String(this.sfPanelCollapsed));
-            } catch {
-                // ignore
-            }
-            try {
-                sessionStorage.setItem(STORAGE_KEYS.accessToken, this.sfAccessToken);
             } catch {
                 // ignore
             }
@@ -949,50 +1036,17 @@ export default class VscodeWorkbenchApp extends LightningElement {
         this.sfError = null;
         this.sfLastRefreshAt = null;
         this._workspaceRoot = this._normalizeWorkspaceRoot(this.workspaceBasePath);
-        try {
-            sessionStorage.removeItem(STORAGE_KEYS.accessToken);
-        } catch {
-            // ignore
-        }
+        this.orgContext = buildOrgContext();
         void clearActiveConnection();
         this.sfAccessToken = '';
+        this.sfInstanceUrl = '';
     }
 
     async refreshSalesforceMetadata() {
         await refreshSalesforceMetadataForApp(this, {
             createToolingClient,
-            mapWithConcurrency,
-            sanitizePathSegment,
-            auraFilename,
-            mkdirp,
         });
     }
-
-    /* async _openReadme() {
-        const vscodeBundle = await getVscodeBundle();
-        const vscode = vscodeBundle.vscode;
-        const createModelReference = vscodeBundle.createModelReference;
-
-        const uri = vscode.Uri.file(getReadmeUri(this._workspaceRoot));
-
-        // Ensure the file exists in the virtual FS and a VSCode model is created.
-        const modelRef = await createModelReference(uri, README_TEXT);
-
-        // Prefer showing the doc in the workbench editor.
-        try {
-            const doc = await vscode.workspace.openTextDocument(uri);
-            if (vscode.window?.showTextDocument) {
-                await vscode.window.showTextDocument(doc, { preview: false });
-            }
-        } catch (e) {
-            // Fallback: at least ensure it exists and has content; the workbench may open it later.
-            // eslint-disable-next-line no-console
-            console.warn('Unable to show README via VSCode APIs, leaving it created:', e);
-        }
-
-        // Avoid leaking the model reference; the workbench/editor services keep their own refs.
-        modelRef?.dispose?.();
-    } */
 
     async _runDemoFeatures() {
         await runDemoFeatures(this, getVscodeBundle);

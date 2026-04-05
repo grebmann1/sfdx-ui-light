@@ -7,6 +7,10 @@ import {
     loadStoredConnection,
 } from '../../../workbench/activeConnection.js';
 import {
+    getCurrentConnection,
+    hasCurrentConnectionProvider,
+} from '../../../workbench/currentConnection.js';
+import {
     DEFAULT_SOURCE_API_VERSION,
     normalizeSfApiVersion,
     resolveWorkspaceApiVersionFromVscode,
@@ -24,6 +28,8 @@ import {
     toStoredConnectionFromConnector,
 } from '../../../workbench/sharedConnection.js';
 import { getWorkspaceRootPath, getWorkspaceUri } from '../core/workspacePaths.js';
+
+import { pickStartupConnectionCandidate } from './startupConnection.js';
 
 let workspaceVscode = null;
 
@@ -157,7 +163,54 @@ async function withToolingClientAuthed(conn, fn) {
     }
 }
 
+async function normalizeAndSaveConnection(connectionRuntime, vscode, connection) {
+    const isChromeExtension = connectionRuntime.isChromeExtensionEnv();
+    const normalized = await normalizeActiveConnection(connection, {
+        proxyUrl: isChromeExtension ? undefined : window.location.origin,
+        workspaceBasePath: getWorkspaceRootPath(vscode),
+    });
+    if (!normalized?.instanceUrl || !normalized?.accessToken) {
+        throw new Error('Selected connection did not produce a usable access token.');
+    }
+    await connectionRuntime.saveConn(normalized);
+    connectionRuntime.setStatus(normalized);
+    return normalized;
+}
+
+async function connectSharedConfiguration(connectionRuntime, vscode, configuration) {
+    const workspaceApiVersion = await connectionRuntime.getWorkspaceApiVersion();
+    const connector = await connectUsingSharedConfiguration(configuration);
+    return await normalizeAndSaveConnection(
+        connectionRuntime,
+        vscode,
+        toStoredConnectionFromConnector(connector, {
+            instanceUrl: configuration.instanceUrl,
+            apiVersion: workspaceApiVersion,
+            orgId: connector?.configuration?.orgId || configuration.orgId || '',
+        })
+    );
+}
+
 function loadStoredConn() {
+    if (hasCurrentConnectionProvider()) {
+        return (
+            getCurrentConnection() || {
+                instanceUrl: '',
+                apiVersion: DEFAULT_SOURCE_API_VERSION,
+                accessToken: '',
+                authType: '',
+                sharedAlias: '',
+                oauthConnectionId: '',
+                username: '',
+                userId: '',
+                orgId: '',
+                organizationName: '',
+                organizationType: '',
+                isSandbox: null,
+                workspaceRoot: '',
+            }
+        );
+    }
     return loadStoredConnection();
 }
 
@@ -173,6 +226,9 @@ async function saveConn(conn) {
         username: nextConn.username,
         userId: nextConn.userId,
         orgId: nextConn.orgId,
+        organizationName: nextConn.organizationName,
+        organizationType: nextConn.organizationType,
+        isSandbox: nextConn.isSandbox,
         workspaceRoot: nextConn.workspaceRoot,
     });
 }
@@ -294,28 +350,11 @@ export function registerConnectionCommands({
 
         if (selectedSharedConfiguration) {
             try {
-                const connector = await connectUsingSharedConfiguration(
+                const stored = await connectSharedConfiguration(
+                    connectionRuntime,
+                    vscode,
                     selectedSharedConfiguration
                 );
-                const stored = await normalizeActiveConnection(
-                    toStoredConnectionFromConnector(connector, {
-                        instanceUrl: selectedSharedConfiguration.instanceUrl,
-                        apiVersion: workspaceApiVersion,
-                        orgId:
-                            connector?.configuration?.orgId ||
-                            selectedSharedConfiguration.orgId ||
-                            '',
-                    }),
-                    {
-                        proxyUrl: isChromeExtension ? undefined : window.location.origin,
-                        workspaceBasePath: getWorkspaceRootPath(vscode),
-                    }
-                );
-                if (!stored.instanceUrl || !stored.accessToken) {
-                    throw new Error('Selected connection did not produce a usable access token.');
-                }
-                await connectionRuntime.saveConn(stored);
-                connectionRuntime.setStatus(stored);
                 await setLoginProblem(null);
                 if (connectionRuntime.reloadForConnectionWorkspaceIfNeeded(stored)) {
                     return;
@@ -464,6 +503,58 @@ export function registerConnectionCommands({
         }
         await vscode.window.showInformationMessage('Project synced from Salesforce.');
     });
+}
+
+export async function tryRestoreStartupConnection({ connectionRuntime, vscode, setLoginProblem }) {
+    const current = connectionRuntime.loadStoredConn();
+
+    let startupCandidate = pickStartupConnectionCandidate({
+        currentConnection: current,
+        oauthCredentialType: OAUTH_TYPES.OAUTH,
+    });
+
+    if (!startupCandidate) {
+        const sharedConnectionEntries = await connectionRuntime
+            .listSharedConnectionEntries()
+            .catch(() => []);
+        startupCandidate = pickStartupConnectionCandidate({
+            currentConnection: current,
+            sharedConnectionEntries,
+            oauthCredentialType: OAUTH_TYPES.OAUTH,
+        });
+    }
+
+    if (!startupCandidate) {
+        return null;
+    }
+
+    try {
+        let restoredConnection = null;
+        if (startupCandidate.type === 'stored-alias') {
+            const resolved = await resolveStoredConnection(startupCandidate.connection);
+            restoredConnection = await normalizeAndSaveConnection(
+                connectionRuntime,
+                vscode,
+                resolved
+            );
+        } else if (startupCandidate.type === 'shared-oauth') {
+            restoredConnection = await connectSharedConfiguration(
+                connectionRuntime,
+                vscode,
+                startupCandidate.configuration
+            );
+        }
+
+        await setLoginProblem?.(null);
+        if (restoredConnection) {
+            connectionRuntime.reloadForConnectionWorkspaceIfNeeded(restoredConnection);
+        }
+        return restoredConnection;
+    } catch (error) {
+        await setLoginProblem?.(error?.message || String(error));
+        connectionRuntime.setStatus(connectionRuntime.loadStoredConn());
+        return null;
+    }
 }
 
 export const __testables = {

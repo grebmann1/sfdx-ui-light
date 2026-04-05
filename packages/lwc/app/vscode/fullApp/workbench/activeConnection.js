@@ -1,4 +1,5 @@
 import { OAUTH_TYPES } from 'core/connector';
+import { normalizeSandboxValue } from './orgContext.js';
 import { DEFAULT_SOURCE_API_VERSION, normalizeSfApiVersion } from './sfdxProject.js';
 import { deriveWorkspaceRootFromConnection } from './workspaceBootstrap.js';
 
@@ -87,6 +88,26 @@ function toAuthType(credentialType) {
     }
 }
 
+function readOrganizationName(currentConnection = {}) {
+    const userInfo = currentConnection?.userInfo || {};
+    return String(
+        currentConnection?.organizationName ||
+            currentConnection?.orgName ||
+            userInfo?.organization_name ||
+            ''
+    ).trim();
+}
+
+function readOrganizationType(currentConnection = {}) {
+    const userInfo = currentConnection?.userInfo || {};
+    return String(
+        currentConnection?.organizationType ||
+            currentConnection?.orgType ||
+            userInfo?.organization_type ||
+            ''
+    ).trim();
+}
+
 export function loadStoredConnection() {
     const currentConnection = readCurrentConnection();
     const credentialType = currentConnection?.credentialType;
@@ -105,6 +126,9 @@ export function loadStoredConnection() {
         )
     ).trim();
     const userInfo = currentConnection?.userInfo || {};
+    const isSandbox = normalizeSandboxValue(
+        currentConnection?.isSandbox ?? currentConnection?.sandbox ?? userInfo?.is_sandbox
+    );
 
     return {
         instanceUrl,
@@ -121,6 +145,9 @@ export function loadStoredConnection() {
         username: String(currentConnection?.username || userInfo?.username || '').trim(),
         userId: String(currentConnection?.userId || userInfo?.user_id || '').trim(),
         orgId: String(currentConnection?.orgId || userInfo?.organization_id || '').trim(),
+        organizationName: readOrganizationName(currentConnection),
+        organizationType: readOrganizationType(currentConnection),
+        isSandbox,
         workspaceRoot: readLocalStorage(STORAGE.workspaceRoot, ''),
     };
 }
@@ -157,6 +184,9 @@ export function parseUrlConnectionParams(locationLike = window?.location) {
             username: String(params.get('username') || '').trim(),
             userId: String(params.get('userId') || '').trim(),
             orgId: String(params.get('orgId') || '').trim(),
+            organizationName: String(params.get('organizationName') || '').trim(),
+            organizationType: String(params.get('organizationType') || '').trim(),
+            isSandbox: normalizeSandboxValue(params.get('isSandbox')),
             oauthConnectionId: '',
             workspaceRoot: '',
         };
@@ -177,6 +207,9 @@ export function clearUrlConnectionParams(locationLike = window?.location) {
             'username',
             'userId',
             'orgId',
+            'organizationName',
+            'organizationType',
+            'isSandbox',
         ];
         let changed = false;
         for (const key of keys) {

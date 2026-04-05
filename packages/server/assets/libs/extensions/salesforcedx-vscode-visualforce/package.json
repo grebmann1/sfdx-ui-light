@@ -1,0 +1,46 @@
+{
+  "name": "salesforcedx-vscode-visualforce",
+  "displayName": "Visualforce",
+  "description": "Provides browser-hosted grammar and language registration for Visualforce.",
+  "version": "66.4.4",
+  "publisher": "salesforce",
+  "license": "BSD-3-Clause",
+  "icon": "./images/VSCodeVisualforce.png",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "browser": "./dist/web/index.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "visualforce",
+        "aliases": [
+          "Visualforce",
+          "visualforce"
+        ],
+        "extensions": [
+          ".page",
+          ".component"
+        ],
+        "configuration": "./syntaxes/visualforce.configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "visualforce",
+        "scopeName": "text.visualforce.markup",
+        "path": "./syntaxes/visualforce.json",
+        "embeddedLanguages": {
+          "source.css": "css",
+          "source.js": "javascript"
+        }
+      }
+    ]
+  }
+}

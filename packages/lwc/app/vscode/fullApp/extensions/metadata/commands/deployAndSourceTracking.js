@@ -6,6 +6,7 @@ import {
     saveSourceTracking,
 } from 'vscode/sourceTracking';
 
+import { AUTO_DEPLOY_KEY } from '../constants.js';
 import { ensureDir, writeTextFile } from '../core/workspaceCache.js';
 import {
     auraFilename,
@@ -15,8 +16,6 @@ import {
     normalizeLwcResourceRelPath,
     safeSeg,
 } from '../core/workspacePaths.js';
-
-const AUTO_DEPLOY_KEY = 'sf_ext_autoDeployOnSave';
 
 export function createDeployAndSourceTracking({
     connectionRuntime,

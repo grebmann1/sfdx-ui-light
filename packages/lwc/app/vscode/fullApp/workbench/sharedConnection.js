@@ -15,6 +15,7 @@ import {
     deriveWorkspaceRootFromConnection,
     saveStoredWorkspaceRoot,
 } from './activeConnection.js';
+import { normalizeSandboxValue } from './orgContext.js';
 import { DEFAULT_SOURCE_API_VERSION, normalizeSfApiVersion } from './sfdxProject.js';
 
 export function getConnectionAuthType(configuration) {
@@ -100,6 +101,21 @@ export function toStoredConnectionFromConnector(connector, fallback = {}) {
         username: configuration.username || userInfo.username || fallback.username || '',
         userId: userInfo.user_id || configuration.userId || fallback.userId || '',
         orgId: configuration.orgId || userInfo.organization_id || fallback.orgId || '',
+        organizationName:
+            configuration.organizationName ||
+            configuration.orgName ||
+            userInfo.organization_name ||
+            fallback.organizationName ||
+            '',
+        organizationType:
+            configuration.organizationType ||
+            configuration.orgType ||
+            userInfo.organization_type ||
+            fallback.organizationType ||
+            '',
+        isSandbox: normalizeSandboxValue(
+            configuration.isSandbox ?? configuration.sandbox ?? fallback.isSandbox
+        ),
         workspaceRoot: fallback.workspaceRoot || '',
     };
 }
@@ -128,6 +144,24 @@ async function fetchUserInfo({ instanceUrl, accessToken }) {
     }
 }
 
+async function fetchOrganizationInfo(client) {
+    try {
+        const soql = 'SELECT Name, IsSandbox, OrganizationType FROM Organization LIMIT 1';
+        const response = await client.requestJson(`/query?q=${encodeURIComponent(soql)}`);
+        const record = Array.isArray(response?.records) ? response.records[0] : null;
+        if (!record || typeof record !== 'object') {
+            return null;
+        }
+        return {
+            organizationName: String(record?.Name || '').trim(),
+            organizationType: String(record?.OrganizationType || '').trim(),
+            isSandbox: normalizeSandboxValue(record?.IsSandbox),
+        };
+    } catch {
+        return null;
+    }
+}
+
 export async function normalizeActiveConnection(connection, options = {}) {
     if (!connection?.instanceUrl || !connection?.accessToken) {
         return null;
@@ -141,13 +175,19 @@ export async function normalizeActiveConnection(connection, options = {}) {
     });
 
     await client.ping();
-    const userInfo =
+    const [userInfo, organizationInfo] = await Promise.all([
         !connection.username || !connection.userId || !connection.orgId
-            ? await fetchUserInfo({
+            ? fetchUserInfo({
                   instanceUrl: client.instanceUrl,
                   accessToken: connection.accessToken,
               })
-            : null;
+            : Promise.resolve(null),
+        !connection.organizationName ||
+        !connection.organizationType ||
+        normalizeSandboxValue(connection.isSandbox) === null
+            ? fetchOrganizationInfo(client)
+            : Promise.resolve(null),
+    ]);
 
     const normalized = {
         ...connection,
@@ -156,6 +196,11 @@ export async function normalizeActiveConnection(connection, options = {}) {
         username: connection.username || userInfo?.username || '',
         userId: connection.userId || userInfo?.userId || '',
         orgId: connection.orgId || userInfo?.orgId || '',
+        organizationName: connection.organizationName || organizationInfo?.organizationName || '',
+        organizationType: connection.organizationType || organizationInfo?.organizationType || '',
+        isSandbox:
+            normalizeSandboxValue(connection.isSandbox) ??
+            normalizeSandboxValue(organizationInfo?.isSandbox),
     };
 
     return {
@@ -179,6 +224,21 @@ function toSharedSessionPayload(configuration, conn) {
         username: conn.username || configuration?.username || userInfo?.username || '',
         userId: conn.userId || configuration?.userId || userInfo?.user_id || '',
         orgId: conn.orgId || configuration?.orgId || userInfo?.organization_id || '',
+        organizationName:
+            conn.organizationName ||
+            configuration?.organizationName ||
+            configuration?.orgName ||
+            userInfo?.organization_name ||
+            '',
+        organizationType:
+            conn.organizationType ||
+            configuration?.organizationType ||
+            configuration?.orgType ||
+            userInfo?.organization_type ||
+            '',
+        isSandbox:
+            normalizeSandboxValue(conn.isSandbox) ??
+            normalizeSandboxValue(configuration?.isSandbox ?? configuration?.sandbox),
     };
 }
 
@@ -201,6 +261,9 @@ function toSessionPayload(conn, configuration = null) {
         username: conn.username || '',
         userId: conn.userId || '',
         orgId: conn.orgId || '',
+        organizationName: conn.organizationName || '',
+        organizationType: conn.organizationType || '',
+        isSandbox: normalizeSandboxValue(conn.isSandbox),
     };
 }
 
