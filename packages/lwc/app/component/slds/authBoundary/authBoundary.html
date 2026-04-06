@@ -1,0 +1,22 @@
+<template>
+    <template lwc:if={shouldRenderReplaceMode}>
+        <slds-require-connection title={title} sub-title={subTitle} is-required={isRequired}>
+            <slot></slot>
+        </slds-require-connection>
+    </template>
+    <template lwc:else>
+        <div class="auth-boundary">
+            <slot></slot>
+            <template lwc:if={shouldShowOverlay}>
+                <div class={overlayClass}>
+                    <div class="auth-boundary__panel">
+                        <slds-require-connection
+                            title={title}
+                            sub-title={subTitle}
+                            is-required></slds-require-connection>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </template>
+</template>

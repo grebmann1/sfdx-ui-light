@@ -1,17 +1,10 @@
-import { openaiBuiltInTools } from './openaiBuiltInTools';
-import { sharedTools } from './shared';
+import { EMPTY_AGENT_TOOL_GROUPS, OPENAI_BUILT_IN_TOOLS } from './constants';
+import { sharedTools } from './modules/shell';
 
 export const tools = {
-    soql: [],
-    apex: [],
-    api: [],
-    connections: [],
-    general: [],
-    chrome: [],
+    ...EMPTY_AGENT_TOOL_GROUPS,
     browserAgent: sharedTools,
-    metadata: [],
-    agent: [],
 };
-export { openaiBuiltInTools };
-export { filterToolsByModel } from './modelToolSupport';
-export { createBashTools } from './shared';
+export const openaiBuiltInTools = OPENAI_BUILT_IN_TOOLS;
+export { filterToolsByModel } from './modules/modelToolSupport';
+export { createBashTools } from './modules/shell';

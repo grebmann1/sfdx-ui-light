@@ -2,7 +2,8 @@ import { store, APEX, DOCUMENT, SELECTORS, ERROR } from 'core/store';
 import LOGGER from 'shared/logger';
 import { z } from 'zod';
 
-import { waitForLoaded, wrappedNavigate, formatTabId } from './utils/utils';
+import { APEX_TOOL_DESCRIPTIONS, TOOL_APP_NAMES } from '../constants';
+import { waitForLoaded, wrappedNavigate, formatTabId } from '../utils/utils';
 
 const { tool } = window.OpenAIAgentsBundle?.Agents || {};
 // Execute anonymous Apex and return the result
@@ -10,7 +11,7 @@ async function navigateToApex() {
     return await store.dispatch(async (dispatch, getState) => {
         const { application } = getState();
         if (application.isLoading) await waitForLoaded();
-        await wrappedNavigate({ applicationName: 'anonymousapex' });
+        await wrappedNavigate({ applicationName: TOOL_APP_NAMES.apex });
         return { success: true };
     });
 }
@@ -19,7 +20,7 @@ async function openApexTab({ tabId }) {
     return await store.dispatch(async (dispatch, getState) => {
         const { application } = getState();
         if (application.isLoading) await waitForLoaded();
-        await wrappedNavigate({ applicationName: 'anonymousapex' });
+        await wrappedNavigate({ applicationName: TOOL_APP_NAMES.apex });
         // We are setting the current tab to the one we want to execute
         await dispatch(APEX.reduxSlice.actions.selectionTab({ id: tabId }));
         return { success: true, tabId };
@@ -31,7 +32,7 @@ async function executeAnonymousApex({ tabId }) {
         .dispatch(async (dispatch, getState) => {
             const { application } = getState();
             if (application.isLoading) await waitForLoaded();
-            await wrappedNavigate({ applicationName: 'anonymousapex' });
+            await wrappedNavigate({ applicationName: TOOL_APP_NAMES.apex });
             // We are setting the current tab to the one we want to execute
             await dispatch(APEX.reduxSlice.actions.selectionTab({ id: tabId }));
             // fetch the body from the current tab
@@ -80,7 +81,7 @@ async function editApexTab({ body, tabId }) {
             const { application, apex } = getState();
             const { tabId: realTabId, isNewTab } = formatTabId(tabId, apex.tabs);
             if (application.isLoading) await waitForLoaded();
-            await wrappedNavigate({ applicationName: 'anonymousapex' });
+            await wrappedNavigate({ applicationName: TOOL_APP_NAMES.apex });
             if (isNewTab) {
                 await dispatch(APEX.reduxSlice.actions.addTab({ tab: { id: realTabId, body } }));
             } else {
@@ -136,7 +137,7 @@ async function saveApexScript({ body, name, isGlobal, alias }) {
         .dispatch(async (dispatch, getState) => {
             const { application } = getState();
             if (application.isLoading) await waitForLoaded();
-            await wrappedNavigate({ applicationName: 'anonymousapex' });
+            await wrappedNavigate({ applicationName: TOOL_APP_NAMES.apex });
             // Compose the script object
             const _alias = isGlobal
                 ? null
@@ -184,7 +185,7 @@ function getApexCurrentTab() {
 
 const apexNavigate = tool({
     name: 'apex_navigate',
-    description: 'Navigate to the Apex Editor application.',
+    description: APEX_TOOL_DESCRIPTIONS.navigate,
     parameters: z.object({}),
     execute: async () => {
         return await navigateToApex();
@@ -193,7 +194,7 @@ const apexNavigate = tool({
 
 const apexOpenTab = tool({
     name: 'apex_open_tab',
-    description: 'Open a specific Apex tab in the Apex Editor.',
+    description: APEX_TOOL_DESCRIPTIONS.openTab,
     parameters: z.object({
         tabId: z.string().describe('The ID of the Apex tab to open'),
     }),
@@ -204,14 +205,11 @@ const apexOpenTab = tool({
 
 const apexExecute = tool({
     name: 'apex_execute',
-    description:
-        'Execute anonymous Apex script from the Apex Editor (Based on a selected tab). Ask for confirmation before executing this tool.',
+    description: APEX_TOOL_DESCRIPTIONS.execute,
     parameters: z.object({
         tabId: z
             .string()
-            .describe(
-                'Tab ID to reuse when the tool is called again with the same context/request'
-            ),
+            .describe(APEX_TOOL_DESCRIPTIONS.executeTabId),
     }),
     execute: async ({ tabId }) => {
         return await executeAnonymousApex({ tabId });
@@ -220,16 +218,14 @@ const apexExecute = tool({
 
 const apexEdit = tool({
     name: 'apex_edit',
-    description: `Create or edit an Apex script in the Apex Editor. \nCall this tool when you need to create or edit an Apex script.`,
+    description: APEX_TOOL_DESCRIPTIONS.edit,
     parameters: z.object({
         body: z.string().describe('The Apex code to edit or create'),
         tabId: z
             .string()
             .optional()
             .nullable()
-            .describe(
-                'Optional tab ID to reuse when the tool is called again with the same context/request'
-            ),
+            .describe(APEX_TOOL_DESCRIPTIONS.editTabId),
     }),
     execute: async ({ body, tabId }) => {
         return await editApexTab({ body, tabId });
@@ -238,14 +234,13 @@ const apexEdit = tool({
 
 const apexSavedScripts = tool({
     name: 'apex_saved_scripts',
-    description:
-        'Fetch saved Apex scripts for the current org/alias. Call this tool when you need to fetch saved Apex scripts.',
+    description: APEX_TOOL_DESCRIPTIONS.savedScripts,
     parameters: z.object({
         alias: z
             .string()
             .optional()
             .nullable()
-            .describe('Optional org alias to fetch saved Apex scripts for'),
+            .describe(APEX_TOOL_DESCRIPTIONS.savedScriptsAlias),
     }),
     execute: async ({ alias }) => {
         alias = alias || store.getState().application.connector?.conn?.alias;
@@ -255,7 +250,7 @@ const apexSavedScripts = tool({
 
 const apexSaveScript = tool({
     name: 'apex_save_script',
-    description: 'Save an Apex script as a reusable asset, either globally or for a specific org.',
+    description: APEX_TOOL_DESCRIPTIONS.saveScript,
     parameters: z.object({
         body: z.string().describe('The Apex code to save'),
         name: z.string().describe('The name for the script'),
@@ -274,7 +269,7 @@ const apexSaveScript = tool({
 
 const apexGetCurrentTab = tool({
     name: 'apex_get_current_tab',
-    description: 'Get the content of the current Apex tab in the Apex Editor (body, id, etc.).',
+    description: APEX_TOOL_DESCRIPTIONS.getCurrentTab,
     parameters: z.object({}),
     execute: async () => {
         return getApexCurrentTab();

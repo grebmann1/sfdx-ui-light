@@ -7,8 +7,11 @@ import { OAUTH_TYPES } from './credentialStrategies/oauthTypes';
 import { getConfiguration } from './platformService';
 import {
     extractName,
+    inferScratchValue,
     normalizeConfiguration,
     extractConfigurationValuesFromConnection,
+    inferSandboxValue,
+    normalizeOrganizationType,
 } from './base';
 import { saveConfiguration } from './web';
 import type { ConnectionLike, ConnectorConfiguration } from './connector';
@@ -153,12 +156,37 @@ export class Connector {
             let latestVersion = Array.isArray(versions)
                 ? versions.sort((a, b) => b.version.localeCompare(a.version))[0]
                 : undefined;
+            const organizationType = normalizeOrganizationType({
+                organizationType:
+                    identity?.organization_type ||
+                    this.configuration.organizationType ||
+                    this.configuration.orgType,
+                isSandbox: this.configuration.isSandbox ?? this.configuration.sandbox ?? null,
+                isScratch: this.configuration.isScratch ?? this.configuration.scratch ?? null,
+                instanceUrl: this.conn?.instanceUrl || this.configuration.instanceUrl,
+            });
+            const isScratch = inferScratchValue({
+                instanceUrl: this.conn?.instanceUrl || this.configuration.instanceUrl,
+                isScratch: this.configuration.isScratch ?? this.configuration.scratch ?? null,
+                organizationType,
+            });
+            const isSandbox = inferSandboxValue({
+                instanceUrl: this.conn?.instanceUrl || this.configuration.instanceUrl,
+                isSandbox: this.configuration.isSandbox ?? this.configuration.sandbox ?? null,
+                organizationType,
+            });
 
             // Enrich Configuration
             Object.assign(this.configuration, {
                 username: identity?.username || this.configuration.username,
                 orgId: identity?.organization_id || this.configuration.orgId,
                 userInfo: identity || this.configuration.userInfo,
+                organizationType: organizationType || this.configuration.organizationType,
+                orgType: organizationType || this.configuration.orgType,
+                isScratch,
+                scratch: isScratch,
+                isSandbox,
+                sandbox: isSandbox,
                 alias: this.configuration.alias || identity?.username,
                 id: this.configuration.id || identity?.username,
             });

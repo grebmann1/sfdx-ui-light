@@ -1,29 +1,10 @@
-export function pickStartupConnectionCandidate({
-    currentConnection = null,
-    sharedConnectionEntries = [],
-    oauthCredentialType = '',
-} = {}) {
-    const sharedAlias = String(currentConnection?.sharedAlias || '').trim();
-    if (sharedAlias) {
-        return {
-            type: 'stored-alias',
-            connection: currentConnection,
-        };
-    }
+export const INJECTED_CONNECTOR_REQUIRED_MESSAGE =
+    'Salesforce connection is required to open this workbench. Launch it from a connected toolkit session.';
 
-    const oauthCandidates = (Array.isArray(sharedConnectionEntries) ? sharedConnectionEntries : [])
-        .map(entry => entry?.configuration || null)
-        .filter(
-            configuration =>
-                configuration?.alias && configuration?.credentialType === oauthCredentialType
-        );
-
-    if (oauthCandidates.length !== 1) {
-        return null;
-    }
-
+export function describeStartupConnectionState(connection = null) {
+    const hasConnection = Boolean(connection?.instanceUrl && connection?.accessToken);
     return {
-        type: 'shared-oauth',
-        configuration: oauthCandidates[0],
+        hasConnection,
+        message: hasConnection ? null : INJECTED_CONNECTOR_REQUIRED_MESSAGE,
     };
 }

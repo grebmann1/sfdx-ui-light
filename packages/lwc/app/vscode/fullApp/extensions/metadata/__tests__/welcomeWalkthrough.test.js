@@ -14,7 +14,6 @@ describe('metadata onboarding walkthrough', () => {
             orgContext: {
                 instanceUrl: 'https://acme.my.salesforce.com',
                 accessToken: 'token',
-                sharedAlias: 'Acme Prod',
                 organizationName: 'Acme Production',
                 isSandbox: false,
             },
@@ -30,7 +29,7 @@ describe('metadata onboarding walkthrough', () => {
             id: constantsModule.ONBOARDING_WALKTHROUGH_ID,
             title: 'Salesforce Workbench Welcome',
         });
-        expect(walkthrough.steps[0].description).toContain('Acme Prod');
+        expect(walkthrough.steps[0].description).toContain('Acme Production');
         expect(walkthrough.steps[0].description).toContain('production org');
         expect(commandIds).toEqual(
             expect.arrayContaining([
@@ -46,7 +45,6 @@ describe('metadata onboarding walkthrough', () => {
             orgContext: {
                 instanceUrl: 'https://acme--uat.sandbox.my.salesforce.com',
                 accessToken: 'token',
-                sharedAlias: 'Acme UAT',
                 username: 'uat@example.com',
                 organizationName: 'Acme UAT',
                 isSandbox: true,

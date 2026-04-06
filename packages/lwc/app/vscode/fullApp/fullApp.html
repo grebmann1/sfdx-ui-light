@@ -7,30 +7,37 @@
                     <div class="orgBannerMessage">{orgBannerMessage}</div>
                 </div>
                 <div class="orgBannerMeta">
-                    <span class="orgBannerPill">{orgBannerEnvironmentLabel}</span>
                     <template if:true={orgBannerHost}>
                         <span class="orgBannerHost">{orgBannerHost}</span>
                     </template>
+                    <span class="orgBannerPill">{orgBannerEnvironmentLabel}</span>
                 </div>
             </section>
         </template>
 
-        <div class="workbenchShell">
-            <template if:true={initializationError}>
-                <div class="overlay overlayError" role="alert">
-                    <strong>Failed to initialize VSCode workbench</strong>
-                    <div class="errorText">{initializationError}</div>
-                </div>
-            </template>
+        <slds-auth-boundary
+            is-required
+            suppress-session-recovery
+            preserve-content-when-blocked
+            title="Salesforce connection required"
+            sub-title="This workbench needs an active toolkit session before it can load.">
+            <div class="workbenchShell">
+                <template if:true={showInitializationErrorOverlay}>
+                    <div class="overlay overlayError" role="alert">
+                        <strong>Failed to initialize VSCode workbench</strong>
+                        <div class="errorText">{initializationError}</div>
+                    </div>
+                </template>
 
-            <template if:false={vscodeInitialized}>
-                <div class="overlay overlayLoading" role="status" aria-live="polite">
-                    <div class="spinner" aria-hidden="true"></div>
-                    <div class="loadingText">Initializing VSCode workbench...</div>
-                </div>
-            </template>
+                <template if:true={showLoadingOverlay}>
+                    <div class="overlay overlayLoading" role="status" aria-live="polite">
+                        <div class="spinner" aria-hidden="true"></div>
+                        <div class="loadingText">Initializing VSCode workbench...</div>
+                    </div>
+                </template>
 
-            <div class="workbench-host"></div>
-        </div>
+                <div class="workbench-host"></div>
+            </div>
+        </slds-auth-boundary>
     </div>
 </template>

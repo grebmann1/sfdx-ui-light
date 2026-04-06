@@ -178,6 +178,14 @@ export class CdpHandler {
         return this.attachedTabId;
     }
 
+    getSandboxWindow() {
+        return this.iframe?.contentWindow ?? null;
+    }
+
+    postToSandbox(message) {
+        this.getSandboxWindow()?.postMessage(message, '*');
+    }
+
     cleanup() {
         window.removeEventListener('message', this.boundHandleSandboxMessage);
         chrome.debugger.onEvent.removeListener(this.boundHandleCdpEvent);
@@ -215,11 +223,8 @@ export class CdpHandler {
         this.attachedTabId = null;
         this.stopGlowHeartbeat();
 
-        LOGGER.log('Sending CDP_CLOSE to sandbox for tab:', tabId);
-        this.iframe.contentWindow?.postMessage(
-            { type: 'CDP_CLOSE', tabId, reason: 'Debugger detached by cleanup' },
-            '*'
-        );
+            LOGGER.log('Sending CDP_CLOSE to sandbox for tab:', tabId);
+            this.postToSandbox({ type: 'CDP_CLOSE', tabId, reason: 'Debugger detached by cleanup' });
 
         this.removeGlowEffect(tabId)
             .finally(() => chrome.debugger.detach({ tabId }))
@@ -232,10 +237,12 @@ export class CdpHandler {
             const id = crypto.randomUUID();
             LOGGER.log('execInSandbox called, id:', id, 'timeout:', timeoutMs);
 
-            const timeout = timeoutMs ?? 30_000;
+            const timeout = timeoutMs ?? 30000;
             const timer = setTimeout(() => {
                 if (!this.pending.has(id)) return;
                 LOGGER.log('execInSandbox timeout, id:', id);
+                // The sandbox only supports one in-flight eval at a time, so a global abort is safe here.
+                this.postToSandbox({ type: 'ABORT' });
                 this.pending.delete(id);
                 reject(new Error('Execution timeout'));
             }, timeout + 1000);
@@ -257,19 +264,16 @@ export class CdpHandler {
                 '[CdpHandler] Posting EVAL_REQUEST to sandbox, iframe:',
                 !!this.iframe,
                 'contentWindow:',
-                !!this.iframe.contentWindow
+                !!this.getSandboxWindow()
             );
 
-            this.iframe.contentWindow?.postMessage(
-                { type: 'EVAL_REQUEST', id, code, timeout },
-                '*'
-            );
+            this.postToSandbox({ type: 'EVAL_REQUEST', id, code, timeout });
         });
     }
 
     abortExecution() {
         LOGGER.log('abortExecution called, pending requests:', this.pending.size);
-        this.iframe.contentWindow?.postMessage({ type: 'ABORT' }, '*');
+        this.postToSandbox({ type: 'ABORT' });
 
         for (const [id, pending] of this.pending) {
             LOGGER.log('Aborting eval request:', id);
@@ -281,20 +285,26 @@ export class CdpHandler {
     }
 
     waitForSandboxReady() {
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
             LOGGER.log('waitForSandboxReady called');
+
+            const timer = window.setTimeout(() => {
+                window.removeEventListener('message', handler);
+                reject(new Error('Sandbox ready timeout'));
+            }, 10_000);
 
             const handler = event => {
                 LOGGER.log(
                     '[CdpHandler] Received message:',
                     event.data?.type,
                     'from:',
-                    event.source === this.iframe.contentWindow ? 'sandbox' : 'other'
+                    event.source === this.getSandboxWindow() ? 'sandbox' : 'other'
                 );
 
                 if (event.data?.type !== 'SANDBOX_READY') return;
 
                 LOGGER.log('SANDBOX_READY received, resolving');
+                window.clearTimeout(timer);
                 window.removeEventListener('message', handler);
                 resolve();
             };
@@ -305,10 +315,10 @@ export class CdpHandler {
                 '[CdpHandler] Sending SANDBOX_PING, iframe:',
                 !!this.iframe,
                 'contentWindow:',
-                !!this.iframe.contentWindow
+                !!this.getSandboxWindow()
             );
 
-            this.iframe.contentWindow?.postMessage({ type: 'SANDBOX_PING' }, '*');
+            this.postToSandbox({ type: 'SANDBOX_PING' });
         });
     }
 
@@ -497,35 +507,26 @@ export class CdpHandler {
         if (message.type === 'CDP_REQUEST') {
             const tabId = message.tabId ?? this.attachedTabId;
             const response = await this.handleCdpCommand(message.payload, tabId);
-            this.iframe.contentWindow?.postMessage(
-                { type: 'CDP_RESPONSE', tabId, payload: response },
-                '*'
-            );
+            this.postToSandbox({ type: 'CDP_RESPONSE', tabId, payload: response });
             return;
         }
 
         if (message.type === 'CDP_ATTACH') {
             try {
                 const attached = await this.handleCdpAttach(message.tabId);
-                this.iframe.contentWindow?.postMessage(
-                    {
-                        type: 'CDP_ATTACH_RESPONSE',
-                        id: message.id,
-                        success: true,
-                        tabId: attached.tabId,
-                    },
-                    '*'
-                );
+                this.postToSandbox({
+                    type: 'CDP_ATTACH_RESPONSE',
+                    id: message.id,
+                    success: true,
+                    tabId: attached.tabId,
+                });
             } catch (error) {
-                this.iframe.contentWindow?.postMessage(
-                    {
-                        type: 'CDP_ATTACH_RESPONSE',
-                        id: message.id,
-                        success: false,
-                        error: error instanceof Error ? error.message : String(error),
-                    },
-                    '*'
-                );
+                this.postToSandbox({
+                    type: 'CDP_ATTACH_RESPONSE',
+                    id: message.id,
+                    success: false,
+                    error: error instanceof Error ? error.message : String(error),
+                });
             }
             return;
         }
@@ -578,18 +579,15 @@ export class CdpHandler {
     handleCdpEvent(source, method, params) {
         if (source.tabId !== this.attachedTabId) return;
 
-        this.iframe.contentWindow?.postMessage(
-            {
-                type: 'CDP_EVENT',
-                tabId: source.tabId,
-                payload: {
-                    sessionId: source.sessionId ?? 'pageTargetSessionId',
-                    method,
-                    params,
-                },
+        this.postToSandbox({
+            type: 'CDP_EVENT',
+            tabId: source.tabId,
+            payload: {
+                sessionId: source.sessionId ?? 'pageTargetSessionId',
+                method,
+                params,
             },
-            '*'
-        );
+        });
     }
 
     handleCdpDetach(source) {
@@ -610,10 +608,7 @@ export class CdpHandler {
         this.attachedTabId = null;
 
         LOGGER.log('Sending CDP_CLOSE from handleCdpDetach for tab:', tabId);
-        this.iframe.contentWindow?.postMessage(
-            { type: 'CDP_CLOSE', tabId, reason: 'Debugger detached' },
-            '*'
-        );
+        this.postToSandbox({ type: 'CDP_CLOSE', tabId, reason: 'Debugger detached' });
     }
 
     async handleCdpAttach(tabId) {
@@ -653,11 +648,11 @@ export class CdpHandler {
     }
 
     dispatchCdpResponse(tabId, payload) {
-        this.iframe.contentWindow?.postMessage({ type: 'CDP_RESPONSE', tabId, payload }, '*');
+        this.postToSandbox({ type: 'CDP_RESPONSE', tabId, payload });
     }
 
     dispatchCdpEvent(tabId, payload) {
-        this.iframe.contentWindow?.postMessage({ type: 'CDP_EVENT', tabId, payload }, '*');
+        this.postToSandbox({ type: 'CDP_EVENT', tabId, payload });
     }
 
     async handleCdpCommand(command, tabId) {
@@ -785,20 +780,14 @@ export class CdpHandler {
                 active: tab.active,
             }));
 
-            this.iframe.contentWindow?.postMessage(
-                { type: 'LIST_TABS_RESPONSE', id, success: true, tabs },
-                '*'
-            );
+            this.postToSandbox({ type: 'LIST_TABS_RESPONSE', id, success: true, tabs });
         } catch (error) {
-            this.iframe.contentWindow?.postMessage(
-                {
-                    type: 'LIST_TABS_RESPONSE',
-                    id,
-                    success: false,
-                    error: error instanceof Error ? error.message : String(error),
-                },
-                '*'
-            );
+            this.postToSandbox({
+                type: 'LIST_TABS_RESPONSE',
+                id,
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+            });
         }
     }
 
@@ -806,30 +795,24 @@ export class CdpHandler {
         try {
             const created = await chrome.tabs.create({ url: url || 'about:blank', active: false });
 
-            this.iframe.contentWindow?.postMessage(
-                {
-                    type: 'CREATE_TAB_RESPONSE',
-                    id,
-                    success: true,
-                    tab: {
-                        id: created.id,
-                        title: created.title || '',
-                        url: created.url || url || 'about:blank',
-                        active: created.active ?? false,
-                    },
+            this.postToSandbox({
+                type: 'CREATE_TAB_RESPONSE',
+                id,
+                success: true,
+                tab: {
+                    id: created.id,
+                    title: created.title || '',
+                    url: created.url || url || 'about:blank',
+                    active: created.active ?? false,
                 },
-                '*'
-            );
+            });
         } catch (error) {
-            this.iframe.contentWindow?.postMessage(
-                {
-                    type: 'CREATE_TAB_RESPONSE',
-                    id,
-                    success: false,
-                    error: error instanceof Error ? error.message : String(error),
-                },
-                '*'
-            );
+            this.postToSandbox({
+                type: 'CREATE_TAB_RESPONSE',
+                id,
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+            });
         }
     }
 
@@ -838,52 +821,37 @@ export class CdpHandler {
             if (this.attachedTabId === tabId) {
                 await chrome.debugger.detach({ tabId }).catch(() => {});
                 this.attachedTabId = null;
-                this.iframe.contentWindow?.postMessage(
-                    { type: 'CDP_CLOSE', tabId, reason: 'Tab closed by closeTab()' },
-                    '*'
-                );
+                this.postToSandbox({ type: 'CDP_CLOSE', tabId, reason: 'Tab closed by closeTab()' });
             }
 
             await chrome.tabs.remove(tabId);
-            this.iframe.contentWindow?.postMessage(
-                { type: 'CLOSE_TAB_RESPONSE', id, success: true },
-                '*'
-            );
+            this.postToSandbox({ type: 'CLOSE_TAB_RESPONSE', id, success: true });
         } catch (error) {
-            this.iframe.contentWindow?.postMessage(
-                {
-                    type: 'CLOSE_TAB_RESPONSE',
-                    id,
-                    success: false,
-                    error: error instanceof Error ? error.message : String(error),
-                },
-                '*'
-            );
+            this.postToSandbox({
+                type: 'CLOSE_TAB_RESPONSE',
+                id,
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+            });
         }
     }
 
     async handleActivateTabRequest(id, tabId) {
         try {
             await chrome.tabs.update(tabId, { active: true });
-            this.iframe.contentWindow?.postMessage(
-                { type: 'ACTIVATE_TAB_RESPONSE', id, success: true },
-                '*'
-            );
+            this.postToSandbox({ type: 'ACTIVATE_TAB_RESPONSE', id, success: true });
         } catch (error) {
-            this.iframe.contentWindow?.postMessage(
-                {
-                    type: 'ACTIVATE_TAB_RESPONSE',
-                    id,
-                    success: false,
-                    error: error instanceof Error ? error.message : String(error),
-                },
-                '*'
-            );
+            this.postToSandbox({
+                type: 'ACTIVATE_TAB_RESPONSE',
+                id,
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+            });
         }
     }
 
     async handleEvalResult(message) {
-        LOGGER.log('### [CdpHandler] handleEvalResult', message);
+        LOGGER.log('### [CdpHandler] handleEvalResult', {message});
         const pending = this.pending.get(message.id);
         if (!pending) return;
 
@@ -903,15 +871,12 @@ export class CdpHandler {
     async handleWorkspaceRequest(message) {
         LOGGER.log('### [CdpHandler] handleFsOrBashRequest', message);
         const respond = ({ success, result, error }) => {
-            this.iframe.contentWindow?.postMessage(
-                {
-                    type: 'WORKSPACE_RESPONSE',
-                    id: message.id,
-                    success: !!success,
-                    ...(success ? { result } : { error }),
-                },
-                '*'
-            );
+            this.postToSandbox({
+                type: 'WORKSPACE_RESPONSE',
+                id: message.id,
+                success: !!success,
+                ...(success ? { result } : { error }),
+            });
         };
 
         try {

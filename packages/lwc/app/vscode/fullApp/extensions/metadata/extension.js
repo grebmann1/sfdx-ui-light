@@ -23,7 +23,6 @@ import {
     tryRestoreStartupConnection,
 } from './runtime/connectionRuntime.js';
 import { registerSchemaTools } from './runtime/schemaTools.js';
-import { fetchAndPopulateWorkspace } from './runtime/workspaceSync.js';
 
 export { EXTENSION_ID } from './constants.js';
 
@@ -174,13 +173,6 @@ function registerSalesforcePanelProvider({ connectionRuntime, context }) {
                             icon: 'versions',
                         }
                     ),
-                    mkAction(
-                        connected ? 'Disconnect' : 'Connect',
-                        connected ? 'salesforceMetadata.disconnect' : 'salesforceMetadata.connect',
-                        {
-                            icon: connected ? 'sign-out' : 'sign-in',
-                        }
-                    ),
                 ];
                 if (connected) {
                     items.push(
@@ -290,14 +282,14 @@ export async function activate(vscodeBundle) {
     const { diagnostics, statusItem, vscode } = context;
     await applyExplorerExcludes(vscode);
 
-    const connectionRuntime = createConnectionRuntime({ statusItem, vscode });
-    connectionRuntime.setStatus(connectionRuntime.loadStoredConn());
-    const activeServices = { connectionRuntime, context };
-    activeMetadataExtensionServices = activeServices;
     const setLoginProblem = createLoginProblemSetter({
         loginDiagnostics: diagnostics.login,
         vscode,
     });
+    const connectionRuntime = createConnectionRuntime({ statusItem, vscode });
+    connectionRuntime.setStatus(connectionRuntime.loadStoredConn());
+    const activeServices = { connectionRuntime, context, setLoginProblem };
+    activeMetadataExtensionServices = activeServices;
 
     registerSalesforcePanelProvider({ connectionRuntime, context });
     registerOnboardingCommands({ context });
@@ -315,8 +307,6 @@ export async function activate(vscodeBundle) {
     registerConnectionCommands({
         connectionRuntime,
         context,
-        fetchAndPopulateWorkspace,
-        invalidateToolingMap: deployTools.invalidateToolingMap,
         setLoginProblem,
     });
     registerMetadataApiCommands({

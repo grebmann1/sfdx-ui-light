@@ -1,35 +1,25 @@
 /* eslint-disable import/no-unresolved */
-import { getConfigurations, OAUTH_TYPES, removeSession } from 'core/connector';
+import { getConnectionAuthType, OAUTH_TYPES } from 'core/connector';
 import { createToolingClient } from 'vscode/toolingApi';
 
 import {
-    deriveWorkspaceRootFromConnection,
-    loadStoredConnection,
-} from '../../../workbench/activeConnection.js';
-import {
-    getCurrentConnection,
-    hasCurrentConnectionProvider,
-} from '../../../workbench/currentConnection.js';
+    getInjectedConnectionContext,
+    isAuthError,
+    refreshConnectionRecord,
+    resolveConnectionRecord,
+} from '../../../workbench/connectorRecord.js';
 import {
     DEFAULT_SOURCE_API_VERSION,
     normalizeSfApiVersion,
     resolveWorkspaceApiVersionFromVscode,
     writeWorkspaceApiVersionFromVscode,
 } from '../../../workbench/sfdxProject.js';
-import {
-    clearActiveConnection,
-    connectUsingSharedConfiguration,
-    getConnectionAuthType,
-    isAuthError,
-    normalizeActiveConnection,
-    persistActiveConnection,
-    refreshStoredConnection,
-    resolveStoredConnection,
-    toStoredConnectionFromConnector,
-} from '../../../workbench/sharedConnection.js';
 import { getWorkspaceRootPath, getWorkspaceUri } from '../core/workspacePaths.js';
 
-import { pickStartupConnectionCandidate } from './startupConnection.js';
+const INJECTED_CONNECTOR_REQUIRED_MESSAGE =
+    'Salesforce connection is required to open this workbench. Launch it from a connected toolkit session.';
+const EXPIRED_CONNECTOR_MESSAGE =
+    'Salesforce connection expired. Reconnect from the toolkit to continue using org features.';
 
 let workspaceVscode = null;
 
@@ -42,49 +32,60 @@ function getConnectionTypeLabel(configuration) {
         case OAUTH_TYPES.USERNAME:
             return 'Username';
         default:
-            return 'Saved';
+            return 'Injected';
     }
 }
 
-async function listSharedConnectionEntries() {
-    const configurations = await getConfigurations().catch(() => []);
-    return (Array.isArray(configurations) ? configurations : [])
-        .filter(item => item?.alias && item?.instanceUrl)
-        .map(item => {
-            let host = item.instanceUrl;
-            try {
-                host = new URL(item.instanceUrl).host;
-            } catch {
-                // ignore
-            }
-            return {
-                label: item.username ? `${item.username} (${host})` : `${item.alias} (${host})`,
-                description: getConnectionTypeLabel(item),
-                detail: item.alias,
-                host,
-                configuration: item,
-                _shared: true,
-            };
-        })
-        .sort((left, right) => String(left.label || '').localeCompare(String(right.label || '')));
+function buildEmptyConnection() {
+    return {
+        instanceUrl: '',
+        apiVersion: DEFAULT_SOURCE_API_VERSION,
+        accessToken: '',
+        authType: '',
+        oauthConnectionId: '',
+        username: '',
+        userId: '',
+        orgId: '',
+        organizationName: '',
+        organizationType: '',
+        isSandbox: null,
+        workspaceRoot: '',
+    };
 }
 
-function reloadForConnectionWorkspaceIfNeeded(vscode, conn) {
-    const currentRoot = getWorkspaceRootPath(vscode);
-    const desiredRoot = conn?.workspaceRoot || deriveWorkspaceRootFromConnection(conn, currentRoot);
-    if (!desiredRoot || desiredRoot === currentRoot) {
-        return false;
+function getCurrentContext() {
+    const context = getInjectedConnectionContext();
+    return context && typeof context === 'object' ? context : null;
+}
+
+function requireCurrentContext() {
+    const context = getCurrentContext();
+    if (
+        !context?.connector?.conn ||
+        !context?.connection?.instanceUrl ||
+        !context?.connection?.accessToken
+    ) {
+        throw new Error(INJECTED_CONNECTOR_REQUIRED_MESSAGE);
     }
-    window.location.reload();
-    return true;
+    return context;
+}
+
+function hasExpiredConnection(conn) {
+    return Boolean(conn?.sessionHasExpired);
+}
+
+function getConnectionProblemMessage(conn) {
+    return hasExpiredConnection(conn) ? EXPIRED_CONNECTOR_MESSAGE : INJECTED_CONNECTOR_REQUIRED_MESSAGE;
 }
 
 function setStatus(statusItem, conn) {
     if (!statusItem) return;
     if (!conn?.instanceUrl || !conn?.accessToken) {
-        statusItem.text = '$(cloud) SF: Disconnected';
-        statusItem.tooltip = 'Click to connect to Salesforce';
-        statusItem.command = 'salesforceMetadata.connect';
+        statusItem.text = hasExpiredConnection(conn)
+            ? '$(cloud-off) SF: Disconnected'
+            : '$(cloud-off) SF: Missing connection';
+        statusItem.tooltip = getConnectionProblemMessage(conn);
+        statusItem.command = undefined;
         return;
     }
 
@@ -92,18 +93,18 @@ function setStatus(statusItem, conn) {
         const host = new URL(conn.instanceUrl).host;
         const who = conn.username ? ` (${conn.username})` : '';
         statusItem.text = `$(cloud) SF: ${host}${who}`;
-        const auth = conn.authType ? `Auth: ${conn.authType}` : 'Auth: unknown';
+        const auth = conn.authType ? `Auth: ${conn.authType}` : 'Auth: injected';
         const ids = [
             conn.orgId ? `Org: ${conn.orgId}` : '',
             conn.userId ? `User: ${conn.userId}` : '',
         ]
             .filter(Boolean)
             .join('\n');
-        statusItem.tooltip = `${auth}${ids ? `\n${ids}` : ''}\n\nClick to fetch metadata into Explorer`;
+        statusItem.tooltip = `${auth}${ids ? `\n${ids}` : ''}\n\nConnection is provided by the parent toolkit session.`;
         statusItem.command = 'salesforceMetadata.fetchMetadata';
     } catch {
         statusItem.text = '$(cloud) SF: Connected';
-        statusItem.tooltip = 'Click to fetch metadata into Explorer';
+        statusItem.tooltip = 'Connection is provided by the parent toolkit session.';
         statusItem.command = 'salesforceMetadata.fetchMetadata';
     }
 }
@@ -132,109 +133,59 @@ async function applyWorkspaceApiVersion(conn, fallback = conn?.apiVersion) {
     };
 }
 
+function getConnectionResolutionOptions(vscode) {
+    return {
+        workspaceBasePath: getWorkspaceRootPath(vscode),
+    };
+}
+
+function loadStoredConn() {
+    return getCurrentContext()?.connection || buildEmptyConnection();
+}
+
+async function saveConn(conn) {
+    return await applyWorkspaceApiVersion(conn);
+}
+
+async function clearConn() {
+    return undefined;
+}
+
 async function withToolingClientAuthed(conn, fn) {
-    const baseConnection = await applyWorkspaceApiVersion(conn);
-    const current = await resolveStoredConnection(baseConnection).catch(() => baseConnection);
+    const context = requireCurrentContext();
+    const baseConnection = await applyWorkspaceApiVersion(
+        conn || context.connection,
+        context.connection.apiVersion
+    );
+    const current = await resolveConnectionRecord(
+        baseConnection,
+        getConnectionResolutionOptions(workspaceVscode)
+    ).catch(() => baseConnection);
     const effectiveCurrent = await applyWorkspaceApiVersion(current, baseConnection?.apiVersion);
-    const proxyUrl = isChromeExtensionEnv() ? undefined : window.location.origin;
     const client = createToolingClient({
-        instanceUrl: effectiveCurrent.instanceUrl,
+        connection: context.connector.conn,
         apiVersion: effectiveCurrent.apiVersion,
-        accessToken: effectiveCurrent.accessToken,
-        proxyUrl,
     });
     try {
         return await fn(client, effectiveCurrent);
     } catch (error) {
         if (!isAuthError(error)) throw error;
-        const refreshedRaw = await refreshStoredConnection(effectiveCurrent).catch(() => null);
+        const refreshedRaw = await refreshConnectionRecord(
+            effectiveCurrent,
+            getConnectionResolutionOptions(workspaceVscode)
+        ).catch(() => null);
         const refreshed = await applyWorkspaceApiVersion(
             refreshedRaw,
             effectiveCurrent?.apiVersion
         );
+        const nextContext = requireCurrentContext();
         if (!refreshed) throw error;
         const retryClient = createToolingClient({
-            instanceUrl: refreshed.instanceUrl,
+            connection: nextContext.connector.conn,
             apiVersion: refreshed.apiVersion,
-            accessToken: refreshed.accessToken,
-            proxyUrl,
         });
         return await fn(retryClient, refreshed);
     }
-}
-
-async function normalizeAndSaveConnection(connectionRuntime, vscode, connection) {
-    const isChromeExtension = connectionRuntime.isChromeExtensionEnv();
-    const normalized = await normalizeActiveConnection(connection, {
-        proxyUrl: isChromeExtension ? undefined : window.location.origin,
-        workspaceBasePath: getWorkspaceRootPath(vscode),
-    });
-    if (!normalized?.instanceUrl || !normalized?.accessToken) {
-        throw new Error('Selected connection did not produce a usable access token.');
-    }
-    await connectionRuntime.saveConn(normalized);
-    connectionRuntime.setStatus(normalized);
-    return normalized;
-}
-
-async function connectSharedConfiguration(connectionRuntime, vscode, configuration) {
-    const workspaceApiVersion = await connectionRuntime.getWorkspaceApiVersion();
-    const connector = await connectUsingSharedConfiguration(configuration);
-    return await normalizeAndSaveConnection(
-        connectionRuntime,
-        vscode,
-        toStoredConnectionFromConnector(connector, {
-            instanceUrl: configuration.instanceUrl,
-            apiVersion: workspaceApiVersion,
-            orgId: connector?.configuration?.orgId || configuration.orgId || '',
-        })
-    );
-}
-
-function loadStoredConn() {
-    if (hasCurrentConnectionProvider()) {
-        return (
-            getCurrentConnection() || {
-                instanceUrl: '',
-                apiVersion: DEFAULT_SOURCE_API_VERSION,
-                accessToken: '',
-                authType: '',
-                sharedAlias: '',
-                oauthConnectionId: '',
-                username: '',
-                userId: '',
-                orgId: '',
-                organizationName: '',
-                organizationType: '',
-                isSandbox: null,
-                workspaceRoot: '',
-            }
-        );
-    }
-    return loadStoredConnection();
-}
-
-async function saveConn(conn) {
-    const nextConn = await applyWorkspaceApiVersion(conn);
-    await persistActiveConnection({
-        instanceUrl: nextConn.instanceUrl,
-        apiVersion: nextConn.apiVersion,
-        accessToken: nextConn.accessToken,
-        authType: nextConn.authType,
-        sharedAlias: nextConn.sharedAlias,
-        oauthConnectionId: nextConn.oauthConnectionId,
-        username: nextConn.username,
-        userId: nextConn.userId,
-        orgId: nextConn.orgId,
-        organizationName: nextConn.organizationName,
-        organizationType: nextConn.organizationType,
-        isSandbox: nextConn.isSandbox,
-        workspaceRoot: nextConn.workspaceRoot,
-    });
-}
-
-async function clearConn() {
-    await clearActiveConnection();
 }
 
 export function createLoginProblemSetter({ loginDiagnostics, vscode }) {
@@ -265,161 +216,33 @@ export function createConnectionRuntime({ statusItem, vscode }) {
     return {
         applyWorkspaceApiVersion,
         clearConn,
+        getCurrentContext,
+        getConnectionProblemMessage,
+        getExpiredConnectionMessage: () => EXPIRED_CONNECTOR_MESSAGE,
+        getInjectedConnectionRequiredMessage: () => INJECTED_CONNECTOR_REQUIRED_MESSAGE,
         getConnectionAuthType,
-        getConnectionTypeLabel,
         getWorkspaceApiVersion,
+        isAuthError,
         isChromeExtensionEnv,
-        listSharedConnectionEntries,
         loadStoredConn,
-        reloadForConnectionWorkspaceIfNeeded: conn =>
-            reloadForConnectionWorkspaceIfNeeded(vscode, conn),
+        normalizeConnectionRecord: conn =>
+            resolveConnectionRecord(conn, getConnectionResolutionOptions(vscode)),
+        requireCurrentContext,
+        refreshConnectionRecord: conn =>
+            refreshConnectionRecord(conn, getConnectionResolutionOptions(vscode)),
+        reloadForConnectionWorkspaceIfNeeded: () => false,
+        resolveConnectionRecord: conn =>
+            resolveConnectionRecord(conn, getConnectionResolutionOptions(vscode)),
         saveConn,
         setStatus: conn => setStatus(statusItem, conn),
         withToolingClientAuthed,
     };
 }
 
-export function registerConnectionCommands({
-    connectionRuntime,
-    context,
-    fetchAndPopulateWorkspace,
-    invalidateToolingMap,
-    setLoginProblem,
-}) {
+export function registerConnectionCommands({ connectionRuntime, context, setLoginProblem }) {
     const { vscode } = context;
     const register = (command, handler) =>
         context.addDisposable(vscode.commands.registerCommand(command, handler));
-
-    register('salesforceMetadata.connect', async () => {
-        await setLoginProblem(null);
-        const current = connectionRuntime.loadStoredConn();
-        const isChromeExtension = connectionRuntime.isChromeExtensionEnv();
-        const workspaceApiVersion = await connectionRuntime.getWorkspaceApiVersion(
-            current.apiVersion
-        );
-
-        let instanceUrl = '';
-        let accessToken = '';
-        let authType = '';
-        let username = '';
-        let userId = '';
-        let orgId = '';
-        let selectedSharedConfiguration = null;
-
-        const connectMethod = await vscode.window.showQuickPick(
-            [
-                {
-                    label: 'Select Org from list',
-                    description: 'Open or create the workspace tied to a saved org',
-                    _selectOrg: true,
-                },
-                {
-                    label: 'Paste Access Token Manually',
-                    description: 'Connect inside the current workspace',
-                    _manual: true,
-                },
-            ],
-            {
-                title: 'Connect to Salesforce',
-                placeHolder: 'Choose how you want to connect',
-                ignoreFocusOut: true,
-            }
-        );
-        if (!connectMethod) return;
-
-        if (connectMethod._selectOrg) {
-            const sharedConnections = await connectionRuntime
-                .listSharedConnectionEntries()
-                .catch(() => []);
-            if (!sharedConnections.length) {
-                await vscode.window.showWarningMessage(
-                    'No saved orgs were found in the shared connection list.'
-                );
-                return;
-            }
-            const pickedOrg = await vscode.window.showQuickPick(sharedConnections, {
-                title: 'Select Org from list',
-                placeHolder: 'Choose the org workspace to open',
-                ignoreFocusOut: true,
-                matchOnDescription: true,
-                matchOnDetail: true,
-            });
-            if (!pickedOrg?.configuration) return;
-            selectedSharedConfiguration = pickedOrg.configuration;
-        }
-
-        if (selectedSharedConfiguration) {
-            try {
-                const stored = await connectSharedConfiguration(
-                    connectionRuntime,
-                    vscode,
-                    selectedSharedConfiguration
-                );
-                await setLoginProblem(null);
-                if (connectionRuntime.reloadForConnectionWorkspaceIfNeeded(stored)) {
-                    return;
-                }
-                await vscode.window.showInformationMessage(
-                    `Salesforce connected: ${selectedSharedConfiguration.alias}`
-                );
-                return;
-            } catch (error) {
-                const message = error?.message || String(error);
-                await setLoginProblem(message);
-                await vscode.window.showErrorMessage(`Salesforce connect failed: ${message}`);
-                return;
-            }
-        }
-
-        instanceUrl = await vscode.window.showInputBox({
-            title: 'Salesforce instance URL',
-            prompt: 'Example: https://mydomain.my.salesforce.com',
-            value: current.instanceUrl || '',
-            ignoreFocusOut: true,
-        });
-        if (!instanceUrl) return;
-
-        accessToken = await vscode.window.showInputBox({
-            title: 'Salesforce access token',
-            prompt: 'Paste an OAuth access token (stored in sessionStorage)',
-            value: '',
-            password: true,
-            ignoreFocusOut: true,
-        });
-        if (!accessToken) return;
-        authType = authType || 'manual';
-
-        try {
-            const stored = await normalizeActiveConnection(
-                {
-                    instanceUrl,
-                    apiVersion: workspaceApiVersion,
-                    accessToken,
-                    authType,
-                    sharedAlias: '',
-                    oauthConnectionId: '',
-                    username,
-                    userId,
-                    orgId,
-                },
-                {
-                    proxyUrl: isChromeExtension ? undefined : window.location.origin,
-                    workspaceBasePath: getWorkspaceRootPath(vscode),
-                }
-            );
-            await connectionRuntime.saveConn(stored);
-            connectionRuntime.setStatus(stored);
-            await setLoginProblem(null);
-            if (connectionRuntime.reloadForConnectionWorkspaceIfNeeded(stored)) {
-                return;
-            }
-            await vscode.window.showInformationMessage('Salesforce connected.');
-        } catch (error) {
-            const message = error?.message || String(error);
-            await setLoginProblem(message);
-            await vscode.window.showErrorMessage(`Salesforce connect failed: ${message}`);
-        }
-    });
 
     register('salesforceMetadata.setWorkspaceApiVersion', async () => {
         const current = connectionRuntime.loadStoredConn();
@@ -469,92 +292,22 @@ export function registerConnectionCommands({
         }
     });
 
-    register('salesforceMetadata.disconnect', async () => {
-        await connectionRuntime.clearConn();
-        await removeSession().catch(() => {});
-        await setLoginProblem(null);
-        connectionRuntime.setStatus(connectionRuntime.loadStoredConn());
-        await vscode.window.showInformationMessage('Salesforce disconnected.');
-    });
-
-    register('salesforceMetadata.fetchMetadata', async () => {
-        const conn = connectionRuntime.loadStoredConn();
-        if (!conn.instanceUrl || !conn.accessToken) {
-            await vscode.commands.executeCommand('salesforceMetadata.connect');
-            return;
-        }
-        await vscode.window.withProgress(
-            {
-                location: vscode.ProgressLocation.Notification,
-                title: 'Syncing project from Salesforce...',
-                cancellable: false,
-            },
-            async () => {
-                await connectionRuntime.withToolingClientAuthed(conn, async client => {
-                    await fetchAndPopulateWorkspace(vscode, client);
-                });
-            }
-        );
-        invalidateToolingMap?.();
-        try {
-            await vscode.commands.executeCommand('salesforceMetadata.refreshProject');
-        } catch {
-            // ignore
-        }
-        await vscode.window.showInformationMessage('Project synced from Salesforce.');
-    });
+    void setLoginProblem;
 }
 
-export async function tryRestoreStartupConnection({ connectionRuntime, vscode, setLoginProblem }) {
+export async function tryRestoreStartupConnection({ connectionRuntime, setLoginProblem }) {
     const current = connectionRuntime.loadStoredConn();
-
-    let startupCandidate = pickStartupConnectionCandidate({
-        currentConnection: current,
-        oauthCredentialType: OAUTH_TYPES.OAUTH,
-    });
-
-    if (!startupCandidate) {
-        const sharedConnectionEntries = await connectionRuntime
-            .listSharedConnectionEntries()
-            .catch(() => []);
-        startupCandidate = pickStartupConnectionCandidate({
-            currentConnection: current,
-            sharedConnectionEntries,
-            oauthCredentialType: OAUTH_TYPES.OAUTH,
-        });
-    }
-
-    if (!startupCandidate) {
-        return null;
-    }
-
-    try {
-        let restoredConnection = null;
-        if (startupCandidate.type === 'stored-alias') {
-            const resolved = await resolveStoredConnection(startupCandidate.connection);
-            restoredConnection = await normalizeAndSaveConnection(
-                connectionRuntime,
-                vscode,
-                resolved
-            );
-        } else if (startupCandidate.type === 'shared-oauth') {
-            restoredConnection = await connectSharedConfiguration(
-                connectionRuntime,
-                vscode,
-                startupCandidate.configuration
-            );
-        }
-
+    connectionRuntime.setStatus(current);
+    if (current?.instanceUrl && current?.accessToken) {
         await setLoginProblem?.(null);
-        if (restoredConnection) {
-            connectionRuntime.reloadForConnectionWorkspaceIfNeeded(restoredConnection);
-        }
-        return restoredConnection;
-    } catch (error) {
-        await setLoginProblem?.(error?.message || String(error));
-        connectionRuntime.setStatus(connectionRuntime.loadStoredConn());
-        return null;
+        return current;
     }
+    const message = connectionRuntime.getConnectionProblemMessage(current);
+    await setLoginProblem?.(message);
+    if (current?.sessionHasExpired) {
+        await workspaceVscode?.window?.showErrorMessage?.(message);
+    }
+    return null;
 }
 
 export const __testables = {

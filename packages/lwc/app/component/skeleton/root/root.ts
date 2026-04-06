@@ -4,14 +4,8 @@ import { isChromeExtension } from 'shared/utils';
 
 // Route definition array
 const routes = [
-    {
-        id: 'homeApp',
-        uri: '/{app}',
-        handler: () => import('skeleton/applicationHandler'),
-        page: {
-            type: 'home',
-        },
-    },
+    // Keep more specific routes first so `app.html?applicationName=settings`
+    // does not get swallowed by the generic `/{app}` home route.
     {
         id: 'namedApp',
         uri: '/{app}?applicationName=:applicationName',
@@ -46,6 +40,14 @@ const routes = [
                 attribute1: ':attribute1',
                 param1: ':param1',
             },
+        },
+    },
+    {
+        id: 'homeApp',
+        uri: '/{app}',
+        handler: () => import('skeleton/applicationHandler'),
+        page: {
+            type: 'home',
         },
     },
 ];

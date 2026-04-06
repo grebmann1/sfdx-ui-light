@@ -461,6 +461,7 @@ const sandboxBuilder = (isProduction) => ({
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
             preventAssignment: true,
         }),
+        stripTypescript(),
         resolve({
             // Indicate that we target a browser environment.
             browser: true,

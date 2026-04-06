@@ -1,4 +1,5 @@
 export type SkillScope = 'project' | 'user';
+import { SKILL_NAME_PATTERN, SKILL_ROOT_DIR_BY_SCOPE } from '../constants';
 
 type SkillFileSystem = {
     readFile?: (path: string, encoding?: string) => Promise<string>;
@@ -15,8 +16,6 @@ type SaveSkillInput = {
     overwrite?: boolean;
 };
 
-const SKILL_NAME_PATTERN = /^[a-z0-9][a-z0-9-_]*$/i;
-
 export function normalizeSkillName(value: string): string {
     return String(value || '').trim();
 }
@@ -31,8 +30,7 @@ export function getSkillNameError(name: string): string | null {
 
 export function resolveSkillRoot(scope?: SkillScope) {
     const resolvedScope: SkillScope = scope === 'user' ? 'user' : 'project';
-    const rootDir =
-        resolvedScope === 'user' ? '/workspace/.cursor/skills' : '/workspace/skills/custom-skills';
+    const rootDir = SKILL_ROOT_DIR_BY_SCOPE[resolvedScope];
     return { scope: resolvedScope, rootDir };
 }
 

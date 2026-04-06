@@ -1,11 +1,11 @@
-import { api, track } from 'lwc';
+import { api, track, wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import { initializeVscodeApiWithDefaults, LogLevel } from 'vscode/baseEditor';
 import { getVscodeBundle } from 'vscode/vscodeBundle';
-import { createToolingClient } from 'vscode/toolingApi';
 import {
     loadExtension as loadSfMetadataExtension,
     activate as activateSfMetadataExtension,
+    getActiveMetadataExtensionServices,
 } from './extensions/metadata/extension.js';
 import {
     loadExtension as loadAgentScriptExtension,
@@ -29,18 +29,7 @@ import {
     normalizeSfApiVersion,
     resolveWorkspaceApiVersion,
 } from './workbench/sfdxProject.js';
-import {
-    clearActiveConnection,
-    normalizeActiveConnection,
-    persistActiveConnection,
-    resolveStoredConnection,
-} from './workbench/sharedConnection.js';
-import {
-    clearUrlConnectionParams,
-    deriveWorkspaceRootFromConnection,
-    loadStoredConnection,
-    parseUrlConnectionParams,
-} from './workbench/activeConnection.js';
+import { deriveWorkspaceRootFromConnection } from './workbench/workspaceBootstrap.js';
 import {
     clearCurrentConnectionProvider,
     setCurrentConnectionProvider,
@@ -51,7 +40,8 @@ import {
     METADATA_WALKTHROUGH_FULL_ID,
     OPEN_ONBOARDING_COMMAND,
 } from './extensions/metadata/constants.js';
-import { STORAGE_KEYS } from 'vscode/utils';
+import { buildConnectionFromConnector, credentialStrategies } from 'core/connector';
+import { connectStore, store, APPLICATION } from 'core/store';
 
 const CHAT_MODEL_STORAGE_PREFIX = 'chat.currentLanguageModel.';
 const WORKBENCH_CHAT_MODEL_VENDOR = 'copilot';
@@ -68,22 +58,10 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
 
     @track vscodeInitialized = false;
     @track initializationError = null;
-
-    // Extension-first UX: Salesforce UI lives in the workbench (status bar/commands).
-    @track useExtensionUi = true;
-
-    @track sfInstanceUrl = '';
-    @track sfAccessToken = '';
     @track sfApiVersion = DEFAULT_SOURCE_API_VERSION;
-    @track sfUseProxy = false;
-    @track sfProxyUrl = 'http://localhost:3001';
-    @track sfConnected = false;
-    @track sfConnecting = false;
-    @track sfRefreshing = false;
-    @track sfError = null;
-    @track sfLastRefreshAt = null;
-    @track sfPanelCollapsed = false;
     @track orgContext = buildOrgContext();
+    @track isConnectionAvailable = false;
+    @track sessionHasExpired = false;
 
     _started = false;
     _isChromeExtension = false;
@@ -103,45 +81,18 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     _workspaceBootstrap = null;
     _currentConnectionProvider = null;
 
+    @wire(connectStore, { store })
+    handleApplicationStore({ application }) {
+        const didSessionExpire = !this.sessionHasExpired && Boolean(application?.sessionHasExpired);
+        this.sessionHasExpired = Boolean(application?.sessionHasExpired);
+        this._syncConnectionState(application);
+        void this._syncWorkbenchConnectionUi({ announceExpired: didSessionExpire });
+    }
+
     connectedCallback() {
-        const activeConnection = loadStoredConnection();
-        this._currentConnectionProvider = () => this._buildCurrentConnection();
+        this._currentConnectionProvider = () => this._buildCurrentConnectionContext();
         setCurrentConnectionProvider(this._currentConnectionProvider);
-        try {
-            this.sfInstanceUrl = activeConnection.instanceUrl || '';
-            this.sfApiVersion = normalizeSfApiVersion(
-                activeConnection.apiVersion,
-                DEFAULT_SOURCE_API_VERSION
-            );
-
-            const storedUseProxy = localStorage.getItem(STORAGE_KEYS.useProxy);
-            if (storedUseProxy === null) {
-                const host = typeof window !== 'undefined' ? window.location.hostname : '';
-                this.sfUseProxy = host === 'localhost' || host === '127.0.0.1';
-            } else {
-                this.sfUseProxy = storedUseProxy === 'true';
-            }
-            this.sfProxyUrl = localStorage.getItem(STORAGE_KEYS.proxyUrl) || '';
-
-            const collapsed = localStorage.getItem(STORAGE_KEYS.panelCollapsed);
-            this.sfPanelCollapsed = collapsed === 'true';
-        } catch {
-            // ignore
-        }
-
-        try {
-            this.sfAccessToken = activeConnection.accessToken || '';
-        } catch {
-            // ignore
-        }
-
-        this._workspaceRoot = activeConnection.instanceUrl
-            ? this._normalizeWorkspaceRoot(
-                  activeConnection.workspaceRoot ||
-                      this._deriveConnectionWorkspaceRoot(activeConnection)
-              )
-            : this._normalizeWorkspaceRoot(this.workspaceBasePath);
-        this.orgContext = buildOrgContext(activeConnection);
+        this._syncConnectionState(store.getState()?.application);
     }
 
     disconnectedCallback() {
@@ -191,9 +142,33 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     }
 
     renderedCallback() {
-        if (this._started) return;
+        if (this._started || !this.isConnectionAvailable) return;
         this._started = true;
         void this._startWorkbench();
+    }
+
+    _syncConnectionState(application = store.getState()?.application || {}) {
+        const connector = application?.connector || this.connector;
+        const activeConnection = buildConnectionFromConnector(connector, this.sfApiVersion);
+
+        this.isConnectionAvailable = Boolean(
+            activeConnection?.instanceUrl || (this.sessionId && this.serverUrl)
+        );
+        this.sfApiVersion = normalizeSfApiVersion(
+            activeConnection?.apiVersion,
+            DEFAULT_SOURCE_API_VERSION
+        );
+        this._workspaceRoot = activeConnection?.instanceUrl
+            ? this._normalizeWorkspaceRoot(
+                  activeConnection.workspaceRoot ||
+                      this._deriveConnectionWorkspaceRoot(activeConnection)
+              )
+            : this._normalizeWorkspaceRoot(this.workspaceBasePath);
+        this.orgContext = buildOrgContext(activeConnection);
+
+        if (activeConnection?.instanceUrl) {
+            this.initializationError = null;
+        }
     }
 
     _normalizeWorkspaceRoot(value) {
@@ -310,16 +285,6 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         return this._workspaceBootstrap;
     }
 
-    async _validateBootstrapConnection(connection) {
-        const nextConnection = await this._applyWorkspaceApiVersion(connection);
-        return await normalizeActiveConnection(nextConnection, {
-            proxyUrl: this.sfUseProxy
-                ? this.sfProxyUrl?.trim() || window.location.origin
-                : undefined,
-            workspaceBasePath: this.workspaceBasePath || DEFAULT_WORKSPACE_ROOT,
-        });
-    }
-
     async _resolveWorkspaceApiVersion(
         workspaceRoot = this._workspaceRoot,
         fallback = this.sfApiVersion
@@ -366,71 +331,102 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         return this.sfApiVersion;
     }
 
-    async _resolveBootstrapConnectionFromProps() {
-        const alias = String(this.alias || '').trim();
-        if (alias) {
-            const resolved = await resolveStoredConnection(
-                {
-                    sharedAlias: alias,
-                },
-                {
-                    persist: false,
-                }
-            ).catch(() => null);
-            if (resolved?.instanceUrl && resolved?.accessToken) {
-                return await this._validateBootstrapConnection(resolved);
-            }
+    _clearSessionBootstrapParams() {
+        this.sessionId = null;
+        this.serverUrl = null;
+        try {
+            window.sessionStorage?.removeItem?.('sfSessionId');
+            window.sessionStorage?.removeItem?.('sfServerUrl');
+        } catch {
+            // ignore
+        }
+    }
+
+    async _ensureConnectorBootstrap() {
+        if (this.connector?.conn) {
+            return this.connector;
+        }
+        if (!this.sessionId || !this.serverUrl) {
+            return null;
         }
 
-        const sessionId = String(this.sessionId || '').trim();
-        const serverUrl = String(this.serverUrl || '').trim();
-        if (sessionId && serverUrl) {
-            return await this._validateBootstrapConnection({
-                instanceUrl: serverUrl,
-                accessToken: sessionId,
-                apiVersion: normalizeSfApiVersion(this.sfApiVersion, DEFAULT_SOURCE_API_VERSION),
-                authType: 'session',
-                sharedAlias: '',
-                username: '',
-                userId: '',
-                orgId: '',
-                workspaceRoot: '',
-            });
-        }
-
-        return null;
+        const connector = await credentialStrategies.SESSION.connect({
+            sessionId: this.sessionId,
+            serverUrl: this.serverUrl,
+        });
+        store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
+        this._clearSessionBootstrapParams();
+        return connector;
     }
 
     _buildCurrentConnection() {
+        const connection = buildConnectionFromConnector(this.connector, this.sfApiVersion);
+        if (!connection) {
+            return null;
+        }
+        const workspaceRoot = this._normalizeWorkspaceRoot(
+            this._workspaceRoot || this._deriveConnectionWorkspaceRoot(connection)
+        );
         return {
-            instanceUrl: String(this.sfInstanceUrl || '').trim(),
-            apiVersion: normalizeSfApiVersion(this.sfApiVersion, DEFAULT_SOURCE_API_VERSION),
-            accessToken: String(this.sfAccessToken || '').trim(),
-            authType: this.orgContext?.sharedAlias ? 'oauth' : 'manual',
-            sharedAlias: this.orgContext?.sharedAlias || '',
-            oauthConnectionId: '',
-            username: this.orgContext?.username || '',
-            userId: '',
-            orgId: this.orgContext?.orgId || '',
-            organizationName: this.orgContext?.organizationName || '',
-            organizationType: this.orgContext?.organizationType || '',
-            isSandbox: this.orgContext?.isSandbox,
-            workspaceRoot: this._workspaceRoot || '',
+            ...connection,
+            apiVersion: normalizeSfApiVersion(connection.apiVersion, DEFAULT_SOURCE_API_VERSION),
+            workspaceRoot,
+            hasConnection: Boolean(connection.instanceUrl && connection.accessToken),
+            sessionHasExpired: this.sessionHasExpired,
         };
     }
 
-    _applyActiveConnection(connection) {
-        if (!connection?.instanceUrl || !connection?.accessToken) {
+    async _syncWorkbenchConnectionUi({ announceExpired = false } = {}) {
+        const services = getActiveMetadataExtensionServices();
+        const connectionRuntime = services?.connectionRuntime;
+        if (!connectionRuntime) {
             return;
         }
-        this.sfInstanceUrl = connection.instanceUrl;
-        this.sfAccessToken = connection.accessToken;
+
+        const currentConnection = connectionRuntime.loadStoredConn();
+        connectionRuntime.setStatus(currentConnection);
+
+        const message = currentConnection?.instanceUrl || currentConnection?.sessionHasExpired
+            ? connectionRuntime.getConnectionProblemMessage(currentConnection)
+            : null;
+        await services?.setLoginProblem?.(
+            currentConnection?.accessToken ? null : message || null
+        );
+
+        if (announceExpired && currentConnection?.sessionHasExpired && message) {
+            await services?.context?.vscode?.window?.showErrorMessage?.(message);
+        }
+    }
+
+    _buildCurrentConnectionContext() {
+        const connection = this._buildCurrentConnection();
+        if (!connection || !this.connector) {
+            return null;
+        }
+        return {
+            connector: this.connector,
+            connection,
+        };
+    }
+
+    _requireCurrentConnection() {
+        const activeConnection = this._buildCurrentConnection();
+        if (!activeConnection?.instanceUrl || !activeConnection?.accessToken) {
+            throw new Error(
+                'Salesforce connection is required to open this workbench. Launch it from a connected toolkit session.'
+            );
+        }
+        return activeConnection;
+    }
+
+    _applyActiveConnection(connection) {
+        if (!connection?.instanceUrl) {
+            return;
+        }
         this.sfApiVersion = normalizeSfApiVersion(
             connection.apiVersion,
             DEFAULT_SOURCE_API_VERSION
         );
-        this.sfConnected = true;
-        this.sfError = null;
         this._workspaceRoot = this._normalizeWorkspaceRoot(
             connection.workspaceRoot || this._deriveConnectionWorkspaceRoot(connection)
         );
@@ -580,90 +576,21 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             this._workspaceRoot = this._normalizeWorkspaceRoot(
                 this._workspaceRoot || this.workspaceBasePath
             );
-            await this._syncAppApiVersionFromWorkspace(this._workspaceRoot, this.sfApiVersion);
             const isChromeExtension = Boolean(globalThis?.chrome?.runtime?.id);
             this._isChromeExtension = isChromeExtension;
-            let activeConnection = null;
-
-            const urlConnection = parseUrlConnectionParams();
-            if (urlConnection) {
-                try {
-                    const validatedUrlConnection =
-                        await this._validateBootstrapConnection(urlConnection);
-                    await persistActiveConnection(validatedUrlConnection);
-                    this._applyActiveConnection(validatedUrlConnection);
-                    activeConnection = validatedUrlConnection;
-                } catch (e) {
-                    this.sfError =
-                        e?.message || 'Failed to validate URL-provided Salesforce connection.';
-                    await clearActiveConnection();
-                } finally {
-                    clearUrlConnectionParams();
-                }
-            } else {
-                const propConnection = await this._resolveBootstrapConnectionFromProps().catch(
-                    () => null
-                );
-                if (propConnection?.instanceUrl && propConnection?.accessToken) {
-                    await persistActiveConnection(propConnection);
-                    this._applyActiveConnection(propConnection);
-                    activeConnection = propConnection;
-                } else {
-                    const storedConnection = loadStoredConnection();
-                    if (
-                        storedConnection.sharedAlias ||
-                        (storedConnection.instanceUrl && storedConnection.accessToken)
-                    ) {
-                        const resolvedConnection = await resolveStoredConnection(
-                            storedConnection
-                        ).catch(() => storedConnection);
-                        if (resolvedConnection.instanceUrl && resolvedConnection.accessToken) {
-                            const validatedStoredConnection =
-                                await this._validateBootstrapConnection(resolvedConnection).catch(
-                                    () => resolvedConnection
-                                );
-                            await persistActiveConnection(validatedStoredConnection);
-                            this._applyActiveConnection(validatedStoredConnection);
-                            activeConnection = validatedStoredConnection;
-                        }
-                    }
-                }
-            }
-
-            if (
-                (!this.sfInstanceUrl || !this.sfAccessToken) &&
-                isChromeExtension &&
-                this.sourceTabId &&
-                chrome?.runtime?.sendMessage
-            ) {
-                const tabId = Number(this.sourceTabId);
-                if (Number.isFinite(tabId)) {
-                    try {
-                        const cookieInfo = await chrome.runtime.sendMessage({
-                            action: 'fetchCookieForTabId',
-                            tabId,
-                        });
-                        const serverUrl = cookieInfo?.serverUrl;
-                        const sessionId = cookieInfo?.sessionId;
-                        if (serverUrl && sessionId) {
-                            this.sfInstanceUrl = serverUrl;
-                            this.sfAccessToken = sessionId;
-                            this.sfUseProxy = false;
-                            activeConnection = await this.handleConnect();
-                        } else if (cookieInfo?.error) {
-                            this.sfError = cookieInfo.error;
-                        }
-                    } catch (e) {
-                        this.sfError = e?.message || 'Failed to read Salesforce session cookie.';
-                    }
-                }
-            }
-
-            await this._prepareWorkspaceBootstrap(
-                activeConnection?.instanceUrl && activeConnection?.accessToken
-                    ? activeConnection
-                    : null
+            await this._ensureConnectorBootstrap();
+            let activeConnection = this._requireCurrentConnection();
+            this._applyActiveConnection(activeConnection);
+            await this._syncAppApiVersionFromWorkspace(
+                this._workspaceRoot,
+                activeConnection.apiVersion || this.sfApiVersion
             );
+            activeConnection = {
+                ...activeConnection,
+                apiVersion: this.sfApiVersion,
+            };
+            this._applyActiveConnection(activeConnection);
+            await this._prepareWorkspaceBootstrap(activeConnection);
 
             const host = this.template.querySelector('.workbench-host');
             if (!host) {
@@ -693,7 +620,6 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                     workspaceRoot: this._workspaceRoot,
                     apiVersion: this.sfApiVersion,
                 };
-                await persistActiveConnection(syncedConnection);
                 this._applyActiveConnection(syncedConnection);
                 activeConnection = syncedConnection;
             }
@@ -855,29 +781,12 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         return this._workbenchFilesService;
     }
 
-    get sfStatusText() {
-        if (this.sfConnecting) return 'Connecting...';
-        if (this.sfRefreshing) return 'Refreshing metadata...';
-        if (this.sfConnected) {
-            try {
-                const url = new URL(this.sfInstanceUrl);
-                const last = this.sfLastRefreshAt ? ` • refreshed ${this.sfLastRefreshAt}` : '';
-                return `Connected: ${url.host}${last}`;
-            } catch {
-                return this.sfLastRefreshAt
-                    ? `Connected • refreshed ${this.sfLastRefreshAt}`
-                    : 'Connected';
-            }
-        }
-        return 'Not connected';
-    }
-
-    get sfPanelChevron() {
-        return this.sfPanelCollapsed ? '▸' : '▾';
-    }
-
     get showOrgBanner() {
-        return Boolean(this.orgContext?.hasConnection);
+        return Boolean(
+            this.orgContext?.hasConnection ||
+                this.orgContext?.instanceUrl ||
+                this.orgContext?.host
+        );
     }
 
     get orgBannerClass() {
@@ -901,151 +810,25 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         return this.orgContext?.host || '';
     }
 
-    get connectDisabled() {
-        return (
-            this.sfConnecting ||
-            this.sfRefreshing ||
-            !this.sfInstanceUrl?.trim() ||
-            !this.sfAccessToken?.trim()
-        );
+    get showSessionExpiredBanner() {
+        return this.sessionHasExpired || this.isSessionExpiredInitializationError;
     }
 
-    get refreshDisabled() {
-        return this.sfConnecting || this.sfRefreshing || !this.sfConnected;
+    get isSessionExpiredInitializationError() {
+        const message = String(this.initializationError || '').toLowerCase();
+        return message.includes('session expired');
     }
 
-    get disconnectDisabled() {
-        return this.sfConnecting || this.sfRefreshing || !this.sfConnected;
+    get showInitializationErrorOverlay() {
+        return Boolean(this.initializationError) && !this.showSessionExpiredBanner;
     }
 
-    handleInstanceUrlInput(event) {
-        this.sfInstanceUrl = event?.target?.value ?? '';
-    }
-
-    handleAccessTokenInput(event) {
-        this.sfAccessToken = event?.target?.value ?? '';
-    }
-
-    handleUseProxyToggle(event) {
-        this.sfUseProxy = Boolean(event?.target?.checked);
-        try {
-            localStorage.setItem(STORAGE_KEYS.useProxy, String(this.sfUseProxy));
-        } catch {
-            // ignore
-        }
-    }
-
-    handleProxyUrlInput(event) {
-        this.sfProxyUrl = event?.target?.value ?? '';
-        try {
-            localStorage.setItem(STORAGE_KEYS.proxyUrl, this.sfProxyUrl);
-        } catch {
-            // ignore
-        }
-    }
-
-    handlePanelToggle() {
-        this.sfPanelCollapsed = !this.sfPanelCollapsed;
-        try {
-            localStorage.setItem(STORAGE_KEYS.panelCollapsed, String(this.sfPanelCollapsed));
-        } catch {
-            // ignore
-        }
-    }
-
-    async handleConnect() {
-        this.sfError = null;
-        this.sfConnecting = true;
-        this.sfConnected = false;
-        try {
-            await this._syncAppApiVersionFromWorkspace(this._workspaceRoot, this.sfApiVersion);
-            const activeConnection = await this._validateBootstrapConnection({
-                instanceUrl: this.sfInstanceUrl,
-                apiVersion: this.sfApiVersion,
-                accessToken: this.sfAccessToken,
-                authType: 'manual',
-                sharedAlias: '',
-                username: '',
-                userId: '',
-                orgId: '',
-                oauthConnectionId: '',
-            });
-            const requiresReload =
-                this.vscodeInitialized && activeConnection.workspaceRoot !== this._workspaceRoot;
-            await persistActiveConnection(activeConnection);
-            this._applyActiveConnection(activeConnection);
-            await this._prepareWorkspaceBootstrap(activeConnection);
-
-            if (requiresReload) {
-                window.location.reload();
-                return;
-            }
-
-            this.sfConnected = true;
-            try {
-                localStorage.setItem(STORAGE_KEYS.useProxy, String(this.sfUseProxy));
-                localStorage.setItem(STORAGE_KEYS.proxyUrl, this.sfProxyUrl);
-                localStorage.setItem(STORAGE_KEYS.panelCollapsed, String(this.sfPanelCollapsed));
-            } catch {
-                // ignore
-            }
-            return activeConnection;
-        } catch (e) {
-            this.sfError = e?.message || 'Failed to connect to Salesforce.';
-            this.sfConnected = false;
-            return null;
-        } finally {
-            this.sfConnecting = false;
-        }
-    }
-
-    async handleRefresh() {
-        this.sfError = null;
-        this.sfRefreshing = true;
-        try {
-            await this.refreshSalesforceMetadata();
-            this.sfLastRefreshAt = new Date().toLocaleTimeString();
-        } catch (e) {
-            this.sfError = e?.message || 'Failed to refresh metadata.';
-        } finally {
-            this.sfRefreshing = false;
-        }
-    }
-
-    async handleFetchMetadata() {
-        this.sfError = null;
-        this.sfRefreshing = true;
-        try {
-            if (!this.sfConnected) {
-                await this.handleConnect();
-            }
-            if (!this.sfConnected) {
-                throw new Error('Not connected.');
-            }
-            await this.refreshSalesforceMetadata();
-            this.sfLastRefreshAt = new Date().toLocaleTimeString();
-        } catch (e) {
-            this.sfError = e?.message || 'Failed to fetch metadata.';
-        } finally {
-            this.sfRefreshing = false;
-        }
-    }
-
-    handleDisconnect() {
-        this.sfConnected = false;
-        this.sfError = null;
-        this.sfLastRefreshAt = null;
-        this._workspaceRoot = this._normalizeWorkspaceRoot(this.workspaceBasePath);
-        this.orgContext = buildOrgContext();
-        void clearActiveConnection();
-        this.sfAccessToken = '';
-        this.sfInstanceUrl = '';
+    get showLoadingOverlay() {
+        return !this.vscodeInitialized && !this.initializationError;
     }
 
     async refreshSalesforceMetadata() {
-        await refreshSalesforceMetadataForApp(this, {
-            createToolingClient,
-        });
+        await refreshSalesforceMetadataForApp(this);
     }
 
     async _runDemoFeatures() {

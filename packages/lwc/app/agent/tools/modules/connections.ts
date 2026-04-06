@@ -10,9 +10,10 @@ import { store, APPLICATION } from 'core/store';
 import LOGGER from 'shared/logger';
 import { z } from 'zod';
 import type { ConnectorLike } from 'core/connector';
+import { CONNECTION_TOOL_DESCRIPTIONS } from '../constants';
 
 const { tool } = window.OpenAIAgentsBundle?.Agents || {};
-import { openToolkit, openBrowser } from './utils/utils';
+import { openToolkit, openBrowser } from '../utils/utils';
 
 async function _getConnector({
     alias,
@@ -119,8 +120,7 @@ async function navigateToOrg({
 
 const listConnectionTool = tool({
     name: 'list_connections',
-    description:
-        'List all Salesforce org connections (aliases, usernames, etc.) available in the toolkit.',
+    description: CONNECTION_TOOL_DESCRIPTIONS.listConnections,
     parameters: z.object({}),
     execute: async () => {
         try {
@@ -135,31 +135,7 @@ const listConnectionTool = tool({
 
 const connectToOrgTool = tool({
     name: 'connect_org',
-    description: `Connect to a Salesforce org. 
-
-    ## Instructions:
-    - Set Redirect to a specific application (applicationName=api) to open a specific application but by default you can keep it null
-
-    ## Applications available:
-        - api: Open the API Explorer
-        - soql: Open the SOQL Editor
-        - anonymousApex: Open the Anonymous Apex Editor
-        - agent: Open the Agent
-        - connections: Open the Connections
-        - settings: Open the Settings
-        - accessAnalyzer: Open the Access Analyzer
-        - org: Open the Org. Overview
-        - code: Open the Code Toolkit
-        - metadata: Open the Metadata Explorer
-        - object: Open the SObject Explorer
-        - doc: Open the Documentation
-        - recordViewer: Open the Record Viewer
-        - platformevent: Open the Event Explorer
-        - package: Open the Deploy/Retrieve
-        - assistant: Open the AI Assistant
-        - settings: Open the Settings
-        - release: Open the Release Notes
-    `,
+    description: CONNECTION_TOOL_DESCRIPTIONS.connectOrg,
     parameters: z.object({
         alias: z.string().describe('The alias of the org to connect to'),
         sessionId: z
@@ -176,7 +152,7 @@ const connectToOrgTool = tool({
             .string()
             .optional()
             .nullable()
-            .describe('The redirect url to open (applicationName=api)'),
+            .describe(CONNECTION_TOOL_DESCRIPTIONS.connectRedirect),
     }),
     execute: async ({ alias, sessionId, instanceUrl, redirect }) => {
         try {
@@ -190,7 +166,7 @@ const connectToOrgTool = tool({
 
 const disconnectOrgTool = tool({
     name: 'disconnect_org',
-    description: 'Disconnect from the current Salesforce org (removes session).',
+    description: CONNECTION_TOOL_DESCRIPTIONS.disconnectOrg,
     parameters: z.object({}),
     execute: async () => {
         try {
@@ -204,7 +180,7 @@ const disconnectOrgTool = tool({
 
 const navigateToOrgTool = tool({
     name: 'navigate_to_org',
-    description: `Navigate to a Salesforce org. Redirect is optional and can be used to open a specific page/application specific to salesforce.`,
+    description: CONNECTION_TOOL_DESCRIPTIONS.navigateToOrg,
     parameters: z.object({
         alias: z.string().describe('The alias of the org to open (different from username)'),
         username: z.string().optional().nullable().describe('The username of the org to open'),

@@ -518,3 +518,9 @@
 .sf-toolkit .slds-radio_button-group, .sf-toolkit .slds-radio--button-group {
     border:unset !important;
 }
+
+/** Chat Fix **/
+
+.sf-toolkit .slds-chat-listitem {
+    margin-top: unset !important;
+}

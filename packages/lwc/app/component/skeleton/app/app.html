@@ -83,15 +83,15 @@
                                                 </slds-information-block>
                                             </template>
                                             <!-- Feature - Start -->
-                                            <template
-                                                for:each={applications}
-                                                for:item="application">
-                                                <div
-                                                    key={application.id}
-                                                    class={application.classVisibility}>
-                                                    <slds-require-connection
-                                                        is-required={application.requireConnection}
-                                                        class="slds-full-height">
+                                            <slds-auth-boundary
+                                                is-required={currentApplicationRequiresConnection}
+                                                class="slds-full-height">
+                                                <template
+                                                    for:each={applications}
+                                                    for:item="application">
+                                                    <div
+                                                        key={application.id}
+                                                        class={application.classVisibility}>
                                                         <template lwc:if={application.isFullHeight}>
                                                             <lwc:component
                                                                 lwc:is={application.constructor}
@@ -105,9 +105,9 @@
                                                                     lwc:spread={application.attributes}></lwc:component>
                                                             </div>
                                                         </template>
-                                                    </slds-require-connection>
-                                                </div>
-                                            </template>
+                                                    </div>
+                                                </template>
+                                            </slds-auth-boundary>
                                             <!-- Feature - End -->
                                         </div>
                                     </section>

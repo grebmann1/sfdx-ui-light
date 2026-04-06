@@ -151,7 +151,6 @@ const METADATA_EXTENSION_BASE_CONFIG = {
             { language: 'html', path: '/workspace/lwc-html.code-snippets' },
         ],
         commands: [
-            { command: 'salesforceMetadata.connect', title: 'Salesforce: Connect' },
             {
                 command: 'salesforceMetadata.setWorkspaceApiVersion',
                 title: 'Salesforce: Set Workspace API Version',
@@ -160,7 +159,6 @@ const METADATA_EXTENSION_BASE_CONFIG = {
                 command: 'salesforceMetadata.fetchMetadata',
                 title: 'Salesforce: Sync Project (fetch/update/delete)',
             },
-            { command: 'salesforceMetadata.disconnect', title: 'Salesforce: Disconnect' },
             {
                 command: 'salesforceMetadata.sourceStatus',
                 title: 'Salesforce: Source Status (Tooling API)',
@@ -226,10 +224,6 @@ const METADATA_EXTENSION_BASE_CONFIG = {
                 title: 'Salesforce: Open Debug Logs (Tooling API)',
             },
             {
-                command: 'salesforceMetadata.compareOrgs',
-                title: 'Salesforce: Compare Two Orgs (Tooling API)',
-            },
-            {
                 command: 'salesforceMetadata.whereUsed',
                 title: 'Salesforce: Where Used / Dependencies (Tooling API)',
             },
@@ -288,10 +282,8 @@ const METADATA_EXTENSION_BASE_CONFIG = {
         ],
         menus: {
             commandPalette: [
-                { command: 'salesforceMetadata.connect' },
                 { command: 'salesforceMetadata.setWorkspaceApiVersion' },
                 { command: 'salesforceMetadata.fetchMetadata' },
-                { command: 'salesforceMetadata.disconnect' },
                 { command: 'salesforceMetadata.sourceStatus' },
                 { command: 'salesforceMetadata.pullRemoteChanges' },
                 { command: 'salesforceMetadata.orgBrowser' },
@@ -308,7 +300,6 @@ const METADATA_EXTENSION_BASE_CONFIG = {
                 { command: 'salesforceMetadata.runApexTests' },
                 { command: 'salesforceMetadata.enableDebugLogs' },
                 { command: 'salesforceMetadata.openDebugLogs' },
-                { command: 'salesforceMetadata.compareOrgs' },
                 { command: 'salesforceMetadata.whereUsed' },
                 { command: 'salesforceMetadata.diffCurrentFile' },
                 { command: 'salesforceMetadata.showOutput' },
@@ -343,7 +334,7 @@ const METADATA_EXTENSION_BASE_CONFIG = {
 
 function buildOrgIntro(orgContext) {
     if (!orgContext.hasConnection) {
-        return 'Connect to a Salesforce org to personalize this workbench and load metadata.';
+        return 'This workbench needs a Salesforce connection from the parent toolkit session before metadata commands can run.';
     }
 
     switch (orgContext.environmentType) {
@@ -351,6 +342,12 @@ function buildOrgIntro(orgContext) {
             return `You are currently connected to **${orgContext.displayName}**. This is a **production org**, so review changes carefully before syncing or deploying.`;
         case ORG_ENVIRONMENT_TYPES.sandbox:
             return `You are currently connected to **${orgContext.displayName}**. This is a **sandbox org**, so it is safer for exploration and testing.`;
+        case ORG_ENVIRONMENT_TYPES.scratch:
+            return `You are currently connected to **${orgContext.displayName}**. This is a **scratch org**, so it is intended for short-lived development, validation, and disposable experiments.`;
+        case ORG_ENVIRONMENT_TYPES.trailhead:
+            return `You are currently connected to **${orgContext.displayName}**. This is a **Trailhead org**, so it is intended for learning, guided exercises, and experimentation.`;
+        case ORG_ENVIRONMENT_TYPES.dev:
+            return `You are currently connected to **${orgContext.displayName}**. This is a **dev org**, so it is intended for local development and isolated testing.`;
         default:
             return `You are currently connected to **${orgContext.displayName}**. The org type could not be confirmed automatically, so treat changes with care.`;
     }
@@ -362,13 +359,18 @@ function buildWalkthroughMarkdown(orgContext) {
         ? `- Organization: **${orgContext.organizationName}**\n`
         : '';
     const usernameLine = orgContext.username ? `- Username: \`${orgContext.username}\`\n` : '';
-    const aliasLine = orgContext.sharedAlias ? `- Alias: **${orgContext.sharedAlias}**\n` : '';
     const orgIdLine = orgContext.orgId ? `- Org Id: \`${orgContext.orgId}\`\n` : '';
     const environmentWarning =
         orgContext.environmentType === ORG_ENVIRONMENT_TYPES.production
             ? 'Because this is a **production org**, make changes carefully and review anything that could affect live users or data before you sync, retrieve, or deploy.'
             : orgContext.environmentType === ORG_ENVIRONMENT_TYPES.sandbox
               ? 'Because this is a **sandbox org**, this environment is better suited for exploration, validation, and trying workflows before touching production.'
+              : orgContext.environmentType === ORG_ENVIRONMENT_TYPES.scratch
+                ? 'Because this is a **scratch org**, this environment is best suited for short-lived development, verification, and disposable experiments.'
+              : orgContext.environmentType === ORG_ENVIRONMENT_TYPES.trailhead
+                ? 'Because this is a **Trailhead org**, this environment is best suited for learning, hands-on exercises, and experimentation rather than production-like workflows.'
+                : orgContext.environmentType === ORG_ENVIRONMENT_TYPES.dev
+                  ? 'Because this is a **dev org**, this environment is best suited for local development, debugging, and isolated validation.'
               : 'Because the org type could not be confirmed automatically, treat this environment carefully until you verify whether it is production or sandbox.';
 
     return `# Welcome to the Salesforce Workbench
@@ -397,7 +399,7 @@ This embedded workspace is a lightweight version of VS Code focused on Salesforc
 
 ## Current org context
 
-${orgNameLine}${aliasLine}${hostLine}${usernameLine}${orgIdLine}- Environment: **${orgContext.environmentLabel}**
+${orgNameLine}${hostLine}${usernameLine}${orgIdLine}- Environment: **${orgContext.environmentLabel}**
 
 ## How the built-in agent can help
 
@@ -425,7 +427,7 @@ ${orgNameLine}${aliasLine}${hostLine}${usernameLine}${orgIdLine}- Environment: *
 function buildWalkthroughs(orgContext) {
     const salesforceActionDescription = orgContext.hasConnection
         ? `[Open the Salesforce panel](command:${OPEN_SALESFORCE_PANEL_COMMAND}) to browse commands and metadata actions, or [sync metadata now](command:salesforceMetadata.fetchMetadata) when you are ready.`
-        : `[Open the Salesforce panel](command:${OPEN_SALESFORCE_PANEL_COMMAND}) to browse commands and metadata actions, or [connect to Salesforce](command:salesforceMetadata.connect) to personalize this workspace.`;
+        : `[Open the Salesforce panel](command:${OPEN_SALESFORCE_PANEL_COMMAND}) to browse commands and metadata actions. This workbench becomes active when it is launched from a connected toolkit session.`;
 
     return [
         {

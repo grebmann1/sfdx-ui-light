@@ -3,6 +3,7 @@ import LOGGER from 'shared/logger';
 import { isNotUndefinedOrNull } from 'shared/utils';
 import { z } from 'zod';
 import type { ConnectorLike } from 'core/connector';
+import { GENERAL_TOOL_DESCRIPTIONS } from '../constants';
 const { tool } = window.OpenAIAgentsBundle?.Agents || {};
 
 /**
@@ -38,7 +39,7 @@ function checkUserLoggedIn() {
 
 const getCurrentApp = tool({
     name: 'get_current_application',
-    description: 'Get the current application name in the toolkit.',
+    description: GENERAL_TOOL_DESCRIPTIONS.currentApplication,
     parameters: z.object({}),
     execute: async () => {
         return getCurrentApplication();
@@ -47,7 +48,7 @@ const getCurrentApp = tool({
 
 const getCurrentUserConnection = tool({
     name: 'get_current_connection',
-    description: 'Get the current user/connection information.',
+    description: GENERAL_TOOL_DESCRIPTIONS.currentConnection,
     parameters: z.object({}),
     execute: async () => {
         return getCurrentConnection();
@@ -56,7 +57,7 @@ const getCurrentUserConnection = tool({
 
 const checkUserLoggedInTool = tool({
     name: 'check_user_logged_in',
-    description: 'Check if the user is logged in.',
+    description: GENERAL_TOOL_DESCRIPTIONS.checkLoggedIn,
     parameters: z.object({}),
     execute: async () => {
         return {

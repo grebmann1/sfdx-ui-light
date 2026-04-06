@@ -1,7 +1,8 @@
 import { store, API, DOCUMENT, SELECTORS } from 'core/store';
 import { z } from 'zod';
 
-import { waitForLoaded, wrappedNavigate, formatTabId } from './utils/utils';
+import { API_TOOL_DESCRIPTIONS, TOOL_APP_NAMES } from '../constants';
+import { waitForLoaded, wrappedNavigate, formatTabId } from '../utils/utils';
 
 const { tool } = window.OpenAIAgentsBundle?.Agents || {};
 
@@ -100,27 +101,19 @@ async function updateMethod({ tabId, method }) {
 const apiAgentTools = [
     tool({
         name: 'getTabs',
-        description: `Get all API tabs currently open in the API editor. 
-        Returns an array of tab objects representing the current open API tabs. 
-        Use this to list or inspect all open tabs.`,
+        description: API_TOOL_DESCRIPTIONS.getTabs,
         parameters: z.object({}),
         execute: getTabs,
     }),
     tool({
         name: 'selectTab',
-        description: `Select a tab by its ID in the API editor. 
-        The tabId must correspond to an existing tab. 
-        If the tabId does not exist, the selection will fail.`,
+        description: API_TOOL_DESCRIPTIONS.selectTab,
         parameters: z.object({ tabId: z.string().describe('Tab ID to select') }),
         execute: selectTab,
     }),
     tool({
         name: 'upsertTab',
-        description: `Add or update a tab in the API editor. 
-        If the tab.id matches an existing tab, that tab will be updated. 
-        If the tab.id is new, a new tab will be created. 
-        When creating a new tab, ensure the id is unique and not reused from an existing tab. 
-        Reusing an existing tab id for a new tab is not allowed and will result in updating the existing tab instead.`,
+        description: API_TOOL_DESCRIPTIONS.upsertTab,
         parameters: z.object({
             tab: z
                 .object({
@@ -136,31 +129,25 @@ const apiAgentTools = [
     }),
     tool({
         name: 'getRecentApiCalls',
-        description: `Get the list of recent API calls. 
-        Returns an array of recent API call objects, ordered from most recent to least recent.`,
+        description: API_TOOL_DESCRIPTIONS.recentCalls,
         parameters: z.object({}),
         execute: getRecentApiCalls,
     }),
     tool({
         name: 'getSavedApiScripts',
-        description: `Get the list of saved API scripts. 
-        Only scripts that are global or associated with an alias are returned. 
-        Use this to retrieve reusable API scripts.`,
+        description: API_TOOL_DESCRIPTIONS.savedScripts,
         parameters: z.object({}),
         execute: getSavedApiScripts,
     }),
     tool({
         name: 'getOpenAPISavedScripts',
-        description: `Get the list of saved OpenAPI schema files. 
-        Returns all OpenAPI schema files currently available in the editor.`,
+        description: API_TOOL_DESCRIPTIONS.openApiSavedScripts,
         parameters: z.object({}),
         execute: getOpenAPISavedScripts,
     }),
     tool({
         name: 'getOpenAPIMethodForScript',
-        description: `Get the OpenAPI method definition for a specific script and HTTP method. 
-        Provide a valid scriptId and HTTP method (GET, POST, etc.). 
-        Returns the path, method, and operation details if found, otherwise returns null.`,
+        description: API_TOOL_DESCRIPTIONS.openApiMethodForScript,
         parameters: z.object({
             scriptId: z.string().describe('OpenAPI schema file ID'),
             method: z.string().describe('HTTP method (GET, POST, etc.)'),
@@ -169,9 +156,7 @@ const apiAgentTools = [
     }),
     tool({
         name: 'updateBody',
-        description: `Update the body for a specific tab. 
-        The tabId must correspond to an existing tab. 
-        The body should be a string representing the request payload.`,
+        description: API_TOOL_DESCRIPTIONS.updateBody,
         parameters: z.object({
             tabId: z.string().describe('Tab ID'),
             body: z.string().describe('Request body'),
@@ -180,9 +165,7 @@ const apiAgentTools = [
     }),
     tool({
         name: 'updateHeader',
-        description: `Update the header for a specific tab. 
-        The tabId must correspond to an existing tab. 
-        The header should be a string representing the request headers.`,
+        description: API_TOOL_DESCRIPTIONS.updateHeader,
         parameters: z.object({
             tabId: z.string().describe('Tab ID'),
             header: z.string().describe('Request header'),
@@ -191,17 +174,13 @@ const apiAgentTools = [
     }),
     tool({
         name: 'updateVariable',
-        description: `Update the global variables for the API editor. 
-        Variables should be provided as a JSON string. 
-        This will overwrite all existing variables.`,
+        description: API_TOOL_DESCRIPTIONS.updateVariable,
         parameters: z.object({ variables: z.string().describe('Variables as JSON string') }),
         execute: updateVariable,
     }),
     tool({
         name: 'updateEndpoint',
-        description: `Update the endpoint for a specific tab. 
-        The tabId must correspond to an existing tab. 
-        The endpoint should be a valid API endpoint string.`,
+        description: API_TOOL_DESCRIPTIONS.updateEndpoint,
         parameters: z.object({
             tabId: z.string().describe('Tab ID'),
             endpoint: z.string().describe('API endpoint'),
@@ -210,9 +189,7 @@ const apiAgentTools = [
     }),
     tool({
         name: 'updateMethod',
-        description: `Update the HTTP method for a specific tab. 
-        The tabId must correspond to an existing tab. 
-        The method should be a valid HTTP method string (e.g., GET, POST, PUT, DELETE).`,
+        description: API_TOOL_DESCRIPTIONS.updateMethod,
         parameters: z.object({
             tabId: z.string().describe('Tab ID'),
             method: z.string().describe('HTTP method'),
@@ -222,28 +199,24 @@ const apiAgentTools = [
     // --- New Tools ---
     tool({
         name: 'navigateToApiEditor',
-        description: `Navigate the user interface to the API editor. 
-        Use this to programmatically switch the application view to the API editor. 
-        No parameters are required. Returns { success: true } if navigation is triggered.`,
+        description: API_TOOL_DESCRIPTIONS.navigateToEditor,
         parameters: z.object({}),
         async execute() {
             const { application } = store.getState();
             if (application.isLoading) await waitForLoaded();
-            await wrappedNavigate({ applicationName: 'api' });
+            await wrappedNavigate({ applicationName: TOOL_APP_NAMES.api });
             return { success: true };
         },
     }),
     tool({
         name: 'getApplicationContext',
-        description: `Get the current application context for the API editor. 
-        Returns information about the current editor state. 
-        No parameters are required.`,
+        description: API_TOOL_DESCRIPTIONS.applicationContext,
         parameters: z.object({}),
         async execute() {
             const state = store.getState();
             const apiState = state.api || {};
             return {
-                editor: 'api',
+                editor: TOOL_APP_NAMES.api,
                 currentTab: apiState.currentTab || null,
                 tabs: apiState.tabs || [],
                 currentBody: apiState.body || null,

@@ -1,75 +1,65 @@
+import { createToolingClient } from '../../toolingApi/toolingApi.js';
 import { fetchAndPopulateWorkspace } from '../extensions/metadata/runtime/workspaceSync.js';
 
-import { DEFAULT_SOURCE_API_VERSION, normalizeSfApiVersion } from './sfdxProject.js';
 import {
     isAuthError,
-    refreshStoredConnection,
-    resolveStoredConnection,
-} from './sharedConnection.js';
-
-function getEffectiveProxyUrl(app) {
-    return app.sfUseProxy ? app.sfProxyUrl?.trim() || window.location.origin : undefined;
-}
-
-function createAppToolingClient(app, createToolingClient, connection) {
-    return createToolingClient({
-        instanceUrl: connection.instanceUrl,
-        accessToken: connection.accessToken,
-        apiVersion: normalizeSfApiVersion(
-            connection.apiVersion || app.sfApiVersion,
-            DEFAULT_SOURCE_API_VERSION
-        ),
-        proxyUrl: getEffectiveProxyUrl(app),
-    });
-}
-
-function getAppConnection(app) {
-    const currentConnection = app?._buildCurrentConnection?.();
-    if (
-        currentConnection?.sharedAlias ||
-        (currentConnection?.instanceUrl && currentConnection?.accessToken)
-    ) {
-        return currentConnection;
-    }
-
-    return {
-        instanceUrl: app.sfInstanceUrl,
-        accessToken: app.sfAccessToken,
-        apiVersion: normalizeSfApiVersion(app.sfApiVersion, DEFAULT_SOURCE_API_VERSION),
-        authType: '',
-        sharedAlias: '',
-        username: app.orgContext?.username || '',
-        userId: '',
-        orgId: app.orgContext?.orgId || '',
-        organizationName: app.orgContext?.organizationName || '',
-        organizationType: app.orgContext?.organizationType || '',
-        isSandbox: app.orgContext?.isSandbox,
-        workspaceRoot: app?._workspaceRoot || '',
-    };
-}
+    refreshConnectionRecord,
+    resolveConnectionRecord,
+} from './connectorRecord.js';
+import { DEFAULT_SOURCE_API_VERSION, normalizeSfApiVersion } from './sfdxProject.js';
 
 async function resolveAppConnection(app) {
-    const current = getAppConnection(app);
-    const resolved = await resolveStoredConnection(current).catch(() => current);
+    const current = app?._requireCurrentConnection?.();
+    const resolved = await resolveConnectionRecord(current, {
+        workspaceBasePath: app.workspaceBasePath || app._workspaceRoot,
+    }).catch(() => current);
     app._applyActiveConnection?.(resolved);
     return resolved;
 }
 
-async function withAuthedToolingClient(app, createToolingClient, fn) {
+async function withAuthedToolingClient(app, fn) {
     const current = await resolveAppConnection(app);
+    const currentConnector = app?.connector;
+    if (!currentConnector?.conn) {
+        throw new Error('Salesforce connection is required to open this workbench.');
+    }
 
     try {
-        return await fn(createAppToolingClient(app, createToolingClient, current), current);
+        return await fn(
+            createToolingClient({
+                connection: currentConnector.conn,
+                apiVersion: normalizeSfApiVersion(
+                    current.apiVersion || app.sfApiVersion,
+                    DEFAULT_SOURCE_API_VERSION
+                ),
+            }),
+            current
+        );
     } catch (error) {
         if (!isAuthError(error)) {
             throw error;
         }
-        const refreshed = await refreshStoredConnection(current).catch(() => null);
+        const refreshed = await refreshConnectionRecord(current, {
+            workspaceBasePath: app.workspaceBasePath || app._workspaceRoot,
+        }).catch(() => null);
         if (!refreshed) {
             throw error;
         }
         app._applyActiveConnection?.(refreshed);
-        return await fn(createAppToolingClient(app, createToolingClient, refreshed), refreshed);
+        const nextConnector = app?.connector;
+        if (!nextConnector?.conn) {
+            throw error;
+        }
+        return await fn(
+            createToolingClient({
+                connection: nextConnector.conn,
+                apiVersion: normalizeSfApiVersion(
+                    refreshed.apiVersion || app.sfApiVersion,
+                    DEFAULT_SOURCE_API_VERSION
+                ),
+            }),
+            refreshed
+        );
     }
 }
 
@@ -86,30 +76,24 @@ async function ensureWorkspaceFileServiceReady(app) {
     }
 }
 
-export async function refreshSalesforceMetadataForApp(app, { createToolingClient }) {
-    if (!app?.sfConnected) {
-        throw new Error('Not connected.');
-    }
+export async function refreshSalesforceMetadataForApp(app) {
+    app?._requireCurrentConnection?.();
     if (app._metadataRefreshPromise) {
         return await app._metadataRefreshPromise;
     }
 
     const refreshPromise = (async () => {
         await ensureWorkspaceFileServiceReady(app);
-        await withAuthedToolingClient(
-            app,
-            createToolingClient,
-            async (client, resolvedConnection) => {
-                app._applyActiveConnection?.({
-                    ...resolvedConnection,
-                    apiVersion: normalizeSfApiVersion(
-                        resolvedConnection.apiVersion || app.sfApiVersion,
-                        DEFAULT_SOURCE_API_VERSION
-                    ),
-                });
-                await fetchAndPopulateWorkspace(app._vscode, client);
-            }
-        );
+        await withAuthedToolingClient(app, async (client, resolvedConnection) => {
+            app._applyActiveConnection?.({
+                ...resolvedConnection,
+                apiVersion: normalizeSfApiVersion(
+                    resolvedConnection.apiVersion || app.sfApiVersion,
+                    DEFAULT_SOURCE_API_VERSION
+                ),
+            });
+            await fetchAndPopulateWorkspace(app._vscode, client);
+        });
     })();
 
     app._metadataRefreshPromise = refreshPromise;

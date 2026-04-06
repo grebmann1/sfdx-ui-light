@@ -29,17 +29,23 @@ function escapeXml(text) {
 }
 
 function stripBom(text) {
-    return text && text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text;
+    return text && text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
 }
 
 function firstText(doc, localName) {
-    const el = doc.getElementsByTagNameNS?.('*', localName)?.[0] || doc.getElementsByTagName(localName)?.[0];
+    const el =
+        doc.getElementsByTagNameNS?.('*', localName)?.[0] ||
+        doc.getElementsByTagName(localName)?.[0];
     const v = el?.textContent != null ? String(el.textContent) : '';
     return v.trim();
 }
 
 function firstEl(doc, localName) {
-    return doc.getElementsByTagNameNS?.('*', localName)?.[0] || doc.getElementsByTagName(localName)?.[0] || null;
+    return (
+        doc.getElementsByTagNameNS?.('*', localName)?.[0] ||
+        doc.getElementsByTagName(localName)?.[0] ||
+        null
+    );
 }
 
 function allEls(doc, localName) {
@@ -52,12 +58,17 @@ function allEls(doc, localName) {
 
 function parseSoapError(xmlText) {
     try {
-        const doc = new DOMParser().parseFromString(stripBom(String(xmlText || '')), 'application/xml');
+        const doc = new DOMParser().parseFromString(
+            stripBom(String(xmlText || '')),
+            'application/xml'
+        );
         const fault = firstEl(doc, 'Fault');
         if (!fault) return null;
         const faultString = firstText(fault, 'faultstring') || firstText(doc, 'faultstring');
         const detail = firstText(fault, 'exceptionMessage') || firstText(doc, 'exceptionMessage');
-        return (faultString || detail) ? `${faultString || 'SOAP Fault'}${detail ? ` - ${detail}` : ''}` : 'SOAP Fault';
+        return faultString || detail
+            ? `${faultString || 'SOAP Fault'}${detail ? ` - ${detail}` : ''}`
+            : 'SOAP Fault';
     } catch {
         return null;
     }
@@ -80,24 +91,6 @@ function bytesToBase64(bytes) {
     return btoa(out);
 }
 
-function toPath(urlOrPath, instanceUrl) {
-    const raw = String(urlOrPath ?? '');
-    if (/^https?:\/\//i.test(raw)) {
-        try {
-            const u = new URL(raw);
-            const i = new URL(instanceUrl);
-            if (u.origin === i.origin) {
-                return `${u.pathname}${u.search}${u.hash}`;
-            }
-        } catch {
-            // ignore
-        }
-        throw new Error('Absolute URLs are not supported.');
-    }
-    if (raw.startsWith('/')) return raw;
-    return `${raw.startsWith('?') ? '' : '/'}${raw}`;
-}
-
 export function unzipRetrieveZip(zipFileBase64) {
     const zipped = base64ToBytes(zipFileBase64);
     const files = unzipSync(zipped);
@@ -113,16 +106,24 @@ export function zipUnpackagedFiles(pathToBytes) {
 }
 
 export function createMetadataApiClient({ instanceUrl, accessToken, apiVersion, proxyUrl } = {}) {
+    const jsforceConnection = arguments[0]?.connection || arguments[0]?.connector?.conn || null;
     const normalizedInstanceUrl = normalizeInstanceUrl(instanceUrl);
     const normalizedApiVersion = normalizeApiVersion(apiVersion);
     const normalizedProxyUrl = normalizeProxyUrl(proxyUrl);
     const token = (accessToken ?? '').trim();
+    const effectiveInstanceUrl = normalizeInstanceUrl(
+        normalizedInstanceUrl || jsforceConnection?.instanceUrl
+    );
+    const effectiveApiVersion = normalizeApiVersion(
+        normalizedApiVersion || jsforceConnection?.version
+    );
+    const effectiveToken = (token || jsforceConnection?.accessToken || '').trim();
 
-    if (!normalizedInstanceUrl) throw new Error('Missing Instance URL.');
-    if (!token) throw new Error('Missing Access Token.');
+    if (!effectiveInstanceUrl) throw new Error('Missing Instance URL.');
+    if (!effectiveToken) throw new Error('Missing Access Token.');
 
-    const soapPath = `/services/Soap/m/${normalizedApiVersion}`;
-    const upstreamUrl = `${normalizedInstanceUrl}${soapPath}`;
+    const soapPath = `/services/Soap/m/${effectiveApiVersion}`;
+    const upstreamUrl = `${effectiveInstanceUrl}${soapPath}`;
     const proxyBase = normalizedProxyUrl ? `${normalizedProxyUrl}/proxy` : '';
     const url = normalizedProxyUrl ? `${proxyBase}${soapPath}` : upstreamUrl;
 
@@ -131,7 +132,7 @@ export function createMetadataApiClient({ instanceUrl, accessToken, apiVersion, 
             `<?xml version="1.0" encoding="UTF-8"?>` +
             `<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:met="http://soap.sforce.com/2006/04/metadata">` +
             `<env:Header>` +
-            `<met:SessionHeader><met:sessionId>${escapeXml(token)}</met:sessionId></met:SessionHeader>` +
+            `<met:SessionHeader><met:sessionId>${escapeXml(effectiveToken)}</met:sessionId></met:SessionHeader>` +
             `</env:Header>` +
             `<env:Body>${bodyInnerXml}</env:Body>` +
             `</env:Envelope>`;
@@ -171,30 +172,38 @@ export function createMetadataApiClient({ instanceUrl, accessToken, apiVersion, 
             if (!typeName || !members.length) continue;
             parts.push(
                 `<types>` +
-                    members.map((m) => `<members>${escapeXml(m)}</members>`).join('') +
+                    members.map(m => `<members>${escapeXml(m)}</members>`).join('') +
                     `<name>${escapeXml(typeName)}</name>` +
-                `</types>`
+                    `</types>`
             );
         }
         return parts.join('');
     }
 
     return {
-        instanceUrl: normalizedInstanceUrl,
-        apiVersion: normalizedApiVersion,
+        instanceUrl: effectiveInstanceUrl,
+        apiVersion: effectiveApiVersion,
         proxyUrl: normalizedProxyUrl || null,
 
-        async describeMetadata(asOfVersion = normalizedApiVersion) {
-            const doc = await requestSoap(`<met:describeMetadata><met:asOfVersion>${escapeXml(asOfVersion)}</met:asOfVersion></met:describeMetadata>`);
+        async describeMetadata(asOfVersion = effectiveApiVersion) {
+            if (typeof jsforceConnection?.metadata?.describe === 'function') {
+                return await jsforceConnection.metadata.describe(asOfVersion);
+            }
+            const doc = await requestSoap(
+                `<met:describeMetadata><met:asOfVersion>${escapeXml(asOfVersion)}</met:asOfVersion></met:describeMetadata>`
+            );
             return doc;
         },
 
-        async listMetadata({ queries, asOfVersion = normalizedApiVersion } = {}) {
+        async listMetadata({ queries, asOfVersion = effectiveApiVersion } = {}) {
             const q = Array.isArray(queries) ? queries : [];
             if (!q.length) return [];
+            if (typeof jsforceConnection?.metadata?.list === 'function') {
+                return await jsforceConnection.metadata.list(q, asOfVersion);
+            }
             const queriesXml = q
-                .filter((x) => x && x.type)
-                .map((x) => {
+                .filter(x => x && x.type)
+                .map(x => {
                     const folder = x.folder ? `<folder>${escapeXml(x.folder)}</folder>` : '';
                     return `<queries>${folder}<type>${escapeXml(x.type)}</type></queries>`;
                 })
@@ -202,30 +211,51 @@ export function createMetadataApiClient({ instanceUrl, accessToken, apiVersion, 
             if (!queriesXml) return [];
             const doc = await requestSoap(
                 `<met:listMetadata>` +
-                  `${queriesXml}` +
-                  `<met:asOfVersion>${escapeXml(asOfVersion)}</met:asOfVersion>` +
-                `</met:listMetadata>`
+                    `${queriesXml}` +
+                    `<met:asOfVersion>${escapeXml(asOfVersion)}</met:asOfVersion>` +
+                    `</met:listMetadata>`
             );
             const results = allEls(doc, 'result');
-            return results.map((r) => ({
-                fullName: firstText(r, 'fullName'),
-                type: firstText(r, 'type'),
-                fileName: firstText(r, 'fileName'),
-                namespacePrefix: firstText(r, 'namespacePrefix'),
-                lastModifiedDate: firstText(r, 'lastModifiedDate'),
-            })).filter((x) => x.fullName || x.fileName);
+            return results
+                .map(r => ({
+                    fullName: firstText(r, 'fullName'),
+                    type: firstText(r, 'type'),
+                    fileName: firstText(r, 'fileName'),
+                    namespacePrefix: firstText(r, 'namespacePrefix'),
+                    lastModifiedDate: firstText(r, 'lastModifiedDate'),
+                }))
+                .filter(x => x.fullName || x.fileName);
         },
 
-        async retrieve({ typesMap, apiVersion = normalizedApiVersion } = {}) {
+        async retrieve({ typesMap, apiVersion = effectiveApiVersion } = {}) {
             const typesXml = xmlForTypes(typesMap || new Map());
+            if (typeof jsforceConnection?.metadata?.retrieve === 'function') {
+                const unpackaged = {
+                    version: apiVersion,
+                    types: Array.from(typesMap?.entries?.() || []).map(([name, members]) => ({
+                        name,
+                        members: Array.isArray(members) ? members : Array.from(members || []),
+                    })),
+                };
+                const result = await jsforceConnection.metadata.retrieve({
+                    apiVersion,
+                    singlePackage: true,
+                    unpackaged,
+                });
+                const id = result?.id || result?.asyncProcessId || result?.zipFile;
+                if (!id) {
+                    throw new Error('Retrieve did not return an id.');
+                }
+                return { id };
+            }
             const doc = await requestSoap(
                 `<met:retrieve>` +
-                  `<met:retrieveRequest>` +
+                    `<met:retrieveRequest>` +
                     `<apiVersion>${escapeXml(apiVersion)}</apiVersion>` +
                     `<singlePackage>true</singlePackage>` +
                     `<unpackaged>${typesXml}<version>${escapeXml(apiVersion)}</version></unpackaged>` +
-                  `</met:retrieveRequest>` +
-                `</met:retrieve>`
+                    `</met:retrieveRequest>` +
+                    `</met:retrieve>`
             );
             const id = firstText(doc, 'id');
             if (!id) throw new Error('Retrieve did not return an id.');
@@ -233,11 +263,14 @@ export function createMetadataApiClient({ instanceUrl, accessToken, apiVersion, 
         },
 
         async checkRetrieveStatus(id, { includeZip = true } = {}) {
+            if (typeof jsforceConnection?.metadata?.checkRetrieveStatus === 'function') {
+                return await jsforceConnection.metadata.checkRetrieveStatus(id, includeZip);
+            }
             const doc = await requestSoap(
                 `<met:checkRetrieveStatus>` +
-                  `<met:asyncProcessId>${escapeXml(id)}</met:asyncProcessId>` +
-                  `<met:includeZip>${includeZip ? 'true' : 'false'}</met:includeZip>` +
-                `</met:checkRetrieveStatus>`
+                    `<met:asyncProcessId>${escapeXml(id)}</met:asyncProcessId>` +
+                    `<met:includeZip>${includeZip ? 'true' : 'false'}</met:includeZip>` +
+                    `</met:checkRetrieveStatus>`
             );
             const done = firstText(doc, 'done') === 'true';
             const success = firstText(doc, 'success') === 'true';
@@ -248,16 +281,30 @@ export function createMetadataApiClient({ instanceUrl, accessToken, apiVersion, 
         },
 
         async deploy(zipBytes, { checkOnly = false, testLevel = 'NoTestRun' } = {}) {
-            const zipB64 = bytesToBase64(zipBytes instanceof Uint8Array ? zipBytes : new Uint8Array(zipBytes || []));
+            const zipB64 = bytesToBase64(
+                zipBytes instanceof Uint8Array ? zipBytes : new Uint8Array(zipBytes || [])
+            );
+            if (typeof jsforceConnection?.metadata?.deploy === 'function') {
+                const result = await jsforceConnection.metadata.deploy(zipB64, {
+                    checkOnly,
+                    singlePackage: true,
+                    testLevel,
+                });
+                const id = result?.id || result?.asyncProcessId || result?.zipFile;
+                if (!id) {
+                    throw new Error('Deploy did not return an id.');
+                }
+                return { id };
+            }
             const doc = await requestSoap(
                 `<met:deploy>` +
-                  `<met:ZipFile>${zipB64}</met:ZipFile>` +
-                  `<met:DeployOptions>` +
+                    `<met:ZipFile>${zipB64}</met:ZipFile>` +
+                    `<met:DeployOptions>` +
                     `<checkOnly>${checkOnly ? 'true' : 'false'}</checkOnly>` +
                     `<singlePackage>true</singlePackage>` +
                     `<testLevel>${escapeXml(testLevel)}</testLevel>` +
-                  `</met:DeployOptions>` +
-                `</met:deploy>`
+                    `</met:DeployOptions>` +
+                    `</met:deploy>`
             );
             const id = firstText(doc, 'id');
             if (!id) throw new Error('Deploy did not return an id.');
@@ -265,11 +312,14 @@ export function createMetadataApiClient({ instanceUrl, accessToken, apiVersion, 
         },
 
         async checkDeployStatus(id, { includeDetails = true } = {}) {
+            if (typeof jsforceConnection?.metadata?.checkDeployStatus === 'function') {
+                return await jsforceConnection.metadata.checkDeployStatus(id, includeDetails);
+            }
             const doc = await requestSoap(
                 `<met:checkDeployStatus>` +
-                  `<met:asyncProcessId>${escapeXml(id)}</met:asyncProcessId>` +
-                  `<met:includeDetails>${includeDetails ? 'true' : 'false'}</met:includeDetails>` +
-                `</met:checkDeployStatus>`
+                    `<met:asyncProcessId>${escapeXml(id)}</met:asyncProcessId>` +
+                    `<met:includeDetails>${includeDetails ? 'true' : 'false'}</met:includeDetails>` +
+                    `</met:checkDeployStatus>`
             );
             const done = firstText(doc, 'done') === 'true';
             const success = firstText(doc, 'success') === 'true';
@@ -279,4 +329,3 @@ export function createMetadataApiClient({ instanceUrl, accessToken, apiVersion, 
         },
     };
 }
-

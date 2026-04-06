@@ -17,18 +17,6 @@ async function ensureShellWorkspaceDir(vscode) {
 
 async function getShellOrgEntries(connectionRuntime) {
     const outputEntries = [];
-    const pushEntry = entry => {
-        if (!entry?.instanceUrl) return;
-        const key = `${entry.instanceUrl}|${entry.alias || ''}|${entry.username || ''}`;
-        if (
-            outputEntries.some(
-                item => `${item.instanceUrl}|${item.alias || ''}|${item.username || ''}` === key
-            )
-        ) {
-            return;
-        }
-        outputEntries.push(entry);
-    };
 
     const current = connectionRuntime.loadStoredConn();
     if (current?.instanceUrl && current?.accessToken) {
@@ -38,7 +26,7 @@ async function getShellOrgEntries(connectionRuntime) {
         } catch {
             // ignore
         }
-        pushEntry({
+        outputEntries.push({
             alias: current.username || host || 'current',
             username: current.username || '',
             instanceUrl: current.instanceUrl,
@@ -46,45 +34,6 @@ async function getShellOrgEntries(connectionRuntime) {
             authType: current.authType || 'current',
             label: host,
         });
-    }
-
-    try {
-        const sharedConnections = await connectionRuntime.listSharedConnectionEntries();
-        for (const item of sharedConnections) {
-            const configuration = item?.configuration;
-            if (!configuration?.instanceUrl) continue;
-            pushEntry({
-                alias: configuration.alias || configuration.username || item.host || 'saved-org',
-                username: configuration.username || '',
-                instanceUrl: configuration.instanceUrl || '',
-                sessionId: configuration.accessToken || '',
-                authType: connectionRuntime.getConnectionAuthType(configuration),
-                sharedAlias: configuration.alias || '',
-                label: item.host || configuration.instanceUrl || '',
-            });
-        }
-    } catch {
-        // ignore
-    }
-
-    if (connectionRuntime.isChromeExtensionEnv()) {
-        try {
-            const tabSessions = await globalThis.chrome?.runtime?.sendMessage({
-                action: 'listOrgSessions',
-            });
-            for (const item of Array.isArray(tabSessions) ? tabSessions : []) {
-                pushEntry({
-                    alias: item?.label || item?.serverUrl || 'tab-session',
-                    username: item?.label || '',
-                    instanceUrl: item?.serverUrl || '',
-                    sessionId: item?.sessionId || '',
-                    authType: 'cookie',
-                    label: item?.label || item?.serverUrl || '',
-                });
-            }
-        } catch {
-            // ignore
-        }
     }
 
     outputEntries.sort((left, right) =>
@@ -101,7 +50,9 @@ async function ensureShellConn(connectionRuntime, vscode) {
         .withToolingClientAuthed(conn, async (_client, effectiveConn) => effectiveConn)
         .catch(() => conn);
     if (!conn.instanceUrl || !conn.accessToken) {
-        await vscode.commands.executeCommand('salesforceMetadata.connect');
+        await vscode.window.showErrorMessage(
+            connectionRuntime.getInjectedConnectionRequiredMessage()
+        );
         conn = connectionRuntime.loadStoredConn();
     }
     if (!conn.instanceUrl || !conn.accessToken) {

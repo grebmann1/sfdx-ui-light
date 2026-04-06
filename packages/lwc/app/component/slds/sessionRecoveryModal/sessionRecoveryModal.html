@@ -1,0 +1,25 @@
+<template>
+    <lightning-modal-header label={heading}></lightning-modal-header>
+    <lightning-modal-body>
+        <div class="slds-p-around_medium">
+            <p class="slds-text-title_bold slds-text-color_error">{message}</p>
+            <template lwc:if={details}>
+                <p class="slds-m-top_small">{details}</p>
+            </template>
+        </div>
+    </lightning-modal-body>
+    <lightning-modal-footer>
+        <lightning-button
+            class="slds-float_left slds-button"
+            variant="neutral"
+            label={closeLabel}
+            onclick={handleClose}></lightning-button>
+        <template lwc:if={isAutoReconnectEnabled}>
+            <lightning-button
+                class="slds-button"
+                variant="brand"
+                label={reconnectLabel}
+                onclick={handleAutoReconnect}></lightning-button>
+        </template>
+    </lightning-modal-footer>
+</template>

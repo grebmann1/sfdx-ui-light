@@ -43,6 +43,9 @@
 
 .orgBannerContent {
     min-width: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
 .orgBannerTitle {
@@ -54,6 +57,7 @@
 
 .orgBannerMessage {
     opacity: 0.9;
+    margin-left: 8px;
 }
 
 .orgBannerMeta {

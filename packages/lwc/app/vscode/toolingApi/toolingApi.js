@@ -27,10 +27,11 @@ function formatSfError(status, payload) {
 
 function isLikelyCorsOrNetworkError(err) {
     const msg = (err?.message || '').toLowerCase();
-    return err?.name === 'TypeError' && (
-        msg.includes('failed to fetch') ||
-        msg.includes('load failed') ||
-        msg.includes('networkerror')
+    return (
+        err?.name === 'TypeError' &&
+        (msg.includes('failed to fetch') ||
+            msg.includes('load failed') ||
+            msg.includes('networkerror'))
     );
 }
 
@@ -53,6 +54,119 @@ function toPath(urlOrPath, instanceUrl) {
 }
 
 export function createToolingClient({ instanceUrl, accessToken, apiVersion, proxyUrl } = {}) {
+    const jsforceConnection = arguments[0]?.connection || arguments[0]?.connector?.conn || null;
+    if (jsforceConnection) {
+        const normalizedInstanceUrl = normalizeInstanceUrl(
+            instanceUrl || jsforceConnection.instanceUrl
+        );
+        const normalizedApiVersion = normalizeApiVersion(apiVersion || jsforceConnection.version);
+
+        const requestJson = async (urlOrPath, { method = 'GET', body, headers } = {}) => {
+            const path = toPath(urlOrPath, normalizedInstanceUrl);
+            const upstreamPath = path.startsWith('/services/data/')
+                ? path
+                : `/services/data/v${normalizedApiVersion}${path}`;
+            return await jsforceConnection.request({
+                method,
+                url: upstreamPath,
+                body: body ? JSON.stringify(body) : undefined,
+                headers: {
+                    ...(body ? { 'Content-Type': 'application/json' } : null),
+                    ...(headers || null),
+                },
+            });
+        };
+
+        const requestText = async (urlOrPath, { method = 'GET', body, headers } = {}) => {
+            const path = toPath(urlOrPath, normalizedInstanceUrl);
+            const upstreamPath = path.startsWith('/services/data/')
+                ? path
+                : `/services/data/v${normalizedApiVersion}${path}`;
+            const response = await jsforceConnection.request({
+                method,
+                url: upstreamPath,
+                body: body ? JSON.stringify(body) : undefined,
+                headers: {
+                    ...(body ? { 'Content-Type': 'application/json' } : null),
+                    ...(headers || null),
+                },
+            });
+            return typeof response === 'string' ? response : JSON.stringify(response ?? '');
+        };
+
+        const toolingQueryAll = async soql => {
+            const queryExec = jsforceConnection.tooling.query(soql);
+            const records = [];
+            for await (const record of queryExec.scanAll()) {
+                records.push(record);
+            }
+            return records;
+        };
+
+        return {
+            instanceUrl: normalizedInstanceUrl,
+            apiVersion: normalizedApiVersion,
+            proxyUrl: null,
+            requestJson,
+            requestText,
+            toolingQueryAll,
+            async ping() {
+                await toolingQueryAll('SELECT Id FROM ApexClass LIMIT 1');
+                return true;
+            },
+            async listApexClasses() {
+                return await toolingQueryAll('SELECT Id, Name FROM ApexClass ORDER BY Name');
+            },
+            async listApexTriggers() {
+                return await toolingQueryAll('SELECT Id, Name FROM ApexTrigger ORDER BY Name');
+            },
+            async getApexClassBody(id) {
+                const rows = await toolingQueryAll(
+                    `SELECT Id, Name, Body FROM ApexClass WHERE Id='${id}'`
+                );
+                return rows?.[0] || null;
+            },
+            async getApexTriggerBody(id) {
+                const rows = await toolingQueryAll(
+                    `SELECT Id, Name, Body FROM ApexTrigger WHERE Id='${id}'`
+                );
+                return rows?.[0] || null;
+            },
+            async listLwcBundles() {
+                return await toolingQueryAll(
+                    'SELECT Id, DeveloperName, NamespacePrefix FROM LightningComponentBundle ORDER BY DeveloperName'
+                );
+            },
+            async listLwcResources(bundleId) {
+                return await toolingQueryAll(
+                    `SELECT Id, FilePath, Format FROM LightningComponentResource WHERE LightningComponentBundleId='${bundleId}' ORDER BY FilePath`
+                );
+            },
+            async getLwcResourceSource(id) {
+                const rows = await toolingQueryAll(
+                    `SELECT Id, FilePath, Format, Source FROM LightningComponentResource WHERE Id='${id}'`
+                );
+                return rows?.[0] || null;
+            },
+            async listAuraBundles() {
+                return await toolingQueryAll(
+                    'SELECT Id, DeveloperName, NamespacePrefix FROM AuraDefinitionBundle ORDER BY DeveloperName'
+                );
+            },
+            async listAuraDefinitions(bundleId) {
+                return await toolingQueryAll(
+                    `SELECT Id, DefType, Format FROM AuraDefinition WHERE AuraDefinitionBundleId='${bundleId}' ORDER BY DefType`
+                );
+            },
+            async getAuraDefinitionSource(id) {
+                const rows = await toolingQueryAll(
+                    `SELECT Id, DefType, Format, Source FROM AuraDefinition WHERE Id='${id}'`
+                );
+                return rows?.[0] || null;
+            },
+        };
+    }
+
     const normalizedInstanceUrl = normalizeInstanceUrl(instanceUrl);
     const normalizedApiVersion = normalizeApiVersion(apiVersion);
     const normalizedProxyUrl = normalizeProxyUrl(proxyUrl);
@@ -66,10 +180,6 @@ export function createToolingClient({ instanceUrl, accessToken, apiVersion, prox
     }
 
     const proxyBase = normalizedProxyUrl ? `${normalizedProxyUrl}/proxy` : '';
-    const base = normalizedProxyUrl
-        ? `${proxyBase}/services/data/v${normalizedApiVersion}`
-        : `${normalizedInstanceUrl}/services/data/v${normalizedApiVersion}`;
-
     async function requestJson(urlOrPath, { method = 'GET', body, headers, signal } = {}) {
         const path = toPath(urlOrPath, normalizedInstanceUrl);
         const upstreamPath = path.startsWith('/services/data/')
@@ -92,13 +202,15 @@ export function createToolingClient({ instanceUrl, accessToken, apiVersion, prox
             });
 
             const text = await res.text();
-            const json = text ? (() => {
-                try {
-                    return JSON.parse(text);
-                } catch {
-                    return null;
-                }
-            })() : null;
+            const json = text
+                ? (() => {
+                      try {
+                          return JSON.parse(text);
+                      } catch {
+                          return null;
+                      }
+                  })()
+                : null;
 
             if (!res.ok) {
                 const err = new Error(formatSfError(res.status, json ?? text));
@@ -114,13 +226,13 @@ export function createToolingClient({ instanceUrl, accessToken, apiVersion, prox
                 if (normalizedProxyUrl) {
                     throw new Error(
                         `Unable to reach local proxy at ${normalizedProxyUrl}. ` +
-                        'Start it (npm run sf:proxy) and retry.'
+                            'Start it (npm run sf:proxy) and retry.'
                     );
                 }
                 throw new Error(
                     'Network/CORS error calling Salesforce. ' +
-                    'Add this app origin to Setup → CORS in your org, then retry, ' +
-                    'or enable the local proxy.'
+                        'Add this app origin to Setup → CORS in your org, then retry, ' +
+                        'or enable the local proxy.'
                 );
             }
             throw err;
@@ -161,13 +273,13 @@ export function createToolingClient({ instanceUrl, accessToken, apiVersion, prox
                 if (normalizedProxyUrl) {
                     throw new Error(
                         `Unable to reach local proxy at ${normalizedProxyUrl}. ` +
-                        'Start it (npm run sf:proxy) and retry.'
+                            'Start it (npm run sf:proxy) and retry.'
                     );
                 }
                 throw new Error(
                     'Network/CORS error calling Salesforce. ' +
-                    'Add this app origin to Setup → CORS in your org, then retry, ' +
-                    'or enable the local proxy.'
+                        'Add this app origin to Setup → CORS in your org, then retry, ' +
+                        'or enable the local proxy.'
                 );
             }
             throw err;
@@ -209,12 +321,16 @@ export function createToolingClient({ instanceUrl, accessToken, apiVersion, prox
         },
 
         async getApexClassBody(id) {
-            const rows = await toolingQueryAll(`SELECT Id, Name, Body FROM ApexClass WHERE Id='${id}'`);
+            const rows = await toolingQueryAll(
+                `SELECT Id, Name, Body FROM ApexClass WHERE Id='${id}'`
+            );
             return rows?.[0] || null;
         },
 
         async getApexTriggerBody(id) {
-            const rows = await toolingQueryAll(`SELECT Id, Name, Body FROM ApexTrigger WHERE Id='${id}'`);
+            const rows = await toolingQueryAll(
+                `SELECT Id, Name, Body FROM ApexTrigger WHERE Id='${id}'`
+            );
             return rows?.[0] || null;
         },
 
@@ -257,4 +373,3 @@ export function createToolingClient({ instanceUrl, accessToken, apiVersion, prox
         },
     };
 }
-

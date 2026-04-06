@@ -1,7 +1,3 @@
-/* eslint-disable import/no-unresolved */
-import { createToolingClient } from 'vscode/toolingApi';
-
-import { resolveStoredConnection } from '../../../workbench/sharedConnection.js';
 import { ensureDir, writeTextFile } from '../core/workspaceCache.js';
 import {
     getSalesforceStateDirUri,
@@ -34,7 +30,9 @@ export function registerQueryAndApexTools({ connectionRuntime, context, deployTo
     async function runQuery({ soql, tooling }) {
         const conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
-            await vscode.commands.executeCommand('salesforceMetadata.connect');
+            await vscode.window.showErrorMessage(
+                connectionRuntime.getInjectedConnectionRequiredMessage()
+            );
             return null;
         }
         const query = String(soql || '').trim();
@@ -172,121 +170,6 @@ export function registerQueryAndApexTools({ connectionRuntime, context, deployTo
         await connectionRuntime.saveConn(next);
         connectionRuntime.setStatus(next);
         return next;
-    }
-
-    async function listConnectionsForCompare() {
-        const current = connectionRuntime.loadStoredConn();
-        const workspaceApiVersion = await connectionRuntime.getWorkspaceApiVersion(
-            current.apiVersion
-        );
-        const items = [];
-        if (current.instanceUrl && current.accessToken) {
-            let host = current.instanceUrl;
-            try {
-                host = new URL(current.instanceUrl).host;
-            } catch {
-                // ignore
-            }
-            items.push({
-                label: `Current: ${host}${current.username ? ` (${current.username})` : ''}`,
-                description: current.authType || 'current',
-                detail: current.instanceUrl,
-                serverUrl: current.instanceUrl,
-                sessionId: current.accessToken,
-                apiVersion: workspaceApiVersion,
-                authType: current.authType || '',
-                sharedAlias: current.sharedAlias || '',
-                _current: true,
-            });
-        }
-
-        const sharedConnections = await connectionRuntime
-            .listSharedConnectionEntries()
-            .catch(() => []);
-        for (const item of sharedConnections) {
-            const configuration = item?.configuration;
-            if (!configuration?.instanceUrl) continue;
-            items.push({
-                label: `Saved: ${item.label}`,
-                description: connectionRuntime.getConnectionTypeLabel(configuration),
-                detail: configuration.alias || configuration.instanceUrl,
-                serverUrl: configuration.instanceUrl,
-                sessionId: configuration.accessToken || '',
-                apiVersion: workspaceApiVersion,
-                authType: connectionRuntime.getConnectionAuthType(configuration),
-                sharedAlias: configuration.alias || '',
-                _shared: true,
-            });
-        }
-
-        if (connectionRuntime.isChromeExtensionEnv()) {
-            const sessions = await globalThis.chrome?.runtime
-                .sendMessage({ action: 'listOrgSessions' })
-                .catch(() => []);
-            if (Array.isArray(sessions)) {
-                for (const session of sessions) {
-                    items.push({
-                        label: `Cookie: ${session?.label || session?.serverUrl || 'Org'}`,
-                        description: 'cookie',
-                        detail: session?.detail || session?.serverUrl || '',
-                        serverUrl: session?.serverUrl,
-                        sessionId: session?.sessionId,
-                        apiVersion: workspaceApiVersion,
-                        authType: 'cookie',
-                        _cookie: true,
-                    });
-                }
-            }
-        }
-
-        const seen = new Set();
-        return items.filter(item => {
-            const key = `${item.serverUrl}|${item.sessionId || item.detail || item.description || ''}`;
-            if (seen.has(key)) return false;
-            seen.add(key);
-            return Boolean(item.serverUrl && (item.sessionId || item._shared));
-        });
-    }
-
-    async function resolveConnectionForUse(connItem) {
-        if (!connItem) return null;
-        if (connItem._current) {
-            const current = connectionRuntime.loadStoredConn();
-            const stored = await resolveStoredConnection(current, { persist: false }).catch(
-                () => current
-            );
-            return {
-                ...connItem,
-                serverUrl: stored.instanceUrl,
-                sessionId: stored.accessToken,
-                apiVersion: connItem.apiVersion || stored.apiVersion,
-                authType: stored.authType,
-                sharedAlias: stored.sharedAlias || '',
-            };
-        }
-        if (connItem.sharedAlias) {
-            const stored = await resolveStoredConnection(
-                {
-                    instanceUrl: connItem.serverUrl,
-                    accessToken: connItem.sessionId,
-                    apiVersion: connItem.apiVersion,
-                    authType: connItem.authType,
-                    sharedAlias: connItem.sharedAlias,
-                },
-                { persist: false }
-            ).catch(() => null);
-            if (stored?.instanceUrl && stored?.accessToken) {
-                return {
-                    ...connItem,
-                    serverUrl: stored.instanceUrl,
-                    sessionId: stored.accessToken,
-                    apiVersion: connItem.apiVersion || stored.apiVersion,
-                    authType: stored.authType,
-                    sharedAlias: stored.sharedAlias || connItem.sharedAlias,
-                };
-            }
-        }
-        return connItem;
     }
 
     function register(command, handler) {
@@ -437,7 +320,9 @@ export function registerQueryAndApexTools({ connectionRuntime, context, deployTo
     register('salesforceMetadata.executeAnonymous', async () => {
         const conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
-            await vscode.commands.executeCommand('salesforceMetadata.connect');
+            await vscode.window.showErrorMessage(
+                connectionRuntime.getInjectedConnectionRequiredMessage()
+            );
             return;
         }
         const editor = vscode.window?.activeTextEditor;
@@ -537,7 +422,9 @@ export function registerQueryAndApexTools({ connectionRuntime, context, deployTo
     register('salesforceMetadata.runApexTests', async () => {
         const conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
-            await vscode.commands.executeCommand('salesforceMetadata.connect');
+            await vscode.window.showErrorMessage(
+                connectionRuntime.getInjectedConnectionRequiredMessage()
+            );
             return;
         }
         const activePath = vscode.window?.activeTextEditor?.document?.uri?.path || '';
@@ -767,7 +654,9 @@ export function registerQueryAndApexTools({ connectionRuntime, context, deployTo
     register('salesforceMetadata.enableDebugLogs', async () => {
         let conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
-            await vscode.commands.executeCommand('salesforceMetadata.connect');
+            await vscode.window.showErrorMessage(
+                connectionRuntime.getInjectedConnectionRequiredMessage()
+            );
             conn = connectionRuntime.loadStoredConn();
         }
         if (!conn.instanceUrl || !conn.accessToken) return;
@@ -859,7 +748,9 @@ export function registerQueryAndApexTools({ connectionRuntime, context, deployTo
     register('salesforceMetadata.openDebugLogs', async () => {
         let conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
-            await vscode.commands.executeCommand('salesforceMetadata.connect');
+            await vscode.window.showErrorMessage(
+                connectionRuntime.getInjectedConnectionRequiredMessage()
+            );
             conn = connectionRuntime.loadStoredConn();
         }
         if (!conn.instanceUrl || !conn.accessToken) return;
@@ -923,221 +814,12 @@ export function registerQueryAndApexTools({ connectionRuntime, context, deployTo
         }
     });
 
-    register('salesforceMetadata.compareOrgs', async () => {
-        const connections = await listConnectionsForCompare();
-        if (connections.length < 2) {
-            await vscode.window.showWarningMessage(
-                'Need at least 2 org connections (OAuth or cookie tabs) to compare.'
-            );
-            return;
-        }
-        const leftPick = await vscode.window.showQuickPick(connections, {
-            title: 'Compare Orgs',
-            placeHolder: 'Select LEFT org',
-            ignoreFocusOut: true,
-            matchOnDescription: true,
-            matchOnDetail: true,
-        });
-        if (!leftPick) return;
-        const rightPick = await vscode.window.showQuickPick(
-            connections.filter(connection => connection !== leftPick),
-            {
-                title: 'Compare Orgs',
-                placeHolder: 'Select RIGHT org',
-                ignoreFocusOut: true,
-                matchOnDescription: true,
-                matchOnDetail: true,
-            }
-        );
-        if (!rightPick) return;
-
-        const left = await resolveConnectionForUse(leftPick);
-        const right = await resolveConnectionForUse(rightPick);
-        if (!left?.serverUrl || !left?.sessionId || !right?.serverUrl || !right?.sessionId) {
-            await vscode.window.showErrorMessage('Missing connection details for comparison.');
-            return;
-        }
-
-        const typePick = await vscode.window.showQuickPick(
-            [
-                { label: 'Apex Classes', type: 'ApexClass' },
-                { label: 'Apex Triggers', type: 'ApexTrigger' },
-            ],
-            {
-                title: 'Compare Orgs',
-                placeHolder: 'Select metadata type',
-                ignoreFocusOut: true,
-            }
-        );
-        if (!typePick) return;
-
-        const proxyUrl = connectionRuntime.isChromeExtensionEnv()
-            ? undefined
-            : window.location.origin;
-        const leftClient = createToolingClient({
-            instanceUrl: left.serverUrl,
-            accessToken: left.sessionId,
-            apiVersion: left.apiVersion,
-            proxyUrl,
-        });
-        const rightClient = createToolingClient({
-            instanceUrl: right.serverUrl,
-            accessToken: right.sessionId,
-            apiVersion: right.apiVersion,
-            proxyUrl,
-        });
-
-        const fetchList = async client => {
-            if (typePick.type === 'ApexClass') {
-                return await client.toolingQueryAll(
-                    'SELECT Id, Name, LastModifiedDate, SystemModstamp FROM ApexClass ORDER BY Name'
-                );
-            }
-            return await client.toolingQueryAll(
-                'SELECT Id, Name, LastModifiedDate, SystemModstamp FROM ApexTrigger ORDER BY Name'
-            );
-        };
-
-        const [leftRows, rightRows] = await vscode.window.withProgress(
-            {
-                location: vscode.ProgressLocation.Notification,
-                title: 'Comparing orgs…',
-                cancellable: false,
-            },
-            async () => await Promise.all([fetchList(leftClient), fetchList(rightClient)])
-        );
-
-        const leftByName = new Map(
-            (leftRows || []).map(row => [String(row?.Name || ''), row]).filter(entry => entry[0])
-        );
-        const rightByName = new Map(
-            (rightRows || []).map(row => [String(row?.Name || ''), row]).filter(entry => entry[0])
-        );
-        const names = Array.from(new Set([...leftByName.keys(), ...rightByName.keys()])).sort(
-            (leftName, rightName) => leftName.localeCompare(rightName)
-        );
-
-        const onlyLeft = [];
-        const onlyRight = [];
-        const changed = [];
-        for (const name of names) {
-            const leftRecord = leftByName.get(name);
-            const rightRecord = rightByName.get(name);
-            if (leftRecord && !rightRecord) onlyLeft.push(name);
-            else if (!leftRecord && rightRecord) onlyRight.push(name);
-            else if (leftRecord && rightRecord) {
-                const leftStamp = String(
-                    leftRecord?.SystemModstamp || leftRecord?.LastModifiedDate || ''
-                );
-                const rightStamp = String(
-                    rightRecord?.SystemModstamp || rightRecord?.LastModifiedDate || ''
-                );
-                if (leftStamp && rightStamp && leftStamp !== rightStamp) {
-                    changed.push(name);
-                }
-            }
-        }
-
-        const outDir = getWorkspaceUri(vscode, '.salesforce/org-compare');
-        await ensureDir(vscode, outDir);
-        const ts = new Date().toISOString().replace(/[:.]/g, '-');
-        const reportUri = vscode.Uri.joinPath(
-            outDir,
-            `compare-${typePick.type.toLowerCase()}-${ts}.md`
-        );
-        const report = [
-            '# Org Compare Report',
-            '',
-            `- Type: ${typePick.type}`,
-            `- Left: ${left.label}`,
-            `- Right: ${right.label}`,
-            '',
-            `- Only in left: ${onlyLeft.length}`,
-            `- Only in right: ${onlyRight.length}`,
-            `- Changed (stamp differs): ${changed.length}`,
-            '',
-            '## Changed',
-            '',
-            ...(changed.length ? changed.map(name => `- ${name}`) : ['(none)']),
-            '',
-            '## Only in left',
-            '',
-            ...(onlyLeft.length ? onlyLeft.map(name => `- ${name}`) : ['(none)']),
-            '',
-            '## Only in right',
-            '',
-            ...(onlyRight.length ? onlyRight.map(name => `- ${name}`) : ['(none)']),
-            '',
-        ].join('\n');
-        await writeTextFile(vscode, reportUri, report, { skipCache: true });
-        try {
-            const doc = await vscode.workspace.openTextDocument(reportUri);
-            await vscode.window.showTextDocument(doc, { preview: false });
-        } catch {
-            // ignore
-        }
-
-        if (!changed.length) return;
-        const action = await vscode.window.showQuickPick(
-            [
-                { label: 'Open diff for a changed item…', _diff: true },
-                { label: 'Done', _done: true },
-            ],
-            { title: 'Org Compare', ignoreFocusOut: true }
-        );
-        if (!action?._diff) return;
-        const itemPick = await vscode.window.showQuickPick(
-            changed.slice(0, 200).map(name => ({ label: name })),
-            {
-                title: 'Diff remote vs remote',
-                placeHolder: 'Select an item to diff',
-                ignoreFocusOut: true,
-            }
-        );
-        if (!itemPick?.label) return;
-        const name = itemPick.label;
-        const leftRecord = leftByName.get(name);
-        const rightRecord = rightByName.get(name);
-        if (!leftRecord?.Id || !rightRecord?.Id) return;
-        const leftText =
-            typePick.type === 'ApexClass'
-                ? await leftClient
-                      .toolingQueryAll(`SELECT Body FROM ApexClass WHERE Id='${leftRecord.Id}'`)
-                      .then(rows => rows?.[0]?.Body ?? '')
-                : await leftClient
-                      .toolingQueryAll(`SELECT Body FROM ApexTrigger WHERE Id='${leftRecord.Id}'`)
-                      .then(rows => rows?.[0]?.Body ?? '');
-        const rightText =
-            typePick.type === 'ApexClass'
-                ? await rightClient
-                      .toolingQueryAll(`SELECT Body FROM ApexClass WHERE Id='${rightRecord.Id}'`)
-                      .then(rows => rows?.[0]?.Body ?? '')
-                : await rightClient
-                      .toolingQueryAll(`SELECT Body FROM ApexTrigger WHERE Id='${rightRecord.Id}'`)
-                      .then(rows => rows?.[0]?.Body ?? '');
-        const diffDir = getWorkspaceUri(vscode, '.salesforce/.diff-orgs');
-        await ensureDir(vscode, diffDir);
-        const extension = typePick.type === 'ApexClass' ? 'cls' : 'trigger';
-        const leftUri = vscode.Uri.joinPath(diffDir, `left-${name}.${extension}`);
-        const rightUri = vscode.Uri.joinPath(diffDir, `right-${name}.${extension}`);
-        await writeTextFile(vscode, leftUri, leftText || '', { skipCache: true });
-        await writeTextFile(vscode, rightUri, rightText || '', { skipCache: true });
-        try {
-            await vscode.commands.executeCommand(
-                'vscode.diff',
-                leftUri,
-                rightUri,
-                `Org Diff: ${name}`
-            );
-        } catch {
-            // ignore
-        }
-    });
-
     register('salesforceMetadata.whereUsed', async () => {
         const conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
-            await vscode.commands.executeCommand('salesforceMetadata.connect');
+            await vscode.window.showErrorMessage(
+                connectionRuntime.getInjectedConnectionRequiredMessage()
+            );
             return;
         }
         const path = vscode.window?.activeTextEditor?.document?.uri?.path;

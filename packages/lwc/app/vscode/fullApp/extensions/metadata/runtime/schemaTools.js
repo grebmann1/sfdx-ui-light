@@ -285,13 +285,9 @@ export async function registerSchemaTools({ connectionRuntime, context }) {
                     if (!conn.instanceUrl || !conn.accessToken) {
                         return [
                             {
-                                kind: 'action',
-                                label: 'Not connected (click to connect)',
-                                icon: 'cloud',
-                                command: {
-                                    command: 'salesforceMetadata.connect',
-                                    title: 'Connect',
-                                },
+                                kind: 'item',
+                                label: 'Connection required',
+                                detail: connectionRuntime.getInjectedConnectionRequiredMessage(),
                             },
                         ];
                     }
@@ -392,7 +388,9 @@ export async function registerSchemaTools({ connectionRuntime, context }) {
             register('salesforceMetadata.refreshSchemaCache', async () => {
                 const conn = connectionRuntime.loadStoredConn();
                 if (!conn.instanceUrl || !conn.accessToken) {
-                    await vscode.commands.executeCommand('salesforceMetadata.connect');
+                    await vscode.window.showErrorMessage(
+                        connectionRuntime.getInjectedConnectionRequiredMessage()
+                    );
                     return;
                 }
                 await vscode.window.withProgress(

@@ -2,7 +2,8 @@ import { store, UI, QUERY, DOCUMENT, SELECTORS } from 'core/store';
 import LOGGER from 'shared/logger';
 import { z } from 'zod';
 
-import { waitForLoaded, wrappedNavigate, formatTabId } from './utils/utils';
+import { SOQL_TOOL_DESCRIPTIONS, TOOL_APP_NAMES } from '../constants';
+import { waitForLoaded, wrappedNavigate, formatTabId } from '../utils/utils';
 
 const { tool } = window.OpenAIAgentsBundle?.Agents || {};
 // Execute a SOQL query and return the result
@@ -12,7 +13,7 @@ async function executeSoqlQuery({ query, tabId }) {
         const { application, ui } = getState();
         const { tabId: realTabId, isNewTab } = formatTabId(tabId, ui.tabs);
         if (application.isLoading) await waitForLoaded();
-        await wrappedNavigate({ applicationName: 'soql' });
+        await wrappedNavigate({ applicationName: TOOL_APP_NAMES.soql });
         if (isNewTab) {
             await dispatch(UI.reduxSlice.actions.addTab({ tab: { id: realTabId, body: query } }));
         } else {
@@ -85,17 +86,14 @@ async function fetchSoqlSavedQueries({ alias }) {
 
 const soqlQuery = tool({
     name: 'soql_query',
-    description:
-        'Display and execute an SOQL query in the Workbench 2.0 Query Editor. Only suitable when the user want to see the query/result in the Workbench 2.0 Query Editor.',
+    description: SOQL_TOOL_DESCRIPTIONS.query,
     parameters: z.object({
         query: z.string(),
         tabId: z
             .string()
             .optional()
             .nullable()
-            .describe(
-                'Optional tab ID to reuse when the tool is called again with the same context/request'
-            ),
+            .describe(SOQL_TOOL_DESCRIPTIONS.queryTabId),
     }),
     execute: async ({ query, tabId }) => {
         return await executeSoqlQuery({ query, tabId });
@@ -104,8 +102,7 @@ const soqlQuery = tool({
 
 const soqlQueryIncognito = tool({
     name: 'soql_query_incognito',
-    description:
-        'Execute a SOQL query (Incognito mode) without displaying it in the UI. Recommended if you want to execute a query without displaying it in the UI.',
+    description: SOQL_TOOL_DESCRIPTIONS.queryIncognito,
     parameters: z.object({
         query: z.string(),
         useToolingApi: z.boolean().describe('Use Tooling API').default(false),
@@ -118,7 +115,7 @@ const soqlQueryIncognito = tool({
 
 const soqlSavedQueries = tool({
     name: 'soql_saved_queries',
-    description: 'Fetch saved SOQL queries for the current org/alias.',
+    description: SOQL_TOOL_DESCRIPTIONS.savedQueries,
     parameters: z.object({}),
     execute: async () => {
         const alias = window.currentAlias || undefined;
@@ -128,7 +125,7 @@ const soqlSavedQueries = tool({
 
 const soqlDisplayTab = tool({
     name: 'soql_display_tab',
-    description: 'Display a SOQL tab in the Workbench 2.0.',
+    description: SOQL_TOOL_DESCRIPTIONS.displayTab,
     parameters: z.object({
         tabId: z.string().describe('Tab ID to display'),
     }),

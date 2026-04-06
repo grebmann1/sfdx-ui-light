@@ -1,6 +1,18 @@
+import {
+    getOrgHost,
+    inferScratchValue,
+    inferSandboxValue,
+    normalizeOrganizationType,
+    normalizeScratchValue,
+    normalizeSandboxValue,
+} from 'core/connector';
+
 export const ORG_ENVIRONMENT_TYPES = {
     production: 'production',
     sandbox: 'sandbox',
+    scratch: 'scratch',
+    trailhead: 'trailhead',
+    dev: 'dev',
     unknown: 'unknown',
 };
 
@@ -8,70 +20,48 @@ function normalizeText(value) {
     return typeof value === 'string' ? value.trim() : '';
 }
 
-export function normalizeSandboxValue(value) {
-    if (typeof value === 'boolean') {
-        return value;
-    }
-    if (typeof value === 'string') {
-        const normalized = value.trim().toLowerCase();
-        if (normalized === 'true') {
-            return true;
-        }
-        if (normalized === 'false') {
-            return false;
-        }
-    }
-    return null;
-}
-
-export function getOrgHost(instanceUrl) {
-    const normalizedUrl = normalizeText(instanceUrl);
-    if (!normalizedUrl) {
-        return '';
-    }
-
-    try {
-        return new URL(normalizedUrl).host;
-    } catch {
-        return normalizedUrl.replace(/^https?:\/\//i, '').replace(/\/.*$/, '');
-    }
-}
-
 export function inferOrgEnvironment({
     instanceUrl = '',
+    isScratch = null,
     isSandbox = null,
     organizationType = '',
 } = {}) {
-    const sandboxFlag = normalizeSandboxValue(isSandbox);
+    const normalizedType = normalizeOrganizationType({
+        organizationType,
+        isSandbox,
+        isScratch,
+        instanceUrl,
+    });
+    const scratchFlag = inferScratchValue({
+        instanceUrl,
+        isScratch,
+        organizationType: normalizedType,
+    });
+    if (scratchFlag === true) {
+        return ORG_ENVIRONMENT_TYPES.scratch;
+    }
+    const sandboxFlag = inferSandboxValue({
+        instanceUrl,
+        isSandbox,
+        organizationType: normalizedType,
+    });
     if (sandboxFlag === true) {
         return ORG_ENVIRONMENT_TYPES.sandbox;
     }
     if (sandboxFlag === false) {
         return ORG_ENVIRONMENT_TYPES.production;
     }
-
-    const normalizedType = normalizeText(organizationType).toLowerCase();
-    if (normalizedType.includes('sandbox')) {
-        return ORG_ENVIRONMENT_TYPES.sandbox;
+    if (normalizedType.toLowerCase() === 'trailhead') {
+        return ORG_ENVIRONMENT_TYPES.trailhead;
     }
-    if (normalizedType.includes('production')) {
-        return ORG_ENVIRONMENT_TYPES.production;
-    }
-
-    const host = getOrgHost(instanceUrl).toLowerCase();
-    if (host.includes('sandbox')) {
-        return ORG_ENVIRONMENT_TYPES.sandbox;
+    if (normalizedType.toLowerCase() === 'dev') {
+        return ORG_ENVIRONMENT_TYPES.dev;
     }
 
     return ORG_ENVIRONMENT_TYPES.unknown;
 }
 
 export function buildOrgDisplayName(connection = {}) {
-    const sharedAlias = normalizeText(connection.sharedAlias);
-    if (sharedAlias) {
-        return sharedAlias;
-    }
-
     const displayName = normalizeText(connection.displayName);
     if (displayName) {
         return displayName;
@@ -114,6 +104,24 @@ function buildOrgEnvironmentSummary(environmentType) {
                 tone: 'info',
                 caution: 'This is a sandbox org.',
             };
+        case ORG_ENVIRONMENT_TYPES.scratch:
+            return {
+                label: 'Scratch org',
+                tone: 'info',
+                caution: 'This is a scratch org.',
+            };
+        case ORG_ENVIRONMENT_TYPES.trailhead:
+            return {
+                label: 'Trailhead org',
+                tone: 'info',
+                caution: 'This is a Trailhead org.',
+            };
+        case ORG_ENVIRONMENT_TYPES.dev:
+            return {
+                label: 'Dev org',
+                tone: 'info',
+                caution: 'This is a dev org.',
+            };
         default:
             return {
                 label: 'Salesforce org',
@@ -137,9 +145,13 @@ export function buildOrgContext(connection = {}) {
     const instanceUrl = normalizeText(connection.instanceUrl);
     const host = getOrgHost(instanceUrl || connection.host);
     const organizationName = normalizeText(connection.organizationName);
-    const organizationType = normalizeText(connection.organizationType);
+    const organizationType = normalizeOrganizationType({
+        organizationType: connection.organizationType,
+        isSandbox: connection.isSandbox,
+        isScratch: connection.isScratch,
+        instanceUrl,
+    });
     const username = normalizeText(connection.username);
-    const sharedAlias = normalizeText(connection.sharedAlias);
     const orgId = normalizeText(connection.orgId);
 
     return {
@@ -148,10 +160,10 @@ export function buildOrgContext(connection = {}) {
         displayName,
         host,
         username,
-        sharedAlias,
         orgId,
         organizationName,
         organizationType,
+        isScratch: normalizeScratchValue(connection.isScratch),
         isSandbox: normalizeSandboxValue(connection.isSandbox),
         environmentType,
         environmentLabel: summary.label,

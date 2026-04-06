@@ -135,6 +135,75 @@ function resolveOpenAiBaseUrl(openaiUrl?: string) {
     return openaiUrl || 'https://api.openai.com/v1';
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return value != null && typeof value === 'object';
+}
+
+function extractNestedErrorMessage(errorLike: unknown): string {
+    const queue: unknown[] = [errorLike];
+    const seen = new Set<unknown>();
+    let fallback: string | null = null;
+
+    while (queue.length > 0) {
+        const current = queue.shift();
+        if (current == null || seen.has(current)) continue;
+        if (typeof current === 'object' || typeof current === 'function') {
+            seen.add(current);
+        }
+
+        if (typeof current === 'string') {
+            const text = current.trim();
+            if (!text) continue;
+            try {
+                queue.unshift(JSON.parse(text));
+                continue;
+            } catch {
+                if (!fallback) fallback = text;
+                if (text !== 'Bad Request') return text;
+                continue;
+            }
+        }
+
+        if (current instanceof Error) {
+            const errorWithExtras = current as Error & {
+                cause?: unknown;
+                responseBody?: unknown;
+                data?: unknown;
+            };
+            if (errorWithExtras.cause) queue.unshift(errorWithExtras.cause);
+            queue.unshift(errorWithExtras.responseBody);
+            queue.unshift(errorWithExtras.data);
+            if (typeof current.message === 'string' && current.message.trim()) {
+                if (!fallback) fallback = current.message.trim();
+                if (current.message.trim() !== 'Bad Request') return current.message.trim();
+            }
+            continue;
+        }
+
+        if (isRecord(current)) {
+            queue.unshift(current.responseBody);
+            queue.unshift(current.data);
+            queue.unshift(current.body);
+            queue.unshift(current.response);
+            queue.unshift(current.cause);
+            queue.unshift(current.error);
+            const message =
+                typeof current.message === 'string'
+                    ? current.message.trim()
+                    : typeof current.error === 'string'
+                      ? current.error.trim()
+                      : '';
+            if (message) {
+                if (!fallback) fallback = message;
+                if (message !== 'Bad Request') return message;
+            }
+        }
+    }
+
+    if (fallback) return fallback;
+    return errorLike instanceof Error ? errorLike.message : String(errorLike);
+}
+
 let cachedSkillsSection: Promise<string> | null = null;
 
 async function resolveSkillsSection() {
@@ -602,7 +671,9 @@ export class Agent {
                         },
                         onError: (event: unknown) => {
                             console.error('### onError gui', {event});
-                            const message  = event?.error?.message || 'Unknown error';
+                            const message = extractNestedErrorMessage(
+                                (event as { error?: unknown })?.error ?? event
+                            );
                             notifyObserver(observer?.onError, {
                                 message: String(message),
                                 timestamp: Date.now(),
@@ -690,13 +761,19 @@ export class Agent {
                             case 'tool-input-end':
                                 break;
                             case 'tool-result': {
+                                const toolResultPart = part as any;
                                 const tc: ToolCall = {
-                                    toolCallId: part.toolCallId,
-                                    toolName: part.toolName,
-                                    input: part.input ?? {},
+                                    toolCallId: toolResultPart.toolCallId,
+                                    toolName: toolResultPart.toolName,
+                                    input: toolResultPart.input ?? {},
                                 };
                                 LOGGER.debug('[agent] processMessage tool-result', { part });
-                                const tr = toToolResult(part.output?.text || part.output?.output || part.output?.content || '');
+                                const tr = toToolResult(
+                                    toolResultPart.output?.text ||
+                                        toolResultPart.output?.output ||
+                                        toolResultPart.output?.content ||
+                                        ''
+                                );
                                 notifyObserver(observer?.onToolFinish, {
                                     toolCall: tc,
                                     toolResult: tr,
@@ -792,7 +869,7 @@ export class Agent {
                         continue;
                     }
 
-                    const msg = err instanceof Error ? err.message : String(err);
+                    const msg = extractNestedErrorMessage(err);
                     notifyObserver(observer?.onError, {
                         message: `Error: ${msg}`,
                         timestamp: Date.now(),

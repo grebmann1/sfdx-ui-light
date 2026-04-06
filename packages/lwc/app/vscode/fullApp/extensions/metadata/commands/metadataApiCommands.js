@@ -2,11 +2,6 @@
 import { createMetadataApiClient, unzipRetrieveZip, zipUnpackagedFiles } from 'vscode/metadataApi';
 
 import {
-    isAuthError,
-    refreshStoredConnection,
-    resolveStoredConnection,
-} from '../../../workbench/sharedConnection.js';
-import {
     ensureDir,
     listFilesAndDirsRecursive,
     writeBytesFile,
@@ -85,35 +80,34 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
 
     async function withMetadataApiClientAuthed(conn, fn) {
         const baseConnection = await connectionRuntime.applyWorkspaceApiVersion(conn);
-        const current = await resolveStoredConnection(baseConnection).catch(() => baseConnection);
+        const current = await connectionRuntime
+            .resolveConnectionRecord(baseConnection)
+            .catch(() => baseConnection);
         const effectiveCurrent = await connectionRuntime.applyWorkspaceApiVersion(
             current,
             baseConnection?.apiVersion
         );
-        const proxyUrl = connectionRuntime.isChromeExtensionEnv()
-            ? undefined
-            : window.location.origin;
+        const context = connectionRuntime.requireCurrentContext();
         const client = createMetadataApiClient({
-            instanceUrl: effectiveCurrent.instanceUrl,
+            connection: context.connector.conn,
             apiVersion: effectiveCurrent.apiVersion,
-            accessToken: effectiveCurrent.accessToken,
-            proxyUrl,
         });
         try {
             return await fn(client, effectiveCurrent);
         } catch (error) {
-            if (!isAuthError(error)) throw error;
-            const refreshedRaw = await refreshStoredConnection(effectiveCurrent).catch(() => null);
+            if (!connectionRuntime.isAuthError(error)) throw error;
+            const refreshedRaw = await connectionRuntime
+                .refreshConnectionRecord(effectiveCurrent)
+                .catch(() => null);
             const refreshed = await connectionRuntime.applyWorkspaceApiVersion(
                 refreshedRaw,
                 effectiveCurrent?.apiVersion
             );
             if (!refreshed) throw error;
+            const retryContext = connectionRuntime.requireCurrentContext();
             const retryClient = createMetadataApiClient({
-                instanceUrl: refreshed.instanceUrl,
+                connection: retryContext.connector.conn,
                 apiVersion: refreshed.apiVersion,
-                accessToken: refreshed.accessToken,
-                proxyUrl,
             });
             return await fn(retryClient, refreshed);
         }
@@ -338,7 +332,9 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
     register('salesforceMetadata.retrieveManifest', async () => {
         const conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
-            await vscode.commands.executeCommand('salesforceMetadata.connect');
+            await vscode.window.showErrorMessage(
+                connectionRuntime.getInjectedConnectionRequiredMessage()
+            );
             return;
         }
 
@@ -599,7 +595,9 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
     register('salesforceMetadata.retrieveMetadataApi', async () => {
         const conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
-            await vscode.commands.executeCommand('salesforceMetadata.connect');
+            await vscode.window.showErrorMessage(
+                connectionRuntime.getInjectedConnectionRequiredMessage()
+            );
             return;
         }
         const uri = await pickPackageXmlUnderWorkspace();
@@ -632,7 +630,9 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
     register('salesforceMetadata.retrieveMetadataApiPick', async () => {
         const conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
-            await vscode.commands.executeCommand('salesforceMetadata.connect');
+            await vscode.window.showErrorMessage(
+                connectionRuntime.getInjectedConnectionRequiredMessage()
+            );
             return;
         }
 
@@ -736,7 +736,9 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
     register('salesforceMetadata.deployMetadataApi', async () => {
         const conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
-            await vscode.commands.executeCommand('salesforceMetadata.connect');
+            await vscode.window.showErrorMessage(
+                connectionRuntime.getInjectedConnectionRequiredMessage()
+            );
             return;
         }
         const uri = await pickPackageXmlUnderWorkspace();
@@ -754,7 +756,9 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
     register('salesforceMetadata.validateDeployMetadataApi', async () => {
         const conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
-            await vscode.commands.executeCommand('salesforceMetadata.connect');
+            await vscode.window.showErrorMessage(
+                connectionRuntime.getInjectedConnectionRequiredMessage()
+            );
             return;
         }
         const uri = await pickPackageXmlUnderWorkspace();

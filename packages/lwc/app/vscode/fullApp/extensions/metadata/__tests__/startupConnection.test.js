@@ -11,65 +11,23 @@ beforeAll(async () => {
 });
 
 describe('startupConnection', () => {
-    it('prefers a previously selected shared alias', () => {
-        expect(
-            startupConnectionModule.pickStartupConnectionCandidate({
-                currentConnection: {
-                    sharedAlias: 'Acme Prod',
-                },
-                oauthCredentialType: 'oauth',
-            })
-        ).toEqual({
-            type: 'stored-alias',
-            connection: {
-                sharedAlias: 'Acme Prod',
-            },
+    it('reports when the injected connector is missing', () => {
+        expect(startupConnectionModule.describeStartupConnectionState()).toEqual({
+            hasConnection: false,
+            message:
+                'Salesforce connection is required to open this workbench. Launch it from a connected toolkit session.',
         });
     });
 
-    it('auto-selects the single saved OAuth org', () => {
+    it('accepts the injected connector context when present', () => {
         expect(
-            startupConnectionModule.pickStartupConnectionCandidate({
-                currentConnection: null,
-                oauthCredentialType: 'oauth',
-                sharedConnectionEntries: [
-                    {
-                        configuration: {
-                            alias: 'Acme Prod',
-                            credentialType: 'oauth',
-                        },
-                    },
-                ],
+            startupConnectionModule.describeStartupConnectionState({
+                instanceUrl: 'https://acme.my.salesforce.com',
+                accessToken: 'token',
             })
         ).toEqual({
-            type: 'shared-oauth',
-            configuration: {
-                alias: 'Acme Prod',
-                credentialType: 'oauth',
-            },
+            hasConnection: true,
+            message: null,
         });
-    });
-
-    it('does not auto-select when multiple saved OAuth orgs exist', () => {
-        expect(
-            startupConnectionModule.pickStartupConnectionCandidate({
-                currentConnection: null,
-                oauthCredentialType: 'oauth',
-                sharedConnectionEntries: [
-                    {
-                        configuration: {
-                            alias: 'Acme Prod',
-                            credentialType: 'oauth',
-                        },
-                    },
-                    {
-                        configuration: {
-                            alias: 'Acme UAT',
-                            credentialType: 'oauth',
-                        },
-                    },
-                ],
-            })
-        ).toBeNull();
     });
 });

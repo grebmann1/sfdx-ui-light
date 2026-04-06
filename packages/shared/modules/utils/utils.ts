@@ -61,6 +61,7 @@ export { getLanguage, formatFiles } from './language';
 
 // Image utilities
 export { compressImage } from './image';
+export * from './toolOutputTruncation';
 
 // Sorting utilities
 export { sortObjectsByField, getCurrentRank } from './sorting';

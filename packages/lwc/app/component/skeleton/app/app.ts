@@ -1,5 +1,4 @@
 import { LightningElement, track, api, wire } from 'lwc';
-import LightningAlert from 'lightning/alert';
 import {
     guid,
     isNotUndefinedOrNull,
@@ -22,7 +21,6 @@ import {
 } from 'core/connector';
 /** Apps  **/
 import { APP_LIST } from 'core/applications';
-import SessionExpiredModal, { RESULT as SESSION_EXPIRED_RESULT } from 'skeleton/sessionExpiredModal';
 /** Helpers **/
 import { loadLimitedMode, loadFullMode } from './session';
 import { connectToBackgroundWithIdentity, disconnectFromBackground } from './background';
@@ -69,9 +67,6 @@ export default class App extends LightningElement {
 
     currentApplicationId;
 
-    // To manage expired session
-    sessionHasExpiredIsDisplayed = false;
-
     // Port to communicate with background
     _backgroundPort = null;
 
@@ -116,10 +111,6 @@ export default class App extends LightningElement {
             } else if (!application.isLoggedIn) {
                 this.handleLogout();
             }
-        }
-
-        if (application.sessionHasExpired) {
-            this.redirectAfterExpiration();
         }
     }
 
@@ -355,75 +346,6 @@ export default class App extends LightningElement {
         }
     };
 
-    redirectAfterExpiration = async () => {
-        if (this.sessionHasExpiredIsDisplayed) return;
-
-        this.sessionHasExpiredIsDisplayed = true;
-        //this.sessionHasExpired = false;
-        //store.dispatch(APPLICATION.reduxSlice.actions.sessionExpired({sessionHasExpired:false}));
-        const credentialType = this.connector?.configuration?.credentialType;
-        const result = await SessionExpiredModal.open({
-            size: 'small',
-            label: 'Session Expired',
-            message: 'Session has expired. \n Please consider adding it to your list of orgs.',
-            isAutoReconnectEnabled: isChromeExtension() && credentialType === OAUTH_TYPES.SESSION,
-        });
-        if (result === SESSION_EXPIRED_RESULT.AUTO_RECONNECT) {
-            await this.handleAutoReconnect();
-        } else {
-            await store.dispatch(APPLICATION.reduxSlice.actions.logout());
-        }
-        this.sessionHasExpiredIsDisplayed = false;
-    };
-
-    handleAutoReconnect = async () => {
-        const configuration = this.connector?.configuration;
-        if (configuration?.credentialType === OAUTH_TYPES.SESSION && isChromeExtension()) {
-            try {
-                const alias = configuration?.alias;
-                const instanceUrl = configuration?.instanceUrl;
-                const result = await new Promise(resolve => {
-                    try {
-                        chrome.runtime.sendMessage(
-                            {
-                                action: 'findExistingSession',
-                                alias,
-                                instanceUrl,
-                            },
-                            response => resolve(response)
-                        );
-                    } catch (e) {
-                        resolve(undefined);
-                    }
-                });
-
-                if (result && result.sessionId && result.serverUrl) {
-                    const connector = await credentialStrategies.SESSION.connect({
-                        sessionId: result.sessionId,
-                        serverUrl: result.serverUrl,
-                    });
-                    store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
-                } else {
-                    await LightningAlert.open({
-                        message:
-                            'No valid session found in existing tabs for this org. Please log in again before clicking on the auto reconnect button.',
-                        theme: 'warning',
-                        label: 'Auto Reconnect',
-                    });
-                    this.redirectAfterExpiration();
-                }
-            } catch (e) {
-                LOGGER.error('Auto reconnect failed', e);
-                await LightningAlert.open({
-                    message: 'Auto reconnect failed. Please try logging in again.',
-                    theme: 'error',
-                    label: 'Auto Reconnect',
-                });
-                this.redirectAfterExpiration();
-            }
-        }
-    };
-
     openSpecificModule = async target => {
         this.handleApplicationSelection(target);
     };
@@ -580,6 +502,13 @@ export default class App extends LightningElement {
         return this.isUserLoggedIn
             ? 'app-container-logged-in slds-full-height'
             : 'app-container slds-full-height';
+    }
+
+    get currentApplicationRequiresConnection() {
+        const currentApplication = this.applications.find(
+            application => application.id === this.currentApplicationId
+        );
+        return Boolean(currentApplication?.requireConnection);
     }
 
     get isLogoutDisplayed() {

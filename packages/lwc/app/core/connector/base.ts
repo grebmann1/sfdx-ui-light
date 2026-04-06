@@ -92,6 +92,166 @@ export function validateInputs(template, selector) {
     return isValid;
 }
 
+function normalizeText(value) {
+    return typeof value === 'string' ? value.trim() : '';
+}
+
+export function normalizeSandboxValue(value) {
+    if (typeof value === 'boolean') {
+        return value;
+    }
+    if (typeof value === 'string') {
+        const normalized = value.trim().toLowerCase();
+        if (normalized === 'true') {
+            return true;
+        }
+        if (normalized === 'false') {
+            return false;
+        }
+    }
+    return null;
+}
+
+export function normalizeScratchValue(value) {
+    if (typeof value === 'boolean') {
+        return value;
+    }
+    if (typeof value === 'string') {
+        const normalized = value.trim().toLowerCase();
+        if (normalized === 'true') {
+            return true;
+        }
+        if (normalized === 'false') {
+            return false;
+        }
+    }
+    return null;
+}
+
+export function getOrgHost(instanceUrl) {
+    const normalizedUrl = normalizeText(instanceUrl);
+    if (!normalizedUrl) {
+        return '';
+    }
+
+    try {
+        return new URL(normalizedUrl).host;
+    } catch {
+        return normalizedUrl.replace(/^https?:\/\//i, '').replace(/\/.*$/, '');
+    }
+}
+
+function isTrailheadHost(instanceUrl) {
+    return getOrgHost(instanceUrl).toLowerCase().endsWith('trailblaze.my.salesforce.com');
+}
+
+function hasLocalDevPort(instanceUrl) {
+    const normalizedUrl = normalizeText(instanceUrl);
+    if (!normalizedUrl) {
+        return false;
+    }
+
+    try {
+        return Boolean(new URL(normalizedUrl).port);
+    } catch {
+        return /:\d+(?:\/|$)/.test(normalizedUrl);
+    }
+}
+
+function isScratchHost(instanceUrl) {
+    return getOrgHost(instanceUrl).toLowerCase().includes('.scratch.');
+}
+
+export function inferScratchValue({
+    instanceUrl = '',
+    isScratch = null,
+    organizationType = '',
+} = {}) {
+    const explicitScratch = normalizeScratchValue(isScratch);
+    if (explicitScratch !== null) {
+        return explicitScratch;
+    }
+
+    const normalizedType = normalizeText(organizationType).toLowerCase();
+    if (normalizedType.includes('scratch')) {
+        return true;
+    }
+
+    if (isScratchHost(instanceUrl)) {
+        return true;
+    }
+
+    return null;
+}
+
+export function inferSandboxValue({
+    instanceUrl = '',
+    isSandbox = null,
+    organizationType = '',
+} = {}) {
+    const explicitSandbox = normalizeSandboxValue(isSandbox);
+    if (explicitSandbox !== null) {
+        return explicitSandbox;
+    }
+
+    const normalizedType = normalizeText(organizationType).toLowerCase();
+    if (normalizedType.includes('sandbox')) {
+        return true;
+    }
+    if (normalizedType.includes('production')) {
+        return false;
+    }
+
+    const host = getOrgHost(instanceUrl).toLowerCase();
+    if (host.includes('sandbox')) {
+        return true;
+    }
+
+    return null;
+}
+
+export function normalizeOrganizationType({
+    organizationType = '',
+    isSandbox = null,
+    isScratch = null,
+    instanceUrl = '',
+} = {}) {
+    const normalizedType = normalizeText(organizationType);
+    if (normalizedType) {
+        return normalizedType;
+    }
+
+    if (hasLocalDevPort(instanceUrl)) {
+        return 'Dev';
+    }
+
+    if (isTrailheadHost(instanceUrl)) {
+        return 'Trailhead';
+    }
+
+    const scratchFlag = inferScratchValue({
+        instanceUrl,
+        isScratch,
+        organizationType,
+    });
+    if (scratchFlag === true) {
+        return 'Scratch';
+    }
+
+    const sandboxFlag = inferSandboxValue({
+        instanceUrl,
+        isSandbox,
+        organizationType,
+    });
+    if (sandboxFlag === true) {
+        return 'Sandbox';
+    }
+    if (sandboxFlag === false) {
+        return 'Production';
+    }
+    return '';
+}
+
 export const normalizeConnection = (credentialType, rawData, platform, extra = {}) => {
     let params = {
         instanceUrl: rawData.instanceUrl,
@@ -175,6 +335,7 @@ export const normalizeConfiguration = (rawData, byPassValidation = false) => {
         alias: rawData.alias,
         username: rawData.username,
         password: rawData.password, // Not secured !!! Avoid using password
+        sessionId: rawData.sessionId || rawData.accessToken,
         instanceUrl: rawData.instanceUrl,
         loginUrl: rawData.loginUrl,
         redirectUrl: rawData.redirectUrl,
@@ -187,7 +348,38 @@ export const normalizeConfiguration = (rawData, byPassValidation = false) => {
         name: isEmpty(rawData.name) ? extractName(rawData.alias)?.name : rawData.name,
         version: rawData.version,
         versionDetails: rawData.versionDetails,
-        orgType: rawData.orgType,
+        organizationType: normalizeOrganizationType({
+            organizationType: rawData.organizationType || rawData.orgType,
+            isSandbox: rawData.isSandbox ?? rawData.sandbox ?? null,
+            isScratch: rawData.isScratch ?? rawData.scratch ?? null,
+            instanceUrl: rawData.instanceUrl,
+        }),
+        orgType: normalizeOrganizationType({
+            organizationType: rawData.orgType || rawData.organizationType,
+            isSandbox: rawData.isSandbox ?? rawData.sandbox ?? null,
+            isScratch: rawData.isScratch ?? rawData.scratch ?? null,
+            instanceUrl: rawData.instanceUrl,
+        }),
+        isScratch: inferScratchValue({
+            instanceUrl: rawData.instanceUrl,
+            isScratch: rawData.isScratch ?? rawData.scratch ?? null,
+            organizationType: rawData.organizationType || rawData.orgType,
+        }),
+        scratch: inferScratchValue({
+            instanceUrl: rawData.instanceUrl,
+            isScratch: rawData.scratch ?? rawData.isScratch ?? null,
+            organizationType: rawData.orgType || rawData.organizationType,
+        }),
+        isSandbox: inferSandboxValue({
+            instanceUrl: rawData.instanceUrl,
+            isSandbox: rawData.isSandbox ?? rawData.sandbox ?? null,
+            organizationType: rawData.organizationType || rawData.orgType,
+        }),
+        sandbox: inferSandboxValue({
+            instanceUrl: rawData.instanceUrl,
+            isSandbox: rawData.sandbox ?? rawData.isSandbox ?? null,
+            organizationType: rawData.orgType || rawData.organizationType,
+        }),
         _hasError: rawData._hasError,
         _formatVersion: rawData._formatVersion || 1,
         _status: rawData._status || null,
@@ -200,6 +392,7 @@ export const normalizeConfiguration = (rawData, byPassValidation = false) => {
 
 export const extractConfigurationValuesFromConnection = connection => {
     return {
+        sessionId: connection.sessionId || connection.accessToken,
         instanceUrl: connection.instanceUrl,
         loginUrl: connection.loginUrl,
         accessToken: connection.accessToken,
@@ -209,5 +402,64 @@ export const extractConfigurationValuesFromConnection = connection => {
         //version: connection.version,
         userInfo: connection.userInfo,
         orgId: connection.userInfo?.organization_id,
+    };
+};
+
+export const getConnectionAuthType = configuration => {
+    switch (String(configuration?.credentialType || '').toUpperCase()) {
+        case OAUTH_TYPES.OAUTH:
+            return 'oauth';
+        case OAUTH_TYPES.SESSION:
+            return 'session';
+        case OAUTH_TYPES.USERNAME:
+            return 'username';
+        default:
+            return 'manual';
+    }
+};
+
+export const buildConnectionFromConnector = (connector, fallbackApiVersion = '') => {
+    if (!connector?.conn) {
+        return null;
+    }
+
+    const configuration = connector.configuration || {};
+    const userInfo = configuration.userInfo || connector.conn.userInfo || {};
+    const instanceUrl = connector.conn.instanceUrl || configuration.instanceUrl || '';
+    const organizationType = normalizeOrganizationType({
+        organizationType:
+            configuration.organizationType || configuration.orgType || userInfo.organization_type || '',
+        isSandbox: configuration.isSandbox ?? configuration.sandbox ?? null,
+        isScratch: configuration.isScratch ?? configuration.scratch ?? null,
+        instanceUrl,
+    });
+    const isScratch = inferScratchValue({
+        instanceUrl,
+        isScratch: configuration.isScratch ?? configuration.scratch ?? null,
+        organizationType,
+    });
+    const isSandbox = inferSandboxValue({
+        instanceUrl,
+        isSandbox: configuration.isSandbox ?? configuration.sandbox ?? null,
+        organizationType,
+    });
+    const connection = {
+        instanceUrl,
+        apiVersion: connector.conn.version || configuration.version || fallbackApiVersion || '',
+        accessToken: connector.conn.accessToken || configuration.accessToken || '',
+        authType: getConnectionAuthType(configuration),
+        username: configuration.username || userInfo.username || connector.conn.username || '',
+        userId: userInfo.user_id || userInfo.id || configuration.userId || '',
+        orgId: configuration.orgId || userInfo.organization_id || '',
+        organizationName:
+            configuration.organizationName || configuration.orgName || userInfo.organization_name || '',
+        organizationType,
+        isScratch,
+        isSandbox,
+    };
+
+    return {
+        ...connection,
+        hasConnection: Boolean(connection.instanceUrl && connection.accessToken),
     };
 };

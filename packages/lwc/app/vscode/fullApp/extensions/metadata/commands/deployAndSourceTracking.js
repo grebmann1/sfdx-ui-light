@@ -124,7 +124,9 @@ export function createDeployAndSourceTracking({
     async function deployPaths(paths, { showProgress, title } = {}) {
         const conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
-            await vscode.commands.executeCommand('salesforceMetadata.connect');
+            await vscode.window.showErrorMessage(
+                connectionRuntime.getInjectedConnectionRequiredMessage()
+            );
             return null;
         }
 
@@ -308,7 +310,9 @@ export function createDeployAndSourceTracking({
     async function fetchPathFromSalesforce(path, { showProgress } = {}) {
         const conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
-            await vscode.commands.executeCommand('salesforceMetadata.connect');
+            await vscode.window.showErrorMessage(
+                connectionRuntime.getInjectedConnectionRequiredMessage()
+            );
             return;
         }
 
@@ -563,7 +567,9 @@ export function createDeployAndSourceTracking({
     async function computeRemoteChangeStatus() {
         const conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
-            await vscode.commands.executeCommand('salesforceMetadata.connect');
+            await vscode.window.showErrorMessage(
+                connectionRuntime.getInjectedConnectionRequiredMessage()
+            );
             return {
                 remoteChangedPaths: [],
                 localChangedPaths: [],
@@ -799,7 +805,9 @@ export function createDeployAndSourceTracking({
         if (!path) return;
         const conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
-            await vscode.commands.executeCommand('salesforceMetadata.connect');
+            await vscode.window.showErrorMessage(
+                connectionRuntime.getInjectedConnectionRequiredMessage()
+            );
             return;
         }
         const mapItems = await loadToolingMapItems();
@@ -989,7 +997,9 @@ export function createDeployAndSourceTracking({
     register('salesforceMetadata.orgBrowser', async () => {
         const conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
-            await vscode.commands.executeCommand('salesforceMetadata.connect');
+            await vscode.window.showErrorMessage(
+                connectionRuntime.getInjectedConnectionRequiredMessage()
+            );
             return;
         }
         await connectionRuntime.withToolingClientAuthed(conn, async client => {

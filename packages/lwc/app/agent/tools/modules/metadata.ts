@@ -1,14 +1,15 @@
 import { store, METADATA } from 'core/store';
 import { z } from 'zod';
 
-import { waitForLoaded, wrappedNavigate, formatTabId } from './utils/utils';
+import { METADATA_TOOL_DESCRIPTIONS, TOOL_APP_NAMES } from '../constants';
+import { waitForLoaded, wrappedNavigate, formatTabId } from '../utils/utils';
 const { tool } = window.OpenAIAgentsBundle?.Agents || {};
 // Navigate to Metadata Explorer
 async function navigateToMetadata() {
     return await store.dispatch(async (dispatch, getState) => {
         const { application } = getState();
         if (application.isLoading) await waitForLoaded();
-        await wrappedNavigate({ applicationName: 'metadata' });
+        await wrappedNavigate({ applicationName: TOOL_APP_NAMES.metadata });
         return { success: true };
     });
 }
@@ -18,7 +19,7 @@ async function openMetadataTab({ tabId }) {
     return await store.dispatch(async (dispatch, getState) => {
         const { application } = getState();
         if (application.isLoading) await waitForLoaded();
-        await wrappedNavigate({ applicationName: 'metadata' });
+        await wrappedNavigate({ applicationName: TOOL_APP_NAMES.metadata });
         // We are setting the current tab to the one we want to execute
         await dispatch(METADATA.reduxSlice.actions.selectionTab({ id: tabId }));
         return { success: true, tabId };
@@ -60,7 +61,7 @@ async function describeSObject({ sobject }) {
 // Tool: Navigate to Metadata Explorer
 const metadataNavigate = tool({
     name: 'metadata_navigate',
-    description: 'Navigate to the Metadata Explorer application.',
+    description: METADATA_TOOL_DESCRIPTIONS.navigate,
     parameters: z.object({}),
     execute: async () => {
         return await navigateToMetadata();
@@ -70,7 +71,7 @@ const metadataNavigate = tool({
 // Tool: Open a specific metadata tab
 const metadataOpenTab = tool({
     name: 'metadata_open_tab',
-    description: 'Open a specific metadata tab in the Metadata Explorer.',
+    description: METADATA_TOOL_DESCRIPTIONS.openTab,
     parameters: z.object({
         tabId: z.string().describe('The ID of the metadata tab to open'),
     }),
@@ -82,7 +83,7 @@ const metadataOpenTab = tool({
 // Tool: List all available metadata types
 const metadataListTypes = tool({
     name: 'metadata_list_types',
-    description: '[Incognito] List all available metadata types in the org.',
+    description: METADATA_TOOL_DESCRIPTIONS.listTypes,
     parameters: z.object({}),
     execute: async () => {
         return await listMetadataTypes();
@@ -92,7 +93,7 @@ const metadataListTypes = tool({
 // Tool: List all records for a metadata type
 const metadataListRecords = tool({
     name: 'metadata_list_records',
-    description: '[Incognito] List all records for a given metadata type.',
+    description: METADATA_TOOL_DESCRIPTIONS.listRecords,
     parameters: z.object({
         sobject: z.string().describe('The metadata type to list records for'),
     }),
@@ -104,7 +105,7 @@ const metadataListRecords = tool({
 // Tool: Get details/files for a specific metadata record
 const metadataGetRecord = tool({
     name: 'metadata_get_record',
-    description: '[Incognito] Get details and files for a specific metadata record.',
+    description: METADATA_TOOL_DESCRIPTIONS.getRecord,
     parameters: z.object({
         sobject: z.string().describe('The metadata type'),
         recordId: z.string().describe('The record ID or fullName'),
@@ -117,7 +118,7 @@ const metadataGetRecord = tool({
 // Tool: Describe SObject (fields, types, etc.)
 const metadataDescribeObject = tool({
     name: 'metadata_describe_object',
-    description: 'Fetch describe/objectInfo (fields, types, etc.) for a given SObject name.',
+    description: METADATA_TOOL_DESCRIPTIONS.describeObject,
     parameters: z.object({
         sobject: z.string().describe('The API name of the SObject to describe'),
     }),

@@ -18,6 +18,7 @@ export const MAX_GREP_PREVIEW_CHARS = 240;
 export const WORKBENCH_RUNTIME_MODELS = [
     { label: 'gpt-5-mini', value: 'gpt-5-mini' },
     { label: 'gpt-5', value: 'gpt-5-2025-08-07' },
+    { label: 'gpt-5-codex', value: 'gpt-5-codex' },
     { label: 'gpt-5-nano', value: 'gpt-5-nano-2025-08-07' },
     { label: 'gpt-5.4', value: 'gpt-5.4' },
 ];
