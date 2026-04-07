@@ -96,11 +96,13 @@ export function createToolingClient({ instanceUrl, accessToken, apiVersion, prox
 
         const toolingQueryAll = async soql => {
             const queryExec = jsforceConnection.tooling.query(soql);
-            const records = [];
-            for await (const record of queryExec.scanAll()) {
-                records.push(record);
-            }
-            return records;
+            return (
+                (await queryExec.run({
+                    responseTarget: 'Records',
+                    autoFetch: true,
+                    maxFetch: 100000,
+                })) || []
+            );
         };
 
         return {

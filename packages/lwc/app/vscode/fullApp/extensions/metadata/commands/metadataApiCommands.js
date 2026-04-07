@@ -18,6 +18,7 @@ import {
     safeSeg,
     toWorkspaceRelativeLabel,
 } from '../core/workspacePaths.js';
+import { fetchAndPopulateWorkspace } from '../runtime/workspaceSync.js';
 
 export function parsePackageXml(xmlText) {
     const output = new Map();
@@ -207,6 +208,38 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
 
         return { writtenPaths };
     }
+
+    register('salesforceMetadata.fetchMetadata', async () => {
+        const conn = connectionRuntime.loadStoredConn();
+        if (!conn.instanceUrl || !conn.accessToken) {
+            await vscode.window.showErrorMessage(
+                connectionRuntime.getInjectedConnectionRequiredMessage()
+            );
+            return;
+        }
+
+        await vscode.window.withProgress(
+            {
+                location: vscode.ProgressLocation.Notification,
+                title: 'Syncing project from Salesforce…',
+                cancellable: false,
+            },
+            async () =>
+                await connectionRuntime.withToolingClientAuthed(conn, async client => {
+                    await fetchAndPopulateWorkspace(vscode, client);
+                })
+        );
+
+        deployTools.invalidateToolingMap();
+        try {
+            await vscode.commands.executeCommand('salesforceMetadata.refreshProject');
+        } catch {
+            // ignore
+        }
+        await vscode.window.showInformationMessage(
+            'Project sync complete. Metadata, tooling map, and source tracking were refreshed.'
+        );
+    });
 
     async function deployViaMetadataApi(conn, { checkOnly, packageXmlText } = {}) {
         const root = getWorkspaceDefaultRootUri(vscode);
