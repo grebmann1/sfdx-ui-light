@@ -1,5 +1,12 @@
 /* eslint-disable import/no-unresolved */
-import { CACHE_CONFIG, loadExtensionConfigFromCache } from 'shared/cacheManager';
+import {
+    CACHE_CONFIG,
+    getAiProviderFromConfig,
+    getLlmProviderConfigCacheKeys,
+    loadExtensionConfigFromCache,
+    resolveLlmProviderConfigMap,
+} from 'shared/cacheManager';
+import { fetchLlmModelsEndpoint, isInternalProviderBaseUrl } from 'shared/llm';
 
 import {
     DEFAULT_WORKBENCH_INTERNAL_MODEL,
@@ -48,9 +55,14 @@ export function resolveWorkbenchReasoningSelection(selection) {
     return allowed.has(normalized) ? normalized : DEFAULT_WORKBENCH_REASONING;
 }
 
-export function resolveWorkbenchModelId(requestedModelId, isInternal = false) {
+export function resolveWorkbenchModelId(requestedModelId, isInternal = false, availableModels) {
     const normalized = typeof requestedModelId === 'string' ? requestedModelId.trim() : '';
-    const supportedModels = isInternal ? WORKBENCH_INTERNAL_MODELS : WORKBENCH_RUNTIME_MODELS;
+    const supportedModels =
+        Array.isArray(availableModels) && availableModels.length > 0
+            ? availableModels
+            : isInternal
+              ? WORKBENCH_INTERNAL_MODELS
+              : WORKBENCH_RUNTIME_MODELS;
     const supportedValues = new Set(supportedModels.map(model => model.value));
     if (supportedValues.has(normalized)) {
         return normalized;
@@ -59,26 +71,38 @@ export function resolveWorkbenchModelId(requestedModelId, isInternal = false) {
 }
 
 export async function resolveWorkbenchAgentSettings({ modelId, reasoning } = {}) {
-    const cachedConfig = await loadExtensionConfigFromCache([
-        CACHE_CONFIG.OPENAI_KEY.key,
-        CACHE_CONFIG.OPENAI_URL.key,
-    ]).catch(() => ({}));
+    const cachedConfig = await loadExtensionConfigFromCache(getLlmProviderConfigCacheKeys()).catch(
+        () => ({})
+    );
+    const providerConfigs = resolveLlmProviderConfigMap(cachedConfig);
+    const aiProvider = getAiProviderFromConfig(cachedConfig);
+    const openaiKey = providerConfigs.openai.apiKey || '';
+    const openaiUrl = resolveWorkbenchOpenAiBaseUrl(providerConfigs.openai.baseUrl);
+    const isInternal = isInternalProviderBaseUrl(openaiUrl);
+    let availableModels;
 
-    const openaiKey =
-        typeof cachedConfig?.[CACHE_CONFIG.OPENAI_KEY.key] === 'string'
-            ? cachedConfig[CACHE_CONFIG.OPENAI_KEY.key].trim()
-            : '';
-    const openaiUrl =
-        typeof cachedConfig?.[CACHE_CONFIG.OPENAI_URL.key] === 'string'
-            ? cachedConfig[CACHE_CONFIG.OPENAI_URL.key].trim()
-            : CACHE_CONFIG.OPENAI_URL.defaultValue;
-    const isInternal = typeof openaiUrl === 'string' && openaiUrl.includes('eng-ai-model-gateway');
+    if (aiProvider === 'openai') {
+        try {
+            const response = await fetchLlmModelsEndpoint({
+                provider: 'openai',
+                providerConfigs,
+            });
+            if (response.catalog?.status === 'ok' && Array.isArray(response.catalog.models)) {
+                availableModels = response.catalog.models.map(model => ({
+                    label: model.label,
+                    value: model.value,
+                }));
+            }
+        } catch (_error) {
+            availableModels = undefined;
+        }
+    }
 
     return {
         openaiKey,
         openaiUrl,
         isInternal,
-        selectedModel: resolveWorkbenchModelId(modelId, isInternal),
+        selectedModel: resolveWorkbenchModelId(modelId, isInternal, availableModels),
         selectedReasoning: resolveWorkbenchReasoningSelection(reasoning),
         modelContextWindow: WORKBENCH_MODEL_CONTEXT_WINDOW,
         maxToolRounds: WORKBENCH_MAX_TOOL_ROUNDS,

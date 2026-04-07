@@ -16,6 +16,10 @@ export const ORG_ENVIRONMENT_TYPES = {
     unknown: 'unknown',
 };
 
+function normalizeConnectionInput(connection) {
+    return connection && typeof connection === 'object' ? connection : {};
+}
+
 function normalizeText(value) {
     return typeof value === 'string' ? value.trim() : '';
 }
@@ -62,27 +66,28 @@ export function inferOrgEnvironment({
 }
 
 export function buildOrgDisplayName(connection = {}) {
-    const displayName = normalizeText(connection.displayName);
+    const safeConnection = normalizeConnectionInput(connection);
+    const displayName = normalizeText(safeConnection.displayName);
     if (displayName) {
         return displayName;
     }
 
-    const organizationName = normalizeText(connection.organizationName);
+    const organizationName = normalizeText(safeConnection.organizationName);
     if (organizationName) {
         return organizationName;
     }
 
-    const username = normalizeText(connection.username);
+    const username = normalizeText(safeConnection.username);
     if (username) {
         return username;
     }
 
-    const host = getOrgHost(connection.instanceUrl);
+    const host = getOrgHost(safeConnection.instanceUrl);
     if (host) {
         return host;
     }
 
-    const orgId = normalizeText(connection.orgId);
+    const orgId = normalizeText(safeConnection.orgId);
     if (orgId) {
         return orgId;
     }
@@ -132,27 +137,28 @@ function buildOrgEnvironmentSummary(environmentType) {
 }
 
 export function buildOrgContext(connection = {}) {
+    const safeConnection = normalizeConnectionInput(connection);
     const hasConnection = Boolean(
-        connection?.hasConnection || (connection?.instanceUrl && connection?.accessToken)
+        safeConnection.hasConnection || (safeConnection.instanceUrl && safeConnection.accessToken)
     );
     const environmentType = Object.values(ORG_ENVIRONMENT_TYPES).includes(
-        normalizeText(connection.environmentType)
+        normalizeText(safeConnection.environmentType)
     )
-        ? connection.environmentType
-        : inferOrgEnvironment(connection);
+        ? safeConnection.environmentType
+        : inferOrgEnvironment(safeConnection);
     const summary = buildOrgEnvironmentSummary(environmentType);
-    const displayName = buildOrgDisplayName(connection) || 'Salesforce org';
-    const instanceUrl = normalizeText(connection.instanceUrl);
-    const host = getOrgHost(instanceUrl || connection.host);
-    const organizationName = normalizeText(connection.organizationName);
+    const displayName = buildOrgDisplayName(safeConnection) || 'Salesforce org';
+    const instanceUrl = normalizeText(safeConnection.instanceUrl);
+    const host = getOrgHost(instanceUrl || safeConnection.host);
+    const organizationName = normalizeText(safeConnection.organizationName);
     const organizationType = normalizeOrganizationType({
-        organizationType: connection.organizationType,
-        isSandbox: connection.isSandbox,
-        isScratch: connection.isScratch,
+        organizationType: safeConnection.organizationType,
+        isSandbox: safeConnection.isSandbox,
+        isScratch: safeConnection.isScratch,
         instanceUrl,
     });
-    const username = normalizeText(connection.username);
-    const orgId = normalizeText(connection.orgId);
+    const username = normalizeText(safeConnection.username);
+    const orgId = normalizeText(safeConnection.orgId);
 
     return {
         hasConnection,
@@ -163,8 +169,8 @@ export function buildOrgContext(connection = {}) {
         orgId,
         organizationName,
         organizationType,
-        isScratch: normalizeScratchValue(connection.isScratch),
-        isSandbox: normalizeSandboxValue(connection.isSandbox),
+        isScratch: normalizeScratchValue(safeConnection.isScratch),
+        isSandbox: normalizeSandboxValue(safeConnection.isSandbox),
         environmentType,
         environmentLabel: summary.label,
         tone: summary.tone,

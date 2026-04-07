@@ -29,23 +29,11 @@
                                 </select>
                             </div>
                             <template lwc:if={showReasoningSelect}>
-                                <div class="slds-col">
-                                    <select
-                                        id="reasoning-picklist"
-                                        class="slds-select chat-select chat-select-reasoning"
-                                        onchange={handleReasoningChange}
-                                        aria-label="Reasoning">
-                                        <template
-                                            for:each={renderedReasoningOptions}
-                                            for:item="opt">
-                                            <option
-                                                key={opt.value}
-                                                value={opt.value}
-                                                selected={opt.isSelected}>
-                                                {opt.label}
-                                            </option>
-                                        </template>
-                                    </select>
+                                <div class="slds-col chat-reasoning-col">
+                                    <slds-reasoning
+                                        class="chat-reasoning-control"
+                                        value={selectedReasoning}
+                                        onchange={handleReasoningChange}></slds-reasoning>
                                 </div>
                             </template>
                         </div>

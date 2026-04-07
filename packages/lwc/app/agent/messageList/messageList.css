@@ -1,5 +1,6 @@
 .message-list-container {
     position: relative;
+    margin-top: 10px;
 }
 
 .scroll-to-bottom-button {

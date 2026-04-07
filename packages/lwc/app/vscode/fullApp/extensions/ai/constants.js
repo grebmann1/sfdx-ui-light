@@ -15,17 +15,20 @@ export const MAX_DIRECTORY_ENTRIES = 200;
 export const MAX_GLOB_RESULTS = 200;
 export const MAX_GREP_RESULTS = 100;
 export const MAX_GREP_PREVIEW_CHARS = 240;
-export const WORKBENCH_RUNTIME_MODELS = [
-    { label: 'gpt-5-mini', value: 'gpt-5-mini' },
-    { label: 'gpt-5', value: 'gpt-5-2025-08-07' },
-    { label: 'gpt-5-codex', value: 'gpt-5-codex' },
-    { label: 'gpt-5-nano', value: 'gpt-5-nano-2025-08-07' },
-    { label: 'gpt-5.4', value: 'gpt-5.4' },
-];
-export const WORKBENCH_INTERNAL_MODELS = [
-    { label: 'gpt-5-mini', value: 'gpt-5-mini' },
-    { label: 'gpt-5', value: 'gpt-5' },
-];
+import {
+    OPENAI_MODEL_OPTIONS,
+    INTERNAL_OPENAI_MODEL_OPTIONS,
+    getDefaultModelForProvider,
+} from 'shared/llm';
+
+export const WORKBENCH_RUNTIME_MODELS = OPENAI_MODEL_OPTIONS.map(model => ({
+    label: model.label,
+    value: model.value,
+}));
+export const WORKBENCH_INTERNAL_MODELS = INTERNAL_OPENAI_MODEL_OPTIONS.map(model => ({
+    label: model.label,
+    value: model.value,
+}));
 export const WORKBENCH_REASONING_OPTIONS = [
     { value: 'none', label: 'None' },
     { value: 'minimal', label: 'Minimal' },
@@ -34,7 +37,8 @@ export const WORKBENCH_REASONING_OPTIONS = [
     { value: 'high', label: 'High' },
     { value: 'xhigh', label: 'X-High' },
 ];
-export const DEFAULT_WORKBENCH_MODEL = WORKBENCH_RUNTIME_MODELS[0].value;
+export const DEFAULT_WORKBENCH_MODEL =
+    getDefaultModelForProvider('openai') || WORKBENCH_RUNTIME_MODELS[0].value;
 export const DEFAULT_WORKBENCH_INTERNAL_MODEL = WORKBENCH_INTERNAL_MODELS[0].value;
 export const DEFAULT_WORKBENCH_REASONING = WORKBENCH_REASONING_OPTIONS[2].value;
 export const WORKBENCH_MODEL_CONTEXT_WINDOW = 128000;

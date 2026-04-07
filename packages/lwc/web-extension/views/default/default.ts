@@ -1,6 +1,6 @@
 import { api, LightningElement, wire } from 'lwc';
 import { store as legacyStore, store_application } from 'shared/store';
-import { connectStore, store, EINSTEIN, APPLICATION } from 'core/store';
+import { connectStore, store, EINSTEIN, APPLICATION, AGENT } from 'core/store';
 
 import {
     getChromePort,
@@ -9,7 +9,14 @@ import {
     disconnectChromePort,
 } from 'shared/utils';
 import { PANELS } from 'extension/utils';
-import { CACHE_CONFIG, loadExtensionConfigFromCache } from 'shared/cacheManager';
+import {
+    CACHE_CONFIG,
+    getAiProviderFromConfig,
+    getLlmProviderConfigCacheKeys,
+    loadExtensionConfigFromCache,
+    resolveLlmProviderConfigMap,
+} from 'shared/cacheManager';
+import { fetchLlmModelsEndpoint, normalizeModelSelection } from 'shared/llm';
 
 import LOGGER from 'shared/logger';
 export default class Default extends LightningElement {
@@ -59,7 +66,7 @@ export default class Default extends LightningElement {
         this.panel = this.urlOverwrittenPanel || this.panel;
         this.connectToBackground();
         this.loadFromCache();
-        store.dispatch(APPLICATION.reduxSlice.actions.setIsSidePanel());
+        store.dispatch(APPLICATION.reduxSlice.actions.setIsSidePanel({}));
     }
 
     disconnectedCallback() {
@@ -81,7 +88,7 @@ export default class Default extends LightningElement {
 
         // Temporary solution to force refresh of connection list
         if (this.refs.default) {
-            this.refs.default.connection_refresh();
+            (this.refs.default as any).connection_refresh();
         }
     };
 
@@ -103,37 +110,55 @@ export default class Default extends LightningElement {
     loadFromCache = async () => {
         const configuration = await loadExtensionConfigFromCache([
             CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key,
-            CACHE_CONFIG.MISTRAL_KEY.key,
-            CACHE_CONFIG.AI_PROVIDER.key,
-            CACHE_CONFIG.OPENAI_KEY.key,
-            CACHE_CONFIG.OPENAI_URL.key,
+            ...getLlmProviderConfigCacheKeys(),
             CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key,
         ]);
 
         this.betaSmartInputEnabled = !!configuration[CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key];
 
-        // Handle LLM keys and provider
-        const openaiKey = configuration[CACHE_CONFIG.OPENAI_KEY.key];
-        const openaiUrl = configuration[CACHE_CONFIG.OPENAI_URL.key];
-        const mistralKey = configuration[CACHE_CONFIG.MISTRAL_KEY.key];
-        const aiProvider = configuration[CACHE_CONFIG.AI_PROVIDER.key];
+        const providerConfigs = resolveLlmProviderConfigMap(configuration);
+        const openaiKey = providerConfigs.openai.apiKey;
+        const openaiUrl = providerConfigs.openai.baseUrl;
+        const mistralKey = providerConfigs.mistral.apiKey;
+        const aiProvider = getAiProviderFromConfig(configuration);
         LOGGER.debug('loadFromCache - openaiKey', openaiKey);
         LOGGER.debug('loadFromCache - openaiUrl', openaiUrl);
         LOGGER.debug('loadFromCache - mistralKey', mistralKey);
         LOGGER.debug('loadFromCache - aiProvider', aiProvider);
-        if (openaiKey) {
-            store.dispatch(APPLICATION.reduxSlice.actions.updateOpenAIKey({ openaiKey, openaiUrl }));
-        }
-        if (mistralKey) {
-            store.dispatch(APPLICATION.reduxSlice.actions.updateMistralKey({ mistralKey }));
-        }
-        if (aiProvider) {
-            store.dispatch(APPLICATION.reduxSlice.actions.updateAiProvider({ aiProvider }));
+        store.dispatch(APPLICATION.reduxSlice.actions.updateProviderConfigs({ providerConfigs }));
+        store.dispatch(APPLICATION.reduxSlice.actions.updateAiProvider({ aiProvider }));
+        try {
+            const response = await fetchLlmModelsEndpoint({
+                provider: aiProvider,
+                providerConfigs,
+            });
+            store.dispatch(
+                APPLICATION.reduxSlice.actions.updateProviderCatalogs({
+                    catalogs: response.catalogs,
+                })
+            );
+            if (response.catalog?.status === 'ok' && Array.isArray(response.catalog.models)) {
+                const currentModel = store.getState()?.agent?.selectedModel;
+                const normalizedModel = normalizeModelSelection(
+                    currentModel,
+                    response.catalog.models,
+                    response.catalog.defaultModel
+                );
+                if (normalizedModel && normalizedModel !== currentModel) {
+                    store.dispatch(
+                        AGENT.reduxSlice.actions.updateSelectedModel({ model: normalizedModel })
+                    );
+                }
+            }
+        } catch (error) {
+            LOGGER.warn('loadFromCache - failed to refresh LLM catalog', error);
         }
     };
 
     connectToBackground = () => {
-        const port = registerChromePort(chrome.runtime.connect({ name: 'sf-toolkit-sidepanel' }));
+        const port = registerChromePort(
+            chrome.runtime.connect({ name: 'sf-toolkit-sidepanel' })
+        ) as any;
         // Copy for global access
         port.onDisconnect.addListener(() => {
             // Optionally handle disconnect in content script
@@ -167,7 +192,7 @@ export default class Default extends LightningElement {
     };
 
     notifyBackgroundApplicationChange = applicationName => {
-        const port = getChromePort();
+        const port = getChromePort() as any;
         if (!port) return;
         try {
             port.postMessage({

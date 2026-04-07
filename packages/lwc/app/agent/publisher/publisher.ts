@@ -1,7 +1,13 @@
 import { api, track } from 'lwc';
 import { isEmpty, isChromeExtension, runActionAfterTimeOut } from 'shared/utils';
 import ToolkitElement from 'core/toolkitElement';
-import { MODELS, INTERNAL_MODELS, DEFAULT_MODEL, DEFAULT_REASONING, REASONING_OPTIONS } from 'agent/utils';
+import {
+    MODELS,
+    INTERNAL_MODELS,
+    DEFAULT_MODEL,
+    DEFAULT_REASONING,
+    REASONING_OPTIONS,
+} from 'agent/utils';
 import LOGGER from 'shared/logger';
 
 export default class App extends ToolkitElement {
@@ -10,30 +16,42 @@ export default class App extends ToolkitElement {
     @api openaiKey: string | undefined;
     @api isAudioRecorderDisabled = false;
     @api isInternal = false;
+    @api availableModels = MODELS;
 
     @track selectedModel = DEFAULT_MODEL;
-    @track availableModels = MODELS;
     @track selectedReasoning = DEFAULT_REASONING;
-    availableReasoningOptions = REASONING_OPTIONS;
+
+    get resolvedAvailableModels() {
+        if (this.isInternal) {
+            return INTERNAL_MODELS;
+        }
+        return Array.isArray(this.availableModels) && this.availableModels.length > 0
+            ? this.availableModels
+            : MODELS;
+    }
 
     normalizeModelValue = value => {
+        const modelOptions = this.resolvedAvailableModels;
+        const fallbackModel = modelOptions[0]?.value || DEFAULT_MODEL;
         const raw = typeof value === 'string' ? value.trim() : '';
-        if (!raw) return DEFAULT_MODEL;
+        if (!raw) return fallbackModel;
         const lowered = raw.toLowerCase();
-        const exactValue = MODELS.find(option => option.value === raw);
+        const exactValue = modelOptions.find(option => option.value === raw);
         if (exactValue) return exactValue.value;
-        const valueCaseInsensitive = MODELS.find(
+        const valueCaseInsensitive = modelOptions.find(
             option => String(option.value || '').toLowerCase() === lowered
         );
         if (valueCaseInsensitive) return valueCaseInsensitive.value;
-        const labelMatch = MODELS.find(option => String(option.label || '').toLowerCase() === lowered);
+        const labelMatch = modelOptions.find(
+            option => String(option.label || '').toLowerCase() === lowered
+        );
         if (labelMatch) return labelMatch.value;
-        const aliasMatch = MODELS.find(option =>
+        const aliasMatch = modelOptions.find(option =>
             String(option.value || '')
                 .toLowerCase()
                 .startsWith(`${lowered}-`)
         );
-        return aliasMatch ? aliasMatch.value : DEFAULT_MODEL;
+        return aliasMatch ? aliasMatch.value : fallbackModel;
     };
 
     normalizeReasoningValue = value => {
@@ -89,7 +107,7 @@ export default class App extends ToolkitElement {
         if (this.isReasoningReadOnly) {
             return;
         }
-        const reasoning = this.normalizeReasoningValue(event.target.value);
+        const reasoning = this.normalizeReasoningValue(event.detail?.value ?? event.target?.value);
         this.selectedReasoning = reasoning;
         this.dispatchEvent(
             new CustomEvent('reasoningchange', {
@@ -202,7 +220,9 @@ export default class App extends ToolkitElement {
 
     @api
     focusInput() {
-        const textarea = this.template.querySelector('.chat-textarea') as HTMLTextAreaElement | null;
+        const textarea = this.template.querySelector(
+            '.chat-textarea'
+        ) as HTMLTextAreaElement | null;
         if (textarea) {
             textarea.focus();
         }
@@ -210,7 +230,8 @@ export default class App extends ToolkitElement {
 
     resizeTextarea = (textarea?: HTMLTextAreaElement | null) => {
         const target =
-            textarea || (this.template.querySelector('.chat-textarea') as HTMLTextAreaElement | null);
+            textarea ||
+            (this.template.querySelector('.chat-textarea') as HTMLTextAreaElement | null);
         if (!target) {
             return;
         }
@@ -225,15 +246,11 @@ export default class App extends ToolkitElement {
     };
 
     renderedCallback() {
-        if (this.isInternal) {
-            this.availableModels = INTERNAL_MODELS;
-            const normalized = this.normalizeModelValue(this.selectedModel);
-            this.selectedModel = this.availableModels.some(model => model.value === normalized)
-                ? normalized
-                : this.availableModels[0]?.value;
-        } else {
-            this.availableModels = MODELS;
-        }
+        const modelOptions = this.resolvedAvailableModels;
+        const normalized = this.normalizeModelValue(this.selectedModel);
+        this.selectedModel = modelOptions.some(model => model.value === normalized)
+            ? normalized
+            : modelOptions[0]?.value;
         if (!this.hasRendered) {
             this.hasRendered = true;
             setTimeout(() => {
@@ -254,7 +271,9 @@ export default class App extends ToolkitElement {
         this._prompt = null;
         this.selectedFiles = [];
         this.imagePreviews = {};
-        const textarea = this.template.querySelector('.chat-textarea') as HTMLTextAreaElement | null;
+        const textarea = this.template.querySelector(
+            '.chat-textarea'
+        ) as HTMLTextAreaElement | null;
         if (textarea) {
             textarea.value = '';
             this.resizeTextarea(textarea);
@@ -290,7 +309,9 @@ export default class App extends ToolkitElement {
     handleSpeechChange = e => {
         const speech = e.detail.value;
         this._prompt = speech;
-        const textarea = this.template.querySelector('.chat-textarea') as HTMLTextAreaElement | null;
+        const textarea = this.template.querySelector(
+            '.chat-textarea'
+        ) as HTMLTextAreaElement | null;
         if (textarea) {
             textarea.value = speech;
             this.resizeTextarea(textarea);
@@ -298,7 +319,9 @@ export default class App extends ToolkitElement {
     };
 
     handleSendClick = async () => {
-        const textarea = this.template.querySelector('.chat-textarea') as HTMLTextAreaElement | null;
+        const textarea = this.template.querySelector(
+            '.chat-textarea'
+        ) as HTMLTextAreaElement | null;
         const value = textarea?.value || '';
         if (!isEmpty(value) || this.selectedFiles.length > 0) {
             this.dispatchEvent(
@@ -356,14 +379,6 @@ export default class App extends ToolkitElement {
         return this.availableModels.map(model => ({
             ...model,
             isSelected: model.value === selectedModel,
-        }));
-    }
-
-    get renderedReasoningOptions() {
-        const selectedReasoning = this.normalizeReasoningValue(this.selectedReasoning);
-        return this.availableReasoningOptions.map(option => ({
-            ...option,
-            isSelected: option.value === selectedReasoning,
         }));
     }
 }

@@ -1,0 +1,31 @@
+<template>
+    <div class="reasoning" onmouseenter={handleMouseEnter} onmouseleave={handleMouseLeave}>
+        <button
+            type="button"
+            class={buttonClass}
+            aria-label={ariaLabel}
+            title={ariaLabel}
+            onclick={handleButtonClick}
+            disabled={disabled}>
+            <span class="reasoning-icon" aria-hidden="true">
+                <slds-lucide-icon
+                    name="brain"
+                    size="14"
+                    stroke-width={iconStrokeWidth}></slds-lucide-icon>
+            </span>
+            <span class="reasoning-bars" aria-hidden="true">
+                <span class={firstBarClass}></span>
+                <span class={secondBarClass}></span>
+                <span class={thirdBarClass}></span>
+            </span>
+        </button>
+        <div
+            class={tooltipClass}
+            role="status"
+            aria-hidden={tooltipAriaHidden}
+            onclick={handleTooltipClick}>
+            Thinking: {currentPreset.short}
+            <span class="reasoning-tooltip-arrow" aria-hidden="true"></span>
+        </div>
+    </div>
+</template>

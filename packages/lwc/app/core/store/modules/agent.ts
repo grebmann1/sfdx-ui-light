@@ -64,7 +64,7 @@ function normalizeModel(model) {
     if (aliasMatch) {
         return aliasMatch.value;
     }
-    return DEFAULT_MODEL;
+    return normalized;
 }
 
 function normalizeReasoning(reasoning) {
@@ -232,9 +232,7 @@ function hydrateMessagesFromConversations(state) {
     if (!state.messagesById) state.messagesById = {};
     (state.conversations || []).forEach(c => {
         if (c.streamHistory && c.streamHistory.length > 0) {
-            const msgs = Array.isArray(c.streamHistory)
-                ? c.streamHistory
-                : [];
+            const msgs = Array.isArray(c.streamHistory) ? c.streamHistory : [];
             const withoutWelcome = Array.isArray(msgs)
                 ? msgs.filter(m => m.id !== Constants.WELCOME_MESSAGE.id)
                 : [];
@@ -251,7 +249,9 @@ export const loadCacheSettingsAsync = createAsyncThunk(
     async (_, { dispatch }) => {
         try {
             const [conversationData, legacyConfig] = await Promise.all([
-                loadSingleExtensionConfigFromCache(CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATION_DATA.key),
+                loadSingleExtensionConfigFromCache(
+                    CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATION_DATA.key
+                ),
                 loadExtensionConfigFromCache([
                     CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATIONS.key,
                     CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATION_ACTIVE_ID.key,
@@ -333,7 +333,10 @@ const agentSlice = createSlice({
             const { id, summary } = action.payload;
             const idx = state.conversations.findIndex(c => c.id === id);
             if (idx !== -1) {
-                state.conversations[idx] = { ...state.conversations[idx], compactionSummary: summary };
+                state.conversations[idx] = {
+                    ...state.conversations[idx],
+                    compactionSummary: summary,
+                };
             }
             saveCacheSettings(state);
         },
@@ -341,9 +344,9 @@ const agentSlice = createSlice({
             const { id } = action.payload;
             const idx = state.conversations.findIndex(c => c.id === id);
             if (idx !== -1) {
-                state.conversations[idx] = { 
+                state.conversations[idx] = {
                     ...state.conversations[idx],
-                    streamHistory : state.messagesById[id] || []
+                    streamHistory: state.messagesById[id] || [],
                 };
             }
             saveCacheSettings(state);
@@ -393,10 +396,12 @@ const agentSlice = createSlice({
         },
         setMessages: (state, action) => {
             const { id, messages } = action.payload;
-            const newMessages = Array.isArray(messages) ? messages.map(m => ({
-                ...m,
-                id: m.id || guid(),
-            })) : [];
+            const newMessages = Array.isArray(messages)
+                ? messages.map(m => ({
+                      ...m,
+                      id: m.id || guid(),
+                  }))
+                : [];
             state.messagesById[id] = newMessages;
             LOGGER.debug('[agent] setMessages', {
                 conversationId: id,
@@ -505,20 +510,18 @@ export const saveConversationsToCache = createAsyncThunk(
     }
 );
 
-
 // Execute agent stream thunk
 export const executeAgent = createAsyncThunk(
     'agent/executeAgent',
-    async ({userMessages, agent}, { getState, dispatch }
-    ) => {
+    async ({ userMessages, agent }, { getState, dispatch }) => {
         try {
             LOGGER.debug('[agent] runExecuteAgent start', {
-                conversationId:agent.conversationId,
+                conversationId: agent.conversationId,
                 message: userMessages,
             });
-            
+
             const AgentObserver = {
-                onStepStart : (info: ProcessMessageStepStart) => {
+                onStepStart: (info: ProcessMessageStepStart) => {
                     LOGGER.debug('[agent] onStepStart', info);
                 },
                 onStepFinish: (info: ProcessMessageStepFinish) => {
@@ -541,11 +544,16 @@ export const executeAgent = createAsyncThunk(
                     );
                 },
             };
-            dispatch(reduxSlice.actions.addMessages({ id: agent.conversationId, messages : [...userMessages] }));
+            dispatch(
+                reduxSlice.actions.addMessages({
+                    id: agent.conversationId,
+                    messages: [...userMessages],
+                })
+            );
             dispatch(reduxSlice.actions.startLoading({ id: agent.conversationId }));
             dispatch(reduxSlice.actions.startStreaming({ id: agent.conversationId }));
-            for await (const chunk of agent.processMessage(userMessages,AgentObserver)) {}
-
+            for await (const chunk of agent.processMessage(userMessages, AgentObserver)) {
+            }
         } catch (e) {
             LOGGER.error('[agent] runExecuteAgent failed', e);
             dispatch(
@@ -559,7 +567,7 @@ export const executeAgent = createAsyncThunk(
         } finally {
             dispatch(
                 reduxSlice.actions.updateConversationStreamHistory({
-                    id: agent.conversationId
+                    id: agent.conversationId,
                 })
             );
             dispatch(reduxSlice.actions.stopLoading({ id: agent.conversationId }));
@@ -567,4 +575,3 @@ export const executeAgent = createAsyncThunk(
         }
     }
 );
-

@@ -1,0 +1,74 @@
+<template>
+    <template lwc:if={hasIcon}>
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={computedSize}
+            height={computedSize}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width={computedStrokeWidth}
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            role={computedRole}
+            aria-hidden={computedAriaHidden}
+            focusable="false">
+            <template lwc:if={title}>
+                <title>{title}</title>
+            </template>
+
+            <template for:each={iconNodeGroups.path} for:item="node">
+                <path key={node.key} d={node.d} fill={node.fill}></path>
+            </template>
+
+            <template for:each={iconNodeGroups.circle} for:item="node">
+                <circle
+                    key={node.key}
+                    cx={node.cx}
+                    cy={node.cy}
+                    r={node.r}
+                    fill={node.fill}></circle>
+            </template>
+
+            <template for:each={iconNodeGroups.ellipse} for:item="node">
+                <ellipse
+                    key={node.key}
+                    cx={node.cx}
+                    cy={node.cy}
+                    rx={node.rx}
+                    ry={node.ry}
+                    fill={node.fill}></ellipse>
+            </template>
+
+            <template for:each={iconNodeGroups.line} for:item="node">
+                <line
+                    key={node.key}
+                    x1={node.x1}
+                    y1={node.y1}
+                    x2={node.x2}
+                    y2={node.y2}
+                    fill={node.fill}></line>
+            </template>
+
+            <template for:each={iconNodeGroups.polygon} for:item="node">
+                <polygon key={node.key} points={node.points} fill={node.fill}></polygon>
+            </template>
+
+            <template for:each={iconNodeGroups.polyline} for:item="node">
+                <polyline key={node.key} points={node.points} fill={node.fill}></polyline>
+            </template>
+
+            <template for:each={iconNodeGroups.rect} for:item="node">
+                <rect
+                    key={node.key}
+                    x={node.x}
+                    y={node.y}
+                    width={node.width}
+                    height={node.height}
+                    rx={node.rx}
+                    ry={node.ry}
+                    fill={node.fill}></rect>
+            </template>
+        </svg>
+    </template>
+</template>

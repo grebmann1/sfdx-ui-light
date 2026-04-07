@@ -14,8 +14,18 @@ function parseQuery(queryString) {
 // This prevents polluting storage with unknown keys
 const ALLOWED_SETTING_KEYS = new Set([
     // AI settings
+    'llm_provider_configs',
+    'ai_provider',
     'openai_key',
     'openai_url',
+    'anthropic_key',
+    'anthropic_url',
+    'gemini_key',
+    'gemini_url',
+    'mistral_key',
+    'mistral_url',
+    'grok_key',
+    'grok_url',
     'einstein_agent_conversation_model',
     'einstein_agent_conversation_reasoning',
     // Metadata storage settings

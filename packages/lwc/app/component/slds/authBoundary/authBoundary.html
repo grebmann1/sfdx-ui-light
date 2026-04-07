@@ -1,6 +1,9 @@
 <template>
     <template lwc:if={shouldRenderReplaceMode}>
-        <slds-require-connection title={title} sub-title={subTitle} is-required={isRequired}>
+        <slds-require-connection
+            title={title}
+            sub-title={subTitle}
+            is-required={shouldRequireConnection}>
             <slot></slot>
         </slds-require-connection>
     </template>

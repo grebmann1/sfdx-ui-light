@@ -1,6 +1,9 @@
 import { LightningElement } from 'lwc';
 import Toast from 'lightning/toast';
-import { cacheManager, CACHE_CONFIG } from 'shared/cacheManager';
+import {
+    loadLlmProviderConfigMapFromCache,
+    saveLlmProviderConfigMapToCache,
+} from 'shared/cacheManager';
 import { store, APPLICATION } from 'core/store';
 
 const EMPLOYEE_AI_SETUP_URL = 'https://example.com/salesforce-employee-ai-setup';
@@ -55,14 +58,24 @@ export default class OnboardaiProvider extends LightningElement {
 
     handleInstallEmployeeKey = async () => {
         if (!this.isEmployeeKeyValid) return;
-        await cacheManager.saveConfig({
-            [CACHE_CONFIG.OPENAI_KEY.key]: this.employeeKey,
-            [CACHE_CONFIG.OPENAI_URL.key]: EMPLOYEE_OPENAI_PROXY_URL,
-        });
+        const providerConfigs = await loadLlmProviderConfigMapFromCache();
+        const nextProviderConfigs = {
+            ...providerConfigs,
+            openai: {
+                ...providerConfigs.openai,
+                apiKey: this.employeeKey,
+                baseUrl: EMPLOYEE_OPENAI_PROXY_URL,
+            },
+            anthropic: {
+                ...providerConfigs.anthropic,
+                apiKey: this.employeeKey,
+                baseUrl: EMPLOYEE_OPENAI_PROXY_URL,
+            },
+        };
+        await saveLlmProviderConfigMapToCache(nextProviderConfigs);
         store.dispatch(
-            APPLICATION.reduxSlice.actions.updateOpenAIKey({
-                openaiKey: this.employeeKey,
-                openaiUrl: EMPLOYEE_OPENAI_PROXY_URL,
+            APPLICATION.reduxSlice.actions.updateProviderConfigs({
+                providerConfigs: nextProviderConfigs,
             })
         );
         Toast.show({ message: 'Employee key installed', variant: 'success' });
@@ -70,12 +83,18 @@ export default class OnboardaiProvider extends LightningElement {
 
     handleInstallExternalKey = async () => {
         if (!this.isExternalKeyValid) return;
-        await cacheManager.saveConfig({
-            [CACHE_CONFIG.OPENAI_KEY.key]: this.externalKey,
-        });
+        const providerConfigs = await loadLlmProviderConfigMapFromCache();
+        const nextProviderConfigs = {
+            ...providerConfigs,
+            openai: {
+                ...providerConfigs.openai,
+                apiKey: this.externalKey,
+            },
+        };
+        await saveLlmProviderConfigMapToCache(nextProviderConfigs);
         store.dispatch(
-            APPLICATION.reduxSlice.actions.updateOpenAIKey({
-                openaiKey: this.externalKey,
+            APPLICATION.reduxSlice.actions.updateProviderConfigs({
+                providerConfigs: nextProviderConfigs,
             })
         );
         Toast.show({ message: 'OpenAI key installed', variant: 'success' });

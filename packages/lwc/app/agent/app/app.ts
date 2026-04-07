@@ -19,20 +19,17 @@ export default class App extends ToolkitElement {
         {
             key: 'soql-opportunities',
             label: 'Write a SOQL query for QTD opportunities',
-            prompt:
-                'Write a SOQL query to list open Opportunities closing this quarter with Amount, StageName, Owner.Name, and Account.Name.',
+            prompt: 'Write a SOQL query to list open Opportunities closing this quarter with Amount, StageName, Owner.Name, and Account.Name.',
         },
         {
             key: 'apex-debug',
             label: 'Help debug an Apex test failure',
-            prompt:
-                'I have a failing Apex test. Explain common root causes, what logs I should inspect first, and propose a step-by-step debug checklist.',
+            prompt: 'I have a failing Apex test. Explain common root causes, what logs I should inspect first, and propose a step-by-step debug checklist.',
         },
         {
             key: 'deploy-plan',
             label: 'Create a safe metadata deployment plan',
-            prompt:
-                'Create a Salesforce deployment plan for metadata changes from sandbox to production, including validation, test strategy, rollback, and post-deploy checks.',
+            prompt: 'Create a Salesforce deployment plan for metadata changes from sandbox to production, including validation, test strategy, rollback, and post-deploy checks.',
         },
     ];
 
@@ -46,6 +43,7 @@ export default class App extends ToolkitElement {
 
     @track selectedModel = DEFAULT_MODEL;
     @track selectedReasoning = DEFAULT_REASONING;
+    @track availableModels = [];
     @track isSidePanelOpen = false;
     @track conversations = [{ id: 'default', title: 'Conversation 1', streamHistory: [] }];
     @track activeConversationId = 'default';
@@ -98,6 +96,14 @@ export default class App extends ToolkitElement {
         this._setIfChanged('openaiUrl', application.openaiUrl);
         this._setIfChanged('aiProvider', application.aiProvider);
         this._setIfChanged('isInternal', application.isInternal);
+        const provider = (application.aiProvider || 'openai').toLowerCase();
+        this.availableModels =
+            application?.availableModelsByProvider?.[provider] && !application.isInternal
+                ? application.availableModelsByProvider[provider].map(model => ({
+                      label: model.label,
+                      value: model.value,
+                  }))
+                : [];
         if (agent) {
             this._setIfChanged('selectedModel', agent.selectedModel);
             this._setIfChanged('selectedReasoning', agent.selectedReasoning ?? DEFAULT_REASONING);
@@ -119,10 +125,7 @@ export default class App extends ToolkitElement {
 
             this._setIfChanged('isLoading', isLoading);
             this._setIfChanged('isStreaming', isStreaming);
-            this._setIfChanged(
-                'loadingStatus',
-                isSummarizing ? 'Summarizing conversation...' : ''
-            );
+            this._setIfChanged('loadingStatus', isSummarizing ? 'Summarizing conversation...' : '');
             const rawMessages =
                 (agent.messagesById && agent.messagesById[this.activeConversationId]) || [];
             this._setIfChanged('displayedMessages', rawMessages);
@@ -233,9 +236,12 @@ export default class App extends ToolkitElement {
         let currentMessages = Array.isArray(state.agent?.messagesById?.[conversationId])
             ? state.agent.messagesById[conversationId]
             : [];
-        
-        console.log('### currentMessages', {original: state.agent?.messagesById?.[conversationId], current: currentMessages});
-    
+
+        console.log('### currentMessages', {
+            original: state.agent?.messagesById?.[conversationId],
+            current: currentMessages,
+        });
+
         const userMessages = [createUserModelMessage({ text: prompt, filesData })];
 
         const agent = await Agent.create({
@@ -261,7 +267,10 @@ export default class App extends ToolkitElement {
         );
     };
 
-    executeAgentWithDirectMessages = async (directMessages: ModelMessage[], model = this.selectedModel) => {
+    executeAgentWithDirectMessages = async (
+        directMessages: ModelMessage[],
+        model = this.selectedModel
+    ) => {
         console.log('executeAgentWithDirectMessages', directMessages);
         const conversationId = this.activeConversationId;
         const state = store.getState();

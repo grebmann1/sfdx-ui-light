@@ -1,5 +1,5 @@
 {
-    "layoutsDir": "$rootDir/packages/server/layouts",   
+    "layoutsDir": "$rootDir/packages/server/layouts",
     "contentDir": "$rootDir/packages/server/content",
     "lwc": {
         "modules": [
@@ -10,18 +10,49 @@
             { "dir": "$rootDir/packages/lwc/app/pages/documentation" },
             { "dir": "$rootDir/packages/lwc/app/tools" },
             { "dir": "$rootDir/packages/lwc/web-extension" },
-            { "name": "shared/analytics", "path": "$rootDir/packages/shared/dist/modules/analytics/analytics.js" },
-            { "name": "shared/cacheManager", "path": "$rootDir/packages/shared/dist/modules/cacheManager/cacheManager.js" },
-            { "name": "shared/loader", "path": "$rootDir/packages/shared/dist/modules/loader/loader.js" },
-            { "name": "shared/logger", "path": "$rootDir/packages/shared/dist/modules/logger/logger.js" },
-            { "name": "shared/markdown", "path": "$rootDir/packages/shared/dist/modules/markdown/markdown.js" },
-            { "name": "shared/middleware", "path": "$rootDir/packages/shared/dist/modules/middleware/middleware.js" },
+            {
+                "name": "shared/analytics",
+                "path": "$rootDir/packages/shared/dist/modules/analytics/analytics.js"
+            },
+            {
+                "name": "shared/cacheManager",
+                "path": "$rootDir/packages/shared/dist/modules/cacheManager/cacheManager.js"
+            },
+            { "name": "shared/llm", "path": "$rootDir/packages/shared/dist/modules/llm/llm.js" },
+            {
+                "name": "shared/loader",
+                "path": "$rootDir/packages/shared/dist/modules/loader/loader.js"
+            },
+            {
+                "name": "shared/logger",
+                "path": "$rootDir/packages/shared/dist/modules/logger/logger.js"
+            },
+            {
+                "name": "shared/markdown",
+                "path": "$rootDir/packages/shared/dist/modules/markdown/markdown.js"
+            },
+            {
+                "name": "shared/middleware",
+                "path": "$rootDir/packages/shared/dist/modules/middleware/middleware.js"
+            },
             { "name": "shared/sf", "path": "$rootDir/packages/shared/dist/modules/sf/sf.js" },
-            { "name": "shared/store", "path": "$rootDir/packages/shared/dist/modules/store/store.js" },
-            { "name": "shared/utils", "path": "$rootDir/packages/shared/dist/modules/utils/utils.js" },
+            {
+                "name": "shared/store",
+                "path": "$rootDir/packages/shared/dist/modules/store/store.js"
+            },
+            {
+                "name": "shared/utils",
+                "path": "$rootDir/packages/shared/dist/modules/utils/utils.js"
+            },
             { "name": "agent/utils", "path": "$rootDir/packages/lwc/app/agent/utils/utils.ts" },
-            { "name": "core/store/storeRef", "path": "$rootDir/packages/lwc/app/core/store/storeRef.ts" },
-            { "name": "core/connector", "path": "$rootDir/packages/lwc/app/core/connector/connector.ts" },
+            {
+                "name": "core/store/storeRef",
+                "path": "$rootDir/packages/lwc/app/core/store/storeRef.ts"
+            },
+            {
+                "name": "core/connector",
+                "path": "$rootDir/packages/lwc/app/core/connector/connector.ts"
+            },
             { "npm": "lightning-base-components" },
             {
                 "name": "imported/jsforce",
@@ -48,26 +79,26 @@
             "urlPath": "/assets"
         },
         {
-            "file":"$rootDir/node_modules/xterm/css/xterm.css",
-            "urlPath":"/xterm.css"
+            "file": "$rootDir/node_modules/xterm/css/xterm.css",
+            "urlPath": "/xterm.css"
         },
         {
-            "alias":"imagesDir",
+            "alias": "imagesDir",
             "dir": "$rootDir/packages/server/assets/images",
             "urlPath": "/images"
         },
         {
-            "alias":"gifsDir",
+            "alias": "gifsDir",
             "dir": "$rootDir/packages/server/assets/gifs",
             "urlPath": "/gifs"
         },
         {
-            "alias":"stylesDir",
+            "alias": "stylesDir",
             "dir": "$rootDir/packages/server/assets/styles",
             "urlPath": "/styles"
         },
         {
-            "alias":"libsDir",
+            "alias": "libsDir",
             "dir": "$rootDir/packages/server/assets/libs",
             "urlPath": "/libs"
         },
@@ -76,17 +107,17 @@
             "urlPath": "/favicon.ico"
         },
         {
-            "alias":"workersDir",
+            "alias": "workersDir",
             "dir": "$rootDir/packages/workers/src",
             "urlPath": "/workers"
         },
         {
-            "alias":"publicDir",
+            "alias": "publicDir",
             "dir": "$rootDir/packages/server/assets",
             "urlPath": "/public"
         },
         {
-            "alias":"skillsPublicDir",
+            "alias": "skillsPublicDir",
             "dir": "$rootDir/assets/skills",
             "urlPath": "/public/skills"
         }
@@ -156,9 +187,6 @@
         }
     ],
     "staticSiteGenerator": {
-        "_additionalModules": [
-            "@lwc/synthetic-shadow",
-            "lwc"
-        ]
+        "_additionalModules": ["@lwc/synthetic-shadow", "lwc"]
     }
 }

@@ -418,8 +418,8 @@
                                             <div slot="title">
                                                 <h1>Background Sync</h1>
                                                 <p class="description slds-truncate">
-                                                    Enable worker-driven metadata synchronization for
-                                                    selected types.
+                                                    Enable worker-driven metadata synchronization
+                                                    for selected types.
                                                 </p>
                                             </div>
                                             <div slot="actions">
@@ -559,9 +559,9 @@
                                 <lightning-card
                                     class="settings slds-col slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
                                     <div slot="title">
-                                        <h1>LLM Keys</h1>
+                                        <h1>Provider Keys</h1>
                                         <p class="description slds-truncate">
-                                            Keys related to LLM integration.
+                                            API keys for each supported LLM provider.
                                         </p>
                                     </div>
                                     <div slot="actions"></div>
@@ -572,8 +572,8 @@
                                             <div slot="title">
                                                 <h1>OpenAI Key</h1>
                                                 <p class="description slds-truncate">
-                                                    API key required for OpenAI Platform integration
-                                                    (AI Assistant &amp; Inline Editor)
+                                                    API key for OpenAI requests and gateway-backed
+                                                    model discovery.
                                                 </p>
                                             </div>
                                             <div slot="actions"></div>
@@ -593,15 +593,63 @@
                                                     onclick={handleToggleVisibility}></lightning-button-icon>
                                             </div>
                                         </settings-card>
-                                        <!--
+                                        <settings-card
+                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                            <div slot="title">
+                                                <h1>Anthropic Key</h1>
+                                                <p class="description slds-truncate">
+                                                    API key for Anthropic provider configuration.
+                                                </p>
+                                            </div>
+                                            <div slot="actions"></div>
+                                            <div class="slds-flex-row">
+                                                <lightning-input
+                                                    data-key="anthropic_key"
+                                                    label="anthropic_key"
+                                                    onchange={inputfield_change}
+                                                    type="password"
+                                                    value={config.anthropic_key}
+                                                    variant="label-hidden"
+                                                    class="slds-full-width"></lightning-input>
+                                                <lightning-button-icon
+                                                    data-key="anthropic_key"
+                                                    alternative-text="copy"
+                                                    icon-name="utility:preview"
+                                                    onclick={handleToggleVisibility}></lightning-button-icon>
+                                            </div>
+                                        </settings-card>
+                                        <settings-card
+                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                            <div slot="title">
+                                                <h1>Gemini Key</h1>
+                                                <p class="description slds-truncate">
+                                                    API key for Gemini provider configuration.
+                                                </p>
+                                            </div>
+                                            <div slot="actions"></div>
+                                            <div class="slds-flex-row">
+                                                <lightning-input
+                                                    data-key="gemini_key"
+                                                    label="gemini_key"
+                                                    onchange={inputfield_change}
+                                                    type="password"
+                                                    value={config.gemini_key}
+                                                    variant="label-hidden"
+                                                    class="slds-full-width"></lightning-input>
+                                                <lightning-button-icon
+                                                    data-key="gemini_key"
+                                                    alternative-text="copy"
+                                                    icon-name="utility:preview"
+                                                    onclick={handleToggleVisibility}></lightning-button-icon>
+                                            </div>
+                                        </settings-card>
                                         <settings-card
                                             class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
                                             <div slot="title">
                                                 <h1>Mistral Key</h1>
                                                 <p class="description slds-truncate">
-                                                    Key for integrating with the Mistral Platform
-                                                    (Currently supports only the Autocomplete
-                                                    feature)
+                                                    API key for Mistral provider configuration and
+                                                    autocomplete support.
                                                 </p>
                                             </div>
                                             <div slot="actions"></div>
@@ -621,16 +669,40 @@
                                                     onclick={handleToggleVisibility}></lightning-button-icon>
                                             </div>
                                         </settings-card>
-                                        -->
+                                        <settings-card
+                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                            <div slot="title">
+                                                <h1>xAI Grok Key</h1>
+                                                <p class="description slds-truncate">
+                                                    API key for xAI Grok provider configuration.
+                                                </p>
+                                            </div>
+                                            <div slot="actions"></div>
+                                            <div class="slds-flex-row">
+                                                <lightning-input
+                                                    data-key="grok_key"
+                                                    label="grok_key"
+                                                    onchange={inputfield_change}
+                                                    type="password"
+                                                    value={config.grok_key}
+                                                    variant="label-hidden"
+                                                    class="slds-full-width"></lightning-input>
+                                                <lightning-button-icon
+                                                    data-key="grok_key"
+                                                    alternative-text="copy"
+                                                    icon-name="utility:preview"
+                                                    onclick={handleToggleVisibility}></lightning-button-icon>
+                                            </div>
+                                        </settings-card>
                                     </div>
                                 </lightning-card>
                                 <lightning-card
                                     class="settings slds-col slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
                                     <div slot="title">
-                                        <h1>LLM Proxy</h1>
+                                        <h1>Provider Endpoints</h1>
                                         <p class="description slds-truncate">
-                                            Proxy URL for LLM API. (keep it empty to use the default
-                                            value)
+                                            Optional endpoint overrides for each provider. Leave the
+                                            default value if you want the hosted API.
                                         </p>
                                     </div>
                                     <div slot="actions"></div>
@@ -639,9 +711,10 @@
                                             class="slds-col slds-size_1-of-1 slds-p-horizontal_small"
                                             is-first>
                                             <div slot="title">
-                                                <h1>OpenAI Proxy URL</h1>
+                                                <h1>OpenAI Endpoint</h1>
                                                 <p class="description slds-truncate">
-                                                    URL of the OpenAI API.
+                                                    Base URL for the OpenAI provider or internal
+                                                    gateway.
                                                 </p>
                                             </div>
                                             <div slot="actions"></div>
@@ -652,6 +725,86 @@
                                                     onchange={inputfield_change}
                                                     type="text"
                                                     value={config.openai_url}
+                                                    variant="label-hidden"
+                                                    class="slds-full-width"></lightning-input>
+                                            </div>
+                                        </settings-card>
+                                        <settings-card
+                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                            <div slot="title">
+                                                <h1>Anthropic Endpoint</h1>
+                                                <p class="description slds-truncate">
+                                                    Base URL override for Anthropic requests.
+                                                </p>
+                                            </div>
+                                            <div slot="actions"></div>
+                                            <div class="slds-flex-row">
+                                                <lightning-input
+                                                    data-key="anthropic_url"
+                                                    label="anthropic_url"
+                                                    onchange={inputfield_change}
+                                                    type="text"
+                                                    value={config.anthropic_url}
+                                                    variant="label-hidden"
+                                                    class="slds-full-width"></lightning-input>
+                                            </div>
+                                        </settings-card>
+                                        <settings-card
+                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                            <div slot="title">
+                                                <h1>Gemini Endpoint</h1>
+                                                <p class="description slds-truncate">
+                                                    Base URL override for Gemini requests.
+                                                </p>
+                                            </div>
+                                            <div slot="actions"></div>
+                                            <div class="slds-flex-row">
+                                                <lightning-input
+                                                    data-key="gemini_url"
+                                                    label="gemini_url"
+                                                    onchange={inputfield_change}
+                                                    type="text"
+                                                    value={config.gemini_url}
+                                                    variant="label-hidden"
+                                                    class="slds-full-width"></lightning-input>
+                                            </div>
+                                        </settings-card>
+                                        <settings-card
+                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                            <div slot="title">
+                                                <h1>Mistral Endpoint</h1>
+                                                <p class="description slds-truncate">
+                                                    Base URL override for Mistral requests.
+                                                </p>
+                                            </div>
+                                            <div slot="actions"></div>
+                                            <div class="slds-flex-row">
+                                                <lightning-input
+                                                    data-key="mistral_url"
+                                                    label="mistral_url"
+                                                    onchange={inputfield_change}
+                                                    type="text"
+                                                    value={config.mistral_url}
+                                                    variant="label-hidden"
+                                                    class="slds-full-width"></lightning-input>
+                                            </div>
+                                        </settings-card>
+                                        <settings-card
+                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                            <div slot="title">
+                                                <h1>xAI Grok Endpoint</h1>
+                                                <p class="description slds-truncate">
+                                                    Base URL override for xAI Grok requests.
+                                                </p>
+                                            </div>
+                                            <div slot="actions"></div>
+                                            <div class="slds-flex-row">
+                                                <lightning-input
+                                                    data-key="grok_url"
+                                                    label="grok_url"
+                                                    onchange={inputfield_change}
+                                                    type="text"
+                                                    value={config.grok_url}
                                                     variant="label-hidden"
                                                     class="slds-full-width"></lightning-input>
                                             </div>
@@ -731,8 +884,8 @@
                                                     <div slot="title">
                                                         <h1>Overlay Visibility</h1>
                                                         <p class="description slds-truncate">
-                                                            Show or hide the Workbench 2.0 overlay in
-                                                            Salesforce pages.
+                                                            Show or hide the Workbench 2.0 overlay
+                                                            in Salesforce pages.
                                                         </p>
                                                     </div>
                                                     <div slot="actions">

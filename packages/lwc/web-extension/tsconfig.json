@@ -12,15 +12,20 @@
             "shared/*": ["../../shared/modules/*"],
             "core/applications": ["../app/core/applications/applications"],
             "core/constant": ["../app/core/constant/constant"],
-            "editor/editorCompleteWidget": ["../app/editor/editorCompleteWidget/editorCompleteWidget"],
+            "editor/editorCompleteWidget": [
+                "../app/editor/editorCompleteWidget/editorCompleteWidget"
+            ],
             "editor/languages": ["../app/editor/languages/languages"],
             "editor/promptWidget": ["../app/editor/promptWidget/promptWidget"],
             "editor/utils": ["../app/editor/utils/utils"],
             "shared/analytics": ["../../shared/modules/analytics/analytics"],
+            "shared/llm": ["../../shared/modules/llm/llm"],
             "shared/loader": ["../../shared/modules/loader/loader"],
             "shared/markdown": ["../../shared/modules/markdown/markdown"],
             "shared/sf": ["../../shared/modules/sf/sf"],
-            "slds/MarkdownViewerEditorModal": ["../app/component/slds/MarkdownViewerEditorModal/MarkdownViewerEditorModal"],
+            "slds/MarkdownViewerEditorModal": [
+                "../app/component/slds/MarkdownViewerEditorModal/MarkdownViewerEditorModal"
+            ],
             "slds/codeBlock": ["../app/component/slds/codeBlock/codeBlock"],
             "slds/hashtagDropdown": ["../app/component/slds/hashtagDropdown/hashtagDropdown"],
             "slds/modalUserSelector": ["../app/component/slds/modalUserSelector/modalUserSelector"]

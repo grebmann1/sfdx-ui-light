@@ -1,5 +1,13 @@
 import LOGGER from 'shared/logger';
 import { isChromeExtension, isEmpty, isUndefinedOrNull, isNotUndefinedOrNull } from 'shared/utils';
+import {
+    createDefaultProviderConfigMap,
+    DEFAULT_LLM_PROVIDER,
+    normalizeLlmProvider,
+    normalizeProviderConfigMap,
+    type LlmProvider,
+    type LlmProviderConfigMap,
+} from 'shared/llm';
 
 import { chromeStore, basicStore, type StorageStore } from './interfaces';
 
@@ -207,10 +215,18 @@ export const CACHE_CONFIG = {
     CONTENT_SCRIPT_INCLUDE_PATTERNS: new CONFIG_OBJECT('content_script_include_patterns', null),
     CONTENT_SCRIPT_EXCLUDE_PATTERNS: new CONFIG_OBJECT('content_script_exclude_patterns', null),
     // AI Settings
+    PROVIDER_CONFIGS: new CONFIG_OBJECT('llm_provider_configs', null),
     OPENAI_KEY: new CONFIG_OBJECT('openai_key', null),
-    MISTRAL_KEY: new CONFIG_OBJECT('mistral_key', null), // Added for Mistral
-    AI_PROVIDER: new CONFIG_OBJECT('ai_provider', 'openai'),
     OPENAI_URL: new CONFIG_OBJECT('openai_url', 'https://api.openai.com/v1'),
+    ANTHROPIC_KEY: new CONFIG_OBJECT('anthropic_key', null),
+    ANTHROPIC_URL: new CONFIG_OBJECT('anthropic_url', 'https://api.anthropic.com/v1'),
+    GEMINI_KEY: new CONFIG_OBJECT('gemini_key', null),
+    GEMINI_URL: new CONFIG_OBJECT('gemini_url', 'https://generativelanguage.googleapis.com'),
+    MISTRAL_KEY: new CONFIG_OBJECT('mistral_key', null),
+    MISTRAL_URL: new CONFIG_OBJECT('mistral_url', 'https://api.mistral.ai/v1'),
+    GROK_KEY: new CONFIG_OBJECT('grok_key', null),
+    GROK_URL: new CONFIG_OBJECT('grok_url', 'https://api.x.ai/v1'),
+    AI_PROVIDER: new CONFIG_OBJECT('ai_provider', 'openai'),
     EXPERIENCE_CLOUD_LOGINAS_INCOGNITO: new CONFIG_OBJECT('experienceCloudLoginAsIncognito', false),
     UI_IS_APPLICATION_TAB_VISIBLE: new CONFIG_OBJECT('ui_isApplicationTabVisible', true),
     CHROME_SYNC_SETTINGS_INITIALIZED_STORAGE_KEY: new CONFIG_OBJECT(
@@ -328,16 +344,133 @@ export async function saveSingleExtensionConfigToCache(key: string, value: unkno
 
 /** Extra Methods to simplify the usage of the cacheManager */
 
+function toConfigValueRecord(config: Record<string, unknown>) {
+    return config && typeof config === 'object' ? config : {};
+}
+
+export function getLlmProviderConfigCacheKeys(): string[] {
+    return [
+        CACHE_CONFIG.PROVIDER_CONFIGS.key,
+        CACHE_CONFIG.OPENAI_KEY.key,
+        CACHE_CONFIG.OPENAI_URL.key,
+        CACHE_CONFIG.ANTHROPIC_KEY.key,
+        CACHE_CONFIG.ANTHROPIC_URL.key,
+        CACHE_CONFIG.GEMINI_KEY.key,
+        CACHE_CONFIG.GEMINI_URL.key,
+        CACHE_CONFIG.MISTRAL_KEY.key,
+        CACHE_CONFIG.MISTRAL_URL.key,
+        CACHE_CONFIG.GROK_KEY.key,
+        CACHE_CONFIG.GROK_URL.key,
+        CACHE_CONFIG.AI_PROVIDER.key,
+    ];
+}
+
+export function getDefaultLlmProviderConfigMap(): LlmProviderConfigMap {
+    return createDefaultProviderConfigMap();
+}
+
+export function getLegacyLlmProviderConfigMap(
+    config: Record<string, unknown> = {}
+): LlmProviderConfigMap {
+    const safeConfig = toConfigValueRecord(config);
+    const defaults = createDefaultProviderConfigMap();
+    return normalizeProviderConfigMap({
+        ...defaults,
+        openai: {
+            apiKey: safeConfig[CACHE_CONFIG.OPENAI_KEY.key],
+            baseUrl: safeConfig[CACHE_CONFIG.OPENAI_URL.key],
+        },
+        anthropic: {
+            apiKey: safeConfig[CACHE_CONFIG.ANTHROPIC_KEY.key],
+            baseUrl: safeConfig[CACHE_CONFIG.ANTHROPIC_URL.key],
+        },
+        gemini: {
+            apiKey: safeConfig[CACHE_CONFIG.GEMINI_KEY.key],
+            baseUrl: safeConfig[CACHE_CONFIG.GEMINI_URL.key],
+        },
+        mistral: {
+            apiKey: safeConfig[CACHE_CONFIG.MISTRAL_KEY.key],
+            baseUrl: safeConfig[CACHE_CONFIG.MISTRAL_URL.key],
+        },
+        grok: {
+            apiKey: safeConfig[CACHE_CONFIG.GROK_KEY.key],
+            baseUrl: safeConfig[CACHE_CONFIG.GROK_URL.key],
+        },
+    });
+}
+
+export function resolveLlmProviderConfigMap(
+    config: Record<string, unknown> = {}
+): LlmProviderConfigMap {
+    const safeConfig = toConfigValueRecord(config);
+    const canonical = safeConfig[CACHE_CONFIG.PROVIDER_CONFIGS.key];
+    if (canonical && typeof canonical === 'object') {
+        return normalizeProviderConfigMap(canonical);
+    }
+    return getLegacyLlmProviderConfigMap(safeConfig);
+}
+
+export function buildProviderConfigCacheRecord(
+    providerConfigs: LlmProviderConfigMap
+): Record<string, unknown> {
+    const normalized = normalizeProviderConfigMap(providerConfigs);
+    return {
+        [CACHE_CONFIG.PROVIDER_CONFIGS.key]: normalized,
+        [CACHE_CONFIG.OPENAI_KEY.key]: normalized.openai.apiKey,
+        [CACHE_CONFIG.OPENAI_URL.key]: normalized.openai.baseUrl,
+        [CACHE_CONFIG.ANTHROPIC_KEY.key]: normalized.anthropic.apiKey,
+        [CACHE_CONFIG.ANTHROPIC_URL.key]: normalized.anthropic.baseUrl,
+        [CACHE_CONFIG.GEMINI_KEY.key]: normalized.gemini.apiKey,
+        [CACHE_CONFIG.GEMINI_URL.key]: normalized.gemini.baseUrl,
+        [CACHE_CONFIG.MISTRAL_KEY.key]: normalized.mistral.apiKey,
+        [CACHE_CONFIG.MISTRAL_URL.key]: normalized.mistral.baseUrl,
+        [CACHE_CONFIG.GROK_KEY.key]: normalized.grok.apiKey,
+        [CACHE_CONFIG.GROK_URL.key]: normalized.grok.baseUrl,
+    };
+}
+
+export async function loadLlmProviderConfigMapFromCache(): Promise<LlmProviderConfigMap> {
+    const config = await cacheManager.loadConfig(getLlmProviderConfigCacheKeys());
+    return resolveLlmProviderConfigMap(config);
+}
+
+export async function saveLlmProviderConfigMapToCache(
+    providerConfigs: LlmProviderConfigMap
+): Promise<void> {
+    await cacheManager.saveConfig(buildProviderConfigCacheRecord(providerConfigs));
+}
+
+export async function saveSingleLlmProviderConfigToCache(
+    provider: LlmProvider,
+    config: Partial<{ apiKey: string | null; baseUrl: string | null }>
+): Promise<LlmProviderConfigMap> {
+    const current = await loadLlmProviderConfigMapFromCache();
+    const normalizedProvider = normalizeLlmProvider(provider);
+    const nextConfigs = normalizeProviderConfigMap({
+        ...current,
+        [normalizedProvider]: {
+            ...current[normalizedProvider],
+            ...config,
+        },
+    });
+    await saveLlmProviderConfigMapToCache(nextConfigs);
+    return nextConfigs;
+}
+
+export function getAiProviderFromConfig(config: Record<string, unknown> = {}): LlmProvider {
+    return normalizeLlmProvider(config[CACHE_CONFIG.AI_PROVIDER.key]);
+}
+
 // OpenAI Key
 export const getOpenAIKeyFromCache = async () => {
-    return (await cacheManager.getConfigValue(CACHE_CONFIG.OPENAI_KEY.key)) || '';
+    return (await loadLlmProviderConfigMapFromCache()).openai.apiKey || '';
 };
 // Mistral Key
 export const getMistralKeyFromCache = async () => {
-    return (await cacheManager.getConfigValue(CACHE_CONFIG.MISTRAL_KEY.key)) || '';
+    return (await loadLlmProviderConfigMapFromCache()).mistral.apiKey || '';
 };
 export const setMistralKeyInCache = async (key: string): Promise<void> => {
-    return await cacheManager.setConfigValue(CACHE_CONFIG.MISTRAL_KEY.key, key);
+    await saveSingleLlmProviderConfigToCache('mistral', { apiKey: key });
 };
 // Synced Settings
 export const getSyncedSettingsInitializedFromCache = async () => {

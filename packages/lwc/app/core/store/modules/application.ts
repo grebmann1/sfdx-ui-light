@@ -1,6 +1,15 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getOpenAIKeyFromCache } from 'shared/cacheManager';
-import { lowerCaseKey, guid, isUndefinedOrNull } from 'shared/utils';
+import { createSlice } from '@reduxjs/toolkit';
+import {
+    createDefaultProviderConfigMap,
+    DEFAULT_LLM_PROVIDER,
+    isInternalProviderBaseUrl,
+    normalizeLlmProvider,
+    normalizeProviderConfigMap,
+    type LlmModelOption,
+    type LlmProvider,
+    type LlmProviderCatalog,
+    type LlmProviderConfigMap,
+} from 'shared/llm';
 import type { ConnectorLike } from 'core/connector';
 
 const saveSession = value => {
@@ -21,11 +30,32 @@ type ApplicationState = {
     sessionHasExpired: boolean;
     isSidePanel: boolean;
     aiProvider: string;
+    providerConfigs: LlmProviderConfigMap;
+    availableModelsByProvider: Record<LlmProvider, LlmModelOption[]>;
+    modelCatalogStatusByProvider: Record<
+        LlmProvider,
+        {
+            status: LlmProviderCatalog['status'];
+            error?: string | null;
+        }
+    >;
     openaiKey: string | null;
     openaiUrl: string;
     mistralKey: string | null;
     isInternal: boolean;
 };
+
+function getActiveProviderConfig(state: ApplicationState) {
+    return state.providerConfigs[normalizeLlmProvider(state.aiProvider)];
+}
+
+function syncLegacyProviderFields(state: ApplicationState) {
+    state.openaiKey = state.providerConfigs.openai.apiKey;
+    state.openaiUrl = state.providerConfigs.openai.baseUrl;
+    state.mistralKey = state.providerConfigs.mistral.apiKey;
+    const activeConfig = getActiveProviderConfig(state);
+    state.isInternal = isInternalProviderBaseUrl(activeConfig?.baseUrl || '');
+}
 
 const initialState: ApplicationState = {
     isLoading: false,
@@ -34,29 +64,31 @@ const initialState: ApplicationState = {
     currentApplication: null,
     sessionHasExpired: false,
     isSidePanel: false,
-    aiProvider: 'openai',
+    aiProvider: DEFAULT_LLM_PROVIDER,
+    providerConfigs: createDefaultProviderConfigMap(),
+    availableModelsByProvider: {
+        openai: [],
+        anthropic: [],
+        gemini: [],
+        mistral: [],
+        grok: [],
+    },
+    modelCatalogStatusByProvider: {
+        openai: { status: 'missing_key', error: null },
+        anthropic: { status: 'missing_key', error: null },
+        gemini: { status: 'missing_key', error: null },
+        mistral: { status: 'missing_key', error: null },
+        grok: { status: 'missing_key', error: null },
+    },
     openaiKey: null,
-    openaiUrl: 'https://api.openai.com/v1', // Used for OpenAI proxy
-    mistralKey: null, // Added for Mistral
+    openaiUrl: createDefaultProviderConfigMap().openai.baseUrl,
+    mistralKey: null,
     isInternal: false,
 };
 
 const applicationSlice = createSlice({
     name: 'application',
     initialState,
-    reducers: {
-        isLoading: false,
-        connector: null,
-        isLoggedIn: false,
-        currentApplication: null,
-        sessionHasExpired: false,
-        isSidePanel: false,
-        aiProvider: 'openai',
-        openaiKey: null,
-        openaiUrl: 'https://api.openai.com/v1', // Used for OpenAI proxy
-        mistralKey: null, // Added for Mistral
-        isInternal: false,
-    },
     reducers: {
         updateCurrentApplication: (state, action) => {
             state.currentApplication = action.payload?.application || null;
@@ -105,20 +137,60 @@ const applicationSlice = createSlice({
         },
         updateAiProvider: (state, action) => {
             const { aiProvider } = action.payload;
-            state.aiProvider = aiProvider;
+            state.aiProvider = normalizeLlmProvider(aiProvider);
+            syncLegacyProviderFields(state);
+        },
+        updateProviderConfigs: (state, action) => {
+            state.providerConfigs = normalizeProviderConfigMap(action.payload?.providerConfigs);
+            syncLegacyProviderFields(state);
+        },
+        updateProviderConfig: (state, action) => {
+            const provider = normalizeLlmProvider(action.payload?.provider);
+            state.providerConfigs = normalizeProviderConfigMap({
+                ...state.providerConfigs,
+                [provider]: {
+                    ...state.providerConfigs[provider],
+                    ...action.payload?.config,
+                },
+            });
+            syncLegacyProviderFields(state);
+        },
+        updateProviderCatalogs: (state, action) => {
+            const catalogs = action.payload?.catalogs || {};
+            for (const provider of Object.keys(state.availableModelsByProvider) as LlmProvider[]) {
+                const catalog = catalogs[provider];
+                if (!catalog) continue;
+                state.availableModelsByProvider[provider] = Array.isArray(catalog.models)
+                    ? catalog.models
+                    : [];
+                state.modelCatalogStatusByProvider[provider] = {
+                    status: catalog.status,
+                    error: catalog.error ?? null,
+                };
+            }
         },
         updateOpenAIKey: (state, action) => {
             const { openaiKey, openaiUrl } = action.payload;
-            state.openaiKey = openaiKey;
-            if (openaiUrl !== undefined) {
-                state.openaiUrl = openaiUrl;
-            }
-            const nextUrl = state.openaiUrl || '';
-            state.isInternal = nextUrl.includes('eng-ai-model-gateway');
+            state.providerConfigs = normalizeProviderConfigMap({
+                ...state.providerConfigs,
+                openai: {
+                    ...state.providerConfigs.openai,
+                    apiKey: openaiKey ?? null,
+                    baseUrl: openaiUrl ?? state.providerConfigs.openai.baseUrl,
+                },
+            });
+            syncLegacyProviderFields(state);
         },
         updateMistralKey: (state, action) => {
             const { mistralKey } = action.payload;
-            state.mistralKey = mistralKey;
+            state.providerConfigs = normalizeProviderConfigMap({
+                ...state.providerConfigs,
+                mistral: {
+                    ...state.providerConfigs.mistral,
+                    apiKey: mistralKey ?? null,
+                },
+            });
+            syncLegacyProviderFields(state);
         },
     },
 });

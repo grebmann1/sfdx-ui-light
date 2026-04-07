@@ -37,6 +37,7 @@ const MODAL_COPY = {
 
 export default class AuthBoundary extends ToolkitElement {
     @api isRequired = false;
+    @api isLoading = false;
     @api title = DEFAULT_TITLE;
     @api subTitle = DEFAULT_SUBTITLE;
     @api preserveContentWhenBlocked = false;
@@ -137,7 +138,11 @@ export default class AuthBoundary extends ToolkitElement {
     }
 
     get isBlocked() {
-        return Boolean(this.isRequired && !this.isUserLoggedIn);
+        return Boolean(this.shouldRequireConnection && !this.isUserLoggedIn);
+    }
+
+    get shouldRequireConnection() {
+        return Boolean(this.isRequired && !this.isLoading);
     }
 
     get shouldShowOverlay() {

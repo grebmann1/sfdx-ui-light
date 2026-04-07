@@ -1,5 +1,5 @@
 <template>
-    <div class="root">
+    <div class={rootClass}>
         <template if:true={showOrgBanner}>
             <section class={orgBannerClass} role="status" aria-live="polite">
                 <div class="orgBannerContent">
@@ -11,12 +11,32 @@
                         <span class="orgBannerHost">{orgBannerHost}</span>
                     </template>
                     <span class="orgBannerPill">{orgBannerEnvironmentLabel}</span>
+                    <button
+                        class="themeToggleButton"
+                        type="button"
+                        title={themeToggleTitle}
+                        aria-label={themeToggleTitle}
+                        onclick={toggleWorkbenchTheme}>
+                        <template if:true={showLightModeIcon}>
+                            <slds-lucide-icon
+                                class="themeToggleIcon"
+                                name="sun"
+                                size="15"></slds-lucide-icon>
+                        </template>
+                        <template if:true={showDarkModeIcon}>
+                            <slds-lucide-icon
+                                class="themeToggleIcon"
+                                name="moon"
+                                size="15"></slds-lucide-icon>
+                        </template>
+                    </button>
                 </div>
             </section>
         </template>
 
         <slds-auth-boundary
             is-required
+            is-loading={isAuthBoundaryLoading}
             suppress-session-recovery
             preserve-content-when-blocked
             title="Salesforce connection required"

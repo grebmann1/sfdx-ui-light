@@ -6,8 +6,6 @@ import { registerShellIntegration } from './commands/shellIntegration.js';
 import {
     APEX_LANGUAGE_ASSETS,
     LWC_SNIPPET_ASSETS,
-    buildInlineAssets,
-    buildMetadataExtensionConfig,
     METADATA_WALKTHROUGH_FULL_ID,
     ONBOARDING_MARKDOWN_PATH,
     OPEN_AGENT_CHAT_COMMAND,
@@ -16,6 +14,7 @@ import {
     WEB_LANGUAGE_ASSETS,
 } from './constants.js';
 import { createActivationContext } from './core/activationContext.js';
+import { buildInlineAssets, buildMetadataExtensionConfig } from './extensionConfig.js';
 import {
     createConnectionRuntime,
     createLoginProblemSetter,

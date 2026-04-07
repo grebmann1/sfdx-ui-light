@@ -8,6 +8,7 @@
         "paths": {
             "shared/*": ["modules/*"],
             "shared/analytics": ["modules/analytics/analytics"],
+            "shared/llm": ["modules/llm/llm"],
             "shared/loader": ["modules/loader/loader"],
             "shared/markdown": ["modules/markdown/markdown"],
             "shared/sf": ["modules/sf/sf"]

@@ -77,7 +77,9 @@
 .chat-input-model-row {
     width: 100%;
     justify-content: flex-end;
+    align-items: flex-start;
     margin-bottom: 0.15rem;
+    overflow: visible;
 }
 .chat-select {
     min-height: 30px;
@@ -104,8 +106,14 @@
 .chat-select-model {
     min-width: 5.8rem;
 }
-.chat-select-reasoning {
-    min-width: 4.9rem;
+
+.chat-reasoning-col {
+    overflow: visible;
+}
+
+.chat-reasoning-control {
+    display: inline-flex;
+    flex-shrink: 0;
 }
 .chat-input-pills-row {
     display: flex;

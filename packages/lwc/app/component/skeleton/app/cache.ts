@@ -1,7 +1,15 @@
-import { store, APPLICATION } from 'core/store';
-import { basicStore, loadExtensionConfigFromCache, CACHE_CONFIG } from 'shared/cacheManager';
+import { store, APPLICATION, AGENT } from 'core/store';
+import {
+    basicStore,
+    loadExtensionConfigFromCache,
+    CACHE_CONFIG,
+    getAiProviderFromConfig,
+    getLlmProviderConfigCacheKeys,
+    resolveLlmProviderConfigMap,
+} from 'shared/cacheManager';
 import LOGGER from 'shared/logger';
 import { isChromeExtension } from 'shared/utils';
+import { fetchLlmModelsEndpoint, normalizeModelSelection } from 'shared/llm';
 
 /**
  * Cache initialization and loading helpers
@@ -13,8 +21,8 @@ import { isChromeExtension } from 'shared/utils';
 export async function initCacheStorage() {
     if (isChromeExtension()) return;
     LOGGER.debug('initCacheStorage');
-    window.defaultStore = await basicStore('local');
-    window.settingsStore = await basicStore('session');
+    (window as any).defaultStore = await basicStore('local');
+    (window as any).settingsStore = await basicStore('session');
 }
 
 /**
@@ -25,10 +33,7 @@ export async function loadFromCache(context) {
     const configuration = await loadExtensionConfigFromCache([
         CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key,
         CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key,
-        CACHE_CONFIG.MISTRAL_KEY.key,
-        CACHE_CONFIG.AI_PROVIDER.key,
-        CACHE_CONFIG.OPENAI_KEY.key,
-        CACHE_CONFIG.OPENAI_URL.key,
+        ...getLlmProviderConfigCacheKeys(),
     ]);
 
     if (context) {
@@ -37,25 +42,40 @@ export async function loadFromCache(context) {
         context.betaSmartInputEnabled = !!configuration[CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key];
     }
 
-    // Handle LLM keys and provider
-    const openaiKey = configuration[CACHE_CONFIG.OPENAI_KEY.key];
-    const openaiUrl = configuration[CACHE_CONFIG.OPENAI_URL.key];
-    const mistralKey = configuration[CACHE_CONFIG.MISTRAL_KEY.key];
-    const aiProvider = configuration[CACHE_CONFIG.AI_PROVIDER.key];
+    const providerConfigs = resolveLlmProviderConfigMap(configuration);
+    const aiProvider = getAiProviderFromConfig(configuration);
+    const openaiKey = providerConfigs.openai.apiKey;
+    const openaiUrl = providerConfigs.openai.baseUrl;
+    const mistralKey = providerConfigs.mistral.apiKey;
 
     /* LOGGER.debug('loadFromCache - openaiKey', openaiKey);
     LOGGER.debug('loadFromCache - openaiUrl', openaiUrl);
     LOGGER.debug('loadFromCache - mistralKey', mistralKey);
     LOGGER.debug('loadFromCache - aiProvider', aiProvider); */
 
-    if (openaiKey) {
-        store.dispatch(APPLICATION.reduxSlice.actions.updateOpenAIKey({ openaiKey, openaiUrl }));
-    }
-    if (mistralKey) {
-        store.dispatch(APPLICATION.reduxSlice.actions.updateMistralKey({ mistralKey }));
-    }
-    if (aiProvider) {
-        store.dispatch(APPLICATION.reduxSlice.actions.updateAiProvider({ aiProvider }));
+    store.dispatch(APPLICATION.reduxSlice.actions.updateProviderConfigs({ providerConfigs }));
+    store.dispatch(APPLICATION.reduxSlice.actions.updateAiProvider({ aiProvider }));
+    try {
+        const response = await fetchLlmModelsEndpoint({ provider: aiProvider, providerConfigs });
+        store.dispatch(
+            APPLICATION.reduxSlice.actions.updateProviderCatalogs({ catalogs: response.catalogs })
+        );
+
+        if (response.catalog?.status === 'ok' && Array.isArray(response.catalog.models)) {
+            const currentModel = store.getState()?.agent?.selectedModel;
+            const normalizedModel = normalizeModelSelection(
+                currentModel,
+                response.catalog.models,
+                response.catalog.defaultModel
+            );
+            if (normalizedModel && normalizedModel !== currentModel) {
+                store.dispatch(
+                    AGENT.reduxSlice.actions.updateSelectedModel({ model: normalizedModel })
+                );
+            }
+        }
+    } catch (error) {
+        LOGGER.warn('loadFromCache - failed to refresh LLM catalog', error);
     }
 
     return {
@@ -63,6 +83,7 @@ export async function loadFromCache(context) {
         openaiUrl,
         mistralKey,
         aiProvider,
+        providerConfigs,
         isApplicationTabVisible: configuration[CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key],
         betaSmartInputEnabled: !!configuration[CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key],
     };

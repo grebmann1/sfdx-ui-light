@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import dotenv from 'dotenv';
 import lwcPlugin from '@lwc/rollup-plugin';
 import replace from '@rollup/plugin-replace';
 import resolve from '@rollup/plugin-node-resolve';
@@ -15,6 +16,7 @@ import * as data from '../../package.json';
 
 const getIsProduction = (args) => (args?.NODE_ENV || process.env.NODE_ENV) === 'production';
 const r = (...args) => path.resolve(__dirname, ...args);
+dotenv.config({ path: r('../../.env') });
 const lwc = typeof lwcPlugin === 'function' ? lwcPlugin : lwcPlugin?.default;
 if (typeof lwc !== 'function') {
     throw new TypeError(
@@ -41,6 +43,11 @@ const resolvePlugin = resolve({
 });
 const cjsPlugin = cjs({ requireReturnsDefault: 'auto' });
 const terserPlugin = terser();
+const workbenchBaseUrl = JSON.stringify(
+    String(process.env.WORKBENCH_BASE_URL || '')
+        .trim()
+        .replace(/\/+$/, '')
+);
 const stripTypescript = () => ({
     name: 'strip-typescript',
     transform(code, id) {
@@ -200,16 +207,18 @@ const lwcAliasForNonLwcBundles = (modulesArg) => {
 };
 
 const getSharedModulePath = (moduleName) => {
-    const distPath = r(`../../packages/shared/dist/modules/${moduleName}/${moduleName}.js`);
+    const entryFile = moduleName;
+    const distPath = r(`../../packages/shared/dist/modules/${moduleName}/${entryFile}.js`);
     if (fs.existsSync(distPath)) {
         return distPath;
     }
-    return r(`../../packages/shared/modules/${moduleName}/${moduleName}.ts`);
+    return r(`../../packages/shared/modules/${moduleName}/${entryFile}.ts`);
 };
 
 const sharedModules = [
     { name: 'shared/analytics', path: getSharedModulePath('analytics') },
     { name: 'shared/cacheManager', path: getSharedModulePath('cacheManager') },
+    { name: 'shared/llm', path: getSharedModulePath('llm') },
     { name: 'shared/loader', path: getSharedModulePath('loader') },
     { name: 'shared/logger', path: getSharedModulePath('logger') },
     { name: 'shared/markdown', path: getSharedModulePath('markdown') },
@@ -392,6 +401,7 @@ const basicBundler = (
             : []),
         replace({
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+            'process.env.WORKBENCH_BASE_URL': workbenchBaseUrl,
             '/assets/icons/': '/_slds/icons/',
             preventAssignment: true,
             'process.env.IS_CHROME': true,
@@ -418,6 +428,7 @@ const coreBuilder = (modulesArg, isProduction) => ({
         createAliasPlugin(coreAliasEntries),
         replace({
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+            'process.env.WORKBENCH_BASE_URL': workbenchBaseUrl,
             'process.env.IS_CHROME': true,
             preventAssignment: true,
         }),
@@ -459,6 +470,7 @@ const sandboxBuilder = (isProduction) => ({
     plugins: [
         replace({
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+            'process.env.WORKBENCH_BASE_URL': workbenchBaseUrl,
             preventAssignment: true,
         }),
         stripTypescript(),
@@ -493,6 +505,7 @@ export default (args) => {
         false,
         [
             { name: 'shared/cacheManager', path: r('../../packages/shared/dist/modules/cacheManager/cacheManager.js') },
+            { name: 'shared/llm', path: r('../../packages/shared/dist/modules/llm/llm.js') },
             { name: 'shared/logger', path: r('../../packages/shared/dist/modules/logger/logger.js') },
             { name: 'shared/utils', path: r('../../packages/shared/dist/modules/utils/utils.js') },
         ]

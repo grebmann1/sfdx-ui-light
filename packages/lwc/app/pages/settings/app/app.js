@@ -7,12 +7,16 @@ import {
     CACHE_SESSION_CONFIG,
     getSyncedSettingsInitializedFromCache,
     CACHE_ORG_DATA_TYPES,
+    buildProviderConfigCacheRecord,
+    getAiProviderFromConfig,
+    resolveLlmProviderConfigMap,
 } from 'shared/cacheManager';
 import Toast from 'lightning/toast';
 import LOGGER from 'shared/logger';
 import { store, APPLICATION } from 'core/store';
 import { NavigationContext, navigate } from 'lwr/navigation';
 import { METADATA as METADATA_UTILS } from 'shared/utils';
+import { getProviderOptions } from 'shared/llm';
 
 export default class App extends ToolkitElement {
     static DEFAULT_METADATA_STORAGE_TYPES = [
@@ -63,10 +67,7 @@ export default class App extends ToolkitElement {
     // New property to track API version validity
     _isApiVersionValid = true;
 
-    @track aiProviderOptions = [
-        { label: 'OpenAI', value: 'openai' },
-        { label: 'Einstein', value: 'einstein' },
-    ];
+    @track aiProviderOptions = getProviderOptions();
     @track metadataStorageTypeOptions = App.DEFAULT_METADATA_STORAGE_TYPES.map(type => ({
         label: type,
         value: type,
@@ -214,6 +215,8 @@ export default class App extends ToolkitElement {
         Object.values(configurationList).forEach(item => {
             config[item.key] = this.config[item.key];
         });
+        const providerConfigs = resolveLlmProviderConfigMap(config);
+        Object.assign(config, buildProviderConfigCacheRecord(providerConfigs));
         // if the overlayEnabled is changed, send a message to the background script
         if (
             this.config[CACHE_CONFIG.OVERLAY_ENABLED.key] !==
@@ -224,6 +227,12 @@ export default class App extends ToolkitElement {
         }
         // Use the new CacheManager to save config
         await cacheManager.saveConfig(config);
+        store.dispatch(APPLICATION.reduxSlice.actions.updateProviderConfigs({ providerConfigs }));
+        store.dispatch(
+            APPLICATION.reduxSlice.actions.updateAiProvider({
+                aiProvider: getAiProviderFromConfig(config),
+            })
+        );
         // we update the originalConfig
         this.originalConfig = { ...config };
 
@@ -287,10 +296,9 @@ export default class App extends ToolkitElement {
             const cached = cachedConfiguration[item.key];
             config[item.key] = cached !== undefined && cached !== null ? cached : item.defaultValue;
         });
-        // Default to 'openai' if not set
-        if (!config.ai_provider) {
-            config.ai_provider = 'openai';
-        }
+        const providerConfigs = resolveLlmProviderConfigMap(cachedConfiguration);
+        Object.assign(config, buildProviderConfigCacheRecord(providerConfigs));
+        config.ai_provider = getAiProviderFromConfig(cachedConfiguration);
         if (!Array.isArray(config.metadata_storage_types)) {
             config.metadata_storage_types = [];
         }
@@ -323,18 +331,25 @@ export default class App extends ToolkitElement {
     };
 
     loadMetadataStorageTypeOptions = async () => {
-        if (!this.isUserLoggedIn || !this.connector?.conn?.metadata || !this.connector?.conn?.version) {
+        if (
+            !this.isUserLoggedIn ||
+            !this.connector?.conn?.metadata ||
+            !this.connector?.conn?.version
+        ) {
             return;
         }
 
         try {
             const result = await this.connector.conn.metadata.describe(this.connector.conn.version);
-            const metadataObjects = Array.isArray(result?.metadataObjects) ? result.metadataObjects : [];
+            const metadataObjects = Array.isArray(result?.metadataObjects)
+                ? result.metadataObjects
+                : [];
             const runtimeTypes = metadataObjects
                 .filter(item => !METADATA_UTILS.METADATA_EXCLUDE_LIST.includes(item.xmlName))
                 .map(item => item.xmlName);
-            const exceptionTypes = METADATA_UTILS.METADATA_EXCEPTION_LIST.filter(item => item.isSearchable)
-                .map(item => item.name);
+            const exceptionTypes = METADATA_UTILS.METADATA_EXCEPTION_LIST.filter(
+                item => item.isSearchable
+            ).map(item => item.name);
             const values = Array.from(
                 new Set([...App.DEFAULT_METADATA_STORAGE_TYPES, ...runtimeTypes, ...exceptionTypes])
             ).sort((a, b) => a.localeCompare(b));
@@ -392,5 +407,4 @@ export default class App extends ToolkitElement {
     get userName() {
         return this.connector?.configuration?.username;
     }
-
 }

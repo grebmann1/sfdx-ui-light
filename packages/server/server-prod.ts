@@ -8,6 +8,7 @@ import handler from 'serve-handler';
 
 import { launchScheduleFileDownloaded } from './modules/cta';
 import { initDocumentationIndex, searchDocumentation } from './modules/documentationSearch';
+import llmModels from './modules/llmModels';
 import openaiProxy from './modules/openaiProxy';
 import proxy from './modules/proxy';
 
@@ -70,6 +71,7 @@ app.all('/cometd{/*splat}', proxy({ enableCORS: true }));
 app.all('/proxy{/*splat}', proxy({ enableCORS: true }));
 /* OpenAI Proxy */
 openaiProxy(app);
+llmModels(app);
 
 app.get('/oauth2/callback', async function (req, res) {
     const code = getQueryStringValue(req.query.code);

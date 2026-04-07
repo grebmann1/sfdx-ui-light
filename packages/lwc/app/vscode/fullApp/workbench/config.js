@@ -1,7 +1,7 @@
-
+import { LIGHT_COLOR_THEME, DARK_COLOR_THEME } from '../constants.js';
 
 export const buildUserConfiguration = (isChromeExtension) => ({
-    'workbench.colorTheme': 'Default Dark+',
+    'workbench.colorTheme': LIGHT_COLOR_THEME,
     ...(isChromeExtension
         ? {
             'workbench.activity.showExtensions': false,

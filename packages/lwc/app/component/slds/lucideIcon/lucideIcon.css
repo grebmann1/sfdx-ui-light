@@ -1,0 +1,14 @@
+:host {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: inherit;
+    line-height: 0;
+    vertical-align: middle;
+    flex: none;
+}
+
+svg {
+    display: block;
+    flex: none;
+}

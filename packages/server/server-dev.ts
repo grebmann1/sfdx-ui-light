@@ -8,6 +8,7 @@ import qs from 'qs';
 
 import { launchScheduleFileDownloaded } from './modules/cta';
 import { searchDocumentation } from './modules/documentationSearch';
+import llmModels from './modules/llmModels';
 import openaiProxy from './modules/openaiProxy';
 import proxy from './modules/proxy';
 
@@ -69,6 +70,7 @@ app.all('/cometd/:splat(*)', proxy({ enableCORS: true }));
 app.all('/proxy/:splat(*)', proxy({ enableCORS: true }));
 /* OpenAI Proxy */
 openaiProxy(app, { path: '/openai/v1' });
+llmModels(app);
 
 app.get('/version', function (req, res) {
     res.json({ version: process.env.npm_package_version });

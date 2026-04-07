@@ -43,8 +43,7 @@ import {
 import { buildConnectionFromConnector, credentialStrategies } from 'core/connector';
 import { connectStore, store, APPLICATION } from 'core/store';
 
-const CHAT_MODEL_STORAGE_PREFIX = 'chat.currentLanguageModel.';
-const WORKBENCH_CHAT_MODEL_VENDOR = 'copilot';
+import { CHAT_MODEL_STORAGE_PREFIX, WORKBENCH_CHAT_MODEL_VENDOR, LIGHT_COLOR_THEME, DARK_COLOR_THEME } from './constants.js';
 
 export default class VscodeWorkbenchApp extends ToolkitElement {
     // static renderMode = 'light';
@@ -61,7 +60,9 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     @track sfApiVersion = DEFAULT_SOURCE_API_VERSION;
     @track orgContext = buildOrgContext();
     @track isConnectionAvailable = false;
+    @track isConnectionBootstrapPending = true;
     @track sessionHasExpired = false;
+    @track themeMode = 'light';
 
     _started = false;
     _isChromeExtension = false;
@@ -72,6 +73,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     _quickInputKeydownDisposer = null;
     _agentScriptLanguageClientWrapper = null;
     _workspaceRoot = DEFAULT_WORKSPACE_ROOT;
+    _forwardedKeyboardEvents = new WeakSet();
 
     _workbenchFilesService = null;
     _fsProvider = null;
@@ -80,6 +82,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     _demoDisposables = [];
     _workspaceBootstrap = null;
     _currentConnectionProvider = null;
+    _connectionBootstrapPromise = null;
 
     @wire(connectStore, { store })
     handleApplicationStore({ application }) {
@@ -93,51 +96,17 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         this._currentConnectionProvider = () => this._buildCurrentConnectionContext();
         setCurrentConnectionProvider(this._currentConnectionProvider);
         this._syncConnectionState(store.getState()?.application);
+        void this._ensureInitialConnectionBootstrap();
     }
 
     disconnectedCallback() {
         clearCurrentConnectionProvider(this._currentConnectionProvider);
         this._currentConnectionProvider = null;
-        try {
-            this._globalKeydownDisposer?.dispose?.();
-        } catch {
-            // ignore
-        } finally {
-            this._globalKeydownDisposer = null;
-        }
-        try {
-            this._quickInputKeydownDisposer?.dispose?.();
-        } catch {
-            // ignore
-        } finally {
-            this._quickInputKeydownDisposer = null;
-        }
-        try {
-            this._agentScriptLanguageClientWrapper?.dispose?.();
-        } catch {
-            // ignore
-        } finally {
-            this._agentScriptLanguageClientWrapper = null;
-        }
-        try {
-            this._disposeDemoRegistrations();
-        } catch {
-            // ignore
-        }
-        try {
-            this._fsOverlayDisposable?.dispose?.();
-        } catch {
-            // ignore
-        } finally {
-            this._fsOverlayDisposable = null;
-        }
-        try {
-            this._fsProvider?.dispose?.();
-        } catch {
-            // ignore
-        } finally {
-            this._fsProvider = null;
-        }
+        this._disposeGlobalKeydownDisposer();
+        this._disposeAgentScriptLanguageClientWrapper();
+        this._disposeDemoRegistrationsSafely();
+        this._disposeFsOverlayDisposable();
+        this._disposeFsProvider();
         this._workbenchFilesService = null;
     }
 
@@ -145,6 +114,73 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         if (this._started || !this.isConnectionAvailable) return;
         this._started = true;
         void this._startWorkbench();
+    }
+
+    _disposeGlobalKeydownDisposer() {
+        try {
+            this._globalKeydownDisposer?.dispose?.();
+        } catch {
+            // ignore
+        } finally {
+            this._globalKeydownDisposer = null;
+        }
+    }
+
+    _disposeAgentScriptLanguageClientWrapper() {
+        try {
+            this._agentScriptLanguageClientWrapper?.dispose?.();
+        } catch {
+            // ignore
+        } finally {
+            this._agentScriptLanguageClientWrapper = null;
+        }
+    }
+
+    _disposeDemoRegistrationsSafely() {
+        try {
+            this._disposeDemoRegistrations();
+        } catch {
+            // ignore
+        }
+    }
+
+    _disposeFsOverlayDisposable() {
+        try {
+            this._fsOverlayDisposable?.dispose?.();
+        } catch {
+            // ignore
+        } finally {
+            this._fsOverlayDisposable = null;
+        }
+    }
+
+    _disposeFsProvider() {
+        try {
+            this._fsProvider?.dispose?.();
+        } catch {
+            // ignore
+        } finally {
+            this._fsProvider = null;
+        }
+    }
+
+    async _ensureInitialConnectionBootstrap() {
+        if (this._connectionBootstrapPromise) {
+            return this._connectionBootstrapPromise;
+        }
+
+        this._connectionBootstrapPromise = (async () => {
+            try {
+                await this._ensureConnectorBootstrap();
+            } catch {
+                // ignore and fall back to the standard connection-required UI
+            } finally {
+                this._syncConnectionState(store.getState()?.application);
+                this.isConnectionBootstrapPending = false;
+            }
+        })();
+
+        return this._connectionBootstrapPromise;
     }
 
     _syncConnectionState(application = store.getState()?.application || {}) {
@@ -265,6 +301,45 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         }
         try {
             this._clearUnsupportedPersistedChatModels(window.sessionStorage, 'sessionStorage');
+        } catch {
+            // ignore
+        }
+    }
+
+    _resolveThemeMode(colorTheme) {
+        return String(colorTheme || '')
+            .toLowerCase()
+            .includes('light')
+            ? 'light'
+            : 'dark';
+    }
+
+    async _syncThemeModeFromWorkbench() {
+        try {
+            const colorTheme = this._vscode?.workspace
+                ?.getConfiguration?.('workbench')
+                ?.get?.('colorTheme');
+            this.themeMode = this._resolveThemeMode(colorTheme);
+        } catch {
+            this.themeMode = 'dark';
+        }
+    }
+
+    async _applyWorkbenchTheme(themeMode) {
+        const nextThemeMode = themeMode === 'light' ? 'light' : 'dark';
+        const colorTheme = nextThemeMode === 'light' ? LIGHT_COLOR_THEME : DARK_COLOR_THEME;
+
+        this.themeMode = nextThemeMode;
+
+        try {
+            const workbenchConfig = this._vscode?.workspace?.getConfiguration?.('workbench');
+            if (typeof workbenchConfig?.update === 'function') {
+                try {
+                    await workbenchConfig.update('colorTheme', colorTheme, true);
+                } catch {
+                    await workbenchConfig.update('colorTheme', colorTheme);
+                }
+            }
         } catch {
             // ignore
         }
@@ -493,45 +568,41 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         };
     }
 
-    _getDeepActiveElement(root = document) {
-        let activeElement = root?.activeElement;
-        while (activeElement?.shadowRoot?.activeElement) {
-            activeElement = activeElement.shadowRoot.activeElement;
+    _installQuickInputKeyboardWorkaround() {
+        if (this._globalKeydownDisposer || typeof window === 'undefined') {
+            return;
         }
-        return activeElement;
-    }
 
-    _installQuickInputEnterWorkaround() {
-        if (this._quickInputKeydownDisposer) return;
-
-        const handler = e => {
+        const handler = (event) => {
             try {
-                if (!e || e.defaultPrevented || e.isComposing) return;
-                if (e.key !== 'Enter') return;
-                if (e.altKey || e.ctrlKey || e.metaKey) return;
+                if (this._forwardedKeyboardEvents.has(event)) {
+                    return;
+                }
 
-                const activeElement = this._getDeepActiveElement();
-                if (!(activeElement instanceof HTMLElement)) return;
+                const command = this._getQuickInputWorkaroundCommand(event);
+                if (command) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.stopImmediatePropagation?.();
+                    void this._vscode?.commands?.executeCommand?.(command);
+                    return;
+                }
 
-                const quickInputWidget = activeElement.closest?.('.quick-input-widget');
-                const isQuickInputTextField =
-                    activeElement.matches?.('input, textarea') ||
-                    activeElement.getAttribute?.('role') === 'textbox';
+                if (!this._shouldForwardWorkbenchShortcut(event)) {
+                    return;
+                }
 
-                if (!quickInputWidget || !isQuickInputTextField) return;
-
-                // Monaco's embedded quick input can lose the Enter keybinding to the
-                // underlying find input control. Route Enter back to quickInput.accept.
-                e.preventDefault();
-                e.stopPropagation();
-                void this._vscode?.commands?.executeCommand?.('quickInput.accept');
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation?.();
+                this._forwardKeyboardEventToWorkbench(event);
             } catch {
                 // ignore
             }
         };
 
         window.addEventListener('keydown', handler, true);
-        this._quickInputKeydownDisposer = {
+        this._globalKeydownDisposer = {
             dispose: () => {
                 try {
                     window.removeEventListener('keydown', handler, true);
@@ -540,6 +611,162 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                 }
             },
         };
+    }
+
+    _getQuickInputWorkaroundCommand(event) {
+        if (!event || event.defaultPrevented || event.isComposing) {
+            return null;
+        }
+
+        if (!this._isQuickInputVisible() || !this._isWorkbenchKeyboardTarget(event)) {
+            return null;
+        }
+
+        if (event.ctrlKey || event.metaKey || event.altKey) {
+            return null;
+        }
+
+        switch (event.key) {
+            case 'Enter':
+                return event.shiftKey ? 'quickInput.acceptInBackground' : 'quickInput.accept';
+            case 'ArrowDown':
+                return event.shiftKey ? null : 'workbench.action.quickOpenSelectNext';
+            case 'ArrowUp':
+                return event.shiftKey ? null : 'workbench.action.quickOpenSelectPrevious';
+            case 'Escape':
+                return event.shiftKey ? null : 'workbench.action.closeQuickOpen';
+            default:
+                return null;
+        }
+    }
+
+    _shouldForwardWorkbenchShortcut(event) {
+        if (!event || event.defaultPrevented || event.isComposing) {
+            return false;
+        }
+
+        if (event.altKey || !(event.ctrlKey || event.metaKey)) {
+            return false;
+        }
+
+        const key = String(event.key || '').toLowerCase();
+        return key === 'p';
+    }
+
+    _forwardKeyboardEventToWorkbench(event) {
+        const target = this._getWorkbenchShortcutForwardTarget();
+        if (!target) {
+            return;
+        }
+
+        if (target instanceof HTMLElement) {
+            target.focus?.({ preventScroll: true });
+        }
+
+        const forwardedEvent = new KeyboardEvent(event.type, {
+            key: event.key,
+            code: event.code,
+            location: event.location,
+            repeat: event.repeat,
+            shiftKey: event.shiftKey,
+            ctrlKey: event.ctrlKey,
+            altKey: event.altKey,
+            metaKey: event.metaKey,
+            bubbles: true,
+            cancelable: true,
+            composed: true,
+        });
+        this._forwardedKeyboardEvents.add(forwardedEvent);
+        target.dispatchEvent(forwardedEvent);
+    }
+
+    _getWorkbenchShortcutForwardTarget() {
+        const activeElement = this._getDeepActiveElement();
+        if (this._isWorkbenchEditorKeyboardSink(activeElement)) {
+            return activeElement;
+        }
+
+        const selectors = [
+            '.monaco-editor textarea.inputarea',
+            '.monaco-editor textarea',
+            '.editor-instance textarea.inputarea',
+            '.monaco-workbench textarea.inputarea',
+            '.monaco-workbench',
+        ];
+
+        for (const selector of selectors) {
+            const target = this._workbenchContainerEl?.querySelector?.(selector);
+            if (target instanceof EventTarget) {
+                return target;
+            }
+        }
+
+        return this._workbenchContainerEl instanceof EventTarget ? this._workbenchContainerEl : null;
+    }
+
+    _isWorkbenchEditorKeyboardSink(element) {
+        return (
+            element instanceof HTMLElement &&
+            Boolean(
+                element.matches?.(
+                    '.monaco-editor textarea.inputarea, .monaco-editor textarea, .editor-instance textarea.inputarea, .monaco-workbench textarea.inputarea'
+                )
+            )
+        );
+    }
+
+    _isQuickInputVisible() {
+        const widget = this._workbenchContainerEl?.querySelector?.('.quick-input-widget');
+        if (!widget) {
+            return false;
+        }
+
+        if (widget.getAttribute('aria-hidden') === 'true') {
+            return false;
+        }
+
+        const styles = window.getComputedStyle(widget);
+        if (styles.display === 'none' || styles.visibility === 'hidden') {
+            return false;
+        }
+
+        return widget.getClientRects().length > 0;
+    }
+
+    _isWorkbenchKeyboardTarget(event) {
+        const eventPath = typeof event.composedPath === 'function' ? event.composedPath() : [];
+        if (eventPath.includes(this._workbenchContainerEl)) {
+            return true;
+        }
+
+        for (const node of eventPath) {
+            if (node instanceof Node && this._workbenchContainerEl?.contains(node)) {
+                return true;
+            }
+        }
+
+        const target = event.target;
+        const activeElement = this._getDeepActiveElement();
+
+        if (target instanceof Node && this._workbenchContainerEl?.contains(target)) {
+            return true;
+        }
+
+        return activeElement instanceof Node && this._workbenchContainerEl?.contains(activeElement);
+    }
+
+    _getDeepActiveElement() {
+        const workbenchRoot = this._workbenchContainerEl?.getRootNode?.();
+        let activeElement =
+            workbenchRoot?.activeElement instanceof Node
+                ? workbenchRoot.activeElement
+                : document.activeElement;
+
+        while (activeElement?.shadowRoot?.activeElement instanceof Node) {
+            activeElement = activeElement.shadowRoot.activeElement;
+        }
+
+        return activeElement;
     }
 
     async _initializeAgentScriptSupport(vscodeBundle) {
@@ -578,7 +805,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             );
             const isChromeExtension = Boolean(globalThis?.chrome?.runtime?.id);
             this._isChromeExtension = isChromeExtension;
-            await this._ensureConnectorBootstrap();
+            await this._ensureInitialConnectionBootstrap();
             let activeConnection = this._requireCurrentConnection();
             this._applyActiveConnection(activeConnection);
             await this._syncAppApiVersionFromWorkspace(
@@ -718,14 +945,15 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
 
             await this._runDemoFeatures();
             this.vscodeInitialized = true;
+            await this._syncThemeModeFromWorkbench();
             await new Promise(resolve =>
                 window.requestAnimationFrame(() => window.requestAnimationFrame(resolve))
             );
             await this._openInitialWalkthrough();
-            this._installQuickInputEnterWorkaround();
-            if (isChromeExtension) {
+            this._installQuickInputKeyboardWorkaround();
+            /* if (isChromeExtension) {
                 this._installSaveKeybindingWorkaround();
-            }
+            } */
         } catch (error) {
             // eslint-disable-next-line no-console
             console.error('Failed to initialize VSCode workbench:', error);
@@ -789,6 +1017,10 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         );
     }
 
+    get rootClass() {
+        return this.themeMode === 'dark' ? 'root rootDark' : 'root';
+    }
+
     get orgBannerClass() {
         const tone = this.orgContext?.tone || 'neutral';
         return `orgBanner orgBanner${tone.charAt(0).toUpperCase()}${tone.slice(1)}`;
@@ -810,6 +1042,18 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         return this.orgContext?.host || '';
     }
 
+    get themeToggleTitle() {
+        return this.themeMode === 'light' ? 'Switch to dark mode' : 'Switch to light mode';
+    }
+
+    get showLightModeIcon() {
+        return this.themeMode === 'dark';
+    }
+
+    get showDarkModeIcon() {
+        return this.themeMode === 'light';
+    }
+
     get showSessionExpiredBanner() {
         return this.sessionHasExpired || this.isSessionExpiredInitializationError;
     }
@@ -825,6 +1069,14 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
 
     get showLoadingOverlay() {
         return !this.vscodeInitialized && !this.initializationError;
+    }
+
+    get isAuthBoundaryLoading() {
+        return this.isConnectionBootstrapPending;
+    }
+
+    async toggleWorkbenchTheme() {
+        await this._applyWorkbenchTheme(this.themeMode === 'light' ? 'dark' : 'light');
     }
 
     async refreshSalesforceMetadata() {

@@ -5,12 +5,17 @@
 }
 
 .root {
+    --app-background: #edf2f7;
     display: flex;
     flex-direction: column;
     height: 100%;
     min-height: 100vh;
     overflow: hidden;
-    background: #1e1e1e;
+    background: var(--app-background);
+}
+
+.rootDark {
+    --app-background: #1e1e1e;
 }
 
 .orgBanner {
@@ -81,19 +86,56 @@
 }
 
 .orgBannerHost {
-    opacity: 0.8;
+    color: rgba(255, 255, 255, 0.8);
     font-size: 11px;
+}
+
+.themeToggleButton {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.96);
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+    transition:
+        background-color 120ms ease,
+        border-color 120ms ease,
+        transform 120ms ease;
+}
+
+.themeToggleButton:hover {
+    background: rgba(255, 255, 255, 0.16);
+    transform: translateY(-1px);
+}
+
+.themeToggleButton:focus-visible {
+    outline: 2px solid rgba(90, 170, 255, 0.9);
+    outline-offset: 2px;
+}
+
+.themeToggleIcon {
+    width: 15px;
+    height: 15px;
+    display: block;
 }
 
 .workbenchShell {
     position: relative;
-    flex: 1;
-    min-height: 0;
+    display: flex;
+    height: 100%;
+    width: 100%;
 }
 
 .workbench-host {
     position: relative;
     height: 100%;
+    width: 100%;
     min-height: 0;
     overflow: hidden;
 }
