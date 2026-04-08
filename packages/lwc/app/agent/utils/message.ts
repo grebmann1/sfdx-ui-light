@@ -1,5 +1,7 @@
 import type { ModelMessage, ToolModelMessage, ToolResultPart } from 'ai';
 import { isNotUndefinedOrNull } from 'shared/utils';
+import { parseDataUrl } from './runnerHelpers';
+
 export function buildUserMessageParts({ text, filesData }) {
     const parts = [];
     if (typeof text === 'string' && text.trim()) {
@@ -8,15 +10,27 @@ export function buildUserMessageParts({ text, filesData }) {
     const files = Array.isArray(filesData) ? filesData : [];
     files.forEach(file => {
         if (!file || typeof file !== 'object') return;
-        const url = typeof file.content === 'string' ? file.content : '';
-        const mediaType = typeof file.type === 'string' ? file.type : '';
-        if (!url || !mediaType) return;
-        parts.push({
-            type: 'file',
-            url,
-            mediaType,
-            filename: typeof file.name === 'string' ? file.name : undefined,
-        });
+        const rawContent = typeof file.content === 'string' ? file.content : '';
+        const rawMediaType = typeof file.type === 'string' ? file.type : '';
+        if (!rawContent || !rawMediaType) return;
+
+        // Extract bare base64 from data URL (e.g. "data:image/png;base64,<data>")
+        const parsed = parseDataUrl(rawContent);
+        const data = parsed ? parsed.base64 : rawContent;
+        const mediaType = parsed ? parsed.mediaType : rawMediaType;
+
+        if (mediaType.startsWith('image/')) {
+            // AI SDK ImagePart: { type: 'image', image: DataContent, mediaType? }
+            parts.push({ type: 'image', image: data, mediaType });
+        } else {
+            // AI SDK FilePart: { type: 'file', data: DataContent, mediaType, filename? }
+            parts.push({
+                type: 'file',
+                data,
+                mediaType,
+                filename: typeof file.name === 'string' ? file.name : undefined,
+            });
+        }
     });
     return parts;
 }

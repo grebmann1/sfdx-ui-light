@@ -3,6 +3,7 @@ import ToolkitElement from 'core/toolkitElement';
 import { getFlattenedFields } from '@jetstreamapp/soql-parser-js';
 import { store, connectStore, SELECTORS, SOBJECT, UI } from 'core/store';
 import { fullApiName, isSame, lowerCaseKey } from 'shared/utils';
+import { getFieldTypeIcon, CHILD_RELATIONSHIP_ICON } from '../constants';
 
 const ROOT_LEVEL = 2;
 const MAX_LEVEL = 4 + ROOT_LEVEL;
@@ -157,7 +158,7 @@ export default class RelationshipsTree extends ToolkitElement {
                     name: field.name,
                     title,
                     rawName: childRawName,
-                    icon: 'utility:number_input',
+                    icon: getFieldTypeIcon(field.type),
                     isActive: selectedForSubquery.includes(childId),
                     isExpandable: false,
                     children: undefined,
@@ -200,7 +201,7 @@ export default class RelationshipsTree extends ToolkitElement {
                     name: relation.itemLabel,
                     title,
                     rawName: relation.relationshipName,
-                    icon: 'utility:record_lookup',
+                    icon: CHILD_RELATIONSHIP_ICON,
                     isActive: !!relation.isActive,
                     isExpandable: true,
                     childSObject: relation.childSObject,

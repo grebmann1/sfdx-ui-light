@@ -92,7 +92,7 @@ export async function persistPromptImageFiles(filesData, fs, conversationId, log
     const source = Array.isArray(filesData) ? filesData : [];
     if (!fs || source.length === 0) return source;
 
-    const baseDir = `/workspace/.agent-images/${sanitizePathSegment(conversationId || 'default')}`;
+    const baseDir = `/workspace/tmp/${sanitizePathSegment(conversationId || 'default')}`;
     try {
         await fs.mkdir(baseDir, { recursive: true });
     } catch (_) {
@@ -102,24 +102,28 @@ export async function persistPromptImageFiles(filesData, fs, conversationId, log
     const persisted = await Promise.all(
         source.map(async (file, index) => {
             if (!file || typeof file !== 'object') return file;
-            if (!file.type?.startsWith?.('image/')) return file;
-            const parsed = parseDataUrl(file.content);
-            if (!parsed) return file;
+            if (!file.content) return file;
 
-            const safeName = sanitizePathSegment(file.name || `image-${index}`);
-            const ext = extensionForMimeType(parsed.mediaType, safeName.split('.').pop() || 'bin');
-            const hasExt = /\.[a-zA-Z0-9]+$/.test(safeName);
-            const finalName = hasExt ? safeName : `${safeName}.${ext}`;
-            const filePath = `${baseDir}/${Date.now()}-${index}-${finalName}`;
+            const safeName = sanitizePathSegment(file.name || `file-${index}`);
+            const filePath = `${baseDir}/${safeName}`;
+
             try {
-                await fs.writeFile(filePath, parsed.base64, { encoding: 'base64' });
-                return {
-                    ...file,
-                    path: filePath,
-                    mediaType: parsed.mediaType,
-                };
+                if (file.type?.startsWith?.('text/') && typeof file.content === 'string') {
+                    await fs.writeFile(filePath, file.content, { encoding: 'utf8' });
+                    return { ...file, path: filePath };
+                }
+
+                const parsed = parseDataUrl(file.content);
+                if (!parsed) return file;
+
+                const ext = extensionForMimeType(parsed.mediaType, safeName.split('.').pop() || 'bin');
+                const hasExt = /\.[a-zA-Z0-9]+$/.test(safeName);
+                const finalName = hasExt ? safeName : `${safeName}.${ext}`;
+                const binaryPath = `${baseDir}/${finalName}`;
+                await fs.writeFile(binaryPath, parsed.base64, { encoding: 'base64' });
+                return { ...file, path: binaryPath, mediaType: parsed.mediaType };
             } catch (error) {
-                logger?.warn?.('[agent] failed to persist prompt image', {
+                logger?.warn?.('[agent] failed to persist attached file', {
                     conversationId,
                     fileName: file.name,
                     message: error instanceof Error ? error.message : String(error),

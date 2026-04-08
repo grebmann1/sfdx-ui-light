@@ -15,16 +15,32 @@
                             <div class="slds-col">
                                 <select
                                     id="model-picklist"
-                                    class="slds-select chat-select chat-select-model"
+                                    class="chat-select chat-select-model"
                                     onchange={handleModelChange}
                                     aria-label="Model">
-                                    <template for:each={renderedModelOptions} for:item="model">
-                                        <option
-                                            key={model.value}
-                                            value={model.value}
-                                            selected={model.isSelected}>
-                                            {model.label}
-                                        </option>
+                                    <template lwc:if={hasMultipleProviderGroups}>
+                                        <template for:each={renderedModelOptionGroups} for:item="group">
+                                            <optgroup key={group.key} label={group.label}>
+                                                <template for:each={group.options} for:item="model">
+                                                    <option
+                                                        key={model.value}
+                                                        value={model.value}
+                                                        selected={model.isSelected}>
+                                                        {model.displayLabel}
+                                                    </option>
+                                                </template>
+                                            </optgroup>
+                                        </template>
+                                    </template>
+                                    <template lwc:else>
+                                        <template for:each={renderedModelOptions} for:item="model">
+                                            <option
+                                                key={model.value}
+                                                value={model.value}
+                                                selected={model.isSelected}>
+                                                {model.displayLabel}
+                                            </option>
+                                        </template>
                                     </template>
                                 </select>
                             </div>

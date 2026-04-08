@@ -1464,6 +1464,47 @@ function createWorkspaceClient(overrides = {}) {
         status() {
             return sendWorkspaceRequest(config, 'status');
         },
+        sheets: {
+            requestAccess() {
+                return sendWorkspaceRequest(config, 'sheets.requestAccess');
+            },
+            createSpreadsheet(input) {
+                return sendWorkspaceRequest(config, 'sheets.createSpreadsheet', input);
+            },
+            getSpreadsheet(input) {
+                return sendWorkspaceRequest(config, 'sheets.getSpreadsheet', input);
+            },
+            listSheets(input) {
+                return sendWorkspaceRequest(config, 'sheets.listSheets', input);
+            },
+            readRange(input) {
+                return sendWorkspaceRequest(config, 'sheets.readRange', input);
+            },
+            batchRead(input) {
+                return sendWorkspaceRequest(config, 'sheets.batchRead', input);
+            },
+            writeRange(input) {
+                return sendWorkspaceRequest(config, 'sheets.writeRange', input);
+            },
+            batchWrite(input) {
+                return sendWorkspaceRequest(config, 'sheets.batchWrite', input);
+            },
+            appendRows(input) {
+                return sendWorkspaceRequest(config, 'sheets.appendRows', input);
+            },
+            clearRange(input) {
+                return sendWorkspaceRequest(config, 'sheets.clearRange', input);
+            },
+            batchClear(input) {
+                return sendWorkspaceRequest(config, 'sheets.batchClear', input);
+            },
+            batchUpdate(input) {
+                return sendWorkspaceRequest(config, 'sheets.batchUpdate', input);
+            },
+            setFormat(input) {
+                return sendWorkspaceRequest(config, 'sheets.setFormat', input);
+            },
+        },
     };
 }
 
@@ -1484,6 +1525,72 @@ function extractResultField(result, field) {
     return Object.prototype.hasOwnProperty.call(result, field) ? result[field] : result;
 }
 
+// -----------------------------------------------------------------------------
+// FS / Bash request helpers (sandbox → parent direct protocol)
+// -----------------------------------------------------------------------------
+
+const FS_RESPONSE_TYPES = {
+    FS_READ_REQUEST: 'FS_READ_RESPONSE',
+    FS_WRITE_REQUEST: 'FS_WRITE_RESPONSE',
+    FS_LIST_REQUEST: 'FS_LIST_RESPONSE',
+    FS_DELETE_REQUEST: 'FS_DELETE_RESPONSE',
+    FS_MKDIR_REQUEST: 'FS_MKDIR_RESPONSE',
+    FS_EXISTS_REQUEST: 'FS_EXISTS_RESPONSE',
+    FS_STAT_REQUEST: 'FS_STAT_RESPONSE',
+};
+
+function sendFsRequest(requestType, payload, timeoutMs = 30000) {
+    return new Promise((resolve, reject) => {
+        const id = crypto.randomUUID();
+        const responseType = FS_RESPONSE_TYPES[requestType];
+        const onMessage = (event) => {
+            if (event.source !== window.parent) return;
+            const data = event.data;
+            if (data?.type !== responseType || data.id !== id) return;
+            window.removeEventListener('message', onMessage);
+            clearTimeout(timeoutId);
+            if (!data.success) {
+                reject(new Error(data.error || `${requestType} failed`));
+                return;
+            }
+            resolve(data);
+        };
+        window.addEventListener('message', onMessage);
+        const timeoutId = setTimeout(() => {
+            window.removeEventListener('message', onMessage);
+            reject(new Error(`${requestType} timeout`));
+        }, timeoutMs);
+        window.parent.postMessage({ type: requestType, id, ...payload }, parentOrigin);
+    });
+}
+
+function sendBashRequest(command, cwd, timeoutMs = 60000) {
+    return new Promise((resolve, reject) => {
+        const id = crypto.randomUUID();
+        const onMessage = (event) => {
+            if (event.source !== window.parent) return;
+            const data = event.data;
+            if (data?.type !== 'BASH_RESPONSE' || data.id !== id) return;
+            window.removeEventListener('message', onMessage);
+            clearTimeout(timeoutId);
+            if (!data.success) {
+                reject(new Error(data.error || 'BASH_REQUEST failed'));
+                return;
+            }
+            resolve(data);
+        };
+        window.addEventListener('message', onMessage);
+        const timeoutId = setTimeout(() => {
+            window.removeEventListener('message', onMessage);
+            reject(new Error('BASH_REQUEST timeout'));
+        }, timeoutMs);
+        window.parent.postMessage(
+            { type: 'BASH_REQUEST', id, command, ...(cwd ? { cwd } : {}) },
+            parentOrigin
+        );
+    });
+}
+
 // Expose for code run via EVAL_REQUEST (e.g. browser automation tools)
 window.listTabs = listTabs;
 window.createTab = createTab;
@@ -1497,22 +1604,28 @@ window.getElementByRef = getElementByRef;
 window.clearInput = clearInput;
 window.workspace = createWorkspaceClient();
 window.readFile = function(path) {
-    const config = createWorkspaceRequestConfig();
-    return sendWorkspaceRequest(config, 'readFile', { path })
-        .then((result) => extractResultField(result, 'content'));
+    return sendFsRequest('FS_READ_REQUEST', { path }).then(res => res.content);
 };
 window.writeFile = function(path, content) {
-    const config = createWorkspaceRequestConfig();
-    return sendWorkspaceRequest(config, 'writeFile', { path, content });
+    return sendFsRequest('FS_WRITE_REQUEST', { path, content });
 };
 window.listFiles = function(path) {
-    const config = createWorkspaceRequestConfig();
-    return sendWorkspaceRequest(config, 'listFiles', { path })
-        .then((result) => extractResultField(result, 'entries'));
+    return sendFsRequest('FS_LIST_REQUEST', { path }).then(res => res.entries);
 };
 window.deleteFile = function(path) {
-    const config = createWorkspaceRequestConfig();
-    return sendWorkspaceRequest(config, 'deleteFile', { path });
+    return sendFsRequest('FS_DELETE_REQUEST', { path });
+};
+window.mkdir = function(path) {
+    return sendFsRequest('FS_MKDIR_REQUEST', { path });
+};
+window.exists = function(path) {
+    return sendFsRequest('FS_EXISTS_REQUEST', { path }).then(res => res.exists);
+};
+window.stat = function(path) {
+    return sendFsRequest('FS_STAT_REQUEST', { path }).then(res => res.stat);
+};
+window.bash = function(command, options) {
+    return sendBashRequest(command, options?.cwd);
 };
 
 function sendToParent(payload) {

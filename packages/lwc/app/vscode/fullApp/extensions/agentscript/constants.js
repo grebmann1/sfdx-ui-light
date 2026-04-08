@@ -17,30 +17,16 @@ export const AGENTSCRIPT_EXTENSION_CONFIG = {
                 id: 'agentscript',
                 aliases: ['Agent Scripting'],
                 extensions: ['.agent', '.afscript'],
-                configuration: '/workspace/language-configuration.json',
+                configuration: '/workspace/vscode/agentscript.language-configuration.json',
             },
         ],
         grammars: [
             {
                 language: 'agentscript',
                 scopeName: 'source.agentscript',
-                path: '/workspace/agentscript.tmLanguage.json',
+                path: '/workspace/vscode/agentscript.tmLanguage.json',
             },
-        ],
-        themes: [
-            {
-                id: 'Tokyo Night',
-                label: 'Tokyo Night',
-                uiTheme: 'vs-dark',
-                path: '/workspace/tokyo-night-color-theme.json',
-            },
-            {
-                id: 'Shades of Purple (Super Dark)',
-                label: 'Shades of Purple (Super Dark)',
-                uiTheme: 'vs-dark',
-                path: '/workspace/shades-of-purple-super-dark.json',
-            },
-        ],
+        ]
     },
     activationEvents: ['*'],
 };
@@ -48,28 +34,17 @@ export const AGENTSCRIPT_EXTENSION_CONFIG = {
 export const AGENTSCRIPT_EXTENSION_ASSETS = [
     {
         sourcePath: AGENTSCRIPT_SERVER_WORKER_URL,
-        targetPath: '/workspace/server.js',
+        targetPath: '/workspace/vscode/server.js',
         mimeType: 'application/javascript',
     },
     {
         sourcePath: '/libs/extensions/agentscript-extension/grammar/agentscript.tmLanguage.json',
-        targetPath: '/workspace/agentscript.tmLanguage.json',
+        targetPath: '/workspace/vscode/agentscript.tmLanguage.json',
         mimeType: 'application/json',
     },
     {
         sourcePath: '/libs/extensions/agentscript-extension/grammar/language-configuration.json',
-        targetPath: '/workspace/language-configuration.json',
+        targetPath: '/workspace/vscode/agentscript.language-configuration.json',
         mimeType: 'application/json',
-    },
-    {
-        sourcePath: '/libs/extensions/agentscript-extension/themes/tokyo-night-color-theme.json',
-        targetPath: '/workspace/tokyo-night-color-theme.json',
-        mimeType: 'application/json',
-    },
-    {
-        sourcePath:
-            '/libs/extensions/agentscript-extension/themes/shades-of-purple-super-dark.json',
-        targetPath: '/workspace/shades-of-purple-super-dark.json',
-        mimeType: 'application/json',
-    },
+    }
 ];

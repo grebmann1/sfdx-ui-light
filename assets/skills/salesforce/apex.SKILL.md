@@ -1,3 +1,8 @@
+---
+name: apex
+description: Edit and execute anonymous Apex code with confirmation. Use when the user wants to write, edit, run, or save Apex scripts against a Salesforce org.
+---
+
 # Apex
 
 Edit and execute anonymous Apex with confirmation.

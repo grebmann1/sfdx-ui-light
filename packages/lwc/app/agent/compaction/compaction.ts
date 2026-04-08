@@ -1,5 +1,8 @@
-import type { createOpenAI } from '@ai-sdk/openai';
 import { generateText, type ModelMessage } from 'ai';
+import {
+    resolveProviderModelInstance,
+    type ProviderInstance,
+} from '../utils/providerRuntime';
 
 export interface CompactionSettings {
     reserveTokens: number;
@@ -24,17 +27,15 @@ export interface PreparedCompaction {
     fileOps: FileOperations;
 }
 
-type OpenAIClient = ReturnType<typeof createOpenAI>;
-
 /**
  * Compute final file lists from file operations.
  * Returns readFiles (files only read, not modified) and modifiedFiles.
  */
 export function computeFileLists(fileOps): { readFiles: string[]; modifiedFiles: string[] } {
-	const modified = new Set([...fileOps.edited, ...fileOps.written]);
-	const readOnly = [...fileOps.read].filter((f) => !modified.has(f)).sort();
-	const modifiedFiles = [...modified].sort();
-	return { readFiles: readOnly, modifiedFiles };
+    const modified = new Set([...fileOps.edited, ...fileOps.written]);
+    const readOnly = [...fileOps.read].filter(f => !modified.has(f)).sort();
+    const modifiedFiles = [...modified].sort();
+    return { readFiles: readOnly, modifiedFiles };
 }
 
 const TOOL_RESULT_MAX_CHARS = 2000;
@@ -254,15 +255,15 @@ export function estimateMessageTokens(message: ModelMessage): number {
  * Format file operations as XML tags for summary.
  */
 export function formatFileOperations(readFiles: string[], modifiedFiles: string[]): string {
-	const sections: string[] = [];
-	if (readFiles.length > 0) {
-		sections.push(`<read-files>\n${readFiles.join("\n")}\n</read-files>`);
-	}
-	if (modifiedFiles.length > 0) {
-		sections.push(`<modified-files>\n${modifiedFiles.join("\n")}\n</modified-files>`);
-	}
-	if (sections.length === 0) return "";
-	return `\n\n${sections.join("\n\n")}`;
+    const sections: string[] = [];
+    if (readFiles.length > 0) {
+        sections.push(`<read-files>\n${readFiles.join('\n')}\n</read-files>`);
+    }
+    if (modifiedFiles.length > 0) {
+        sections.push(`<modified-files>\n${modifiedFiles.join('\n')}\n</modified-files>`);
+    }
+    if (sections.length === 0) return '';
+    return `\n\n${sections.join('\n\n')}`;
 }
 
 export function estimateConversationTokens(
@@ -271,7 +272,9 @@ export function estimateConversationTokens(
     inFlightText = ''
 ): number {
     const systemTokens = Math.ceil((systemPrompt.length + inFlightText.length) / 4);
-    return systemTokens + messages.reduce((sum, message) => sum + estimateMessageTokens(message), 0);
+    return (
+        systemTokens + messages.reduce((sum, message) => sum + estimateMessageTokens(message), 0)
+    );
 }
 
 export function shouldCompactContext(
@@ -286,7 +289,11 @@ function isValidCutPoint(message: ModelMessage): boolean {
     return message.role !== 'tool';
 }
 
-function findTurnStartIndex(messages: ModelMessage[], entryIndex: number, startIndex: number): number {
+function findTurnStartIndex(
+    messages: ModelMessage[],
+    entryIndex: number,
+    startIndex: number
+): number {
     for (let i = entryIndex; i >= startIndex; i--) {
         if (messages[i]?.role === 'user') {
             return i;
@@ -334,83 +341,82 @@ export function findCutPoint(
 }
 
 export interface FileOperations {
-	read: Set<string>;
-	written: Set<string>;
-	edited: Set<string>;
+    read: Set<string>;
+    written: Set<string>;
+    edited: Set<string>;
 }
 
 export function createFileOps(): FileOperations {
-	return {
-		read: new Set(),
-		written: new Set(),
-		edited: new Set(),
-	};
+    return {
+        read: new Set(),
+        written: new Set(),
+        edited: new Set(),
+    };
 }
 
 /**
  * Extract file operations from tool calls in an assistant message.
  */
 export function extractFileOpsFromMessage(message: ModelMessage, fileOps: FileOperations): void {
-	if (message.role !== "assistant") return;
-	if (!("content" in message) || !Array.isArray(message.content)) return;
+    if (message.role !== 'assistant') return;
+    if (!('content' in message) || !Array.isArray(message.content)) return;
 
-	for (const block of message.content) {
-
+    for (const block of message.content) {
         console.log('### block', block);
-		if (typeof block !== "object" || block === null) continue;
-		if (!("type" in block) || block.type !== "tool-call") continue;
-		if (!("arguments" in block) || !("name" in block)) continue;
+        if (typeof block !== 'object' || block === null) continue;
+        if (!('type' in block) || block.type !== 'tool-call') continue;
+        if (!('arguments' in block) || !('name' in block)) continue;
 
-		const args = block.arguments as Record<string, unknown>;
-		if (!args) continue;
+        const args = block.arguments as Record<string, unknown>;
+        if (!args) continue;
 
-		const path = typeof args.path === "string" ? args.path : undefined;
-		if (!path) continue;
+        const path = typeof args.path === 'string' ? args.path : undefined;
+        if (!path) continue;
 
-		switch (block.name) {
-			case "read":
-            case "readFile":
-				fileOps.read.add(path);
-				break;
-			case "write":
-            case "writeFile":
-				fileOps.written.add(path);
-				break;
-			case "edit":
-            case "editFile":
-				fileOps.edited.add(path);
-				break;
-		}
-	}
+        switch (block.name) {
+            case 'read':
+            case 'readFile':
+                fileOps.read.add(path);
+                break;
+            case 'write':
+            case 'writeFile':
+                fileOps.written.add(path);
+                break;
+            case 'edit':
+            case 'editFile':
+                fileOps.edited.add(path);
+                break;
+        }
+    }
 }
 
 /**
  * Extract file operations from messages and previous compaction entries.
  */
 function extractFileOperations(messages, entries, prevCompactionIndex): FileOperations {
-	const fileOps = createFileOps();
+    const fileOps = createFileOps();
 
-	// Collect from previous compaction's details (if pi-generated)
-	if (prevCompactionIndex >= 0) {
-		const prevCompaction = entries[prevCompactionIndex];
-		if (!prevCompaction.fromHook && prevCompaction.details) {
-			// fromHook field kept for session file compatibility
-			const details = prevCompaction.details;
-			if (Array.isArray(details.readFiles)) {
-				for (const f of details.readFiles) fileOps.read.add(f);
-			}
-			if (Array.isArray(details.modifiedFiles)) {
-				for (const f of details.modifiedFiles) fileOps.edited.add(f);
-			}
-		}
-	}
+    // Collect from previous compaction's details (if pi-generated)
+    if (prevCompactionIndex >= 0) {
+        const prevCompaction = entries[prevCompactionIndex];
+        if (!prevCompaction.fromHook && prevCompaction.details) {
+            // fromHook field kept for session file compatibility
+            const details = prevCompaction.details;
+            if (Array.isArray(details.readFiles)) {
+                for (const f of details.readFiles) fileOps.read.add(f);
+            }
+            if (Array.isArray(details.modifiedFiles)) {
+                for (const f of details.modifiedFiles) fileOps.edited.add(f);
+            }
+        }
+    }
 
-	// Extract from tool calls in messages
-	for (const msg of messages) {
-		extractFileOpsFromMessage(msg, fileOps);
-	}
+    // Extract from tool calls in messages
+    for (const msg of messages) {
+        extractFileOpsFromMessage(msg, fileOps);
+    }
 
-	return fileOps;
+    return fileOps;
 }
 
 export function prepareCompaction(
@@ -442,7 +448,7 @@ export function prepareCompaction(
     }
 
     // Extract file operations from messages and previous compaction
-	const fileOps = extractFileOperations(messagesToSummarize, null, -1);
+    const fileOps = extractFileOperations(messagesToSummarize, null, -1);
 
     return {
         previousSummary,
@@ -514,14 +520,16 @@ export function serializeConversation(messages: ModelMessage[]): string {
 }
 
 async function summarizeConversation(
-    openai: OpenAIClient,
+    providerInstance: ProviderInstance,
+    provider: string,
     modelId: string,
     messages: ModelMessage[],
     reserveTokens: number,
     customInstructions?: string,
     previousSummary?: string,
     promptOverride?: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    isInternal = false
 ): Promise<string> {
     const serialized = serializeConversation(messages);
     const promptParts = [serialized];
@@ -530,7 +538,8 @@ async function summarizeConversation(
         promptParts.push(`Existing summary:\n${previousSummary}`);
     }
 
-    const basePrompt = promptOverride ?? (previousSummary ? UPDATE_SUMMARIZATION_PROMPT : SUMMARIZATION_PROMPT);
+    const basePrompt =
+        promptOverride ?? (previousSummary ? UPDATE_SUMMARIZATION_PROMPT : SUMMARIZATION_PROMPT);
     promptParts.push(basePrompt);
 
     if (customInstructions?.trim()) {
@@ -538,7 +547,11 @@ async function summarizeConversation(
     }
 
     const { text } = await generateText({
-        model: openai(modelId),
+        model: resolveProviderModelInstance(providerInstance, {
+            provider,
+            modelId,
+            isInternal,
+        }),
         system: SUMMARIZATION_SYSTEM_PROMPT,
         prompt: promptParts.filter(Boolean).join('\n\n'),
         abortSignal: signal,
@@ -551,61 +564,70 @@ async function summarizeConversation(
 }
 
 export async function generateCompactionSummary(
-    openai: OpenAIClient,
+    providerInstance: ProviderInstance,
+    provider: string,
     modelId: string,
     preparation: PreparedCompaction,
     customInstructions?: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    isInternal = false
 ): Promise<string> {
-    const { messagesToSummarize, turnPrefixMessages, isSplitTurn, previousSummary, settings } = preparation;
+    const { messagesToSummarize, turnPrefixMessages, isSplitTurn, previousSummary, settings } =
+        preparation;
     let summary;
     if (isSplitTurn && turnPrefixMessages.length > 0) {
         const [historySummary, prefixSummary] = await Promise.all([
             messagesToSummarize.length > 0
                 ? summarizeConversation(
-                    openai,
-                    modelId,
-                    messagesToSummarize,
-                    settings.reserveTokens,
-                    customInstructions,
-                    previousSummary,
-                    undefined,
-                    signal
-                )
+                      providerInstance,
+                      provider,
+                      modelId,
+                      messagesToSummarize,
+                      settings.reserveTokens,
+                      customInstructions,
+                      previousSummary,
+                      undefined,
+                      signal,
+                      isInternal
+                  )
                 : Promise.resolve(previousSummary?.trim() || ''),
             summarizeConversation(
-                openai,
+                providerInstance,
+                provider,
                 modelId,
                 turnPrefixMessages,
                 settings.reserveTokens,
                 undefined,
                 undefined,
                 TURN_PREFIX_SUMMARIZATION_PROMPT,
-                signal
+                signal,
+                isInternal
             ),
         ]);
 
         if (historySummary && prefixSummary) {
-            summary =  `${historySummary}\n\n---\n\n**Turn Context (split turn):**\n\n${prefixSummary}`;
-        }else {
+            summary = `${historySummary}\n\n---\n\n**Turn Context (split turn):**\n\n${prefixSummary}`;
+        } else {
             summary = (historySummary || prefixSummary).trim();
         }
     }
 
     summary = await summarizeConversation(
-        openai,
+        providerInstance,
+        provider,
         modelId,
         messagesToSummarize,
         settings.reserveTokens,
         customInstructions,
         previousSummary,
         undefined,
-        signal
+        signal,
+        isInternal
     );
 
     // Compute file lists and append to summary
-	const { readFiles, modifiedFiles } = computeFileLists(preparation.fileOps);
-	summary += formatFileOperations(readFiles, modifiedFiles);
+    const { readFiles, modifiedFiles } = computeFileLists(preparation.fileOps);
+    summary += formatFileOperations(readFiles, modifiedFiles);
 
-    return summary
+    return summary;
 }

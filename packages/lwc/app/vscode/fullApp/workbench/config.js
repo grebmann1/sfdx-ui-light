@@ -2,6 +2,8 @@ import { LIGHT_COLOR_THEME, DARK_COLOR_THEME } from '../constants.js';
 
 export const buildUserConfiguration = (isChromeExtension) => ({
     'workbench.colorTheme': LIGHT_COLOR_THEME,
+    'files.autoSave': 'off',
+    'window.menuBarVisibility': 'visible',
     ...(isChromeExtension
         ? {
             'workbench.activity.showExtensions': false,

@@ -72,3 +72,10 @@ export const Constants = {
     REASONING_LABEL_THOUGHT_FOR: 'Thought for',
     REASONING_LABEL_THOUGHT_BRIEFLY: 'Thought briefly',
 };
+
+export const SKILLS_ROOT = '/workspace/skills';
+
+export const SKILLS_INSTRUCTIONS = `AGENT SKILLS (optional):
+The following <available_skills> list specialized workflows. Use them when they might help the user's request — not only on exact keyword matches.
+If a skill's description fits the task or could improve consistency, read that skill's instructions first using read_file with the path from <location>, then follow the SKILL.md body.
+Paths inside a skill (scripts/, references/, assets/) are relative to the skill directory (the folder containing SKILL.md); prefer absolute paths in tool calls.`;

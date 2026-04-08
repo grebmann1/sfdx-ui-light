@@ -1,3 +1,8 @@
+---
+name: chrome-browser
+description: Browser automation for screenshots, tab management, and window control. Use when the user asks "what do you see", wants a screenshot, or needs to open, close, group, or navigate browser tabs.
+---
+
 # Chrome
 
 Browser automation (screenshots, tabs).

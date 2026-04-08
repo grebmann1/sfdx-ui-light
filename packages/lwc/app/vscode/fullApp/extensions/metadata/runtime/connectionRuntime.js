@@ -14,6 +14,7 @@ import {
     resolveWorkspaceApiVersionFromVscode,
     writeWorkspaceApiVersionFromVscode,
 } from '../../../workbench/sfdxProject.js';
+import { OPEN_SALESFORCE_PANEL_COMMAND } from '../constants.js';
 import { getWorkspaceRootPath, getWorkspaceUri } from '../core/workspacePaths.js';
 
 const INJECTED_CONNECTOR_REQUIRED_MESSAGE =
@@ -74,25 +75,36 @@ function hasExpiredConnection(conn) {
     return Boolean(conn?.sessionHasExpired);
 }
 
+function hasConnectionIssue(conn) {
+    return Boolean(conn?.hasError || hasExpiredConnection(conn));
+}
+
+function hasActiveConnection(conn) {
+    return Boolean(conn?.instanceUrl && conn?.accessToken && !hasConnectionIssue(conn));
+}
+
 function getConnectionProblemMessage(conn) {
+    if (conn?.errorMessage) {
+        return String(conn.errorMessage);
+    }
     return hasExpiredConnection(conn) ? EXPIRED_CONNECTOR_MESSAGE : INJECTED_CONNECTOR_REQUIRED_MESSAGE;
 }
 
 function setStatus(statusItem, conn) {
     if (!statusItem) return;
-    if (!conn?.instanceUrl || !conn?.accessToken) {
-        statusItem.text = hasExpiredConnection(conn)
+    if (!hasActiveConnection(conn)) {
+        statusItem.text = hasConnectionIssue(conn)
             ? '$(cloud-off) SF: Disconnected'
             : '$(cloud-off) SF: Missing connection';
         statusItem.tooltip = getConnectionProblemMessage(conn);
-        statusItem.command = undefined;
+        statusItem.command = OPEN_SALESFORCE_PANEL_COMMAND;
         return;
     }
 
     try {
         const host = new URL(conn.instanceUrl).host;
         const who = conn.username ? ` (${conn.username})` : '';
-        statusItem.text = `$(cloud) SF: ${host}${who}`;
+        statusItem.text = `$(cloud) SF: ${host}${who} · Connected`;
         const auth = conn.authType ? `Auth: ${conn.authType}` : 'Auth: injected';
         const ids = [
             conn.orgId ? `Org: ${conn.orgId}` : '',
@@ -100,12 +112,13 @@ function setStatus(statusItem, conn) {
         ]
             .filter(Boolean)
             .join('\n');
-        statusItem.tooltip = `${auth}${ids ? `\n${ids}` : ''}\n\nConnection is provided by the parent toolkit session.`;
-        statusItem.command = 'salesforceMetadata.fetchMetadata';
+        statusItem.tooltip = `${auth}${ids ? `\n${ids}` : ''}\n\nStatus: Connected\nClick to open the Salesforce panel.`;
+        statusItem.command = OPEN_SALESFORCE_PANEL_COMMAND;
     } catch {
         statusItem.text = '$(cloud) SF: Connected';
-        statusItem.tooltip = 'Connection is provided by the parent toolkit session.';
-        statusItem.command = 'salesforceMetadata.fetchMetadata';
+        statusItem.tooltip =
+            'Connection is provided by the parent toolkit session.\n\nStatus: Connected\nClick to open the Salesforce panel.';
+        statusItem.command = OPEN_SALESFORCE_PANEL_COMMAND;
     }
 }
 
@@ -298,7 +311,7 @@ export function registerConnectionCommands({ connectionRuntime, context, setLogi
 export async function tryRestoreStartupConnection({ connectionRuntime, setLoginProblem }) {
     const current = connectionRuntime.loadStoredConn();
     connectionRuntime.setStatus(current);
-    if (current?.instanceUrl && current?.accessToken) {
+    if (hasActiveConnection(current)) {
         await setLoginProblem?.(null);
         return current;
     }

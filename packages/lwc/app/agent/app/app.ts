@@ -1,11 +1,26 @@
 import { api, track, wire } from 'lwc';
 import Toast from 'lightning/toast';
 import { isEmpty, isNotUndefinedOrNull, classSet } from 'shared/utils';
+import {
+    buildAvailableAgentModelOptions,
+    getProviderForModel,
+    getProviderLabel,
+    isInternalProviderBaseUrl,
+    normalizeLlmProvider,
+} from 'shared/llm';
+import { CACHE_CONFIG, saveSingleExtensionConfigToCache } from 'shared/cacheManager';
 import ToolkitElement from 'core/toolkitElement';
-import { reportError, store, connectStore, AGENT } from 'core/store';
+import { reportError, store, connectStore, AGENT, APPLICATION } from 'core/store';
 import LOGGER from 'shared/logger';
 import { NavigationContext } from 'lwr/navigation';
-import { Constants, Message, DEFAULT_MODEL, DEFAULT_REASONING, readFileContent } from 'agent/utils';
+import {
+    Constants,
+    Message,
+    DEFAULT_MODEL,
+    DEFAULT_REASONING,
+    getDefaultModelForAgentProvider,
+    readFileContent,
+} from 'agent/utils';
 import Analytics from 'shared/analytics';
 import type { ConnectorLike } from 'core/connector';
 import { createUserModelMessage } from 'agent/utils';
@@ -14,6 +29,7 @@ import { getIndexedDbFileSystem } from 'core/fs';
 import { Agent } from 'agent/Agent';
 import { browserAgentInstructions } from 'agent/agents';
 import type { ModelMessage, UIMessage } from 'ai';
+
 export default class App extends ToolkitElement {
     quickPromptSuggestions = [
         {
@@ -80,9 +96,10 @@ export default class App extends ToolkitElement {
     @track isErrorDetailsOpen = false;
     errorIds;
 
-    openaiKey;
-    openaiUrl;
     aiProvider;
+    activeProvider;
+    activeProviderApiKey;
+    activeProviderBaseUrl;
     isInternal;
 
     // Better to use a constant than a getter ! (renderCallback is called too many times)
@@ -92,18 +109,25 @@ export default class App extends ToolkitElement {
     // UI
     @wire(connectStore, { store })
     storeChange({ application, agent }) {
-        this._setIfChanged('openaiKey', application.openaiKey);
-        this._setIfChanged('openaiUrl', application.openaiUrl);
         this._setIfChanged('aiProvider', application.aiProvider);
-        this._setIfChanged('isInternal', application.isInternal);
-        const provider = (application.aiProvider || 'openai').toLowerCase();
-        this.availableModels =
-            application?.availableModelsByProvider?.[provider] && !application.isInternal
-                ? application.availableModelsByProvider[provider].map(model => ({
-                      label: model.label,
-                      value: model.value,
-                  }))
-                : [];
+        const nextAvailableModels = buildAvailableAgentModelOptions({
+            availableModelsByProvider: application?.availableModelsByProvider,
+            providerConfigs: application?.providerConfigs,
+        }).map(model => ({
+            label: model.label,
+            value: model.value,
+            provider: model.provider,
+        }));
+        this._setIfChanged('availableModels', nextAvailableModels);
+        const activeProvider = getProviderForModel(agent?.selectedModel, nextAvailableModels);
+        const activeProviderConfig = application?.providerConfigs?.[activeProvider];
+        this._setIfChanged('activeProvider', activeProvider);
+        this._setIfChanged('activeProviderApiKey', activeProviderConfig?.apiKey || null);
+        this._setIfChanged('activeProviderBaseUrl', activeProviderConfig?.baseUrl || null);
+        this._setIfChanged(
+            'isInternal',
+            activeProvider === 'openai' && isInternalProviderBaseUrl(activeProviderConfig?.baseUrl)
+        );
         if (agent) {
             this._setIfChanged('selectedModel', agent.selectedModel);
             this._setIfChanged('selectedReasoning', agent.selectedReasoning ?? DEFAULT_REASONING);
@@ -222,10 +246,40 @@ export default class App extends ToolkitElement {
         });
     };
 
-    executeAgent = async (prompt, files = [], model = this.selectedModel) => {
-        console.log('executeAgent', prompt, files, model);
+    buildAgentExecutionContext(model = this.selectedModel) {
         const conversationId = this.activeConversationId;
         const state = store.getState();
+        const activeProvider = getProviderForModel(model, this.availableModels);
+        const activeProviderConfig = state.application?.providerConfigs?.[activeProvider];
+        const isInternal =
+            activeProvider === 'openai' && isInternalProviderBaseUrl(activeProviderConfig?.baseUrl);
+        const currentMessages = Array.isArray(state.agent?.messagesById?.[conversationId])
+            ? state.agent.messagesById[conversationId]
+            : [];
+
+        return {
+            conversationId,
+            currentMessages,
+            settings: {
+                provider: activeProvider,
+                apiKey: activeProviderConfig?.apiKey ?? '',
+                baseUrl: activeProviderConfig?.baseUrl,
+                isInternal,
+                selectedModel:
+                    model ||
+                    state.agent?.selectedModel ||
+                    getDefaultModelForAgentProvider(activeProvider, isInternal),
+                selectedReasoning: state.agent?.selectedReasoning ?? DEFAULT_REASONING,
+                systemPrompt: browserAgentInstructions,
+                isStoreEnabled: true,
+                store,
+            },
+        };
+    }
+
+    executeAgent = async (prompt, files = [], model = this.selectedModel) => {
+        console.log('executeAgent', prompt, files, model);
+        const { conversationId, currentMessages, settings } = this.buildAgentExecutionContext(model);
         const fs = getIndexedDbFileSystem();
         let filesData = [];
         if (files && files.length > 0) {
@@ -233,12 +287,8 @@ export default class App extends ToolkitElement {
             filesData = await persistPromptImageFiles(filesData, fs, conversationId, LOGGER);
         }
 
-        let currentMessages = Array.isArray(state.agent?.messagesById?.[conversationId])
-            ? state.agent.messagesById[conversationId]
-            : [];
-
         console.log('### currentMessages', {
-            original: state.agent?.messagesById?.[conversationId],
+            original: currentMessages,
             current: currentMessages,
         });
 
@@ -247,16 +297,7 @@ export default class App extends ToolkitElement {
         const agent = await Agent.create({
             messages: currentMessages as ModelMessage[],
             conversationId,
-            settings: {
-                openaiKey: state.application?.openaiKey ?? '',
-                openaiUrl: state.application?.openaiUrl,
-                isInternal: state.application?.isInternal,
-                selectedModel: model || state.agent?.selectedModel || DEFAULT_MODEL,
-                selectedReasoning: state.agent?.selectedReasoning ?? DEFAULT_REASONING,
-                systemPrompt: browserAgentInstructions,
-                isStoreEnabled: true,
-                store: store,
-            },
+            settings,
         });
 
         await store.dispatch(
@@ -272,25 +313,11 @@ export default class App extends ToolkitElement {
         model = this.selectedModel
     ) => {
         console.log('executeAgentWithDirectMessages', directMessages);
-        const conversationId = this.activeConversationId;
-        const state = store.getState();
-
-        const currentMessages = Array.isArray(state.agent?.messagesById?.[conversationId])
-            ? state.agent.messagesById[conversationId]
-            : [];
+        const { conversationId, currentMessages, settings } = this.buildAgentExecutionContext(model);
         const agent = await Agent.create({
             messages: currentMessages as ModelMessage[],
             conversationId,
-            settings: {
-                openaiKey: state.application?.openaiKey ?? '',
-                openaiUrl: state.application?.openaiUrl,
-                isInternal: state.application?.isInternal,
-                selectedModel: model || state.agent?.selectedModel || DEFAULT_MODEL,
-                selectedReasoning: state.agent?.selectedReasoning ?? DEFAULT_REASONING,
-                systemPrompt: browserAgentInstructions,
-                isStoreEnabled: true,
-                store: store,
-            },
+            settings,
         });
 
         await store.dispatch(
@@ -355,11 +382,19 @@ export default class App extends ToolkitElement {
     handleModelChange = e => {
         const model = e.detail?.model;
         if (model) {
+            const provider = getProviderForModel(model, this.availableModels);
             LOGGER.debug('[agent-app] publisher modelchange', {
                 model,
+                provider,
                 activeConversationId: this.activeConversationId,
             });
             store.dispatch(AGENT.reduxSlice.actions.updateSelectedModel({ model }));
+            if (provider !== normalizeLlmProvider(this.aiProvider)) {
+                store.dispatch(
+                    APPLICATION.reduxSlice.actions.updateAiProvider({ aiProvider: provider })
+                );
+                void saveSingleExtensionConfigToCache(CACHE_CONFIG.AI_PROVIDER.key, provider);
+            }
         }
     };
 
@@ -379,14 +414,18 @@ export default class App extends ToolkitElement {
         const files = e.detail.files || [];
         const model = e.detail.model ?? this.selectedModel;
         const reasoning = e.detail.reasoning ?? this.selectedReasoning;
+        const { settings } = this.buildAgentExecutionContext(model);
+        const activeProvider = normalizeLlmProvider(settings.provider);
+        const activeProviderLabel = getProviderLabel(activeProvider);
+        const isProviderConfigured = !isEmpty(settings.apiKey);
         store.dispatch(AGENT.reduxSlice.actions.updateSelectedModel({ model }));
         store.dispatch(AGENT.reduxSlice.actions.setSelectedReasoning({ reasoning }));
-        if (isEmpty(this.openaiKey)) {
+        if (!isProviderConfigured) {
             store.dispatch(
                 AGENT.reduxSlice.actions.setError({
                     id: this.activeConversationId,
                     title: 'Error',
-                    message: 'No OpenAI key found',
+                    message: `No ${activeProviderLabel} API key found`,
                 })
             );
             return;
@@ -403,17 +442,16 @@ export default class App extends ToolkitElement {
             return;
         }
 
-        if (isEmpty(this.openaiKey)) {
+        if (!this.isAiProviderConfigured) {
             store.dispatch(
                 AGENT.reduxSlice.actions.setError({
                     id: this.activeConversationId,
                     title: 'Error',
-                    message: 'No OpenAI key found',
+                    message: `No ${this.activeProviderLabel} API key found`,
                 })
             );
             return;
         }
-
         this.resetError();
         this.executeAgent(prompt.trim(), [], this.selectedModel);
     };
@@ -528,6 +566,12 @@ export default class App extends ToolkitElement {
     deleteConversation = async id => {
         const wasActive = this.activeConversationId === id;
         Agent.cleanupConversationResources(id);
+        try {
+            const fs = getIndexedDbFileSystem();
+            await fs.rm(`/workspace/tmp/${id}`, { recursive: true });
+        } catch (_) {
+            // Directory may not exist — best effort cleanup.
+        }
         await store.dispatch(AGENT.reduxSlice.actions.deleteConversation({ id }));
         const convs = store.getState().agent?.conversations || [];
         if (convs.length === 0) {
@@ -599,11 +643,11 @@ export default class App extends ToolkitElement {
     }
 
     get isAiProviderConfigured() {
-        const provider = (this.aiProvider || 'openai').toLowerCase();
-        if (provider === 'openai') {
-            return !isEmpty(this.openaiKey);
-        }
-        return false;
+        return !isEmpty(this.activeProviderApiKey);
+    }
+
+    get activeProviderLabel() {
+        return getProviderLabel(this.activeProvider);
     }
 
     get inputSectionClass() {

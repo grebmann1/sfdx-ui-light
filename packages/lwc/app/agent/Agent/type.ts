@@ -62,8 +62,9 @@ export type StreamChunk =
     | { type: 'done' };
 
 type AgentSettings = {
-    openaiKey?: string;
-    openaiUrl?: string;
+    provider?: string;
+    apiKey?: string;
+    baseUrl?: string;
     selectedModel?: string;
     selectedReasoning?: string;
     modelContextWindow?: number;

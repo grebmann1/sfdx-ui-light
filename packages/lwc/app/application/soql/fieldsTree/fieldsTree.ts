@@ -3,6 +3,7 @@ import ToolkitElement from 'core/toolkitElement';
 import { getFlattenedFields } from '@jetstreamapp/soql-parser-js';
 import { store, connectStore, SELECTORS, SOBJECT, UI } from 'core/store';
 import { fullApiName, isSame, lowerCaseKey } from 'shared/utils';
+import { getFieldTypeIcon } from '../constants';
 
 export default class FieldsTree extends ToolkitElement {
     @api relationship;
@@ -178,7 +179,7 @@ export default class FieldsTree extends ToolkitElement {
                     name: field.name,
                     title,
                     rawName: childRawName,
-                    icon: 'utility:number_input',
+                    icon: getFieldTypeIcon(field.type),
                     isActive: selectedForPath.includes(childId),
                     isExpandable: canExpand,
                     relationshipSObjectName: field.referenceTo?.[0],
@@ -299,7 +300,7 @@ export default class FieldsTree extends ToolkitElement {
                 name: field.name,
                 title,
                 rawName,
-                icon: 'utility:number_input',
+                icon: getFieldTypeIcon(field.type),
                 isActive: !!field.isActive,
                 isExpandable: canExpand,
                 relationshipSObjectName: field.relationshipSObjectName,

@@ -29,7 +29,7 @@
             </div>
             <div class="quick-launcher__grid">
                 <!-- Explorers -->
-                <div class="quick-launcher__category">
+                <div class="quick-launcher__category" lwc:if={hasExplorers}>
                     <h2 class="quick-launcher__category-title">Explorers</h2>
                     <div class="quick-launcher__list">
                         <template for:each={explorers} for:item="item">
@@ -54,7 +54,7 @@
                     </div>
                 </div>
                 <!-- Developer -->
-                <div class="quick-launcher__category">
+                <div class="quick-launcher__category" lwc:if={hasDeveloperTools}>
                     <h2 class="quick-launcher__category-title">Developer</h2>
                     <div class="quick-launcher__list">
                         <template for:each={developerTools} for:item="item">
@@ -79,7 +79,7 @@
                     </div>
                 </div>
                 <!-- Data & Deploy -->
-                <div class="quick-launcher__category">
+                <div class="quick-launcher__category" lwc:if={hasDataAndDeployTools}>
                     <h2 class="quick-launcher__category-title">Data &amp; Deploy</h2>
                     <div class="quick-launcher__list">
                         <template for:each={dataAndDeployTools} for:item="item">
@@ -104,7 +104,7 @@
                     </div>
                 </div>
                 <!-- Utilities -->
-                <div class="quick-launcher__category">
+                <div class="quick-launcher__category" lwc:if={hasUtilities}>
                     <h2 class="quick-launcher__category-title">Utilities</h2>
                     <div class="quick-launcher__list">
                         <template for:each={utilities} for:item="item">

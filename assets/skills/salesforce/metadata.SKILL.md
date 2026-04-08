@@ -1,3 +1,8 @@
+---
+name: metadata
+description: Navigate and inspect Salesforce metadata types, records, and SObject schemas. Use when the user wants to explore metadata types, list or drill into records, or describe an SObject's fields and types.
+---
+
 # Metadata
 
 Navigate and inspect metadata types and records.

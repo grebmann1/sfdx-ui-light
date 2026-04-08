@@ -376,9 +376,37 @@ export default class App extends ToolkitElement {
 
     get renderedModelOptions() {
         const selectedModel = this.normalizeModelValue(this.selectedModel);
-        return this.availableModels.map(model => ({
-            ...model,
-            isSelected: model.value === selectedModel,
-        }));
+        return this.resolvedAvailableModels.map(model => {
+            const colonIdx = model.label.indexOf(': ');
+            const displayLabel =
+                colonIdx !== -1 ? model.label.slice(colonIdx + 2) : model.label;
+            const provider =
+                (model as { provider?: string }).provider ||
+                (colonIdx !== -1 ? model.label.slice(0, colonIdx).toLowerCase() : null);
+            return {
+                ...model,
+                displayLabel,
+                provider,
+                isSelected: model.value === selectedModel,
+            };
+        });
+    }
+
+    get renderedModelOptionGroups() {
+        const options = this.renderedModelOptions;
+        const map = new Map<string, { key: string; label: string; options: typeof options }>();
+        options.forEach(model => {
+            const key = model.provider || 'default';
+            if (!map.has(key)) {
+                const label = key !== 'default' ? key.charAt(0).toUpperCase() + key.slice(1) : '';
+                map.set(key, { key, label, options: [] });
+            }
+            map.get(key)!.options.push(model);
+        });
+        return Array.from(map.values());
+    }
+
+    get hasMultipleProviderGroups() {
+        return this.renderedModelOptionGroups.length > 1;
     }
 }

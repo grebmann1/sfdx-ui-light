@@ -112,14 +112,13 @@
 .slds-tree__item [data-element='api-badge'] {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
+    gap: 0.2rem;
     min-width: 2.25rem;
     margin-right: var(--slds-g-spacing-2, 0.5rem);
-    padding: 0.125rem 0.5rem;
-    font-size: var(--slds-g-font-scale-1, 0.75rem);
+    font-size: 0.6rem;
     font-weight: var(--slds-g-font-weight-7, 700);
     text-transform: uppercase;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.04em;
     border-radius: var(--slds-g-radius-border-1, 0.25rem);
     border: none;
     flex-shrink: 0;
@@ -135,6 +134,11 @@
 .api-badge--get,
 .slds-tree__item .slds-theme_info[data-element='api-badge'] {
     background: var(--slds-g-color-brand-base-50, #0176d3);
+    color: var(--slds-g-color-neutral-base-100, #ffffff);
+}
+
+.slds-tree__item .api-badge--patch[data-element='api-badge'] {
+    background: #6366f1;
     color: var(--slds-g-color-neutral-base-100, #ffffff);
 }
 

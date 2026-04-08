@@ -1,6 +1,7 @@
 import { wire, api } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import { NavigationContext, navigate } from 'lwr/navigation';
+import { isChromeExtension } from 'shared/utils';
 
 export default class RequireConnection extends ToolkitElement {
     @wire(NavigationContext)
@@ -13,6 +14,13 @@ export default class RequireConnection extends ToolkitElement {
     /** Events */
 
     goToConnection = () => {
+        if (isChromeExtension()) {
+            const appUrl = new URL(chrome.runtime.getURL('/views/app.html'));
+            appUrl.searchParams.set('applicationName', 'connections');
+            window.location.assign(appUrl.toString());
+            return;
+        }
+
         navigate(this.navContext, {
             type: 'application',
             state: {

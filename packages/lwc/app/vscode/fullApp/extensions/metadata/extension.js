@@ -1,80 +1,26 @@
-import { createDeployAndSourceTracking } from './commands/deployAndSourceTracking.js';
-import { registerLwcComponentScaffolding } from './commands/lwcComponentScaffolding.js';
 import { registerMetadataApiCommands } from './commands/metadataApiCommands.js';
 import { registerQueryAndApexTools } from './commands/queryAndApexTools.js';
 import { registerShellIntegration } from './commands/shellIntegration.js';
 import {
-    APEX_LANGUAGE_ASSETS,
-    LWC_SNIPPET_ASSETS,
     METADATA_WALKTHROUGH_FULL_ID,
     ONBOARDING_MARKDOWN_PATH,
     OPEN_AGENT_CHAT_COMMAND,
     OPEN_ONBOARDING_COMMAND,
     OPEN_SALESFORCE_PANEL_COMMAND,
-    WEB_LANGUAGE_ASSETS,
+    OPEN_TOOLKIT_CONNECTIONS_COMMAND,
 } from './constants.js';
-import { createActivationContext } from './core/activationContext.js';
 import { buildInlineAssets, buildMetadataExtensionConfig } from './extensionConfig.js';
-import {
-    createConnectionRuntime,
-    createLoginProblemSetter,
-    registerConnectionCommands,
-    tryRestoreStartupConnection,
-} from './runtime/connectionRuntime.js';
-import { registerSchemaTools } from './runtime/schemaTools.js';
+import { registerConnectionCommands } from './runtime/connectionRuntime.js';
+import { buildSalesforceExtensionBundle } from '../salesforce/salesforceExtensionSupport.js';
+import { getOrCreateSalesforceWorkbenchHost } from '../salesforce/salesforceWorkbenchHost.js';
 
 export { EXTENSION_ID } from './constants.js';
 
-function createObjectUrl(content, mimeType) {
-    return URL.createObjectURL(new Blob([content], { type: mimeType }));
-}
-
-async function fetchTextAsset(sourcePath) {
-    const response = await fetch(sourcePath);
-    return response.text();
-}
-
-async function loadRemoteAssets(filesOrContents, assets) {
-    const loadedAssets = await Promise.all(
-        assets.map(async ({ sourcePath, targetPath, mimeType }) => ({
-            targetPath,
-            objectUrl: createObjectUrl(await fetchTextAsset(sourcePath), mimeType),
-        }))
-    );
-
-    for (const { targetPath, objectUrl } of loadedAssets) {
-        filesOrContents.set(targetPath, objectUrl);
-    }
-}
-
-function loadInlineAssets(filesOrContents, assets) {
-    for (const { targetPath, mimeType, content } of assets) {
-        filesOrContents.set(targetPath, createObjectUrl(content, mimeType));
-    }
-}
-
-async function tryLoadAssetGroup(loadGroup) {
-    try {
-        await loadGroup();
-    } catch {
-        // ignore
-    }
-}
-
 export async function loadExtension(options = {}) {
-    const filesOrContents = new Map();
-
-    await tryLoadAssetGroup(() =>
-        Promise.resolve(loadInlineAssets(filesOrContents, buildInlineAssets(options)))
-    );
-    await tryLoadAssetGroup(() => loadRemoteAssets(filesOrContents, APEX_LANGUAGE_ASSETS));
-    await tryLoadAssetGroup(() => loadRemoteAssets(filesOrContents, WEB_LANGUAGE_ASSETS));
-    await tryLoadAssetGroup(() => loadRemoteAssets(filesOrContents, LWC_SNIPPET_ASSETS));
-
-    return {
+    return await buildSalesforceExtensionBundle({
         config: buildMetadataExtensionConfig(options),
-        filesOrContents,
-    };
+        inlineAssets: buildInlineAssets(options),
+    });
 }
 
 let activeMetadataExtensionServices = null;
@@ -118,7 +64,18 @@ function registerSalesforcePanelProvider({ connectionRuntime, context }) {
             return;
         }
 
+        const treeDataEmitter =
+            typeof vscode.EventEmitter === 'function' ? new vscode.EventEmitter() : null;
+
         class SfPanelProvider {
+            get onDidChangeTreeData() {
+                return treeDataEmitter?.event;
+            }
+
+            refresh() {
+                treeDataEmitter?.fire?.();
+            }
+
             getTreeItem(element) {
                 return element;
             }
@@ -153,7 +110,12 @@ function registerSalesforcePanelProvider({ connectionRuntime, context }) {
                 };
 
                 const conn = connectionRuntime.loadStoredConn();
-                const connected = Boolean(conn?.instanceUrl && conn?.accessToken);
+                const connected = Boolean(
+                    conn?.instanceUrl &&
+                        conn?.accessToken &&
+                        !conn?.sessionHasExpired &&
+                        !conn?.hasError
+                );
                 let host = '';
                 try {
                     host = connected ? new URL(conn.instanceUrl).host : '';
@@ -162,17 +124,26 @@ function registerSalesforcePanelProvider({ connectionRuntime, context }) {
                 }
 
                 const items = [
-                    mkItem(connected ? `Connected${host ? `: ${host}` : ''}` : 'Not connected', {
+                    mkItem(connected ? `Connected${host ? `: ${host}` : ''}` : 'Disconnected', {
                         icon: connected ? 'cloud' : 'cloud-off',
+                        tooltip: connected
+                            ? `Status: Connected${host ? `\nHost: ${host}` : ''}`
+                            : connectionRuntime.getConnectionProblemMessage(conn),
                     }),
+                ];
+                if (!connected) {
+                    return items;
+                }
+
+                items.push(
                     mkAction(
                         'Set Workspace API Version',
                         'salesforceMetadata.setWorkspaceApiVersion',
                         {
                             icon: 'versions',
                         }
-                    ),
-                ];
+                    )
+                );
                 if (connected) {
                     items.push(
                         mkAction(
@@ -206,12 +177,21 @@ function registerSalesforcePanelProvider({ connectionRuntime, context }) {
             }
         }
 
+        const provider = new SfPanelProvider();
+        const originalSetStatus = connectionRuntime.setStatus.bind(connectionRuntime);
+        connectionRuntime.setStatus = conn => {
+            originalSetStatus(conn);
+            provider.refresh();
+        };
+
         context.addDisposable(
-            vscode.window.registerTreeDataProvider(
-                'salesforceMetadata.salesforcePanel',
-                new SfPanelProvider()
-            )
+            vscode.window.registerTreeDataProvider('salesforceMetadata.salesforcePanel', provider)
         );
+        context.addDisposable({
+            dispose() {
+                treeDataEmitter?.dispose?.();
+            },
+        });
     } catch {
         // ignore
     }
@@ -256,6 +236,22 @@ function registerOnboardingCommands({ context }) {
         }
     });
 
+    register(OPEN_TOOLKIT_CONNECTIONS_COMMAND, async () => {
+        try {
+            const targetUrl = new URL('/views/app.html', globalThis.location?.href || '/');
+            targetUrl.searchParams.set('applicationName', 'connections');
+            if (typeof vscode.env?.openExternal === 'function') {
+                await vscode.env.openExternal(vscode.Uri.parse(targetUrl.toString()));
+                return;
+            }
+            globalThis.location?.assign?.(targetUrl.toString());
+        } catch {
+            await vscode.window.showInformationMessage(
+                'Open the Salesforce Toolkit connections page to log in.'
+            );
+        }
+    });
+
     register(OPEN_AGENT_CHAT_COMMAND, async () => {
         const commandIds = ['workbench.action.chat.open', 'workbench.action.quickchat.toggle'];
         for (const commandId of commandIds) {
@@ -273,63 +269,50 @@ function registerOnboardingCommands({ context }) {
 }
 
 export async function activate(vscodeBundle) {
-    const context = createActivationContext(vscodeBundle);
-    if (!context) {
+    const host = await getOrCreateSalesforceWorkbenchHost(vscodeBundle);
+    if (!host) {
         return { dispose() {} };
     }
 
-    const { diagnostics, statusItem, vscode } = context;
-    await applyExplorerExcludes(vscode);
+    await host.activateFeatureOnce(
+        'salesforce-metadata',
+        async ({ connectionRuntime, context, deployTools }) => {
+            const activeServices = {
+                ...host,
+                connectionRuntime,
+                context,
+                setLoginProblem: host.setLoginProblem || null,
+            };
+            activeMetadataExtensionServices = activeServices;
 
-    const setLoginProblem = createLoginProblemSetter({
-        loginDiagnostics: diagnostics.login,
-        vscode,
-    });
-    const connectionRuntime = createConnectionRuntime({ statusItem, vscode });
-    connectionRuntime.setStatus(connectionRuntime.loadStoredConn());
-    const activeServices = { connectionRuntime, context, setLoginProblem };
-    activeMetadataExtensionServices = activeServices;
+            registerSalesforcePanelProvider({ connectionRuntime, context });
+            registerOnboardingCommands({ context });
+            registerShellIntegration({ connectionRuntime, context });
+            deployTools.registerCommandGroups(['metadata']);
+            registerConnectionCommands({
+                connectionRuntime,
+                context,
+                setLoginProblem: host.setLoginProblem || (() => undefined),
+            });
+            registerMetadataApiCommands({
+                connectionRuntime,
+                context,
+                deployTools,
+            });
+            registerQueryAndApexTools({
+                connectionRuntime,
+                context,
+                deployTools,
+                commandGroups: ['metadata'],
+            });
+        }
+    );
 
-    registerSalesforcePanelProvider({ connectionRuntime, context });
-    registerOnboardingCommands({ context });
-
-    const schemaTools = await registerSchemaTools({ connectionRuntime, context });
-    registerShellIntegration({ connectionRuntime, context });
-    registerLwcComponentScaffolding({ connectionRuntime, context });
-    const deployTools = createDeployAndSourceTracking({
-        connectionRuntime,
-        context,
-        isLwcDoc: schemaTools.isLwcDoc,
-        lintLwcDocument: schemaTools.lintLwcDocument,
-    });
-
-    registerConnectionCommands({
-        connectionRuntime,
-        context,
-        setLoginProblem,
-    });
-    registerMetadataApiCommands({
-        connectionRuntime,
-        context,
-        deployTools,
-    });
-    registerQueryAndApexTools({
-        connectionRuntime,
-        context,
-        deployTools,
-    });
-    await tryRestoreStartupConnection({
-        connectionRuntime,
-        vscode,
-        setLoginProblem,
-    });
-
-    return {
-        dispose() {
-            if (activeMetadataExtensionServices === activeServices) {
-                activeMetadataExtensionServices = null;
-            }
-            context.dispose();
-        },
+    activeMetadataExtensionServices = {
+        ...host,
+        connectionRuntime: host.connectionRuntime,
+        context: host.context,
+        setLoginProblem: host.setLoginProblem || null,
     };
+    return host;
 }

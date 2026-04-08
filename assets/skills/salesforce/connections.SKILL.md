@@ -1,3 +1,8 @@
+---
+name: connections
+description: List, connect, disconnect, or open Salesforce orgs. Use when the user wants to list orgs, connect or disconnect an org, or open an org in the browser.
+---
+
 # Connections
 
 List, connect, disconnect, or open Salesforce orgs.

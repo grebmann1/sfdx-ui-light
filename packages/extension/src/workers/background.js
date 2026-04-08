@@ -218,7 +218,7 @@ const handleTabOpening = async tab => {
 };
 
 const openSideBar = async tab => {
-    await chrome.sidePanel.open(); /* { tabId: tab.id } */
+    await chrome.sidePanel.open({ tabId: tab.id });
     await chrome.sidePanel.setOptions({
         // tabId: tab.id,
         path: `views/default.html?salesforce`,
@@ -561,7 +561,7 @@ function injectToolkit(tabId) {
 /** Browser event handlers. */
 function handleContextMenuClick(info, tab) {
     if (info.menuItemId === OPEN_SIDE_PANEL) {
-        chrome.sidePanel.open(); /* { tabId: tab.id } */
+        chrome.sidePanel.open({ tabId: tab.id });
     } else if (info.menuItemId === OPEN_TOOLKIT) {
         chrome.tabs.create({ url: chrome.runtime.getURL('views/app.html') });
     } else if (info.menuItemId === OVERLAY_ENABLE) {
@@ -598,7 +598,7 @@ async function handleTabUpdated(tabId, info, tab) {
             }
         );
     }
-    await handleTabOpening(tab);
+    // await handleTabOpening(tab);
 }
 
 async function handleTabCreated(tab) {
@@ -626,7 +626,7 @@ async function handleTabCreated(tab) {
         if (tab.url) {
             await handleTabOpening(tab);
         }
-        await chrome.sidePanel.open(); /* { tabId: tab.id } */
+        await chrome.sidePanel.open({ tabId: tab.id });
         safeLog('[SF-TOOLKIT][BG][SidePanel] panel opened for new tab', {
             tabId: tab.id,
             windowId: tab.windowId,
@@ -863,7 +863,7 @@ async function handleRuntimeMessage(message, sender) {
 chrome.contextMenus.onClicked.addListener(handleContextMenuClick);
 chrome.tabs.onActivated.addListener(handleTabActivated);
 chrome.tabs.onUpdated.addListener(handleTabUpdated);
-chrome.tabs.onCreated.addListener(handleTabCreated);
+// chrome.tabs.onCreated.addListener(handleTabCreated);
 chrome.runtime.onMessage.addListener(wrapAsyncFunction(handleRuntimeMessage));
 
 /** Extension lifecycle hooks. */
@@ -931,7 +931,7 @@ chrome.commands.onCommand.addListener((command, tab) => {
         });
     } else if (command === OPEN_OVERLAY_SEARCH) {
     } else if (command === OPEN_SIDE_PANEL) {
-        chrome.sidePanel.open(); /* { tabId: tab.id } */
+        chrome.sidePanel.open({ tabId: tab.id });
     }
 });
 

@@ -44,7 +44,7 @@ const resolvePlugin = resolve({
 const cjsPlugin = cjs({ requireReturnsDefault: 'auto' });
 const terserPlugin = terser();
 const workbenchBaseUrl = JSON.stringify(
-    String(process.env.WORKBENCH_BASE_URL || '')
+    String(process.env.WORKBENCH_BASE_URL || 'https://sf-toolkit.com')
         .trim()
         .replace(/\/+$/, '')
 );

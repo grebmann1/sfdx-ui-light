@@ -10,13 +10,13 @@
     </lightning-modal-body>
     <lightning-modal-footer>
         <lightning-button
-            class="slds-float_left slds-button"
+            class="slds-button"
             variant="neutral"
             label={closeLabel}
             onclick={handleClose}></lightning-button>
         <template lwc:if={isAutoReconnectEnabled}>
             <lightning-button
-                class="slds-button"
+                class="slds-button slds-m-left_x-small"
                 variant="brand"
                 label={reconnectLabel}
                 onclick={handleAutoReconnect}></lightning-button>

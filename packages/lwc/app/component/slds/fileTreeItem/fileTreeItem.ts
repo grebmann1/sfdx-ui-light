@@ -8,6 +8,17 @@ import {
     getParentTreeItem,
 } from './utils';
 
+const API_METHOD_ICONS: Record<string, string> = {
+    get: 'arrow-down',
+    post: 'plus',
+    put: 'upload',
+    patch: 'pen-line',
+    delete: 'trash-2',
+    options: 'settings-2',
+    head: 'eye',
+    trace: 'route',
+};
+
 const KEY = {
     Enter: 'Enter',
     Space: ' ',
@@ -374,6 +385,22 @@ export default class FileTreeItem extends LightningElement {
         return (this.item?.icon || '').startsWith('api:');
     }
 
+    get isLucideFileIcon() {
+        return (this.item?.icon || '').startsWith('lucide:');
+    }
+
+    get lucideFileIconName() {
+        return (this.item?.icon || '').replace('lucide:', '');
+    }
+
+    get isLucideFolderIcon() {
+        return (this.item?.icon || '').startsWith('lucide:');
+    }
+
+    get lucideFolderIconName() {
+        return (this.item?.icon || '').replace('lucide:', '');
+    }
+
     get isVisible() {
         return this.item.visible;
     }
@@ -441,12 +468,17 @@ export default class FileTreeItem extends LightningElement {
                 'slds-theme_error': this.item?.icon === 'api:delete',
                 'slds-theme_success': this.item?.icon === 'api:post',
                 'slds-theme_warning': this.item?.icon === 'api:put',
-                'slds-theme_info': this.item?.icon === 'api:patch',
+                'api-badge--patch': this.item?.icon === 'api:patch',
             })
             .toString();
     }
 
     get apiIconText() {
         return (this.item?.icon || 'api:...').split(':')[1];
+    }
+
+    get apiIconLucideName() {
+        const method = (this.item?.icon || '').split(':')[1] || '';
+        return API_METHOD_ICONS[method] || null;
     }
 }

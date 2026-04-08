@@ -1553,7 +1553,7 @@ export default class App extends ToolkitElement {
             id,
             name,
             title: title || name,
-            icon: icon ?? 'utility:open_folder',
+            icon: icon ?? 'lucide:folder',
             keywords,
             children: children || [],
         });
@@ -1561,7 +1561,7 @@ export default class App extends ToolkitElement {
         const templates = folder({
             id: `sf-catalog:templates:v${v}`,
             name: 'Templates',
-            icon: 'utility:collection',
+            icon: 'lucide:layers',
             keywords: ['templates', 'salesforce', 'rest'],
             children: [
                 folder({
@@ -1905,7 +1905,7 @@ export default class App extends ToolkitElement {
         const discovery = folder({
             id: `sf-catalog:discovery:v${v}`,
             name: `Discovery (v${v})`,
-            icon: 'utility:search',
+            icon: 'lucide:search',
             keywords: ['discovery', 'resources', 'services', 'data'],
             children: discoveryChildren,
         });

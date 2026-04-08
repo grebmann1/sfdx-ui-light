@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import type { ModelMessage } from 'ai';
 import {
     Constants,
     DEFAULT_MODEL,
@@ -23,6 +24,27 @@ import {
     type ProcessMessageStepFinish,
     type ProcessMessageToolFinish,
 } from 'agent/Agent';
+
+export interface Conversation {
+    id: string;
+    title: string;
+    streamHistory: ModelMessage[];
+    compactionSummary: ModelMessage[];
+}
+
+export interface AgentState {
+    conversations: Conversation[];
+    activeConversationId: string;
+    selectedModel: string;
+    selectedReasoning: string;
+    errorById: Record<string, { title: string; message: string | null }>;
+    loadingById: Record<string, boolean>;
+    streamingById: Record<string, boolean>;
+    summarizingById: Record<string, boolean>;
+    messagesById: Record<string, ModelMessage[]>;
+    debugMode: boolean;
+    lastRunDebugByConversationId: Record<string, unknown>;
+}
 
 const DEFAULT_CONVERSATION = {
     id: 'default',
@@ -95,15 +117,18 @@ function normalizeReasoning(reasoning) {
     return DEFAULT_REASONING;
 }
 
-function normalizeConversation(conversation) {
+function normalizeConversation(conversation: unknown): Conversation {
     if (!conversation || typeof conversation !== 'object') {
         return { ...DEFAULT_CONVERSATION };
     }
+    const c = conversation as Record<string, unknown>;
     return {
-        id: conversation.id || `conv_${Date.now()}`,
-        title: conversation.title || 'Conversation',
-        streamHistory: Array.isArray(conversation.streamHistory) ? conversation.streamHistory : [],
-        compactionSummary: conversation.compactionSummary || [],
+        id: typeof c.id === 'string' && c.id ? c.id : `conv_${Date.now()}`,
+        title: typeof c.title === 'string' && c.title ? c.title : 'Conversation',
+        streamHistory: Array.isArray(c.streamHistory) ? (c.streamHistory as ModelMessage[]) : [],
+        compactionSummary: Array.isArray(c.compactionSummary)
+            ? (c.compactionSummary as ModelMessage[])
+            : [],
     };
 }
 
@@ -227,20 +252,44 @@ function loadCacheSettings(cachedConfig, state) {
     }
 }
 
-function hydrateMessagesFromConversations(state) {
-    if (!state.conversations || state.conversations.length === 0) return;
-    if (!state.messagesById) state.messagesById = {};
-    (state.conversations || []).forEach(c => {
-        if (c.streamHistory && c.streamHistory.length > 0) {
-            const msgs = Array.isArray(c.streamHistory) ? c.streamHistory : [];
-            const withoutWelcome = Array.isArray(msgs)
-                ? msgs.filter(m => m.id !== Constants.WELCOME_MESSAGE.id)
-                : [];
-            state.messagesById[c.id] = withoutWelcome;
-        } else {
-            state.messagesById[c.id] = [];
-        }
+/**
+ * Replaces binary image/file parts with a text placeholder before persisting
+ * messages to streamHistory (cache). This prevents base64 blobs from bloating
+ * extension storage and stops stale malformed parts from being replayed to the
+ * LLM on the next session.
+ */
+function sanitizeMessagesForCache(messages: ModelMessage[]): ModelMessage[] {
+    return messages.map(message => {
+        const content = (message as { content?: unknown }).content;
+        if (!Array.isArray(content)) return message;
+        const sanitized = content.map(part => {
+            if (!part || typeof part !== 'object') return part;
+            const p = part as { type?: string; filename?: string; mediaType?: string };
+            if (p.type === 'image') {
+                const label = p.mediaType ? `[Image: ${p.mediaType}]` : '[Image]';
+                return { type: 'text', text: label };
+            }
+            if (p.type === 'file') {
+                const name = p.filename || p.mediaType || 'file';
+                return { type: 'text', text: `[File: ${name}]` };
+            }
+            return part;
+        });
+        return { ...message, content: sanitized } as ModelMessage;
     });
+}
+
+function hydrateMessagesFromConversations(state: AgentState) {
+    if (!Array.isArray(state.conversations) || state.conversations.length === 0) return;
+    if (!state.messagesById) state.messagesById = {};
+    for (const c of state.conversations) {
+        const history = Array.isArray(c.streamHistory) ? c.streamHistory : [];
+        const filtered = history.filter(
+            (m: ModelMessage) => (m as { id?: string }).id !== Constants.WELCOME_MESSAGE.id
+        );
+        // Strip any lingering binary image/file blobs that were cached in previous sessions
+        state.messagesById[c.id] = sanitizeMessagesForCache(filtered);
+    }
 }
 
 // Async: load cached settings from extension storage
@@ -291,8 +340,11 @@ const agentSlice = createSlice({
     initialState,
     reducers: {
         addConversation: (state, action) => {
-            const { conversation } = action.payload;
+            const conversation = normalizeConversation(action.payload?.conversation);
             state.conversations = [...state.conversations, conversation];
+            if (!Array.isArray(state.messagesById[conversation.id])) {
+                state.messagesById[conversation.id] = [];
+            }
             saveCacheSettings(state);
         },
         deleteConversation: (state, action) => {
@@ -346,7 +398,7 @@ const agentSlice = createSlice({
             if (idx !== -1) {
                 state.conversations[idx] = {
                     ...state.conversations[idx],
-                    streamHistory: state.messagesById[id] || [],
+                    streamHistory: sanitizeMessagesForCache(state.messagesById[id] || []),
                 };
             }
             saveCacheSettings(state);
@@ -413,7 +465,8 @@ const agentSlice = createSlice({
         },
         addMessages: (state, action) => {
             const { id, messages } = action.payload;
-            state.messagesById[id] = [...state.messagesById[id], ...messages];
+            const incoming: ModelMessage[] = Array.isArray(messages) ? messages : [];
+            state.messagesById[id] = [...(state.messagesById[id] || []), ...incoming];
         },
         clearMessages: (state, action) => {
             const { id } = action.payload;

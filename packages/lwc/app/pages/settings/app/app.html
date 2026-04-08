@@ -461,6 +461,69 @@
                                 </lightning-card>
                             </div>
                         </slds-tab>
+                        <slds-tab label="Integrations">
+                            <!-- Integrations -->
+                            <div class="slds-section slds-reverse slds-is-open">
+                                <h3 class="slds-section__title">
+                                    <div class="slds-section__title-action slds-p-vertical_x-small">
+                                        <span class="slds-truncate" title="Integrations">
+                                            Integrations
+                                        </span>
+                                    </div>
+                                </h3>
+                            </div>
+                            <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
+                                <lightning-card
+                                    class="settings slds-col slds-size_1-of-1 slds-large-size_1-of-1 slds-p-around_medium">
+                                    <div slot="title">
+                                        <h1>Google</h1>
+                                        <p class="description slds-truncate">
+                                            Connect your Google account to enable Sheets integration
+                                            for the AI agent.
+                                        </p>
+                                    </div>
+                                    <div slot="actions"></div>
+                                    <div class="slds-grid slds-wrap">
+                                        <settings-card
+                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small"
+                                            is-first>
+                                            <div slot="title">
+                                                <h1>Google Account</h1>
+                                                <p class="description slds-truncate">
+                                                    Authorize access to Google Sheets and Drive.
+                                                </p>
+                                            </div>
+                                            <div slot="actions">
+                                                <lightning-badge
+                                                    lwc:if={googleConnected}
+                                                    label="Connected"
+                                                    class="slds-m-right_small"
+                                                    style="--slds-c-badge-color-background: #2e844a; --slds-c-badge-text-color: white;"></lightning-badge>
+                                                <lightning-badge
+                                                    lwc:else
+                                                    label="Not connected"
+                                                    class="slds-m-right_small"></lightning-badge>
+                                                <lightning-button
+                                                    lwc:if={googleConnected}
+                                                    label="Disconnect"
+                                                    variant="destructive-text"
+                                                    onclick={handleDisconnectGoogle}></lightning-button>
+                                                <lightning-button
+                                                    lwc:else
+                                                    label="Connect to Google"
+                                                    variant="brand"
+                                                    onclick={handleConnectGoogle}></lightning-button>
+                                            </div>
+                                            <slds-information-block>
+                                                The agent will use this connection to read and write
+                                                Google Sheets on your behalf. You can revoke access
+                                                at any time from your Google account settings.
+                                            </slds-information-block>
+                                        </settings-card>
+                                    </div>
+                                </lightning-card>
+                            </div>
+                        </slds-tab>
                         <slds-tab label="AI">
                             <!-- AI Settings -->
                             <div class="slds-section slds-reverse slds-is-open">
@@ -520,25 +583,6 @@
                                         <settings-card
                                             class="slds-col slds-size_1-of-1 slds-p-horizontal_small"
                                             is-first>
-                                            <div slot="title">
-                                                <h1>AI Assistant</h1>
-                                                <p class="description slds-truncate">
-                                                    Select the AI provider to use for the AI
-                                                    Assistant.
-                                                </p>
-                                            </div>
-                                            <div slot="actions"></div>
-                                            <lightning-combobox
-                                                data-key="ai_provider"
-                                                label="AI Provider"
-                                                value={config.ai_provider}
-                                                options={aiProviderOptions}
-                                                onchange={inputfield_change}
-                                                variant="label-hidden"
-                                                class="slds-full-width"></lightning-combobox>
-                                        </settings-card>
-                                        <settings-card
-                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
                                             <div slot="title">
                                                 <h1>Autocomplete</h1>
                                                 <p class="description slds-truncate">

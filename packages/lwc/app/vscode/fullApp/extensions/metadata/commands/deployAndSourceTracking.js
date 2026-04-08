@@ -22,8 +22,12 @@ export function createDeployAndSourceTracking({
     context,
     isLwcDoc,
     lintLwcDocument,
+    commandGroups = ['all'],
 }) {
     const { diagnostics, output, state, statusItem, vscode } = context;
+    let currentIsLwcDoc = isLwcDoc;
+    let currentLintLwcDocument = lintLwcDocument;
+    const registeredCommandGroups = new Set();
 
     function loadAutoDeployOnSave() {
         try {
@@ -726,7 +730,7 @@ export function createDeployAndSourceTracking({
             context.addDisposable(
                 vscode.workspace.onDidSaveTextDocument(async doc => {
                     try {
-                        await lintLwcDocument(doc);
+                        await currentLintLwcDocument?.(doc);
                     } catch (error) {
                         // eslint-disable-next-line no-console
                         console.warn('LWC lint failed:', error);
@@ -748,7 +752,7 @@ export function createDeployAndSourceTracking({
             context.addDisposable(
                 vscode.workspace.onDidCloseTextDocument(doc => {
                     try {
-                        if (isLwcDoc(doc)) {
+                        if (currentIsLwcDoc?.(doc)) {
                             diagnostics.lwc?.delete(doc.uri);
                         }
                     } catch {
@@ -781,484 +785,547 @@ export function createDeployAndSourceTracking({
         return context.addDisposable(vscode.commands.registerCommand(command, handler));
     }
 
-    register('salesforceMetadata.lintCurrentFile', async () => {
-        const doc = vscode.window?.activeTextEditor?.document;
-        if (!doc) return;
-        await lintLwcDocument(doc);
-    });
-
-    register('salesforceMetadata.deployCurrentFile', async () => {
-        const path = vscode.window?.activeTextEditor?.document?.uri?.path;
-        if (!path) return;
-        await deployPaths([path], { showProgress: true, title: 'Deploying current file...' });
-    });
-
-    register('salesforceMetadata.fetchCurrentFile', async () => {
-        const path = vscode.window?.activeTextEditor?.document?.uri?.path;
-        if (!path) return;
-        await fetchPathFromSalesforce(path, { showProgress: true });
-    });
-
-    register('salesforceMetadata.diffCurrentFile', async () => {
-        const doc = vscode.window?.activeTextEditor?.document;
-        const path = doc?.uri?.path;
-        if (!path) return;
-        const conn = connectionRuntime.loadStoredConn();
-        if (!conn.instanceUrl || !conn.accessToken) {
-            await vscode.window.showErrorMessage(
-                connectionRuntime.getInjectedConnectionRequiredMessage()
-            );
-            return;
-        }
-        const mapItems = await loadToolingMapItems();
-        const entry = mapItems?.[path];
-        if (!entry?.type || !entry?.id) {
-            await vscode.window.showWarningMessage(
-                'This file is not in tooling-map.json. Fetch metadata first.'
-            );
-            return;
-        }
-        const remoteText = await vscode.window.withProgress(
-            {
-                location: vscode.ProgressLocation.Notification,
-                title: 'Fetching remote source…',
-                cancellable: false,
-            },
-            async () =>
-                await connectionRuntime.withToolingClientAuthed(
-                    conn,
-                    async client => await fetchRemoteTextForEntry(client, entry)
-                )
+    function registerCommandGroups(nextGroups = ['all']) {
+        const groupSet = new Set(
+            Array.isArray(nextGroups) && nextGroups.length ? nextGroups : ['all']
         );
-        if (remoteText == null) {
-            await vscode.window.showWarningMessage('Salesforce returned no source for this file.');
-            return;
-        }
-        const remoteUri = getWorkspaceUri(vscode, `.salesforce/.diff${path}`);
-        await writeTextFile(vscode, remoteUri, remoteText, { skipCache: true });
-        try {
-            const title = `Diff: ${path.split('/').pop() || path} (local ↔ org)`;
-            await vscode.commands.executeCommand('vscode.diff', remoteUri, doc.uri, title);
-            return;
-        } catch {
-            // ignore
-        }
-        try {
-            const commands = await vscode.commands.getCommands(true);
-            const candidate = [
-                'workbench.action.compareEditorWith',
-                'workbench.action.compareEditorWithPrevious',
-                'workbench.action.compareWithClipboard',
-            ].find(command => commands.includes(command));
-            if (candidate) {
-                const remoteDoc = await vscode.workspace.openTextDocument(remoteUri);
-                await vscode.window.showTextDocument(remoteDoc, { preview: true });
-                await vscode.window.showTextDocument(doc, { preview: true });
-                await vscode.commands.executeCommand(candidate);
+        const hasRequestedGroup = group => groupSet.has('all') || groupSet.has(group);
+
+        if (hasRequestedGroup('lwc')) {
+            if (registeredCommandGroups.has('lwc')) {
                 return;
             }
-        } catch {
-            // ignore
-        }
-        try {
-            const remoteDoc = await vscode.workspace.openTextDocument(remoteUri);
-            await vscode.window.showTextDocument(remoteDoc, { preview: true });
-        } catch {
-            await vscode.window.showInformationMessage(
-                `Remote source written under ${getWorkspacePath(
-                    vscode,
-                    '.salesforce/.diff'
-                )} (diff command unavailable).`
-            );
-        }
-    });
+            registeredCommandGroups.add('lwc');
+            register('salesforceMetadata.lintCurrentFile', async () => {
+                const doc = vscode.window?.activeTextEditor?.document;
+                if (!doc) return;
+                await currentLintLwcDocument?.(doc);
+            });
 
-    register('salesforceMetadata.deployChangedFiles', async () => {
-        const paths = Array.from(changedPaths);
-        await deployPaths(paths, { showProgress: true, title: 'Deploying changed files...' });
-        changedPaths.clear();
-    });
+            register('salesforceMetadata.deployCurrentFile', async () => {
+                const path = vscode.window?.activeTextEditor?.document?.uri?.path;
+                if (!path) return;
+                await deployPaths([path], { showProgress: true, title: 'Deploying current file...' });
+            });
 
-    register('salesforceMetadata.sourceStatus', async () => {
-        const status = await computeRemoteChangeStatus();
-        const local = status.localChangedPaths?.length || 0;
-        const remote = status.remoteChangedPaths?.length || 0;
-        const conflicts = status.conflictPaths?.length || 0;
-        const message = `Local changes: ${local} • Remote changes: ${remote} • Conflicts: ${conflicts}`;
-        try {
-            statusItem.tooltip = status.note ? `${message}\n\n${status.note}` : message;
-        } catch {
-            // ignore
-        }
-        if (status.note) {
-            await vscode.window.showWarningMessage(`${message}\n\n${status.note}`);
-        } else {
-            await vscode.window.showInformationMessage(message);
-        }
-    });
+            register('salesforceMetadata.fetchCurrentFile', async () => {
+                const path = vscode.window?.activeTextEditor?.document?.uri?.path;
+                if (!path) return;
+                await fetchPathFromSalesforce(path, { showProgress: true });
+            });
 
-    register('salesforceMetadata.pullRemoteChanges', async () => {
-        const status = await computeRemoteChangeStatus();
-        if (status.note && !status.remoteChangedPaths?.length) {
-            await vscode.window.showWarningMessage(status.note);
-            return;
-        }
-        const remoteChanged = status.remoteChangedPaths || [];
-        if (!remoteChanged.length) {
-            await vscode.window.showInformationMessage('No remote changes found.');
-            return;
-        }
-        const conflicts = status.conflictPaths || [];
-        const conflictSet = new Set(conflicts);
-        const nonConflicting = remoteChanged.filter(path => !conflictSet.has(path));
-        let toPull = [...nonConflicting];
-        if (conflicts.length) {
-            const action = await vscode.window.showQuickPick(
-                [
-                    {
-                        label: 'Pull non-conflicting changes',
-                        detail: `Pull ${nonConflicting.length} file(s) and skip ${conflicts.length} conflict(s).`,
-                        id: 'nonconflict',
-                    },
-                    {
-                        label: 'Review conflicts…',
-                        detail: 'Choose which conflicting files to overwrite locally.',
-                        id: 'review',
-                    },
-                    { label: 'Cancel', detail: '', id: 'cancel' },
-                ],
-                {
-                    title: 'Remote changes detected',
-                    placeHolder: 'Choose how to handle conflicts',
-                    ignoreFocusOut: true,
+            register('salesforceMetadata.diffCurrentFile', async () => {
+                const doc = vscode.window?.activeTextEditor?.document;
+                const path = doc?.uri?.path;
+                if (!path) return;
+                const conn = connectionRuntime.loadStoredConn();
+                if (!conn.instanceUrl || !conn.accessToken) {
+                    await vscode.window.showErrorMessage(
+                        connectionRuntime.getInjectedConnectionRequiredMessage()
+                    );
+                    return;
                 }
-            );
-            if (!action || action.id === 'cancel') return;
-            if (action.id === 'review') {
-                const picks = conflicts.map(path => ({
-                    label: path.split('/').pop() || path,
-                    description: path,
-                    picked: true,
-                    path,
-                }));
-                const selected = await vscode.window.showQuickPick(picks, {
-                    title: 'Conflicts: select files to pull (overwrite local)',
-                    placeHolder: 'Choose conflicting files',
-                    canPickMany: true,
-                    ignoreFocusOut: true,
-                    matchOnDescription: true,
+                const mapItems = await loadToolingMapItems();
+                const entry = mapItems?.[path];
+                if (!entry?.type || !entry?.id) {
+                    await vscode.window.showWarningMessage(
+                        'This file is not in tooling-map.json. Fetch metadata first.'
+                    );
+                    return;
+                }
+                const remoteText = await vscode.window.withProgress(
+                    {
+                        location: vscode.ProgressLocation.Notification,
+                        title: 'Fetching remote source…',
+                        cancellable: false,
+                    },
+                    async () =>
+                        await connectionRuntime.withToolingClientAuthed(
+                            conn,
+                            async client => await fetchRemoteTextForEntry(client, entry)
+                        )
+                );
+                if (remoteText == null) {
+                    await vscode.window.showWarningMessage(
+                        'Salesforce returned no source for this file.'
+                    );
+                    return;
+                }
+                const remoteUri = getWorkspaceUri(vscode, `.salesforce/.diff${path}`);
+                await writeTextFile(vscode, remoteUri, remoteText, { skipCache: true });
+                try {
+                    const title = `Diff: ${path.split('/').pop() || path} (local ↔ org)`;
+                    await vscode.commands.executeCommand('vscode.diff', remoteUri, doc.uri, title);
+                    return;
+                } catch {
+                    // ignore
+                }
+                try {
+                    const commands = await vscode.commands.getCommands(true);
+                    const candidate = [
+                        'workbench.action.compareEditorWith',
+                        'workbench.action.compareEditorWithPrevious',
+                        'workbench.action.compareWithClipboard',
+                    ].find(command => commands.includes(command));
+                    if (candidate) {
+                        const remoteDoc = await vscode.workspace.openTextDocument(remoteUri);
+                        await vscode.window.showTextDocument(remoteDoc, { preview: true });
+                        await vscode.window.showTextDocument(doc, { preview: true });
+                        await vscode.commands.executeCommand(candidate);
+                        return;
+                    }
+                } catch {
+                    // ignore
+                }
+                try {
+                    const remoteDoc = await vscode.workspace.openTextDocument(remoteUri);
+                    await vscode.window.showTextDocument(remoteDoc, { preview: true });
+                } catch {
+                    await vscode.window.showInformationMessage(
+                        `Remote source written under ${getWorkspacePath(
+                            vscode,
+                            '.salesforce/.diff'
+                        )} (diff command unavailable).`
+                    );
+                }
+            });
+
+            register('salesforceMetadata.deployChangedFiles', async () => {
+                const paths = Array.from(changedPaths);
+                await deployPaths(paths, {
+                    showProgress: true,
+                    title: 'Deploying changed files...',
                 });
-                if (!selected) return;
-                toPull = [...nonConflicting, ...selected.map(item => item.path).filter(Boolean)];
-            }
-        }
-        if (!toPull.length) {
-            await vscode.window.showInformationMessage('Nothing selected to pull.');
-            return;
-        }
-        await vscode.window.withProgress(
-            {
-                location: vscode.ProgressLocation.Notification,
-                title: 'Pulling remote changes...',
-                cancellable: true,
-            },
-            async (progress, token) => {
-                const total = toPull.length;
-                let done = 0;
-                for (const path of toPull) {
-                    if (token?.isCancellationRequested) break;
-                    progress.report({
-                        message: path,
-                        increment: total ? 100 / total : 0,
-                    });
-                    // eslint-disable-next-line no-await-in-loop
-                    await fetchPathFromSalesforce(path, { showProgress: false });
-                    done += 1;
-                }
-                progress.report({ message: `Pulled ${done}/${total}` });
-            }
-        );
-        await updateSourceTrackingForPaths(toPull);
-        try {
-            context.logLines([
-                '',
-                `=== Pull (${new Date().toLocaleString()}) ===`,
-                `Items: ${toPull.length}`,
-                ...toPull.map(path => `  PULL ${path}`),
-            ]);
-        } catch {
-            // ignore
-        }
-        await vscode.window.showInformationMessage(
-            `Pulled ${toPull.length} file(s) from Salesforce.`
-        );
-    });
+                changedPaths.clear();
+            });
 
-    register('salesforceMetadata.orgBrowser', async () => {
-        const conn = connectionRuntime.loadStoredConn();
-        if (!conn.instanceUrl || !conn.accessToken) {
-            await vscode.window.showErrorMessage(
-                connectionRuntime.getInjectedConnectionRequiredMessage()
-            );
-            return;
+            register('salesforceMetadata.toggleAutoDeploy', async () => {
+                const next = !loadAutoDeployOnSave();
+                saveAutoDeployOnSave(next);
+                setAutoDeployStatus();
+                await vscode.window.showInformationMessage(
+                    `Auto deploy on save: ${next ? 'ON' : 'OFF'}.`
+                );
+            });
+
+            void registerEditorLifecycle();
         }
-        await connectionRuntime.withToolingClientAuthed(conn, async client => {
-            const typePick = await vscode.window.showQuickPick(
-                [
-                    { label: 'Apex Classes', type: 'ApexClass' },
-                    { label: 'Apex Triggers', type: 'ApexTrigger' },
-                    { label: 'LWC Bundles', type: 'LightningComponentBundle' },
-                    { label: 'Aura Bundles', type: 'AuraDefinitionBundle' },
-                ],
-                {
-                    title: 'Org Browser',
-                    placeHolder: 'Select a metadata type',
-                    ignoreFocusOut: true,
-                }
-            );
-            if (!typePick) return;
-            const rows = await vscode.window.withProgress(
-                {
-                    location: vscode.ProgressLocation.Notification,
-                    title: 'Loading org metadata…',
-                    cancellable: false,
-                },
-                async () => {
-                    if (typePick.type === 'ApexClass') {
-                        return await client.toolingQueryAll(
-                            'SELECT Id, Name, Body FROM ApexClass ORDER BY Name'
-                        );
-                    }
-                    if (typePick.type === 'ApexTrigger') {
-                        return await client.toolingQueryAll(
-                            'SELECT Id, Name, Body FROM ApexTrigger ORDER BY Name'
-                        );
-                    }
-                    if (typePick.type === 'LightningComponentBundle') {
-                        return await client.toolingQueryAll(
-                            'SELECT Id, DeveloperName, NamespacePrefix FROM LightningComponentBundle ORDER BY DeveloperName'
-                        );
-                    }
-                    if (typePick.type === 'AuraDefinitionBundle') {
-                        return await client.toolingQueryAll(
-                            'SELECT Id, DeveloperName, NamespacePrefix FROM AuraDefinitionBundle ORDER BY DeveloperName'
-                        );
-                    }
-                    return [];
-                }
-            );
-            if (!rows?.length) {
-                await vscode.window.showInformationMessage('No items found.');
+
+        if (hasRequestedGroup('metadata')) {
+            if (registeredCommandGroups.has('metadata')) {
                 return;
             }
-            const selected = await vscode.window.showQuickPick(
-                rows.map(row => {
-                    const name = row?.Name || row?.DeveloperName || row?.Id;
-                    const namespace = row?.NamespacePrefix ? String(row.NamespacePrefix) : '';
-                    return {
-                        label: namespace ? `${name} (${namespace})` : String(name),
-                        description: row?.Id,
-                        row,
-                    };
-                }),
-                {
-                    title: 'Org Browser',
-                    placeHolder: 'Select item(s) to pull into the workspace',
-                    canPickMany: true,
-                    ignoreFocusOut: true,
-                    matchOnDescription: true,
+            registeredCommandGroups.add('metadata');
+            register('salesforceMetadata.sourceStatus', async () => {
+                const status = await computeRemoteChangeStatus();
+                const local = status.localChangedPaths?.length || 0;
+                const remote = status.remoteChangedPaths?.length || 0;
+                const conflicts = status.conflictPaths?.length || 0;
+                const message = `Local changes: ${local} • Remote changes: ${remote} • Conflicts: ${conflicts}`;
+                try {
+                    statusItem.tooltip = status.note ? `${message}\n\n${status.note}` : message;
+                } catch {
+                    // ignore
                 }
-            );
-            if (!selected?.length) return;
-            await vscode.window.withProgress(
-                {
-                    location: vscode.ProgressLocation.Notification,
-                    title: 'Pulling selected items…',
-                    cancellable: false,
-                },
-                async () => {
-                    const defaultRoot = getWorkspaceDefaultRootUri(vscode);
-                    for (const item of selected) {
-                        const row = item?.row;
-                        if (!row) continue;
-                        if (typePick.type === 'ApexClass') {
-                            const uri = vscode.Uri.joinPath(
-                                defaultRoot,
-                                'classes',
-                                `${safeSeg(row.Name)}.cls`
-                            );
-                            await writeTextFile(vscode, uri, row.Body || '');
-                        } else if (typePick.type === 'ApexTrigger') {
-                            const uri = vscode.Uri.joinPath(
-                                defaultRoot,
-                                'triggers',
-                                `${safeSeg(row.Name)}.trigger`
-                            );
-                            await writeTextFile(vscode, uri, row.Body || '');
-                        } else if (typePick.type === 'LightningComponentBundle') {
-                            const bundleName = safeSeg(row.DeveloperName);
-                            const bundlePath = vscode.Uri.joinPath(defaultRoot, 'lwc', bundleName);
-                            await ensureDir(vscode, bundlePath);
-                            const resources = await client.toolingQueryAll(
-                                `SELECT Id, FilePath, Format, Source FROM LightningComponentResource WHERE LightningComponentBundleId='${row.Id}' ORDER BY FilePath`
-                            );
-                            for (const resource of resources) {
-                                if (!resource?.Source) continue;
-                                const relativePath = normalizeLwcResourceRelPath(
-                                    bundleName,
-                                    resource.FilePath,
-                                    resource.Format
+                if (status.note) {
+                    await vscode.window.showWarningMessage(`${message}\n\n${status.note}`);
+                } else {
+                    await vscode.window.showInformationMessage(message);
+                }
+            });
+
+            register('salesforceMetadata.pullRemoteChanges', async () => {
+                const status = await computeRemoteChangeStatus();
+                if (status.note && !status.remoteChangedPaths?.length) {
+                    await vscode.window.showWarningMessage(status.note);
+                    return;
+                }
+                const remoteChanged = status.remoteChangedPaths || [];
+                if (!remoteChanged.length) {
+                    await vscode.window.showInformationMessage('No remote changes found.');
+                    return;
+                }
+                const conflicts = status.conflictPaths || [];
+                const conflictSet = new Set(conflicts);
+                const nonConflicting = remoteChanged.filter(path => !conflictSet.has(path));
+                let toPull = [...nonConflicting];
+                if (conflicts.length) {
+                    const action = await vscode.window.showQuickPick(
+                        [
+                            {
+                                label: 'Pull non-conflicting changes',
+                                detail: `Pull ${nonConflicting.length} file(s) and skip ${conflicts.length} conflict(s).`,
+                                id: 'nonconflict',
+                            },
+                            {
+                                label: 'Review conflicts…',
+                                detail: 'Choose which conflicting files to overwrite locally.',
+                                id: 'review',
+                            },
+                            { label: 'Cancel', detail: '', id: 'cancel' },
+                        ],
+                        {
+                            title: 'Remote changes detected',
+                            placeHolder: 'Choose how to handle conflicts',
+                            ignoreFocusOut: true,
+                        }
+                    );
+                    if (!action || action.id === 'cancel') return;
+                    if (action.id === 'review') {
+                        const picks = conflicts.map(path => ({
+                            label: path.split('/').pop() || path,
+                            description: path,
+                            picked: true,
+                            path,
+                        }));
+                        const selected = await vscode.window.showQuickPick(picks, {
+                            title: 'Conflicts: select files to pull (overwrite local)',
+                            placeHolder: 'Choose conflicting files',
+                            canPickMany: true,
+                            ignoreFocusOut: true,
+                            matchOnDescription: true,
+                        });
+                        if (!selected) return;
+                        toPull = [
+                            ...nonConflicting,
+                            ...selected.map(item => item.path).filter(Boolean),
+                        ];
+                    }
+                }
+                if (!toPull.length) {
+                    await vscode.window.showInformationMessage('Nothing selected to pull.');
+                    return;
+                }
+                await vscode.window.withProgress(
+                    {
+                        location: vscode.ProgressLocation.Notification,
+                        title: 'Pulling remote changes...',
+                        cancellable: true,
+                    },
+                    async (progress, token) => {
+                        const total = toPull.length;
+                        let done = 0;
+                        for (const path of toPull) {
+                            if (token?.isCancellationRequested) break;
+                            progress.report({
+                                message: path,
+                                increment: total ? 100 / total : 0,
+                            });
+                            // eslint-disable-next-line no-await-in-loop
+                            await fetchPathFromSalesforce(path, { showProgress: false });
+                            done += 1;
+                        }
+                        progress.report({ message: `Pulled ${done}/${total}` });
+                    }
+                );
+                await updateSourceTrackingForPaths(toPull);
+                try {
+                    context.logLines([
+                        '',
+                        `=== Pull (${new Date().toLocaleString()}) ===`,
+                        `Items: ${toPull.length}`,
+                        ...toPull.map(path => `  PULL ${path}`),
+                    ]);
+                } catch {
+                    // ignore
+                }
+                await vscode.window.showInformationMessage(
+                    `Pulled ${toPull.length} file(s) from Salesforce.`
+                );
+            });
+
+            register('salesforceMetadata.orgBrowser', async () => {
+                const conn = connectionRuntime.loadStoredConn();
+                if (!conn.instanceUrl || !conn.accessToken) {
+                    await vscode.window.showErrorMessage(
+                        connectionRuntime.getInjectedConnectionRequiredMessage()
+                    );
+                    return;
+                }
+                await connectionRuntime.withToolingClientAuthed(conn, async client => {
+                    const typePick = await vscode.window.showQuickPick(
+                        [
+                            { label: 'Apex Classes', type: 'ApexClass' },
+                            { label: 'Apex Triggers', type: 'ApexTrigger' },
+                            { label: 'LWC Bundles', type: 'LightningComponentBundle' },
+                            { label: 'Aura Bundles', type: 'AuraDefinitionBundle' },
+                        ],
+                        {
+                            title: 'Org Browser',
+                            placeHolder: 'Select a metadata type',
+                            ignoreFocusOut: true,
+                        }
+                    );
+                    if (!typePick) return;
+                    const rows = await vscode.window.withProgress(
+                        {
+                            location: vscode.ProgressLocation.Notification,
+                            title: 'Loading org metadata…',
+                            cancellable: false,
+                        },
+                        async () => {
+                            if (typePick.type === 'ApexClass') {
+                                return await client.toolingQueryAll(
+                                    'SELECT Id, Name, Body FROM ApexClass ORDER BY Name'
                                 );
-                                const parts = relativePath
-                                    .split('/')
-                                    .map(safeSeg)
-                                    .filter(part => part && part !== '.' && part !== '..');
-                                const target = vscode.Uri.joinPath(bundlePath, ...parts);
-                                await writeTextFile(vscode, target, resource.Source || '');
                             }
-                        } else if (typePick.type === 'AuraDefinitionBundle') {
-                            const bundleName = safeSeg(row.DeveloperName);
-                            const bundlePath = vscode.Uri.joinPath(defaultRoot, 'aura', bundleName);
-                            await ensureDir(vscode, bundlePath);
-                            const defs = await client.toolingQueryAll(
-                                `SELECT Id, DefType, Format, Source FROM AuraDefinition WHERE AuraDefinitionBundleId='${row.Id}' ORDER BY DefType`
-                            );
-                            const used = new Set();
-                            for (const definition of defs) {
-                                if (!definition?.Source) continue;
-                                let fileName = safeSeg(
-                                    auraFilename(bundleName, definition.DefType, definition.Format)
+                            if (typePick.type === 'ApexTrigger') {
+                                return await client.toolingQueryAll(
+                                    'SELECT Id, Name, Body FROM ApexTrigger ORDER BY Name'
                                 );
-                                if (used.has(fileName)) {
-                                    fileName = `${fileName}.${String(definition.Id || '').slice(-6)}`;
+                            }
+                            if (typePick.type === 'LightningComponentBundle') {
+                                return await client.toolingQueryAll(
+                                    'SELECT Id, DeveloperName, NamespacePrefix FROM LightningComponentBundle ORDER BY DeveloperName'
+                                );
+                            }
+                            if (typePick.type === 'AuraDefinitionBundle') {
+                                return await client.toolingQueryAll(
+                                    'SELECT Id, DeveloperName, NamespacePrefix FROM AuraDefinitionBundle ORDER BY DeveloperName'
+                                );
+                            }
+                            return [];
+                        }
+                    );
+                    if (!rows?.length) {
+                        await vscode.window.showInformationMessage('No items found.');
+                        return;
+                    }
+                    const selected = await vscode.window.showQuickPick(
+                        rows.map(row => {
+                            const name = row?.Name || row?.DeveloperName || row?.Id;
+                            const namespace = row?.NamespacePrefix
+                                ? String(row.NamespacePrefix)
+                                : '';
+                            return {
+                                label: namespace ? `${name} (${namespace})` : String(name),
+                                description: row?.Id,
+                                row,
+                            };
+                        }),
+                        {
+                            title: 'Org Browser',
+                            placeHolder: 'Select item(s) to pull into the workspace',
+                            canPickMany: true,
+                            ignoreFocusOut: true,
+                            matchOnDescription: true,
+                        }
+                    );
+                    if (!selected?.length) return;
+                    await vscode.window.withProgress(
+                        {
+                            location: vscode.ProgressLocation.Notification,
+                            title: 'Pulling selected items…',
+                            cancellable: false,
+                        },
+                        async () => {
+                            const defaultRoot = getWorkspaceDefaultRootUri(vscode);
+                            for (const item of selected) {
+                                const row = item?.row;
+                                if (!row) continue;
+                                if (typePick.type === 'ApexClass') {
+                                    const uri = vscode.Uri.joinPath(
+                                        defaultRoot,
+                                        'classes',
+                                        `${safeSeg(row.Name)}.cls`
+                                    );
+                                    await writeTextFile(vscode, uri, row.Body || '');
+                                } else if (typePick.type === 'ApexTrigger') {
+                                    const uri = vscode.Uri.joinPath(
+                                        defaultRoot,
+                                        'triggers',
+                                        `${safeSeg(row.Name)}.trigger`
+                                    );
+                                    await writeTextFile(vscode, uri, row.Body || '');
+                                } else if (typePick.type === 'LightningComponentBundle') {
+                                    const bundleName = safeSeg(row.DeveloperName);
+                                    const bundlePath = vscode.Uri.joinPath(
+                                        defaultRoot,
+                                        'lwc',
+                                        bundleName
+                                    );
+                                    await ensureDir(vscode, bundlePath);
+                                    const resources = await client.toolingQueryAll(
+                                        `SELECT Id, FilePath, Format, Source FROM LightningComponentResource WHERE LightningComponentBundleId='${row.Id}' ORDER BY FilePath`
+                                    );
+                                    for (const resource of resources) {
+                                        if (!resource?.Source) continue;
+                                        const relativePath = normalizeLwcResourceRelPath(
+                                            bundleName,
+                                            resource.FilePath,
+                                            resource.Format
+                                        );
+                                        const parts = relativePath
+                                            .split('/')
+                                            .map(safeSeg)
+                                            .filter(part => part && part !== '.' && part !== '..');
+                                        const target = vscode.Uri.joinPath(bundlePath, ...parts);
+                                        await writeTextFile(vscode, target, resource.Source || '');
+                                    }
+                                } else if (typePick.type === 'AuraDefinitionBundle') {
+                                    const bundleName = safeSeg(row.DeveloperName);
+                                    const bundlePath = vscode.Uri.joinPath(
+                                        defaultRoot,
+                                        'aura',
+                                        bundleName
+                                    );
+                                    await ensureDir(vscode, bundlePath);
+                                    const defs = await client.toolingQueryAll(
+                                        `SELECT Id, DefType, Format, Source FROM AuraDefinition WHERE AuraDefinitionBundleId='${row.Id}' ORDER BY DefType`
+                                    );
+                                    const used = new Set();
+                                    for (const definition of defs) {
+                                        if (!definition?.Source) continue;
+                                        let fileName = safeSeg(
+                                            auraFilename(
+                                                bundleName,
+                                                definition.DefType,
+                                                definition.Format
+                                            )
+                                        );
+                                        if (used.has(fileName)) {
+                                            fileName = `${fileName}.${String(
+                                                definition.Id || ''
+                                            ).slice(-6)}`;
+                                        }
+                                        used.add(fileName);
+                                        const target = vscode.Uri.joinPath(bundlePath, fileName);
+                                        await writeTextFile(vscode, target, definition.Source || '');
+                                    }
                                 }
-                                used.add(fileName);
-                                const target = vscode.Uri.joinPath(bundlePath, fileName);
-                                await writeTextFile(vscode, target, definition.Source || '');
+                            }
+                        }
+                    );
+                    await vscode.window.showInformationMessage(
+                        `Pulled ${selected.length} item(s) into the workspace.`
+                    );
+                    try {
+                        await vscode.commands.executeCommand('salesforceMetadata.refreshProject');
+                    } catch {
+                        // ignore
+                    }
+                });
+            });
+
+            register('salesforceMetadata.refreshProject', async () => {
+                const candidates = [
+                    'workbench.files.action.refreshFilesExplorer',
+                    'workbench.action.files.refreshExplorer',
+                    'workbench.action.refreshExplorerView',
+                    'workbench.explorer.fileView.refresh',
+                ];
+                const commands = await vscode.commands.getCommands(true);
+                const command = candidates.find(candidate => commands.includes(candidate));
+                try {
+                    await vscode.commands.executeCommand('workbench.view.explorer');
+                } catch {
+                    // ignore
+                }
+                if (command) {
+                    await vscode.commands.executeCommand(command);
+                }
+            });
+
+            register('salesforceMetadata.openNamespaceReport', async () => {
+                try {
+                    const uri = getWorkspaceUri(vscode, '.salesforce/namespaces.json');
+                    const bytes = await vscode.workspace.fs.readFile(uri);
+                    if (!bytes || !bytes.length) {
+                        await vscode.window.showWarningMessage(
+                            'Namespace report is empty. Fetch metadata first.'
+                        );
+                        return;
+                    }
+                    if (vscode.window?.showTextDocument) {
+                        await vscode.window.showTextDocument(uri);
+                    } else {
+                        await vscode.window.showInformationMessage(
+                            `Namespace report written to ${getWorkspacePath(
+                                vscode,
+                                '.salesforce/namespaces.json'
+                            )}`
+                        );
+                    }
+                } catch {
+                    await vscode.window.showWarningMessage(
+                        'Namespace report not found. Fetch metadata first.'
+                    );
+                }
+            });
+
+            register('salesforceMetadata.installExtensions', async () => {
+                const extensionIds = [
+                    'salesforce.salesforcedx-vscode-core',
+                    'salesforce.salesforcedx-vscode-apex',
+                    'salesforce.salesforcedx-vscode-lwc',
+                    'dbaeumer.vscode-eslint',
+                ];
+                const commands = await vscode.commands.getCommands(true);
+                const hasInstall = commands.includes('workbench.extensions.installExtension');
+                const hasSearch = commands.includes('workbench.extensions.search');
+                const hasOpenView = commands.includes('workbench.view.extensions');
+                if (hasOpenView) {
+                    await vscode.commands.executeCommand('workbench.view.extensions');
+                }
+                if (hasSearch) {
+                    await vscode.commands.executeCommand(
+                        'workbench.extensions.search',
+                        '@recommended'
+                    );
+                }
+                if (!hasInstall) {
+                    await vscode.window.showWarningMessage(
+                        'This workbench runtime does not expose the extension install command. Use the Extensions view to install from Open VSX manually.'
+                    );
+                    return;
+                }
+                await vscode.window.withProgress(
+                    {
+                        location: vscode.ProgressLocation.Notification,
+                        title: 'Installing extensions from Open VSX...',
+                        cancellable: false,
+                    },
+                    async () => {
+                        for (const extensionId of extensionIds) {
+                            try {
+                                await vscode.commands.executeCommand(
+                                    'workbench.extensions.installExtension',
+                                    extensionId
+                                );
+                            } catch (error) {
+                                // eslint-disable-next-line no-console
+                                console.warn(
+                                    'Failed to install extension',
+                                    extensionId,
+                                    error
+                                );
                             }
                         }
                     }
-                }
-            );
-            await vscode.window.showInformationMessage(
-                `Pulled ${selected.length} item(s) into the workspace.`
-            );
-            try {
-                await vscode.commands.executeCommand('salesforceMetadata.refreshProject');
-            } catch {
-                // ignore
-            }
-        });
-    });
-
-    register('salesforceMetadata.toggleAutoDeploy', async () => {
-        const next = !loadAutoDeployOnSave();
-        saveAutoDeployOnSave(next);
-        setAutoDeployStatus();
-        await vscode.window.showInformationMessage(`Auto deploy on save: ${next ? 'ON' : 'OFF'}.`);
-    });
-
-    register('salesforceMetadata.refreshProject', async () => {
-        const candidates = [
-            'workbench.files.action.refreshFilesExplorer',
-            'workbench.action.files.refreshExplorer',
-            'workbench.action.refreshExplorerView',
-            'workbench.explorer.fileView.refresh',
-        ];
-        const commands = await vscode.commands.getCommands(true);
-        const command = candidates.find(candidate => commands.includes(candidate));
-        try {
-            await vscode.commands.executeCommand('workbench.view.explorer');
-        } catch {
-            // ignore
-        }
-        if (command) {
-            await vscode.commands.executeCommand(command);
-        }
-    });
-
-    register('salesforceMetadata.openNamespaceReport', async () => {
-        try {
-            const uri = getWorkspaceUri(vscode, '.salesforce/namespaces.json');
-            const bytes = await vscode.workspace.fs.readFile(uri);
-            if (!bytes || !bytes.length) {
-                await vscode.window.showWarningMessage(
-                    'Namespace report is empty. Fetch metadata first.'
                 );
-                return;
-            }
-            if (vscode.window?.showTextDocument) {
-                await vscode.window.showTextDocument(uri);
-            } else {
                 await vscode.window.showInformationMessage(
-                    `Namespace report written to ${getWorkspacePath(
-                        vscode,
-                        '.salesforce/namespaces.json'
-                    )}`
+                    'Install triggered. Note: many official Salesforce extensions require desktop VS Code/CLI and may not work fully in a browser workbench.'
                 );
-            }
-        } catch {
-            await vscode.window.showWarningMessage(
-                'Namespace report not found. Fetch metadata first.'
-            );
+            });
         }
-    });
+    }
 
-    register('salesforceMetadata.installExtensions', async () => {
-        const extensionIds = [
-            'salesforce.salesforcedx-vscode-core',
-            'salesforce.salesforcedx-vscode-apex',
-            'salesforce.salesforcedx-vscode-lwc',
-            'dbaeumer.vscode-eslint',
-        ];
-        const commands = await vscode.commands.getCommands(true);
-        const hasInstall = commands.includes('workbench.extensions.installExtension');
-        const hasSearch = commands.includes('workbench.extensions.search');
-        const hasOpenView = commands.includes('workbench.view.extensions');
-        if (hasOpenView) {
-            await vscode.commands.executeCommand('workbench.view.extensions');
-        }
-        if (hasSearch) {
-            await vscode.commands.executeCommand('workbench.extensions.search', '@recommended');
-        }
-        if (!hasInstall) {
-            await vscode.window.showWarningMessage(
-                'This workbench runtime does not expose the extension install command. Use the Extensions view to install from Open VSX manually.'
-            );
-            return;
-        }
-        await vscode.window.withProgress(
-            {
-                location: vscode.ProgressLocation.Notification,
-                title: 'Installing extensions from Open VSX...',
-                cancellable: false,
-            },
-            async () => {
-                for (const extensionId of extensionIds) {
-                    try {
-                        await vscode.commands.executeCommand(
-                            'workbench.extensions.installExtension',
-                            extensionId
-                        );
-                    } catch (error) {
-                        // eslint-disable-next-line no-console
-                        console.warn('Failed to install extension', extensionId, error);
-                    }
-                }
-            }
-        );
-        await vscode.window.showInformationMessage(
-            'Install triggered. Note: many official Salesforce extensions require desktop VS Code/CLI and may not work fully in a browser workbench.'
-        );
-    });
-
-    void registerEditorLifecycle();
+    registerCommandGroups(commandGroups);
 
     return {
         deployPaths,
         fetchPathFromSalesforce,
         invalidateToolingMap,
         loadToolingMapItems,
+        registerCommandGroups,
+        setLwcDocumentTools(next = {}) {
+            if (typeof next.isLwcDoc === 'function') {
+                currentIsLwcDoc = next.isLwcDoc;
+            }
+            if (typeof next.lintLwcDocument === 'function') {
+                currentLintLwcDocument = next.lintLwcDocument;
+            }
+        },
         updateSourceTrackingForPaths,
     };
 }

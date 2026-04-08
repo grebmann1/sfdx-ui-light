@@ -1,8 +1,8 @@
 <template>
     <template lwc:if={shouldRenderReplaceMode}>
         <slds-require-connection
-            title={title}
-            sub-title={subTitle}
+            title={resolvedTitle}
+            sub-title={resolvedSubTitle}
             is-required={shouldRequireConnection}>
             <slot></slot>
         </slds-require-connection>
@@ -14,8 +14,8 @@
                 <div class={overlayClass}>
                     <div class="auth-boundary__panel">
                         <slds-require-connection
-                            title={title}
-                            sub-title={subTitle}
+                            title={resolvedTitle}
+                            sub-title={resolvedSubTitle}
                             is-required></slds-require-connection>
                     </div>
                 </div>

@@ -9,7 +9,12 @@ import {
 } from 'shared/cacheManager';
 import LOGGER from 'shared/logger';
 import { isChromeExtension } from 'shared/utils';
-import { fetchLlmModelsEndpoint, normalizeModelSelection } from 'shared/llm';
+import {
+    buildAvailableAgentModelOptions,
+    fetchLlmModelsEndpoint,
+    getProviderForModel,
+    normalizeModelSelection,
+} from 'shared/llm';
 
 /**
  * Cache initialization and loading helpers
@@ -61,16 +66,24 @@ export async function loadFromCache(context) {
             APPLICATION.reduxSlice.actions.updateProviderCatalogs({ catalogs: response.catalogs })
         );
 
-        if (response.catalog?.status === 'ok' && Array.isArray(response.catalog.models)) {
+        const availableModels = buildAvailableAgentModelOptions({
+            availableModelsByProvider: response.catalogs,
+            providerConfigs,
+        });
+        if (availableModels.length > 0) {
             const currentModel = store.getState()?.agent?.selectedModel;
-            const normalizedModel = normalizeModelSelection(
-                currentModel,
-                response.catalog.models,
-                response.catalog.defaultModel
-            );
+            const normalizedModel = normalizeModelSelection(currentModel, availableModels);
             if (normalizedModel && normalizedModel !== currentModel) {
                 store.dispatch(
                     AGENT.reduxSlice.actions.updateSelectedModel({ model: normalizedModel })
+                );
+            }
+            const resolvedProvider = getProviderForModel(normalizedModel, availableModels);
+            if (resolvedProvider !== aiProvider) {
+                store.dispatch(
+                    APPLICATION.reduxSlice.actions.updateAiProvider({
+                        aiProvider: resolvedProvider,
+                    })
                 );
             }
         }

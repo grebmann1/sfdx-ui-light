@@ -176,7 +176,7 @@ const getCompletionItems = (parserInstance, suggestionInstance) => {
 
             if (parserInstance.position === 'group by' || parserInstance.position === 'having') {
                 //console.log('--> suggestion 6');
-                return suggestionInstance.getSelectedFields();
+                return suggestionInstance.getSelectedFieldSuggestion();
             }
         } else if (parserInstance.fromObject !== null) {
             //console.log('--> suggestion 7');

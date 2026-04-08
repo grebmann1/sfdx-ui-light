@@ -5,28 +5,23 @@ import {
     OPEN_AGENT_CHAT_COMMAND,
     OPEN_ONBOARDING_COMMAND,
     OPEN_SALESFORCE_PANEL_COMMAND,
-    EXTENSION_VERSION,
 } from './constants.js';
+import { buildSalesforceExtensionConfig } from '../salesforce/salesforceExtensionSupport.js';
 
 const SVG_MIME_TYPE = 'image/svg+xml';
 const MARKDOWN_MIME_TYPE = 'text/markdown';
 
-const METADATA_EXTENSION_BASE_CONFIG = {
+const METADATA_EXTENSION_BASE_CONFIG = buildSalesforceExtensionConfig({
     name: 'sf-metadata',
     displayName: 'Salesforce Metadata (Workbench)',
-    description: 'Fetch Salesforce metadata into the workbench Explorer',
-    version: EXTENSION_VERSION,
-    publisher: 'salesforce',
-    license: 'MIT',
-    engines: { vscode: '*' },
-    activationEvents: ['*'],
+    description: 'Core Salesforce metadata workflows and workspace sync for the workbench',
     contributes: {
         viewsContainers: {
             panel: [
                 {
                     id: 'salesforcePanel',
                     title: 'Salesforce',
-                    icon: '/workspace/salesforce-panel-icon.svg',
+                    icon: '/workspace/vscode/salesforce-panel-icon.svg',
                 },
             ],
         },
@@ -36,109 +31,8 @@ const METADATA_EXTENSION_BASE_CONFIG = {
                     id: 'salesforceMetadata.salesforcePanel',
                     name: 'Salesforce',
                 },
-                {
-                    id: 'salesforceMetadata.schemaExplorer',
-                    name: 'Schema',
-                },
             ],
         },
-        languages: [
-            {
-                id: 'apex',
-                aliases: ['Apex'],
-                extensions: ['.cls', '.trigger'],
-                configuration: '/workspace/apex.configuration.json',
-            },
-            { id: 'soql', aliases: ['SOQL'], extensions: ['.soql'] },
-            {
-                id: 'javascript',
-                aliases: ['JavaScript'],
-                extensions: ['.js', '.mjs', '.cjs'],
-                configuration: '/workspace/javascript-language-configuration.json',
-            },
-            {
-                id: 'javascriptreact',
-                aliases: ['JavaScript React'],
-                extensions: ['.jsx'],
-                configuration: '/workspace/javascript-language-configuration.json',
-            },
-            {
-                id: 'typescript',
-                aliases: ['TypeScript'],
-                extensions: ['.ts'],
-                configuration: '/workspace/typescript-language-configuration.json',
-            },
-            {
-                id: 'typescriptreact',
-                aliases: ['TypeScript React'],
-                extensions: ['.tsx'],
-                configuration: '/workspace/typescript-language-configuration.json',
-            },
-            {
-                id: 'html',
-                aliases: ['HTML'],
-                extensions: ['.html', '.htm'],
-                configuration: '/workspace/html-language-configuration.json',
-            },
-            {
-                id: 'css',
-                aliases: ['CSS'],
-                extensions: ['.css'],
-                configuration: '/workspace/css-language-configuration.json',
-            },
-        ],
-        grammars: [
-            {
-                language: 'apex',
-                scopeName: 'source.apex',
-                path: '/workspace/apex.tmLanguage',
-            },
-            {
-                language: 'soql',
-                scopeName: 'source.soql',
-                path: '/workspace/soql.tmLanguage',
-            },
-            {
-                language: 'javascript',
-                scopeName: 'source.js',
-                path: '/workspace/JavaScript.tmLanguage.json',
-            },
-            {
-                language: 'javascriptreact',
-                scopeName: 'source.js.jsx',
-                path: '/workspace/JavaScriptReact.tmLanguage.json',
-            },
-            {
-                language: 'typescript',
-                scopeName: 'source.ts',
-                path: '/workspace/TypeScript.tmLanguage.json',
-            },
-            {
-                language: 'typescriptreact',
-                scopeName: 'source.tsx',
-                path: '/workspace/TypeScriptReact.tmLanguage.json',
-            },
-            {
-                language: 'html',
-                scopeName: 'text.html.basic',
-                path: '/workspace/html.tmLanguage.json',
-            },
-            { language: 'css', scopeName: 'source.css', path: '/workspace/css.tmLanguage.json' },
-            {
-                scopeName: 'documentation.injection.ts',
-                path: '/workspace/jsdoc.ts.injection.tmLanguage.json',
-                injectTo: ['source.ts', 'source.tsx'],
-            },
-            {
-                scopeName: 'documentation.injection.js.jsx',
-                path: '/workspace/jsdoc.js.injection.tmLanguage.json',
-                injectTo: ['source.js', 'source.js.jsx'],
-            },
-        ],
-        snippets: [
-            { language: 'javascript', path: '/workspace/lwc-js.code-snippets' },
-            { language: 'html', path: '/workspace/lwc-html.code-snippets' },
-        ],
         commands: [
             {
                 command: 'salesforceMetadata.setWorkspaceApiVersion',
@@ -181,44 +75,8 @@ const METADATA_EXTENSION_BASE_CONFIG = {
                 title: 'Salesforce: Validate Deploy (Metadata API)',
             },
             {
-                command: 'salesforceMetadata.runSoqlQuery',
-                title: 'Salesforce: Run SOQL Query (REST)',
-            },
-            {
-                command: 'salesforceMetadata.runToolingQuery',
-                title: 'Salesforce: Run Tooling Query (Tooling API)',
-            },
-            {
-                command: 'salesforceMetadata.openSoqlScratch',
-                title: 'Salesforce: Open SOQL Scratch',
-            },
-            {
-                command: 'salesforceMetadata.refreshSchemaCache',
-                title: 'Salesforce: Refresh Schema Cache',
-            },
-            {
-                command: 'salesforceMetadata.executeAnonymous',
-                title: 'Salesforce: Execute Anonymous Apex (Tooling API)',
-            },
-            {
-                command: 'salesforceMetadata.runApexTests',
-                title: 'Salesforce: Run Apex Tests (Tooling API)',
-            },
-            {
-                command: 'salesforceMetadata.enableDebugLogs',
-                title: 'Salesforce: Enable Debug Logs (Tooling API)',
-            },
-            {
-                command: 'salesforceMetadata.openDebugLogs',
-                title: 'Salesforce: Open Debug Logs (Tooling API)',
-            },
-            {
                 command: 'salesforceMetadata.whereUsed',
                 title: 'Salesforce: Where Used / Dependencies (Tooling API)',
-            },
-            {
-                command: 'salesforceMetadata.diffCurrentFile',
-                title: 'Salesforce: Diff Current File (local vs org)',
             },
             {
                 command: 'salesforceMetadata.showOutput',
@@ -227,26 +85,6 @@ const METADATA_EXTENSION_BASE_CONFIG = {
             {
                 command: 'salesforceMetadata.installExtensions',
                 title: 'Salesforce: Install Linting/Language Extensions (Open VSX)',
-            },
-            {
-                command: 'salesforceMetadata.lintCurrentFile',
-                title: 'Salesforce: Lint Current File (LWC ESLint)',
-            },
-            {
-                command: 'salesforceMetadata.deployCurrentFile',
-                title: 'Salesforce: Deploy Current File (Tooling API)',
-            },
-            {
-                command: 'salesforceMetadata.fetchCurrentFile',
-                title: 'Salesforce: Fetch Current File (Tooling API)',
-            },
-            {
-                command: 'salesforceMetadata.deployChangedFiles',
-                title: 'Salesforce: Deploy Changed Files (Tooling API)',
-            },
-            {
-                command: 'salesforceMetadata.toggleAutoDeploy',
-                title: 'Salesforce: Toggle Auto Deploy on Save',
             },
             {
                 command: 'salesforceMetadata.refreshProject',
@@ -264,10 +102,6 @@ const METADATA_EXTENSION_BASE_CONFIG = {
                 command: 'salesforceMetadata.runShellCommand',
                 title: 'Salesforce: Run Shell Command',
             },
-            {
-                command: 'salesforceMetadata.createLightningComponent',
-                title: 'Salesforce: Create Lightning Component',
-            },
         ],
         menus: {
             commandPalette: [
@@ -281,49 +115,22 @@ const METADATA_EXTENSION_BASE_CONFIG = {
                 { command: 'salesforceMetadata.retrieveMetadataApiPick' },
                 { command: 'salesforceMetadata.deployMetadataApi' },
                 { command: 'salesforceMetadata.validateDeployMetadataApi' },
-                { command: 'salesforceMetadata.runSoqlQuery' },
-                { command: 'salesforceMetadata.runToolingQuery' },
-                { command: 'salesforceMetadata.openSoqlScratch' },
-                { command: 'salesforceMetadata.refreshSchemaCache' },
-                { command: 'salesforceMetadata.executeAnonymous' },
-                { command: 'salesforceMetadata.runApexTests' },
-                { command: 'salesforceMetadata.enableDebugLogs' },
-                { command: 'salesforceMetadata.openDebugLogs' },
                 { command: 'salesforceMetadata.whereUsed' },
-                { command: 'salesforceMetadata.diffCurrentFile' },
                 { command: 'salesforceMetadata.showOutput' },
                 { command: 'salesforceMetadata.installExtensions' },
-                { command: 'salesforceMetadata.lintCurrentFile' },
-                { command: 'salesforceMetadata.deployCurrentFile' },
-                { command: 'salesforceMetadata.fetchCurrentFile' },
-                { command: 'salesforceMetadata.deployChangedFiles' },
-                { command: 'salesforceMetadata.toggleAutoDeploy' },
                 { command: 'salesforceMetadata.refreshProject' },
                 { command: 'salesforceMetadata.openNamespaceReport' },
                 { command: 'salesforceMetadata.openShellTerminal' },
                 { command: 'salesforceMetadata.runShellCommand' },
-                { command: 'salesforceMetadata.createLightningComponent' },
             ],
-            'editor/context': [
-                { command: 'salesforceMetadata.fetchMetadata' },
-                { command: 'salesforceMetadata.fetchCurrentFile' },
-                { command: 'salesforceMetadata.diffCurrentFile' },
-                { command: 'salesforceMetadata.deployCurrentFile' },
-            ],
-            'explorer/context': [
-                {
-                    command: 'salesforceMetadata.createLightningComponent',
-                    when: 'explorerResourceIsFolder && resourceFilename == lwc',
-                    group: 'navigation',
-                },
-            ],
+            'editor/context': [{ command: 'salesforceMetadata.fetchMetadata' }],
         },
     },
-};
+});
 
 const BASE_INLINE_ASSETS = [
     {
-        targetPath: '/workspace/salesforce-panel-icon.svg',
+        targetPath: '/workspace/vscode/salesforce-panel-icon.svg',
         mimeType: SVG_MIME_TYPE,
         content: `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -339,17 +146,17 @@ function buildOrgIntro(orgContext) {
 
     switch (orgContext.environmentType) {
         case ORG_ENVIRONMENT_TYPES.production:
-            return `You are currently connected to **${orgContext.displayName}**. This is a **production org**, so review changes carefully before syncing or deploying.`;
+            return 'This is a **production org**, so review changes carefully before syncing or deploying.';
         case ORG_ENVIRONMENT_TYPES.sandbox:
-            return `You are currently connected to **${orgContext.displayName}**. This is a **sandbox org**, so it is safer for exploration and testing.`;
+            return 'This is a **sandbox org**, so it is safer for exploration and testing.';
         case ORG_ENVIRONMENT_TYPES.scratch:
-            return `You are currently connected to **${orgContext.displayName}**. This is a **scratch org**, so it is intended for short-lived development, validation, and disposable experiments.`;
+            return 'This is a **scratch org**, so it is intended for short-lived development, validation, and disposable experiments.';
         case ORG_ENVIRONMENT_TYPES.trailhead:
-            return `You are currently connected to **${orgContext.displayName}**. This is a **Trailhead org**, so it is intended for learning, guided exercises, and experimentation.`;
+            return 'This is a **Trailhead org**, so it is intended for learning, guided exercises, and experimentation.';
         case ORG_ENVIRONMENT_TYPES.dev:
-            return `You are currently connected to **${orgContext.displayName}**. This is a **dev org**, so it is intended for local development and isolated testing.`;
+            return 'This is a **dev org**, so it is intended for local development and isolated testing.';
         default:
-            return `You are currently connected to **${orgContext.displayName}**. The org type could not be confirmed automatically, so treat changes with care.`;
+            return 'The org type could not be confirmed automatically, so treat changes with care.';
     }
 }
 

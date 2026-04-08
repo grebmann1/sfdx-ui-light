@@ -1,8 +1,8 @@
-import { createOpenAI } from '@ai-sdk/openai';
 import { stepCountIs, streamText, tool as createAiSdkTool } from 'ai';
 import type { ModelMessage, ToolModelMessage, ToolResultPart, ToolSet } from 'ai';
 import type { ToolCall as AiToolCall, ToolResultOutput } from '@ai-sdk/provider-utils';
 import { createBashTools, filterToolsByModel } from 'agent/tools';
+import { DEFAULT_LLM_PROVIDER, normalizeLlmProvider } from 'shared/llm';
 import { getIndexedDbFileSystem } from 'core/fs';
 import { guid } from 'shared/utils';
 import { z } from 'zod';
@@ -31,6 +31,8 @@ import {
 import {
     DEFAULT_MODEL,
     DEFAULT_REASONING,
+    createProviderInstance,
+    getSummaryModelForAgentProvider,
     getReasoningConfigFromSelection,
     isAbortLikeError,
     isContextOverflowError,
@@ -38,9 +40,12 @@ import {
     cloneMessageForStreaming,
     discoverSkills,
     formatSkillsForPrompt,
+    resolveProviderModelInstance,
+    resolveProviderOptions,
+    type ProviderInstance,
 } from 'agent/utils';
 import { createStreamMessageBuilder } from 'agent/streamBuilder';
-import { Store } from '@reduxjs/toolkit';
+import type { Store } from '@reduxjs/toolkit';
 
 const MAX_TOOL_ROUNDS = 400;
 
@@ -107,8 +112,9 @@ export type StreamChunk =
     | { type: 'done' };
 
 type AgentSettings = {
-    openaiKey?: string;
-    openaiUrl?: string;
+    provider?: string;
+    apiKey?: string;
+    baseUrl?: string;
     selectedModel?: string;
     selectedReasoning?: string;
     modelContextWindow?: number;
@@ -130,10 +136,6 @@ type SubagentStatus = {
     description: string;
     detail?: string;
 };
-
-function resolveOpenAiBaseUrl(openaiUrl?: string) {
-    return openaiUrl || 'https://api.openai.com/v1';
-}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
     return value != null && typeof value === 'object';
@@ -278,10 +280,12 @@ export class Agent {
     public conversationId: string;
     public systemPrompt: string;
 
-    private openai: ReturnType<typeof createOpenAI>;
+    private providerInstance: ProviderInstance;
+    private provider: string;
     private isStoreEnabled: boolean;
     private store: Store;
     private model: string;
+    private summaryModel: string;
     private tools: ToolSet;
     private reasoningConfig?: { reasoningEffort: string; reasoningSummary: string };
     private modelContextWindow: number;
@@ -291,21 +295,21 @@ export class Agent {
     private planContext: string | null = null;
     private isInternal: boolean;
     private subagentStatusListeners = new Set<(status: SubagentStatus | null) => void>();
-    private _lastContextStats:
-        | {
-            contextWindow: number;
-            usedTokens: number;
-            remainingTokens: number;
-            ratioUsed: number;
-            ratioRemaining: number;
-            preCompactionTokens: number;
-        }
-        | null = null;
+    private _lastContextStats: {
+        contextWindow: number;
+        usedTokens: number;
+        remainingTokens: number;
+        ratioUsed: number;
+        ratioRemaining: number;
+        preCompactionTokens: number;
+    } | null = null;
 
     private constructor({
         conversationId,
-        openai,
+        providerInstance,
+        provider,
         model,
+        summaryModel,
         messages,
         tools,
         reasoningConfig,
@@ -317,8 +321,10 @@ export class Agent {
         store,
     }: {
         conversationId: string;
-        openai: ReturnType<typeof createOpenAI>;
+        providerInstance: ProviderInstance;
+        provider: string;
         model: string;
+        summaryModel: string;
         messages: ModelMessage[];
         tools: ToolSet;
         reasoningConfig?: { reasoningEffort: string; reasoningSummary: string };
@@ -331,8 +337,10 @@ export class Agent {
     }) {
         this.conversationId = conversationId;
         this.messages = [...messages];
-        this.openai = openai;
+        this.providerInstance = providerInstance;
+        this.provider = provider;
         this.model = model;
+        this.summaryModel = summaryModel;
         this.tools = tools;
         this.reasoningConfig = reasoningConfig;
         this.modelContextWindow = modelContextWindow;
@@ -343,7 +351,15 @@ export class Agent {
         this.store = store;
     }
 
-    static async create({ messages = [], conversationId, settings }: { messages?: ModelMessage[]; conversationId?: string; settings: AgentSettings }) {
+    static async create({
+        messages = [],
+        conversationId,
+        settings,
+    }: {
+        messages?: ModelMessage[];
+        conversationId?: string;
+        settings: AgentSettings;
+    }) {
         const id = conversationId || guid();
         const shell = getOrCreateBashInstanceForConversation(id);
         if (!getCdpHandlerForConversation(id)) {
@@ -367,26 +383,25 @@ export class Agent {
         const reasoningConfig = getReasoningConfigFromSelection(
             settings.selectedReasoning || DEFAULT_REASONING
         );
-        const openai = createOpenAI({
-            apiKey: settings.openaiKey || '',
-            baseURL: resolveOpenAiBaseUrl(settings.openaiUrl),
-            fetch: (url, options) => {
-                return fetch(url, {
-                    ...options,
-                    credentials: "omit",
-                    headers: {
-                        // Only spread the headers, no cookies included
-                        ...Object.fromEntries(Object.entries(options.headers || {}).filter(([key]) => key !== 'cookie')),
-                    },
-                });
-            },
+        const provider = normalizeLlmProvider(settings.provider || DEFAULT_LLM_PROVIDER);
+        const providerInstance = createProviderInstance({
+            provider,
+            apiKey: settings.apiKey,
+            baseUrl: settings.baseUrl,
         });
+        const summaryModel = getSummaryModelForAgentProvider(
+            provider,
+            currentModel,
+            !!settings.isInternal
+        );
 
         return new Agent({
             messages,
             conversationId: id,
-            openai,
+            providerInstance,
+            provider,
             model: currentModel,
+            summaryModel,
             tools: aiTools,
             reasoningConfig,
             modelContextWindow: settings.modelContextWindow || 128000,
@@ -450,7 +465,10 @@ export class Agent {
         });
     }
 
-    static subscribeStreamingMessage(conversationId: string, listener: (message: ModelMessage | null) => void): () => void {
+    static subscribeStreamingMessage(
+        conversationId: string,
+        listener: (message: ModelMessage | null) => void
+    ): () => void {
         if (!conversationId || typeof listener !== 'function') {
             return () => {};
         }
@@ -539,20 +557,26 @@ export class Agent {
         }
 
         if (this.isStoreEnabled && this.store) {
-            this.store.dispatch(AGENT.reduxSlice.actions.startSummarizing({ id: this.conversationId }));
+            this.store.dispatch(
+                AGENT.reduxSlice.actions.startSummarizing({ id: this.conversationId })
+            );
         }
         let summary: string | null = null;
         try {
             summary = await generateCompactionSummary(
-                this.openai,
-                this.model,
+                this.providerInstance,
+                this.provider,
+                this.summaryModel,
                 preparation,
                 undefined,
-                signal
+                signal,
+                this.isInternal
             );
         } finally {
             if (this.isStoreEnabled && this.store) {
-                this.store.dispatch(AGENT.reduxSlice.actions.stopSummarizing({ id: this.conversationId }));
+                this.store.dispatch(
+                    AGENT.reduxSlice.actions.stopSummarizing({ id: this.conversationId })
+                );
             }
         }
         if (!summary) {
@@ -560,10 +584,7 @@ export class Agent {
             return true;
         }
 
-        this.messages = [
-            createCompactionSummaryMessage(summary),
-            ...preparation.keptMessages,
-        ];
+        this.messages = [createCompactionSummaryMessage(summary), ...preparation.keptMessages];
         return true;
     }
 
@@ -571,7 +592,6 @@ export class Agent {
         userMessages: ModelMessage[],
         observer?: ProcessMessageObserver
     ): AsyncGenerator<StreamChunk, void, unknown> {
-
         Agent.registerAgent(this.conversationId, this);
         this.abortController = new AbortController();
         const signal = this.abortController.signal;
@@ -580,6 +600,7 @@ export class Agent {
         );
         const completedStepMessages: ModelMessage[] = [];
 
+        this.messages = sanitizeIncompleteToolExchanges(this.messages);
         this.messages.push(...userMessages);
         const systemText = await buildSystemPrompt(
             this.systemPrompt,
@@ -607,23 +628,14 @@ export class Agent {
                         compactionSettings,
                         attemptedOverflowRecovery
                     );
-                    const tokensAfter = estimateConversationTokens(
-                        systemText,
-                        this.messages
-                    );
+                    const tokensAfter = estimateConversationTokens(systemText, this.messages);
 
                     this._lastContextStats = {
                         contextWindow: this.modelContextWindow,
                         usedTokens: tokensAfter,
-                        remainingTokens: Math.max(
-                            0,
-                            this.modelContextWindow -
-                            tokensAfter
-                        ),
-                        ratioUsed:
-                            tokensAfter / this.modelContextWindow,
-                        ratioRemaining:
-                            1 - tokensAfter / this.modelContextWindow,
+                        remainingTokens: Math.max(0, this.modelContextWindow - tokensAfter),
+                        ratioUsed: tokensAfter / this.modelContextWindow,
+                        ratioRemaining: 1 - tokensAfter / this.modelContextWindow,
                         preCompactionTokens,
                     };
 
@@ -636,17 +648,22 @@ export class Agent {
                     });
 
                     const result = streamText({
-                        model: this.isInternal ? this.openai.chat(this.model) : this.openai(this.model),
+                        model: resolveProviderModelInstance(this.providerInstance, {
+                            provider: this.provider,
+                            modelId: this.model,
+                            isInternal: this.isInternal,
+                        }),
                         system: systemText,
                         messages: this.messages,
                         tools: this.tools,
                         stopWhen: stepCountIs(this.maxToolRounds),
                         maxRetries: 0,
                         abortSignal: signal,
-                        providerOptions:
-                            this.isInternal || this.reasoningConfig == null
-                                ? undefined
-                                : { openai: this.reasoningConfig },
+                        providerOptions: resolveProviderOptions({
+                            provider: this.provider,
+                            reasoningConfig: this.reasoningConfig,
+                            isInternal: this.isInternal,
+                        }),
                         experimental_onStepStart: (event: unknown) => {
                             notifyObserver(observer?.onStepStart, {
                                 stepNumber: getStepNumber(event, 0),
@@ -670,7 +687,7 @@ export class Agent {
                             }
                         },
                         onError: (event: unknown) => {
-                            console.error('### onError gui', {event});
+                            console.error('### onError gui', { event });
                             const message = extractNestedErrorMessage(
                                 (event as { error?: unknown })?.error ?? event
                             );
@@ -679,13 +696,16 @@ export class Agent {
                                 timestamp: Date.now(),
                             });
                             throw new Error(message);
-                        }
+                        },
                     });
 
                     for await (const part of result.fullStream) {
                         const partType = (part as { type?: string })?.type;
                         if (signal.aborted) {
-                            const cancelledChunk = { type: 'content', content: '\n\n[Cancelled]' } as StreamChunk;
+                            const cancelledChunk = {
+                                type: 'content',
+                                content: '\n\n[Cancelled]',
+                            } as StreamChunk;
                             streamBuilder.handleChunk(cancelledChunk);
                             yield cancelledChunk;
                             break;
@@ -700,14 +720,20 @@ export class Agent {
                                 break;
                             case 'text-delta':
                                 {
-                                    const chunk = { type: 'content', content: part.text } as StreamChunk;
+                                    const chunk = {
+                                        type: 'content',
+                                        content: part.text,
+                                    } as StreamChunk;
                                     streamBuilder.handleChunk(chunk);
                                     yield chunk;
                                 }
                                 break;
                             case 'reasoning-delta':
                                 {
-                                    const chunk = { type: 'reasoning', content: part.text } as StreamChunk;
+                                    const chunk = {
+                                        type: 'reasoning',
+                                        content: part.text,
+                                    } as StreamChunk;
                                     streamBuilder.handleChunk(chunk);
                                     yield chunk;
                                 }
@@ -719,7 +745,10 @@ export class Agent {
                                     timestamp: Date.now(),
                                 });
                                 {
-                                    const chunk = { type: 'tool_calls', toolCalls: [tc] } as StreamChunk;
+                                    const chunk = {
+                                        type: 'tool_calls',
+                                        toolCalls: [tc],
+                                    } as StreamChunk;
                                     streamBuilder.handleChunk(chunk);
                                     yield chunk;
                                 }
@@ -780,7 +809,11 @@ export class Agent {
                                     timestamp: Date.now(),
                                 });
                                 {
-                                    const chunk = { type: 'tool_result', toolCall: tc, toolResult: tr } as StreamChunk;
+                                    const chunk = {
+                                        type: 'tool_result',
+                                        toolCall: tc,
+                                        toolResult: tr,
+                                    } as StreamChunk;
                                     streamBuilder.handleChunk(chunk);
                                     yield chunk;
                                 }
@@ -793,7 +826,10 @@ export class Agent {
                                     timestamp: Date.now(),
                                 });
                                 {
-                                    const chunk = { type: 'error', content: message } as StreamChunk;
+                                    const chunk = {
+                                        type: 'error',
+                                        content: message,
+                                    } as StreamChunk;
                                     streamBuilder.handleChunk(chunk);
                                     yield chunk;
                                 }
@@ -801,7 +837,10 @@ export class Agent {
                             }
                             case 'abort':
                                 {
-                                    const chunk = { type: 'content', content: '\n\n[Cancelled]' } as StreamChunk;
+                                    const chunk = {
+                                        type: 'content',
+                                        content: '\n\n[Cancelled]',
+                                    } as StreamChunk;
                                     streamBuilder.handleChunk(chunk);
                                     yield chunk;
                                 }
@@ -822,18 +861,17 @@ export class Agent {
                     }
 
                     try {
-                        const response = await result.response; 
+                        const response = await result.response;
                         if (!signal.aborted) {
                             LOGGER.debug('[agent] processMessage response', { response });
                             this.appendCompletedTurn(response.messages);
                         }
-
                     } catch (responseError: unknown) {
-                        LOGGER.error('[agent] processMessage responseError', {responseError,isContextOverflowError: isContextOverflowError(responseError)});
-                        if (
-                            !attemptedOverflowRecovery  &&
-                            isContextOverflowError(responseError)
-                        ) {
+                        LOGGER.error('[agent] processMessage responseError', {
+                            responseError,
+                            isContextOverflowError: isContextOverflowError(responseError),
+                        });
+                        if (!attemptedOverflowRecovery && isContextOverflowError(responseError)) {
                             attemptedOverflowRecovery = true;
                             continue;
                         }
@@ -856,7 +894,10 @@ export class Agent {
                 } catch (err: unknown) {
                     if (signal.aborted) {
                         this.discardAbortedTurn(userMessages);
-                        const cancelledChunk = { type: 'content', content: '\n\n[Cancelled]' } as StreamChunk;
+                        const cancelledChunk = {
+                            type: 'content',
+                            content: '\n\n[Cancelled]',
+                        } as StreamChunk;
                         streamBuilder.handleChunk(cancelledChunk);
                         yield cancelledChunk;
                         const doneChunk = { type: 'done' } as StreamChunk;
@@ -875,7 +916,10 @@ export class Agent {
                         timestamp: Date.now(),
                     });
                     {
-                        const errorChunk = { type: 'error', content: `Error: ${msg}` } as StreamChunk;
+                        const errorChunk = {
+                            type: 'error',
+                            content: `Error: ${msg}`,
+                        } as StreamChunk;
                         streamBuilder.handleChunk(errorChunk);
                         yield errorChunk;
                     }
@@ -921,7 +965,12 @@ export class Agent {
             return;
         }
 
-        this.store.dispatch(AGENT.reduxSlice.actions.addMessages({ id: this.conversationId, messages : [...finalizedMessages] }));
+        this.store.dispatch(
+            AGENT.reduxSlice.actions.addMessages({
+                id: this.conversationId,
+                messages: [...finalizedMessages],
+            })
+        );
         this.messages.push(...finalizedMessages);
     }
 
@@ -932,7 +981,12 @@ export class Agent {
     }
 }
 
-function toToolCall(part: { toolCallId: string; toolName: string; args?: unknown; input?: unknown }): ToolCall {
+function toToolCall(part: {
+    toolCallId: string;
+    toolName: string;
+    args?: unknown;
+    input?: unknown;
+}): ToolCall {
     return {
         toolCallId: part.toolCallId,
         toolName: part.toolName,
@@ -945,13 +999,7 @@ function normalizeToolCallId(part: any): string {
 }
 
 function normalizeToolName(part: any): string {
-    return (
-        part?.toolName ||
-        part?.name ||
-        part?.function?.name ||
-        part?.tool?.name ||
-        ''
-    );
+    return part?.toolName || part?.name || part?.function?.name || part?.tool?.name || '';
 }
 
 function extractToolCallDelta(part: any): string {
@@ -991,7 +1039,12 @@ function notifyObserver<T>(listener: ((payload: T) => void) | undefined, payload
 }
 
 function getStepNumber(event: unknown, fallback: number): number {
-    if (event && typeof event === 'object' && 'stepNumber' in event && typeof event.stepNumber === 'number') {
+    if (
+        event &&
+        typeof event === 'object' &&
+        'stepNumber' in event &&
+        typeof event.stepNumber === 'number'
+    ) {
         return event.stepNumber;
     }
     return fallback;
@@ -1039,6 +1092,70 @@ function toToolResult(output: unknown): ToolResult {
         return { type: 'text', value: '' };
     }
     return { type: 'json', value: output as any };
+}
+
+/**
+ * Removes trailing incomplete tool exchanges from the message list before sending to an LLM.
+ *
+ * When execution is stopped mid-way, the history may end with:
+ *   [assistant:{only-tool-calls}, tool:{results}]
+ * without a subsequent model text response. Sending this to Gemini causes a
+ * "function call turn must come after a user turn or function response turn" error
+ * because the tool-result maps to a Gemini user turn, making two consecutive user
+ * turns when the next real user message is appended.
+ *
+ * This function iteratively strips such dangling blocks from the tail.
+ */
+function sanitizeIncompleteToolExchanges(messages: ModelMessage[]): ModelMessage[] {
+    if (messages.length === 0) return messages;
+
+    let end = messages.length;
+
+    while (end > 0) {
+        // Walk backwards over trailing tool-result messages
+        let toolEnd = end;
+        while (toolEnd > 0 && (messages[toolEnd - 1] as any).role === 'tool') {
+            toolEnd--;
+        }
+
+        if (toolEnd < end) {
+            // There are trailing tool messages — check if preceded by assistant with only tool-calls
+            if (toolEnd > 0) {
+                const preceding = messages[toolEnd - 1] as any;
+                if (preceding.role === 'assistant') {
+                    const content = Array.isArray(preceding.content) ? preceding.content : [];
+                    const hasText = content.some(
+                        (p: any) =>
+                            p.type === 'text' && typeof p.text === 'string' && p.text.trim()
+                    );
+                    if (!hasText) {
+                        // Incomplete exchange: assistant issued tool calls but never gave a text response
+                        end = toolEnd - 1;
+                        continue;
+                    }
+                }
+            }
+            break;
+        }
+
+        // No trailing tool messages — check for an orphaned assistant with only tool-calls
+        const last = messages[end - 1] as any;
+        if (last.role === 'assistant') {
+            const content = Array.isArray(last.content) ? last.content : [];
+            const hasText = content.some(
+                (p: any) => p.type === 'text' && typeof p.text === 'string' && p.text.trim()
+            );
+            const hasToolCalls = content.some((p: any) => p.type === 'tool-call');
+            if (hasToolCalls && !hasText) {
+                end--;
+                continue;
+            }
+        }
+
+        break;
+    }
+
+    return end === messages.length ? messages : messages.slice(0, end);
 }
 
 async function buildSystemPrompt(

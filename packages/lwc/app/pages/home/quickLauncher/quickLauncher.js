@@ -42,7 +42,9 @@ export default class QuickLauncher extends ToolkitElement {
 
     /** Methods */
     getAppsByName(names = []) {
-        return names.map(name => CONFIG.APP_LIST.find(app => app.name === name)).filter(Boolean);
+        return names
+            .map(name => CONFIG.APP_LIST.find(app => app.name === name))
+            .filter(app => app && (this.isUserLoggedIn || app.isOfflineAvailable));
     }
 
     /** Getters */
@@ -72,5 +74,21 @@ export default class QuickLauncher extends ToolkitElement {
     get utilities() {
         const names = ['smartinput/app', 'textCompare/app'];
         return this.getAppsByName(names);
+    }
+
+    get hasExplorers() {
+        return this.explorers.length > 0;
+    }
+
+    get hasDeveloperTools() {
+        return this.developerTools.length > 0;
+    }
+
+    get hasDataAndDeployTools() {
+        return this.dataAndDeployTools.length > 0;
+    }
+
+    get hasUtilities() {
+        return this.utilities.length > 0;
     }
 }

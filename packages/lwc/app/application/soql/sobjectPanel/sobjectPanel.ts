@@ -3,6 +3,7 @@ import ToolkitElement from 'core/toolkitElement';
 
 import { store, connectStore, DESCRIBE, UI } from 'core/store';
 import { lowerCaseKey } from 'shared/utils';
+import { SOBJECT_ICON } from '../constants';
 
 export default class SobjectsPanel extends ToolkitElement {
     sobjects;
@@ -60,7 +61,7 @@ export default class SobjectsPanel extends ToolkitElement {
                 name: sobject.itemLabel,
                 title: sobject.itemLabel,
                 rawName: sobject.name,
-                icon: 'utility:record_lookup',
+                icon: SOBJECT_ICON,
             }));
     }
 

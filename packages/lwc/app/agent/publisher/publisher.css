@@ -76,20 +76,22 @@
 }
 .chat-input-model-row {
     width: 100%;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 0.15rem;
     overflow: visible;
 }
 .chat-select {
-    min-height: 30px;
+    min-height: 26px;
     border: 1px solid var(--lwc-colorBorderInput, #c9c7c5);
-    border-radius: 8px;
-    background-color: #ffffff;
-    color: var(--lwc-colorTextDefault, #181818);
-    font-size: 0.82rem;
+    border-radius: 6px;
+    background-color: var(--lwc-colorBackgroundAlt2, #f3f2f2);
+    color: var(--lwc-colorTextLabel, #3e3e3c);
+    font-size: 0.78rem;
+    font-weight: 500;
     line-height: 1.2;
-    padding: 0 1.75rem 0 0.55rem;
+    padding: 0 1.5rem 0 0.5rem;
+    cursor: pointer;
     transition:
         border-color 120ms ease,
         box-shadow 120ms ease,
@@ -97,14 +99,17 @@
 }
 .chat-select:hover {
     border-color: #989690;
+    background-color: #e8e6e4;
 }
 .chat-select:focus {
     outline: none;
     border-color: var(--lwc-colorBorderBrand, #0176d3);
     box-shadow: 0 0 0 1px rgba(1, 118, 211, 0.25);
+    background-color: #ffffff;
 }
 .chat-select-model {
-    min-width: 5.8rem;
+    min-width: 0;
+    max-width: 11rem;
 }
 
 .chat-reasoning-col {

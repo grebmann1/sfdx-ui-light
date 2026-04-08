@@ -275,6 +275,8 @@ export const CACHE_CONFIG = {
         'metadata_storage_background_sync_enabled',
         false
     ),
+    // Google Integration
+    GOOGLE_CONNECTED: new CONFIG_OBJECT('google_connected', false),
     // Beta Features
     BETA_SMARTINPUT_ENABLED: new CONFIG_OBJECT('beta_smartinput_enabled', false),
     // Keyboard shortcuts (injected page + app). Use defaultValue when config not set.

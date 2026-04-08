@@ -69,6 +69,14 @@ export function getProviderModelOptions(provider: LlmProvider): LlmModelOption[]
     return PROVIDER_MODEL_OPTIONS[provider] || [];
 }
 
+export function getProviderLabel(provider: unknown): string {
+    const normalized = normalizeLlmProvider(provider);
+    return (
+        LLM_PROVIDER_OPTIONS.find(option => option.value === normalized)?.label ||
+        DEFAULT_LLM_PROVIDER
+    );
+}
+
 export function getDefaultModelForProvider(provider: LlmProvider): string | null {
     return getProviderModelOptions(provider)[0]?.value || null;
 }
@@ -110,13 +118,116 @@ export function resolveOpenAiCompatibleModels(isInternal = false): LlmModelOptio
 }
 
 function getWorkbenchBaseUrl(): string {
+    if (
+        typeof process === 'undefined' ||
+        !process ||
+        typeof process.env !== 'object' ||
+        typeof process.env.WORKBENCH_BASE_URL !== 'string'
+    ) {
+        return '';
+    }
+
     return normalizeString(process.env.WORKBENCH_BASE_URL).replace(/\/+$/, '');
 }
 
 function resolveWorkbenchEndpoint(pathname: string): string {
     const normalizedPath = pathname.startsWith('/') ? pathname : `/${pathname}`;
     const baseUrl = getWorkbenchBaseUrl();
-    return baseUrl ? `${baseUrl}${normalizedPath}` : normalizedPath;
+    if (!baseUrl) {
+        throw new Error('fetchLlmModelsEndpoint: no WORKBENCH_BASE_URL configured');
+    }
+    return `${baseUrl}${normalizedPath}`;
+}
+
+function extractModels(
+    availableModelsByProvider:
+        | Partial<Record<LlmProvider, LlmModelOption[] | { models?: LlmModelOption[] }>>
+        | undefined,
+    provider: LlmProvider
+): LlmModelOption[] {
+    const entry = availableModelsByProvider?.[provider];
+    if (Array.isArray(entry)) {
+        return entry;
+    }
+    return Array.isArray(entry?.models) ? entry.models : [];
+}
+
+export function getProviderForModel(
+    model: unknown,
+    options: LlmModelOption[] = Object.values(PROVIDER_MODEL_OPTIONS).flat()
+): LlmProvider {
+    const normalized = normalizeString(model);
+    if (!normalized) {
+        return DEFAULT_LLM_PROVIDER;
+    }
+
+    const lowered = normalized.toLowerCase();
+    const exactValue = options.find(option => option.value === normalized);
+    if (exactValue) return exactValue.provider;
+
+    const caseInsensitiveValue = options.find(option => option.value.toLowerCase() === lowered);
+    if (caseInsensitiveValue) return caseInsensitiveValue.provider;
+
+    const labelMatch = options.find(option => option.label.toLowerCase() === lowered);
+    if (labelMatch) return labelMatch.provider;
+
+    const aliasMatch = options.find(option => option.value.toLowerCase().startsWith(`${lowered}-`));
+    return aliasMatch?.provider || DEFAULT_LLM_PROVIDER;
+}
+
+export function buildAvailableAgentModelOptions({
+    availableModelsByProvider,
+    providerConfigs,
+}: {
+    availableModelsByProvider?:
+        | Partial<Record<LlmProvider, LlmModelOption[] | { models?: LlmModelOption[] }>>
+        | undefined;
+    providerConfigs: LlmProviderConfigMap;
+}): LlmModelOption[] {
+    const normalizedConfigs = normalizeProviderConfigMap(providerConfigs);
+    const configuredProviders = LLM_PROVIDERS.filter(
+        provider => !!normalizedConfigs[provider]?.apiKey
+    );
+    const shouldPrefixProviderLabel = configuredProviders.length > 1;
+
+    return configuredProviders.flatMap(provider => {
+        const config = normalizedConfigs[provider];
+        const models =
+            provider === 'openai' && isInternalProviderBaseUrl(config.baseUrl)
+                ? resolveOpenAiCompatibleModels(true)
+                : extractModels(availableModelsByProvider, provider).length > 0
+                  ? extractModels(availableModelsByProvider, provider)
+                  : getProviderModelOptions(provider);
+
+        return models.map(model => ({
+            ...model,
+            label: shouldPrefixProviderLabel
+                ? `${getProviderLabel(provider)}: ${model.label}`
+                : model.label,
+        }));
+    });
+}
+
+export function resolveAgentProviderBaseUrl(provider: unknown, baseUrl: unknown): string {
+    const normalizedProvider = normalizeLlmProvider(provider);
+    const normalizedBaseUrl = normalizeString(baseUrl).replace(/\/+$/, '');
+    const fallbackBaseUrl = DEFAULT_PROVIDER_BASE_URLS[normalizedProvider];
+    const effectiveBaseUrl = normalizedBaseUrl || fallbackBaseUrl;
+
+    if (normalizedProvider !== 'gemini') {
+        return effectiveBaseUrl;
+    }
+
+    if (effectiveBaseUrl.includes('/openai')) {
+        return effectiveBaseUrl;
+    }
+    if (effectiveBaseUrl.endsWith('/v1beta')) {
+        return `${effectiveBaseUrl}/openai`;
+    }
+    if (effectiveBaseUrl.includes('generativelanguage.googleapis.com')) {
+        return `${effectiveBaseUrl}/v1beta/openai`;
+    }
+    return effectiveBaseUrl;
 }
 
 export async function fetchLlmModelsEndpoint({

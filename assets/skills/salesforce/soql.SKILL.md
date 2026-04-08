@@ -1,3 +1,8 @@
+---
+name: soql
+description: Run and display SOQL queries against a Salesforce org. Use when the user wants to query records, inspect data, run a saved query, or display results in the Query Editor.
+---
+
 # SOQL
 
 Run and display SOQL queries in the toolkit.

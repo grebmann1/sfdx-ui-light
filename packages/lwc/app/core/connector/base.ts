@@ -381,6 +381,7 @@ export const normalizeConfiguration = (rawData, byPassValidation = false) => {
             organizationType: rawData.orgType || rawData.organizationType,
         }),
         _hasError: rawData._hasError,
+        _errorMessage: rawData._errorMessage || null,
         _formatVersion: rawData._formatVersion || 1,
         _status: rawData._status || null,
         _statusClass: rawData._statusClass || null,

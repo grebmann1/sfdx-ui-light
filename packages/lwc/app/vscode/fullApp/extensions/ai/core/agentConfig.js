@@ -36,13 +36,6 @@ export function resolveWorkbenchOpenAiBaseUrl(openaiUrl) {
     return openaiUrl || 'https://api.openai.com/v1';
 }
 
-export function getReasoningConfigFromSelection(selection) {
-    if (selection === 'off' || selection === 'none' || !selection) {
-        return undefined;
-    }
-    return { reasoningEffort: selection, reasoningSummary: 'auto' };
-}
-
 export function isAbortLikeError(error) {
     const name = error?.name || '';
     const message = error?.message || '';

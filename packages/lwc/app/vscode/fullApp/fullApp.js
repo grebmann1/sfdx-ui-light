@@ -8,6 +8,18 @@ import {
     getActiveMetadataExtensionServices,
 } from './extensions/metadata/extension.js';
 import {
+    loadExtension as loadSfApexExtension,
+    activate as activateSfApexExtension,
+} from './extensions/apex/extension.js';
+import {
+    loadExtension as loadSfSoqlExtension,
+    activate as activateSfSoqlExtension,
+} from './extensions/soql/extension.js';
+import {
+    loadExtension as loadSfLwcExtension,
+    activate as activateSfLwcExtension,
+} from './extensions/lwc/extension.js';
+import {
     loadExtension as loadAgentScriptExtension,
     activate as activateAgentScriptExtension,
 } from './extensions/agentscript/extension.js';
@@ -53,7 +65,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     @api serverUrl;
     @api redirectUrl;
     @api sourceTabId;
-    @api workspaceBasePath = '/workspace/orgs/Workbench-PROD';
+    @api workspaceBasePath;
 
     @track vscodeInitialized = false;
     @track initializationError = null;
@@ -62,6 +74,8 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     @track isConnectionAvailable = false;
     @track isConnectionBootstrapPending = true;
     @track sessionHasExpired = false;
+    @track connectorHasError = false;
+    @track connectorErrorMessage = null;
     @track themeMode = 'light';
 
     _started = false;
@@ -111,7 +125,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     }
 
     renderedCallback() {
-        if (this._started || !this.isConnectionAvailable) return;
+        if (this._started) return;
         this._started = true;
         void this._startWorkbench();
     }
@@ -186,9 +200,17 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     _syncConnectionState(application = store.getState()?.application || {}) {
         const connector = application?.connector || this.connector;
         const activeConnection = buildConnectionFromConnector(connector, this.sfApiVersion);
+        const connectorHasError = Boolean(connector?.configuration?._hasError);
+        const connectorErrorMessage =
+            connector?.configuration?._errorMessage ||
+            (typeof connector?.errorMessage === 'string' ? connector.errorMessage : null);
+
+        this.connectorHasError = connectorHasError;
+        this.connectorErrorMessage = connectorErrorMessage;
 
         this.isConnectionAvailable = Boolean(
-            activeConnection?.instanceUrl || (this.sessionId && this.serverUrl)
+            (activeConnection?.instanceUrl && !connectorHasError && !this.sessionHasExpired) ||
+                (this.sessionId && this.serverUrl)
         );
         this.sfApiVersion = normalizeSfApiVersion(
             activeConnection?.apiVersion,
@@ -202,7 +224,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             : this._normalizeWorkspaceRoot(this.workspaceBasePath);
         this.orgContext = buildOrgContext(activeConnection);
 
-        if (activeConnection?.instanceUrl) {
+        if (activeConnection?.instanceUrl && !connectorHasError && !this.sessionHasExpired) {
             this.initializationError = null;
         }
     }
@@ -446,9 +468,25 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             ...connection,
             apiVersion: normalizeSfApiVersion(connection.apiVersion, DEFAULT_SOURCE_API_VERSION),
             workspaceRoot,
-            hasConnection: Boolean(connection.instanceUrl && connection.accessToken),
+            hasConnection: Boolean(
+                connection.instanceUrl &&
+                    connection.accessToken &&
+                    !this.sessionHasExpired &&
+                    !this.connectorHasError
+            ),
+            hasError: this.connectorHasError,
+            errorMessage: this.connectorErrorMessage,
             sessionHasExpired: this.sessionHasExpired,
         };
+    }
+
+    _hasUsableWorkbenchConnection(connection = this._buildCurrentConnection()) {
+        return Boolean(
+            connection?.instanceUrl &&
+                connection?.accessToken &&
+                !connection?.sessionHasExpired &&
+                !connection?.hasError
+        );
     }
 
     async _syncWorkbenchConnectionUi({ announceExpired = false } = {}) {
@@ -461,11 +499,18 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         const currentConnection = connectionRuntime.loadStoredConn();
         connectionRuntime.setStatus(currentConnection);
 
-        const message = currentConnection?.instanceUrl || currentConnection?.sessionHasExpired
-            ? connectionRuntime.getConnectionProblemMessage(currentConnection)
-            : null;
+        const message =
+            currentConnection?.instanceUrl ||
+            currentConnection?.sessionHasExpired ||
+            currentConnection?.hasError
+                ? connectionRuntime.getConnectionProblemMessage(currentConnection)
+                : null;
         await services?.setLoginProblem?.(
-            currentConnection?.accessToken ? null : message || null
+            currentConnection?.accessToken &&
+                !currentConnection?.sessionHasExpired &&
+                !currentConnection?.hasError
+                ? null
+                : message || null
         );
 
         if (announceExpired && currentConnection?.sessionHasExpired && message) {
@@ -486,9 +531,15 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
 
     _requireCurrentConnection() {
         const activeConnection = this._buildCurrentConnection();
-        if (!activeConnection?.instanceUrl || !activeConnection?.accessToken) {
+        if (
+            !activeConnection?.instanceUrl ||
+            !activeConnection?.accessToken ||
+            activeConnection?.sessionHasExpired ||
+            activeConnection?.hasError
+        ) {
             throw new Error(
-                'Salesforce connection is required to open this workbench. Launch it from a connected toolkit session.'
+                activeConnection?.errorMessage ||
+                    'Salesforce connection is required to open this workbench. Launch it from a connected toolkit session.'
             );
         }
         return activeConnection;
@@ -513,6 +564,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         if (typeof commands?.executeCommand !== 'function' || !METADATA_WALKTHROUGH_FULL_ID) {
             return;
         }
+        console.log('OPEN_ONBOARDING_COMMAND', OPEN_ONBOARDING_COMMAND);
 
         let lastError = null;
         for (let attempt = 0; attempt < 6; attempt += 1) {
@@ -806,18 +858,23 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             const isChromeExtension = Boolean(globalThis?.chrome?.runtime?.id);
             this._isChromeExtension = isChromeExtension;
             await this._ensureInitialConnectionBootstrap();
-            let activeConnection = this._requireCurrentConnection();
-            this._applyActiveConnection(activeConnection);
-            await this._syncAppApiVersionFromWorkspace(
-                this._workspaceRoot,
-                activeConnection.apiVersion || this.sfApiVersion
-            );
-            activeConnection = {
-                ...activeConnection,
-                apiVersion: this.sfApiVersion,
-            };
-            this._applyActiveConnection(activeConnection);
-            await this._prepareWorkspaceBootstrap(activeConnection);
+            let activeConnection = this._buildCurrentConnection();
+            if (this._hasUsableWorkbenchConnection(activeConnection)) {
+                this._applyActiveConnection(activeConnection);
+                await this._syncAppApiVersionFromWorkspace(
+                    this._workspaceRoot,
+                    activeConnection.apiVersion || this.sfApiVersion
+                );
+                activeConnection = {
+                    ...activeConnection,
+                    apiVersion: this.sfApiVersion,
+                };
+                this._applyActiveConnection(activeConnection);
+                await this._prepareWorkspaceBootstrap(activeConnection);
+            } else {
+                activeConnection = null;
+                await this._prepareWorkspaceBootstrap(null);
+            }
 
             const host = this.template.querySelector('.workbench-host');
             if (!host) {
@@ -841,7 +898,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                 this._workspaceRoot,
                 activeConnection?.apiVersion || this.sfApiVersion
             );
-            if (activeConnection?.instanceUrl && activeConnection?.accessToken) {
+            if (this._hasUsableWorkbenchConnection(activeConnection)) {
                 const syncedConnection = {
                     ...activeConnection,
                     workspaceRoot: this._workspaceRoot,
@@ -851,8 +908,17 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                 activeConnection = syncedConnection;
             }
 
-            const [sfMetadataExtension, agentScriptExtension] = await Promise.all([
+            const [
+                sfMetadataExtension,
+                sfApexExtension,
+                sfSoqlExtension,
+                sfLwcExtension,
+                agentScriptExtension,
+            ] = await Promise.all([
                 loadSfMetadataExtension({ orgContext: this.orgContext }),
+                loadSfApexExtension(),
+                loadSfSoqlExtension(),
+                loadSfLwcExtension(),
                 loadAgentScriptExtension(),
             ]);
             const userConfiguration = buildUserConfiguration(isChromeExtension);
@@ -929,7 +995,13 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                     userConfiguration: {
                         json: JSON.stringify(userConfiguration),
                     },
-                    extensions: [sfMetadataExtension, agentScriptExtension],
+                    extensions: [
+                        sfMetadataExtension,
+                        sfApexExtension,
+                        sfSoqlExtension,
+                        sfLwcExtension,
+                        agentScriptExtension,
+                    ],
                     serviceOverrides: workbenchFilesService?.getServiceOverrides(),
                 },
                 logLevel: LogLevel.Info,
@@ -937,6 +1009,9 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             });
 
             await activateSfMetadataExtension(vscodeBundle);
+            await activateSfApexExtension(vscodeBundle);
+            await activateSfSoqlExtension(vscodeBundle);
+            await activateSfLwcExtension(vscodeBundle);
             await activateAgentScriptExtension(vscodeBundle);
             const workbenchAiExtension = await activateWorkbenchAiExtension(vscodeBundle);
             if (workbenchAiExtension?.dispose) {
@@ -1030,10 +1105,6 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         return this.orgContext?.bannerTitle || 'Welcome to Salesforce.';
     }
 
-    get orgBannerMessage() {
-        return this.orgContext?.bannerMessage || '';
-    }
-
     get orgBannerEnvironmentLabel() {
         return this.orgContext?.environmentLabel || '';
     }
@@ -1056,6 +1127,29 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
 
     get showSessionExpiredBanner() {
         return this.sessionHasExpired || this.isSessionExpiredInitializationError;
+    }
+
+    get authBoundaryTitle() {
+        if (this.showSessionExpiredBanner) {
+            return 'Session Expired';
+        }
+        if (this.connectorHasError) {
+            return 'Salesforce connection issue';
+        }
+        return 'Salesforce connection required';
+    }
+
+    get authBoundarySubtitle() {
+        if (this.showSessionExpiredBanner) {
+            return 'Your Salesforce session has expired. Reconnect from the toolkit to continue using this workbench.';
+        }
+        if (this.connectorHasError) {
+            return (
+                this.connectorErrorMessage ||
+                'This workbench detected an issue with the toolkit connection. Reconnect from the toolkit to continue.'
+            );
+        }
+        return 'This workbench needs an active toolkit session before it can load.';
     }
 
     get isSessionExpiredInitializationError() {

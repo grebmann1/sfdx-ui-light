@@ -1,3 +1,8 @@
+---
+name: api
+description: Run Salesforce REST API calls and manage saved API scripts. Use when the user wants to run a REST call, inspect or edit a request (endpoint, method, body, headers), or manage saved API scripts.
+---
+
 # API
 
 Run REST calls and manage saved API scripts.

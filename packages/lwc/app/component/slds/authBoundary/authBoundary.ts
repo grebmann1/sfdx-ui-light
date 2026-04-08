@@ -5,35 +5,14 @@ import { connectStore, store, APPLICATION } from 'core/store';
 import LOGGER from 'shared/logger';
 import { isChromeExtension } from 'shared/utils';
 import SessionRecoveryModal, { RESULT as SESSION_RECOVERY_RESULT } from 'slds/sessionRecoveryModal';
-
-const MODAL_VARIANTS = {
-    EXPIRED: 'expired',
-    MISSING_SESSION: 'missing-session',
-    RECONNECT_FAILED: 'reconnect-failed',
-};
-
-const DEFAULT_TITLE = 'No Salesforce Connection';
-const DEFAULT_SUBTITLE = "It's required to be connected to an Org to use this feature";
-
-const MODAL_COPY = {
-    [MODAL_VARIANTS.EXPIRED]: {
-        heading: 'Session Expired',
-        message: 'Your Salesforce session has expired.',
-        details:
-            'If auto-reconnect is available, we can try to restore the same org session for you. Otherwise, log out and reconnect manually.',
-    },
-    [MODAL_VARIANTS.MISSING_SESSION]: {
-        heading: 'Reconnect Unavailable',
-        message: 'No reusable Salesforce session was found in your open browser tabs.',
-        details:
-            'Open the same org in another tab if you want to retry auto-reconnect, or log out and reconnect manually.',
-    },
-    [MODAL_VARIANTS.RECONNECT_FAILED]: {
-        heading: 'Reconnect Failed',
-        message: 'We could not restore your Salesforce session automatically.',
-        details: 'You can retry auto-reconnect or log out and reconnect manually.',
-    },
-};
+import {
+    DEFAULT_SUBTITLE,
+    DEFAULT_TITLE,
+    EXPIRED_SUBTITLE,
+    EXPIRED_TITLE,
+    MODAL_COPY,
+    MODAL_VARIANTS,
+} from './constants.js';
 
 export default class AuthBoundary extends ToolkitElement {
     @api isRequired = false;
@@ -44,10 +23,12 @@ export default class AuthBoundary extends ToolkitElement {
     @api suppressSessionRecovery = false;
 
     _sessionRecoveryInProgress = false;
+    sessionHasExpired = false;
 
     @wire(connectStore, { store })
     handleApplicationChange({ application }) {
-        if (!this.suppressSessionRecovery && application?.sessionHasExpired) {
+        this.sessionHasExpired = Boolean(application?.sessionHasExpired);
+        if (!this.suppressSessionRecovery && this.sessionHasExpired) {
             void this.handleSessionRecovery();
         }
     }
@@ -78,7 +59,7 @@ export default class AuthBoundary extends ToolkitElement {
                     continue;
                 }
 
-                store.dispatch(APPLICATION.reduxSlice.actions.logout());
+                store.dispatch(APPLICATION.reduxSlice.actions.logout({}));
                 return;
             }
         } finally {
@@ -93,20 +74,49 @@ export default class AuthBoundary extends ToolkitElement {
         }
 
         try {
-            const result = await new Promise(resolve => {
-                try {
-                    chrome.runtime.sendMessage(
-                        {
-                            action: 'findExistingSession',
-                            alias: configuration?.alias,
-                            instanceUrl: configuration?.instanceUrl,
-                        },
-                        response => resolve(response)
-                    );
-                } catch {
-                    resolve(undefined);
+            const chromeRuntime = (
+                window as Window & {
+                    chrome?: {
+                        runtime?: {
+                            sendMessage?: (
+                                message: {
+                                    action: string;
+                                    alias?: string;
+                                    instanceUrl?: string;
+                                },
+                                callback?: (response?: { sessionId?: string; serverUrl?: string }) => void
+                            ) => void;
+                        };
+                    };
                 }
-            });
+            ).chrome?.runtime;
+            const sendMessage =
+                chromeRuntime && typeof chromeRuntime.sendMessage === 'function'
+                    ? chromeRuntime.sendMessage.bind(chromeRuntime)
+                    : null;
+            const result = await new Promise<{ sessionId?: string; serverUrl?: string } | undefined>(
+                resolve => {
+                    try {
+                        if (!sendMessage) {
+                            resolve(undefined);
+                            return;
+                        }
+                        sendMessage(
+                            {
+                                action: 'findExistingSession',
+                                alias: configuration?.alias,
+                                instanceUrl: configuration?.instanceUrl,
+                            },
+                            response =>
+                                resolve(
+                                    response as { sessionId?: string; serverUrl?: string } | undefined
+                                )
+                        );
+                    } catch {
+                        resolve(undefined);
+                    }
+                }
+            );
 
             if (result?.sessionId && result?.serverUrl) {
                 const connector = await credentialStrategies.SESSION.connect({
@@ -138,7 +148,7 @@ export default class AuthBoundary extends ToolkitElement {
     }
 
     get isBlocked() {
-        return Boolean(this.shouldRequireConnection && !this.isUserLoggedIn);
+        return Boolean(this.shouldRequireConnection && (!this.isUserLoggedIn || this.sessionHasExpired));
     }
 
     get shouldRequireConnection() {
@@ -157,6 +167,14 @@ export default class AuthBoundary extends ToolkitElement {
         return this.isBlocked
             ? 'auth-boundary__overlay auth-boundary__overlay_visible'
             : 'auth-boundary__overlay';
+    }
+
+    get resolvedTitle() {
+        return this.sessionHasExpired ? EXPIRED_TITLE : this.title;
+    }
+
+    get resolvedSubTitle() {
+        return this.sessionHasExpired ? EXPIRED_SUBTITLE : this.subTitle;
     }
 
     get isAutoReconnectEnabled() {

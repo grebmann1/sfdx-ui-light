@@ -26,24 +26,46 @@
                         onkeydown={stopKeydown}
                         alternative-text={i18n.AltTextExpandFolder}
                         data-element="chevron-icon"></lightning-button-icon>
-                    <lightning-icon
-                        lwc:if={isFolderIconDisplayedAndVisible}
-                        icon-name={folderIcon}
-                        size="x-small"
-                        class="slds-m-right_x-small"
-                        alternative-text={i18n.AltTextFolder}></lightning-icon>
+                    <template lwc:if={isFolderIconDisplayedAndVisible}>
+                        <slds-lucide-icon
+                            lwc:if={isLucideFolderIcon}
+                            name={lucideFolderIconName}
+                            size="14"
+                            stroke-width="1.5"
+                            class="slds-m-right_x-small"></slds-lucide-icon>
+                        <lightning-icon
+                            lwc:else
+                            icon-name={folderIcon}
+                            size="x-small"
+                            class="slds-m-right_x-small"
+                            alternative-text={i18n.AltTextFolder}></lightning-icon>
+                    </template>
                 </template>
                 <template lwc:else>
                     <template lwc:if={isApiIconAndVisible}>
-                        <span class={apiIconClass} data-element="api-badge">{apiIconText}</span>
+                        <span class={apiIconClass} data-element="api-badge">
+                            <slds-lucide-icon
+                                lwc:if={apiIconLucideName}
+                                name={apiIconLucideName}
+                                size="11"
+                                stroke-width="2.5"
+                                class="api-badge-icon"></slds-lucide-icon>{apiIconText}</span>
                     </template>
                     <template lwc:else>
-                        <lightning-icon
-                            lwc:if={isFileIconVisible}
-                            icon-name={itemIcon}
-                            size="x-small"
-                            class="slds-m-right_x-small"
-                            alternative-text={i18n.AltTextFile}></lightning-icon>
+                        <template lwc:if={isFileIconVisible}>
+                            <slds-lucide-icon
+                                lwc:if={isLucideFileIcon}
+                                name={lucideFileIconName}
+                                size="14"
+                                stroke-width="1.5"
+                                class="slds-m-right_x-small"></slds-lucide-icon>
+                            <lightning-icon
+                                lwc:else
+                                icon-name={itemIcon}
+                                size="x-small"
+                                class="slds-m-right_x-small"
+                                alternative-text={i18n.AltTextFile}></lightning-icon>
+                        </template>
                     </template>
                 </template>
                 <h3

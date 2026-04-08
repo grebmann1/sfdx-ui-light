@@ -1,5 +1,10 @@
 /* eslint-disable import/no-unresolved */
-import { createOpenAI } from '@ai-sdk/openai';
+import {
+    createProviderInstance,
+    getReasoningConfigFromSelection,
+    resolveProviderModelInstance,
+    resolveProviderOptions,
+} from 'agent/utils';
 import { jsonSchema, stepCountIs, streamText, tool as createAiSdkTool } from 'ai';
 import { guid } from 'shared/utils';
 import { z } from 'zod';
@@ -7,10 +12,8 @@ import { z } from 'zod';
 import { MAX_STORED_MESSAGES } from '../constants.js';
 
 import {
-    getReasoningConfigFromSelection,
     isAbortLikeError,
     resolveWorkbenchAgentSettings,
-    resolveWorkbenchOpenAiBaseUrl,
 } from './agentConfig.js';
 
 const conversationsByKey = new Map();
@@ -186,19 +189,10 @@ export async function createWorkbenchAgentRequest({
     const messages = [...previousMessages, userMessage];
     const abortController = new AbortController();
     const reasoningConfig = getReasoningConfigFromSelection(settings.selectedReasoning);
-    const openai = createOpenAI({
+    const providerInstance = createProviderInstance({
+        provider: 'openai',
         apiKey: settings.openaiKey,
-        baseURL: resolveWorkbenchOpenAiBaseUrl(settings.openaiUrl),
-        fetch: (url, options) =>
-            fetch(url, {
-                ...options,
-                credentials: 'omit',
-                headers: {
-                    ...Object.fromEntries(
-                        Object.entries(options?.headers || {}).filter(([key]) => key !== 'cookie')
-                    ),
-                },
-            }),
+        baseUrl: settings.openaiUrl,
     });
 
     return {
@@ -209,19 +203,22 @@ export async function createWorkbenchAgentRequest({
         async *stream() {
             let assistantText = '';
             const result = streamText({
-                model: settings.isInternal
-                    ? openai.chat(settings.selectedModel)
-                    : openai(settings.selectedModel),
+                model: resolveProviderModelInstance(providerInstance, {
+                    provider: 'openai',
+                    modelId: settings.selectedModel,
+                    isInternal: settings.isInternal,
+                }),
                 system: buildSystemPrompt(settings.systemPrompt, conversationId),
                 messages,
                 tools: toAiSdkTools(tools, { conversationId }),
                 stopWhen: stepCountIs(settings.maxToolRounds),
                 maxRetries: 0,
                 abortSignal: abortController.signal,
-                providerOptions:
-                    settings.isInternal || reasoningConfig == null
-                        ? undefined
-                        : { openai: reasoningConfig },
+                providerOptions: resolveProviderOptions({
+                    provider: 'openai',
+                    reasoningConfig,
+                    isInternal: settings.isInternal,
+                }),
             });
 
             try {

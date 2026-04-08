@@ -10,13 +10,45 @@ import {
     buildProviderConfigCacheRecord,
     getAiProviderFromConfig,
     resolveLlmProviderConfigMap,
+    saveSingleExtensionConfigToCache,
 } from 'shared/cacheManager';
 import Toast from 'lightning/toast';
 import LOGGER from 'shared/logger';
 import { store, APPLICATION } from 'core/store';
 import { NavigationContext, navigate } from 'lwr/navigation';
 import { METADATA as METADATA_UTILS } from 'shared/utils';
-import { getProviderOptions } from 'shared/llm';
+
+function buildEditableProviderConfigs(config) {
+    const currentProviderConfigs = resolveLlmProviderConfigMap(config);
+    return {
+        ...currentProviderConfigs,
+        openai: {
+            ...currentProviderConfigs.openai,
+            apiKey: config[CACHE_CONFIG.OPENAI_KEY.key],
+            baseUrl: config[CACHE_CONFIG.OPENAI_URL.key],
+        },
+        anthropic: {
+            ...currentProviderConfigs.anthropic,
+            apiKey: config[CACHE_CONFIG.ANTHROPIC_KEY.key],
+            baseUrl: config[CACHE_CONFIG.ANTHROPIC_URL.key],
+        },
+        gemini: {
+            ...currentProviderConfigs.gemini,
+            apiKey: config[CACHE_CONFIG.GEMINI_KEY.key],
+            baseUrl: config[CACHE_CONFIG.GEMINI_URL.key],
+        },
+        mistral: {
+            ...currentProviderConfigs.mistral,
+            apiKey: config[CACHE_CONFIG.MISTRAL_KEY.key],
+            baseUrl: config[CACHE_CONFIG.MISTRAL_URL.key],
+        },
+        grok: {
+            ...currentProviderConfigs.grok,
+            apiKey: config[CACHE_CONFIG.GROK_KEY.key],
+            baseUrl: config[CACHE_CONFIG.GROK_URL.key],
+        },
+    };
+}
 
 export default class App extends ToolkitElement {
     static DEFAULT_METADATA_STORAGE_TYPES = [
@@ -64,10 +96,12 @@ export default class App extends ToolkitElement {
     isOpenAIKeyVisible = false;
     isMistralKeyVisible = false;
 
+    // Google Integration
+    @track googleConnected = false;
+
     // New property to track API version validity
     _isApiVersionValid = true;
 
-    @track aiProviderOptions = getProviderOptions();
     @track metadataStorageTypeOptions = App.DEFAULT_METADATA_STORAGE_TYPES.map(type => ({
         label: type,
         value: type,
@@ -200,6 +234,48 @@ export default class App extends ToolkitElement {
         navigate(this.navContext, { type: 'application', state: { applicationName: 'files' } });
     };
 
+    handleConnectGoogle = async () => {
+        if (!this.isChrome || typeof chrome?.identity?.getAuthToken !== 'function') {
+            Toast.show({ label: 'Google sign-in is only available in the Chrome extension.', variant: 'error' });
+            return;
+        }
+        try {
+            await new Promise((resolve, reject) => {
+                chrome.identity.getAuthToken({ interactive: true }, token => {
+                    if (chrome.runtime.lastError || !token) {
+                        reject(new Error(chrome.runtime.lastError?.message || 'Authorization failed'));
+                    } else {
+                        resolve(token);
+                    }
+                });
+            });
+            this.googleConnected = true;
+            await saveSingleExtensionConfigToCache(CACHE_CONFIG.GOOGLE_CONNECTED.key, true);
+            Toast.show({ label: 'Connected to Google', variant: 'success' });
+        } catch (err) {
+            LOGGER.error('Google OAuth error', err);
+            Toast.show({ label: `Failed to connect: ${err.message}`, variant: 'error' });
+        }
+    };
+
+    handleDisconnectGoogle = async () => {
+        if (!this.isChrome || typeof chrome?.identity?.getAuthToken !== 'function') return;
+        try {
+            const token = await new Promise(resolve => {
+                chrome.identity.getAuthToken({ interactive: false }, t => resolve(t || null));
+            });
+            if (token) {
+                await new Promise(resolve => chrome.identity.removeCachedAuthToken({ token }, resolve));
+            }
+            this.googleConnected = false;
+            await saveSingleExtensionConfigToCache(CACHE_CONFIG.GOOGLE_CONNECTED.key, false);
+            Toast.show({ label: 'Disconnected from Google', variant: 'success' });
+        } catch (err) {
+            LOGGER.error('Google disconnect error', err);
+            Toast.show({ label: `Failed to disconnect: ${err.message}`, variant: 'error' });
+        }
+    };
+
     /** Methods **/
 
     sendToggleOverlayMessage = checked => {
@@ -215,7 +291,7 @@ export default class App extends ToolkitElement {
         Object.values(configurationList).forEach(item => {
             config[item.key] = this.config[item.key];
         });
-        const providerConfigs = resolveLlmProviderConfigMap(config);
+        const providerConfigs = buildEditableProviderConfigs(config);
         Object.assign(config, buildProviderConfigCacheRecord(providerConfigs));
         // if the overlayEnabled is changed, send a message to the background script
         if (
@@ -328,6 +404,9 @@ export default class App extends ToolkitElement {
             this.hasIncognitoAccess = await chrome.extension.isAllowedIncognitoAccess();
             this.isChromeSyncSettingsEnabled = cacheManager.isChromeSyncSettingsEnabled; // Manually added to the cacheManager
         }
+
+        // Google Integration status
+        this.googleConnected = !!config[CACHE_CONFIG.GOOGLE_CONNECTED.key];
     };
 
     loadMetadataStorageTypeOptions = async () => {

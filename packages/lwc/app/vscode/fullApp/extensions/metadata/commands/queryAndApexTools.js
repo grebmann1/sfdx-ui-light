@@ -24,8 +24,29 @@ function flattenRecord(record) {
     return output;
 }
 
-export function registerQueryAndApexTools({ connectionRuntime, context, deployTools }) {
+function sanitizeSoqlText(soql) {
+    return String(soql || '')
+        .split(/\r?\n/)
+        .filter(line => {
+            const trimmed = line.trim();
+            return !trimmed.startsWith('//') && !trimmed.startsWith('--');
+        })
+        .join('\n')
+        .trim();
+}
+
+export function registerQueryAndApexTools({
+    connectionRuntime,
+    context,
+    deployTools,
+    commandGroups = ['all'],
+}) {
     const { diagnostics, vscode } = context;
+    const activeGroups = new Set(
+        Array.isArray(commandGroups) && commandGroups.length ? commandGroups : ['all']
+    );
+    const hasGroup = group => activeGroups.has('all') || activeGroups.has(group);
+    const registeredCommandGroups = new Set();
 
     async function runQuery({ soql, tooling }) {
         const conn = connectionRuntime.loadStoredConn();
@@ -35,7 +56,7 @@ export function registerQueryAndApexTools({ connectionRuntime, context, deployTo
             );
             return null;
         }
-        const query = String(soql || '').trim();
+        const query = sanitizeSoqlText(soql);
         if (!query) return null;
         const path = tooling
             ? `/tooling/query?q=${encodeURIComponent(query)}`
@@ -176,148 +197,187 @@ export function registerQueryAndApexTools({ connectionRuntime, context, deployTo
         return context.addDisposable(vscode.commands.registerCommand(command, handler));
     }
 
-    register('salesforceMetadata.runSoqlQuery', async () => {
-        const editor = vscode.window?.activeTextEditor;
-        const selected =
-            editor?.document && editor?.selection && !editor.selection.isEmpty
-                ? editor.document.getText(editor.selection)
-                : '';
-        const soql = await vscode.window.showInputBox({
-            title: 'Run SOQL Query',
-            prompt: 'Example: SELECT Id, Name FROM Account LIMIT 50',
-            value: selected?.trim() || '',
-            ignoreFocusOut: true,
+    if (hasGroup('soql')) {
+        if (registeredCommandGroups.has('soql')) {
+            return;
+        }
+        registeredCommandGroups.add('soql');
+        register('salesforceMetadata.runSoqlQuery', async () => {
+            const editor = vscode.window?.activeTextEditor;
+            const selected =
+                editor?.document && editor?.selection && !editor.selection.isEmpty
+                    ? editor.document.getText(editor.selection)
+                    : '';
+            const soql = await vscode.window.showInputBox({
+                title: 'Run SOQL Query',
+                prompt: 'Example: SELECT Id, Name FROM Account LIMIT 50',
+                value: selected?.trim() || '',
+                ignoreFocusOut: true,
+            });
+            if (!soql) return;
+            const result = await vscode.window.withProgress(
+                {
+                    location: vscode.ProgressLocation.Notification,
+                    title: 'Running SOQL query…',
+                    cancellable: false,
+                },
+                async () => await runQuery({ tooling: false, soql })
+            );
+            if (!result) return;
+            await writeQueryResults(result);
         });
-        if (!soql) return;
-        const result = await vscode.window.withProgress(
-            {
-                location: vscode.ProgressLocation.Notification,
-                title: 'Running SOQL query…',
-                cancellable: false,
-            },
-            async () => await runQuery({ tooling: false, soql })
-        );
-        if (!result) return;
-        await writeQueryResults(result);
-    });
 
-    register('salesforceMetadata.runToolingQuery', async () => {
-        const editor = vscode.window?.activeTextEditor;
-        const selected =
-            editor?.document && editor?.selection && !editor.selection.isEmpty
-                ? editor.document.getText(editor.selection)
-                : '';
-        const soql = await vscode.window.showInputBox({
-            title: 'Run Tooling Query',
-            prompt: 'Example: SELECT Id, Name FROM ApexClass LIMIT 50',
-            value: selected?.trim() || '',
-            ignoreFocusOut: true,
+        register('salesforceMetadata.runToolingQuery', async () => {
+            const editor = vscode.window?.activeTextEditor;
+            const selected =
+                editor?.document && editor?.selection && !editor.selection.isEmpty
+                    ? editor.document.getText(editor.selection)
+                    : '';
+            const soql = await vscode.window.showInputBox({
+                title: 'Run Tooling Query',
+                prompt: 'Example: SELECT Id, Name FROM ApexClass LIMIT 50',
+                value: selected?.trim() || '',
+                ignoreFocusOut: true,
+            });
+            if (!soql) return;
+            const result = await vscode.window.withProgress(
+                {
+                    location: vscode.ProgressLocation.Notification,
+                    title: 'Running Tooling query…',
+                    cancellable: false,
+                },
+                async () => await runQuery({ tooling: true, soql })
+            );
+            if (!result) return;
+            await writeQueryResults(result);
         });
-        if (!soql) return;
-        const result = await vscode.window.withProgress(
-            {
-                location: vscode.ProgressLocation.Notification,
-                title: 'Running Tooling query…',
-                cancellable: false,
-            },
-            async () => await runQuery({ tooling: true, soql })
-        );
-        if (!result) return;
-        await writeQueryResults(result);
-    });
 
-    register('salesforceMetadata.openSoqlScratch', async () => {
-        const sfDir = getSalesforceStateDirUri(vscode);
-        const scratchUri = getWorkspaceUri(vscode, '.salesforce/soql-editor.soql');
-        await ensureDir(vscode, sfDir);
-        try {
-            await vscode.workspace.fs.stat(scratchUri);
-        } catch {
+        register('salesforceMetadata.openSoqlScratch', async () => {
+            const sfDir = getSalesforceStateDirUri(vscode);
+            const scratchUri = getWorkspaceUri(vscode, '.salesforce/soql-editor.soql');
+            await ensureDir(vscode, sfDir);
             try {
-                await writeTextFile(
-                    vscode,
-                    scratchUri,
-                    'SELECT Id, Name\nFROM Account\nLIMIT 50\n',
-                    { skipCache: true }
-                );
+                await vscode.workspace.fs.stat(scratchUri);
+            } catch {
+                try {
+                    await writeTextFile(
+                        vscode,
+                        scratchUri,
+                        'SELECT Id, Name\nFROM Account\nLIMIT 50\n',
+                        { skipCache: true }
+                    );
+                } catch {
+                    // ignore
+                }
+            }
+            try {
+                const doc = await vscode.workspace.openTextDocument(scratchUri);
+                await vscode.window.showTextDocument(doc, { preview: false });
             } catch {
                 // ignore
             }
-        }
+        });
+
+        register('salesforceMetadata._runSoqlEditorDoc', async uriArg => {
+            const uri = await toUri(uriArg);
+            const soql = await readSelectionOrDocumentText(uri);
+            const result = await vscode.window.withProgress(
+                {
+                    location: vscode.ProgressLocation.Notification,
+                    title: 'Running SOQL query…',
+                    cancellable: false,
+                },
+                async () => await runQuery({ tooling: false, soql })
+            );
+            if (!result) return;
+            await writeQueryResults(result);
+        });
+
+        register('salesforceMetadata._runToolingEditorDoc', async uriArg => {
+            const uri = await toUri(uriArg);
+            const soql = await readSelectionOrDocumentText(uri);
+            const result = await vscode.window.withProgress(
+                {
+                    location: vscode.ProgressLocation.Notification,
+                    title: 'Running Tooling query…',
+                    cancellable: false,
+                },
+                async () => await runQuery({ tooling: true, soql })
+            );
+            if (!result) return;
+            await writeQueryResults(result);
+        });
+
         try {
-            const doc = await vscode.workspace.openTextDocument(scratchUri);
-            await vscode.window.showTextDocument(doc, { preview: false });
+            if (
+                typeof vscode.languages?.registerCodeLensProvider === 'function' &&
+                typeof vscode.CodeLens === 'function' &&
+                typeof vscode.Range === 'function'
+            ) {
+                context.addDisposable(
+                    vscode.languages.registerCodeLensProvider('soql', {
+                        provideCodeLenses(doc) {
+                            try {
+                                if (!doc || doc.languageId !== 'soql') return [];
+                                const top = new vscode.Range(0, 0, 0, 0);
+                                return [
+                                    new vscode.CodeLens(top, {
+                                        title: 'Run SOQL',
+                                        command: 'salesforceMetadata._runSoqlEditorDoc',
+                                        arguments: [doc.uri],
+                                    }),
+                                    new vscode.CodeLens(top, {
+                                        title: 'Run Tooling',
+                                        command: 'salesforceMetadata._runToolingEditorDoc',
+                                        arguments: [doc.uri],
+                                    }),
+                                ];
+                            } catch {
+                                return [];
+                            }
+                        },
+                    })
+                );
+            }
         } catch {
             // ignore
         }
-    });
-
-    register('salesforceMetadata._runSoqlEditorDoc', async uriArg => {
-        const uri = await toUri(uriArg);
-        const soql = await readSelectionOrDocumentText(uri);
-        const result = await vscode.window.withProgress(
-            {
-                location: vscode.ProgressLocation.Notification,
-                title: 'Running SOQL query…',
-                cancellable: false,
-            },
-            async () => await runQuery({ tooling: false, soql })
-        );
-        if (!result) return;
-        await writeQueryResults(result);
-    });
-
-    register('salesforceMetadata._runToolingEditorDoc', async uriArg => {
-        const uri = await toUri(uriArg);
-        const soql = await readSelectionOrDocumentText(uri);
-        const result = await vscode.window.withProgress(
-            {
-                location: vscode.ProgressLocation.Notification,
-                title: 'Running Tooling query…',
-                cancellable: false,
-            },
-            async () => await runQuery({ tooling: true, soql })
-        );
-        if (!result) return;
-        await writeQueryResults(result);
-    });
-
-    try {
-        if (
-            typeof vscode.languages?.registerCodeLensProvider === 'function' &&
-            typeof vscode.CodeLens === 'function' &&
-            typeof vscode.Range === 'function'
-        ) {
-            context.addDisposable(
-                vscode.languages.registerCodeLensProvider('soql', {
-                    provideCodeLenses(doc) {
-                        try {
-                            if (!doc || doc.languageId !== 'soql') return [];
-                            const top = new vscode.Range(0, 0, 0, 0);
-                            return [
-                                new vscode.CodeLens(top, {
-                                    title: 'Run SOQL',
-                                    command: 'salesforceMetadata._runSoqlEditorDoc',
-                                    arguments: [doc.uri],
-                                }),
-                                new vscode.CodeLens(top, {
-                                    title: 'Run Tooling',
-                                    command: 'salesforceMetadata._runToolingEditorDoc',
-                                    arguments: [doc.uri],
-                                }),
-                            ];
-                        } catch {
-                            return [];
-                        }
-                    },
-                })
-            );
-        }
-    } catch {
-        // ignore
     }
 
-    register('salesforceMetadata.executeAnonymous', async () => {
+    if (hasGroup('apex')) {
+        if (registeredCommandGroups.has('apex')) {
+            return;
+        }
+        registeredCommandGroups.add('apex');
+        try {
+            if (
+                typeof vscode.languages?.registerCodeLensProvider === 'function' &&
+                typeof vscode.CodeLens === 'function' &&
+                typeof vscode.Range === 'function'
+            ) {
+                context.addDisposable(
+                    vscode.languages.registerCodeLensProvider('apex', {
+                        provideCodeLenses(doc) {
+                            try {
+                                if (!doc || doc.languageId !== 'apex') return [];
+                                const top = new vscode.Range(0, 0, 0, 0);
+                                return [
+                                    new vscode.CodeLens(top, {
+                                        title: 'Run Anonymous Apex',
+                                        command: 'salesforceMetadata.executeAnonymous',
+                                    }),
+                                ];
+                            } catch {
+                                return [];
+                            }
+                        },
+                    })
+                );
+            }
+        } catch {
+            // ignore
+        }
+        register('salesforceMetadata.executeAnonymous', async () => {
         const conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
             await vscode.window.showErrorMessage(
@@ -335,7 +395,7 @@ export function registerQueryAndApexTools({ connectionRuntime, context, deployTo
         if (
             !code &&
             doc &&
-            (doc.languageId === 'apex' || /\.cls$|\.trigger$/i.test(doc.uri?.path || ''))
+            (doc.languageId === 'apex' || /\.cls$|\.trigger$|\.apex$/i.test(doc.uri?.path || ''))
         ) {
             code = String(doc.getText?.() || '').trim();
         }
@@ -417,9 +477,9 @@ export function registerQueryAndApexTools({ connectionRuntime, context, deployTo
         await vscode.window.showErrorMessage(
             `Execute Anonymous failed.${details ? `\n\n${details}` : ''}`
         );
-    });
+        });
 
-    register('salesforceMetadata.runApexTests', async () => {
+        register('salesforceMetadata.runApexTests', async () => {
         const conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
             await vscode.window.showErrorMessage(
@@ -649,9 +709,9 @@ export function registerQueryAndApexTools({ connectionRuntime, context, deployTo
         } else {
             await vscode.window.showInformationMessage('Apex tests succeeded.');
         }
-    });
+        });
 
-    register('salesforceMetadata.enableDebugLogs', async () => {
+        register('salesforceMetadata.enableDebugLogs', async () => {
         let conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
             await vscode.window.showErrorMessage(
@@ -743,9 +803,9 @@ export function registerQueryAndApexTools({ connectionRuntime, context, deployTo
         await vscode.window.showInformationMessage(
             `Debug logs enabled for ${minutesPick.minutes} minutes.`
         );
-    });
+        });
 
-    register('salesforceMetadata.openDebugLogs', async () => {
+        register('salesforceMetadata.openDebugLogs', async () => {
         let conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
             await vscode.window.showErrorMessage(
@@ -812,9 +872,15 @@ export function registerQueryAndApexTools({ connectionRuntime, context, deployTo
         } catch {
             // ignore
         }
-    });
+        });
+    }
 
-    register('salesforceMetadata.whereUsed', async () => {
+    if (hasGroup('metadata')) {
+        if (registeredCommandGroups.has('metadata')) {
+            return;
+        }
+        registeredCommandGroups.add('metadata');
+        register('salesforceMetadata.whereUsed', async () => {
         const conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
             await vscode.window.showErrorMessage(
@@ -890,5 +956,6 @@ export function registerQueryAndApexTools({ connectionRuntime, context, deployTo
         } catch {
             // ignore
         }
-    });
+        });
+    }
 }

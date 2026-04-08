@@ -3,8 +3,7 @@
         <template if:true={showOrgBanner}>
             <section class={orgBannerClass} role="status" aria-live="polite">
                 <div class="orgBannerContent">
-                    <strong class="orgBannerTitle">{orgBannerTitle}</strong>
-                    <div class="orgBannerMessage">{orgBannerMessage}</div>
+                    <!-- <strong class="orgBannerTitle">{orgBannerTitle}</strong> -->
                 </div>
                 <div class="orgBannerMeta">
                     <template if:true={orgBannerHost}>
@@ -39,8 +38,8 @@
             is-loading={isAuthBoundaryLoading}
             suppress-session-recovery
             preserve-content-when-blocked
-            title="Salesforce connection required"
-            sub-title="This workbench needs an active toolkit session before it can load.">
+            title={authBoundaryTitle}
+            sub-title={authBoundarySubtitle}>
             <div class="workbenchShell">
                 <template if:true={showInitializationErrorOverlay}>
                     <div class="overlay overlayError" role="alert">

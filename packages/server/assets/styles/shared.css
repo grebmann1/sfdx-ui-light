@@ -524,3 +524,10 @@
 .sf-toolkit .slds-chat-listitem {
     margin-top: unset !important;
 }
+
+/** Modal close because of slds plus **/
+
+.slds-modal__close{
+    background-color: unset !important;
+    border: unset !important;
+}

@@ -496,6 +496,13 @@ export class CdpHandler {
             'ACTIVATE_TAB_REQUEST',
             'EVAL_RESULT',
             'SANDBOX_READY',
+            'FS_READ_REQUEST',
+            'FS_WRITE_REQUEST',
+            'FS_LIST_REQUEST',
+            'FS_DELETE_REQUEST',
+            'FS_MKDIR_REQUEST',
+            'FS_EXISTS_REQUEST',
+            'FS_STAT_REQUEST',
             'BASH_REQUEST',
             'WORKSPACE_REQUEST',
         ];
@@ -565,10 +572,19 @@ export class CdpHandler {
             return;
         }
 
-        /* if (message.type === "BASH_REQUEST") {
-            await this.handleBashRequest(message);
+        const FS_TYPES = [
+            'FS_READ_REQUEST',
+            'FS_WRITE_REQUEST',
+            'FS_LIST_REQUEST',
+            'FS_DELETE_REQUEST',
+            'FS_MKDIR_REQUEST',
+            'FS_EXISTS_REQUEST',
+            'FS_STAT_REQUEST',
+        ];
+        if (FS_TYPES.includes(message.type) || message.type === 'BASH_REQUEST') {
+            await this.handleFsOrBashRequest(message);
             return;
-        } */
+        }
 
         if (message.type === 'WORKSPACE_REQUEST') {
             await this.handleWorkspaceRequest(message);
@@ -868,8 +884,113 @@ export class CdpHandler {
         });
     }
 
+    async handleFsOrBashRequest(message) {
+        LOGGER.log('### [CdpHandler] handleFsOrBashRequest', message.type);
+        const responseType = message.type.replace('_REQUEST', '_RESPONSE');
+        const respond = (payload) => {
+            this.postToSandbox({ ...payload, type: responseType, id: message.id });
+        };
+
+        try {
+            const bash = this.deps?.getBashInstance?.();
+            if (!bash || typeof bash.exec !== 'function') {
+                respond({ success: false, error: 'Filesystem unavailable' });
+                return;
+            }
+
+            const quoteShell = (value) => {
+                const text = String(value ?? '');
+                return `'${text.replace(/'/g, `'\\''`)}'`;
+            };
+
+            const run = async (command) => {
+                const res = await bash.exec(command);
+                if (res?.exitCode !== 0) {
+                    const stderr = res?.stderr ? String(res.stderr).trim() : '';
+                    const stdout = res?.stdout ? String(res.stdout).trim() : '';
+                    throw new Error(stderr || stdout || `Command failed with exit code ${res?.exitCode}`);
+                }
+                return res;
+            };
+
+            switch (message.type) {
+                case 'FS_READ_REQUEST': {
+                    const res = await run(`cat -- ${quoteShell(message.path)}`);
+                    respond({ success: true, content: res.stdout ?? '' });
+                    return;
+                }
+                case 'FS_WRITE_REQUEST': {
+                    const { path, content } = message;
+                    const parentDir = path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : '';
+                    if (parentDir) await run(`mkdir -p -- ${quoteShell(parentDir)}`);
+                    const delimiter = `__FS_WRITE_${Date.now()}_${Math.random().toString(16).slice(2)}__`;
+                    await run(`cat > ${quoteShell(path)} <<'${delimiter}'\n${content}\n${delimiter}`);
+                    respond({ success: true });
+                    return;
+                }
+                case 'FS_LIST_REQUEST': {
+                    const res = await bash.exec(`ls -1a -- ${quoteShell(message.path)} 2>/dev/null`);
+                    const entries = (res.stdout ?? '')
+                        .split('\n')
+                        .map(e => e.trim())
+                        .filter(e => e && e !== '.' && e !== '..');
+                    respond({ success: true, entries });
+                    return;
+                }
+                case 'FS_DELETE_REQUEST': {
+                    await run(`rm -rf -- ${quoteShell(message.path)}`);
+                    respond({ success: true });
+                    return;
+                }
+                case 'FS_MKDIR_REQUEST': {
+                    await run(`mkdir -p -- ${quoteShell(message.path)}`);
+                    respond({ success: true });
+                    return;
+                }
+                case 'FS_EXISTS_REQUEST': {
+                    const res = await bash.exec(
+                        `test -e ${quoteShell(message.path)} && echo yes || echo no`
+                    );
+                    respond({ success: true, exists: (res.stdout ?? '').trim() === 'yes' });
+                    return;
+                }
+                case 'FS_STAT_REQUEST': {
+                    const res = await bash.exec(
+                        `if [ -d ${quoteShell(message.path)} ]; then echo directory; elif [ -f ${quoteShell(message.path)} ]; then echo file; else echo none; fi`
+                    );
+                    const type = (res.stdout ?? '').trim();
+                    if (type === 'none') {
+                        respond({ success: false, error: `Path not found: ${message.path}` });
+                        return;
+                    }
+                    respond({ success: true, stat: { type } });
+                    return;
+                }
+                case 'BASH_REQUEST': {
+                    const opts = message.cwd ? { cwd: message.cwd } : undefined;
+                    const res = await bash.exec(message.command, opts);
+                    respond({
+                        success: true,
+                        stdout: res?.stdout ?? '',
+                        stderr: res?.stderr ?? '',
+                        exitCode: res?.exitCode ?? 0,
+                    });
+                    return;
+                }
+                default: {
+                    respond({ success: false, error: `Unsupported FS/bash operation: ${message.type}` });
+                }
+            }
+        } catch (error) {
+            respond({
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+            });
+        }
+    }
+
     async handleWorkspaceRequest(message) {
-        LOGGER.log('### [CdpHandler] handleFsOrBashRequest', message);
+        LOGGER.log('### [CdpHandler] handleWorkspaceRequest', message.operation);
         const respond = ({ success, result, error }) => {
             this.postToSandbox({
                 type: 'WORKSPACE_RESPONSE',
@@ -964,6 +1085,178 @@ export class CdpHandler {
                     });
                     return;
                 }
+                case 'readFile': {
+                    const path = input?.path;
+                    if (typeof path !== 'string' || !path.trim()) {
+                        throw new Error('readFile requires a non-empty string path');
+                    }
+                    const res = await bash.exec(`cat -- ${quoteShell(path)}`);
+                    if (res?.exitCode !== 0) {
+                        throw new Error(
+                            (res?.stderr ? String(res.stderr).trim() : '') ||
+                            `cat failed with exit code ${res?.exitCode}`
+                        );
+                    }
+                    respond({ success: true, result: { content: res.stdout ?? '' } });
+                    return;
+                }
+                case 'listFiles': {
+                    const path = input?.path ?? '.';
+                    const res = await bash.exec(`ls -1a -- ${quoteShell(path)} 2>/dev/null`);
+                    const entries = (res.stdout ?? '')
+                        .split('\n')
+                        .map(e => e.trim())
+                        .filter(e => e && e !== '.' && e !== '..');
+                    respond({ success: true, result: { entries } });
+                    return;
+                }
+                case 'deleteFile': {
+                    const path = input?.path;
+                    if (typeof path !== 'string' || !path.trim()) {
+                        throw new Error('deleteFile requires a non-empty string path');
+                    }
+                    await run(`rm -rf -- ${quoteShell(path)}`);
+                    respond({ success: true, result: { path, deleted: true } });
+                    return;
+                }
+                case 'sheets.requestAccess': {
+                    try {
+                        const token = await this._getGoogleAccessToken(false);
+                        respond({ success: true, result: { authorized: !!token } });
+                    } catch {
+                        respond({ success: true, result: { authorized: false } });
+                    }
+                    return;
+                }
+                case 'sheets.getSpreadsheet': {
+                    const { spreadsheetId } = input;
+                    if (!spreadsheetId) throw new Error('sheets.getSpreadsheet requires spreadsheetId');
+                    const result = await this._googleSheetsRequest(
+                        'GET',
+                        `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}`
+                    );
+                    respond({ success: true, result });
+                    return;
+                }
+                case 'sheets.listSheets': {
+                    const { spreadsheetId } = input;
+                    if (!spreadsheetId) throw new Error('sheets.listSheets requires spreadsheetId');
+                    const data = await this._googleSheetsRequest(
+                        'GET',
+                        `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}?fields=sheets.properties`
+                    );
+                    const sheets = (data.sheets || []).map((s: any) => s.properties?.title).filter(Boolean);
+                    respond({ success: true, result: { sheets } });
+                    return;
+                }
+                case 'sheets.readRange': {
+                    const { spreadsheetId, range } = input;
+                    if (!spreadsheetId || !range) throw new Error('sheets.readRange requires spreadsheetId and range');
+                    const result = await this._googleSheetsRequest(
+                        'GET',
+                        `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent(range)}`
+                    );
+                    respond({ success: true, result });
+                    return;
+                }
+                case 'sheets.batchRead': {
+                    const { spreadsheetId, ranges } = input;
+                    if (!spreadsheetId || !Array.isArray(ranges)) throw new Error('sheets.batchRead requires spreadsheetId and ranges array');
+                    const params = ranges.map((r: string) => `ranges=${encodeURIComponent(r)}`).join('&');
+                    const result = await this._googleSheetsRequest(
+                        'GET',
+                        `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}/values:batchGet?${params}`
+                    );
+                    respond({ success: true, result });
+                    return;
+                }
+                case 'sheets.writeRange': {
+                    const { spreadsheetId, range, values, valueInputOption = 'USER_ENTERED' } = input;
+                    if (!spreadsheetId || !range || !values) throw new Error('sheets.writeRange requires spreadsheetId, range, and values');
+                    const result = await this._googleSheetsRequest(
+                        'PUT',
+                        `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent(range)}?valueInputOption=${valueInputOption}`,
+                        { range, values }
+                    );
+                    respond({ success: true, result });
+                    return;
+                }
+                case 'sheets.batchWrite': {
+                    const { spreadsheetId, data: writeData, valueInputOption = 'USER_ENTERED' } = input;
+                    if (!spreadsheetId || !Array.isArray(writeData)) throw new Error('sheets.batchWrite requires spreadsheetId and data array');
+                    const result = await this._googleSheetsRequest(
+                        'POST',
+                        `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}/values:batchUpdate`,
+                        { valueInputOption, data: writeData }
+                    );
+                    respond({ success: true, result });
+                    return;
+                }
+                case 'sheets.appendRows': {
+                    const { spreadsheetId, range, values, valueInputOption = 'USER_ENTERED' } = input;
+                    if (!spreadsheetId || !range || !values) throw new Error('sheets.appendRows requires spreadsheetId, range, and values');
+                    const result = await this._googleSheetsRequest(
+                        'POST',
+                        `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent(range)}:append?valueInputOption=${valueInputOption}&insertDataOption=INSERT_ROWS`,
+                        { values }
+                    );
+                    respond({ success: true, result });
+                    return;
+                }
+                case 'sheets.clearRange': {
+                    const { spreadsheetId, range } = input;
+                    if (!spreadsheetId || !range) throw new Error('sheets.clearRange requires spreadsheetId and range');
+                    const result = await this._googleSheetsRequest(
+                        'POST',
+                        `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent(range)}:clear`,
+                        {}
+                    );
+                    respond({ success: true, result });
+                    return;
+                }
+                case 'sheets.batchClear': {
+                    const { spreadsheetId, ranges } = input;
+                    if (!spreadsheetId || !Array.isArray(ranges)) throw new Error('sheets.batchClear requires spreadsheetId and ranges array');
+                    const result = await this._googleSheetsRequest(
+                        'POST',
+                        `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}/values:batchClear`,
+                        { ranges }
+                    );
+                    respond({ success: true, result });
+                    return;
+                }
+                case 'sheets.createSpreadsheet': {
+                    const { title, sheets: sheetDefs } = input;
+                    const body: any = { properties: { title: title || 'Untitled' } };
+                    if (Array.isArray(sheetDefs) && sheetDefs.length > 0) {
+                        body.sheets = sheetDefs.map((name: string) => ({ properties: { title: name } }));
+                    }
+                    const result = await this._googleSheetsRequest('POST', 'https://sheets.googleapis.com/v4/spreadsheets', body);
+                    respond({ success: true, result });
+                    return;
+                }
+                case 'sheets.batchUpdate': {
+                    const { spreadsheetId, requests } = input;
+                    if (!spreadsheetId || !Array.isArray(requests)) throw new Error('sheets.batchUpdate requires spreadsheetId and requests array');
+                    const result = await this._googleSheetsRequest(
+                        'POST',
+                        `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}:batchUpdate`,
+                        { requests }
+                    );
+                    respond({ success: true, result });
+                    return;
+                }
+                case 'sheets.setFormat': {
+                    const { spreadsheetId, requests: formatRequests } = input;
+                    if (!spreadsheetId || !Array.isArray(formatRequests)) throw new Error('sheets.setFormat requires spreadsheetId and requests array');
+                    const result = await this._googleSheetsRequest(
+                        'POST',
+                        `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}:batchUpdate`,
+                        { requests: formatRequests }
+                    );
+                    respond({ success: true, result });
+                    return;
+                }
                 default:
                     throw new Error(`Unsupported workspace operation: ${String(operation)}`);
             }
@@ -971,6 +1264,49 @@ export class CdpHandler {
             const errorMessage = error instanceof Error ? error.message : String(error);
             respond({ success: false, error: errorMessage });
         }
+    }
+
+    async _getGoogleAccessToken(interactive = false): Promise<string> {
+        if (typeof chrome === 'undefined' || typeof chrome?.identity?.getAuthToken !== 'function') {
+            throw new Error('Google sign-in is only available in the Chrome extension.');
+        }
+        return new Promise((resolve, reject) => {
+            chrome.identity.getAuthToken({ interactive }, token => {
+                if (chrome.runtime.lastError || !token) {
+                    reject(new Error(
+                        chrome.runtime.lastError?.message ||
+                        'Not authorized. Please connect to Google in Settings.'
+                    ));
+                } else {
+                    resolve(token as string);
+                }
+            });
+        });
+    }
+
+    async _googleSheetsRequest(method: string, url: string, body?: object): Promise<any> {
+        const token = await this._getGoogleAccessToken(false);
+        const init: RequestInit = {
+            method,
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        };
+        if (body !== undefined && method !== 'GET') {
+            init.body = JSON.stringify(body);
+        }
+        const response = await fetch(url, init);
+        if (response.status === 401) {
+            // Token is expired or revoked — invalidate and surface a clear error
+            await new Promise<void>(resolve => chrome.identity.removeCachedAuthToken({ token }, resolve));
+            throw new Error('Google token expired. Please reconnect to Google in Settings.');
+        }
+        if (!response.ok) {
+            const text = await response.text().catch(() => response.statusText);
+            throw new Error(`Google Sheets API error ${response.status}: ${text}`);
+        }
+        return response.json();
     }
 
     async encodeImagesAsWebp(images) {
