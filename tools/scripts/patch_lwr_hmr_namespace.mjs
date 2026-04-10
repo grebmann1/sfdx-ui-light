@@ -7,6 +7,10 @@ const targetFile = join(
     scriptDir,
     '../../node_modules/@lwrjs/lwc-module-provider/build/es/index.js'
 );
+const lwrEsmLoaderFile = join(
+    scriptDir,
+    '../../node_modules/@lwrjs/loader/build/modules/lwr/esmLoader/esmLoader.js'
+);
 
 const SEARCH = `    async getModuleSource({ name, namespace, specifier }, moduleEntry) {
         const { entry, version, id } = moduleEntry;
@@ -34,6 +38,34 @@ try {
 } catch (err) {
     if (err?.code === 'ENOENT') {
         console.warn('[patch-lwr-hmr] LWR module provider file not found; skipping.');
+    } else {
+        throw err;
+    }
+}
+
+const LOADER_DYNAMIC_IMPORT_SEARCH = '    return import(uri);';
+const LOADER_DYNAMIC_IMPORT_REPLACE = "    return Function('u', 'return import(u)')(uri);";
+
+try {
+    const content = readFileSync(lwrEsmLoaderFile, 'utf8');
+
+    if (content.includes(LOADER_DYNAMIC_IMPORT_REPLACE)) {
+        console.log('[patch-lwr-hmr] LWR esm loader dynamic import patch already applied.');
+    } else if (!content.includes(LOADER_DYNAMIC_IMPORT_SEARCH)) {
+        console.warn(
+            '[patch-lwr-hmr] Expected esm loader dynamic import line not found; skipping.'
+        );
+    } else {
+        const patched = content.replace(
+            LOADER_DYNAMIC_IMPORT_SEARCH,
+            LOADER_DYNAMIC_IMPORT_REPLACE
+        );
+        writeFileSync(lwrEsmLoaderFile, patched, 'utf8');
+        console.log('[patch-lwr-hmr] Patched LWR esm loader dynamic import for strict mode.');
+    }
+} catch (err) {
+    if (err?.code === 'ENOENT') {
+        console.warn('[patch-lwr-hmr] LWR esm loader file not found; skipping.');
     } else {
         throw err;
     }

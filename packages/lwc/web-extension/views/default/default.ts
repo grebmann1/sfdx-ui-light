@@ -28,6 +28,8 @@ export default class Default extends LightningElement {
     @api currentApplication;
     @api recordId;
     @api panel = PANELS.DEFAULT;
+    /** True when the focused browser tab URL matches inject/content-script include rules (Salesforce-like). */
+    @api activeTabMatchesSalesforce = false;
 
     previousPanel;
     isBackButtonDisplayed = false;
@@ -56,6 +58,14 @@ export default class Default extends LightningElement {
 
     get defaultPanelClass() {
         return this.isSalesforcePanel ? 'slds-hide' : '';
+    }
+
+    get showSalesforceContextBanner() {
+        return !this.isSalesforcePanel && this.activeTabMatchesSalesforce;
+    }
+
+    get showBackToAppsBanner() {
+        return this.isSalesforcePanel && !this.activeTabMatchesSalesforce;
     }
 
     @wire(connectStore, { store: legacyStore })
@@ -108,6 +118,22 @@ export default class Default extends LightningElement {
         this.panel = PANELS.SALESFORCE; // For now only salesforce is returned with go back, In the futur, store the navigation events to go back !
         this.isBackButtonDisplayed = false;
         //this.previousPanel = null;
+    };
+
+    handleOpenSalesforcePanel = () => {
+        this.panel = PANELS.SALESFORCE;
+        this.isBackButtonDisplayed = false;
+        this.notifyBackgroundApplicationChange('salesforce');
+        if (this.refs.default) {
+            (this.refs.default as any).connection_refresh();
+        }
+    };
+
+    handleBackToAppsPanel = () => {
+        this.panel = PANELS.DEFAULT;
+        this.isBackButtonDisplayed = false;
+        const app = store.getState()?.application?.currentApplication || 'connection';
+        this.notifyBackgroundApplicationChange(app);
     };
 
     /** Methods **/

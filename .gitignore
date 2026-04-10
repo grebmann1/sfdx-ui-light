@@ -16,6 +16,10 @@ dist/web
 out/
 *.zip
 dist/extension/
+/dist/ui/
+/dist/docs/
+/apps/docs/.docusaurus/
+/apps/docs/.cache/
 assets/data/salesforce/*/
 cert/
 /packages/workers/dist/

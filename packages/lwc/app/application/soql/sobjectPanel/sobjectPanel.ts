@@ -3,7 +3,7 @@ import ToolkitElement from 'core/toolkitElement';
 
 import { store, connectStore, DESCRIBE, UI } from 'core/store';
 import { lowerCaseKey } from 'shared/utils';
-import { SOBJECT_ICON } from '../constants';
+import { SOBJECT_ICON } from './constants.ts';
 
 export default class SobjectsPanel extends ToolkitElement {
     sobjects;

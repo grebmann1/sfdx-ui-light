@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import fs from 'node:fs';
+import path from 'node:path';
 
 import express from 'express';
 import jsforce from 'jsforce';
@@ -31,6 +32,9 @@ console.log('process.env.PORT', process.env.PORT);
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const SERVER_MODE = 'development' === process.env.NODE_ENV ? 'dev' : 'prod';
 const CHROME_ID = process.env.CHROME_ID || 'dncmipbpdapfjancbhmbodlhllapmagf';
+const UI_DIST_DIR = path.resolve(process.cwd(), 'dist/ui');
+const DOCS_DIST_DIR = path.resolve(process.cwd(), 'dist/docs');
+const hasDocsSite = fs.existsSync(path.join(DOCS_DIST_DIR, 'index.html'));
 
 // Initialize documentation search index
 //documentationSearch.initDocumentationIndex(DATA_DOCUMENTATION.contents);
@@ -60,6 +64,24 @@ const app = lwrServer.getInternalServer('express');
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb' }));
 app.use(haltOnTimedout);
+
+if (hasDocsSite) {
+    app.use('/docs', express.static(DOCS_DIST_DIR));
+    app.get('/docs', (_req, res) => {
+        res.redirect('/docs/');
+    });
+}
+
+app.use('/welcome/ui-assets', express.static(path.join(UI_DIST_DIR, 'ui-assets')));
+app.get('/welcome', (_req, res) => {
+    res.sendFile(path.join(UI_DIST_DIR, 'index.html'));
+});
+app.get('/welcome/', (_req, res) => {
+    res.sendFile(path.join(UI_DIST_DIR, 'index.html'));
+});
+app.get('/welcome/:splat(*)', (_req, res) => {
+    res.sendFile(path.join(UI_DIST_DIR, 'index.html'));
+});
 
 function haltOnTimedout(req, res, next) {
     if (!req.timedout) next();

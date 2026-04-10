@@ -48,6 +48,65 @@ const workbenchBaseUrl = JSON.stringify(
         .trim()
         .replace(/\/+$/, '')
 );
+const fullAppPathFragment = `${path.sep}vscode${path.sep}fullApp${path.sep}`;
+
+function importerIsUnderVscodeFullApp(importer) {
+    return typeof importer === 'string' && importer.includes(fullAppPathFragment);
+}
+
+/**
+ * Map extensionless or `.js` specifiers under vscode/fullApp to sibling `*.ts` when the `.ts` file exists.
+ * LWC output often ends up with `.js` specifiers for modules that are `.ts` only (no stub `.js`).
+ */
+const vscodeFullAppTsFallback = () => ({
+    name: 'vscode-fullapp-ts-fallback',
+    async resolveId(source, importer, options) {
+        if (typeof source !== 'string' || source.startsWith('\0')) {
+            return null;
+        }
+        if (importerIsUnderVscodeFullApp(importer) && (source.startsWith('.') || source.startsWith('/'))) {
+            const baseDir = path.dirname(importer);
+            const absoluteJs =
+                source.endsWith('.js') ? path.resolve(baseDir, source) : null;
+            if (absoluteJs && fs.existsSync(absoluteJs)) {
+                return null;
+            }
+            let candidateTs;
+            if (source.endsWith('.ts')) {
+                candidateTs = path.resolve(baseDir, source);
+            } else if (source.endsWith('.js')) {
+                candidateTs = path.resolve(baseDir, `${source.slice(0, -3)}.ts`);
+            } else {
+                candidateTs = path.resolve(baseDir, `${source}.ts`);
+            }
+            try {
+                if (candidateTs.endsWith('.ts') && fs.existsSync(candidateTs)) {
+                    return candidateTs;
+                }
+            } catch {
+                // fall through to default resolution
+            }
+        }
+        const resolved = await this.resolve(source, importer, {
+            skipSelf: true,
+            ...options,
+        });
+        const id = resolved?.id;
+        if (typeof id !== 'string' || !id.endsWith('.js') || !id.includes(fullAppPathFragment)) {
+            return null;
+        }
+        try {
+            if (fs.existsSync(id)) {
+                return null;
+            }
+        } catch {
+            return null;
+        }
+        const tsPath = `${id.slice(0, -3)}.ts`;
+        return fs.existsSync(tsPath) ? tsPath : null;
+    },
+});
+
 const stripTypescript = () => ({
     name: 'strip-typescript',
     transform(code, id) {
@@ -387,6 +446,7 @@ const basicBundler = (
         createAliasPlugin(coreAliasEntries),
         ...(useLwc ? [] : [lwcAliasForNonLwcBundles(modulesArg)]),
         resolvePlugin,
+        vscodeFullAppTsFallback(),
         cjsPlugin,
         // Provide polyfills for any Node built-ins used by bundled deps (browser-only output).
         nodePolyfills(),
@@ -435,6 +495,7 @@ const coreBuilder = (modulesArg, isProduction) => ({
         // Polyfill Node built-ins before resolving dependencies.
         nodePolyfills(),
         resolvePlugin,
+        vscodeFullAppTsFallback(),
         cjsPlugin,
         stripTypescript(),
         lwc({

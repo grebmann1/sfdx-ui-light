@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import fs from 'node:fs';
+import path from 'node:path';
 
 import express from 'express';
 import jsforce from 'jsforce';
@@ -43,6 +44,9 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb' }));
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const CHROME_ID = process.env.CHROME_ID || 'dncmipbpdapfjancbhmbodlhllapmagf';
+const UI_DIST_DIR = path.resolve(process.cwd(), 'dist/ui');
+const DOCS_DIST_DIR = path.resolve(process.cwd(), 'dist/docs');
+const hasDocsSite = fs.existsSync(path.join(DOCS_DIST_DIR, 'index.html'));
 
 const getQueryStringValue = (value: unknown): string => {
     if (Array.isArray(value)) {
@@ -64,6 +68,18 @@ const getOAuth2Instance = params => {
 const checkIfPresent = (a, b) => {
     return (a || '').toLowerCase().includes((b || '').toLowerCase());
 };
+
+if (hasDocsSite) {
+    app.use('/docs', express.static(DOCS_DIST_DIR));
+    app.get('/docs', (_req, res) => {
+        res.redirect('/docs/');
+    });
+}
+
+app.use('/welcome/ui-assets', express.static(path.join(UI_DIST_DIR, 'ui-assets')));
+app.get('/welcome{/*splat}', (_req, res) => {
+    res.sendFile(path.join(UI_DIST_DIR, 'index.html'));
+});
 
 /* CometD Proxy */
 app.all('/cometd{/*splat}', proxy({ enableCORS: true }));

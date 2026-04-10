@@ -2,7 +2,7 @@ import { generateText, type ModelMessage } from 'ai';
 import {
     resolveProviderModelInstance,
     type ProviderInstance,
-} from '../utils/providerRuntime';
+} from '../utils/providerRuntime.ts';
 
 export interface CompactionSettings {
     reserveTokens: number;

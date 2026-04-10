@@ -1,0 +1,33 @@
+{
+  "name": "@sf-toolkit/docs",
+  "private": true,
+  "version": "1.0.0",
+  "description": "SF Toolkit documentation site",
+  "scripts": {
+    "dev": "DOCS_BASE_PATH=/ docusaurus start --port 27000 --host 0.0.0.0 --no-open",
+    "build": "DOCS_BASE_PATH=/docs/ docusaurus build --out-dir ../../dist/docs",
+    "serve": "DOCS_BASE_PATH=/docs/ docusaurus serve ../../dist/docs --port 27001 --host 0.0.0.0",
+    "clear": "docusaurus clear",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@docusaurus/core": "3.6.3",
+    "@docusaurus/preset-classic": "3.6.3",
+    "@mdx-js/react": "^3.1.0",
+    "clsx": "^2.1.1",
+    "prism-react-renderer": "^2.4.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@docusaurus/module-type-aliases": "3.6.3",
+    "@docusaurus/tsconfig": "3.6.3",
+    "@docusaurus/types": "3.6.3",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.9.3",
+    "webpack": "5.95.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

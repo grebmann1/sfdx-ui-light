@@ -20,6 +20,8 @@ const VARIANT = {
     VSCODE: 'vscode',
 };
 
+const MATCH_CONTENT_SCRIPT_URL = 'matchContentScriptUrl';
+
 export default class Root extends LightningElement {
     @api variant;
     sessionId;
@@ -32,6 +34,7 @@ export default class Root extends LightningElement {
     panel = PANELS.SALESFORCE;
     connector;
     _currentUrl;
+    activeTabMatchesSalesforce = false;
 
     get currentUrl() {
         return this._currentUrl;
@@ -104,6 +107,7 @@ export default class Root extends LightningElement {
 
     disconnectedCallback() {
         chrome.tabs.onUpdated.removeListener(this.monitorUrlListener);
+        chrome.tabs.onActivated.removeListener(this.handleTabActivatedListener);
         //chrome.runtime.onMessage.removeListener(this.messageListener);
     }
 
@@ -130,35 +134,97 @@ export default class Root extends LightningElement {
         // Handle Tabs
         try {
             this.currentTab = await getCurrentTab();
-            this.currentUrl = this.currentTab.url;
+            this.currentUrl = this.currentTab?.url;
             //this.currentOrigin = (new URL(this.currentTab.url)).origin;
             if (withMonitorChange) {
                 chrome.tabs.onUpdated.addListener(this.monitorUrlListener);
+                chrome.tabs.onActivated.addListener(this.handleTabActivatedListener);
             }
         } catch (e) {
             console.error(e);
         }
+        await this.updateActiveTabMatchesSalesforce(this.currentTab?.url);
         this.hasLoaded = true;
     };
 
-    monitorUrlListener = async (tabId, info, tab) => {
+    updateActiveTabMatchesSalesforce = async (url: string | undefined) => {
+        let matches = false;
+        try {
+            const res = (await chrome.runtime.sendMessage({
+                action: MATCH_CONTENT_SCRIPT_URL,
+                url: url ?? '',
+            })) as { matches?: boolean } | undefined;
+            matches = res?.matches === true;
+        } catch {
+            matches = false;
+        }
+        this.activeTabMatchesSalesforce = matches;
+    };
+
+    syncForDebouncedUrl = async (url: string) => {
+        if (!url) {
+            return;
+        }
+        this.currentUrl = url;
+        await this.updateActiveTabMatchesSalesforce(url);
+        if (!this.hasSession) {
+            await this.loadComponent(false);
+        } else {
+            const nextCookie = await getHostAndSession();
+            if (isUndefinedOrNull(nextCookie)) {
+                this.redirectToDefaultView();
+            }
+        }
+    };
+
+    applyActivatedTabId = async (tabId: number) => {
+        let tab: chrome.tabs.Tab | undefined;
+        try {
+            tab = await chrome.tabs.get(tabId);
+        } catch {
+            return;
+        }
+        if (!tab?.id) {
+            return;
+        }
+        this.currentTab = tab;
+        if (tab.url) {
+            this.currentUrl = tab.url;
+        }
+        await this.updateActiveTabMatchesSalesforce(tab.url);
+        if (!this.hasSession) {
+            await this.loadComponent(false);
+        } else {
+            const nextCookie = await getHostAndSession();
+            if (isUndefinedOrNull(nextCookie)) {
+                this.redirectToDefaultView();
+            }
+        }
+    };
+
+    handleTabActivatedListener = (activeInfo: chrome.tabs.TabActiveInfo) => {
+        if (!activeInfo?.tabId) {
+            return;
+        }
+        runActionAfterTimeOut(
+            activeInfo.tabId,
+            (tabId: number) => {
+                void this.applyActivatedTabId(tabId);
+            },
+            { timeout: 100, key: 'sidepanel-tab-activated' }
+        );
+    };
+
+    monitorUrlListener = (tabId: number, info: chrome.tabs.TabChangeInfo, tab: chrome.tabs.Tab) => {
         //console.log('onUpdated',tabId, info, tab)
-        if (!tab.url || info.status !== 'complete' || tabId != this.currentTab.id) return;
+        if (!tab.url || info.status !== 'complete' || tabId !== this.currentTab?.id) {
+            return;
+        }
 
         runActionAfterTimeOut(
             tab.url,
-            async newUrl => {
-                this.currentUrl = newUrl;
-                if (!this.hasSession) {
-                    // Reload in case there is existing session found!
-                    this.loadComponent(false);
-                } else {
-                    // verify cookie
-                    const cookie = await getHostAndSession();
-                    if (isUndefinedOrNull(cookie)) {
-                        this.redirectToDefaultView();
-                    }
-                }
+            async (newUrl: string) => {
+                await this.syncForDebouncedUrl(newUrl);
             },
             { timeout: 300 }
         );

@@ -3,7 +3,7 @@ import ToolkitElement from 'core/toolkitElement';
 import { getFlattenedFields } from '@jetstreamapp/soql-parser-js';
 import { store, connectStore, SELECTORS, SOBJECT, UI } from 'core/store';
 import { fullApiName, isSame, lowerCaseKey } from 'shared/utils';
-import { getFieldTypeIcon, CHILD_RELATIONSHIP_ICON } from '../constants';
+import { getFieldTypeIcon, CHILD_RELATIONSHIP_ICON } from './constants.ts';
 
 const ROOT_LEVEL = 2;
 const MAX_LEVEL = 4 + ROOT_LEVEL;

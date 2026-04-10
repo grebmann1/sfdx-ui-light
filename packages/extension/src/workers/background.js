@@ -43,6 +43,8 @@ const OPEN_TOOLKIT = 'open_toolkit';
 const PORT_INSTANCE = 'sf-toolkit-instance';
 const PORT_INJECTED = 'sf-toolkit-injected';
 const PORT_SIDEPANEL = 'sf-toolkit-sidepanel';
+const MATCH_CONTENT_SCRIPT_URL = 'matchContentScriptUrl';
+const STABLE_SIDEPANEL_PATH = 'views/default.html';
 
 /** Default content-script patterns */
 const DEFAULT_INCLUDE_PATTERNS = [
@@ -168,7 +170,6 @@ async function findExistingSession({ alias, instanceUrl } = {}) {
 }
 
 /** Runtime connection state shared across ports and windows. */
-const _lastSidePanelOptionsByTabId = new Map(); // tabId -> { url, ts }
 const sidePanelConnectionCountByWindowId = new Map(); // windowId -> number of active side panel ports
 const sidePanelApplicationByWindowId = new Map(); // windowId -> applicationName
 const injectedConnections = new Set();
@@ -183,45 +184,20 @@ function shouldKeepSidePanelOpenForNewTab(tab) {
     return openPanelCount > 0;
 }
 
-function isAgentActiveInSidePanel(windowId) {
-    if (!Number.isInteger(windowId)) return false;
-    return sidePanelApplicationByWindowId.get(windowId) === 'agent';
-}
-
 const handleTabOpening = async tab => {
     try {
-        if (!tab?.id || !tab?.url) return;
-        if (isAgentActiveInSidePanel(tab.windowId)) {
-            safeLog('[SF-TOOLKIT][BG][SidePanel] skip handleTabOpening (agent active)', {
-                tabId: tab.id,
-                windowId: tab.windowId,
-                url: tab.url,
-            });
-            return;
-        }
-        const now = Date.now();
-        const last = _lastSidePanelOptionsByTabId.get(tab.id);
-        if (last && last.url === tab.url && now - last.ts < 750) return;
-
-        const isSalesforceTab = await isHostMatching(
-            tab.url,
-            DEFAULT_INCLUDE_PATTERNS,
-            DEFAULT_EXCLUDE_PATTERNS
-        );
-        const path = `views/default.html?${isSalesforceTab ? 'salesforce' : 'default'}`;
+        if (!tab?.id) return;
         await chrome.sidePanel.setOptions({
-            path: path,
+            path: STABLE_SIDEPANEL_PATH,
             enabled: true,
         });
-        _lastSidePanelOptionsByTabId.set(tab.id, { url: tab.url, ts: now });
     } catch (e) {}
 };
 
 const openSideBar = async tab => {
     await chrome.sidePanel.open({ tabId: tab.id });
     await chrome.sidePanel.setOptions({
-        // tabId: tab.id,
-        path: `views/default.html?salesforce`,
+        path: STABLE_SIDEPANEL_PATH,
         enabled: true,
     });
 };
@@ -571,14 +547,8 @@ function handleContextMenuClick(info, tab) {
     }
 }
 
-async function handleTabActivated({ tabId, windowId }) {
-    /* if (!tabId) return;
-    const tab = await chrome.tabs.get(tabId);
-    try {
-        await handleTabOpening(tab);
-    } catch (e) {
-        console.error('handleTabOpening issue: ', e);
-    } */
+async function handleTabActivated() {
+    // Side panel path stays stable; tab context is handled in the side panel LWC.
 }
 
 async function handleTabUpdated(tabId, info, tab) {
@@ -833,6 +803,18 @@ async function handleRuntimeMessage(message, sender) {
             excludePatterns: DEFAULT_EXCLUDE_PATTERNS,
         };
     }
+    if (message.action === MATCH_CONTENT_SCRIPT_URL) {
+        const url = typeof message.url === 'string' ? message.url : '';
+        if (!url || !normalizeUrlForPatternMatch(url)) {
+            return { matches: false };
+        }
+        const matches = await isHostMatching(
+            url,
+            DEFAULT_INCLUDE_PATTERNS,
+            DEFAULT_EXCLUDE_PATTERNS
+        );
+        return { matches };
+    }
     if (message.action === 'toggleOverlay') {
         safeLog('[SF-TOOLKIT][BG] received toggleOverlay message', {
             enabled: message.enabled,
@@ -896,10 +878,8 @@ chrome.runtime.onInstalled.addListener(async details => {
     await ensureContextMenu();
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tabs.length > 0) {
-        const currentTab = tabs[0];
         chrome.sidePanel.setOptions({
-            //tabId: currentTab.id,
-            path: 'views/default.html',
+            path: STABLE_SIDEPANEL_PATH,
             enabled: true,
         });
     }
