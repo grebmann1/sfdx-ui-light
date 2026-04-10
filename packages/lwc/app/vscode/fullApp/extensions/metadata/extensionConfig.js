@@ -1,15 +1,9 @@
-import { buildOrgContext, ORG_ENVIRONMENT_TYPES } from '../../workbench/orgContext.js';
-import {
-    ONBOARDING_MARKDOWN_PATH,
-    ONBOARDING_WALKTHROUGH_ID,
-    OPEN_AGENT_CHAT_COMMAND,
-    OPEN_ONBOARDING_COMMAND,
-    OPEN_SALESFORCE_PANEL_COMMAND,
-} from './constants.js';
 import { buildSalesforceExtensionConfig } from '../salesforce/salesforceExtensionSupport.js';
 
+const OPEN_AGENT_CHAT_COMMAND = 'salesforceMetadata.openAgentChat';
+const OPEN_SALESFORCE_PANEL_COMMAND = 'salesforceMetadata.openSalesforcePanel';
+
 const SVG_MIME_TYPE = 'image/svg+xml';
-const MARKDOWN_MIME_TYPE = 'text/markdown';
 
 const METADATA_EXTENSION_BASE_CONFIG = buildSalesforceExtensionConfig({
     name: 'sf-metadata',
@@ -139,149 +133,7 @@ const BASE_INLINE_ASSETS = [
     },
 ];
 
-function buildOrgIntro(orgContext) {
-    if (!orgContext.hasConnection) {
-        return 'This workbench needs a Salesforce connection from the parent toolkit session before metadata commands can run.';
-    }
-
-    switch (orgContext.environmentType) {
-        case ORG_ENVIRONMENT_TYPES.production:
-            return 'This is a **production org**, so review changes carefully before syncing or deploying.';
-        case ORG_ENVIRONMENT_TYPES.sandbox:
-            return 'This is a **sandbox org**, so it is safer for exploration and testing.';
-        case ORG_ENVIRONMENT_TYPES.scratch:
-            return 'This is a **scratch org**, so it is intended for short-lived development, validation, and disposable experiments.';
-        case ORG_ENVIRONMENT_TYPES.trailhead:
-            return 'This is a **Trailhead org**, so it is intended for learning, guided exercises, and experimentation.';
-        case ORG_ENVIRONMENT_TYPES.dev:
-            return 'This is a **dev org**, so it is intended for local development and isolated testing.';
-        default:
-            return 'The org type could not be confirmed automatically, so treat changes with care.';
-    }
-}
-
-function buildWalkthroughMarkdown(orgContext) {
-    const hostLine = orgContext.host ? `- Host: \`${orgContext.host}\`\n` : '';
-    const orgNameLine = orgContext.organizationName
-        ? `- Organization: **${orgContext.organizationName}**\n`
-        : '';
-    const usernameLine = orgContext.username ? `- Username: \`${orgContext.username}\`\n` : '';
-    const orgIdLine = orgContext.orgId ? `- Org Id: \`${orgContext.orgId}\`\n` : '';
-    const environmentWarning =
-        orgContext.environmentType === ORG_ENVIRONMENT_TYPES.production
-            ? 'Because this is a **production org**, make changes carefully and review anything that could affect live users or data before you sync, retrieve, or deploy.'
-            : orgContext.environmentType === ORG_ENVIRONMENT_TYPES.sandbox
-              ? 'Because this is a **sandbox org**, this environment is better suited for exploration, validation, and trying workflows before touching production.'
-              : orgContext.environmentType === ORG_ENVIRONMENT_TYPES.scratch
-                ? 'Because this is a **scratch org**, this environment is best suited for short-lived development, verification, and disposable experiments.'
-              : orgContext.environmentType === ORG_ENVIRONMENT_TYPES.trailhead
-                ? 'Because this is a **Trailhead org**, this environment is best suited for learning, hands-on exercises, and experimentation rather than production-like workflows.'
-                : orgContext.environmentType === ORG_ENVIRONMENT_TYPES.dev
-                  ? 'Because this is a **dev org**, this environment is best suited for local development, debugging, and isolated validation.'
-                  : 'Because the org type could not be confirmed automatically, treat this environment carefully until you verify whether it is production or sandbox.';
-
-    return `# Welcome to the Salesforce Workbench
-
-${buildOrgIntro(orgContext)}
-
-${environmentWarning}
-
-## What this workspace is
-
-This embedded workspace is a lightweight version of VS Code focused on Salesforce workflows inside the browser. It is meant to help you inspect metadata, edit files, run targeted commands, and collaborate with the built-in agent.
-
-## What this workspace is good for
-
-- Reviewing and editing project files directly in the browser
-- Syncing Salesforce metadata into the Explorer
-- Running focused Salesforce commands without leaving the workbench
-- Using the built-in agent to inspect code, explain files, and help with targeted changes
-
-## Important limitations to keep in mind
-
-- Some desktop VS Code capabilities are intentionally limited or unavailable in this embedded experience.
-- This workbench is designed for focused Salesforce tasks, not full parity with a local desktop IDE.
-- Certain extensions, advanced desktop-only workflows, and local machine integrations may not be available here.
-- Salesforce metadata actions are exposed through the **Salesforce** panel and command palette.
-
-## Current org context
-
-${orgNameLine}${hostLine}${usernameLine}${orgIdLine}- Environment: **${orgContext.environmentLabel}**
-
-## How the built-in agent can help
-
-- Explain files, flows, and Salesforce-specific code in this workspace
-- Help you locate metadata, commands, and implementation entry points
-- Make scoped code edits and suggest safer next steps
-- Summarize what changed after an edit or help you understand a diff
-
-## When to stay careful
-
-- Double-check the org banner before editing or deploying
-- Be extra cautious when the org is production or when the org type is unknown
-- Prefer reviewing metadata changes before syncing or deploying them
-- Treat this workbench as a lightweight environment and switch to a fuller local setup if you need desktop-only capabilities
-
-## Suggested next steps
-
-1. Review the org banner above the workbench before making changes.
-2. Open the Salesforce panel and sync metadata into the Explorer.
-3. Open the agent when you need help navigating, understanding, or changing this workspace.
-4. Confirm the org type before making risky changes if the environment is still shown as unknown.
-`;
-}
-
-function buildWalkthroughs(orgContext) {
-    const salesforceActionDescription = orgContext.hasConnection
-        ? `[Open the Salesforce panel](command:${OPEN_SALESFORCE_PANEL_COMMAND}) to browse commands and metadata actions, or [sync metadata now](command:salesforceMetadata.fetchMetadata) when you are ready.`
-        : `[Open the Salesforce panel](command:${OPEN_SALESFORCE_PANEL_COMMAND}) to browse commands and metadata actions. This workbench becomes active when it is launched from a connected toolkit session.`;
-
-    return [
-        {
-            id: ONBOARDING_WALKTHROUGH_ID,
-            title: 'Salesforce Workbench Welcome',
-            description:
-                'Review your connected org, understand the limits of this lightweight workbench, and use the built-in agent effectively.',
-            steps: [
-                {
-                    id: 'review-org-context',
-                    title: 'Review your org context',
-                    description: buildOrgIntro(orgContext),
-                    media: {
-                        markdown: ONBOARDING_MARKDOWN_PATH,
-                    },
-                },
-                {
-                    id: 'understand-workbench-scope',
-                    title: 'Understand the lightweight workspace',
-                    description:
-                        'This is a focused, embedded workbench rather than the full desktop VS Code experience. It is ideal for targeted Salesforce tasks, but some extensions, integrations, and advanced local workflows may be unavailable.',
-                },
-                {
-                    id: 'open-salesforce-tools',
-                    title: 'Open Salesforce tools',
-                    description: salesforceActionDescription,
-                    completionEvents: ['onCommand:salesforceMetadata.fetchMetadata'],
-                },
-                {
-                    id: 'review-workbench-limitations',
-                    title: 'Review workbench limitations',
-                    description:
-                        'Use this browser workbench for focused metadata and code tasks. If you need full desktop parity, advanced local tooling, or unsupported extensions, switch to your local VS Code setup.',
-                },
-                {
-                    id: 'use-the-agent',
-                    title: 'Use the built-in agent',
-                    description: `[Open the agent chat](command:${OPEN_AGENT_CHAT_COMMAND}) whenever you want help understanding code, locating metadata, planning a change, or making guided edits in this workspace.`,
-                    completionEvents: [`onCommand:${OPEN_AGENT_CHAT_COMMAND}`],
-                },
-            ],
-        },
-    ];
-}
-
-export function buildMetadataExtensionConfig({ orgContext } = {}) {
-    const nextOrgContext = buildOrgContext(orgContext);
+export function buildMetadataExtensionConfig() {
     const contributes = METADATA_EXTENSION_BASE_CONFIG.contributes || {};
     const commandPalette = contributes.menus?.commandPalette || [];
 
@@ -289,13 +141,8 @@ export function buildMetadataExtensionConfig({ orgContext } = {}) {
         ...METADATA_EXTENSION_BASE_CONFIG,
         contributes: {
             ...contributes,
-            walkthroughs: buildWalkthroughs(nextOrgContext),
             commands: [
                 ...contributes.commands,
-                {
-                    command: OPEN_ONBOARDING_COMMAND,
-                    title: 'Salesforce: Open Welcome Page',
-                },
                 {
                     command: OPEN_SALESFORCE_PANEL_COMMAND,
                     title: 'Salesforce: Open Salesforce Panel',
@@ -309,7 +156,6 @@ export function buildMetadataExtensionConfig({ orgContext } = {}) {
                 ...contributes.menus,
                 commandPalette: [
                     ...commandPalette,
-                    { command: OPEN_ONBOARDING_COMMAND },
                     { command: OPEN_SALESFORCE_PANEL_COMMAND },
                     { command: OPEN_AGENT_CHAT_COMMAND },
                 ],
@@ -319,14 +165,7 @@ export function buildMetadataExtensionConfig({ orgContext } = {}) {
 }
 
 export function buildInlineAssets({ orgContext } = {}) {
-    const nextOrgContext = buildOrgContext(orgContext);
-
     return [
         ...BASE_INLINE_ASSETS,
-        {
-            targetPath: ONBOARDING_MARKDOWN_PATH,
-            mimeType: MARKDOWN_MIME_TYPE,
-            content: buildWalkthroughMarkdown(nextOrgContext),
-        },
     ];
 }

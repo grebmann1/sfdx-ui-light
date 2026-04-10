@@ -8,6 +8,10 @@ import {
 
 let activeSalesforceWorkbenchHost = null;
 
+export function getActiveSalesforceWorkbenchHost() {
+    return activeSalesforceWorkbenchHost;
+}
+
 async function applyExplorerExcludes(vscode) {
     try {
         if (typeof vscode.workspace?.getConfiguration !== 'function') {

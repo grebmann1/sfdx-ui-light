@@ -6,7 +6,7 @@ import {
     saveSourceTracking,
 } from 'vscode/sourceTracking';
 
-import { AUTO_DEPLOY_KEY } from '../constants.js';
+const AUTO_DEPLOY_KEY = 'sf_ext_autoDeployOnSave';
 import { ensureDir, writeTextFile } from '../core/workspaceCache.js';
 import {
     auraFilename,
@@ -16,6 +16,7 @@ import {
     normalizeLwcResourceRelPath,
     safeSeg,
 } from '../core/workspacePaths.js';
+import { createToolingMapStore } from '../core/toolingMapStore.js';
 
 export function createDeployAndSourceTracking({
     connectionRuntime,
@@ -28,6 +29,7 @@ export function createDeployAndSourceTracking({
     let currentIsLwcDoc = isLwcDoc;
     let currentLintLwcDocument = lintLwcDocument;
     const registeredCommandGroups = new Set();
+    const toolingMapStore = createToolingMapStore(vscode, state);
 
     function loadAutoDeployOnSave() {
         try {
@@ -65,25 +67,8 @@ export function createDeployAndSourceTracking({
     autoDeployStatusItem.show();
     context.addDisposable(autoDeployStatusItem);
 
-    async function loadToolingMapItems({ force } = {}) {
-        if (!force && state.toolingMapCache) return state.toolingMapCache;
-        try {
-            const uri = getWorkspaceUri(vscode, '.salesforce/tooling-map.json');
-            const bytes = await vscode.workspace.fs.readFile(uri);
-            const text = new TextDecoder().decode(bytes || new Uint8Array());
-            const parsed = JSON.parse(text || '{}');
-            state.toolingMapCache =
-                parsed?.items && typeof parsed.items === 'object' ? parsed.items : {};
-            return state.toolingMapCache;
-        } catch {
-            state.toolingMapCache = {};
-            return state.toolingMapCache;
-        }
-    }
-
-    function invalidateToolingMap() {
-        state.toolingMapCache = null;
-    }
+    const loadToolingMapItems = ({ force } = {}) => toolingMapStore.loadItems({ force });
+    const invalidateToolingMap = () => toolingMapStore.invalidate();
 
     function ensureDeployWorker() {
         if (state.deployWorker) return state.deployWorker;
@@ -306,6 +291,18 @@ export function createDeployAndSourceTracking({
             }
         } else if (showProgress) {
             await vscode.window.showInformationMessage('Deploy complete.');
+        }
+
+        const successPaths = results
+            .filter(r => r?.ok === true && r?.path)
+            .map(r => r.path);
+        if (successPaths.length) {
+            for (const path of successPaths) changedPaths.delete(path);
+            try {
+                await updateSourceTrackingForPaths(successPaths);
+            } catch {
+                // ignore
+            }
         }
 
         return { failures, results, skippedReadOnly };
@@ -725,7 +722,26 @@ export function createDeployAndSourceTracking({
         }
     }
 
+    async function restoreLocalChangedPaths() {
+        const tracking = await loadSourceTracking(vscode);
+        if (!tracking?.items) return;
+        const conn = connectionRuntime.loadStoredConn();
+        if (tracking.instanceUrl && tracking.instanceUrl !== conn?.instanceUrl) return;
+        for (const [path, entry] of Object.entries(tracking.items)) {
+            if (!entry?.hash) continue;
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                const text = await readTextForPath(path);
+                if (hashText(text ?? '') !== entry.hash) changedPaths.add(path);
+            } catch {
+                // file may not exist yet
+            }
+        }
+    }
+
     async function registerEditorLifecycle() {
+        void restoreLocalChangedPaths();
+
         if (vscode.workspace?.onDidSaveTextDocument) {
             context.addDisposable(
                 vscode.workspace.onDidSaveTextDocument(async doc => {
@@ -791,10 +807,7 @@ export function createDeployAndSourceTracking({
         );
         const hasRequestedGroup = group => groupSet.has('all') || groupSet.has(group);
 
-        if (hasRequestedGroup('lwc')) {
-            if (registeredCommandGroups.has('lwc')) {
-                return;
-            }
+        if (hasRequestedGroup('lwc') && !registeredCommandGroups.has('lwc')) {
             registeredCommandGroups.add('lwc');
             register('salesforceMetadata.lintCurrentFile', async () => {
                 const doc = vscode.window?.activeTextEditor?.document;
@@ -911,10 +924,7 @@ export function createDeployAndSourceTracking({
             void registerEditorLifecycle();
         }
 
-        if (hasRequestedGroup('metadata')) {
-            if (registeredCommandGroups.has('metadata')) {
-                return;
-            }
+        if (hasRequestedGroup('metadata') && !registeredCommandGroups.has('metadata')) {
             registeredCommandGroups.add('metadata');
             register('salesforceMetadata.sourceStatus', async () => {
                 const status = await computeRemoteChangeStatus();

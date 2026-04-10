@@ -370,7 +370,6 @@ export function createIndexedDbWorkspaceProvider({ fs, vscode, workspaceRoot }) 
             }
         },
         dispose() {
-            logOperation('dispose', { workspaceRoot });
             if (fireHandle) {
                 clearTimeout(fireHandle);
                 fireHandle = null;

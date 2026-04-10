@@ -13,6 +13,18 @@
                     <button
                         class="themeToggleButton"
                         type="button"
+                        title="Download workspace as zip"
+                        aria-label="Download workspace as zip"
+                        disabled={isDownloadingWorkspace}
+                        onclick={downloadWorkspace}>
+                        <slds-lucide-icon
+                            class="themeToggleIcon"
+                            name={downloadWorkspaceIcon}
+                            size="15"></slds-lucide-icon>
+                    </button>
+                    <button
+                        class="themeToggleButton"
+                        type="button"
                         title={themeToggleTitle}
                         aria-label={themeToggleTitle}
                         onclick={toggleWorkbenchTheme}>

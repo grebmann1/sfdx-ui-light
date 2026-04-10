@@ -2,6 +2,7 @@ import { isNotUndefinedOrNull } from 'shared/utils';
 
 
 export * from './constants';
+export * from './generateTitle';
 export * from './models';
 export * from './message';
 export * from './providerRuntime';

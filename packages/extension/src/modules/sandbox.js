@@ -839,8 +839,10 @@ let cachedBrowser = null;
 let cachedPage = null;
 let cachedTabId = null;
 
+const isInternalLogEnabled = false
+
 function sandboxLog(...args) {
-    if (typeof console !== 'undefined' && console.log) {
+    if (typeof console !== 'undefined' && console.log && isInternalLogEnabled) {
         console.log('[sandbox]', ...args);
     }
 }

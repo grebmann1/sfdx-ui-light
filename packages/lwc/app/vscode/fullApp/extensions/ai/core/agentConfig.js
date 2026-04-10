@@ -6,31 +6,46 @@ import {
     loadExtensionConfigFromCache,
     resolveLlmProviderConfigMap,
 } from 'shared/cacheManager';
-import { fetchLlmModelsEndpoint, isInternalProviderBaseUrl } from 'shared/llm';
-
 import {
-    DEFAULT_WORKBENCH_INTERNAL_MODEL,
-    DEFAULT_WORKBENCH_MODEL,
-    DEFAULT_WORKBENCH_REASONING,
-    WORKBENCH_AGENT_SYSTEM_PROMPT,
-    WORKBENCH_INTERNAL_MODELS,
-    WORKBENCH_MAX_TOOL_ROUNDS,
-    WORKBENCH_MODEL_CONTEXT_WINDOW,
-    WORKBENCH_REASONING_OPTIONS,
-    WORKBENCH_RUNTIME_MODELS,
-} from '../constants.js';
+    fetchLlmModelsEndpoint,
+    getDefaultModelForProvider,
+    INTERNAL_OPENAI_MODEL_OPTIONS,
+    isInternalProviderBaseUrl,
+    OPENAI_MODEL_OPTIONS,
+} from 'shared/llm';
 
-export {
-    DEFAULT_WORKBENCH_INTERNAL_MODEL,
-    DEFAULT_WORKBENCH_MODEL,
-    DEFAULT_WORKBENCH_REASONING,
-    WORKBENCH_AGENT_SYSTEM_PROMPT,
-    WORKBENCH_INTERNAL_MODELS,
-    WORKBENCH_MAX_TOOL_ROUNDS,
-    WORKBENCH_MODEL_CONTEXT_WINDOW,
-    WORKBENCH_REASONING_OPTIONS,
-    WORKBENCH_RUNTIME_MODELS,
-};
+export const WORKBENCH_RUNTIME_MODELS = OPENAI_MODEL_OPTIONS.map(model => ({
+    label: model.label,
+    value: model.value,
+}));
+export const WORKBENCH_INTERNAL_MODELS = INTERNAL_OPENAI_MODEL_OPTIONS.map(model => ({
+    label: model.label,
+    value: model.value,
+}));
+export const WORKBENCH_REASONING_OPTIONS = [
+    { value: 'none', label: 'None' },
+    { value: 'minimal', label: 'Minimal' },
+    { value: 'low', label: 'Low' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'high', label: 'High' },
+    { value: 'xhigh', label: 'X-High' },
+];
+export const DEFAULT_WORKBENCH_MODEL =
+    getDefaultModelForProvider('openai') || WORKBENCH_RUNTIME_MODELS[0].value;
+export const DEFAULT_WORKBENCH_INTERNAL_MODEL = WORKBENCH_INTERNAL_MODELS[0].value;
+export const DEFAULT_WORKBENCH_REASONING = WORKBENCH_REASONING_OPTIONS[2].value;
+export const WORKBENCH_MODEL_CONTEXT_WINDOW = 128000;
+export const WORKBENCH_MAX_TOOL_ROUNDS = 400;
+export const WORKBENCH_AGENT_SYSTEM_PROMPT = `You are a dedicated coding agent operating inside an embedded VS Code workbench.
+
+You have access to VS Code-native tools for reading, editing, creating, saving, opening, and deleting files in the current workspace.
+
+- Prefer workspace discovery tools before guessing file paths.
+- Prefer targeted edits over broad rewrites.
+- Prefer range reads for large files.
+- Use create tools only for new files and edit tools for existing files.
+- Explain errors clearly when a tool reports failure.
+- Keep responses concise and practical for coding tasks.`;
 
 export function resolveWorkbenchOpenAiBaseUrl(openaiUrl) {
     return openaiUrl || 'https://api.openai.com/v1';

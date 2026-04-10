@@ -1,6 +1,6 @@
 import { writeTextFile } from '../core/workspaceCache.js';
 import { getWorkspaceUri } from '../core/workspacePaths.js';
-import { OPEN_TOOLKIT_CONNECTIONS_COMMAND } from '../constants.js';
+const OPEN_TOOLKIT_CONNECTIONS_COMMAND = 'salesforceMetadata.openToolkitConnections';
 
 export async function registerSchemaTools({ connectionRuntime, context }) {
     const { vscode, vscodeBundle } = context;
@@ -496,12 +496,10 @@ export async function registerSchemaTools({ connectionRuntime, context }) {
             }
 
             const schemaProvider = new SchemaProvider();
-            const originalSetStatus = connectionRuntime.setStatus.bind(connectionRuntime);
-            connectionRuntime.setStatus = conn => {
-                originalSetStatus(conn);
+            const removeStatusListener = connectionRuntime.addStatusChangeListener(conn => {
                 updateSchemaTreeMessage(conn);
                 schemaProvider.refresh();
-            };
+            });
             context.addDisposable({
                 dispose: () => {
                     try {
@@ -509,6 +507,7 @@ export async function registerSchemaTools({ connectionRuntime, context }) {
                     } catch {
                         // ignore
                     }
+                    removeStatusListener();
                 },
             });
             if (typeof vscode.window?.createTreeView === 'function') {

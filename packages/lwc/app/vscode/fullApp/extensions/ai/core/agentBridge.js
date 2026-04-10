@@ -1,13 +1,11 @@
-import {
-    CHAT_PARTICIPANT_ID,
-    MAX_INLINE_TEXT_CHARS,
-    MAX_TOOL_STATUS_CHARS,
-    MODEL_FAMILY,
-    MODEL_ID,
-    MODEL_NAME,
-    MODEL_VENDOR,
-    THINKING_PROGRESS_ID,
-} from '../constants.js';
+const CHAT_PARTICIPANT_ID = 'salesforce.workbench.agent';
+const MODEL_VENDOR = 'copilot';
+const MODEL_ID = 'workbench-agent';
+const MODEL_FAMILY = 'salesforce-workbench-agent';
+const MODEL_NAME = 'Workbench Agent';
+const THINKING_PROGRESS_ID = 'workbench-agent-thinking';
+const MAX_INLINE_TEXT_CHARS = 24000;
+const MAX_TOOL_STATUS_CHARS = 240;
 import { createWorkbenchBashTools } from '../tools/bashTools.js';
 import { createWorkspaceFileTools } from '../tools/vscodeFileTools.js';
 

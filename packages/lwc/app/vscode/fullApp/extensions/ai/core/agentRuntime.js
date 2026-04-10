@@ -9,7 +9,7 @@ import { jsonSchema, stepCountIs, streamText, tool as createAiSdkTool } from 'ai
 import { guid } from 'shared/utils';
 import { z } from 'zod';
 
-import { MAX_STORED_MESSAGES } from '../constants.js';
+const MAX_STORED_MESSAGES = 24;
 
 import {
     isAbortLikeError,

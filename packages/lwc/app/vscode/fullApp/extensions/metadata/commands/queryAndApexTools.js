@@ -197,10 +197,7 @@ export function registerQueryAndApexTools({
         return context.addDisposable(vscode.commands.registerCommand(command, handler));
     }
 
-    if (hasGroup('soql')) {
-        if (registeredCommandGroups.has('soql')) {
-            return;
-        }
+    if (hasGroup('soql') && !registeredCommandGroups.has('soql')) {
         registeredCommandGroups.add('soql');
         register('salesforceMetadata.runSoqlQuery', async () => {
             const editor = vscode.window?.activeTextEditor;
@@ -344,10 +341,7 @@ export function registerQueryAndApexTools({
         }
     }
 
-    if (hasGroup('apex')) {
-        if (registeredCommandGroups.has('apex')) {
-            return;
-        }
+    if (hasGroup('apex') && !registeredCommandGroups.has('apex')) {
         registeredCommandGroups.add('apex');
         try {
             if (
@@ -875,10 +869,7 @@ export function registerQueryAndApexTools({
         });
     }
 
-    if (hasGroup('metadata')) {
-        if (registeredCommandGroups.has('metadata')) {
-            return;
-        }
+    if (hasGroup('metadata') && !registeredCommandGroups.has('metadata')) {
         registeredCommandGroups.add('metadata');
         register('salesforceMetadata.whereUsed', async () => {
         const conn = connectionRuntime.loadStoredConn();

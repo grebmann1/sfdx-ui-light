@@ -430,7 +430,7 @@ export default class FileTreeItem extends LightningElement {
     }
 
     get isFileMenuVisible() {
-        return this.isFile && this.isMenuButtonVisible && (this.hasCustomActions || this.isDeletable);
+        return this.isFile && this.isMenuButtonVisible && this.hasCustomActions;
     }
 
     get isFolderMenuVisible() {

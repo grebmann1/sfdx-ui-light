@@ -2,28 +2,8 @@ import { api, track, wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import { initializeVscodeApiWithDefaults, LogLevel } from 'vscode/baseEditor';
 import { getVscodeBundle } from 'vscode/vscodeBundle';
-import {
-    loadExtension as loadSfMetadataExtension,
-    activate as activateSfMetadataExtension,
-    getActiveMetadataExtensionServices,
-} from './extensions/metadata/extension.js';
-import {
-    loadExtension as loadSfApexExtension,
-    activate as activateSfApexExtension,
-} from './extensions/apex/extension.js';
-import {
-    loadExtension as loadSfSoqlExtension,
-    activate as activateSfSoqlExtension,
-} from './extensions/soql/extension.js';
-import {
-    loadExtension as loadSfLwcExtension,
-    activate as activateSfLwcExtension,
-} from './extensions/lwc/extension.js';
-import {
-    loadExtension as loadAgentScriptExtension,
-    activate as activateAgentScriptExtension,
-} from './extensions/agentscript/extension.js';
-import { activate as activateWorkbenchAiExtension } from './extensions/ai/extension.js';
+import { registerAllExtensions } from './workbench/extensionRegistry.js';
+import { getActiveSalesforceWorkbenchHost } from './extensions/salesforce/salesforceWorkbenchHost.js';
 import { getIndexedDbFileSystem } from 'core/fs';
 import { DEFAULT_WORKSPACE_ROOT } from './workbench/constants.js';
 import {
@@ -41,7 +21,6 @@ import {
     normalizeSfApiVersion,
     resolveWorkspaceApiVersion,
 } from './workbench/sfdxProject.js';
-import { deriveWorkspaceRootFromConnection } from './workbench/workspaceBootstrap.js';
 import {
     clearCurrentConnectionProvider,
     setCurrentConnectionProvider,
@@ -49,11 +28,14 @@ import {
 import { seedWorkspaceFiles } from './workbench/fsBridge.js';
 import { buildOrgContext } from './workbench/orgContext.js';
 import {
-    METADATA_WALKTHROUGH_FULL_ID,
-    OPEN_ONBOARDING_COMMAND,
-} from './extensions/metadata/constants.js';
+    normalizeWorkspaceRoot,
+    deriveConnectionWorkspaceRoot,
+    buildWorkbenchConnection,
+    hasUsableConnection,
+} from './workbench/workbenchRuntime.js';
 import { buildConnectionFromConnector, credentialStrategies } from 'core/connector';
 import { connectStore, store, APPLICATION } from 'core/store';
+import { zipUnpackagedFiles } from 'vscode/metadataApi';
 
 import { CHAT_MODEL_STORAGE_PREFIX, WORKBENCH_CHAT_MODEL_VENDOR, LIGHT_COLOR_THEME, DARK_COLOR_THEME } from './constants.js';
 
@@ -77,6 +59,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     @track connectorHasError = false;
     @track connectorErrorMessage = null;
     @track themeMode = 'light';
+    @track isDownloadingWorkspace = false;
 
     _started = false;
     _isChromeExtension = false;
@@ -85,7 +68,6 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     _vscode = null;
     _globalKeydownDisposer = null;
     _quickInputKeydownDisposer = null;
-    _agentScriptLanguageClientWrapper = null;
     _workspaceRoot = DEFAULT_WORKSPACE_ROOT;
     _forwardedKeyboardEvents = new WeakSet();
 
@@ -117,7 +99,6 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         clearCurrentConnectionProvider(this._currentConnectionProvider);
         this._currentConnectionProvider = null;
         this._disposeGlobalKeydownDisposer();
-        this._disposeAgentScriptLanguageClientWrapper();
         this._disposeDemoRegistrationsSafely();
         this._disposeFsOverlayDisposable();
         this._disposeFsProvider();
@@ -140,15 +121,6 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         }
     }
 
-    _disposeAgentScriptLanguageClientWrapper() {
-        try {
-            this._agentScriptLanguageClientWrapper?.dispose?.();
-        } catch {
-            // ignore
-        } finally {
-            this._agentScriptLanguageClientWrapper = null;
-        }
-    }
 
     _disposeDemoRegistrationsSafely() {
         try {
@@ -230,21 +202,11 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     }
 
     _normalizeWorkspaceRoot(value) {
-        const raw = String(value ?? '').trim();
-        if (!raw) {
-            return DEFAULT_WORKSPACE_ROOT;
-        }
-        const normalized = raw.replace(/\\/g, '/').replace(/^\/+/, '').replace(/\/+$/, '');
-        return normalized ? `/${normalized}` : DEFAULT_WORKSPACE_ROOT;
+        return normalizeWorkspaceRoot(value, DEFAULT_WORKSPACE_ROOT);
     }
 
     _deriveConnectionWorkspaceRoot(connection) {
-        return this._normalizeWorkspaceRoot(
-            deriveWorkspaceRootFromConnection(
-                connection,
-                this.workspaceBasePath || DEFAULT_WORKSPACE_ROOT
-            )
-        );
+        return deriveConnectionWorkspaceRoot(connection, this.workspaceBasePath);
     }
 
     _buildDefaultWorkspaceBootstrap() {
@@ -457,41 +419,23 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     }
 
     _buildCurrentConnection() {
-        const connection = buildConnectionFromConnector(this.connector, this.sfApiVersion);
-        if (!connection) {
-            return null;
-        }
-        const workspaceRoot = this._normalizeWorkspaceRoot(
-            this._workspaceRoot || this._deriveConnectionWorkspaceRoot(connection)
-        );
-        return {
-            ...connection,
-            apiVersion: normalizeSfApiVersion(connection.apiVersion, DEFAULT_SOURCE_API_VERSION),
-            workspaceRoot,
-            hasConnection: Boolean(
-                connection.instanceUrl &&
-                    connection.accessToken &&
-                    !this.sessionHasExpired &&
-                    !this.connectorHasError
-            ),
-            hasError: this.connectorHasError,
-            errorMessage: this.connectorErrorMessage,
+        return buildWorkbenchConnection(this.connector, {
+            sfApiVersion: this.sfApiVersion,
+            workspaceRoot: this._workspaceRoot,
+            workspaceBasePath: this.workspaceBasePath,
             sessionHasExpired: this.sessionHasExpired,
-        };
+            connectorHasError: this.connectorHasError,
+            connectorErrorMessage: this.connectorErrorMessage,
+        });
     }
 
     _hasUsableWorkbenchConnection(connection = this._buildCurrentConnection()) {
-        return Boolean(
-            connection?.instanceUrl &&
-                connection?.accessToken &&
-                !connection?.sessionHasExpired &&
-                !connection?.hasError
-        );
+        return hasUsableConnection(connection);
     }
 
     async _syncWorkbenchConnectionUi({ announceExpired = false } = {}) {
-        const services = getActiveMetadataExtensionServices();
-        const connectionRuntime = services?.connectionRuntime;
+        const host = getActiveSalesforceWorkbenchHost();
+        const connectionRuntime = host?.connectionRuntime;
         if (!connectionRuntime) {
             return;
         }
@@ -505,7 +449,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             currentConnection?.hasError
                 ? connectionRuntime.getConnectionProblemMessage(currentConnection)
                 : null;
-        await services?.setLoginProblem?.(
+        await host?.setLoginProblem?.(
             currentConnection?.accessToken &&
                 !currentConnection?.sessionHasExpired &&
                 !currentConnection?.hasError
@@ -514,7 +458,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         );
 
         if (announceExpired && currentConnection?.sessionHasExpired && message) {
-            await services?.context?.vscode?.window?.showErrorMessage?.(message);
+            await host?.context?.vscode?.window?.showErrorMessage?.(message);
         }
     }
 
@@ -557,33 +501,6 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             connection.workspaceRoot || this._deriveConnectionWorkspaceRoot(connection)
         );
         this.orgContext = buildOrgContext(connection);
-    }
-
-    async _openInitialWalkthrough() {
-        const commands = this._vscode?.commands;
-        if (typeof commands?.executeCommand !== 'function' || !METADATA_WALKTHROUGH_FULL_ID) {
-            return;
-        }
-        console.log('OPEN_ONBOARDING_COMMAND', OPEN_ONBOARDING_COMMAND);
-
-        let lastError = null;
-        for (let attempt = 0; attempt < 6; attempt += 1) {
-            try {
-                const waitMs = attempt === 0 ? 0 : 250 * attempt;
-                if (waitMs > 0) {
-                    await new Promise(resolve => window.setTimeout(resolve, waitMs));
-                }
-                await commands.executeCommand(OPEN_ONBOARDING_COMMAND);
-                return;
-            } catch (error) {
-                lastError = error;
-            }
-        }
-
-        if (lastError) {
-            // eslint-disable-next-line no-console
-            console.warn('Failed to open onboarding walkthrough:', lastError);
-        }
     }
 
     _installSaveKeybindingWorkaround() {
@@ -821,34 +738,6 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         return activeElement;
     }
 
-    async _initializeAgentScriptSupport(vscodeBundle) {
-        try {
-            const LanguageClientWrapper =
-                vscodeBundle?.monacoLanguageClient?.LanguageClient?.LanguageClientWrapper;
-            if (LanguageClientWrapper && !this._agentScriptLanguageClientWrapper) {
-                const { languageClientConfig } = await activateAgentScriptExtension(vscodeBundle);
-                if (languageClientConfig) {
-                    this._agentScriptLanguageClientWrapper = new LanguageClientWrapper(
-                        languageClientConfig
-                    );
-                    await this._agentScriptLanguageClientWrapper.start();
-                }
-            }
-        } catch (e) {
-            // eslint-disable-next-line no-console
-            console.warn('Agent Script language client failed to start:', e);
-        }
-
-        try {
-            const extension = vscodeBundle?.vscode?.extensions?.getExtension?.(
-                'salesforce.agentscript-extension'
-            );
-            await extension?.activate?.();
-        } catch (e) {
-            // eslint-disable-next-line no-console
-            console.warn('Agent Script extension activation failed:', e);
-        }
-    }
 
     async _startWorkbench() {
         try {
@@ -908,19 +797,6 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                 activeConnection = syncedConnection;
             }
 
-            const [
-                sfMetadataExtension,
-                sfApexExtension,
-                sfSoqlExtension,
-                sfLwcExtension,
-                agentScriptExtension,
-            ] = await Promise.all([
-                loadSfMetadataExtension({ orgContext: this.orgContext }),
-                loadSfApexExtension(),
-                loadSfSoqlExtension(),
-                loadSfLwcExtension(),
-                loadAgentScriptExtension(),
-            ]);
             const userConfiguration = buildUserConfiguration(isChromeExtension);
             const vscodeBundle = await getVscodeBundle();
             this._vscodeBundle = vscodeBundle;
@@ -941,12 +817,13 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                         : {}),
                     advanced: {
                         loadThemes: true,
-                        enableExtHostWorker: false,
+                        enableExtHostWorker: true,
                         terminal: null,
+                        enforceSemanticHighlighting:true,
                         ...(isChromeExtension
                             ? {
                                   workbenchFeatures: {
-                                      terminal: false,
+                                      terminal: true,
                                       scm: true,
                                       extensions: true,
                                       extensionGallery: true,
@@ -995,28 +872,16 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                     userConfiguration: {
                         json: JSON.stringify(userConfiguration),
                     },
-                    extensions: [
-                        sfMetadataExtension,
-                        sfApexExtension,
-                        sfSoqlExtension,
-                        sfLwcExtension,
-                        agentScriptExtension,
-                    ],
                     serviceOverrides: workbenchFilesService?.getServiceOverrides(),
                 },
                 logLevel: LogLevel.Info,
                 caller: 'VscodeWorkbenchApp._startWorkbench',
             });
 
-            await activateSfMetadataExtension(vscodeBundle);
-            await activateSfApexExtension(vscodeBundle);
-            await activateSfSoqlExtension(vscodeBundle);
-            await activateSfLwcExtension(vscodeBundle);
-            await activateAgentScriptExtension(vscodeBundle);
-            const workbenchAiExtension = await activateWorkbenchAiExtension(vscodeBundle);
-            if (workbenchAiExtension?.dispose) {
-                this._demoDisposables.push(workbenchAiExtension);
-            }
+            const extensionDisposables = await registerAllExtensions(vscodeBundle, {
+                orgContext: this.orgContext,
+            });
+            this._demoDisposables.push(...extensionDisposables);
 
             await this._runDemoFeatures();
             this.vscodeInitialized = true;
@@ -1024,7 +889,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             await new Promise(resolve =>
                 window.requestAnimationFrame(() => window.requestAnimationFrame(resolve))
             );
-            await this._openInitialWalkthrough();
+            //await this._openInitialWalkthrough();
             this._installQuickInputKeyboardWorkaround();
             /* if (isChromeExtension) {
                 this._installSaveKeybindingWorkaround();
@@ -1171,6 +1036,66 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
 
     async toggleWorkbenchTheme() {
         await this._applyWorkbenchTheme(this.themeMode === 'light' ? 'dark' : 'light');
+    }
+
+    get downloadWorkspaceIcon() {
+        return this.isDownloadingWorkspace ? 'loader' : 'download';
+    }
+
+    async downloadWorkspace() {
+        if (this.isDownloadingWorkspace || !this._vscode) return;
+        this.isDownloadingWorkspace = true;
+        try {
+            const vscode = this._vscode;
+            const root = vscode.Uri.file(this._workspaceRoot);
+            const pathToBytes = {};
+
+            const walk = async (uri) => {
+                let entries;
+                try {
+                    entries = await vscode.workspace.fs.readDirectory(uri);
+                } catch {
+                    return;
+                }
+                for (const [name, type] of entries) {
+                    const child = vscode.Uri.joinPath(uri, name);
+                    const isDir = vscode.FileType?.Directory
+                        ? (Number(type) & vscode.FileType.Directory) === vscode.FileType.Directory
+                        : Number(type) === 2;
+                    if (isDir) {
+                        // eslint-disable-next-line no-await-in-loop
+                        await walk(child);
+                    } else {
+                        // eslint-disable-next-line no-await-in-loop
+                        const bytes = await vscode.workspace.fs.readFile(child).catch(() => null);
+                        if (bytes) {
+                            const relative = child.path.slice(this._workspaceRoot.length).replace(/^\//, '');
+                            pathToBytes[relative] = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+                        }
+                    }
+                }
+            };
+
+            await walk(root);
+
+            const zipBytes = zipUnpackagedFiles(pathToBytes);
+            const blob = new Blob([zipBytes], { type: 'application/zip' });
+            const url = URL.createObjectURL(blob);
+            const orgSlug = this.orgContext?.host
+                ? this.orgContext.host.replace(/[^a-zA-Z0-9_-]/g, '_')
+                : 'workspace';
+            const ts = new Date().toISOString().slice(0, 10);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${orgSlug}-${ts}.zip`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('[fullApp] workspace download failed:', error);
+        } finally {
+            this.isDownloadingWorkspace = false;
+        }
     }
 
     async refreshSalesforceMetadata() {

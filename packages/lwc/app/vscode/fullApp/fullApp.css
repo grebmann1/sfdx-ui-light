@@ -114,6 +114,15 @@
     outline-offset: 2px;
 }
 
+.themeToggleButton:disabled {
+    cursor: wait;
+    opacity: 0.7;
+}
+
+.themeToggleButton:disabled .themeToggleIcon {
+    animation: spin 0.9s linear infinite;
+}
+
 .themeToggleIcon {
     width: 15px;
     height: 15px;

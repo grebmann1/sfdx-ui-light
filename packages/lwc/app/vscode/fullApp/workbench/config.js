@@ -2,6 +2,7 @@ import { LIGHT_COLOR_THEME, DARK_COLOR_THEME } from '../constants.js';
 
 export const buildUserConfiguration = (isChromeExtension) => ({
     'workbench.colorTheme': LIGHT_COLOR_THEME,
+    // 'workbench.startupEditor': 'none',
     'files.autoSave': 'off',
     'window.menuBarVisibility': 'visible',
     ...(isChromeExtension
@@ -52,7 +53,6 @@ export const preloadWorkbenchConfiguration = async (vscodeBundle, userConfigurat
     if (typeof initUserConfiguration !== 'function' || typeof initUserKeybindings !== 'function') {
         return;
     }
-    console.log('preloadWorkbenchConfiguration', vscodeBundle, userConfiguration);
     await Promise.all([
         initUserConfiguration(JSON.stringify(userConfiguration)),
         initUserKeybindings(JSON.stringify([])),

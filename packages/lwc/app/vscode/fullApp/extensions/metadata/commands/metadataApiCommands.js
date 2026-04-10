@@ -18,6 +18,7 @@ import {
     safeSeg,
     toWorkspaceRelativeLabel,
 } from '../core/workspacePaths.js';
+import { createToolingMapStore } from '../core/toolingMapStore.js';
 import { fetchAndPopulateWorkspace } from '../runtime/workspaceSync.js';
 
 export function parsePackageXml(xmlText) {
@@ -56,28 +57,11 @@ export function parsePackageXml(xmlText) {
 }
 
 export function registerMetadataApiCommands({ connectionRuntime, context, deployTools }) {
-    const { vscode } = context;
+    const { state, vscode } = context;
+    const toolingMapStore = createToolingMapStore(vscode, state);
 
-    async function loadToolingMapJson() {
-        try {
-            const uri = getWorkspaceUri(vscode, '.salesforce/tooling-map.json');
-            const bytes = await vscode.workspace.fs.readFile(uri);
-            const text = new TextDecoder().decode(bytes || new Uint8Array());
-            const parsed = JSON.parse(text || '{}');
-            return parsed && typeof parsed === 'object' ? parsed : { items: {} };
-        } catch {
-            return { items: {} };
-        }
-    }
-
-    async function saveToolingMapJson(obj) {
-        const uri = getWorkspaceUri(vscode, '.salesforce/tooling-map.json');
-        const next = obj && typeof obj === 'object' ? obj : { items: {} };
-        if (!next.items || typeof next.items !== 'object') next.items = {};
-        next.generatedAt = new Date().toISOString();
-        await writeTextFile(vscode, uri, JSON.stringify(next, null, 2), { skipCache: true });
-        deployTools.invalidateToolingMap();
-    }
+    const loadToolingMapJson = () => toolingMapStore.loadJson();
+    const saveToolingMapJson = (obj) => toolingMapStore.saveJson(obj);
 
     async function withMetadataApiClientAuthed(conn, fn) {
         const baseConnection = await connectionRuntime.applyWorkspaceApiVersion(conn);

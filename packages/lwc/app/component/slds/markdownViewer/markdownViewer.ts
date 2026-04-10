@@ -11,8 +11,18 @@ import {
 import sldsCodeBlock from 'slds/codeBlock';
 import MarkdownViewerEditorModal from 'slds/MarkdownViewerEditorModal';
 
+const SFTOOLKIT_PREFIX = 'sftoolkit:';
+
+function extractSftoolkitPath(href) {
+    if (typeof href !== 'string' || !href.startsWith(SFTOOLKIT_PREFIX)) return null;
+    const path = href.slice(SFTOOLKIT_PREFIX.length);
+    return path.startsWith('/') ? path : '/' + path;
+}
+
 function extractVirtualWorkspacePath(urlValue) {
     if (typeof urlValue !== 'string' || urlValue.trim().length === 0) return null;
+    const sftoolkitPath = extractSftoolkitPath(urlValue);
+    if (sftoolkitPath) return sftoolkitPath;
     try {
         const parsed = new URL(urlValue, window.location.href);
         const pathName = parsed.pathname || '';
@@ -36,12 +46,31 @@ function mimeTypeFromPath(path) {
     return 'application/octet-stream';
 }
 
+function isImageMimeType(mimeType) {
+    return typeof mimeType === 'string' && mimeType.startsWith('image/');
+}
+
+function getFilename(path) {
+    return String(path || '').split('/').filter(Boolean).pop() || 'file';
+}
+
+const FILE_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+const OPEN_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
+const DOWNLOAD_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
+
+function buildFileAttachmentHTML(path, filename) {
+    const escapedPath = path.replace(/"/g, '&quot;');
+    const escapedName = filename.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return `<span class="sftoolkit-file-attachment" data-path="${escapedPath}">${FILE_ICON_SVG}<span class="sftoolkit-file-name" title="${escapedName}">${escapedName}</span><button class="sftoolkit-file-btn" data-action="open" data-path="${escapedPath}" title="Open">${OPEN_ICON_SVG}</button><button class="sftoolkit-file-btn" data-action="download" data-path="${escapedPath}" title="Download">${DOWNLOAD_ICON_SVG}</button></span>`;
+}
+
 export default class MarkdownViewer extends LightningElement {
     hasRendered = false;
     _renderRequested = false;
     _lastRenderedValue = null;
     _instanceKey = '';
     _linkClickBound = false;
+    _objectUrls: string[] = [];
     fs = getIndexedDbFileSystem();
 
     _value = '';
@@ -74,6 +103,8 @@ export default class MarkdownViewer extends LightningElement {
             this.refs.container.removeEventListener('click', this.handleContainerClick);
         }
         this._linkClickBound = false;
+        this._objectUrls.forEach(url => URL.revokeObjectURL(url));
+        this._objectUrls = [];
     }
 
     /** Methods */
@@ -124,6 +155,20 @@ export default class MarkdownViewer extends LightningElement {
     };
 
     handleContainerClick = async event => {
+        // Handle file attachment action buttons
+        const btn = event?.target?.closest?.('.sftoolkit-file-btn');
+        if (btn) {
+            event.preventDefault();
+            event.stopPropagation();
+            const action = btn.getAttribute('data-action');
+            const path = btn.getAttribute('data-path');
+            if (path) {
+                await this.openVirtualFile(path, action === 'download');
+            }
+            return;
+        }
+
+        // Handle sftoolkit: anchor links that weren't replaced (e.g. failed inline load)
         const anchor = event?.target?.closest?.('a[href]');
         if (!anchor) return;
         const href = anchor.getAttribute('href') || '';
@@ -131,29 +176,82 @@ export default class MarkdownViewer extends LightningElement {
         if (!workspacePath) return;
         event.preventDefault();
         event.stopPropagation();
+        await this.openVirtualFile(workspacePath, false);
+    };
+
+    openVirtualFile = async (path, download = false) => {
         try {
             await this.fs.ready;
-            const bytes = await this.fs.readFileBuffer(workspacePath);
-            const blob = new Blob([bytes], { type: mimeTypeFromPath(workspacePath) });
+            const bytes = await this.fs.readFileBuffer(path);
+            const mime = mimeTypeFromPath(path);
+            const blob = new Blob([bytes], { type: mime });
             const objectUrl = URL.createObjectURL(blob);
-            window.open(objectUrl, '_blank');
+            if (download) {
+                const a = document.createElement('a');
+                a.href = objectUrl;
+                a.download = getFilename(path);
+                a.click();
+            } else {
+                window.open(objectUrl, '_blank');
+            }
             setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
         } catch (_) {
-            // Keep silent in UI; fallback to default browser behavior.
-            window.open(href, '_blank');
+            // Best-effort fallback — nothing to show without the FS
         }
     };
 
     setMarkdown = markdown => {
-        var html = marked()(markdown);
+        const html = marked()(markdown);
         this.refs.container.innerHTML = html;
+        this.enable_sftoolkitLinks();
         runActionAfterTimeOut(
             html,
-            async value => {
+            async () => {
                 this.enable_codeViewer();
             },
             { timeout: 500, key: `${this._instanceKey}.enableCodeViewer` }
         );
+    };
+
+    enable_sftoolkitLinks = async () => {
+        const anchors = Array.from(
+            this.refs.container.querySelectorAll('a[href^="sftoolkit:"]')
+        );
+        for (const anchor of anchors) {
+            const href = anchor.getAttribute('href') || '';
+            const path = extractSftoolkitPath(href);
+            if (!path) continue;
+            const mime = mimeTypeFromPath(path);
+            const filename = getFilename(path);
+            if (isImageMimeType(mime)) {
+                await this.replaceAnchorWithImage(anchor, path, filename, mime);
+            } else {
+                this.replaceAnchorWithFileAttachment(anchor, path, filename);
+            }
+        }
+    };
+
+    replaceAnchorWithImage = async (anchor, path, filename, mime) => {
+        try {
+            await this.fs.ready;
+            const bytes = await this.fs.readFileBuffer(path);
+            const blob = new Blob([bytes], { type: mime });
+            const objectUrl = URL.createObjectURL(blob);
+            this._objectUrls.push(objectUrl);
+            const img = document.createElement('img');
+            img.src = objectUrl;
+            img.alt = filename;
+            img.className = 'sftoolkit-inline-image';
+            anchor.replaceWith(img);
+        } catch (_) {
+            // Leave anchor in place if FS read fails
+        }
+    };
+
+    replaceAnchorWithFileAttachment = (anchor, path, filename) => {
+        const wrapper = document.createElement('span');
+        wrapper.innerHTML = buildFileAttachmentHTML(path, filename);
+        anchor.replaceWith(wrapper.firstChild);
     };
 
     enable_codeViewer = () => {

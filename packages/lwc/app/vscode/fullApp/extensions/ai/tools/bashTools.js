@@ -1,7 +1,7 @@
 /* eslint-disable import/no-unresolved */
 import { createWorkbenchShellService } from '../../metadata/commands/workbenchShellService.js';
-import { getActiveMetadataExtensionServices } from '../../metadata/extension.js';
-import { MAX_BASH_OUTPUT_CHARS } from '../constants.js';
+import { getActiveSalesforceWorkbenchHost } from '../../salesforce/salesforceWorkbenchHost.js';
+const MAX_BASH_OUTPUT_CHARS = 30000;
 
 const shellServicesByConversationId = new Map();
 
@@ -46,12 +46,12 @@ function getOrCreateShellService(conversationId) {
         return shellServicesByConversationId.get(key);
     }
 
-    const services = getActiveMetadataExtensionServices();
-    if (!services?.connectionRuntime || !services?.context) {
+    const host = getActiveSalesforceWorkbenchHost();
+    if (!host?.connectionRuntime || !host?.context) {
         throw new Error('Salesforce shell services are not ready yet.');
     }
 
-    const shellService = createWorkbenchShellService(services);
+    const shellService = createWorkbenchShellService(host);
     shellServicesByConversationId.set(key, shellService);
     return shellService;
 }

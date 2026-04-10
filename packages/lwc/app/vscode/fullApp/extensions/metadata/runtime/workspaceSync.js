@@ -60,19 +60,19 @@ export async function fetchAndPopulateWorkspace(vscode, client) {
 
     const [classes, triggers, lwcBundles, auraBundles] = await Promise.all([
         toolingQueryAllWithFallback(
-            'SELECT Id, Name, Body, NamespacePrefix, ManageableState, IsProtected, LastModifiedDate, SystemModstamp FROM ApexClass ORDER BY Name',
+            'SELECT Id, Name, Body, NamespacePrefix, ManageableState, LastModifiedDate, SystemModstamp FROM ApexClass ORDER BY Name',
             'SELECT Id, Name, Body, NamespacePrefix FROM ApexClass ORDER BY Name'
         ),
         toolingQueryAllWithFallback(
-            'SELECT Id, Name, Body, NamespacePrefix, ManageableState, IsProtected, LastModifiedDate, SystemModstamp FROM ApexTrigger ORDER BY Name',
+            'SELECT Id, Name, Body, NamespacePrefix, ManageableState, LastModifiedDate, SystemModstamp FROM ApexTrigger ORDER BY Name',
             'SELECT Id, Name, Body, NamespacePrefix FROM ApexTrigger ORDER BY Name'
         ),
         toolingQueryAllWithFallback(
-            'SELECT Id, DeveloperName, NamespacePrefix, ManageableState, IsProtected FROM LightningComponentBundle ORDER BY DeveloperName',
+            'SELECT Id, DeveloperName, NamespacePrefix, ManageableState FROM LightningComponentBundle ORDER BY DeveloperName',
             'SELECT Id, DeveloperName, NamespacePrefix FROM LightningComponentBundle ORDER BY DeveloperName'
         ),
         toolingQueryAllWithFallback(
-            'SELECT Id, DeveloperName, NamespacePrefix, ManageableState, IsProtected FROM AuraDefinitionBundle ORDER BY DeveloperName',
+            'SELECT Id, DeveloperName, NamespacePrefix, ManageableState FROM AuraDefinitionBundle ORDER BY DeveloperName',
             'SELECT Id, DeveloperName, NamespacePrefix FROM AuraDefinitionBundle ORDER BY DeveloperName'
         ),
     ]);

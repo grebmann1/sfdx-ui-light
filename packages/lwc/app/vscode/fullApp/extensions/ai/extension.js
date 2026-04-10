@@ -1,10 +1,55 @@
-import {
-    ACTIVE_EDITOR_TOOL_DEFINITIONS,
-    AI_EXTENSION_API_PROPOSALS,
-    CHAT_PARTICIPANT_ID,
-    MODEL_VENDOR,
-} from './constants.js';
 import { createWorkbenchAgentBridge } from './core/agentBridge.js';
+
+const CHAT_PARTICIPANT_ID = 'salesforce.workbench.agent';
+const MODEL_VENDOR = 'copilot';
+
+const ACTIVE_EDITOR_TOOL_DEFINITIONS = [
+    {
+        name: 'getActiveEditorContext',
+        toolReferenceName: 'getActiveEditorContext',
+        displayName: 'Get Active Editor Context',
+        userDescription: 'Read the active editor path, selection, and text snapshot.',
+        modelDescription: 'Use this tool to inspect the current active VS Code editor context.',
+        canBeReferencedInPrompt: true,
+        inputSchema: {
+            type: 'object',
+            properties: { includeFullText: { type: 'boolean' } },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'applyActiveEditorEdit',
+        toolReferenceName: 'applyActiveEditorEdit',
+        displayName: 'Apply Active Editor Edit',
+        userDescription: 'Apply a text edit to the current active editor.',
+        modelDescription: 'Use this tool to update the active VS Code editor.',
+        canBeReferencedInPrompt: true,
+        inputSchema: {
+            type: 'object',
+            properties: {
+                content: { type: 'string' },
+                replaceSelection: { type: 'boolean' },
+                startLine: { type: 'number' },
+                startCharacter: { type: 'number' },
+                endLine: { type: 'number' },
+                endCharacter: { type: 'number' },
+            },
+            required: ['content'],
+            additionalProperties: false,
+        },
+    },
+];
+
+const AI_EXTENSION_API_PROPOSALS = [
+    'aiRelatedInformation',
+    'mappedEditsProvider',
+    'chatSessionsProvider',
+    'defaultChatParticipant',
+    'chatParticipantAdditions',
+    'chatParticipantPrivate',
+    'languageModelThinkingPart',
+    'chatProvider',
+];
 import { WORKBENCH_BASH_TOOL_DEFINITIONS } from './tools/bashTools.js';
 import { VSCODE_FILE_TOOL_DEFINITIONS } from './tools/vscodeFileTools.js';
 
@@ -46,7 +91,7 @@ const config = {
     enabledApiProposals: AI_EXTENSION_API_PROPOSALS,
 };
 
-export async function activate(vscodeBundle) {
+export async function register(vscodeBundle) {
     const extensionApi = vscodeBundle?.vscodeApi?.extensions;
     if (!extensionApi?.registerExtension || !extensionApi?.ExtensionHostKind) {
         return { dispose() {} };

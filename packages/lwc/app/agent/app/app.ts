@@ -20,6 +20,7 @@ import {
     DEFAULT_REASONING,
     getDefaultModelForAgentProvider,
     readFileContent,
+    generateConversationTitle,
 } from 'agent/utils';
 import Analytics from 'shared/analytics';
 import type { ConnectorLike } from 'core/connector';
@@ -291,6 +292,25 @@ export default class App extends ToolkitElement {
             original: currentMessages,
             current: currentMessages,
         });
+
+        // Auto-generate a title on the first message of a conversation
+        if (currentMessages.length === 0) {
+            const titleConversationId = conversationId;
+            generateConversationTitle(settings, prompt)
+                .then(title => {
+                    if (title) {
+                        store.dispatch(
+                            AGENT.reduxSlice.actions.updateConversationTitle({
+                                id: titleConversationId,
+                                title,
+                            })
+                        );
+                    }
+                })
+                .catch(err => {
+                    LOGGER.warn('[agent-app] Title generation failed (non-critical):', err);
+                });
+        }
 
         const userMessages = [createUserModelMessage({ text: prompt, filesData })];
 

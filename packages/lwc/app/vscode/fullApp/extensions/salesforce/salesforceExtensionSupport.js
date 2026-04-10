@@ -1,4 +1,5 @@
-import { EXTENSION_VERSION } from '../metadata/constants.js';
+export const EXTENSION_VERSION = '1.0.O';
+export const EXTENSION_PUBLISHER = 'salesforce';
 
 function createObjectUrl(content, mimeType) {
     return URL.createObjectURL(new Blob([content], { type: mimeType }));
@@ -47,7 +48,7 @@ export function buildSalesforceExtensionConfig({
         displayName,
         description,
         version: EXTENSION_VERSION,
-        publisher: 'salesforce',
+        publisher: EXTENSION_PUBLISHER,
         license: 'MIT',
         engines: { vscode: '*' },
         activationEvents: ['*'],

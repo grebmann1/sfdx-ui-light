@@ -14,7 +14,7 @@ import {
     resolveWorkspaceApiVersionFromVscode,
     writeWorkspaceApiVersionFromVscode,
 } from '../../../workbench/sfdxProject.js';
-import { OPEN_SALESFORCE_PANEL_COMMAND } from '../constants.js';
+const OPEN_SALESFORCE_PANEL_COMMAND = 'salesforceMetadata.openSalesforcePanel';
 import { getWorkspaceRootPath, getWorkspaceUri } from '../core/workspacePaths.js';
 
 const INJECTED_CONNECTOR_REQUIRED_MESSAGE =
@@ -226,7 +226,10 @@ export function createLoginProblemSetter({ loginDiagnostics, vscode }) {
 
 export function createConnectionRuntime({ statusItem, vscode }) {
     workspaceVscode = vscode;
-    return {
+
+    const statusListeners = new Set();
+
+    const runtime = {
         applyWorkspaceApiVersion,
         clearConn,
         getCurrentContext,
@@ -247,9 +250,26 @@ export function createConnectionRuntime({ statusItem, vscode }) {
         resolveConnectionRecord: conn =>
             resolveConnectionRecord(conn, getConnectionResolutionOptions(vscode)),
         saveConn,
-        setStatus: conn => setStatus(statusItem, conn),
+        setStatus(conn) {
+            setStatus(statusItem, conn);
+            for (const listener of statusListeners) {
+                try {
+                    listener(conn);
+                } catch {
+                    // ignore listener errors
+                }
+            }
+        },
+        addStatusChangeListener(listener) {
+            if (typeof listener === 'function') {
+                statusListeners.add(listener);
+            }
+            return () => statusListeners.delete(listener);
+        },
         withToolingClientAuthed,
     };
+
+    return runtime;
 }
 
 export function registerConnectionCommands({ connectionRuntime, context, setLoginProblem }) {
