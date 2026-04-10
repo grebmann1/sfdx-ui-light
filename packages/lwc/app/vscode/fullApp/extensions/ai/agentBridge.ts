@@ -1,16 +1,28 @@
-const CHAT_PARTICIPANT_ID = 'salesforce.workbench.agent';
-const MODEL_VENDOR = 'copilot';
-const MODEL_ID = 'workbench-agent';
-const MODEL_FAMILY = 'salesforce-workbench-agent';
-const MODEL_NAME = 'Workbench Agent';
-const THINKING_PROGRESS_ID = 'workbench-agent-thinking';
-const MAX_INLINE_TEXT_CHARS = 24000;
-const MAX_TOOL_STATUS_CHARS = 240;
-import { createWorkbenchBashTools } from '../tools/bashTools';
-import { createWorkspaceFileTools } from '../tools/vscodeFileTools';
+import {
+    WORKBENCH_CHAT_MODEL_FAMILY,
+    WORKBENCH_CHAT_MODEL_ID,
+    WORKBENCH_CHAT_MODEL_NAME,
+    WORKBENCH_CHAT_MODEL_VENDOR,
+    WORKBENCH_CHAT_PARTICIPANT_ID,
+} from '../../constants';
 
 import { stringifyUri, truncateText } from './agentFormatting';
 import { createWorkbenchAgentRequest } from './agentRuntime';
+import { createWorkbenchBashTools } from './tools/bashTools';
+import { createWorkspaceFileTools } from './tools/vscodeFileTools';
+
+const THINKING_PROGRESS_ID = 'workbench-agent-thinking';
+const MAX_INLINE_TEXT_CHARS = 24000;
+const MAX_TOOL_STATUS_CHARS = 240;
+
+type WorkbenchEditorEditInput = {
+    content?: string;
+    replaceSelection?: boolean;
+    startLine?: number;
+    startCharacter?: number;
+    endLine?: number;
+    endCharacter?: number;
+};
 
 function normalizePrompt(value) {
     return typeof value === 'string' ? value.trim() : '';
@@ -47,6 +59,7 @@ function buildActiveEditorContext(vscode, { includeFullText = true } = {}) {
             : null,
         selectedText: truncateText(selectedText, 8000),
         fullText: includeFullText ? truncateText(document.getText(), MAX_INLINE_TEXT_CHARS) : '',
+        text: '',
     };
 
     context.text = formatActiveEditorContext(context);
@@ -131,21 +144,22 @@ function buildPromptText({ prompt, activeEditorContext, referencedFiles, source 
     return parts.join('\n\n');
 }
 
-function buildRange(vscode, document, input = {}, selection) {
+function buildRange(vscode, document, input: WorkbenchEditorEditInput = {}, selection) {
+    const safeInput: WorkbenchEditorEditInput = input || {};
     const hasExplicitRange =
-        Number.isInteger(input.startLine) &&
-        Number.isInteger(input.startCharacter) &&
-        Number.isInteger(input.endLine) &&
-        Number.isInteger(input.endCharacter);
+        Number.isInteger(safeInput.startLine) &&
+        Number.isInteger(safeInput.startCharacter) &&
+        Number.isInteger(safeInput.endLine) &&
+        Number.isInteger(safeInput.endCharacter);
 
     if (hasExplicitRange) {
         return new vscode.Range(
-            new vscode.Position(input.startLine, input.startCharacter),
-            new vscode.Position(input.endLine, input.endCharacter)
+            new vscode.Position(safeInput.startLine, safeInput.startCharacter),
+            new vscode.Position(safeInput.endLine, safeInput.endCharacter)
         );
     }
 
-    if (input.replaceSelection !== false && selection && !selection.isEmpty) {
+    if (safeInput.replaceSelection !== false && selection && !selection.isEmpty) {
         return selection;
     }
 
@@ -205,7 +219,8 @@ function createEditorTools(vscode) {
                 required: ['content'],
                 additionalProperties: false,
             },
-            execute: async input => {
+            execute: async (input: WorkbenchEditorEditInput = {}) => {
+                const safeInput: WorkbenchEditorEditInput = input || {};
                 const editor = getActiveEditor(vscode);
                 if (!editor?.document) {
                     return {
@@ -216,9 +231,9 @@ function createEditorTools(vscode) {
                     };
                 }
 
-                const range = buildRange(vscode, editor.document, input, editor.selection);
+                const range = buildRange(vscode, editor.document, safeInput, editor.selection);
                 const edit = new vscode.WorkspaceEdit();
-                edit.replace(editor.document.uri, range, String(input?.content ?? ''));
+                edit.replace(editor.document.uri, range, String(safeInput.content ?? ''));
                 const applied = await vscode.workspace.applyEdit(edit);
                 if (!applied) {
                     return {
@@ -489,6 +504,22 @@ function createProviderResponseHandlers(vscode, progress) {
     };
 }
 
+export function createWorkbenchModelInfo() {
+    return {
+        id: WORKBENCH_CHAT_MODEL_ID,
+        name: WORKBENCH_CHAT_MODEL_NAME,
+        family: WORKBENCH_CHAT_MODEL_FAMILY,
+        version: '1.0.0',
+        maxInputTokens: 128000,
+        maxOutputTokens: 8192,
+        isDefault: true,
+        isUserSelectable: true,
+        capabilities: {
+            toolCalling: true,
+        },
+    };
+}
+
 export function createWorkbenchAgentBridge(vscodeBundle, vscodeApi) {
     const vscode = vscodeBundle?.vscode;
     const forwardAgentRequest = async requestPayload =>
@@ -499,23 +530,11 @@ export function createWorkbenchAgentBridge(vscodeBundle, vscodeApi) {
         });
 
     return {
-        participantId: CHAT_PARTICIPANT_ID,
-        modelVendor: MODEL_VENDOR,
-        modelId: MODEL_ID,
+        participantId: WORKBENCH_CHAT_PARTICIPANT_ID,
+        modelVendor: WORKBENCH_CHAT_MODEL_VENDOR,
+        modelId: WORKBENCH_CHAT_MODEL_ID,
         createModelInfo() {
-            return {
-                id: MODEL_ID,
-                name: MODEL_NAME,
-                family: MODEL_FAMILY,
-                version: '1.0.0',
-                maxInputTokens: 128000,
-                maxOutputTokens: 8192,
-                isDefault: true,
-                isUserSelectable: true,
-                capabilities: {
-                    toolCalling: true,
-                },
-            };
+            return createWorkbenchModelInfo();
         },
         async handleChatRequest(request, context, response, token) {
             const historyLength = Array.isArray(context?.history) ? context.history.length : 0;
@@ -545,8 +564,8 @@ export function createWorkbenchAgentBridge(vscodeBundle, vscodeApi) {
         async handleProviderRequest(model, messages, progress, token) {
             const requestPayload = {
                 prompt: buildProviderPrompt(messages),
-                modelId: model?.id || MODEL_ID,
-                conversationKey: `provider:${model?.id || MODEL_ID}`,
+                modelId: model?.id || WORKBENCH_CHAT_MODEL_ID,
+                conversationKey: `provider:${model?.id || WORKBENCH_CHAT_MODEL_ID}`,
                 resetConversation: true,
                 token,
                 source: 'vscode-language-model-provider',
@@ -570,9 +589,10 @@ export function createWorkbenchAgentBridge(vscodeBundle, vscodeApi) {
             return createWorkbenchTools(vscode).map(tool => ({
                 definition: tool,
                 createInstance() {
+                    const executableTool: any = tool;
                     return {
                         async invoke(options) {
-                            const result = await tool.execute(options?.input || {});
+                            const result = await executableTool.execute(options?.input || {});
                             return new vscode.LanguageModelToolResult([
                                 new vscode.LanguageModelTextPart(
                                     formatLanguageModelToolResult(result)
@@ -581,17 +601,21 @@ export function createWorkbenchAgentBridge(vscodeBundle, vscodeApi) {
                         },
                         async prepareInvocation(options) {
                             let confirmationMessages;
-                            if (typeof tool.prepareInvocation === 'function') {
-                                confirmationMessages = await tool.prepareInvocation(options);
+                            if (typeof executableTool.prepareInvocation === 'function') {
+                                confirmationMessages =
+                                    await executableTool.prepareInvocation(options);
                             } else if (
-                                typeof tool.buildConfirmation === 'function' &&
-                                tool.shouldConfirm?.(options)
+                                typeof executableTool.buildConfirmation === 'function' &&
+                                executableTool.shouldConfirm?.(options)
                             ) {
-                                confirmationMessages = tool.buildConfirmation(vscode, options);
+                                confirmationMessages = executableTool.buildConfirmation(
+                                    vscode,
+                                    options
+                                );
                             }
                             return {
                                 invocationMessage: new vscode.MarkdownString(
-                                    `Running \`${tool.name}\``
+                                    `Running \`${executableTool.name}\``
                                 ),
                                 confirmationMessages,
                             };
@@ -602,3 +626,13 @@ export function createWorkbenchAgentBridge(vscodeBundle, vscodeApi) {
         },
     };
 }
+
+export const __testables = {
+    buildPromptText,
+    buildProviderPrompt,
+    createWorkbenchModelInfo,
+    extractTextContent,
+    formatLanguageModelToolResult,
+    formatToolResultMessage,
+    summarizeToolResult,
+};

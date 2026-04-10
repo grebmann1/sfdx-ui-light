@@ -1,49 +1,50 @@
 <template>
     <div class={rootClass}>
-        <template if:true={showOrgBanner}>
-            <section class={orgBannerClass} role="status" aria-live="polite">
-                <div class="orgBannerContent">
-                    <!-- <strong class="orgBannerTitle">{orgBannerTitle}</strong> -->
-                </div>
-                <div class="orgBannerMeta">
+        <section class={orgBannerClass} role="status" aria-live="polite">
+            <div class="orgBannerContent">
+                <strong class="orgBannerTitle">{orgBannerTitle}</strong>
+                <span class="orgBannerMessage">{orgBannerMessage}</span>
+            </div>
+            <div class="orgBannerMeta">
+                <template if:true={showOrgBanner}>
                     <template if:true={orgBannerHost}>
                         <span class="orgBannerHost">{orgBannerHost}</span>
                     </template>
                     <span class="orgBannerPill">{orgBannerEnvironmentLabel}</span>
-                    <button
-                        class="themeToggleButton"
-                        type="button"
-                        title="Download workspace as zip"
-                        aria-label="Download workspace as zip"
-                        disabled={isDownloadingWorkspace}
-                        onclick={downloadWorkspace}>
+                </template>
+                <button
+                    class="themeToggleButton"
+                    type="button"
+                    title="Download workspace as zip"
+                    aria-label="Download workspace as zip"
+                    disabled={isDownloadingWorkspace}
+                    onclick={downloadWorkspace}>
+                    <slds-lucide-icon
+                        class="themeToggleIcon"
+                        name={downloadWorkspaceIcon}
+                        size="15"></slds-lucide-icon>
+                </button>
+                <button
+                    class="themeToggleButton"
+                    type="button"
+                    title={themeToggleTitle}
+                    aria-label={themeToggleTitle}
+                    onclick={toggleWorkbenchTheme}>
+                    <template if:true={showLightModeIcon}>
                         <slds-lucide-icon
                             class="themeToggleIcon"
-                            name={downloadWorkspaceIcon}
+                            name="sun"
                             size="15"></slds-lucide-icon>
-                    </button>
-                    <button
-                        class="themeToggleButton"
-                        type="button"
-                        title={themeToggleTitle}
-                        aria-label={themeToggleTitle}
-                        onclick={toggleWorkbenchTheme}>
-                        <template if:true={showLightModeIcon}>
-                            <slds-lucide-icon
-                                class="themeToggleIcon"
-                                name="sun"
-                                size="15"></slds-lucide-icon>
-                        </template>
-                        <template if:true={showDarkModeIcon}>
-                            <slds-lucide-icon
-                                class="themeToggleIcon"
-                                name="moon"
-                                size="15"></slds-lucide-icon>
-                        </template>
-                    </button>
-                </div>
-            </section>
-        </template>
+                    </template>
+                    <template if:true={showDarkModeIcon}>
+                        <slds-lucide-icon
+                            class="themeToggleIcon"
+                            name="moon"
+                            size="15"></slds-lucide-icon>
+                    </template>
+                </button>
+            </div>
+        </section>
 
         <slds-auth-boundary
             is-loading={isAuthBoundaryLoading}

@@ -103,7 +103,11 @@ function toAiSdkTools(tools, extraContext = {}) {
         result[rawTool.name] = createAiSdkTool({
             description: rawTool.description || '',
             inputSchema: normalizeToolInputSchema(rawTool.parameters),
-            execute: async input => rawTool.execute({ ...(input || {}), ...extraContext }),
+            execute: async input =>
+                rawTool.execute({
+                    ...(input && typeof input === 'object' ? input : {}),
+                    ...extraContext,
+                }),
         });
     });
     return result;
@@ -173,9 +177,9 @@ export async function createWorkbenchAgentRequest({
     tools = [],
 }) {
     const settings = await resolveWorkbenchAgentSettings({ modelId });
-    if (!settings.openaiKey) {
+    if (!settings.providerKey) {
         throw new Error(
-            'Workbench AI is not configured. Add an OpenAI key before using the workbench agent.'
+            `Workbench AI is not configured. Add a ${settings.providerLabel} API key before using the workbench agent.`
         );
     }
 
@@ -187,9 +191,9 @@ export async function createWorkbenchAgentRequest({
     const abortController = new AbortController();
     const reasoningConfig = getReasoningConfigFromSelection(settings.selectedReasoning);
     const providerInstance = createProviderInstance({
-        provider: 'openai',
-        apiKey: settings.openaiKey,
-        baseUrl: settings.openaiUrl,
+        provider: settings.provider,
+        apiKey: settings.providerKey,
+        baseUrl: settings.providerBaseUrl,
     });
 
     return {
@@ -201,7 +205,7 @@ export async function createWorkbenchAgentRequest({
             let assistantText = '';
             const result = streamText({
                 model: resolveProviderModelInstance(providerInstance, {
-                    provider: 'openai',
+                    provider: settings.provider,
                     modelId: settings.selectedModel,
                     isInternal: settings.isInternal,
                 }),
@@ -212,7 +216,7 @@ export async function createWorkbenchAgentRequest({
                 maxRetries: 0,
                 abortSignal: abortController.signal,
                 providerOptions: resolveProviderOptions({
-                    provider: 'openai',
+                    provider: settings.provider,
                     reasoningConfig,
                     isInternal: settings.isInternal,
                 }),

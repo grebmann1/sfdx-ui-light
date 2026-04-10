@@ -1,5 +1,17 @@
 import { createIndexedDbWorkspaceProvider } from '../indexedDbWorkspaceProvider';
 
+export function mergeServiceOverrides(...overrides) {
+    return overrides.reduce((result, nextOverrides) => {
+        if (!nextOverrides || typeof nextOverrides !== 'object') {
+            return result;
+        }
+        return {
+            ...result,
+            ...nextOverrides,
+        };
+    }, {});
+}
+
 function resolveBundledFileServiceHelper(vscodeBundle) {
     if (!vscodeBundle) {
         return { helper: null, source: 'missing' };
@@ -43,7 +55,7 @@ export function createWorkbenchFilesService({
                 return {};
             }
 
-            return getBundledServiceOverride(options) || {};
+            return mergeServiceOverrides(getBundledServiceOverride(options) || {});
         },
         createWorkspaceProvider({ fs, nextWorkspaceRoot = workspaceRoot }) {
             if (!fs) {
@@ -87,6 +99,7 @@ export function createWorkbenchFilesService({
 }
 
 export const __testables = {
+    mergeServiceOverrides,
     resolveBundledFileServiceHelper,
     resolveGetServiceOverride,
 };

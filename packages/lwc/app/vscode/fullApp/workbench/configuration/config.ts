@@ -1,5 +1,7 @@
 import { LIGHT_COLOR_THEME } from '../../constants';
 
+import { buildWorkbenchDefaultChatAgent } from './workbenchAiOverrides';
+
 export const buildUserConfiguration = (isChromeExtension: boolean) => ({
     'workbench.colorTheme': LIGHT_COLOR_THEME,
     'files.autoSave': 'off',
@@ -36,6 +38,7 @@ export const buildWorkspaceConfig = async (
     productConfiguration: {
         nameShort: 'monaco-workbench',
         nameLong: 'Monaco Workbench',
+        defaultChatAgent: buildWorkbenchDefaultChatAgent(),
         ...(isChromeExtension
             ? {}
             : {

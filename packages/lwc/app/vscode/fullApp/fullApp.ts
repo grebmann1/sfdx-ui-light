@@ -9,6 +9,8 @@ import { getVscodeBundle } from 'vscode/vscodeBundle';
 
 import {
     CHAT_MODEL_STORAGE_PREFIX,
+    WORKBENCH_CHAT_MODEL_FAMILY,
+    WORKBENCH_CHAT_MODEL_ID,
     WORKBENCH_CHAT_MODEL_VENDOR,
     LIGHT_COLOR_THEME,
     DARK_COLOR_THEME,
@@ -20,6 +22,7 @@ import {
     DEFAULT_WORKSPACE_ROOT,
     preloadWorkbenchConfiguration,
 } from './workbench/workbenchConfiguration';
+import { createWorkbenchAiServiceOverrides } from './workbench/configuration/workbenchAiOverrides';
 import {
     buildOrgContext,
     buildWorkbenchConnection,
@@ -305,7 +308,14 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         };
     }
 
-    _clearPersistedChatModels(storage, { obsoleteVendors = [] } = {}) {
+    _clearPersistedChatModels(
+        storage,
+        {
+            currentVendor = '',
+            allowedModelTokens = [],
+            obsoleteVendors = [],
+        } = {}
+    ) {
         if (!storage) {
             return;
         }
@@ -328,9 +338,18 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             }
             try {
                 const value = String(storage.getItem(key) || '');
-                const shouldRemove = obsoleteVendors.some(vendor =>
+                const normalizedValue = value.toLowerCase();
+                const shouldRemoveForVendor = obsoleteVendors.some(vendor =>
                     vendor ? value.toLowerCase().includes(String(vendor).toLowerCase()) : false
                 );
+                const tracksCurrentVendor =
+                    !!currentVendor &&
+                    normalizedValue.includes(String(currentVendor).toLowerCase());
+                const referencesWorkbenchModel = allowedModelTokens.some(token =>
+                    token ? normalizedValue.includes(String(token).toLowerCase()) : false
+                );
+                const shouldRemove =
+                    shouldRemoveForVendor || (tracksCurrentVendor && !referencesWorkbenchModel);
                 if (!shouldRemove) {
                     continue;
                 }
@@ -346,13 +365,22 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         const obsoleteVendors = ['salesforce-workbench'].filter(
             vendor => vendor !== WORKBENCH_CHAT_MODEL_VENDOR
         );
+        const allowedModelTokens = [WORKBENCH_CHAT_MODEL_ID, WORKBENCH_CHAT_MODEL_FAMILY];
         try {
-            this._clearPersistedChatModels(window.localStorage, { obsoleteVendors });
+            this._clearPersistedChatModels(window.localStorage, {
+                currentVendor: WORKBENCH_CHAT_MODEL_VENDOR,
+                allowedModelTokens,
+                obsoleteVendors,
+            });
         } catch {
             // ignore
         }
         try {
-            this._clearPersistedChatModels(window.sessionStorage, { obsoleteVendors });
+            this._clearPersistedChatModels(window.sessionStorage, {
+                currentVendor: WORKBENCH_CHAT_MODEL_VENDOR,
+                allowedModelTokens,
+                obsoleteVendors,
+            });
         } catch {
             // ignore
         }
@@ -1010,7 +1038,9 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                     userConfiguration: {
                         json: JSON.stringify(userConfiguration),
                     },
-                    serviceOverrides: workbenchFilesService?.getServiceOverrides(),
+                    serviceOverrides: createWorkbenchAiServiceOverrides(
+                        workbenchFilesService?.getServiceOverrides()
+                    ),
                 },
                 logLevel: LogLevel.Info,
                 caller: 'VscodeWorkbenchApp._startWorkbench',
@@ -1102,11 +1132,19 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     }
 
     get orgBannerTitle() {
-        return this.orgContext?.bannerTitle || 'Welcome to Salesforce.';
+        return this.showOrgBanner
+            ? this.orgContext?.bannerTitle || 'Welcome to Salesforce.'
+            : 'Salesforce disconnected.';
+    }
+
+    get orgBannerMessage() {
+        return this.showOrgBanner
+            ? this.orgContext?.bannerMessage || ''
+            : 'Reconnect from the toolkit to enable org features in this workbench.';
     }
 
     get orgBannerEnvironmentLabel() {
-        return this.orgContext?.environmentLabel || '';
+        return this.showOrgBanner ? this.orgContext?.environmentLabel || '' : 'Disconnected';
     }
 
     get orgBannerHost() {

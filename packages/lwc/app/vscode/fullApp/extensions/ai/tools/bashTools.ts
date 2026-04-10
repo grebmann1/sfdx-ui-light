@@ -1,7 +1,7 @@
 /* eslint-disable import/no-unresolved */
 import { createWorkbenchShellService } from '../../metadata/commands/workbenchShellService';
 import { getActiveSalesforceWorkbenchHost } from '../../salesforce/salesforceWorkbenchHost';
-import { truncateText } from '../core/agentFormatting';
+import { truncateText } from '../agentFormatting';
 const MAX_BASH_OUTPUT_CHARS = 30000;
 
 const shellServicesByConversationId = new Map();

@@ -5,7 +5,7 @@ const MAX_DIRECTORY_ENTRIES = 200;
 const MAX_GLOB_RESULTS = 200;
 const MAX_GREP_RESULTS = 100;
 const MAX_GREP_PREVIEW_CHARS = 240;
-import { stringifyUri } from '../core/agentFormatting';
+import { stringifyUri } from '../agentFormatting';
 
 let openDocumentQueue = Promise.resolve();
 

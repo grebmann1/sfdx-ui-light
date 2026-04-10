@@ -1,9 +1,14 @@
-import { createWorkbenchAgentBridge } from './core/agentBridge';
+import {
+    WORKBENCH_AI_COMPLETIONS_SETTING,
+    WORKBENCH_AI_NEXT_EDIT_SUGGESTIONS_SETTING,
+    WORKBENCH_CHAT_MODEL_VENDOR,
+    WORKBENCH_CHAT_PARTICIPANT_ID,
+    WORKBENCH_CHAT_PROVIDER_NAME,
+} from '../../constants';
+
+import { createWorkbenchAgentBridge } from './agentBridge';
 import { WORKBENCH_BASH_TOOL_DEFINITIONS } from './tools/bashTools';
 import { VSCODE_FILE_TOOL_DEFINITIONS } from './tools/vscodeFileTools';
-
-const CHAT_PARTICIPANT_ID = 'salesforce.workbench.agent';
-const MODEL_VENDOR = 'copilot';
 
 const ACTIVE_EDITOR_TOOL_DEFINITIONS = [
     {
@@ -42,17 +47,6 @@ const ACTIVE_EDITOR_TOOL_DEFINITIONS = [
     },
 ];
 
-const AI_EXTENSION_API_PROPOSALS = [
-    'aiRelatedInformation',
-    'mappedEditsProvider',
-    'chatSessionsProvider',
-    'defaultChatParticipant',
-    'chatParticipantAdditions',
-    'chatParticipantPrivate',
-    'languageModelThinkingPart',
-    'chatProvider',
-];
-
 const TOOL_DEFINITIONS = [
     ...ACTIVE_EDITOR_TOOL_DEFINITIONS,
     ...WORKBENCH_BASH_TOOL_DEFINITIONS,
@@ -61,7 +55,7 @@ const TOOL_DEFINITIONS = [
 
 const config = {
     name: 'workbench-ai',
-    displayName: 'Workbench AI',
+    displayName: WORKBENCH_CHAT_PROVIDER_NAME,
     description: 'Connect the embedded VS Code chat surface to the Workbench agent runtime.',
     version: '1.0.0',
     publisher: 'salesforce',
@@ -70,9 +64,30 @@ const config = {
         vscode: '*',
     },
     contributes: {
+        configuration: {
+            title: 'Workbench AI',
+            properties: {
+                [WORKBENCH_AI_COMPLETIONS_SETTING]: {
+                    type: 'object',
+                    scope: 'window',
+                    default: { '*': false },
+                    additionalProperties: {
+                        type: 'boolean',
+                    },
+                    markdownDescription:
+                        'Enable or disable auto-triggering of Workbench AI completions for specific languages.',
+                },
+                [WORKBENCH_AI_NEXT_EDIT_SUGGESTIONS_SETTING]: {
+                    type: 'boolean',
+                    default: false,
+                    tags: ['nextEditSuggestions', 'onExp'],
+                    scope: 'language-overridable',
+                },
+            },
+        },
         chatParticipants: [
             {
-                id: CHAT_PARTICIPANT_ID,
+                id: WORKBENCH_CHAT_PARTICIPANT_ID,
                 fullName: 'Workbench Agent',
                 name: 'workbench-agent',
                 isDefault: true,
@@ -82,17 +97,26 @@ const config = {
         ],
         languageModelChatProviders: [
             {
-                vendor: MODEL_VENDOR,
+                vendor: WORKBENCH_CHAT_MODEL_VENDOR,
                 displayName: 'Workbench Agent',
             },
         ],
         languageModelTools: TOOL_DEFINITIONS,
     },
-    enabledApiProposals: AI_EXTENSION_API_PROPOSALS,
+    enabledApiProposals: [
+        'aiRelatedInformation',
+        'mappedEditsProvider',
+        'chatSessionsProvider',
+        'defaultChatParticipant',
+        'chatParticipantAdditions',
+        'chatParticipantPrivate',
+        'languageModelThinkingPart',
+        'chatProvider',
+    ],
 };
 
 export async function register(vscodeBundle) {
-    const extensionApi = vscodeBundle?.vscodeApi?.extensions;
+    const extensionApi = vscodeBundle?.extensions;
     if (!extensionApi?.registerExtension || !extensionApi?.ExtensionHostKind) {
         return { dispose() {} };
     }
@@ -118,7 +142,7 @@ export async function register(vscodeBundle) {
     disposables.push(onDidChangeLanguageModelChatInformation);
 
     disposables.push(
-        vscodeApi.lm.registerLanguageModelChatProvider(MODEL_VENDOR, {
+        vscodeApi.lm.registerLanguageModelChatProvider(WORKBENCH_CHAT_MODEL_VENDOR, {
             provideLanguageModelChatInformation() {
                 return [bridge.createModelInfo()];
             },
@@ -134,7 +158,7 @@ export async function register(vscodeBundle) {
 
     disposables.push(
         vscodeApi.chat.createChatParticipant(
-            CHAT_PARTICIPANT_ID,
+            WORKBENCH_CHAT_PARTICIPANT_ID,
             async (request, context, response, token) => {
                 await bridge.handleChatRequest(request, context, response, token);
             }

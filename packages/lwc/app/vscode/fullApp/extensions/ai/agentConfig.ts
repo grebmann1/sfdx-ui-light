@@ -6,17 +6,27 @@ import {
     resolveLlmProviderConfigMap,
 } from 'shared/cacheManager';
 import {
+    buildAvailableAgentModelOptions,
     fetchLlmModelsEndpoint,
     getDefaultModelForProvider,
+    getProviderLabel,
+    getProviderModelOptions,
     INTERNAL_OPENAI_MODEL_OPTIONS,
     isInternalProviderBaseUrl,
+    normalizeLlmProvider,
+    normalizeModelSelection,
     OPENAI_MODEL_OPTIONS,
+    resolveAgentProviderBaseUrl,
 } from 'shared/llm';
 
-export const WORKBENCH_RUNTIME_MODELS = OPENAI_MODEL_OPTIONS.map(model => ({
-    label: model.label,
-    value: model.value,
-}));
+function toModelSelectionOptions(models = []) {
+    return models.map(model => ({
+        label: model.label,
+        value: model.value,
+    }));
+}
+
+export const WORKBENCH_RUNTIME_MODELS = toModelSelectionOptions(OPENAI_MODEL_OPTIONS);
 export const WORKBENCH_INTERNAL_MODELS = INTERNAL_OPENAI_MODEL_OPTIONS.map(model => ({
     label: model.label,
     value: model.value,
@@ -50,6 +60,14 @@ export function resolveWorkbenchOpenAiBaseUrl(openaiUrl) {
     return openaiUrl || 'https://api.openai.com/v1';
 }
 
+export function getDefaultWorkbenchModelOptions(provider, isInternal = false) {
+    const normalizedProvider = normalizeLlmProvider(provider);
+    if (normalizedProvider === 'openai' && isInternal) {
+        return INTERNAL_OPENAI_MODEL_OPTIONS;
+    }
+    return getProviderModelOptions(normalizedProvider);
+}
+
 export function isAbortLikeError(error) {
     const name = error?.name || '';
     const message = error?.message || '';
@@ -77,42 +95,69 @@ export function resolveWorkbenchModelId(requestedModelId, isInternal = false, av
     return isInternal ? DEFAULT_WORKBENCH_INTERNAL_MODEL : DEFAULT_WORKBENCH_MODEL;
 }
 
-export async function resolveWorkbenchAgentSettings({ modelId, reasoning } = {}) {
+type WorkbenchAgentSettingsOptions = {
+    modelId?: string;
+    reasoning?: string;
+};
+
+export async function resolveWorkbenchAgentSettings(options: WorkbenchAgentSettingsOptions = {}) {
+    const { modelId, reasoning } = options;
     const cachedConfig = await loadExtensionConfigFromCache(getLlmProviderConfigCacheKeys()).catch(
         () => ({})
     );
     const providerConfigs = resolveLlmProviderConfigMap(cachedConfig);
-    const aiProvider = getAiProviderFromConfig(cachedConfig);
-    const openaiKey = providerConfigs.openai.apiKey || '';
-    const openaiUrl = resolveWorkbenchOpenAiBaseUrl(providerConfigs.openai.baseUrl);
-    const isInternal = isInternalProviderBaseUrl(openaiUrl);
-    let availableModels;
+    const selectedProvider = normalizeLlmProvider(getAiProviderFromConfig(cachedConfig));
+    const providerConfig = providerConfigs[selectedProvider] || providerConfigs.openai;
+    const providerKey = providerConfig?.apiKey || '';
+    const providerBaseUrl = resolveAgentProviderBaseUrl(
+        selectedProvider,
+        providerConfig?.baseUrl || ''
+    );
+    const isInternal =
+        selectedProvider === 'openai' && isInternalProviderBaseUrl(providerBaseUrl || '');
+    let availableModelsByProvider;
 
-    if (aiProvider === 'openai') {
-        try {
-            const response = await fetchLlmModelsEndpoint({
-                provider: 'openai',
-                providerConfigs,
-            });
-            if (response.catalog?.status === 'ok' && Array.isArray(response.catalog.models)) {
-                availableModels = response.catalog.models.map(model => ({
-                    label: model.label,
-                    value: model.value,
-                }));
-            }
-        } catch {
-            availableModels = undefined;
-        }
+    try {
+        const response = await fetchLlmModelsEndpoint({
+            provider: selectedProvider,
+            providerConfigs,
+        });
+        availableModelsByProvider = response.catalogs;
+    } catch {
+        availableModelsByProvider = undefined;
     }
 
+    const availableModels = buildAvailableAgentModelOptions({
+        availableModelsByProvider,
+        providerConfigs,
+    }).filter(model => model.provider === selectedProvider);
+    const fallbackModels =
+        availableModels.length > 0
+            ? availableModels
+            : getDefaultWorkbenchModelOptions(selectedProvider, isInternal);
+    const selectedModel =
+        normalizeModelSelection(
+            modelId,
+            fallbackModels,
+            getDefaultModelForProvider(selectedProvider)
+        ) || getDefaultModelForProvider(selectedProvider);
+
     return {
-        openaiKey,
-        openaiUrl,
+        provider: selectedProvider,
+        providerLabel: getProviderLabel(selectedProvider),
+        providerConfigs,
+        providerKey,
+        providerBaseUrl,
         isInternal,
-        selectedModel: resolveWorkbenchModelId(modelId, isInternal, availableModels),
+        availableModels: toModelSelectionOptions(fallbackModels),
+        selectedModel,
         selectedReasoning: resolveWorkbenchReasoningSelection(reasoning),
         modelContextWindow: WORKBENCH_MODEL_CONTEXT_WINDOW,
         maxToolRounds: WORKBENCH_MAX_TOOL_ROUNDS,
         systemPrompt: WORKBENCH_AGENT_SYSTEM_PROMPT,
     };
 }
+
+export const __testables = {
+    getDefaultWorkbenchModelOptions,
+};
