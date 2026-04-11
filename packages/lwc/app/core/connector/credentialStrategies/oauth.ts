@@ -147,7 +147,7 @@ export async function connect(
                 }
             );
         });
-    } else if (platform === PLATFORM.WEB) {
+    } else if ([PLATFORM.WEB, PLATFORM.ELECTRON].includes(platform)) {
         LOGGER.log('Web OAuth');
         // Web OAuth: use authorization code flow so the server can exchange code for tokens
         // and redirect to /callback#...; jsforce's default login() uses response_type=token

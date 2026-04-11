@@ -3,11 +3,15 @@ import LOGGER from 'shared/logger';
 import {
     isNotUndefinedOrNull,
     isEmpty,
-    decodeError,
     classSet,
-    runActionAfterTimeOut,
 } from 'shared/utils';
 
+import {
+    getDesktopOrgs,
+    getDesktopStoredOrg,
+    removeDesktopStoredOrg,
+    renameDesktopStoredOrg,
+} from 'core/electron/desktopBridge';
 import { extractName, extractConfig } from './base';
 import { OAUTH_TYPES } from './credentialStrategies/oauthTypes';
 
@@ -15,10 +19,7 @@ const CONNECTION_ERRORS = ['JwtAuthError', 'RefreshTokenAuthError'];
 const CONNECTION_WARNING = ['DomainNotFoundError'];
 
 export async function getConfiguration(alias) {
-    const { res, error } = await window.electron.invoke('org-seeDetails', { alias });
-    if (error) {
-        throw decodeError(error);
-    }
+    const res = await getDesktopStoredOrg(alias);
 
     const { name, company } = extractName(res.alias);
     const { refreshToken, instanceUrl } = res.sfdxAuthUrl ? extractConfig(res.sfdxAuthUrl) : {};
@@ -35,31 +36,18 @@ export async function getConfiguration(alias) {
     };
 }
 
-export async function renameConfiguration({ oldAlias, newAlias, username, credentialType }) {
+export async function renameConfiguration({ oldAlias, newAlias, credentialType }) {
     if (credentialType === OAUTH_TYPES.USERNAME) {
-        let res = await window.electron.invoke('org-renameStoredOrg', {
-            alias: oldAlias,
-            newAlias: newAlias,
+        await renameDesktopStoredOrg({
+            oldAlias,
+            newAlias,
         });
-        if (res?.error) {
-            throw decodeError(res.error);
-        }
     } else {
-        let res = await window.electron.invoke('org-setAlias', {
-            alias: newAlias,
-            username: username,
-        });
-        if (res?.error) {
-            throw decodeError(res.error);
-        }
-
         if (oldAlias !== 'Empty' || isNotUndefinedOrNull(oldAlias)) {
-            let res2 = await window.electron.invoke('org-unsetAlias', {
-                alias: oldAlias,
+            await renameDesktopStoredOrg({
+                oldAlias,
+                newAlias,
             });
-            if (res2?.error) {
-                throw decodeError(res2.error);
-            }
         }
     }
 }
@@ -67,19 +55,9 @@ export async function renameConfiguration({ oldAlias, newAlias, username, creden
 export async function removeConfiguration({ alias, credentialType }) {
     // todo: need to be refactured
     if (credentialType === OAUTH_TYPES.USERNAME) {
-        let res = await window.electron.invoke('org-removeStoredOrg', { alias });
-        if (res?.error) {
-            throw decodeError(res.error);
-        }
+        await removeDesktopStoredOrg(alias);
     } else {
-        let res = await window.electron.invoke('org-logout', { alias });
-        if (res?.error) {
-            throw decodeError(res.error);
-        }
-        let res1 = await window.electron.invoke('org-unsetAlias', { alias });
-        if (res1?.error) {
-            throw decodeError(res1.error);
-        }
+        await removeDesktopStoredOrg(alias);
     }
 }
 
@@ -154,8 +132,7 @@ export async function getConfigurations({ sync = false } = {}) {
         const cachedOrgs = await cacheManager.loadOrgData('electron', DATA_TYPE);
         if (cachedOrgs) {
             // ASYNC (background refresh)
-            window.electron
-                .invoke('org-getAllOrgs')
+            getDesktopOrgs()
                 .then(async ({ sfdxOrgs, storedOrgs }) => {
                     const orgs = normalizeOrgs(sfdxOrgs, storedOrgs);
                     await cacheManager.saveOrgData('electron', DATA_TYPE, orgs);
@@ -170,7 +147,7 @@ export async function getConfigurations({ sync = false } = {}) {
     }
 
     // If no cache, fetch fresh, update cache, and return (SYNC)
-    const { sfdxOrgs, storedOrgs } = await window.electron.invoke('org-getAllOrgs');
+    const { sfdxOrgs, storedOrgs } = await getDesktopOrgs();
     LOGGER.info('getConfigurations - electron - result', sfdxOrgs, storedOrgs);
     const orgs = normalizeOrgs(sfdxOrgs, storedOrgs);
     await cacheManager.saveOrgData('electron', DATA_TYPE, orgs);

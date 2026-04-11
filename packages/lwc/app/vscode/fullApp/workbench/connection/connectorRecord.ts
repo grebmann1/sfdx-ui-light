@@ -1,6 +1,8 @@
+import { buildConnectionFromConnector } from 'core/connector';
+
 import { deriveWorkspaceRootFromConnection } from '../workspace/workspaceBootstrap';
 
-import { getCurrentConnection } from './currentConnection';
+import { getCurrentConnectionContext } from './currentConnection';
 
 function normalizeComparableUrl(value: unknown) {
     return String(value || '')
@@ -52,7 +54,7 @@ function connectorMatchesConnection(
 }
 
 function getProviderContext(): Record<string, unknown> | null {
-    const context = getCurrentConnection();
+    const context = getCurrentConnectionContext();
     return context && typeof context === 'object' ? context : null;
 }
 
@@ -64,8 +66,41 @@ function getProviderConnector(): Record<string, unknown> | null {
 
 function getProviderConnection(): Record<string, unknown> | null {
     const ctx = getProviderContext();
-    const c = ctx?.connection;
-    return c && typeof c === 'object' ? (c as Record<string, unknown>) : null;
+    const getConnectionRecord = ctx?.getConnectionRecord;
+    if (typeof getConnectionRecord === 'function') {
+        try {
+            const record = getConnectionRecord();
+            if (record && typeof record === 'object') {
+                return record as Record<string, unknown>;
+            }
+        } catch {
+            // ignore
+        }
+    }
+
+    const connector = getProviderConnector();
+    const rawConnection = ctx?.connection;
+    const fallbackApiVersion =
+        typeof ctx?.apiVersion === 'string' ? String(ctx.apiVersion) : undefined;
+    const normalized = buildConnectionFromConnector(connector, fallbackApiVersion);
+
+    if (normalized) {
+        const fallbackWorkspaceRoot =
+            typeof ctx?.workspaceRoot === 'string' ? String(ctx.workspaceRoot) : '';
+        return {
+            ...normalized,
+            workspaceRoot:
+                fallbackWorkspaceRoot ||
+                deriveWorkspaceRootFromConnection(normalized, fallbackWorkspaceRoot),
+            sessionHasExpired: Boolean(ctx?.sessionHasExpired),
+            hasError: Boolean(ctx?.hasError),
+            errorMessage: typeof ctx?.errorMessage === 'string' ? ctx.errorMessage : null,
+        };
+    }
+
+    return rawConnection && typeof rawConnection === 'object'
+        ? (rawConnection as Record<string, unknown>)
+        : null;
 }
 
 function unsupportedConnectionError() {
@@ -117,7 +152,10 @@ export async function resolveConnectionRecord(
     connection: Record<string, unknown>,
     options: { workspaceBasePath?: string } = {}
 ) {
-    const normalized = mergeProviderConnection(connection, options);
+    const normalized = mergeProviderConnection(connection, options) as Record<
+        string,
+        unknown
+    > | null;
     if (!normalized?.instanceUrl || !normalized?.accessToken) {
         throw unsupportedConnectionError();
     }

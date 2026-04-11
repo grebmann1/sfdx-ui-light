@@ -1,6 +1,11 @@
 import { api, wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { credentialStrategies, OAUTH_TYPES } from 'core/connector';
+import {
+    connectSessionFromBackgroundResult,
+    credentialStrategies,
+    findExistingSessionViaBackground,
+    OAUTH_TYPES,
+} from 'core/connector';
 import { connectStore, store, APPLICATION } from 'core/store';
 import LOGGER from 'shared/logger';
 import { isChromeExtension } from 'shared/utils';
@@ -42,7 +47,7 @@ export default class AuthBoundary extends ToolkitElement {
         let modalVariant = MODAL_VARIANTS.EXPIRED;
 
         try {
-            while (true) {
+            for (;;) {
                 const result = await SessionRecoveryModal.open(this.getModalOptions(modalVariant));
                 if (
                     result === SESSION_RECOVERY_RESULT.AUTO_RECONNECT &&
@@ -74,55 +79,21 @@ export default class AuthBoundary extends ToolkitElement {
         }
 
         try {
-            const chromeRuntime = (
-                window as Window & {
-                    chrome?: {
-                        runtime?: {
-                            sendMessage?: (
-                                message: {
-                                    action: string;
-                                    alias?: string;
-                                    instanceUrl?: string;
-                                },
-                                callback?: (response?: { sessionId?: string; serverUrl?: string }) => void
-                            ) => void;
-                        };
-                    };
-                }
-            ).chrome?.runtime;
-            const sendMessage =
-                chromeRuntime && typeof chromeRuntime.sendMessage === 'function'
-                    ? chromeRuntime.sendMessage.bind(chromeRuntime)
-                    : null;
-            const result = await new Promise<{ sessionId?: string; serverUrl?: string } | undefined>(
-                resolve => {
-                    try {
-                        if (!sendMessage) {
-                            resolve(undefined);
-                            return;
-                        }
-                        sendMessage(
-                            {
-                                action: 'findExistingSession',
-                                alias: configuration?.alias,
-                                instanceUrl: configuration?.instanceUrl,
-                            },
-                            response =>
-                                resolve(
-                                    response as { sessionId?: string; serverUrl?: string } | undefined
-                                )
-                        );
-                    } catch {
-                        resolve(undefined);
-                    }
-                }
-            );
+            const result = await findExistingSessionViaBackground({
+                alias: configuration?.alias,
+                instanceUrl: configuration?.instanceUrl,
+            });
 
             if (result?.sessionId && result?.serverUrl) {
-                const connector = await credentialStrategies.SESSION.connect({
-                    sessionId: result.sessionId,
-                    serverUrl: result.serverUrl,
-                });
+                const connector =
+                    (await connectSessionFromBackgroundResult({
+                        sessionId: result.sessionId,
+                        serverUrl: result.serverUrl,
+                    })) ||
+                    (await credentialStrategies.SESSION.connect({
+                        sessionId: result.sessionId,
+                        serverUrl: result.serverUrl,
+                    }));
                 store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
                 return 'success';
             }
@@ -148,7 +119,9 @@ export default class AuthBoundary extends ToolkitElement {
     }
 
     get isBlocked() {
-        return Boolean(this.shouldRequireConnection && (!this.isUserLoggedIn || this.sessionHasExpired));
+        return Boolean(
+            this.shouldRequireConnection && (!this.isUserLoggedIn || this.sessionHasExpired)
+        );
     }
 
     get shouldRequireConnection() {

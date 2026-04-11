@@ -1,5 +1,6 @@
 import { api } from 'lwc';
 import { decodeError, isNotUndefinedOrNull, isUndefinedOrNull } from 'shared/utils';
+import { getDesktopPmdInstallation, installDesktopLatestPmd } from 'core/electron/desktopBridge';
 import ToolkitElement from 'core/toolkitElement';
 
 export default class Pmd extends ToolkitElement {
@@ -26,25 +27,18 @@ export default class Pmd extends ToolkitElement {
     };
 
     checkIfPmdInstalled = async (): Promise<void> => {
-        const { error, result } = await window.electron.invoke('code-isPmdInstalled', {
-            projectPath: this.projectPath,
-        });
-        if (error) {
-            throw decodeError(error);
-        }
-        console.info('checkIfPmdInstalled', { error, result });
-        this.pmdPath = isNotUndefinedOrNull(result) ? `${result}/bin/pmd` : null;
+        const result = await getDesktopPmdInstallation(this.projectPath);
+        console.info('checkIfPmdInstalled', result);
+        this.pmdPath = isNotUndefinedOrNull(result?.executablePath) ? result.executablePath : null;
     };
 
     installLatestPMD = async (): Promise<void> => {
-        const { error, result } = await window.electron.invoke('code-installLatestPmd', {
-            projectPath: this.projectPath,
-        });
-        if (error) {
+        try {
+            await installDesktopLatestPmd(this.projectPath);
+            await this.checkIfPmdInstalled();
+        } catch (error) {
             throw decodeError(error);
         }
-        console.info('installLatestPMD', result);
-        this.checkIfPmdInstalled();
     };
 
     /** Getters **/

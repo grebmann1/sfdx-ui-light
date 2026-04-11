@@ -34,4 +34,3 @@ export function getFieldTypeIcon(fieldType: string): string {
     const iconName = FIELD_TYPE_ICONS[(fieldType || '').toLowerCase()] || DEFAULT_FIELD_ICON;
     return `lucide:${iconName}`;
 }
-export * from '../constants';

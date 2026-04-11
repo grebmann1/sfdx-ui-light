@@ -7,17 +7,17 @@ import {
     notificationService,
     validateInputs,
     OAUTH_TYPES,
-    setRedirectCredential
+    setRedirectCredential,
 } from 'core/connector';
 const { showToast, handleError } = notificationService;
 import {
     isEmpty,
     isNotUndefinedOrNull,
     isElectronApp,
-    decodeError,
     checkIfPresent,
 } from 'shared/utils';
 import type { ConnectorLike } from 'core/connector';
+import { setDesktopStoredOrg } from 'core/electron/desktopBridge';
 
 import LOGGER from 'shared/logger';
 
@@ -287,7 +287,7 @@ export default class ConnectionNewModal extends LightningModal {
                 },
                 { saveFullConfiguration: false }
             );
-            const result = await window.electron.invoke('org-setStoredOrg', {
+            const result = await setDesktopStoredOrg({
                 alias: this.alias,
                 configuration: connector.configuration,
             });
@@ -320,32 +320,21 @@ export default class ConnectionNewModal extends LightningModal {
     };
 
     electron_oauth = async () => {
-        //console.log('electron_oauth');
-        const normalizedUrl = getSalesforceURL(this.loginUrl);
-        let params = {
-            alias: this.alias,
-            instanceurl: normalizedUrl,
-        };
         try {
-            const { error, res } = await window.electron.invoke('org-createNewOrgAlias', params);
-            if (error) {
-                throw decodeError(error);
-            }
-            console.log('electron_oauth', error, res);
-
-            window.electron.listener_on('oauth', value => {
-                if (value.action === 'done' || value.action === 'exit') {
-                    window.electron.listener_off('oauth');
-                    setTimeout(() => {
-                        //console.log('close connection');
-                        this.close(value.data);
-                    }, 1000);
-                } else if (value.action === 'error') {
-                    throw decodeError(value.error);
-                }
+            const connector: ConnectorLike = await credentialStrategies.OAUTH.connect(
+                {
+                    alias: this.alias,
+                    loginUrl: this.loginUrl,
+                },
+                { saveFullConfiguration: false, persist: false }
+            );
+            const result = await setDesktopStoredOrg({
+                alias: this.alias,
+                configuration: connector.configuration,
             });
+            showToast({ label: 'Connected successfully!', variant: 'success' });
+            this.close(result);
         } catch (e) {
-            //console.log('error',e);
             this.close();
             await LightningAlert.open({
                 message: e.message,

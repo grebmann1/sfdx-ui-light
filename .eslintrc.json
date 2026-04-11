@@ -44,7 +44,7 @@
   },
   "overrides": [
     {
-      "files": ["packages/lwc/app/**/*.ts"],
+      "files": ["packages/lwc/app/**/*.ts", "packages/desktop/**/*.ts"],
       "parser": "@typescript-eslint/parser",
       "parserOptions": {
         "ecmaVersion": "latest",

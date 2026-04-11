@@ -72,6 +72,10 @@ const METADATA_EXTENSION_BASE_CONFIG = buildSalesforceExtensionConfig({
                 title: 'Salesforce: Retrieve Source in Manifest (Tooling API)',
             },
             {
+                command: 'salesforceMetadata.generateManifestFile',
+                title: 'SFDX: Generate Manifest File',
+            },
+            {
                 command: 'salesforceMetadata.retrieveMetadataApi',
                 title: 'Salesforce: Retrieve Source in Manifest (Metadata API)',
             },
@@ -127,6 +131,13 @@ const METADATA_EXTENSION_BASE_CONFIG = buildSalesforceExtensionConfig({
                 { command: 'salesforceMetadata.openNamespaceReport' },
             ],
             'editor/context': [{ command: 'salesforceMetadata.fetchMetadata' }],
+            'explorer/context': [
+                {
+                    command: 'salesforceMetadata.generateManifestFile',
+                    when: 'resourceFilename != package.xml',
+                    group: 'navigation',
+                },
+            ],
         },
     },
 });

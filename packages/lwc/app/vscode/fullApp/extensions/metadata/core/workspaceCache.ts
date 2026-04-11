@@ -40,6 +40,15 @@ export async function listFilesAndDirsRecursive(vscode, dirUri) {
     return { files, dirs };
 }
 
+export async function pathExists(vscode, uri) {
+    try {
+        await vscode.workspace.fs.stat(uri);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 export function looksLikeBadLwcPath(path) {
     return /\/force-app\/main\/[^/]+\/lwc\/[^/]+\/lwc\//.test(String(path || ''));
 }

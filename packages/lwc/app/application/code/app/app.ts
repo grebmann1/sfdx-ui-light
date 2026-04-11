@@ -1,5 +1,13 @@
 import { track } from 'lwc';
 import { decodeError, isNotUndefinedOrNull } from 'shared/utils';
+import {
+    exportDesktopMetadata,
+    getDesktopCodeInitialConfig,
+    onDesktopLegacyChannel,
+    openDesktopVSCodeProject,
+    retrieveDesktopCode,
+    selectDesktopCodeProject,
+} from 'core/electron/desktopBridge';
 import ToolkitElement from 'core/toolkitElement';
 import Analytics from 'shared/analytics';
 
@@ -20,13 +28,7 @@ export default class App extends ToolkitElement {
     /** Methods  **/
 
     loadPathFromConfig = async (): Promise<void> => {
-        const { error, result } = await window.electron.invoke('code-getInitialConfig', {
-            alias: this.connector.configuration.alias,
-        });
-        if (error) {
-            throw decodeError(error);
-        }
-        //console.log('result',result);
+        const result = await getDesktopCodeInitialConfig(this.connector.configuration.alias);
         this.projectPath = result.projectPath;
         this.initMetadataLoaded = result.metadataLoaded || true; // For DEMO - TODO: Fix issue related to Metadata download
 
@@ -47,15 +49,11 @@ export default class App extends ToolkitElement {
     };
 
     selectProject = async (): Promise<void> => {
-        /** Electron **/
-        const { error, result } = await window.electron.invoke('code-createVSCodeProject', {
+        const result = await selectDesktopCodeProject({
+            alias: this.connector.configuration.alias,
             defaultPath: this.projectPath,
         });
-        if (error) {
-            throw decodeError(error);
-        }
 
-        //console.log('test',error,result);
         this.projectPath = result?.projectPath || null;
         this.savePathToConfig();
     };
@@ -69,34 +67,30 @@ export default class App extends ToolkitElement {
         this.isLoading = true;
 
         /** Electron **/
-        const { error, result } = await window.electron.invoke('code-retrieveCode', {
+        const result = await retrieveDesktopCode({
             targetPath: this.projectPath,
             alias: this.connector.configuration.alias,
             refresh: isRefresh === true,
         });
 
-        window.electron.listener_on('update-from-worker', (value: any) => {
-            if (value.action === 'done') {
-                this.metadata = value.data;
-                window.electron.listener_off('update-from-worker');
-            } else if (value.action === 'error') {
-                throw decodeError(value.error);
-            }
-            this.isLoading = false;
-        });
-
-        if (error) {
-            this.isLoading = false;
-            throw decodeError(error);
-        }
-        if (!result.runInWorker) {
+        if (result.runInWorker) {
+            const cleanup = onDesktopLegacyChannel('update-from-worker', (value: any) => {
+                if (value.action === 'done') {
+                    this.metadata = value.data;
+                    cleanup?.();
+                } else if (value.action === 'error') {
+                    throw decodeError(value.error);
+                }
+                this.isLoading = false;
+            });
+        } else {
             this.metadata = result.res;
             this.isLoading = false;
         }
     };
 
     openVSCode = async (): Promise<void> => {
-        window.electron.invoke('code-openVSCodeProject', { path: this.projectPath });
+        await openDesktopVSCodeProject(this.projectPath);
     };
 
     handleCopy = (): void => {
@@ -104,14 +98,14 @@ export default class App extends ToolkitElement {
     };
 
     downloadCode = (): void => {
-        window.electron.invoke('code-exportMetadata', {
+        void exportDesktopMetadata({
             targetPath: this.projectPath,
             alias: this.connector.configuration.alias,
         });
 
-        window.electron.listener_on('metadata', (value: any) => {
+        const cleanup = onDesktopLegacyChannel('metadata', (value: any) => {
             if (value.action === 'done') {
-                window.electron.listener_off('metadata');
+                cleanup?.();
             } else if (value.action === 'error') {
                 throw decodeError(value.error);
             }

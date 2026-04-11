@@ -1,17 +1,16 @@
 export type { ConnectorLike, ConnectionLike, ConnectorConfiguration } from 'shared/types/connector';
 
-import * as IntegrationMatrix from './integrationMatrix';
-import * as NotificationService from './notificationService';
-import * as PlatformService from './platformService';
-
-
 import * as Oauth2 from './credentialStrategies/oauth';
 import * as Session from './credentialStrategies/session';
 import * as UsernamePassword from './credentialStrategies/usernamePassword';
 import { OAUTH_TYPES } from './credentialStrategies/oauthTypes';
+import * as IntegrationMatrix from './integrationMatrix';
+import * as NotificationService from './notificationService';
+import * as PlatformService from './platformService';
 
 export * from './chrome';
 export * from './base';
+export * from './backgroundSession';
 export * from './connectionRegistry';
 export { Connector } from './connectorClass';
 export * from './redirectCredential';

@@ -97,6 +97,14 @@ export function getWorkspaceDefaultRootUri(vscode) {
     return getWorkspaceUri(vscode, 'force-app/main/default');
 }
 
+export function getManifestDirUri(vscode) {
+    return getWorkspaceUri(vscode, 'manifest');
+}
+
+export function getManifestFileUri(vscode, fileName = 'package.xml') {
+    return vscode.Uri.joinPath(getManifestDirUri(vscode), String(fileName || 'package.xml'));
+}
+
 export function getSalesforceStateDirUri(vscode) {
     return getWorkspaceUri(vscode, '.salesforce');
 }
@@ -110,6 +118,8 @@ export function toWorkspaceRelativeLabel(vscode, path) {
 export const __testables = {
     auraFilename,
     lwcExtFromFormat,
+    getManifestDirUri,
+    getManifestFileUri,
     normalizeLwcResourceRelPath,
     parentUri,
     safeSeg,

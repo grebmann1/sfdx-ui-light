@@ -3,7 +3,7 @@ import ToolkitElement from 'core/toolkitElement';
 import { getFlattenedFields } from '@jetstreamapp/soql-parser-js';
 import { store, connectStore, SELECTORS, SOBJECT, UI } from 'core/store';
 import { fullApiName, isSame, lowerCaseKey } from 'shared/utils';
-import { getFieldTypeIcon } from './constants.ts';
+import { getFieldTypeIcon } from './constants';
 
 export default class FieldsTree extends ToolkitElement {
     @api relationship;

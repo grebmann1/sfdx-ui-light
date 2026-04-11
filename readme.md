@@ -101,6 +101,28 @@ npm run start:prod:server
 npm run start:prod:web
 ```
 
+### Desktop App
+
+- Build the desktop package:
+```sh
+npm run build:desktop
+```
+
+- Start the desktop app against an already-running local web server:
+```sh
+npm run start:dev:desktop
+```
+
+- Start both the local web server and the desktop app together:
+```sh
+npm run start:dev:desktop:all
+```
+
+- Open the desktop app through the launcher CLI:
+```sh
+npm run desktop:open
+```
+
 ### Chrome Extension
 
 - Dev (main + sandbox watch + local serve):

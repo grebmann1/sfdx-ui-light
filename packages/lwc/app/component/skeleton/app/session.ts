@@ -5,6 +5,7 @@ import { store, APPLICATION } from 'core/store';
 import { navigate } from 'lwr/navigation';
 import LOGGER from 'shared/logger';
 import { isNotUndefinedOrNull, isElectronApp } from 'shared/utils';
+import { notifyDesktopLimitedModeStatus } from 'core/electron/desktopBridge';
 
 import { handleRedirect } from './utils';
 
@@ -31,8 +32,7 @@ function getDefaultLandingTarget() {
  * @param {Function} handleNavigation - Handler for navigation after load
  */
 export async function loadLimitedMode(context) {
-    const { alias, sessionId, serverUrl, redirectUrl, navContext, targetPage, handleNavigation } =
-        context;
+    const { alias, sessionId, serverUrl, redirectUrl, navContext, targetPage } = context;
 
     try {
         let connector;
@@ -71,8 +71,7 @@ export async function loadLimitedMode(context) {
         store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
 
         if (isElectronApp()) {
-            LOGGER.debug('load_limitedMode - ELECTRON - channel : ', window.electron.getChannel());
-            window.electron.send(window.electron.getChannel(), {
+            await notifyDesktopLimitedModeStatus({
                 isLoggedIn: true,
                 username: connector.configuration.username,
             });
@@ -91,8 +90,7 @@ export async function loadLimitedMode(context) {
     } catch (e) {
         LOGGER.error(e);
         if (isElectronApp()) {
-            LOGGER.debug('load_limitedMode - ELECTRON - channel : ', window.electron.getChannel());
-            window.electron.send(window.electron.getChannel(), {
+            await notifyDesktopLimitedModeStatus({
                 isLoggedIn: false,
                 message: e.message,
             });
@@ -120,7 +118,6 @@ export async function loadFullMode(context) {
         navContext,
         targetPage,
         loadModule,
-        handleNavigation,
     } = context;
 
     try {

@@ -35,6 +35,10 @@ import { reportError, store, APPLICATION } from 'core/store';
 import LOGGER from 'shared/logger';
 import { cacheManager } from 'shared/cacheManager';
 import type { ConnectorLike } from 'core/connector';
+import {
+    openDesktopInstance,
+    openDesktopOrgUrl,
+} from 'core/electron/desktopBridge';
 
 const { showToast, handleError } = notificationService;
 const ACTIONS = [
@@ -221,7 +225,7 @@ export default class App extends ToolkitElement {
         }).then(res => {
             if (res) {
                 if (isElectronApp()) {
-                    window.electron.invoke('OPEN_INSTANCE', {
+                    openDesktopInstance({
                         alias: res.conn.alias,
                         username: res.configuration.username,
                     });
@@ -388,7 +392,7 @@ export default class App extends ToolkitElement {
 
     login = async row => {
         if (isElectronApp() && row.credentialType === OAUTH_TYPES.OAUTH) {
-            await window.electron.invoke('OPEN_INSTANCE', row);
+            await openDesktopInstance(row);
         } else {
             let configuration = this.data.find(x => x.id == row.id);
             let { alias, credentialType, ...settings } = configuration;
@@ -410,7 +414,7 @@ export default class App extends ToolkitElement {
                     };
                     LOGGER.log('login - electron - params', params);
                     store.dispatch(APPLICATION.reduxSlice.actions.stopLoading());
-                    await window.electron.invoke('OPEN_INSTANCE', params);
+                    await openDesktopInstance(params);
                     return;
                 }
                 if (!connector.hasError) {
@@ -479,7 +483,7 @@ export default class App extends ToolkitElement {
             } else {
                 window.electron.invoke('org-openOrgUrl', row);
             } */
-            window.electron.invoke('org-openOrgUrl', row);
+            await openDesktopOrgUrl(row);
         } else {
             this.setLoading('Opening browser...');
             try {
@@ -638,7 +642,7 @@ export default class App extends ToolkitElement {
                 await this.fetchAllConnections();
             }
             if (isElectronApp()) {
-                await window.electron.invoke('org-killOauth');
+                // The desktop bridge does not maintain a dedicated OAuth child process yet.
             }
         });
     };

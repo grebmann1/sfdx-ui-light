@@ -1,8 +1,17 @@
-import { buildConnectionFromConnector, credentialStrategies } from 'core/connector';
+import {
+    connectSessionFromBackgroundResult,
+    credentialStrategies,
+    fetchCookieForTabIdViaBackground,
+    findExistingSessionViaBackground,
+    hasChromeBackgroundMessaging,
+    listOrgSessionsViaBackground,
+    requestTabsPermissionViaBackground,
+} from 'core/connector';
 import { getIndexedDbFileSystem } from 'core/fs';
 import { connectStore, store, APPLICATION } from 'core/store';
 import ToolkitElement from 'core/toolkitElement';
 import { api, track, wire } from 'lwc';
+import { isChromeExtension } from 'shared/utils';
 import { initializeVscodeApiWithDefaults, LogLevel } from 'vscode/baseEditor';
 import { zipUnpackagedFiles } from 'vscode/metadataApi';
 import { getVscodeBundle } from 'vscode/vscodeBundle';
@@ -16,22 +25,22 @@ import {
     DARK_COLOR_THEME,
 } from './constants';
 import { getActiveSalesforceWorkbenchHost } from './extensions/salesforce/salesforceWorkbenchHost';
+import { createWorkbenchAiServiceOverrides } from './workbench/configuration/workbenchAiOverrides';
 import {
     buildUserConfiguration,
     buildWorkspaceConfig,
     DEFAULT_WORKSPACE_ROOT,
     preloadWorkbenchConfiguration,
 } from './workbench/workbenchConfiguration';
-import { createWorkbenchAiServiceOverrides } from './workbench/configuration/workbenchAiOverrides';
 import {
     buildOrgContext,
     buildWorkbenchConnection,
     deriveConnectionWorkspaceRoot,
-    clearCurrentConnectionProvider,
+    clearSharedCurrentConnectionContext,
     hasUsableConnection,
     normalizeWorkspaceRoot,
     refreshSalesforceMetadataForApp,
-    setCurrentConnectionProvider,
+    shareCurrentConnectionContext,
 } from './workbench/workbenchConnection';
 import {
     createChromeExtensionWorkerFactory,
@@ -50,7 +59,6 @@ import {
 export default class VscodeWorkbenchApp extends ToolkitElement {
     // static renderMode = 'light';
 
-    @api alias;
     @api sessionId;
     @api serverUrl;
     @api redirectUrl;
@@ -86,7 +94,10 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     _demoDisposables = [];
     _workspaceBootstrap = null;
     _currentConnectionProvider = null;
+    _sharedConnectionContext = null;
     _connectionBootstrapPromise = null;
+    _sessionRecoveryPromise = null;
+    @track isReconnectBusy = false;
 
     @wire(connectStore, { store })
     handleApplicationStore({ application }) {
@@ -94,23 +105,61 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         this.sessionHasExpired = Boolean(application?.sessionHasExpired);
         this._syncConnectionState(application);
         void this._syncWorkbenchConnectionUi({ announceExpired: didSessionExpire });
+        if (didSessionExpire) {
+            void this.tryRecoverExpiredSession({ silent: true });
+        }
     }
 
     connectedCallback() {
-        this._currentConnectionProvider = () => this._buildCurrentConnectionContext();
-        setCurrentConnectionProvider(this._currentConnectionProvider);
+        this._sharedConnectionContext = this._createSharedConnectionContext();
+        this._currentConnectionProvider = () => this._sharedConnectionContext;
+        shareCurrentConnectionContext(this._currentConnectionProvider);
         this._syncConnectionState(store.getState()?.application);
         void this._ensureInitialConnectionBootstrap();
     }
 
     disconnectedCallback() {
-        clearCurrentConnectionProvider(this._currentConnectionProvider);
+        clearSharedCurrentConnectionContext(this._currentConnectionProvider);
         this._currentConnectionProvider = null;
         this._disposeGlobalKeydownDisposer();
         this._disposeDemoRegistrationsSafely();
         this._disposeFsOverlayDisposable();
         this._disposeFsProvider();
         this._workbenchFilesService = null;
+    }
+
+    _createSharedConnectionContext() {
+        if (this._sharedConnectionContext) {
+            return this._sharedConnectionContext;
+        }
+        const getComponent = () => this;
+        this._sharedConnectionContext = {
+            get connector() {
+                return getComponent().connector;
+            },
+            get connection() {
+                return getComponent().connector?.conn || null;
+            },
+            get workspaceRoot() {
+                return getComponent()._workspaceRoot;
+            },
+            get apiVersion() {
+                return getComponent().sfApiVersion;
+            },
+            get sessionHasExpired() {
+                return getComponent().sessionHasExpired;
+            },
+            get hasError() {
+                return getComponent().connectorHasError;
+            },
+            get errorMessage() {
+                return getComponent().connectorErrorMessage;
+            },
+            getConnectionRecord() {
+                return getComponent()._buildCurrentConnection();
+            },
+        };
+        return this._sharedConnectionContext;
     }
 
     renderedCallback() {
@@ -199,13 +248,17 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         return this._connectionBootstrapPromise;
     }
 
-    _syncConnectionState(application = store.getState()?.application || {}) {
+    _syncConnectionState(application: any = store.getState()?.application || {}) {
         const connector = application?.connector || this.connector;
-        const activeConnection = buildConnectionFromConnector(connector, this.sfApiVersion);
         const connectorHasError = Boolean(connector?.configuration?._hasError);
         const connectorErrorMessage =
             connector?.configuration?._errorMessage ||
             (typeof connector?.errorMessage === 'string' ? connector.errorMessage : null);
+        const activeConnection = this._buildCurrentConnection(connector, {
+            connectorHasError,
+            connectorErrorMessage,
+            sessionHasExpired: this.sessionHasExpired,
+        });
 
         this.connectorHasError = connectorHasError;
         this.connectorErrorMessage = connectorErrorMessage;
@@ -310,11 +363,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
 
     _clearPersistedChatModels(
         storage,
-        {
-            currentVendor = '',
-            allowedModelTokens = [],
-            obsoleteVendors = [],
-        } = {}
+        { currentVendor = '', allowedModelTokens = [], obsoleteVendors = [] } = {}
     ) {
         if (!storage) {
             return;
@@ -578,14 +627,21 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         return connector;
     }
 
-    _buildCurrentConnection() {
-        return buildWorkbenchConnection(this.connector, {
+    _buildCurrentConnection(
+        connector = this.connector,
+        {
+            sessionHasExpired = this.sessionHasExpired,
+            connectorHasError = this.connectorHasError,
+            connectorErrorMessage = this.connectorErrorMessage,
+        } = {}
+    ) {
+        return buildWorkbenchConnection(connector, {
             sfApiVersion: this.sfApiVersion,
             workspaceRoot: this._workspaceRoot,
             workspaceBasePath: this.workspaceBasePath,
-            sessionHasExpired: this.sessionHasExpired,
-            connectorHasError: this.connectorHasError,
-            connectorErrorMessage: this.connectorErrorMessage,
+            sessionHasExpired,
+            connectorHasError,
+            connectorErrorMessage,
         });
     }
 
@@ -623,14 +679,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     }
 
     _buildCurrentConnectionContext() {
-        const connection = this._buildCurrentConnection();
-        if (!connection || !this.connector) {
-            return null;
-        }
-        return {
-            connector: this.connector,
-            connection,
-        };
+        return this._createSharedConnectionContext();
     }
 
     _requireCurrentConnection() {
@@ -661,6 +710,272 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             connection.workspaceRoot || this._deriveConnectionWorkspaceRoot(connection)
         );
         this.orgContext = buildOrgContext(connection);
+    }
+
+    _getVscodeWindow() {
+        return (
+            this._vscode?.window ||
+            getActiveSalesforceWorkbenchHost()?.context?.vscode?.window ||
+            null
+        );
+    }
+
+    async _showInputBox(
+        options: { prompt?: string; title?: string; value?: string; [key: string]: unknown } = {}
+    ) {
+        const vscodeWindow = this._getVscodeWindow();
+        if (typeof vscodeWindow?.showInputBox === 'function') {
+            return await vscodeWindow.showInputBox({
+                ignoreFocusOut: true,
+                ...options,
+            });
+        }
+        const fallbackValue = window.prompt(
+            options?.prompt || options?.title || '',
+            options?.value || ''
+        );
+        return typeof fallbackValue === 'string' ? fallbackValue : undefined;
+    }
+
+    async _showQuickPick(items = [], options = {}) {
+        const vscodeWindow = this._getVscodeWindow();
+        if (typeof vscodeWindow?.showQuickPick === 'function') {
+            return await vscodeWindow.showQuickPick(items, {
+                ignoreFocusOut: true,
+                ...options,
+            });
+        }
+        return items?.[0];
+    }
+
+    async _showInformationMessage(message) {
+        await this._getVscodeWindow()?.showInformationMessage?.(message);
+    }
+
+    async _showErrorMessage(message) {
+        await this._getVscodeWindow()?.showErrorMessage?.(message);
+    }
+
+    _normalizeServerUrl(value) {
+        const normalized = String(value || '').trim();
+        if (!normalized) {
+            throw new Error('An instance URL is required.');
+        }
+        const withProtocol = /^https?:\/\//i.test(normalized)
+            ? normalized
+            : `https://${normalized}`;
+        return new URL(withProtocol).origin;
+    }
+
+    async _applyConnector(connector) {
+        if (!connector?.conn) {
+            return null;
+        }
+        store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
+        this._syncConnectionState(store.getState()?.application);
+        await this._syncWorkbenchConnectionUi();
+        return connector;
+    }
+
+    async _connectWithSession({ sessionId, serverUrl }) {
+        const normalizedServerUrl = this._normalizeServerUrl(serverUrl);
+        const connector = await credentialStrategies.SESSION.connect({
+            sessionId,
+            serverUrl: normalizedServerUrl,
+            extra: {
+                isProxyDisabled: isChromeExtension(),
+            },
+        });
+        return await this._applyConnector(connector);
+    }
+
+    async reconnectManually() {
+        if (this.isReconnectBusy) {
+            return;
+        }
+        this.isReconnectBusy = true;
+        try {
+            const instanceUrl = await this._showInputBox({
+                title: 'Connect to Salesforce Manually',
+                prompt: 'Enter the Salesforce instance URL.',
+                placeHolder: 'https://mydomain.my.salesforce.com',
+                validateInput: value => {
+                    try {
+                        this._normalizeServerUrl(value);
+                        return undefined;
+                    } catch (error) {
+                        return error instanceof Error
+                            ? error.message
+                            : 'Enter a valid instance URL.';
+                    }
+                },
+            });
+            if (!instanceUrl) {
+                return;
+            }
+
+            const accessToken = await this._showInputBox({
+                title: 'Connect to Salesforce Manually',
+                prompt: 'Enter the Salesforce access token.',
+                password: true,
+                validateInput: value =>
+                    String(value || '').trim() ? undefined : 'An access token is required.',
+            });
+            if (!accessToken) {
+                return;
+            }
+
+            await this._connectWithSession({
+                sessionId: String(accessToken).trim(),
+                serverUrl: instanceUrl,
+            });
+        } catch (error) {
+            await this._showErrorMessage(
+                `Failed to connect manually: ${error instanceof Error ? error.message : String(error)}`
+            );
+        } finally {
+            this.isReconnectBusy = false;
+        }
+    }
+
+    async importBrowserOrg() {
+        if (this.isReconnectBusy) {
+            return;
+        }
+        this.isReconnectBusy = true;
+        try {
+            if (!hasChromeBackgroundMessaging()) {
+                await this._showInformationMessage(
+                    'Browser-backed org discovery is only available inside the Chrome extension.'
+                );
+                return;
+            }
+
+            let sessionCandidate = null;
+            const sourceTabId = Number(this.sourceTabId);
+            if (Number.isFinite(sourceTabId)) {
+                const fromSourceTab = await fetchCookieForTabIdViaBackground(sourceTabId);
+                if (fromSourceTab?.sessionId && fromSourceTab?.serverUrl) {
+                    sessionCandidate = fromSourceTab;
+                }
+            }
+
+            if (!sessionCandidate) {
+                const permission = await requestTabsPermissionViaBackground();
+                if (permission?.granted === false) {
+                    await this._showErrorMessage(
+                        permission.error ||
+                            'Tab access is required to discover active Salesforce browser sessions.'
+                    );
+                    return;
+                }
+
+                const sessions = await listOrgSessionsViaBackground();
+                if (!Array.isArray(sessions)) {
+                    await this._showErrorMessage(
+                        sessions?.error || 'No active Salesforce browser sessions were found.'
+                    );
+                    return;
+                }
+                if (!sessions.length) {
+                    await this._showInformationMessage(
+                        'No reusable Salesforce session was found in your open browser tabs.'
+                    );
+                    return;
+                }
+
+                const picked = await this._showQuickPick(
+                    sessions.map(session => ({
+                        label: session.label || session.serverUrl || 'Salesforce org',
+                        description: session.serverUrl || '',
+                        detail: session.detail || '',
+                        session,
+                    })),
+                    {
+                        title: 'Import Active Browser Org',
+                        placeHolder: 'Choose an active Salesforce browser session',
+                    }
+                );
+                if (!picked?.session) {
+                    return;
+                }
+                sessionCandidate = picked.session;
+            }
+
+            const connector =
+                (await connectSessionFromBackgroundResult({
+                    sessionId: sessionCandidate.sessionId,
+                    serverUrl: sessionCandidate.serverUrl,
+                })) ||
+                (await this._connectWithSession({
+                    sessionId: sessionCandidate.sessionId,
+                    serverUrl: sessionCandidate.serverUrl,
+                }));
+            if (connector?.conn && connector !== this.connector) {
+                await this._applyConnector(connector);
+            }
+        } catch (error) {
+            await this._showErrorMessage(
+                `Failed to import browser org: ${error instanceof Error ? error.message : String(error)}`
+            );
+        } finally {
+            this.isReconnectBusy = false;
+        }
+    }
+
+    async tryRecoverExpiredSession({ silent = false } = {}) {
+        if (this._sessionRecoveryPromise) {
+            return await this._sessionRecoveryPromise;
+        }
+        if (!this.sessionHasExpired || !hasChromeBackgroundMessaging()) {
+            return null;
+        }
+
+        this._sessionRecoveryPromise = (async () => {
+            try {
+                const configuration = this.connector?.configuration || {};
+                const result = await findExistingSessionViaBackground({
+                    alias: configuration.alias,
+                    instanceUrl: configuration.instanceUrl,
+                });
+                if (!result?.sessionId || !result?.serverUrl) {
+                    if (!silent) {
+                        await this._showInformationMessage(
+                            'No reusable Salesforce session was found in your open browser tabs.'
+                        );
+                    }
+                    return null;
+                }
+
+                const connector =
+                    (await connectSessionFromBackgroundResult({
+                        sessionId: result.sessionId,
+                        serverUrl: result.serverUrl,
+                    })) ||
+                    (await this._connectWithSession({
+                        sessionId: result.sessionId,
+                        serverUrl: result.serverUrl,
+                    }));
+                if (!connector) {
+                    return null;
+                }
+                if (connector?.conn && connector !== this.connector) {
+                    await this._applyConnector(connector);
+                }
+                return connector;
+            } catch (error) {
+                if (!silent) {
+                    await this._showErrorMessage(
+                        `Failed to recover the expired session: ${error instanceof Error ? error.message : String(error)}`
+                    );
+                }
+                return null;
+            } finally {
+                this._sessionRecoveryPromise = null;
+            }
+        })();
+
+        return await this._sessionRecoveryPromise;
     }
 
     _installSaveKeybindingWorkaround() {
@@ -905,7 +1220,17 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             this._workspaceRoot = this._resolvePreferredWorkspaceRoot(
                 this._workspaceRoot || this.workspaceBasePath
             );
-            const isChromeExtension = Boolean(globalThis?.chrome?.runtime?.id);
+            const isChromeExtension = Boolean(
+                (
+                    globalThis as typeof globalThis & {
+                        chrome?: {
+                            runtime?: {
+                                id?: string;
+                            };
+                        };
+                    }
+                )?.chrome?.runtime?.id
+            );
             this._isChromeExtension = isChromeExtension;
 
             // Connection bootstrap is best-effort and must never gate workbench startup.
@@ -1140,7 +1465,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     get orgBannerMessage() {
         return this.showOrgBanner
             ? this.orgContext?.bannerMessage || ''
-            : 'Reconnect from the toolkit to enable org features in this workbench.';
+            : 'Use the banner actions to reconnect and enable org features in this workbench.';
     }
 
     get orgBannerEnvironmentLabel() {
@@ -1179,15 +1504,15 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
 
     get authBoundarySubtitle() {
         if (this.showSessionExpiredBanner) {
-            return 'Your Salesforce session has expired. Reconnect from the toolkit to continue using this workbench.';
+            return 'Your Salesforce session has expired. Use the banner actions to reconnect and continue using this workbench.';
         }
         if (this.connectorHasError) {
             return (
                 this.connectorErrorMessage ||
-                'This workbench detected an issue with the toolkit connection. Reconnect from the toolkit to continue.'
+                'This workbench detected an issue with the toolkit connection. Use the banner actions to reconnect.'
             );
         }
-        return 'The editor loads without a Salesforce connection. Reconnect from the toolkit to enable org features.';
+        return 'The editor loads without a Salesforce connection. Use the banner actions to connect an org.';
     }
 
     get isSessionExpiredInitializationError() {
@@ -1205,6 +1530,20 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
 
     get isAuthBoundaryLoading() {
         return false;
+    }
+
+    get showReconnectActions() {
+        return (
+            this.showSessionExpiredBanner || !this.isConnectionAvailable || this.connectorHasError
+        );
+    }
+
+    get canImportBrowserSession() {
+        return hasChromeBackgroundMessaging();
+    }
+
+    get isBrowserReconnectDisabled() {
+        return this.isReconnectBusy || !this.canImportBrowserSession;
     }
 
     async toggleWorkbenchTheme() {

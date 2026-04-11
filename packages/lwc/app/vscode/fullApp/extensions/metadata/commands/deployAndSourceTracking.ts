@@ -7,16 +7,84 @@ import {
 } from 'vscode/sourceTracking';
 
 const AUTO_DEPLOY_KEY = 'sf_ext_autoDeployOnSave';
+const DEPLOYABLE_TOOLING_TYPES = new Set([
+    'ApexClass',
+    'ApexTrigger',
+    'LightningComponentResource',
+    'AuraDefinition',
+]);
 import { createToolingMapStore } from '../core/toolingMapStore';
-import { ensureDir, writeTextFile } from '../core/workspaceCache';
-import {
-    auraFilename,
-    getWorkspaceDefaultRootUri,
-    getWorkspacePath,
-    getWorkspaceUri,
-    normalizeLwcResourceRelPath,
-    safeSeg,
-} from '../core/workspacePaths';
+import { writeTextFile } from '../core/workspaceCache';
+import { getWorkspacePath, getWorkspaceUri } from '../core/workspacePaths';
+
+function isDeployableToolingEntry(entry) {
+    return Boolean(
+        entry?.type && entry?.id && !entry?.readOnly && DEPLOYABLE_TOOLING_TYPES.has(entry.type)
+    );
+}
+
+function partitionChangedPathsForDeploy(paths, mapItems) {
+    const summary = {
+        deployablePaths: [],
+        missingPaths: [],
+        readOnlyPaths: [],
+        unsupportedPaths: [],
+    };
+    for (const path of Array.isArray(paths) ? paths : []) {
+        const entry = mapItems?.[path];
+        if (!entry) {
+            summary.missingPaths.push(path);
+            continue;
+        }
+        if (entry.readOnly) {
+            summary.readOnlyPaths.push(path);
+            continue;
+        }
+        if (!DEPLOYABLE_TOOLING_TYPES.has(entry.type)) {
+            summary.unsupportedPaths.push(path);
+            continue;
+        }
+        if (!isDeployableToolingEntry(entry)) {
+            summary.missingPaths.push(path);
+            continue;
+        }
+        summary.deployablePaths.push(path);
+    }
+    return summary;
+}
+
+function buildChangedFileDeployQuickPickItems(paths, mapItems) {
+    return (Array.isArray(paths) ? paths : []).map(path => {
+        const entry = mapItems?.[path] || {};
+        const segments = String(path || '')
+            .split('/')
+            .filter(Boolean);
+        const label = segments[segments.length - 1] || String(path || '(unknown)');
+        const parentPath =
+            segments.length > 1 ? `/${segments.slice(0, -1).join('/')}` : '/workspace';
+        const details = [entry.type || 'Tracked file', parentPath];
+        if (entry.namespace) {
+            details.push(`namespace: ${entry.namespace}`);
+        }
+        return {
+            label,
+            description: path,
+            detail: details.join(' • '),
+            picked: true,
+            path,
+        };
+    });
+}
+
+function pruneChangedPathsForSuccessfulDeploys(trackedPaths, results) {
+    const successPaths = (Array.isArray(results) ? results : [])
+        .filter(result => result?.ok === true && result?.path)
+        .map(result => result.path);
+    for (const path of successPaths) {
+        trackedPaths?.delete?.(path);
+    }
+    return successPaths;
+}
 
 export function createDeployAndSourceTracking({
     connectionRuntime,
@@ -87,12 +155,7 @@ export function createDeployAndSourceTracking({
         const type = entry?.type;
         const id = entry?.id;
         if (!type || !id) return null;
-        if (
-            type !== 'ApexClass' &&
-            type !== 'ApexTrigger' &&
-            type !== 'LightningComponentResource' &&
-            type !== 'AuraDefinition'
-        ) {
+        if (!DEPLOYABLE_TOOLING_TYPES.has(type)) {
             return null;
         }
         const field = type === 'ApexClass' || type === 'ApexTrigger' ? 'Body' : 'Source';
@@ -112,6 +175,10 @@ export function createDeployAndSourceTracking({
 
     async function deployPaths(paths, { showProgress, title } = {}) {
         const conn = connectionRuntime.loadStoredConn();
+        const liveConnection =
+            typeof connectionRuntime.loadLiveConnection === 'function'
+                ? connectionRuntime.loadLiveConnection()
+                : conn;
         if (!conn.instanceUrl || !conn.accessToken) {
             await vscode.window.showErrorMessage(
                 connectionRuntime.getInjectedConnectionRequiredMessage()
@@ -167,7 +234,7 @@ export function createDeployAndSourceTracking({
                 worker.postMessage({
                     type: 'deploy',
                     requestId,
-                    connection: conn,
+                    connection: liveConnection || conn,
                     items,
                 });
             });
@@ -293,9 +360,8 @@ export function createDeployAndSourceTracking({
             await vscode.window.showInformationMessage('Deploy complete.');
         }
 
-        const successPaths = results.filter(r => r?.ok === true && r?.path).map(r => r.path);
+        const successPaths = pruneChangedPathsForSuccessfulDeploys(changedPaths, results);
         if (successPaths.length) {
-            for (const path of successPaths) changedPaths.delete(path);
             try {
                 await updateSourceTrackingForPaths(successPaths);
             } catch {
@@ -905,12 +971,54 @@ export function createDeployAndSourceTracking({
             });
 
             register('salesforceMetadata.deployChangedFiles', async () => {
-                const paths = Array.from(changedPaths);
-                await deployPaths(paths, {
+                const trackedPaths = Array.from(changedPaths);
+                if (!trackedPaths.length) {
+                    await vscode.window.showInformationMessage(
+                        'No changed files are currently tracked for deployment.'
+                    );
+                    return;
+                }
+
+                const mapItems = await loadToolingMapItems();
+                const { deployablePaths, missingPaths, readOnlyPaths, unsupportedPaths } =
+                    partitionChangedPathsForDeploy(trackedPaths, mapItems);
+
+                if (!deployablePaths.length) {
+                    const skippedCount =
+                        missingPaths.length + readOnlyPaths.length + unsupportedPaths.length;
+                    await vscode.window.showWarningMessage(
+                        skippedCount
+                            ? `No deployable tracked files found (${readOnlyPaths.length} read-only, ${unsupportedPaths.length} unsupported, ${missingPaths.length} missing tooling-map entries).`
+                            : 'No deployable tracked files found.'
+                    );
+                    return;
+                }
+
+                const selected = await vscode.window.showQuickPick(
+                    buildChangedFileDeployQuickPickItems(deployablePaths, mapItems),
+                    {
+                        title: 'Review changed files to deploy',
+                        placeHolder: 'Select the tracked files to deploy',
+                        canPickMany: true,
+                        ignoreFocusOut: true,
+                        matchOnDescription: true,
+                        matchOnDetail: true,
+                    }
+                );
+                if (!selected) {
+                    return;
+                }
+
+                const selectedPaths = selected.map(item => item.path).filter(Boolean);
+                if (!selectedPaths.length) {
+                    await vscode.window.showInformationMessage('Nothing selected to deploy.');
+                    return;
+                }
+
+                await deployPaths(selectedPaths, {
                     showProgress: true,
                     title: 'Deploying changed files...',
                 });
-                changedPaths.clear();
             });
 
             register('salesforceMetadata.toggleAutoDeploy', async () => {
@@ -1046,180 +1154,13 @@ export function createDeployAndSourceTracking({
             });
 
             register('salesforceMetadata.orgBrowser', async () => {
-                const conn = connectionRuntime.loadStoredConn();
-                if (!conn.instanceUrl || !conn.accessToken) {
-                    await vscode.window.showErrorMessage(
-                        connectionRuntime.getInjectedConnectionRequiredMessage()
-                    );
-                    return;
-                }
-                await connectionRuntime.withToolingClientAuthed(conn, async client => {
-                    const typePick = await vscode.window.showQuickPick(
-                        [
-                            { label: 'Apex Classes', type: 'ApexClass' },
-                            { label: 'Apex Triggers', type: 'ApexTrigger' },
-                            { label: 'LWC Bundles', type: 'LightningComponentBundle' },
-                            { label: 'Aura Bundles', type: 'AuraDefinitionBundle' },
-                        ],
-                        {
-                            title: 'Org Browser',
-                            placeHolder: 'Select a metadata type',
-                            ignoreFocusOut: true,
-                        }
-                    );
-                    if (!typePick) return;
-                    const rows = await vscode.window.withProgress(
-                        {
-                            location: vscode.ProgressLocation.Notification,
-                            title: 'Loading org metadata…',
-                            cancellable: false,
-                        },
-                        async () => {
-                            if (typePick.type === 'ApexClass') {
-                                return await client.toolingQueryAll(
-                                    'SELECT Id, Name, Body FROM ApexClass ORDER BY Name'
-                                );
-                            }
-                            if (typePick.type === 'ApexTrigger') {
-                                return await client.toolingQueryAll(
-                                    'SELECT Id, Name, Body FROM ApexTrigger ORDER BY Name'
-                                );
-                            }
-                            if (typePick.type === 'LightningComponentBundle') {
-                                return await client.toolingQueryAll(
-                                    'SELECT Id, DeveloperName, NamespacePrefix FROM LightningComponentBundle ORDER BY DeveloperName'
-                                );
-                            }
-                            if (typePick.type === 'AuraDefinitionBundle') {
-                                return await client.toolingQueryAll(
-                                    'SELECT Id, DeveloperName, NamespacePrefix FROM AuraDefinitionBundle ORDER BY DeveloperName'
-                                );
-                            }
-                            return [];
-                        }
-                    );
-                    if (!rows?.length) {
-                        await vscode.window.showInformationMessage('No items found.');
-                        return;
-                    }
-                    const selected = await vscode.window.showQuickPick(
-                        rows.map(row => {
-                            const name = row?.Name || row?.DeveloperName || row?.Id;
-                            const namespace = row?.NamespacePrefix
-                                ? String(row.NamespacePrefix)
-                                : '';
-                            return {
-                                label: namespace ? `${name} (${namespace})` : String(name),
-                                description: row?.Id,
-                                row,
-                            };
-                        }),
-                        {
-                            title: 'Org Browser',
-                            placeHolder: 'Select item(s) to pull into the workspace',
-                            canPickMany: true,
-                            ignoreFocusOut: true,
-                            matchOnDescription: true,
-                        }
-                    );
-                    if (!selected?.length) return;
-                    await vscode.window.withProgress(
-                        {
-                            location: vscode.ProgressLocation.Notification,
-                            title: 'Pulling selected items…',
-                            cancellable: false,
-                        },
-                        async () => {
-                            const defaultRoot = getWorkspaceDefaultRootUri(vscode);
-                            for (const item of selected) {
-                                const row = item?.row;
-                                if (!row) continue;
-                                if (typePick.type === 'ApexClass') {
-                                    const uri = vscode.Uri.joinPath(
-                                        defaultRoot,
-                                        'classes',
-                                        `${safeSeg(row.Name)}.cls`
-                                    );
-                                    await writeTextFile(vscode, uri, row.Body || '');
-                                } else if (typePick.type === 'ApexTrigger') {
-                                    const uri = vscode.Uri.joinPath(
-                                        defaultRoot,
-                                        'triggers',
-                                        `${safeSeg(row.Name)}.trigger`
-                                    );
-                                    await writeTextFile(vscode, uri, row.Body || '');
-                                } else if (typePick.type === 'LightningComponentBundle') {
-                                    const bundleName = safeSeg(row.DeveloperName);
-                                    const bundlePath = vscode.Uri.joinPath(
-                                        defaultRoot,
-                                        'lwc',
-                                        bundleName
-                                    );
-                                    await ensureDir(vscode, bundlePath);
-                                    const resources = await client.toolingQueryAll(
-                                        `SELECT Id, FilePath, Format, Source FROM LightningComponentResource WHERE LightningComponentBundleId='${row.Id}' ORDER BY FilePath`
-                                    );
-                                    for (const resource of resources) {
-                                        if (!resource?.Source) continue;
-                                        const relativePath = normalizeLwcResourceRelPath(
-                                            bundleName,
-                                            resource.FilePath,
-                                            resource.Format
-                                        );
-                                        const parts = relativePath
-                                            .split('/')
-                                            .map(safeSeg)
-                                            .filter(part => part && part !== '.' && part !== '..');
-                                        const target = vscode.Uri.joinPath(bundlePath, ...parts);
-                                        await writeTextFile(vscode, target, resource.Source || '');
-                                    }
-                                } else if (typePick.type === 'AuraDefinitionBundle') {
-                                    const bundleName = safeSeg(row.DeveloperName);
-                                    const bundlePath = vscode.Uri.joinPath(
-                                        defaultRoot,
-                                        'aura',
-                                        bundleName
-                                    );
-                                    await ensureDir(vscode, bundlePath);
-                                    const defs = await client.toolingQueryAll(
-                                        `SELECT Id, DefType, Format, Source FROM AuraDefinition WHERE AuraDefinitionBundleId='${row.Id}' ORDER BY DefType`
-                                    );
-                                    const used = new Set();
-                                    for (const definition of defs) {
-                                        if (!definition?.Source) continue;
-                                        let fileName = safeSeg(
-                                            auraFilename(
-                                                bundleName,
-                                                definition.DefType,
-                                                definition.Format
-                                            )
-                                        );
-                                        if (used.has(fileName)) {
-                                            fileName = `${fileName}.${String(
-                                                definition.Id || ''
-                                            ).slice(-6)}`;
-                                        }
-                                        used.add(fileName);
-                                        const target = vscode.Uri.joinPath(bundlePath, fileName);
-                                        await writeTextFile(
-                                            vscode,
-                                            target,
-                                            definition.Source || ''
-                                        );
-                                    }
-                                }
-                            }
-                        }
-                    );
+                try {
+                    await vscode.commands.executeCommand('salesforceOrgBrowser.openView');
+                } catch {
                     await vscode.window.showInformationMessage(
-                        `Pulled ${selected.length} item(s) into the workspace.`
+                        'The Org Browser is unavailable right now. Try reopening the workbench.'
                     );
-                    try {
-                        await vscode.commands.executeCommand('salesforceMetadata.refreshProject');
-                    } catch {
-                        // ignore
-                    }
-                });
+                }
             });
 
             register('salesforceMetadata.refreshProject', async () => {
@@ -1340,3 +1281,9 @@ export function createDeployAndSourceTracking({
         updateSourceTrackingForPaths,
     };
 }
+
+export const __testables = {
+    buildChangedFileDeployQuickPickItems,
+    partitionChangedPathsForDeploy,
+    pruneChangedPathsForSuccessfulDeploys,
+};

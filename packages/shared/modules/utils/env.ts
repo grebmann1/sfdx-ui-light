@@ -5,7 +5,7 @@ import { isNotUndefinedOrNull } from './validation';
  */
 
 export const isElectronApp = (): boolean => {
-    return isNotUndefinedOrNull(window.electron);
+    return isNotUndefinedOrNull(window.desktop) || isNotUndefinedOrNull(window.electron);
 };
 
 export const isChromeExtension = (): boolean => {

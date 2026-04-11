@@ -12,6 +12,25 @@
                     </template>
                     <span class="orgBannerPill">{orgBannerEnvironmentLabel}</span>
                 </template>
+                <template if:true={showReconnectActions}>
+                    <button
+                        class="orgBannerActionButton"
+                        type="button"
+                        disabled={isReconnectBusy}
+                        onclick={reconnectManually}>
+                        Connect Manually
+                    </button>
+                    <button
+                        class="orgBannerActionButton"
+                        type="button"
+                        disabled={isBrowserReconnectDisabled}
+                        onclick={importBrowserOrg}>
+                        <template if:true={canImportBrowserSession}>Use Browser Org</template>
+                        <template if:false={canImportBrowserSession}>
+                            Browser Org Unavailable
+                        </template>
+                    </button>
+                </template>
                 <button
                     class="themeToggleButton"
                     type="button"

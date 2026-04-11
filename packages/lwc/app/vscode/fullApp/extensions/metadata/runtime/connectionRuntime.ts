@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import { getConnectionAuthType, OAUTH_TYPES } from 'core/connector';
+import { buildConnectionFromConnector, getConnectionAuthType, OAUTH_TYPES } from 'core/connector';
 import { createToolingClient } from 'vscode/toolingApi';
 
 import {
@@ -58,18 +58,66 @@ function buildEmptyConnection() {
     };
 }
 
+function buildConnectionFromContext(context) {
+    if (!context || typeof context !== 'object') {
+        return buildEmptyConnection();
+    }
+
+    const getConnectionRecord = context?.getConnectionRecord;
+    if (typeof getConnectionRecord === 'function') {
+        try {
+            const record = getConnectionRecord();
+            if (record && typeof record === 'object') {
+                return {
+                    ...buildEmptyConnection(),
+                    ...record,
+                };
+            }
+        } catch {
+            // ignore
+        }
+    }
+
+    const connector = context?.connector;
+    const fallbackApiVersion =
+        typeof context?.apiVersion === 'string'
+            ? context.apiVersion
+            : context?.connection?.version || DEFAULT_SOURCE_API_VERSION;
+    const connection = buildConnectionFromConnector(connector, fallbackApiVersion);
+    if (!connection) {
+        return {
+            ...buildEmptyConnection(),
+            sessionHasExpired: Boolean(context?.sessionHasExpired),
+            hasError: Boolean(context?.hasError),
+            errorMessage: typeof context?.errorMessage === 'string' ? context.errorMessage : null,
+        };
+    }
+    return {
+        ...buildEmptyConnection(),
+        ...connection,
+        apiVersion: fallbackApiVersion,
+        workspaceRoot: typeof context?.workspaceRoot === 'string' ? context.workspaceRoot : '',
+        sessionHasExpired: Boolean(context?.sessionHasExpired),
+        hasError: Boolean(context?.hasError),
+        errorMessage: typeof context?.errorMessage === 'string' ? context.errorMessage : null,
+    };
+}
+
 function getCurrentContext() {
-    const context = getInjectedConnectionContext();
+    const context = getInjectedConnectionContext() as any;
     return context && typeof context === 'object' ? context : null;
 }
 
-function requireCurrentContext() {
+function loadLiveConnection() {
     const context = getCurrentContext();
-    if (
-        !context?.connector?.conn ||
-        !context?.connection?.instanceUrl ||
-        !context?.connection?.accessToken
-    ) {
+    const liveConnection = context?.connection || context?.connector?.conn || null;
+    return liveConnection && typeof liveConnection === 'object' ? liveConnection : null;
+}
+
+function requireCurrentContext() {
+    const context = getCurrentContext() as any;
+    const liveConnection = loadLiveConnection();
+    if (!context?.connector?.conn || !liveConnection?.instanceUrl || !liveConnection?.accessToken) {
         throw new Error(INJECTED_CONNECTOR_REQUIRED_MESSAGE);
     }
     return context;
@@ -117,9 +165,17 @@ function setStatus(statusItem, conn) {
 }
 
 function isChromeExtensionEnv() {
+    const chromeGlobal = globalThis as typeof globalThis & {
+        chrome?: {
+            runtime?: {
+                id?: string;
+                sendMessage?: unknown;
+            };
+        };
+    };
     return Boolean(
-        globalThis?.chrome?.runtime?.id &&
-        typeof globalThis.chrome?.runtime?.sendMessage === 'function'
+        chromeGlobal?.chrome?.runtime?.id &&
+        typeof chromeGlobal.chrome?.runtime?.sendMessage === 'function'
     );
 }
 
@@ -147,7 +203,7 @@ function getConnectionResolutionOptions(vscode) {
 }
 
 function loadStoredConn() {
-    return getCurrentContext()?.connection || buildEmptyConnection();
+    return buildConnectionFromContext(getCurrentContext());
 }
 
 async function saveConn(conn) {
@@ -160,9 +216,10 @@ async function clearConn() {
 
 async function withToolingClientAuthed(conn, fn) {
     const context = requireCurrentContext();
+    const currentConnection = buildConnectionFromContext(context);
     const baseConnection = await applyWorkspaceApiVersion(
-        conn || context.connection,
-        context.connection.apiVersion
+        conn || currentConnection,
+        currentConnection.apiVersion
     );
     const current = await resolveConnectionRecord(
         baseConnection,
@@ -221,7 +278,7 @@ export function createLoginProblemSetter({ loginDiagnostics, vscode }) {
 export function createConnectionRuntime({ statusItem, vscode }) {
     workspaceVscode = vscode;
 
-    const statusListeners = new Set();
+    const statusListeners = new Set<(conn: any) => void>();
 
     const runtime = {
         applyWorkspaceApiVersion,
@@ -234,6 +291,7 @@ export function createConnectionRuntime({ statusItem, vscode }) {
         getWorkspaceApiVersion,
         isAuthError,
         isChromeExtensionEnv,
+        loadLiveConnection,
         loadStoredConn,
         normalizeConnectionRecord: conn =>
             resolveConnectionRecord(conn, getConnectionResolutionOptions(vscode)),

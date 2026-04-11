@@ -1,5 +1,10 @@
 import { api } from 'lwc';
 import { decodeError, isNotUndefinedOrNull, isUndefinedOrNull } from 'shared/utils';
+import {
+    onDesktopLegacyChannel,
+    runDesktopSfdxAnalyzer,
+    runDesktopShell,
+} from 'core/electron/desktopBridge';
 import ToolkitElement from 'core/toolkitElement';
 import xterm from 'xterm';
 import { theme } from './theme';
@@ -34,7 +39,7 @@ export default class Pmd extends ToolkitElement {
                 "FiraCode, SFMono-Regular, Consolas, 'Liberation Mono', Menlo, Courier, monospace",
             fontSize: 13,
             lineHeight: 1.3,
-            theme: theme,
+            theme: theme as xterm.ITheme,
         });
         this.terminal.write('$'); // this.projectPath + '\r\n'
     }
@@ -55,7 +60,7 @@ export default class Pmd extends ToolkitElement {
     /** Methods  **/
 
     createTerminal = (): void => {
-        const terminalTheme = {
+        const terminalTheme: xterm.ITheme = {
             background: '#151515',
             foreground: theme.colors['neutral-fg-high'],
             cursor: theme.colors['neutral-fg-high'],
@@ -146,14 +151,14 @@ export default class Pmd extends ToolkitElement {
 
     runTerminal = async (path: string | null, command: string): Promise<void> => {
         const listenerName = 'sfdx-run-shell';
-        await window.electron.invoke('code-runShell', {
+        await runDesktopShell({
             alias: this.connector.configuration.alias,
             targetPath: this.projectPath,
             listenerName,
-            command: command,
+            command,
         });
-        window.electron.listener_on(listenerName, (res: any) => {
-            const { action, data, error } = res;
+        const cleanup = onDesktopLegacyChannel(listenerName, (res: any) => {
+            const { action, data } = res;
             //console.log('response',res);
 
             if (action === 'message' || action === 'error') {
@@ -163,10 +168,9 @@ export default class Pmd extends ToolkitElement {
             } else if (action === 'exit') {
                 this.terminal.write('\r\n'); //  + this.projectPathDisplayed + '\r\n'
                 this.terminal.write('$');
-                window.electron.listener_off(listenerName);
+                cleanup?.();
             } else if (action === 'error') {
                 //this.terminal.write(data.toString() + '\r\n');
-                //window.electron.listener_off(listenerName);
                 //throw decodeError(error);
             }
         });
@@ -180,19 +184,21 @@ export default class Pmd extends ToolkitElement {
 
     runSfdxAnalyzer = async (): Promise<void> => {
         const listenerName = 'sfdx-code-analyzer';
-        const { error, result } = await window.electron.invoke('code-runSfdxAnalyzer', {
-            alias: this.connector.configuration.alias,
-            listenerName,
-            command: this.sfdxScannerCommand,
-        });
-        if (error) {
+        this.isLoading = true;
+        try {
+            await runDesktopSfdxAnalyzer({
+                alias: this.connector.configuration.alias,
+                listenerName,
+                command: this.sfdxScannerCommand,
+            });
+        } catch (error) {
+            this.isLoading = false;
             throw decodeError(error);
         }
-        //console.info('runSfdxAnalyzer',result);
-        window.electron.listener_on(listenerName, (value: any) => {
+        const cleanup = onDesktopLegacyChannel(listenerName, (value: any) => {
             //console.log('value',value);
             if (value.action === 'done') {
-                window.electron.listener_off(listenerName);
+                cleanup?.();
             } else if (value.action === 'error') {
                 throw decodeError(value.error);
             }
@@ -215,7 +221,9 @@ export default class Pmd extends ToolkitElement {
     }
 
     get projectPathDisplayed() {
-        return (this.projectPath || []).split('/').shift();
+        return String(this.projectPath || '')
+            .split('/')
+            .shift();
     }
 
     get isButtonDisabled() {

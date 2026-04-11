@@ -1,25 +1,18 @@
 /* eslint-disable import/no-unresolved */
-import { createMetadataApiClient, unzipRetrieveZip, zipUnpackagedFiles } from 'vscode/metadataApi';
+// @ts-expect-error -- provided by the browser workbench runtime at bundle time
+import { zipUnpackagedFiles } from 'vscode/metadataApi';
 
 import { registerCommand } from '../../core/extensionRegistration';
-import { createToolingMapStore } from '../core/toolingMapStore';
+import { listFilesAndDirsRecursive } from '../core/workspaceCache';
 import {
-    ensureDir,
-    listFilesAndDirsRecursive,
-    writeBytesFile,
-    writeTextFile,
-} from '../core/workspaceCache';
-import {
-    auraFilename,
-    getSalesforceStateDirUri,
     getWorkspaceDefaultRootUri,
     getWorkspaceRootPath,
     getWorkspaceRootUri,
-    getWorkspaceUri,
-    normalizeLwcResourceRelPath,
-    safeSeg,
     toWorkspaceRelativeLabel,
 } from '../core/workspacePaths';
+import { createManifestGenerationRuntime } from '../runtime/manifestGenerationRuntime';
+import { createMetadataRetrieveRuntime } from '../runtime/metadataRetrieveRuntime';
+import { TOOLING_METADATA_TYPES } from '../runtime/metadataRetrieveRuntimeHelpers';
 import { fetchAndPopulateWorkspace } from '../runtime/workspaceSync';
 
 export function parsePackageXml(xmlText) {
@@ -59,140 +52,13 @@ export function parsePackageXml(xmlText) {
 
 export function registerMetadataApiCommands({ connectionRuntime, context, deployTools }) {
     const { state, vscode } = context;
-    const toolingMapStore = createToolingMapStore(vscode, state);
-
-    const loadToolingMapJson = () => toolingMapStore.loadJson();
-    const saveToolingMapJson = obj => toolingMapStore.saveJson(obj);
-
-    async function withMetadataApiClientAuthed(conn, fn) {
-        const baseConnection = await connectionRuntime.applyWorkspaceApiVersion(conn);
-        const current = await connectionRuntime
-            .resolveConnectionRecord(baseConnection)
-            .catch(() => baseConnection);
-        const effectiveCurrent = await connectionRuntime.applyWorkspaceApiVersion(
-            current,
-            baseConnection?.apiVersion
-        );
-        const context = connectionRuntime.requireCurrentContext();
-        const client = createMetadataApiClient({
-            connection: context.connector.conn,
-            apiVersion: effectiveCurrent.apiVersion,
-        });
-        try {
-            return await fn(client, effectiveCurrent);
-        } catch (error) {
-            if (!connectionRuntime.isAuthError(error)) throw error;
-            const refreshedRaw = await connectionRuntime
-                .refreshConnectionRecord(effectiveCurrent)
-                .catch(() => null);
-            const refreshed = await connectionRuntime.applyWorkspaceApiVersion(
-                refreshedRaw,
-                effectiveCurrent?.apiVersion
-            );
-            if (!refreshed) throw error;
-            const retryContext = connectionRuntime.requireCurrentContext();
-            const retryClient = createMetadataApiClient({
-                connection: retryContext.connector.conn,
-                apiVersion: refreshed.apiVersion,
-            });
-            return await fn(retryClient, refreshed);
-        }
-    }
-
-    async function retrieveViaMetadataApi(conn, typesMap, { title } = {}) {
-        const { effectiveConn, id } = await withMetadataApiClientAuthed(
-            conn,
-            async (client, activeConn) => {
-                const response = await client.retrieve({ typesMap });
-                return { id: response.id, effectiveConn: activeConn };
-            }
-        );
-        const startedAt = Date.now();
-        let lastStatus = '';
-        const status = await vscode.window.withProgress(
-            {
-                location: vscode.ProgressLocation.Notification,
-                title: title || 'Retrieving via Metadata API…',
-                cancellable: false,
-            },
-            async progress => {
-                for (;;) {
-                    // eslint-disable-next-line no-await-in-loop
-                    const nextStatus = await withMetadataApiClientAuthed(
-                        effectiveConn || conn,
-                        async client => await client.checkRetrieveStatus(id, { includeZip: true })
-                    );
-                    const message =
-                        nextStatus.status ||
-                        (nextStatus.done
-                            ? nextStatus.success
-                                ? 'Succeeded'
-                                : 'Failed'
-                            : 'In progress');
-                    if (message && message !== lastStatus) {
-                        lastStatus = message;
-                        progress.report({ message });
-                    }
-                    if (nextStatus.done) return nextStatus;
-                    if (Date.now() - startedAt > 10 * 60 * 1000) {
-                        throw new Error('Retrieve timed out (10 minutes).');
-                    }
-                    // eslint-disable-next-line no-await-in-loop
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                }
-            }
-        );
-        if (!status.success) {
-            throw new Error(
-                status.errorMessage || `Retrieve failed: ${status.status || 'Unknown error'}`
-            );
-        }
-        if (!status.zipFile) {
-            throw new Error('Retrieve succeeded but returned no zipFile.');
-        }
-
-        const files = unzipRetrieveZip(status.zipFile);
-        const writtenPaths = [];
-        const map = {
-            generatedAt: new Date().toISOString(),
-            instanceUrl: (effectiveConn || conn).instanceUrl,
-            apiVersion: (effectiveConn || conn).apiVersion,
-            items: {},
-        };
-        const root = getWorkspaceDefaultRootUri(vscode);
-        const base = root.path;
-        await ensureDir(vscode, root);
-
-        for (const [zipPathRaw, bytes] of Object.entries(files || {})) {
-            const zipPath = String(zipPathRaw || '');
-            if (!zipPath || zipPath.endsWith('/')) continue;
-            let relativePath = zipPath.replace(/\\/g, '/');
-            if (relativePath.startsWith('unpackaged/')) {
-                relativePath = relativePath.slice('unpackaged/'.length);
-            }
-            if (
-                !relativePath ||
-                relativePath === 'package.xml' ||
-                relativePath.endsWith('/package.xml')
-            ) {
-                continue;
-            }
-            const target = vscode.Uri.file(`${base}/${relativePath}`.replace(/\/+/g, '/'));
-            // eslint-disable-next-line no-await-in-loop
-            await writeBytesFile(vscode, target, bytes);
-            writtenPaths.push(target.path);
-            map.items[target.path] = { zipPath };
-        }
-
-        await writeTextFile(
-            vscode,
-            getWorkspaceUri(vscode, '.salesforce/metadata-api-map.json'),
-            JSON.stringify(map, null, 2),
-            { skipCache: true }
-        );
-
-        return { writtenPaths };
-    }
+    const retrieveRuntime = createMetadataRetrieveRuntime({
+        connectionRuntime,
+        state,
+        updateSourceTrackingForPaths: deployTools.updateSourceTrackingForPaths,
+        vscode,
+    });
+    const manifestRuntime = createManifestGenerationRuntime({ vscode });
 
     registerCommand(context, vscode, 'salesforceMetadata.fetchMetadata', async () => {
         const conn = connectionRuntime.loadStoredConn();
@@ -226,7 +92,10 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
         );
     });
 
-    async function deployViaMetadataApi(conn, { checkOnly, packageXmlText } = {}) {
+    async function deployViaMetadataApi(
+        conn,
+        { checkOnly, packageXmlText }: { checkOnly?: boolean; packageXmlText?: string } = {}
+    ) {
         const root = getWorkspaceDefaultRootUri(vscode);
         const { files } = await listFilesAndDirsRecursive(vscode, root);
         const pathToBytes = {
@@ -246,7 +115,7 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
         }
 
         const zipBytes = zipUnpackagedFiles(pathToBytes);
-        const { effectiveConn, id } = await withMetadataApiClientAuthed(
+        const { effectiveConn, id } = await retrieveRuntime.withMetadataApiClientAuthed(
             conn,
             async (client, activeConn) => {
                 const response = await client.deploy(zipBytes, { checkOnly: Boolean(checkOnly) });
@@ -265,7 +134,7 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
             async progress => {
                 for (;;) {
                     // eslint-disable-next-line no-await-in-loop
-                    const nextStatus = await withMetadataApiClientAuthed(
+                    const nextStatus = await retrieveRuntime.withMetadataApiClientAuthed(
                         effectiveConn || conn,
                         async client => await client.checkDeployStatus(id, { includeDetails: true })
                     );
@@ -320,15 +189,15 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
         return picked?.uri || null;
     }
 
-    function parseDescribeMetadataTypes(doc) {
-        const output = new Set();
+    function parseDescribeMetadataTypes(doc: any) {
+        const output = new Set<string>();
         try {
             const metadataObjects = Array.from(
                 doc.getElementsByTagNameNS?.('*', 'metadataObjects') ||
                     doc.getElementsByTagName('metadataObjects') ||
                     []
             );
-            for (const metadataObject of metadataObjects) {
+            for (const metadataObject of metadataObjects as any[]) {
                 const xmlNameElement =
                     metadataObject.getElementsByTagNameNS?.('*', 'xmlName')?.[0] ||
                     metadataObject.getElementsByTagName('xmlName')?.[0];
@@ -420,8 +289,8 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
             );
             if (!pick) return;
             if (pick._metadataApi) {
-                const result = await retrieveViaMetadataApi(conn, manifest, {
-                    title: 'Retrieving manifest via Metadata API…',
+                const result = await retrieveRuntime.retrieveViaMetadataApi(conn, manifest, {
+                    title: 'Retrieving manifest via Metadata API...',
                 });
                 deployTools.invalidateToolingMap();
                 try {
@@ -443,168 +312,64 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
             return;
         }
 
-        await connectionRuntime.withToolingClientAuthed(conn, async client => {
-            const toolingMap = await loadToolingMapJson();
-            const pulledPaths = [];
-
-            const ensureDefaultDirs = async () => {
-                await ensureDir(vscode, getWorkspaceUri(vscode, 'force-app/main/default/classes'));
-                await ensureDir(vscode, getWorkspaceUri(vscode, 'force-app/main/default/triggers'));
-                await ensureDir(vscode, getWorkspaceUri(vscode, 'force-app/main/default/lwc'));
-                await ensureDir(vscode, getWorkspaceUri(vscode, 'force-app/main/default/aura'));
-                await ensureDir(vscode, getSalesforceStateDirUri(vscode));
-            };
-            await ensureDefaultDirs();
-
-            const membersOrAll = set => {
-                const nextSet = set instanceof Set ? set : new Set();
-                return {
-                    all: nextSet.has('*'),
-                    members: Array.from(nextSet).filter(member => member && member !== '*'),
-                };
-            };
-
-            const pullApex = async (sobject, dir, ext, members) => {
-                const { all, members: names } = membersOrAll(members);
-                const soql =
-                    all || !names.length
-                        ? `SELECT Id, Name, Body, LastModifiedDate, SystemModstamp FROM ${sobject} ORDER BY Name`
-                        : `SELECT Id, Name, Body, LastModifiedDate, SystemModstamp FROM ${sobject} WHERE Name IN (${names.map(name => `'${String(name).replace(/'/g, "\\\\'")}'`).join(',')}) ORDER BY Name`;
-                const rows = await client.toolingQueryAll(soql);
-                for (const row of rows || []) {
-                    if (!row?.Id || !row?.Name) continue;
-                    const uri = getWorkspaceUri(
-                        vscode,
-                        `force-app/main/default/${dir}/${safeSeg(row.Name)}.${ext}`
-                    );
-                    await writeTextFile(vscode, uri, row.Body || '');
-                    pulledPaths.push(uri.path);
-                    toolingMap.items[uri.path] = { type: sobject, id: row.Id };
-                }
-            };
-
-            const pullLwcBundles = async members => {
-                const { all, members: names } = membersOrAll(members);
-                const soql =
-                    all || !names.length
-                        ? 'SELECT Id, DeveloperName FROM LightningComponentBundle ORDER BY DeveloperName'
-                        : `SELECT Id, DeveloperName FROM LightningComponentBundle WHERE DeveloperName IN (${names.map(name => `'${String(name).replace(/'/g, "\\\\'")}'`).join(',')}) ORDER BY DeveloperName`;
-                const bundles = await client.toolingQueryAll(soql);
-                for (const bundle of bundles || []) {
-                    if (!bundle?.Id || !bundle?.DeveloperName) continue;
-                    const bundleName = safeSeg(bundle.DeveloperName);
-                    const bundlePath = getWorkspaceUri(
-                        vscode,
-                        `force-app/main/default/lwc/${bundleName}`
-                    );
-                    await ensureDir(vscode, bundlePath);
-                    const resources = await client.toolingQueryAll(
-                        `SELECT Id, FilePath, Format, Source, LastModifiedDate, SystemModstamp FROM LightningComponentResource WHERE LightningComponentBundleId='${bundle.Id}' ORDER BY FilePath`
-                    );
-                    for (const resource of resources || []) {
-                        if (!resource?.Id || !resource?.Source) continue;
-                        const relativePath = normalizeLwcResourceRelPath(
-                            bundleName,
-                            resource.FilePath,
-                            resource.Format
-                        );
-                        const parts = relativePath
-                            .split('/')
-                            .map(safeSeg)
-                            .filter(part => part && part !== '.' && part !== '..');
-                        const target = vscode.Uri.joinPath(bundlePath, ...parts);
-                        await writeTextFile(vscode, target, resource.Source || '');
-                        pulledPaths.push(target.path);
-                        toolingMap.items[target.path] = {
-                            type: 'LightningComponentResource',
-                            id: resource.Id,
-                            format: resource.Format,
-                            filePath: resource.FilePath,
-                        };
-                    }
-                }
-            };
-
-            const pullAuraBundles = async members => {
-                const { all, members: names } = membersOrAll(members);
-                const soql =
-                    all || !names.length
-                        ? 'SELECT Id, DeveloperName FROM AuraDefinitionBundle ORDER BY DeveloperName'
-                        : `SELECT Id, DeveloperName FROM AuraDefinitionBundle WHERE DeveloperName IN (${names.map(name => `'${String(name).replace(/'/g, "\\\\'")}'`).join(',')}) ORDER BY DeveloperName`;
-                const bundles = await client.toolingQueryAll(soql);
-                for (const bundle of bundles || []) {
-                    if (!bundle?.Id || !bundle?.DeveloperName) continue;
-                    const bundleName = safeSeg(bundle.DeveloperName);
-                    const bundlePath = getWorkspaceUri(
-                        vscode,
-                        `force-app/main/default/aura/${bundleName}`
-                    );
-                    await ensureDir(vscode, bundlePath);
-                    const defs = await client.toolingQueryAll(
-                        `SELECT Id, DefType, Format, Source, LastModifiedDate, SystemModstamp FROM AuraDefinition WHERE AuraDefinitionBundleId='${bundle.Id}' ORDER BY DefType`
-                    );
-                    const used = new Set();
-                    for (const definition of defs || []) {
-                        if (!definition?.Id || !definition?.Source) continue;
-                        let fileName = safeSeg(
-                            auraFilename(bundleName, definition.DefType, definition.Format)
-                        );
-                        if (used.has(fileName)) {
-                            fileName = `${fileName}.${String(definition.Id || '').slice(-6)}`;
-                        }
-                        used.add(fileName);
-                        const target = vscode.Uri.joinPath(bundlePath, fileName);
-                        await writeTextFile(vscode, target, definition.Source || '');
-                        pulledPaths.push(target.path);
-                        toolingMap.items[target.path] = {
-                            type: 'AuraDefinition',
-                            id: definition.Id,
-                            defType: definition.DefType,
-                            format: definition.Format,
-                        };
-                    }
-                }
-            };
-
-            await vscode.window.withProgress(
-                {
-                    location: vscode.ProgressLocation.Notification,
-                    title: 'Retrieving manifest contents…',
-                    cancellable: false,
-                },
-                async () => {
-                    if (manifest.has('ApexClass')) {
-                        await pullApex('ApexClass', 'classes', 'cls', manifest.get('ApexClass'));
-                    }
-                    if (manifest.has('ApexTrigger')) {
-                        await pullApex(
-                            'ApexTrigger',
-                            'triggers',
-                            'trigger',
-                            manifest.get('ApexTrigger')
-                        );
-                    }
-                    if (manifest.has('LightningComponentBundle')) {
-                        await pullLwcBundles(manifest.get('LightningComponentBundle'));
-                    }
-                    if (manifest.has('AuraDefinitionBundle')) {
-                        await pullAuraBundles(manifest.get('AuraDefinitionBundle'));
-                    }
-                }
-            );
-
-            await saveToolingMapJson(toolingMap);
-            await deployTools.updateSourceTrackingForPaths(pulledPaths);
-            await vscode.window.showInformationMessage(
-                `Retrieved ${pulledPaths.length} file(s) from manifest.`
-            );
-            try {
-                await vscode.commands.executeCommand('salesforceMetadata.refreshProject');
-            } catch {
-                // ignore
-            }
+        const result = await retrieveRuntime.retrieveToolingTypes(conn, manifest, {
+            title: 'Retrieving manifest contents...',
         });
+        deployTools.invalidateToolingMap();
+        await vscode.window.showInformationMessage(
+            `Retrieved ${result.writtenPaths.length} file(s) from manifest.`
+        );
+        try {
+            await vscode.commands.executeCommand('salesforceMetadata.refreshProject');
+        } catch {
+            // ignore
+        }
     });
+
+    registerCommand(
+        context,
+        vscode,
+        'salesforceMetadata.generateManifestFile',
+        async (sourceUri, uris) => {
+            try {
+                const normalizedSourceUri =
+                    sourceUri &&
+                    typeof sourceUri === 'object' &&
+                    typeof (sourceUri as { path?: unknown }).path === 'string'
+                        ? (sourceUri as { path?: string })
+                        : null;
+                const fileNameInput = await vscode.window.showInputBox({
+                    title: 'Generate manifest file',
+                    prompt: 'Enter a name for the generated manifest file',
+                    placeHolder: 'package.xml',
+                    value: 'package.xml',
+                    ignoreFocusOut: true,
+                });
+                if (fileNameInput === undefined) {
+                    return;
+                }
+
+                const generated = await manifestRuntime.generatePackageXmlFromSelection({
+                    sourceUri: normalizedSourceUri,
+                    uris: Array.isArray(uris) ? uris : [],
+                    activeUri: vscode.window?.activeTextEditor?.document?.uri || null,
+                });
+                const saved = await manifestRuntime.writeManifestFile(
+                    fileNameInput,
+                    generated.packageXml
+                );
+                const doc = await vscode.workspace.openTextDocument(saved.uri);
+                await vscode.window.showTextDocument(doc, { preview: false });
+                await vscode.window.showInformationMessage(
+                    `Generated ${saved.fileName} from ${generated.selectedUris.length} selected item(s).`
+                );
+            } catch (error) {
+                await vscode.window.showErrorMessage(
+                    error instanceof Error ? error.message : 'Failed to generate manifest file.'
+                );
+            }
+        }
+    );
 
     registerCommand(context, vscode, 'salesforceMetadata.retrieveMetadataApi', async () => {
         const conn = connectionRuntime.loadStoredConn();
@@ -627,8 +392,8 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
             await vscode.window.showErrorMessage('Manifest parse failed or contains no <types>.');
             return;
         }
-        const result = await retrieveViaMetadataApi(conn, manifest, {
-            title: 'Retrieving via Metadata API…',
+        const result = await retrieveRuntime.retrieveViaMetadataApi(conn, manifest, {
+            title: 'Retrieving via Metadata API...',
         });
         deployTools.invalidateToolingMap();
         try {
@@ -657,7 +422,7 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
                 cancellable: false,
             },
             async () =>
-                await withMetadataApiClientAuthed(conn, async client => {
+                await retrieveRuntime.withMetadataApiClientAuthed(conn, async client => {
                     const doc = await client.describeMetadata(client.apiVersion);
                     return parseDescribeMetadataTypes(doc);
                 })
@@ -688,7 +453,7 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
                     cancellable: false,
                 },
                 async () =>
-                    await withMetadataApiClientAuthed(conn, async client => {
+                    await retrieveRuntime.withMetadataApiClientAuthed(conn, async client => {
                         return await client.listMetadata({
                             queries: [{ type: typePick.label }],
                             asOfVersion: client.apiVersion,
@@ -733,9 +498,14 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
 
         if (!members.length) return;
         const typesMap = new Map([[typePick.label, new Set(members)]]);
-        const result = await retrieveViaMetadataApi(conn, typesMap, {
-            title: `Retrieving ${typePick.label} via Metadata API…`,
-        });
+        const runtime = TOOLING_METADATA_TYPES.has(typePick.label)
+            ? retrieveRuntime.retrieveToolingTypes(conn, typesMap, {
+                  title: `Retrieving ${typePick.label}...`,
+              })
+            : retrieveRuntime.retrieveViaMetadataApi(conn, typesMap, {
+                  title: `Retrieving ${typePick.label} via Metadata API...`,
+              });
+        const result = await runtime;
         deployTools.invalidateToolingMap();
         try {
             await vscode.commands.executeCommand('salesforceMetadata.refreshProject');
@@ -743,7 +513,7 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
             // ignore
         }
         await vscode.window.showInformationMessage(
-            `Retrieved ${result.writtenPaths.length} file(s) via Metadata API.`
+            `Retrieved ${result.writtenPaths.length} file(s).`
         );
     });
 

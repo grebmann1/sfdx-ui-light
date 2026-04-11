@@ -1,5 +1,6 @@
 import { wire } from 'lwc';
 import { isEmpty, isElectronApp } from 'shared/utils';
+import { openDesktopOrgUrl } from 'core/electron/desktopBridge';
 import ToolkitElement from 'core/toolkitElement';
 import { store as legacyStore, store_application } from 'shared/store';
 import { NavigationContext, navigate } from 'lwr/navigation';
@@ -47,15 +48,13 @@ export default class App extends ToolkitElement {
         this.goToTarget(application);
     };
 
-    openInBrowser = (): void => {
+    openInBrowser = async (): Promise<void> => {
         if (isElectronApp()) {
-            // Electron version
-            window.electron.invoke('org-openOrgUrl', this.connector.configuration);
+            await openDesktopOrgUrl(this.connector.configuration);
         } else {
-            // Browser version
             const url = this.connector.frontDoorUrl;
             window.open(url, '_blank');
-        } //https://rieckermanngmbh--qa.sandbox.lightning.force.com/lightning/setup/SetupOneHome/home?setupApp=all
+        }
     };
 
     goToUrl = (e: any): void => {

@@ -10,7 +10,6 @@ import {
     decodeBase64UrlToJson,
 } from 'shared/utils';
 import { NavigationContext, CurrentPageReference, navigate } from 'lwr/navigation';
-import { handleRedirect } from './utils';
 import LOGGER from 'shared/logger';
 import {
     getConfigurations,
@@ -26,9 +25,14 @@ import { loadLimitedMode, loadFullMode } from './session';
 import { connectToBackgroundWithIdentity, disconnectFromBackground } from './background';
 import { initShortcuts } from './shortcuts';
 import { initCacheStorage, loadFromCache } from './cache';
+import {
+    checkDesktopCommands,
+    getDesktopLaunchIntent,
+    onDesktopLaunchIntent,
+} from 'core/electron/desktopBridge';
 
 /** Store **/
-import { connectStore, store, DOCUMENT, APPLICATION, SHELL } from 'core/store';
+import { connectStore, store, DOCUMENT, APPLICATION } from 'core/store';
 import { store as legacyStore } from 'shared/store';
 
 const LIMITED = 'limited';
@@ -58,6 +62,7 @@ export default class App extends LightningElement {
     pageHasLoaded = false;
     targetPage;
     _isLoggedIn = false;
+    _removeDesktopLaunchIntentListener = null;
 
     // Full App Loading
     _isFullAppLoading = false;
@@ -158,12 +163,57 @@ export default class App extends LightningElement {
         await loadFromCache(this);
         await this.processShareParams();
         if (isElectronApp()) {
+            await this.prepareDesktopLaunchIntent();
             await this.initElectron();
             this.isCommandCheckFinished = true;
+            this.registerDesktopLaunchIntentListener();
         }
         this.loadVersion();
         await this.initMode();
         this.initDragDrop();
+    };
+
+    disconnectedCallback() {
+        if (typeof this._removeDesktopLaunchIntentListener === 'function') {
+            this._removeDesktopLaunchIntentListener();
+        }
+    }
+
+    prepareDesktopLaunchIntent = async () => {
+        const launchIntent = await getDesktopLaunchIntent();
+        await this.applyDesktopLaunchIntent(launchIntent);
+    };
+
+    registerDesktopLaunchIntentListener = () => {
+        this._removeDesktopLaunchIntentListener = onDesktopLaunchIntent(async launchIntent => {
+            await this.applyDesktopLaunchIntent(launchIntent, true);
+        });
+    };
+
+    applyDesktopLaunchIntent = async (launchIntent, shouldReload = false) => {
+        if (launchIntent?.target !== 'org' || !launchIntent.orgAlias) {
+            return;
+        }
+
+        try {
+            const configuration = await getConfiguration(launchIntent.orgAlias);
+            if (!configuration) {
+                return;
+            }
+
+            await saveSession({
+                ...configuration,
+                alias: configuration.alias,
+                credentialType: configuration.credentialType,
+            });
+
+            if (shouldReload) {
+                store.dispatch(APPLICATION.reduxSlice.actions.logout({}));
+                await this.initMode();
+            }
+        } catch (error) {
+            LOGGER.error('applyDesktopLaunchIntent', error);
+        }
     };
 
     processShareParams = async () => {
@@ -358,11 +408,7 @@ export default class App extends LightningElement {
 
     initElectron = async () => {
         try {
-            let { error, result } = await window.electron.invoke('util-checkCommands');
-            if (error) {
-                throw decodeError(error);
-            }
-
+            const result = await checkDesktopCommands();
             this.isSalesforceCliInstalled = result.sfdx;
             this.isJavaCliInstalled = result.java;
         } catch (error) {

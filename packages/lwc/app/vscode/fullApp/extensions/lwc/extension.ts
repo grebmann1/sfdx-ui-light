@@ -195,7 +195,7 @@ function buildLwcExtensionConfig() {
                 },
                 {
                     command: 'salesforceMetadata.deployChangedFiles',
-                    title: 'Salesforce: Deploy Changed Files (Tooling API)',
+                    title: 'Salesforce: Review and Deploy Changed Files (Tooling API)',
                 },
                 {
                     command: 'salesforceMetadata.toggleAutoDeploy',

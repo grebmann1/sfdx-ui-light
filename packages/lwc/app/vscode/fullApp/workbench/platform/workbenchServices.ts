@@ -11,6 +11,9 @@ export function getWorkbenchHost(): SalesforceWorkbenchHost | null {
 export function getWorkbenchConnection(): Record<string, unknown> {
     const host = getWorkbenchHost();
     const runtime = host?.connectionRuntime;
+    if (runtime && typeof runtime.loadLiveConnection === 'function') {
+        return runtime.loadLiveConnection() || {};
+    }
     if (runtime && typeof runtime.loadStoredConn === 'function') {
         return runtime.loadStoredConn();
     }

@@ -1,33 +1,38 @@
-type ConnectionProvider = () => unknown;
+type ConnectionContextProvider = () => unknown;
 
-let currentConnectionProvider: ConnectionProvider | null = null;
+let currentConnectionProvider: ConnectionContextProvider | null = null;
 
-export function setCurrentConnectionProvider(provider: unknown) {
+export function shareCurrentConnectionContext(provider: unknown) {
     currentConnectionProvider =
-        typeof provider === 'function' ? (provider as ConnectionProvider) : null;
+        typeof provider === 'function' ? (provider as ConnectionContextProvider) : null;
 }
 
-export function hasCurrentConnectionProvider() {
+export function hasCurrentConnectionContextProvider() {
     return typeof currentConnectionProvider === 'function';
 }
 
-export function getCurrentConnection(): Record<string, unknown> | null {
-    if (!hasCurrentConnectionProvider()) {
+export function getCurrentConnectionContext(): Record<string, unknown> | null {
+    if (!hasCurrentConnectionContextProvider()) {
         return null;
     }
 
     try {
-        const connection = currentConnectionProvider?.();
-        return connection && typeof connection === 'object'
-            ? (connection as Record<string, unknown>)
-            : null;
+        const context = currentConnectionProvider?.();
+        return context && typeof context === 'object' ? (context as Record<string, unknown>) : null;
     } catch {
         return null;
     }
 }
 
-export function clearCurrentConnectionProvider(provider: ConnectionProvider | null = null) {
+export function clearSharedCurrentConnectionContext(
+    provider: ConnectionContextProvider | null = null
+) {
     if (!provider || currentConnectionProvider === provider) {
         currentConnectionProvider = null;
     }
 }
+
+export const setCurrentConnectionProvider = shareCurrentConnectionContext;
+export const hasCurrentConnectionProvider = hasCurrentConnectionContextProvider;
+export const getCurrentConnection = getCurrentConnectionContext;
+export const clearCurrentConnectionProvider = clearSharedCurrentConnectionContext;

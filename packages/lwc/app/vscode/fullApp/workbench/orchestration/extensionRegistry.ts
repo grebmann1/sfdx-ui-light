@@ -4,6 +4,7 @@ import { register as registerApex } from '../../extensions/apex/extension';
 import type { VscodeBundle } from '../../extensions/core/extensionRegistration';
 import { register as registerLwc } from '../../extensions/lwc/extension';
 import { register as registerMetadata } from '../../extensions/metadata/extension';
+import { register as registerOrgBrowser } from '../../extensions/orgBrowser/extension';
 import { registerUnifiedSoqlExtension } from '../../extensions/soql/unifiedSoqlExtension';
 import {
     register as registerWalkthrough,
@@ -19,6 +20,7 @@ const EXTENSION_REGISTRARS: Array<
 > = [
     vscodeBundle => registerUnifiedSoqlExtension(vscodeBundle),
     (vscodeBundle, ctx) => registerMetadata(vscodeBundle, ctx),
+    vscodeBundle => registerOrgBrowser(vscodeBundle),
     vscodeBundle => registerApex(vscodeBundle),
     vscodeBundle => registerLwc(vscodeBundle),
     vscodeBundle => registerAgentScript(vscodeBundle),

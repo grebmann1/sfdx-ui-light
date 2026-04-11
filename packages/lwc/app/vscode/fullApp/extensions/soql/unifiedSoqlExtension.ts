@@ -189,7 +189,12 @@ export async function registerUnifiedSoqlExtension(vscodeBundle: VscodeBundle) {
             const middleware = createSoqlCompletionMiddleware({
                 CompletionItemKind: vs.CompletionItemKind,
                 loadConnection: () =>
-                    sfHost.connectionRuntime.loadStoredConn() as Record<string, unknown> | null,
+                    (typeof sfHost.connectionRuntime.loadLiveConnection === 'function'
+                        ? sfHost.connectionRuntime.loadLiveConnection()
+                        : sfHost.connectionRuntime.loadStoredConn()) as Record<
+                        string,
+                        unknown
+                    > | null,
                 getSchemaApi: () => schemaApi,
             });
 
@@ -251,10 +256,11 @@ export async function registerUnifiedSoqlExtension(vscodeBundle: VscodeBundle) {
                                     ?.getConfiguration?.('salesforcedx-vscode-soql')
                                     ?.get?.('experimental.validateQueries')
                             );
-                            const conn = sfHost.connectionRuntime.loadStoredConn() as Record<
-                                string,
-                                unknown
-                            >;
+                            const conn = (
+                                typeof sfHost.connectionRuntime.loadLiveConnection === 'function'
+                                    ? sfHost.connectionRuntime.loadLiveConnection()
+                                    : sfHost.connectionRuntime.loadStoredConn()
+                            ) as Record<string, unknown>;
                             if (!conn?.instanceUrl || !conn?.accessToken) {
                                 return {
                                     error: {
