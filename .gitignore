@@ -31,3 +31,4 @@ package-lock.json
 .cursor/rules/do-not-edit-these-rules-from-mcp-gateway/
 .windsurf/rules/do-not-edit-these-rules-from-mcp-gateway/
 /test-results/
+/toExclude/
