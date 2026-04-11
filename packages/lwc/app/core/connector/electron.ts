@@ -11,7 +11,7 @@ import {
     getDesktopStoredOrg,
     removeDesktopStoredOrg,
     renameDesktopStoredOrg,
-} from 'core/electron/desktopBridge';
+} from 'core/desktopBridge';
 import { extractName, extractConfig } from './base';
 import { OAUTH_TYPES } from './credentialStrategies/oauthTypes';
 

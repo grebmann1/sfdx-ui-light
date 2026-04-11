@@ -38,7 +38,7 @@ import type { ConnectorLike } from 'core/connector';
 import {
     openDesktopInstance,
     openDesktopOrgUrl,
-} from 'core/electron/desktopBridge';
+} from 'core/desktopBridge';
 
 const { showToast, handleError } = notificationService;
 const ACTIONS = [

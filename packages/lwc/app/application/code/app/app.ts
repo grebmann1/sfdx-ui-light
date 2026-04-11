@@ -7,7 +7,7 @@ import {
     openDesktopVSCodeProject,
     retrieveDesktopCode,
     selectDesktopCodeProject,
-} from 'core/electron/desktopBridge';
+} from 'core/desktopBridge';
 import ToolkitElement from 'core/toolkitElement';
 import Analytics from 'shared/analytics';
 

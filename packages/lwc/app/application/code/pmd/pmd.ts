@@ -1,6 +1,6 @@
 import { api } from 'lwc';
 import { decodeError, isNotUndefinedOrNull, isUndefinedOrNull } from 'shared/utils';
-import { getDesktopPmdInstallation, installDesktopLatestPmd } from 'core/electron/desktopBridge';
+import { getDesktopPmdInstallation, installDesktopLatestPmd } from 'core/desktopBridge';
 import ToolkitElement from 'core/toolkitElement';
 
 export default class Pmd extends ToolkitElement {

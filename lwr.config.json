@@ -53,10 +53,6 @@
                 "name": "core/connector",
                 "path": "$rootDir/packages/lwc/app/core/connector/connector.ts"
             },
-            {
-                "name": "core/electron/desktopBridge",
-                "path": "$rootDir/packages/lwc/app/core/electron/desktopBridge.ts"
-            },
             { "npm": "lightning-base-components" },
             {
                 "name": "imported/jsforce",

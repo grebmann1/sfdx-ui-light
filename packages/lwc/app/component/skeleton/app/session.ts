@@ -5,7 +5,7 @@ import { store, APPLICATION } from 'core/store';
 import { navigate } from 'lwr/navigation';
 import LOGGER from 'shared/logger';
 import { isNotUndefinedOrNull, isElectronApp } from 'shared/utils';
-import { notifyDesktopLimitedModeStatus } from 'core/electron/desktopBridge';
+import { notifyDesktopLimitedModeStatus } from 'core/desktopBridge';
 
 import { handleRedirect } from './utils';
 

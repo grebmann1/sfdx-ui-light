@@ -17,7 +17,7 @@ import {
     checkIfPresent,
 } from 'shared/utils';
 import type { ConnectorLike } from 'core/connector';
-import { setDesktopStoredOrg } from 'core/electron/desktopBridge';
+import { setDesktopStoredOrg } from 'core/desktopBridge';
 
 import LOGGER from 'shared/logger';
 

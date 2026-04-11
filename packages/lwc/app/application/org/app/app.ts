@@ -1,6 +1,6 @@
 import { wire } from 'lwc';
 import { isEmpty, isElectronApp } from 'shared/utils';
-import { openDesktopOrgUrl } from 'core/electron/desktopBridge';
+import { openDesktopOrgUrl } from 'core/desktopBridge';
 import ToolkitElement from 'core/toolkitElement';
 import { store as legacyStore, store_application } from 'shared/store';
 import { NavigationContext, navigate } from 'lwr/navigation';

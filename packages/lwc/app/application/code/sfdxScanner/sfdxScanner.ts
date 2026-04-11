@@ -4,7 +4,7 @@ import {
     onDesktopLegacyChannel,
     runDesktopSfdxAnalyzer,
     runDesktopShell,
-} from 'core/electron/desktopBridge';
+} from 'core/desktopBridge';
 import ToolkitElement from 'core/toolkitElement';
 import xterm from 'xterm';
 import { theme } from './theme';

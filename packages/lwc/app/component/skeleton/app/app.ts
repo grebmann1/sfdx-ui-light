@@ -29,7 +29,7 @@ import {
     checkDesktopCommands,
     getDesktopLaunchIntent,
     onDesktopLaunchIntent,
-} from 'core/electron/desktopBridge';
+} from 'core/desktopBridge';
 
 /** Store **/
 import { connectStore, store, DOCUMENT, APPLICATION } from 'core/store';
