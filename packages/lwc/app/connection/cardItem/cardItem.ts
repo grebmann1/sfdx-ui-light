@@ -1,4 +1,5 @@
 import { api } from 'lwc';
+import { getErrorRowActionName } from 'connection/rowActions';
 import ToolkitElement from 'core/toolkitElement';
 import {
     isEmpty,
@@ -85,5 +86,13 @@ export default class CardItem extends ToolkitElement {
 
     get errorMessage() {
         return this.item?._errorMessage || '';
+    }
+
+    get errorActionLabel() {
+        return this.item?._connectLabel || 'Authorize Org';
+    }
+
+    get errorActionName() {
+        return getErrorRowActionName(this.item?._connectAction);
     }
 }

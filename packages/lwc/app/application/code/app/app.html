@@ -16,11 +16,19 @@
                 icon-name="standard:user">
                 <div slot="actions" class="slds-builder-toolbar__actions">
                     <lightning-button-group>
-                        <lightning-button
-                            icon-name="utility:apex"
+                        <button
+                            class="slds-button slds-button_neutral"
+                            type="button"
+                            title="Open with VS Code"
                             onclick={openVSCode}
-                            label="Open with VS Code"
-                            disabled={isVSCodeDisabled}></lightning-button>
+                            disabled={isVSCodeDisabled}>
+                            <slds-lucide-icon
+                                class="slds-button__icon slds-button__icon_left"
+                                name="square-terminal"
+                                size="14"
+                                stroke-width="1.75"></slds-lucide-icon>
+                            <span>Open with VS Code</span>
+                        </button>
                         <template lwc:if={isRetrieveDisplayed}>
                             <lightning-button
                                 icon-name="utility:sync"

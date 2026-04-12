@@ -116,11 +116,19 @@
 
                                 <!-- action -->
                                 <lightning-button-group slot="action">
-                                    <lightning-button-icon
-                                        icon-name="utility:apex"
-                                        label="Open VS Code Editor"
-                                        onclick={handleOpenVscodeEditor}
-                                        size="medium"></lightning-button-icon>
+                                    <button
+                                        class="slds-button slds-button_icon slds-button_icon-border-filled"
+                                        type="button"
+                                        title="Open VS Code Editor"
+                                        aria-label="Open VS Code Editor"
+                                        onclick={handleOpenVscodeEditor}>
+                                        <slds-lucide-icon
+                                            class="slds-button__icon"
+                                            name="square-terminal"
+                                            size="14"
+                                            stroke-width="1.75"></slds-lucide-icon>
+                                        <span class="slds-assistive-text">Open VS Code Editor</span>
+                                    </button>
                                     <!-- <lightning-button-icon
                                         icon-name="utility:apex"
                                         label="Open Anonymous Apex"

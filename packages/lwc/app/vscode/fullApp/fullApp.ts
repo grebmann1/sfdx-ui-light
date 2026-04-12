@@ -3,6 +3,7 @@ import {
     credentialStrategies,
     fetchCookieForTabIdViaBackground,
     findExistingSessionViaBackground,
+    getConfiguration,
     hasChromeBackgroundMessaging,
     listOrgSessionsViaBackground,
     requestTabsPermissionViaBackground,
@@ -62,6 +63,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     @api sessionId;
     @api serverUrl;
     @api redirectUrl;
+    @api bootstrapAlias;
     @api sourceTabId;
     @api workspaceBasePath;
 
@@ -265,6 +267,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
 
         this.isConnectionAvailable = Boolean(
             (activeConnection?.instanceUrl && !connectorHasError && !this.sessionHasExpired) ||
+            this._getBootstrapAlias() ||
             (this.sessionId && this.serverUrl)
         );
         this.sfApiVersion = normalizeSfApiVersion(
@@ -290,6 +293,11 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
 
     _deriveConnectionWorkspaceRoot(connection) {
         return deriveConnectionWorkspaceRoot(connection, this.workspaceBasePath);
+    }
+
+    _getBootstrapAlias() {
+        const alias = String(this.bootstrapAlias || '').trim();
+        return alias || null;
     }
 
     _getBootstrapServerUrl() {
@@ -535,7 +543,8 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         return this.sfApiVersion;
     }
 
-    _clearSessionBootstrapParams() {
+    _clearConnectionBootstrapParams() {
+        this.bootstrapAlias = null;
         this.sessionId = null;
         this.serverUrl = null;
         try {
@@ -558,7 +567,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                 message
             );
             if (isSessionExpired) {
-                this._clearSessionBootstrapParams();
+                this._clearConnectionBootstrapParams();
                 try {
                     store.dispatch(
                         APPLICATION.reduxSlice.actions.sessionExpired({ sessionHasExpired: true })
@@ -584,6 +593,27 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         if (this.connector?.conn) {
             return this.connector;
         }
+
+        const bootstrapAlias = this._getBootstrapAlias();
+        if (bootstrapAlias) {
+            const storedAliasConfiguration = await getConfiguration(bootstrapAlias).catch(
+                () => null
+            );
+            if (storedAliasConfiguration) {
+                const aliasedConnector = await credentialStrategies.OAUTH.connect({
+                    alias: bootstrapAlias,
+                }).catch(error => handleConnectorFailure(error));
+                const usableAliasedConnector = toUsableConnector(aliasedConnector);
+                if (usableAliasedConnector) {
+                    store.dispatch(
+                        APPLICATION.reduxSlice.actions.login({ connector: usableAliasedConnector })
+                    );
+                    this._clearConnectionBootstrapParams();
+                    return usableAliasedConnector;
+                }
+            }
+        }
+
         if (!this.sessionId || !this.serverUrl) {
             return null;
         }
@@ -612,7 +642,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                     store.dispatch(
                         APPLICATION.reduxSlice.actions.login({ connector: usableConnector })
                     );
-                    this._clearSessionBootstrapParams();
+                    this._clearConnectionBootstrapParams();
                 })
                 .catch(error => handleConnectorFailure(error));
             return null;
@@ -623,7 +653,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             return null;
         }
         store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
-        this._clearSessionBootstrapParams();
+        this._clearConnectionBootstrapParams();
         return connector;
     }
 

@@ -23,7 +23,6 @@
             "ai/assistants": ["ai/assistants/assistants"],
             "ai/functions": ["ai/functions/functions"],
             "ai/utils": ["ai/utils/utils"],
-            "connection/app": ["connection/app/app"],
             "connection/connectionDetailModal": [
                 "connection/connectionDetailModal/connectionDetailModal"
             ],
@@ -35,6 +34,7 @@
             ],
             "connection/connectionNewModal": ["connection/connectionNewModal/connectionNewModal"],
             "connection/quickConnect": ["connection/quickConnect/quickConnect"],
+            "connection/rowActions": ["connection/rowActions/rowActions"],
             "connection/shareUtils": ["connection/shareUtils/shareUtils"],
             "core/applications": ["core/applications/applications"],
             "core/constant": ["core/constant/constant"],

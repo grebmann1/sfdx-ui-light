@@ -3,10 +3,17 @@
 }
 
 /* Make other types of icons look like utility icons */
-.icon:not([icon-name^='utility']) {
+.icon:not(.icon-lucide):not([icon-name^='utility']) {
     transform: scale(1.5);
     --slds-c-icon-color-background: transparent;
     --slds-c-icon-color-foreground: var(
+        --slds-c-icon-color-foreground-default,
+        var(--slds-s-icon-color-foreground, var(--lwc-colorTextIconDefault, #747474))
+    );
+}
+
+.icon.icon-lucide {
+    color: var(
         --slds-c-icon-color-foreground-default,
         var(--slds-s-icon-color-foreground, var(--lwc-colorTextIconDefault, #747474))
     );

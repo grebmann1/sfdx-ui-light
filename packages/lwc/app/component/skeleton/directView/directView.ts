@@ -21,14 +21,16 @@ export default class directView extends LightningElement {
             this.redirectUrl = this.getRedirectUrl();
             this.sourceTabId = this.getSourceTabId();
         } else {
+            this.alias = this.getAlias();
             this.sessionId = this.getSessionId();
             this.serverUrl = this.getServerUrl();
             this.redirectUrl = this.getRedirectUrl();
             this.sourceTabId = this.getSourceTabId();
-            if (
-                (isUndefinedOrNull(this.sessionId) || isUndefinedOrNull(this.serverUrl))
-                && isUndefinedOrNull(this.sourceTabId)
-            ) {
+            const hasAliasBootstrap =
+                typeof this.alias === 'string' && this.alias.trim().length > 0;
+            const hasSessionBootstrap =
+                !isUndefinedOrNull(this.sessionId) && !isUndefinedOrNull(this.serverUrl);
+            if (!hasAliasBootstrap && !hasSessionBootstrap && isUndefinedOrNull(this.sourceTabId)) {
                 this.sendError();
             }
         }

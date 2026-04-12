@@ -53,6 +53,10 @@
                 "name": "core/connector",
                 "path": "$rootDir/packages/lwc/app/core/connector/connector.ts"
             },
+            {
+                "name": "connection/app",
+                "path": "$rootDir/packages/lwc/app/connection/app/app.ts"
+            },
             { "npm": "lightning-base-components" },
             {
                 "name": "imported/jsforce",
@@ -112,14 +116,14 @@
             "urlPath": "/workers"
         },
         {
-            "alias": "publicDir",
-            "dir": "$rootDir/packages/server/assets",
-            "urlPath": "/public"
-        },
-        {
             "alias": "skillsPublicDir",
             "dir": "$rootDir/assets/skills",
             "urlPath": "/public/skills"
+        },
+        {
+            "alias": "publicDir",
+            "dir": "$rootDir/packages/server/assets",
+            "urlPath": "/public"
         }
     ],
     "hooks": ["$rootDir/packages/server/dist/hooks/application-hook.js"],

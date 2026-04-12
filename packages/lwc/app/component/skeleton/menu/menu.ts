@@ -359,16 +359,23 @@ export default class Menu extends ToolkitElement {
     }
 
     get vscodeEditorLink() {
+        const alias = this.connector?.configuration?.alias;
         const sessionId = this.connector?.conn?.accessToken;
         const serverUrl = this.connector?.conn?.instanceUrl;
-        if (!this.isUserLoggedIn || !isChromeExtension() || isEmpty(sessionId) || isEmpty(serverUrl)) {
+        const hasAliasBootstrap = !isEmpty(alias);
+        const hasSessionBootstrap = !isEmpty(sessionId) && !isEmpty(serverUrl);
+        if (
+            !this.isUserLoggedIn ||
+            !isChromeExtension() ||
+            (!hasAliasBootstrap && !hasSessionBootstrap)
+        ) {
             return null;
         }
 
         return {
             name: 'extra_vscodeEditor',
-            url: getVscodeEditorUrl({ sessionId, serverUrl }),
-            menuIcon: 'utility:open_folder',
+            url: getVscodeEditorUrl({ alias, sessionId, serverUrl }),
+            menuIcon: 'lucide:square-terminal',
             menuLabel: 'VS Code Editor',
         };
     }
@@ -390,7 +397,10 @@ export default class Menu extends ToolkitElement {
     }
 
     get filteredVscodeEditorLinks() {
-        return this.filterBySearch(this.vscodeEditorLink ? [this.vscodeEditorLink] : [], this.filterText);
+        return this.filterBySearch(
+            this.vscodeEditorLink ? [this.vscodeEditorLink] : [],
+            this.filterText
+        );
     }
 
     get isUnlimitedMode() {

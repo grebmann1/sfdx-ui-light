@@ -1,6 +1,9 @@
-import { api, LightningElement } from 'lwc';
 import { classSet } from 'lightning/utils';
+import { api, LightningElement } from 'lwc';
+
 import { hasSelectedDescendant } from './utils';
+
+const LUCIDE_PREFIX = 'lucide:';
 
 const Event = Object.freeze({
     Select: 'select',
@@ -135,9 +138,18 @@ export default class VerticalNavigationItem extends LightningElement {
 
     get iconClass() {
         return classSet('icon').add({
+            'icon-lucide': this.isLucideIcon,
             'slds-m-right_x-small': !this.isCollapsed,
             'slds-m-right_none': this.isCollapsed,
         });
+    }
+
+    get isLucideIcon() {
+        return typeof this.iconName === 'string' && this.iconName.startsWith(LUCIDE_PREFIX);
+    }
+
+    get lucideIconName() {
+        return this.isLucideIcon ? this.iconName.slice(LUCIDE_PREFIX.length) : '';
     }
 
     get showLabel() {

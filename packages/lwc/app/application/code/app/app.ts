@@ -1,10 +1,9 @@
 import { track } from 'lwc';
-import { decodeError, isNotUndefinedOrNull } from 'shared/utils';
+import { decodeError, getVscodeEditorUrl, isNotUndefinedOrNull } from 'shared/utils';
 import {
     exportDesktopMetadata,
     getDesktopCodeInitialConfig,
     onDesktopLegacyChannel,
-    openDesktopVSCodeProject,
     retrieveDesktopCode,
     selectDesktopCodeProject,
 } from 'core/desktopBridge';
@@ -89,8 +88,13 @@ export default class App extends ToolkitElement {
         }
     };
 
-    openVSCode = async (): Promise<void> => {
-        await openDesktopVSCodeProject(this.projectPath);
+    openVSCode = (): void => {
+        if (!this.hasVscodeEditorBootstrap) return;
+
+        const alias = this.connector?.configuration?.alias;
+        const sessionId = this.connector?.conn?.accessToken;
+        const serverUrl = this.connector?.conn?.instanceUrl;
+        window.open(getVscodeEditorUrl({ alias, sessionId, serverUrl }));
     };
 
     handleCopy = (): void => {
@@ -123,7 +127,7 @@ export default class App extends ToolkitElement {
     }
 
     get isVSCodeDisabled() {
-        return this.isLoading || !isNotUndefinedOrNull(this.projectPath) || !this.isMetadataLoaded;
+        return this.isLoading || !this.hasVscodeEditorBootstrap;
     }
 
     get isDownloadDisabled() {
@@ -132,5 +136,18 @@ export default class App extends ToolkitElement {
 
     get isRetrieveDisplayed() {
         return !this.isMetadataLoaded;
+    }
+
+    get hasVscodeEditorBootstrap() {
+        const alias = this.connector?.configuration?.alias;
+        const sessionId = this.connector?.conn?.accessToken;
+        const serverUrl = this.connector?.conn?.instanceUrl;
+        const hasAliasBootstrap = this.hasTextValue(alias);
+        const hasSessionBootstrap = this.hasTextValue(sessionId) && this.hasTextValue(serverUrl);
+        return hasAliasBootstrap || hasSessionBootstrap;
+    }
+
+    hasTextValue(value: unknown): boolean {
+        return isNotUndefinedOrNull(value) && String(value).trim().length > 0;
     }
 }

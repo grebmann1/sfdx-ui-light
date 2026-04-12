@@ -18,7 +18,16 @@
                 aria-expanded={ariaExpanded}
                 onclick={handleClick}
                 onkeydown={handleKeyDown}>
+                <slds-lucide-icon
+                    lwc:if={isLucideIcon}
+                    data-tid="icon"
+                    name={lucideIconName}
+                    title={label}
+                    size="14"
+                    stroke-width="1.75"
+                    class={iconClass}></slds-lucide-icon>
                 <lightning-icon
+                    lwc:else
                     data-tid="icon"
                     icon-name={iconName}
                     alternative-text={label}

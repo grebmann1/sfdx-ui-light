@@ -10,11 +10,20 @@
                         onclick={redirectToWebsite}
                         title="Open Workbench 2.0"></lightning-button-icon>
                     <!--<lightning-button-icon icon-name="utility:einstein" title="Open Einstein" onclick={einsteinClick}></lightning-button-icon>-->
-                    
-                    <lightning-button-icon
-                        icon-name="utility:apex"
+
+                    <button
+                        class="slds-button slds-button_icon slds-button_icon-border-filled"
+                        type="button"
                         onclick={redirectToVscodeEditor}
-                        title="Open VS Code Editor"></lightning-button-icon>
+                        title="Open VS Code Editor"
+                        aria-label="Open VS Code Editor">
+                        <slds-lucide-icon
+                            class="slds-button__icon"
+                            name="square-terminal"
+                            size="14"
+                            stroke-width="1.75"></slds-lucide-icon>
+                        <span class="slds-assistive-text">Open VS Code Editor</span>
+                    </button>
                     <!-- <lightning-button-icon
                         icon-name="utility:apex"
                         onclick={redirectToAnonymousApex}

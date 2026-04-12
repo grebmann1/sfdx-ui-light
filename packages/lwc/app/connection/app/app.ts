@@ -6,6 +6,7 @@ import ConnectionDetailModal from 'connection/connectionDetailModal';
 import ConnectionImportModal from 'connection/connectionImportModal';
 import ConnectionManualModal from 'connection/connectionManualModal';
 import { runQuickConnect } from 'connection/quickConnect';
+import { CONNECTION_ROW_ACTIONS, resolveRequestedConnectionAction } from 'connection/rowActions';
 import { buildConnectionShareMessage } from 'connection/shareUtils';
 import {
     download,
@@ -35,10 +36,7 @@ import { reportError, store, APPLICATION } from 'core/store';
 import LOGGER from 'shared/logger';
 import { cacheManager } from 'shared/cacheManager';
 import type { ConnectorLike } from 'core/connector';
-import {
-    openDesktopInstance,
-    openDesktopOrgUrl,
-} from 'core/desktopBridge';
+import { openDesktopInstance, openDesktopOrgUrl } from 'core/desktopBridge';
 
 const { showToast, handleError } = notificationService;
 const ACTIONS = [
@@ -241,18 +239,24 @@ export default class App extends ToolkitElement {
 
     handleRowAction = event => {
         //console.log('event.detail',event.detail);
-        const actionName = event.detail.action.name;
+        const actionName = resolveRequestedConnectionAction(
+            event.detail.action.name,
+            event.detail.row?._connectAction
+        );
         const { row, redirect } = event.detail;
         switch (actionName) {
-            case 'login': // Used for login & logout (in UI)
+            case CONNECTION_ROW_ACTIONS.LOGIN: // Used for login & logout (in UI)
                 if (row._connectAction === 'logout') {
                     store.dispatch(APPLICATION.reduxSlice.actions.logout());
                 } /* else if (row._hasError && row.credentialType !== OAUTH_TYPES.USERNAME) {
                     LOGGER.debug('authorizeExistingOrg');
                     this.authorizeExistingOrg(row);
-                }  */else {
+                }  */ else {
                     this.login(row);
                 }
+                break;
+            case CONNECTION_ROW_ACTIONS.AUTHORIZE:
+                this.authorizeExistingOrg(row);
                 break;
             case 'openBrowser':
                 this.openBrowser(row, '_blank');

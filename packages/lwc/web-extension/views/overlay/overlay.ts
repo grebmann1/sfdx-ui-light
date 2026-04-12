@@ -305,10 +305,14 @@ export default class Overlay extends ToolkitElement {
     };
 
     handleOpenVscodeEditor = () => {
+        const alias = this.connector?.configuration?.alias;
         const sessionId = this.connector?.conn?.accessToken;
         const serverUrl = this.connector?.conn?.instanceUrl;
-        if (this.isBlankValue(sessionId) || this.isBlankValue(serverUrl)) return;
-        window.open(getVscodeEditorUrl({ sessionId, serverUrl }));
+        const hasAliasBootstrap = !this.isBlankValue(alias);
+        const hasSessionBootstrap =
+            !this.isBlankValue(sessionId) && !this.isBlankValue(serverUrl);
+        if (!hasAliasBootstrap && !hasSessionBootstrap) return;
+        window.open(getVscodeEditorUrl({ alias, sessionId, serverUrl }));
     };
 
     handleOpenSideBar = async e => {

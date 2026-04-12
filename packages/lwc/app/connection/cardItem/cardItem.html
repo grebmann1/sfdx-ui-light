@@ -157,9 +157,9 @@
                 <lightning-button
                     class="slds-m-left_x-small"
                     variant="base"
-                    label="Authorize Org"
+                    label={errorActionLabel}
                     onclick={handleEventClick}
-                    data-event="login"></lightning-button>
+                    data-event={errorActionName}></lightning-button>
             </p>
         </template>
     </div>

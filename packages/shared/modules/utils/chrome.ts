@@ -50,15 +50,24 @@ export async function getAllOrgs(debugMode: boolean = false): Promise<MappedOrg[
 
 type RedirectParams = {
     baseUrl: string;
+    alias?: string;
     redirectUrl?: string;
     sessionId?: string;
     serverUrl?: string;
     isNewTab?: boolean;
 };
 
-const buildRedirectUrl = ({ baseUrl, redirectUrl, sessionId, serverUrl }: RedirectParams): string => {
+const buildRedirectUrl = ({
+    baseUrl,
+    alias,
+    redirectUrl,
+    sessionId,
+    serverUrl,
+}: RedirectParams): string => {
     const params = new URLSearchParams();
-    if (sessionId) {
+    if (alias) {
+        params.append('alias', alias);
+    } else if (sessionId) {
         params.append('sessionId', sessionId);
         params.append('serverUrl', serverUrl || '');
     }
@@ -73,12 +82,13 @@ const buildRedirectUrl = ({ baseUrl, redirectUrl, sessionId, serverUrl }: Redire
 
 export const redirectToUrlViaChrome = ({
     baseUrl,
+    alias,
     redirectUrl,
     sessionId,
     serverUrl,
     isNewTab,
 }: RedirectParams): void => {
-    const url = buildRedirectUrl({ baseUrl, redirectUrl, sessionId, serverUrl });
+    const url = buildRedirectUrl({ baseUrl, alias, redirectUrl, sessionId, serverUrl });
     if (isNewTab) {
         window.open(url, '_blank');
     } else {
@@ -86,14 +96,18 @@ export const redirectToUrlViaChrome = ({
     }
 };
 
-type VscodeEditorUrlParams = Pick<RedirectParams, 'sessionId' | 'serverUrl'>;
+type VscodeEditorUrlParams = Pick<RedirectParams, 'alias' | 'sessionId' | 'serverUrl'>;
 
-export const getVscodeEditorUrl = ({ sessionId, serverUrl }: VscodeEditorUrlParams): string => {
+export const getVscodeEditorUrl = ({
+    alias,
+    sessionId,
+    serverUrl,
+}: VscodeEditorUrlParams): string => {
     const baseUrl =
         typeof chrome !== 'undefined' && typeof chrome.runtime?.getURL === 'function'
             ? chrome.runtime.getURL('/views/vscode.html')
             : '/views/vscode.html';
-    return buildRedirectUrl({ baseUrl, sessionId, serverUrl });
+    return buildRedirectUrl({ baseUrl, alias, sessionId, serverUrl });
 };
 
 type ChromeTab = {

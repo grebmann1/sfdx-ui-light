@@ -62,8 +62,9 @@ export async function getTabIdToStoreIdMap() {
 export function getSalesforceURL(tabUrl) {
     let url = new URL(tabUrl).origin;
     if (tabUrl.match(SOMA_LOCAL_DOMAIN_REGEX.regex)) {
-        url = new URL(tabUrl.replace(SOMA_LOCAL_DOMAIN_REGEX.regex, SOMA_LOCAL_DOMAIN_REGEX.replace))
-            .origin;
+        url = new URL(
+            tabUrl.replace(SOMA_LOCAL_DOMAIN_REGEX.regex, SOMA_LOCAL_DOMAIN_REGEX.replace)
+        ).origin;
     } else if (tabUrl.match(WORKSPACE_NO_MY_DOMAIN_REGEX.regex)) {
         url = new URL(
             tabUrl.replace(WORKSPACE_NO_MY_DOMAIN_REGEX.regex, WORKSPACE_NO_MY_DOMAIN_REGEX.replace)
@@ -284,7 +285,7 @@ export async function listOrgSessionsFromTabs() {
 
 export function openWorkbenchTab(sourceTabId) {
     const url = chrome.runtime.getURL(
-        `views/workbench.html${sourceTabId ? `?sourceTabId=${sourceTabId}` : ''}`
+        `views/vscode.html${sourceTabId ? `?sourceTabId=${sourceTabId}` : ''}`
     );
     return chrome.tabs.create({ url });
 }

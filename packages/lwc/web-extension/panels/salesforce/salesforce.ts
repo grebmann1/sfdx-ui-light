@@ -94,10 +94,13 @@ export default class Salesforce extends ToolkitElement {
     };
 
     redirectToVscodeEditor = () => {
+        const alias = this.connector?.configuration?.alias;
         const sessionId = this.connector?.conn?.accessToken;
         const serverUrl = this.connector?.conn?.instanceUrl;
-        if (isEmpty(sessionId) || isEmpty(serverUrl)) return;
-        window.open(getVscodeEditorUrl({ sessionId, serverUrl }));
+        const hasAliasBootstrap = !isEmpty(alias);
+        const hasSessionBootstrap = !isEmpty(sessionId) && !isEmpty(serverUrl);
+        if (!hasAliasBootstrap && !hasSessionBootstrap) return;
+        window.open(getVscodeEditorUrl({ alias, sessionId, serverUrl }));
     };
 
     handleSearch = e => {
