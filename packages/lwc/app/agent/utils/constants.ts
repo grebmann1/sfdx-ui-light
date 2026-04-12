@@ -20,7 +20,7 @@ export const Constants = {
         parts: [
             {
                 type: 'text',
-                text: 'Hello, I am the Workbench 2.0 Assistant, I can help you interact with Salesforce and Salesforce tools.',
+                text: 'Hello, I am the Workbench Assistant, I can help you interact with Salesforce and Salesforce tools.',
             },
         ],
     },

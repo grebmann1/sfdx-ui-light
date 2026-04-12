@@ -6,7 +6,8 @@ export type OrgBrowserNodeKind =
     | 'folder'
     | 'component'
     | 'customObject'
-    | 'customField';
+    | 'customField'
+    | 'empty';
 
 export type OrgBrowserNode = {
     id: string;
@@ -51,12 +52,15 @@ export function getNodeContextValue(node: OrgBrowserNode) {
     if (node.kind === 'customField') {
         return 'component';
     }
+    if (node.kind === 'empty') {
+        return 'empty';
+    }
     return node.kind;
 }
 
 export function createTreeItem(vscode, node: OrgBrowserNode) {
     const collapsibleState =
-        node.kind === 'component' || node.kind === 'customField'
+        node.kind === 'component' || node.kind === 'customField' || node.kind === 'empty'
             ? vscode.TreeItemCollapsibleState.None
             : vscode.TreeItemCollapsibleState.Collapsed;
     const item = new vscode.TreeItem(node.label, collapsibleState);
@@ -69,20 +73,12 @@ export function createTreeItem(vscode, node: OrgBrowserNode) {
         item.tooltip = node.tooltip;
     }
 
-    if (vscode.ThemeIcon) {
-        if (node.kind === 'type' || node.kind === 'folderType') {
-            item.iconPath = new vscode.ThemeIcon('symbol-class');
-        } else if (node.kind === 'folder') {
-            item.iconPath = new vscode.ThemeIcon('folder');
-        } else if (node.kind === 'customObject') {
-            item.iconPath = node.filePresent
-                ? new vscode.ThemeIcon('pass-filled')
-                : new vscode.ThemeIcon('database');
-        } else {
-            item.iconPath = node.filePresent
-                ? new vscode.ThemeIcon('pass-filled')
-                : new vscode.ThemeIcon('circle-large-outline');
-        }
+    if (vscode.ThemeIcon && node.kind === 'empty') {
+        item.iconPath = new vscode.ThemeIcon('info');
+    } else if (vscode.ThemeIcon && node.filePresent !== undefined) {
+        item.iconPath = node.filePresent
+            ? new vscode.ThemeIcon('pass-filled')
+            : new vscode.ThemeIcon('circle-large-outline');
     }
 
     return item;

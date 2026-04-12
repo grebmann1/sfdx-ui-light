@@ -164,7 +164,7 @@ loadAllDocumentAsSeparateFile = async (items) => {
     // Chunk the URLs
     //const itemChunks = chunkList(items.map(x => ({url:x.a_attr.href,...x})), CHUNK_SIZE);
     /*const vectorStore = await openai.beta.vectorStores.create({
-        name: "Workbench 2.0 - Store"
+        name: "Workbench - Store"
     });*/
     // Process each items
     const results = [];

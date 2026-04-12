@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import LOGGER from 'shared/logger';
 import { API as API_UTILS, compressImage } from 'shared/utils';
-import { ToolResultPart } from 'ai';
+import type { ToolResultPart } from 'ai';
 import {
     APEX_HELP,
     API_HELP,

@@ -22,7 +22,7 @@ export async function connect({
     alias?: string;
 }): Promise<ConnectorLike> {
     try {
-        LOGGER.debug('connect', sessionId, serverUrl);
+        LOGGER.debug('connect', { hasSessionId: Boolean(sessionId), serverUrl });
         // Retrieve from sessionStorage if not provided
         if (!sessionId) {
             const storedSessionId = sessionStorage.getItem('sfSessionId');
@@ -55,15 +55,16 @@ export async function connect({
         // Persist to sessionStorage for this tab
         sessionStorage.setItem('sfSessionId', sessionId);
         sessionStorage.setItem('sfServerUrl', serverUrl);
+        const jsforceWindow = window as JsforceWindow;
         let params = {
             sessionId,
             serverUrl: formattedServerUrl,
             instanceUrl: formattedServerUrl,
             loginUrl: formattedServerUrl,
-            version: window.jsforceSettings?.apiVersion,
+            version: jsforceWindow.jsforceSettings?.apiVersion,
             logLevel: null,
         };
-        const connection = new window.jsforce.Connection(
+        const connection = new jsforceWindow.jsforce.Connection(
             normalizeConnection(OAUTH_TYPES.SESSION, params, platform, extra)
         );
 

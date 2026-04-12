@@ -44,7 +44,7 @@ export function buildConnectionShareMessage(
 
     if (credentialType === OAUTH_TYPES.USERNAME) {
         const lines = [
-            '--- Workbench 2.0 Connection (Username/Password) ---',
+            '--- Workbench Connection (Username/Password) ---',
             `Category: ${company}`,
             `Name: ${name}`,
             `Alias: ${alias}`,
@@ -74,7 +74,7 @@ export function buildConnectionShareMessage(
 
     if (credentialType === OAUTH_TYPES.OAUTH) {
         const lines = [
-            '--- Workbench 2.0 Connection (OAuth) ---',
+            '--- Workbench Connection (OAuth) ---',
             `Category: ${company}`,
             `Name: ${name}`,
             `Alias: ${alias}`,
@@ -99,7 +99,7 @@ export function buildConnectionShareMessage(
     }
 
     return [
-        '--- Workbench 2.0 Connection ---',
+        '--- Workbench Connection ---',
         `Category: ${company}`,
         `Name: ${name}`,
         `Alias: ${alias}`,

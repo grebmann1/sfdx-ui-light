@@ -86,6 +86,31 @@ function pruneChangedPathsForSuccessfulDeploys(trackedPaths, results) {
     return successPaths;
 }
 
+function pickCloneSafeConnectionValue(primaryValue, fallbackValue) {
+    const preferred = String(primaryValue ?? '').trim();
+    if (preferred) {
+        return preferred;
+    }
+    return String(fallbackValue ?? '').trim();
+}
+
+function buildDeployWorkerConnection(liveConnection, storedConnection) {
+    return {
+        instanceUrl: pickCloneSafeConnectionValue(
+            liveConnection?.instanceUrl,
+            storedConnection?.instanceUrl
+        ),
+        accessToken: pickCloneSafeConnectionValue(
+            liveConnection?.accessToken,
+            storedConnection?.accessToken
+        ),
+        apiVersion: pickCloneSafeConnectionValue(
+            liveConnection?.apiVersion,
+            storedConnection?.apiVersion
+        ),
+    };
+}
+
 export function createDeployAndSourceTracking({
     connectionRuntime,
     context,
@@ -174,12 +199,13 @@ export function createDeployAndSourceTracking({
     }
 
     async function deployPaths(paths, { showProgress, title } = {}) {
-        const conn = connectionRuntime.loadStoredConn();
+        const storedConnection = connectionRuntime.loadStoredConn();
         const liveConnection =
             typeof connectionRuntime.loadLiveConnection === 'function'
                 ? connectionRuntime.loadLiveConnection()
-                : conn;
-        if (!conn.instanceUrl || !conn.accessToken) {
+                : storedConnection;
+        const deployConnection = buildDeployWorkerConnection(liveConnection, storedConnection);
+        if (!deployConnection.instanceUrl || !deployConnection.accessToken) {
             await vscode.window.showErrorMessage(
                 connectionRuntime.getInjectedConnectionRequiredMessage()
             );
@@ -234,7 +260,7 @@ export function createDeployAndSourceTracking({
                 worker.postMessage({
                     type: 'deploy',
                     requestId,
-                    connection: liveConnection || conn,
+                    connection: deployConnection,
                     items,
                 });
             });
@@ -1283,6 +1309,7 @@ export function createDeployAndSourceTracking({
 }
 
 export const __testables = {
+    buildDeployWorkerConnection,
     buildChangedFileDeployQuickPickItems,
     partitionChangedPathsForDeploy,
     pruneChangedPathsForSuccessfulDeploys,

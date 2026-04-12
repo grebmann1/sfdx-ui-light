@@ -7,7 +7,10 @@ import {
     normalizeSfApiVersion,
     normalizeWorkspaceRoot as normalizeWorkspaceRootPath,
 } from '../workspace/sfdxProject';
-import { deriveWorkspaceRootFromConnection } from '../workspace/workspaceBootstrap';
+import {
+    deriveWorkspaceRootFromConnection,
+    resolveWorkspaceRootForConnection,
+} from '../workspace/workspaceBootstrap';
 
 export { normalizeWorkspaceRoot } from '../workspace/sfdxProject';
 
@@ -49,7 +52,12 @@ export function buildWorkbenchConnection(
     if (!connection) return null;
 
     const resolvedRoot = normalizeWorkspaceRootPath(
-        workspaceRoot || deriveConnectionWorkspaceRoot(connection, workspaceBasePath)
+        resolveWorkspaceRootForConnection({
+            connection,
+            workspaceRoot,
+            workspaceBasePath: workspaceBasePath || DEFAULT_WORKSPACE_ROOT,
+            defaultWorkspaceRoot: DEFAULT_WORKSPACE_ROOT,
+        })
     );
 
     return {

@@ -7,6 +7,8 @@ import {
 } from './orgBrowserNode';
 
 const ROOT_CACHE_KEY = '__root__';
+const EMPTY_NODE_LABEL = 'No items found';
+const EMPTY_ROOT_LABEL = 'No metadata types available';
 
 function hasUsableWorkbenchConnection(conn) {
     return Boolean(conn?.instanceUrl && conn?.accessToken);
@@ -106,16 +108,27 @@ export class MetadataTypeTreeProvider {
         }
     }
 
+    private createEmptyNode(parent: OrgBrowserNode | undefined, label: string) {
+        return createOrgBrowserNode({
+            kind: 'empty',
+            label,
+            description: 'Connected org returned no results for this level.',
+            componentName: parent ? `__empty__:${parent.id}` : '__empty__root',
+            xmlName: parent?.xmlName || '__empty__',
+        });
+    }
+
     private async loadChildren(element: OrgBrowserNode | undefined, conn) {
         if (!element) {
             const types = await this.dataRuntime.listMetadataTypes(conn);
-            return types.map(type =>
+            const nodes = types.map(type =>
                 createOrgBrowserNode({
                     kind: type.inFolder || isFolderType(type.xmlName) ? 'folderType' : 'type',
                     label: type.xmlName,
                     xmlName: type.xmlName,
                 })
             );
+            return nodes.length > 0 ? nodes : [this.createEmptyNode(undefined, EMPTY_ROOT_LABEL)];
         }
 
         if (element.kind === 'customObject') {
@@ -137,7 +150,7 @@ export class MetadataTypeTreeProvider {
                 const filePresent = await this.dataRuntime.isMemberPresent('CustomField', fullName);
                 nodes.push(createCustomFieldNode(element, field, { filePresent }));
             }
-            return nodes;
+            return nodes.length > 0 ? nodes : [this.createEmptyNode(element, EMPTY_NODE_LABEL)];
         }
 
         if (
@@ -149,7 +162,7 @@ export class MetadataTypeTreeProvider {
                 undefined,
                 conn
             );
-            return folders.map(folder =>
+            const nodes = folders.map(folder =>
                 createOrgBrowserNode({
                     kind: 'folder',
                     folderName: String(folder.fullName || ''),
@@ -158,6 +171,7 @@ export class MetadataTypeTreeProvider {
                     xmlName: element.xmlName,
                 })
             );
+            return nodes.length > 0 ? nodes : [this.createEmptyNode(element, EMPTY_NODE_LABEL)];
         }
 
         if (element.kind === 'folder') {
@@ -166,12 +180,14 @@ export class MetadataTypeTreeProvider {
                 element.folderName,
                 conn
             );
-            return await this.buildComponentNodes(element.xmlName, members);
+            const nodes = await this.buildComponentNodes(element.xmlName, members);
+            return nodes.length > 0 ? nodes : [this.createEmptyNode(element, EMPTY_NODE_LABEL)];
         }
 
         if (element.kind === 'type') {
             const members = await this.dataRuntime.listMetadata(element.xmlName, undefined, conn);
-            return await this.buildComponentNodes(element.xmlName, members);
+            const nodes = await this.buildComponentNodes(element.xmlName, members);
+            return nodes.length > 0 ? nodes : [this.createEmptyNode(element, EMPTY_NODE_LABEL)];
         }
 
         return [];

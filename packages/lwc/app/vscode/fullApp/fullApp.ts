@@ -18,6 +18,16 @@ import { zipUnpackagedFiles } from 'vscode/metadataApi';
 import { getVscodeBundle } from 'vscode/vscodeBundle';
 
 import {
+    isSessionAuthErrorMessage,
+    resolveBootstrapMode,
+    shouldAwaitWorkbenchStartupBootstrap,
+    SESSION_BOOTSTRAP_STORAGE_KEYS,
+    shouldRefreshWorkbenchStartupConnection,
+    shouldRemountWorkbenchWorkspace,
+    shouldUsePersistedBootstrapSeed,
+    shouldUsePersistedSessionBootstrap,
+} from './bootstrapState';
+import {
     CHAT_MODEL_STORAGE_PREFIX,
     WORKBENCH_CHAT_MODEL_FAMILY,
     WORKBENCH_CHAT_MODEL_ID,
@@ -99,6 +109,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     _sharedConnectionContext = null;
     _connectionBootstrapPromise = null;
     _sessionRecoveryPromise = null;
+    _workspaceSyncPromise = Promise.resolve();
     @track isReconnectBusy = false;
 
     @wire(connectStore, { store })
@@ -265,10 +276,12 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         this.connectorHasError = connectorHasError;
         this.connectorErrorMessage = connectorErrorMessage;
 
+        const bootstrapSessionId = this._getBootstrapSessionId();
+        const bootstrapServerUrl = this._getBootstrapServerUrl();
         this.isConnectionAvailable = Boolean(
             (activeConnection?.instanceUrl && !connectorHasError && !this.sessionHasExpired) ||
             this._getBootstrapAlias() ||
-            (this.sessionId && this.serverUrl)
+            (bootstrapSessionId && bootstrapServerUrl)
         );
         this.sfApiVersion = normalizeSfApiVersion(
             activeConnection?.apiVersion,
@@ -300,26 +313,113 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         return alias || null;
     }
 
-    _getBootstrapServerUrl() {
-        if (this.serverUrl) {
-            return this.serverUrl;
+    _getBootstrapMode() {
+        return resolveBootstrapMode({
+            alias: this.bootstrapAlias,
+            sessionId: this.sessionId,
+            serverUrl: this.serverUrl,
+        });
+    }
+
+    _shouldUseStoredBootstrapSeed() {
+        return shouldUsePersistedBootstrapSeed({
+            sourceTabId: this.sourceTabId,
+            hasExplicitBootstrap: this._getBootstrapMode() !== 'none',
+        });
+    }
+
+    _getPersistedBootstrapValue(key) {
+        if (!this._shouldUseStoredBootstrapSeed()) {
+            return null;
         }
         try {
-            return window.sessionStorage?.getItem?.('sfServerUrl') || null;
+            return window.sessionStorage?.getItem?.(key) || null;
         } catch {
             return null;
         }
     }
 
-    _getBootstrapWorkspaceRoot() {
-        const serverUrl = this._getBootstrapServerUrl();
-        if (!serverUrl) {
+    _getBootstrapSessionId() {
+        const sessionId = String(this.sessionId || '').trim();
+        if (sessionId) {
+            return sessionId;
+        }
+        if (
+            !shouldUsePersistedSessionBootstrap({
+                alias: this.bootstrapAlias,
+                sessionId: this.sessionId,
+                serverUrl: this.serverUrl,
+            })
+        ) {
             return null;
         }
-        const normalizedServerUrl = String(serverUrl).startsWith('http')
-            ? serverUrl
-            : `https://${serverUrl}`;
-        return this._deriveConnectionWorkspaceRoot({ instanceUrl: normalizedServerUrl });
+        return this._getPersistedBootstrapValue(SESSION_BOOTSTRAP_STORAGE_KEYS.sessionId);
+    }
+
+    _getBootstrapServerUrl() {
+        const serverUrl = String(this.serverUrl || '').trim();
+        if (serverUrl) {
+            return serverUrl;
+        }
+        if (
+            !shouldUsePersistedSessionBootstrap({
+                alias: this.bootstrapAlias,
+                sessionId: this.sessionId,
+                serverUrl: this.serverUrl,
+            })
+        ) {
+            return null;
+        }
+        return this._getPersistedBootstrapValue(SESSION_BOOTSTRAP_STORAGE_KEYS.serverUrl);
+    }
+
+    _getBootstrapOrgId() {
+        const persistedOrgId = this._getPersistedBootstrapValue(
+            SESSION_BOOTSTRAP_STORAGE_KEYS.orgId
+        );
+        if (!persistedOrgId) {
+            return null;
+        }
+
+        const explicitAlias = String(this.bootstrapAlias || '').trim();
+        if (explicitAlias) {
+            return null;
+        }
+
+        const explicitSessionId = String(this.sessionId || '').trim();
+        const explicitServerUrl = String(this.serverUrl || '').trim();
+        if (!explicitSessionId || !explicitServerUrl) {
+            return persistedOrgId;
+        }
+
+        const persistedSessionId = this._getPersistedBootstrapValue(
+            SESSION_BOOTSTRAP_STORAGE_KEYS.sessionId
+        );
+        const persistedServerUrl = this._getPersistedBootstrapValue(
+            SESSION_BOOTSTRAP_STORAGE_KEYS.serverUrl
+        );
+        if (persistedSessionId !== explicitSessionId || persistedServerUrl !== explicitServerUrl) {
+            return null;
+        }
+
+        return persistedOrgId;
+    }
+
+    _getBootstrapWorkspaceRoot() {
+        const orgId = this._getBootstrapOrgId();
+        const serverUrl = this._getBootstrapServerUrl();
+        if (!orgId && !serverUrl) {
+            return null;
+        }
+        const normalizedServerUrl = serverUrl
+            ? String(serverUrl).startsWith('http')
+                ? serverUrl
+                : `https://${serverUrl}`
+            : null;
+        return this._deriveConnectionWorkspaceRoot({
+            orgId,
+            instanceUrl: normalizedServerUrl,
+        });
     }
 
     _resolvePreferredWorkspaceRoot(candidate) {
@@ -337,11 +437,15 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         const workspaceRoot = this._resolvePreferredWorkspaceRoot(
             this._workspaceRoot || this.workspaceBasePath
         );
+        const orgId = this._getBootstrapOrgId();
         const serverUrl = this._getBootstrapServerUrl();
-        const normalizedServerUrl =
-            serverUrl && String(serverUrl).startsWith('http') ? serverUrl : `https://${serverUrl}`;
+        const normalizedServerUrl = serverUrl
+            ? String(serverUrl).startsWith('http')
+                ? serverUrl
+                : `https://${serverUrl}`
+            : null;
         const seededBootstrap = await buildWorkspaceBootstrap(
-            serverUrl ? { instanceUrl: normalizedServerUrl } : null,
+            orgId || normalizedServerUrl ? { orgId, instanceUrl: normalizedServerUrl } : null,
             this.workspaceBasePath || DEFAULT_WORKSPACE_ROOT
         );
         const sourceRoot = seededBootstrap.workspaceRoot;
@@ -543,15 +647,22 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         return this.sfApiVersion;
     }
 
-    _clearConnectionBootstrapParams() {
+    _clearPersistedBootstrapSeed() {
+        try {
+            window.sessionStorage?.removeItem?.(SESSION_BOOTSTRAP_STORAGE_KEYS.sessionId);
+            window.sessionStorage?.removeItem?.(SESSION_BOOTSTRAP_STORAGE_KEYS.serverUrl);
+            window.sessionStorage?.removeItem?.(SESSION_BOOTSTRAP_STORAGE_KEYS.orgId);
+        } catch {
+            // ignore
+        }
+    }
+
+    _clearConnectionBootstrapParams({ clearPersistedSeed = false } = {}) {
         this.bootstrapAlias = null;
         this.sessionId = null;
         this.serverUrl = null;
-        try {
-            window.sessionStorage?.removeItem?.('sfSessionId');
-            window.sessionStorage?.removeItem?.('sfServerUrl');
-        } catch {
-            // ignore
+        if (clearPersistedSeed) {
+            this._clearPersistedBootstrapSeed();
         }
     }
 
@@ -563,11 +674,8 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                     : typeof error === 'string'
                       ? error
                       : String(error || '');
-            const isSessionExpired = /(session expired|invalid session|invalid_session_id)/i.test(
-                message
-            );
-            if (isSessionExpired) {
-                this._clearConnectionBootstrapParams();
+            if (isSessionAuthErrorMessage(message)) {
+                this._clearConnectionBootstrapParams({ clearPersistedSeed: true });
                 try {
                     store.dispatch(
                         APPLICATION.reduxSlice.actions.sessionExpired({ sessionHasExpired: true })
@@ -595,6 +703,48 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         }
 
         const bootstrapAlias = this._getBootstrapAlias();
+        const bootstrapSessionId = this._getBootstrapSessionId();
+        const bootstrapServerUrl = this._getBootstrapServerUrl();
+        const hasSessionBootstrap = Boolean(bootstrapSessionId && bootstrapServerUrl);
+
+        if (hasSessionBootstrap) {
+            const CONNECT_TIMEOUT_MS = 10000;
+            const timeoutMarker = Symbol('session-connect-timeout');
+            const connectPromise = credentialStrategies.SESSION.connect({
+                sessionId: bootstrapSessionId,
+                serverUrl: bootstrapServerUrl,
+            });
+
+            const connectorOrTimeout = await Promise.race([
+                connectPromise,
+                new Promise(resolve =>
+                    window.setTimeout(() => resolve(timeoutMarker), CONNECT_TIMEOUT_MS)
+                ),
+            ]).catch(error => handleConnectorFailure(error));
+
+            if (connectorOrTimeout === timeoutMarker) {
+                void connectPromise
+                    .then(async connector => {
+                        const usableConnector = toUsableConnector(connector);
+                        if (!usableConnector) {
+                            return;
+                        }
+                        await this._applyConnector(usableConnector);
+                        this._clearConnectionBootstrapParams();
+                    })
+                    .catch(error => handleConnectorFailure(error));
+                return null;
+            }
+
+            const connector = toUsableConnector(connectorOrTimeout);
+            if (!connector) {
+                return null;
+            }
+            await this._applyConnector(connector);
+            this._clearConnectionBootstrapParams();
+            return connector;
+        }
+
         if (bootstrapAlias) {
             const storedAliasConfiguration = await getConfiguration(bootstrapAlias).catch(
                 () => null
@@ -605,56 +755,13 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                 }).catch(error => handleConnectorFailure(error));
                 const usableAliasedConnector = toUsableConnector(aliasedConnector);
                 if (usableAliasedConnector) {
-                    store.dispatch(
-                        APPLICATION.reduxSlice.actions.login({ connector: usableAliasedConnector })
-                    );
+                    await this._applyConnector(usableAliasedConnector);
                     this._clearConnectionBootstrapParams();
                     return usableAliasedConnector;
                 }
             }
         }
-
-        if (!this.sessionId || !this.serverUrl) {
-            return null;
-        }
-
-        const CONNECT_TIMEOUT_MS = 10000;
-        const timeoutMarker = Symbol('session-connect-timeout');
-        const connectPromise = credentialStrategies.SESSION.connect({
-            sessionId: this.sessionId,
-            serverUrl: this.serverUrl,
-        });
-
-        const connectorOrTimeout = await Promise.race([
-            connectPromise,
-            new Promise(resolve =>
-                window.setTimeout(() => resolve(timeoutMarker), CONNECT_TIMEOUT_MS)
-            ),
-        ]).catch(error => handleConnectorFailure(error));
-
-        if (connectorOrTimeout === timeoutMarker) {
-            void connectPromise
-                .then(connector => {
-                    const usableConnector = toUsableConnector(connector);
-                    if (!usableConnector) {
-                        return;
-                    }
-                    store.dispatch(
-                        APPLICATION.reduxSlice.actions.login({ connector: usableConnector })
-                    );
-                    this._clearConnectionBootstrapParams();
-                })
-                .catch(error => handleConnectorFailure(error));
-            return null;
-        }
-
-        const connector = toUsableConnector(connectorOrTimeout);
-        if (!connector) {
-            return null;
-        }
-        store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
-        this._clearConnectionBootstrapParams();
-        return connector;
+        return null;
     }
 
     _buildCurrentConnection(
@@ -742,6 +849,69 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         this.orgContext = buildOrgContext(connection);
     }
 
+    async _syncWorkbenchWorkspaceFolder(nextWorkspaceRoot) {
+        const workspace = this._vscode?.workspace;
+        const uriFactory = this._vscode?.Uri;
+        if (!workspace || !uriFactory || typeof workspace.updateWorkspaceFolders !== 'function') {
+            return;
+        }
+
+        const currentFolder = Array.isArray(workspace.workspaceFolders)
+            ? workspace.workspaceFolders[0]
+            : null;
+        const currentWorkspaceRoot = this._normalizeWorkspaceRoot(
+            currentFolder?.uri?.path || currentFolder?.uri?.fsPath
+        );
+        const normalizedWorkspaceRoot = this._normalizeWorkspaceRoot(nextWorkspaceRoot);
+        if (currentWorkspaceRoot === normalizedWorkspaceRoot) {
+            return;
+        }
+
+        workspace.updateWorkspaceFolders(
+            0,
+            Array.isArray(workspace.workspaceFolders) ? workspace.workspaceFolders.length : 0,
+            {
+                uri: uriFactory.file(normalizedWorkspaceRoot),
+                name: 'Org Workspace',
+            }
+        );
+    }
+
+    async _syncWorkspaceBootstrapForConnection(connection = this._buildCurrentConnection()) {
+        const previousWorkspaceRoot =
+            this._workbenchFilesService?.workspaceRoot || this._workspaceRoot;
+        await this._prepareWorkspaceBootstrap(connection);
+        const nextWorkspaceRoot = this._workspaceBootstrap?.workspaceRoot || this._workspaceRoot;
+
+        if (!this._workbenchContainerEl) {
+            return nextWorkspaceRoot;
+        }
+
+        if (
+            !this._fsProvider ||
+            shouldRemountWorkbenchWorkspace({
+                previousWorkspaceRoot,
+                nextWorkspaceRoot,
+            })
+        ) {
+            await this._seedWorkspaceFiles();
+            await this._syncWorkbenchWorkspaceFolder(nextWorkspaceRoot);
+        }
+
+        await this._syncAppApiVersionFromWorkspace(
+            nextWorkspaceRoot,
+            connection?.apiVersion || this.sfApiVersion
+        );
+        return nextWorkspaceRoot;
+    }
+
+    async _queueWorkspaceSync(connection = this._buildCurrentConnection()) {
+        this._workspaceSyncPromise = this._workspaceSyncPromise
+            .catch(() => {})
+            .then(() => this._syncWorkspaceBootstrapForConnection(connection));
+        return await this._workspaceSyncPromise;
+    }
+
     _getVscodeWindow() {
         return (
             this._vscode?.window ||
@@ -803,11 +973,33 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         }
         store.dispatch(APPLICATION.reduxSlice.actions.login({ connector }));
         this._syncConnectionState(store.getState()?.application);
+        const activeConnection = this._buildCurrentConnection(connector);
+        if (activeConnection?.instanceUrl) {
+            await this._queueWorkspaceSync(activeConnection);
+            this._applyActiveConnection({
+                ...activeConnection,
+                workspaceRoot: this._workspaceRoot,
+                apiVersion: this.sfApiVersion,
+            });
+            this._persistResolvedWorkspaceIdentity(activeConnection);
+        }
         await this._syncWorkbenchConnectionUi();
         return connector;
     }
 
-    async _connectWithSession({ sessionId, serverUrl }) {
+    _persistResolvedWorkspaceIdentity(connection = this._buildCurrentConnection()) {
+        const orgId = String(connection?.orgId || '').trim();
+        if (!orgId) {
+            return;
+        }
+        try {
+            window.sessionStorage?.setItem?.(SESSION_BOOTSTRAP_STORAGE_KEYS.orgId, orgId);
+        } catch {
+            // ignore
+        }
+    }
+
+    async _connectWithSession({ sessionId, serverUrl }: { sessionId: string; serverUrl: string }) {
         const normalizedServerUrl = this._normalizeServerUrl(serverUrl);
         const connector = await credentialStrategies.SESSION.connect({
             sessionId,
@@ -932,18 +1124,19 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                 sessionCandidate = picked.session;
             }
 
-            const connector =
-                (await connectSessionFromBackgroundResult({
-                    sessionId: sessionCandidate.sessionId,
-                    serverUrl: sessionCandidate.serverUrl,
-                })) ||
-                (await this._connectWithSession({
-                    sessionId: sessionCandidate.sessionId,
-                    serverUrl: sessionCandidate.serverUrl,
-                }));
-            if (connector?.conn && connector !== this.connector) {
-                await this._applyConnector(connector);
+            const backgroundConnector = await connectSessionFromBackgroundResult({
+                sessionId: sessionCandidate.sessionId,
+                serverUrl: sessionCandidate.serverUrl,
+            });
+            if (backgroundConnector?.conn) {
+                await this._applyConnector(backgroundConnector);
+                return;
             }
+
+            await this._connectWithSession({
+                sessionId: sessionCandidate.sessionId,
+                serverUrl: sessionCandidate.serverUrl,
+            });
         } catch (error) {
             await this._showErrorMessage(
                 `Failed to import browser org: ${error instanceof Error ? error.message : String(error)}`
@@ -977,22 +1170,19 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                     return null;
                 }
 
-                const connector =
-                    (await connectSessionFromBackgroundResult({
-                        sessionId: result.sessionId,
-                        serverUrl: result.serverUrl,
-                    })) ||
-                    (await this._connectWithSession({
-                        sessionId: result.sessionId,
-                        serverUrl: result.serverUrl,
-                    }));
-                if (!connector) {
-                    return null;
+                const backgroundConnector = await connectSessionFromBackgroundResult({
+                    sessionId: result.sessionId,
+                    serverUrl: result.serverUrl,
+                });
+                if (backgroundConnector?.conn) {
+                    await this._applyConnector(backgroundConnector);
+                    return backgroundConnector;
                 }
-                if (connector?.conn && connector !== this.connector) {
-                    await this._applyConnector(connector);
-                }
-                return connector;
+
+                return await this._connectWithSession({
+                    sessionId: result.sessionId,
+                    serverUrl: result.serverUrl,
+                });
             } catch (error) {
                 if (!silent) {
                     await this._showErrorMessage(
@@ -1263,10 +1453,18 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             );
             this._isChromeExtension = isChromeExtension;
 
-            // Connection bootstrap is best-effort and must never gate workbench startup.
-            void this._ensureInitialConnectionBootstrap();
+            const initialBootstrapPromise = this._ensureInitialConnectionBootstrap();
 
             let activeConnection = this._buildCurrentConnection();
+            if (
+                shouldAwaitWorkbenchStartupBootstrap({
+                    bootstrapMode: this._getBootstrapMode(),
+                    hasUsableConnection: this._hasUsableWorkbenchConnection(activeConnection),
+                })
+            ) {
+                await initialBootstrapPromise;
+                activeConnection = this._buildCurrentConnection();
+            }
 
             if (this._hasUsableWorkbenchConnection(activeConnection)) {
                 this._applyActiveConnection(activeConnection);
@@ -1283,6 +1481,27 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             } else {
                 activeConnection = null;
                 await this._prepareWorkspaceBootstrap(null);
+            }
+
+            const latestConnection = this._buildCurrentConnection();
+            if (
+                shouldRefreshWorkbenchStartupConnection({
+                    initialConnection: activeConnection,
+                    latestConnection,
+                })
+            ) {
+                activeConnection = latestConnection;
+                this._applyActiveConnection(activeConnection);
+                await this._syncAppApiVersionFromWorkspace(
+                    this._workspaceRoot,
+                    activeConnection.apiVersion || this.sfApiVersion
+                );
+                activeConnection = {
+                    ...activeConnection,
+                    apiVersion: this.sfApiVersion,
+                };
+                this._applyActiveConnection(activeConnection);
+                await this._prepareWorkspaceBootstrap(activeConnection);
             }
 
             const host = this.template.querySelector('.workbench-host');

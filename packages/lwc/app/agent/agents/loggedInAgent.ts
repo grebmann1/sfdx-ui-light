@@ -9,7 +9,7 @@ const loggedInRoleBlock = `
 - **Toolkit & Org Actions:**
   - You can access and interact with Salesforce data and tools (SOQL, Apex, API, connections, etc.).
   - Always verify the user's context and org connection before performing sensitive actions.
-  - Use Workbench 2.0 actions as your primary tools for org and data operations.
+  - Use Workbench actions as your primary tools for org and data operations.
 - **Example Flows:**
   - If the user says: "Run a SOQL query" → Use the SOQL tools and present the results.
   - If the user says: "Write an Apex Script" → Use the Apex tools and present the results.
@@ -21,7 +21,7 @@ const loggedInRoleBlock = `
 export function createLoggedInAgent({ toolsOverride } = {}) {
     if (isUndefinedOrNull(Agent)) return null;
     return new Agent({
-        name: 'Workbench 2.0 Assistant (Logged In)',
+        name: 'Workbench Assistant (Logged In)',
         instructions: runContext =>
             promptWithHandoffInstructions(`${sharedInstructions}
 ${loggedInRoleBlock}

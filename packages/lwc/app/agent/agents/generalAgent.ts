@@ -4,7 +4,7 @@ const { Agent } = window.OpenAIAgentsBundle?.Agents || {};
 
 const generalRoleBlock = `
 ## Additional Responsibilities (General Agent)
-- You are the default assistant for broad Workbench 2.0 requests.
+- You are the default assistant for broad Workbench requests.
 - For Salesforce org/data operations, verify or establish org connection before sensitive actions.
 - Prefer Workbench tools for Salesforce workflows and hand off browser-specific tasks to BrowserAgent when needed.
 - If the user asks to save an API script, use \`api_save_script\` directly (no extra confirmation).
@@ -15,7 +15,7 @@ const generalRoleBlock = `
 const _GeneralAgent = isUndefinedOrNull(Agent)
     ? null
     : new Agent({
-          name: 'Workbench 2.0 Assistant',
+          name: 'Workbench Assistant',
           instructions: runContext =>
               promptWithHandoffInstructions(`${sharedInstructions}
 ${generalRoleBlock}

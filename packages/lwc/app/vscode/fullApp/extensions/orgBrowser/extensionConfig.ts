@@ -5,6 +5,10 @@ import {
     EXTENSION_NAME,
     OPEN_VIEW_COMMAND,
     ORG_BROWSER_ICON_PATH,
+    ORG_BROWSER_REFRESH_DARK_ICON_PATH,
+    ORG_BROWSER_REFRESH_LIGHT_ICON_PATH,
+    ORG_BROWSER_RETRIEVE_DARK_ICON_PATH,
+    ORG_BROWSER_RETRIEVE_LIGHT_ICON_PATH,
     REFRESH_TYPE_COMMAND,
     RETRIEVE_METADATA_COMMAND,
     TREE_VIEW_ID,
@@ -48,16 +52,23 @@ export function buildOrgBrowserExtensionConfig() {
                 },
                 {
                     command: REFRESH_TYPE_COMMAND,
-                    title: 'Org Browser: Refresh',
-                    icon: '$(refresh)',
+                    title: 'Refresh Type',
+                    icon: {
+                        dark: ORG_BROWSER_REFRESH_DARK_ICON_PATH,
+                        light: ORG_BROWSER_REFRESH_LIGHT_ICON_PATH,
+                    },
                 },
                 {
                     command: RETRIEVE_METADATA_COMMAND,
-                    title: 'Org Browser: Retrieve Metadata',
+                    title: 'Retrieve Metadata',
+                    icon: {
+                        dark: ORG_BROWSER_RETRIEVE_DARK_ICON_PATH,
+                        light: ORG_BROWSER_RETRIEVE_LIGHT_ICON_PATH,
+                    },
                 },
                 {
                     command: COLLAPSE_ALL_COMMAND,
-                    title: 'Org Browser: Collapse All',
+                    title: 'Collapse All',
                     icon: '$(collapse-all)',
                 },
             ],

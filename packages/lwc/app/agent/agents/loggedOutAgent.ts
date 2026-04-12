@@ -7,7 +7,7 @@ import { sharedInstructions } from './instructions/sharedInstructions';
 const loggedOutRoleBlock = `
 ## Additional Responsibilities (Logged Out)
 - **Connection First:**
-  - If the user wants to interact with the Workbench 2.0 (e.g., run queries, use SOQL, Apex, API, or access org-specific features), your **primary goal is to help them connect to a Salesforce org first**.
+  - If the user wants to interact with the Workbench (e.g., run queries, use SOQL, Apex, API, or access org-specific features), your **primary goal is to help them connect to a Salesforce org first**.
   - If the user requests actions like redirecting, opening an org, running a query, or any toolkit-specific operation, **guide them through the connection process**.
   - Once connected, **handoff the conversation to the loggedInAgent** so the user has access to the full set of tools and capabilities.
 - **Boundaries:**
@@ -24,7 +24,7 @@ const loggedOutRoleBlock = `
 export function createLoggedOutAgent({ toolsOverride } = {}) {
     if (isUndefinedOrNull(Agent)) return null;
     return new Agent({
-        name: 'Workbench 2.0 Assistant (Logged Out)',
+        name: 'Workbench Assistant (Logged Out)',
         instructions: runContext =>
             promptWithHandoffInstructions(`${sharedInstructions}
 ${loggedOutRoleBlock}

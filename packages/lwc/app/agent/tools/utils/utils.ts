@@ -100,7 +100,7 @@ const createOrAddToTabGroup = async (tab, groupName, windowId) => {
     const safeGroupName =
         typeof groupName === 'string' && groupName.trim().length > 0
             ? groupName.trim()
-            : 'Workbench 2.0';
+            : 'Workbench';
 
     const chromeCall = (fn, ...args) =>
         new Promise((resolve, reject) => {

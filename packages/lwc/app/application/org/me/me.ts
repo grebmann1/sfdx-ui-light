@@ -86,7 +86,7 @@ export default class Me extends ToolkitElement {
             url.searchParams.set('serverUrl', serverUrl);
 
             const message = [
-                '--- Workbench 2.0 Current User ---',
+                '--- Workbench Current User ---',
                 this.user?.Name ? `Name: ${this.user.Name}` : '',
                 this.user?.Username ? `Username: ${this.user.Username}` : '',
                 this.user?.Id ? `User Id: ${this.user.Id}` : '',
@@ -95,7 +95,7 @@ export default class Me extends ToolkitElement {
                     : '',
                 `Server Url: ${serverUrl}`,
                 '',
-                'Open in Workbench 2.0:',
+                'Open in Workbench:',
                 url.toString(),
             ]
                 .filter(Boolean)

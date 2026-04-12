@@ -36,6 +36,20 @@ declare const process: {
     env?: Record<string, string | undefined>;
 };
 
+type JsforceConnectionConstructor = new (
+    options: Record<string, unknown>
+) => Record<string, unknown>;
+
+type JsforceWindow = Window &
+    typeof globalThis & {
+        jsforceSettings?: {
+            apiVersion?: string;
+        };
+        jsforce: {
+            Connection: JsforceConnectionConstructor;
+        };
+    };
+
 interface Window {
     desktop?: {
         getAppInfo: () => Promise<{

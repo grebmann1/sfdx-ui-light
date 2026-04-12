@@ -1,6 +1,16 @@
+:host {
+    display: block;
+    min-height: 0;
+    height: 100%;
+}
+
 .container {
+    display: flex;
+    flex-direction: column;
     width: 16.6875rem;
     height: 100%;
+    min-height: 0;
+    overflow: hidden;
     background-color: var(--slds-g-color-neutral-base-100, #fff);
     border-right: var(--slds-g-sizing-border-1, 1px) solid
         var(--slds-g-color-border-1, var(--lwc-colorBorder));
@@ -9,6 +19,17 @@
 
 .container.collapsed {
     width: 4.1718rem;
+}
+
+.nav-scroll-region {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.nav-content {
+    min-height: 100%;
 }
 
 .section {
@@ -23,10 +44,12 @@
 }
 
 .collapse-control-wrapper {
-    left: 0;
-    bottom: var(--slds-g-spacing-2, 0.5rem);
-    z-index: 1000;
+    display: block;
+    flex: 0 0 auto;
     width: 100%;
+    background-color: var(--slds-g-color-neutral-base-100, #fff);
+    border-top: var(--slds-g-sizing-border-1, 1px) solid
+        var(--slds-g-color-border-1, var(--lwc-colorBorder));
 }
 
 .collapse-control-button {

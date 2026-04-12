@@ -1,13 +1,13 @@
 {
     "manifest_version": 3,
-    "name": "Workbench 2.0",
+    "name": "Workbench",
     "version": "__buildVersion__",
-    "description": "Use Workbench 2.0 directly from chrome to visualize record details and analyze User access, profile, permissions, etc",
+    "description": "Use Workbench directly from chrome to visualize record details and analyze User access, profile, permissions, etc",
     "icons": {
         "128": "__buildLogo__"
     },
     "action": {
-        "default_title": "Click to open Workbench 2.0"
+        "default_title": "Click to open Workbench"
     },
     "commands": {
         "overlay_toggle": {

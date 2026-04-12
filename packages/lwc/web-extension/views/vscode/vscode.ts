@@ -1,4 +1,5 @@
 import { LightningElement } from 'lwc';
+import { parseVscodeBootstrapSeed } from 'shared/utils';
 
 export default class Vscode extends LightningElement {
     alias;
@@ -8,11 +9,11 @@ export default class Vscode extends LightningElement {
     sourceTabId;
 
     connectedCallback() {
-        const params = new URLSearchParams(window.location.search);
-        this.alias = params.get('alias');
-        this.sessionId = params.get('sessionId');
-        this.serverUrl = params.get('serverUrl');
-        this.redirectUrl = params.get('redirectUrl');
-        this.sourceTabId = params.get('sourceTabId');
+        const seed = parseVscodeBootstrapSeed(window.location.search);
+        this.alias = seed.alias;
+        this.sessionId = seed.sessionId;
+        this.serverUrl = seed.serverUrl;
+        this.redirectUrl = seed.redirectUrl;
+        this.sourceTabId = seed.sourceTabId;
     }
 }

@@ -1,6 +1,9 @@
 import { buildConnectionFromConnector } from 'core/connector';
 
-import { deriveWorkspaceRootFromConnection } from '../workspace/workspaceBootstrap';
+import {
+    deriveWorkspaceRootFromConnection,
+    resolveWorkspaceRootForConnection,
+} from '../workspace/workspaceBootstrap';
 
 import { getCurrentConnectionContext } from './currentConnection';
 
@@ -134,9 +137,11 @@ function mergeProviderConnection(
     return {
         ...current,
         ...(connection && typeof connection === 'object' ? connection : {}),
-        workspaceRoot:
-            fallbackWorkspaceRoot ||
-            deriveWorkspaceRootFromConnection(current, options.workspaceBasePath),
+        workspaceRoot: resolveWorkspaceRootForConnection({
+            connection: current,
+            workspaceRoot: fallbackWorkspaceRoot,
+            workspaceBasePath: options.workspaceBasePath,
+        }),
     };
 }
 

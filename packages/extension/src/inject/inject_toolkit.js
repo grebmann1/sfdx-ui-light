@@ -14,7 +14,7 @@ const _injectHtml = (myJsonObject, className) => {
 /** Methods **/
 
 (async () => {
-    //console.log('### Workbench 2.0 Injection ###');
+    //console.log('### Workbench Injection ###');
 
     _injectHtml(await chrome.storage.local.get('connections'), 'injected-connections');
     _injectHtml(await chrome.storage.local.get('openai_key'), 'injected-openai-key');

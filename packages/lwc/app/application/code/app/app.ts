@@ -6,7 +6,7 @@ import {
     onDesktopLegacyChannel,
     retrieveDesktopCode,
     selectDesktopCodeProject,
-} from 'core/desktopBridge';
+} from '../../../core/desktopBridge/desktopBridge';
 import ToolkitElement from 'core/toolkitElement';
 import Analytics from 'shared/analytics';
 
@@ -89,12 +89,8 @@ export default class App extends ToolkitElement {
     };
 
     openVSCode = (): void => {
-        if (!this.hasVscodeEditorBootstrap) return;
-
-        const alias = this.connector?.configuration?.alias;
-        const sessionId = this.connector?.conn?.accessToken;
-        const serverUrl = this.connector?.conn?.instanceUrl;
-        window.open(getVscodeEditorUrl({ alias, sessionId, serverUrl }));
+        if (!this.vscodeEditorUrl) return;
+        window.open(this.vscodeEditorUrl);
     };
 
     handleCopy = (): void => {
@@ -139,15 +135,14 @@ export default class App extends ToolkitElement {
     }
 
     get hasVscodeEditorBootstrap() {
-        const alias = this.connector?.configuration?.alias;
-        const sessionId = this.connector?.conn?.accessToken;
-        const serverUrl = this.connector?.conn?.instanceUrl;
-        const hasAliasBootstrap = this.hasTextValue(alias);
-        const hasSessionBootstrap = this.hasTextValue(sessionId) && this.hasTextValue(serverUrl);
-        return hasAliasBootstrap || hasSessionBootstrap;
+        return Boolean(this.vscodeEditorUrl);
     }
 
-    hasTextValue(value: unknown): boolean {
-        return isNotUndefinedOrNull(value) && String(value).trim().length > 0;
+    get vscodeEditorUrl() {
+        return getVscodeEditorUrl({
+            alias: this.connector?.configuration?.alias,
+            sessionId: this.connector?.conn?.accessToken,
+            serverUrl: this.connector?.conn?.instanceUrl,
+        });
     }
 }

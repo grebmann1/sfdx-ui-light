@@ -390,13 +390,13 @@ export const METADATA_TOOL_DESCRIPTIONS = {
 
 export const SOQL_TOOL_DESCRIPTIONS = {
     query:
-        'Display and execute an SOQL query in the Workbench 2.0 Query Editor. Only suitable when the user want to see the query/result in the Workbench 2.0 Query Editor.',
+        'Display and execute an SOQL query in the Workbench Query Editor. Only suitable when the user want to see the query/result in the Workbench Query Editor.',
     queryTabId:
         'Optional tab ID to reuse when the tool is called again with the same context/request',
     queryIncognito:
         'Execute a SOQL query (Incognito mode) without displaying it in the UI. Recommended if you want to execute a query without displaying it in the UI.',
     savedQueries: 'Fetch saved SOQL queries for the current org/alias.',
-    displayTab: 'Display a SOQL tab in the Workbench 2.0.',
+    displayTab: 'Display a SOQL tab in the Workbench.',
 } as const;
 
 export const SKILL_NAME_PATTERN = /^[a-z0-9][a-z0-9-_]*$/i;

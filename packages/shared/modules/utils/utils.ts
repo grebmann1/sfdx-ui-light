@@ -82,6 +82,12 @@ export {
 // Chrome extension utilities
 export {
     getAllOrgs,
+    hasVscodeAliasBootstrap,
+    hasVscodeBootstrapEntrySeed,
+    hasVscodeExplicitBootstrap,
+    hasVscodeSessionBootstrap,
+    normalizeVscodeBootstrapSeed,
+    parseVscodeBootstrapSeed,
     getVscodeEditorUrl,
     redirectToUrlViaChrome,
     getCurrentTab,

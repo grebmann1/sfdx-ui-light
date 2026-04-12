@@ -1,12 +1,12 @@
-# Workbench 2.0 Web
+# Workbench Web
 
-Workbench 2.0 Web is a Salesforce administration toolkit delivered as:
+Workbench Web is a Salesforce administration toolkit delivered as:
 - a web app (`packages/lwc` + `packages/server`)
 - a Chrome extension (`packages/extension`)
 
 It includes tools for org exploration, SOQL, metadata, API testing, platform events, and AI-assisted workflows.
 
-![Welcome Page of Workbench 2.0](./assets/images/welcome.png)
+![Welcome Page of Workbench](./assets/images/welcome.png)
 
 ## What You Get
 

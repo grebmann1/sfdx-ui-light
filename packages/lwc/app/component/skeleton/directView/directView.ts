@@ -1,6 +1,11 @@
 import Toast from 'lightning/toast';
 import { api, LightningElement } from 'lwc';
-import { isUndefinedOrNull, isElectronApp } from 'shared/utils';
+import {
+    hasVscodeExplicitBootstrap,
+    hasVscodeBootstrapEntrySeed,
+    isElectronApp,
+    parseVscodeBootstrapSeed,
+} from 'shared/utils';
 
 export default class directView extends LightningElement {
     @api variant = 'default';
@@ -14,46 +19,23 @@ export default class directView extends LightningElement {
     connector;
 
     connectedCallback() {
-        if (isElectronApp()) {
-            this.alias = this.getAlias();
-            this.sessionId = this.getSessionId();
-            this.serverUrl = this.getServerUrl();
-            this.redirectUrl = this.getRedirectUrl();
-            this.sourceTabId = this.getSourceTabId();
-        } else {
-            this.alias = this.getAlias();
-            this.sessionId = this.getSessionId();
-            this.serverUrl = this.getServerUrl();
-            this.redirectUrl = this.getRedirectUrl();
-            this.sourceTabId = this.getSourceTabId();
-            const hasAliasBootstrap =
-                typeof this.alias === 'string' && this.alias.trim().length > 0;
-            const hasSessionBootstrap =
-                !isUndefinedOrNull(this.sessionId) && !isUndefinedOrNull(this.serverUrl);
-            if (!hasAliasBootstrap && !hasSessionBootstrap && isUndefinedOrNull(this.sourceTabId)) {
-                this.sendError();
-            }
+        const seed = this.getBootstrapSeed();
+        this.alias = seed.alias;
+        this.sessionId = seed.sessionId;
+        this.serverUrl = seed.serverUrl;
+        this.redirectUrl = seed.redirectUrl;
+        this.sourceTabId = seed.sourceTabId;
+
+        const hasValidBootstrapSeed = this.isVscodeVariant
+            ? hasVscodeBootstrapEntrySeed(seed)
+            : hasVscodeExplicitBootstrap(seed);
+        if (!isElectronApp() && !hasValidBootstrapSeed) {
+            this.sendError();
         }
     }
 
-    getSessionId = () => {
-        return new URLSearchParams(window.location.search).get('sessionId');
-    };
-
-    getServerUrl = () => {
-        return new URLSearchParams(window.location.search).get('serverUrl');
-    };
-
-    getRedirectUrl = () => {
-        return new URLSearchParams(window.location.search).get('redirectUrl');
-    };
-
-    getAlias = () => {
-        return new URLSearchParams(window.location.search).get('alias');
-    };
-
-    getSourceTabId = () => {
-        return new URLSearchParams(window.location.search).get('sourceTabId');
+    getBootstrapSeed = () => {
+        return parseVscodeBootstrapSeed(window.location.search);
     };
 
     get isVscodeVariant() {

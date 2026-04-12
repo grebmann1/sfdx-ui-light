@@ -21,7 +21,7 @@ const _showCopiedNotification = copiedValue => {
 
     const sfToolkit = document.createElement('div');
     sfToolkit.className = 'sf-toolkit-notification-header';
-    sfToolkit.textContent = 'Workbench 2.0';
+    sfToolkit.textContent = 'Workbench';
 
     const message = document.createElement('span');
     message.textContent = `${copiedValue} copied to clipboard`;
@@ -154,7 +154,7 @@ const injectShortCuts = async () => {
         CACHE_CONFIG.SHORTCUT_OPEN_OVERLAY.defaultValue;
     if (!shortcutEnabled) return;
 
-    //console.log('### Workbench 2.0 - Shortcut Injection ###');
+    //console.log('### Workbench - Shortcut Injection ###');
 
     // Create a container for our shortcuts if it doesn't exist
     let shortcutContainer = document.getElementById('sf-toolkit-shortcut-container');
@@ -634,7 +634,7 @@ class INJECTOR {
     init = async () => {
         if (chrome.runtime) chrome.runtime.onMessage.addListener(this.handleMessage);
         const isValid = this.isValidPage();
-        console.log(`--> Workbench 2.0 - ${isValid ? 'Inject Code' : 'Skip injection'}  <--`);
+        console.log(`--> Workbench - ${isValid ? 'Inject Code' : 'Skip injection'}  <--`);
         if (isValid) {
             connectToBackground();
             this.injectCode();

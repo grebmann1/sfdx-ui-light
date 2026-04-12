@@ -1,3 +1,10 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+}
+
 .slds-inner-menu-header {
     overflow: hidden;
     padding: unset;
@@ -37,5 +44,6 @@
 }
 
 .menu-header {
-    height: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
 }

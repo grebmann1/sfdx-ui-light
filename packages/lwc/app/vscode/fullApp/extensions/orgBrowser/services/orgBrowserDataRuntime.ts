@@ -24,36 +24,116 @@ function isSupportedManageableState(item) {
     );
 }
 
-function parseDescribeMetadataTypes(doc: Document) {
-    const output = [];
-    try {
-        const metadataObjects = Array.from(
-            doc.getElementsByTagNameNS?.('*', 'metadataObjects') ||
-                doc.getElementsByTagName('metadataObjects') ||
-                []
+type MetadataTypeEntry = {
+    inFolder: boolean;
+    xmlName: string;
+};
+
+type DescribeMetadataTypeRecord = {
+    inFolder?: unknown;
+    xmlName?: unknown;
+};
+
+type XmlLikeNode = {
+    textContent?: unknown;
+};
+
+type XmlLikeElement = {
+    getElementsByTagName?: (tagName: string) => XmlLikeNode[];
+    getElementsByTagNameNS?: (namespace: string, localName: string) => XmlLikeNode[];
+};
+
+type XmlLikeDocument = {
+    getElementsByTagName?: (tagName: string) => XmlLikeElement[];
+    getElementsByTagNameNS?: (namespace: string, localName: string) => XmlLikeElement[];
+};
+
+function normalizeMetadataTypeEntry(rawXmlName: unknown, rawInFolder: unknown) {
+    const xmlName = String(rawXmlName ?? '').trim();
+    if (!xmlName) {
+        return null;
+    }
+    return {
+        inFolder:
+            rawInFolder === true || String(rawInFolder ?? '').trim().toLowerCase() === 'true',
+        xmlName,
+    };
+}
+
+function parseDescribeMetadataTypesFromXmlDocument(doc: XmlLikeDocument): MetadataTypeEntry[] {
+    const output: MetadataTypeEntry[] = [];
+    const metadataObjects = Array.from(
+        doc.getElementsByTagNameNS?.('*', 'metadataObjects') ||
+            doc.getElementsByTagName('metadataObjects') ||
+            []
+    );
+    for (const metadataObject of metadataObjects) {
+        const xmlNameElement =
+            metadataObject.getElementsByTagNameNS?.('*', 'xmlName')?.[0] ||
+            metadataObject.getElementsByTagName('xmlName')?.[0];
+        const inFolderElement =
+            metadataObject.getElementsByTagNameNS?.('*', 'inFolder')?.[0] ||
+            metadataObject.getElementsByTagName('inFolder')?.[0];
+        const normalized = normalizeMetadataTypeEntry(
+            xmlNameElement?.textContent,
+            inFolderElement?.textContent
         );
-        for (const metadataObject of metadataObjects) {
-            const xmlNameElement =
-                metadataObject.getElementsByTagNameNS?.('*', 'xmlName')?.[0] ||
-                metadataObject.getElementsByTagName('xmlName')?.[0];
-            const inFolderElement =
-                metadataObject.getElementsByTagNameNS?.('*', 'inFolder')?.[0] ||
-                metadataObject.getElementsByTagName('inFolder')?.[0];
-            const xmlName = xmlNameElement?.textContent
-                ? String(xmlNameElement.textContent).trim()
-                : '';
-            if (!xmlName) {
-                continue;
-            }
-            output.push({
-                inFolder: String(inFolderElement?.textContent || '').trim() === 'true',
-                xmlName,
-            });
+        if (normalized) {
+            output.push(normalized);
+        }
+    }
+    return output;
+}
+
+function parseDescribeMetadataTypesFromObject(describeResult: unknown): MetadataTypeEntry[] {
+    const metadataObjects =
+        describeResult &&
+        typeof describeResult === 'object' &&
+        Array.isArray((describeResult as { metadataObjects?: unknown[] }).metadataObjects)
+            ? (describeResult as { metadataObjects: DescribeMetadataTypeRecord[] }).metadataObjects
+            : [];
+    const output: MetadataTypeEntry[] = [];
+    for (const metadataObject of metadataObjects) {
+        const normalized = normalizeMetadataTypeEntry(
+            metadataObject?.xmlName,
+            metadataObject?.inFolder
+        );
+        if (normalized) {
+            output.push(normalized);
+        }
+    }
+    return output;
+}
+
+function parseDescribeMetadataTypes(describeResult: unknown): MetadataTypeEntry[] {
+    try {
+        const fromObject = parseDescribeMetadataTypesFromObject(describeResult);
+        if (fromObject.length > 0) {
+            return fromObject.sort((left, right) => left.xmlName.localeCompare(right.xmlName));
+        }
+        if (
+            describeResult &&
+            typeof describeResult === 'object' &&
+            typeof (describeResult as XmlLikeDocument).getElementsByTagName === 'function'
+        ) {
+            return parseDescribeMetadataTypesFromXmlDocument(
+                describeResult as XmlLikeDocument
+            ).sort((left, right) => left.xmlName.localeCompare(right.xmlName));
         }
     } catch {
         return [];
     }
-    return output.sort((left, right) => left.xmlName.localeCompare(right.xmlName));
+    return [];
+}
+
+function normalizeListMetadataResult(listed: unknown) {
+    if (Array.isArray(listed)) {
+        return listed;
+    }
+    if (listed && typeof listed === 'object') {
+        return [listed];
+    }
+    return [];
 }
 
 export function createOrgBrowserDataRuntime({
@@ -87,13 +167,11 @@ export function createOrgBrowserDataRuntime({
                     asOfVersion: client.apiVersion,
                 })
         );
-        return Array.isArray(listed)
-            ? listed
-                  .filter(item => item?.fullName && isSupportedManageableState(item))
-                  .sort((left, right) =>
-                      String(left.fullName || '').localeCompare(String(right.fullName || ''))
-                  )
-            : [];
+        return normalizeListMetadataResult(listed)
+            .filter(item => item?.fullName && isSupportedManageableState(item))
+            .sort((left, right) =>
+                String(left.fullName || '').localeCompare(String(right.fullName || ''))
+            );
     }
 
     async function describeCustomObject(

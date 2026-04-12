@@ -14,14 +14,16 @@ export async function seedWorkspaceFiles(
         workspaceRoot,
     }
 ) {
-    if (app._fsProvider) {
+    const root = workspaceRoot || getWorkspaceRoot(app);
+    const currentWorkspaceRoot =
+        app?._workbenchFilesService?.workspaceRoot || app?._workspaceRoot || '/workspace';
+    if (app._fsProvider && currentWorkspaceRoot === root) {
         return;
     }
 
     const vscodeBundle = await getVscodeBundle();
     app._vscodeBundle = vscodeBundle;
     app._vscode = vscodeBundle.vscode;
-    const root = workspaceRoot || getWorkspaceRoot(app);
     app._workbenchFilesService =
         app._ensureWorkbenchFilesService?.(vscodeBundle) ||
         createWorkbenchFilesService({
@@ -52,6 +54,7 @@ export async function seedWorkspaceFiles(
         return;
     }
 
+    const previousProvider = app._fsProvider;
     const { provider, overlayDisposable } = app._workbenchFilesService.mountWorkspaceOverlay({
         fs: app._appFs,
         priority: 1,
@@ -61,4 +64,7 @@ export async function seedWorkspaceFiles(
 
     app._fsOverlayDisposable?.dispose?.();
     app._fsOverlayDisposable = overlayDisposable;
+    if (previousProvider && previousProvider !== provider) {
+        previousProvider.dispose?.();
+    }
 }

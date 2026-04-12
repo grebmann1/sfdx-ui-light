@@ -360,21 +360,19 @@ export default class Menu extends ToolkitElement {
 
     get vscodeEditorLink() {
         const alias = this.connector?.configuration?.alias;
-        const sessionId = this.connector?.conn?.accessToken;
-        const serverUrl = this.connector?.conn?.instanceUrl;
-        const hasAliasBootstrap = !isEmpty(alias);
-        const hasSessionBootstrap = !isEmpty(sessionId) && !isEmpty(serverUrl);
-        if (
-            !this.isUserLoggedIn ||
-            !isChromeExtension() ||
-            (!hasAliasBootstrap && !hasSessionBootstrap)
-        ) {
+        const url = alias
+            ? getVscodeEditorUrl({ alias })
+            : getVscodeEditorUrl({
+                  sessionId: this.connector?.conn?.accessToken,
+                  serverUrl: this.connector?.conn?.instanceUrl,
+              });
+        if (!this.isUserLoggedIn || !isChromeExtension() || !url) {
             return null;
         }
 
         return {
             name: 'extra_vscodeEditor',
-            url: getVscodeEditorUrl({ alias, sessionId, serverUrl }),
+            url,
             menuIcon: 'lucide:square-terminal',
             menuLabel: 'VS Code Editor',
         };

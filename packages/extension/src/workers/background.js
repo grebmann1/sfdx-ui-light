@@ -237,14 +237,14 @@ async function createContextMenu() {
     });
     /* chrome.contextMenus.create({
         id: OPEN_SIDE_PANEL,
-        title: 'Open Workbench 2.0 (side panel)',
+        title: 'Open Workbench (side panel)',
         contexts: ['page'],
     }); */
 
     chrome.contextMenus.create(
         {
             id: OPEN_TOOLKIT,
-            title: 'Open Workbench 2.0 (in new tab)',
+            title: 'Open Workbench (in new tab)',
             contexts: ['action'],
             enabled: true,
             visible: true,

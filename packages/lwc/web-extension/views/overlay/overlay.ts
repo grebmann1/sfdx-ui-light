@@ -285,10 +285,10 @@ export default class Overlay extends ToolkitElement {
             url.searchParams.set('serverUrl', serverUrl);
 
             const message = [
-                '--- Workbench 2.0 Connection (Session) ---',
+                '--- Workbench Connection (Session) ---',
                 `Server Url: ${serverUrl}`,
                 '',
-                'Open in Workbench 2.0:',
+                'Open in Workbench:',
                 url.toString(),
             ].join('\n');
 
@@ -305,14 +305,13 @@ export default class Overlay extends ToolkitElement {
     };
 
     handleOpenVscodeEditor = () => {
-        const alias = this.connector?.configuration?.alias;
-        const sessionId = this.connector?.conn?.accessToken;
-        const serverUrl = this.connector?.conn?.instanceUrl;
-        const hasAliasBootstrap = !this.isBlankValue(alias);
-        const hasSessionBootstrap =
-            !this.isBlankValue(sessionId) && !this.isBlankValue(serverUrl);
-        if (!hasAliasBootstrap && !hasSessionBootstrap) return;
-        window.open(getVscodeEditorUrl({ alias, sessionId, serverUrl }));
+        const url = getVscodeEditorUrl({
+            alias: this.connector?.configuration?.alias,
+            sessionId: this.connector?.conn?.accessToken,
+            serverUrl: this.connector?.conn?.instanceUrl,
+        });
+        if (!url) return;
+        window.open(url);
     };
 
     handleOpenSideBar = async e => {

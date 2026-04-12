@@ -127,6 +127,34 @@ async function main() {
         folderChildren[0].componentName === 'QuarterlyPipeline',
         'folder children should keep the member full name'
     );
+
+    const emptyProvider = new MetadataTypeTreeProvider(
+        connectionRuntime,
+        {
+            async describeCustomObject() {
+                return { fields: [] };
+            },
+            async isMemberPresent() {
+                return false;
+            },
+            async listMetadata() {
+                return [];
+            },
+            async listMetadataTypes() {
+                return [];
+            },
+        },
+        vscode
+    );
+    const emptyRoot = await emptyProvider.getChildren();
+    assert(
+        emptyRoot.length === 1 && emptyRoot[0].kind === 'empty',
+        'empty roots should render a placeholder item to indicate no metadata types'
+    );
+    assert(
+        emptyRoot[0].label === 'No metadata types available',
+        'empty root placeholder should explain that no metadata types were returned'
+    );
 }
 
 main().catch(error => {
