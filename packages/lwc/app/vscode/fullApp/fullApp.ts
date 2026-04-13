@@ -34,9 +34,20 @@ import {
     WORKBENCH_CHAT_MODEL_VENDOR,
     LIGHT_COLOR_THEME,
     DARK_COLOR_THEME,
+    WORKBENCH_IFRAME_URL,
+    WORKBENCH_IFRAME_ORIGIN,
+    IFRAME_FS_BRIDGE_QUERY_FLAG,
+    IFRAME_FS_BRIDGE_QUERY_VERSION_PARAM,
+    IFRAME_FS_BRIDGE_QUERY_PARENT_ORIGIN_PARAM,
+    IFRAME_JSFORCE_BRIDGE_QUERY_FLAG,
+    IFRAME_JSFORCE_BRIDGE_QUERY_VERSION_PARAM,
 } from './constants';
+import { createCoreServices } from './extensions/core/coreServices';
 import { getActiveSalesforceWorkbenchHost } from './extensions/salesforce/salesforceWorkbenchHost';
 import { createWorkbenchAiServiceOverrides } from './workbench/configuration/workbenchAiOverrides';
+import { IFRAME_JSFORCE_BRIDGE_VERSION } from './workbench/salesforce/iframeJsforceBridgeContract';
+import { createIframeJsforceBridgeHost } from './workbench/salesforce/iframeJsforceBridgeHost';
+import { createIframeJsforceBridgeRuntime } from './workbench/salesforce/iframeJsforceBridgeRuntime';
 import {
     buildUserConfiguration,
     buildWorkspaceConfig,
@@ -58,7 +69,6 @@ import {
     registerAllExtensions,
     runDemoFeatures,
 } from './workbench/workbenchOrchestration';
-import { createCoreServices } from './extensions/core/coreServices';
 import {
     buildWorkspaceBootstrap,
     createWorkbenchFilesService,
@@ -67,6 +77,8 @@ import {
     resolveWorkspaceApiVersion,
     seedWorkspaceFiles,
 } from './workbench/workbenchWorkspace';
+import { IFRAME_FS_BRIDGE_VERSION } from './workbench/workspace/iframeFsBridgeContract';
+import { createIframeFsBridgeHost } from './workbench/workspace/iframeFsBridgeHost';
 
 export default class VscodeWorkbenchApp extends ToolkitElement {
     // static renderMode = 'light';
@@ -111,6 +123,9 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     _connectionBootstrapPromise = null;
     _sessionRecoveryPromise = null;
     _workspaceSyncPromise = Promise.resolve();
+    _iframeFsBridgeHost = null;
+    _iframeJsforceBridgeHost = null;
+    _iframeBridgeInitializationPromise = null;
     @track isReconnectBusy = false;
 
     @wire(connectStore, { store })
@@ -135,6 +150,8 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     disconnectedCallback() {
         clearSharedCurrentConnectionContext(this._currentConnectionProvider);
         this._currentConnectionProvider = null;
+        this._disposeIframeJsforceBridgeHost();
+        this._disposeIframeFsBridgeHost();
         this._disposeGlobalKeydownDisposer();
         this._disposeDemoRegistrationsSafely();
         this._disposeFsOverlayDisposable();
@@ -179,7 +196,136 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     renderedCallback() {
         if (this._started) return;
         this._started = true;
-        void this._startWorkbench();
+        void this._initializeIframeBridge();
+    }
+
+    handleWorkbenchIframeLoad() {
+        this._disposeIframeJsforceBridgeHost();
+        this._disposeIframeFsBridgeHost();
+        void this._initializeIframeBridge();
+    }
+
+    async _initializeIframeBridge() {
+        if (this._iframeFsBridgeHost) {
+            return;
+        }
+        if (this._iframeBridgeInitializationPromise) {
+            return await this._iframeBridgeInitializationPromise;
+        }
+
+        this._iframeBridgeInitializationPromise = (async () => {
+            try {
+                this._workspaceRoot = this._resolvePreferredWorkspaceRoot(
+                    this._workspaceRoot || this.workspaceBasePath
+                );
+
+                await this._ensureInitialConnectionBootstrap();
+                const activeConnection = this._buildCurrentConnection();
+                const workspaceConnection = await this._applyWorkspaceApiVersion(activeConnection);
+                if (
+                    workspaceConnection &&
+                    this._hasUsableWorkbenchConnection(workspaceConnection)
+                ) {
+                    this._applyActiveConnection(workspaceConnection);
+                    await this._prepareWorkspaceBootstrap(workspaceConnection);
+                } else {
+                    await this._prepareWorkspaceBootstrap(null);
+                }
+
+                await this._seedWorkspaceFiles();
+                const iframe = this._getWorkbenchIframeElement();
+                if (!iframe) {
+                    throw new Error('Workbench iframe element not found.');
+                }
+
+                this._iframeFsBridgeHost = createIframeFsBridgeHost({
+                    iframe,
+                    targetOrigin: this._getWorkbenchIframeOrigin(),
+                    getWorkspaceRoot: () => this._workspaceRoot,
+                    getFileSystem: async () => {
+                        if (!this._appFs) {
+                            await this._seedWorkspaceFiles();
+                        }
+                        return (
+                            this._appFs ||
+                            getIndexedDbFileSystem({
+                                ensureDirectories: [this._workspaceRoot],
+                            })
+                        );
+                    },
+                    onError: error => {
+                        this.initializationError =
+                            error?.message || 'Failed to connect the iframe filesystem bridge.';
+                    },
+                });
+                this._iframeFsBridgeHost.start();
+
+                const jsforceBridgeRuntime = createIframeJsforceBridgeRuntime({
+                    getConnectionRecord: () => this._buildCurrentConnection(),
+                    getConnector: () => this.connector,
+                    getWorkspaceBasePath: () => this.workspaceBasePath || this._workspaceRoot,
+                    getApiVersion: () => this.sfApiVersion,
+                    onConnectionResolved: connection => {
+                        this._applyActiveConnection(connection);
+                    },
+                });
+                this._iframeJsforceBridgeHost = createIframeJsforceBridgeHost({
+                    iframe,
+                    targetOrigin: this._getWorkbenchIframeOrigin(),
+                    runtime: jsforceBridgeRuntime,
+                    onError: error => {
+                        this.initializationError =
+                            error?.message || 'Failed to connect the iframe JSForce bridge.';
+                    },
+                });
+                this._iframeJsforceBridgeHost.start();
+                this.initializationError = null;
+            } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error('[fullApp] Failed to initialize iframe bridge:', error);
+                this.initializationError =
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to initialize iframe filesystem bridge.';
+            } finally {
+                this._iframeBridgeInitializationPromise = null;
+            }
+        })();
+
+        return await this._iframeBridgeInitializationPromise;
+    }
+
+    _getWorkbenchIframeElement() {
+        const iframe = this.template.querySelector('.workbench-iframe');
+        return iframe instanceof HTMLIFrameElement ? iframe : null;
+    }
+
+    _getWorkbenchIframeOrigin() {
+        try {
+            return new URL(WORKBENCH_IFRAME_URL).origin;
+        } catch {
+            return WORKBENCH_IFRAME_ORIGIN;
+        }
+    }
+
+    _disposeIframeFsBridgeHost() {
+        try {
+            this._iframeFsBridgeHost?.dispose?.();
+        } catch {
+            // ignore
+        } finally {
+            this._iframeFsBridgeHost = null;
+        }
+    }
+
+    _disposeIframeJsforceBridgeHost() {
+        try {
+            this._iframeJsforceBridgeHost?.dispose?.();
+        } catch {
+            // ignore
+        } finally {
+            this._iframeJsforceBridgeHost = null;
+        }
     }
 
     _disposeGlobalKeydownDisposer() {
@@ -1697,6 +1843,27 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         return Boolean(
             this.orgContext?.hasConnection || this.orgContext?.instanceUrl || this.orgContext?.host
         );
+    }
+
+    get workbenchIframeSrc() {
+        const url = new URL(WORKBENCH_IFRAME_URL);
+        url.searchParams.set(IFRAME_FS_BRIDGE_QUERY_FLAG, '1');
+        url.searchParams.set(
+            IFRAME_FS_BRIDGE_QUERY_VERSION_PARAM,
+            String(IFRAME_FS_BRIDGE_VERSION)
+        );
+        url.searchParams.set(IFRAME_JSFORCE_BRIDGE_QUERY_FLAG, '1');
+        url.searchParams.set(
+            IFRAME_JSFORCE_BRIDGE_QUERY_VERSION_PARAM,
+            String(IFRAME_JSFORCE_BRIDGE_VERSION)
+        );
+        if (typeof window !== 'undefined' && window.location?.origin) {
+            url.searchParams.set(
+                IFRAME_FS_BRIDGE_QUERY_PARENT_ORIGIN_PARAM,
+                window.location.origin
+            );
+        }
+        return url.toString();
     }
 
     get rootClass() {

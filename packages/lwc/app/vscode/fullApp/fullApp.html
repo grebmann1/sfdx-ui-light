@@ -79,14 +79,20 @@
                     </div>
                 </template>
 
-                <template if:true={showLoadingOverlay}>
+                <!-- <template if:true={showLoadingOverlay}>
                     <div class="overlay overlayLoading" role="status" aria-live="polite">
                         <div class="spinner" aria-hidden="true"></div>
                         <div class="loadingText">Initializing VSCode workbench...</div>
                     </div>
-                </template>
+                </template> -->
 
-                <div class="workbench-host"></div>
+                <div class="workbench-host">
+                    <iframe
+                        class="workbench-iframe"
+                        src={workbenchIframeSrc}
+                        title="Salesforce Workbench"
+                        onload={handleWorkbenchIframeLoad}></iframe>
+                </div>
             </div>
         </slds-auth-boundary>
     </div>

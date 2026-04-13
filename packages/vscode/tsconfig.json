@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ESNext", "DOM"],
+    "moduleResolution": "bundler",
+    "strict": false,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "isolatedModules": false,
+    "esModuleInterop": true,
+    "noEmit": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitReturns": true,
+    "baseUrl": ".",
+    "experimentalDecorators": true,
+    "noUncheckedIndexedAccess": false,
+    "paths": {
+      "agent/*": ["./src/sfWorkbench/compat/agent/*"],
+      "core/*": ["./src/sfWorkbench/compat/core/*"],
+      "shared/*": ["./src/sfWorkbench/compat/shared/*"],
+      "vscode/baseEditor": ["./src/sfWorkbench/vscodeBaseEditorCompat.ts"],
+      "vscode/metadataApi": ["../lwc/app/vscode/metadataApi/metadataApi.ts"],
+      "vscode/sourceTracking": ["../lwc/app/vscode/sourceTracking/sourceTracking.ts"],
+      "vscode/toolingApi": ["../lwc/app/vscode/toolingApi/toolingApi.ts"],
+      "vscode/vscode/*": ["../dist/main/vscode/src/*"],
+      "vscode/*": ["../dist/main/*"]
+    },
+    "typeRoots": [
+      "./node_modules/@types"
+    ],
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/types.d.ts",
+    "src/entry.ts",
+    "src/loader.ts",
+    "src/main.common.ts",
+    "src/main.workbench.ts",
+    "src/setup.common.ts",
+    "src/setup.workbench.ts",
+    "src/sfWorkbench/**/*.ts"
+  ]
+}

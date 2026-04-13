@@ -380,6 +380,12 @@ const getChromeCopyTargets = (isProduction) => [
                 isProduction ? 'images/sf-toolkit-icon-128.png' : 'images/sf-toolkit-icon-128-dev.png'
             );
             newContents = newContents.replace('__buildVersion__', data.version);
+            newContents = newContents.replace(
+                '__buildWorkbenchOrigin__',
+                isProduction
+                    ? String(process.env.WORKBENCH_BASE_URL || 'https://sf-toolkit.com') + '/'
+                    : 'http://localhost:5173/'
+            );
             return newContents;
         }
     }

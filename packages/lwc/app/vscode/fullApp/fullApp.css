@@ -184,6 +184,13 @@
     overflow: hidden;
 }
 
+.workbench-iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
 .sfPanel {
     position: fixed;
     top: 12px;

@@ -52,7 +52,7 @@
     ],
     "content_security_policy": {
         "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-modals; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http:; child-src 'self' blob:",
-        "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+        "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; frame-src __buildWorkbenchOrigin__;"
     },
     "web_accessible_resources": [
         {
