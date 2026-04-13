@@ -1,5 +1,5 @@
 import { createToolingMapStore } from '../../metadata/core/toolingMapStore';
-import { safeSeg } from '../../metadata/core/workspacePaths';
+import { getWorkspaceRootUri, safeSeg } from '../../metadata/core/workspacePaths';
 import { TOOLING_METADATA_TYPES } from '../../metadata/runtime/metadataRetrieveRuntimeHelpers';
 
 function buildMetadataMemberKey(type: string, fullName: string) {
@@ -55,7 +55,10 @@ function normalizeMetadataTypeEntry(rawXmlName: unknown, rawInFolder: unknown) {
     }
     return {
         inFolder:
-            rawInFolder === true || String(rawInFolder ?? '').trim().toLowerCase() === 'true',
+            rawInFolder === true ||
+            String(rawInFolder ?? '')
+                .trim()
+                .toLowerCase() === 'true',
         xmlName,
     };
 }
@@ -136,6 +139,87 @@ function normalizeListMetadataResult(listed: unknown) {
     return [];
 }
 
+function splitCustomFieldFullName(fullName: string) {
+    const normalized = String(fullName || '').trim();
+    const separatorIndex = normalized.indexOf('.');
+    if (separatorIndex <= 0 || separatorIndex === normalized.length - 1) {
+        return null;
+    }
+    return {
+        fieldName: normalized.slice(separatorIndex + 1),
+        objectName: normalized.slice(0, separatorIndex),
+    };
+}
+
+const CUSTOM_OBJECT_CHILD_FILE_RULES = {
+    BusinessProcess: {
+        folder: 'businessProcesses',
+        suffix: '.businessProcess-meta.xml',
+    },
+    CompactLayout: {
+        folder: 'compactLayouts',
+        suffix: '.compactLayout-meta.xml',
+    },
+    CustomField: {
+        folder: 'fields',
+        suffix: '.field-meta.xml',
+    },
+    FieldSet: {
+        folder: 'fieldSets',
+        suffix: '.fieldSet-meta.xml',
+    },
+    Index: {
+        folder: 'indexes',
+        suffix: '.index-meta.xml',
+    },
+    ListView: {
+        folder: 'listViews',
+        suffix: '.listView-meta.xml',
+    },
+    RecordType: {
+        folder: 'recordTypes',
+        suffix: '.recordType-meta.xml',
+    },
+    SharingReason: {
+        folder: 'sharingReasons',
+        suffix: '.sharingReason-meta.xml',
+    },
+    ValidationRule: {
+        folder: 'validationRules',
+        suffix: '.validationRule-meta.xml',
+    },
+    WebLink: {
+        folder: 'webLinks',
+        suffix: '.webLink-meta.xml',
+    },
+} as const;
+
+function splitObjectChildFullName(fullName: string) {
+    const normalized = String(fullName || '').trim();
+    const separatorIndex = normalized.indexOf('.');
+    if (separatorIndex <= 0 || separatorIndex === normalized.length - 1) {
+        return null;
+    }
+    return {
+        childName: normalized.slice(separatorIndex + 1),
+        objectName: normalized.slice(0, separatorIndex),
+    };
+}
+
+function parseCustomFieldNamesFromObjectMetadataXml(xmlText: string) {
+    const names = new Set<string>();
+    const matches = String(xmlText || '').matchAll(/<fields>([\s\S]*?)<\/fields>/g);
+    for (const match of matches) {
+        const block = String(match?.[1] || '');
+        const fieldMatch = block.match(/<fullName>\s*([^<]+)\s*<\/fullName>/);
+        const fieldName = String(fieldMatch?.[1] || '').trim();
+        if (fieldName) {
+            names.add(fieldName);
+        }
+    }
+    return names;
+}
+
 export function createOrgBrowserDataRuntime({
     connectionRuntime,
     metadataRetrieveRuntime,
@@ -143,6 +227,7 @@ export function createOrgBrowserDataRuntime({
     vscode,
 }) {
     const toolingMapStore = createToolingMapStore(vscode, state);
+    const objectFieldNamesCache = new Map<string, Promise<Set<string>>>();
 
     async function listMetadataTypes(conn = connectionRuntime.loadStoredConn()) {
         return await metadataRetrieveRuntime.withMetadataApiClientAuthed(conn, async client =>
@@ -183,6 +268,106 @@ export function createOrgBrowserDataRuntime({
         });
     }
 
+    async function loadObjectFieldNamesFromWorkspace(objectName: string) {
+        const key = String(objectName || '').trim();
+        if (!key) {
+            return new Set<string>();
+        }
+        const cached = objectFieldNamesCache.get(key);
+        if (cached) {
+            return await cached;
+        }
+        const pending = (async () => {
+            const workspaceFolderUris = Array.isArray(vscode?.workspace?.workspaceFolders)
+                ? vscode.workspace.workspaceFolders
+                      .map(folder => folder?.uri)
+                      .filter(folderUri => Boolean(folderUri))
+                : [];
+            const roots =
+                workspaceFolderUris.length > 0
+                    ? workspaceFolderUris
+                    : [getWorkspaceRootUri(vscode)];
+            for (const rootUri of roots) {
+                const fileUri = vscode.Uri.joinPath(
+                    rootUri,
+                    'force-app',
+                    'main',
+                    'default',
+                    'objects',
+                    safeSeg(key),
+                    `${safeSeg(key)}.object-meta.xml`
+                );
+                try {
+                    // eslint-disable-next-line no-await-in-loop
+                    const bytes = await vscode.workspace.fs.readFile(fileUri);
+                    const text = new TextDecoder().decode(bytes || new Uint8Array());
+                    return parseCustomFieldNamesFromObjectMetadataXml(text);
+                } catch {
+                    // Keep probing other workspace folders.
+                }
+            }
+            return new Set<string>();
+        })();
+        objectFieldNamesCache.set(key, pending);
+        return await pending;
+    }
+
+    async function isCustomFieldPresentInWorkspace(fullName: string) {
+        const split = splitCustomFieldFullName(fullName);
+        if (!split) {
+            return false;
+        }
+        const fieldNames = await loadObjectFieldNamesFromWorkspace(split.objectName);
+        return fieldNames.has(split.fieldName);
+    }
+
+    async function isObjectChildPresentInWorkspace(type: string, fullName: string) {
+        const rule = CUSTOM_OBJECT_CHILD_FILE_RULES[String(type || '').trim()];
+        if (!rule) {
+            return false;
+        }
+        const split = splitObjectChildFullName(fullName);
+        if (!split) {
+            return false;
+        }
+        const workspaceFolderUris = Array.isArray(vscode?.workspace?.workspaceFolders)
+            ? vscode.workspace.workspaceFolders
+                  .map(folder => folder?.uri)
+                  .filter(folderUri => Boolean(folderUri))
+            : [];
+        const roots =
+            workspaceFolderUris.length > 0 ? workspaceFolderUris : [getWorkspaceRootUri(vscode)];
+        for (const rootUri of roots) {
+            const childFileUri = vscode.Uri.joinPath(
+                rootUri,
+                'force-app',
+                'main',
+                'default',
+                'objects',
+                safeSeg(split.objectName),
+                rule.folder,
+                `${safeSeg(split.childName)}${rule.suffix}`
+            );
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                await vscode.workspace.fs.stat(childFileUri);
+                return true;
+            } catch {
+                // keep probing other roots
+            }
+        }
+        return false;
+    }
+
+    function invalidateCustomObjectFieldPresenceCache(objectName?: string) {
+        const normalizedObjectName = String(objectName || '').trim();
+        if (!normalizedObjectName) {
+            objectFieldNamesCache.clear();
+            return;
+        }
+        objectFieldNamesCache.delete(normalizedObjectName);
+    }
+
     async function loadPresenceMaps() {
         const [metadataApiMap, toolingMapItems] = await Promise.all([
             metadataRetrieveRuntime.loadMetadataApiMapJson(),
@@ -204,7 +389,10 @@ export function createOrgBrowserDataRuntime({
         }
         const { metadataMembers, toolingMapItems } = await loadPresenceMaps();
         if (type === 'CustomField') {
-            return Boolean(metadataMembers[buildMetadataMemberKey(type, fullName)]);
+            if (metadataMembers[buildMetadataMemberKey(type, fullName)]) {
+                return true;
+            }
+            return await isCustomFieldPresentInWorkspace(fullName);
         }
         if (TOOLING_METADATA_TYPES.has(type)) {
             if (type === 'ApexClass') {
@@ -227,11 +415,15 @@ export function createOrgBrowserDataRuntime({
             }
             return Object.keys(toolingMapItems).some(path => path.includes(bundlePrefix));
         }
-        return Boolean(metadataMembers[buildMetadataMemberKey(type, fullName)]);
+        if (metadataMembers[buildMetadataMemberKey(type, fullName)]) {
+            return true;
+        }
+        return await isObjectChildPresentInWorkspace(type, fullName);
     }
 
     return {
         describeCustomObject,
+        invalidateCustomObjectFieldPresenceCache,
         isMemberPresent,
         listMetadata,
         listMetadataTypes,

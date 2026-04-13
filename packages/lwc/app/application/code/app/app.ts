@@ -6,7 +6,7 @@ import {
     onDesktopLegacyChannel,
     retrieveDesktopCode,
     selectDesktopCodeProject,
-} from '../../../core/desktopBridge/desktopBridge';
+} from 'core/desktopBridge';
 import ToolkitElement from 'core/toolkitElement';
 import Analytics from 'shared/analytics';
 

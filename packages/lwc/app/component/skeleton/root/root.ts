@@ -1,4 +1,4 @@
-import { LightningElement, api } from 'lwc';
+import { LightningElement } from 'lwc';
 import { createRouter } from 'lwr/router';
 import { isChromeExtension } from 'shared/utils';
 
@@ -52,17 +52,21 @@ const routes = [
     },
 ];
 
+const CHROME_ROUTE_ENTRYPOINTS = ['app.html', 'tool.html'];
+
 const initRouter = () => {
     const isChrome = isChromeExtension();
     if (isChrome) {
-        // Chrome
-        const _routes = routes.map(x => ({
-            ...x,
-            uri: x.uri.replace('{app}', 'app.html'),
-        }));
+        const chromeRoutes = CHROME_ROUTE_ENTRYPOINTS.flatMap(entrypoint =>
+            routes.map(route => ({
+                ...route,
+                id: `${route.id}_${entrypoint.replace('.', '_')}`,
+                uri: route.uri.replace('{app}', entrypoint),
+            }))
+        );
 
         return createRouter({
-            routes: _routes,
+            routes: chromeRoutes,
             basePath: '/views',
         });
     } else {
@@ -83,7 +87,7 @@ export default class Root extends LightningElement {
 
     /** Events */
 
-    handleNavigation = e => {
+    handleNavigation = _event => {
         // Dev Extension ->  chrome-extension://dncmipbpdapfjancbhmbodlhllapmagf/views/app.html
     };
 

@@ -69,3 +69,38 @@ assert(
         merged['CustomField::Account.Custom__c'].paths.length === 1,
     'merge should retain the retrieved path list for explicit members'
 );
+
+const mergedWithArtifacts = helpers.mergeRetrievedMetadataMembers(
+    {},
+    new Map([['CustomObject', new Set(['Account'])]]),
+    ['/workspace/force-app/main/default/objects/Account/Account.object-meta.xml'],
+    {
+        additionalMembers: [
+            { type: 'ListView', fullName: 'Account.AllAccounts' },
+            { type: 'WebLink', fullName: 'Account.Billing' },
+        ],
+        memberPathsByKey: {
+            'ListView::Account.AllAccounts': [
+                '/workspace/force-app/main/default/objects/Account/listViews/AllAccounts.listView-meta.xml',
+            ],
+            'WebLink::Account.Billing': [
+                '/workspace/force-app/main/default/objects/Account/webLinks/Billing.webLink-meta.xml',
+            ],
+        },
+    }
+);
+
+assert(
+    Object.prototype.hasOwnProperty.call(mergedWithArtifacts, 'ListView::Account.AllAccounts'),
+    'merge should register additional child members discovered from retrieved artifacts'
+);
+assert(
+    Object.prototype.hasOwnProperty.call(mergedWithArtifacts, 'WebLink::Account.Billing'),
+    'merge should register multiple discovered child metadata members'
+);
+assert(
+    mergedWithArtifacts['ListView::Account.AllAccounts'].paths[0].endsWith(
+        '/listViews/AllAccounts.listView-meta.xml'
+    ),
+    'merge should use per-member paths when provided'
+);

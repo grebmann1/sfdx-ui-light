@@ -13,6 +13,11 @@ import {
 } from '../core/workspacePaths';
 
 import {
+    CUSTOM_OBJECT_CHILD_TYPE_RULES,
+    inferMetadataMemberFromRelativePath,
+    normalizeMetadataPath,
+} from './metadataPathInference';
+import {
     buildMetadataMemberKey,
     isToolingMetadataType,
     membersOrAll,
@@ -20,9 +25,47 @@ import {
 } from './metadataRetrieveRuntimeHelpers';
 
 const METADATA_API_MAP_PATH = '.salesforce/metadata-api-map.json';
+const INFERRED_OBJECT_METADATA_TYPES = new Set([
+    'CustomObject',
+    ...Object.values(CUSTOM_OBJECT_CHILD_TYPE_RULES).map(rule => rule.type),
+]);
 
 function escapeSoqlLiteral(value) {
     return String(value || '').replace(/'/g, "\\\\'");
+}
+
+function collectMemberPathArtifactsFromWrittenPaths(writtenPaths) {
+    const memberPathsByKey = {};
+    const additionalMembersByKey = new Map();
+    for (const path of Array.isArray(writtenPaths) ? writtenPaths : []) {
+        const normalizedPath = normalizeMetadataPath(path);
+        const relativeIndex = normalizedPath.indexOf('/force-app/main/default/');
+        const relativePath =
+            relativeIndex >= 0
+                ? normalizedPath.slice(relativeIndex + '/force-app/main/default/'.length)
+                : normalizedPath.replace(/^\/+/, '');
+        const inferred = inferMetadataMemberFromRelativePath(relativePath);
+        if (
+            !inferred?.type ||
+            !inferred?.fullName ||
+            !INFERRED_OBJECT_METADATA_TYPES.has(inferred.type)
+        ) {
+            continue;
+        }
+        const key = buildMetadataMemberKey(inferred.type, inferred.fullName);
+        if (!memberPathsByKey[key]) {
+            memberPathsByKey[key] = [];
+        }
+        memberPathsByKey[key].push(normalizedPath);
+        additionalMembersByKey.set(key, {
+            type: inferred.type,
+            fullName: inferred.fullName,
+        });
+    }
+    return {
+        additionalMembers: Array.from(additionalMembersByKey.values()),
+        memberPathsByKey,
+    };
 }
 
 async function loadMetadataApiMapJson(vscode, state) {
@@ -132,7 +175,7 @@ export function createMetadataRetrieveRuntime({
         }
     }
 
-    async function retrieveViaMetadataApi(conn, typesMap, { title } = {}) {
+    async function retrieveViaMetadataApi(conn, typesMap, { title }: { title?: string } = {}) {
         const { effectiveConn, id } = await withMetadataApiClientAuthed(
             conn,
             async (client, activeConn) => {
@@ -198,7 +241,10 @@ export function createMetadataRetrieveRuntime({
                 previousMap?.items && typeof previousMap.items === 'object'
                     ? { ...previousMap.items }
                     : {},
-            members: mergeRetrievedMetadataMembers(previousMap?.members, typesMap, writtenPaths),
+            members:
+                previousMap?.members && typeof previousMap.members === 'object'
+                    ? { ...previousMap.members }
+                    : {},
         };
         const root = getWorkspaceDefaultRootUri(vscode);
         const base = root.path;
@@ -227,17 +273,22 @@ export function createMetadataRetrieveRuntime({
             nextMap.items[target.path] = { zipPath };
         }
 
+        const memberPathArtifacts = collectMemberPathArtifactsFromWrittenPaths(writtenPaths);
         nextMap.members = mergeRetrievedMetadataMembers(
             previousMap?.members,
             typesMap,
-            writtenPaths
+            writtenPaths,
+            {
+                additionalMembers: memberPathArtifacts.additionalMembers,
+                memberPathsByKey: memberPathArtifacts.memberPathsByKey,
+            }
         );
         await saveMetadataApiMapJson(vscode, state, nextMap);
 
         return { writtenPaths };
     }
 
-    async function retrieveToolingTypes(conn, typesMap, { title } = {}) {
+    async function retrieveToolingTypes(conn, typesMap, { title }: { title?: string } = {}) {
         const toolingMap = await toolingMapStore.loadJson();
         const pulledPaths = [];
 

@@ -1,5 +1,6 @@
 import { createToolingClient } from '../../../toolingApi/toolingApi';
 import { fetchAndPopulateWorkspace } from '../../extensions/metadata/runtime/workspaceSync';
+import { getActiveSalesforceWorkbenchHost } from '../../extensions/salesforce/salesforceWorkbenchHost';
 import { DEFAULT_SOURCE_API_VERSION, normalizeSfApiVersion } from '../workspace/sfdxProject';
 
 import { isAuthError, refreshConnectionRecord, resolveConnectionRecord } from './connectorRecord';
@@ -89,6 +90,7 @@ export async function refreshSalesforceMetadataForApp(app) {
                 ),
             });
             await fetchAndPopulateWorkspace(app._vscode, client);
+            getActiveSalesforceWorkbenchHost()?.deployTools?.invalidateToolingMap?.();
         });
     })();
 

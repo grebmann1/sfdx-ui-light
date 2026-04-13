@@ -1,0 +1,16 @@
+<template>
+    <div class="full-page slds-full-height">
+        <template lwc:if={noticeMessage}>
+            <slds-notify class="slds-m-around_small">
+                <h2>{noticeMessage}</h2>
+            </slds-notify>
+        </template>
+        <template lwc:if={hasTool}>
+            <slds-auth-boundary is-required={currentTool.requireConnection} class="slds-full-height">
+                <lwc:component
+                    lwc:is={currentTool.constructor}
+                    lwc:spread={currentTool.attributes}></lwc:component>
+            </slds-auth-boundary>
+        </template>
+    </div>
+</template>

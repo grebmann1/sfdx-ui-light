@@ -10,19 +10,18 @@ import {
     register as registerWalkthrough,
     type WalkthroughVscodeBundle,
 } from '../../extensions/walkthrough/extension';
-
-export type RegisterContext = { orgContext?: Record<string, unknown> };
+import { registerExtensionsWithRegistrars, type RegisterContext } from './extensionRegistryRuntime';
 
 type Disposable = { dispose(): void };
 
 const EXTENSION_REGISTRARS: Array<
     (vscodeBundle: VscodeBundle, ctx?: RegisterContext) => Promise<Disposable | void>
 > = [
-    vscodeBundle => registerUnifiedSoqlExtension(vscodeBundle),
+    (vscodeBundle, ctx) => registerUnifiedSoqlExtension(vscodeBundle, ctx),
     (vscodeBundle, ctx) => registerMetadata(vscodeBundle, ctx),
-    vscodeBundle => registerOrgBrowser(vscodeBundle),
-    vscodeBundle => registerApex(vscodeBundle),
-    vscodeBundle => registerLwc(vscodeBundle),
+    (vscodeBundle, ctx) => registerOrgBrowser(vscodeBundle, ctx),
+    (vscodeBundle, ctx) => registerApex(vscodeBundle, ctx),
+    (vscodeBundle, ctx) => registerLwc(vscodeBundle, ctx),
     vscodeBundle => registerAgentScript(vscodeBundle),
     vscodeBundle => registerWorkbenchAi(vscodeBundle),
     (vscodeBundle, ctx) => registerWalkthrough(vscodeBundle as WalkthroughVscodeBundle, ctx),
@@ -30,21 +29,10 @@ const EXTENSION_REGISTRARS: Array<
 
 export async function registerAllExtensions(
     vscodeBundle: VscodeBundle,
-    context: RegisterContext = {}
+    context: RegisterContext = {},
+    registrars: Array<
+        (vscodeBundle: VscodeBundle, ctx?: RegisterContext) => Promise<Disposable | void>
+    > = EXTENSION_REGISTRARS
 ): Promise<Disposable[]> {
-    const disposables: Disposable[] = [];
-
-    for (const registrar of EXTENSION_REGISTRARS) {
-        try {
-            const disposable = await registrar(vscodeBundle, context);
-            if (disposable && typeof disposable.dispose === 'function') {
-                disposables.push(disposable);
-            }
-        } catch (error) {
-            // eslint-disable-next-line no-console
-            console.warn('[extensionRegistry] Failed to register extension:', error);
-        }
-    }
-
-    return disposables;
+    return await registerExtensionsWithRegistrars(vscodeBundle, context, registrars);
 }

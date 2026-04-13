@@ -326,50 +326,35 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
         }
     });
 
-    registerCommand(
-        context,
-        vscode,
-        'salesforceMetadata.generateManifestFile',
-        async (sourceUri, uris) => {
-            try {
-                const normalizedSourceUri =
-                    sourceUri &&
-                    typeof sourceUri === 'object' &&
-                    typeof (sourceUri as { path?: unknown }).path === 'string'
-                        ? (sourceUri as { path?: string })
-                        : null;
-                const fileNameInput = await vscode.window.showInputBox({
-                    title: 'Generate manifest file',
-                    prompt: 'Enter a name for the generated manifest file',
-                    placeHolder: 'package.xml',
-                    value: 'package.xml',
-                    ignoreFocusOut: true,
-                });
-                if (fileNameInput === undefined) {
-                    return;
-                }
-
-                const generated = await manifestRuntime.generatePackageXmlFromSelection({
-                    sourceUri: normalizedSourceUri,
-                    uris: Array.isArray(uris) ? uris : [],
-                    activeUri: vscode.window?.activeTextEditor?.document?.uri || null,
-                });
-                const saved = await manifestRuntime.writeManifestFile(
-                    fileNameInput,
-                    generated.packageXml
-                );
-                const doc = await vscode.workspace.openTextDocument(saved.uri);
-                await vscode.window.showTextDocument(doc, { preview: false });
-                await vscode.window.showInformationMessage(
-                    `Generated ${saved.fileName} from ${generated.selectedUris.length} selected item(s).`
-                );
-            } catch (error) {
-                await vscode.window.showErrorMessage(
-                    error instanceof Error ? error.message : 'Failed to generate manifest file.'
-                );
+    registerCommand(context, vscode, 'salesforceMetadata.generateManifestFile', async () => {
+        try {
+            const fileNameInput = await vscode.window.showInputBox({
+                title: 'Generate manifest file',
+                prompt: 'Enter a name for the generated manifest file',
+                placeHolder: 'package.xml',
+                value: 'package.xml',
+                ignoreFocusOut: true,
+            });
+            if (fileNameInput === undefined) {
+                return;
             }
+
+            const generated = await manifestRuntime.generatePackageXmlFromWorkspace();
+            const saved = await manifestRuntime.writeManifestFile(
+                fileNameInput,
+                generated.packageXml
+            );
+            const doc = await vscode.workspace.openTextDocument(saved.uri);
+            await vscode.window.showTextDocument(doc, { preview: false });
+            await vscode.window.showInformationMessage(
+                `Generated ${saved.fileName} from workspace source files (${generated.sourcePaths.length} files scanned).`
+            );
+        } catch (error) {
+            await vscode.window.showErrorMessage(
+                error instanceof Error ? error.message : 'Failed to generate manifest file.'
+            );
         }
-    );
+    });
 
     registerCommand(context, vscode, 'salesforceMetadata.retrieveMetadataApi', async () => {
         const conn = connectionRuntime.loadStoredConn();

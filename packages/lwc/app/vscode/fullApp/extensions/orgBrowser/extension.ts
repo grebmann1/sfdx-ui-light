@@ -1,6 +1,6 @@
 import { registerCommand, registerSalesforceExtension } from '../core/extensionRegistration';
+import { resolveCoreServices, type CoreServices } from '../core/coreServices';
 import { createMetadataRetrieveRuntime } from '../metadata/runtime/metadataRetrieveRuntime';
-import { getOrCreateSalesforceWorkbenchHost } from '../salesforce/salesforceWorkbenchHost';
 
 import { createRetrieveHandler } from './commands/retrieveMetadata';
 import {
@@ -16,7 +16,10 @@ import { createOrgBrowserDataRuntime } from './services/orgBrowserDataRuntime';
 import { createOrgBrowserRetrieveService } from './services/orgBrowserRetrieveService';
 import { MetadataTypeTreeProvider } from './tree/metadataTypeTreeProvider';
 
-export async function register(vscodeBundle) {
+export async function register(
+    vscodeBundle,
+    { coreServices }: { coreServices?: CoreServices } = {}
+) {
     return registerSalesforceExtension(
         vscodeBundle,
         {
@@ -24,87 +27,97 @@ export async function register(vscodeBundle) {
             inlineAssets: ORG_BROWSER_INLINE_ASSETS,
         },
         async vscode => {
-            const sfHost = await getOrCreateSalesforceWorkbenchHost(vscodeBundle);
-            if (!sfHost || !vscode) {
+            const vscodeApi = vscode as any;
+            const core = await resolveCoreServices(coreServices, vscodeBundle);
+            if (
+                !core?.connection?.runtime ||
+                !core?.workspace?.context ||
+                !core?.operations?.deployTools ||
+                !core.features ||
+                !vscodeApi
+            ) {
                 return;
             }
 
-            await sfHost.activateFeatureOnce(
-                'salesforce-org-browser',
-                async ({ connectionRuntime, context, deployTools }) => {
-                    const metadataRetrieveRuntime = createMetadataRetrieveRuntime({
-                        connectionRuntime,
-                        state: context.state,
-                        updateSourceTrackingForPaths: deployTools.updateSourceTrackingForPaths,
-                        vscode,
-                    });
-                    const dataRuntime = createOrgBrowserDataRuntime({
-                        connectionRuntime,
-                        metadataRetrieveRuntime,
-                        state: context.state,
-                        vscode,
-                    });
-                    const retrieveService = createOrgBrowserRetrieveService({
-                        connectionRuntime,
-                        metadataRetrieveRuntime,
-                        vscode,
-                    });
-                    const treeProvider = new MetadataTypeTreeProvider(
-                        connectionRuntime,
-                        dataRuntime,
-                        vscode
-                    );
-                    context.addDisposable(treeProvider);
-
-                    registerCommand(context, vscode, OPEN_VIEW_COMMAND, async () => {
-                        await openOrgBrowserView(vscode);
-                    });
-                    registerCommand(context, vscode, REFRESH_TYPE_COMMAND, async node => {
-                        await treeProvider.refreshType(node);
-                    });
-                    registerCommand(context, vscode, COLLAPSE_ALL_COMMAND, async () => {
-                        try {
-                            await vscode.commands.executeCommand(
-                                `workbench.actions.treeView.${TREE_VIEW_ID}.collapseAll`
-                            );
-                        } catch {
-                            // ignore
-                        }
-                    });
-                    registerCommand(
-                        context,
-                        vscode,
-                        RETRIEVE_METADATA_COMMAND,
-                        createRetrieveHandler({
-                            dataRuntime,
-                            retrieveService,
-                            treeProvider,
-                            vscode,
-                        })
-                    );
-
-                    if (typeof vscode.window?.createTreeView === 'function') {
-                        const treeView = vscode.window.createTreeView(TREE_VIEW_ID, {
-                            treeDataProvider: treeProvider,
-                        });
-                        treeProvider.setTreeView(treeView);
-                        context.addDisposable(treeView);
-                    } else if (typeof vscode.window?.registerTreeDataProvider === 'function') {
-                        context.addDisposable(
-                            vscode.window.registerTreeDataProvider(TREE_VIEW_ID, treeProvider)
-                        );
-                    }
-
-                    const removeStatusListener = connectionRuntime.addStatusChangeListener(() => {
-                        void treeProvider.refreshType();
-                    });
-                    context.addDisposable({
-                        dispose() {
-                            removeStatusListener();
-                        },
-                    });
+            await core.features.activateOnce?.('salesforce-org-browser', async () => {
+                const connectionRuntime = core.connection?.runtime;
+                const context = core.workspace?.context;
+                const deployTools = core.operations?.deployTools;
+                if (!connectionRuntime || !context || !deployTools) {
+                    return;
                 }
-            );
+                const metadataRetrieveRuntime = createMetadataRetrieveRuntime({
+                    connectionRuntime,
+                    state: context.state,
+                    updateSourceTrackingForPaths: deployTools.updateSourceTrackingForPaths,
+                    vscode: vscodeApi,
+                });
+                const dataRuntime = createOrgBrowserDataRuntime({
+                    connectionRuntime,
+                    metadataRetrieveRuntime,
+                    state: context.state,
+                    vscode: vscodeApi,
+                });
+                const retrieveService = createOrgBrowserRetrieveService({
+                    connectionRuntime,
+                    metadataRetrieveRuntime,
+                    vscode: vscodeApi,
+                });
+                const treeProvider = new MetadataTypeTreeProvider(
+                    connectionRuntime,
+                    dataRuntime,
+                    vscodeApi
+                );
+                context.addDisposable(treeProvider);
+
+                registerCommand(context, vscodeApi, OPEN_VIEW_COMMAND, async () => {
+                    await openOrgBrowserView(vscodeApi);
+                });
+                registerCommand(context, vscodeApi, REFRESH_TYPE_COMMAND, async node => {
+                    await treeProvider.refreshType(node as any);
+                });
+                registerCommand(context, vscodeApi, COLLAPSE_ALL_COMMAND, async () => {
+                    try {
+                        await vscodeApi.commands.executeCommand(
+                            `workbench.actions.treeView.${TREE_VIEW_ID}.collapseAll`
+                        );
+                    } catch {
+                        // ignore
+                    }
+                });
+                registerCommand(
+                    context,
+                    vscodeApi,
+                    RETRIEVE_METADATA_COMMAND,
+                    createRetrieveHandler({
+                        dataRuntime,
+                        retrieveService,
+                        treeProvider,
+                        vscode: vscodeApi,
+                    })
+                );
+
+                if (typeof vscodeApi.window?.createTreeView === 'function') {
+                    const treeView = vscodeApi.window.createTreeView(TREE_VIEW_ID, {
+                        treeDataProvider: treeProvider,
+                    });
+                    treeProvider.setTreeView(treeView);
+                    context.addDisposable(treeView);
+                } else if (typeof vscodeApi.window?.registerTreeDataProvider === 'function') {
+                    context.addDisposable(
+                        vscodeApi.window.registerTreeDataProvider(TREE_VIEW_ID, treeProvider)
+                    );
+                }
+
+                const removeStatusListener = connectionRuntime.addStatusChangeListener(() => {
+                    void treeProvider.refreshType();
+                });
+                context.addDisposable({
+                    dispose() {
+                        removeStatusListener();
+                    },
+                });
+            });
         }
     );
 }

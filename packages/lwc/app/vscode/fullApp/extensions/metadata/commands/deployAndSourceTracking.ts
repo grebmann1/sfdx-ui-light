@@ -6,110 +6,32 @@ import {
     saveSourceTracking,
 } from 'vscode/sourceTracking';
 
-const AUTO_DEPLOY_KEY = 'sf_ext_autoDeployOnSave';
-const DEPLOYABLE_TOOLING_TYPES = new Set([
-    'ApexClass',
-    'ApexTrigger',
-    'LightningComponentResource',
-    'AuraDefinition',
-]);
 import { createToolingMapStore } from '../core/toolingMapStore';
 import { writeTextFile } from '../core/workspaceCache';
 import { getWorkspacePath, getWorkspaceUri } from '../core/workspacePaths';
 
-function isDeployableToolingEntry(entry) {
-    return Boolean(
-        entry?.type && entry?.id && !entry?.readOnly && DEPLOYABLE_TOOLING_TYPES.has(entry.type)
-    );
-}
+import {
+    buildChangedFileDeployQuickPickItems,
+    buildCurrentFileWarningMessage,
+    buildDeployWorkerConnection,
+    classifyDeployPath,
+    classifyToolingCommandPath,
+    DEPLOYABLE_TOOLING_TYPES,
+    partitionChangedPathsForDeploy,
+    pruneChangedPathsForSuccessfulDeploys,
+} from './deployAndSourceTrackingHelpers';
 
-function partitionChangedPathsForDeploy(paths, mapItems) {
-    const summary = {
-        deployablePaths: [],
-        missingPaths: [],
-        readOnlyPaths: [],
-        unsupportedPaths: [],
-    };
-    for (const path of Array.isArray(paths) ? paths : []) {
-        const entry = mapItems?.[path];
-        if (!entry) {
-            summary.missingPaths.push(path);
-            continue;
-        }
-        if (entry.readOnly) {
-            summary.readOnlyPaths.push(path);
-            continue;
-        }
-        if (!DEPLOYABLE_TOOLING_TYPES.has(entry.type)) {
-            summary.unsupportedPaths.push(path);
-            continue;
-        }
-        if (!isDeployableToolingEntry(entry)) {
-            summary.missingPaths.push(path);
-            continue;
-        }
-        summary.deployablePaths.push(path);
-    }
-    return summary;
-}
+const AUTO_DEPLOY_KEY = 'sf_ext_autoDeployOnSave';
+const METADATA_API_MAP_PATH = '.salesforce/metadata-api-map.json';
 
-function buildChangedFileDeployQuickPickItems(paths, mapItems) {
-    return (Array.isArray(paths) ? paths : []).map(path => {
-        const entry = mapItems?.[path] || {};
-        const segments = String(path || '')
-            .split('/')
-            .filter(Boolean);
-        const label = segments[segments.length - 1] || String(path || '(unknown)');
-        const parentPath =
-            segments.length > 1 ? `/${segments.slice(0, -1).join('/')}` : '/workspace';
-        const details = [entry.type || 'Tracked file', parentPath];
-        if (entry.namespace) {
-            details.push(`namespace: ${entry.namespace}`);
-        }
-        return {
-            label,
-            description: path,
-            detail: details.join(' • '),
-            picked: true,
-            path,
-        };
-    });
-}
+type ToolingMapEntry = {
+    id?: string;
+    namespace?: string;
+    readOnly?: boolean;
+    type?: string;
+};
 
-function pruneChangedPathsForSuccessfulDeploys(trackedPaths, results) {
-    const successPaths = (Array.isArray(results) ? results : [])
-        .filter(result => result?.ok === true && result?.path)
-        .map(result => result.path);
-    for (const path of successPaths) {
-        trackedPaths?.delete?.(path);
-    }
-    return successPaths;
-}
-
-function pickCloneSafeConnectionValue(primaryValue, fallbackValue) {
-    const preferred = String(primaryValue ?? '').trim();
-    if (preferred) {
-        return preferred;
-    }
-    return String(fallbackValue ?? '').trim();
-}
-
-function buildDeployWorkerConnection(liveConnection, storedConnection) {
-    return {
-        instanceUrl: pickCloneSafeConnectionValue(
-            liveConnection?.instanceUrl,
-            storedConnection?.instanceUrl
-        ),
-        accessToken: pickCloneSafeConnectionValue(
-            liveConnection?.accessToken,
-            storedConnection?.accessToken
-        ),
-        apiVersion: pickCloneSafeConnectionValue(
-            liveConnection?.apiVersion,
-            storedConnection?.apiVersion
-        ),
-    };
-}
+type ToolingMapItems = Record<string, ToolingMapEntry>;
 
 export function createDeployAndSourceTracking({
     connectionRuntime,
@@ -160,8 +82,81 @@ export function createDeployAndSourceTracking({
     autoDeployStatusItem.show();
     context.addDisposable(autoDeployStatusItem);
 
-    const loadToolingMapItems = ({ force } = {}) => toolingMapStore.loadItems({ force });
+    const loadToolingMapItems = (options: { force?: boolean } = {}): Promise<ToolingMapItems> =>
+        toolingMapStore.loadItems({ force: Boolean(options?.force) }) as Promise<ToolingMapItems>;
     const invalidateToolingMap = () => toolingMapStore.invalidate();
+
+    async function loadMetadataApiMapItems(options: { force?: boolean } = {}) {
+        const force = Boolean(options?.force);
+        if (!force && state?.metadataApiMapCache?.items) {
+            return state.metadataApiMapCache.items;
+        }
+        try {
+            const uri = getWorkspaceUri(vscode, METADATA_API_MAP_PATH);
+            const bytes = await vscode.workspace.fs.readFile(uri);
+            const text = new TextDecoder().decode(bytes || new Uint8Array());
+            const parsed = JSON.parse(text || '{}');
+            const next = parsed && typeof parsed === 'object' ? parsed : { items: {}, members: {} };
+            if (!next.items || typeof next.items !== 'object') {
+                next.items = {};
+            }
+            if (!next.members || typeof next.members !== 'object') {
+                next.members = {};
+            }
+            if (state) {
+                state.metadataApiMapCache = next;
+            }
+            return next.items;
+        } catch {
+            const next = { items: {}, members: {} };
+            if (state) {
+                state.metadataApiMapCache = next;
+            }
+            return next.items;
+        }
+    }
+
+    async function resolveCurrentPath(
+        path,
+        resolver: (
+            path: string,
+            toolingMapItems: ToolingMapItems,
+            metadataApiItems: Record<string, unknown> | null,
+            workspaceRoot: string
+        ) => {
+            entry?: ToolingMapEntry;
+            path: string;
+            reason?: string;
+            source?: string;
+            status: string;
+        },
+        options: { includeMetadataApi?: boolean } = {}
+    ) {
+        const includeMetadataApi = Boolean(options?.includeMetadataApi);
+        const run = async force => {
+            const toolingMapItems = await loadToolingMapItems({ force });
+            const metadataApiItems = includeMetadataApi
+                ? await loadMetadataApiMapItems({ force })
+                : null;
+            return resolver(path, toolingMapItems, metadataApiItems, getWorkspacePath(vscode));
+        };
+
+        let resolution = await run(false);
+        if (resolution?.status === 'missing') {
+            resolution = await run(true);
+        }
+        return resolution;
+    }
+
+    async function resolveCurrentToolingPath(path, options: { includeMetadataApi?: boolean } = {}) {
+        return await resolveCurrentPath(path, classifyToolingCommandPath, {
+            includeMetadataApi: Boolean(options?.includeMetadataApi),
+        });
+    }
+
+    async function resolveCurrentDeployPath(path) {
+        return await resolveCurrentPath(path, classifyDeployPath, { includeMetadataApi: true });
+    }
 
     function ensureDeployWorker() {
         if (state.deployWorker) return state.deployWorker;
@@ -198,7 +193,17 @@ export function createDeployAndSourceTracking({
         return new TextDecoder().decode(bytes || new Uint8Array());
     }
 
-    async function deployPaths(paths, { showProgress, title } = {}) {
+    async function deployPaths(
+        paths,
+        options: {
+            showProgress?: boolean;
+            textOverrides?: Record<string, string>;
+            title?: string;
+        } = {}
+    ) {
+        const showProgress = Boolean(options?.showProgress);
+        const textOverrides = options?.textOverrides || {};
+        const title = options?.title;
         const storedConnection = connectionRuntime.loadStoredConn();
         const liveConnection =
             typeof connectionRuntime.loadLiveConnection === 'function'
@@ -222,8 +227,10 @@ export function createDeployAndSourceTracking({
                 skippedReadOnly += 1;
                 continue;
             }
-            // eslint-disable-next-line no-await-in-loop
-            const text = await readTextForPath(path);
+            const text = Object.prototype.hasOwnProperty.call(textOverrides, path)
+                ? textOverrides[path]
+                : // eslint-disable-next-line no-await-in-loop
+                  await readTextForPath(path);
             const item = toDeployItemFromMapEntry(path, entry, text);
             if (item) items.push(item);
         }
@@ -242,7 +249,7 @@ export function createDeployAndSourceTracking({
         const requestId = `deploy_${Date.now()}_${Math.random().toString(16).slice(2)}`;
         const results = [];
         const run = () =>
-            new Promise(resolve => {
+            new Promise<void>(resolve => {
                 const onMessage = event => {
                     const message = event?.data;
                     if (!message || message.requestId !== requestId) return;
@@ -326,7 +333,7 @@ export function createDeployAndSourceTracking({
             context.logLines([
                 '',
                 `=== Deploy (${new Date().toLocaleString()}) ===`,
-                `Target: ${conn.instanceUrl}`,
+                `Target: ${deployConnection.instanceUrl}`,
                 `Items: ${results.length} • Success: ${successes.length} • Failed: ${failures.length}`,
                 '',
                 'Success:',
@@ -398,7 +405,18 @@ export function createDeployAndSourceTracking({
         return { failures, results, skippedReadOnly };
     }
 
-    async function fetchPathFromSalesforce(path, { showProgress } = {}) {
+    async function fetchPathFromSalesforce(
+        path,
+        options: {
+            lookupPath?: string;
+            mirrorPath?: string;
+            showProgress?: boolean;
+        } = {}
+    ) {
+        const lookupPath = options?.lookupPath || path;
+        const mirrorPath =
+            options?.mirrorPath && options.mirrorPath !== path ? options.mirrorPath : '';
+        const showProgress = Boolean(options?.showProgress);
         const conn = connectionRuntime.loadStoredConn();
         if (!conn.instanceUrl || !conn.accessToken) {
             await vscode.window.showErrorMessage(
@@ -408,7 +426,7 @@ export function createDeployAndSourceTracking({
         }
 
         const mapItems = await loadToolingMapItems();
-        const entry = mapItems?.[path];
+        const entry = mapItems?.[lookupPath];
         if (!entry?.type || !entry?.id) {
             await vscode.window.showWarningMessage(
                 'This file is not in tooling-map.json. Fetch metadata first.'
@@ -452,8 +470,14 @@ export function createDeployAndSourceTracking({
                 return;
             }
             await writeTextFile(vscode, vscode.Uri.file(path), text);
+            if (mirrorPath) {
+                await writeTextFile(vscode, vscode.Uri.file(mirrorPath), text);
+            }
             try {
                 diagnostics.deploy?.delete?.(vscode.Uri.file(path));
+                if (mirrorPath) {
+                    diagnostics.deploy?.delete?.(vscode.Uri.file(mirrorPath));
+                }
             } catch {
                 // ignore
             }
@@ -505,20 +529,20 @@ export function createDeployAndSourceTracking({
         return null;
     }
 
-    const changedPaths = new Set();
-    const deployInFlight = new Set();
-    const deployPending = new Map();
+    const changedPaths = new Set<string>();
+    const deployInFlight = new Set<string>();
+    const deployPending = new Map<string, { uri?: { path?: string } }>();
     let deployTimer = null;
     let autoDeployUiLock = false;
 
-    function setAutoDeployBusyState(isBusy, { pendingCount } = {}) {
+    function setAutoDeployBusyState(isBusy, options: { pendingCount?: number } = {}) {
+        const pendingCount = Number(options?.pendingCount || 0);
         if (!loadAutoDeployOnSave()) return;
         try {
             if (isBusy) {
                 autoDeployUiLock = true;
-                const count = Number(pendingCount || 0);
                 autoDeployStatusItem.text = `$(sync~spin) AutoDeploy: Deploying${
-                    count ? ` (${count} pending)` : ''
+                    pendingCount ? ` (${pendingCount} pending)` : ''
                 }`;
                 autoDeployStatusItem.tooltip = 'Auto deploy is running in the background';
                 return;
@@ -817,7 +841,9 @@ export function createDeployAndSourceTracking({
         if (!tracking?.items) return;
         const conn = connectionRuntime.loadStoredConn();
         if (tracking.instanceUrl && tracking.instanceUrl !== conn?.instanceUrl) return;
-        for (const [path, entry] of Object.entries(tracking.items)) {
+        for (const [path, entry] of Object.entries(
+            tracking.items as Record<string, { hash?: string }>
+        )) {
             if (!entry?.hash) continue;
             try {
                 // eslint-disable-next-line no-await-in-loop
@@ -906,10 +932,19 @@ export function createDeployAndSourceTracking({
             });
 
             register('salesforceMetadata.deployCurrentFile', async () => {
-                const path = vscode.window?.activeTextEditor?.document?.uri?.path;
+                const doc = vscode.window?.activeTextEditor?.document;
+                const path = doc?.uri?.path;
                 if (!path) return;
-                await deployPaths([path], {
+                const resolution = await resolveCurrentDeployPath(path);
+                if (resolution?.status !== 'deployable') {
+                    await vscode.window.showWarningMessage(
+                        buildCurrentFileWarningMessage(resolution, 'Deploy current file')
+                    );
+                    return;
+                }
+                await deployPaths([resolution.path], {
                     showProgress: true,
+                    textOverrides: { [resolution.path]: doc?.getText?.() ?? '' },
                     title: 'Deploying current file...',
                 });
             });
@@ -917,7 +952,24 @@ export function createDeployAndSourceTracking({
             register('salesforceMetadata.fetchCurrentFile', async () => {
                 const path = vscode.window?.activeTextEditor?.document?.uri?.path;
                 if (!path) return;
-                await fetchPathFromSalesforce(path, { showProgress: true });
+                const resolution = await resolveCurrentToolingPath(path, {
+                    includeMetadataApi: true,
+                });
+                if (
+                    resolution?.status !== 'tooling' ||
+                    !resolution?.entry?.type ||
+                    !resolution?.entry?.id
+                ) {
+                    await vscode.window.showWarningMessage(
+                        buildCurrentFileWarningMessage(resolution, 'Fetch current file')
+                    );
+                    return;
+                }
+                await fetchPathFromSalesforce(path, {
+                    lookupPath: resolution.path,
+                    mirrorPath: resolution.path !== path ? resolution.path : undefined,
+                    showProgress: true,
+                });
             });
 
             register('salesforceMetadata.diffCurrentFile', async () => {
@@ -931,11 +983,13 @@ export function createDeployAndSourceTracking({
                     );
                     return;
                 }
-                const mapItems = await loadToolingMapItems();
-                const entry = mapItems?.[path];
-                if (!entry?.type || !entry?.id) {
+                const resolution = await resolveCurrentToolingPath(path, {
+                    includeMetadataApi: true,
+                });
+                const entry = resolution?.entry;
+                if (resolution?.status !== 'tooling' || !entry?.type || !entry?.id) {
                     await vscode.window.showWarningMessage(
-                        'This file is not in tooling-map.json. Fetch metadata first.'
+                        buildCurrentFileWarningMessage(resolution, 'Diff current file')
                     );
                     return;
                 }
@@ -957,10 +1011,10 @@ export function createDeployAndSourceTracking({
                     );
                     return;
                 }
-                const remoteUri = getWorkspaceUri(vscode, `.salesforce/.diff${path}`);
+                const remoteUri = getWorkspaceUri(vscode, `.salesforce/.diff${resolution.path}`);
                 await writeTextFile(vscode, remoteUri, remoteText, { skipCache: true });
                 try {
-                    const title = `Diff: ${path.split('/').pop() || path} (local ↔ org)`;
+                    const title = `Diff: ${resolution.path.split('/').pop() || resolution.path} (local ↔ org)`;
                     await vscode.commands.executeCommand('vscode.diff', remoteUri, doc.uri, title);
                     return;
                 } catch {
@@ -1295,13 +1349,15 @@ export function createDeployAndSourceTracking({
         fetchPathFromSalesforce,
         invalidateToolingMap,
         loadToolingMapItems,
+        resolveCurrentToolingPath,
         registerCommandGroups,
-        setLwcDocumentTools(next = {}) {
-            if (typeof next.isLwcDoc === 'function') {
-                currentIsLwcDoc = next.isLwcDoc;
+        setLwcDocumentTools(next) {
+            const tools = next || {};
+            if (typeof tools.isLwcDoc === 'function') {
+                currentIsLwcDoc = tools.isLwcDoc;
             }
-            if (typeof next.lintLwcDocument === 'function') {
-                currentLintLwcDocument = next.lintLwcDocument;
+            if (typeof tools.lintLwcDocument === 'function') {
+                currentLintLwcDocument = tools.lintLwcDocument;
             }
         },
         updateSourceTrackingForPaths,
@@ -1309,8 +1365,11 @@ export function createDeployAndSourceTracking({
 }
 
 export const __testables = {
+    buildCurrentFileWarningMessage,
     buildDeployWorkerConnection,
     buildChangedFileDeployQuickPickItems,
+    classifyDeployPath,
+    classifyToolingCommandPath,
     partitionChangedPathsForDeploy,
     pruneChangedPathsForSuccessfulDeploys,
 };

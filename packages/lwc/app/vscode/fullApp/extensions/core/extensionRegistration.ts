@@ -1,4 +1,5 @@
 export type DisposableLike = { dispose(): void };
+import { SALESFORCE_CONTEXT_MENU_GROUP } from './constants';
 import { createObjectUrl, fetchTextAsset } from './extensionAssets';
 
 export function toDisposable(value: unknown): DisposableLike {
@@ -95,7 +96,7 @@ export async function registerSalesforceExtension(
         return toDisposable(null);
     }
 
-    const { config } = definition;
+    const config = withDefaultSalesforceMenuGroups(definition.config);
     const assetsMap = await buildAssetsMap(definition);
     const registration = extensionsApi.registerExtension(
         config,
@@ -166,4 +167,64 @@ async function buildAssetsMap(
     }
 
     return map;
+}
+
+function withDefaultSalesforceMenuGroups(config: Record<string, unknown>): Record<string, unknown> {
+    const contributes = toRecord(config.contributes);
+    const menus = contributes ? toRecord(contributes.menus) : null;
+    if (!menus) {
+        return config;
+    }
+
+    let hasChanges = false;
+    const normalizedMenus: Record<string, unknown> = {};
+
+    for (const [menuLocation, menuItems] of Object.entries(menus)) {
+        if (!Array.isArray(menuItems)) {
+            normalizedMenus[menuLocation] = menuItems;
+            continue;
+        }
+
+        normalizedMenus[menuLocation] = menuItems.map(menuItem => {
+            const normalizedItem = withDefaultMenuGroup(menuItem);
+            if (normalizedItem !== menuItem) {
+                hasChanges = true;
+            }
+            return normalizedItem;
+        });
+    }
+
+    if (!hasChanges) {
+        return config;
+    }
+
+    return {
+        ...config,
+        contributes: {
+            ...contributes,
+            menus: normalizedMenus,
+        },
+    };
+}
+
+function withDefaultMenuGroup(menuItem: unknown): unknown {
+    const menuContribution = toRecord(menuItem);
+    if (!menuContribution || typeof menuContribution.command !== 'string') {
+        return menuItem;
+    }
+    if (typeof menuContribution.group === 'string' && menuContribution.group.length > 0) {
+        return menuItem;
+    }
+
+    return {
+        ...menuContribution,
+        group: SALESFORCE_CONTEXT_MENU_GROUP,
+    };
+}
+
+function toRecord(value: unknown): Record<string, unknown> | null {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return null;
+    }
+    return value as Record<string, unknown>;
 }

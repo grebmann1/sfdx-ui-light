@@ -1,7 +1,7 @@
 import { buildSalesforceExtensionConfig } from '../core/extensionManifest';
 import { registerSalesforceExtension } from '../core/extensionRegistration';
+import { resolveCoreServices, type CoreServices } from '../core/coreServices';
 import { registerQueryAndApexTools } from '../metadata/commands/queryAndApexTools';
-import { getOrCreateSalesforceWorkbenchHost } from '../salesforce/salesforceWorkbenchHost';
 
 const APEX_LANGUAGE_ASSETS = [
     {
@@ -72,7 +72,10 @@ function buildApexExtensionConfig() {
     });
 }
 
-export async function register(vscodeBundle) {
+export async function register(
+    vscodeBundle,
+    { coreServices }: { coreServices?: CoreServices } = {}
+) {
     return registerSalesforceExtension(
         vscodeBundle,
         {
@@ -80,20 +83,27 @@ export async function register(vscodeBundle) {
             remoteAssets: APEX_LANGUAGE_ASSETS,
         },
         async () => {
-            const sfHost = await getOrCreateSalesforceWorkbenchHost(vscodeBundle);
-            if (!sfHost) return;
+            const core = await resolveCoreServices(coreServices, vscodeBundle);
+            if (
+                !core?.connection?.runtime ||
+                !core?.workspace?.context ||
+                !core?.operations?.deployTools ||
+                !core.features
+            ) {
+                return;
+            }
+            const connectionRuntime = core.connection.runtime;
+            const context = core.workspace.context;
+            const deployTools = core.operations.deployTools;
 
-            await sfHost.activateFeatureOnce(
-                'salesforce-apex',
-                async ({ connectionRuntime, context, deployTools }) => {
-                    registerQueryAndApexTools({
-                        connectionRuntime,
-                        context,
-                        deployTools,
-                        commandGroups: ['apex'],
-                    });
-                }
-            );
+            await core.features.activateOnce?.('salesforce-apex', async () => {
+                registerQueryAndApexTools({
+                    connectionRuntime,
+                    context,
+                    deployTools,
+                    commandGroups: ['apex'],
+                });
+            });
         }
     );
 }

@@ -3,13 +3,24 @@ import { pathExists, writeTextFile, listFilesAndDirsRecursive } from '../core/wo
 import {
     getManifestFileUri,
     getWorkspaceRootPath,
+    getWorkspaceRootUri,
     toWorkspaceRelativeLabel,
 } from '../core/workspacePaths';
 
+import {
+    inferMetadataMemberFromRelativePath,
+    normalizeMetadataPath,
+    shouldIgnoreMetadataRelativePath,
+} from './metadataPathInference';
+
 type SourceSelection = {
-    sourceUri?: { path?: string } | null;
-    uris?: Array<{ path?: string }> | null;
-    activeUri?: { path?: string } | null;
+    sourceUri?: PathLikeUri | null;
+    uris?: PathLikeUri[] | null;
+    activeUri?: PathLikeUri | null;
+};
+
+type PathLikeUri = {
+    path?: string;
 };
 
 type InferredMetadataMember = {
@@ -17,12 +28,20 @@ type InferredMetadataMember = {
     member: string;
 };
 
-function normalizePath(value) {
-    return String(value || '').replace(/\\/g, '/');
+function toWorkspaceRelativePath(path, workspaceRoot) {
+    if (!path) {
+        return '';
+    }
+    const normalizedPath = normalizeMetadataPath(path);
+    if (workspaceRoot && normalizedPath.startsWith(workspaceRoot)) {
+        return normalizedPath.slice(workspaceRoot.length);
+    }
+    return normalizedPath.replace(/^\/+/, '');
 }
 
-function trimSuffix(value, suffix) {
-    return value.endsWith(suffix) ? value.slice(0, -suffix.length) : value;
+function shouldSkipManifestSourcePath(path, workspaceRoot) {
+    const relativePath = toWorkspaceRelativePath(path, workspaceRoot);
+    return shouldIgnoreMetadataRelativePath(relativePath);
 }
 
 export function appendXmlExtension(fileName) {
@@ -53,7 +72,7 @@ function addMember(typesMap, type, member) {
     typesMap.get(type)?.add(member);
 }
 
-function serializePackageXml(typesMap, apiVersion) {
+function serializePackageXml(typesMap: Map<string, Set<string>>, apiVersion) {
     const lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<Package xmlns="http://soap.sforce.com/2006/04/metadata">',
@@ -79,96 +98,21 @@ function serializePackageXml(typesMap, apiVersion) {
 }
 
 export function inferMetadataFromRelativePath(relativePath): InferredMetadataMember | null {
-    const normalizedPath = normalizePath(relativePath).replace(/^\/+/, '');
-    if (
-        !normalizedPath ||
-        normalizedPath.startsWith('.salesforce/') ||
-        normalizedPath.startsWith('.vscode/') ||
-        normalizedPath.startsWith('manifest/')
-    ) {
-        return null;
-    }
-
-    const segments = normalizedPath.split('/').filter(Boolean);
-    if (segments.length >= 2) {
-        const parentDir = segments[segments.length - 2];
-        const fileName = segments[segments.length - 1];
-        if (parentDir === 'classes') {
-            if (fileName.endsWith('.cls') || fileName.endsWith('.cls-meta.xml')) {
-                return {
-                    type: 'ApexClass',
-                    member: trimSuffix(trimSuffix(fileName, '.cls-meta.xml'), '.cls'),
-                };
-            }
-        }
-        if (parentDir === 'triggers') {
-            if (fileName.endsWith('.trigger') || fileName.endsWith('.trigger-meta.xml')) {
-                return {
-                    type: 'ApexTrigger',
-                    member: trimSuffix(trimSuffix(fileName, '.trigger-meta.xml'), '.trigger'),
-                };
-            }
-        }
-        if (parentDir === 'layouts' && fileName.endsWith('.layout-meta.xml')) {
-            return { type: 'Layout', member: trimSuffix(fileName, '.layout-meta.xml') };
-        }
-        if (parentDir === 'permissionsets' && fileName.endsWith('.permissionset-meta.xml')) {
-            return {
-                type: 'PermissionSet',
-                member: trimSuffix(fileName, '.permissionset-meta.xml'),
-            };
-        }
-        if (parentDir === 'applications' && fileName.endsWith('.app-meta.xml')) {
-            return { type: 'CustomApplication', member: trimSuffix(fileName, '.app-meta.xml') };
-        }
-        if (parentDir === 'tabs' && fileName.endsWith('.tab-meta.xml')) {
-            return { type: 'CustomTab', member: trimSuffix(fileName, '.tab-meta.xml') };
-        }
-        if (parentDir === 'labels' && fileName.endsWith('.labels-meta.xml')) {
-            return { type: 'CustomLabels', member: trimSuffix(fileName, '.labels-meta.xml') };
-        }
-        if (parentDir === 'flexipages' && fileName.endsWith('.flexipage-meta.xml')) {
-            return { type: 'FlexiPage', member: trimSuffix(fileName, '.flexipage-meta.xml') };
-        }
-        if (parentDir === 'flows' && fileName.endsWith('.flow-meta.xml')) {
-            return { type: 'Flow', member: trimSuffix(fileName, '.flow-meta.xml') };
-        }
-    }
-
-    const lwcIndex = segments.indexOf('lwc');
-    if (lwcIndex >= 0 && segments[lwcIndex + 1]) {
-        return { type: 'LightningComponentBundle', member: segments[lwcIndex + 1] };
-    }
-
-    const auraIndex = segments.indexOf('aura');
-    if (auraIndex >= 0 && segments[auraIndex + 1]) {
-        return { type: 'AuraDefinitionBundle', member: segments[auraIndex + 1] };
-    }
-
-    const objectIndex = segments.indexOf('objects');
-    if (objectIndex >= 0 && segments[objectIndex + 1]) {
-        const objectName = segments[objectIndex + 1];
-        const leaf = segments[segments.length - 1];
-        if (leaf === `${objectName}.object-meta.xml`) {
-            return { type: 'CustomObject', member: objectName };
-        }
-        if (segments[objectIndex + 2] === 'fields' && leaf.endsWith('.field-meta.xml')) {
-            return {
-                type: 'CustomField',
-                member: `${objectName}.${trimSuffix(leaf, '.field-meta.xml')}`,
-            };
-        }
-    }
-
-    return null;
+    const inferred = inferMetadataMemberFromRelativePath(relativePath);
+    return inferred
+        ? {
+              type: inferred.type,
+              member: inferred.fullName,
+          }
+        : null;
 }
 
-async function expandSelectionToFiles(vscode, uris) {
+async function expandSelectionToFiles(vscode, uris: PathLikeUri[]) {
     const files = [];
     const seen = new Set<string>();
 
     for (const uri of uris || []) {
-        const path = normalizePath(uri?.path);
+        const path = normalizeMetadataPath(uri?.path);
         if (!path || seen.has(path)) continue;
         seen.add(path);
         try {
@@ -178,7 +122,7 @@ async function expandSelectionToFiles(vscode, uris) {
                 // eslint-disable-next-line no-await-in-loop
                 const listed = await listFilesAndDirsRecursive(vscode, uri);
                 for (const fileUri of listed.files || []) {
-                    const filePath = normalizePath(fileUri?.path);
+                    const filePath = normalizeMetadataPath(fileUri?.path);
                     if (!filePath || seen.has(filePath)) continue;
                     seen.add(filePath);
                     files.push(fileUri);
@@ -208,21 +152,53 @@ export async function collectSelectedSourceUris(vscode, selection: SourceSelecti
     return await expandSelectionToFiles(vscode, selectedUris);
 }
 
-async function generatePackageXmlFromPaths(vscode, sourceUris) {
-    const sourcePaths = sourceUris.map(uri => normalizePath(uri?.path)).filter(Boolean);
+export async function collectWorkspaceSourceUris(vscode) {
+    const workspaceRootUri = getWorkspaceRootUri(vscode);
     const workspaceRoot = `${getWorkspaceRootPath(vscode).replace(/\/+$/, '')}/`;
+    const { files } = await listFilesAndDirsRecursive(vscode, workspaceRootUri);
+    return (files || []).filter(uri => {
+        const path = normalizeMetadataPath(uri?.path);
+        return path && !shouldSkipManifestSourcePath(path, workspaceRoot);
+    });
+}
+
+async function requireWorkspaceSourceUris(vscode) {
+    const workspaceSourceUris = await collectWorkspaceSourceUris(vscode);
+    if (!workspaceSourceUris.length) {
+        throw new Error(
+            'No Salesforce source files found under the workspace root. Retrieve metadata or open a Salesforce project first.'
+        );
+    }
+    return workspaceSourceUris;
+}
+
+async function generatePackageXmlFromPaths(vscode, sourceUris: PathLikeUri[]) {
+    const workspaceRoot = `${getWorkspaceRootPath(vscode).replace(/\/+$/, '')}/`;
+    const sourcePaths: string[] = Array.from(
+        new Set(
+            sourceUris
+                .map(uri => normalizeMetadataPath(uri?.path))
+                .filter(
+                    (path): path is string =>
+                        Boolean(path) && !shouldSkipManifestSourcePath(path, workspaceRoot)
+                )
+        )
+    );
+    if (!sourcePaths.length) {
+        throw new Error(
+            'The selected resources do not map to supported Salesforce source metadata.'
+        );
+    }
+
     const typesMap = new Map<string, Set<string>>();
     for (const sourceUri of sourceUris) {
-        const path = normalizePath(sourceUri?.path);
-        if (!path) continue;
-        const relativePath = path.startsWith(workspaceRoot)
-            ? path.slice(workspaceRoot.length)
-            : path;
+        const path = normalizeMetadataPath(sourceUri?.path);
+        if (!path || shouldSkipManifestSourcePath(path, workspaceRoot)) continue;
+        const relativePath = toWorkspaceRelativePath(path, workspaceRoot);
         const inferred = inferMetadataFromRelativePath(relativePath);
         if (!inferred) continue;
         addMember(typesMap, inferred.type, inferred.member);
     }
-
     if (!typesMap.size) {
         throw new Error(
             'The selected resources do not map to supported Salesforce source metadata.'
@@ -233,7 +209,7 @@ async function generatePackageXmlFromPaths(vscode, sourceUris) {
     return {
         packageXml: serializePackageXml(typesMap, apiVersion),
         sourcePaths,
-        usedFallback: true,
+        usedFallback: false,
     };
 }
 
@@ -243,12 +219,17 @@ export function createManifestGenerationRuntime({ vscode }) {
             await collectSelectedSourceUris(vscode, selection),
         generatePackageXmlFromSelection: async (selection: SourceSelection = {}) => {
             const selectedUris = await collectSelectedSourceUris(vscode, selection);
-            if (!selectedUris.length) {
-                throw new Error('Select one or more source files or folders first.');
-            }
+            const workspaceSourceUris = await requireWorkspaceSourceUris(vscode);
             return {
-                ...(await generatePackageXmlFromPaths(vscode, selectedUris)),
+                ...(await generatePackageXmlFromPaths(vscode, workspaceSourceUris)),
                 selectedUris,
+            };
+        },
+        generatePackageXmlFromWorkspace: async () => {
+            const workspaceSourceUris = await requireWorkspaceSourceUris(vscode);
+            return {
+                ...(await generatePackageXmlFromPaths(vscode, workspaceSourceUris)),
+                workspaceSourceUris,
             };
         },
         writeManifestFile: async (fileName, packageXml) => {
@@ -267,6 +248,7 @@ export function createManifestGenerationRuntime({ vscode }) {
 
 export const __testables = {
     appendXmlExtension,
+    collectWorkspaceSourceUris,
     collectSelectedSourceUris,
     inferMetadataFromRelativePath,
     normalizeManifestFileName,

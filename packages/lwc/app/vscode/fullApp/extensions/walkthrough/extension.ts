@@ -149,11 +149,11 @@ export async function register(
                     icon: { type: 'icon', icon: { id: 'book' } },
                     steps: [
                         {
-                            id: `${WALKTHROUGH_EXTENSION_ID}#open`,
+                            id: `${WALKTHROUGH_EXTENSION_ID}#step1`,
                             title: 'Review your org context',
                             description: buildOrgIntro(orgContext || {}),
                             media: {
-                                markdown: '/workspace/vscode/walkthrough/workbench-onboarding.md',
+                                markdown: 'workbench-onboarding.md',
                             },
                             when: vscodeBundle.vscodeApiMonaco.ContextKeyExpr.true(),
                             completionEvents: [],

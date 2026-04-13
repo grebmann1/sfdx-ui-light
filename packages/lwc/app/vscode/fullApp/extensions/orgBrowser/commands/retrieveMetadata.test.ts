@@ -101,6 +101,71 @@ async function main() {
     );
     assert(fireCalls === 1, 'successful leaf retrieve should emit a targeted tree change');
     assert(refreshCalls === 0, 'leaf retrieve should not force a full tree refresh');
+
+    const customObjectNode = createOrgBrowserNode({
+        componentName: 'Account',
+        filePresent: false,
+        kind: 'customObject',
+        label: 'Account',
+        xmlName: 'CustomObject',
+    });
+    let customObjectRefreshCalls = 0;
+    let customObjectFireCalls = 0;
+    let invalidatedObjectKey = '';
+    const customObjectHandler = createRetrieveHandler({
+        dataRuntime: {
+            invalidateCustomObjectFieldPresenceCache(objectName: string) {
+                invalidatedObjectKey = objectName;
+            },
+            async isMemberPresent() {
+                return false;
+            },
+        },
+        retrieveService: {
+            async retrieveMembers() {
+                return {
+                    writtenPaths: [
+                        '/workspace/force-app/main/default/objects/Account/Account.object-meta.xml',
+                    ],
+                };
+            },
+        },
+        treeProvider: {
+            fireChangeEvent() {
+                customObjectFireCalls += 1;
+            },
+            async getChildren() {
+                return [];
+            },
+            async refreshType() {
+                customObjectRefreshCalls += 1;
+            },
+        },
+        vscode: {
+            window: {
+                async showWarningMessage(_message: string, yesLabel: string) {
+                    return yesLabel;
+                },
+            },
+        },
+    });
+    await customObjectHandler(customObjectNode);
+    assert(
+        customObjectNode.filePresent === true,
+        'custom object retrieve should still mark the object node as present'
+    );
+    assert(
+        invalidatedObjectKey === 'Account',
+        'custom object retrieve should invalidate field presence cache for that object'
+    );
+    assert(
+        customObjectRefreshCalls === 1,
+        'custom object retrieve should refresh the node so field presence is recomputed'
+    );
+    assert(
+        customObjectFireCalls === 0,
+        'custom object retrieve should rely on refresh, not a targeted fire-only update'
+    );
 }
 
 main().catch(error => {

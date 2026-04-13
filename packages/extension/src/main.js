@@ -5,6 +5,7 @@ import { createElement } from 'lwc';
 import { chromeStore } from 'shared/cacheManager';
 import skeletonDirectView from 'skeleton/directView';
 import skeletonFullView from 'skeleton/fullView';
+import skeletonSingleToolView from 'skeleton/singleToolView';
 const init = async () => {
     /** Load Local Forage  **/
     //await loadLocalForage();
@@ -51,6 +52,15 @@ window.extension_initVscode = async () => {
     const elm = createElement('skeleton-direct-view', { is: skeletonDirectView });
     Object.assign(elm, {
         variant: 'vscode',
+    });
+    document.body.appendChild(elm);
+};
+
+window.extension_initSingleTool = async variant => {
+    await init();
+    const elm = createElement('skeleton-single-tool-view', { is: skeletonSingleToolView });
+    Object.assign(elm, {
+        variant,
     });
     document.body.appendChild(elm);
 };

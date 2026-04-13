@@ -1,7 +1,7 @@
 import { buildSalesforceExtensionConfig } from '../core/extensionManifest';
 import { registerSalesforceExtension } from '../core/extensionRegistration';
+import { resolveCoreServices, type CoreServices } from '../core/coreServices';
 import { registerLwcComponentScaffolding } from '../metadata/commands/lwcComponentScaffolding';
-import { getOrCreateSalesforceWorkbenchHost } from '../salesforce/salesforceWorkbenchHost';
 
 const WEB_LANGUAGE_ASSETS = [
     {
@@ -217,15 +217,20 @@ function buildLwcExtensionConfig() {
                     { command: 'salesforceMetadata.createLightningComponent' },
                 ],
                 'editor/context': [
-                    { command: 'salesforceMetadata.fetchCurrentFile' },
-                    { command: 'salesforceMetadata.diffCurrentFile' },
-                    { command: 'salesforceMetadata.deployCurrentFile' },
+                    {
+                        command: 'salesforceMetadata.fetchCurrentFile',
+                    },
+                    {
+                        command: 'salesforceMetadata.diffCurrentFile',
+                    },
+                    {
+                        command: 'salesforceMetadata.deployCurrentFile',
+                    },
                 ],
                 'explorer/context': [
                     {
                         command: 'salesforceMetadata.createLightningComponent',
                         when: 'explorerResourceIsFolder && resourceFilename == lwc',
-                        group: 'navigation',
                     },
                 ],
             },
@@ -233,7 +238,10 @@ function buildLwcExtensionConfig() {
     });
 }
 
-export async function register(vscodeBundle) {
+export async function register(
+    vscodeBundle,
+    { coreServices }: { coreServices?: CoreServices } = {}
+) {
     return registerSalesforceExtension(
         vscodeBundle,
         {
@@ -241,16 +249,26 @@ export async function register(vscodeBundle) {
             remoteAssets: [...WEB_LANGUAGE_ASSETS, ...LWC_SNIPPET_ASSETS],
         },
         async () => {
-            const sfHost = await getOrCreateSalesforceWorkbenchHost(vscodeBundle);
-            if (!sfHost) return;
+            const core = await resolveCoreServices(coreServices, vscodeBundle);
+            if (
+                !core?.connection?.runtime ||
+                !core?.workspace?.context ||
+                !core?.operations?.deployTools ||
+                !core.features
+            ) {
+                return;
+            }
+            const connectionRuntime = core.connection.runtime;
+            const context = core.workspace.context;
+            const deployTools = core.operations.deployTools;
 
-            await sfHost.activateFeatureOnce(
-                'salesforce-lwc',
-                async ({ connectionRuntime, context, deployTools }) => {
-                    registerLwcComponentScaffolding({ connectionRuntime, context });
-                    deployTools.registerCommandGroups(['lwc']);
-                }
-            );
+            await core.features.activateOnce?.('salesforce-lwc', async () => {
+                registerLwcComponentScaffolding({
+                    connectionRuntime,
+                    context,
+                });
+                deployTools.registerCommandGroups(['lwc']);
+            });
         }
     );
 }

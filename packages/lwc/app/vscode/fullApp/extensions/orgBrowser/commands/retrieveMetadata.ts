@@ -66,13 +66,15 @@ export function createRetrieveHandler({ dataRuntime, retrieveService, treeProvid
             openFirstFile: members.length === 1,
             title: buildRetrieveTitle(node),
         });
-        if (
-            node.kind === 'component' ||
-            node.kind === 'customObject' ||
-            node.kind === 'customField'
-        ) {
+        if (node.kind === 'component' || node.kind === 'customField') {
             node.filePresent = true;
             treeProvider.fireChangeEvent(node);
+        } else if (node.kind === 'customObject') {
+            node.filePresent = true;
+            if (typeof dataRuntime?.invalidateCustomObjectFieldPresenceCache === 'function') {
+                dataRuntime.invalidateCustomObjectFieldPresenceCache(node.componentName);
+            }
+            await treeProvider.refreshType(node);
         } else {
             await treeProvider.refreshType(node);
         }

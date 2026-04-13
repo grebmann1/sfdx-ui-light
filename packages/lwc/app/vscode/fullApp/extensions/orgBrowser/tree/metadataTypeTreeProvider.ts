@@ -10,6 +10,30 @@ const ROOT_CACHE_KEY = '__root__';
 const EMPTY_NODE_LABEL = 'No items found';
 const EMPTY_ROOT_LABEL = 'No metadata types available';
 
+function buildNamespacedObjectApiName(
+    namespace: string | undefined,
+    componentName: string | undefined
+) {
+    const normalizedComponentName = String(componentName || '').trim();
+    if (!normalizedComponentName) {
+        return '';
+    }
+    const normalizedNamespace = String(namespace || '').trim();
+    if (!normalizedNamespace) {
+        return normalizedComponentName;
+    }
+    return `${normalizedNamespace}__${normalizedComponentName}`;
+}
+
+function stripNamespacePrefix(namespace: string | undefined, value: string) {
+    const normalizedNamespace = String(namespace || '').trim();
+    const normalizedValue = String(value || '').trim();
+    if (!normalizedNamespace) {
+        return normalizedValue;
+    }
+    return normalizedValue.replace(new RegExp(`^${normalizedNamespace}__`), '');
+}
+
 function hasUsableWorkbenchConnection(conn) {
     return Boolean(conn?.instanceUrl && conn?.accessToken);
 }
@@ -48,6 +72,15 @@ export class MetadataTypeTreeProvider {
     }
 
     async refreshType(node?: OrgBrowserNode) {
+        if (typeof this.dataRuntime?.invalidateCustomObjectFieldPresenceCache === 'function') {
+            if (!node) {
+                this.dataRuntime.invalidateCustomObjectFieldPresenceCache();
+            } else if (node.kind === 'customObject') {
+                this.dataRuntime.invalidateCustomObjectFieldPresenceCache(node.componentName);
+            } else if (node.kind === 'type' && node.xmlName === 'CustomObject') {
+                this.dataRuntime.invalidateCustomObjectFieldPresenceCache();
+            }
+        }
         if (!node) {
             this.childrenCache.clear();
         } else if (node.kind === 'folder') {
@@ -132,10 +165,11 @@ export class MetadataTypeTreeProvider {
         }
 
         if (element.kind === 'customObject') {
-            const describe = await this.dataRuntime.describeCustomObject(
-                element.componentName,
-                conn
+            const objectApiName = buildNamespacedObjectApiName(
+                element.namespace,
+                element.componentName
             );
+            const describe = await this.dataRuntime.describeCustomObject(objectApiName, conn);
             const fields = Array.isArray(describe?.fields)
                 ? describe.fields
                       .filter(field => field?.custom)
@@ -143,13 +177,18 @@ export class MetadataTypeTreeProvider {
                           String(left?.name || '').localeCompare(String(right?.name || ''))
                       )
                 : [];
-            const nodes = [];
-            for (const field of fields) {
-                const fullName = `${element.componentName}.${String(field?.name || '').trim()}`;
-                // eslint-disable-next-line no-await-in-loop
-                const filePresent = await this.dataRuntime.isMemberPresent('CustomField', fullName);
-                nodes.push(createCustomFieldNode(element, field, { filePresent }));
-            }
+            const nodes = await Promise.all(
+                fields.map(async field => {
+                    const rawFieldName = String(field?.name || '').trim();
+                    const memberFieldName = stripNamespacePrefix(element.namespace, rawFieldName);
+                    const fullName = `${String(element.componentName || '').trim()}.${memberFieldName}`;
+                    const filePresent = await this.dataRuntime.isMemberPresent(
+                        'CustomField',
+                        fullName
+                    );
+                    return createCustomFieldNode(element, field, { filePresent });
+                })
+            );
             return nodes.length > 0 ? nodes : [this.createEmptyNode(element, EMPTY_NODE_LABEL)];
         }
 

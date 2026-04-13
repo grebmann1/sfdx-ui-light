@@ -3,12 +3,10 @@ import {
     DEFAULT_SOURCE_API_VERSION,
     normalizeSfApiVersion,
 } from '../../workbench/workbenchWorkspace';
+import { resolveCoreServices, type CoreServices } from '../core/coreServices';
 import { buildSalesforceExtensionConfig } from '../core/extensionManifest';
 import { registerCommand, registerSalesforceExtension } from '../core/extensionRegistration';
-import {
-    getActiveSalesforceWorkbenchHost,
-    getOrCreateSalesforceWorkbenchHost,
-} from '../salesforce/salesforceWorkbenchHost';
+import { getActiveSalesforceWorkbenchHost } from '../salesforce/salesforceWorkbenchHost';
 
 import { registerMetadataApiCommands } from './commands/metadataApiCommands';
 import { registerQueryAndApexTools } from './commands/queryAndApexTools';
@@ -19,8 +17,11 @@ import { registerSchemaTools } from './runtime/schemaTools';
 export const EXTENSION_ID = 'salesforce.sf-metadata';
 
 const OPEN_AGENT_CHAT_COMMAND = 'salesforceMetadata.openAgentChat';
+const OPEN_API_EXPLORER_COMMAND = 'salesforceMetadata.openApiExplorer';
 const OPEN_SALESFORCE_PANEL_COMMAND = 'salesforceMetadata.openSalesforcePanel';
 const OPEN_TOOLKIT_CONNECTIONS_COMMAND = 'salesforceMetadata.openToolkitConnections';
+const API_EXPLORER_WEBVIEW_VIEW_TYPE = 'salesforceMetadata.apiExplorerPage';
+const API_EXPLORER_WEBVIEW_TITLE = 'Salesforce API Explorer';
 const SVG_MIME_TYPE = 'image/svg+xml';
 const MIN_WORKSPACE_API_VERSION = 45;
 
@@ -130,12 +131,15 @@ const METADATA_EXTENSION_BASE_CONFIG = buildSalesforceExtensionConfig({
                 { command: 'salesforceMetadata.refreshProject' },
                 { command: 'salesforceMetadata.openNamespaceReport' },
             ],
-            'editor/context': [{ command: 'salesforceMetadata.fetchMetadata' }],
+            'editor/context': [
+                {
+                    command: 'salesforceMetadata.fetchMetadata',
+                },
+            ],
             'explorer/context': [
                 {
                     command: 'salesforceMetadata.generateManifestFile',
                     when: 'resourceFilename != package.xml',
-                    group: 'navigation',
                 },
             ],
         },
@@ -175,6 +179,10 @@ function buildMetadataExtensionConfig() {
                     command: OPEN_AGENT_CHAT_COMMAND,
                     title: 'Salesforce: Open Agent Chat',
                 },
+                {
+                    command: OPEN_API_EXPLORER_COMMAND,
+                    title: 'Salesforce: Open API Explorer',
+                },
             ],
             menus: {
                 ...(contributes as { menus?: Record<string, unknown> }).menus,
@@ -182,6 +190,7 @@ function buildMetadataExtensionConfig() {
                     ...commandPalette,
                     { command: OPEN_SALESFORCE_PANEL_COMMAND },
                     { command: OPEN_AGENT_CHAT_COMMAND },
+                    { command: OPEN_API_EXPLORER_COMMAND },
                 ],
             },
         },
@@ -686,8 +695,13 @@ function registerSalesforcePanelProvider({ connectionRuntime, context }) {
     }
 }
 
-function registerMetadataCommands({ context }) {
+function registerMetadataCommands({ connectionRuntime, context }) {
     const { vscode } = context;
+    let apiExplorerPanel: {
+        reveal?: (...args: unknown[]) => unknown;
+        webview?: { html?: string };
+        onDidDispose?: (listener: () => void) => { dispose?: () => void } | void;
+    } | null = null;
 
     registerCommand(context, vscode, OPEN_SALESFORCE_PANEL_COMMAND, async () => {
         try {
@@ -701,7 +715,7 @@ function registerMetadataCommands({ context }) {
 
     registerCommand(context, vscode, OPEN_TOOLKIT_CONNECTIONS_COMMAND, async () => {
         try {
-            const targetUrl = new URL('/views/app.html', globalThis.location?.href || '/');
+            const targetUrl = buildWorkbenchViewUrl('app.html');
             targetUrl.searchParams.set('applicationName', 'connections');
             if (typeof vscode.env?.openExternal === 'function') {
                 await vscode.env.openExternal(vscode.Uri.parse(targetUrl.toString()));
@@ -711,6 +725,57 @@ function registerMetadataCommands({ context }) {
         } catch {
             await vscode.window.showInformationMessage(
                 'Open the Salesforce Toolkit connections page to log in.'
+            );
+        }
+    });
+
+    registerCommand(context, vscode, OPEN_API_EXPLORER_COMMAND, async () => {
+        try {
+            const targetUrl = buildWorkbenchViewUrl('tool.html');
+            targetUrl.searchParams.set('applicationName', 'api');
+            try {
+                const conn = connectionRuntime?.loadStoredConn?.();
+                if (conn?.instanceUrl && conn?.accessToken) {
+                    targetUrl.searchParams.set('serverUrl', conn.instanceUrl);
+                    targetUrl.searchParams.set('sessionId', conn.accessToken);
+                }
+            } catch {
+                // keep URL minimal when connection details are unavailable
+            }
+            if (typeof vscode.window?.createWebviewPanel === 'function') {
+                if (apiExplorerPanel) {
+                    apiExplorerPanel.reveal?.(vscode.ViewColumn?.Active);
+                    return;
+                }
+                apiExplorerPanel = vscode.window.createWebviewPanel(
+                    API_EXPLORER_WEBVIEW_VIEW_TYPE,
+                    API_EXPLORER_WEBVIEW_TITLE,
+                    vscode.ViewColumn?.Active,
+                    {
+                        enableScripts: true,
+                        retainContextWhenHidden: true,
+                    }
+                );
+                if (apiExplorerPanel?.webview) {
+                    apiExplorerPanel.webview.html = getApiExplorerWebviewHtml(targetUrl.toString());
+                }
+                const disposeRegistration = apiExplorerPanel?.onDidDispose?.(() => {
+                    apiExplorerPanel = null;
+                });
+                if (disposeRegistration) {
+                    context.addDisposable(disposeRegistration);
+                }
+                context.addDisposable(apiExplorerPanel);
+                return;
+            }
+            if (typeof vscode.env?.openExternal === 'function') {
+                await vscode.env.openExternal(vscode.Uri.parse(targetUrl.toString()));
+                return;
+            }
+            globalThis.location?.assign?.(targetUrl.toString());
+        } catch {
+            await vscode.window.showInformationMessage(
+                'Unable to open the embedded API Explorer view right now.'
             );
         }
     });
@@ -744,7 +809,59 @@ function registerMetadataCommands({ context }) {
     });
 }
 
-export async function register(vscodeBundle, { orgContext }: { orgContext?: unknown } = {}) {
+function buildWorkbenchViewUrl(viewFileName: string) {
+    const locationHref = String(globalThis.location?.href || '').trim();
+    if (locationHref) {
+        try {
+            const baseUrl = new URL(locationHref);
+            if (baseUrl.protocol === 'file:') {
+                return new URL(`../../../views/${viewFileName}`, baseUrl);
+            }
+            return new URL(`/views/${viewFileName}`, baseUrl);
+        } catch {
+            // ignore and use fallback below
+        }
+    }
+    return new URL(`/views/${viewFileName}`, 'https://sf-toolkit.invalid');
+}
+
+function getApiExplorerWebviewHtml(url: string) {
+    const safeUrl = String(url || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Salesforce API Explorer</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        iframe {
+            border: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <iframe src="${safeUrl}" title="Salesforce API Explorer"></iframe>
+</body>
+</html>`;
+}
+
+export async function register(
+    vscodeBundle,
+    { coreServices, orgContext }: { coreServices?: CoreServices; orgContext?: unknown } = {}
+) {
     void orgContext;
     return registerSalesforceExtension(
         vscodeBundle,
@@ -753,39 +870,42 @@ export async function register(vscodeBundle, { orgContext }: { orgContext?: unkn
             inlineAssets: buildInlineAssets(),
         },
         async () => {
-            const sfHost = await getOrCreateSalesforceWorkbenchHost(vscodeBundle);
-            if (!sfHost) return;
+            const core = await resolveCoreServices(coreServices, vscodeBundle);
+            if (!core?.connection?.runtime || !core?.workspace?.context || !core.features) return;
 
-            await sfHost.activateFeatureOnce(
-                'salesforce-schema-tools',
-                async ({ connectionRuntime, context }) => {
-                    sfHost.setSchemaTools(
-                        await registerSchemaTools({ connectionRuntime, context })
-                    );
-                }
-            );
+            await core.features.activateOnce?.('salesforce-schema-tools', async () => {
+                core.features?.setSchemaTools?.(
+                    await registerSchemaTools({
+                        connectionRuntime: core.connection?.runtime,
+                        context: core.workspace?.context,
+                    })
+                );
+            });
 
-            await sfHost.activateFeatureOnce(
-                'salesforce-metadata',
-                async ({ connectionRuntime, context, deployTools }) => {
-                    registerSalesforcePanelProvider({ connectionRuntime, context });
-                    registerMetadataCommands({ context });
-                    registerShellIntegration({ connectionRuntime, context });
-                    deployTools.registerCommandGroups(['metadata']);
-                    registerConnectionCommands({
-                        connectionRuntime,
-                        context,
-                        setLoginProblem: sfHost.setLoginProblem || (() => undefined),
-                    });
-                    registerMetadataApiCommands({ connectionRuntime, context, deployTools });
-                    registerQueryAndApexTools({
-                        connectionRuntime,
-                        context,
-                        deployTools,
-                        commandGroups: ['metadata'],
-                    });
+            await core.features.activateOnce?.('salesforce-metadata', async () => {
+                const connectionRuntime = core.connection?.runtime;
+                const context = core.workspace?.context;
+                const deployTools = core.operations?.deployTools;
+                if (!connectionRuntime || !context || !deployTools) {
+                    return;
                 }
-            );
+                registerSalesforcePanelProvider({ connectionRuntime, context });
+                registerMetadataCommands({ connectionRuntime, context });
+                registerShellIntegration({ connectionRuntime, context });
+                deployTools.registerCommandGroups(['metadata']);
+                registerConnectionCommands({
+                    connectionRuntime,
+                    context,
+                    setLoginProblem: core.features?.setLoginProblem || (() => undefined),
+                });
+                registerMetadataApiCommands({ connectionRuntime, context, deployTools });
+                registerQueryAndApexTools({
+                    connectionRuntime,
+                    context,
+                    deployTools,
+                    commandGroups: ['metadata'],
+                });
+            });
         }
     );
 }

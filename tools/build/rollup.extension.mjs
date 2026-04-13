@@ -1,17 +1,19 @@
-import path from 'path';
 import fs from 'fs';
-import dotenv from 'dotenv';
-import lwcPlugin from '@lwc/rollup-plugin';
-import replace from '@rollup/plugin-replace';
-import resolve from '@rollup/plugin-node-resolve';
-import cjs from '@rollup/plugin-commonjs';
-import terser from '@rollup/plugin-terser';
+import path from 'path';
+
 import { transformSync } from '@babel/core';
 import syntaxDecorators from '@babel/plugin-syntax-decorators';
 import transformTypescript from '@babel/plugin-transform-typescript';
-import copy from 'rollup-plugin-copy';
+import lwcPlugin from '@lwc/rollup-plugin';
 import alias from '@rollup/plugin-alias';
+import cjs from '@rollup/plugin-commonjs';
+import resolve from '@rollup/plugin-node-resolve';
+import replace from '@rollup/plugin-replace';
+import terser from '@rollup/plugin-terser';
+import dotenv from 'dotenv';
+import copy from 'rollup-plugin-copy';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
+
 import * as data from '../../package.json';
 
 const getIsProduction = (args) => (args?.NODE_ENV || process.env.NODE_ENV) === 'production';
@@ -292,6 +294,60 @@ const coreAliasEntries = [
     { find: 'core/fs', replacement: r('../../packages/lwc/app/core/fs/fs.ts') },
 ];
 
+const monacoWrapperInlineScriptExtractor = () => ({
+    name: 'monaco-wrapper-inline-script-extractor',
+    writeBundle() {
+        const monacoWrapperDir = r('../../dist/extension/libs/vscode/monacoWrapper');
+        if (!fs.existsSync(monacoWrapperDir)) {
+            return;
+        }
+        const htmlFiles = fs
+            .readdirSync(monacoWrapperDir)
+            .filter(fileName => fileName.toLowerCase().endsWith('.html'));
+
+        htmlFiles.forEach(htmlFileName => {
+            const htmlPath = path.join(monacoWrapperDir, htmlFileName);
+            const htmlSource = fs.readFileSync(htmlPath, 'utf8');
+            const htmlBaseName = path.basename(htmlFileName, '.html');
+            const priorExtractedPrefix = `${htmlBaseName}.inline-`;
+            fs.readdirSync(monacoWrapperDir)
+                .filter(
+                    fileName =>
+                        fileName.startsWith(priorExtractedPrefix) &&
+                        fileName.toLowerCase().endsWith('.js')
+                )
+                .forEach(fileName => {
+                    fs.rmSync(path.join(monacoWrapperDir, fileName));
+                });
+
+            let inlineScriptCount = 0;
+            const rewrittenHtml = htmlSource.replace(
+                /<script\b([^>]*)>([\s\S]*?)<\/script>/gi,
+                (fullMatch, attributes = '', scriptContent = '') => {
+                    if (/\bsrc\s*=/i.test(String(attributes))) {
+                        return fullMatch;
+                    }
+
+                    inlineScriptCount += 1;
+                    const scriptFileName = `${htmlBaseName}.inline-${inlineScriptCount}.js`;
+                    const scriptPath = path.join(monacoWrapperDir, scriptFileName);
+                    fs.writeFileSync(scriptPath, String(scriptContent), 'utf8');
+
+                    const normalizedAttributes = String(attributes).trim();
+                    const attributesWithSpacing = normalizedAttributes
+                        ? ` ${normalizedAttributes}`
+                        : '';
+                    return `<script${attributesWithSpacing} src="./${scriptFileName}"></script>`;
+                }
+            );
+
+            if (inlineScriptCount > 0 && rewrittenHtml !== htmlSource) {
+                fs.writeFileSync(htmlPath, rewrittenHtml, 'utf8');
+            }
+        });
+    },
+});
+
 // Copy targets extracted for clarity
 const assetCopyTargets = [
     { src: r('../../packages/server/assets/styles'), dest: r('../../dist/extension') },
@@ -511,6 +567,7 @@ const coreBuilder = (modulesArg, isProduction) => ({
         copy({
             targets: getChromeCopyTargets(isProduction),
         }),
+        monacoWrapperInlineScriptExtractor(),
         ...(isProduction ? [terserPlugin] : []),
     ]
 });

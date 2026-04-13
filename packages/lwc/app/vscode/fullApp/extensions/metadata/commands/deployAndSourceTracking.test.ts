@@ -1,4 +1,4 @@
-import { __testables } from './deployAndSourceTracking';
+import * as helpers from './deployAndSourceTrackingHelpers';
 
 function assert(condition: unknown, message: string): asserts condition {
     if (!condition) {
@@ -29,7 +29,7 @@ const mapItems = {
     },
 };
 
-const partition = __testables.partitionChangedPathsForDeploy(trackedPaths, mapItems);
+const partition = helpers.partitionChangedPathsForDeploy(trackedPaths, mapItems);
 
 assert(
     partition.deployablePaths.length === 1 &&
@@ -52,7 +52,7 @@ assert(
     'files without tooling-map entries should be partitioned out'
 );
 
-const picks = __testables.buildChangedFileDeployQuickPickItems(partition.deployablePaths, mapItems);
+const picks = helpers.buildChangedFileDeployQuickPickItems(partition.deployablePaths, mapItems);
 assert(picks.length === 1, 'deploy quick pick should only include deployable tracked files');
 assert(picks[0].label === 'MyClass.cls', 'deploy quick pick label should use the file name');
 assert(
@@ -61,7 +61,7 @@ assert(
 );
 
 const changedPathSet = new Set(['/workspace/classes/MyClass.cls', '/workspace/classes/Other.cls']);
-const successPaths = __testables.pruneChangedPathsForSuccessfulDeploys(changedPathSet, [
+const successPaths = helpers.pruneChangedPathsForSuccessfulDeploys(changedPathSet, [
     { ok: true, path: '/workspace/classes/MyClass.cls' },
     { ok: false, path: '/workspace/classes/Other.cls' },
 ]);
@@ -92,7 +92,7 @@ const storedConnection = {
     apiVersion: '61.0',
     refresh: () => {},
 };
-const workerConnection = __testables.buildDeployWorkerConnection(liveConnection, storedConnection);
+const workerConnection = helpers.buildDeployWorkerConnection(liveConnection, storedConnection);
 assert(
     workerConnection.instanceUrl === 'https://live.my.salesforce.com' &&
         workerConnection.accessToken === 'live-token' &&
@@ -106,7 +106,7 @@ assert(
     'worker connection payload should only include clone-safe scalar fields'
 );
 
-const fallbackWorkerConnection = __testables.buildDeployWorkerConnection(
+const fallbackWorkerConnection = helpers.buildDeployWorkerConnection(
     {
         instanceUrl: '',
         accessToken: '   ',
@@ -119,4 +119,62 @@ assert(
         fallbackWorkerConnection.accessToken === 'stored-token' &&
         fallbackWorkerConnection.apiVersion === '61.0',
     'worker connection payload should fall back to stored scalars when live values are missing'
+);
+
+assert(
+    typeof helpers.resolveTrackedPath === 'function',
+    'resolveTrackedPath should exist to remap stale workspace-root paths'
+);
+
+const remappedTrackedPath = helpers.resolveTrackedPath(
+    '/workspace/force-app/main/default/classes/MyClass.cls',
+    {
+        '/workspace/orgs/00Dxx0000000001AAA/force-app/main/default/classes/MyClass.cls': {
+            type: 'ApexClass',
+            id: '01p-remapped',
+        },
+    },
+    '/workspace/orgs/00Dxx0000000001AAA'
+);
+
+assert(
+    remappedTrackedPath?.path ===
+        '/workspace/orgs/00Dxx0000000001AAA/force-app/main/default/classes/MyClass.cls' &&
+        remappedTrackedPath?.entry?.id === '01p-remapped' &&
+        remappedTrackedPath?.source === 'remapped',
+    'stale current-file paths should remap onto the active workspace root before lookup'
+);
+
+assert(
+    typeof helpers.classifyToolingCommandPath === 'function',
+    'classifyToolingCommandPath should exist to distinguish tooling, metadata-only, and missing paths'
+);
+
+const metadataOnlyPath = helpers.classifyToolingCommandPath(
+    '/workspace/force-app/main/default/objects/Account/Account.object-meta.xml',
+    {},
+    {
+        '/workspace/orgs/00Dxx0000000001AAA/force-app/main/default/objects/Account/Account.object-meta.xml':
+            { zipPath: 'unpackaged/objects/Account/Account.object-meta.xml' },
+    },
+    '/workspace/orgs/00Dxx0000000001AAA'
+);
+
+assert(
+    metadataOnlyPath?.status === 'metadata' &&
+        metadataOnlyPath?.path ===
+            '/workspace/orgs/00Dxx0000000001AAA/force-app/main/default/objects/Account/Account.object-meta.xml',
+    'metadata-api-only files should be classified separately from missing tooling-map entries'
+);
+
+assert(
+    typeof helpers.buildCurrentFileWarningMessage === 'function',
+    'buildCurrentFileWarningMessage should exist to return precise current-file warnings'
+);
+
+const metadataWarning = helpers.buildCurrentFileWarningMessage(metadataOnlyPath, 'Deploy current file');
+assert(
+    metadataWarning.includes('Metadata API') &&
+        !metadataWarning.includes('not in tooling-map.json'),
+    'metadata-only current files should report an unsupported Metadata API warning instead of a missing tooling-map entry'
 );

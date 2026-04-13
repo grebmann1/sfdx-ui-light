@@ -155,6 +155,53 @@ async function main() {
         emptyRoot[0].label === 'No metadata types available',
         'empty root placeholder should explain that no metadata types were returned'
     );
+
+    let describedObjectName = '';
+    const customFieldPresenceChecks: string[] = [];
+    const namespacedProvider = new MetadataTypeTreeProvider(
+        connectionRuntime,
+        {
+            async describeCustomObject(objectName: string) {
+                describedObjectName = objectName;
+                return {
+                    fields: [{ custom: true, name: 'acme__Custom_Field__c', type: 'string' }],
+                };
+            },
+            async isMemberPresent(_type: string, fullName: string) {
+                customFieldPresenceChecks.push(fullName);
+                return true;
+            },
+            async listMetadata() {
+                return [];
+            },
+            async listMetadataTypes() {
+                return [];
+            },
+        },
+        vscode
+    );
+    const namespacedChildren = await namespacedProvider.getChildren(
+        createOrgBrowserNode({
+            componentName: 'Invoice__c',
+            kind: 'customObject',
+            label: 'Invoice__c',
+            namespace: 'acme',
+            xmlName: 'CustomObject',
+        })
+    );
+    assert(
+        describedObjectName === 'acme__Invoice__c',
+        'namespaced custom objects should be described with their namespace-qualified API name'
+    );
+    assert(
+        customFieldPresenceChecks.length === 1 &&
+            customFieldPresenceChecks[0] === 'Invoice__c.Custom_Field__c',
+        'custom field presence checks should use namespace-stripped field API names'
+    );
+    assert(
+        namespacedChildren.length === 1 && namespacedChildren[0].kind === 'customField',
+        'namespaced custom object expansion should still render custom field nodes'
+    );
 }
 
 main().catch(error => {

@@ -2,25 +2,333 @@
   "name": "salesforcedx-vscode-soql",
   "displayName": "SOQL",
   "description": "Provides code-editing features for SOQL",
+  "qna": "https://github.com/forcedotcom/salesforcedx-vscode/issues",
+  "bugs": {
+    "url": "https://github.com/forcedotcom/salesforcedx-vscode/issues"
+  },
+  "repository": {
+    "url": "https://github.com/forcedotcom/salesforcedx-vscode"
+  },
   "version": "66.4.4",
   "publisher": "salesforce",
+  "o11yUploadEndpoint": "https://794testsite.my.site.com/byolwr/webruntime/log/metrics",
+  "enableO11y": "true",
+  "productFeatureId": "aJCEE0000000mLm4AI",
   "license": "BSD-3-Clause",
-  "icon": "./images/VSCodeSoql.png",
+  "icon": "images/VSCodeSoql.png",
+  "galleryBanner": {
+    "color": "#ECECEC",
+    "theme": "light"
+  },
   "engines": {
     "vscode": "^1.90.0"
   },
   "categories": [
     "Programming Languages"
   ],
+  "keywords": [
+    "soql",
+    "salesforce",
+    "salesforcedx",
+    "sfdx",
+    "soql builder"
+  ],
+  "dependencies": {
+    "@salesforce/apex-tmlanguage": "^1.8.3",
+    "@salesforce/core": "^8.28.0",
+    "@salesforce/effect-ext-utils": "*",
+    "effect": "^3.20.0",
+    "@salesforce/soql-common": "*",
+    "@salesforce/soql-language-server": "^1.1.0",
+    "@salesforce/vscode-i18n": "*",
+    "antlr4ts": "^0.5.0-alpha.3",
+    "debounce": "^2.2.0",
+    "papaparse": "^5.3.0",
+    "vscode-languageclient": "^9.0.1",
+    "vscode-uri": "^3.1.0"
+  },
+  "devDependencies": {
+    "@salesforce/core": "^8.28.0",
+    "@babel/preset-typescript": "^7.0.0",
+    "@lwc/engine-dom": "^9.0.0",
+    "@lwc/eslint-plugin-lwc": "^3.3.0",
+    "@lwc/jest-preset": "^19.0.0",
+    "@lwc/rollup-plugin": "^9.0.0",
+    "@lwc/synthetic-shadow": "^9.0.0",
+    "@rollup/plugin-alias": "^6.0.0",
+    "@rollup/plugin-babel": "^6.0.0",
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-inject": "^5.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-terser": "^0.4.0",
+    "@salesforce/eslint-config-lwc": "^4.1.2",
+    "@salesforce/eslint-plugin-lightning": "^2.0.0",
+    "@salesforce/playwright-vscode-ext": "*",
+    "@salesforce/ts-types": "^2.0.12",
+    "@types/debounce": "^1.2.0",
+    "@types/papaparse": "^5.2.3",
+    "immutable": "^5.1.5",
+    "jest-environment-jsdom": "^29.0.0",
+    "rollup": "^4.0.0",
+    "rxjs": "^7.8.2",
+    "salesforcedx-vscode-services": "*"
+  },
   "extensionDependencies": [
     "salesforce.salesforcedx-vscode-services"
   ],
-  "activationEvents": [
-    "onLanguage:soql",
-    "onFileSystem:memfs"
-  ],
+  "scripts": {
+    "vscode:bundle": "wireit",
+    "compile": "wireit",
+    "lint": "wireit",
+    "clean": "shx rm -rf node_modules out dist coverage .nyc_output .wireit .eslintcache *.vsix src/soql-builder-ui/dist src/soql-builder-ui/node_modules .circular-deps.json",
+    "copy:grammars": "wireit",
+    "build:soql-builder-ui": "wireit",
+    "test": "wireit",
+    "test:soql-builder-ui": "wireit",
+    "run:web": "wireit",
+    "test:web": "wireit",
+    "test:web:ui": "DEBUG_MODE=1 npm run test:web -- --headed",
+    "test:web:debug": "npm run test:web -- --debug",
+    "test:desktop": "wireit",
+    "test:desktop:debug": "npm run test:desktop -- --debug",
+    "test:e2e": "wireit",
+    "vscode:package": "wireit",
+    "vscode:sha256": "node ../../scripts/generate-sha256.js >> ../../SHA256",
+    "vscode:publish": "node ../../scripts/publish-vsix.js"
+  },
+  "wireit": {
+    "compile": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "../soql-common:compile",
+        "../salesforcedx-vscode-i18n:compile",
+        "../salesforcedx-vscode-services:compile"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "test/**/*.ts",
+        "tsconfig.json",
+        "../../tsconfig.common.json",
+        "package.json",
+        "package.nls*.json",
+        "../soql-common/out/**",
+        "../salesforcedx-vscode-i18n/out/**",
+        "../salesforcedx-vscode-services/out/**"
+      ],
+      "output": [
+        "out/**",
+        "tsconfig.tsbuildinfo"
+      ]
+    },
+    "copy:grammars": {
+      "command": "shx mkdir -p grammars && shx cp ../../node_modules/@salesforce/apex-tmlanguage/grammars/soql.tmLanguage ./grammars/",
+      "files": [
+        "../../node_modules/@salesforce/apex-tmlanguage/grammars/soql.tmLanguage"
+      ],
+      "output": [
+        "grammars/soql.tmLanguage"
+      ]
+    },
+    "build:soql-builder-ui": {
+      "command": "cd src/soql-builder-ui && rollup -c rollup.config.mjs",
+      "files": [
+        "src/soql-builder-ui/*.{ts,html}",
+        "src/soql-builder-ui/modules/**",
+        "src/soql-builder-ui/rollup.config.mjs"
+      ],
+      "output": [
+        "src/soql-builder-ui/dist/**"
+      ]
+    },
+    "test:soql-builder-ui": {
+      "command": "jest --config src/soql-builder-ui/jest.config.js",
+      "files": [
+        "src/soql-builder-ui/modules/**",
+        "src/soql-builder-ui/jest.config.js",
+        "src/soql-builder-ui/jestSetup/**",
+        "test/jest/soql-builder-ui/**"
+      ],
+      "output": []
+    },
+    "vscode:bundle": {
+      "command": "node ./esbuild.config.mjs",
+      "dependencies": [
+        "compile",
+        "copy:grammars",
+        "build:soql-builder-ui"
+      ],
+      "files": [
+        "esbuild.config.mjs",
+        "../../scripts/bundling/node.mjs",
+        "../../scripts/bundling/web.mjs",
+        "../../browser-extensions/salesforcedx-vscode-soql/**",
+        "out/**",
+        "src/soql-builder-ui/dist/**",
+        "src/soql-data-view/**"
+      ],
+      "output": [
+        "dist"
+      ]
+    },
+    "vscode:bundle:local": {
+      "command": "node ./esbuild.config.mjs",
+      "dependencies": [
+        "compile",
+        "copy:grammars",
+        "build:soql-builder-ui",
+        "../salesforcedx-vscode-services:vscode:bundle:local"
+      ],
+      "files": [
+        "esbuild.config.mjs",
+        "../../scripts/bundling/node.mjs",
+        "../../scripts/bundling/web.mjs",
+        "../../browser-extensions/salesforcedx-vscode-soql/**",
+        "out/**",
+        "src/soql-builder-ui/dist/**",
+        "src/soql-data-view/**"
+      ],
+      "output": [
+        "dist"
+      ]
+    },
+    "run:web": {
+      "command": "npx vscode-test-web --browserType=chromium --browserOption=--disable-web-security --browserOption=--remote-debugging-port=9222 --extensionDevelopmentPath . --extensionPath ../salesforcedx-vscode-services --extensionPath ../salesforcedx-vscode-metadata --open-devtools --port 3001 --quality stable --verbose --printServerLog",
+      "service": true,
+      "dependencies": [
+        "vscode:bundle:local",
+        "../salesforcedx-vscode-services:vscode:bundle:local",
+        "../salesforcedx-vscode-metadata:vscode:bundle:local"
+      ],
+      "files": []
+    },
+    "test": {
+      "command": "jest --coverage",
+      "dependencies": [
+        "compile"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "test/**/*.ts",
+        "jest.config.js",
+        "../../config/jest.base.config.js"
+      ],
+      "output": [
+        "coverage"
+      ]
+    },
+    "lint": {
+      "command": "../../node_modules/.bin/eslint --color --cache --cache-location .eslintcache .",
+      "dependencies": [
+        "../eslint-local-rules:compile",
+        "check:circular-deps"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "test/**/*.ts",
+        "../../eslint.config.mjs",
+        ".vscodeignore",
+        "package.json",
+        "package.nls.json"
+      ],
+      "output": []
+    },
+    "check:circular-deps": {
+      "command": "dpdm --no-warning --no-tree --exit-code circular:1 --output .circular-deps.json --exclude \"node_modules|out\" src/index.ts",
+      "dependencies": [
+        "compile"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "package.json"
+      ],
+      "output": [
+        ".circular-deps.json"
+      ]
+    },
+    "test:web": {
+      "command": "playwright test --config=playwright.config.web.ts",
+      "env": {
+        "PLAYWRIGHT_WORKERS": {
+          "external": true
+        }
+      },
+      "dependencies": [
+        "compile",
+        "vscode:bundle",
+        "../salesforcedx-vscode-services:vscode:bundle",
+        "../salesforcedx-vscode-services:spans:server",
+        "../salesforcedx-vscode-metadata:vscode:bundle",
+        "../playwright-vscode-ext:compile"
+      ],
+      "files": [
+        "playwright.config.web.ts",
+        "test/playwright/**/*.ts",
+        "package*.json"
+      ],
+      "output": []
+    },
+    "test:desktop": {
+      "command": "playwright test --config=playwright.config.desktop.ts",
+      "env": {
+        "VSCODE_DESKTOP": "1",
+        "PLAYWRIGHT_WORKERS": {
+          "external": true
+        }
+      },
+      "dependencies": [
+        "vscode:bundle",
+        "../salesforcedx-vscode-metadata:vscode:bundle",
+        "../salesforcedx-vscode-services:vscode:bundle",
+        "../playwright-vscode-ext:compile"
+      ],
+      "files": [
+        "playwright.config.desktop.ts",
+        "test/playwright/**/*.ts",
+        "package*.json"
+      ],
+      "output": []
+    },
+    "test:e2e": {
+      "dependencies": [
+        "test:web",
+        "test:desktop"
+      ]
+    },
+    "vscode:package": {
+      "command": "vsce package --allow-package-all-secrets",
+      "dependencies": [
+        "vscode:bundle"
+      ],
+      "files": [
+        "package.json",
+        "package.nls*.json",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.txt",
+        "images/**",
+        "grammars/**"
+      ],
+      "output": [
+        "*.vsix"
+      ]
+    }
+  },
+  "main": "./dist/index.js",
   "browser": "./dist/web/index.js",
   "contributes": {
+    "customEditors": [
+      {
+        "viewType": "soqlCustom.soql",
+        "displayName": "%soqlCustom_soql%",
+        "selector": [
+          {
+            "filenamePattern": "*.soql"
+          }
+        ],
+        "priority": "option"
+      }
+    ],
     "languages": [
       {
         "id": "soql",
@@ -40,16 +348,155 @@
         "path": "./grammars/soql.tmLanguage"
       }
     ],
+    "commands": [
+      {
+        "command": "soql.open.new.builder",
+        "title": "%soql_open_new_builder%"
+      },
+      {
+        "command": "soql.open.new.text.editor",
+        "title": "%soql_open_new_text_editor%"
+      },
+      {
+        "command": "soql.builder.toggle",
+        "title": "%soql_builder_toggle%",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "soql.walkthrough.open",
+        "title": "%soql_walkthrough_open%"
+      },
+      {
+        "command": "sf.data.query.selection",
+        "title": "%data_query_selection_text%"
+      },
+      {
+        "command": "sf.data.query.document",
+        "title": "%data_query_document_text%"
+      },
+      {
+        "command": "sf.data.query.explain.selection",
+        "title": "%query_plan_selection_text%"
+      },
+      {
+        "command": "sf.data.query.explain.document",
+        "title": "%query_plan_document_text%"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "soql.open.new.builder",
+          "when": "sf:project_opened"
+        },
+        {
+          "command": "soql.open.new.text.editor",
+          "when": "sf:project_opened"
+        },
+        {
+          "command": "soql.builder.toggle",
+          "when": "false"
+        },
+        {
+          "command": "soql.walkthrough.open",
+          "when": "sf:project_opened"
+        },
+        {
+          "command": "sf.data.query.selection",
+          "when": "sf:project_opened && editorHasSelection && sf:has_target_org"
+        },
+        {
+          "command": "sf.data.query.document",
+          "when": "sf:project_opened && resourceExtname == .soql && sf:has_target_org"
+        },
+        {
+          "command": "sf.data.query.explain.selection",
+          "when": "sf:project_opened && editorHasSelection && sf:has_target_org"
+        },
+        {
+          "command": "sf.data.query.explain.document",
+          "when": "sf:project_opened && resourceExtname == .soql && sf:has_target_org"
+        }
+      ],
+      "editor/title": [
+        {
+          "when": "resourceExtname == .soql",
+          "command": "soql.builder.toggle",
+          "group": "navigation"
+        }
+      ]
+    },
     "configuration": {
       "type": "object",
-      "title": "SOQL",
+      "title": "%configuration_title%",
       "properties": {
         "salesforcedx-vscode-soql.experimental.validateQueries": {
           "type": "boolean",
           "default": false,
-          "description": "Validate LIMIT 0 queries against the connected org when the host provides query services."
+          "description": "%soql_validation_flag%"
         }
       }
-    }
-  }
+    },
+    "walkthroughs": [
+      {
+        "id": "soqlWalkthrough",
+        "title": "%soql_walkthrough_title%",
+        "description": "%soql_walkthrough_description%",
+        "steps": [
+          {
+            "id": "step1",
+            "title": "%soql_walkthrough_step1_title%",
+            "description": "%soql_walkthrough_step1_description%",
+            "media": {
+              "image": "images/SOQL_Builder_50.16.0.gif",
+              "altText": "%soql_walkthrough_step1_alt%"
+            }
+          },
+          {
+            "id": "step2",
+            "title": "%soql_walkthrough_step2_title%",
+            "description": "%soql_walkthrough_step2_description%",
+            "media": {
+              "image": "images/SOQL_Builder_50.16.0.gif",
+              "altText": "%soql_walkthrough_step2_alt%"
+            },
+            "completionEvents": [
+              "onCommand:soql.open.new.builder"
+            ]
+          },
+          {
+            "id": "step3",
+            "title": "%soql_walkthrough_step3_title%",
+            "description": "%soql_walkthrough_step3_description%",
+            "media": {
+              "image": "images/SOQL_Builder_50.16.0.gif",
+              "altText": "%soql_walkthrough_step3_alt%"
+            }
+          },
+          {
+            "id": "step4",
+            "title": "%soql_walkthrough_step4_title%",
+            "description": "%soql_walkthrough_step4_description%",
+            "media": {
+              "image": "images/SOQL_Builder_50.16.0.gif",
+              "altText": "%soql_walkthrough_step4_alt%"
+            }
+          },
+          {
+            "id": "step5",
+            "title": "%soql_walkthrough_step5_title%",
+            "description": "%soql_walkthrough_step5_description%",
+            "media": {
+              "image": "images/SOQL_Builder_50.16.0.gif",
+              "altText": "%soql_walkthrough_step5_alt%"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "activationEvents": [
+    "onLanguage:soql",
+    "onFileSystem:memfs"
+  ]
 }

@@ -1,3 +1,4 @@
+import { runAndShowSoqlQueryPlan } from '../../soql/soqlQueryPlan';
 import { executeSoqlQuery } from '../../soql/soqlQueryRunner';
 import { ensureDir, writeTextFile } from '../core/workspaceCache';
 import {
@@ -5,6 +6,8 @@ import {
     getWorkspacePath,
     getWorkspaceUri,
 } from '../core/workspacePaths';
+
+import { buildCurrentFileWarningMessage } from './deployAndSourceTrackingHelpers';
 
 function csvEscape(value) {
     const stringValue = value == null ? '' : String(value);
@@ -25,11 +28,19 @@ function flattenRecord(record) {
     return output;
 }
 
+function getDocumentFileName(uri) {
+    const path = String(uri?.path || uri?.fsPath || '');
+    if (!path) return 'SOQL Query';
+    const parts = path.split('/');
+    return parts[parts.length - 1] || 'SOQL Query';
+}
+
 export function registerQueryAndApexTools({
     connectionRuntime,
     context,
     deployTools,
     commandGroups = ['all'],
+    soqlUi,
 }) {
     const { diagnostics, vscode } = context;
     const activeGroups = new Set(
@@ -37,6 +48,22 @@ export function registerQueryAndApexTools({
     );
     const hasGroup = group => activeGroups.has('all') || activeGroups.has(group);
     const registeredCommandGroups = new Set();
+
+    async function showQueryResultsWithUi(result, documentName) {
+        if (!result || typeof soqlUi?.showQueryResults !== 'function') {
+            return false;
+        }
+        try {
+            return Boolean(
+                await soqlUi.showQueryResults({
+                    ...result,
+                    documentName,
+                })
+            );
+        } catch {
+            return false;
+        }
+    }
 
     async function runQuery({ soql, tooling }) {
         const conn = connectionRuntime.loadStoredConn();
@@ -58,12 +85,12 @@ export function registerQueryAndApexTools({
         const jsonUri = vscode.Uri.joinPath(dir, `${baseName}.json`);
         const csvUri = vscode.Uri.joinPath(dir, `${baseName}.csv`);
 
-        const flattened = (records || []).map(flattenRecord);
+        const flattened = (records || []).map(flattenRecord) as Record<string, string>[];
         const columns = Array.from(
-            flattened.reduce((set, row) => {
+            flattened.reduce((set: Set<string>, row: Record<string, string>) => {
                 for (const key of Object.keys(row || {})) set.add(key);
                 return set;
-            }, new Set())
+            }, new Set<string>())
         ).sort((left, right) => left.localeCompare(right));
 
         const csvLines = [
@@ -167,6 +194,73 @@ export function registerQueryAndApexTools({
 
     if (hasGroup('soql') && !registeredCommandGroups.has('soql')) {
         registeredCommandGroups.add('soql');
+        const runQueryWithUiFallback = async ({
+            soql,
+            tooling,
+            title,
+            documentName,
+        }: {
+            soql: string;
+            tooling: boolean;
+            title: string;
+            documentName?: string;
+        }) => {
+            const result = await vscode.window.withProgress(
+                {
+                    location: vscode.ProgressLocation.Notification,
+                    title,
+                    cancellable: false,
+                },
+                async () => await runQuery({ tooling, soql })
+            );
+            if (!result) return;
+            const shownInUi = await showQueryResultsWithUi(result, documentName);
+            if (!shownInUi) {
+                await writeQueryResults(result);
+            }
+        };
+
+        const runExplainPlan = async (soql: string) => {
+            await vscode.window.withProgress(
+                {
+                    location: vscode.ProgressLocation.Notification,
+                    title: 'Running SOQL explain plan…',
+                    cancellable: false,
+                },
+                async () =>
+                    await runAndShowSoqlQueryPlan({
+                        connectionRuntime,
+                        outputChannel: context.output,
+                        vscode,
+                        soql,
+                    })
+            );
+        };
+
+        const pickQueryApi = async () => {
+            const picked = await vscode.window.showQuickPick(
+                [
+                    {
+                        label: 'REST API',
+                        description: 'Query data from standard objects',
+                        tooling: false,
+                    },
+                    {
+                        label: 'Tooling API',
+                        description: 'Query metadata/tooling objects',
+                        tooling: true,
+                    },
+                ],
+                {
+                    title: 'Run Query With',
+                    placeHolder: 'Choose an API',
+                    ignoreFocusOut: true,
+                }
+            );
+            if (!picked) return null;
+            return Boolean(picked.tooling);
+        };
+
         register('salesforceMetadata.runSoqlQuery', async () => {
             const editor = vscode.window?.activeTextEditor;
             const selected =
@@ -180,16 +274,14 @@ export function registerQueryAndApexTools({
                 ignoreFocusOut: true,
             });
             if (!soql) return;
-            const result = await vscode.window.withProgress(
-                {
-                    location: vscode.ProgressLocation.Notification,
-                    title: 'Running SOQL query…',
-                    cancellable: false,
-                },
-                async () => await runQuery({ tooling: false, soql })
-            );
-            if (!result) return;
-            await writeQueryResults(result);
+            await runQueryWithUiFallback({
+                soql,
+                tooling: false,
+                title: 'Running SOQL query…',
+                documentName: editor?.document
+                    ? getDocumentFileName(editor.document.uri)
+                    : undefined,
+            });
         });
 
         register('salesforceMetadata.runToolingQuery', async () => {
@@ -205,16 +297,14 @@ export function registerQueryAndApexTools({
                 ignoreFocusOut: true,
             });
             if (!soql) return;
-            const result = await vscode.window.withProgress(
-                {
-                    location: vscode.ProgressLocation.Notification,
-                    title: 'Running Tooling query…',
-                    cancellable: false,
-                },
-                async () => await runQuery({ tooling: true, soql })
-            );
-            if (!result) return;
-            await writeQueryResults(result);
+            await runQueryWithUiFallback({
+                soql,
+                tooling: true,
+                title: 'Running Tooling query…',
+                documentName: editor?.document
+                    ? getDocumentFileName(editor.document.uri)
+                    : undefined,
+            });
         });
 
         register('salesforceMetadata.openSoqlScratch', async () => {
@@ -246,31 +336,92 @@ export function registerQueryAndApexTools({
         register('salesforceMetadata._runSoqlEditorDoc', async uriArg => {
             const uri = await toUri(uriArg);
             const soql = await readSelectionOrDocumentText(uri);
-            const result = await vscode.window.withProgress(
-                {
-                    location: vscode.ProgressLocation.Notification,
-                    title: 'Running SOQL query…',
-                    cancellable: false,
-                },
-                async () => await runQuery({ tooling: false, soql })
-            );
-            if (!result) return;
-            await writeQueryResults(result);
+            await runQueryWithUiFallback({
+                soql,
+                tooling: false,
+                title: 'Running SOQL query…',
+                documentName: getDocumentFileName(uri),
+            });
         });
 
         register('salesforceMetadata._runToolingEditorDoc', async uriArg => {
             const uri = await toUri(uriArg);
             const soql = await readSelectionOrDocumentText(uri);
-            const result = await vscode.window.withProgress(
-                {
-                    location: vscode.ProgressLocation.Notification,
-                    title: 'Running Tooling query…',
-                    cancellable: false,
-                },
-                async () => await runQuery({ tooling: true, soql })
-            );
-            if (!result) return;
-            await writeQueryResults(result);
+            await runQueryWithUiFallback({
+                soql,
+                tooling: true,
+                title: 'Running Tooling query…',
+                documentName: getDocumentFileName(uri),
+            });
+        });
+
+        register('salesforceMetadata._explainSoqlEditorDoc', async uriArg => {
+            const uri = await toUri(uriArg);
+            const soql = await readSelectionOrDocumentText(uri);
+            if (!String(soql || '').trim()) {
+                await vscode.window.showInformationMessage('Select or open a SOQL query first.');
+                return;
+            }
+            await runExplainPlan(soql);
+        });
+
+        register('sf.data.query.selection', async () => {
+            const editor = vscode.window?.activeTextEditor;
+            const hasSelection = Boolean(editor?.selection && !editor.selection.isEmpty);
+            if (!editor?.document || !hasSelection) {
+                await vscode.window.showInformationMessage(
+                    'Select a SOQL query in the active editor first.'
+                );
+                return;
+            }
+            const queryApiTooling = await pickQueryApi();
+            if (queryApiTooling == null) return;
+            const soql = editor.document.getText(editor.selection);
+            await runQueryWithUiFallback({
+                soql,
+                tooling: queryApiTooling,
+                title: queryApiTooling ? 'Running Tooling query…' : 'Running SOQL query…',
+                documentName: getDocumentFileName(editor.document.uri),
+            });
+        });
+
+        register('sf.data.query.document', async () => {
+            const editor = vscode.window?.activeTextEditor;
+            if (!editor?.document) {
+                await vscode.window.showInformationMessage('Open a .soql document first.');
+                return;
+            }
+            const queryApiTooling = await pickQueryApi();
+            if (queryApiTooling == null) return;
+            const soql = editor.document.getText?.() || '';
+            await runQueryWithUiFallback({
+                soql,
+                tooling: queryApiTooling,
+                title: queryApiTooling ? 'Running Tooling query…' : 'Running SOQL query…',
+                documentName: getDocumentFileName(editor.document.uri),
+            });
+        });
+
+        register('sf.data.query.explain.selection', async () => {
+            const editor = vscode.window?.activeTextEditor;
+            const hasSelection = Boolean(editor?.selection && !editor.selection.isEmpty);
+            if (!editor?.document || !hasSelection) {
+                await vscode.window.showInformationMessage(
+                    'Select a SOQL query in the active editor first.'
+                );
+                return;
+            }
+            const soql = editor.document.getText(editor.selection);
+            await runExplainPlan(soql);
+        });
+
+        register('sf.data.query.explain.document', async () => {
+            const editor = vscode.window?.activeTextEditor;
+            if (!editor?.document) {
+                await vscode.window.showInformationMessage('Open a .soql document first.');
+                return;
+            }
+            await runExplainPlan(editor.document.getText?.() || '');
         });
 
         try {
@@ -294,6 +445,11 @@ export function registerQueryAndApexTools({
                                     new vscode.CodeLens(top, {
                                         title: 'Run Tooling',
                                         command: 'salesforceMetadata._runToolingEditorDoc',
+                                        arguments: [doc.uri],
+                                    }),
+                                    new vscode.CodeLens(top, {
+                                        title: 'Explain SOQL',
+                                        command: 'salesforceMetadata._explainSoqlEditorDoc',
                                         arguments: [doc.uri],
                                     }),
                                 ];
@@ -454,7 +610,11 @@ export function registerQueryAndApexTools({
             }
             const activePath = vscode.window?.activeTextEditor?.document?.uri?.path || '';
             const mapItems = await deployTools.loadToolingMapItems();
-            const activeEntry = activePath ? mapItems?.[activePath] : null;
+            const activeResolution = activePath
+                ? await deployTools.resolveCurrentToolingPath(activePath)
+                : null;
+            const activeEntry =
+                activeResolution?.status === 'tooling' ? activeResolution.entry : null;
             const activeClassId =
                 activeEntry?.type === 'ApexClass' ? String(activeEntry.id || '') : '';
 
@@ -500,7 +660,9 @@ export function registerQueryAndApexTools({
             const classIds = picked.map(item => item.id).filter(Boolean);
             const classIdToName = new Map(picked.map(item => [item.id, item.name || item.label]));
             const idToPath = new Map();
-            for (const [path, entry] of Object.entries(mapItems || {})) {
+            for (const [path, entry] of Object.entries(mapItems || {}) as Array<
+                [string, { type?: string; id?: string }]
+            >) {
                 if (entry?.type === 'ApexClass' && entry?.id) {
                     idToPath.set(String(entry.id), path);
                 }
@@ -862,11 +1024,13 @@ export function registerQueryAndApexTools({
             }
             const path = vscode.window?.activeTextEditor?.document?.uri?.path;
             if (!path) return;
-            const mapItems = await deployTools.loadToolingMapItems();
-            const entry = mapItems?.[path];
-            if (!entry?.id) {
+            const resolution = await deployTools.resolveCurrentToolingPath(path, {
+                includeMetadataApi: true,
+            });
+            const entry = resolution?.entry;
+            if (resolution?.status !== 'tooling' || !entry?.id) {
                 await vscode.window.showWarningMessage(
-                    'This file is not in tooling-map.json. Fetch metadata first.'
+                    buildCurrentFileWarningMessage(resolution, 'Where Used')
                 );
                 return;
             }

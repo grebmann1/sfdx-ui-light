@@ -19,6 +19,7 @@ export default class directView extends LightningElement {
     connector;
 
     connectedCallback() {
+        this.applyVariantFromSearch();
         const seed = this.getBootstrapSeed();
         this.alias = seed.alias;
         this.sessionId = seed.sessionId;
@@ -33,6 +34,26 @@ export default class directView extends LightningElement {
             this.sendError();
         }
     }
+
+    applyVariantFromSearch = () => {
+        if (typeof window === 'undefined') {
+            return;
+        }
+
+        const configuredVariant = String(this.variant || '')
+            .trim()
+            .toLowerCase();
+        if (configuredVariant && configuredVariant !== 'default') {
+            return;
+        }
+
+        const variant = String(new URLSearchParams(window.location.search).get('variant') || '')
+            .trim()
+            .toLowerCase();
+        if (variant) {
+            this.variant = variant;
+        }
+    };
 
     getBootstrapSeed = () => {
         return parseVscodeBootstrapSeed(window.location.search);

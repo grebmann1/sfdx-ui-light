@@ -58,6 +58,7 @@ import {
     registerAllExtensions,
     runDemoFeatures,
 } from './workbench/workbenchOrchestration';
+import { createCoreServices } from './extensions/core/coreServices';
 import {
     buildWorkspaceBootstrap,
     createWorkbenchFilesService,
@@ -1621,7 +1622,9 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             });
 
             this.vscodeInitialized = true;
+            const coreServices = await createCoreServices(vscodeBundle);
             const extensionDisposables = await registerAllExtensions(vscodeBundle, {
+                coreServices,
                 orgContext: this.orgContext,
             });
             this._demoDisposables.push(...extensionDisposables);
