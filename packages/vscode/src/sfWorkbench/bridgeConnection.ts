@@ -2,9 +2,13 @@
 import { zipSync } from 'fflate'
 import { isIframeJsforceBridgeEnabled } from '../../../lwc/app/vscode/tempForIframeContent/bridge/bootstrapIframeJsforceBridge'
 import { connectIframeJsforceBridgeClient } from '../../../lwc/app/vscode/tempForIframeContent/bridge/iframeJsforceBridgeClient'
+import type { IframeJsforceBridgeHostEvent } from '../../../lwc/app/vscode/tempForIframeContent/bridge/iframeJsforceBridgeContract'
 
 type BridgeClient = {
   dispose?: () => void
+  onHostEvent?: (
+    listener: (event: IframeJsforceBridgeHostEvent) => void
+  ) => { dispose?: () => void }
   getConnectionStatus: () => Promise<any>
   executeSoql: (args: {
     query: string
@@ -59,11 +63,18 @@ type ConnectionRecord = {
 type BridgeConnectionContext = {
   getContext: () => Record<string, unknown>
   refreshStatus: () => Promise<void>
+  onHostEvent: (
+    listener: (event: IframeJsforceBridgeHostEvent) => void
+  ) => { dispose: () => void }
   dispose: () => void
 }
 
 function asString(value: unknown) {
   return String(value ?? '').trim()
+}
+
+function hasOwnValue(record: Record<string, unknown>, key: string) {
+  return Object.prototype.hasOwnProperty.call(record, key)
 }
 
 function normalizeApiVersion(value: unknown, fallback = '63.0') {
@@ -240,7 +251,103 @@ export async function createBridgeConnectionContext({
 
   let bridgeClient: BridgeClient | null = null
   let bridgeClientPromise: Promise<BridgeClient> | null = null
+  let bridgeHostEventDisposable: { dispose?: () => void } | null = null
   let disposed = false
+
+  const hostEventListeners = new Set<(event: IframeJsforceBridgeHostEvent) => void>()
+
+  const emitHostEvent = (event: IframeJsforceBridgeHostEvent) => {
+    for (const listener of Array.from(hostEventListeners)) {
+      try {
+        listener(event)
+      } catch {
+        // ignore listener errors
+      }
+    }
+  }
+
+  const onHostEvent = (listener: (event: IframeJsforceBridgeHostEvent) => void) => {
+    if (typeof listener !== 'function') {
+      return { dispose() {} }
+    }
+    hostEventListeners.add(listener)
+    return {
+      dispose: () => {
+        hostEventListeners.delete(listener)
+      }
+    }
+  }
+
+  const applyConnectionStatePayload = (payload: Record<string, unknown>) => {
+    if (hasOwnValue(payload, 'instanceUrl')) {
+      connectionRecord.instanceUrl = asString(payload.instanceUrl)
+    }
+    if (hasOwnValue(payload, 'apiVersion')) {
+      connectionRecord.apiVersion = normalizeApiVersion(payload.apiVersion, connectionRecord.apiVersion)
+    }
+    if (hasOwnValue(payload, 'workspaceRoot')) {
+      connectionRecord.workspaceRoot = asString(payload.workspaceRoot)
+    }
+    if (hasOwnValue(payload, 'username')) {
+      connectionRecord.username = asString(payload.username)
+    }
+    if (hasOwnValue(payload, 'userId')) {
+      connectionRecord.userId = asString(payload.userId)
+    }
+    if (hasOwnValue(payload, 'orgId')) {
+      connectionRecord.orgId = asString(payload.orgId)
+    }
+    if (hasOwnValue(payload, 'organizationName')) {
+      connectionRecord.organizationName = asString(payload.organizationName)
+    }
+    if (hasOwnValue(payload, 'sessionHasExpired')) {
+      connectionRecord.sessionHasExpired = Boolean(payload.sessionHasExpired)
+    }
+    if (hasOwnValue(payload, 'hasError')) {
+      connectionRecord.hasError = Boolean(payload.hasError)
+    }
+    if (hasOwnValue(payload, 'errorMessage')) {
+      const message = asString(payload.errorMessage)
+      connectionRecord.errorMessage =
+        message || (connectionRecord.hasError ? 'Bridge connection failed.' : null)
+    } else if (!connectionRecord.hasError) {
+      connectionRecord.errorMessage = null
+    }
+    if (hasOwnValue(payload, 'connected')) {
+      connectionRecord.hasConnection =
+        Boolean(payload.connected) && !connectionRecord.sessionHasExpired && !connectionRecord.hasError
+    } else {
+      connectionRecord.hasConnection = !connectionRecord.sessionHasExpired && !connectionRecord.hasError
+    }
+  }
+
+  const shouldRefreshStatusFromBannerAction = (payload: Record<string, unknown>) => {
+    const action = asString(payload.action)
+    const status = asString(payload.status)
+    if (status !== 'completed' && status !== 'failed' && status !== 'cancelled') {
+      return false
+    }
+    return action === 'reconnectManually' || action === 'importBrowserOrg'
+  }
+
+  const handleHostEvent = (event: IframeJsforceBridgeHostEvent) => {
+    const eventName = asString(event?.eventName)
+    const payload =
+      event?.payload && typeof event.payload === 'object'
+        ? (event.payload as Record<string, unknown>)
+        : null
+
+    if (eventName === 'connection.state' && payload) {
+      applyConnectionStatePayload(payload)
+    } else if (eventName === 'banner.action' && payload && shouldRefreshStatusFromBannerAction(payload)) {
+      void refreshStatus()
+    }
+
+    emitHostEvent({
+      eventName,
+      payload
+    })
+  }
 
   const resolveBridgeClient = async () => {
     if (bridgeClient) {
@@ -254,7 +361,16 @@ export async function createBridgeConnectionContext({
         return createMockBridgeClient(connectionRecord.workspaceRoot)
       }
       try {
-        return await connectIframeJsforceBridgeClient()
+        const client = await connectIframeJsforceBridgeClient()
+        if (typeof client.onHostEvent === 'function') {
+          try {
+            bridgeHostEventDisposable?.dispose?.()
+          } catch {
+            // ignore
+          }
+          bridgeHostEventDisposable = client.onHostEvent(handleHostEvent)
+        }
+        return client
       } catch (error) {
         console.warn('[sfWorkbench] JSForce bridge unavailable, using mock client.', error)
         return createMockBridgeClient(connectionRecord.workspaceRoot)
@@ -458,6 +574,7 @@ export async function createBridgeConnectionContext({
       }
     },
     refreshStatus,
+    onHostEvent,
     dispose() {
       if (disposed) {
         return
@@ -468,8 +585,15 @@ export async function createBridgeConnectionContext({
       } catch {
         // ignore
       }
+      try {
+        bridgeHostEventDisposable?.dispose?.()
+      } catch {
+        // ignore
+      }
       bridgeClient = null
       bridgeClientPromise = null
+      bridgeHostEventDisposable = null
+      hostEventListeners.clear()
     }
   }
 }

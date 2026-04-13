@@ -33,6 +33,7 @@ Behavior:
     - `metadata.retrieveToolingTypes`
     - `schema.describeCustomObject`
 - Salesforce auth/session handling stays centralized in host runtime wrappers.
+- Banner actions are pushed to iframe over JSForce bridge `bridgeEvent` messages.
 
 ## Iframe side (temporary package)
 
@@ -62,6 +63,12 @@ if (status.connected) {
     });
     console.log(queryResult.records);
 }
+
+jsforceBridge.onHostEvent(event => {
+    if (event.eventName === 'banner.action') {
+        console.log('Host banner action:', event.payload);
+    }
+});
 ```
 
 ## URL flags

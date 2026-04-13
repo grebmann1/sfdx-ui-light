@@ -15,6 +15,7 @@ export const IFRAME_JSFORCE_BRIDGE_PORT_MESSAGE_TYPES = {
     READY: 'bridgeReady',
     REQUEST: 'jsforceRequest',
     RESPONSE: 'jsforceResponse',
+    EVENT: 'bridgeEvent',
     ERROR: 'bridgeError',
 } as const;
 
@@ -36,6 +37,11 @@ export type IframeJsforceBridgeMethod = (typeof IFRAME_JSFORCE_BRIDGE_METHODS)[n
 export type IframeJsforceBridgeError = {
     code: string;
     message: string;
+};
+
+export type IframeJsforceBridgeHostEvent = {
+    eventName: string;
+    payload?: Record<string, unknown> | null;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {

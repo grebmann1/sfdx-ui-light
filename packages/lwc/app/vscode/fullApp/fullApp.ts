@@ -126,6 +126,8 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     _iframeFsBridgeHost = null;
     _iframeJsforceBridgeHost = null;
     _iframeBridgeInitializationPromise = null;
+    _lastIframeConnectionEventSignature = '';
+    _lastIframeThemeEventSignature = '';
     @track isReconnectBusy = false;
 
     @wire(connectStore, { store })
@@ -273,6 +275,10 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                     iframe,
                     targetOrigin: this._getWorkbenchIframeOrigin(),
                     runtime: jsforceBridgeRuntime,
+                    onReady: () => {
+                        this._emitIframeConnectionState('bridge.ready', { force: true });
+                        this._emitIframeThemeState('bridge.ready', { force: true });
+                    },
                     onError: error => {
                         this.initializationError =
                             error?.message || 'Failed to connect the iframe JSForce bridge.';
@@ -326,6 +332,82 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         } finally {
             this._iframeJsforceBridgeHost = null;
         }
+    }
+
+    _emitIframeHostEvent(eventName, payload = null) {
+        const normalizedEventName = String(eventName || '').trim();
+        if (!normalizedEventName) {
+            return false;
+        }
+        const bridgeHost = this._iframeJsforceBridgeHost;
+        if (!bridgeHost?.emitEvent) {
+            return false;
+        }
+        const normalizedPayload = payload && typeof payload === 'object' ? payload : null;
+        try {
+            return Boolean(
+                bridgeHost.emitEvent({
+                    eventName: normalizedEventName,
+                    payload: normalizedPayload,
+                })
+            );
+        } catch {
+            return false;
+        }
+    }
+
+    _buildIframeConnectionEventPayload() {
+        const connection = this._buildCurrentConnection();
+        return {
+            connected: this._hasUsableWorkbenchConnection(connection),
+            instanceUrl: String(connection?.instanceUrl || ''),
+            apiVersion: String(this.sfApiVersion || ''),
+            workspaceRoot: String(this._workspaceRoot || ''),
+            sessionHasExpired: Boolean(this.sessionHasExpired),
+            hasError: Boolean(this.connectorHasError),
+            errorMessage: this.connectorErrorMessage || connection?.errorMessage || null,
+            orgId: String(connection?.orgId || ''),
+            userId: String(connection?.userId || ''),
+        };
+    }
+
+    _emitIframeConnectionState(reason = 'connection.sync', { force = false } = {}) {
+        const payload = {
+            reason: String(reason || 'connection.sync'),
+            ...this._buildIframeConnectionEventPayload(),
+        };
+        const signature = JSON.stringify(payload);
+        if (!force && signature === this._lastIframeConnectionEventSignature) {
+            return;
+        }
+        const emitted = this._emitIframeHostEvent('connection.state', payload);
+        if (emitted) {
+            this._lastIframeConnectionEventSignature = signature;
+        }
+    }
+
+    _emitIframeThemeState(reason = 'theme.sync', { force = false } = {}) {
+        const payload = {
+            reason: String(reason || 'theme.sync'),
+            themeMode: this.themeMode === 'light' ? 'light' : 'dark',
+        };
+        const signature = JSON.stringify(payload);
+        if (!force && signature === this._lastIframeThemeEventSignature) {
+            return;
+        }
+        const emitted = this._emitIframeHostEvent('theme.mode', payload);
+        if (emitted) {
+            this._lastIframeThemeEventSignature = signature;
+        }
+    }
+
+    _emitIframeBannerAction(action, status, details: Record<string, unknown> = {}) {
+        this._emitIframeHostEvent('banner.action', {
+            action: String(action || ''),
+            status: String(status || ''),
+            timestamp: Date.now(),
+            ...(details && typeof details === 'object' ? details : {}),
+        });
     }
 
     _disposeGlobalKeydownDisposer() {
@@ -445,6 +527,8 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         if (activeConnection?.instanceUrl && !connectorHasError && !this.sessionHasExpired) {
             this.initializationError = null;
         }
+
+        this._emitIframeConnectionState('connection.sync');
     }
 
     _normalizeWorkspaceRoot(value) {
@@ -731,6 +815,8 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         } catch {
             // ignore
         }
+
+        this._emitIframeThemeState('theme.applied');
     }
 
     async _prepareWorkspaceBootstrap(connection) {
@@ -1131,6 +1217,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             this._persistResolvedWorkspaceIdentity(activeConnection);
         }
         await this._syncWorkbenchConnectionUi();
+        this._emitIframeConnectionState('connection.applied', { force: true });
         return connector;
     }
 
@@ -1160,9 +1247,13 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
 
     async reconnectManually() {
         if (this.isReconnectBusy) {
+            this._emitIframeBannerAction('reconnectManually', 'ignored', {
+                reason: 'busy',
+            });
             return;
         }
         this.isReconnectBusy = true;
+        this._emitIframeBannerAction('reconnectManually', 'started');
         try {
             const instanceUrl = await this._showInputBox({
                 title: 'Connect to Salesforce Manually',
@@ -1180,6 +1271,9 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                 },
             });
             if (!instanceUrl) {
+                this._emitIframeBannerAction('reconnectManually', 'cancelled', {
+                    reason: 'instanceUrl-not-provided',
+                });
                 return;
             }
 
@@ -1191,6 +1285,9 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                     String(value || '').trim() ? undefined : 'An access token is required.',
             });
             if (!accessToken) {
+                this._emitIframeBannerAction('reconnectManually', 'cancelled', {
+                    reason: 'accessToken-not-provided',
+                });
                 return;
             }
 
@@ -1198,7 +1295,11 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                 sessionId: String(accessToken).trim(),
                 serverUrl: instanceUrl,
             });
+            this._emitIframeBannerAction('reconnectManually', 'completed');
         } catch (error) {
+            this._emitIframeBannerAction('reconnectManually', 'failed', {
+                message: error instanceof Error ? error.message : String(error),
+            });
             await this._showErrorMessage(
                 `Failed to connect manually: ${error instanceof Error ? error.message : String(error)}`
             );
@@ -1209,11 +1310,18 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
 
     async importBrowserOrg() {
         if (this.isReconnectBusy) {
+            this._emitIframeBannerAction('importBrowserOrg', 'ignored', {
+                reason: 'busy',
+            });
             return;
         }
         this.isReconnectBusy = true;
+        this._emitIframeBannerAction('importBrowserOrg', 'started');
         try {
             if (!hasChromeBackgroundMessaging()) {
+                this._emitIframeBannerAction('importBrowserOrg', 'cancelled', {
+                    reason: 'background-messaging-unavailable',
+                });
                 await this._showInformationMessage(
                     'Browser-backed org discovery is only available inside the Chrome extension.'
                 );
@@ -1232,6 +1340,11 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             if (!sessionCandidate) {
                 const permission = await requestTabsPermissionViaBackground();
                 if (permission?.granted === false) {
+                    this._emitIframeBannerAction('importBrowserOrg', 'failed', {
+                        message:
+                            permission.error ||
+                            'Tab access is required to discover active Salesforce browser sessions.',
+                    });
                     await this._showErrorMessage(
                         permission.error ||
                             'Tab access is required to discover active Salesforce browser sessions.'
@@ -1241,12 +1354,19 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
 
                 const sessions = await listOrgSessionsViaBackground();
                 if (!Array.isArray(sessions)) {
+                    this._emitIframeBannerAction('importBrowserOrg', 'failed', {
+                        message:
+                            sessions?.error || 'No active Salesforce browser sessions were found.',
+                    });
                     await this._showErrorMessage(
                         sessions?.error || 'No active Salesforce browser sessions were found.'
                     );
                     return;
                 }
                 if (!sessions.length) {
+                    this._emitIframeBannerAction('importBrowserOrg', 'cancelled', {
+                        reason: 'no-browser-sessions-found',
+                    });
                     await this._showInformationMessage(
                         'No reusable Salesforce session was found in your open browser tabs.'
                     );
@@ -1266,6 +1386,9 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                     }
                 );
                 if (!picked?.session) {
+                    this._emitIframeBannerAction('importBrowserOrg', 'cancelled', {
+                        reason: 'session-not-selected',
+                    });
                     return;
                 }
                 sessionCandidate = picked.session;
@@ -1277,6 +1400,9 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             });
             if (backgroundConnector?.conn) {
                 await this._applyConnector(backgroundConnector);
+                this._emitIframeBannerAction('importBrowserOrg', 'completed', {
+                    mode: 'background-connector',
+                });
                 return;
             }
 
@@ -1284,7 +1410,13 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                 sessionId: sessionCandidate.sessionId,
                 serverUrl: sessionCandidate.serverUrl,
             });
+            this._emitIframeBannerAction('importBrowserOrg', 'completed', {
+                mode: 'session-connect',
+            });
         } catch (error) {
+            this._emitIframeBannerAction('importBrowserOrg', 'failed', {
+                message: error instanceof Error ? error.message : String(error),
+            });
             await this._showErrorMessage(
                 `Failed to import browser org: ${error instanceof Error ? error.message : String(error)}`
             );
@@ -1966,7 +2098,14 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     }
 
     async toggleWorkbenchTheme() {
-        await this._applyWorkbenchTheme(this.themeMode === 'light' ? 'dark' : 'light');
+        const nextThemeMode = this.themeMode === 'light' ? 'dark' : 'light';
+        this._emitIframeBannerAction('toggleWorkbenchTheme', 'started', {
+            nextThemeMode,
+        });
+        await this._applyWorkbenchTheme(nextThemeMode);
+        this._emitIframeBannerAction('toggleWorkbenchTheme', 'completed', {
+            themeMode: this.themeMode,
+        });
     }
 
     get downloadWorkspaceIcon() {
@@ -1974,8 +2113,14 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     }
 
     async downloadWorkspace() {
-        if (this.isDownloadingWorkspace || !this._vscode) return;
+        if (this.isDownloadingWorkspace || !this._vscode) {
+            this._emitIframeBannerAction('downloadWorkspace', 'ignored', {
+                reason: this.isDownloadingWorkspace ? 'busy' : 'vscode-unavailable',
+            });
+            return;
+        }
         this.isDownloadingWorkspace = true;
+        this._emitIframeBannerAction('downloadWorkspace', 'started');
         try {
             const vscode = this._vscode;
             const root = vscode.Uri.file(this._workspaceRoot);
@@ -2024,7 +2169,11 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             a.download = `${orgSlug}-${ts}.zip`;
             a.click();
             URL.revokeObjectURL(url);
+            this._emitIframeBannerAction('downloadWorkspace', 'completed');
         } catch (error) {
+            this._emitIframeBannerAction('downloadWorkspace', 'failed', {
+                message: error instanceof Error ? error.message : String(error),
+            });
             // eslint-disable-next-line no-console
             console.error('[fullApp] workspace download failed:', error);
         } finally {
@@ -2033,7 +2182,16 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     }
 
     async refreshSalesforceMetadata() {
-        await refreshSalesforceMetadataForApp(this);
+        this._emitIframeBannerAction('refreshSalesforceMetadata', 'started');
+        try {
+            await refreshSalesforceMetadataForApp(this);
+            this._emitIframeBannerAction('refreshSalesforceMetadata', 'completed');
+        } catch (error) {
+            this._emitIframeBannerAction('refreshSalesforceMetadata', 'failed', {
+                message: error instanceof Error ? error.message : String(error),
+            });
+            throw error;
+        }
     }
 
     async _runDemoFeatures() {

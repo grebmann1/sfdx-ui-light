@@ -51,6 +51,12 @@ if (status.connected) {
     });
     console.log(queryResult.records);
 }
+
+const hostEvents = jsforceBridge.onHostEvent(event => {
+    if (event.eventName === 'banner.action') {
+        console.log('Banner action event:', event.payload);
+    }
+});
 ```
 
 3. The provider reads `workspaceRoot` sent by the parent host bridge during handshake.
@@ -61,3 +67,4 @@ if (status.connected) {
 - The parent validates origin/source before transferring the communication port.
 - Paths are constrained to the parent workspace root.
 - JSForce operations run through host-owned auth/session recovery helpers.
+- Parent banner actions are pushed to iframe via JSForce bridge `bridgeEvent` messages.

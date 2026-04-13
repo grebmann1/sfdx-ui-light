@@ -50,35 +50,45 @@ export default defineConfig({
       }
     },
     {
-      // Serve webview HTML and other static assets from dist/extension/libs/ without Vite transforming them
+      // Serve pre-built extension assets (libs, scripts, views, styles) from dist/extension without
+      // Vite transforming them. This prevents Vite from injecting @vite/client (HMR) into extension
+      // scripts loaded inside VS Code webview panels, which would cause CSP connect-src violations.
       name: 'force-prevent-transform-assets',
       apply: 'serve',
       configureServer(server) {
         const distExtensionDir = path.resolve(__dirname, '../../dist/extension')
+        const serverAssetsDir = path.resolve(__dirname, '../../packages/server/assets')
+        const STATIC_PREFIXES = ['/libs/', '/scripts/', '/views/', '/styles/']
+        const mimeTypes: Record<string, string> = {
+          '.html': 'text/html',
+          '.js': 'application/javascript',
+          '.json': 'application/json',
+          '.css': 'text/css',
+          '.svg': 'image/svg+xml',
+          '.wasm': 'application/wasm'
+        }
         return () => {
           server.middlewares.use(async (req, res, next) => {
             if (req.originalUrl != null) {
               const pathname = new URL(req.originalUrl, import.meta.url).pathname
-              if (pathname.startsWith('/libs/')) {
-                const filePath = path.join(distExtensionDir, pathname)
-                try {
-                  const content = fs.readFileSync(filePath)
-                  const ext = path.extname(pathname)
-                  const mimeTypes: Record<string, string> = {
-                    '.html': 'text/html',
-                    '.js': 'application/javascript',
-                    '.json': 'application/json',
-                    '.css': 'text/css',
-                    '.svg': 'image/svg+xml',
-                    '.wasm': 'application/wasm'
+              if (STATIC_PREFIXES.some(prefix => pathname.startsWith(prefix))) {
+                // Try dist/extension first, then fall back to packages/server/assets
+                const candidates = [
+                  path.join(distExtensionDir, pathname),
+                  path.join(serverAssetsDir, pathname)
+                ]
+                for (const filePath of candidates) {
+                  try {
+                    const content = fs.readFileSync(filePath)
+                    const ext = path.extname(pathname)
+                    res.setHeader('Content-Type', mimeTypes[ext] ?? 'application/octet-stream')
+                    res.writeHead(200)
+                    res.write(content)
+                    res.end()
+                    return
+                  } catch {
+                    // try next candidate
                   }
-                  res.setHeader('Content-Type', mimeTypes[ext] ?? 'application/octet-stream')
-                  res.writeHead(200)
-                  res.write(content)
-                  res.end()
-                  return
-                } catch {
-                  // fall through to next middleware when file not found
                 }
               }
             }
@@ -117,7 +127,7 @@ export default defineConfig({
     port: 5173,
     host: '0.0.0.0',
     fs: {
-      allow: ['../', '../../dist/extension'] // allow codicon.ttf from monaco-editor and libs from dist/extension
+      allow: ['../', '../../dist/extension', '../../packages/server/assets']
     }
   },
   define: {

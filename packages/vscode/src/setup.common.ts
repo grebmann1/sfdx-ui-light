@@ -260,17 +260,6 @@ export const constructOptions: IWorkbenchConstructionOptions = {
   },
   welcomeBanner: {
     message: 'Welcome to Salesforce Workbench'
-  },
-  productConfiguration: {
-    nameShort: 'Salesforce Workbench',
-    nameLong: 'Salesforce Workbench',
-    extensionsGallery: {
-      serviceUrl: 'https://open-vsx.org/vscode/gallery',
-      resourceUrlTemplate: 'https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{version}/{path}',
-      extensionUrlTemplate: 'https://open-vsx.org/vscode/gallery/{publisher}/{name}/latest',
-      controlUrl: '',
-      nlsBaseUrl: ''
-    }
   }
 }
 

@@ -1,6 +1,7 @@
 import { resolveCoreServices, type CoreServices } from '../core/coreServices';
 import { buildSalesforceExtensionConfig } from '../core/extensionManifest';
 import { registerSalesforceExtension, type VscodeBundle } from '../core/extensionRegistration';
+import { fetchTextAsset } from '../core/extensionAssets';
 import { registerQueryAndApexTools } from '../metadata/commands/queryAndApexTools';
 import { registerSchemaTools } from '../metadata/runtime/schemaTools';
 
@@ -13,6 +14,7 @@ import { executeSoqlQuery } from './soqlQueryRunner';
 const SOQL_SERVER_WORKER_URL = '/libs/extensions/salesforcedx-vscode-soql/dist/serverWorker.js';
 const SOQL_SOURCE_ROOT = '/libs/extensions/salesforcedx-vscode-soql';
 const SOQL_TARGET_ROOT = '/workspace/vscode';
+
 
 const SOQL_UI_REMOTE_ASSETS = [
     {

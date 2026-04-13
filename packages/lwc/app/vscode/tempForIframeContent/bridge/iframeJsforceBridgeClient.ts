@@ -6,6 +6,7 @@ import {
     isIframeJsforceBridgeEnvelope,
     isIframeJsforceBridgeMethod,
     toIframeJsforceBridgeError,
+    type IframeJsforceBridgeHostEvent,
     type IframeJsforceBridgeMethod,
 } from './iframeJsforceBridgeContract';
 
@@ -30,6 +31,7 @@ export class IframeJsforceBridgeClient {
     private port: MessagePort;
     private requestTimeoutMs: number;
     private pending = new Map<string, PendingRequest>();
+    private hostEventListeners = new Set<(event: IframeJsforceBridgeHostEvent) => void>();
 
     private readonly boundHandlePortMessage = this.handlePortMessage.bind(this);
 
@@ -55,6 +57,21 @@ export class IframeJsforceBridgeClient {
             pending.reject(new Error(`Bridge request ${id} was cancelled.`));
             this.pending.delete(id);
         }
+        this.hostEventListeners.clear();
+    }
+
+    onHostEvent(listener: (event: IframeJsforceBridgeHostEvent) => void) {
+        if (typeof listener !== 'function') {
+            return {
+                dispose() {},
+            };
+        }
+        this.hostEventListeners.add(listener);
+        return {
+            dispose: () => {
+                this.hostEventListeners.delete(listener);
+            },
+        };
     }
 
     async getConnectionStatus() {
@@ -236,6 +253,29 @@ export class IframeJsforceBridgeClient {
                 pending.reject(error);
             }
             this.pending.clear();
+            return;
+        }
+
+        if (event.data.type === IFRAME_JSFORCE_BRIDGE_PORT_MESSAGE_TYPES.EVENT) {
+            const eventName = String(event.data.eventName || '').trim();
+            if (!eventName) {
+                return;
+            }
+            const payload =
+                event.data.payload && typeof event.data.payload === 'object'
+                    ? event.data.payload
+                    : null;
+            const hostEvent: IframeJsforceBridgeHostEvent = {
+                eventName,
+                payload,
+            };
+            for (const listener of Array.from(this.hostEventListeners)) {
+                try {
+                    listener(hostEvent);
+                } catch {
+                    // ignore listener errors
+                }
+            }
         }
     }
 }
