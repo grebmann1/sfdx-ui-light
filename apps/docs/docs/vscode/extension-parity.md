@@ -177,7 +177,7 @@ Only packages with meaningful end-user surfaces are included below.
 
 ## SOQL Asset Sync Workflow
 
-- Run `npm run sync:soql-extension-assets` to sync upstream SOQL assets into `packages/server/assets/libs/extensions/salesforcedx-vscode-soql`.
+- Run `npm run sync:soql-extension-assets` to sync upstream SOQL assets into `packages/vscode/assets/libs/extensions/salesforcedx-vscode-soql`.
 - Optional override: set `SOQL_UPSTREAM_ROOT` if your upstream checkout is in a different location.
 - Synced payload includes `package.json`, `grammars/soql.tmLanguage`, `dist/web/index.js`, `dist/serverWorker.js`, `dist/soql-builder-ui/**`, `dist/soql-data-view/**`, and optional `images/**`.
 

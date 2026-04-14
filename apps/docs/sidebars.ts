@@ -10,6 +10,11 @@ const sidebars: SidebarsConfig = {
         },
         {
             type: 'category',
+            label: 'Architecture',
+            items: ['architecture/overview'],
+        },
+        {
+            type: 'category',
             label: 'Workflows',
             items: ['workflows/common-tasks'],
         },

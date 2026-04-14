@@ -82,15 +82,18 @@ import getImageResizeServiceOverride from '@codingame/monaco-vscode-image-resize
 import getAssignmentServiceOverride from '@codingame/monaco-vscode-assignment-service-override'
 import { EnvironmentOverride } from '@codingame/monaco-vscode-api/workbench'
 import { Worker } from './tools/fakeWorker.js'
-import defaultKeybindings from './user/keybindings.json?raw'
-import defaultConfiguration from './user/configuration.json?raw'
+import {
+  buildUserConfigurationJson,
+  buildWorkspaceConfig,
+  defaultKeybindingsJson
+} from './workbench/configuration/config'
 import {
   ITerminalChildProcess,
   SimpleTerminalBackend,
   SimpleTerminalProcess
 } from '@codingame/monaco-vscode-terminal-service-override'
 import ansiColors from 'ansi-colors'
-import { registerIframeWorkspaceProvider } from '../../lwc/app/vscode/tempForIframeContent/bridge/registerIframeWorkspaceProvider'
+import { registerIframeWorkspaceProvider } from 'vscode/bridge/registerIframeWorkspaceProvider'
 import 'vscode/localExtensionHost'
 
 const _SimpleTerminalBackend = SimpleTerminalBackend as any
@@ -162,6 +165,7 @@ export const workspaceRoot =
 export const workspaceFile = monaco.Uri.file(`${workspaceRoot}.code-workspace`)
 
 if (!useIframeWorkspaceBridge) {
+  console.warn('useIframeWorkspaceBridge is false, using default workspace');
   const fileSystemProvider = new RegisteredFileSystemProvider(false)
 
   fileSystemProvider.registerFile(
@@ -226,9 +230,15 @@ window.MonacoEnvironment = {
 
 // Set configuration before initializing service so it's directly available (especially for the theme, to prevent a flicker)
 await Promise.all([
-  initUserConfiguration(defaultConfiguration),
-  initUserKeybindings(defaultKeybindings)
+  initUserConfiguration(buildUserConfigurationJson(useIframeWorkspaceBridge)),
+  initUserKeybindings(defaultKeybindingsJson)
 ])
+
+const workspaceConfig = buildWorkspaceConfig(
+  monaco.Uri.file.bind(monaco.Uri),
+  useIframeWorkspaceBridge,
+  workspaceRoot
+)
 
 export const constructOptions: IWorkbenchConstructionOptions = {
   remoteAuthority,
@@ -240,15 +250,12 @@ export const constructOptions: IWorkbenchConstructionOptions = {
     command: ''
   },
   workspaceProvider: {
-    trusted: true,
-    async open() {
-      window.open(window.location.href)
-      return true
-    },
+    ...workspaceConfig.workspaceProvider,
     workspace: useIframeWorkspaceBridge
       ? { folderUri: monaco.Uri.file(workspaceRoot) }
       : { workspaceUri: workspaceFile }
   },
+  productConfiguration: workspaceConfig.productConfiguration,
   developmentOptions: {
     logLevel: LogLevel.Info
   },

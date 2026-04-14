@@ -1,35 +1,90 @@
+import { wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
-import { cacheManager } from 'shared/cacheManager';
+import { NavigationContext, navigate } from 'lwr/navigation';
+import { isChromeExtension } from 'shared/utils';
+import { listOrgSessionsViaBackground } from 'core/connector';
 
-const HOME_WELCOME_DISMISSED_KEY = 'home-welcome-dismissed';
+const GITHUB_ISSUES_URL = 'https://github.com/grebmann1/sf-toolkit-web/issues';
 
 export default class Welcome extends ToolkitElement {
-    showBanner = true;
+    @wire(NavigationContext)
+    navContext;
+
+    sessions = [];
+    isLoadingSessions = true;
 
     async connectedCallback() {
+        this.isLoadingSessions = true;
         try {
-            const isDismissed = await cacheManager.loadGeneralData(
-                HOME_WELCOME_DISMISSED_KEY,
-                false
-            );
-            this.showBanner = isDismissed !== true;
+            const result = await listOrgSessionsViaBackground();
+            if (Array.isArray(result)) {
+                this.sessions = result;
+            } else {
+                this.sessions = [];
+            }
         } catch {
-            // Non-blocking fallback: keep banner visible if cache read fails.
-            this.showBanner = true;
+            this.sessions = [];
+        } finally {
+            this.isLoadingSessions = false;
         }
     }
 
-    /** Methods */
-
     /** Getters */
 
+    get hasSessions() {
+        return this.sessions.length > 0;
+    }
+
     /** Events */
-    handleClose = async () => {
-        this.showBanner = false;
-        try {
-            await cacheManager.saveGeneralData(HOME_WELCOME_DISMISSED_KEY, true);
-        } catch {
-            // Non-blocking: UI remains dismissed for current session even if cache write fails.
+
+    handleSessionClick = event => {
+        const el = event.currentTarget;
+        const serverUrl = el.dataset.serverUrl;
+        const sessionId = el.dataset.sessionId;
+        if (!serverUrl || !sessionId) return;
+
+        if (isChromeExtension()) {
+            const appUrl = new URL(chrome.runtime.getURL('/views/app.html'));
+            appUrl.searchParams.set('sessionId', sessionId);
+            appUrl.searchParams.set('serverUrl', serverUrl);
+            window.location.assign(appUrl.toString());
+            return;
         }
+
+        navigate(this.navContext, {
+            type: 'application',
+            state: {
+                applicationName: 'home',
+                sessionId,
+                serverUrl,
+            },
+        });
+    };
+
+    handleSessionKeydown = event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            this.handleSessionClick(event);
+        }
+    };
+
+    handleGoToConnections = () => {
+        if (isChromeExtension()) {
+            const appUrl = new URL(chrome.runtime.getURL('/views/app.html'));
+            appUrl.searchParams.set('applicationName', 'connections');
+            window.location.assign(appUrl.toString());
+            return;
+        }
+
+        navigate(this.navContext, {
+            type: 'application',
+            state: {
+                applicationName: 'connections',
+            },
+        });
+    };
+
+    handleGitHub = () => {
+        window.open(GITHUB_ISSUES_URL, '_blank', 'noopener,noreferrer');
     };
 }

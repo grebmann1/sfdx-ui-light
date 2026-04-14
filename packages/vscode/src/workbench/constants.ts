@@ -1,0 +1,16 @@
+export const CHAT_MODEL_STORAGE_PREFIX = 'chat.currentLanguageModel.';
+export const WORKBENCH_CHAT_EXTENSION_ID = 'salesforce.workbench-ai';
+export const WORKBENCH_CHAT_PARTICIPANT_ID = 'salesforce.workbench.agent';
+export const WORKBENCH_CHAT_MODEL_VENDOR = 'copilot';
+export const WORKBENCH_CHAT_MODEL_ID = 'workbench-agent';
+export const WORKBENCH_CHAT_MODEL_FAMILY = 'salesforce-workbench-agent';
+export const WORKBENCH_CHAT_FAMILY_PREFIX = 'workbench-';
+export const WORKBENCH_CHAT_MODEL_NAME = 'Workbench Agent';
+export const WORKBENCH_CHAT_PROVIDER_ID = 'workbench';
+export const WORKBENCH_CHAT_PROVIDER_NAME = 'Workbench AI';
+export const WORKBENCH_AI_COMPLETIONS_SETTING = 'workbenchAICompletionsEnabled';
+export const WORKBENCH_AI_NEXT_EDIT_SUGGESTIONS_SETTING = 'workbenchAINextEditSuggestionsEnabled';
+export const LIGHT_COLOR_THEME = 'Default Light+';
+export const DARK_COLOR_THEME = 'Default Dark+';
+export const WORKBENCH_IFRAME_URL = 'http://localhost:3001/examples/workbench';
+export const WORKBENCH_IFRAME_ORIGIN = 'http://localhost:3001';

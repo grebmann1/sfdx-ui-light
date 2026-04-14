@@ -1,6 +1,7 @@
 export const CONNECTION_ROW_ACTIONS = {
     AUTHORIZE: 'authorize',
     LOGIN: 'login',
+    CLEAR_ERROR: 'clearError',
 } as const;
 
 export function getErrorRowActionName(connectAction?: string) {

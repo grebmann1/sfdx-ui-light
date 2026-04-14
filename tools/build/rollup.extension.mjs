@@ -294,6 +294,29 @@ const coreAliasEntries = [
     { find: 'core/fs', replacement: r('../../packages/lwc/app/core/fs/fs.ts') },
 ];
 
+// Plain TypeScript modules that must be resolved by the alias plugin BEFORE the LWC compiler
+// sees them. The LWC compiler has no TypeScript transform and will error on type syntax.
+// These entries mirror what's in the `modules` array (used by non-LWC builds via
+// lwcAliasForNonLwcBundles); here they are pre-resolved for LWC builds.
+const vscodePureAliasEntries = [
+    { find: 'vscode/metadataApi', replacement: r('../../packages/shared/modules/metadataApi/metadataApi.ts') },
+    { find: 'vscode/toolingApi', replacement: r('../../packages/shared/modules/toolingApi/toolingApi.ts') },
+    { find: 'vscode/sourceTracking', replacement: r('../../packages/shared/modules/sourceTracking/sourceTracking.ts') },
+    // workbench modules (consumed by fullApp.ts via module aliases)
+    { find: 'vscode/workbench/iframeAiBridgeRuntime', replacement: r('../../packages/vscode/src/workbench/bridge/iframeAiBridgeRuntime.ts') },
+    { find: 'vscode/workbench/iframeJsforceBridgeRuntime', replacement: r('../../packages/vscode/src/workbench/bridge/iframeJsforceBridgeRuntime.ts') },
+    { find: 'vscode/workbench/workbenchConnection', replacement: r('../../packages/vscode/src/workbench/workbenchConnection.ts') },
+    { find: 'vscode/workbench/workbenchWorkspace', replacement: r('../../packages/vscode/src/workbench/workbenchWorkspace.ts') },
+    { find: 'vscode/workbench/salesforceWorkbenchHost', replacement: r('../../packages/vscode/src/workbench/platform/workbenchHost.ts') },
+    // bridge aliases (consumed transitively by workbench modules)
+    { find: 'vscode/bridge/iframeFsBridgeContract', replacement: r('../../packages/lwc/app/vscode/fullApp/bridge/iframeFsBridgeContract.ts') },
+    { find: 'vscode/bridge/iframeFsBridgeClient', replacement: r('../../packages/lwc/app/vscode/fullApp/bridge/iframeFsBridgeClient.ts') },
+    { find: 'vscode/bridge/bootstrapIframeBridge', replacement: r('../../packages/lwc/app/vscode/fullApp/bridge/bootstrapIframeBridge.ts') },
+    { find: 'vscode/bridge/iframeJsforceBridgeContract', replacement: r('../../packages/lwc/app/vscode/fullApp/bridge/iframeJsforceBridgeContract.ts') },
+    { find: 'vscode/bridge/bootstrapIframeJsforceBridge', replacement: r('../../packages/lwc/app/vscode/fullApp/bridge/bootstrapIframeJsforceBridge.ts') },
+    { find: 'vscode/bridge/iframeJsforceBridgeClient', replacement: r('../../packages/lwc/app/vscode/fullApp/bridge/iframeJsforceBridgeClient.ts') },
+];
+
 const monacoWrapperInlineScriptExtractor = () => ({
     name: 'monaco-wrapper-inline-script-extractor',
     writeBundle() {
@@ -352,6 +375,7 @@ const monacoWrapperInlineScriptExtractor = () => ({
 const assetCopyTargets = [
     { src: r('../../packages/server/assets/styles'), dest: r('../../dist/extension') },
     { src: r('../../packages/server/assets/libs'), dest: r('../../dist/extension') },
+    { src: r('../../packages/vscode/assets/libs/extensions'), dest: r('../../dist/extension/libs') },
     { src: r('../../packages/server/assets/images'), dest: r('../../dist/extension') },
     { src: r('../../node_modules/@salesforce-ux/design-system/assets'), dest: r('../../dist/extension') },
     // Default skills are fetched from /public/skills at runtime.
@@ -414,7 +438,22 @@ const modules = [
     //{ name: 'jspdf', path: r('src/client/assets/libs/jspdf/jspdf.es.js') },
     //{ name: 'jspdf-autotable', path: r('src/client/assets/libs/jspdf/jspdf.plugin.autotable.js') },
     { name: 'imported/jsforce', path: r('../../packages/server/assets/libs/jsforce/jsforce.js') },
-    { name: 'imported/openapi-parser', path: r('../../packages/server/assets/libs/openapi-parser/openapi-parser.esm.min.js') }
+    { name: 'imported/openapi-parser', path: r('../../packages/server/assets/libs/openapi-parser/openapi-parser.esm.min.js') },
+    { name: 'vscode/metadataApi', path: r('../../packages/shared/modules/metadataApi/metadataApi.ts') },
+    { name: 'vscode/toolingApi', path: r('../../packages/shared/modules/toolingApi/toolingApi.ts') },
+    { name: 'vscode/sourceTracking', path: r('../../packages/shared/modules/sourceTracking/sourceTracking.ts') },
+    // vscode workbench modules (consumed by fullApp.ts via module aliases)
+    { name: 'vscode/workbench/iframeJsforceBridgeRuntime', path: r('../../packages/vscode/src/workbench/bridge/iframeJsforceBridgeRuntime.ts') },
+    { name: 'vscode/workbench/workbenchConnection', path: r('../../packages/vscode/src/workbench/workbenchConnection.ts') },
+    { name: 'vscode/workbench/workbenchWorkspace', path: r('../../packages/vscode/src/workbench/workbenchWorkspace.ts') },
+    { name: 'vscode/workbench/salesforceWorkbenchHost', path: r('../../packages/vscode/src/workbench/platform/workbenchHost.ts') },
+    // vscode bridge aliases (consumed by workbench modules imported from vscode package)
+    { name: 'vscode/bridge/iframeFsBridgeContract', path: r('../../packages/lwc/app/vscode/fullApp/bridge/iframeFsBridgeContract.ts') },
+    { name: 'vscode/bridge/iframeFsBridgeClient', path: r('../../packages/lwc/app/vscode/fullApp/bridge/iframeFsBridgeClient.ts') },
+    { name: 'vscode/bridge/bootstrapIframeBridge', path: r('../../packages/lwc/app/vscode/fullApp/bridge/bootstrapIframeBridge.ts') },
+    { name: 'vscode/bridge/iframeJsforceBridgeContract', path: r('../../packages/lwc/app/vscode/fullApp/bridge/iframeJsforceBridgeContract.ts') },
+    { name: 'vscode/bridge/bootstrapIframeJsforceBridge', path: r('../../packages/lwc/app/vscode/fullApp/bridge/bootstrapIframeJsforceBridge.ts') },
+    { name: 'vscode/bridge/iframeJsforceBridgeClient', path: r('../../packages/lwc/app/vscode/fullApp/bridge/iframeJsforceBridgeClient.ts') },
 ];
 
 const injectedModules = [
@@ -550,6 +589,7 @@ const coreBuilder = (modulesArg, isProduction) => ({
         chevrotainAlias,
         chevrotainUrlReplace,
         createAliasPlugin(coreAliasEntries),
+        createAliasPlugin(vscodePureAliasEntries),
         replace({
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
             'process.env.WORKBENCH_BASE_URL': workbenchBaseUrl,

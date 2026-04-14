@@ -25,6 +25,7 @@ import {
 import {
     getConfigurations,
     setConfigurations,
+    saveConfiguration,
     removeConfiguration,
     getConfiguration,
     getCurrentTab,
@@ -257,6 +258,9 @@ export default class App extends ToolkitElement {
                 break;
             case CONNECTION_ROW_ACTIONS.AUTHORIZE:
                 this.authorizeExistingOrg(row);
+                break;
+            case CONNECTION_ROW_ACTIONS.CLEAR_ERROR:
+                this.clearConnectionError(row);
                 break;
             case 'openBrowser':
                 this.openBrowser(row, '_blank');
@@ -733,6 +737,11 @@ export default class App extends ToolkitElement {
             await removeConfiguration({ alias: row.alias, credentialType: row.credentialType });
             await this.fetchAllConnections();
         }
+    };
+
+    clearConnectionError = async row => {
+        await saveConfiguration(row.alias, { ...row, _hasError: false, _errorMessage: null });
+        await this.fetchAllConnections();
     };
 
     createOrAddToTabGroup = async (tab, groupName, windowId) => {

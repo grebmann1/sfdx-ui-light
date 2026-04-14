@@ -4,13 +4,13 @@ title: IndexedDB Virtual File System
 
 # IndexedDB Virtual File System
 
-The workbench uses a virtual file system backed by browser storage (IndexedDB) for workspace files in the embedded VS Code experience.
+The workbench uses a virtual file system backed by browser IndexedDB for all workspace files in the embedded VS Code experience. Files never touch disk — they live entirely in the browser storage of the app origin.
 
 ## How it works
 
-- workspace file operations are routed through a custom file-system provider
-- the provider is restricted to the active workspace root
-- read/write/create/delete/rename operations are handled locally in the browser context
+The LWC app (`core/fs`) owns the IndexedDB store. The embedded VS Code workbench accesses it through the **FS Bridge**: a `MessageChannel`-based link where VS Code registers a custom `FileSystemProvider` that forwards every file operation (`stat`, `readdir`, `readFile`, `writeFile`, `mkdir`, `rm`, `mv`) to the parent app over the bridge port. The parent enforces workspace root boundaries before delegating to IndexedDB.
+
+This design means VS Code has full file-system semantics (watchers, saves, diffs) without ever directly touching the database or the network.
 
 ## Read-only protections
 
@@ -30,5 +30,6 @@ The workbench uses a virtual file system backed by browser storage (IndexedDB) f
 
 ## Related docs
 
+- [Architecture overview](../architecture/overview)
 - [AI Agent Tools Overview](../ai-agent/tools-overview)
 - [Local data and privacy](../security/local-data-and-privacy)

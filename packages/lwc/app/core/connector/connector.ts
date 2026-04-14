@@ -43,6 +43,10 @@ export async function removeConfiguration(params) {
     return platformService.removeConfiguration(params);
 }
 
+export async function saveConfiguration(alias, configuration) {
+    return platformService.saveConfiguration(alias, configuration);
+}
+
 export async function getConfigurations() {
     return platformService.getConfigurations();
 }

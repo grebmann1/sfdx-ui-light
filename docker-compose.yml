@@ -1,0 +1,14 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sf-toolkit:latest
+    ports:
+      - "3000:3000"   # packages/server  — Express API + LWR web app
+      - "4000:4000"   # apps/docs        — Docusaurus documentation
+      - "5000:5000"   # apps/ui          — Vite welcome SPA
+      - "5173:5173"   # packages/vscode  — Monaco/VS Code web IDE
+    env_file:
+      - .env
+    restart: unless-stopped

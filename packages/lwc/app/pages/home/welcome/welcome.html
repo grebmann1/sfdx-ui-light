@@ -1,35 +1,105 @@
 <template>
-    <template lwc:if={showBanner}>
-        <section class="welcome-banner" role="region" aria-label="Home welcome message">
-            <div class="welcome-banner__header">
-                <div class="welcome-banner__heading">
-                    <p class="welcome-banner__eyebrow">Welcome</p>
-                    <h2 class="welcome-banner__title">Get started with Workbench</h2>
-                </div>
-                <lightning-button-icon
-                    class="welcome-banner__close"
-                    icon-name="utility:close"
-                    variant="bare"
-                    alternative-text="Dismiss welcome message"
-                    title="Dismiss welcome message"
-                    onclick={handleClose}></lightning-button-icon>
+    <div class="welcome-page">
+        <!-- Hero header -->
+        <div class="welcome-hero">
+            <div class="welcome-hero__top">
+                <p class="welcome-hero__eyebrow">SF Toolkit</p>
+                <h1 class="welcome-hero__title">Workbench</h1>
+                <p class="welcome-hero__subtitle">Your modern Salesforce productivity companion</p>
             </div>
-            <p class="welcome-banner__intro">
-                Workbench is a modern Salesforce companion built to replace the legacy Workbench
-                with a cleaner, faster, and more consistent experience.
-            </p>
-            <ul class="welcome-banner__list">
-                <li>It centralizes developer and admin workflows in one unified toolkit.</li>
-                <li>
-                    It focuses on reliability, usability, and productivity for everyday Salesforce
-                    work.
-                </li>
-                <li>
-                    It evolves as a long-term platform for the next generation of Workbench
-                    capabilities.
-                </li>
-                <li>It is currently in beta, and feedback will shape the release.</li>
-            </ul>
-        </section>
-    </template>
+        </div>
+
+        <!-- Active Sessions card -->
+        <div class="welcome-card">
+            <div class="welcome-card__header">
+                <h2 class="welcome-card__title">Active Browser Sessions</h2>
+                <p class="welcome-card__desc">Salesforce orgs currently open in your browser</p>
+            </div>
+            <div class="welcome-card__body">
+                <!-- Loading -->
+                <template lwc:if={isLoadingSessions}>
+                    <div class="sessions-skeleton">
+                        <div class="sessions-skeleton__row"></div>
+                        <div class="sessions-skeleton__row"></div>
+                    </div>
+                </template>
+
+                <!-- Sessions list -->
+                <template lwc:elseif={hasSessions}>
+                    <ul class="sessions-list" role="list">
+                        <template for:each={sessions} for:item="session">
+                            <li
+                                key={session.serverUrl}
+                                class="session-item"
+                                role="button"
+                                tabindex="0"
+                                data-server-url={session.serverUrl}
+                                data-session-id={session.sessionId}
+                                onclick={handleSessionClick}
+                                onkeydown={handleSessionKeydown}>
+                                <span class="session-item__avatar" aria-hidden="true">
+                                    <lightning-icon
+                                        icon-name="utility:salesforce1"
+                                        size="small"></lightning-icon>
+                                </span>
+                                <div class="session-item__body">
+                                    <span class="session-item__label">{session.label}</span>
+                                    <span class="session-item__detail">{session.detail}</span>
+                                </div>
+                                <lightning-icon
+                                    icon-name="utility:chevronright"
+                                    size="x-small"
+                                    class="session-item__chevron"></lightning-icon>
+                            </li>
+                        </template>
+                    </ul>
+                </template>
+
+                <!-- Empty state -->
+                <template lwc:else>
+                    <div class="sessions-empty">
+                        <lightning-icon
+                            icon-name="utility:connected_apps"
+                            size="medium"
+                            class="sessions-empty__icon"></lightning-icon>
+                        <p class="sessions-empty__title">No active sessions found</p>
+                        <p class="sessions-empty__hint">
+                            Open a Salesforce org in a browser tab to see it here
+                        </p>
+                    </div>
+                </template>
+            </div>
+
+            <!-- CTA -->
+            <div class="welcome-card__footer">
+                <button
+                    class="welcome-cta-btn"
+                    type="button"
+                    onclick={handleGoToConnections}>
+                    <lightning-icon
+                        icon-name="utility:list"
+                        size="x-small"
+                        class="welcome-cta-btn__icon"></lightning-icon>
+                    View Registered Connections
+                </button>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="welcome-footer">
+            <lightning-icon
+                icon-name="utility:info"
+                size="x-small"
+                class="welcome-footer__icon"></lightning-icon>
+            <span class="welcome-footer__text">
+                Have a question or feature request?&nbsp;
+                <button
+                    class="welcome-footer__link"
+                    type="button"
+                    onclick={handleGitHub}>
+                    Open a GitHub issue
+                </button>
+            </span>
+        </div>
+    </div>
 </template>

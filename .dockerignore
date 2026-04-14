@@ -1,0 +1,41 @@
+# Dependencies
+node_modules
+apps/ui/node_modules
+apps/docs/node_modules
+packages/vscode/node_modules
+packages/desktop/node_modules
+
+# Build outputs
+dist
+site
+__lwr_cache__
+packages/server/dist
+packages/vscode/dist
+packages/shared/dist
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+docker/
+
+# Environment files (injected at runtime)
+.env
+.env.*
+
+# Editor / OS
+.DS_Store
+.cursor
+*.log
+npm-debug.log*
+
+# Desktop app (not needed in server Docker image)
+packages/desktop
+
+# Test artifacts
+coverage
+*.test.js.map

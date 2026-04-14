@@ -1,3 +1,17 @@
+import {
+    IFRAME_FS_BRIDGE_QUERY_FLAG,
+    IFRAME_FS_BRIDGE_QUERY_PARENT_ORIGIN_PARAM,
+    IFRAME_FS_BRIDGE_QUERY_VERSION_PARAM,
+} from './bridge/iframeFsBridgeContract';
+import {
+    IFRAME_JSFORCE_BRIDGE_QUERY_FLAG,
+    IFRAME_JSFORCE_BRIDGE_QUERY_VERSION_PARAM,
+} from './bridge/iframeJsforceBridgeContract';
+import {
+    IFRAME_AI_BRIDGE_QUERY_FLAG,
+    IFRAME_AI_BRIDGE_QUERY_VERSION_PARAM,
+} from './bridge/iframeAiBridgeContract';
+
 export const CHAT_MODEL_STORAGE_PREFIX = 'chat.currentLanguageModel.';
 export const WORKBENCH_CHAT_EXTENSION_ID = 'salesforce.workbench-ai';
 export const WORKBENCH_CHAT_PARTICIPANT_ID = 'salesforce.workbench.agent';
@@ -13,8 +27,13 @@ export const LIGHT_COLOR_THEME = 'Default Light+';
 export const DARK_COLOR_THEME = 'Default Dark+';
 export const WORKBENCH_IFRAME_URL = 'http://localhost:5173/';
 export const WORKBENCH_IFRAME_ORIGIN = 'http://localhost:5173';
-export const IFRAME_FS_BRIDGE_QUERY_FLAG = 'fsBridge';
-export const IFRAME_FS_BRIDGE_QUERY_VERSION_PARAM = 'bridgeProtocolVersion';
-export const IFRAME_FS_BRIDGE_QUERY_PARENT_ORIGIN_PARAM = 'bridgeParentOrigin';
-export const IFRAME_JSFORCE_BRIDGE_QUERY_FLAG = 'jsforceBridge';
-export const IFRAME_JSFORCE_BRIDGE_QUERY_VERSION_PARAM = 'jsforceBridgeProtocolVersion';
+export const DEFAULT_WORKSPACE_ROOT = '/workspace';
+export {
+    IFRAME_FS_BRIDGE_QUERY_FLAG,
+    IFRAME_FS_BRIDGE_QUERY_PARENT_ORIGIN_PARAM,
+    IFRAME_FS_BRIDGE_QUERY_VERSION_PARAM,
+    IFRAME_JSFORCE_BRIDGE_QUERY_FLAG,
+    IFRAME_JSFORCE_BRIDGE_QUERY_VERSION_PARAM,
+    IFRAME_AI_BRIDGE_QUERY_FLAG,
+    IFRAME_AI_BRIDGE_QUERY_VERSION_PARAM,
+};

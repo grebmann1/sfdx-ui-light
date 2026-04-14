@@ -57,6 +57,7 @@ export default defineConfig({
       apply: 'serve',
       configureServer(server) {
         const distExtensionDir = path.resolve(__dirname, '../../dist/extension')
+        const vscodeAssetsDir = path.resolve(__dirname, './assets')
         const serverAssetsDir = path.resolve(__dirname, '../../packages/server/assets')
         const STATIC_PREFIXES = ['/libs/', '/scripts/', '/views/', '/styles/']
         const mimeTypes: Record<string, string> = {
@@ -67,34 +68,37 @@ export default defineConfig({
           '.svg': 'image/svg+xml',
           '.wasm': 'application/wasm'
         }
-        return () => {
-          server.middlewares.use(async (req, res, next) => {
-            if (req.originalUrl != null) {
-              const pathname = new URL(req.originalUrl, import.meta.url).pathname
-              if (STATIC_PREFIXES.some(prefix => pathname.startsWith(prefix))) {
-                // Try dist/extension first, then fall back to packages/server/assets
-                const candidates = [
-                  path.join(distExtensionDir, pathname),
-                  path.join(serverAssetsDir, pathname)
-                ]
-                for (const filePath of candidates) {
-                  try {
-                    const content = fs.readFileSync(filePath)
-                    const ext = path.extname(pathname)
-                    res.setHeader('Content-Type', mimeTypes[ext] ?? 'application/octet-stream')
-                    res.writeHead(200)
-                    res.write(content)
-                    res.end()
-                    return
-                  } catch {
-                    // try next candidate
-                  }
+        // Register BEFORE Vite's built-in middleware so Vite never gets a chance
+        // to inject @vite/client (HMR) into these assets. If registered via the
+        // returned function it would run after Vite's HTML transform, which is
+        // too late and causes CSP connect-src violations in VS Code webview panels.
+        server.middlewares.use(async (req, res, next) => {
+          if (req.originalUrl != null) {
+            const pathname = new URL(req.originalUrl, import.meta.url).pathname
+            if (STATIC_PREFIXES.some(prefix => pathname.startsWith(prefix))) {
+              // Try dist/extension first, then packages/vscode/assets, then fall back to packages/server/assets
+              const candidates = [
+                path.join(distExtensionDir, pathname),
+                path.join(vscodeAssetsDir, pathname),
+                path.join(serverAssetsDir, pathname)
+              ]
+              for (const filePath of candidates) {
+                try {
+                  const content = fs.readFileSync(filePath)
+                  const ext = path.extname(pathname)
+                  res.setHeader('Content-Type', mimeTypes[ext] ?? 'application/octet-stream')
+                  res.writeHead(200)
+                  res.write(content)
+                  res.end()
+                  return
+                } catch {
+                  // try next candidate
                 }
               }
             }
-            next()
-          })
-        }
+          }
+          next()
+        })
       }
     }
   ],
@@ -127,7 +131,7 @@ export default defineConfig({
     port: 5173,
     host: '0.0.0.0',
     fs: {
-      allow: ['../', '../../dist/extension', '../../packages/server/assets']
+      allow: ['../', './assets', '../../dist/extension', '../../packages/server/assets']
     }
   },
   define: {
@@ -136,32 +140,72 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: 'vscode/baseEditor',
-        replacement: path.resolve(__dirname, './src/sfWorkbench/vscodeBaseEditorCompat.ts')
-      },
-      {
         find: 'vscode/toolingApi',
-        replacement: path.resolve(__dirname, '../lwc/app/vscode/toolingApi/toolingApi.ts')
+        replacement: path.resolve(__dirname, './src/shared/toolingApi/toolingApi.ts')
       },
       {
         find: 'vscode/metadataApi',
-        replacement: path.resolve(__dirname, '../lwc/app/vscode/metadataApi/metadataApi.ts')
+        replacement: path.resolve(__dirname, './src/shared/metadataApi/metadataApi.ts')
       },
       {
         find: 'vscode/sourceTracking',
-        replacement: path.resolve(__dirname, '../lwc/app/vscode/sourceTracking/sourceTracking.ts')
+        replacement: path.resolve(__dirname, './src/shared/sourceTracking/sourceTracking.ts')
+      },
+      {
+        find: 'vscode/bridge/iframeFsBridgeContract',
+        replacement: path.resolve(__dirname, '../lwc/app/vscode/fullApp/bridge/iframeFsBridgeContract.ts')
+      },
+      {
+        find: 'vscode/bridge/iframeFsBridgeClient',
+        replacement: path.resolve(__dirname, '../lwc/app/vscode/fullApp/bridge/iframeFsBridgeClient.ts')
+      },
+      {
+        find: 'vscode/bridge/bootstrapIframeBridge',
+        replacement: path.resolve(__dirname, '../lwc/app/vscode/fullApp/bridge/bootstrapIframeBridge.ts')
+      },
+      {
+        find: 'vscode/bridge/iframeJsforceBridgeContract',
+        replacement: path.resolve(__dirname, '../lwc/app/vscode/fullApp/bridge/iframeJsforceBridgeContract.ts')
+      },
+      {
+        find: 'vscode/bridge/bootstrapIframeJsforceBridge',
+        replacement: path.resolve(__dirname, '../lwc/app/vscode/fullApp/bridge/bootstrapIframeJsforceBridge.ts')
+      },
+      {
+        find: 'vscode/bridge/iframeJsforceBridgeClient',
+        replacement: path.resolve(__dirname, '../lwc/app/vscode/fullApp/bridge/iframeJsforceBridgeClient.ts')
+      },
+      {
+        find: 'vscode/bridge/iframeAiBridgeContract',
+        replacement: path.resolve(__dirname, '../lwc/app/vscode/fullApp/bridge/iframeAiBridgeContract.ts')
+      },
+      {
+        find: 'vscode/bridge/bootstrapIframeAiBridge',
+        replacement: path.resolve(__dirname, '../lwc/app/vscode/fullApp/bridge/bootstrapIframeAiBridge.ts')
+      },
+      {
+        find: 'vscode/bridge/iframeAiBridgeClient',
+        replacement: path.resolve(__dirname, '../lwc/app/vscode/fullApp/bridge/iframeAiBridgeClient.ts')
+      },
+      {
+        find: 'vscode/fullApp/bootstrapState',
+        replacement: path.resolve(__dirname, '../lwc/app/vscode/fullApp/bootstrapState.ts')
+      },
+      {
+        find: 'vscode/bridge/registerIframeWorkspaceProvider',
+        replacement: path.resolve(__dirname, './src/workbench/bridge/registerIframeWorkspaceProvider.ts')
       },
       {
         find: /^core\/(.*)$/,
-        replacement: path.resolve(__dirname, './src/sfWorkbench/compat/core/$1')
+        replacement: path.resolve(__dirname, './src/workbench/compat/core/$1')
       },
       {
         find: /^shared\/(.*)$/,
-        replacement: path.resolve(__dirname, './src/sfWorkbench/compat/shared/$1')
+        replacement: path.resolve(__dirname, './src/workbench/compat/shared/$1')
       },
       {
         find: /^agent\/(.*)$/,
-        replacement: path.resolve(__dirname, './src/sfWorkbench/compat/agent/$1')
+        replacement: path.resolve(__dirname, './src/workbench/compat/agent/$1')
       }
     ],
     dedupe: ['vscode', ...localDependencies]

@@ -15,7 +15,7 @@ import {
   envOptions,
   userDataProvider
 } from './setup.common'
-import { startSalesforceWorkbench } from './sfWorkbench/startSalesforceWorkbench'
+import { startSalesforceWorkbench } from './workbench/startSalesforceWorkbench'
 
 const container = document.createElement('div')
 container.style.height = '100vh'
@@ -25,6 +25,24 @@ const shadowRoot = container.attachShadow({ mode: 'open' })
 const workbenchElement = document.createElement('div')
 workbenchElement.style.height = '100vh'
 shadowRoot.appendChild(workbenchElement)
+
+const workbenchOverrideStyle = document.createElement('style')
+workbenchOverrideStyle.textContent = `
+  .monaco-workbench .statusbar {
+    height: 18px !important;
+    line-height: 18px !important;
+    font-size: 11px !important;
+  }
+  .monaco-workbench .statusbar .statusbar-item {
+    line-height: 18px !important;
+  }
+  .monaco-workbench .statusbar .statusbar-item .label,
+  .monaco-workbench .statusbar .statusbar-item a {
+    font-size: 11px !important;
+    line-height: 18px !important;
+  }
+`
+shadowRoot.appendChild(workbenchOverrideStyle)
 
 await initializeMonacoService(
   {
